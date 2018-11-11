@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha1 contains API Schema definitions for the container v1alpha1 API group
+// Package v1alpha1 contains API Schema definitions for the conductor core v1alpha1 API group
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen=package,register
-// +k8s:conversion-gen=github.com/upbound/conductor/pkg/apis/gcp/container
+// +k8s:conversion-gen=github.com/upbound/conductor/pkg/apis/compute
 // +k8s:defaulter-gen=TypeMeta
-// +groupName=container.gcp.conductor.io
+// +groupName=compute.conductor.io
 package v1alpha1
