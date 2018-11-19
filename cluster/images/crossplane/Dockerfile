@@ -4,7 +4,7 @@ RUN apk --no-cache add ca-certificates bash
 ARG ARCH
 ARG TINI_VERSION
 
-ADD conductor /usr/local/bin/
+ADD crossplane /usr/local/bin/
 EXPOSE 8080
-ENTRYPOINT ["conductor"]
+ENTRYPOINT ["crossplane"]
 CMD ["--install-crds=false"]
