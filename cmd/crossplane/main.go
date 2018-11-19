@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Conductor Authors.
+Copyright 2018 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/upbound/conductor/pkg/apis"
-	"github.com/upbound/conductor/pkg/controller"
+	"github.com/crossplaneio/crossplane/pkg/apis"
+	"github.com/crossplaneio/crossplane/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
