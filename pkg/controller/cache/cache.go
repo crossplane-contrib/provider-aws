@@ -14,27 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package cache
 
 import (
+	"github.com/crossplaneio/crossplane/pkg/controller/cache/redis"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-
-	"github.com/crossplaneio/crossplane/pkg/controller/aws"
-	"github.com/crossplaneio/crossplane/pkg/controller/azure"
-	"github.com/crossplaneio/crossplane/pkg/controller/cache"
-	"github.com/crossplaneio/crossplane/pkg/controller/compute"
-	"github.com/crossplaneio/crossplane/pkg/controller/gcp"
-	"github.com/crossplaneio/crossplane/pkg/controller/storage"
 )
 
 func init() {
-	// AddToManagerFuncs is a list of functions to create controllers and add them to a manager.
-	AddToManagerFuncs = append(AddToManagerFuncs, aws.AddToManager)
-	AddToManagerFuncs = append(AddToManagerFuncs, azure.AddToManager)
-	AddToManagerFuncs = append(AddToManagerFuncs, cache.AddToManager)
-	AddToManagerFuncs = append(AddToManagerFuncs, compute.AddToManager)
-	AddToManagerFuncs = append(AddToManagerFuncs, gcp.AddToManager)
-	AddToManagerFuncs = append(AddToManagerFuncs, storage.AddToManager)
+	AddToManagerFuncs = append(AddToManagerFuncs, redis.AddCluster)
 }
 
 // AddToManagerFuncs is a list of functions to add all Controllers to the Manager
