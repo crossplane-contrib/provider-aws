@@ -25,6 +25,7 @@ import (
 	"github.com/crossplaneio/crossplane/pkg/controller/compute"
 	"github.com/crossplaneio/crossplane/pkg/controller/gcp"
 	"github.com/crossplaneio/crossplane/pkg/controller/storage"
+	"github.com/crossplaneio/crossplane/pkg/controller/workload"
 )
 
 func init() {
@@ -36,6 +37,7 @@ func init() {
 		compute.AddToManager,
 		gcp.AddToManager,
 		storage.AddToManager,
+		workload.AddToManager,
 	)
 }
 
