@@ -14,12 +14,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
-
-import (
-	"github.com/crossplaneio/crossplane/pkg/resource"
-)
-
-var (
-	_ resource.Claim = &Bucket{}
-)
+package controller
