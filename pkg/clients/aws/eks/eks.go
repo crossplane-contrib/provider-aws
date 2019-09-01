@@ -33,8 +33,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
-	awscomputev1alpha1 "github.com/crossplaneio/crossplane/aws/apis/compute/v1alpha1"
-	cfc "github.com/crossplaneio/crossplane/pkg/clients/aws/cloudformation"
+	awscomputev1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/compute/v1alpha1"
+	cfc "github.com/crossplaneio/stack-aws/pkg/clients/aws/cloudformation"
 )
 
 const (

@@ -27,7 +27,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
-	localtest "github.com/crossplaneio/crossplane/pkg/test"
+
+	localtest "github.com/crossplaneio/stack-aws/pkg/test"
 )
 
 const (

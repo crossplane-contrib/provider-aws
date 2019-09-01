@@ -26,10 +26,11 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	"github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha1"
+
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	databasev1alpha1 "github.com/crossplaneio/crossplane/apis/database/v1alpha1"
-	"github.com/crossplaneio/crossplane/aws/apis/database/v1alpha1"
 )
 
 // PostgreSQLInstanceClaimController is responsible for adding the PostgreSQLInstance

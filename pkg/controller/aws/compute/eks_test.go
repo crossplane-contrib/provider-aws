@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/crossplaneio/crossplane/aws/apis"
+	"github.com/crossplaneio/stack-aws/aws/apis"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
@@ -39,12 +39,13 @@ import (
 	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	. "github.com/crossplaneio/stack-aws/aws/apis/compute/v1alpha1"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/eks"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/eks/fake"
+
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
-	. "github.com/crossplaneio/crossplane/aws/apis/compute/v1alpha1"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/eks"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/eks/fake"
 )
 
 const (

@@ -35,7 +35,7 @@ linters-settings:
   goimports:
     # put imports beginning with prefix after 3rd-party packages;
     # it's a comma-separated list of prefixes
-    local-prefixes: github.com/crossplaneio/crossplane
+    local-prefixes: github.com/crossplaneio/stack-aws
 
   gocyclo:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
@@ -170,13 +170,6 @@ issues:
       linters:
       - gosec
       - gas
-
-    # The Azure AddToUserAgent method appends to the existing user agent string.
-    # It returns an error if you pass it an empty string lettinga you know the
-    # user agent did not change, making it more of a warning.
-    - text: \.AddToUserAgent
-      linters:
-      - errcheck
 
   # Independently from option `exclude` we use default exclude patterns,
   # it can be disabled by this option. To list all

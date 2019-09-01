@@ -19,8 +19,8 @@ package fake
 import (
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
-	"github.com/crossplaneio/crossplane/aws/apis/storage/v1alpha1"
-	client "github.com/crossplaneio/crossplane/pkg/clients/aws/s3"
+	"github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha1"
+	client "github.com/crossplaneio/stack-aws/pkg/clients/aws/s3"
 )
 
 // MockS3Client for testing.

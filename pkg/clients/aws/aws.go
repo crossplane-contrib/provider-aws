@@ -23,21 +23,22 @@ import (
 	"github.com/go-ini/ini"
 	"k8s.io/client-go/kubernetes"
 
+	"github.com/crossplaneio/stack-aws/aws/apis/v1alpha1"
+
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
-	"github.com/crossplaneio/crossplane/aws/apis/v1alpha1"
 )
 
 // DefaultSection for INI files.
 const DefaultSection = ini.DefaultSection
 
 // A FieldOption determines how common Go types are translated to the types
-// required by the Azure Go SDK.
+// required by the AWS Go SDK.
 type FieldOption int
 
 // Field options.
 const (
 	// FieldRequired causes zero values to be converted to a pointer to the zero
-	// value, rather than a nil pointer. Azure Go SDK types use pointer fields,
+	// value, rather than a nil pointer. AWS Go SDK types use pointer fields,
 	// with a nil pointer indicating an unset field. Our ToPtr functions return
 	// a nil pointer for a zero values, unless FieldRequired is set.
 	FieldRequired FieldOption = iota

@@ -31,15 +31,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	databasev1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha1"
+	awsv1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha1"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/rds"
+
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
-	databasev1alpha1 "github.com/crossplaneio/crossplane/aws/apis/database/v1alpha1"
-	awsv1alpha1 "github.com/crossplaneio/crossplane/aws/apis/v1alpha1"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/rds"
 )
 
 const (

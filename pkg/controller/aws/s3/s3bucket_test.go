@@ -20,7 +20,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/crossplaneio/crossplane/aws/apis"
+	"github.com/crossplaneio/stack-aws/aws/apis"
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/google/go-cmp/cmp"
@@ -35,15 +35,16 @@ import (
 	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	"github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha1"
+	. "github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha1"
+	awsv1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha1"
+	client "github.com/crossplaneio/stack-aws/pkg/clients/aws/s3"
+	. "github.com/crossplaneio/stack-aws/pkg/clients/aws/s3/fake"
+
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 	storagev1alpha1 "github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
-	"github.com/crossplaneio/crossplane/aws/apis/storage/v1alpha1"
-	. "github.com/crossplaneio/crossplane/aws/apis/storage/v1alpha1"
-	awsv1alpha1 "github.com/crossplaneio/crossplane/aws/apis/v1alpha1"
-	client "github.com/crossplaneio/crossplane/pkg/clients/aws/s3"
-	. "github.com/crossplaneio/crossplane/pkg/clients/aws/s3/fake"
 )
 
 const (

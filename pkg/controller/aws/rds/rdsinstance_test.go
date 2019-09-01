@@ -19,7 +19,7 @@ package rds
 import (
 	"testing"
 
-	"github.com/crossplaneio/crossplane/aws/apis"
+	"github.com/crossplaneio/stack-aws/aws/apis"
 
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
@@ -34,13 +34,14 @@ import (
 	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	"github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha1"
+	. "github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha1"
+	awsv1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha1"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/rds"
+	. "github.com/crossplaneio/stack-aws/pkg/clients/aws/rds/fake"
+
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
-	"github.com/crossplaneio/crossplane/aws/apis/database/v1alpha1"
-	. "github.com/crossplaneio/crossplane/aws/apis/database/v1alpha1"
-	awsv1alpha1 "github.com/crossplaneio/crossplane/aws/apis/v1alpha1"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/rds"
-	. "github.com/crossplaneio/crossplane/pkg/clients/aws/rds/fake"
 )
 
 const (
