@@ -1,0 +1,38 @@
+---
+# Put your rbac rules here
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+- apiGroups:
+  - cache.crossplane.io
+  - compute.crossplane.io
+  - database.crossplane.io
+  - core.crossplane.io
+  - storage.crossplane.io
+  - workload.crossplane.io
+  - aws.crossplane.io
+  - cache.aws.crossplane.io
+  - compute.aws.crossplane.io
+  - database.aws.crossplane.io
+  - storage.aws.crossplane.io
+  resources:
+  - "*"
+  verbs:
+  - "*"
