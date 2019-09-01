@@ -26,10 +26,11 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	"github.com/crossplaneio/stack-aws/aws/apis/cache/v1alpha1"
+
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	cachev1alpha1 "github.com/crossplaneio/crossplane/apis/cache/v1alpha1"
-	"github.com/crossplaneio/crossplane/aws/apis/cache/v1alpha1"
 )
 
 // ReplicationGroupClaimController is responsible for adding the ReplicationGroup

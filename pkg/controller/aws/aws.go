@@ -19,16 +19,16 @@ package aws
 import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	"github.com/crossplaneio/crossplane/pkg/controller/aws/cache"
-	"github.com/crossplaneio/crossplane/pkg/controller/aws/compute"
-	"github.com/crossplaneio/crossplane/pkg/controller/aws/rds"
-	"github.com/crossplaneio/crossplane/pkg/controller/aws/s3"
+	"github.com/crossplaneio/stack-aws/pkg/controller/aws/cache"
+	"github.com/crossplaneio/stack-aws/pkg/controller/aws/compute"
+	"github.com/crossplaneio/stack-aws/pkg/controller/aws/rds"
+	"github.com/crossplaneio/stack-aws/pkg/controller/aws/s3"
 )
 
 // Controllers passes down config and adds individual controllers to the manager.
 type Controllers struct{}
 
-// SetupWithManager adds all GCP controllers to the manager.
+// SetupWithManager adds all AWS controllers to the manager.
 func (c *Controllers) SetupWithManager(mgr ctrl.Manager) error {
 	if err := (&cache.ReplicationGroupClaimController{}).SetupWithManager(mgr); err != nil {
 		return err

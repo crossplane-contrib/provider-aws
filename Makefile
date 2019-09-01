@@ -1,7 +1,7 @@
 # ====================================================================================
 # Setup Project
 
-PROJECT_NAME := crossplane
+PROJECT_NAME := stack-aws
 PROJECT_REPO := github.com/crossplaneio/$(PROJECT_NAME)
 
 PLATFORMS ?= linux_amd64 linux_arm64
@@ -31,17 +31,8 @@ GO_TEST_PARALLEL := $(shell echo $$(( $(NPROCS) / 2 )))
 
 GO_STATIC_PACKAGES = $(GO_PROJECT)/cmd/crossplane
 GO_LDFLAGS += -X $(GO_PROJECT)/pkg/version.Version=$(VERSION)
-GO_SUBDIRS += cmd pkg apis aws azure gcp
+GO_SUBDIRS += cmd pkg aws
 -include build/makelib/golang.mk
-
-# ====================================================================================
-# Setup Helm
-
-HELM_BASE_URL = https://charts.crossplane.io
-HELM_S3_BUCKET = crossplane.charts
-HELM_CHARTS = crossplane
-HELM_CHART_LINT_ARGS_crossplane = --set nameOverride='',imagePullSecrets=''
--include build/makelib/helm.mk
 
 # ====================================================================================
 # Setup Kubebuilder
@@ -57,16 +48,8 @@ HELM_CHART_LINT_ARGS_crossplane = --set nameOverride='',imagePullSecrets=''
 # Setup Images
 
 DOCKER_REGISTRY = crossplane
-IMAGES = crossplane
+IMAGES = stack-aws
 -include build/makelib/image.mk
-
-# ====================================================================================
-# Setup Docs
-
-SOURCE_DOCS_DIR = docs
-DEST_DOCS_DIR = docs
-DOCS_GIT_REPO = https://$(GIT_API_TOKEN)@github.com/crossplaneio/crossplaneio.github.io.git
--include build/makelib/docs.mk
 
 # ====================================================================================
 # Targets
@@ -87,16 +70,7 @@ go.test.unit: $(KUBEBUILDER)
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: vendor
 	@$(INFO) Generating CRD manifests
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:trivialVersions=true paths=./aws/... output:dir=cluster/charts/crossplane/crds/aws
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:trivialVersions=true paths=./azure/... output:dir=cluster/charts/crossplane/crds/azure
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:trivialVersions=true paths=./gcp/... output:dir=cluster/charts/crossplane/crds/gcp
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:trivialVersions=true paths=./apis/cache/... output:dir=cluster/charts/crossplane/crds
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:trivialVersions=true paths=./apis/compute/... output:dir=cluster/charts/crossplane/crds
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:trivialVersions=true paths=./apis/core/... output:dir=cluster/charts/crossplane/crds
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:trivialVersions=true paths=./apis/database/... output:dir=cluster/charts/crossplane/crds
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:trivialVersions=true paths=./apis/storage/... output:dir=cluster/charts/crossplane/crds
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:trivialVersions=true paths=./apis/workloads/... output:dir=cluster/charts/crossplane/crds
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:maxDescLen=0,trivialVersions=true paths=./apis/stacks/... output:dir=cluster/charts/crossplane/crds
+	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:trivialVersions=true paths=./aws/... output:dir=config/crd
 	@$(OK) Generating CRD manifests
 
 # Generate a coverage report for cobertura applying exclusions on

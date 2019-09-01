@@ -27,10 +27,11 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	"github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha1"
+
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	storagev1alpha1 "github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
-	"github.com/crossplaneio/crossplane/aws/apis/storage/v1alpha1"
 )
 
 var s3ACL = map[storagev1alpha1.PredefinedACL]s3.BucketCannedACL{

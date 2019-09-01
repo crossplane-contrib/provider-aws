@@ -35,13 +35,14 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/crossplaneio/stack-aws/aws/apis/cache/v1alpha1"
+	awsv1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha1"
+	elasticacheclient "github.com/crossplaneio/stack-aws/pkg/clients/aws/elasticache"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/elasticache/fake"
+
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
-	"github.com/crossplaneio/crossplane/aws/apis/cache/v1alpha1"
-	awsv1alpha1 "github.com/crossplaneio/crossplane/aws/apis/v1alpha1"
-	elasticacheclient "github.com/crossplaneio/crossplane/pkg/clients/aws/elasticache"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/elasticache/fake"
 )
 
 const (

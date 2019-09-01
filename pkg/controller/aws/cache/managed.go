@@ -27,14 +27,15 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/crossplaneio/stack-aws/aws/apis/cache/v1alpha1"
+	awsv1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha1"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/elasticache"
+
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
-	"github.com/crossplaneio/crossplane/aws/apis/cache/v1alpha1"
-	awsv1alpha1 "github.com/crossplaneio/crossplane/aws/apis/v1alpha1"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/elasticache"
 )
 
 // Error strings.

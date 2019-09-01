@@ -37,17 +37,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	awscomputev1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/compute/v1alpha1"
+	awsv1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha1"
+	awsClient "github.com/crossplaneio/stack-aws/pkg/clients/aws"
+	cloudformationclient "github.com/crossplaneio/stack-aws/pkg/clients/aws/cloudformation"
+
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	awscomputev1alpha1 "github.com/crossplaneio/crossplane/aws/apis/compute/v1alpha1"
-	awsv1alpha1 "github.com/crossplaneio/crossplane/aws/apis/v1alpha1"
-	awsClient "github.com/crossplaneio/crossplane/pkg/clients/aws"
-	cloudformationclient "github.com/crossplaneio/crossplane/pkg/clients/aws/cloudformation"
+
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/eks"
 
 	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/eks"
 )
 
 const (

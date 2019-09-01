@@ -25,8 +25,8 @@ import (
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplaneio/crossplane/aws/apis/cache/v1alpha1"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws"
+	"github.com/crossplaneio/stack-aws/aws/apis/cache/v1alpha1"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws"
 )
 
 // NamePrefix is the prefix for all created ElastiCache replication groups.

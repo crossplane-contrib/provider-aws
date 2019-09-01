@@ -32,7 +32,8 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 
 	storagev1alpha1 "github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
-	localtest "github.com/crossplaneio/crossplane/pkg/test"
+
+	localtest "github.com/crossplaneio/stack-aws/pkg/test"
 )
 
 const (

@@ -1,4 +1,4 @@
-# Gopkg.toml 
+# Gopkg.toml
 #
 # Add constraints for packages that are a direct dependency
 # of this project (i.e. they are imported by golang source code)
@@ -24,10 +24,10 @@
 #  version = "2.4.0"
 
 ignored = [
-    "github.com/crossplaneio/crossplane/.cache",
-    "github.com/crossplaneio/crossplane/.work",
-    "github.com/crossplaneio/crossplane/_output",
-    "github.com/crossplaneio/crossplane/build",
+    "github.com/crossplaneio/stack-aws/.cache",
+    "github.com/crossplaneio/stack-aws/.work",
+    "github.com/crossplaneio/stack-aws/_output",
+    "github.com/crossplaneio/stack-aws/build",
     ]
 
 required = [
@@ -59,4 +59,3 @@ required = [
   name = "gopkg.in/fsnotify.v1"
   source = "https://github.com/fsnotify/fsnotify.git"
   version="v1.4.7"
-
