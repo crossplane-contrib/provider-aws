@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stack-aws
+  labels:
+    core.crossplane.io/name: "stack-aws"
+spec:
+  selector:
+    matchLabels:
+      core.crossplane.io/name: "stack-aws"
+  replicas: 1
+  template:
+    metadata:
+      name: "stack-aws-controller"
+      labels:
+        core.crossplane.io/name: "stack-aws"
+    spec:
+      containers:
+      - name: "stack-aws-controller"
+        image: "crossplane/stack-aws:master"
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace

@@ -45,7 +45,13 @@ GO_SUBDIRS += cmd pkg aws
 -include build/makelib/k8s_tools.mk
 
 # ====================================================================================
-# Setup Images
+# Setup Stacks
+
+STACK_PACKAGE=stack-package
+export STACK_PACKAGE
+STACK_PACKAGE_REGISTRY=$(STACK_PACKAGE)/.registry
+CRD_DIR=config/crd
+STACK_PACKAGE_REGISTRY_SOURCE=config/stack/manifests
 
 DOCKER_REGISTRY = crossplane
 IMAGES = stack-aws
@@ -70,7 +76,7 @@ go.test.unit: $(KUBEBUILDER)
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: vendor
 	@$(INFO) Generating CRD manifests
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:trivialVersions=true paths=./aws/... output:dir=config/crd
+	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:trivialVersions=true paths=./aws/... output:dir=$(CRD_DIR)
 	@$(OK) Generating CRD manifests
 
 # Generate a coverage report for cobertura applying exclusions on
@@ -105,18 +111,52 @@ run: go.build
 	@# To see other arguments that can be provided, run the command with --help instead
 	$(GO_OUT_DIR)/$(PROJECT_NAME) --debug
 
-.PHONY: manifests cobertura reviewable submodules fallthrough test-integration run
+# ====================================================================================
+# Stacks related targets
+
+# Initialize the stack package folder
+$(STACK_PACKAGE_REGISTRY):
+	@mkdir -p $(STACK_PACKAGE_REGISTRY)/resources
+	@touch $(STACK_PACKAGE_REGISTRY)/app.yaml $(STACK_PACKAGE_REGISTRY)/install.yaml $(STACK_PACKAGE_REGISTRY)/rbac.yaml
+
+build.artifacts: build-stack-package
+
+build-stack-package: $(STACK_PACKAGE_REGISTRY)
+# Copy CRDs over
+#
+# The reason this looks complicated is because it is
+# preserving the original crd filenames and changing
+# *.yaml to *.crd.yaml.
+#
+# An alternate and simpler-looking approach would
+# be to cat all of the files into a single crd.yaml,
+# but then we couldn't use per CRD metadata files.
+	@$(INFO) building stack package in $(STACK_PACKAGE)
+	@find $(CRD_DIR) -type f -name '*.yaml' | \
+		while read filename ; do cat $$filename > \
+		$(STACK_PACKAGE_REGISTRY)/resources/$$( basename $${filename/.yaml/.crd.yaml} ) \
+		; done
+	@cp -r $(STACK_PACKAGE_REGISTRY_SOURCE)/* $(STACK_PACKAGE_REGISTRY)
+
+clean: clean-stack-package
+
+clean-stack-package:
+	@rm -rf $(STACK_PACKAGE)
+
+.PHONY: manifests cobertura reviewable submodules fallthrough test-integration run clean-stack-package build-stack-package
 
 # ====================================================================================
 # Special Targets
 
 define CROSSPLANE_MAKE_HELP
 Crossplane Targets:
-    manifests          Generate manifests e.g. CRD, RBAC etc.
-    cobertura          Generate a coverage report for cobertura applying exclusions on generated files.
-    reviewable         Ensure a PR is ready for review.
-    submodules         Update the submodules, such as the common build scripts.
-    run                Run crossplane locally, out-of-cluster. Useful for development.
+    manifests             Generate manifests e.g. CRD, RBAC etc.
+    cobertura             Generate a coverage report for cobertura applying exclusions on generated files.
+    reviewable            Ensure a PR is ready for review.
+    submodules            Update the submodules, such as the common build scripts.
+    run                   Run crossplane locally, out-of-cluster. Useful for development.
+    build-stack-package   Builds the stack package contents in the stack package directory (./$(STACK_PACKAGE))
+    clean-stack-package   Cleans out the generated stack package directory (./$(STACK_PACKAGE))
 
 endef
 # The reason CROSSPLANE_MAKE_HELP is used instead of CROSSPLANE_HELP is because the crossplane

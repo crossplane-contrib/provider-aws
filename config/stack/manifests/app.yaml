@@ -1,0 +1,44 @@
+# Human readable title of application.
+title: Amazon Web Services (AWS) Crossplane Stack
+
+# Markdown description of this entry
+description: |
+ This `stack-aws` repository is the implementation of a Crossplane infrastructure
+ [stack](https://github.com/crossplaneio/crossplane/blob/master/design/design-doc-stacks.md) for
+ [Amazon Web Services (AWS)](https://aws.amazon.com).
+ The stack that is built from the source code in this repository can be installed into a Crossplane control plane and adds the following new functionality:
+
+ * Custom Resource Definitions (CRDs) that model AWS infrastructure and services (e.g. [Amazon Relational Database Service (RDS)](https://aws.amazon.com/rds/), [EKS clusters](https://aws.amazon.com/eks/), etc.)
+ * Controllers to provision these resources in AWS based on the users desired state captured in CRDs they create
+ * Implementations of Crossplane's [portable resource abstractions](https://crossplane.io/docs/master/running-resources.html), enabling AWS resources to fulfill a user's general need for cloud services
+
+# Version of project (optional)
+# If omitted the version will be filled with the docker tag
+# If set it must match the docker tag
+version: 0.0.1
+
+# Maintainer names and emails.
+maintainers:
+- name: Jared Watts
+  email: jared@upbound.io
+
+# Owner names and emails.
+owners:
+- name: Jared Watts
+  email: jared@upbound.io
+
+# Keywords that describe this application and help search indexing
+keywords:
+- "amazon"
+- "aws"
+- "infrastructure"
+
+# Links to more information about the application (about page, source code, etc.)
+links:
+- description: Website
+  url: "https://crossplane.io"
+- description: Source Code
+  url: "https://github.com/crossplaneio/stack-aws"
+
+# License SPDX name: https://spdx.org/licenses/
+license: Apache-2.0
