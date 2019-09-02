@@ -23,7 +23,7 @@ import (
 	"github.com/go-ini/ini"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/crossplaneio/stack-aws/aws/apis/v1alpha1"
+	"github.com/crossplaneio/stack-aws/aws/apis/v1alpha2"
 
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 )
@@ -104,7 +104,7 @@ func ValidateConfig(config *aws.Config) error {
 }
 
 // Config - crate AWS Config based on credentials data using [default] profile
-func Config(client kubernetes.Interface, p *v1alpha1.Provider) (*aws.Config, error) {
+func Config(client kubernetes.Interface, p *v1alpha2.Provider) (*aws.Config, error) {
 	data, err := util.SecretData(client, p.Namespace, p.Spec.Secret)
 	if err != nil {
 		return nil, err

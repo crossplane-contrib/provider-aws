@@ -25,7 +25,7 @@ import (
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplaneio/stack-aws/aws/apis/cache/v1alpha1"
+	"github.com/crossplaneio/stack-aws/aws/apis/cache/v1alpha2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/aws"
 )
 
@@ -80,8 +80,8 @@ func NewReplicationGroupID(o metav1.Object) string {
 
 // NewReplicationGroupDescription returns a description suitable for use with
 // the AWS API.
-func NewReplicationGroupDescription(g *v1alpha1.ReplicationGroup) string {
-	return fmt.Sprintf("Crossplane managed %s %s/%s", v1alpha1.ReplicationGroupKindAPIVersion, g.GetNamespace(), g.GetName())
+func NewReplicationGroupDescription(g *v1alpha2.ReplicationGroup) string {
+	return fmt.Sprintf("Crossplane managed %s %s/%s", v1alpha2.ReplicationGroupKindAPIVersion, g.GetNamespace(), g.GetName())
 }
 
 // TODO(negz): Determine whether we have to handle converting zero values to
@@ -89,14 +89,14 @@ func NewReplicationGroupDescription(g *v1alpha1.ReplicationGroup) string {
 
 // NewCreateReplicationGroupInput returns ElastiCache replication group creation
 // input suitable for use with the AWS API.
-func NewCreateReplicationGroupInput(g *v1alpha1.ReplicationGroup, authToken string) *elasticache.CreateReplicationGroupInput {
+func NewCreateReplicationGroupInput(g *v1alpha2.ReplicationGroup, authToken string) *elasticache.CreateReplicationGroupInput {
 	return &elasticache.CreateReplicationGroupInput{
 		ReplicationGroupId:          aws.String(NewReplicationGroupID(g), aws.FieldRequired),
 		ReplicationGroupDescription: aws.String(NewReplicationGroupDescription(g), aws.FieldRequired),
 
 		// The AWS API docs state these fields are not required, but they are.
 		// The APi returns an error if they're omitted.
-		Engine:        aws.String(v1alpha1.CacheEngineRedis, aws.FieldRequired),
+		Engine:        aws.String(v1alpha2.CacheEngineRedis, aws.FieldRequired),
 		CacheNodeType: aws.String(g.Spec.CacheNodeType, aws.FieldRequired),
 
 		AtRestEncryptionEnabled:    aws.Bool(g.Spec.AtRestEncryptionEnabled),
@@ -123,7 +123,7 @@ func NewCreateReplicationGroupInput(g *v1alpha1.ReplicationGroup, authToken stri
 	}
 }
 
-func newNodeGroupConfigurations(g *v1alpha1.ReplicationGroup) []elasticache.NodeGroupConfiguration {
+func newNodeGroupConfigurations(g *v1alpha2.ReplicationGroup) []elasticache.NodeGroupConfiguration {
 	if len(g.Spec.NodeGroupConfiguration) == 0 {
 		return nil
 	}
@@ -141,7 +141,7 @@ func newNodeGroupConfigurations(g *v1alpha1.ReplicationGroup) []elasticache.Node
 
 // NewModifyReplicationGroupInput returns ElastiCache replication group
 // modification input suitable for use with the AWS API.
-func NewModifyReplicationGroupInput(g *v1alpha1.ReplicationGroup) *elasticache.ModifyReplicationGroupInput {
+func NewModifyReplicationGroupInput(g *v1alpha2.ReplicationGroup) *elasticache.ModifyReplicationGroupInput {
 	return &elasticache.ModifyReplicationGroupInput{
 		ReplicationGroupId: aws.String(NewReplicationGroupID(g), aws.FieldRequired),
 
@@ -166,13 +166,13 @@ func NewModifyReplicationGroupInput(g *v1alpha1.ReplicationGroup) *elasticache.M
 
 // NewDeleteReplicationGroupInput returns ElastiCache replication group deletion
 // input suitable for use with the AWS API.
-func NewDeleteReplicationGroupInput(g *v1alpha1.ReplicationGroup) *elasticache.DeleteReplicationGroupInput {
+func NewDeleteReplicationGroupInput(g *v1alpha2.ReplicationGroup) *elasticache.DeleteReplicationGroupInput {
 	return &elasticache.DeleteReplicationGroupInput{ReplicationGroupId: aws.String(NewReplicationGroupID(g), aws.FieldRequired)}
 }
 
 // NewDescribeReplicationGroupsInput returns ElastiCache replication group describe
 // input suitable for use with the AWS API.
-func NewDescribeReplicationGroupsInput(g *v1alpha1.ReplicationGroup) *elasticache.DescribeReplicationGroupsInput {
+func NewDescribeReplicationGroupsInput(g *v1alpha2.ReplicationGroup) *elasticache.DescribeReplicationGroupsInput {
 	return &elasticache.DescribeReplicationGroupsInput{ReplicationGroupId: aws.String(NewReplicationGroupID(g))}
 }
 
@@ -186,7 +186,7 @@ func NewDescribeCacheClustersInput(cluster string) *elasticache.DescribeCacheClu
 // differs from the supplied AWS resource. It considers only fields that can be
 // modified in place without deleting and recreating the group, and only fields
 // that are first class properties of the AWS replication group.
-func ReplicationGroupNeedsUpdate(kube *v1alpha1.ReplicationGroup, rg elasticache.ReplicationGroup) bool {
+func ReplicationGroupNeedsUpdate(kube *v1alpha2.ReplicationGroup, rg elasticache.ReplicationGroup) bool {
 	switch {
 	case kube.Spec.AutomaticFailoverEnabled != automaticFailoverEnabled(rg):
 		return true
@@ -209,7 +209,7 @@ func automaticFailoverEnabled(rg elasticache.ReplicationGroup) bool {
 // differs from the supplied AWS resource. It considers only fields that can be
 // modified in place without deleting and recreating the group, and only fields
 // that are first class properties of the AWS replication group.
-func CacheClusterNeedsUpdate(kube *v1alpha1.ReplicationGroup, cc elasticache.CacheCluster) bool { // nolint:gocyclo
+func CacheClusterNeedsUpdate(kube *v1alpha2.ReplicationGroup, cc elasticache.CacheCluster) bool { // nolint:gocyclo
 	// AWS will set and return a default version if we don't specify one.
 	if v := kube.Spec.EngineVersion; v != "" && v != aws.StringValue(cc.EngineVersion) {
 		return true

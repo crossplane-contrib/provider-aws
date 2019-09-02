@@ -35,9 +35,9 @@ import (
 	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha1"
-	. "github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha1"
-	awsv1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha1"
+	"github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha2"
+	. "github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha2"
+	awsv1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha2"
 	client "github.com/crossplaneio/stack-aws/pkg/clients/aws/s3"
 	. "github.com/crossplaneio/stack-aws/pkg/clients/aws/s3/fake"
 
@@ -69,8 +69,8 @@ func init() {
 	}
 }
 
-func testProvider() *awsv1alpha1.Provider {
-	return &awsv1alpha1.Provider{
+func testProvider() *awsv1alpha2.Provider {
+	return &awsv1alpha2.Provider{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      providerName,
 			Namespace: namespace,
@@ -88,7 +88,7 @@ func testResource() *S3Bucket {
 		},
 		Spec: S3BucketSpec{
 			ResourceSpec:       runtimev1alpha1.ResourceSpec{ProviderReference: &corev1.ObjectReference{}},
-			S3BucketParameters: v1alpha1.S3BucketParameters{LocalPermission: &perm},
+			S3BucketParameters: v1alpha2.S3BucketParameters{LocalPermission: &perm},
 		},
 		Status: S3BucketStatus{
 			IAMUsername: testIAMUsername,

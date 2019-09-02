@@ -31,8 +31,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	databasev1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha1"
-	awsv1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha1"
+	databasev1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha2"
+	awsv1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/aws"
 	"github.com/crossplaneio/stack-aws/pkg/clients/aws/rds"
 
@@ -62,10 +62,10 @@ type Reconciler struct {
 	kubeclient kubernetes.Interface
 	recorder   record.EventRecorder
 
-	connect func(*databasev1alpha1.RDSInstance) (rds.Client, error)
-	create  func(*databasev1alpha1.RDSInstance, rds.Client) (reconcile.Result, error)
-	sync    func(*databasev1alpha1.RDSInstance, rds.Client) (reconcile.Result, error)
-	delete  func(*databasev1alpha1.RDSInstance, rds.Client) (reconcile.Result, error)
+	connect func(*databasev1alpha2.RDSInstance) (rds.Client, error)
+	create  func(*databasev1alpha2.RDSInstance, rds.Client) (reconcile.Result, error)
+	sync    func(*databasev1alpha2.RDSInstance, rds.Client) (reconcile.Result, error)
+	delete  func(*databasev1alpha2.RDSInstance, rds.Client) (reconcile.Result, error)
 }
 
 // InstanceController is responsible for adding the RDSInstance
@@ -88,20 +88,20 @@ func (c *InstanceController) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named("instance-controller").
-		For(&databasev1alpha1.RDSInstance{}).
+		For(&databasev1alpha2.RDSInstance{}).
 		Owns(&corev1.Secret{}).
 		Complete(r)
 }
 
 // fail - helper function to set fail condition with reason and message
-func (r *Reconciler) fail(instance *databasev1alpha1.RDSInstance, err error) (reconcile.Result, error) {
+func (r *Reconciler) fail(instance *databasev1alpha2.RDSInstance, err error) (reconcile.Result, error) {
 	instance.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
 	return reconcile.Result{Requeue: true}, r.Update(context.TODO(), instance)
 }
 
 // connectionSecret return secret object for this resource
-func connectionSecret(instance *databasev1alpha1.RDSInstance, password string) *corev1.Secret {
-	s := resource.ConnectionSecretFor(instance, databasev1alpha1.RDSInstanceGroupVersionKind)
+func connectionSecret(instance *databasev1alpha2.RDSInstance, password string) *corev1.Secret {
+	s := resource.ConnectionSecretFor(instance, databasev1alpha2.RDSInstanceGroupVersionKind)
 	s.Data = map[string][]byte{
 		runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(instance.Spec.MasterUsername),
 		runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(password),
@@ -109,9 +109,9 @@ func connectionSecret(instance *databasev1alpha1.RDSInstance, password string) *
 	return s
 }
 
-func (r *Reconciler) _connect(instance *databasev1alpha1.RDSInstance) (rds.Client, error) {
+func (r *Reconciler) _connect(instance *databasev1alpha2.RDSInstance) (rds.Client, error) {
 	// Fetch AWS Provider
-	p := &awsv1alpha1.Provider{}
+	p := &awsv1alpha2.Provider{}
 	err := r.Get(ctx, meta.NamespacedNameOf(instance.Spec.ProviderReference), p)
 	if err != nil {
 		return nil, err
@@ -127,7 +127,7 @@ func (r *Reconciler) _connect(instance *databasev1alpha1.RDSInstance) (rds.Clien
 	return rds.NewClient(config), nil
 }
 
-func (r *Reconciler) _create(instance *databasev1alpha1.RDSInstance, client rds.Client) (reconcile.Result, error) {
+func (r *Reconciler) _create(instance *databasev1alpha2.RDSInstance, client rds.Client) (reconcile.Result, error) {
 	instance.Status.SetConditions(runtimev1alpha1.Creating())
 	resourceName := fmt.Sprintf("%s-%s", instance.Spec.Engine, instance.UID)
 
@@ -155,7 +155,7 @@ func (r *Reconciler) _create(instance *databasev1alpha1.RDSInstance, client rds.
 	return resultRequeue, r.Update(ctx, instance)
 }
 
-func (r *Reconciler) _sync(instance *databasev1alpha1.RDSInstance, client rds.Client) (reconcile.Result, error) {
+func (r *Reconciler) _sync(instance *databasev1alpha2.RDSInstance, client rds.Client) (reconcile.Result, error) {
 	// Search for the RDS instance in AWS
 	db, err := client.GetInstance(instance.Status.InstanceName)
 	if err != nil {
@@ -165,13 +165,13 @@ func (r *Reconciler) _sync(instance *databasev1alpha1.RDSInstance, client rds.Cl
 	instance.Status.State = db.Status
 
 	switch db.Status {
-	case string(databasev1alpha1.RDSInstanceStateCreating):
+	case string(databasev1alpha2.RDSInstanceStateCreating):
 		instance.Status.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileSuccess())
 		return resultRequeue, r.Update(ctx, instance)
-	case string(databasev1alpha1.RDSInstanceStateFailed):
+	case string(databasev1alpha2.RDSInstanceStateFailed):
 		instance.Status.SetConditions(runtimev1alpha1.Unavailable(), runtimev1alpha1.ReconcileSuccess())
 		return result, r.Update(ctx, instance)
-	case string(databasev1alpha1.RDSInstanceStateAvailable):
+	case string(databasev1alpha2.RDSInstanceStateAvailable):
 		instance.Status.SetConditions(runtimev1alpha1.Available())
 		resource.SetBindable(instance)
 	default:
@@ -201,7 +201,7 @@ func (r *Reconciler) _sync(instance *databasev1alpha1.RDSInstance, client rds.Cl
 	return result, r.Update(ctx, instance)
 }
 
-func (r *Reconciler) _delete(instance *databasev1alpha1.RDSInstance, client rds.Client) (reconcile.Result, error) {
+func (r *Reconciler) _delete(instance *databasev1alpha2.RDSInstance, client rds.Client) (reconcile.Result, error) {
 	instance.Status.SetConditions(runtimev1alpha1.Deleting())
 
 	if instance.Spec.ReclaimPolicy == runtimev1alpha1.ReclaimDelete {
@@ -218,9 +218,9 @@ func (r *Reconciler) _delete(instance *databasev1alpha1.RDSInstance, client rds.
 // Reconcile reads that state of the cluster for a Instance object and makes changes based on the state read
 // and what is in the Instance.Spec
 func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	log.V(logging.Debug).Info("reconciling", "kind", databasev1alpha1.RDSInstanceKindAPIVersion, "request", request)
+	log.V(logging.Debug).Info("reconciling", "kind", databasev1alpha2.RDSInstanceKindAPIVersion, "request", request)
 	// Fetch the CRD instance
-	instance := &databasev1alpha1.RDSInstance{}
+	instance := &databasev1alpha2.RDSInstance{}
 
 	err := r.Get(ctx, request.NamespacedName, instance)
 	if err != nil {

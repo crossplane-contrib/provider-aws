@@ -17,14 +17,14 @@ limitations under the License.
 package fake
 
 import (
-	"github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha1"
+	"github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/aws/rds"
 )
 
 // MockRDSClient for testing.
 type MockRDSClient struct {
 	MockGetInstance    func(string) (*rds.Instance, error)
-	MockCreateInstance func(string, string, *v1alpha1.RDSInstanceSpec) (*rds.Instance, error)
+	MockCreateInstance func(string, string, *v1alpha2.RDSInstanceSpec) (*rds.Instance, error)
 	MockDeleteInstance func(name string) (*rds.Instance, error)
 }
 
@@ -34,7 +34,7 @@ func (m *MockRDSClient) GetInstance(name string) (*rds.Instance, error) {
 }
 
 // CreateInstance creates RDS Instance with provided Specification
-func (m *MockRDSClient) CreateInstance(name, password string, spec *v1alpha1.RDSInstanceSpec) (*rds.Instance, error) {
+func (m *MockRDSClient) CreateInstance(name, password string, spec *v1alpha2.RDSInstanceSpec) (*rds.Instance, error) {
 	return m.MockCreateInstance(name, password, spec)
 }
 

@@ -24,7 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/aws/aws-sdk-go-v2/service/rds/rdsiface"
 
-	"github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha1"
+	"github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha2"
 )
 
 // Instance crossplane representation of the to AWS DBInstance
@@ -52,7 +52,7 @@ func NewInstance(instance *rds.DBInstance) *Instance {
 
 // Client defines RDS RDSClient operations
 type Client interface {
-	CreateInstance(string, string, *v1alpha1.RDSInstanceSpec) (*Instance, error)
+	CreateInstance(string, string, *v1alpha2.RDSInstanceSpec) (*Instance, error)
 	GetInstance(name string) (*Instance, error)
 	DeleteInstance(name string) (*Instance, error)
 }
@@ -67,7 +67,7 @@ func NewClient(config *aws.Config) Client {
 }
 
 // CreateInstance creates RDS Instance with provided Specification
-func (r *rdsClient) CreateInstance(name, password string, spec *v1alpha1.RDSInstanceSpec) (*Instance, error) {
+func (r *rdsClient) CreateInstance(name, password string, spec *v1alpha2.RDSInstanceSpec) (*Instance, error) {
 	input := CreateDBInstanceInput(name, password, spec)
 
 	output, err := r.rds.CreateDBInstanceRequest(input).Send()
@@ -119,7 +119,7 @@ func IsErrorNotFound(err error) bool {
 }
 
 // CreateDBInstanceInput from RDSInstanceSpec
-func CreateDBInstanceInput(name, password string, spec *v1alpha1.RDSInstanceSpec) *rds.CreateDBInstanceInput {
+func CreateDBInstanceInput(name, password string, spec *v1alpha2.RDSInstanceSpec) *rds.CreateDBInstanceInput {
 	return &rds.CreateDBInstanceInput{
 		DBInstanceIdentifier:  aws.String(name),
 		AllocatedStorage:      aws.Int64(spec.Size),

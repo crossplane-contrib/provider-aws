@@ -37,8 +37,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	awscomputev1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/compute/v1alpha1"
-	awsv1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha1"
+	awscomputev1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/compute/v1alpha2"
+	awsv1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha2"
 	awsClient "github.com/crossplaneio/stack-aws/pkg/clients/aws"
 	cloudformationclient "github.com/crossplaneio/stack-aws/pkg/clients/aws/cloudformation"
 
@@ -92,12 +92,12 @@ type Reconciler struct {
 	kubeclient kubernetes.Interface
 	recorder   record.EventRecorder
 
-	connect func(*awscomputev1alpha1.EKSCluster) (eks.Client, error)
-	create  func(*awscomputev1alpha1.EKSCluster, eks.Client) (reconcile.Result, error)
-	sync    func(*awscomputev1alpha1.EKSCluster, eks.Client) (reconcile.Result, error)
-	delete  func(*awscomputev1alpha1.EKSCluster, eks.Client) (reconcile.Result, error)
-	secret  func(*eks.Cluster, *awscomputev1alpha1.EKSCluster, eks.Client) error
-	awsauth func(*eks.Cluster, *awscomputev1alpha1.EKSCluster, eks.Client, string) error
+	connect func(*awscomputev1alpha2.EKSCluster) (eks.Client, error)
+	create  func(*awscomputev1alpha2.EKSCluster, eks.Client) (reconcile.Result, error)
+	sync    func(*awscomputev1alpha2.EKSCluster, eks.Client) (reconcile.Result, error)
+	delete  func(*awscomputev1alpha2.EKSCluster, eks.Client) (reconcile.Result, error)
+	secret  func(*eks.Cluster, *awscomputev1alpha2.EKSCluster, eks.Client) error
+	awsauth func(*eks.Cluster, *awscomputev1alpha2.EKSCluster, eks.Client, string) error
 }
 
 // EKSClusterController is responsible for adding the EKSCluster
@@ -122,19 +122,19 @@ func (c *EKSClusterController) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(controllerName).
-		For(&awscomputev1alpha1.EKSCluster{}).
+		For(&awscomputev1alpha2.EKSCluster{}).
 		Complete(r)
 }
 
 // fail - helper function to set fail condition with reason and message
-func (r *Reconciler) fail(instance *awscomputev1alpha1.EKSCluster, err error) (reconcile.Result, error) {
+func (r *Reconciler) fail(instance *awscomputev1alpha2.EKSCluster, err error) (reconcile.Result, error) {
 	instance.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
 	return resultRequeue, r.Update(context.TODO(), instance)
 }
 
-func (r *Reconciler) _connect(instance *awscomputev1alpha1.EKSCluster) (eks.Client, error) {
+func (r *Reconciler) _connect(instance *awscomputev1alpha2.EKSCluster) (eks.Client, error) {
 	// Fetch Provider
-	p := &awsv1alpha1.Provider{}
+	p := &awsv1alpha2.Provider{}
 	err := r.Get(ctx, meta.NamespacedNameOf(instance.Spec.ProviderReference), p)
 	if err != nil {
 		return nil, err
@@ -155,7 +155,7 @@ func (r *Reconciler) _connect(instance *awscomputev1alpha1.EKSCluster) (eks.Clie
 	return eks.NewClient(config), nil
 }
 
-func (r *Reconciler) _create(instance *awscomputev1alpha1.EKSCluster, client eks.Client) (reconcile.Result, error) {
+func (r *Reconciler) _create(instance *awscomputev1alpha2.EKSCluster, client eks.Client) (reconcile.Result, error) {
 	instance.Status.SetConditions(runtimev1alpha1.Creating())
 	clusterName := fmt.Sprintf("%s%s", clusterNamePrefix, instance.UID)
 
@@ -175,7 +175,7 @@ func (r *Reconciler) _create(instance *awscomputev1alpha1.EKSCluster, client eks
 	instance.Status.ClusterVersion = createdCluster.Version
 
 	// Update status
-	instance.Status.State = awscomputev1alpha1.ClusterStatusCreating
+	instance.Status.State = awscomputev1alpha2.ClusterStatusCreating
 	instance.Status.ClusterName = clusterName
 
 	instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
@@ -183,16 +183,16 @@ func (r *Reconciler) _create(instance *awscomputev1alpha1.EKSCluster, client eks
 }
 
 // generateAWSAuthConfigMap generates the configmap for configure auth
-func generateAWSAuthConfigMap(instance *awscomputev1alpha1.EKSCluster, workerARN string) (*v1.ConfigMap, error) {
+func generateAWSAuthConfigMap(instance *awscomputev1alpha2.EKSCluster, workerARN string) (*v1.ConfigMap, error) {
 	data := map[string]string{}
-	defaultRole := awscomputev1alpha1.MapRole{
+	defaultRole := awscomputev1alpha2.MapRole{
 		RoleARN:  workerARN,
 		Username: "system:node:{{EC2PrivateDNSName}}",
 		Groups:   []string{"system:bootstrappers", "system:nodes"},
 	}
 
 	// Serialize mapRoles
-	roles := make([]awscomputev1alpha1.MapRole, len(instance.Spec.MapRoles))
+	roles := make([]awscomputev1alpha2.MapRole, len(instance.Spec.MapRoles))
 	copy(roles, instance.Spec.MapRoles)
 	roles = append(roles, defaultRole)
 
@@ -226,7 +226,7 @@ func generateAWSAuthConfigMap(instance *awscomputev1alpha1.EKSCluster, workerARN
 }
 
 // _awsauth generates an aws-auth configmap and pushes it to the remote eks cluster to configure auth
-func (r *Reconciler) _awsauth(cluster *eks.Cluster, instance *awscomputev1alpha1.EKSCluster, client eks.Client, workerARN string) error {
+func (r *Reconciler) _awsauth(cluster *eks.Cluster, instance *awscomputev1alpha2.EKSCluster, client eks.Client, workerARN string) error {
 	cm, err := generateAWSAuthConfigMap(instance, workerARN)
 	if err != nil {
 		return err
@@ -268,13 +268,13 @@ func (r *Reconciler) _awsauth(cluster *eks.Cluster, instance *awscomputev1alpha1
 	return err
 }
 
-func (r *Reconciler) _sync(instance *awscomputev1alpha1.EKSCluster, client eks.Client) (reconcile.Result, error) {
+func (r *Reconciler) _sync(instance *awscomputev1alpha2.EKSCluster, client eks.Client) (reconcile.Result, error) {
 	cluster, err := client.Get(instance.Status.ClusterName)
 	if err != nil {
 		return r.fail(instance, err)
 	}
 
-	if cluster.Status != awscomputev1alpha1.ClusterStatusActive {
+	if cluster.Status != awscomputev1alpha2.ClusterStatusActive {
 		instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
 		return resultRequeue, nil
 	}
@@ -314,14 +314,14 @@ func (r *Reconciler) _sync(instance *awscomputev1alpha1.EKSCluster, client eks.C
 
 	// update resource status
 	instance.Status.Endpoint = cluster.Endpoint
-	instance.Status.State = awscomputev1alpha1.ClusterStatusActive
+	instance.Status.State = awscomputev1alpha2.ClusterStatusActive
 	instance.Status.SetConditions(runtimev1alpha1.Available(), runtimev1alpha1.ReconcileSuccess())
 	resource.SetBindable(instance)
 
 	return result, r.Update(ctx, instance)
 }
 
-func (r *Reconciler) _secret(cluster *eks.Cluster, instance *awscomputev1alpha1.EKSCluster, client eks.Client) error {
+func (r *Reconciler) _secret(cluster *eks.Cluster, instance *awscomputev1alpha2.EKSCluster, client eks.Client) error {
 	token, err := client.ConnectionToken(instance.Status.ClusterName)
 	if err != nil {
 		return err
@@ -334,7 +334,7 @@ func (r *Reconciler) _secret(cluster *eks.Cluster, instance *awscomputev1alpha1.
 	}
 
 	// secret := instance.ConnectionSecret()
-	secret := resource.ConnectionSecretFor(instance, awscomputev1alpha1.EKSClusterGroupVersionKind)
+	secret := resource.ConnectionSecretFor(instance, awscomputev1alpha2.EKSClusterGroupVersionKind)
 	data := make(map[string][]byte)
 	data[runtimev1alpha1.ResourceCredentialsSecretEndpointKey] = []byte(cluster.Endpoint)
 	data[runtimev1alpha1.ResourceCredentialsSecretCAKey] = caData
@@ -350,7 +350,7 @@ func (r *Reconciler) _secret(cluster *eks.Cluster, instance *awscomputev1alpha1.
 }
 
 // _delete check reclaim policy and if needed delete the eks cluster resource
-func (r *Reconciler) _delete(instance *awscomputev1alpha1.EKSCluster, client eks.Client) (reconcile.Result, error) {
+func (r *Reconciler) _delete(instance *awscomputev1alpha2.EKSCluster, client eks.Client) (reconcile.Result, error) {
 	instance.Status.SetConditions(runtimev1alpha1.Deleting())
 	if instance.Spec.ReclaimPolicy == runtimev1alpha1.ReclaimDelete {
 		var deleteErrors []string
@@ -377,9 +377,9 @@ func (r *Reconciler) _delete(instance *awscomputev1alpha1.EKSCluster, client eks
 // Reconcile reads that state of the cluster for a Provider object and makes changes based on the state read
 // and what is in the Provider.Spec
 func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	log.V(logging.Debug).Info("reconciling", "kind", awscomputev1alpha1.EKSClusterKindAPIVersion, "request", request)
+	log.V(logging.Debug).Info("reconciling", "kind", awscomputev1alpha2.EKSClusterKindAPIVersion, "request", request)
 	// Fetch the Provider instance
-	instance := &awscomputev1alpha1.EKSCluster{}
+	instance := &awscomputev1alpha2.EKSCluster{}
 	err := r.Get(ctx, request.NamespacedName, instance)
 	if err != nil {
 		if kerrors.IsNotFound(err) {

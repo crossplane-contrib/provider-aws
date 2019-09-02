@@ -17,23 +17,23 @@ limitations under the License.
 package fake
 
 import (
-	"github.com/crossplaneio/stack-aws/aws/apis/compute/v1alpha1"
+	"github.com/crossplaneio/stack-aws/aws/apis/compute/v1alpha2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/aws/eks"
 )
 
 // MockEKSClient mock client for EKS
 type MockEKSClient struct {
-	MockCreate            func(string, v1alpha1.EKSClusterSpec) (*eks.Cluster, error)
+	MockCreate            func(string, v1alpha2.EKSClusterSpec) (*eks.Cluster, error)
 	MockGet               func(string) (*eks.Cluster, error)
 	MockDelete            func(name string) error
 	MockConnectionToken   func(string) (string, error)
-	MockCreateWorkerNodes func(string, string, v1alpha1.EKSClusterSpec) (*eks.ClusterWorkers, error)
+	MockCreateWorkerNodes func(string, string, v1alpha2.EKSClusterSpec) (*eks.ClusterWorkers, error)
 	MockGetWorkerNodes    func(string) (*eks.ClusterWorkers, error)
 	MockDeleteWorkerNodes func(string) error
 }
 
 // Create EKS Cluster with provided Specification
-func (m *MockEKSClient) Create(name string, spec v1alpha1.EKSClusterSpec) (*eks.Cluster, error) {
+func (m *MockEKSClient) Create(name string, spec v1alpha2.EKSClusterSpec) (*eks.Cluster, error) {
 	return m.MockCreate(name, spec)
 }
 
@@ -53,7 +53,7 @@ func (m *MockEKSClient) ConnectionToken(name string) (string, error) {
 }
 
 // CreateWorkerNodes mock
-func (m *MockEKSClient) CreateWorkerNodes(name string, version string, spec v1alpha1.EKSClusterSpec) (*eks.ClusterWorkers, error) {
+func (m *MockEKSClient) CreateWorkerNodes(name string, version string, spec v1alpha2.EKSClusterSpec) (*eks.ClusterWorkers, error) {
 	return m.MockCreateWorkerNodes(name, version, spec)
 }
 

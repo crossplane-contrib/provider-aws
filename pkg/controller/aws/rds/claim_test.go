@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha1"
+	"github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha2"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
@@ -65,26 +65,26 @@ func TestConfigurePostgreRDSInstance(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{UID: claimUID},
 					Spec:       databasev1alpha1.PostgreSQLInstanceSpec{EngineVersion: "9.6"},
 				},
-				cs: &v1alpha1.RDSInstanceClass{
-					SpecTemplate: v1alpha1.RDSInstanceClassSpecTemplate{
+				cs: &v1alpha2.RDSInstanceClass{
+					SpecTemplate: v1alpha2.RDSInstanceClassSpecTemplate{
 						ResourceClassSpecTemplate: runtimev1alpha1.ResourceClassSpecTemplate{
 							ProviderReference: &corev1.ObjectReference{Name: providerName},
 							ReclaimPolicy:     runtimev1alpha1.ReclaimDelete,
 						},
 					},
 				},
-				mg: &v1alpha1.RDSInstance{},
+				mg: &v1alpha2.RDSInstance{},
 			},
 			want: want{
-				mg: &v1alpha1.RDSInstance{
-					Spec: v1alpha1.RDSInstanceSpec{
+				mg: &v1alpha2.RDSInstance{
+					Spec: v1alpha2.RDSInstanceSpec{
 						ResourceSpec: runtimev1alpha1.ResourceSpec{
 							ReclaimPolicy:                    runtimev1alpha1.ReclaimDelete,
 							WriteConnectionSecretToReference: corev1.LocalObjectReference{Name: string(claimUID)},
 							ProviderReference:                &corev1.ObjectReference{Name: providerName},
 						},
-						RDSInstanceParameters: v1alpha1.RDSInstanceParameters{
-							Engine:        v1alpha1.PostgresqlEngine,
+						RDSInstanceParameters: v1alpha2.RDSInstanceParameters{
+							Engine:        v1alpha2.PostgresqlEngine,
 							EngineVersion: "9.6",
 						},
 					},
@@ -133,26 +133,26 @@ func TestConfigureMyRDSInstance(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{UID: claimUID},
 					Spec:       databasev1alpha1.MySQLInstanceSpec{EngineVersion: "5.6"},
 				},
-				cs: &v1alpha1.RDSInstanceClass{
-					SpecTemplate: v1alpha1.RDSInstanceClassSpecTemplate{
+				cs: &v1alpha2.RDSInstanceClass{
+					SpecTemplate: v1alpha2.RDSInstanceClassSpecTemplate{
 						ResourceClassSpecTemplate: runtimev1alpha1.ResourceClassSpecTemplate{
 							ProviderReference: &corev1.ObjectReference{Name: providerName},
 							ReclaimPolicy:     runtimev1alpha1.ReclaimDelete,
 						},
 					},
 				},
-				mg: &v1alpha1.RDSInstance{},
+				mg: &v1alpha2.RDSInstance{},
 			},
 			want: want{
-				mg: &v1alpha1.RDSInstance{
-					Spec: v1alpha1.RDSInstanceSpec{
+				mg: &v1alpha2.RDSInstance{
+					Spec: v1alpha2.RDSInstanceSpec{
 						ResourceSpec: runtimev1alpha1.ResourceSpec{
 							ReclaimPolicy:                    runtimev1alpha1.ReclaimDelete,
 							WriteConnectionSecretToReference: corev1.LocalObjectReference{Name: string(claimUID)},
 							ProviderReference:                &corev1.ObjectReference{Name: providerName},
 						},
-						RDSInstanceParameters: v1alpha1.RDSInstanceParameters{
-							Engine:        v1alpha1.MysqlEngine,
+						RDSInstanceParameters: v1alpha2.RDSInstanceParameters{
+							Engine:        v1alpha2.MysqlEngine,
 							EngineVersion: "5.6",
 						},
 					},
