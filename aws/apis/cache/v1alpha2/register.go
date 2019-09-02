@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 // +kubebuilder:object:generate=true
-// +groupName=compute.aws.crossplane.io
-// +versionName=v1alpha1
+// +groupName=cache.aws.crossplane.io
+// +versionName=v1alpha2
 
-package v1alpha1
+package v1alpha2
 
 import (
 	"reflect"
@@ -28,8 +28,8 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "compute.aws.crossplane.io"
-	Version = "v1alpha1"
+	Group   = "cache.aws.crossplane.io"
+	Version = "v1alpha2"
 )
 
 var (
@@ -40,21 +40,21 @@ var (
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
-// EKSCluster type metadata.
+// ReplicationGroup type metadata.
 var (
-	EKSClusterKind             = reflect.TypeOf(EKSCluster{}).Name()
-	EKSClusterKindAPIVersion   = EKSClusterKind + "." + SchemeGroupVersion.String()
-	EKSClusterGroupVersionKind = SchemeGroupVersion.WithKind(EKSClusterKind)
+	ReplicationGroupKind             = reflect.TypeOf(ReplicationGroup{}).Name()
+	ReplicationGroupKindAPIVersion   = ReplicationGroupKind + "." + SchemeGroupVersion.String()
+	ReplicationGroupGroupVersionKind = SchemeGroupVersion.WithKind(ReplicationGroupKind)
 )
 
-// EKSClusterClass type metadata.
+// ReplicationGroupClass type metadata.
 var (
-	EKSClusterClassKind             = reflect.TypeOf(EKSClusterClass{}).Name()
-	EKSClusterClassKindAPIVersion   = EKSClusterClassKind + "." + SchemeGroupVersion.String()
-	EKSClusterClassGroupVersionKind = SchemeGroupVersion.WithKind(EKSClusterClassKind)
+	ReplicationGroupClassKind             = reflect.TypeOf(ReplicationGroupClass{}).Name()
+	ReplicationGroupClassKindAPIVersion   = ReplicationGroupClassKind + "." + SchemeGroupVersion.String()
+	ReplicationGroupClassGroupVersionKind = SchemeGroupVersion.WithKind(ReplicationGroupClassKind)
 )
 
 func init() {
-	SchemeBuilder.Register(&EKSCluster{}, &EKSClusterList{})
-	SchemeBuilder.Register(&EKSClusterClass{}, &EKSClusterClassList{})
+	SchemeBuilder.Register(&ReplicationGroup{}, &ReplicationGroupList{})
+	SchemeBuilder.Register(&ReplicationGroupClass{}, &ReplicationGroupClassList{})
 }

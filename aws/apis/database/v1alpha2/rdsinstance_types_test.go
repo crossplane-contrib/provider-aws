@@ -14,18 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	"testing"
 
-	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 	"golang.org/x/net/context"
-	v1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 
 	localtest "github.com/crossplaneio/stack-aws/pkg/test"
@@ -33,7 +35,7 @@ import (
 
 const (
 	namespace = "default"
-	name      = "test-provider"
+	name      = "test-instance"
 )
 
 var (
@@ -41,45 +43,43 @@ var (
 	c   client.Client
 )
 
+var _ resource.Managed = &RDSInstance{}
+
 func TestMain(m *testing.M) {
 	t := test.NewEnv(namespace, SchemeBuilder.SchemeBuilder, localtest.CRDs())
 	c = t.StartClient()
 	t.StopAndExit(m.Run())
 }
 
-func TestProvider(t *testing.T) {
+func TestStorage(t *testing.T) {
+	g := NewGomegaWithT(t)
+
 	key := types.NamespacedName{Name: name, Namespace: namespace}
-	created := &Provider{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: ProviderSpec{
-			Secret: v1.SecretKeySelector{
-				LocalObjectReference: v1.LocalObjectReference{Name: "u-235"},
-				Key:                  "credentials",
+	created := &RDSInstance{
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
+		Spec: RDSInstanceSpec{
+			ResourceSpec: runtimev1alpha1.ResourceSpec{
+				ProviderReference: &core.ObjectReference{},
 			},
-			Region: "us-west-2",
 		},
 	}
-	g := gomega.NewGomegaWithT(t)
 
 	// Test Create
-	g.Expect(c.Create(ctx, created)).NotTo(gomega.HaveOccurred())
+	fetched := &RDSInstance{}
+	g.Expect(c.Create(ctx, created)).NotTo(HaveOccurred())
 
-	fetched := &Provider{}
-	g.Expect(c.Get(ctx, key, fetched)).NotTo(gomega.HaveOccurred())
-	g.Expect(fetched).To(gomega.Equal(created))
+	g.Expect(c.Get(ctx, key, fetched)).NotTo(HaveOccurred())
+	g.Expect(fetched).To(Equal(created))
 
 	// Test Updating the Labels
 	updated := fetched.DeepCopy()
 	updated.Labels = map[string]string{"hello": "world"}
-	g.Expect(c.Update(ctx, updated)).NotTo(gomega.HaveOccurred())
+	g.Expect(c.Update(ctx, updated)).NotTo(HaveOccurred())
 
-	g.Expect(c.Get(ctx, key, fetched)).NotTo(gomega.HaveOccurred())
-	g.Expect(fetched).To(gomega.Equal(updated))
+	g.Expect(c.Get(ctx, key, fetched)).NotTo(HaveOccurred())
+	g.Expect(fetched).To(Equal(updated))
 
 	// Test Delete
-	g.Expect(c.Delete(ctx, fetched)).NotTo(gomega.HaveOccurred())
-	g.Expect(c.Get(ctx, key, fetched)).To(gomega.HaveOccurred())
+	g.Expect(c.Delete(ctx, fetched)).NotTo(HaveOccurred())
+	g.Expect(c.Get(ctx, key, fetched)).To(HaveOccurred())
 }

@@ -14,5 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha1 contains API Schema definitions for the aws v1alpha1 API group
-package v1alpha1
+// Package v1alpha2 contains API Schema definitions for the database v1alpha2 API group
+package v1alpha2

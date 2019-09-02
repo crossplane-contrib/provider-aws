@@ -30,8 +30,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	bucketv1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha1"
-	awsv1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha1"
+	bucketv1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha2"
+	awsv1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/aws"
 	"github.com/crossplaneio/stack-aws/pkg/clients/aws/s3"
 
@@ -61,10 +61,10 @@ type Reconciler struct {
 	kubeclient kubernetes.Interface
 	recorder   record.EventRecorder
 
-	connect func(*bucketv1alpha1.S3Bucket) (s3.Service, error)
-	create  func(*bucketv1alpha1.S3Bucket, s3.Service) (reconcile.Result, error)
-	sync    func(*bucketv1alpha1.S3Bucket, s3.Service) (reconcile.Result, error)
-	delete  func(*bucketv1alpha1.S3Bucket, s3.Service) (reconcile.Result, error)
+	connect func(*bucketv1alpha2.S3Bucket) (s3.Service, error)
+	create  func(*bucketv1alpha2.S3Bucket, s3.Service) (reconcile.Result, error)
+	sync    func(*bucketv1alpha2.S3Bucket, s3.Service) (reconcile.Result, error)
+	delete  func(*bucketv1alpha2.S3Bucket, s3.Service) (reconcile.Result, error)
 }
 
 // BucketController is responsible for adding the Bucket controller and its
@@ -87,20 +87,20 @@ func (c *BucketController) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(controllerName).
-		For(&bucketv1alpha1.S3Bucket{}).
+		For(&bucketv1alpha2.S3Bucket{}).
 		Owns(&corev1.Secret{}).
 		Complete(r)
 }
 
 // fail - helper function to set fail condition with reason and message
-func (r *Reconciler) fail(bucket *bucketv1alpha1.S3Bucket, err error) (reconcile.Result, error) {
+func (r *Reconciler) fail(bucket *bucketv1alpha2.S3Bucket, err error) (reconcile.Result, error) {
 	bucket.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
 	return reconcile.Result{Requeue: true}, r.Update(context.TODO(), bucket)
 }
 
 // connectionSecret return secret object for this resource
-func connectionSecret(bucket *bucketv1alpha1.S3Bucket, accessKey *iam.AccessKey) *corev1.Secret {
-	s := resource.ConnectionSecretFor(bucket, bucketv1alpha1.S3BucketGroupVersionKind)
+func connectionSecret(bucket *bucketv1alpha2.S3Bucket, accessKey *iam.AccessKey) *corev1.Secret {
+	s := resource.ConnectionSecretFor(bucket, bucketv1alpha2.S3BucketGroupVersionKind)
 	s.Data = map[string][]byte{
 		runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(util.StringValue(accessKey.AccessKeyId)),
 		runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(util.StringValue(accessKey.SecretAccessKey)),
@@ -109,9 +109,9 @@ func connectionSecret(bucket *bucketv1alpha1.S3Bucket, accessKey *iam.AccessKey)
 	return s
 }
 
-func (r *Reconciler) _connect(instance *bucketv1alpha1.S3Bucket) (s3.Service, error) {
+func (r *Reconciler) _connect(instance *bucketv1alpha2.S3Bucket) (s3.Service, error) {
 	// Fetch AWS Provider
-	p := &awsv1alpha1.Provider{}
+	p := &awsv1alpha2.Provider{}
 	err := r.Get(ctx, meta.NamespacedNameOf(instance.Spec.ProviderReference), p)
 	if err != nil {
 		return nil, err
@@ -130,7 +130,7 @@ func (r *Reconciler) _connect(instance *bucketv1alpha1.S3Bucket) (s3.Service, er
 	return s3.NewClient(config), nil
 }
 
-func (r *Reconciler) _create(bucket *bucketv1alpha1.S3Bucket, client s3.Service) (reconcile.Result, error) {
+func (r *Reconciler) _create(bucket *bucketv1alpha2.S3Bucket, client s3.Service) (reconcile.Result, error) {
 	bucket.Status.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileSuccess())
 	meta.AddFinalizer(bucket, finalizer)
 	err := client.CreateOrUpdateBucket(bucket)
@@ -169,7 +169,7 @@ func (r *Reconciler) _create(bucket *bucketv1alpha1.S3Bucket, client s3.Service)
 	return result, r.Update(ctx, bucket)
 }
 
-func (r *Reconciler) _sync(bucket *bucketv1alpha1.S3Bucket, client s3.Service) (reconcile.Result, error) {
+func (r *Reconciler) _sync(bucket *bucketv1alpha2.S3Bucket, client s3.Service) (reconcile.Result, error) {
 	if bucket.Status.IAMUsername == "" {
 		return r.fail(bucket, errors.New("username not set, .Status.IAMUsername"))
 	}
@@ -211,7 +211,7 @@ func (r *Reconciler) _sync(bucket *bucketv1alpha1.S3Bucket, client s3.Service) (
 	return result, r.Update(ctx, bucket)
 }
 
-func (r *Reconciler) _delete(bucket *bucketv1alpha1.S3Bucket, client s3.Service) (reconcile.Result, error) {
+func (r *Reconciler) _delete(bucket *bucketv1alpha2.S3Bucket, client s3.Service) (reconcile.Result, error) {
 	bucket.Status.SetConditions(runtimev1alpha1.Deleting(), runtimev1alpha1.ReconcileSuccess())
 	if bucket.Spec.ReclaimPolicy == runtimev1alpha1.ReclaimDelete {
 		if err := client.DeleteBucket(bucket); err != nil {
@@ -226,10 +226,10 @@ func (r *Reconciler) _delete(bucket *bucketv1alpha1.S3Bucket, client s3.Service)
 // Reconcile reads that state of the bucket for an Instance object and makes changes based on the state read
 // and what is in the Instance.Spec
 func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	log.V(logging.Debug).Info("reconciling", "kind", bucketv1alpha1.S3BucketKindAPIVersion, "request", request)
+	log.V(logging.Debug).Info("reconciling", "kind", bucketv1alpha2.S3BucketKindAPIVersion, "request", request)
 
 	// Fetch the CRD instance
-	bucket := &bucketv1alpha1.S3Bucket{}
+	bucket := &bucketv1alpha2.S3Bucket{}
 
 	err := r.Get(ctx, request.NamespacedName, bucket)
 	if err != nil {

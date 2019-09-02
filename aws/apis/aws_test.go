@@ -20,11 +20,11 @@ package apis
 import (
 	"testing"
 
-	cachev1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/cache/v1alpha1"
-	computev1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/compute/v1alpha1"
-	databasev1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha1"
-	storagev1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha1"
-	awsv1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha1"
+	cachev1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/cache/v1alpha2"
+	computev1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/compute/v1alpha2"
+	databasev1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha2"
+	storagev1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha2"
+	awsv1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha2"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -36,11 +36,11 @@ func TestAddToScheme(t *testing.T) {
 		t.Errorf("AddToScheme() error = %v", err)
 	}
 	gvs := []schema.GroupVersion{
-		awsv1alpha1.SchemeGroupVersion,
-		cachev1alpha1.SchemeGroupVersion,
-		computev1alpha1.SchemeGroupVersion,
-		databasev1alpha1.SchemeGroupVersion,
-		storagev1alpha1.SchemeGroupVersion,
+		awsv1alpha2.SchemeGroupVersion,
+		cachev1alpha2.SchemeGroupVersion,
+		computev1alpha2.SchemeGroupVersion,
+		databasev1alpha2.SchemeGroupVersion,
+		storagev1alpha2.SchemeGroupVersion,
 	}
 	for _, gv := range gvs {
 		if !s.IsVersionRegistered(gv) {

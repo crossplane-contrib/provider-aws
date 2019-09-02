@@ -23,21 +23,21 @@ package apis
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
-	cachev1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/cache/v1alpha1"
-	computev1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/compute/v1alpha1"
-	databasev1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha1"
-	storagev1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha1"
-	awsv1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha1"
+	cachev1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/cache/v1alpha2"
+	computev1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/compute/v1alpha2"
+	databasev1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha2"
+	storagev1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha2"
+	awsv1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha2"
 )
 
 func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes,
-		cachev1alpha1.SchemeBuilder.AddToScheme,
-		computev1alpha1.SchemeBuilder.AddToScheme,
-		databasev1alpha1.SchemeBuilder.AddToScheme,
-		awsv1alpha1.SchemeBuilder.AddToScheme,
-		storagev1alpha1.SchemeBuilder.AddToScheme,
+		cachev1alpha2.SchemeBuilder.AddToScheme,
+		computev1alpha2.SchemeBuilder.AddToScheme,
+		databasev1alpha2.SchemeBuilder.AddToScheme,
+		awsv1alpha2.SchemeBuilder.AddToScheme,
+		storagev1alpha2.SchemeBuilder.AddToScheme,
 	)
 }
 

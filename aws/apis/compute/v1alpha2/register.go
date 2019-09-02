@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 // +kubebuilder:object:generate=true
-// +groupName=storage.aws.crossplane.io
-// +versionName=v1alpha1
+// +groupName=compute.aws.crossplane.io
+// +versionName=v1alpha2
 
-package v1alpha1
+package v1alpha2
 
 import (
 	"reflect"
@@ -28,8 +28,8 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "storage.aws.crossplane.io"
-	Version = "v1alpha1"
+	Group   = "compute.aws.crossplane.io"
+	Version = "v1alpha2"
 )
 
 var (
@@ -40,21 +40,21 @@ var (
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
-// S3Bucket type metadata.
+// EKSCluster type metadata.
 var (
-	S3BucketKind             = reflect.TypeOf(S3Bucket{}).Name()
-	S3BucketKindAPIVersion   = "s3bucket" + "." + SchemeGroupVersion.String()
-	S3BucketGroupVersionKind = SchemeGroupVersion.WithKind(S3BucketKind)
+	EKSClusterKind             = reflect.TypeOf(EKSCluster{}).Name()
+	EKSClusterKindAPIVersion   = EKSClusterKind + "." + SchemeGroupVersion.String()
+	EKSClusterGroupVersionKind = SchemeGroupVersion.WithKind(EKSClusterKind)
 )
 
-// S3BucketClass type metadata.
+// EKSClusterClass type metadata.
 var (
-	S3BucketClassKind             = reflect.TypeOf(S3BucketClass{}).Name()
-	S3BucketClassKindAPIVersion   = S3BucketClassKind + "." + SchemeGroupVersion.String()
-	S3BucketClassGroupVersionKind = SchemeGroupVersion.WithKind(S3BucketClassKind)
+	EKSClusterClassKind             = reflect.TypeOf(EKSClusterClass{}).Name()
+	EKSClusterClassKindAPIVersion   = EKSClusterClassKind + "." + SchemeGroupVersion.String()
+	EKSClusterClassGroupVersionKind = SchemeGroupVersion.WithKind(EKSClusterClassKind)
 )
 
 func init() {
-	SchemeBuilder.Register(&S3Bucket{}, &S3BucketList{})
-	SchemeBuilder.Register(&S3BucketClass{}, &S3BucketClassList{})
+	SchemeBuilder.Register(&EKSCluster{}, &EKSClusterList{})
+	SchemeBuilder.Register(&EKSClusterClass{}, &EKSClusterClassList{})
 }

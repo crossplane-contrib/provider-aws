@@ -26,7 +26,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"github.com/crossplaneio/stack-aws/aws/apis/cache/v1alpha1"
+	"github.com/crossplaneio/stack-aws/aws/apis/cache/v1alpha2"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
@@ -41,8 +41,8 @@ type ReplicationGroupClaimController struct{}
 func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) error {
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(cachev1alpha1.RedisClusterGroupVersionKind),
-		resource.ClassKind(v1alpha1.ReplicationGroupClassGroupVersionKind),
-		resource.ManagedKind(v1alpha1.ReplicationGroupGroupVersionKind),
+		resource.ClassKind(v1alpha2.ReplicationGroupClassGroupVersionKind),
+		resource.ManagedKind(v1alpha2.ReplicationGroupGroupVersionKind),
 		resource.WithManagedBinder(resource.NewAPIManagedStatusBinder(mgr.GetClient())),
 		resource.WithManagedFinalizer(resource.NewAPIManagedStatusUnbinder(mgr.GetClient())),
 		resource.WithManagedConfigurators(
@@ -52,14 +52,14 @@ func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) err
 
 	name := strings.ToLower(fmt.Sprintf("%s.%s.%s",
 		cachev1alpha1.RedisClusterKind,
-		v1alpha1.ReplicationGroupKind,
-		v1alpha1.Group))
+		v1alpha2.ReplicationGroupKind,
+		v1alpha2.Group))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		Watches(&source.Kind{Type: &v1alpha1.ReplicationGroup{}}, &resource.EnqueueRequestForClaim{}).
+		Watches(&source.Kind{Type: &v1alpha2.ReplicationGroup{}}, &resource.EnqueueRequestForClaim{}).
 		For(&cachev1alpha1.RedisCluster{}).
-		WithEventFilter(resource.NewPredicates(resource.HasClassReferenceKind(resource.ClassKind(v1alpha1.ReplicationGroupClassGroupVersionKind)))).
+		WithEventFilter(resource.NewPredicates(resource.HasClassReferenceKind(resource.ClassKind(v1alpha2.ReplicationGroupClassGroupVersionKind)))).
 		Complete(r)
 }
 
@@ -72,17 +72,17 @@ func ConfigureReplicationGroup(_ context.Context, cm resource.Claim, cs resource
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), cachev1alpha1.RedisClusterGroupVersionKind)
 	}
 
-	rs, csok := cs.(*v1alpha1.ReplicationGroupClass)
+	rs, csok := cs.(*v1alpha2.ReplicationGroupClass)
 	if !csok {
-		return errors.Errorf("expected resource class %s to be %s", cs.GetName(), v1alpha1.ReplicationGroupClassGroupVersionKind)
+		return errors.Errorf("expected resource class %s to be %s", cs.GetName(), v1alpha2.ReplicationGroupClassGroupVersionKind)
 	}
 
-	i, mgok := mg.(*v1alpha1.ReplicationGroup)
+	i, mgok := mg.(*v1alpha2.ReplicationGroup)
 	if !mgok {
-		return errors.Errorf("expected managed resource %s to be %s", mg.GetName(), v1alpha1.ReplicationGroupGroupVersionKind)
+		return errors.Errorf("expected managed resource %s to be %s", mg.GetName(), v1alpha2.ReplicationGroupGroupVersionKind)
 	}
 
-	spec := &v1alpha1.ReplicationGroupSpec{
+	spec := &v1alpha2.ReplicationGroupSpec{
 		ResourceSpec: runtimev1alpha1.ResourceSpec{
 			ReclaimPolicy: runtimev1alpha1.ReclaimRetain,
 		},
@@ -102,7 +102,7 @@ func ConfigureReplicationGroup(_ context.Context, cm resource.Claim, cs resource
 	return nil
 }
 
-func resolveAWSClassInstanceValues(spec *v1alpha1.ReplicationGroupSpec, rc *cachev1alpha1.RedisCluster) error {
+func resolveAWSClassInstanceValues(spec *v1alpha2.ReplicationGroupSpec, rc *cachev1alpha1.RedisCluster) error {
 	var err error
 	switch {
 	case spec.EngineVersion == "" && rc.Spec.EngineVersion == "":
@@ -130,8 +130,8 @@ func resolveAWSClassInstanceValues(spec *v1alpha1.ReplicationGroupSpec, rc *cach
 }
 
 func latestSupportedPatchVersion(minorVersion string) (string, error) {
-	p := v1alpha1.LatestSupportedPatchVersion[v1alpha1.MinorVersion(minorVersion)]
-	if p == v1alpha1.UnsupportedVersion {
+	p := v1alpha2.LatestSupportedPatchVersion[v1alpha2.MinorVersion(minorVersion)]
+	if p == v1alpha2.UnsupportedVersion {
 		return "", errors.Errorf("minor version %s is not currently supported", minorVersion)
 	}
 	return string(p), nil

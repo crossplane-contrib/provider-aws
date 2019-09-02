@@ -34,9 +34,9 @@ import (
 	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha1"
-	. "github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha1"
-	awsv1alpha1 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha1"
+	"github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha2"
+	. "github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha2"
+	awsv1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/aws/rds"
 	. "github.com/crossplaneio/stack-aws/pkg/clients/aws/rds/fake"
 
@@ -71,8 +71,8 @@ func init() {
 	}
 }
 
-func testProvider() *awsv1alpha1.Provider {
-	return &awsv1alpha1.Provider{
+func testProvider() *awsv1alpha2.Provider {
+	return &awsv1alpha2.Provider{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      providerName,
 			Namespace: namespace,
@@ -90,7 +90,7 @@ func testResource() *RDSInstance {
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
 				ProviderReference: &corev1.ObjectReference{},
 			},
-			RDSInstanceParameters: v1alpha1.RDSInstanceParameters{
+			RDSInstanceParameters: v1alpha2.RDSInstanceParameters{
 				MasterUsername: masterUserName,
 				Engine:         engine,
 				Class:          class,

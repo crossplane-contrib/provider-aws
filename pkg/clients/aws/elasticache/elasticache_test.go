@@ -24,7 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/crossplaneio/stack-aws/aws/apis/cache/v1alpha1"
+	"github.com/crossplaneio/stack-aws/aws/apis/cache/v1alpha2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/aws"
 )
 
@@ -66,15 +66,15 @@ var (
 	securityGroupIDs         = []string{"coolID", "coolerID"}
 	snapshotARNs             = []string{"arn:aws:s3:snappy"}
 
-	description = "Crossplane managed " + v1alpha1.ReplicationGroupKindAPIVersion + " " + namespace + "/" + name
+	description = "Crossplane managed " + v1alpha2.ReplicationGroupKindAPIVersion + " " + namespace + "/" + name
 
 	nodeGroupAZs = []string{"us-cool-1a", "us-cool-1b"}
 
 	meta             = metav1.ObjectMeta{Namespace: namespace, Name: name, UID: uid}
-	replicationGroup = &v1alpha1.ReplicationGroup{
+	replicationGroup = &v1alpha2.ReplicationGroup{
 		ObjectMeta: meta,
-		Spec: v1alpha1.ReplicationGroupSpec{
-			ReplicationGroupParameters: v1alpha1.ReplicationGroupParameters{
+		Spec: v1alpha2.ReplicationGroupSpec{
+			ReplicationGroupParameters: v1alpha2.ReplicationGroupParameters{
 				CacheNodeType:            cacheNodeType,
 				AtRestEncryptionEnabled:  atRestEncryptionEnabled,
 				AutomaticFailoverEnabled: autoFailoverEnabled,
@@ -82,7 +82,7 @@ var (
 				CacheSecurityGroupNames:  cacheSecurityGroupNames,
 				CacheSubnetGroupName:     cacheSubnetGroupName,
 				EngineVersion:            engineVersion,
-				NodeGroupConfiguration: []v1alpha1.NodeGroupConfigurationSpec{
+				NodeGroupConfiguration: []v1alpha2.NodeGroupConfigurationSpec{
 					{
 						PrimaryAvailabilityZone:  nodeGroupPrimaryAZ,
 						ReplicaAvailabilityZones: nodeGroupAZs,
@@ -134,7 +134,7 @@ func TestNewReplicationGroupID(t *testing.T) {
 func TestNewReplicationGroupDescription(t *testing.T) {
 	cases := []struct {
 		name  string
-		group *v1alpha1.ReplicationGroup
+		group *v1alpha2.ReplicationGroup
 		want  string
 	}{
 		{
@@ -157,7 +157,7 @@ func TestNewReplicationGroupDescription(t *testing.T) {
 func TestNewCreateReplicationGroupInput(t *testing.T) {
 	cases := []struct {
 		name      string
-		group     *v1alpha1.ReplicationGroup
+		group     *v1alpha2.ReplicationGroup
 		authToken string
 		want      *elasticache.CreateReplicationGroupInput
 	}{
@@ -168,7 +168,7 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 			want: &elasticache.CreateReplicationGroupInput{
 				ReplicationGroupId:          aws.String(id, aws.FieldRequired),
 				ReplicationGroupDescription: aws.String(description, aws.FieldRequired),
-				Engine:                      aws.String(v1alpha1.CacheEngineRedis, aws.FieldRequired),
+				Engine:                      aws.String(v1alpha2.CacheEngineRedis, aws.FieldRequired),
 				CacheNodeType:               aws.String(cacheNodeType, aws.FieldRequired),
 				AtRestEncryptionEnabled:     aws.Bool(atRestEncryptionEnabled),
 				AuthToken:                   aws.String(authToken),
@@ -202,17 +202,17 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 		},
 		{
 			name: "UnsetFieldsAreNilNotZeroType",
-			group: &v1alpha1.ReplicationGroup{
+			group: &v1alpha2.ReplicationGroup{
 				ObjectMeta: meta,
-				Spec: v1alpha1.ReplicationGroupSpec{
-					ReplicationGroupParameters: v1alpha1.ReplicationGroupParameters{
+				Spec: v1alpha2.ReplicationGroupSpec{
+					ReplicationGroupParameters: v1alpha2.ReplicationGroupParameters{
 						CacheNodeType: cacheNodeType},
 				},
 			},
 			want: &elasticache.CreateReplicationGroupInput{
 				ReplicationGroupId:          aws.String(id, aws.FieldRequired),
 				ReplicationGroupDescription: aws.String(description, aws.FieldRequired),
-				Engine:                      aws.String(v1alpha1.CacheEngineRedis, aws.FieldRequired),
+				Engine:                      aws.String(v1alpha2.CacheEngineRedis, aws.FieldRequired),
 				CacheNodeType:               aws.String(cacheNodeType, aws.FieldRequired),
 			},
 		},
@@ -235,7 +235,7 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 func TestNewModifyReplicationGroupInput(t *testing.T) {
 	cases := []struct {
 		name  string
-		group *v1alpha1.ReplicationGroup
+		group *v1alpha2.ReplicationGroup
 		want  *elasticache.ModifyReplicationGroupInput
 	}{
 		{
@@ -258,7 +258,7 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 		},
 		{
 			name:  "UnsetFieldsAreNilNotZeroType",
-			group: &v1alpha1.ReplicationGroup{ObjectMeta: meta},
+			group: &v1alpha2.ReplicationGroup{ObjectMeta: meta},
 			want: &elasticache.ModifyReplicationGroupInput{
 				ReplicationGroupId: aws.String(id, aws.FieldRequired),
 				ApplyImmediately:   aws.Bool(true),
@@ -266,12 +266,12 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 		},
 		{
 			name: "SuperfluousFields",
-			group: &v1alpha1.ReplicationGroup{
+			group: &v1alpha2.ReplicationGroup{
 				ObjectMeta: meta,
 
 				// AtRestEncryptionEnabled cannot be modified
-				Spec: v1alpha1.ReplicationGroupSpec{
-					ReplicationGroupParameters: v1alpha1.ReplicationGroupParameters{
+				Spec: v1alpha2.ReplicationGroupSpec{
+					ReplicationGroupParameters: v1alpha2.ReplicationGroupParameters{
 						AtRestEncryptionEnabled: true},
 				},
 			},
@@ -299,7 +299,7 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 func TestNewDeleteReplicationGroupInput(t *testing.T) {
 	cases := []struct {
 		name  string
-		group *v1alpha1.ReplicationGroup
+		group *v1alpha2.ReplicationGroup
 		want  *elasticache.DeleteReplicationGroupInput
 	}{
 		{
@@ -326,7 +326,7 @@ func TestNewDeleteReplicationGroupInput(t *testing.T) {
 func TestNewDescribeReplicationGroupsInput(t *testing.T) {
 	cases := []struct {
 		name  string
-		group *v1alpha1.ReplicationGroup
+		group *v1alpha2.ReplicationGroup
 		want  *elasticache.DescribeReplicationGroupsInput
 	}{
 		{
@@ -372,7 +372,7 @@ func TestNewDescribeCacheClustersInput(t *testing.T) {
 func TestReplicationGroupNeedsUpdate(t *testing.T) {
 	cases := []struct {
 		name string
-		kube *v1alpha1.ReplicationGroup
+		kube *v1alpha2.ReplicationGroup
 		rg   elasticache.ReplicationGroup
 		want bool
 	}{
@@ -428,7 +428,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			// want to make sure we don't consider it to need an update if we
 			// never specified a value in the first place.
 			name: "NeedsNoUpdateSnapshotWindowAutoPopulated",
-			kube: func() *v1alpha1.ReplicationGroup {
+			kube: func() *v1alpha2.ReplicationGroup {
 				g := replicationGroup.DeepCopy()
 				g.Spec.SnapshotWindow = ""
 				return g
@@ -456,7 +456,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 func TestCacheClusterNeedsUpdate(t *testing.T) {
 	cases := []struct {
 		name string
-		kube *v1alpha1.ReplicationGroup
+		kube *v1alpha2.ReplicationGroup
 		cc   elasticache.CacheCluster
 		want bool
 	}{

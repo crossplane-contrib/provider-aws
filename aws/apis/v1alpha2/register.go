@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 // +kubebuilder:object:generate=true
-// +groupName=database.aws.crossplane.io
-// +versionName=v1alpha1
+// +groupName=aws.crossplane.io
+// +versionName=v1alpha2
 
-package v1alpha1
+package v1alpha2
 
 import (
 	"reflect"
@@ -28,8 +28,8 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "database.aws.crossplane.io"
-	Version = "v1alpha1"
+	Group   = "aws.crossplane.io"
+	Version = "v1alpha2"
 )
 
 var (
@@ -40,21 +40,13 @@ var (
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
-// RDSInstance type metadata.
+// Provider type metadata.
 var (
-	RDSInstanceKind             = reflect.TypeOf(RDSInstance{}).Name()
-	RDSInstanceKindAPIVersion   = RDSInstanceKind + "." + SchemeGroupVersion.String()
-	RDSInstanceGroupVersionKind = SchemeGroupVersion.WithKind(RDSInstanceKind)
-)
-
-// RDSInstanceClass type metadata.
-var (
-	RDSInstanceClassKind             = reflect.TypeOf(RDSInstanceClass{}).Name()
-	RDSInstanceClassKindAPIVersion   = RDSInstanceClassKind + "." + SchemeGroupVersion.String()
-	RDSInstanceClassGroupVersionKind = SchemeGroupVersion.WithKind(RDSInstanceClassKind)
+	ProviderKind             = reflect.TypeOf(Provider{}).Name()
+	ProviderKindAPIVersion   = ProviderKind + "." + SchemeGroupVersion.String()
+	ProviderGroupVersionKind = SchemeGroupVersion.WithKind(ProviderKind)
 )
 
 func init() {
-	SchemeBuilder.Register(&RDSInstance{}, &RDSInstanceList{})
-	SchemeBuilder.Register(&RDSInstanceClass{}, &RDSInstanceClassList{})
+	SchemeBuilder.Register(&Provider{}, &ProviderList{})
 }

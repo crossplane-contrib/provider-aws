@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 // +kubebuilder:object:generate=true
-// +groupName=aws.crossplane.io
-// +versionName=v1alpha1
+// +groupName=storage.aws.crossplane.io
+// +versionName=v1alpha2
 
-package v1alpha1
+package v1alpha2
 
 import (
 	"reflect"
@@ -28,8 +28,8 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "aws.crossplane.io"
-	Version = "v1alpha1"
+	Group   = "storage.aws.crossplane.io"
+	Version = "v1alpha2"
 )
 
 var (
@@ -40,13 +40,21 @@ var (
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
-// Provider type metadata.
+// S3Bucket type metadata.
 var (
-	ProviderKind             = reflect.TypeOf(Provider{}).Name()
-	ProviderKindAPIVersion   = ProviderKind + "." + SchemeGroupVersion.String()
-	ProviderGroupVersionKind = SchemeGroupVersion.WithKind(ProviderKind)
+	S3BucketKind             = reflect.TypeOf(S3Bucket{}).Name()
+	S3BucketKindAPIVersion   = "s3bucket" + "." + SchemeGroupVersion.String()
+	S3BucketGroupVersionKind = SchemeGroupVersion.WithKind(S3BucketKind)
+)
+
+// S3BucketClass type metadata.
+var (
+	S3BucketClassKind             = reflect.TypeOf(S3BucketClass{}).Name()
+	S3BucketClassKindAPIVersion   = S3BucketClassKind + "." + SchemeGroupVersion.String()
+	S3BucketClassGroupVersionKind = SchemeGroupVersion.WithKind(S3BucketClassKind)
 )
 
 func init() {
-	SchemeBuilder.Register(&Provider{}, &ProviderList{})
+	SchemeBuilder.Register(&S3Bucket{}, &S3BucketList{})
+	SchemeBuilder.Register(&S3BucketClass{}, &S3BucketClassList{})
 }

@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 // +kubebuilder:object:generate=true
-// +groupName=cache.aws.crossplane.io
-// +versionName=v1alpha1
+// +groupName=database.aws.crossplane.io
+// +versionName=v1alpha2
 
-package v1alpha1
+package v1alpha2
 
 import (
 	"reflect"
@@ -28,8 +28,8 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "cache.aws.crossplane.io"
-	Version = "v1alpha1"
+	Group   = "database.aws.crossplane.io"
+	Version = "v1alpha2"
 )
 
 var (
@@ -40,21 +40,21 @@ var (
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
-// ReplicationGroup type metadata.
+// RDSInstance type metadata.
 var (
-	ReplicationGroupKind             = reflect.TypeOf(ReplicationGroup{}).Name()
-	ReplicationGroupKindAPIVersion   = ReplicationGroupKind + "." + SchemeGroupVersion.String()
-	ReplicationGroupGroupVersionKind = SchemeGroupVersion.WithKind(ReplicationGroupKind)
+	RDSInstanceKind             = reflect.TypeOf(RDSInstance{}).Name()
+	RDSInstanceKindAPIVersion   = RDSInstanceKind + "." + SchemeGroupVersion.String()
+	RDSInstanceGroupVersionKind = SchemeGroupVersion.WithKind(RDSInstanceKind)
 )
 
-// ReplicationGroupClass type metadata.
+// RDSInstanceClass type metadata.
 var (
-	ReplicationGroupClassKind             = reflect.TypeOf(ReplicationGroupClass{}).Name()
-	ReplicationGroupClassKindAPIVersion   = ReplicationGroupClassKind + "." + SchemeGroupVersion.String()
-	ReplicationGroupClassGroupVersionKind = SchemeGroupVersion.WithKind(ReplicationGroupClassKind)
+	RDSInstanceClassKind             = reflect.TypeOf(RDSInstanceClass{}).Name()
+	RDSInstanceClassKindAPIVersion   = RDSInstanceClassKind + "." + SchemeGroupVersion.String()
+	RDSInstanceClassGroupVersionKind = SchemeGroupVersion.WithKind(RDSInstanceClassKind)
 )
 
 func init() {
-	SchemeBuilder.Register(&ReplicationGroup{}, &ReplicationGroupList{})
-	SchemeBuilder.Register(&ReplicationGroupClass{}, &ReplicationGroupClassList{})
+	SchemeBuilder.Register(&RDSInstance{}, &RDSInstanceList{})
+	SchemeBuilder.Register(&RDSInstanceClass{}, &RDSInstanceClassList{})
 }
