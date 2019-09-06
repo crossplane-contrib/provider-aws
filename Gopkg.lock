@@ -716,6 +716,14 @@
   version = "v2.2.2"
 
 [[projects]]
+  branch = "v3"
+  digest = "1:698122d666025ff02316a3ca307e35b9889fa54789d617718fbff3264fd34663"
+  name = "gopkg.in/yaml.v3"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "827449938966de02e59eecfd53d81305d5a5f78a"
+
+[[projects]]
   digest = "1:baf5a7da864b8f493ff372a9486c2d6a7fae8363699af2dc0ef6dba9a869928f"
   name = "k8s.io/api"
   packages = [
@@ -1053,7 +1061,7 @@
   version = "v0.2.0"
 
 [[projects]]
-  digest = "1:1edc986a412b40d477a5c0077e7749d280fffa4446f7ec2e24c3e0cf4b128070"
+  digest = "1:6852be48889f976ee43ef7ca2e1a25ee9cfd3d0d46dbcdfcf32f8b7186c019e0"
   name = "sigs.k8s.io/controller-tools"
   packages = [
     "cmd/controller-gen",
@@ -1066,11 +1074,12 @@
     "pkg/loader",
     "pkg/markers",
     "pkg/rbac",
+    "pkg/schemapatcher",
+    "pkg/schemapatcher/internal/yaml",
     "pkg/webhook",
   ]
   pruneopts = "UT"
-  revision = "8e509cc6044facab5022c3af8f713f8b736d9108"
-  source = "https://github.com/muvaf/controller-tools.git"
+  revision = "ba11932048e4538f6e435f5ca0cdea19bf458338"
 
 [[projects]]
   digest = "1:9070222ca967d09b3966552a161dd4420d62315964bf5e1efd8cc4c7c30ebca8"
