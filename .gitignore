@@ -6,3 +6,6 @@ cover.out
 /.vendor-new
 
 /stack-package
+
+# ignore vscode files (debug config etc...)
+/.vscode
