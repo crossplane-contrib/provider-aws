@@ -14,5 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha2 contains API Schema definitions for the compute v1alpha2 API group
+// Package v1alpha2 contains managed resources for AWS compute services such as
+// EKS.
+// +kubebuilder:object:generate=true
+// +groupName=compute.aws.crossplane.io
+// +versionName=v1alpha2
 package v1alpha2
