@@ -26,6 +26,8 @@ import (
 	cachev1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/cache/v1alpha2"
 	computev1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/compute/v1alpha2"
 	databasev1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/database/v1alpha2"
+	identityv1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/identity/v1alpha2"
+	networkv1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/network/v1alpha2"
 	storagev1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha2"
 	awsv1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/v1alpha2"
 )
@@ -36,6 +38,8 @@ func init() {
 		cachev1alpha2.SchemeBuilder.AddToScheme,
 		computev1alpha2.SchemeBuilder.AddToScheme,
 		databasev1alpha2.SchemeBuilder.AddToScheme,
+		identityv1alpha2.SchemeBuilder.AddToScheme,
+		networkv1alpha2.SchemeBuilder.AddToScheme,
 		awsv1alpha2.SchemeBuilder.AddToScheme,
 		storagev1alpha2.SchemeBuilder.AddToScheme,
 	)
