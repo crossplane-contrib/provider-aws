@@ -32,9 +32,10 @@ import (
 
 	corev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-	v1alpha1 "github.com/crossplaneio/crossplane/aws/apis/network/v1alpha1"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/ec2"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/ec2/fake"
+
+	v1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/network/v1alpha2"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/ec2"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/ec2/fake"
 )
 
 var (
@@ -56,7 +57,7 @@ func TestMain(m *testing.M) {
 func Test_Connect(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := &v1alpha1.RouteTable{}
+	mockManaged := &v1alpha2.RouteTable{}
 	var clientErr error
 	var configErr error
 
@@ -123,9 +124,9 @@ func Test_Connect(t *testing.T) {
 func Test_Observe(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha1.RouteTable{
-		Status: v1alpha1.RouteTableStatus{
-			RouteTableExternalStatus: v1alpha1.RouteTableExternalStatus{
+	mockManaged := v1alpha2.RouteTable{
+		Status: v1alpha2.RouteTableStatus{
+			RouteTableExternalStatus: v1alpha2.RouteTableExternalStatus{
 				RouteTableID: "some arbitrary id",
 			},
 		},
@@ -195,7 +196,7 @@ func Test_Observe(t *testing.T) {
 		},
 		{
 			"if item's identifier is not yet set, returns expected",
-			&v1alpha1.RouteTable{},
+			&v1alpha2.RouteTable{},
 			nil,
 			nil,
 			true,
@@ -239,7 +240,7 @@ func Test_Observe(t *testing.T) {
 		g.Expect(result.ResourceExists).To(gomega.Equal(tc.expectedResourceExist), tc.description)
 		if tc.expectedResourceExist {
 
-			mgd := tc.managedObj.(*v1alpha1.RouteTable)
+			mgd := tc.managedObj.(*v1alpha2.RouteTable)
 
 			if tc.expectedResoruceAbailable {
 				g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
@@ -257,17 +258,17 @@ func Test_Observe(t *testing.T) {
 func Test_Create(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha1.RouteTable{
-		Spec: v1alpha1.RouteTableSpec{
-			RouteTableParameters: v1alpha1.RouteTableParameters{
+	mockManaged := v1alpha2.RouteTable{
+		Spec: v1alpha2.RouteTableSpec{
+			RouteTableParameters: v1alpha2.RouteTableParameters{
 				VPCID: "arbitrary vpcId",
-				Routes: []v1alpha1.Route{
+				Routes: []v1alpha2.Route{
 					{
 						DestinationCIDRBlock: "arbitrary dcb 0",
 						GatewayID:            "arbitrary gi 0",
 					},
 				},
-				Associations: []v1alpha1.Association{
+				Associations: []v1alpha2.Association{
 					{
 						SubnetID: "arbitrary subnet 0",
 					},
@@ -437,7 +438,7 @@ func Test_Create(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha1.RouteTable)
+			mgd := tc.managedObj.(*v1alpha2.RouteTable)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
@@ -452,7 +453,7 @@ func Test_Create(t *testing.T) {
 func Test_Update(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha1.RouteTable{}
+	mockManaged := v1alpha2.RouteTable{}
 
 	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
 
@@ -462,19 +463,19 @@ func Test_Update(t *testing.T) {
 func Test_Delete(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha1.RouteTable{
-		Status: v1alpha1.RouteTableStatus{
-			RouteTableExternalStatus: v1alpha1.RouteTableExternalStatus{
+	mockManaged := v1alpha2.RouteTable{
+		Status: v1alpha2.RouteTableStatus{
+			RouteTableExternalStatus: v1alpha2.RouteTableExternalStatus{
 				RouteTableID: "an arbitrary id",
-				Routes: []v1alpha1.RouteState{
+				Routes: []v1alpha2.RouteState{
 					{
-						Route: v1alpha1.Route{
+						Route: v1alpha2.Route{
 							DestinationCIDRBlock: "arbitrary dcb 0",
 							GatewayID:            "arbitrary gatewayid 0",
 						},
 					},
 				},
-				Associations: []v1alpha1.AssociationState{
+				Associations: []v1alpha2.AssociationState{
 					{
 						AssociationID: "arbitrary association id 0",
 					},
@@ -543,7 +544,7 @@ func Test_Delete(t *testing.T) {
 		},
 		{
 			"if status doesn't have the resource ID, it should return an error",
-			&v1alpha1.RouteTable{},
+			&v1alpha2.RouteTable{},
 			nil,
 			nil,
 			nil,
@@ -594,12 +595,12 @@ func Test_Delete(t *testing.T) {
 		},
 		{
 			"if a route is local, it should not be deleted",
-			&v1alpha1.RouteTable{
-				Status: v1alpha1.RouteTableStatus{
-					RouteTableExternalStatus: v1alpha1.RouteTableExternalStatus{
+			&v1alpha2.RouteTable{
+				Status: v1alpha2.RouteTableStatus{
+					RouteTableExternalStatus: v1alpha2.RouteTableExternalStatus{
 						RouteTableID: "an arbitrary id",
-						Routes: []v1alpha1.RouteState{
-							{Route: v1alpha1.Route{
+						Routes: []v1alpha2.RouteState{
+							{Route: v1alpha2.Route{
 								DestinationCIDRBlock: "arbitrary dcb 0",
 								GatewayID:            ec2.LocalGatewayID,
 							}},
@@ -637,7 +638,7 @@ func Test_Delete(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha1.RouteTable)
+			mgd := tc.managedObj.(*v1alpha2.RouteTable)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)

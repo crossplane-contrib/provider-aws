@@ -32,9 +32,10 @@ import (
 
 	corev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-	v1alpha1 "github.com/crossplaneio/crossplane/aws/apis/storage/v1alpha1"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/rds"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/rds/fake"
+
+	v1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha2"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/rds"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/rds/fake"
 )
 
 var (
@@ -56,7 +57,7 @@ func TestMain(m *testing.M) {
 func Test_Connect(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := &v1alpha1.DBSubnetGroup{}
+	mockManaged := &v1alpha2.DBSubnetGroup{}
 	var clientErr error
 	var configErr error
 
@@ -123,9 +124,9 @@ func Test_Connect(t *testing.T) {
 func Test_Observe(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha1.DBSubnetGroup{
-		Spec: v1alpha1.DBSubnetGroupSpec{
-			DBSubnetGroupParameters: v1alpha1.DBSubnetGroupParameters{
+	mockManaged := v1alpha2.DBSubnetGroup{
+		Spec: v1alpha2.DBSubnetGroupSpec{
+			DBSubnetGroupParameters: v1alpha2.DBSubnetGroupParameters{
 				DBSubnetGroupDescription: "arbitrary description",
 				DBSubnetGroupName:        "arbitrary group name",
 				SubnetIDs:                []string{"subnetid1", "subnetid2"},
@@ -209,7 +210,7 @@ func Test_Observe(t *testing.T) {
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		g.Expect(result.ResourceExists).To(gomega.Equal(tc.expectedResourceExist), tc.description)
 		if tc.expectedResourceExist {
-			mgd := tc.managedObj.(*v1alpha1.DBSubnetGroup)
+			mgd := tc.managedObj.(*v1alpha2.DBSubnetGroup)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionTrue), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonAvailable), tc.description)
@@ -221,13 +222,13 @@ func Test_Observe(t *testing.T) {
 func Test_Create(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha1.DBSubnetGroup{
-		Spec: v1alpha1.DBSubnetGroupSpec{
-			DBSubnetGroupParameters: v1alpha1.DBSubnetGroupParameters{
+	mockManaged := v1alpha2.DBSubnetGroup{
+		Spec: v1alpha2.DBSubnetGroupSpec{
+			DBSubnetGroupParameters: v1alpha2.DBSubnetGroupParameters{
 				DBSubnetGroupDescription: "arbitrary description",
 				DBSubnetGroupName:        "arbitrary group name",
 				SubnetIDs:                []string{"subnetid1", "subnetid2"},
-				Tags: []v1alpha1.Tag{
+				Tags: []v1alpha2.Tag{
 					{"tagKey1", "tagValue1"}, {"tagKey2", "tagValue2"},
 				},
 			},
@@ -286,7 +287,7 @@ func Test_Create(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha1.DBSubnetGroup)
+			mgd := tc.managedObj.(*v1alpha2.DBSubnetGroup)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
@@ -298,7 +299,7 @@ func Test_Create(t *testing.T) {
 func Test_Update(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha1.DBSubnetGroup{}
+	mockManaged := v1alpha2.DBSubnetGroup{}
 
 	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
 
@@ -308,9 +309,9 @@ func Test_Update(t *testing.T) {
 func Test_Delete(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha1.DBSubnetGroup{
-		Spec: v1alpha1.DBSubnetGroupSpec{
-			DBSubnetGroupParameters: v1alpha1.DBSubnetGroupParameters{
+	mockManaged := v1alpha2.DBSubnetGroup{
+		Spec: v1alpha2.DBSubnetGroupSpec{
+			DBSubnetGroupParameters: v1alpha2.DBSubnetGroupParameters{
 				DBSubnetGroupDescription: "arbitrary description",
 				DBSubnetGroupName:        "arbitrary group name",
 				SubnetIDs:                []string{"subnetid1", "subnetid2"},
@@ -366,7 +367,7 @@ func Test_Delete(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha1.DBSubnetGroup)
+			mgd := tc.managedObj.(*v1alpha2.DBSubnetGroup)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)

@@ -1,4 +1,4 @@
-package v1alpha1
+package v1alpha2
 
 import (
 	"os"
@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/onsi/gomega"
 
-	"github.com/crossplaneio/crossplane/pkg/clients/aws"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws"
 )
 
 func TestMain(m *testing.M) {

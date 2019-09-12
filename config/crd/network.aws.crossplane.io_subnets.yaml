@@ -34,7 +34,9 @@ spec:
   group: network.aws.crossplane.io
   names:
     kind: Subnet
+    listKind: SubnetList
     plural: subnets
+    singular: subnet
   scope: ""
   subresources:
     status: {}
@@ -272,9 +274,9 @@ spec:
           - subnetState
           type: object
       type: object
-  version: v1alpha1
+  version: v1alpha2
   versions:
-  - name: v1alpha1
+  - name: v1alpha2
     served: true
     storage: true
 status:

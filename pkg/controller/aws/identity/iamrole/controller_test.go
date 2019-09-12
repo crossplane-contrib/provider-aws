@@ -32,9 +32,10 @@ import (
 
 	corev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-	v1alpha1 "github.com/crossplaneio/crossplane/aws/apis/identity/v1alpha1"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/iam"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/iam/fake"
+
+	v1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/identity/v1alpha2"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/iam"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/iam/fake"
 )
 
 var (
@@ -56,7 +57,7 @@ func TestMain(m *testing.M) {
 func Test_Connect(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := &v1alpha1.IAMRole{}
+	mockManaged := &v1alpha2.IAMRole{}
 	var clientErr error
 	var configErr error
 
@@ -115,7 +116,7 @@ func Test_Connect(t *testing.T) {
 func Test_Observe(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha1.IAMRole{}
+	mockManaged := v1alpha2.IAMRole{}
 	mockExternal := &awsiam.Role{
 		Arn: aws.String("some arbitrary arn"),
 	}
@@ -175,7 +176,7 @@ func Test_Observe(t *testing.T) {
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		g.Expect(result.ResourceExists).To(gomega.Equal(tc.expectedResourceExist), tc.description)
 		if tc.expectedResourceExist {
-			mgd := tc.managedObj.(*v1alpha1.IAMRole)
+			mgd := tc.managedObj.(*v1alpha2.IAMRole)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionTrue), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonAvailable), tc.description)
@@ -187,9 +188,9 @@ func Test_Observe(t *testing.T) {
 func Test_Create(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha1.IAMRole{
-		Spec: v1alpha1.IAMRoleSpec{
-			IAMRoleParameters: v1alpha1.IAMRoleParameters{
+	mockManaged := v1alpha2.IAMRole{
+		Spec: v1alpha2.IAMRoleSpec{
+			IAMRoleParameters: v1alpha2.IAMRoleParameters{
 				AssumeRolePolicyDocument: "arbitrary role policy doc",
 				Description:              "arbitrary role description",
 				RoleName:                 "arbitrary role name",
@@ -246,7 +247,7 @@ func Test_Create(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha1.IAMRole)
+			mgd := tc.managedObj.(*v1alpha2.IAMRole)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
@@ -258,7 +259,7 @@ func Test_Create(t *testing.T) {
 func Test_Update(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha1.IAMRole{}
+	mockManaged := v1alpha2.IAMRole{}
 
 	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
 
@@ -268,9 +269,9 @@ func Test_Update(t *testing.T) {
 func Test_Delete(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha1.IAMRole{
-		Spec: v1alpha1.IAMRoleSpec{
-			IAMRoleParameters: v1alpha1.IAMRoleParameters{
+	mockManaged := v1alpha2.IAMRole{
+		Spec: v1alpha2.IAMRoleSpec{
+			IAMRoleParameters: v1alpha2.IAMRoleParameters{
 				RoleName: "arbitrary role name",
 			},
 		},
@@ -324,7 +325,7 @@ func Test_Delete(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha1.IAMRole)
+			mgd := tc.managedObj.(*v1alpha2.IAMRole)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)
