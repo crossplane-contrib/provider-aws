@@ -22,7 +22,9 @@ spec:
   group: network.aws.crossplane.io
   names:
     kind: RouteTable
+    listKind: RouteTableList
     plural: routetables
+    singular: routetable
   scope: ""
   subresources:
     status: {}
@@ -306,9 +308,9 @@ spec:
           - routeTableId
           type: object
       type: object
-  version: v1alpha1
+  version: v1alpha2
   versions:
-  - name: v1alpha1
+  - name: v1alpha2
     served: true
     storage: true
 status:

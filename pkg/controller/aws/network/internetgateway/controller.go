@@ -30,9 +30,10 @@ import (
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-	v1alpha1 "github.com/crossplaneio/crossplane/aws/apis/network/v1alpha1"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/ec2"
-	"github.com/crossplaneio/crossplane/pkg/controller/aws/utils"
+
+	v1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/network/v1alpha2"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/ec2"
+	"github.com/crossplaneio/stack-aws/pkg/controller/aws/utils"
 )
 
 const (
@@ -53,13 +54,13 @@ type Controller struct{}
 // and Start it when the Manager is Started.
 func (c *Controller) SetupWithManager(mgr ctrl.Manager) error {
 	r := resource.NewManagedReconciler(mgr,
-		resource.ManagedKind(v1alpha1.InternetGatewayGroupVersionKind),
+		resource.ManagedKind(v1alpha2.InternetGatewayGroupVersionKind),
 		resource.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewInternetGatewayClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
 		resource.WithManagedConnectionPublishers())
-	name := strings.ToLower(fmt.Sprintf("%s.%s", v1alpha1.InternetGatewayKindAPIVersion, v1alpha1.Group))
+	name := strings.ToLower(fmt.Sprintf("%s.%s", v1alpha2.InternetGatewayKindAPIVersion, v1alpha2.Group))
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha1.InternetGateway{}).
+		For(&v1alpha2.InternetGateway{}).
 		Complete(r)
 }
 
@@ -70,7 +71,7 @@ type connector struct {
 }
 
 func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (resource.ExternalClient, error) {
-	cr, ok := mgd.(*v1alpha1.InternetGateway)
+	cr, ok := mgd.(*v1alpha2.InternetGateway)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -93,7 +94,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (resource.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha1.InternetGateway)
+	cr, ok := mgd.(*v1alpha2.InternetGateway)
 	if !ok {
 		return resource.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -153,7 +154,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (resource.
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (resource.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.InternetGateway)
+	cr, ok := mgd.(*v1alpha2.InternetGateway)
 	if !ok {
 		return resource.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -190,7 +191,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (resource.E
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.InternetGateway)
+	cr, ok := mgd.(*v1alpha2.InternetGateway)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

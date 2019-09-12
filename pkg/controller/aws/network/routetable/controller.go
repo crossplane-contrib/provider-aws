@@ -30,9 +30,10 @@ import (
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-	v1alpha1 "github.com/crossplaneio/crossplane/aws/apis/network/v1alpha1"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/ec2"
-	"github.com/crossplaneio/crossplane/pkg/controller/aws/utils"
+
+	v1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/network/v1alpha2"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/ec2"
+	"github.com/crossplaneio/stack-aws/pkg/controller/aws/utils"
 )
 
 const (
@@ -56,13 +57,13 @@ type Controller struct{}
 // and Start it when the Manager is Started.
 func (c *Controller) SetupWithManager(mgr ctrl.Manager) error {
 	r := resource.NewManagedReconciler(mgr,
-		resource.ManagedKind(v1alpha1.RouteTableGroupVersionKind),
+		resource.ManagedKind(v1alpha2.RouteTableGroupVersionKind),
 		resource.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewRouteTableClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
 		resource.WithManagedConnectionPublishers())
-	name := strings.ToLower(fmt.Sprintf("%s.%s", v1alpha1.RouteTableKindAPIVersion, v1alpha1.Group))
+	name := strings.ToLower(fmt.Sprintf("%s.%s", v1alpha2.RouteTableKindAPIVersion, v1alpha2.Group))
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha1.RouteTable{}).
+		For(&v1alpha2.RouteTable{}).
 		Complete(r)
 }
 
@@ -73,7 +74,7 @@ type connector struct {
 }
 
 func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (resource.ExternalClient, error) {
-	cr, ok := mgd.(*v1alpha1.RouteTable)
+	cr, ok := mgd.(*v1alpha2.RouteTable)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -96,7 +97,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (resource.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha1.RouteTable)
+	cr, ok := mgd.(*v1alpha2.RouteTable)
 	if !ok {
 		return resource.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -154,7 +155,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (resource.
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (resource.ExternalCreation, error) { // nolint:gocyclo
-	cr, ok := mgd.(*v1alpha1.RouteTable)
+	cr, ok := mgd.(*v1alpha2.RouteTable)
 	if !ok {
 		return resource.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -193,7 +194,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (resource.E
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.RouteTable)
+	cr, ok := mgd.(*v1alpha2.RouteTable)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
@@ -231,7 +232,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	return errors.Wrap(err, errDelete)
 }
 
-func (e *external) createRoutes(ctx context.Context, tableID string, desired []v1alpha1.Route, observed []v1alpha1.RouteState) error {
+func (e *external) createRoutes(ctx context.Context, tableID string, desired []v1alpha2.Route, observed []v1alpha2.RouteState) error {
 	for _, rt := range desired {
 		isObserved := false
 		for _, ob := range observed {
@@ -258,7 +259,7 @@ func (e *external) createRoutes(ctx context.Context, tableID string, desired []v
 	return nil
 }
 
-func (e *external) deleteRoutes(ctx context.Context, tableID string, observed []v1alpha1.RouteState) error {
+func (e *external) deleteRoutes(ctx context.Context, tableID string, observed []v1alpha2.RouteState) error {
 	for _, rt := range observed {
 		// "local" routes cannot be deleted
 		// https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html
@@ -282,7 +283,7 @@ func (e *external) deleteRoutes(ctx context.Context, tableID string, observed []
 	return nil
 }
 
-func (e *external) createAssociations(ctx context.Context, tableID string, desired []v1alpha1.Association, observed []v1alpha1.AssociationState) error {
+func (e *external) createAssociations(ctx context.Context, tableID string, desired []v1alpha2.Association, observed []v1alpha2.AssociationState) error {
 	for _, asc := range desired {
 		isObserved := false
 		for _, ob := range observed {
@@ -308,7 +309,7 @@ func (e *external) createAssociations(ctx context.Context, tableID string, desir
 	return nil
 }
 
-func (e *external) deleteAssociations(ctx context.Context, observed []v1alpha1.AssociationState) error {
+func (e *external) deleteAssociations(ctx context.Context, observed []v1alpha2.AssociationState) error {
 	for _, asc := range observed {
 		req := e.client.DisassociateRouteTableRequest(&awsec2.DisassociateRouteTableInput{
 			AssociationId: aws.String(asc.AssociationID),

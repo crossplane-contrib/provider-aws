@@ -14,14 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	corev1 "k8s.io/api/core/v1"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws"
+
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws"
 )
 
 // SetBindingPhase of this SecurityGroup.

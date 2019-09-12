@@ -30,9 +30,10 @@ import (
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-	v1alpha1 "github.com/crossplaneio/crossplane/aws/apis/storage/v1alpha1"
-	"github.com/crossplaneio/crossplane/pkg/clients/aws/rds"
-	"github.com/crossplaneio/crossplane/pkg/controller/aws/utils"
+
+	v1alpha2 "github.com/crossplaneio/stack-aws/aws/apis/storage/v1alpha2"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws/rds"
+	"github.com/crossplaneio/stack-aws/pkg/controller/aws/utils"
 )
 
 const (
@@ -51,13 +52,13 @@ type Controller struct{}
 // and Start it when the Manager is Started.
 func (c *Controller) SetupWithManager(mgr ctrl.Manager) error {
 	r := resource.NewManagedReconciler(mgr,
-		resource.ManagedKind(v1alpha1.DBSubnetGroupGroupVersionKind),
+		resource.ManagedKind(v1alpha2.DBSubnetGroupGroupVersionKind),
 		resource.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: rds.NewDBSubnetGroupClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
 		resource.WithManagedConnectionPublishers())
-	name := strings.ToLower(fmt.Sprintf("%s.%s", v1alpha1.DBSubnetGroupKindAPIVersion, v1alpha1.Group))
+	name := strings.ToLower(fmt.Sprintf("%s.%s", v1alpha2.DBSubnetGroupKindAPIVersion, v1alpha2.Group))
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha1.DBSubnetGroup{}).
+		For(&v1alpha2.DBSubnetGroup{}).
 		Complete(r)
 }
 
@@ -68,7 +69,7 @@ type connector struct {
 }
 
 func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (resource.ExternalClient, error) {
-	cr, ok := mgd.(*v1alpha1.DBSubnetGroup)
+	cr, ok := mgd.(*v1alpha2.DBSubnetGroup)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -90,7 +91,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (resource.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha1.DBSubnetGroup)
+	cr, ok := mgd.(*v1alpha2.DBSubnetGroup)
 	if !ok {
 		return resource.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -130,7 +131,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (resource.
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (resource.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.DBSubnetGroup)
+	cr, ok := mgd.(*v1alpha2.DBSubnetGroup)
 	if !ok {
 		return resource.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -173,7 +174,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (resource.E
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.DBSubnetGroup)
+	cr, ok := mgd.(*v1alpha2.DBSubnetGroup)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

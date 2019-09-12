@@ -15,9 +15,9 @@ limitations under the License.
 */
 // +kubebuilder:object:generate=true
 // +groupName=network.aws.crossplane.io
-// +versionName=v1alpha1
+// +versionName=v1alpha2
 
-package v1alpha1
+package v1alpha2
 
 import (
 	"reflect"
@@ -29,7 +29,7 @@ import (
 // Package type metadata.
 const (
 	Group   = "network.aws.crossplane.io"
-	Version = "v1alpha1"
+	Version = "v1alpha2"
 )
 
 var (

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	"testing"
@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/onsi/gomega"
 
-	"github.com/crossplaneio/crossplane/pkg/clients/aws"
+	"github.com/crossplaneio/stack-aws/pkg/clients/aws"
 )
 
 func Test_DBSubnetGroup_BuildExternalStatusFromObservation(t *testing.T) {

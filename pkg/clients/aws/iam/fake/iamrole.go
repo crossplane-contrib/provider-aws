@@ -19,7 +19,7 @@ package fake
 import (
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
-	clientset "github.com/crossplaneio/crossplane/pkg/clients/aws/iam"
+	clientset "github.com/crossplaneio/stack-aws/pkg/clients/aws/iam"
 )
 
 // this ensures that the mock implements the client interface

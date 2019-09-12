@@ -28,7 +28,9 @@ spec:
   group: network.aws.crossplane.io
   names:
     kind: VPC
+    listKind: VPCList
     plural: vpcs
+    singular: vpc
   scope: ""
   subresources:
     status: {}
@@ -256,9 +258,9 @@ spec:
           - vpcState
           type: object
       type: object
-  version: v1alpha1
+  version: v1alpha2
   versions:
-  - name: v1alpha1
+  - name: v1alpha2
     served: true
     storage: true
 status:

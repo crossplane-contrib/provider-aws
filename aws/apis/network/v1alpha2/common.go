@@ -14,4 +14,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1alpha2
+
+import (
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+)
+
+// Tag defines a tag
+type Tag struct {
+
+	// Key is the name of the tag.
+	Key string `json:"key"`
+
+	// Value is the value of the tag.
+	Value string `json:"value"`
+}
+
+// BuildFromEC2Tags returns a list of tags, off of the given ec2 tags
+func BuildFromEC2Tags(tags []ec2.Tag) []Tag {
+	res := make([]Tag, len(tags))
+	for i, t := range tags {
+		res[i] = Tag{aws.StringValue(t.Key), aws.StringValue(t.Value)}
+	}
+
+	return res
+}

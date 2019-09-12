@@ -25,7 +25,9 @@ spec:
   group: identity.aws.crossplane.io
   names:
     kind: IAMRolePolicyAttachment
+    listKind: IAMRolePolicyAttachmentList
     plural: iamrolepolicyattachments
+    singular: iamrolepolicyattachment
   scope: ""
   subresources:
     status: {}
@@ -238,9 +240,9 @@ spec:
           - attachedPolicyArn
           type: object
       type: object
-  version: v1alpha1
+  version: v1alpha2
   versions:
-  - name: v1alpha1
+  - name: v1alpha2
     served: true
     storage: true
 status:
