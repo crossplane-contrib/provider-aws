@@ -316,14 +316,14 @@ func (rg *ReplicationGroup) GetClaimReference() *corev1.ObjectReference {
 	return rg.Spec.ClaimReference
 }
 
-// SetClassReference of this ReplicationGroup.
-func (rg *ReplicationGroup) SetClassReference(r *corev1.ObjectReference) {
-	rg.Spec.ClassReference = r
+// SetNonPortableClassReference of this ReplicationGroup.
+func (rg *ReplicationGroup) SetNonPortableClassReference(r *corev1.ObjectReference) {
+	rg.Spec.NonPortableClassReference = r
 }
 
-// GetClassReference of this ReplicationGroup.
-func (rg *ReplicationGroup) GetClassReference() *corev1.ObjectReference {
-	return rg.Spec.ClassReference
+// GetNonPortableClassReference of this ReplicationGroup.
+func (rg *ReplicationGroup) GetNonPortableClassReference() *corev1.ObjectReference {
+	return rg.Spec.NonPortableClassReference
 }
 
 // SetWriteConnectionSecretToReference of this ReplicationGroup.
@@ -357,11 +357,12 @@ type ReplicationGroupList struct {
 
 // ReplicationGroupClassSpecTemplate is the Schema for the resource class
 type ReplicationGroupClassSpecTemplate struct {
-	runtimev1alpha1.ResourceClassSpecTemplate `json:",inline"`
-	ReplicationGroupParameters                `json:",inline"`
+	runtimev1alpha1.NonPortableClassSpecTemplate `json:",inline"`
+	ReplicationGroupParameters                   `json:",inline"`
 }
 
-var _ resource.Class = &ReplicationGroupClass{}
+// All non-portable classes must implement the NonPortableClass interface.
+var _ resource.NonPortableClass = &ReplicationGroupClass{}
 
 // +kubebuilder:object:root=true
 

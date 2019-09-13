@@ -49,14 +49,14 @@ func (t *RouteTable) GetClaimReference() *corev1.ObjectReference {
 	return t.Spec.ClaimReference
 }
 
-// SetClassReference of this RouteTable.
-func (t *RouteTable) SetClassReference(r *corev1.ObjectReference) {
-	t.Spec.ClassReference = r
+// SetNonPortableClassReference of this RouteTable.
+func (t *RouteTable) SetNonPortableClassReference(r *corev1.ObjectReference) {
+	t.Spec.NonPortableClassReference = r
 }
 
-// GetClassReference of this RouteTable.
-func (t *RouteTable) GetClassReference() *corev1.ObjectReference {
-	return t.Spec.ClassReference
+// GetNonPortableClassReference of this RouteTable.
+func (t *RouteTable) GetNonPortableClassReference() *corev1.ObjectReference {
+	return t.Spec.NonPortableClassReference
 }
 
 // SetWriteConnectionSecretToReference of this RouteTable.

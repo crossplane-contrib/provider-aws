@@ -50,14 +50,14 @@ func (s *SecurityGroup) GetClaimReference() *corev1.ObjectReference {
 	return s.Spec.ClaimReference
 }
 
-// SetClassReference of this SecurityGroup.
-func (s *SecurityGroup) SetClassReference(r *corev1.ObjectReference) {
-	s.Spec.ClassReference = r
+// SetNonPortableClassReference of this SecurityGroup.
+func (s *SecurityGroup) SetNonPortableClassReference(r *corev1.ObjectReference) {
+	s.Spec.NonPortableClassReference = r
 }
 
-// GetClassReference of this SecurityGroup.
-func (s *SecurityGroup) GetClassReference() *corev1.ObjectReference {
-	return s.Spec.ClassReference
+// GetNonPortableClassReference of this SecurityGroup.
+func (s *SecurityGroup) GetNonPortableClassReference() *corev1.ObjectReference {
+	return s.Spec.NonPortableClassReference
 }
 
 // SetWriteConnectionSecretToReference of this SecurityGroup.
