@@ -49,7 +49,7 @@ type BucketClaimController struct{}
 func (c *BucketClaimController) SetupWithManager(mgr ctrl.Manager) error {
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(storagev1alpha1.BucketGroupVersionKind),
-		resource.ClassKind(v1alpha2.S3BucketClassGroupVersionKind),
+		resource.ClassKinds{Portable: storagev1alpha1.BucketClassGroupVersionKind, NonPortable: v1alpha2.S3BucketClassGroupVersionKind},
 		resource.ManagedKind(v1alpha2.S3BucketGroupVersionKind),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigureS3Bucket),
@@ -62,14 +62,14 @@ func (c *BucketClaimController) SetupWithManager(mgr ctrl.Manager) error {
 		Named(name).
 		Watches(&source.Kind{Type: &v1alpha2.S3Bucket{}}, &resource.EnqueueRequestForClaim{}).
 		For(&storagev1alpha1.Bucket{}).
-		WithEventFilter(resource.NewPredicates(resource.HasClassReferenceKind(resource.ClassKind(v1alpha2.S3BucketClassGroupVersionKind)))).
+		WithEventFilter(resource.NewPredicates(resource.HasClassReferenceKinds(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{Portable: storagev1alpha1.BucketClassGroupVersionKind, NonPortable: v1alpha2.S3BucketClassGroupVersionKind}))).
 		Complete(r)
 }
 
 // ConfigureS3Bucket configures the supplied resource (presumed
 // to be a S3Bucket) using the supplied resource claim (presumed
 // to be a Bucket) and resource class.
-func ConfigureS3Bucket(_ context.Context, cm resource.Claim, cs resource.Class, mg resource.Managed) error {
+func ConfigureS3Bucket(_ context.Context, cm resource.Claim, cs resource.NonPortableClass, mg resource.Managed) error {
 	b, cmok := cm.(*storagev1alpha1.Bucket)
 	if !cmok {
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), storagev1alpha1.BucketGroupVersionKind)

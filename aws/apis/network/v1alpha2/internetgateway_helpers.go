@@ -49,14 +49,14 @@ func (i *InternetGateway) GetClaimReference() *corev1.ObjectReference {
 	return i.Spec.ClaimReference
 }
 
-// SetClassReference of this InternetGateway.
-func (i *InternetGateway) SetClassReference(r *corev1.ObjectReference) {
-	i.Spec.ClassReference = r
+// SetNonPortableClassReference of this InternetGateway.
+func (i *InternetGateway) SetNonPortableClassReference(r *corev1.ObjectReference) {
+	i.Spec.NonPortableClassReference = r
 }
 
-// GetClassReference of this InternetGateway.
-func (i *InternetGateway) GetClassReference() *corev1.ObjectReference {
-	return i.Spec.ClassReference
+// GetNonPortableClassReference of this InternetGateway.
+func (i *InternetGateway) GetNonPortableClassReference() *corev1.ObjectReference {
+	return i.Spec.NonPortableClassReference
 }
 
 // SetWriteConnectionSecretToReference of this InternetGateway.

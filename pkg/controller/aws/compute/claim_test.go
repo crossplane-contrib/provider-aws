@@ -39,7 +39,7 @@ func TestConfigureEKSCluster(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		cm  resource.Claim
-		cs  resource.Class
+		cs  resource.NonPortableClass
 		mg  resource.Managed
 	}
 
@@ -60,7 +60,7 @@ func TestConfigureEKSCluster(t *testing.T) {
 				cm: &computev1alpha1.KubernetesCluster{ObjectMeta: metav1.ObjectMeta{UID: claimUID}},
 				cs: &v1alpha2.EKSClusterClass{
 					SpecTemplate: v1alpha2.EKSClusterClassSpecTemplate{
-						ResourceClassSpecTemplate: runtimev1alpha1.ResourceClassSpecTemplate{
+						NonPortableClassSpecTemplate: runtimev1alpha1.NonPortableClassSpecTemplate{
 							ProviderReference: &corev1.ObjectReference{Name: providerName},
 							ReclaimPolicy:     runtimev1alpha1.ReclaimDelete,
 						},
