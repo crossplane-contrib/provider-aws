@@ -34,11 +34,19 @@ keywords:
 - "infrastructure"
 
 # Links to more information about the application (about page, source code, etc.)
-links:
-- description: Website
-  url: "https://crossplane.io"
-- description: Source Code
-  url: "https://github.com/crossplaneio/stack-aws"
+website: "https://crossplane.io"
+source: "https://github.com/crossplaneio/stack-aws"
+
+# RBAC ClusterRoles will be generated permitting this stack to use all verbs on all
+# resources in the groups listed below.
+permissionScope: Cluster
+dependsOn:
+- crd: '*.cache.crossplane.io/v1alpha1'
+- crd: '*.compute.crossplane.io/v1alpha1'
+- crd: '*.database.crossplane.io/v1alpha1'
+- crd: '*.core.crossplane.io/v1alpha1'
+- crd: '*.storage.crossplane.io/v1alpha1'
+- crd: '*.workload.crossplane.io/v1alpha1'
 
 # License SPDX name: https://spdx.org/licenses/
 license: Apache-2.0
