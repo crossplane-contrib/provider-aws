@@ -50,14 +50,14 @@ func (r *IAMRole) GetClaimReference() *corev1.ObjectReference {
 	return r.Spec.ClaimReference
 }
 
-// SetClassReference of this IAMRole.
-func (r *IAMRole) SetClassReference(ref *corev1.ObjectReference) {
-	r.Spec.ClassReference = ref
+// SetNonPortableClassReference of this IAMRole.
+func (r *IAMRole) SetNonPortableClassReference(ref *corev1.ObjectReference) {
+	r.Spec.NonPortableClassReference = ref
 }
 
-// GetClassReference of this IAMRole.
-func (r *IAMRole) GetClassReference() *corev1.ObjectReference {
-	return r.Spec.ClassReference
+// GetNonPortableClassReference of this IAMRole.
+func (r *IAMRole) GetNonPortableClassReference() *corev1.ObjectReference {
+	return r.Spec.NonPortableClassReference
 }
 
 // SetWriteConnectionSecretToReference of this IAMRole.
