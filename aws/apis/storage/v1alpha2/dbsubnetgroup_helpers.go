@@ -50,14 +50,14 @@ func (b *DBSubnetGroup) GetClaimReference() *corev1.ObjectReference {
 	return b.Spec.ClaimReference
 }
 
-// SetClassReference of this DBSubnetGroup.
-func (b *DBSubnetGroup) SetClassReference(r *corev1.ObjectReference) {
-	b.Spec.ClassReference = r
+// SetNonPortableClassReference of this DBSubnetGroup.
+func (b *DBSubnetGroup) SetNonPortableClassReference(r *corev1.ObjectReference) {
+	b.Spec.NonPortableClassReference = r
 }
 
-// GetClassReference of this DBSubnetGroup.
-func (b *DBSubnetGroup) GetClassReference() *corev1.ObjectReference {
-	return b.Spec.ClassReference
+// GetNonPortableClassReference of this DBSubnetGroup.
+func (b *DBSubnetGroup) GetNonPortableClassReference() *corev1.ObjectReference {
+	return b.Spec.NonPortableClassReference
 }
 
 // SetWriteConnectionSecretToReference of this DBSubnetGroup.

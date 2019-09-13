@@ -49,14 +49,14 @@ func (v *VPC) GetClaimReference() *corev1.ObjectReference {
 	return v.Spec.ClaimReference
 }
 
-// SetClassReference of this VPC.
-func (v *VPC) SetClassReference(r *corev1.ObjectReference) {
-	v.Spec.ClassReference = r
+// SetNonPortableClassReference of this VPC.
+func (v *VPC) SetNonPortableClassReference(r *corev1.ObjectReference) {
+	v.Spec.NonPortableClassReference = r
 }
 
-// GetClassReference of this VPC.
-func (v *VPC) GetClassReference() *corev1.ObjectReference {
-	return v.Spec.ClassReference
+// GetNonPortableClassReference of this VPC.
+func (v *VPC) GetNonPortableClassReference() *corev1.ObjectReference {
+	return v.Spec.NonPortableClassReference
 }
 
 // SetWriteConnectionSecretToReference of this VPC.
