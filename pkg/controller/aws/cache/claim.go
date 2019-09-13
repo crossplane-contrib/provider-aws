@@ -41,7 +41,7 @@ type ReplicationGroupClaimController struct{}
 func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) error {
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(cachev1alpha1.RedisClusterGroupVersionKind),
-		resource.ClassKind(v1alpha2.ReplicationGroupClassGroupVersionKind),
+		resource.ClassKinds{Portable: cachev1alpha1.RedisClusterClassGroupVersionKind, NonPortable: v1alpha2.ReplicationGroupClassGroupVersionKind},
 		resource.ManagedKind(v1alpha2.ReplicationGroupGroupVersionKind),
 		resource.WithManagedBinder(resource.NewAPIManagedStatusBinder(mgr.GetClient())),
 		resource.WithManagedFinalizer(resource.NewAPIManagedStatusUnbinder(mgr.GetClient())),
@@ -59,14 +59,14 @@ func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) err
 		Named(name).
 		Watches(&source.Kind{Type: &v1alpha2.ReplicationGroup{}}, &resource.EnqueueRequestForClaim{}).
 		For(&cachev1alpha1.RedisCluster{}).
-		WithEventFilter(resource.NewPredicates(resource.HasClassReferenceKind(resource.ClassKind(v1alpha2.ReplicationGroupClassGroupVersionKind)))).
+		WithEventFilter(resource.NewPredicates(resource.HasClassReferenceKinds(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{Portable: cachev1alpha1.RedisClusterClassGroupVersionKind, NonPortable: v1alpha2.ReplicationGroupClassGroupVersionKind}))).
 		Complete(r)
 }
 
 // ConfigureReplicationGroup configures the supplied resource (presumed
 // to be a ReplicationGroup) using the supplied resource claim (presumed
 // to be a RedisCluster) and resource class.
-func ConfigureReplicationGroup(_ context.Context, cm resource.Claim, cs resource.Class, mg resource.Managed) error {
+func ConfigureReplicationGroup(_ context.Context, cm resource.Claim, cs resource.NonPortableClass, mg resource.Managed) error {
 	rc, cmok := cm.(*cachev1alpha1.RedisCluster)
 	if !cmok {
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), cachev1alpha1.RedisClusterGroupVersionKind)

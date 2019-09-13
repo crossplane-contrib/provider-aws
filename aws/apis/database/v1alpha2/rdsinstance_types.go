@@ -124,14 +124,14 @@ func (i *RDSInstance) GetClaimReference() *corev1.ObjectReference {
 	return i.Spec.ClaimReference
 }
 
-// SetClassReference of this RDSInstance.
-func (i *RDSInstance) SetClassReference(r *corev1.ObjectReference) {
-	i.Spec.ClassReference = r
+// SetNonPortableClassReference of this RDSInstance.
+func (i *RDSInstance) SetNonPortableClassReference(r *corev1.ObjectReference) {
+	i.Spec.NonPortableClassReference = r
 }
 
-// GetClassReference of this RDSInstance.
-func (i *RDSInstance) GetClassReference() *corev1.ObjectReference {
-	return i.Spec.ClassReference
+// GetNonPortableClassReference of this RDSInstance.
+func (i *RDSInstance) GetNonPortableClassReference() *corev1.ObjectReference {
+	return i.Spec.NonPortableClassReference
 }
 
 // SetWriteConnectionSecretToReference of this RDSInstance.
@@ -165,11 +165,12 @@ type RDSInstanceList struct {
 
 // RDSInstanceClassSpecTemplate is the Schema for the resource class
 type RDSInstanceClassSpecTemplate struct {
-	runtimev1alpha1.ResourceClassSpecTemplate `json:",inline"`
-	RDSInstanceParameters                     `json:",inline"`
+	runtimev1alpha1.NonPortableClassSpecTemplate `json:",inline"`
+	RDSInstanceParameters                        `json:",inline"`
 }
 
-var _ resource.Class = &RDSInstanceClass{}
+// All non-portable classes must implement the NonPortableClass interface.
+var _ resource.NonPortableClass = &RDSInstanceClass{}
 
 // +kubebuilder:object:root=true
 

@@ -49,7 +49,7 @@ func TestConfigureReplicationGroup(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		cm  resource.Claim
-		cs  resource.Class
+		cs  resource.NonPortableClass
 		mg  resource.Managed
 	}
 
@@ -73,7 +73,7 @@ func TestConfigureReplicationGroup(t *testing.T) {
 				},
 				cs: &v1alpha2.ReplicationGroupClass{
 					SpecTemplate: v1alpha2.ReplicationGroupClassSpecTemplate{
-						ResourceClassSpecTemplate: runtimev1alpha1.ResourceClassSpecTemplate{
+						NonPortableClassSpecTemplate: runtimev1alpha1.NonPortableClassSpecTemplate{
 							ProviderReference: &corev1.ObjectReference{Name: providerName},
 							ReclaimPolicy:     runtimev1alpha1.ReclaimDelete,
 						},
