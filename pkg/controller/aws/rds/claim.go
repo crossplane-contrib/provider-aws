@@ -41,7 +41,7 @@ type PostgreSQLInstanceClaimController struct{}
 func (c *PostgreSQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error {
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(databasev1alpha1.PostgreSQLInstanceGroupVersionKind),
-		resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
+		resource.ClassKinds{Portable: databasev1alpha1.PostgreSQLInstanceClassGroupVersionKind, NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind},
 		resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigurePostgreRDSInstance),
@@ -54,7 +54,7 @@ func (c *PostgreSQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) e
 		Named(name).
 		Watches(&source.Kind{Type: &v1alpha2.RDSInstance{}}, &resource.EnqueueRequestForClaim{}).
 		For(&databasev1alpha1.PostgreSQLInstance{}).
-		WithEventFilter(resource.NewPredicates(resource.HasClassReferenceKind(resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind)))).
+		WithEventFilter(resource.NewPredicates(resource.HasClassReferenceKinds(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{Portable: databasev1alpha1.PostgreSQLInstanceClassGroupVersionKind, NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind}))).
 		Complete(r)
 }
 
@@ -66,7 +66,7 @@ type MySQLInstanceClaimController struct{}
 func (c *MySQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error {
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(databasev1alpha1.MySQLInstanceGroupVersionKind),
-		resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
+		resource.ClassKinds{Portable: databasev1alpha1.MySQLInstanceClassGroupVersionKind, NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind},
 		resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigureMyRDSInstance),
@@ -79,14 +79,14 @@ func (c *MySQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error 
 		Named(name).
 		Watches(&source.Kind{Type: &v1alpha2.RDSInstance{}}, &resource.EnqueueRequestForClaim{}).
 		For(&databasev1alpha1.MySQLInstance{}).
-		WithEventFilter(resource.NewPredicates(resource.HasClassReferenceKind(resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind)))).
+		WithEventFilter(resource.NewPredicates(resource.HasClassReferenceKinds(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{Portable: databasev1alpha1.MySQLInstanceClassGroupVersionKind, NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind}))).
 		Complete(r)
 }
 
 // ConfigurePostgreRDSInstance configures the supplied resource (presumed
 // to be a RDSInstance) using the supplied resource claim (presumed to be a
 // PostgreSQLInstance) and resource class.
-func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resource.Class, mg resource.Managed) error {
+func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resource.NonPortableClass, mg resource.Managed) error {
 	pg, cmok := cm.(*databasev1alpha1.PostgreSQLInstance)
 	if !cmok {
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), databasev1alpha1.PostgreSQLInstanceGroupVersionKind)
@@ -127,7 +127,7 @@ func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resour
 // ConfigureMyRDSInstance configures the supplied resource (presumed to be
 // a RDSInstance) using the supplied resource claim (presumed to be a
 // MySQLInstance) and resource class.
-func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.Class, mg resource.Managed) error {
+func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.NonPortableClass, mg resource.Managed) error {
 	my, cmok := cm.(*databasev1alpha1.MySQLInstance)
 	if !cmok {
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), databasev1alpha1.MySQLInstanceGroupVersionKind)

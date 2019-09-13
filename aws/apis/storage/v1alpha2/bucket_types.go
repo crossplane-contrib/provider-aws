@@ -109,14 +109,14 @@ func (b *S3Bucket) GetClaimReference() *corev1.ObjectReference {
 	return b.Spec.ClaimReference
 }
 
-// SetClassReference of this S3Bucket.
-func (b *S3Bucket) SetClassReference(r *corev1.ObjectReference) {
-	b.Spec.ClassReference = r
+// SetNonPortableClassReference of this S3Bucket.
+func (b *S3Bucket) SetNonPortableClassReference(r *corev1.ObjectReference) {
+	b.Spec.NonPortableClassReference = r
 }
 
-// GetClassReference of this S3Bucket.
-func (b *S3Bucket) GetClassReference() *corev1.ObjectReference {
-	return b.Spec.ClassReference
+// GetNonPortableClassReference of this S3Bucket.
+func (b *S3Bucket) GetNonPortableClassReference() *corev1.ObjectReference {
+	return b.Spec.NonPortableClassReference
 }
 
 // SetWriteConnectionSecretToReference of this S3Bucket.
@@ -150,11 +150,12 @@ type S3BucketList struct {
 
 // S3BucketClassSpecTemplate is the Schema for the resource class
 type S3BucketClassSpecTemplate struct {
-	runtimev1alpha1.ResourceClassSpecTemplate `json:",inline"`
-	S3BucketParameters                        `json:",inline"`
+	runtimev1alpha1.NonPortableClassSpecTemplate `json:",inline"`
+	S3BucketParameters                           `json:",inline"`
 }
 
-var _ resource.Class = &S3BucketClass{}
+// All non-portable classes must implement the NonPortableClass interface.
+var _ resource.NonPortableClass = &S3BucketClass{}
 
 // +kubebuilder:object:root=true
 

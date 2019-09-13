@@ -261,14 +261,14 @@ func (c *EKSCluster) GetClaimReference() *corev1.ObjectReference {
 	return c.Spec.ClaimReference
 }
 
-// SetClassReference of this EKSCluster.
-func (c *EKSCluster) SetClassReference(r *corev1.ObjectReference) {
-	c.Spec.ClassReference = r
+// SetNonPortableClassReference of this EKSCluster.
+func (c *EKSCluster) SetNonPortableClassReference(r *corev1.ObjectReference) {
+	c.Spec.NonPortableClassReference = r
 }
 
-// GetClassReference of this EKSCluster.
-func (c *EKSCluster) GetClassReference() *corev1.ObjectReference {
-	return c.Spec.ClassReference
+// GetNonPortableClassReference of this EKSCluster.
+func (c *EKSCluster) GetNonPortableClassReference() *corev1.ObjectReference {
+	return c.Spec.NonPortableClassReference
 }
 
 // SetWriteConnectionSecretToReference of this EKSCluster.
@@ -302,11 +302,12 @@ type EKSClusterList struct {
 
 // EKSClusterClassSpecTemplate is the Schema for the resource class
 type EKSClusterClassSpecTemplate struct {
-	runtimev1alpha1.ResourceClassSpecTemplate `json:",inline"`
-	EKSClusterParameters                      `json:",inline"`
+	runtimev1alpha1.NonPortableClassSpecTemplate `json:",inline"`
+	EKSClusterParameters                         `json:",inline"`
 }
 
-var _ resource.Class = &EKSClusterClass{}
+// All non-portable classes must implement the NonPortableClass interface.
+var _ resource.NonPortableClass = &EKSClusterClass{}
 
 // +kubebuilder:object:root=true
 
