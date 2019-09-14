@@ -39,22 +39,36 @@ type EKSClusterClaimController struct{}
 
 // SetupWithManager adds a controller that reconciles KubernetesCluster resource claims.
 func (c *EKSClusterClaimController) SetupWithManager(mgr ctrl.Manager) error {
+	name := strings.ToLower(fmt.Sprintf("%s.%s.%s",
+		computev1alpha1.KubernetesClusterKind,
+		v1alpha2.EKSClusterKind,
+		v1alpha2.Group))
+
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(computev1alpha1.KubernetesClusterGroupVersionKind),
-		resource.ClassKinds{Portable: computev1alpha1.KubernetesClusterClassGroupVersionKind, NonPortable: v1alpha2.EKSClusterClassGroupVersionKind},
+		resource.ClassKinds{
+			Portable:    computev1alpha1.KubernetesClusterClassGroupVersionKind,
+			NonPortable: v1alpha2.EKSClusterClassGroupVersionKind,
+		},
 		resource.ManagedKind(v1alpha2.EKSClusterGroupVersionKind),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigureEKSCluster),
 			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
 		))
 
-	name := strings.ToLower(fmt.Sprintf("%s.%s", computev1alpha1.KubernetesClusterKind, controllerName))
+	p := resource.NewPredicates(resource.AnyOf(
+		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.EKSClusterGroupVersionKind)),
+		resource.HasDirectClassReferenceKind(resource.NonPortableClassKind(v1alpha2.EKSClusterClassGroupVersionKind)),
+		resource.HasIndirectClassReferenceKind(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{
+			Portable:    computev1alpha1.KubernetesClusterClassGroupVersionKind,
+			NonPortable: v1alpha2.EKSClusterClassGroupVersionKind,
+		})))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		Watches(&source.Kind{Type: &v1alpha2.EKSCluster{}}, &resource.EnqueueRequestForClaim{}).
 		For(&computev1alpha1.KubernetesCluster{}).
-		WithEventFilter(resource.NewPredicates(resource.HasClassReferenceKinds(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{Portable: computev1alpha1.KubernetesClusterClassGroupVersionKind, NonPortable: v1alpha2.EKSClusterClassGroupVersionKind}))).
+		WithEventFilter(p).
 		Complete(r)
 }
 
