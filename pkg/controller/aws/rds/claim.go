@@ -39,47 +39,36 @@ type PostgreSQLInstanceClaimController struct{}
 
 // SetupWithManager adds a controller that reconciles PostgreSQLInstance instance claims.
 func (c *PostgreSQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error {
+	name := strings.ToLower(fmt.Sprintf("%s.%s.%s",
+		databasev1alpha1.PostgreSQLInstanceKind,
+		v1alpha2.RDSInstanceKind,
+		v1alpha2.Group))
+
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(databasev1alpha1.PostgreSQLInstanceGroupVersionKind),
-		resource.ClassKinds{Portable: databasev1alpha1.PostgreSQLInstanceClassGroupVersionKind, NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind},
+		resource.ClassKinds{
+			Portable:    databasev1alpha1.PostgreSQLInstanceClassGroupVersionKind,
+			NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind,
+		},
 		resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigurePostgreRDSInstance),
 			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
 		))
 
-	name := strings.ToLower(fmt.Sprintf("%s.%s", databasev1alpha1.PostgreSQLInstanceKind, controllerName))
+	p := resource.NewPredicates(resource.AnyOf(
+		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind)),
+		resource.HasDirectClassReferenceKind(resource.NonPortableClassKind(v1alpha2.RDSInstanceClassGroupVersionKind)),
+		resource.HasIndirectClassReferenceKind(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{
+			Portable:    databasev1alpha1.PostgreSQLInstanceClassGroupVersionKind,
+			NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind,
+		})))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		Watches(&source.Kind{Type: &v1alpha2.RDSInstance{}}, &resource.EnqueueRequestForClaim{}).
 		For(&databasev1alpha1.PostgreSQLInstance{}).
-		WithEventFilter(resource.NewPredicates(resource.HasClassReferenceKinds(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{Portable: databasev1alpha1.PostgreSQLInstanceClassGroupVersionKind, NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind}))).
-		Complete(r)
-}
-
-// MySQLInstanceClaimController is responsible for adding the MySQLInstance
-// claim controller and its corresponding reconciler to the manager with any runtime configuration.
-type MySQLInstanceClaimController struct{}
-
-// SetupWithManager adds a controller that reconciles MySQLInstance instance claims.
-func (c *MySQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error {
-	r := resource.NewClaimReconciler(mgr,
-		resource.ClaimKind(databasev1alpha1.MySQLInstanceGroupVersionKind),
-		resource.ClassKinds{Portable: databasev1alpha1.MySQLInstanceClassGroupVersionKind, NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind},
-		resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind),
-		resource.WithManagedConfigurators(
-			resource.ManagedConfiguratorFn(ConfigureMyRDSInstance),
-			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
-		))
-
-	name := strings.ToLower(fmt.Sprintf("%s.%s", databasev1alpha1.MySQLInstanceKind, controllerName))
-
-	return ctrl.NewControllerManagedBy(mgr).
-		Named(name).
-		Watches(&source.Kind{Type: &v1alpha2.RDSInstance{}}, &resource.EnqueueRequestForClaim{}).
-		For(&databasev1alpha1.MySQLInstance{}).
-		WithEventFilter(resource.NewPredicates(resource.HasClassReferenceKinds(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{Portable: databasev1alpha1.MySQLInstanceClassGroupVersionKind, NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind}))).
+		WithEventFilter(p).
 		Complete(r)
 }
 
@@ -122,6 +111,45 @@ func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resour
 	i.Spec = *spec
 
 	return nil
+}
+
+// MySQLInstanceClaimController is responsible for adding the MySQLInstance
+// claim controller and its corresponding reconciler to the manager with any runtime configuration.
+type MySQLInstanceClaimController struct{}
+
+// SetupWithManager adds a controller that reconciles MySQLInstance instance claims.
+func (c *MySQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error {
+	name := strings.ToLower(fmt.Sprintf("%s.%s.%s",
+		databasev1alpha1.MySQLInstanceKind,
+		v1alpha2.RDSInstanceKind,
+		v1alpha2.Group))
+
+	r := resource.NewClaimReconciler(mgr,
+		resource.ClaimKind(databasev1alpha1.MySQLInstanceGroupVersionKind),
+		resource.ClassKinds{
+			Portable:    databasev1alpha1.MySQLInstanceClassGroupVersionKind,
+			NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind,
+		},
+		resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind),
+		resource.WithManagedConfigurators(
+			resource.ManagedConfiguratorFn(ConfigureMyRDSInstance),
+			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
+		))
+
+	p := resource.NewPredicates(resource.AnyOf(
+		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind)),
+		resource.HasDirectClassReferenceKind(resource.NonPortableClassKind(v1alpha2.RDSInstanceClassGroupVersionKind)),
+		resource.HasIndirectClassReferenceKind(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{
+			Portable:    databasev1alpha1.MySQLInstanceClassGroupVersionKind,
+			NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind,
+		})))
+
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		Watches(&source.Kind{Type: &v1alpha2.RDSInstance{}}, &resource.EnqueueRequestForClaim{}).
+		For(&databasev1alpha1.MySQLInstance{}).
+		WithEventFilter(p).
+		Complete(r)
 }
 
 // ConfigureMyRDSInstance configures the supplied resource (presumed to be
