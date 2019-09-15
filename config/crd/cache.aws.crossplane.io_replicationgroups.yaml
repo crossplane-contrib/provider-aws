@@ -93,8 +93,10 @@ spec:
                 you start creating a cluster.
               type: string
             claimRef:
-              description: ObjectReference contains enough information to let you
-                inspect or modify the referred object.
+              description: ClaimReference specifies the resource claim to which this
+                managed resource will be bound. ClaimReference is set automatically
+                during dynamic provisioning. Crossplane does not currently support
+                setting this field manually, per https://github.com/crossplaneio/crossplane-runtime/issues/19
               properties:
                 apiVersion:
                   description: API version of the referent.
@@ -130,8 +132,10 @@ spec:
                   type: string
               type: object
             classRef:
-              description: NonPortableClassReference is a reference to a non-portable
-                class.
+              description: NonPortableClassReference specifies the non-portable resource
+                class that was used to dynamically provision this managed resource,
+                if any. Crossplane does not currently support setting this field manually,
+                per https://github.com/crossplaneio/crossplane-runtime/issues/20
               properties:
                 apiVersion:
                   description: API version of the referent.
@@ -245,8 +249,8 @@ spec:
                 sun:23:00-mon:01:30"
               type: string
             providerRef:
-              description: ObjectReference contains enough information to let you
-                inspect or modify the referred object.
+              description: ProviderReference specifies the provider that will be used
+                to create, observe, update, and delete this managed resource.
               properties:
                 apiVersion:
                   description: API version of the referent.
@@ -282,8 +286,12 @@ spec:
                   type: string
               type: object
             reclaimPolicy:
-              description: A ReclaimPolicy determines what should happen to managed
-                resources when their bound resource claims are deleted.
+              description: ReclaimPolicy specifies what will happen to the external
+                resource this managed resource manages when the managed resource is
+                deleted. "Delete" deletes the external resource, while "Retain" (the
+                default) does not. Note this behaviour is subtly different from other
+                uses of the ReclaimPolicy concept within the Kubernetes ecosystem
+                per https://github.com/crossplaneio/crossplane-runtime/issues/21
               type: string
             replicasPerNodeGroup:
               description: ReplicasPerNodeGroup specifies the number of replica nodes
@@ -333,8 +341,11 @@ spec:
                 a cluster."
               type: boolean
             writeConnectionSecretToRef:
-              description: LocalObjectReference contains enough information to let
-                you locate the referenced object inside the same namespace.
+              description: WriteConnectionSecretToReference specifies the name of
+                a Secret, in the same namespace as this managed resource, to which
+                any connection details for this managed resource should be written.
+                Connection details frequently include the endpoint, username, and
+                password required to connect to the managed resource.
               properties:
                 name:
                   description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
@@ -349,7 +360,11 @@ spec:
           description: ReplicationGroupStatus defines the observed state of ReplicationGroup
           properties:
             bindingPhase:
-              description: Phase represents the binding phase of the resource.
+              description: Phase represents the binding phase of a managed resource
+                or claim. Unbindable resources cannot be bound, typically because
+                they are currently unavailable, or still being created. Unbound resource
+                are available for binding, and Bound resources have successfully bound
+                to another resource.
               enum:
               - Unbindable
               - Unbound
@@ -361,7 +376,7 @@ spec:
                 multiple shards.
               type: boolean
             conditions:
-              description: Conditions of the managed resource.
+              description: Conditions of the resource.
               items:
                 description: A Condition that may apply to a managed resource.
                 properties:
@@ -384,7 +399,7 @@ spec:
                     type: string
                   type:
                     description: Type of this condition. At most one of each condition
-                      type may apply to a managed resource at any point in time.
+                      type may apply to a resource at any point in time.
                     type: string
                 required:
                 - lastTransitionTime

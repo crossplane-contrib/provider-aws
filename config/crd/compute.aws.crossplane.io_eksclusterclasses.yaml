@@ -122,8 +122,9 @@ spec:
                 type: object
               type: array
             providerRef:
-              description: ObjectReference contains enough information to let you
-                inspect or modify the referred object.
+              description: ProviderReference specifies the provider that will be used
+                to create, observe, update, and delete managed resources that are
+                dynamically provisioned using this resource class.
               properties:
                 apiVersion:
                   description: API version of the referent.
@@ -159,8 +160,12 @@ spec:
                   type: string
               type: object
             reclaimPolicy:
-              description: A ReclaimPolicy determines what should happen to managed
-                resources when their bound resource claims are deleted.
+              description: ReclaimPolicy specifies what will happen to external resources
+                when managed resources dynamically provisioned using this resource
+                class are deleted. "Delete" deletes the external resource, while "Retain"
+                (the default) does not. Note this behaviour is subtly different from
+                other uses of the ReclaimPolicy concept within the Kubernetes ecosystem
+                per https://github.com/crossplaneio/crossplane-runtime/issues/21
               type: string
             region:
               description: Region for EKS Cluster

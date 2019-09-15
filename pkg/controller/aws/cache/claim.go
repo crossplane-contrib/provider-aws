@@ -39,9 +39,17 @@ type ReplicationGroupClaimController struct{}
 
 // SetupWithManager adds a controller that reconciles RedisCluster resource claims.
 func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) error {
+	name := strings.ToLower(fmt.Sprintf("%s.%s.%s",
+		cachev1alpha1.RedisClusterKind,
+		v1alpha2.ReplicationGroupKind,
+		v1alpha2.Group))
+
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(cachev1alpha1.RedisClusterGroupVersionKind),
-		resource.ClassKinds{Portable: cachev1alpha1.RedisClusterClassGroupVersionKind, NonPortable: v1alpha2.ReplicationGroupClassGroupVersionKind},
+		resource.ClassKinds{
+			Portable:    cachev1alpha1.RedisClusterClassGroupVersionKind,
+			NonPortable: v1alpha2.ReplicationGroupClassGroupVersionKind,
+		},
 		resource.ManagedKind(v1alpha2.ReplicationGroupGroupVersionKind),
 		resource.WithManagedBinder(resource.NewAPIManagedStatusBinder(mgr.GetClient())),
 		resource.WithManagedFinalizer(resource.NewAPIManagedStatusUnbinder(mgr.GetClient())),
@@ -50,16 +58,19 @@ func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) err
 			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
 		))
 
-	name := strings.ToLower(fmt.Sprintf("%s.%s.%s",
-		cachev1alpha1.RedisClusterKind,
-		v1alpha2.ReplicationGroupKind,
-		v1alpha2.Group))
+	p := resource.NewPredicates(resource.AnyOf(
+		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.ReplicationGroupGroupVersionKind)),
+		resource.HasDirectClassReferenceKind(resource.NonPortableClassKind(v1alpha2.ReplicationGroupClassGroupVersionKind)),
+		resource.HasIndirectClassReferenceKind(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{
+			Portable:    cachev1alpha1.RedisClusterClassGroupVersionKind,
+			NonPortable: v1alpha2.ReplicationGroupClassGroupVersionKind,
+		})))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		Watches(&source.Kind{Type: &v1alpha2.ReplicationGroup{}}, &resource.EnqueueRequestForClaim{}).
 		For(&cachev1alpha1.RedisCluster{}).
-		WithEventFilter(resource.NewPredicates(resource.HasClassReferenceKinds(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{Portable: cachev1alpha1.RedisClusterClassGroupVersionKind, NonPortable: v1alpha2.ReplicationGroupClassGroupVersionKind}))).
+		WithEventFilter(p).
 		Complete(r)
 }
 
