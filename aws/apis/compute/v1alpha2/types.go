@@ -168,7 +168,7 @@ type MapUser struct {
 //WorkerNodesSpec - Worker node spec used to define cloudformation template that provisions workers for cluster
 type WorkerNodesSpec struct {
 	// KeyName The EC2 Key Pair to allow SSH access to the instances
-	KeyName string `json:"keyName"`
+	KeyName string `json:"keyName,omitempty"`
 
 	// NodeImageId The EC2 Key Pair to allow SSH access to the instances
 	// defaults to region standard AMI

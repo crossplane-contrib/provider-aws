@@ -151,7 +151,6 @@ func (e *eksClient) CreateWorkerNodes(name string, clusterVersion string, spec a
 		"ClusterName":                      name,
 		"VpcId":                            spec.VpcID,
 		"Subnets":                          subnetIds,
-		"KeyName":                          spec.WorkerNodes.KeyName,
 		"NodeImageId":                      aws.StringValue(ami.ImageId),
 		"NodeInstanceType":                 spec.WorkerNodes.NodeInstanceType,
 		"BootstrapArguments":               spec.WorkerNodes.BootstrapArguments,
@@ -348,10 +347,6 @@ Description: 'Amazon EKS - Node Group - Released 2018-08-30'
 
 Parameters:
 
-  KeyName:
-    Description: The EC2 Key Pair to allow SSH access to the instances
-    Type: AWS::EC2::KeyPair::KeyName
-
   NodeImageId:
     Type: AWS::EC2::Image::Id
     Description: AMI id for the node instances.
@@ -502,7 +497,6 @@ Metadata:
           - NodeInstanceType
           - NodeImageId
           - NodeVolumeSize
-          - KeyName
           - BootstrapArguments
       -
         Label:
@@ -666,7 +660,6 @@ Resources:
       IamInstanceProfile: !Ref NodeInstanceProfile
       ImageId: !Ref NodeImageId
       InstanceType: !Ref NodeInstanceType
-      KeyName: !Ref KeyName
       SecurityGroups:
       - !Ref NodeSecurityGroup
       BlockDeviceMappings:
