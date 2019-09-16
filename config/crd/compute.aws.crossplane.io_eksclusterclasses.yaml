@@ -321,7 +321,6 @@ spec:
                   description: 'NodeVolumeSize Node volume size in GB Default: 20'
                   type: integer
               required:
-              - keyName
               - nodeInstanceType
               type: object
           required:
