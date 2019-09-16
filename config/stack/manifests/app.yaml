@@ -1,8 +1,14 @@
 # Human readable title of application.
 title: Amazon Web Services (AWS) Crossplane Stack
 
+overviewShort: The AWS Stack enables resource management with Amazon Web Services.
+overview: |-
+ The Amazon Web Services Crossplane Stack adds support for managing AWS resources in Kubernetes.
+
+ Amazon Elastic Kubernetes Service (EKS), Amazon Relational Database Service (RDS), Amazon ElastiCache, and Amazon Simple Storage Service (Amazon S3) can be provisioned, updated, and deleted by this stack.
+
 # Markdown description of this entry
-description: |
+readme: |
  This `stack-aws` repository is the implementation of a Crossplane infrastructure
  [stack](https://github.com/crossplaneio/crossplane/blob/master/design/design-doc-stacks.md) for
  [Amazon Web Services (AWS)](https://aws.amazon.com).
