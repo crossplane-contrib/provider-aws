@@ -16,6 +16,7 @@ type VPCClient interface {
 	CreateVpcRequest(*ec2.CreateVpcInput) ec2.CreateVpcRequest
 	DeleteVpcRequest(*ec2.DeleteVpcInput) ec2.DeleteVpcRequest
 	DescribeVpcsRequest(*ec2.DescribeVpcsInput) ec2.DescribeVpcsRequest
+	ModifyVpcAttributeRequest(*ec2.ModifyVpcAttributeInput) ec2.ModifyVpcAttributeRequest
 }
 
 // NewVPCClient returns a new client using AWS credentials as JSON encoded data.

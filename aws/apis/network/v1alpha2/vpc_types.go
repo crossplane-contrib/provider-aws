@@ -27,6 +27,12 @@ type VPCParameters struct {
 	// CIDRBlock is the IPv4 network range for the VPC, in CIDR notation. For example, 10.0.0.0/16.
 	// +kubebuilder:validation:Required
 	CIDRBlock string `json:"cidrBlock"`
+
+	// A boolean flag to enable/disable DNS support in the VPC
+	EnableDNSSupport bool `json:"enableDnsSupport,omitempty"`
+
+	// A boolean flag to enable/disable DNS hostnames in the VPC
+	EnableDNSHostNames bool `json:"enableDnsHostNames,omitempty"`
 }
 
 // VPCSpec defines the desired state of a VPC
