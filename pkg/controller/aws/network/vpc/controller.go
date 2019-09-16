@@ -37,13 +37,14 @@ import (
 )
 
 const (
-	errUnexpectedObject = "The managed resource is not an VPC resource"
-	errClient           = "cannot create a new VPCClient"
-	errDescribe         = "failed to describe VPC with id: %v"
-	errMultipleItems    = "retrieved multiple VPCs for the given vpcId: %v"
-	errCreate           = "failed to create the VPC resource"
-	errDeleteNotPresent = "cannot delete the VPC, since the VPCID is not present"
-	errDelete           = "failed to delete the VPC resource"
+	errUnexpectedObject    = "The managed resource is not an VPC resource"
+	errClient              = "cannot create a new VPCClient"
+	errDescribe            = "failed to describe VPC with id: %v"
+	errMultipleItems       = "retrieved multiple VPCs for the given vpcId: %v"
+	errCreate              = "failed to create the VPC resource"
+	errModifyVPCAttributes = "failed to modify the VPC resource attributes"
+	errDeleteNotPresent    = "cannot delete the VPC, since the VPCID is not present"
+	errDelete              = "failed to delete the VPC resource"
 )
 
 // Controller is the controller for VPC objects
@@ -150,17 +151,41 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (resource.E
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
-	req := e.client.CreateVpcRequest(&awsec2.CreateVpcInput{
-		CidrBlock: aws.String(cr.Spec.CIDRBlock),
-	})
-	req.SetContext(ctx)
+	// if VPCID already exists, skip creating the vpc
+	// this happens when an error has occurred when modifying vpc attributes
+	if cr.Status.VPCID == "" {
 
-	result, err := req.Send()
-	if err != nil {
-		return resource.ExternalCreation{}, errors.Wrap(err, errCreate)
+		req := e.client.CreateVpcRequest(&awsec2.CreateVpcInput{
+			CidrBlock: aws.String(cr.Spec.CIDRBlock),
+		})
+		req.SetContext(ctx)
+
+		result, err := req.Send()
+		if err != nil {
+			return resource.ExternalCreation{}, errors.Wrap(err, errCreate)
+		}
+
+		cr.UpdateExternalStatus(*result.Vpc)
 	}
 
-	cr.UpdateExternalStatus(*result.Vpc)
+	// modify vpc attributes
+	for _, input := range []*awsec2.ModifyVpcAttributeInput{
+		{
+			VpcId:            aws.String(cr.Status.VPCID),
+			EnableDnsSupport: &awsec2.AttributeBooleanValue{Value: aws.Bool(cr.Spec.EnableDNSSupport)},
+		},
+		{
+			VpcId:              aws.String(cr.Status.VPCID),
+			EnableDnsHostnames: &awsec2.AttributeBooleanValue{Value: aws.Bool(cr.Spec.EnableDNSHostNames)},
+		},
+	} {
+		attrReq := e.client.ModifyVpcAttributeRequest(input)
+		attrReq.SetContext(ctx)
+
+		if _, err := attrReq.Send(); err != nil {
+			return resource.ExternalCreation{}, errors.Wrap(err, errModifyVPCAttributes)
+		}
+	}
 
 	return resource.ExternalCreation{ConnectionDetails: resource.ConnectionDetails{}}, nil
 }

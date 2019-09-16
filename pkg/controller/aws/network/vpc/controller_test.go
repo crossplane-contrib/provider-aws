@@ -235,10 +235,12 @@ func Test_Create(t *testing.T) {
 		},
 	}
 	mockExternal := &awsec2.Vpc{
-		VpcId: aws.String("some arbitrary arn"),
+		VpcId: aws.String("some arbitrary id"),
 	}
 	var mockClientErr error
+	var numCreateCalled int
 	mockClient.MockCreateVpcRequest = func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
+		numCreateCalled++
 		g.Expect(aws.StringValue(input.CidrBlock)).To(gomega.Equal(mockManaged.Spec.CIDRBlock), "the passed parameters are not valid")
 		return awsec2.CreateVpcRequest{
 			Request: &aws.Request{
@@ -251,32 +253,90 @@ func Test_Create(t *testing.T) {
 		}
 	}
 
+	var mockModifyVpcErr error
+	var numModifyCalled int
+	mockClient.MockModifyVpcAttributeRequest = func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
+		numModifyCalled++
+		g.Expect(input.VpcId).To(gomega.Equal(mockExternal.VpcId), "the passed parameters are not valid")
+		return awsec2.ModifyVpcAttributeRequest{
+			Request: &aws.Request{
+				HTTPRequest: &http.Request{},
+				Data:        &awsec2.ModifyVpcAttributeOutput{},
+				Error:       mockModifyVpcErr,
+			},
+		}
+	}
+
 	for _, tc := range []struct {
-		description    string
-		managedObj     resource.Managed
-		clientErr      error
-		expectedErrNil bool
+		description         string
+		managedObj          resource.Managed
+		clientErr           error
+		modifyVpcErr        error
+		expectedErrNil      bool
+		expectedCreateCalls int
+		expectedModifyCalls int
 	}{
 		{
 			"valid input should return expected",
 			mockManaged.DeepCopy(),
 			nil,
+			nil,
 			true,
+			1,
+			2,
 		},
 		{
 			"unexpected managed resource should return error",
 			unexpecedItem,
 			nil,
+			nil,
 			false,
+			0,
+			0,
 		},
 		{
 			"if creating resource fails, it should return error",
 			mockManaged.DeepCopy(),
 			errors.New("some error"),
+			nil,
 			false,
+			1,
+			0,
+		},
+		{
+			"if VPCID is not empty, it should skip creating vpc",
+			&v1alpha2.VPC{
+				Spec: v1alpha2.VPCSpec{
+					VPCParameters: v1alpha2.VPCParameters{
+						CIDRBlock: "arbitrary cidr block string",
+					},
+				},
+				Status: v1alpha2.VPCStatus{
+					VPCExternalStatus: v1alpha2.VPCExternalStatus{
+						VPCID: "some arbitrary id",
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+			0,
+			2,
+		},
+		{
+			"if modifying attributes fails, it should return error",
+			mockManaged.DeepCopy(),
+			nil,
+			errors.New("some error"),
+			false,
+			1,
+			1,
 		},
 	} {
+		numCreateCalled = 0
+		numModifyCalled = 0
 		mockClientErr = tc.clientErr
+		mockModifyVpcErr = tc.modifyVpcErr
 
 		_, err := mockExternalClient.Create(context.Background(), tc.managedObj)
 
@@ -288,6 +348,9 @@ func Test_Create(t *testing.T) {
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
 			g.Expect(mgd.Status.VPCExternalStatus.VPCState).To(gomega.Equal(string(mockExternal.State)), tc.description)
 		}
+
+		g.Expect(numCreateCalled).To(gomega.Equal(tc.expectedCreateCalls), tc.description)
+		g.Expect(numModifyCalled).To(gomega.Equal(tc.expectedModifyCalls), tc.description)
 	}
 }
 

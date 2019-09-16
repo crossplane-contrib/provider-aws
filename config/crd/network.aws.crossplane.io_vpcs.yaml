@@ -135,6 +135,12 @@ spec:
                   description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                   type: string
               type: object
+            enableDnsHostNames:
+              description: A boolean flag to enable/disable DNS hostnames in the VPC
+              type: boolean
+            enableDnsSupport:
+              description: A boolean flag to enable/disable DNS support in the VPC
+              type: boolean
             providerRef:
               description: ProviderReference specifies the provider that will be used
                 to create, observe, update, and delete this managed resource.
