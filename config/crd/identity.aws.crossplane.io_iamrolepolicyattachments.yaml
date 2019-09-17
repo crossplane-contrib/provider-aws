@@ -33,8 +33,8 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      description: IAMRolePolicyAttachment is the Schema for the IAM role policy attachment
-        API
+      description: An IAMRolePolicyAttachment is a managed resource that represents
+        an AWS IAM Role policy attachment.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -49,8 +49,8 @@ spec:
         metadata:
           type: object
         spec:
-          description: IAMRolePolicyAttachmentSpec defines the desired state of a
-            IAM role
+          description: An IAMRolePolicyAttachmentSpec defines the desired state of
+            an IAMRolePolicyAttachment.
           properties:
             claimRef:
               description: ClaimReference specifies the resource claim to which this
@@ -180,7 +180,7 @@ spec:
                 per https://github.com/crossplaneio/crossplane-runtime/issues/21
               type: string
             roleName:
-              description: RoleName presents the name of the IAM role
+              description: RoleName presents the name of the IAM role.
               type: string
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the name of
@@ -200,8 +200,8 @@ spec:
           - roleName
           type: object
         status:
-          description: IAMRolePolicyAttachmentStatus defines the observed state of
-            an IAM role
+          description: An IAMRolePolicyAttachmentStatus represents the observed state
+            of an IAMRolePolicyAttachment.
           properties:
             attachedPolicyArn:
               description: AttachedPolicyARN is the arn for the attached policy. If

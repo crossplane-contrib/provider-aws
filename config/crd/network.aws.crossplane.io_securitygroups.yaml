@@ -36,7 +36,8 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      description: SecurityGroup is the Schema for the SecurityGroup API
+      description: A SecurityGroup is a managed resource that represents an AWS VPC
+        Security Group.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -51,7 +52,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: SecurityGroupSpec defines the desired state of a SecurityGroup
+          description: A SecurityGroupSpec defines the desired state of a SecurityGroup.
           properties:
             claimRef:
               description: ClaimReference specifies the resource claim to which this
@@ -313,7 +314,7 @@ spec:
           - providerRef
           type: object
         status:
-          description: SecurityGroupStatus defines the observed state of an SecurityGroup
+          description: A SecurityGroupStatus represents the observed state of a SecurityGroup.
           properties:
             bindingPhase:
               description: Phase represents the binding phase of a managed resource

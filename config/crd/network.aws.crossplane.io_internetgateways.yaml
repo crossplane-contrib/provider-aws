@@ -33,7 +33,8 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      description: InternetGateway is the Schema for the InternetGateway API
+      description: An InternetGateway is a managed resource that represents an AWS
+        VPC Internet Gateway.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -48,7 +49,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: InternetGatewaySpec defines the desired state of a InternetGateway
+          description: An InternetGatewaySpec defines the desired state of an InternetGateway.
           properties:
             claimRef:
               description: ClaimReference specifies the resource claim to which this
@@ -193,7 +194,8 @@ spec:
           - vpcId
           type: object
         status:
-          description: InternetGatewayStatus defines the observed state of an InternetGateway
+          description: An InternetGatewayStatus represents the observed state of an
+            InternetGateway.
           properties:
             attachments:
               description: Any VPCs attached to the internet gateway.

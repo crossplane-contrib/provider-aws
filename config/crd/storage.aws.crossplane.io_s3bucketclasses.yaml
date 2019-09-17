@@ -26,7 +26,9 @@ spec:
   subresources: {}
   validation:
     openAPIV3Schema:
-      description: S3BucketClass is the Schema for the resource class
+      description: An S3BucketClass is a non-portable resource class. It defines the
+        desired spec of resource claims that use it to dynamically provision a managed
+        resource.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -41,10 +43,11 @@ spec:
         metadata:
           type: object
         specTemplate:
-          description: S3BucketClassSpecTemplate is the Schema for the resource class
+          description: SpecTemplate is a template for the spec of a dynamically provisioned
+            S3Bucket.
           properties:
             cannedACL:
-              description: CannedACL applies a standard aws built-in ACL for common
+              description: CannedACL applies a standard AWS built-in ACL for common
                 bucket use cases.
               enum:
               - private
@@ -64,8 +67,10 @@ spec:
               - ReadWrite
               type: string
             nameFormat:
-              description: NameFormat to format bucket name passing it a object UID
-                If not provided, defaults to "%s", i.e. UID value
+              description: NameFormat specifies the name of the external S3Bucket
+                instance. The first instance of the string '%s' will be replaced with
+                the Kubernetes UID of this S3Bucket. Omit this field to use the UID
+                alone as the name.
               type: string
             providerRef:
               description: ProviderReference specifies the provider that will be used
@@ -114,15 +119,19 @@ spec:
                 per https://github.com/crossplaneio/crossplane-runtime/issues/21
               type: string
             region:
-              description: Region is the aws region for the bucket
+              description: Region of the bucket.
               type: string
             versioning:
+              description: Versioning enables versioning of objects stored in this
+                bucket.
               type: boolean
           required:
           - localPermission
           - providerRef
           - region
           type: object
+      required:
+      - specTemplate
       type: object
   version: v1alpha2
   versions:

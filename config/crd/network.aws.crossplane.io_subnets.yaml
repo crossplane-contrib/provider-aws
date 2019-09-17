@@ -42,7 +42,7 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      description: Subnet is the Schema for the Subnet API
+      description: A Subnet is a managed resource that represents an AWS VPC Subnet.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -57,7 +57,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: SubnetSpec defines the desired state of a Subnet
+          description: A SubnetSpec defines the desired state of a Subnet.
           properties:
             availabilityZone:
               description: 'The Availability Zone for the subnet. Default: AWS selects
@@ -213,7 +213,7 @@ spec:
           - vpcId
           type: object
         status:
-          description: SubnetStatus defines the observed state of an Subnet
+          description: A SubnetStatus represents the observed state of a Subnet.
           properties:
             bindingPhase:
               description: Phase represents the binding phase of a managed resource

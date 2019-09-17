@@ -22,7 +22,7 @@ import (
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 )
 
-// SubnetParameters defines the desired state of a Subnet
+// SubnetParameters define the desired state of an AWS VPC Subnet.
 type SubnetParameters struct {
 	// CIDRBlock is the IPv4 network range for the Subnet, in CIDR notation. For example, 10.0.0.0/18.
 	CIDRBlock string `json:"cidrBlock"`
@@ -36,7 +36,7 @@ type SubnetParameters struct {
 	VPCID string `json:"vpcId"`
 }
 
-// SubnetSpec defines the desired state of a Subnet
+// A SubnetSpec defines the desired state of a Subnet.
 type SubnetSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
 	SubnetParameters             `json:",inline"`
@@ -55,7 +55,7 @@ type SubnetExternalStatus struct {
 	SubnetID string `json:"subnetId"`
 }
 
-// SubnetStatus defines the observed state of an Subnet
+// A SubnetStatus represents the observed state of a Subnet.
 type SubnetStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
 	SubnetExternalStatus           `json:",inline"`
@@ -63,7 +63,7 @@ type SubnetStatus struct {
 
 // +kubebuilder:object:root=true
 
-// Subnet is the Schema for the Subnet API
+// A Subnet is a managed resource that represents an AWS VPC Subnet.
 // +kubebuilder:printcolumn:name="SUBNETID",type="string",JSONPath=".status.subnetId"
 // +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".spec.vpcId"
 // +kubebuilder:printcolumn:name="CIDRBLOCK",type="string",JSONPath=".spec.cidrBlock"
