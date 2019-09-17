@@ -21,22 +21,21 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// ProviderSpec defines the desired state of Provider
+// A ProviderSpec defines the desired state of a Provider.
 type ProviderSpec struct {
-	// Important: Run "make generate" to regenerate code after modifying this file
 
-	// AWS Region
+	// Region for managed resources created using this AWS provider.
 	Region string `json:"region"`
 
-	// AWS Credentials file
+	// A Secret containing INI encoded credentials for an AWS IAM role
+	// that will be used to authenticate to this AWS account.
 	Secret corev1.SecretKeySelector `json:"credentialsSecretRef"`
 }
 
 // +kubebuilder:object:root=true
 
-// Provider is the Schema for the instances API
+// A Provider configures an AWS 'provider', i.e. a connection to a particular
+// AWS account using a particular AWS IAM role.
 // +kubebuilder:printcolumn:name="REGION",type="string",JSONPath=".spec.region"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:printcolumn:name="SECRET-NAME",type="string",JSONPath=".spec.credentialsSecretRef.name",priority=1

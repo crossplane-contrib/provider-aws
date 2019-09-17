@@ -30,7 +30,8 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      description: ReplicationGroup is the Schema for the instances API
+      description: A ReplicationGroup is a managed resource that represents an AWS
+        ElastiCache Replication Group.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -45,7 +46,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: ReplicationGroupSpec defines the desired state of ReplicationGroup
+          description: A ReplicationGroupSpec defines the desired state of a ReplicationGroup.
           properties:
             atRestEncryptionEnabled:
               description: "AtRestEncryptionEnabled enables encryption at rest when
@@ -180,8 +181,8 @@ spec:
               description: NodeGroupConfiguration specifies a list of node group (shard)
                 configuration options.
               items:
-                description: NodeGroupConfigurationSpec specifies the configuration
-                  of a node group within a replication group.
+                description: A NodeGroupConfigurationSpec specifies the desired state
+                  of a node group.
                 properties:
                   primaryAvailabilityZone:
                     description: PrimaryAvailabilityZone specifies the Availability
@@ -357,7 +358,7 @@ spec:
           - providerRef
           type: object
         status:
-          description: ReplicationGroupStatus defines the observed state of ReplicationGroup
+          description: A ReplicationGroupStatus defines the observed state of a ReplicationGroup.
           properties:
             bindingPhase:
               description: Phase represents the binding phase of a managed resource
@@ -419,8 +420,6 @@ spec:
               items:
                 type: string
               type: array
-            message:
-              type: string
             port:
               description: Port at which the Replication Group endpoint is listening.
               type: integer
@@ -429,6 +428,7 @@ spec:
                 in the cloud provider
               type: string
             state:
+              description: State of the Replication Group.
               type: string
           type: object
       type: object

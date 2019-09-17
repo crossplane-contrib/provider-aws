@@ -22,9 +22,10 @@ import (
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 )
 
-// VPCParameters defines the desired state of a VPC
+// VPCParameters define the desired state of an AWS Virtual Private Cloud.
 type VPCParameters struct {
-	// CIDRBlock is the IPv4 network range for the VPC, in CIDR notation. For example, 10.0.0.0/16.
+	// CIDRBlock is the IPv4 network range for the VPC, in CIDR notation. For
+	// example, 10.0.0.0/16.
 	// +kubebuilder:validation:Required
 	CIDRBlock string `json:"cidrBlock"`
 
@@ -35,7 +36,7 @@ type VPCParameters struct {
 	EnableDNSHostNames bool `json:"enableDnsHostNames,omitempty"`
 }
 
-// VPCSpec defines the desired state of a VPC
+// A VPCSpec defines the desired state of a VPC.
 type VPCSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
 	VPCParameters                `json:",inline"`
@@ -54,7 +55,7 @@ type VPCExternalStatus struct {
 	VPCID string `json:"vpcId"`
 }
 
-// VPCStatus defines the observed state of an VPC
+// A VPCStatus represents the observed state of a VPC.
 type VPCStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
 	VPCExternalStatus              `json:",inline"`
@@ -62,7 +63,7 @@ type VPCStatus struct {
 
 // +kubebuilder:object:root=true
 
-// VPC is the Schema for the VPC API
+// A VPC is a managed resource that represents an AWS Virtual Private Cloud.
 // +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".status.vpcId"
 // +kubebuilder:printcolumn:name="CIDRBLOCK",type="string",JSONPath=".spec.cidrBlock"
 // +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.vpcState"
