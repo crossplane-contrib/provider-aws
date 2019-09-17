@@ -61,6 +61,7 @@ func TestStorage(t *testing.T) {
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
 				ProviderReference: &core.ObjectReference{},
 			},
+			RDSInstanceParameters: RDSInstanceParameters{Engine: MysqlEngine},
 		},
 	}
 

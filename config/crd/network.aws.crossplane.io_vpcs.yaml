@@ -36,7 +36,8 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      description: VPC is the Schema for the VPC API
+      description: A VPC is a managed resource that represents an AWS Virtual Private
+        Cloud.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -51,7 +52,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: VPCSpec defines the desired state of a VPC
+          description: A VPCSpec defines the desired state of a VPC.
           properties:
             cidrBlock:
               description: CIDRBlock is the IPv4 network range for the VPC, in CIDR
@@ -203,7 +204,7 @@ spec:
           - providerRef
           type: object
         status:
-          description: VPCStatus defines the observed state of an VPC
+          description: A VPCStatus represents the observed state of a VPC.
           properties:
             bindingPhase:
               description: Phase represents the binding phase of a managed resource

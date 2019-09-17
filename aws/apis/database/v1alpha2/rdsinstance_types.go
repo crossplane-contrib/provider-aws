@@ -30,28 +30,39 @@ const (
 	PostgresqlEngine = "postgres"
 )
 
-// RDSInstanceParameters defines the desired state of RDSInstance
+// RDSInstanceParameters define the desired state of an AWS Relational Database
+// Service instance.
 type RDSInstanceParameters struct {
+	// MasterUsername for this RDSInstance.
 	MasterUsername string `json:"masterUsername"`
-	Engine         string `json:"engine"`
-	EngineVersion  string `json:"engineVersion,omitempty"`
-	Class          string `json:"class"` // like "db.t2.micro"
-	Size           int64  `json:"size"`  // size in gb
 
-	// Specifies a DB subnet group for the DB instance. The new DB instance is created
-	// in the VPC associated with the DB subnet group. If no DB subnet group is
-	// specified, then the new DB instance is not created in a VPC.
+	// Engine for this RDSInstance - either mysql or postgres.
+	// +kubebuilder:validation:Enum=mysql;postgres
+	Engine string `json:"engine"`
+
+	// EngineVersion for this RDS instance, for example "5.6".
+	// +optional
+	EngineVersion string `json:"engineVersion,omitempty"`
+
+	// Class of this RDS instance, for example "db.t2.micro".
+	Class string `json:"class"`
+
+	// Size in GB of this RDS instance.
+	Size int64 `json:"size"`
+
+	// SubnetGroupName specifies a database subnet group for the RDS instance.
+	// The new instance is created in the VPC associated with the DB subnet
+	// group. If no DB subnet group is specified, then the instance is not
+	// created in a VPC.
+	// +optional
 	SubnetGroupName string `json:"subnetGroupName,omitempty"`
 
-	// VPC Security groups that will allow the RDS instance to be accessed over the network.
-	// You can consider the following groups:
-	// 1) A default group that allows all communication amongst instances in that group
-	// 2) A RDS specific group that allows port 3306 from allowed sources (clients and instances
-	//	  that are expected to connect to the database.
+	// SecurityGroups that will allow the RDS instance to be accessed over the network.
+	// +optional
 	SecurityGroups []string `json:"securityGroups,omitempty"`
 }
 
-// RDSInstanceSpec defines the desired state of RDSInstance
+// An RDSInstanceSpec defines the desired state of an RDSInstance.
 type RDSInstanceSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
 	RDSInstanceParameters        `json:",inline"`
@@ -72,20 +83,27 @@ const (
 	RDSInstanceStateFailed RDSInstanceState = "failed"
 )
 
-// RDSInstanceStatus defines the observed state of RDSInstance
+// An RDSInstanceStatus represents the observed state of an RDSInstance.
 type RDSInstanceStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
 
-	State        string `json:"state,omitempty"`
-	Message      string `json:"message,omitempty"`
-	ProviderID   string `json:"providerID,omitempty"`   // the external ID to identify this resource in the cloud provider
-	InstanceName string `json:"instanceName,omitempty"` // the generated DB Instance name
-	Endpoint     string `json:"endpoint,omitempty"`     // rds instance endpoint
+	// State of this RDS instance.
+	State string `json:"state,omitempty"`
+
+	// ProviderID is the AWS identifier for this RDS instance.
+	ProviderID string `json:"providerID,omitempty"`
+
+	// InstanceName of this RDS instance.
+	InstanceName string `json:"instanceName,omitempty"`
+
+	// Endpoint of this RDS instance.
+	Endpoint string `json:"endpoint,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// RDSInstance is the Schema for the instances API
+// An RDSInstance is a managed resource that represents an AWS Relational
+// Database Service instance.
 // +kubebuilder:printcolumn:name="STATUS",type="string",JSONPath=".status.bindingPhase"
 // +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.state"
 // +kubebuilder:printcolumn:name="CLASS",type="string",JSONPath=".spec.classRef.name"
@@ -163,7 +181,8 @@ type RDSInstanceList struct {
 	Items           []RDSInstance `json:"items"`
 }
 
-// RDSInstanceClassSpecTemplate is the Schema for the resource class
+// An RDSInstanceClassSpecTemplate is a template for the spec of a dynamically
+// provisioned RDSInstance.
 type RDSInstanceClassSpecTemplate struct {
 	runtimev1alpha1.NonPortableClassSpecTemplate `json:",inline"`
 	RDSInstanceParameters                        `json:",inline"`
@@ -174,7 +193,9 @@ var _ resource.NonPortableClass = &RDSInstanceClass{}
 
 // +kubebuilder:object:root=true
 
-// RDSInstanceClass is the Schema for the resource class
+// An RDSInstanceClass is a non-portable resource class. It defines the desired
+// spec of resource claims that use it to dynamically provision a managed
+// resource.
 // +kubebuilder:printcolumn:name="PROVIDER-REF",type="string",JSONPath=".specTemplate.providerRef.name"
 // +kubebuilder:printcolumn:name="RECLAIM-POLICY",type="string",JSONPath=".specTemplate.reclaimPolicy"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
@@ -182,7 +203,9 @@ type RDSInstanceClass struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	SpecTemplate RDSInstanceClassSpecTemplate `json:"specTemplate,omitempty"`
+	// SpecTemplate is a template for the spec of a dynamically provisioned
+	// RDSInstance.
+	SpecTemplate RDSInstanceClassSpecTemplate `json:"specTemplate"`
 }
 
 // GetReclaimPolicy of this RDSInstanceClass.

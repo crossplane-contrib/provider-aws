@@ -22,17 +22,20 @@ import (
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 )
 
-// IAMRolePolicyAttachmentParameters defines the desired state of an IAM role policy attachment
+// IAMRolePolicyAttachmentParameters define the desired state of an AWS IAM
+// Role policy attachment.
 type IAMRolePolicyAttachmentParameters struct {
 
-	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to attach.
+	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to
+	// attach.
 	PolicyARN string `json:"policyArn"`
 
-	// RoleName presents the name of the IAM role
+	// RoleName presents the name of the IAM role.
 	RoleName string `json:"roleName"`
 }
 
-// IAMRolePolicyAttachmentSpec defines the desired state of a IAM role
+// An IAMRolePolicyAttachmentSpec defines the desired state of an
+// IAMRolePolicyAttachment.
 type IAMRolePolicyAttachmentSpec struct {
 	runtimev1alpha1.ResourceSpec      `json:",inline"`
 	IAMRolePolicyAttachmentParameters `json:",inline"`
@@ -40,11 +43,13 @@ type IAMRolePolicyAttachmentSpec struct {
 
 // IAMRolePolicyAttachmentExternalStatus keeps the state for the external resource
 type IAMRolePolicyAttachmentExternalStatus struct {
-	// AttachedPolicyARN is the arn for the attached policy. If nil, the policy is not yet attached
+	// AttachedPolicyARN is the arn for the attached policy. If nil, the policy
+	// is not yet attached
 	AttachedPolicyARN string `json:"attachedPolicyArn"`
 }
 
-// IAMRolePolicyAttachmentStatus defines the observed state of an IAM role
+// An IAMRolePolicyAttachmentStatus represents the observed state of an
+// IAMRolePolicyAttachment.
 type IAMRolePolicyAttachmentStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
 
@@ -53,7 +58,8 @@ type IAMRolePolicyAttachmentStatus struct {
 
 // +kubebuilder:object:root=true
 
-// IAMRolePolicyAttachment is the Schema for the IAM role policy attachment API
+// An IAMRolePolicyAttachment is a managed resource that represents an AWS IAM
+// Role policy attachment.
 // +kubebuilder:printcolumn:name="ROLENAME",type="string",JSONPath=".spec.roleName"
 // +kubebuilder:printcolumn:name="POLICYARN",type="string",JSONPath=".spec.policyArn"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"

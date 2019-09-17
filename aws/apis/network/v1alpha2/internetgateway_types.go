@@ -22,23 +22,25 @@ import (
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 )
 
-// InternetGatewayParameters defines the desired state of a InternetGateway
+// InternetGatewayParameters define the desired state of an AWS VPC Internet
+// Gateway.
 type InternetGatewayParameters struct {
 	// the VPC to attach the gateway to.
 	VPCID string `json:"vpcId"`
 }
 
-// InternetGatewaySpec defines the desired state of a InternetGateway
+// An InternetGatewaySpec defines the desired state of an InternetGateway.
 type InternetGatewaySpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
 	InternetGatewayParameters    `json:",inline"`
 }
 
-// InternetGatewayAttachment describes the attachment of a VPC to an internet gateway or an egress-only
-// internet gateway.
+// InternetGatewayAttachment describes the attachment of a VPC to an internet
+// gateway or an egress-only internet gateway.
 type InternetGatewayAttachment struct {
-	// The current state of the attachment. For an internet gateway, the state is
-	// available when attached to a VPC; otherwise, this value is not returned.
+	// The current state of the attachment. For an internet gateway, the state
+	// is available when attached to a VPC; otherwise, this value is not
+	// returned.
 	// +kubebuilder:validation:Enum=available;attaching;attached;detaching;detached
 	AttachmentStatus string `json:"attachmentStatus"`
 
@@ -58,7 +60,7 @@ type InternetGatewayExternalStatus struct {
 	Tags []Tag `json:"tags,omitempty"`
 }
 
-// InternetGatewayStatus defines the observed state of an InternetGateway
+// An InternetGatewayStatus represents the observed state of an InternetGateway.
 type InternetGatewayStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
 	InternetGatewayExternalStatus  `json:",inline"`
@@ -66,7 +68,8 @@ type InternetGatewayStatus struct {
 
 // +kubebuilder:object:root=true
 
-// InternetGateway is the Schema for the InternetGateway API
+// An InternetGateway is a managed resource that represents an AWS VPC Internet
+// Gateway.
 // +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".status.internetGatewayId"
 // +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".spec.vpcId"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"

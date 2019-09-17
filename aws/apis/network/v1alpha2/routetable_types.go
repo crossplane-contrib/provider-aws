@@ -24,8 +24,8 @@ import (
 
 // Route describes a route in a route table.
 type Route struct {
-	// The IPv4 CIDR address block used for the destination match. Routing decisions
-	// are based on the most specific match.
+	// The IPv4 CIDR address block used for the destination match. Routing
+	// decisions are based on the most specific match.
 	DestinationCIDRBlock string `json:"destinationCidrBlock"`
 
 	// The ID of an internet gateway or virtual private gateway attached to your
@@ -35,9 +35,9 @@ type Route struct {
 
 // RouteState describes a route state in the route table.
 type RouteState struct {
-	// The state of the route. The blackhole state indicates that the route's target
-	// isn't available (for example, the specified gateway isn't attached to the
-	// VPC, or the specified NAT instance has been terminated).
+	// The state of the route. The blackhole state indicates that the route's
+	// target isn't available (for example, the specified gateway isn't attached
+	// to the VPC, or the specified NAT instance has been terminated).
 	RouteState string `json:"routeState,omitempty"`
 
 	Route `json:",inline"`
@@ -45,7 +45,8 @@ type RouteState struct {
 
 // Association describes an association between a route table and a subnet.
 type Association struct {
-	// The ID of the subnet. A subnet ID is not returned for an implicit association.
+	// The ID of the subnet. A subnet ID is not returned for an implicit
+	// association.
 	SubnetID string `json:"subnetId"`
 }
 
@@ -60,7 +61,7 @@ type AssociationState struct {
 	Association `json:",inline"`
 }
 
-// RouteTableParameters defines the desired state of a RouteTable
+// RouteTableParameters define the desired state of an AWS VPC Route Table.
 type RouteTableParameters struct {
 	// VPCID is the ID of the VPC.
 	VPCID string `json:"vpcId"`
@@ -72,7 +73,7 @@ type RouteTableParameters struct {
 	Associations []Association `json:"associations,omitempty"`
 }
 
-// RouteTableSpec defines the desired state of a RouteTable
+// A RouteTableSpec defines the desired state of a RouteTable.
 type RouteTableSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
 	RouteTableParameters         `json:",inline"`
@@ -91,7 +92,7 @@ type RouteTableExternalStatus struct {
 	Associations []AssociationState `json:"associations,omitempty"`
 }
 
-// RouteTableStatus defines the observed state of an RouteTable
+// A RouteTableStatus represents the observed state of a RouteTable.
 type RouteTableStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
 	RouteTableExternalStatus       `json:",inline"`
@@ -99,7 +100,7 @@ type RouteTableStatus struct {
 
 // +kubebuilder:object:root=true
 
-// RouteTable is the Schema for the RouteTable API
+// A RouteTable is a managed resource that represents an AWS VPC Route Table.
 // +kubebuilder:printcolumn:name="TABLEID",type="string",JSONPath=".status.routeTableId"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"

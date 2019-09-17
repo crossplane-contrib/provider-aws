@@ -19,35 +19,41 @@ package v1alpha2
 import (
 	"strconv"
 
-	storagev1alpha1 "github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
-
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	storagev1alpha1 "github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// S3BucketParameters defines the desired state of S3Bucket
+// S3BucketParameters define the desired state of an AWS S3 Bucket.
 type S3BucketParameters struct {
-	// NameFormat to format bucket name passing it a object UID
-	// If not provided, defaults to "%s", i.e. UID value
+	// NameFormat specifies the name of the external S3Bucket instance. The
+	// first instance of the string '%s' will be replaced with the Kubernetes
+	// UID of this S3Bucket. Omit this field to use the UID alone as the name.
+	// +optional
 	NameFormat string `json:"nameFormat,omitempty"`
 
-	// Region is the aws region for the bucket
+	// Region of the bucket.
 	Region string `json:"region"`
-	// CannedACL applies a standard aws built-in ACL for common bucket use cases.
-	// +kubebuilder:validation:Enum=private;public-read;public-read-write;authenticated-read;log-delivery-write;aws-exec-read
-	CannedACL  *s3.BucketCannedACL `json:"cannedACL,omitempty"`
-	Versioning bool                `json:"versioning,omitempty"`
 
-	// LocalPermission is the permissions granted on the bucket for the provider specific
-	// bucket service account that is available in a secret after provisioning.
+	// CannedACL applies a standard AWS built-in ACL for common bucket use
+	// cases.
+	// +kubebuilder:validation:Enum=private;public-read;public-read-write;authenticated-read;log-delivery-write;aws-exec-read
+	// +optional
+	CannedACL *s3.BucketCannedACL `json:"cannedACL,omitempty"`
+
+	// Versioning enables versioning of objects stored in this bucket.
+	// +optional
+	Versioning bool `json:"versioning,omitempty"`
+
+	// LocalPermission is the permissions granted on the bucket for the provider
+	// specific bucket service account that is available in a secret after
+	// provisioning.
 	// +kubebuilder:validation:Enum=Read;Write;ReadWrite
 	LocalPermission *storagev1alpha1.LocalPermissionType `json:"localPermission"`
 }
@@ -62,16 +68,25 @@ type S3BucketSpec struct {
 type S3BucketStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
 
-	Message               string                              `json:"message,omitempty"`
-	ProviderID            string                              `json:"providerID,omitempty"` // the external ID to identify this resource in the cloud provider
-	IAMUsername           string                              `json:"iamUsername,omitempty"`
-	LastUserPolicyVersion int                                 `json:"lastUserPolicyVersion,omitempty"`
-	LastLocalPermission   storagev1alpha1.LocalPermissionType `json:"lastLocalPermission,omitempty"`
+	// ProviderID is the AWS identifier for this bucket.
+	ProviderID string `json:"providerID,omitempty"`
+
+	// IAMUsername is the name of an IAM user that is automatically created and
+	// granted access to this bucket by Crossplane at bucket creation time.
+	IAMUsername string `json:"iamUsername,omitempty"`
+
+	// LastUserPolicyVersion is the most recent version of the policy associated
+	// with this bucket's IAMUser.
+	LastUserPolicyVersion int `json:"lastUserPolicyVersion,omitempty"`
+
+	// LastLocalPermission is the most recent local permission that was set for
+	// this bucket.
+	LastLocalPermission storagev1alpha1.LocalPermissionType `json:"lastLocalPermission,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// S3Bucket is the Schema for the S3Bucket API
+// An S3Bucket is a managed resource that represents an AWS S3 Bucket.
 // +kubebuilder:printcolumn:name="CLASS",type="string",JSONPath=".spec.classRef.name"
 // +kubebuilder:printcolumn:name="PREDEFINED-ACL",type="string",JSONPath=".spec.cannedACL"
 // +kubebuilder:printcolumn:name="LOCAL-PERMISSION",type="string",JSONPath=".spec.localPermission"
@@ -148,7 +163,8 @@ type S3BucketList struct {
 	Items           []S3Bucket `json:"items"`
 }
 
-// S3BucketClassSpecTemplate is the Schema for the resource class
+// An S3BucketClassSpecTemplate is a template for the spec of a dynamically
+// provisioned S3Bucket.
 type S3BucketClassSpecTemplate struct {
 	runtimev1alpha1.NonPortableClassSpecTemplate `json:",inline"`
 	S3BucketParameters                           `json:",inline"`
@@ -159,7 +175,9 @@ var _ resource.NonPortableClass = &S3BucketClass{}
 
 // +kubebuilder:object:root=true
 
-// S3BucketClass is the Schema for the resource class
+// An S3BucketClass is a non-portable resource class. It defines the desired
+// spec of resource claims that use it to dynamically provision a managed
+// resource.
 // +kubebuilder:printcolumn:name="PROVIDER-REF",type="string",JSONPath=".specTemplate.providerRef.name"
 // +kubebuilder:printcolumn:name="RECLAIM-POLICY",type="string",JSONPath=".specTemplate.reclaimPolicy"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
@@ -167,7 +185,9 @@ type S3BucketClass struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	SpecTemplate S3BucketClassSpecTemplate `json:"specTemplate,omitempty"`
+	// SpecTemplate is a template for the spec of a dynamically provisioned
+	// S3Bucket.
+	SpecTemplate S3BucketClassSpecTemplate `json:"specTemplate"`
 }
 
 // GetReclaimPolicy of this S3BucketClass.

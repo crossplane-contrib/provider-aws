@@ -29,7 +29,7 @@ spec:
   subresources: {}
   validation:
     openAPIV3Schema:
-      description: S3Bucket is the Schema for the S3Bucket API
+      description: An S3Bucket is a managed resource that represents an AWS S3 Bucket.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -47,7 +47,7 @@ spec:
           description: S3BucketSpec defines the desired state of S3Bucket
           properties:
             cannedACL:
-              description: CannedACL applies a standard aws built-in ACL for common
+              description: CannedACL applies a standard AWS built-in ACL for common
                 bucket use cases.
               enum:
               - private
@@ -145,8 +145,10 @@ spec:
               - ReadWrite
               type: string
             nameFormat:
-              description: NameFormat to format bucket name passing it a object UID
-                If not provided, defaults to "%s", i.e. UID value
+              description: NameFormat specifies the name of the external S3Bucket
+                instance. The first instance of the string '%s' will be replaced with
+                the Kubernetes UID of this S3Bucket. Omit this field to use the UID
+                alone as the name.
               type: string
             providerRef:
               description: ProviderReference specifies the provider that will be used
@@ -194,9 +196,11 @@ spec:
                 per https://github.com/crossplaneio/crossplane-runtime/issues/21
               type: string
             region:
-              description: Region is the aws region for the bucket
+              description: Region of the bucket.
               type: string
             versioning:
+              description: Versioning enables versioning of objects stored in this
+                bucket.
               type: boolean
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the name of
@@ -263,15 +267,20 @@ spec:
                 type: object
               type: array
             iamUsername:
+              description: IAMUsername is the name of an IAM user that is automatically
+                created and granted access to this bucket by Crossplane at bucket
+                creation time.
               type: string
             lastLocalPermission:
-              description: LocalPermissionType - Base type for LocalPermissions
+              description: LastLocalPermission is the most recent local permission
+                that was set for this bucket.
               type: string
             lastUserPolicyVersion:
+              description: LastUserPolicyVersion is the most recent version of the
+                policy associated with this bucket's IAMUser.
               type: integer
-            message:
-              type: string
             providerID:
+              description: ProviderID is the AWS identifier for this bucket.
               type: string
           type: object
       type: object

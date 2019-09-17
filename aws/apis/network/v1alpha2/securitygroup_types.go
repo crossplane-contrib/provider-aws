@@ -24,8 +24,9 @@ import (
 
 // IPRange describes an IPv4 range.
 type IPRange struct {
-	// The IPv4 CIDR range. You can either specify a CIDR range or a source security
-	// group, not both. To specify a single IPv4 address, use the /32 prefix length.
+	// The IPv4 CIDR range. You can either specify a CIDR range or a source
+	// security group, not both. To specify a single IPv4 address, use the /32
+	// prefix length.
 	CIDRIP string `json:"cidrIp"`
 
 	// A description for the ip range
@@ -35,13 +36,14 @@ type IPRange struct {
 // IPPermission Describes a set of permissions for a security group rule.
 type IPPermission struct {
 	// The start of port range for the TCP and UDP protocols, or an ICMP/ICMPv6
-	// type number. A value of -1 indicates all ICMP/ICMPv6 types. If you specify
-	// all ICMP/ICMPv6 types, you must specify all codes.
+	// type number. A value of -1 indicates all ICMP/ICMPv6 types. If you
+	// specify all ICMP/ICMPv6 types, you must specify all codes.
 	FromPort int64 `json:"fromPort"`
 
-	// The end of port range for the TCP and UDP protocols, or an ICMP/ICMPv6 code.
-	// A value of -1 indicates all ICMP/ICMPv6 codes for the specified ICMP type.
-	// If you specify all ICMP/ICMPv6 types, you must specify all codes.
+	// The end of port range for the TCP and UDP protocols, or an ICMP/ICMPv6
+	// code. A value of -1 indicates all ICMP/ICMPv6 codes for the specified
+	// ICMP type. If you specify all ICMP/ICMPv6 types, you must specify all
+	// codes.
 	ToPort int64 `json:"toPort"`
 
 	// The IP protocol name (tcp, udp, icmp) or number (see Protocol Numbers (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
@@ -58,7 +60,8 @@ type IPPermission struct {
 	CIDRBlocks []IPRange `json:"cidrBlocks,omitempty"`
 }
 
-// SecurityGroupParameters defines the desired state of a SecurityGroup
+// SecurityGroupParameters define the desired state of an AWS VPC Security
+// Group.
 type SecurityGroupParameters struct {
 	// VPCID is the ID of the VPC.
 	VPCID string `json:"vpcId,omitempty"`
@@ -76,7 +79,7 @@ type SecurityGroupParameters struct {
 	EgressPermissions []IPPermission `json:"egress,omitempty"`
 }
 
-// SecurityGroupSpec defines the desired state of a SecurityGroup
+// A SecurityGroupSpec defines the desired state of a SecurityGroup.
 type SecurityGroupSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
 	SecurityGroupParameters      `json:",inline"`
@@ -91,7 +94,7 @@ type SecurityGroupExternalStatus struct {
 	Tags []Tag `json:"tags,omitempty"`
 }
 
-// SecurityGroupStatus defines the observed state of an SecurityGroup
+// A SecurityGroupStatus represents the observed state of a SecurityGroup.
 type SecurityGroupStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
 	SecurityGroupExternalStatus    `json:",inline"`
@@ -99,7 +102,8 @@ type SecurityGroupStatus struct {
 
 // +kubebuilder:object:root=true
 
-// SecurityGroup is the Schema for the SecurityGroup API
+// A SecurityGroup is a managed resource that represents an AWS VPC Security
+// Group.
 // +kubebuilder:printcolumn:name="GROUPNAME",type="string",JSONPath=".spec.groupName"
 // +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".spec.vpcId"
 // +kubebuilder:printcolumn:name="DESCRIPTION",type="string",JSONPath=".spec.description"
