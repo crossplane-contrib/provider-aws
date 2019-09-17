@@ -27,7 +27,8 @@ spec:
   subresources: {}
   validation:
     openAPIV3Schema:
-      description: Provider is the Schema for the instances API
+      description: A Provider configures an AWS 'provider', i.e. a connection to a
+        particular AWS account using a particular AWS IAM role.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -42,10 +43,11 @@ spec:
         metadata:
           type: object
         spec:
-          description: ProviderSpec defines the desired state of Provider
+          description: A ProviderSpec defines the desired state of a Provider.
           properties:
             credentialsSecretRef:
-              description: AWS Credentials file
+              description: A Secret containing INI encoded credentials for an AWS
+                IAM role that will be used to authenticate to this AWS account.
               properties:
                 key:
                   description: The key of the secret to select from.  Must be a valid
@@ -62,7 +64,7 @@ spec:
               - key
               type: object
             region:
-              description: AWS Region
+              description: Region for managed resources created using this AWS provider.
               type: string
           required:
           - credentialsSecretRef

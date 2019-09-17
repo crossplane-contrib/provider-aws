@@ -22,7 +22,7 @@ import (
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 )
 
-// IAMRoleParameters defines the desired state of an IAM role
+// IAMRoleParameters define the desired state of an AWS IAM Role.
 type IAMRoleParameters struct {
 
 	// AssumeRolePolicyDocument is the the trust relationship policy document
@@ -33,11 +33,11 @@ type IAMRoleParameters struct {
 	// +optional
 	Description string `json:"description,omitempty"`
 
-	// RoleName presents the name of the IAM role
+	// RoleName presents the name of the IAM role.
 	RoleName string `json:"roleName"`
 }
 
-// IAMRoleSpec defines the desired state of a IAM role
+// An IAMRoleSpec defines the desired state of an IAMRole.
 type IAMRoleSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
 	IAMRoleParameters            `json:",inline"`
@@ -56,7 +56,7 @@ type IAMRoleExternalStatus struct {
 	RoleID string `json:"roleID"`
 }
 
-// IAMRoleStatus defines the observed state of an IAM role
+// An IAMRoleStatus represents the observed state of an IAMRole.
 type IAMRoleStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
 
@@ -65,7 +65,7 @@ type IAMRoleStatus struct {
 
 // +kubebuilder:object:root=true
 
-// IAMRole is the Schema for the IAM role API
+// An IAMRole is a managed resource that represents an AWS IAM Role.
 // +kubebuilder:printcolumn:name="ROLENAME",type="string",JSONPath=".spec.roleName"
 // +kubebuilder:printcolumn:name="DESCRIPTION",type="string",JSONPath=".spec.description"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"

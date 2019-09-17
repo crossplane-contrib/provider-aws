@@ -26,7 +26,9 @@ spec:
   subresources: {}
   validation:
     openAPIV3Schema:
-      description: RDSInstanceClass is the Schema for the resource class
+      description: An RDSInstanceClass is a non-portable resource class. It defines
+        the desired spec of resource claims that use it to dynamically provision a
+        managed resource.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -41,16 +43,23 @@ spec:
         metadata:
           type: object
         specTemplate:
-          description: RDSInstanceClassSpecTemplate is the Schema for the resource
-            class
+          description: SpecTemplate is a template for the spec of a dynamically provisioned
+            RDSInstance.
           properties:
             class:
+              description: Class of this RDS instance, for example "db.t2.micro".
               type: string
             engine:
+              description: Engine for this RDSInstance - either mysql or postgres.
+              enum:
+              - mysql
+              - postgres
               type: string
             engineVersion:
+              description: EngineVersion for this RDS instance, for example "5.6".
               type: string
             masterUsername:
+              description: MasterUsername for this RDSInstance.
               type: string
             providerRef:
               description: ProviderReference specifies the provider that will be used
@@ -99,23 +108,20 @@ spec:
                 per https://github.com/crossplaneio/crossplane-runtime/issues/21
               type: string
             securityGroups:
-              description: "VPC Security groups that will allow the RDS instance to
-                be accessed over the network. You can consider the following groups:
-                1) A default group that allows all communication amongst instances
-                in that group 2) A RDS specific group that allows port 3306 from allowed
-                sources (clients and instances \t  that are expected to connect to
-                the database."
+              description: SecurityGroups that will allow the RDS instance to be accessed
+                over the network.
               items:
                 type: string
               type: array
             size:
+              description: Size in GB of this RDS instance.
               format: int64
               type: integer
             subnetGroupName:
-              description: Specifies a DB subnet group for the DB instance. The new
-                DB instance is created in the VPC associated with the DB subnet group.
-                If no DB subnet group is specified, then the new DB instance is not
-                created in a VPC.
+              description: SubnetGroupName specifies a database subnet group for the
+                RDS instance. The new instance is created in the VPC associated with
+                the DB subnet group. If no DB subnet group is specified, then the
+                instance is not created in a VPC.
               type: string
           required:
           - class
@@ -124,6 +130,8 @@ spec:
           - providerRef
           - size
           type: object
+      required:
+      - specTemplate
       type: object
   version: v1alpha2
   versions:

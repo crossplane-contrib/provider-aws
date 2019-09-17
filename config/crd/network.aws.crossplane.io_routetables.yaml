@@ -30,7 +30,8 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      description: RouteTable is the Schema for the RouteTable API
+      description: A RouteTable is a managed resource that represents an AWS VPC Route
+        Table.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -45,7 +46,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: RouteTableSpec defines the desired state of a RouteTable
+          description: A RouteTableSpec defines the desired state of a RouteTable.
           properties:
             associations:
               description: The associations between the route table and one or more
@@ -223,7 +224,7 @@ spec:
           - vpcId
           type: object
         status:
-          description: RouteTableStatus defines the observed state of an RouteTable
+          description: A RouteTableStatus represents the observed state of a RouteTable.
           properties:
             associations:
               description: The actual associations created for the route table.

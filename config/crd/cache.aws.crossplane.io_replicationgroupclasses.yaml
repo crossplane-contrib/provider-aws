@@ -26,7 +26,9 @@ spec:
   subresources: {}
   validation:
     openAPIV3Schema:
-      description: ReplicationGroupClass is the Schema for the resource class
+      description: A ReplicationGroupClass is a non-portable resource class. It defines
+        the desired spec of resource claims that use it to dynamically provision a
+        managed resource.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -41,8 +43,8 @@ spec:
         metadata:
           type: object
         specTemplate:
-          description: ReplicationGroupClassSpecTemplate is the Schema for the resource
-            class
+          description: SpecTemplate is a template for the spec of a dynamically provisioned
+            ReplicationGroup.
           properties:
             atRestEncryptionEnabled:
               description: "AtRestEncryptionEnabled enables encryption at rest when
@@ -99,8 +101,8 @@ spec:
               description: NodeGroupConfiguration specifies a list of node group (shard)
                 configuration options.
               items:
-                description: NodeGroupConfigurationSpec specifies the configuration
-                  of a node group within a replication group.
+                description: A NodeGroupConfigurationSpec specifies the desired state
+                  of a node group.
                 properties:
                   primaryAvailabilityZone:
                     description: PrimaryAvailabilityZone specifies the Availability
@@ -264,6 +266,8 @@ spec:
           - cacheNodeType
           - providerRef
           type: object
+      required:
+      - specTemplate
       type: object
   version: v1alpha2
   versions:

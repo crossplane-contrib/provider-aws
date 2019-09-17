@@ -39,7 +39,8 @@ type Subnet struct {
 	SubnetStatus string `json:"subnetStatus"`
 }
 
-// DBSubnetGroupParameters defines the desired state of a DBSubnetGroup
+// DBSubnetGroupParameters define the desired state of an AWS VPC Database
+// Subnet Group.
 type DBSubnetGroupParameters struct {
 	// The description for the DB subnet group.
 	DBSubnetGroupDescription string `json:"description"`
@@ -55,7 +56,7 @@ type DBSubnetGroupParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 }
 
-// DBSubnetGroupSpec defines the desired state of a DBSubnetGroup
+// A DBSubnetGroupSpec defines the desired state of a DBSubnetGroup.
 type DBSubnetGroupSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
 	DBSubnetGroupParameters      `json:",inline"`
@@ -76,7 +77,7 @@ type DBSubnetGroupExternalStatus struct {
 	VPCID string `json:"vpcId"`
 }
 
-// DBSubnetGroupStatus defines the observed state of an DBSubnetGroup
+// A DBSubnetGroupStatus represents the observed state of a DBSubnetGroup.
 type DBSubnetGroupStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
 	DBSubnetGroupExternalStatus    `json:",inline"`
@@ -84,7 +85,8 @@ type DBSubnetGroupStatus struct {
 
 // +kubebuilder:object:root=true
 
-// DBSubnetGroup is the Schema for the DBSubnetGroup API
+// A DBSubnetGroup is a managed resource that represents an AWS VPC Database
+// Subnet Group.
 // +kubebuilder:printcolumn:name="GROUPNAME",type="string",JSONPath=".spec.groupName"
 // +kubebuilder:printcolumn:name="DESCRIPTION",type="string",JSONPath=".spec.description"
 // +kubebuilder:printcolumn:name="STATUS",type="string",JSONPath=".status.groupStatus"
