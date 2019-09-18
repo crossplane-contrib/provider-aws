@@ -33,6 +33,9 @@ owners:
 - name: Jared Watts
   email: jared@upbound.io
 
+# Human readable company name
+company: Crossplane
+
 # Keywords that describe this application and help search indexing
 keywords:
 - "amazon"
