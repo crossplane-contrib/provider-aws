@@ -117,7 +117,7 @@ run: go.build
 # Initialize the stack package folder
 $(STACK_PACKAGE_REGISTRY):
 	@mkdir -p $(STACK_PACKAGE_REGISTRY)/resources
-	@touch $(STACK_PACKAGE_REGISTRY)/app.yaml $(STACK_PACKAGE_REGISTRY)/install.yaml $(STACK_PACKAGE_REGISTRY)/rbac.yaml
+	@touch $(STACK_PACKAGE_REGISTRY)/app.yaml $(STACK_PACKAGE_REGISTRY)/install.yaml
 
 build.artifacts: build-stack-package
 

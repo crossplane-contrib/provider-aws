@@ -1,0 +1,17 @@
+id: dbsubnetgroup
+title: DB Subnet Group
+titlePlural: DB Subnet Groups
+category: Networking
+overviewShort: "A DBSubnetGroup is a managed resource that represents an AWS VPC Database Subnet Group."
+overview: |
+ A DBSubnetGroup is a managed resource that represents an AWS VPC Database Subnet Group.
+readme: |
+ ## DB Subnet Group
+
+ Unless you are working with a legacy DB instance, your DB instance is in a virtual private cloud (VPC). A VPC is a virtual network that is logically isolated from other virtual networks in the AWS Cloud. Amazon VPC lets you launch AWS resources, such as an Amazon RDS DB instance or Amazon EC2 instance, into a VPC. The VPC can either be a default VPC that comes with your account or one that you create. All VPCs are associated with your AWS account.
+
+ Your default VPC has three subnets you can use to isolate resources inside the VPC. The default VPC also has an Internet Gateway that can be used to provide access to resources inside the VPC from outside the VPC.
+
+ ---
+
+ This content is from the [AWS Documentation](https://docs.aws.amazon.com/en_pv/AmazonRDS/latest/UserGuide/USER_VPC.WorkingWithRDSInstanceinaVPC.html), you can learn more at <https://aws.amazon.com/rds/>.
