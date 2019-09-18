@@ -1,0 +1,15 @@
+id: rdsinstance
+title: RDS Instance
+titlePlural: RDS Instances
+category: Database
+overviewShort: "An RDSInstance is a managed resource that represents an AWS Relational Database Service instance."
+overview: |
+ An RDSInstance is a managed resource that represents an AWS Relational Database Service instance.
+readme: |
+ ## AWS RDS Instance
+
+ Amazon Relational Database Service (Amazon RDS) is a web service that makes it easier to set up, operate, and scale a relational database in the cloud. It provides cost-efficient, resizable capacity for an industry-standard relational database and manages common database administration tasks.
+
+ ---
+
+ This content is from the [AWS Documentation](https://aws.amazon.com/rds/resources), you can learn more at <https://aws.amazon.com/rds>.

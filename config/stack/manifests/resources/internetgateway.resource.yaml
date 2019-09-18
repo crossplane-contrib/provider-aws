@@ -1,0 +1,19 @@
+id: internetgateway
+title: Internet Gateway
+titlePlural: Internet Gateways
+category: Networking
+overviewShort: "An InternetGateway is a managed resource that represents an AWS VPC Internet Gateway."
+overview: |
+ An InternetGateway is a managed resource that represents an AWS VPC Internet Gateway.
+readme: |
+ ## AWS VPC Internet Gateway
+
+ An internet gateway is a horizontally scaled, redundant, and highly available VPC component that allows communication between instances in your VPC and the internet. It therefore imposes no availability risks or bandwidth constraints on your network traffic.
+
+ An internet gateway serves two purposes: to provide a target in your VPC route tables for internet-routable traffic, and to perform network address translation (NAT) for instances that have been assigned public IPv4 addresses.
+
+ An internet gateway supports IPv4 and IPv6 traffic.
+
+ ---
+
+ This content is from the [AWS Documentation](https://docs.aws.amazon.com/en_pv/vpc/latest/userguide/VPC_Internet_Gateway.html), you can learn more at <https://aws.amazon.com/vpc>.

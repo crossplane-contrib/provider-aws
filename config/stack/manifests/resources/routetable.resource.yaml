@@ -1,0 +1,17 @@
+id: routetable
+title: Route Table
+titlePlural: Route Tables
+category: Networking
+overviewShort: "A RouteTable is a managed resource that represents an AWS VPC Route Table."
+overview: |
+ A RouteTable is a managed resource that represents an AWS VPC Route Table.
+readme: |
+ ## AWS VPC Route Tables
+
+ A route table contains a set of rules, called routes, that are used to determine where network traffic is directed.
+
+ Each subnet in your VPC must be associated with a route table; the table controls the routing for the subnet. A subnet can only be associated with one route table at a time, but you can associate multiple subnets with the same route table.
+
+ ---
+
+ This content is from the [AWS Documentation](https://docs.aws.amazon.com/en_pv/vpc/latest/userguide/VPC_Route_Tables.html), you can learn more at <https://aws.amazon.com/vpc>.
