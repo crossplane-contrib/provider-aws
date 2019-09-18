@@ -1,0 +1,17 @@
+id: iamrole
+title: IAM Role
+titlePlural: IAM Roles
+category: 
+overviewShort: "An IAMRole is a managed resource that represents an AWS IAM Role."
+overview: |
+ An IAMRole is a managed resource that represents an AWS IAM Role.
+readme: |
+ ## AWS IAM Role
+
+ An IAM role is an IAM identity that you can create in your account that has specific permissions. An IAM role is similar to an IAM user, in that it is an AWS identity with permission policies that determine what the identity can and cannot do in AWS. However, instead of being uniquely associated with one person, a role is intended to be assumable by anyone who needs it. Also, a role does not have standard long-term credentials such as a password or access keys associated with it. Instead, when you assume a role, it provides you with temporary security credentials for your role session.
+
+ You can use roles to delegate access to users, applications, or services that don't normally have access to your AWS resources. For example, you might want to grant users in your AWS account access to resources they don't usually have, or grant users in one AWS account access to resources in another account. Or you might want to allow a mobile app to use AWS resources, but not want to embed AWS keys within the app (where they can be difficult to rotate and where users can potentially extract them). Sometimes you want to give AWS access to users who already have identities defined outside of AWS, such as in your corporate directory. Or, you might want to grant access to your account to third parties so that they can perform an audit on your resources.
+
+ ---
+
+ This content is from the [AWS Documentation](https://docs.aws.amazon.com/en_pv/IAM/latest/UserGuide/id_roles.html), you can learn more at <https://aws.amazon.com/iam>.
