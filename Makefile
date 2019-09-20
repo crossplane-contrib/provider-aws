@@ -32,7 +32,7 @@ GO_TEST_PARALLEL := $(shell echo $$(( $(NPROCS) / 2 )))
 GO_STATIC_PACKAGES = $(GO_PROJECT)/cmd/crossplane
 GO_LDFLAGS += -X $(GO_PROJECT)/pkg/version.Version=$(VERSION)
 GO_SUBDIRS += cmd pkg aws
--include build/makelib/golang.mk
+-include golang_with_modules.mk
 
 # ====================================================================================
 # Setup Kubebuilder

@@ -45,7 +45,7 @@ pipeline {
                 }
             }
             steps {
-                sh './build/run make vendor.check'
+                sh './build/run make vendor'
                 sh './build/run make -j\$(nproc) build.all'
             }
             post {
