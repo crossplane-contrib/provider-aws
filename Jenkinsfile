@@ -46,7 +46,7 @@ pipeline {
             }
             steps {
                 sh './build/run make vendor'
-                sh './build/run make -j\$(nproc) build.all'
+                sh './build/run make build.all'
             }
             post {
                 always {
