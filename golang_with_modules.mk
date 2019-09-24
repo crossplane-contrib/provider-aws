@@ -32,7 +32,6 @@ GO_INTEGRATION_TESTS_SUBDIRS ?=
 # Optional directories (relative to CURDIR)
 GO_VENDOR_DIR ?= vendor
 GO_PKG_DIR ?= $(WORK_DIR)/pkg
-GO_MOD_DIR ?= $(ROOT_DIR)
 
 # Optional build flags passed to go tools
 GO_BUILDFLAGS ?=
@@ -146,11 +145,8 @@ go.init: go.vendor
 		exit 1 ;\
 	fi
 
-go.build: export GOPATH =
 go.build:
-	@$(INFO) go build tada tada $(PLATFORM)
-	# cd $(GO_MOD_DIR)
-	@echo $(shell pwd)
+	@$(INFO) go build $(PLATFORM)
 	$(foreach p,$(GO_STATIC_PACKAGES),@CGO_ENABLED=0 $(GO) build -mod=vendor -v -i -o $(GO_OUT_DIR)/$(lastword $(subst /, ,$(p)))$(GO_OUT_EXT) $(GO_STATIC_FLAGS) $(p) || $(FAIL) ${\n})
 	$(foreach p,$(GO_TEST_PACKAGES) $(GO_LONGHAUL_TEST_PACKAGES),@CGO_ENABLED=0 GOPATH= $(GO) test -i -c -o $(GO_TEST_OUTPUT)/$(lastword $(subst /, ,$(p)))$(GO_OUT_EXT) $(GO_STATIC_FLAGS) $(p) || $(FAIL ${\n}))
 	@$(OK) go build $(PLATFORM)
@@ -189,7 +185,11 @@ go.test.integration: $(GOJUNIT)
 	@cat $(GO_TEST_OUTPUT)/integration-tests.log | $(GOJUNIT) -set-exit-code > $(GO_TEST_OUTPUT)/integration-tests.xml || $(FAIL)
 	@$(OK) go test integration-tests
 
-go.lint: ; @:
+go.lint: $(GOLANGCILINT)
+	@$(INFO) golangci-lint
+	@mkdir -p $(GO_LINT_OUTPUT)
+	@$(GOLANGCILINT) run $(GO_LINT_ARGS) || $(FAIL)
+	@$(OK) golangci-lint
 
 go.vet:
 	@$(INFO) go vet $(PLATFORM)
@@ -218,16 +218,15 @@ go.imports.fix: $(GOIMPORTS)
 
 go.validate: go.vet go.fmt
 
-go.vendor.verify: export GOPATH =
 go.vendor.verify:
 	@$(INFO) verify dependencies have expected content
 	@$(GO) mod verify || $(FAIL)
 	@$(OK) go modules dependencies verified
 
-go.vendor: export GOPATH =
 go.vendor:
 	@$(INFO) go mod vendor
 	@$(GO) mod vendor || $(FAIL)
+	@find ~/go/pkg/mod/ -type d -exec chmod 777 {} \; 
 	@$(OK) go mod vendor
 
 go.clean:
@@ -300,6 +299,7 @@ $(GOLANGCILINT):
 	@mkdir -p $(TOOLS_HOST_DIR)/tmp-golangci-lint || $(FAIL)
 	@curl -fsSL https://github.com/golangci/golangci-lint/releases/download/v$(GOLANGCILINT_VERSION)/golangci-lint-$(GOLANGCILINT_VERSION)-$(HOSTOS)-$(HOSTARCH).tar.gz | tar -xz --strip-components=1 -C $(TOOLS_HOST_DIR)/tmp-golangci-lint || $(FAIL)
 	@mv $(TOOLS_HOST_DIR)/tmp-golangci-lint/golangci-lint $(GOLANGCILINT) || $(FAIL)
+	@find $(TOOLS_HOST_DIR)/tmp-golangci-lint -type d -exec chmod 777 {} \; 
 	@rm -fr $(TOOLS_HOST_DIR)/tmp-golangci-lint
 	@$(OK) installing golangci-lint-v$(GOLANGCILINT_VERSION) $(HOSTOS)-$(HOSTARCH)
 
@@ -308,6 +308,7 @@ $(GOFMT):
 	@mkdir -p $(TOOLS_HOST_DIR)/tmp-fmt || $(FAIL)
 	@curl -sL https://dl.google.com/go/go$(GOFMT_VERSION).$(HOSTOS)-$(HOSTARCH).tar.gz | tar -xz -C $(TOOLS_HOST_DIR)/tmp-fmt || $(FAIL)
 	@mv $(TOOLS_HOST_DIR)/tmp-fmt/go/bin/gofmt $(GOFMT) || $(FAIL)
+	@find $(TOOLS_HOST_DIR)/tmp-fmt -type d -exec chmod 777 {} \; 
 	@rm -fr $(TOOLS_HOST_DIR)/tmp-fmt
 	@$(OK) installing gofmt$(GOFMT_VERSION)
 
@@ -322,6 +323,7 @@ $(GOJUNIT):
 	@$(INFO) installing go-junit-report
 	@mkdir -p $(TOOLS_HOST_DIR)/tmp-junit || $(FAIL)
 	@GOPATH=$(TOOLS_HOST_DIR)/tmp-junit GOBIN=$(TOOLS_HOST_DIR) $(GOHOST) get github.com/jstemmer/go-junit-report || rm -fr $(TOOLS_HOST_DIR)/tmp-junit || $(FAIL)
+	@find $(TOOLS_HOST_DIR)/tmp-junit -type d -exec chmod 777 {} \; 
 	@rm -fr $(TOOLS_HOST_DIR)/tmp-junit
 	@$(OK) installing go-junit-report
 
@@ -329,5 +331,6 @@ $(GOCOVER_COBERTURA):
 	@$(INFO) installing gocover-cobertura
 	@mkdir -p $(TOOLS_HOST_DIR)/tmp-gocover-cobertura || $(FAIL)
 	@GOPATH=$(TOOLS_HOST_DIR)/tmp-gocover-cobertura GOBIN=$(TOOLS_HOST_DIR) $(GOHOST) get github.com/t-yuki/gocover-cobertura || rm -fr $(TOOLS_HOST_DIR)/tmp-covcover-cobertura || $(FAIL)
+	@find $(TOOLS_HOST_DIR)/tmp-gocover-cobertura -type d -exec chmod 777 {} \; 
 	@rm -fr $(TOOLS_HOST_DIR)/tmp-gocover-cobertura
 	@$(OK) installing gocover-cobertura
