@@ -230,10 +230,19 @@ go.vendor:
 	@$(OK) go mod vendor
 
 go.clean:
-	@rm -fr $(GO_BIN_DIR) $(GO_TEST_DIR)
+	@$(MAKE) go.remove.folder FOLDER=$(GO_BIN_DIR)
+	@$(MAKE) go.remove.folder FOLDER=$(GO_TEST_DIR)
 
 go.distclean:
-	@rm -rf $(GO_VENDOR_DIR) $(GO_PKG_DIR)
+	@$(MAKE) go.remove.folder FOLDER=$(GO_VENDOR_DIR)
+	@$(MAKE) go.remove.folder FOLDER=$(GO_PKG_DIR)
+
+# make sure the folder is writable (otherwise it won't be deleted)
+go.remove.folder:
+	@if [ -f $(FOLDER) ]; then \
+		@find $(FOLDER) -type d -exec chmod 777 {}; \
+		rm -fr $(FOLDER); \
+	fi
 
 go.generate: $(GOIMPORTS)
 	@$(INFO) go generate $(PLATFORM)
@@ -299,8 +308,7 @@ $(GOLANGCILINT):
 	@mkdir -p $(TOOLS_HOST_DIR)/tmp-golangci-lint || $(FAIL)
 	@curl -fsSL https://github.com/golangci/golangci-lint/releases/download/v$(GOLANGCILINT_VERSION)/golangci-lint-$(GOLANGCILINT_VERSION)-$(HOSTOS)-$(HOSTARCH).tar.gz | tar -xz --strip-components=1 -C $(TOOLS_HOST_DIR)/tmp-golangci-lint || $(FAIL)
 	@mv $(TOOLS_HOST_DIR)/tmp-golangci-lint/golangci-lint $(GOLANGCILINT) || $(FAIL)
-	@find $(TOOLS_HOST_DIR)/tmp-golangci-lint -type d -exec chmod 777 {} \; 
-	@rm -fr $(TOOLS_HOST_DIR)/tmp-golangci-lint
+	@$(MAKE) go.remove.folder FOLDER=$(TOOLS_HOST_DIR)/tmp-golangci-lint
 	@$(OK) installing golangci-lint-v$(GOLANGCILINT_VERSION) $(HOSTOS)-$(HOSTARCH)
 
 $(GOFMT):
@@ -308,29 +316,26 @@ $(GOFMT):
 	@mkdir -p $(TOOLS_HOST_DIR)/tmp-fmt || $(FAIL)
 	@curl -sL https://dl.google.com/go/go$(GOFMT_VERSION).$(HOSTOS)-$(HOSTARCH).tar.gz | tar -xz -C $(TOOLS_HOST_DIR)/tmp-fmt || $(FAIL)
 	@mv $(TOOLS_HOST_DIR)/tmp-fmt/go/bin/gofmt $(GOFMT) || $(FAIL)
-	@find $(TOOLS_HOST_DIR)/tmp-fmt -type d -exec chmod 777 {} \; 
-	@rm -fr $(TOOLS_HOST_DIR)/tmp-fmt
+	@$(MAKE) go.remove.folder FOLDER=$(TOOLS_HOST_DIR)/tmp-fmt
 	@$(OK) installing gofmt$(GOFMT_VERSION)
 
 $(GOIMPORTS):
 	@$(INFO) installing goimports
 	@mkdir -p $(TOOLS_HOST_DIR)/tmp-imports || $(FAIL)
-	@GOPATH=$(TOOLS_HOST_DIR)/tmp-imports GOBIN=$(TOOLS_HOST_DIR) $(GOHOST) get -u golang.org/x/tools/cmd/goimports || rm -fr $(TOOLS_HOST_DIR)/tmp-imports || $(FAIL)
-	@rm -fr $(TOOLS_HOST_DIR)/tmp-imports
+	@GOPATH=$(TOOLS_HOST_DIR)/tmp-imports GOBIN=$(TOOLS_HOST_DIR) $(GOHOST) get -u golang.org/x/tools/cmd/goimports || $(MAKE) go.remove.folder FOLDER=$(TOOLS_HOST_DIR)/tmp-imports || $(FAIL)
+	@$(MAKE) go.remove.folder FOLDER=$(TOOLS_HOST_DIR)/tmp-imports
 	@$(OK) installing goimports
 
 $(GOJUNIT):
 	@$(INFO) installing go-junit-report
 	@mkdir -p $(TOOLS_HOST_DIR)/tmp-junit || $(FAIL)
-	@GOPATH=$(TOOLS_HOST_DIR)/tmp-junit GOBIN=$(TOOLS_HOST_DIR) $(GOHOST) get github.com/jstemmer/go-junit-report || rm -fr $(TOOLS_HOST_DIR)/tmp-junit || $(FAIL)
-	@find $(TOOLS_HOST_DIR)/tmp-junit -type d -exec chmod 777 {} \; 
-	@rm -fr $(TOOLS_HOST_DIR)/tmp-junit
+	@GOPATH=$(TOOLS_HOST_DIR)/tmp-junit GOBIN=$(TOOLS_HOST_DIR) $(GOHOST) get github.com/jstemmer/go-junit-report || $(MAKE) go.remove.folder FOLDER=$(TOOLS_HOST_DIR)/tmp-junit || $(FAIL)
+	@$(MAKE) go.remove.folder FOLDER=$(TOOLS_HOST_DIR)/tmp-junit
 	@$(OK) installing go-junit-report
 
 $(GOCOVER_COBERTURA):
 	@$(INFO) installing gocover-cobertura
 	@mkdir -p $(TOOLS_HOST_DIR)/tmp-gocover-cobertura || $(FAIL)
-	@GOPATH=$(TOOLS_HOST_DIR)/tmp-gocover-cobertura GOBIN=$(TOOLS_HOST_DIR) $(GOHOST) get github.com/t-yuki/gocover-cobertura || rm -fr $(TOOLS_HOST_DIR)/tmp-covcover-cobertura || $(FAIL)
-	@find $(TOOLS_HOST_DIR)/tmp-gocover-cobertura -type d -exec chmod 777 {} \; 
-	@rm -fr $(TOOLS_HOST_DIR)/tmp-gocover-cobertura
+	@GOPATH=$(TOOLS_HOST_DIR)/tmp-gocover-cobertura GOBIN=$(TOOLS_HOST_DIR) $(GOHOST) get github.com/t-yuki/gocover-cobertura || $(MAKE) go.remove.folder FOLDER=$(TOOLS_HOST_DIR)/tmp-gocover-cobertura || $(FAIL)
+	@$(MAKE) go.remove.folder FOLDER=$(TOOLS_HOST_DIR)/tmp-gocover-cobertura
 	@$(OK) installing gocover-cobertura
