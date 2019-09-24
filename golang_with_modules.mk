@@ -237,7 +237,7 @@ go.distclean:
 	@$(MAKE) go.remove.folder FOLDER=$(GO_VENDOR_DIR)
 	@$(MAKE) go.remove.folder FOLDER=$(GO_PKG_DIR)
 
-# make sure the folder is writable (otherwise it won't be deleted)
+# before delete, make sure the folder is writable (otherwise it won't be deleted)
 go.remove.folder:
 	@if [ -f $(FOLDER) ]; then \
 		@find $(FOLDER) -type d -exec chmod 777 {}; \
@@ -323,6 +323,7 @@ $(GOIMPORTS):
 	@$(INFO) installing goimports
 	@mkdir -p $(TOOLS_HOST_DIR)/tmp-imports || $(FAIL)
 	@GOPATH=$(TOOLS_HOST_DIR)/tmp-imports GOBIN=$(TOOLS_HOST_DIR) $(GOHOST) get -u golang.org/x/tools/cmd/goimports || $(MAKE) go.remove.folder FOLDER=$(TOOLS_HOST_DIR)/tmp-imports || $(FAIL)
+	@$(GOHOST) mod tidy
 	@$(MAKE) go.remove.folder FOLDER=$(TOOLS_HOST_DIR)/tmp-imports
 	@$(OK) installing goimports
 
@@ -330,6 +331,7 @@ $(GOJUNIT):
 	@$(INFO) installing go-junit-report
 	@mkdir -p $(TOOLS_HOST_DIR)/tmp-junit || $(FAIL)
 	@GOPATH=$(TOOLS_HOST_DIR)/tmp-junit GOBIN=$(TOOLS_HOST_DIR) $(GOHOST) get github.com/jstemmer/go-junit-report || $(MAKE) go.remove.folder FOLDER=$(TOOLS_HOST_DIR)/tmp-junit || $(FAIL)
+	@$(GOHOST) mod tidy
 	@$(MAKE) go.remove.folder FOLDER=$(TOOLS_HOST_DIR)/tmp-junit
 	@$(OK) installing go-junit-report
 
@@ -337,5 +339,6 @@ $(GOCOVER_COBERTURA):
 	@$(INFO) installing gocover-cobertura
 	@mkdir -p $(TOOLS_HOST_DIR)/tmp-gocover-cobertura || $(FAIL)
 	@GOPATH=$(TOOLS_HOST_DIR)/tmp-gocover-cobertura GOBIN=$(TOOLS_HOST_DIR) $(GOHOST) get github.com/t-yuki/gocover-cobertura || $(MAKE) go.remove.folder FOLDER=$(TOOLS_HOST_DIR)/tmp-gocover-cobertura || $(FAIL)
+	@$(GOHOST) mod tidy
 	@$(MAKE) go.remove.folder FOLDER=$(TOOLS_HOST_DIR)/tmp-gocover-cobertura
 	@$(OK) installing gocover-cobertura
