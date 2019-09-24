@@ -144,6 +144,7 @@ pipeline {
     post {
         always {
             script {
+                sh 'make -j\$(nproc) go.clean'
                 sh 'make -j\$(nproc) clean'
                 sh 'make -j\$(nproc) prune PRUNE_HOURS=48 PRUNE_KEEP=48'
                 sh 'docker images'
