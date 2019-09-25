@@ -107,10 +107,10 @@ func (r *rdsClient) DeleteInstance(name string) (*Instance, error) {
 	return NewInstance(output.DBInstance), nil
 }
 
-// IsErrorAlreadyExists returns true if the supplied error indicates a cluster
-// does already exists.
+// IsErrorAlreadyExists returns true if the supplied error indicates an instance
+// already exists.
 func IsErrorAlreadyExists(err error) bool {
-	return strings.Contains(err.Error(), rds.ErrCodeDBClusterAlreadyExistsFault)
+	return strings.Contains(err.Error(), rds.ErrCodeDBInstanceAlreadyExistsFault)
 }
 
 // IsErrorNotFound helper function to test for ErrCodeDBInstanceNotFoundFault error
