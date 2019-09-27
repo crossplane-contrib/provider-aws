@@ -60,7 +60,7 @@ func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) err
 
 	p := resource.NewPredicates(resource.AnyOf(
 		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.ReplicationGroupGroupVersionKind)),
-		resource.HasDirectClassReferenceKind(resource.NonPortableClassKind(v1alpha2.ReplicationGroupClassGroupVersionKind)),
+		resource.IsManagedKind(resource.ManagedKind(v1alpha2.ReplicationGroupGroupVersionKind), mgr.GetScheme()),
 		resource.HasIndirectClassReferenceKind(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{
 			Portable:    cachev1alpha1.RedisClusterClassGroupVersionKind,
 			NonPortable: v1alpha2.ReplicationGroupClassGroupVersionKind,
