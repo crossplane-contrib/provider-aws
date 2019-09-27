@@ -58,7 +58,7 @@ func (c *EKSClusterClaimController) SetupWithManager(mgr ctrl.Manager) error {
 
 	p := resource.NewPredicates(resource.AnyOf(
 		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.EKSClusterGroupVersionKind)),
-		resource.HasDirectClassReferenceKind(resource.NonPortableClassKind(v1alpha2.EKSClusterClassGroupVersionKind)),
+		resource.IsManagedKind(resource.ManagedKind(v1alpha2.EKSClusterGroupVersionKind), mgr.GetScheme()),
 		resource.HasIndirectClassReferenceKind(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{
 			Portable:    computev1alpha1.KubernetesClusterClassGroupVersionKind,
 			NonPortable: v1alpha2.EKSClusterClassGroupVersionKind,
