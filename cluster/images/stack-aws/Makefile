@@ -15,7 +15,7 @@ include ../../../build/makelib/image.mk
 img.build:
 	@$(INFO) docker build $(IMAGE)
 	@cp Dockerfile $(IMAGE_TEMP_DIR) || $(FAIL)
-	@cp $(OUTPUT_DIR)/bin/$(OS)_$(ARCH)/crossplane $(IMAGE_TEMP_DIR) || $(FAIL)
+	@cp $(OUTPUT_DIR)/bin/$(OS)_$(ARCH)/stack $(IMAGE_TEMP_DIR) || $(FAIL)
 	@cp -R ../../../$(STACK_PACKAGE) $(IMAGE_TEMP_DIR) || $(FAIL)
 	@cd $(IMAGE_TEMP_DIR) && $(SED_CMD) 's|BASEIMAGE|$(OSBASEIMAGE)|g' Dockerfile || $(FAIL)
 	@docker build $(BUILD_ARGS) \
