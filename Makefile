@@ -76,7 +76,8 @@ go.test.unit: $(KUBEBUILDER)
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: vendor
 	@$(INFO) Generating CRD manifests
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:trivialVersions=true paths=./aws/... output:dir=$(CRD_DIR)
+	@rm -rf $(CRD_DIR)
+	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go crd:trivialVersions=true paths=./apis/... output:dir=$(CRD_DIR)
 	@$(OK) Generating CRD manifests
 
 # Generate a coverage report for cobertura applying exclusions on
