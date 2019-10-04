@@ -19,6 +19,8 @@ package v1alpha2
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 )
 
@@ -121,4 +123,37 @@ type RouteTableList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []RouteTable `json:"items"`
+}
+
+// UpdateExternalStatus updates the external status object, given the observation
+func (t *RouteTable) UpdateExternalStatus(observation ec2.RouteTable) {
+	st := RouteTableExternalStatus{
+		RouteTableID: aws.StringValue(observation.RouteTableId),
+		Routes:       []RouteState{},
+		Associations: []AssociationState{},
+	}
+
+	st.Routes = make([]RouteState, len(observation.Routes))
+	for i, rt := range observation.Routes {
+		st.Routes[i] = RouteState{
+			RouteState: string(rt.State),
+			Route: Route{
+				DestinationCIDRBlock: aws.StringValue(rt.DestinationCidrBlock),
+				GatewayID:            aws.StringValue(rt.GatewayId),
+			},
+		}
+	}
+
+	st.Associations = make([]AssociationState, len(observation.Associations))
+	for i, asc := range observation.Associations {
+		st.Associations[i] = AssociationState{
+			Main:          aws.BoolValue(asc.Main),
+			AssociationID: aws.StringValue(asc.RouteTableAssociationId),
+			Association: Association{
+				SubnetID: aws.StringValue(asc.SubnetId),
+			},
+		}
+	}
+
+	t.Status.RouteTableExternalStatus = st
 }

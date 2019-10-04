@@ -19,6 +19,10 @@ package v1alpha2
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/aws/aws-sdk-go-v2/service/rds"
+
+	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 )
 
@@ -109,4 +113,33 @@ type DBSubnetGroupList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []DBSubnetGroup `json:"items"`
+}
+
+// UpdateExternalStatus updates the external status object, given the observation
+func (b *DBSubnetGroup) UpdateExternalStatus(observation rds.DBSubnetGroup) {
+
+	subnets := make([]Subnet, len(observation.Subnets))
+	for i, sn := range observation.Subnets {
+		subnets[i] = Subnet{
+			SubnetID:     aws.StringValue(sn.SubnetIdentifier),
+			SubnetStatus: aws.StringValue(sn.SubnetStatus),
+		}
+	}
+
+	b.Status.DBSubnetGroupExternalStatus = DBSubnetGroupExternalStatus{
+		DBSubnetGroupARN:  aws.StringValue(observation.DBSubnetGroupArn),
+		SubnetGroupStatus: aws.StringValue(observation.SubnetGroupStatus),
+		Subnets:           subnets,
+		VPCID:             aws.StringValue(observation.VpcId),
+	}
+}
+
+// BuildFromRDSTags returns a list of tags, off of the given RDS tags
+func BuildFromRDSTags(tags []rds.Tag) []Tag {
+	res := make([]Tag, len(tags))
+	for i, t := range tags {
+		res[i] = Tag{aws.StringValue(t.Key), aws.StringValue(t.Value)}
+	}
+
+	return res
 }

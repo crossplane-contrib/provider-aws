@@ -19,6 +19,8 @@ package v1alpha2
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 )
 
@@ -88,4 +90,13 @@ type SubnetList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Subnet `json:"items"`
+}
+
+// UpdateExternalStatus updates the external status object,  given the observation
+func (s *Subnet) UpdateExternalStatus(observation ec2.Subnet) {
+	s.Status.SubnetExternalStatus = SubnetExternalStatus{
+		SubnetID:    aws.StringValue(observation.SubnetId),
+		Tags:        BuildFromEC2Tags(observation.Tags),
+		SubnetState: string(observation.State),
+	}
 }
