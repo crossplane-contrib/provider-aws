@@ -18,67 +18,9 @@ package v1alpha2
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
-	corev1 "k8s.io/api/core/v1"
-
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 
 	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 )
-
-// SetBindingPhase of this DBSubnetGroup.
-func (b *DBSubnetGroup) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
-	b.Status.SetBindingPhase(p)
-}
-
-// GetBindingPhase of this DBSubnetGroup.
-func (b *DBSubnetGroup) GetBindingPhase() runtimev1alpha1.BindingPhase {
-	return b.Status.GetBindingPhase()
-}
-
-// SetConditions of this DBSubnetGroup.
-func (b *DBSubnetGroup) SetConditions(c ...runtimev1alpha1.Condition) {
-	b.Status.SetConditions(c...)
-}
-
-// SetClaimReference of this DBSubnetGroup.
-func (b *DBSubnetGroup) SetClaimReference(r *corev1.ObjectReference) {
-	b.Spec.ClaimReference = r
-}
-
-// GetClaimReference of this DBSubnetGroup.
-func (b *DBSubnetGroup) GetClaimReference() *corev1.ObjectReference {
-	return b.Spec.ClaimReference
-}
-
-// SetNonPortableClassReference of this DBSubnetGroup.
-func (b *DBSubnetGroup) SetNonPortableClassReference(r *corev1.ObjectReference) {
-	b.Spec.NonPortableClassReference = r
-}
-
-// GetNonPortableClassReference of this DBSubnetGroup.
-func (b *DBSubnetGroup) GetNonPortableClassReference() *corev1.ObjectReference {
-	return b.Spec.NonPortableClassReference
-}
-
-// SetWriteConnectionSecretToReference of this DBSubnetGroup.
-func (b *DBSubnetGroup) SetWriteConnectionSecretToReference(r corev1.LocalObjectReference) {
-	b.Spec.WriteConnectionSecretToReference = r
-}
-
-// GetWriteConnectionSecretToReference of this DBSubnetGroup.
-func (b *DBSubnetGroup) GetWriteConnectionSecretToReference() corev1.LocalObjectReference {
-	return b.Spec.WriteConnectionSecretToReference
-}
-
-// GetReclaimPolicy of this DBSubnetGroup.
-func (b *DBSubnetGroup) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
-	return b.Spec.ReclaimPolicy
-}
-
-// SetReclaimPolicy of this DBSubnetGroup.
-func (b *DBSubnetGroup) SetReclaimPolicy(p runtimev1alpha1.ReclaimPolicy) {
-	b.Spec.ReclaimPolicy = p
-}
 
 // UpdateExternalStatus updates the external status object, given the observation
 func (b *DBSubnetGroup) UpdateExternalStatus(observation rds.DBSubnetGroup) {

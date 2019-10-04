@@ -18,75 +18,9 @@ package v1alpha2
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	corev1 "k8s.io/api/core/v1"
-
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 
 	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 )
-
-// SetBindingPhase of this SecurityGroup.
-func (s *SecurityGroup) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
-	s.Status.SetBindingPhase(p)
-}
-
-// GetBindingPhase of this SecurityGroup.
-func (s *SecurityGroup) GetBindingPhase() runtimev1alpha1.BindingPhase {
-	return s.Status.GetBindingPhase()
-}
-
-// SetConditions of this SecurityGroup.
-func (s *SecurityGroup) SetConditions(c ...runtimev1alpha1.Condition) {
-	s.Status.SetConditions(c...)
-}
-
-// SetClaimReference of this SecurityGroup.
-func (s *SecurityGroup) SetClaimReference(r *corev1.ObjectReference) {
-	s.Spec.ClaimReference = r
-}
-
-// GetClaimReference of this SecurityGroup.
-func (s *SecurityGroup) GetClaimReference() *corev1.ObjectReference {
-	return s.Spec.ClaimReference
-}
-
-// SetNonPortableClassReference of this SecurityGroup.
-func (s *SecurityGroup) SetNonPortableClassReference(r *corev1.ObjectReference) {
-	s.Spec.NonPortableClassReference = r
-}
-
-// GetNonPortableClassReference of this SecurityGroup.
-func (s *SecurityGroup) GetNonPortableClassReference() *corev1.ObjectReference {
-	return s.Spec.NonPortableClassReference
-}
-
-// SetWriteConnectionSecretToReference of this SecurityGroup.
-func (s *SecurityGroup) SetWriteConnectionSecretToReference(r corev1.LocalObjectReference) {
-	s.Spec.WriteConnectionSecretToReference = r
-}
-
-// GetWriteConnectionSecretToReference of this SecurityGroup.
-func (s *SecurityGroup) GetWriteConnectionSecretToReference() corev1.LocalObjectReference {
-	return s.Spec.WriteConnectionSecretToReference
-}
-
-// GetReclaimPolicy of this SecurityGroup.
-func (s *SecurityGroup) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
-	return s.Spec.ReclaimPolicy
-}
-
-// SetReclaimPolicy of this SecurityGroup.
-func (s *SecurityGroup) SetReclaimPolicy(p runtimev1alpha1.ReclaimPolicy) {
-	s.Spec.ReclaimPolicy = p
-}
-
-// UpdateExternalStatus updates the external status object, given the observation
-func (s *SecurityGroup) UpdateExternalStatus(observation ec2.SecurityGroup) {
-	s.Status.SecurityGroupExternalStatus = SecurityGroupExternalStatus{
-		SecurityGroupID: aws.StringValue(observation.GroupId),
-		Tags:            BuildFromEC2Tags(observation.Tags),
-	}
-}
 
 // BuildEC2Permissions converts object Permissions to ec2 format
 func BuildEC2Permissions(objectPerms []IPPermission) []ec2.IpPermission {

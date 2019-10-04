@@ -19,65 +19,7 @@ package v1alpha2
 import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	corev1 "k8s.io/api/core/v1"
-
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 )
-
-// SetBindingPhase of this RouteTable.
-func (t *RouteTable) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
-	t.Status.SetBindingPhase(p)
-}
-
-// GetBindingPhase of this RouteTable.
-func (t *RouteTable) GetBindingPhase() runtimev1alpha1.BindingPhase {
-	return t.Status.GetBindingPhase()
-}
-
-// SetConditions of this RouteTable.
-func (t *RouteTable) SetConditions(c ...runtimev1alpha1.Condition) {
-	t.Status.SetConditions(c...)
-}
-
-// SetClaimReference of this RouteTable.
-func (t *RouteTable) SetClaimReference(r *corev1.ObjectReference) {
-	t.Spec.ClaimReference = r
-}
-
-// GetClaimReference of this RouteTable.
-func (t *RouteTable) GetClaimReference() *corev1.ObjectReference {
-	return t.Spec.ClaimReference
-}
-
-// SetNonPortableClassReference of this RouteTable.
-func (t *RouteTable) SetNonPortableClassReference(r *corev1.ObjectReference) {
-	t.Spec.NonPortableClassReference = r
-}
-
-// GetNonPortableClassReference of this RouteTable.
-func (t *RouteTable) GetNonPortableClassReference() *corev1.ObjectReference {
-	return t.Spec.NonPortableClassReference
-}
-
-// SetWriteConnectionSecretToReference of this RouteTable.
-func (t *RouteTable) SetWriteConnectionSecretToReference(r corev1.LocalObjectReference) {
-	t.Spec.WriteConnectionSecretToReference = r
-}
-
-// GetWriteConnectionSecretToReference of this RouteTable.
-func (t *RouteTable) GetWriteConnectionSecretToReference() corev1.LocalObjectReference {
-	return t.Spec.WriteConnectionSecretToReference
-}
-
-// GetReclaimPolicy of this RouteTable.
-func (t *RouteTable) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
-	return t.Spec.ReclaimPolicy
-}
-
-// SetReclaimPolicy of this RouteTable.
-func (t *RouteTable) SetReclaimPolicy(p runtimev1alpha1.ReclaimPolicy) {
-	t.Spec.ReclaimPolicy = p
-}
 
 // UpdateExternalStatus updates the external status object, given the observation
 func (t *RouteTable) UpdateExternalStatus(observation ec2.RouteTable) {
