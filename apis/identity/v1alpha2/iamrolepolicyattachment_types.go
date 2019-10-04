@@ -19,7 +19,9 @@ package v1alpha2
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/aws/aws-sdk-go-v2/service/iam"
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 )
 
 // IAMRolePolicyAttachmentParameters define the desired state of an AWS IAM
@@ -81,4 +83,11 @@ type IAMRolePolicyAttachmentList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []IAMRolePolicyAttachment `json:"items"`
+}
+
+// UpdateExternalStatus updates the external status object, given the observation
+func (r *IAMRolePolicyAttachment) UpdateExternalStatus(observation iam.AttachedPolicy) {
+	r.Status.IAMRolePolicyAttachmentExternalStatus = IAMRolePolicyAttachmentExternalStatus{
+		AttachedPolicyARN: aws.StringValue(observation.PolicyArn),
+	}
 }

@@ -19,6 +19,9 @@ package v1alpha2
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/aws/aws-sdk-go-v2/service/iam"
+	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 )
 
@@ -87,4 +90,12 @@ type IAMRoleList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []IAMRole `json:"items"`
+}
+
+// UpdateExternalStatus updates the external status object, given the observation
+func (r *IAMRole) UpdateExternalStatus(observation iam.Role) {
+	r.Status.IAMRoleExternalStatus = IAMRoleExternalStatus{
+		ARN:    aws.StringValue(observation.Arn),
+		RoleID: aws.StringValue(observation.RoleId),
+	}
 }
