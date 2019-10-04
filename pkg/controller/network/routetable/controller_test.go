@@ -168,7 +168,7 @@ func Test_Observe(t *testing.T) {
 			true,
 		},
 		{
-			"if any route is not active, then the resource should not be avialable",
+			"if any route is not active, then the resource should not be available",
 			mockManaged.DeepCopy(),
 			[]awsec2.RouteTable{
 				{
