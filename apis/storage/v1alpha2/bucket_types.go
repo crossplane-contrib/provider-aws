@@ -20,13 +20,11 @@ import (
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	storagev1alpha1 "github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 )
 
@@ -99,61 +97,6 @@ type S3Bucket struct {
 	Status S3BucketStatus `json:"status,omitempty"`
 }
 
-// SetBindingPhase of this S3Bucket.
-func (b *S3Bucket) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
-	b.Status.SetBindingPhase(p)
-}
-
-// GetBindingPhase of this S3Bucket.
-func (b *S3Bucket) GetBindingPhase() runtimev1alpha1.BindingPhase {
-	return b.Status.GetBindingPhase()
-}
-
-// SetConditions of this S3Bucket.
-func (b *S3Bucket) SetConditions(c ...runtimev1alpha1.Condition) {
-	b.Status.SetConditions(c...)
-}
-
-// SetClaimReference of this S3Bucket.
-func (b *S3Bucket) SetClaimReference(r *corev1.ObjectReference) {
-	b.Spec.ClaimReference = r
-}
-
-// GetClaimReference of this S3Bucket.
-func (b *S3Bucket) GetClaimReference() *corev1.ObjectReference {
-	return b.Spec.ClaimReference
-}
-
-// SetNonPortableClassReference of this S3Bucket.
-func (b *S3Bucket) SetNonPortableClassReference(r *corev1.ObjectReference) {
-	b.Spec.NonPortableClassReference = r
-}
-
-// GetNonPortableClassReference of this S3Bucket.
-func (b *S3Bucket) GetNonPortableClassReference() *corev1.ObjectReference {
-	return b.Spec.NonPortableClassReference
-}
-
-// SetWriteConnectionSecretToReference of this S3Bucket.
-func (b *S3Bucket) SetWriteConnectionSecretToReference(r corev1.LocalObjectReference) {
-	b.Spec.WriteConnectionSecretToReference = r
-}
-
-// GetWriteConnectionSecretToReference of this S3Bucket.
-func (b *S3Bucket) GetWriteConnectionSecretToReference() corev1.LocalObjectReference {
-	return b.Spec.WriteConnectionSecretToReference
-}
-
-// GetReclaimPolicy of this S3Bucket.
-func (b *S3Bucket) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
-	return b.Spec.ReclaimPolicy
-}
-
-// SetReclaimPolicy of this S3Bucket.
-func (b *S3Bucket) SetReclaimPolicy(p runtimev1alpha1.ReclaimPolicy) {
-	b.Spec.ReclaimPolicy = p
-}
-
 // +kubebuilder:object:root=true
 
 // S3BucketList contains a list of S3Buckets
@@ -170,9 +113,6 @@ type S3BucketClassSpecTemplate struct {
 	S3BucketParameters                           `json:",inline"`
 }
 
-// All non-portable classes must implement the NonPortableClass interface.
-var _ resource.NonPortableClass = &S3BucketClass{}
-
 // +kubebuilder:object:root=true
 
 // An S3BucketClass is a non-portable resource class. It defines the desired
@@ -188,16 +128,6 @@ type S3BucketClass struct {
 	// SpecTemplate is a template for the spec of a dynamically provisioned
 	// S3Bucket.
 	SpecTemplate S3BucketClassSpecTemplate `json:"specTemplate"`
-}
-
-// GetReclaimPolicy of this S3BucketClass.
-func (i *S3BucketClass) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
-	return i.SpecTemplate.ReclaimPolicy
-}
-
-// SetReclaimPolicy of this S3BucketClass.
-func (i *S3BucketClass) SetReclaimPolicy(p runtimev1alpha1.ReclaimPolicy) {
-	i.SpecTemplate.ReclaimPolicy = p
 }
 
 // +kubebuilder:object:root=true

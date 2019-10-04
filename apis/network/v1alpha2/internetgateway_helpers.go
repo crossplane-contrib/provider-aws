@@ -19,65 +19,7 @@ package v1alpha2
 import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	corev1 "k8s.io/api/core/v1"
-
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 )
-
-// SetBindingPhase of this InternetGateway.
-func (i *InternetGateway) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
-	i.Status.SetBindingPhase(p)
-}
-
-// GetBindingPhase of this InternetGateway.
-func (i *InternetGateway) GetBindingPhase() runtimev1alpha1.BindingPhase {
-	return i.Status.GetBindingPhase()
-}
-
-// SetConditions of this InternetGateway.
-func (i *InternetGateway) SetConditions(c ...runtimev1alpha1.Condition) {
-	i.Status.SetConditions(c...)
-}
-
-// SetClaimReference of this InternetGateway.
-func (i *InternetGateway) SetClaimReference(r *corev1.ObjectReference) {
-	i.Spec.ClaimReference = r
-}
-
-// GetClaimReference of this InternetGateway.
-func (i *InternetGateway) GetClaimReference() *corev1.ObjectReference {
-	return i.Spec.ClaimReference
-}
-
-// SetNonPortableClassReference of this InternetGateway.
-func (i *InternetGateway) SetNonPortableClassReference(r *corev1.ObjectReference) {
-	i.Spec.NonPortableClassReference = r
-}
-
-// GetNonPortableClassReference of this InternetGateway.
-func (i *InternetGateway) GetNonPortableClassReference() *corev1.ObjectReference {
-	return i.Spec.NonPortableClassReference
-}
-
-// SetWriteConnectionSecretToReference of this InternetGateway.
-func (i *InternetGateway) SetWriteConnectionSecretToReference(r corev1.LocalObjectReference) {
-	i.Spec.WriteConnectionSecretToReference = r
-}
-
-// GetWriteConnectionSecretToReference of this InternetGateway.
-func (i *InternetGateway) GetWriteConnectionSecretToReference() corev1.LocalObjectReference {
-	return i.Spec.WriteConnectionSecretToReference
-}
-
-// GetReclaimPolicy of this InternetGateway.
-func (i *InternetGateway) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
-	return i.Spec.ReclaimPolicy
-}
-
-// SetReclaimPolicy of this InternetGateway.
-func (i *InternetGateway) SetReclaimPolicy(p runtimev1alpha1.ReclaimPolicy) {
-	i.Spec.ReclaimPolicy = p
-}
 
 // UpdateExternalStatus updates the external status object, given the observation
 func (i *InternetGateway) UpdateExternalStatus(observation ec2.InternetGateway) {
