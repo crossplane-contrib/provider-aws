@@ -19,6 +19,9 @@ package v1alpha2
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 )
 
@@ -126,4 +129,37 @@ type SecurityGroupList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []SecurityGroup `json:"items"`
+}
+
+// UpdateExternalStatus updates the external status object, given the observation
+func (s *SecurityGroup) UpdateExternalStatus(observation ec2.SecurityGroup) {
+	s.Status.SecurityGroupExternalStatus = SecurityGroupExternalStatus{
+		SecurityGroupID: aws.StringValue(observation.GroupId),
+		Tags:            BuildFromEC2Tags(observation.Tags),
+	}
+}
+
+// BuildEC2Permissions converts object Permissions to ec2 format
+func BuildEC2Permissions(objectPerms []IPPermission) []ec2.IpPermission {
+	permissions := make([]ec2.IpPermission, len(objectPerms))
+	for i, p := range objectPerms {
+
+		ipPerm := ec2.IpPermission{
+			FromPort:   aws.Int64(int(p.FromPort)),
+			ToPort:     aws.Int64(int(p.ToPort)),
+			IpProtocol: aws.String(p.IPProtocol),
+		}
+
+		ipPerm.IpRanges = make([]ec2.IpRange, len(p.CIDRBlocks))
+		for j, c := range p.CIDRBlocks {
+			ipPerm.IpRanges[j] = ec2.IpRange{
+				CidrIp:      aws.String(c.CIDRIP),
+				Description: aws.String(c.Description),
+			}
+		}
+
+		permissions[i] = ipPerm
+	}
+
+	return permissions
 }
