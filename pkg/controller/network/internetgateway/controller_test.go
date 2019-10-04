@@ -168,7 +168,7 @@ func Test_Observe(t *testing.T) {
 			true,
 		},
 		{
-			"if resource is attaching, then the condition should not be avialable",
+			"if resource is attaching, then the condition should not be available",
 			mockManaged.DeepCopy(),
 			[]awsec2.InternetGateway{
 				{
@@ -186,7 +186,7 @@ func Test_Observe(t *testing.T) {
 			false,
 		},
 		{
-			"if resource is detaching, then the condition should not be avialable",
+			"if resource is detaching, then the condition should not be available",
 			mockManaged.DeepCopy(),
 			[]awsec2.InternetGateway{
 				{
