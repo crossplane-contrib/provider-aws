@@ -18,9 +18,7 @@ package v1alpha2
 
 import (
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -117,61 +115,6 @@ type RDSInstance struct {
 	Status RDSInstanceStatus `json:"status,omitempty"`
 }
 
-// SetBindingPhase of this RDSInstance.
-func (i *RDSInstance) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
-	i.Status.SetBindingPhase(p)
-}
-
-// GetBindingPhase of this RDSInstance.
-func (i *RDSInstance) GetBindingPhase() runtimev1alpha1.BindingPhase {
-	return i.Status.GetBindingPhase()
-}
-
-// SetConditions of this RDSInstance.
-func (i *RDSInstance) SetConditions(c ...runtimev1alpha1.Condition) {
-	i.Status.SetConditions(c...)
-}
-
-// SetClaimReference of this RDSInstance.
-func (i *RDSInstance) SetClaimReference(r *corev1.ObjectReference) {
-	i.Spec.ClaimReference = r
-}
-
-// GetClaimReference of this RDSInstance.
-func (i *RDSInstance) GetClaimReference() *corev1.ObjectReference {
-	return i.Spec.ClaimReference
-}
-
-// SetNonPortableClassReference of this RDSInstance.
-func (i *RDSInstance) SetNonPortableClassReference(r *corev1.ObjectReference) {
-	i.Spec.NonPortableClassReference = r
-}
-
-// GetNonPortableClassReference of this RDSInstance.
-func (i *RDSInstance) GetNonPortableClassReference() *corev1.ObjectReference {
-	return i.Spec.NonPortableClassReference
-}
-
-// SetWriteConnectionSecretToReference of this RDSInstance.
-func (i *RDSInstance) SetWriteConnectionSecretToReference(r corev1.LocalObjectReference) {
-	i.Spec.WriteConnectionSecretToReference = r
-}
-
-// GetWriteConnectionSecretToReference of this RDSInstance.
-func (i *RDSInstance) GetWriteConnectionSecretToReference() corev1.LocalObjectReference {
-	return i.Spec.WriteConnectionSecretToReference
-}
-
-// GetReclaimPolicy of this RDSInstance.
-func (i *RDSInstance) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
-	return i.Spec.ReclaimPolicy
-}
-
-// SetReclaimPolicy of this RDSInstance.
-func (i *RDSInstance) SetReclaimPolicy(p runtimev1alpha1.ReclaimPolicy) {
-	i.Spec.ReclaimPolicy = p
-}
-
 // +kubebuilder:object:root=true
 
 // RDSInstanceList contains a list of RDSInstance
@@ -188,9 +131,6 @@ type RDSInstanceClassSpecTemplate struct {
 	RDSInstanceParameters                        `json:",inline"`
 }
 
-// All non-portable classes must implement the NonPortableClass interface.
-var _ resource.NonPortableClass = &RDSInstanceClass{}
-
 // +kubebuilder:object:root=true
 
 // An RDSInstanceClass is a non-portable resource class. It defines the desired
@@ -206,16 +146,6 @@ type RDSInstanceClass struct {
 	// SpecTemplate is a template for the spec of a dynamically provisioned
 	// RDSInstance.
 	SpecTemplate RDSInstanceClassSpecTemplate `json:"specTemplate"`
-}
-
-// GetReclaimPolicy of this RDSInstanceClass.
-func (i *RDSInstanceClass) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
-	return i.SpecTemplate.ReclaimPolicy
-}
-
-// SetReclaimPolicy of this RDSInstanceClass.
-func (i *RDSInstanceClass) SetReclaimPolicy(p runtimev1alpha1.ReclaimPolicy) {
-	i.SpecTemplate.ReclaimPolicy = p
 }
 
 // +kubebuilder:object:root=true
