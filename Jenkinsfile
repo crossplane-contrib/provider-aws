@@ -88,6 +88,17 @@ pipeline {
             }
         }
 
+        stage("Integration Tests"){
+            when {
+                expression {
+                    return env.shouldBuild != "false"
+                }
+            }
+            steps {
+                sh './build/run make -j\$(nproc) e2e'
+            }
+        }
+
         stage('Record Coverage') {
             when {
                 allOf {
