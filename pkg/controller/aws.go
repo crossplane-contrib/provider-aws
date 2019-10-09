@@ -45,6 +45,7 @@ func (c *Controllers) SetupWithManager(mgr ctrl.Manager) error {
 		&cache.ReplicationGroupClaimController{},
 		&cache.ReplicationGroupController{},
 		&compute.EKSClusterClaimController{},
+		&compute.EKSClusterSecretController{},
 		&compute.EKSClusterController{},
 		&rds.PostgreSQLInstanceClaimController{},
 		&rds.MySQLInstanceClaimController{},
