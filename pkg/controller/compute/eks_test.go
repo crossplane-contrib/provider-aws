@@ -17,28 +17,24 @@ limitations under the License.
 package compute
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"testing"
 
-	"github.com/crossplaneio/stack-aws/apis"
-
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/ghodss/yaml"
+	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
+	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	. "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/kubernetes/scheme"
-	. "k8s.io/client-go/testing"
 	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	"github.com/crossplaneio/stack-aws/apis"
 	. "github.com/crossplaneio/stack-aws/apis/compute/v1alpha2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/eks"
 	"github.com/crossplaneio/stack-aws/pkg/clients/eks/fake"
@@ -152,8 +148,7 @@ func TestCreate(t *testing.T) {
 
 	test := func(cluster *EKSCluster, client eks.Client, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) *EKSCluster {
 		r := &Reconciler{
-			Client:     NewFakeClient(cluster),
-			kubeclient: NewSimpleClientset(),
+			Client: NewFakeClient(cluster),
 		}
 
 		rs, err := r._create(cluster, client)
@@ -173,7 +168,7 @@ func TestCreate(t *testing.T) {
 	expectedStatus := runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileSuccess())
 
-	reconciledCluster := test(cluster, client, resultRequeue, expectedStatus)
+	reconciledCluster := test(cluster, client, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 
 	g.Expect(reconciledCluster.Status.ClusterName).To(Equal(fmt.Sprintf("%s%s", clusterNamePrefix, cluster.UID)))
 	g.Expect(reconciledCluster.Status.State).To(Equal(ClusterStatusCreating))
@@ -188,7 +183,7 @@ func TestCreate(t *testing.T) {
 	expectedStatus = runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileError(errorBadRequest))
 
-	reconciledCluster = test(cluster, client, result, expectedStatus)
+	reconciledCluster = test(cluster, client, reconcile.Result{}, expectedStatus)
 	g.Expect(reconciledCluster.Finalizers).To(BeEmpty())
 	g.Expect(reconciledCluster.Status.ClusterName).To(BeEmpty())
 	g.Expect(reconciledCluster.Status.State).To(BeEmpty())
@@ -204,7 +199,7 @@ func TestCreate(t *testing.T) {
 	expectedStatus = runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileError(errorOther))
 
-	reconciledCluster = test(cluster, client, resultRequeue, expectedStatus)
+	reconciledCluster = test(cluster, client, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 	g.Expect(reconciledCluster.Finalizers).To(BeEmpty())
 	g.Expect(reconciledCluster.Status.ClusterName).To(BeEmpty())
 	g.Expect(reconciledCluster.Status.State).To(BeEmpty())
@@ -218,10 +213,9 @@ func TestSync(t *testing.T) {
 	test := func(tc *EKSCluster, cl *fake.MockEKSClient, sec func(*eks.Cluster, *EKSCluster, eks.Client) error, auth func(*eks.Cluster, *EKSCluster, eks.Client, string) error,
 		rslt reconcile.Result, exp runtimev1alpha1.ConditionedStatus) *EKSCluster {
 		r := &Reconciler{
-			Client:     NewFakeClient(tc),
-			kubeclient: NewSimpleClientset(),
-			secret:     sec,
-			awsauth:    auth,
+			Client:  NewFakeClient(tc),
+			secret:  sec,
+			awsauth: auth,
 		}
 
 		rs, err := r._sync(tc, cl)
@@ -255,7 +249,7 @@ func TestSync(t *testing.T) {
 	expectedStatus := runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(errorGet))
 	tc := testCluster()
-	test(tc, cl, nil, nil, resultRequeue, expectedStatus)
+	test(tc, cl, nil, nil, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 
 	// cluster is not ready
 	cl.MockGet = func(string) (*eks.Cluster, error) {
@@ -265,7 +259,7 @@ func TestSync(t *testing.T) {
 	}
 	expectedStatus = runtimev1alpha1.ConditionedStatus{}
 	tc = testCluster()
-	test(tc, cl, nil, nil, resultRequeue, expectedStatus)
+	test(tc, cl, nil, nil, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 
 	// cluster is ready, but lets create workers that error
 	cl.MockGet = func(string) (*eks.Cluster, error) {
@@ -282,7 +276,7 @@ func TestSync(t *testing.T) {
 	expectedStatus = runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(errorCreateNodes))
 	tc = testCluster()
-	reconciledCluster := test(tc, cl, nil, nil, resultRequeue, expectedStatus)
+	reconciledCluster := test(tc, cl, nil, nil, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 	g.Expect(reconciledCluster.Status.CloudFormationStackID).To(BeEmpty())
 
 	// cluster is ready, lets create workers
@@ -299,7 +293,7 @@ func TestSync(t *testing.T) {
 	expectedStatus = runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.ReconcileSuccess())
 	tc = testCluster()
-	reconciledCluster = test(tc, cl, nil, nil, resultRequeue, expectedStatus)
+	reconciledCluster = test(tc, cl, nil, nil, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 	g.Expect(reconciledCluster.Status.CloudFormationStackID).To(Equal(fakeStackID))
 
 	// cluster is ready, but auth sync failed
@@ -321,7 +315,7 @@ func TestSync(t *testing.T) {
 		return errorAuth
 
 	}
-	test(tc, cl, nil, auth, resultRequeue, expectedStatus)
+	test(tc, cl, nil, auth, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 
 	// cluster is ready, but secret failed
 	cl.MockGetWorkerNodes = func(string) (*eks.ClusterWorkers, error) {
@@ -345,7 +339,7 @@ func TestSync(t *testing.T) {
 	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(errorSecret))
 	tc = testCluster()
 	tc.Status.CloudFormationStackID = fakeStackID
-	test(tc, cl, fSec, auth, resultRequeue, expectedStatus)
+	test(tc, cl, fSec, auth, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 
 	// cluster is ready
 	fSec = func(*eks.Cluster, *EKSCluster, eks.Client) error {
@@ -355,21 +349,10 @@ func TestSync(t *testing.T) {
 	expectedStatus.SetConditions(runtimev1alpha1.Available(), runtimev1alpha1.ReconcileSuccess())
 	tc = testCluster()
 	tc.Status.CloudFormationStackID = fakeStackID
-	test(tc, cl, fSec, auth, result, expectedStatus)
+	test(tc, cl, fSec, auth, reconcile.Result{RequeueAfter: aLongWait}, expectedStatus)
 }
 
 func TestSecret(t *testing.T) {
-	g := NewGomegaWithT(t)
-
-	tc := testCluster()
-
-	// connection token error
-	testError := "test-connection-token-error"
-	client := &fake.MockEKSClient{
-		MockConnectionToken: func(string) (string, error) {
-			return "", fmt.Errorf(testError)
-		},
-	}
 	clusterCA := []byte("test-ca")
 	cluster := &eks.Cluster{
 		Status:   ClusterStatusActive,
@@ -377,40 +360,41 @@ func TestSecret(t *testing.T) {
 		CA:       base64.StdEncoding.EncodeToString(clusterCA),
 	}
 
-	kc := NewSimpleClientset()
 	r := &Reconciler{
-		Client:     NewFakeClient(tc),
-		kubeclient: kc,
+		publisher: resource.ManagedConnectionPublisherFns{
+			PublishConnectionFn: func(_ context.Context, _ resource.Managed, got resource.ConnectionDetails) error {
+				want := resource.ConnectionDetails{
+					runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(cluster.Endpoint),
+					runtimev1alpha1.ResourceCredentialsSecretCAKey:       clusterCA,
+					runtimev1alpha1.ResourceCredentialsTokenKey:          []byte("test-token"),
+				}
+
+				if diff := cmp.Diff(want, got); diff != "" {
+					t.Errorf("-want, +got\n%s", diff)
+				}
+
+				return nil
+			},
+		},
 	}
 
-	err := r._secret(cluster, tc, client)
-	g.Expect(err).To(And(HaveOccurred(), MatchError(testError)))
+	tc := testCluster()
+	client := &fake.MockEKSClient{}
 
-	// test success
+	// Ensure we return an error when we can't get a new token.
+	testError := "test-connection-token-error"
+	client.MockConnectionToken = func(string) (string, error) { return "", errors.New(testError) }
+	want := errors.New(testError)
+	got := r._secret(cluster, tc, client)
+	if diff := cmp.Diff(want, got, test.EquateErrors()); diff != "" {
+		t.Errorf("r._secret(...): -want error, +got error:\n%s", diff)
+	}
+
+	// Ensure we don't return an error when we can get a new token.
 	client.MockConnectionToken = func(string) (string, error) { return "test-token", nil }
-	err = r._secret(cluster, tc, client)
-
-	g.Expect(err).NotTo(HaveOccurred())
-	// validate secret
-	secret, err := kc.CoreV1().Secrets(tc.GetNamespace()).Get(tc.GetWriteConnectionSecretToReference().Name, metav1.GetOptions{})
-	g.Expect(err).NotTo(HaveOccurred())
-	data := make(map[string][]byte)
-	data[runtimev1alpha1.ResourceCredentialsSecretEndpointKey] = []byte(cluster.Endpoint)
-	data[runtimev1alpha1.ResourceCredentialsSecretCAKey] = clusterCA
-	data[runtimev1alpha1.ResourceCredentialsTokenKey] = []byte("test-token")
-	secret.Data = data
-	expSec := resource.ConnectionSecretFor(tc, EKSClusterGroupVersionKind)
-	expSec.Data = data
-	g.Expect(secret).To(Equal(expSec))
-
-	// test update secret error
-	testError = "test-update-secret-error"
-	kc.PrependReactor("get", "secrets", func(Action) (handled bool, ret runtime.Object, err error) {
-		return true, nil, fmt.Errorf(testError)
-	})
-
-	err = r._secret(cluster, tc, client)
-	g.Expect(err).To(And(HaveOccurred(), MatchError(testError)))
+	if err := r._secret(cluster, tc, client); err != nil {
+		t.Errorf("r._secret(...): %s", err)
+	}
 }
 
 func TestDelete(t *testing.T) {
@@ -418,8 +402,7 @@ func TestDelete(t *testing.T) {
 
 	test := func(cluster *EKSCluster, client eks.Client, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) *EKSCluster {
 		r := &Reconciler{
-			Client:     NewFakeClient(cluster),
-			kubeclient: NewSimpleClientset(),
+			Client: NewFakeClient(cluster),
 		}
 
 		rs, err := r._delete(cluster, client)
@@ -442,7 +425,7 @@ func TestDelete(t *testing.T) {
 	expectedStatus := runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.Deleting(), runtimev1alpha1.ReconcileSuccess())
 
-	reconciledCluster := test(cluster, client, result, expectedStatus)
+	reconciledCluster := test(cluster, client, reconcile.Result{}, expectedStatus)
 	g.Expect(reconciledCluster.Finalizers).To(BeEmpty())
 
 	// reclaim - retain
@@ -451,7 +434,7 @@ func TestDelete(t *testing.T) {
 	cluster.Finalizers = []string{finalizer}
 	client.MockDelete = nil // should not be called
 
-	reconciledCluster = test(cluster, client, result, expectedStatus)
+	reconciledCluster = test(cluster, client, reconcile.Result{}, expectedStatus)
 	g.Expect(reconciledCluster.Finalizers).To(BeEmpty())
 
 	// reclaim - delete, delete error
@@ -466,7 +449,7 @@ func TestDelete(t *testing.T) {
 		runtimev1alpha1.ReconcileError(errors.Wrap(errorDelete, "Master Delete Error")),
 	)
 
-	reconciledCluster = test(cluster, client, resultRequeue, expectedStatus)
+	reconciledCluster = test(cluster, client, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 	g.Expect(reconciledCluster.Finalizers).To(ContainElement(finalizer))
 
 	// reclaim - delete, delete error with worker
@@ -482,7 +465,7 @@ func TestDelete(t *testing.T) {
 		runtimev1alpha1.ReconcileError(errors.Wrap(testErrorWorker, "Worker Delete Error")),
 	)
 
-	reconciledCluster = test(cluster, client, resultRequeue, expectedStatus)
+	reconciledCluster = test(cluster, client, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 	g.Expect(reconciledCluster.Finalizers).To(ContainElement(finalizer))
 
 	// reclaim - delete, delete error in cluster and cluster workers
@@ -498,7 +481,7 @@ func TestDelete(t *testing.T) {
 		runtimev1alpha1.ReconcileError(errors.New("Master Delete Error: test-delete-error, Worker Delete Error: test-delete-error-worker")),
 	)
 
-	reconciledCluster = test(cluster, client, resultRequeue, expectedStatus)
+	reconciledCluster = test(cluster, client, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 	g.Expect(reconciledCluster.Finalizers).To(ContainElement(finalizer))
 }
 
@@ -509,7 +492,7 @@ func TestReconcileObjectNotFound(t *testing.T) {
 		Client: NewFakeClient(),
 	}
 	rs, err := r.Reconcile(request)
-	g.Expect(rs).To(Equal(result))
+	g.Expect(rs).To(Equal(reconcile.Result{}))
 	g.Expect(err).To(BeNil())
 }
 
@@ -521,8 +504,7 @@ func TestReconcileClientError(t *testing.T) {
 	called := false
 
 	r := &Reconciler{
-		Client:     NewFakeClient(testCluster()),
-		kubeclient: NewSimpleClientset(),
+		Client: NewFakeClient(testCluster()),
 		connect: func(*EKSCluster) (eks.Client, error) {
 			called = true
 			return nil, testError
@@ -534,7 +516,7 @@ func TestReconcileClientError(t *testing.T) {
 	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(testError))
 
 	rs, err := r.Reconcile(request)
-	g.Expect(rs).To(Equal(resultRequeue))
+	g.Expect(rs).To(Equal(reconcile.Result{RequeueAfter: aShortWait}))
 	g.Expect(err).To(BeNil())
 	g.Expect(called).To(BeTrue())
 
@@ -552,19 +534,18 @@ func TestReconcileDelete(t *testing.T) {
 	called := false
 
 	r := &Reconciler{
-		Client:     NewFakeClient(tc),
-		kubeclient: NewSimpleClientset(),
+		Client: NewFakeClient(tc),
 		connect: func(*EKSCluster) (eks.Client, error) {
 			return nil, nil
 		},
 		delete: func(*EKSCluster, eks.Client) (reconcile.Result, error) {
 			called = true
-			return result, nil
+			return reconcile.Result{}, nil
 		},
 	}
 
 	rs, err := r.Reconcile(request)
-	g.Expect(rs).To(Equal(result))
+	g.Expect(rs).To(Equal(reconcile.Result{}))
 	g.Expect(err).To(BeNil())
 	g.Expect(called).To(BeTrue())
 	assertResource(g, r, runtimev1alpha1.ConditionedStatus{})
@@ -576,19 +557,18 @@ func TestReconcileCreate(t *testing.T) {
 	called := false
 
 	r := &Reconciler{
-		Client:     NewFakeClient(testCluster()),
-		kubeclient: NewSimpleClientset(),
+		Client: NewFakeClient(testCluster()),
 		connect: func(*EKSCluster) (eks.Client, error) {
 			return nil, nil
 		},
 		create: func(*EKSCluster, eks.Client) (reconcile.Result, error) {
 			called = true
-			return resultRequeue, nil
+			return reconcile.Result{RequeueAfter: aShortWait}, nil
 		},
 	}
 
 	rs, err := r.Reconcile(request)
-	g.Expect(rs).To(Equal(resultRequeue))
+	g.Expect(rs).To(Equal(reconcile.Result{RequeueAfter: aShortWait}))
 	g.Expect(err).To(BeNil())
 	g.Expect(called).To(BeTrue())
 
@@ -605,19 +585,18 @@ func TestReconcileSync(t *testing.T) {
 	tc.Finalizers = []string{finalizer}
 
 	r := &Reconciler{
-		Client:     NewFakeClient(tc),
-		kubeclient: NewSimpleClientset(),
+		Client: NewFakeClient(tc),
 		connect: func(*EKSCluster) (eks.Client, error) {
 			return nil, nil
 		},
 		sync: func(*EKSCluster, eks.Client) (reconcile.Result, error) {
 			called = true
-			return resultRequeue, nil
+			return reconcile.Result{RequeueAfter: aShortWait}, nil
 		},
 	}
 
 	rs, err := r.Reconcile(request)
-	g.Expect(rs).To(Equal(resultRequeue))
+	g.Expect(rs).To(Equal(reconcile.Result{RequeueAfter: aShortWait}))
 	g.Expect(err).To(BeNil())
 	g.Expect(called).To(BeTrue())
 
