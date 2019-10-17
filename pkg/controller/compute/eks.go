@@ -29,17 +29,16 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	awscomputev1alpha2 "github.com/crossplaneio/stack-aws/apis/compute/v1alpha2"
 	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
-	awsClient "github.com/crossplaneio/stack-aws/pkg/clients"
+	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 	cloudformationclient "github.com/crossplaneio/stack-aws/pkg/clients/cloudformation"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
@@ -49,7 +48,6 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 )
 
 const (
@@ -88,9 +86,7 @@ var (
 // Reconciler reconciles a Provider object
 type Reconciler struct {
 	client.Client
-	scheme     *runtime.Scheme
-	kubeclient kubernetes.Interface
-	recorder   record.EventRecorder
+	publisher resource.ManagedConnectionPublisher
 
 	connect func(*awscomputev1alpha2.EKSCluster) (eks.Client, error)
 	create  func(*awscomputev1alpha2.EKSCluster, eks.Client) (reconcile.Result, error)
@@ -108,10 +104,8 @@ type EKSClusterController struct{}
 // and Start it when the Manager is Started.
 func (c *EKSClusterController) SetupWithManager(mgr ctrl.Manager) error {
 	r := &Reconciler{
-		Client:     mgr.GetClient(),
-		scheme:     mgr.GetScheme(),
-		kubeclient: kubernetes.NewForConfigOrDie(mgr.GetConfig()),
-		recorder:   mgr.GetEventRecorderFor(controllerName),
+		Client:    mgr.GetClient(),
+		publisher: resource.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
 	}
 	r.connect = r._connect
 	r.create = r._create
@@ -133,22 +127,23 @@ func (r *Reconciler) fail(instance *awscomputev1alpha2.EKSCluster, err error) (r
 }
 
 func (r *Reconciler) _connect(instance *awscomputev1alpha2.EKSCluster) (eks.Client, error) {
-	// Fetch Provider
 	p := &awsv1alpha2.Provider{}
-	err := r.Get(ctx, meta.NamespacedNameOf(instance.Spec.ProviderReference), p)
-	if err != nil {
+	if err := r.Get(ctx, meta.NamespacedNameOf(instance.Spec.ProviderReference), p); err != nil {
 		return nil, err
 	}
 
-	// Get Provider's AWS Config
-	config, err := awsClient.Config(r.kubeclient, p)
-	if err != nil {
+	s := &v1.Secret{}
+	n := types.NamespacedName{Namespace: p.GetNamespace(), Name: p.Spec.Secret.Name}
+	if err := r.Get(ctx, n, s); err != nil {
 		return nil, err
 	}
 
-	// Connection Region must be with Spec.Region
-	if string(instance.Spec.Region) != config.Region {
-		config.Region = string(instance.Spec.Region)
+	// NOTE(negz): EKS clusters must specify a region for creation. They never
+	// use the provider's region. This should be addressed per the below issue.
+	// https://github.com/crossplaneio/stack-aws/issues/38
+	config, err := aws.LoadConfig(s.Data[p.Spec.Secret.Key], aws.DefaultSection, string(instance.Spec.Region))
+	if err != nil {
+		return nil, err
 	}
 
 	// Create new EKS Client
@@ -333,20 +328,11 @@ func (r *Reconciler) _secret(cluster *eks.Cluster, instance *awscomputev1alpha2.
 		return err
 	}
 
-	// secret := instance.ConnectionSecret()
-	secret := resource.ConnectionSecretFor(instance, awscomputev1alpha2.EKSClusterGroupVersionKind)
-	data := make(map[string][]byte)
-	data[runtimev1alpha1.ResourceCredentialsSecretEndpointKey] = []byte(cluster.Endpoint)
-	data[runtimev1alpha1.ResourceCredentialsSecretCAKey] = caData
-	data[runtimev1alpha1.ResourceCredentialsTokenKey] = []byte(token)
-	secret.Data = data
-
-	// create connection secret
-	if _, err := util.ApplySecret(r.kubeclient, secret); err != nil {
-		return err
-	}
-
-	return nil
+	return r.publisher.PublishConnection(ctx, instance, resource.ConnectionDetails{
+		runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(cluster.Endpoint),
+		runtimev1alpha1.ResourceCredentialsSecretCAKey:       caData,
+		runtimev1alpha1.ResourceCredentialsTokenKey:          []byte(token),
+	})
 }
 
 // _delete check reclaim policy and if needed delete the eks cluster resource
