@@ -21,13 +21,13 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strings"
+	"time"
 
 	cf "github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
@@ -61,10 +61,14 @@ const (
 )
 
 var (
-	log           = logging.Logger.WithName("controller." + controllerName)
-	ctx           = context.Background()
-	result        = reconcile.Result{}
-	resultRequeue = reconcile.Result{Requeue: true}
+	log = logging.Logger.WithName("controller." + controllerName)
+	ctx = context.Background()
+)
+
+// Amounts of time we wait before requeuing a reconcile.
+const (
+	aShortWait = 30 * time.Second
+	aLongWait  = 60 * time.Second
 )
 
 // CloudFormation States that are non-transitory
@@ -123,7 +127,11 @@ func (c *EKSClusterController) SetupWithManager(mgr ctrl.Manager) error {
 // fail - helper function to set fail condition with reason and message
 func (r *Reconciler) fail(instance *awscomputev1alpha2.EKSCluster, err error) (reconcile.Result, error) {
 	instance.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
-	return resultRequeue, r.Update(context.TODO(), instance)
+
+	// If this is the first time we've encountered this error we'll be requeued
+	// implicitly due to the status update. Otherwise we requeue after a short
+	// wait in case the error condition was resolved.
+	return reconcile.Result{RequeueAfter: aShortWait}, r.Update(ctx, instance)
 }
 
 func (r *Reconciler) _connect(instance *awscomputev1alpha2.EKSCluster) (eks.Client, error) {
@@ -158,9 +166,12 @@ func (r *Reconciler) _create(instance *awscomputev1alpha2.EKSCluster, client eks
 	createdCluster, err := client.Create(clusterName, instance.Spec)
 	if err != nil && !eks.IsErrorAlreadyExists(err) {
 		if eks.IsErrorBadRequest(err) {
-			// do not requeue on bad requests
+			// If this was the first time we encountered this error we'll be
+			// requeued implicitly. Otherwise there's no point requeuing, since
+			// the error indicates our spec is bad and needs updating before
+			// anything will work.
 			instance.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
-			return result, r.Update(ctx, instance)
+			return reconcile.Result{}, r.Update(ctx, instance)
 		}
 		return r.fail(instance, err)
 	}
@@ -174,7 +185,11 @@ func (r *Reconciler) _create(instance *awscomputev1alpha2.EKSCluster, client eks
 	instance.Status.ClusterName = clusterName
 
 	instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
-	return resultRequeue, r.Update(ctx, instance)
+
+	// We'll be requeued immediately the first time we update our status
+	// condition. Otherwise we want to requeue after a short wait in order to
+	// determine whether the cluster is ready.
+	return reconcile.Result{RequeueAfter: aShortWait}, r.Update(ctx, instance)
 }
 
 // generateAWSAuthConfigMap generates the configmap for configure auth
@@ -271,7 +286,9 @@ func (r *Reconciler) _sync(instance *awscomputev1alpha2.EKSCluster, client eks.C
 
 	if cluster.Status != awscomputev1alpha2.ClusterStatusActive {
 		instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
-		return resultRequeue, nil
+
+		// Requeue after a short wait to see if the cluster has become ready.
+		return reconcile.Result{RequeueAfter: aShortWait}, nil
 	}
 
 	// Create workers
@@ -282,7 +299,11 @@ func (r *Reconciler) _sync(instance *awscomputev1alpha2.EKSCluster, client eks.C
 		}
 		instance.Status.CloudFormationStackID = clusterWorkers.WorkerStackID
 		instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
-		return resultRequeue, r.Update(ctx, instance)
+
+		// We'll likely be requeued implicitly due to the status update, but
+		// otherwise we want to requeue a reconcile after a short wait to check
+		// on the worker node creation.
+		return reconcile.Result{RequeueAfter: aShortWait}, r.Update(ctx, instance)
 	}
 
 	clusterWorker, err := client.GetWorkerNodes(instance.Status.CloudFormationStackID)
@@ -296,7 +317,8 @@ func (r *Reconciler) _sync(instance *awscomputev1alpha2.EKSCluster, client eks.C
 
 	if !completedCFState[clusterWorker.WorkersStatus] {
 		instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
-		return resultRequeue, r.Update(ctx, instance)
+
+		return reconcile.Result{RequeueAfter: aShortWait}, r.Update(ctx, instance)
 	}
 
 	if err := r.awsauth(cluster, instance, client, clusterWorker.WorkerARN); err != nil {
@@ -313,7 +335,9 @@ func (r *Reconciler) _sync(instance *awscomputev1alpha2.EKSCluster, client eks.C
 	instance.Status.SetConditions(runtimev1alpha1.Available(), runtimev1alpha1.ReconcileSuccess())
 	resource.SetBindable(instance)
 
-	return result, r.Update(ctx, instance)
+	// Our cluster is available. Requeue speculative yafter a long wait in case
+	// the cluster has changed.
+	return reconcile.Result{RequeueAfter: aLongWait}, r.Update(ctx, instance)
 }
 
 func (r *Reconciler) _secret(cluster *eks.Cluster, instance *awscomputev1alpha2.EKSCluster, client eks.Client) error {
@@ -357,7 +381,10 @@ func (r *Reconciler) _delete(instance *awscomputev1alpha2.EKSCluster, client eks
 
 	meta.RemoveFinalizer(instance, finalizer)
 	instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
-	return result, r.Update(ctx, instance)
+
+	// No need to requeue a reconcile if we've successfully asked for the
+	// cluster to be deleted.
+	return reconcile.Result{Requeue: false}, r.Update(ctx, instance)
 }
 
 // Reconcile reads that state of the cluster for a Provider object and makes changes based on the state read
@@ -368,13 +395,9 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	instance := &awscomputev1alpha2.EKSCluster{}
 	err := r.Get(ctx, request.NamespacedName, instance)
 	if err != nil {
-		if kerrors.IsNotFound(err) {
-			// Object not found, return.  Created objects are automatically garbage collected.
-			// For additional cleanup logic use finalizers.
-			return reconcile.Result{}, nil
-		}
-		// Error reading the object - requeue the request.
-		return reconcile.Result{}, err
+		// No need to requeue if the resource no longer exists, otherwise we'll
+		// be requeued because we return an error.
+		return reconcile.Result{}, resource.IgnoreNotFound(err)
 	}
 
 	// Create EKS Client
