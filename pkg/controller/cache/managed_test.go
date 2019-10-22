@@ -49,7 +49,6 @@ const (
 	namespace = "coolNamespace"
 	name      = "coolGroup"
 	uid       = types.UID("definitely-a-uuid")
-	id        = elasticacheclient.NamePrefix + "-efdd8494195d7940" // FNV-64a hash of uid
 
 	cacheNodeType            = "n1.super.cool"
 	autoFailoverEnabled      = true

@@ -31,6 +31,7 @@ github.com/crossplaneio/crossplane-runtime v0.0.0-20191022193131-1647c0818444 h1
 github.com/crossplaneio/crossplane-runtime v0.0.0-20191022193131-1647c0818444/go.mod h1:FMlJ6k7pUZdxQrjh0B33D2b79iBac+xcMEHTWiruXao=
 github.com/crossplaneio/crossplane-tools v0.0.0-20191022184929-086ccf793892 h1:7cL5x1BNUIOQxsXhBGVWIaPwTJ7hat+6QKkqyU8pqUc=
 github.com/crossplaneio/crossplane-tools v0.0.0-20191022184929-086ccf793892/go.mod h1:fzQeWDvZvzaC4N8vPjTubQocGnwzQ4cuZM6949+T43U=
+github.com/dave/jennifer v1.3.0 h1:p3tl41zjjCZTNBytMwrUuiAnherNUZktlhPTKoF/sEk=
 github.com/dave/jennifer v1.3.0/go.mod h1:fIb+770HOpJ2fmN9EPPKOqm1vMGhB+TwXKMZhrIygKg=
 github.com/davecgh/go-spew v0.0.0-20151105211317-5215b55f46b2/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -265,6 +266,7 @@ golang.org/x/tools v0.0.0-20181011042414-1f849cf54d09/go.mod h1:n7NCudcB/nEzxVGm
 golang.org/x/tools v0.0.0-20181030221726-6c7e314b6563/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
 golang.org/x/tools v0.0.0-20190606124116-d0a3d012864b h1:mSUCVIwDx4hfXJfWsOPfdzEHxzb2Xjl6BQ8YgPnazQA=
 golang.org/x/tools v0.0.0-20190606124116-d0a3d012864b/go.mod h1:/rFqwRUd4F7ZHNgwSSTFct+R/Kf4OFW1sUzUTQQTgfc=
+golang.org/x/tools v0.0.0-20191018212557-ed542cd5b28a h1:UuQ+70Pi/ZdWHuP4v457pkXeOynTdgd/4enxeIO/98k=
 golang.org/x/tools v0.0.0-20191018212557-ed542cd5b28a/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 gomodules.xyz/jsonpatch/v2 v2.0.0/go.mod h1:IhYNNY4jnS53ZnfE4PAmpKtDpTCj1JFXc+3mwe7XcUU=

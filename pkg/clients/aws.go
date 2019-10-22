@@ -113,6 +113,20 @@ func Config(client kubernetes.Interface, p *v1alpha2.Provider) (*aws.Config, err
 	return LoadConfig(data, DefaultSection, p.Spec.Region)
 }
 
+// StringAddress returns address of the given string.
+func StringAddress(v string) *string {
+	return &v
+}
+
+// Int64Address returns address of the given int64.
+func Int64Address(i *int) *int64 {
+	if i == nil {
+		return nil
+	}
+	n := int64(*i)
+	return &n
+}
+
 // String converts the supplied string for use with the AWS Go SDK.
 func String(v string, o ...FieldOption) *string {
 	for _, fo := range o {
@@ -169,8 +183,52 @@ func Int64Value(v *int64) int {
 	return int(aws.Int64Value(v))
 }
 
+// Float64Value converts the supplied float64 pointer to an int, returning zero if
+// the pointer is nil.
+func Float64Value(v *float64) int {
+	return int(aws.Float64Value(v))
+}
+
 // BoolValue converts the supplied bool pointer to a bool, returning false if
 // the pointer is nil.
 func BoolValue(v *bool) bool {
 	return aws.BoolValue(v)
+}
+
+// IntValue converts the supplied int pointer to a int, returning 0 if
+// the pointer is nil.
+func IntValue(v *int) int {
+	return aws.IntValue(v)
+}
+
+func LateInitializeStringPtr(in *string, from *string) *string {
+	if in != nil {
+		return in
+	}
+	return from
+}
+
+func LateInitializeBoolPtr(in *bool, from *bool) *bool {
+	if in != nil {
+		return in
+	}
+	return from
+}
+
+func LateInitializeBool(in *bool, from bool) *bool {
+	if in != nil {
+		return in
+	}
+	return &from
+}
+
+func LateInitializeIntPtr(in *int, from *int64) *int {
+	if in != nil {
+		return in
+	}
+	if from != nil {
+		i := int(*from)
+		return &i
+	}
+	return nil
 }

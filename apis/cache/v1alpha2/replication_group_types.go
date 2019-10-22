@@ -63,18 +63,201 @@ var LatestSupportedPatchVersion = map[MinorVersion]PatchVersion{
 	MinorVersion("2.8"): PatchVersion("2.8.24"),
 }
 
+// Endpoint represents the information required for client programs to connect
+// to a cache node.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/Endpoint
+type Endpoint struct {
+	// Address is the DNS hostname of the cache node.
+	Address string `json:"address,omitempty"`
+
+	// Port number that the cache engine is listening on.
+	Port int `json:"port,omitempty"`
+}
+
+// NodeGroup represents a collection of cache nodes in a replication group.
+// One node in the node group is the read/write primary node. All the other
+// nodes are read-only Replica nodes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/NodeGroup
+type NodeGroup struct {
+	// NodeGroupId is the identifier for the node group (shard). A Redis
+	// (cluster mode disabled) replication group contains only 1 node group;
+	// therefore, the node group ID is 0001. A Redis (cluster mode enabled)
+	// replication group contains 1 to 15 node groups numbered 0001 to 0015.
+	NodeGroupId string `json:"port,omitempty"`
+
+	// NodeGroupMembers is a list containing information about individual nodes
+	// within the node group (shard).
+	NodeGroupMembers []NodeGroupMember `json:"nodeGroupMembers,omitempty"`
+
+	// PrimaryEndpoint is the endpoint of the primary node in this
+	// node group (shard).
+	PrimaryEndpoint Endpoint `json:"primaryEndpoint,omitempty"`
+
+	// Slots is the keyspace for this node group (shard).
+	Slots string `json:"slots,omitempty"`
+
+	// Status of this replication group - creating, available, etc.
+	Status string `json:"status,omitempty"`
+}
+
+// NodeGroupMember represents a single node within a node group (shard).
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/NodeGroupMember
+type NodeGroupMember struct {
+	// CacheClusterId is the ID of the cluster to which the node belongs.
+	CacheClusterId string `json:"cacheClusterId,omitempty"`
+
+	// CacheNodeId is the ID of the node within its cluster. A node ID is a
+	// numeric identifier (0001, 0002, etc.).
+	CacheNodeId string `json:"cacheNodeId,omitempty"`
+
+	// CurrentRole is the role that is currently assigned to the node - primary
+	// or replica. This member is only applicable for Redis (cluster mode
+	// disabled) replication groups.
+	CurrentRole string `json:"currentRole,omitempty"`
+
+	// PreferredAvailabilityZone is the name of the Availability Zone in
+	// which the node is located.
+	PreferredAvailabilityZone string `json:"preferredAvailabilityZone,omitempty"`
+
+	// ReadEndpoint is the information required for client programs to connect to a
+	// node for read operations. The read endpoint is only applicable on Redis
+	// (cluster mode disabled) clusters.
+	ReadEndpoint Endpoint `json:"readEndpoint,omitempty"`
+}
+
+// ReplicationGroupPendingModifiedValues are the settings to be applied to the
+// Redis replication group, either immediately or during the next maintenance
+// window. Please also see
+// https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ReplicationGroupPendingModifiedValues
+type ReplicationGroupPendingModifiedValues struct {
+	// AutomaticFailoverStatus indicates the status of Multi-AZ with automatic
+	// failover for this Redis replication group.
+	AutomaticFailoverStatus string `json:"automaticFailoverStatus,omitempty"`
+
+	// PrimaryClusterID that is applied immediately or during the next
+	// maintenance window.
+	PrimaryClusterID string `json:"primaryClusterId,omitempty"`
+
+	// Resharding is the status of an online resharding operation.
+	Resharding ReshardingStatus `json:"resharding,omitempty"`
+}
+
+// The status of an online resharding operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ReshardingStatus
+type ReshardingStatus struct {
+	// Represents the progress of an online resharding operation.
+	SlotMigration SlotMigration `json:"slotMigration"`
+}
+
+// Represents the progress of an online resharding operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/SlotMigration
+type SlotMigration struct {
+	// NOTE(muvaf): Type of ProgressPercentage is float64 in AWS SDK but
+	// float is not supported by controller-runtime.
+	// See https://github.com/kubernetes-sigs/controller-tools/issues/245
+
+	// ProgressPercentage is the percentage of the slot migration
+	// that is complete.
+	ProgressPercentage int `json:"progressPercentage"`
+}
+
+// ReplicationGroupObservation contains the observation of the status of
+// the given ReplicationGroup.
+type ReplicationGroupObservation struct {
+	// AutomaticFailover indicates the status of Multi-AZ with automatic failover
+	// for this Redis replication group.
+	AutomaticFailover string `json:"automaticFailoverStatus,omitempty"`
+
+	// ClusterEnabled is a flag indicating whether or not this replication group
+	// is cluster enabled; i.e., whether its data can be partitioned across
+	// multiple shards (API/CLI: node groups).
+	ClusterEnabled bool `json:"clusterEnabled,omitempty"`
+
+	// ConfigurationEndpoint for this replication group. Use the configuration
+	// endpoint to connect to this replication group.
+	ConfigurationEndpoint Endpoint `json:"configurationEndpoint,omitempty"`
+
+	// MemberClusters is the list of names of all the cache clusters that are
+	// part of this replication group.
+	MemberClusters []string `json:"memberClusters,omitempty"`
+
+	// NodeGroups is a list of node groups in this replication group.
+	// For Redis (cluster mode disabled) replication groups, this is a
+	// single-element list. For Redis (cluster mode enabled) replication groups,
+	// the list contains an entry for each node group (shard).
+	NodeGroups []NodeGroup `json:"nodeGroups,omitempty"`
+
+	// PendingModifiedValues is a group of settings to be applied to the
+	// replication group, either immediately or during the next maintenance window.
+	PendingModifiedValues ReplicationGroupPendingModifiedValues `json:"pendingModifiedValues,omitempty"`
+
+	// Status is the current state of this replication group - creating,
+	// available, modifying, deleting, create-failed, snapshotting.
+	Status string `json:"status,omitempty"`
+}
+
+// A Tag is used to tag the ElastiCache resources in AWS.
+type Tag struct {
+	// Key for the tag.
+	Key string `json:"key"`
+
+	// Value of the tag.
+	Value string `json:"value"`
+}
+
+// A NodeGroupConfigurationSpec specifies the desired state of a node group.
+type NodeGroupConfigurationSpec struct {
+	// PrimaryAvailabilityZone specifies the Availability Zone where the primary
+	// node of this node group (shard) is launched.
+	// +optional
+	PrimaryAvailabilityZone *string `json:"primaryAvailabilityZone,omitempty"`
+
+	// ReplicaAvailabilityZones specifies a list of Availability Zones to be
+	// used for the read replicas. The number of Availability Zones in this list
+	// must match the value of ReplicaCount or ReplicasPerNodeGroup if not
+	// specified.
+	// +optional
+	ReplicaAvailabilityZones []string `json:"replicaAvailabilityZones,omitempty"`
+
+	// ReplicaCount specifies the number of read replica nodes in this node
+	// group (shard).
+	// +optional
+	ReplicaCount *int `json:"replicaCount,omitempty"`
+
+	// Slots specifies the keyspace for a particular node group. Keyspaces range
+	// from 0 to 16,383. The string is in the format startkey-endkey.
+	//
+	// Example: "0-3999"
+	// +optional
+	Slots *string `json:"slots,omitempty"`
+}
+
 // ReplicationGroupParameters define the desired state of an AWS ElastiCache
 // Replication Group. Most fields map directly to an AWS ReplicationGroup:
 // https://docs.aws.amazon.com/AmazonElastiCache/latest/APIReference/API_CreateReplicationGroup.html#API_CreateReplicationGroup_RequestParameters
 type ReplicationGroupParameters struct {
+	// If true, this parameter causes the modifications in this request and any
+	// pending modifications to be applied, asynchronously and as soon as possible,
+	// regardless of the PreferredMaintenanceWindow setting for the replication
+	// group.
+	//
+	// If false, changes to the nodes in the replication group are applied on the
+	// next maintenance reboot, or the next failure reboot, whichever occurs first.
+	ApplyImmediately bool `json:"applyImmediately"`
+
 	// AtRestEncryptionEnabled enables encryption at rest when set to true.
 	//
 	// You cannot modify the value of AtRestEncryptionEnabled after the replication
 	// group is created. To enable encryption at rest on a replication group you
 	// must set AtRestEncryptionEnabled to true when you create the replication
 	// group.
+	//
+	// Only available when creating a replication group in an Amazon VPC
+	// using redis version 3.2.6 or 4.x.
+	//
+	// +immutable
 	// +optional
-	AtRestEncryptionEnabled bool `json:"atRestEncryptionEnabled,omitempty"`
+	AtRestEncryptionEnabled *bool `json:"atRestEncryptionEnabled,omitempty"`
 
 	// AuthEnabled enables mandatory authentication when connecting to the
 	// managed replication group. AuthEnabled requires TransitEncryptionEnabled
@@ -84,8 +267,9 @@ type ReplicationGroupParameters struct {
 	// group object as closely as possible, we expose a boolean here rather than
 	// requiring the operator pass in a string authentication token. Crossplane
 	// will generate a token automatically and expose it via a Secret.
+	// +immutable
 	// +optional
-	AuthEnabled bool `json:"authEnabled,omitempty"`
+	AuthEnabled *bool `json:"authEnabled,omitempty"`
 
 	// AutomaticFailoverEnabled specifies whether a read-only replica is
 	// automatically promoted to read/write primary if the existing primary
@@ -94,18 +278,36 @@ type ReplicationGroupParameters struct {
 	//
 	// AutomaticFailoverEnabled must be enabled for Redis (cluster mode enabled)
 	// replication groups.
+	//
+	// Amazon ElastiCache for Redis does not support Multi-AZ with automatic
+	// failover on:
+	// * Redis versions earlier than 2.8.6.
+	// * Redis (cluster mode disabled): T1 and T2 cache node types.
+	// * Redis (cluster mode enabled): T1 node types.
 	// +optional
-	AutomaticFailoverEnabled bool `json:"automaticFailoverEnabled,omitempty"`
+	AutomaticFailoverEnabled *bool `json:"automaticFailoverEnabled,omitempty"`
 
 	// CacheNodeType specifies the compute and memory capacity of the nodes in
 	// the node group (shard).
+	// For a complete listing of node types and specifications, see:
+	// * Amazon ElastiCache Product Features and Details (http://aws.amazon.com/elasticache/details)
+	// * Cache Node Type-Specific Parameters for Memcached (http://docs.aws.amazon.com/AmazonElastiCache/latest/mem-ug/ParameterGroups.Memcached.html#ParameterGroups.Memcached.NodeSpecific)
+	// * Cache Node Type-Specific Parameters for Redis (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ParameterGroups.Redis.html#ParameterGroups.Redis.NodeSpecific)
 	CacheNodeType string `json:"cacheNodeType"`
 
 	// CacheParameterGroupName specifies the name of the parameter group to
 	// associate with this replication group. If this argument is omitted, the
 	// default cache parameter group for the specified engine is used.
+	//
+	// If you are running Redis version 3.2.4 or later, only one node group (shard),
+	// and want to use a default parameter group, we recommend that you specify
+	// the parameter group by name.
+	// * To create a Redis (cluster mode disabled) replication group,
+	// use CacheParameterGroupName=default.redis3.2.
+	// * To create a Redis (cluster mode enabled) replication group,
+	// use CacheParameterGroupName=default.redis3.2.cluster.on.
 	// +optional
-	CacheParameterGroupName string `json:"cacheParameterGroupName,omitempty"`
+	CacheParameterGroupName *string `json:"cacheParameterGroupName,omitempty"`
 
 	// CacheSecurityGroupNames specifies a list of cache security group names to
 	// associate with this replication group.
@@ -115,18 +317,40 @@ type ReplicationGroupParameters struct {
 	// CacheSubnetGroupName specifies the name of the cache subnet group to be
 	// used for the replication group. If you're going to launch your cluster in
 	// an Amazon VPC, you need to create a subnet group before you start
-	// creating a cluster.
+	// creating a cluster. For more information, see Subnets and Subnet Groups
+	// (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/SubnetGroups.html).
+	// +immutable
 	// +optional
-	CacheSubnetGroupName string `json:"cacheSubnetGroupName,omitempty"`
+	CacheSubnetGroupName *string `json:"cacheSubnetGroupName,omitempty"`
+
+	// Engine is the name of the cache engine to be used for the clusters in
+	// this replication group.
+	// +immutable
+	Engine string `json:"engine"`
 
 	// EngineVersion specifies the version number of the cache engine to be
 	// used for the clusters in this replication group. To view the supported
 	// cache engine versions, use the DescribeCacheEngineVersions operation.
+	//
+	// Important: You can upgrade to a newer engine version (see Selecting a Cache
+	// Engine and Version (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/SelectEngine.html#VersionManagement))
+	// in the ElastiCache User Guide, but you cannot downgrade to an earlier engine
+	// version. If you want to use an earlier engine version, you must delete the
+	// existing cluster or replication group and create it anew with the earlier
+	// engine version.
 	// +optional
-	EngineVersion string `json:"engineVersion,omitempty"`
+	EngineVersion *string `json:"engineVersion,omitempty"`
 
-	// NodeGroupConfiguration specifies a list of node group (shard)
+	// NodeGroupConfigurationSpec specifies a list of node group (shard)
 	// configuration options.
+	//
+	// If you're creating a Redis (cluster mode disabled) or a Redis (cluster mode
+	// enabled) replication group, you can use this parameter to individually configure
+	// each node group (shard), or you can omit this parameter. However, when seeding
+	// a Redis (cluster mode enabled) cluster from a S3 rdb file, you must configure
+	// each node group (shard) using this parameter because you must specify the
+	// slots for each node group.
+	// +immutable
 	// +optional
 	NodeGroupConfiguration []NodeGroupConfigurationSpec `json:"nodeGroupConfiguration,omitempty"`
 
@@ -134,7 +358,15 @@ type ReplicationGroupParameters struct {
 	// Amazon Simple Notification Service (SNS) topic to which notifications are
 	// sent. The Amazon SNS topic owner must be the same as the cluster owner.
 	// +optional
-	NotificationTopicARN string `json:"notificationTopicArn,omitempty"`
+	NotificationTopicARN *string `json:"notificationTopicArn,omitempty"`
+
+	// NotificationTopicStatus is the status of the Amazon SNS notification
+	// topic for the replication group. Notifications are sent only if the status
+	// is active.
+	//
+	// Valid values: active | inactive
+	// +optional
+	NotificationTopicStatus *string `json:"notificationTopicStatus,omitempty"`
 
 	// NumCacheClusters specifies the number of clusters this replication group
 	// initially has. This parameter is not used if there is more than one node
@@ -144,19 +376,26 @@ type ReplicationGroupParameters struct {
 	// at least 2. If AutomaticFailoverEnabled is false you can omit this
 	// parameter (it will default to 1), or you can explicitly set it to a value
 	// between 2 and 6.
+	//
+	// The maximum permitted value for NumCacheClusters is 6 (1 primary plus 5 replicas).
+	// +immutable
 	// +optional
-	NumCacheClusters int `json:"numCacheClusters,omitempty"`
+	NumCacheClusters *int `json:"numCacheClusters,omitempty"`
 
 	// NumNodeGroups specifies the number of node groups (shards) for this Redis
 	// (cluster mode enabled) replication group. For Redis (cluster mode
 	// disabled) either omit this parameter or set it to 1.
+	//
+	// Default: 1
+	// +immutable
 	// +optional
-	NumNodeGroups int `json:"numNodeGroups,omitempty"`
+	NumNodeGroups *int `json:"numNodeGroups,omitempty"`
 
 	// Port number on which each member of the replication group accepts
 	// connections.
+	// +immutable
 	// +optional
-	Port int `json:"port,omitempty"`
+	Port *int `json:"port,omitempty"`
 
 	// PreferredCacheClusterAZs specifies a list of EC2 Availability Zones in
 	// which the replication group's clusters are created. The order of the
@@ -164,10 +403,16 @@ type ReplicationGroupParameters struct {
 	// allocated. The primary cluster is created in the first AZ in the list.
 	//
 	// This parameter is not used if there is more than one node group (shard).
-	// You should use NodeGroupConfiguration instead.
+	// You should use NodeGroupConfigurationSpec instead.
 	//
-	// The number of Availability Zones listed must equal the value of
-	// NumCacheClusters.
+	// If you are creating your replication group in an Amazon VPC (recommended),
+	// you can only locate clusters in Availability Zones associated with the subnets
+	// in the selected subnet group.
+	//
+	// The number of Availability Zones listed must equal the value of NumCacheClusters.
+	//
+	// Default: system chosen Availability Zones.
+	// +immutable
 	// +optional
 	PreferredCacheClusterAZs []string `json:"preferredCacheClusterAzs,omitempty"`
 
@@ -178,12 +423,25 @@ type ReplicationGroupParameters struct {
 	//
 	// Example: sun:23:00-mon:01:30
 	// +optional
-	PreferredMaintenanceWindow string `json:"preferredMaintenanceWindow,omitempty"`
+	PreferredMaintenanceWindow *string `json:"preferredMaintenanceWindow,omitempty"`
+
+	// PrimaryClusterId is the identifier of the cluster that serves as the
+	// primary for this replication group. This cluster must already exist
+	// and have a status of available.
+	//
+	// This parameter is not required if NumCacheClusters, NumNodeGroups or
+	// ReplicasPerNodeGroup is specified.
+	// +optional
+	PrimaryClusterID *string `json:"primaryClusterId,omitempty"`
 
 	// ReplicasPerNodeGroup specifies the number of replica nodes in each node
 	// group (shard). Valid values are 0 to 5.
+	// +immutable
 	// +optional
-	ReplicasPerNodeGroup int `json:"replicasPerNodeGroup,omitempty"`
+	ReplicasPerNodeGroup *int `json:"replicasPerNodeGroup,omitempty"`
+
+	// ReplicationGroupDescription is the description for the replication group.
+	ReplicationGroupDescription string `json:"replicasPerNodeGroup"`
 
 	// SecurityGroupIDs specifies one or more Amazon VPC security groups
 	// associated with this replication group. Use this parameter only when you
@@ -197,22 +455,25 @@ type ReplicationGroupParameters struct {
 	// S3 object name in the ARN cannot contain any commas. The new replication
 	// group will have the number of node groups (console: shards) specified by
 	// the parameter NumNodeGroups or the number of node groups configured by
-	// NodeGroupConfiguration regardless of the number of ARNs specified here.
+	// NodeGroupConfigurationSpec regardless of the number of ARNs specified here.
+	// +immutable
 	// +optional
 	SnapshotARNs []string `json:"snapshotArns,omitempty"`
 
 	// SnapshotName specifies the name of a snapshot from which to restore data
 	// into the new replication group. The snapshot status changes to restoring
 	// while the new replication group is being created.
+	// +immutable
 	// +optional
-	SnapshotName string `json:"snapshotName,omitempty"`
+	SnapshotName *string `json:"snapshotName,omitempty"`
 
 	// SnapshotRetentionLimit specifies the number of days for which ElastiCache
 	// retains automatic snapshots before deleting them. For example, if you set
 	// SnapshotRetentionLimit to 5, a snapshot that was taken today is retained
 	// for 5 days before being deleted.
+	// Default: 0 (i.e., automatic backups are disabled for this cluster).
 	// +optional
-	SnapshotRetentionLimit int `json:"snapshotRetentionLimit,omitempty"`
+	SnapshotRetentionLimit *int `json:"snapshotRetentionLimit,omitempty"`
 
 	// SnapshotWindow specifies the daily time range (in UTC) during which
 	// ElastiCache begins taking a daily snapshot of your node group (shard).
@@ -222,79 +483,54 @@ type ReplicationGroupParameters struct {
 	// If you do not specify this parameter, ElastiCache automatically chooses an
 	// appropriate time range.
 	// +optional
-	SnapshotWindow string `json:"snapshotWindow,omitempty"`
+	SnapshotWindow *string `json:"snapshotWindow,omitempty"`
+
+	// SnapshottingClusterID is used as the daily snapshot source for the replication
+	// group. This parameter cannot be set for Redis (cluster mode enabled) replication
+	// groups.
+	// +optional
+	SnapshottingClusterID *string `json:"snapshottingClusterId,omitempty"`
+
+	// A list of cost allocation tags to be added to this resource. A tag is a key-value
+	// pair.
+	// +immutable
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
 
 	// TransitEncryptionEnabled enables in-transit encryption when set to true.
 	//
 	// You cannot modify the value of TransitEncryptionEnabled after the cluster
 	// is created. To enable in-transit encryption on a cluster you must
 	// TransitEncryptionEnabled to true when you create a cluster.
+	//
+	// This parameter is valid only if the Engine parameter is redis, the EngineVersion
+	// parameter is 3.2.6 or 4.x, and the cluster is being created in an Amazon
+	// VPC.
+	//
+	// If you enable in-transit encryption, you must also specify a value for CacheSubnetGroup.
+	//
+	// Required: Only available when creating a replication group in an Amazon VPC
+	// using redis version 3.2.6 or 4.x.
+	//
+	// Default: false
+	//
+	// For HIPAA compliance, you must specify TransitEncryptionEnabled as true,
+	// an AuthToken, and a CacheSubnetGroup.
+	// +immutable
 	// +optional
-	TransitEncryptionEnabled bool `json:"transitEncryptionEnabled,omitempty"`
+	TransitEncryptionEnabled *bool `json:"transitEncryptionEnabled,omitempty"`
 }
 
 // A ReplicationGroupSpec defines the desired state of a ReplicationGroup.
 type ReplicationGroupSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ReplicationGroupParameters   `json:",inline"`
-}
-
-// A NodeGroupConfigurationSpec specifies the desired state of a node group.
-type NodeGroupConfigurationSpec struct {
-	// PrimaryAvailabilityZone specifies the Availability Zone where the primary
-	// node of this node group (shard) is launched.
-	// +optional
-	PrimaryAvailabilityZone string `json:"primaryAvailabilityZone,omitempty"`
-
-	// ReplicaAvailabilityZones specifies a list of Availability Zones to be
-	// used for the read replicas. The number of Availability Zones in this list
-	// must match the value of ReplicaCount or ReplicasPerNodeGroup if not
-	// specified.
-	// +optional
-	ReplicaAvailabilityZones []string `json:"replicaAvailabilityZones,omitempty"`
-
-	// ReplicaCount specifies the number of read replica nodes in this node
-	// group (shard).
-	// +optional
-	ReplicaCount int `json:"replicaCount,omitempty"`
-
-	// Slots specifies the keyspace for a particular node group. Keyspaces range
-	// from 0 to 16,383. The string is in the format startkey-endkey.
-	//
-	// Example: "0-3999"
-	// +optional
-	Slots string `json:"slots,omitempty"`
+	ForProvider                  ReplicationGroupParameters `json:"forProvider,omitempty"`
 }
 
 // A ReplicationGroupStatus defines the observed state of a ReplicationGroup.
 type ReplicationGroupStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-
-	// State of the Replication Group.
-	State string `json:"state,omitempty"`
-
-	// ProviderID is the external ID to identify this resource in the cloud
-	// provider
-	ProviderID string `json:"providerID,omitempty"`
-
-	// Endpoint of the Replication Group used in connection strings.
-	Endpoint string `json:"endpoint,omitempty"`
-
-	// Port at which the Replication Group endpoint is listening.
-	Port int `json:"port,omitempty"`
-
-	// ClusterEnabled indicates whether cluster mode is enabled, i.e. whether
-	// this replication group's data can be partitioned across multiple shards.
-	ClusterEnabled bool `json:"clusterEnabled,omitempty"`
-
-	// MemberClusters that are part of this replication group.
-	MemberClusters []string `json:"memberClusters,omitempty"`
-
-	// Groupname of the Replication Group.
-	GroupName string `json:"groupName,omitempty"`
-
-	// TODO(negz): Support PendingModifiedValues?
-	// https://docs.aws.amazon.com/AmazonElastiCache/latest/APIReference/API_ReplicationGroupPendingModifiedValues.html
+	AtProvider                     ReplicationGroupObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
