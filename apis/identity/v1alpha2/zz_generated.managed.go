@@ -33,6 +33,11 @@ func (mg *IAMRole) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
 }
 
+// GetCondition of this IAMRole.
+func (mg *IAMRole) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
 // GetNonPortableClassReference of this IAMRole.
 func (mg *IAMRole) GetNonPortableClassReference() *corev1.ObjectReference {
 	return mg.Spec.NonPortableClassReference
@@ -86,6 +91,11 @@ func (mg *IAMRolePolicyAttachment) GetBindingPhase() runtimev1alpha1.BindingPhas
 // GetClaimReference of this IAMRolePolicyAttachment.
 func (mg *IAMRolePolicyAttachment) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
+}
+
+// GetCondition of this IAMRolePolicyAttachment.
+func (mg *IAMRolePolicyAttachment) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
 }
 
 // GetNonPortableClassReference of this IAMRolePolicyAttachment.

@@ -33,6 +33,11 @@ func (mg *DBSubnetGroup) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
 }
 
+// GetCondition of this DBSubnetGroup.
+func (mg *DBSubnetGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
 // GetNonPortableClassReference of this DBSubnetGroup.
 func (mg *DBSubnetGroup) GetNonPortableClassReference() *corev1.ObjectReference {
 	return mg.Spec.NonPortableClassReference
@@ -86,6 +91,11 @@ func (mg *S3Bucket) GetBindingPhase() runtimev1alpha1.BindingPhase {
 // GetClaimReference of this S3Bucket.
 func (mg *S3Bucket) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
+}
+
+// GetCondition of this S3Bucket.
+func (mg *S3Bucket) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
 }
 
 // GetNonPortableClassReference of this S3Bucket.
