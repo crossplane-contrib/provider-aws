@@ -184,6 +184,19 @@ spec:
                 uses of the ReclaimPolicy concept within the Kubernetes ecosystem
                 per https://github.com/crossplaneio/crossplane-runtime/issues/21
               type: string
+            subnetIdRefs:
+              description: SubnetIDRefs is a set of referencers that each retrieve
+                the subnetID from the referenced Subnet
+              items:
+                description: SubnetIDReferencerForDBSubnetGroup is an attribute referencer
+                  that resolves SubnetID from a referenced Subnet
+                properties:
+                  name:
+                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                      TODO: Add other useful fields. apiVersion, kind, uid?'
+                    type: string
+                type: object
+              type: array
             subnetIds:
               description: The EC2 Subnet IDs for the DB subnet group.
               items:
@@ -223,7 +236,6 @@ spec:
           - description
           - groupName
           - providerRef
-          - subnetIds
           type: object
         status:
           description: A DBSubnetGroupStatus represents the observed state of a DBSubnetGroup.
@@ -297,11 +309,6 @@ spec:
             vpcId:
               description: Provides the VpcId of the DB subnet group.
               type: string
-          required:
-          - groupArn
-          - groupStatus
-          - subnets
-          - vpcId
           type: object
       type: object
   version: v1alpha2

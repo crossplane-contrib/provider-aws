@@ -188,7 +188,20 @@ spec:
                 uses of the ReclaimPolicy concept within the Kubernetes ecosystem
                 per https://github.com/crossplaneio/crossplane-runtime/issues/21
               type: string
-            securityGroups:
+            securityGroupIdRefs:
+              description: SecurityGroupRefs references to a list of SecurityGroups
+                to retrieve a list of securityGroupIDs
+              items:
+                description: SecurityGroupIDReferencerForRDSInstance is an attribute
+                  referencer that resolves SecurityGroupID from a referenced SecurityGroup
+                properties:
+                  name:
+                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                      TODO: Add other useful fields. apiVersion, kind, uid?'
+                    type: string
+                type: object
+              type: array
+            securityGroupIds:
               description: SecurityGroups that will allow the RDS instance to be accessed
                 over the network.
               items:
@@ -199,11 +212,20 @@ spec:
               format: int64
               type: integer
             subnetGroupName:
-              description: SubnetGroupName specifies a database subnet group for the
-                RDS instance. The new instance is created in the VPC associated with
-                the DB subnet group. If no DB subnet group is specified, then the
-                instance is not created in a VPC.
+              description: DBSubnetGroupName specifies a database subnet group for
+                the RDS instance. The new instance is created in the VPC associated
+                with the DB subnet group. If no DB subnet group is specified, then
+                the instance is not created in a VPC.
               type: string
+            subnetGroupNameRef:
+              description: SubnetGroupNameRef references to a DBSubnetGroup to retrieve
+                its name
+              properties:
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    TODO: Add other useful fields. apiVersion, kind, uid?'
+                  type: string
+              type: object
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the name of
                 a Secret, in the same namespace as this managed resource, to which

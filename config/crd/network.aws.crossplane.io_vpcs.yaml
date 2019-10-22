@@ -275,9 +275,6 @@ spec:
               - pending
               - available
               type: string
-          required:
-          - vpcId
-          - vpcState
           type: object
       type: object
   version: v1alpha2

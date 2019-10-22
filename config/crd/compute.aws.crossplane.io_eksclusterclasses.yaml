@@ -160,19 +160,61 @@ spec:
                 on your behalf. For more information, see ''Amazon EKS Service IAM
                 Role'' in the Amazon EKS User Guide.'
               type: string
+            roleARNRef:
+              description: RoleARNRef references to an IAMRole to retrieve its ARN
+              properties:
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    TODO: Add other useful fields. apiVersion, kind, uid?'
+                  type: string
+              type: object
+            securityGroupIdRefs:
+              description: SecurityGroupIDRefs is a set of referencers that each retrieve
+                the ID from the referenced SecurityGroup
+              items:
+                description: SecurityGroupIDReferencerForEKSCluster is an attribute
+                  referencer that resolves ID from a referenced SecurityGroup
+                properties:
+                  name:
+                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                      TODO: Add other useful fields. apiVersion, kind, uid?'
+                    type: string
+                type: object
+              type: array
             securityGroupIds:
-              description: SecurityGroupIds of this EKS cluster.
+              description: SecurityGroupIDs of this EKS cluster.
               items:
                 type: string
               type: array
+            subnetIdRefs:
+              description: SubnetIDRefs is a set of referencers that each retrieve
+                the subnetID from the referenced Subnet
+              items:
+                description: SubnetIDReferencerForEKSCluster is an attribute referencer
+                  that resolves SubnetID from a referenced Subnet
+                properties:
+                  name:
+                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                      TODO: Add other useful fields. apiVersion, kind, uid?'
+                    type: string
+                type: object
+              type: array
             subnetIds:
-              description: SubnetIds of this EKS cluster.
+              description: SubnetIDs of this EKS cluster.
               items:
                 type: string
               type: array
             vpcId:
-              description: VpcID of this EKS cluster.
+              description: VPCID is the ID of the VPC.
               type: string
+            vpcIdRef:
+              description: VPCIDRef references to a VPC to and retrieves its vpcId
+              properties:
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    TODO: Add other useful fields. apiVersion, kind, uid?'
+                  type: string
+              type: object
             workerNodes:
               description: WorkerNodes configuration for cloudformation
               properties:
@@ -185,6 +227,15 @@ spec:
                     group of the cluster control plane in order to allow communication
                     to this node group.
                   type: string
+                clusterControlPlaneSecurityGroupRef:
+                  description: ClusterControlPlaneSecurityGroupRef references to a
+                    SecurityGroup to retrieve its ID
+                  properties:
+                    name:
+                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                        TODO: Add other useful fields. apiVersion, kind, uid?'
+                      type: string
+                  type: object
                 keyName:
                   description: KeyName of the EC2 Key Pair to allow SSH access to
                     the EC2 instances.
@@ -298,10 +349,6 @@ spec:
           required:
           - providerRef
           - region
-          - roleARN
-          - securityGroupIds
-          - subnetIds
-          - vpcId
           - workerNodes
           type: object
       required:
