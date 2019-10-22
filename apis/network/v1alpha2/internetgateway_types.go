@@ -22,13 +22,39 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
 )
+
+// Error strings
+const (
+	errResourceIsNotInternetGateway = "The managed resource is not a InternetGateway"
+)
+
+// VPCIDReferencerForInternetGateway is an attribute referencer that resolves VPCID from a referenced VPC
+type VPCIDReferencerForInternetGateway struct {
+	VPCIDReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved vpcId to the managed resource
+func (v *VPCIDReferencerForInternetGateway) Assign(res resource.CanReference, value string) error {
+	ig, ok := res.(*InternetGateway)
+	if !ok {
+		return errors.New(errResourceIsNotInternetGateway)
+	}
+
+	ig.Spec.VPCID = value
+	return nil
+}
 
 // InternetGatewayParameters define the desired state of an AWS VPC Internet
 // Gateway.
 type InternetGatewayParameters struct {
-	// the VPC to attach the gateway to.
-	VPCID string `json:"vpcId"`
+	// VPCID is the ID of the VPC.
+	VPCID string `json:"vpcId,omitempty"`
+
+	// VPCIDRef references to a VPC to and retrieves its vpcId
+	VPCIDRef *VPCIDReferencerForInternetGateway `json:"vpcIdRef,omitempty" resource:"attributereferencer"`
 }
 
 // An InternetGatewaySpec defines the desired state of an InternetGateway.

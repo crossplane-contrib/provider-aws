@@ -123,8 +123,8 @@ func (e *eksClient) Create(name string, spec awscomputev1alpha2.EKSClusterSpec) 
 		Name:    aws.String(name),
 		RoleArn: aws.String(spec.RoleARN),
 		ResourcesVpcConfig: &eks.VpcConfigRequest{
-			SubnetIds:        spec.SubnetIds,
-			SecurityGroupIds: spec.SecurityGroupIds,
+			SubnetIds:        spec.SubnetIDs,
+			SecurityGroupIds: spec.SecurityGroupIDs,
 		},
 	}
 	if spec.ClusterVersion != "" {
@@ -146,11 +146,11 @@ func (e *eksClient) CreateWorkerNodes(name string, clusterVersion string, spec a
 		return nil, err
 	}
 
-	subnetIds := strings.Join(spec.SubnetIds, ",")
+	subnetIDs := strings.Join(spec.SubnetIDs, ",")
 	parameters := map[string]string{
 		"ClusterName":                      name,
-		"VpcId":                            spec.VpcID,
-		"Subnets":                          subnetIds,
+		"VpcId":                            spec.VPCID,
+		"Subnets":                          subnetIDs,
 		"NodeImageId":                      aws.StringValue(ami.ImageId),
 		"NodeInstanceType":                 spec.WorkerNodes.NodeInstanceType,
 		"BootstrapArguments":               spec.WorkerNodes.BootstrapArguments,

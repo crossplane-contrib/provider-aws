@@ -33,6 +33,11 @@ func (mg *ReplicationGroup) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
 }
 
+// GetCondition of this ReplicationGroup.
+func (mg *ReplicationGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
 // GetNonPortableClassReference of this ReplicationGroup.
 func (mg *ReplicationGroup) GetNonPortableClassReference() *corev1.ObjectReference {
 	return mg.Spec.NonPortableClassReference

@@ -42,6 +42,7 @@ import (
 	. "github.com/crossplaneio/stack-aws/pkg/clients/s3/fake"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 	storagev1alpha1 "github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
@@ -110,8 +111,9 @@ func TestSyncBucketError(t *testing.T) {
 
 	assert := func(instance *S3Bucket, client client.Service, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) {
 		r := &Reconciler{
-			Client:     NewFakeClient(instance),
-			kubeclient: NewSimpleClientset(),
+			Client:                   NewFakeClient(instance),
+			kubeclient:               NewSimpleClientset(),
+			ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
 		}
 
 		rs, err := r._sync(instance, client)
@@ -194,8 +196,9 @@ func TestSyncBucket(t *testing.T) {
 	tr.Status.LastLocalPermission = storagev1alpha1.ReadOnlyPermission
 
 	r := &Reconciler{
-		Client:     NewFakeClient(tr),
-		kubeclient: NewSimpleClientset(),
+		Client:                   NewFakeClient(tr),
+		kubeclient:               NewSimpleClientset(),
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
 	}
 	//
 	updateBucketACLCalled := false
@@ -227,8 +230,9 @@ func TestDelete(t *testing.T) {
 	tr := testResource()
 
 	r := &Reconciler{
-		Client:     NewFakeClient(tr),
-		kubeclient: NewSimpleClientset(),
+		Client:                   NewFakeClient(tr),
+		kubeclient:               NewSimpleClientset(),
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
 	}
 
 	cl := &MockS3Client{}
@@ -282,8 +286,9 @@ func TestCreate(t *testing.T) {
 	tk := NewSimpleClientset()
 
 	r := &Reconciler{
-		Client:     NewFakeClient(tr),
-		kubeclient: tk,
+		Client:                   NewFakeClient(tr),
+		kubeclient:               tk,
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
 	}
 
 	createOrUpdateBucketCalled := false
@@ -342,8 +347,9 @@ func TestCreateFail(t *testing.T) {
 	}
 
 	r := &Reconciler{
-		Client:     NewFakeClient(tr),
-		kubeclient: tk,
+		Client:                   NewFakeClient(tr),
+		kubeclient:               tk,
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
 	}
 
 	// test apply secret error
@@ -414,8 +420,9 @@ func TestConnect(t *testing.T) {
 	tr := testResource()
 
 	r := &Reconciler{
-		Client:     NewFakeClient(tp),
-		kubeclient: NewSimpleClientset(),
+		Client:                   NewFakeClient(tp),
+		kubeclient:               NewSimpleClientset(),
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
 	}
 
 	// error getting aws config - secret is not found
@@ -432,8 +439,9 @@ func TestReconcile(t *testing.T) {
 	tr.Status.IAMUsername = ""
 
 	r := &Reconciler{
-		Client:     NewFakeClient(tr),
-		kubeclient: NewSimpleClientset(),
+		Client:                   NewFakeClient(tr),
+		kubeclient:               NewSimpleClientset(),
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
 	}
 
 	// test connect error

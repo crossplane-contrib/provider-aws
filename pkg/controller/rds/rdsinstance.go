@@ -19,6 +19,7 @@ package rds
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -48,6 +49,16 @@ const (
 	finalizer      = "finalizer." + controllerName
 )
 
+// Amounts of time we wait before requeuing a reconcile.
+const (
+	aLongWait = 60 * time.Second
+)
+
+// Error strings
+const (
+	errUpdateManagedStatus = "cannot update managed resource status"
+)
+
 var (
 	log           = logging.Logger.WithName("controller." + controllerName)
 	ctx           = context.Background()
@@ -61,6 +72,7 @@ type Reconciler struct {
 	scheme     *runtime.Scheme
 	kubeclient kubernetes.Interface
 	recorder   record.EventRecorder
+	resource.ManagedReferenceResolver
 
 	connect func(*databasev1alpha2.RDSInstance) (rds.Client, error)
 	create  func(*databasev1alpha2.RDSInstance, rds.Client) (reconcile.Result, error)
@@ -76,10 +88,11 @@ type InstanceController struct{}
 // and Start it when the Manager is Started.
 func (c *InstanceController) SetupWithManager(mgr ctrl.Manager) error {
 	r := &Reconciler{
-		Client:     mgr.GetClient(),
-		scheme:     mgr.GetScheme(),
-		kubeclient: kubernetes.NewForConfigOrDie(mgr.GetConfig()),
-		recorder:   mgr.GetEventRecorderFor(controllerName),
+		Client:                   mgr.GetClient(),
+		scheme:                   mgr.GetScheme(),
+		kubeclient:               kubernetes.NewForConfigOrDie(mgr.GetConfig()),
+		recorder:                 mgr.GetEventRecorderFor(controllerName),
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(mgr.GetClient()),
 	}
 	r.connect = r._connect
 	r.create = r._create
@@ -236,6 +249,21 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	rdsClient, err := r.connect(instance)
 	if err != nil {
 		return r.fail(instance, err)
+	}
+
+	if !resource.IsConditionTrue(instance.GetCondition(runtimev1alpha1.TypeReferencesResolved)) {
+		if err := r.ResolveReferences(ctx, instance); err != nil {
+			condition := runtimev1alpha1.ReconcileError(err)
+			if resource.IsReferencesAccessError(err) {
+				condition = runtimev1alpha1.ReferenceResolutionBlocked(err)
+			}
+
+			instance.Status.SetConditions(condition)
+			return reconcile.Result{RequeueAfter: aLongWait}, errors.Wrap(r.Update(ctx, instance), errUpdateManagedStatus)
+		}
+
+		// Add ReferenceResolutionSuccess to the conditions
+		instance.Status.SetConditions(runtimev1alpha1.ReferenceResolutionSuccess())
 	}
 
 	// Check for deletion

@@ -59,8 +59,14 @@ spec:
                     description: The ID of the subnet. A subnet ID is not returned
                       for an implicit association.
                     type: string
-                required:
-                - subnetId
+                  subnetIdRef:
+                    description: A referencer to retrieve the ID of a subnet
+                    properties:
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                    type: object
                 type: object
               type: array
             claimRef:
@@ -199,14 +205,29 @@ spec:
                     description: The ID of an internet gateway or virtual private
                       gateway attached to your VPC.
                     type: string
+                  gatewayIdRef:
+                    description: A referencer to retrieve the ID of a gateway
+                    properties:
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                    type: object
                 required:
                 - destinationCidrBlock
-                - gatewayId
                 type: object
               type: array
             vpcId:
               description: VPCID is the ID of the VPC.
               type: string
+            vpcIdRef:
+              description: VPCIDRef references to a VPC to and retrieves its vpcId
+              properties:
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    TODO: Add other useful fields. apiVersion, kind, uid?'
+                  type: string
+              type: object
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the name of
                 a Secret, in the same namespace as this managed resource, to which
@@ -221,7 +242,6 @@ spec:
               type: object
           required:
           - providerRef
-          - vpcId
           type: object
         status:
           description: A RouteTableStatus represents the observed state of a RouteTable.
@@ -243,10 +263,17 @@ spec:
                     description: The ID of the subnet. A subnet ID is not returned
                       for an implicit association.
                     type: string
+                  subnetIdRef:
+                    description: A referencer to retrieve the ID of a subnet
+                    properties:
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                    type: object
                 required:
                 - associationId
                 - main
-                - subnetId
                 type: object
               type: array
             bindingPhase:
@@ -309,6 +336,14 @@ spec:
                     description: The ID of an internet gateway or virtual private
                       gateway attached to your VPC.
                     type: string
+                  gatewayIdRef:
+                    description: A referencer to retrieve the ID of a gateway
+                    properties:
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                    type: object
                   routeState:
                     description: The state of the route. The blackhole state indicates
                       that the route's target isn't available (for example, the specified
@@ -317,7 +352,6 @@ spec:
                     type: string
                 required:
                 - destinationCidrBlock
-                - gatewayId
                 type: object
               type: array
           required:
