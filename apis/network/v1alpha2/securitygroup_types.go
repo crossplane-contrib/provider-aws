@@ -20,11 +20,34 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/pkg/errors"
 
 	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 )
+
+// Error strings
+const (
+	errResourceIsNotSecurityGroup = "The managed resource is not a SecurityGroup"
+)
+
+// VPCIDReferencerForSecurityGroup is an attribute referencer that resolves VPCID from a referenced VPC
+type VPCIDReferencerForSecurityGroup struct {
+	VPCIDReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved value to the managed resource
+func (v *VPCIDReferencerForSecurityGroup) Assign(res resource.CanReference, value string) error {
+	sg, ok := res.(*SecurityGroup)
+	if !ok {
+		return errors.New(errResourceIsNotSecurityGroup)
+	}
+
+	sg.Spec.VPCID = value
+	return nil
+}
 
 // IPRange describes an IPv4 range.
 type IPRange struct {
@@ -69,6 +92,9 @@ type IPPermission struct {
 type SecurityGroupParameters struct {
 	// VPCID is the ID of the VPC.
 	VPCID string `json:"vpcId,omitempty"`
+
+	// VPCIDRef references to a VPC to and retrieves its vpcId
+	VPCIDRef *VPCIDReferencerForSecurityGroup `json:"vpcIdRef,omitempty" resource:"attributereferencer"`
 
 	// A description of the security group.
 	Description string `json:"description"`
