@@ -21,8 +21,32 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/pkg/errors"
+
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 )
+
+// Error strings
+const (
+	errResourceIsNotSubnet = "The managed resource is not a Subnet"
+)
+
+// VPCIDReferencerForSubnet is an attribute referencer that resolves VPCID from a referenced VPC
+type VPCIDReferencerForSubnet struct {
+	VPCIDReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved vpcId to the managed resource
+func (v *VPCIDReferencerForSubnet) Assign(res resource.CanReference, value string) error {
+	subnet, ok := res.(*Subnet)
+	if !ok {
+		return errors.New(errResourceIsNotSubnet)
+	}
+
+	subnet.Spec.VPCID = value
+	return nil
+}
 
 // SubnetParameters define the desired state of an AWS VPC Subnet.
 type SubnetParameters struct {
@@ -35,7 +59,10 @@ type SubnetParameters struct {
 	AvailabilityZone string `json:"availabilityZone"`
 
 	// VPCID is the ID of the VPC.
-	VPCID string `json:"vpcId"`
+	VPCID string `json:"vpcId,omitempty"`
+
+	// VPCIDRef references to a VPC to and retrieves its vpcId
+	VPCIDRef *VPCIDReferencerForSubnet `json:"vpcIdRef,omitempty" resource:"attributereferencer"`
 }
 
 // A SubnetSpec defines the desired state of a Subnet.
