@@ -32,8 +32,9 @@ const (
 	namespace = "coolNamespace"
 	name      = "coolGroup"
 	uid       = types.UID("definitely-a-uuid")
-	id        = NamePrefix + "-efdd8494195d7940" // FNV-64a hash of uid
+)
 
+var (
 	cacheNodeType            = "n1.super.cool"
 	atRestEncryptionEnabled  = true
 	authToken                = "coolToken"
@@ -57,7 +58,7 @@ const (
 	nodeGroupReplicaCount = 2
 	nodeGroupSlots        = "coolslots"
 
-	cacheClusterID = id + "-0001"
+	cacheClusterID = name + "-0001"
 )
 
 var (
@@ -74,62 +75,39 @@ var (
 	replicationGroup = &v1alpha2.ReplicationGroup{
 		ObjectMeta: meta,
 		Spec: v1alpha2.ReplicationGroupSpec{
-			ReplicationGroupParameters: v1alpha2.ReplicationGroupParameters{
+			ForProvider: v1alpha2.ReplicationGroupParameters{
 				CacheNodeType:            cacheNodeType,
-				AtRestEncryptionEnabled:  atRestEncryptionEnabled,
-				AutomaticFailoverEnabled: autoFailoverEnabled,
-				CacheParameterGroupName:  cacheParameterGroupName,
+				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
+				AutomaticFailoverEnabled: &autoFailoverEnabled,
+				CacheParameterGroupName:  &cacheParameterGroupName,
 				CacheSecurityGroupNames:  cacheSecurityGroupNames,
-				CacheSubnetGroupName:     cacheSubnetGroupName,
-				EngineVersion:            engineVersion,
+				CacheSubnetGroupName:     &cacheSubnetGroupName,
+				EngineVersion:            &engineVersion,
 				NodeGroupConfiguration: []v1alpha2.NodeGroupConfigurationSpec{
 					{
-						PrimaryAvailabilityZone:  nodeGroupPrimaryAZ,
+						PrimaryAvailabilityZone:  &nodeGroupPrimaryAZ,
 						ReplicaAvailabilityZones: nodeGroupAZs,
-						ReplicaCount:             nodeGroupReplicaCount,
-						Slots:                    nodeGroupSlots,
+						ReplicaCount:             &nodeGroupReplicaCount,
+						Slots:                    &nodeGroupSlots,
 					},
 				},
-				NotificationTopicARN:       notificationTopicARN,
-				NumCacheClusters:           numCacheClusters,
-				NumNodeGroups:              numNodeGroups,
-				Port:                       port,
+				NotificationTopicARN:       &notificationTopicARN,
+				NumCacheClusters:           &numCacheClusters,
+				NumNodeGroups:              &numNodeGroups,
+				Port:                       &port,
 				PreferredCacheClusterAZs:   preferredCacheClusterAZs,
-				PreferredMaintenanceWindow: maintenanceWindow,
-				ReplicasPerNodeGroup:       replicasPerNodeGroup,
+				PreferredMaintenanceWindow: &maintenanceWindow,
+				ReplicasPerNodeGroup:       &replicasPerNodeGroup,
 				SecurityGroupIDs:           securityGroupIDs,
 				SnapshotARNs:               snapshotARNs,
-				SnapshotName:               snapshotName,
-				SnapshotRetentionLimit:     snapshotRetentionLimit,
-				SnapshotWindow:             snapshotWindow,
-				TransitEncryptionEnabled:   transitEncryptionEnabled,
+				SnapshotName:               &snapshotName,
+				SnapshotRetentionLimit:     &snapshotRetentionLimit,
+				SnapshotWindow:             &snapshotWindow,
+				TransitEncryptionEnabled:   &transitEncryptionEnabled,
 			},
 		},
 	}
 )
-
-func TestNewReplicationGroupID(t *testing.T) {
-	cases := []struct {
-		name   string
-		object metav1.Object
-		want   string
-	}{
-		{
-			name:   "Successful",
-			object: replicationGroup,
-			want:   id,
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			got := NewReplicationGroupID(tc.object)
-			if got != tc.want {
-				t.Errorf("NewReplicationGroupID(...): want %s, got %s", tc.want, got)
-			}
-		})
-	}
-}
 
 func TestNewReplicationGroupDescription(t *testing.T) {
 	cases := []struct {
@@ -157,16 +135,16 @@ func TestNewReplicationGroupDescription(t *testing.T) {
 func TestNewCreateReplicationGroupInput(t *testing.T) {
 	cases := []struct {
 		name      string
-		group     *v1alpha2.ReplicationGroup
+		params    v1alpha2.ReplicationGroupParameters
 		authToken string
 		want      *elasticache.CreateReplicationGroupInput
 	}{
 		{
 			name:      "AllPossibleFields",
-			group:     replicationGroup,
+			params:    replicationGroup.Spec.ForProvider,
 			authToken: authToken,
 			want: &elasticache.CreateReplicationGroupInput{
-				ReplicationGroupId:          aws.String(id, aws.FieldRequired),
+				ReplicationGroupId:          aws.String(name, aws.FieldRequired),
 				ReplicationGroupDescription: aws.String(description, aws.FieldRequired),
 				Engine:                      aws.String(v1alpha2.CacheEngineRedis, aws.FieldRequired),
 				CacheNodeType:               aws.String(cacheNodeType, aws.FieldRequired),
@@ -202,15 +180,11 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 		},
 		{
 			name: "UnsetFieldsAreNilNotZeroType",
-			group: &v1alpha2.ReplicationGroup{
-				ObjectMeta: meta,
-				Spec: v1alpha2.ReplicationGroupSpec{
-					ReplicationGroupParameters: v1alpha2.ReplicationGroupParameters{
-						CacheNodeType: cacheNodeType},
-				},
+			params: v1alpha2.ReplicationGroupParameters{
+				CacheNodeType: cacheNodeType,
 			},
 			want: &elasticache.CreateReplicationGroupInput{
-				ReplicationGroupId:          aws.String(id, aws.FieldRequired),
+				ReplicationGroupId:          aws.String(name, aws.FieldRequired),
 				ReplicationGroupDescription: aws.String(description, aws.FieldRequired),
 				Engine:                      aws.String(v1alpha2.CacheEngineRedis, aws.FieldRequired),
 				CacheNodeType:               aws.String(cacheNodeType, aws.FieldRequired),
@@ -220,7 +194,7 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := NewCreateReplicationGroupInput(tc.group, tc.authToken)
+			got := NewCreateReplicationGroupInput(tc.params, name, tc.authToken)
 
 			if err := got.Validate(); err != nil {
 				t.Errorf("NewCreateReplicationGroupInput(...): invalid input: %v", err)
@@ -234,15 +208,15 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 
 func TestNewModifyReplicationGroupInput(t *testing.T) {
 	cases := []struct {
-		name  string
-		group *v1alpha2.ReplicationGroup
-		want  *elasticache.ModifyReplicationGroupInput
+		name   string
+		params v1alpha2.ReplicationGroupParameters
+		want   *elasticache.ModifyReplicationGroupInput
 	}{
 		{
-			name:  "AllPossibleFields",
-			group: replicationGroup,
+			name:   "AllPossibleFields",
+			params: replicationGroup.Spec.ForProvider,
 			want: &elasticache.ModifyReplicationGroupInput{
-				ReplicationGroupId:         aws.String(id, aws.FieldRequired),
+				ReplicationGroupId:         aws.String(name, aws.FieldRequired),
 				ApplyImmediately:           aws.Bool(true),
 				AutomaticFailoverEnabled:   aws.Bool(autoFailoverEnabled),
 				CacheNodeType:              aws.String(cacheNodeType),
@@ -257,26 +231,20 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 			},
 		},
 		{
-			name:  "UnsetFieldsAreNilNotZeroType",
-			group: &v1alpha2.ReplicationGroup{ObjectMeta: meta},
+			name:   "UnsetFieldsAreNilNotZeroType",
+			params: v1alpha2.ReplicationGroupParameters{},
 			want: &elasticache.ModifyReplicationGroupInput{
-				ReplicationGroupId: aws.String(id, aws.FieldRequired),
+				ReplicationGroupId: aws.String(name, aws.FieldRequired),
 				ApplyImmediately:   aws.Bool(true),
 			},
 		},
 		{
 			name: "SuperfluousFields",
-			group: &v1alpha2.ReplicationGroup{
-				ObjectMeta: meta,
-
-				// AtRestEncryptionEnabled cannot be modified
-				Spec: v1alpha2.ReplicationGroupSpec{
-					ReplicationGroupParameters: v1alpha2.ReplicationGroupParameters{
-						AtRestEncryptionEnabled: true},
-				},
+			params: v1alpha2.ReplicationGroupParameters{
+				AtRestEncryptionEnabled: &atRestEncryptionEnabled,
 			},
 			want: &elasticache.ModifyReplicationGroupInput{
-				ReplicationGroupId: aws.String(id, aws.FieldRequired),
+				ReplicationGroupId: aws.String(name, aws.FieldRequired),
 				ApplyImmediately:   aws.Bool(true),
 			},
 		},
@@ -284,7 +252,7 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := NewModifyReplicationGroupInput(tc.group)
+			got := NewModifyReplicationGroupInput(tc.params, name)
 
 			if err := got.Validate(); err != nil {
 				t.Errorf("NewModifyReplicationGroupInput(...): invalid input: %v", err)
@@ -298,20 +266,18 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 
 func TestNewDeleteReplicationGroupInput(t *testing.T) {
 	cases := []struct {
-		name  string
-		group *v1alpha2.ReplicationGroup
-		want  *elasticache.DeleteReplicationGroupInput
+		name string
+		want *elasticache.DeleteReplicationGroupInput
 	}{
 		{
-			name:  "Successful",
-			group: replicationGroup,
-			want:  &elasticache.DeleteReplicationGroupInput{ReplicationGroupId: aws.String(id, aws.FieldRequired)},
+			name: "Successful",
+			want: &elasticache.DeleteReplicationGroupInput{ReplicationGroupId: aws.String(name, aws.FieldRequired)},
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := NewDeleteReplicationGroupInput(tc.group)
+			got := NewDeleteReplicationGroupInput(name)
 
 			if err := got.Validate(); err != nil {
 				t.Errorf("NewDeleteReplicationGroupInput(...): invalid input: %v", err)
@@ -325,20 +291,18 @@ func TestNewDeleteReplicationGroupInput(t *testing.T) {
 
 func TestNewDescribeReplicationGroupsInput(t *testing.T) {
 	cases := []struct {
-		name  string
-		group *v1alpha2.ReplicationGroup
-		want  *elasticache.DescribeReplicationGroupsInput
+		name string
+		want *elasticache.DescribeReplicationGroupsInput
 	}{
 		{
-			name:  "Successful",
-			group: replicationGroup,
-			want:  &elasticache.DescribeReplicationGroupsInput{ReplicationGroupId: aws.String(id, aws.FieldRequired)},
+			name: "Successful",
+			want: &elasticache.DescribeReplicationGroupsInput{ReplicationGroupId: aws.String(name, aws.FieldRequired)},
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := NewDescribeReplicationGroupsInput(tc.group)
+			got := NewDescribeReplicationGroupsInput(name)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("NewDescribeReplicationGroupsInput(...): -want, +got:\n%s", diff)
 			}
@@ -430,7 +394,8 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			name: "NeedsNoUpdateSnapshotWindowAutoPopulated",
 			kube: func() *v1alpha2.ReplicationGroup {
 				g := replicationGroup.DeepCopy()
-				g.Spec.SnapshotWindow = ""
+				s := ""
+				g.Spec.ForProvider.SnapshotWindow = &s
 				return g
 			}(),
 			rg: elasticache.ReplicationGroup{
@@ -593,9 +558,9 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := CacheClusterNeedsUpdate(tc.kube, tc.cc)
+			got := cacheClusterNeedsUpdate(tc.kube, tc.cc)
 			if got != tc.want {
-				t.Errorf("CacheClusterNeedsUpdate(...): want %t, got %t", tc.want, got)
+				t.Errorf("cacheClusterNeedsUpdate(...): want %t, got %t", tc.want, got)
 			}
 		})
 	}

@@ -18,9 +18,11 @@ package cache
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
 	"strings"
 
+	elasticache2 "github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -100,19 +102,19 @@ func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (resource.
 	if c.newClientFn != nil {
 		newClientFn = c.newClientFn
 	}
-	client, err := newClientFn(s.Data[p.Spec.Secret.Key], p.Spec.Region)
-	return &external{client: client}, errors.Wrap(err, errNewClient)
+	awsClient, err := newClientFn(s.Data[p.Spec.Secret.Key], p.Spec.Region)
+	return &external{client: awsClient}, errors.Wrap(err, errNewClient)
 }
 
 type external struct{ client elasticache.Client }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.ExternalObservation, error) {
-	g, ok := mg.(*v1alpha2.ReplicationGroup)
+	cr, ok := mg.(*v1alpha2.ReplicationGroup)
 	if !ok {
 		return resource.ExternalObservation{}, errors.New(errNotReplicationGroup)
 	}
 
-	dr := e.client.DescribeReplicationGroupsRequest(elasticache.NewDescribeReplicationGroupsInput(g))
+	dr := e.client.DescribeReplicationGroupsRequest(elasticache.NewDescribeReplicationGroupsInput(meta.GetExternalName(cr)))
 	dr.SetContext(ctx)
 	rsp, err := dr.Send()
 	if elasticache.IsNotFound(err) {
@@ -121,134 +123,103 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 	if err != nil {
 		return resource.ExternalObservation{}, errors.Wrap(err, errDescribeReplicationGroup)
 	}
-
-	// DescribeReplicationGroups can return one or many replication groups. We
-	// ask for one group by name, so we should get either a single element list
-	// or an error.
-	existing := rsp.ReplicationGroups[0]
-	g.Status.State = aws.StringValue(existing.Status)
-	g.Status.Endpoint = elasticache.ConnectionEndpoint(existing).Address
-	g.Status.Port = elasticache.ConnectionEndpoint(existing).Port
-	g.Status.ProviderID = aws.StringValue(existing.ReplicationGroupId)
-	g.Status.ClusterEnabled = aws.BoolValue(existing.ClusterEnabled)
-	g.Status.MemberClusters = existing.MemberClusters
-
-	switch g.Status.State {
-	case v1alpha2.StatusAvailable:
-		g.Status.SetConditions(runtimev1alpha1.Available())
-		resource.SetBindable(g)
-	case v1alpha2.StatusCreating:
-		g.Status.SetConditions(runtimev1alpha1.Creating())
-	case v1alpha2.StatusDeleting:
-		g.Status.SetConditions(runtimev1alpha1.Deleting())
-	}
+	rg := rsp.ReplicationGroups[0]
+	elasticache.LateInitialize(&cr.Spec.ForProvider, rg)
 
 	o := resource.ExternalObservation{
 		ResourceExists:    true,
 		ConnectionDetails: resource.ConnectionDetails{},
 	}
 
-	if g.Status.Endpoint != "" {
-		o.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretEndpointKey] = []byte(g.Status.Endpoint)
+	// DescribeReplicationGroups can return one or many replication groups. We
+	// ask for one group by name, so we should get either a single element list
+	// or an error.
+	ccList := make([]elasticache2.CacheCluster, len(cr.Status.AtProvider.MemberClusters))
+	for i, cc := range cr.Status.AtProvider.MemberClusters {
+		dcc := e.client.DescribeCacheClustersRequest(elasticache.NewDescribeCacheClustersInput(cc))
+		dcc.SetContext(ctx)
+		rsp, err := dcc.Send()
+		if err != nil {
+			return resource.ExternalObservation{}, errors.Wrapf(err, errDescribeCacheCluster)
+		}
+		ccList[i] = rsp.CacheClusters[0]
+	}
+	o.ResourceUpToDate = !elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList)
+
+	if cr.Status.AtProvider.ConfigurationEndpoint.Address != "" {
+		o.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretEndpointKey] = []byte(cr.Status.AtProvider.ConfigurationEndpoint.Address)
+		b := make([]byte, binary.MaxVarintLen64)
+		binary.LittleEndian.PutUint64(b, uint64(cr.Status.AtProvider.ConfigurationEndpoint.Port))
+		o.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPortKey] = b
+	}
+
+	cr.Status.AtProvider = elasticache.GenerateObservation(rg)
+	switch cr.Status.AtProvider.Status {
+	case v1alpha2.StatusAvailable:
+		cr.Status.SetConditions(runtimev1alpha1.Available())
+		resource.SetBindable(cr)
+	case v1alpha2.StatusCreating:
+		cr.Status.SetConditions(runtimev1alpha1.Creating())
+	case v1alpha2.StatusDeleting:
+		cr.Status.SetConditions(runtimev1alpha1.Deleting())
+	default:
+		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
 	}
 
 	return o, nil
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.ExternalCreation, error) {
-	g, ok := mg.(*v1alpha2.ReplicationGroup)
+	cr, ok := mg.(*v1alpha2.ReplicationGroup)
 	if !ok {
 		return resource.ExternalCreation{}, errors.New(errNotReplicationGroup)
 	}
 
-	g.Status.SetConditions(runtimev1alpha1.Creating())
-	g.Status.GroupName = elasticache.NewReplicationGroupID(g)
-
+	cr.Status.SetConditions(runtimev1alpha1.Creating())
 	// Our create request will fail if auth is enabled but transit encryption is
 	// not. We don't check for the latter here because it's less surprising to
 	// submit the request as the operator intended and let the reconcile fail
 	// with an explanatory message from AWS explaining that transit encryption
 	// is required.
-	if !g.Spec.AuthEnabled {
-		token := ""
-		r := e.client.CreateReplicationGroupRequest(elasticache.NewCreateReplicationGroupInput(g, token))
-		r.SetContext(ctx)
-		_, err := r.Send()
-		return resource.ExternalCreation{}, errors.Wrap(resource.Ignore(elasticache.IsAlreadyExists, err), errCreateReplicationGroup)
+	token := ""
+	if aws.BoolValue(cr.Spec.ForProvider.AuthEnabled) {
+		t, err := util.GeneratePassword(maxAuthTokenData)
+		if err != nil {
+			return resource.ExternalCreation{}, errors.Wrap(err, errGenerateAuthToken)
+		}
+		token = t
 	}
-
-	token, err := util.GeneratePassword(maxAuthTokenData)
-	if err != nil {
-		return resource.ExternalCreation{}, errors.Wrap(err, errGenerateAuthToken)
-	}
-
-	r := e.client.CreateReplicationGroupRequest(elasticache.NewCreateReplicationGroupInput(g, token))
+	r := e.client.CreateReplicationGroupRequest(elasticache.NewCreateReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr), token))
 	r.SetContext(ctx)
 	if _, err := r.Send(); err != nil {
 		return resource.ExternalCreation{}, errors.Wrap(resource.Ignore(elasticache.IsAlreadyExists, err), errCreateReplicationGroup)
 	}
-
 	c := resource.ExternalCreation{
 		ConnectionDetails: resource.ConnectionDetails{
 			runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(token),
 		},
 	}
-
 	return c, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.ExternalUpdate, error) {
-	g, ok := mg.(*v1alpha2.ReplicationGroup)
+	cr, ok := mg.(*v1alpha2.ReplicationGroup)
 	if !ok {
 		return resource.ExternalUpdate{}, errors.New(errNotReplicationGroup)
 	}
-
-	dr := e.client.DescribeReplicationGroupsRequest(elasticache.NewDescribeReplicationGroupsInput(g))
-	dr.SetContext(ctx)
-	rsp, err := dr.Send()
-	if err != nil {
-		return resource.ExternalUpdate{}, errors.Wrap(err, errDescribeReplicationGroup)
-	}
-
-	// DescribeReplicationGroups can return one or many replication groups. We
-	// ask for one group by name, so we should get either a single element list
-	//  or an error.
-	if elasticache.ReplicationGroupNeedsUpdate(g, rsp.ReplicationGroups[0]) {
-		mr := e.client.ModifyReplicationGroupRequest(elasticache.NewModifyReplicationGroupInput(g))
-		mr.SetContext(ctx)
-		_, err = mr.Send()
-		return resource.ExternalUpdate{}, errors.Wrap(err, errModifyReplicationGroup)
-	}
-
-	for _, cc := range g.Status.MemberClusters {
-		dcc := e.client.DescribeCacheClustersRequest(elasticache.NewDescribeCacheClustersInput(cc))
-		dcc.SetContext(ctx)
-		rsp, err := dcc.Send()
-		if err != nil {
-			return resource.ExternalUpdate{}, errors.Wrapf(err, errDescribeCacheCluster)
-		}
-
-		// DescribeCacheClusters can return one or many cache clusters. We ask
-		// for one cluster by name, so we should get either a single element
-		// list or an error.
-		if elasticache.CacheClusterNeedsUpdate(g, rsp.CacheClusters[0]) {
-			mr := e.client.ModifyReplicationGroupRequest(elasticache.NewModifyReplicationGroupInput(g))
-			mr.SetContext(ctx)
-			_, err = mr.Send()
-			return resource.ExternalUpdate{}, errors.Wrap(err, errModifyReplicationGroup)
-		}
-	}
-
-	return resource.ExternalUpdate{}, nil
+	mr := e.client.ModifyReplicationGroupRequest(elasticache.NewModifyReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
+	mr.SetContext(ctx)
+	_, err := mr.Send()
+	return resource.ExternalUpdate{}, errors.Wrap(err, errModifyReplicationGroup)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
-	g, ok := mg.(*v1alpha2.ReplicationGroup)
+	cr, ok := mg.(*v1alpha2.ReplicationGroup)
 	if !ok {
 		return errors.New(errNotReplicationGroup)
 	}
 	mg.SetConditions(runtimev1alpha1.Deleting())
-	req := e.client.DeleteReplicationGroupRequest(elasticache.NewDeleteReplicationGroupInput(g))
+	req := e.client.DeleteReplicationGroupRequest(elasticache.NewDeleteReplicationGroupInput(meta.GetExternalName(cr)))
 	req.SetContext(ctx)
 	_, err := req.Send()
 	return errors.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDeleteReplicationGroup)
