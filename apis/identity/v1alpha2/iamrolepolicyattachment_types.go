@@ -21,9 +21,33 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+
+	"github.com/pkg/errors"
 
 	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 )
+
+// Error strings
+const (
+	errResourceIsNotIAMRolePolicyAttachment = "The managed resource is not an IAMRolePolicyAttachment"
+)
+
+// IAMRoleNameReferencerForIAMRolePolicyAttachment is an attribute referencer that retrieves Name from a referenced IAMRole
+type IAMRoleNameReferencerForIAMRolePolicyAttachment struct {
+	IAMRoleNameReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved name to the managed resource
+func (v *IAMRoleNameReferencerForIAMRolePolicyAttachment) Assign(res resource.CanReference, value string) error {
+	p, ok := res.(*IAMRolePolicyAttachment)
+	if !ok {
+		return errors.New(errResourceIsNotIAMRolePolicyAttachment)
+	}
+
+	p.Spec.RoleName = value
+	return nil
+}
 
 // IAMRolePolicyAttachmentParameters define the desired state of an AWS IAM
 // Role policy attachment.
@@ -34,7 +58,10 @@ type IAMRolePolicyAttachmentParameters struct {
 	PolicyARN string `json:"policyArn"`
 
 	// RoleName presents the name of the IAM role.
-	RoleName string `json:"roleName"`
+	RoleName string `json:"roleName,omitempty"`
+
+	// RoleNameRef references to an IAMRole to retrieve its Name
+	RoleNameRef *IAMRoleNameReferencerForIAMRolePolicyAttachment `json:"roleNameRef,omitempty" resource:"attributereferencer"`
 }
 
 // An IAMRolePolicyAttachmentSpec defines the desired state of an
