@@ -22,7 +22,78 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
 )
+
+// Error strings
+const (
+	errResourceIsNotRouteTable = "The managed resource is not a RouteTable"
+	errAssociationNotFound     = "Could not find an association in the array with the referred object name"
+	errRouteNotFound           = "Could not find a route in the array with the referred object name"
+)
+
+// VPCIDReferencerForRouteTable is an attribute referencer that resolves VPCID from a referenced VPC
+type VPCIDReferencerForRouteTable struct {
+	VPCIDReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved vpcId to the managed resource
+func (v *VPCIDReferencerForRouteTable) Assign(res resource.CanReference, value string) error {
+	rt, ok := res.(*RouteTable)
+	if !ok {
+		return errors.New(errResourceIsNotRouteTable)
+	}
+
+	rt.Spec.VPCID = value
+	return nil
+}
+
+// SubnetIDReferencerForRouteTable is an attribute referencer that resolves SubnetID from a referenced Subnet
+type SubnetIDReferencerForRouteTable struct {
+	SubnetIDReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved subnetId to the managed resource
+func (v *SubnetIDReferencerForRouteTable) Assign(res resource.CanReference, value string) error {
+	rt, ok := res.(*RouteTable)
+	if !ok {
+		return errors.New(errResourceIsNotRouteTable)
+	}
+
+	// find the association that this field belongs to, and assign its subnetID
+	for i := 0; i < len(rt.Spec.Associations); i++ {
+		if rt.Spec.Associations[i].SubnetIDRef.Name == v.Name {
+			rt.Spec.Associations[i].SubnetID = value
+			return nil
+		}
+	}
+
+	return errors.New(errAssociationNotFound)
+}
+
+// InternetGatewayIDReferencerForRouteTable is an attribute referencer that resolves VPCID from a referenced VPC
+type InternetGatewayIDReferencerForRouteTable struct {
+	InternetGatewayIDReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved value to the managed resource
+func (v *InternetGatewayIDReferencerForRouteTable) Assign(res resource.CanReference, value string) error {
+	rt, ok := res.(*RouteTable)
+	if !ok {
+		return errors.New(errResourceIsNotRouteTable)
+	}
+
+	// find the route that this field belongs to, and assign its gatewayID
+	for i := 0; i < len(rt.Spec.Routes); i++ {
+		if rt.Spec.Routes[i].GatewayIDRef.Name == v.Name {
+			rt.Spec.Routes[i].GatewayID = value
+			return nil
+		}
+	}
+
+	return errors.New(errRouteNotFound)
+}
 
 // Route describes a route in a route table.
 type Route struct {
@@ -32,7 +103,10 @@ type Route struct {
 
 	// The ID of an internet gateway or virtual private gateway attached to your
 	// VPC.
-	GatewayID string `json:"gatewayId"`
+	GatewayID string `json:"gatewayId,omitempty"`
+
+	// A referencer to retrieve the ID of a gateway
+	GatewayIDRef *InternetGatewayIDReferencerForRouteTable `json:"gatewayIdRef,omitempty" resource:"attributereferencer"`
 }
 
 // RouteState describes a route state in the route table.
@@ -49,7 +123,10 @@ type RouteState struct {
 type Association struct {
 	// The ID of the subnet. A subnet ID is not returned for an implicit
 	// association.
-	SubnetID string `json:"subnetId"`
+	SubnetID string `json:"subnetId,omitempty"`
+
+	// A referencer to retrieve the ID of a subnet
+	SubnetIDRef *SubnetIDReferencerForRouteTable `json:"subnetIdRef,omitempty" resource:"attributereferencer"`
 }
 
 // AssociationState describes an association state in the route table.
@@ -66,7 +143,10 @@ type AssociationState struct {
 // RouteTableParameters define the desired state of an AWS VPC Route Table.
 type RouteTableParameters struct {
 	// VPCID is the ID of the VPC.
-	VPCID string `json:"vpcId"`
+	VPCID string `json:"vpcId,omitempty"`
+
+	// VPCIDRef references to a VPC to and retrieves its vpcId
+	VPCIDRef *VPCIDReferencerForRouteTable `json:"vpcIdRef,omitempty" resource:"attributereferencer"`
 
 	// the routes in the route table
 	Routes []Route `json:"routes,omitempty"`
