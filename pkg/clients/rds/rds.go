@@ -129,8 +129,8 @@ func CreateDBInstanceInput(name, password string, spec *v1alpha2.RDSInstanceSpec
 		MasterUsername:        aws.String(spec.MasterUsername),
 		MasterUserPassword:    aws.String(password),
 		BackupRetentionPeriod: aws.Int64(0),
-		VpcSecurityGroupIds:   spec.SecurityGroups,
+		VpcSecurityGroupIds:   spec.SecurityGroupIDs,
 		PubliclyAccessible:    aws.Bool(true),
-		DBSubnetGroupName:     aws.String(spec.SubnetGroupName),
+		DBSubnetGroupName:     aws.String(spec.DBSubnetGroupName),
 	}
 }

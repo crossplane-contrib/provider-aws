@@ -182,6 +182,14 @@ spec:
             roleName:
               description: RoleName presents the name of the IAM role.
               type: string
+            roleNameRef:
+              description: RoleNameRef references to an IAMRole to retrieve its Name
+              properties:
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    TODO: Add other useful fields. apiVersion, kind, uid?'
+                  type: string
+              type: object
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the name of
                 a Secret, in the same namespace as this managed resource, to which
@@ -197,7 +205,6 @@ spec:
           required:
           - policyArn
           - providerRef
-          - roleName
           type: object
         status:
           description: An IAMRolePolicyAttachmentStatus represents the observed state

@@ -33,6 +33,11 @@ func (mg *InternetGateway) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
 }
 
+// GetCondition of this InternetGateway.
+func (mg *InternetGateway) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
 // GetNonPortableClassReference of this InternetGateway.
 func (mg *InternetGateway) GetNonPortableClassReference() *corev1.ObjectReference {
 	return mg.Spec.NonPortableClassReference
@@ -86,6 +91,11 @@ func (mg *RouteTable) GetBindingPhase() runtimev1alpha1.BindingPhase {
 // GetClaimReference of this RouteTable.
 func (mg *RouteTable) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
+}
+
+// GetCondition of this RouteTable.
+func (mg *RouteTable) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
 }
 
 // GetNonPortableClassReference of this RouteTable.
@@ -143,6 +153,11 @@ func (mg *SecurityGroup) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
 }
 
+// GetCondition of this SecurityGroup.
+func (mg *SecurityGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
 // GetNonPortableClassReference of this SecurityGroup.
 func (mg *SecurityGroup) GetNonPortableClassReference() *corev1.ObjectReference {
 	return mg.Spec.NonPortableClassReference
@@ -198,6 +213,11 @@ func (mg *Subnet) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
 }
 
+// GetCondition of this Subnet.
+func (mg *Subnet) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
 // GetNonPortableClassReference of this Subnet.
 func (mg *Subnet) GetNonPortableClassReference() *corev1.ObjectReference {
 	return mg.Spec.NonPortableClassReference
@@ -251,6 +271,11 @@ func (mg *VPC) GetBindingPhase() runtimev1alpha1.BindingPhase {
 // GetClaimReference of this VPC.
 func (mg *VPC) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
+}
+
+// GetCondition of this VPC.
+func (mg *VPC) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
 }
 
 // GetNonPortableClassReference of this VPC.

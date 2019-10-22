@@ -48,13 +48,13 @@ type VPCSpec struct {
 type VPCExternalStatus struct {
 	// VPCState is the current state of the VPC.
 	// +kubebuilder:validation:Enum=pending;available
-	VPCState string `json:"vpcState"`
+	VPCState string `json:"vpcState,omitempty"`
 
 	// Tags represents to current ec2 tags.
 	Tags []Tag `json:"tags,omitempty"`
 
 	// VPCID is the ID of the VPC.
-	VPCID string `json:"vpcId"`
+	VPCID string `json:"vpcId,omitempty"`
 }
 
 // A VPCStatus represents the observed state of a VPC.

@@ -41,6 +41,7 @@ import (
 	. "github.com/crossplaneio/stack-aws/pkg/clients/rds/fake"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 )
 
@@ -114,8 +115,9 @@ func TestSyncClusterError(t *testing.T) {
 
 	assert := func(instance *RDSInstance, client rds.Client, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) {
 		r := &Reconciler{
-			Client:     NewFakeClient(instance),
-			kubeclient: NewSimpleClientset(),
+			Client:                   NewFakeClient(instance),
+			kubeclient:               NewSimpleClientset(),
+			ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(instance)),
 		}
 
 		rs, err := r._sync(instance, client)
@@ -207,8 +209,9 @@ func TestSyncClusterUpdateSecretFailure(t *testing.T) {
 	})
 
 	r := &Reconciler{
-		Client:     NewFakeClient(tr),
-		kubeclient: kc,
+		Client:                   NewFakeClient(tr),
+		kubeclient:               kc,
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
 	}
 
 	called := false
@@ -238,8 +241,9 @@ func TestSyncCluster(t *testing.T) {
 	ts := connectionSecret(tr, "testPassword")
 
 	r := &Reconciler{
-		Client:     NewFakeClient(tr),
-		kubeclient: NewSimpleClientset(ts),
+		Client:                   NewFakeClient(tr),
+		kubeclient:               NewSimpleClientset(ts),
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
 	}
 
 	called := false
@@ -269,8 +273,9 @@ func TestDelete(t *testing.T) {
 	tr := testResource()
 
 	r := &Reconciler{
-		Client:     NewFakeClient(tr),
-		kubeclient: NewSimpleClientset(),
+		Client:                   NewFakeClient(tr),
+		kubeclient:               NewSimpleClientset(),
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
 	}
 
 	cl := &MockRDSClient{}
@@ -324,8 +329,9 @@ func TestCreate(t *testing.T) {
 	tk := NewSimpleClientset()
 
 	r := &Reconciler{
-		Client:     NewFakeClient(tr),
-		kubeclient: tk,
+		Client:                   NewFakeClient(tr),
+		kubeclient:               tk,
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
 	}
 
 	called := false
@@ -360,8 +366,9 @@ func TestCreateFail(t *testing.T) {
 	cl := &MockRDSClient{}
 
 	r := &Reconciler{
-		Client:     NewFakeClient(tr),
-		kubeclient: tk,
+		Client:                   NewFakeClient(tr),
+		kubeclient:               tk,
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
 	}
 
 	// test apply secret error
@@ -405,8 +412,9 @@ func TestConnect(t *testing.T) {
 	tr := testResource()
 
 	r := &Reconciler{
-		Client:     NewFakeClient(tp),
-		kubeclient: NewSimpleClientset(),
+		Client:                   NewFakeClient(tp),
+		kubeclient:               NewSimpleClientset(),
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
 	}
 
 	// error getting aws config - secret is not found
@@ -422,8 +430,9 @@ func TestReconcile(t *testing.T) {
 	tr := testResource()
 
 	r := &Reconciler{
-		Client:     NewFakeClient(tr),
-		kubeclient: NewSimpleClientset(),
+		Client:                   NewFakeClient(tr),
+		kubeclient:               NewSimpleClientset(),
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
 	}
 
 	// test connect error

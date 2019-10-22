@@ -20,10 +20,18 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/aws/aws-sdk-go-v2/service/rds"
+	"github.com/pkg/errors"
 
+	network "github.com/crossplaneio/stack-aws/apis/network/v1alpha2"
 	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+)
+
+// Error strings
+const (
+	errResourceIsNotDBSubnetGroup = "The managed resource is not a DBSubnetGroup"
 )
 
 // Tag defines a tag
@@ -43,6 +51,24 @@ type Subnet struct {
 	SubnetStatus string `json:"subnetStatus"`
 }
 
+// SubnetIDReferencerForDBSubnetGroup is an attribute referencer that resolves SubnetID from a referenced Subnet
+type SubnetIDReferencerForDBSubnetGroup struct {
+	network.SubnetIDReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved value to the managed resource
+func (v *SubnetIDReferencerForDBSubnetGroup) Assign(res resource.CanReference, value string) error {
+	sg, ok := res.(*DBSubnetGroup)
+	if !ok {
+		return errors.New(errResourceIsNotDBSubnetGroup)
+	}
+
+	sg.Spec.SubnetIDs = append(sg.Spec.SubnetIDs, value)
+	return nil
+}
+
+var _ resource.AttributeReferencer = (*SubnetIDReferencerForDBSubnetGroup)(nil)
+
 // DBSubnetGroupParameters define the desired state of an AWS VPC Database
 // Subnet Group.
 type DBSubnetGroupParameters struct {
@@ -53,7 +79,10 @@ type DBSubnetGroupParameters struct {
 	DBSubnetGroupName string `json:"groupName"`
 
 	// The EC2 Subnet IDs for the DB subnet group.
-	SubnetIDs []string `json:"subnetIds"`
+	SubnetIDs []string `json:"subnetIds,omitempty"`
+
+	// SubnetIDRefs is a set of referencers that each retrieve the subnetID from the referenced Subnet
+	SubnetIDRefs []*SubnetIDReferencerForDBSubnetGroup `json:"subnetIdRefs,omitempty" resource:"attributereferencer"`
 
 	// A list of tags. For more information, see Tagging Amazon RDS Resources (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
 	// in the Amazon RDS User Guide.
@@ -69,16 +98,16 @@ type DBSubnetGroupSpec struct {
 // DBSubnetGroupExternalStatus keeps the state for the external resource
 type DBSubnetGroupExternalStatus struct {
 	// The Amazon Resource Name (ARN) for the DB subnet group.
-	DBSubnetGroupARN string `json:"groupArn"`
+	DBSubnetGroupARN string `json:"groupArn,omitempty"`
 
 	// Provides the status of the DB subnet group.
-	SubnetGroupStatus string `json:"groupStatus"`
+	SubnetGroupStatus string `json:"groupStatus,omitempty"`
 
 	// Contains a list of Subnet elements.
-	Subnets []Subnet `json:"subnets"`
+	Subnets []Subnet `json:"subnets,omitempty"`
 
 	// Provides the VpcId of the DB subnet group.
-	VPCID string `json:"vpcId"`
+	VPCID string `json:"vpcId,omitempty"`
 }
 
 // A DBSubnetGroupStatus represents the observed state of a DBSubnetGroup.

@@ -18,8 +18,18 @@ package v1alpha2
 
 import (
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	network "github.com/crossplaneio/stack-aws/apis/network/v1alpha2"
+	storage "github.com/crossplaneio/stack-aws/apis/storage/v1alpha2"
+)
+
+// Error strings
+const (
+	errResourceIsNotRDSInstance = "The managed resource is not an RDSInstance"
 )
 
 // SQL database engines.
@@ -27,6 +37,38 @@ const (
 	MysqlEngine      = "mysql"
 	PostgresqlEngine = "postgres"
 )
+
+// SecurityGroupIDReferencerForRDSInstance is an attribute referencer that resolves SecurityGroupID from a referenced SecurityGroup
+type SecurityGroupIDReferencerForRDSInstance struct {
+	network.SecurityGroupIDReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved value to the managed resource
+func (v *SecurityGroupIDReferencerForRDSInstance) Assign(res resource.CanReference, value string) error {
+	rds, ok := res.(*RDSInstance)
+	if !ok {
+		return errors.New(errResourceIsNotRDSInstance)
+	}
+
+	rds.Spec.SecurityGroupIDs = append(rds.Spec.SecurityGroupIDs, value)
+	return nil
+}
+
+// DBSubnetGroupNameReferencerForRDSInstance is an attribute referencer that retrieves the name from a referenced DBSubnetGroup
+type DBSubnetGroupNameReferencerForRDSInstance struct {
+	storage.DBSubnetGroupNameReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved value to the managed resource
+func (v *DBSubnetGroupNameReferencerForRDSInstance) Assign(res resource.CanReference, value string) error {
+	rds, ok := res.(*RDSInstance)
+	if !ok {
+		return errors.New(errResourceIsNotRDSInstance)
+	}
+
+	rds.Spec.DBSubnetGroupName = value
+	return nil
+}
 
 // RDSInstanceParameters define the desired state of an AWS Relational Database
 // Service instance.
@@ -48,16 +90,22 @@ type RDSInstanceParameters struct {
 	// Size in GB of this RDS instance.
 	Size int64 `json:"size"`
 
-	// SubnetGroupName specifies a database subnet group for the RDS instance.
+	// DBSubnetGroupName specifies a database subnet group for the RDS instance.
 	// The new instance is created in the VPC associated with the DB subnet
 	// group. If no DB subnet group is specified, then the instance is not
 	// created in a VPC.
 	// +optional
-	SubnetGroupName string `json:"subnetGroupName,omitempty"`
+	DBSubnetGroupName string `json:"subnetGroupName,omitempty"`
+
+	// SubnetGroupNameRef references to a DBSubnetGroup to retrieve its name
+	SubnetGroupNameRef *DBSubnetGroupNameReferencerForRDSInstance `json:"subnetGroupNameRef,omitempty" resource:"attributereferencer"`
 
 	// SecurityGroups that will allow the RDS instance to be accessed over the network.
 	// +optional
-	SecurityGroups []string `json:"securityGroups,omitempty"`
+	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
+
+	// SecurityGroupRefs references to a list of SecurityGroups to retrieve a list of securityGroupIDs
+	SecurityGroupIDRefs []*SecurityGroupIDReferencerForRDSInstance `json:"securityGroupIdRefs,omitempty" resource:"attributereferencer"`
 }
 
 // An RDSInstanceSpec defines the desired state of an RDSInstance.
@@ -114,6 +162,8 @@ type RDSInstance struct {
 	Spec   RDSInstanceSpec   `json:"spec,omitempty"`
 	Status RDSInstanceStatus `json:"status,omitempty"`
 }
+
+var _ resource.Managed = (*RDSInstance)(nil)
 
 // +kubebuilder:object:root=true
 
