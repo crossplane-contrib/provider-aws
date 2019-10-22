@@ -194,6 +194,14 @@ spec:
             vpcId:
               description: VPCID is the ID of the VPC.
               type: string
+            vpcIdRef:
+              description: VPCIDRef references to a VPC to and retrieves its vpcId
+              properties:
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    TODO: Add other useful fields. apiVersion, kind, uid?'
+                  type: string
+              type: object
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the name of
                 a Secret, in the same namespace as this managed resource, to which
@@ -210,7 +218,6 @@ spec:
           - availabilityZone
           - cidrBlock
           - providerRef
-          - vpcId
           type: object
         status:
           description: A SubnetStatus represents the observed state of a Subnet.
@@ -284,9 +291,6 @@ spec:
                 - value
                 type: object
               type: array
-          required:
-          - subnetId
-          - subnetState
           type: object
       type: object
   version: v1alpha2
