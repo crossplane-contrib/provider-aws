@@ -33,6 +33,11 @@ func (mg *RDSInstance) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
 }
 
+// GetCondition of this RDSInstance.
+func (mg *RDSInstance) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
 // GetNonPortableClassReference of this RDSInstance.
 func (mg *RDSInstance) GetNonPortableClassReference() *corev1.ObjectReference {
 	return mg.Spec.NonPortableClassReference
