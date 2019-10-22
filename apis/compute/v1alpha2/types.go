@@ -17,9 +17,14 @@ limitations under the License.
 package v1alpha2
 
 import (
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-
+	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+
+	identity "github.com/crossplaneio/stack-aws/apis/identity/v1alpha2"
+	network "github.com/crossplaneio/stack-aws/apis/network/v1alpha2"
 )
 
 // Cluster statuses.
@@ -28,6 +33,11 @@ const (
 	ClusterStatusCreating = "CREATING"
 
 	ClusterStatusActive = "ACTIVE"
+)
+
+// Error strings
+const (
+	errResourceIsNotEKSCluster = "The managed resource is not an EKSCluster"
 )
 
 // EKSRegion represents an EKS enabled AWS region.
@@ -45,6 +55,86 @@ const (
 	EKSRegionEUWest1 EKSRegion = "eu-west-1"
 )
 
+// VPCIDReferencerForEKSCluster is an attribute referencer that resolves VPCID from a referenced VPC
+type VPCIDReferencerForEKSCluster struct {
+	network.VPCIDReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved vpcId to the managed resource
+func (v *VPCIDReferencerForEKSCluster) Assign(res resource.CanReference, value string) error {
+	eks, ok := res.(*EKSCluster)
+	if !ok {
+		return errors.New(errResourceIsNotEKSCluster)
+	}
+
+	eks.Spec.VPCID = value
+	return nil
+}
+
+// IAMRoleARNReferencerForEKSCluster is an attribute referencer that retrieves IAMRoleARN from a referenced IAMRole
+type IAMRoleARNReferencerForEKSCluster struct {
+	identity.IAMRoleARNReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved value to the managed resource
+func (v *IAMRoleARNReferencerForEKSCluster) Assign(res resource.CanReference, value string) error {
+	eks, ok := res.(*EKSCluster)
+	if !ok {
+		return errors.New(errResourceIsNotEKSCluster)
+	}
+
+	eks.Spec.RoleARN = value
+	return nil
+}
+
+// SubnetIDReferencerForEKSCluster is an attribute referencer that resolves SubnetID from a referenced Subnet
+type SubnetIDReferencerForEKSCluster struct {
+	network.SubnetIDReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved subnetId to the managed resource
+func (v *SubnetIDReferencerForEKSCluster) Assign(res resource.CanReference, value string) error {
+	eks, ok := res.(*EKSCluster)
+	if !ok {
+		return errors.New(errResourceIsNotEKSCluster)
+	}
+
+	eks.Spec.SubnetIDs = append(eks.Spec.SubnetIDs, value)
+	return nil
+}
+
+// SecurityGroupIDReferencerForEKSCluster is an attribute referencer that resolves ID from a referenced SecurityGroup
+type SecurityGroupIDReferencerForEKSCluster struct {
+	network.SecurityGroupIDReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved securityGroupId to the managed resource
+func (v *SecurityGroupIDReferencerForEKSCluster) Assign(res resource.CanReference, value string) error {
+	eks, ok := res.(*EKSCluster)
+	if !ok {
+		return errors.New(errResourceIsNotEKSCluster)
+	}
+
+	eks.Spec.SecurityGroupIDs = append(eks.Spec.SecurityGroupIDs, value)
+	return nil
+}
+
+// SecurityGroupIDReferencerForEKSWorkerNodes is an attribute referencer that resolves ID from a referenced SecurityGroup
+type SecurityGroupIDReferencerForEKSWorkerNodes struct {
+	network.SecurityGroupIDReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved securityGroupId to worker nodes in the managed resource
+func (v *SecurityGroupIDReferencerForEKSWorkerNodes) Assign(res resource.CanReference, value string) error {
+	eks, ok := res.(*EKSCluster)
+	if !ok {
+		return errors.New(errResourceIsNotEKSCluster)
+	}
+
+	eks.Spec.WorkerNodes.ClusterControlPlaneSecurityGroup = value
+	return nil
+}
+
 // EKSClusterParameters define the desired state of an AWS Elastic Kubernetes
 // Service cluster.
 type EKSClusterParameters struct {
@@ -59,7 +149,10 @@ type EKSClusterParameters struct {
 	// permis sions for Amazon EKS to make calls to other AWS  API  operations
 	// on your behalf. For more information, see 'Amazon EKS Service IAM Role'
 	// in the Amazon EKS User Guide.
-	RoleARN string `json:"roleARN"`
+	RoleARN string `json:"roleARN,omitempty"`
+
+	// RoleARNRef references to an IAMRole to retrieve its ARN
+	RoleARNRef *IAMRoleARNReferencerForEKSCluster `json:"roleARNRef,omitempty" resource:"attributereferencer"`
 
 	// The VPC subnets and security groups  used  by  the  cluster  control
 	// plane.  Amazon  EKS VPC resources have specific requirements to work
@@ -69,14 +162,23 @@ type EKSClusterParameters struct {
 	// specify  up  to  5  security groups, but we recommend that you use a
 	// dedicated security group for your cluster control plane.
 
-	// VpcID of this EKS cluster.
-	VpcID string `json:"vpcId"`
+	// VPCID is the ID of the VPC.
+	VPCID string `json:"vpcId,omitempty"`
 
-	// SubnetIds of this EKS cluster.
-	SubnetIds []string `json:"subnetIds"`
+	// VPCIDRef references to a VPC to and retrieves its vpcId
+	VPCIDRef *VPCIDReferencerForEKSCluster `json:"vpcIdRef,omitempty" resource:"attributereferencer"`
 
-	// SecurityGroupIds of this EKS cluster.
-	SecurityGroupIds []string `json:"securityGroupIds"`
+	// SubnetIDs of this EKS cluster.
+	SubnetIDs []string `json:"subnetIds,omitempty"`
+
+	// SubnetIDRefs is a set of referencers that each retrieve the subnetID from the referenced Subnet
+	SubnetIDRefs []*SubnetIDReferencerForEKSCluster `json:"subnetIdRefs,omitempty" resource:"attributereferencer"`
+
+	// SecurityGroupIDs of this EKS cluster.
+	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
+
+	// SecurityGroupIDRefs is a set of referencers that each retrieve the ID from the referenced SecurityGroup
+	SecurityGroupIDRefs []*SecurityGroupIDReferencerForEKSCluster `json:"securityGroupIdRefs,omitempty" resource:"attributereferencer"`
 
 	// ClusterVersion: The desired Kubernetes version of this EKS Cluster. If
 	// you do not specify a value here, the latest version available is used.
@@ -173,6 +275,9 @@ type WorkerNodesSpec struct {
 	// cluster control plane in order to allow communication to this node group.
 	// +optional
 	ClusterControlPlaneSecurityGroup string `json:"clusterControlPlaneSecurityGroup,omitempty"`
+
+	// ClusterControlPlaneSecurityGroupRef references to a SecurityGroup to retrieve its ID
+	ClusterControlPlaneSecurityGroupRef *SecurityGroupIDReferencerForEKSWorkerNodes `json:"clusterControlPlaneSecurityGroupRef,omitempty" resource:"attributereferencer"`
 }
 
 // An EKSClusterStatus represents the observed state of an EKSCluster.
