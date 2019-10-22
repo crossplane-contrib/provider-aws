@@ -36,18 +36,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
+	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+
 	awscomputev1alpha2 "github.com/crossplaneio/stack-aws/apis/compute/v1alpha2"
 	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
 	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 	cloudformationclient "github.com/crossplaneio/stack-aws/pkg/clients/cloudformation"
-
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-
 	"github.com/crossplaneio/stack-aws/pkg/clients/eks"
-
-	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
-	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 )
 
 const (
@@ -71,6 +69,11 @@ const (
 	aLongWait  = 60 * time.Second
 )
 
+// Error strings
+const (
+	errUpdateManagedStatus = "cannot update managed resource status"
+)
+
 // CloudFormation States that are non-transitory
 var (
 	completedCFState = map[cf.StackStatus]bool{
@@ -91,6 +94,7 @@ var (
 type Reconciler struct {
 	client.Client
 	publisher resource.ManagedConnectionPublisher
+	resource.ManagedReferenceResolver
 
 	connect func(*awscomputev1alpha2.EKSCluster) (eks.Client, error)
 	create  func(*awscomputev1alpha2.EKSCluster, eks.Client) (reconcile.Result, error)
@@ -108,8 +112,9 @@ type EKSClusterController struct{}
 // and Start it when the Manager is Started.
 func (c *EKSClusterController) SetupWithManager(mgr ctrl.Manager) error {
 	r := &Reconciler{
-		Client:    mgr.GetClient(),
-		publisher: resource.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
+		Client:                   mgr.GetClient(),
+		publisher:                resource.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(mgr.GetClient()),
 	}
 	r.connect = r._connect
 	r.create = r._create
@@ -404,6 +409,21 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	eksClient, err := r.connect(instance)
 	if err != nil {
 		return r.fail(instance, err)
+	}
+
+	if !resource.IsConditionTrue(instance.GetCondition(runtimev1alpha1.TypeReferencesResolved)) {
+		if err := r.ResolveReferences(ctx, instance); err != nil {
+			condition := runtimev1alpha1.ReconcileError(err)
+			if resource.IsReferencesAccessError(err) {
+				condition = runtimev1alpha1.ReferenceResolutionBlocked(err)
+			}
+
+			instance.Status.SetConditions(condition)
+			return reconcile.Result{RequeueAfter: aLongWait}, errors.Wrap(r.Update(ctx, instance), errUpdateManagedStatus)
+		}
+
+		// Add ReferenceResolutionSuccess to the conditions
+		instance.Status.SetConditions(runtimev1alpha1.ReferenceResolutionSuccess())
 	}
 
 	// Add finalizer

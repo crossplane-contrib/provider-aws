@@ -18,9 +18,10 @@ package s3
 
 import (
 	"context"
-	"errors"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -47,6 +48,16 @@ const (
 	finalizer      = "finalizer." + controllerName
 )
 
+// Amounts of time we wait before requeuing a reconcile.
+const (
+	aLongWait = 60 * time.Second
+)
+
+// Error strings
+const (
+	errUpdateManagedStatus = "cannot update managed resource status"
+)
+
 var (
 	log           = logging.Logger.WithName("controller." + controllerName)
 	ctx           = context.Background()
@@ -60,6 +71,7 @@ type Reconciler struct {
 	scheme     *runtime.Scheme
 	kubeclient kubernetes.Interface
 	recorder   record.EventRecorder
+	resource.ManagedReferenceResolver
 
 	connect func(*bucketv1alpha2.S3Bucket) (s3.Service, error)
 	create  func(*bucketv1alpha2.S3Bucket, s3.Service) (reconcile.Result, error)
@@ -75,10 +87,11 @@ type BucketController struct{}
 // The Manager will set fields on the Controller and Start it when the Manager is Started.
 func (c *BucketController) SetupWithManager(mgr ctrl.Manager) error {
 	r := &Reconciler{
-		Client:     mgr.GetClient(),
-		scheme:     mgr.GetScheme(),
-		kubeclient: kubernetes.NewForConfigOrDie(mgr.GetConfig()),
-		recorder:   mgr.GetEventRecorderFor(controllerName),
+		Client:                   mgr.GetClient(),
+		scheme:                   mgr.GetScheme(),
+		kubeclient:               kubernetes.NewForConfigOrDie(mgr.GetConfig()),
+		recorder:                 mgr.GetEventRecorderFor(controllerName),
+		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(mgr.GetClient()),
 	}
 	r.connect = r._connect
 	r.create = r._create
@@ -245,6 +258,21 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	s3Client, err := r.connect(bucket)
 	if err != nil {
 		return r.fail(bucket, err)
+	}
+
+	if !resource.IsConditionTrue(bucket.GetCondition(runtimev1alpha1.TypeReferencesResolved)) {
+		if err := r.ResolveReferences(ctx, bucket); err != nil {
+			condition := runtimev1alpha1.ReconcileError(err)
+			if resource.IsReferencesAccessError(err) {
+				condition = runtimev1alpha1.ReferenceResolutionBlocked(err)
+			}
+
+			bucket.Status.SetConditions(condition)
+			return reconcile.Result{RequeueAfter: aLongWait}, errors.Wrap(r.Update(ctx, bucket), errUpdateManagedStatus)
+		}
+
+		// Add ReferenceResolutionSuccess to the conditions
+		bucket.Status.SetConditions(runtimev1alpha1.ReferenceResolutionSuccess())
 	}
 
 	// Check for deletion
