@@ -48,13 +48,13 @@ type SubnetSpec struct {
 type SubnetExternalStatus struct {
 	// SubnetState is the current state of the Subnet.
 	// +kubebuilder:validation:Enum=pending;available
-	SubnetState string `json:"subnetState"`
+	SubnetState string `json:"subnetState,omitempty"`
 
 	// Tags represents to current ec2 tags.
 	Tags []Tag `json:"tags,omitempty"`
 
 	// SubnetID is the ID of the Subnet.
-	SubnetID string `json:"subnetId"`
+	SubnetID string `json:"subnetId,omitempty"`
 }
 
 // A SubnetStatus represents the observed state of a Subnet.
