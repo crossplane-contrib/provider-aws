@@ -69,16 +69,16 @@ type DBSubnetGroupSpec struct {
 // DBSubnetGroupExternalStatus keeps the state for the external resource
 type DBSubnetGroupExternalStatus struct {
 	// The Amazon Resource Name (ARN) for the DB subnet group.
-	DBSubnetGroupARN string `json:"groupArn"`
+	DBSubnetGroupARN string `json:"groupArn,omitempty"`
 
 	// Provides the status of the DB subnet group.
-	SubnetGroupStatus string `json:"groupStatus"`
+	SubnetGroupStatus string `json:"groupStatus,omitempty"`
 
 	// Contains a list of Subnet elements.
-	Subnets []Subnet `json:"subnets"`
+	Subnets []Subnet `json:"subnets,omitempty"`
 
 	// Provides the VpcId of the DB subnet group.
-	VPCID string `json:"vpcId"`
+	VPCID string `json:"vpcId,omitempty"`
 }
 
 // A DBSubnetGroupStatus represents the observed state of a DBSubnetGroup.
