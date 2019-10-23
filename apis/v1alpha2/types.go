@@ -17,8 +17,9 @@ limitations under the License.
 package v1alpha2
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 )
 
 // A ProviderSpec defines the desired state of a Provider.
@@ -29,7 +30,7 @@ type ProviderSpec struct {
 
 	// A Secret containing INI encoded credentials for an AWS IAM role
 	// that will be used to authenticate to this AWS account.
-	Secret corev1.SecretKeySelector `json:"credentialsSecretRef"`
+	Secret runtimev1alpha1.SecretKeySelector `json:"credentialsSecretRef"`
 }
 
 // +kubebuilder:object:root=true
@@ -39,6 +40,7 @@ type ProviderSpec struct {
 // +kubebuilder:printcolumn:name="REGION",type="string",JSONPath=".spec.region"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:printcolumn:name="SECRET-NAME",type="string",JSONPath=".spec.credentialsSecretRef.name",priority=1
+// +kubebuilder:resource:scope=Cluster
 type Provider struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

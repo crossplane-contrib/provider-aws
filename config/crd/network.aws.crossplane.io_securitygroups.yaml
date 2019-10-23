@@ -31,7 +31,7 @@ spec:
     listKind: SecurityGroupList
     plural: securitygroups
     singular: securitygroup
-  scope: ""
+  scope: Cluster
   subresources:
     status: {}
   validation:

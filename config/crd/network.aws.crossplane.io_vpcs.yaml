@@ -31,7 +31,7 @@ spec:
     listKind: VPCList
     plural: vpcs
     singular: vpc
-  scope: ""
+  scope: Cluster
   subresources:
     status: {}
   validation:

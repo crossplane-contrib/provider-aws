@@ -25,7 +25,7 @@ spec:
     listKind: ReplicationGroupList
     plural: replicationgroups
     singular: replicationgroup
-  scope: ""
+  scope: Cluster
   subresources:
     status: {}
   validation:
