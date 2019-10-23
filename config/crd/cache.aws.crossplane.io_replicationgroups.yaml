@@ -315,6 +315,10 @@ spec:
                     is specified."
                   type: string
                 replicasPerNodeGroup:
+                  description: ReplicasPerNodeGroup specifies the number of replica
+                    nodes in each node group (shard). Valid values are 0 to 5.
+                  type: integer
+                replicationGroupDescription:
                   description: ReplicationGroupDescription is the description for
                     the replication group.
                   type: string
@@ -357,7 +361,7 @@ spec:
                     not specify this parameter, ElastiCache automatically chooses
                     an appropriate time range."
                   type: string
-                snapshottingClusterId:
+                snapshottingClusterID:
                   description: SnapshottingClusterID is used as the daily snapshot
                     source for the replication group. This parameter cannot be set
                     for Redis (cluster mode enabled) replication groups.
@@ -398,7 +402,7 @@ spec:
               - applyImmediately
               - cacheNodeType
               - engine
-              - replicasPerNodeGroup
+              - replicationGroupDescription
               type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
@@ -513,11 +517,11 @@ spec:
                             a node group (shard). Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/NodeGroupMember
                           properties:
                             cacheClusterId:
-                              description: CacheClusterId is the ID of the cluster
+                              description: CacheClusterID is the ID of the cluster
                                 to which the node belongs.
                               type: string
                             cacheNodeId:
-                              description: CacheNodeId is the ID of the node within
+                              description: CacheNodeID is the ID of the node within
                                 its cluster. A node ID is a numeric identifier (0001,
                                 0002, etc.).
                               type: string
@@ -549,7 +553,7 @@ spec:
                           type: object
                         type: array
                       port:
-                        description: NodeGroupId is the identifier for the node group
+                        description: NodeGroupID is the identifier for the node group
                           (shard). A Redis (cluster mode disabled) replication group
                           contains only 1 node group; therefore, the node group ID
                           is 0001. A Redis (cluster mode enabled) replication group

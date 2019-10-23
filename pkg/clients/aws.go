@@ -113,20 +113,6 @@ func Config(client kubernetes.Interface, p *v1alpha2.Provider) (*aws.Config, err
 	return LoadConfig(data, DefaultSection, p.Spec.Region)
 }
 
-// StringAddress returns address of the given string.
-func StringAddress(v string) *string {
-	return &v
-}
-
-// Int64Address returns address of the given int64.
-func Int64Address(i *int) *int64 {
-	if i == nil {
-		return nil
-	}
-	n := int64(*i)
-	return &n
-}
-
 // String converts the supplied string for use with the AWS Go SDK.
 func String(v string, o ...FieldOption) *string {
 	for _, fo := range o {
@@ -140,6 +126,22 @@ func String(v string, o ...FieldOption) *string {
 	}
 
 	return aws.String(v)
+}
+
+// StringValue converts the supplied string pointer to a string, returning the
+// empty string if the pointer is nil.
+// TODO(muvaf): is this really meaningful? why not implement it?
+func StringValue(v *string) string {
+	return aws.StringValue(v)
+}
+
+// LateInitializeStringPtr returns in if it's non-nil, otherwise returns from
+// which is the backup for the cases in is nil.
+func LateInitializeStringPtr(in *string, from *string) *string {
+	if in != nil {
+		return in
+	}
+	return from
 }
 
 // Int64 converts the supplied int for use with the AWS Go SDK.
@@ -157,6 +159,37 @@ func Int64(v int, o ...FieldOption) *int64 {
 	return aws.Int64(int64(v))
 }
 
+// Int64Address returns the given *int in the form of *int64.
+func Int64Address(i *int) *int64 {
+	if i == nil {
+		return nil
+	}
+	return aws.Int64(int64(*i))
+}
+
+// IntAddress converts the supplied int64 pointer to an int pointer, returning nil if
+// the pointer is nil.
+func IntAddress(i *int64) *int {
+	if i == nil {
+		return nil
+	}
+	r := int(*i)
+	return &r
+}
+
+// LateInitializeIntPtr returns in if it's non-nil, otherwise returns from
+// which is the backup for the cases in is nil.
+func LateInitializeIntPtr(in *int, from *int64) *int {
+	if in != nil {
+		return in
+	}
+	if from != nil {
+		i := int(*from)
+		return &i
+	}
+	return nil
+}
+
 // Bool converts the supplied bool for use with the AWS Go SDK.
 func Bool(v bool, o ...FieldOption) *bool {
 	for _, fo := range o {
@@ -171,67 +204,11 @@ func Bool(v bool, o ...FieldOption) *bool {
 	return aws.Bool(v)
 }
 
-// StringValue converts the supplied string pointer to a string, returning the
-// empty string if the pointer is nil.
-func StringValue(v *string) string {
-	return aws.StringValue(v)
-}
-
-// Int64Value converts the supplied int64 pointer to an int, returning zero if
-// the pointer is nil.
-func Int64Value(v *int64) int {
-	return int(aws.Int64Value(v))
-}
-
-// Int64Ref converts the supplied int64 pointer to an int pointer, returning nil if
-// the pointer is nil.
-func Int64Ref(i *int64) *int {
-	if i == nil {
-		return nil
-	}
-	r := int(*i)
-	return &r
-}
-
-// Float64Value converts the supplied float64 pointer to an int, returning zero if
-// the pointer is nil.
-func Float64Value(v *float64) int {
-	return int(aws.Float64Value(v))
-}
-
-// BoolValue converts the supplied bool pointer to a bool, returning false if
-// the pointer is nil.
-func BoolValue(v *bool) bool {
-	return aws.BoolValue(v)
-}
-
-// IntValue converts the supplied int pointer to a int, returning 0 if
-// the pointer is nil.
-func IntValue(v *int) int {
-	return aws.IntValue(v)
-}
-
-func LateInitializeStringPtr(in *string, from *string) *string {
-	if in != nil {
-		return in
-	}
-	return from
-}
-
+// LateInitializeBoolPtr returns in if it's non-nil, otherwise returns from
+// which is the backup for the cases in is nil.
 func LateInitializeBoolPtr(in *bool, from *bool) *bool {
 	if in != nil {
 		return in
 	}
 	return from
-}
-
-func LateInitializeIntPtr(in *int, from *int64) *int {
-	if in != nil {
-		return in
-	}
-	if from != nil {
-		i := int(*from)
-		return &i
-	}
-	return nil
 }

@@ -273,6 +273,10 @@ spec:
                 per https://github.com/crossplaneio/crossplane-runtime/issues/21
               type: string
             replicasPerNodeGroup:
+              description: ReplicasPerNodeGroup specifies the number of replica nodes
+                in each node group (shard). Valid values are 0 to 5.
+              type: integer
+            replicationGroupDescription:
               description: ReplicationGroupDescription is the description for the
                 replication group.
               type: string
@@ -313,7 +317,7 @@ spec:
                 group (shard). \n Example: 05:00-09:00 \n If you do not specify this
                 parameter, ElastiCache automatically chooses an appropriate time range."
               type: string
-            snapshottingClusterId:
+            snapshottingClusterID:
               description: SnapshottingClusterID is used as the daily snapshot source
                 for the replication group. This parameter cannot be set for Redis
                 (cluster mode enabled) replication groups.
@@ -354,7 +358,7 @@ spec:
           - cacheNodeType
           - engine
           - providerRef
-          - replicasPerNodeGroup
+          - replicationGroupDescription
           type: object
       required:
       - specTemplate

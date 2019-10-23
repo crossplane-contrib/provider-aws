@@ -18,12 +18,18 @@ package elasticache
 
 import (
 	"reflect"
+	"strconv"
 
+	"github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache/elasticacheiface"
-	"github.com/crossplaneio/stack-aws/apis/cache/v1alpha2"
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 	"github.com/pkg/errors"
+
+	"github.com/crossplaneio/stack-aws/apis/cache/v1alpha2"
+	clients "github.com/crossplaneio/stack-aws/pkg/clients"
 )
 
 // A Client handles CRUD operations for ElastiCache resources. This interface is
@@ -33,7 +39,7 @@ type Client elasticacheiface.ElastiCacheAPI
 // NewClient returns a new ElastiCache client. Credentials must be passed as
 // JSON encoded data.
 func NewClient(credentials []byte, region string) (Client, error) {
-	cfg, err := aws.LoadConfig(credentials, aws.DefaultSection, region)
+	cfg, err := clients.LoadConfig(credentials, clients.DefaultSection, region)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot create new AWS configuration")
 	}
@@ -60,17 +66,17 @@ func NewCreateReplicationGroupInput(g v1alpha2.ReplicationGroupParameters, id st
 		CacheSubnetGroupName:       g.CacheSubnetGroupName,
 		EngineVersion:              g.EngineVersion,
 		NotificationTopicArn:       g.NotificationTopicARN,
-		NumCacheClusters:           aws.Int64Address(g.NumCacheClusters),
-		NumNodeGroups:              aws.Int64Address(g.NumNodeGroups),
-		Port:                       aws.Int64Address(g.Port),
+		NumCacheClusters:           clients.Int64Address(g.NumCacheClusters),
+		NumNodeGroups:              clients.Int64Address(g.NumNodeGroups),
+		Port:                       clients.Int64Address(g.Port),
 		PreferredCacheClusterAZs:   g.PreferredCacheClusterAZs,
 		PreferredMaintenanceWindow: g.PreferredMaintenanceWindow,
 		PrimaryClusterId:           g.PrimaryClusterID,
-		ReplicasPerNodeGroup:       aws.Int64Address(g.ReplicasPerNodeGroup),
+		ReplicasPerNodeGroup:       clients.Int64Address(g.ReplicasPerNodeGroup),
 		SecurityGroupIds:           g.SecurityGroupIDs,
 		SnapshotArns:               g.SnapshotARNs,
 		SnapshotName:               g.SnapshotName,
-		SnapshotRetentionLimit:     aws.Int64Address(g.SnapshotRetentionLimit),
+		SnapshotRetentionLimit:     clients.Int64Address(g.SnapshotRetentionLimit),
 		SnapshotWindow:             g.SnapshotWindow,
 		TransitEncryptionEnabled:   g.TransitEncryptionEnabled,
 	}
@@ -89,7 +95,7 @@ func NewCreateReplicationGroupInput(g v1alpha2.ReplicationGroupParameters, id st
 			c.NodeGroupConfiguration[i] = elasticache.NodeGroupConfiguration{
 				PrimaryAvailabilityZone:  cfg.PrimaryAvailabilityZone,
 				ReplicaAvailabilityZones: cfg.ReplicaAvailabilityZones,
-				ReplicaCount:             aws.Int64Address(cfg.ReplicaCount),
+				ReplicaCount:             clients.Int64Address(cfg.ReplicaCount),
 				Slots:                    cfg.Slots,
 			}
 		}
@@ -114,7 +120,7 @@ func NewModifyReplicationGroupInput(g v1alpha2.ReplicationGroupParameters, id st
 		PrimaryClusterId:            g.PrimaryClusterID,
 		ReplicationGroupDescription: &g.ReplicationGroupDescription,
 		SecurityGroupIds:            g.SecurityGroupIDs,
-		SnapshotRetentionLimit:      aws.Int64Address(g.SnapshotRetentionLimit),
+		SnapshotRetentionLimit:      clients.Int64Address(g.SnapshotRetentionLimit),
 		SnapshotWindow:              g.SnapshotWindow,
 		SnapshottingClusterId:       g.SnapshottingClusterID,
 	}
@@ -138,16 +144,19 @@ func NewDescribeCacheClustersInput(clusterID string) *elasticache.DescribeCacheC
 	return &elasticache.DescribeCacheClustersInput{CacheClusterId: &clusterID}
 }
 
+// LateInitialize assigns the observed configurations and assigns them to the
+// corresponding fields in ReplicationGroupParameters in order to let user
+// know the defaults and make the changes as wished on that value.
 func LateInitialize(s *v1alpha2.ReplicationGroupParameters, rg elasticache.ReplicationGroup) {
 	// NOTE(muvaf): there are many other parameters that elasticache.ReplicationGroup
 	// does not include for some reason.
-	s.AtRestEncryptionEnabled = aws.LateInitializeBoolPtr(s.AtRestEncryptionEnabled, rg.AtRestEncryptionEnabled)
-	s.AuthEnabled = aws.LateInitializeBoolPtr(s.AuthEnabled, rg.AuthTokenEnabled)
-	s.AutomaticFailoverEnabled = aws.LateInitializeBoolPtr(s.AutomaticFailoverEnabled, automaticFailoverEnabled(rg.AutomaticFailover))
-	s.SnapshotRetentionLimit = aws.LateInitializeIntPtr(s.SnapshotRetentionLimit, rg.SnapshotRetentionLimit)
-	s.SnapshotWindow = aws.LateInitializeStringPtr(s.SnapshotWindow, rg.SnapshotWindow)
-	s.SnapshottingClusterID = aws.LateInitializeStringPtr(s.SnapshottingClusterID, rg.SnapshottingClusterId)
-	s.TransitEncryptionEnabled = aws.LateInitializeBoolPtr(s.TransitEncryptionEnabled, rg.TransitEncryptionEnabled)
+	s.AtRestEncryptionEnabled = clients.LateInitializeBoolPtr(s.AtRestEncryptionEnabled, rg.AtRestEncryptionEnabled)
+	s.AuthEnabled = clients.LateInitializeBoolPtr(s.AuthEnabled, rg.AuthTokenEnabled)
+	s.AutomaticFailoverEnabled = clients.LateInitializeBoolPtr(s.AutomaticFailoverEnabled, automaticFailoverEnabled(rg.AutomaticFailover))
+	s.SnapshotRetentionLimit = clients.LateInitializeIntPtr(s.SnapshotRetentionLimit, rg.SnapshotRetentionLimit)
+	s.SnapshotWindow = clients.LateInitializeStringPtr(s.SnapshotWindow, rg.SnapshotWindow)
+	s.SnapshottingClusterID = clients.LateInitializeStringPtr(s.SnapshottingClusterID, rg.SnapshottingClusterId)
+	s.TransitEncryptionEnabled = clients.LateInitializeBoolPtr(s.TransitEncryptionEnabled, rg.TransitEncryptionEnabled)
 }
 
 // ReplicationGroupNeedsUpdate returns true if the supplied Kubernetes resource
@@ -158,7 +167,7 @@ func ReplicationGroupNeedsUpdate(kube v1alpha2.ReplicationGroupParameters, rg el
 		return true
 	case !reflect.DeepEqual(&kube.CacheNodeType, rg.CacheNodeType):
 		return true
-	case !reflect.DeepEqual(kube.SnapshotRetentionLimit, aws.Int64Ref(rg.SnapshotRetentionLimit)):
+	case !reflect.DeepEqual(kube.SnapshotRetentionLimit, clients.IntAddress(rg.SnapshotRetentionLimit)):
 		return true
 	case !reflect.DeepEqual(kube.SnapshotWindow, rg.SnapshotWindow):
 		return true
@@ -194,7 +203,7 @@ func cacheClusterNeedsUpdate(kube v1alpha2.ReplicationGroupParameters, cc elasti
 		if !reflect.DeepEqual(cc.NotificationConfiguration.TopicStatus, kube.NotificationTopicStatus) {
 			return true
 		}
-	} else if aws.StringValue(kube.NotificationTopicARN) != "" {
+	} else if clients.StringValue(kube.NotificationTopicARN) != "" {
 		return true
 	}
 	if !reflect.DeepEqual(kube.PreferredMaintenanceWindow, cc.PreferredMaintenanceWindow) {
@@ -209,7 +218,7 @@ func sgIDsNeedUpdate(kube []string, cc []elasticache.SecurityGroupMembership) bo
 	}
 	existingOnes := map[string]bool{}
 	for _, sg := range cc {
-		existingOnes[aws.StringValue(sg.SecurityGroupId)] = true
+		existingOnes[clients.StringValue(sg.SecurityGroupId)] = true
 	}
 	for _, desired := range kube {
 		if !existingOnes[desired] {
@@ -225,7 +234,7 @@ func sgNamesNeedUpdate(kube []string, cc []elasticache.CacheSecurityGroupMembers
 	}
 	existingOnes := map[string]bool{}
 	for _, sg := range cc {
-		existingOnes[aws.StringValue(sg.CacheSecurityGroupName)] = true
+		existingOnes[clients.StringValue(sg.CacheSecurityGroupName)] = true
 	}
 	for _, desired := range kube {
 		if !existingOnes[desired] {
@@ -235,13 +244,15 @@ func sgNamesNeedUpdate(kube []string, cc []elasticache.CacheSecurityGroupMembers
 	return false
 }
 
+// GenerateObservation produces a ReplicationGroupObservation object out of
+// received elasticache.ReplicationGroup object.
 func GenerateObservation(rg elasticache.ReplicationGroup) v1alpha2.ReplicationGroupObservation {
 	o := v1alpha2.ReplicationGroupObservation{
 		AutomaticFailover:     string(rg.AutomaticFailover),
 		ClusterEnabled:        aws.BoolValue(rg.ClusterEnabled),
 		ConfigurationEndpoint: newEndpoint(rg.ConfigurationEndpoint),
 		MemberClusters:        rg.MemberClusters,
-		Status:                aws.StringValue(rg.Status),
+		Status:                clients.StringValue(rg.Status),
 	}
 	if len(rg.NodeGroups) != 0 {
 		o.NodeGroups = make([]v1alpha2.NodeGroup, len(rg.NodeGroups))
@@ -257,23 +268,23 @@ func GenerateObservation(rg elasticache.ReplicationGroup) v1alpha2.ReplicationGr
 
 func generateNodeGroup(ng elasticache.NodeGroup) v1alpha2.NodeGroup {
 	r := v1alpha2.NodeGroup{
-		NodeGroupId: aws.StringValue(ng.NodeGroupId),
-		Slots:       aws.StringValue(ng.Slots),
-		Status:      aws.StringValue(ng.Status),
+		NodeGroupID: clients.StringValue(ng.NodeGroupId),
+		Slots:       clients.StringValue(ng.Slots),
+		Status:      clients.StringValue(ng.Status),
 	}
 	if len(ng.NodeGroupMembers) != 0 {
 		r.NodeGroupMembers = make([]v1alpha2.NodeGroupMember, len(ng.NodeGroupMembers))
 		for i, m := range ng.NodeGroupMembers {
 			r.NodeGroupMembers[i] = v1alpha2.NodeGroupMember{
-				CacheClusterId:            aws.StringValue(m.CacheClusterId),
-				CacheNodeId:               aws.StringValue(m.CacheNodeId),
-				CurrentRole:               aws.StringValue(m.CurrentRole),
-				PreferredAvailabilityZone: aws.StringValue(m.PreferredAvailabilityZone),
+				CacheClusterID:            clients.StringValue(m.CacheClusterId),
+				CacheNodeID:               clients.StringValue(m.CacheNodeId),
+				CurrentRole:               clients.StringValue(m.CurrentRole),
+				PreferredAvailabilityZone: clients.StringValue(m.PreferredAvailabilityZone),
 			}
 			if m.ReadEndpoint != nil {
 				r.NodeGroupMembers[i].ReadEndpoint = v1alpha2.Endpoint{
-					Address: aws.StringValue(m.ReadEndpoint.Address),
-					Port:    aws.Int64Value(m.ReadEndpoint.Port),
+					Address: clients.StringValue(m.ReadEndpoint.Address),
+					Port:    int(aws.Int64Value(m.ReadEndpoint.Port)),
 				}
 			}
 		}
@@ -284,12 +295,12 @@ func generateNodeGroup(ng elasticache.NodeGroup) v1alpha2.NodeGroup {
 func generateReplicationGroupPendingModifiedValues(in elasticache.ReplicationGroupPendingModifiedValues) v1alpha2.ReplicationGroupPendingModifiedValues {
 	r := v1alpha2.ReplicationGroupPendingModifiedValues{
 		AutomaticFailoverStatus: string(in.AutomaticFailoverStatus),
-		PrimaryClusterID:        aws.StringValue(in.PrimaryClusterId),
+		PrimaryClusterID:        clients.StringValue(in.PrimaryClusterId),
 	}
 	if in.Resharding != nil && in.Resharding.SlotMigration != nil {
 		r.Resharding = v1alpha2.ReshardingStatus{
 			SlotMigration: v1alpha2.SlotMigration{
-				ProgressPercentage: aws.Float64Value(in.Resharding.SlotMigration.ProgressPercentage),
+				ProgressPercentage: int(aws.Float64Value(in.Resharding.SlotMigration.ProgressPercentage)),
 			},
 		}
 	}
@@ -301,28 +312,38 @@ func newEndpoint(e *elasticache.Endpoint) v1alpha2.Endpoint {
 		return v1alpha2.Endpoint{}
 	}
 
-	return v1alpha2.Endpoint{Address: aws.StringValue(e.Address), Port: aws.Int64Value(e.Port)}
+	return v1alpha2.Endpoint{Address: clients.StringValue(e.Address), Port: int(aws.Int64Value(e.Port))}
 }
 
 // ConnectionEndpoint returns the connection endpoint for a Replication Group.
 // https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/Endpoints.html
-func ConnectionEndpoint(rg elasticache.ReplicationGroup) v1alpha2.Endpoint {
+func ConnectionEndpoint(rg elasticache.ReplicationGroup) resource.ConnectionDetails {
 	// "Cluster enabled" Replication Groups have multiple node groups, and an
 	// explicit configuration endpoint that should be used for read and write.
-	if aws.BoolValue(rg.ClusterEnabled) {
-		return newEndpoint(rg.ConfigurationEndpoint)
+	if aws.BoolValue(rg.ClusterEnabled) &&
+		rg.ConfigurationEndpoint != nil &&
+		rg.ConfigurationEndpoint.Address != nil {
+		return resource.ConnectionDetails{
+			v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(rg.ConfigurationEndpoint.Address)),
+			v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(aws.Int64Value(rg.ConfigurationEndpoint.Port)))),
+		}
 	}
 
 	// "Cluster disabled" Replication Groups have a single node group, with a
 	// primary endpoint that should be used for write. Any node's endpoint can
 	// be used for read, but we support only a single endpoint so we return the
 	// primary's.
-	if len(rg.NodeGroups) > 0 {
-		return newEndpoint(rg.NodeGroups[0].PrimaryEndpoint)
+	if len(rg.NodeGroups) > 0 &&
+		rg.NodeGroups[0].PrimaryEndpoint != nil &&
+		rg.NodeGroups[0].PrimaryEndpoint.Address != nil {
+		return resource.ConnectionDetails{
+			v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(rg.NodeGroups[0].PrimaryEndpoint.Address)),
+			v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(aws.Int64Value(rg.NodeGroups[0].PrimaryEndpoint.Port)))),
+		}
 	}
 
 	// If the AWS API docs are to be believed we should never get here.
-	return v1alpha2.Endpoint{}
+	return nil
 }
 
 // IsNotFound returns true if the supplied error indicates a Replication Group

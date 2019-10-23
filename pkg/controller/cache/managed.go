@@ -19,9 +19,9 @@ package cache
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
+	commonaws "github.com/aws/aws-sdk-go-v2/aws"
 	elasticacheservice "github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -31,7 +31,6 @@ import (
 
 	"github.com/crossplaneio/stack-aws/apis/cache/v1alpha2"
 	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 	"github.com/crossplaneio/stack-aws/pkg/clients/elasticache"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
@@ -140,18 +139,6 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 		}
 		ccList[i] = rsp.CacheClusters[0]
 	}
-
-	o := resource.ExternalObservation{
-		ResourceExists:    true,
-		ResourceUpToDate:  !elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList),
-		ConnectionDetails: resource.ConnectionDetails{},
-	}
-	conn := elasticache.ConnectionEndpoint(rg)
-	if conn.Address != "" {
-		o.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretEndpointKey] = []byte(conn.Address)
-		o.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPortKey] = []byte(strconv.Itoa(conn.Port))
-	}
-
 	switch cr.Status.AtProvider.Status {
 	case v1alpha2.StatusAvailable:
 		cr.Status.SetConditions(runtimev1alpha1.Available())
@@ -164,7 +151,11 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
 	}
 
-	return o, nil
+	return resource.ExternalObservation{
+		ResourceExists:    true,
+		ResourceUpToDate:  !elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList),
+		ConnectionDetails: elasticache.ConnectionEndpoint(rg),
+	}, nil
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.ExternalCreation, error) {
@@ -180,7 +171,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.Ex
 	// with an explanatory message from AWS explaining that transit encryption
 	// is required.
 	var token *string
-	if aws.BoolValue(cr.Spec.ForProvider.AuthEnabled) {
+	if commonaws.BoolValue(cr.Spec.ForProvider.AuthEnabled) {
 		t, err := util.GeneratePassword(maxAuthTokenData)
 		if err != nil {
 			return resource.ExternalCreation{}, errors.Wrap(err, errGenerateAuthToken)

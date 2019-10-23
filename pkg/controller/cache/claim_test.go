@@ -26,12 +26,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/crossplaneio/stack-aws/apis/cache/v1alpha2"
-
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 	cachev1alpha1 "github.com/crossplaneio/crossplane/apis/cache/v1alpha1"
+
+	"github.com/crossplaneio/stack-aws/apis/cache/v1alpha2"
 )
 
 const (
@@ -91,7 +91,7 @@ func TestConfigureReplicationGroup(t *testing.T) {
 							ProviderReference:                &corev1.ObjectReference{Name: providerName},
 						},
 						ForProvider: v1alpha2.ReplicationGroupParameters{
-							Engine: v1alpha2.CacheEngineRedis,
+							Engine:        v1alpha2.CacheEngineRedis,
 							EngineVersion: &testEngineVersion,
 						},
 					},

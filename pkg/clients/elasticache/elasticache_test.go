@@ -18,7 +18,11 @@ package elasticache
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
+
+	"github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/google/go-cmp/cmp"
@@ -56,7 +60,7 @@ var (
 	replicasPerNodeGroup     = 2
 	snapshotName             = "coolSnapshot"
 	snapshotRetentionLimit   = 1
-	snapshottingClusterId    = "snapshot-cluster"
+	snapshottingClusterID    = "snapshot-cluster"
 	snapshotWindow           = "thedayaftertomorrow"
 	tagKey                   = "key-1"
 	tagValue                 = "value-1"
@@ -116,7 +120,7 @@ var (
 				SnapshotARNs:                snapshotARNs,
 				SnapshotName:                &snapshotName,
 				SnapshotRetentionLimit:      &snapshotRetentionLimit,
-				SnapshottingClusterID:       &snapshottingClusterId,
+				SnapshottingClusterID:       &snapshottingClusterID,
 				SnapshotWindow:              &snapshotWindow,
 				Tags: []v1alpha2.Tag{
 					{
@@ -238,7 +242,7 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 				SecurityGroupIds:            securityGroupIDs,
 				SnapshotRetentionLimit:      aws.Int64(snapshotRetentionLimit),
 				SnapshotWindow:              aws.String(snapshotWindow),
-				SnapshottingClusterId:       aws.String(snapshottingClusterId),
+				SnapshottingClusterId:       aws.String(snapshottingClusterID),
 			},
 		},
 		{
@@ -613,7 +617,7 @@ func TestConnectionEndpoint(t *testing.T) {
 	cases := []struct {
 		name string
 		rg   elasticache.ReplicationGroup
-		want v1alpha2.Endpoint
+		want resource.ConnectionDetails
 	}{
 		{
 			name: "ClusterModeEnabled",
@@ -624,14 +628,17 @@ func TestConnectionEndpoint(t *testing.T) {
 					Port:    aws.Int64(port),
 				},
 			},
-			want: v1alpha2.Endpoint{Address: host, Port: port},
+			want: resource.ConnectionDetails{
+				v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(host),
+				v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(port)),
+			},
 		},
 		{
 			name: "ClusterModeEnabledMissingConfigurationEndpoint",
 			rg: elasticache.ReplicationGroup{
 				ClusterEnabled: aws.Bool(true),
 			},
-			want: v1alpha2.Endpoint{},
+			want: nil,
 		},
 		{
 			name: "ClusterModeDisabled",
@@ -643,17 +650,20 @@ func TestConnectionEndpoint(t *testing.T) {
 					}},
 				},
 			},
-			want: v1alpha2.Endpoint{Address: host, Port: port},
+			want: resource.ConnectionDetails{
+				v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(host),
+				v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(port)),
+			},
 		},
 		{
 			name: "ClusterModeDisabledMissingPrimaryEndpoint",
 			rg:   elasticache.ReplicationGroup{NodeGroups: []elasticache.NodeGroup{{}}},
-			want: v1alpha2.Endpoint{},
+			want: nil,
 		},
 		{
 			name: "ClusterModeDisabledMissingNodeGroups",
 			rg:   elasticache.ReplicationGroup{},
-			want: v1alpha2.Endpoint{},
+			want: nil,
 		},
 	}
 	for _, tc := range cases {
