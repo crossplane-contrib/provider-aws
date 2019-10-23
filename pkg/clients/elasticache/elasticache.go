@@ -143,7 +143,7 @@ func LateInitialize(s *v1alpha2.ReplicationGroupParameters, rg elasticache.Repli
 	// does not include for some reason.
 	s.AtRestEncryptionEnabled = aws.LateInitializeBoolPtr(s.AtRestEncryptionEnabled, rg.AtRestEncryptionEnabled)
 	s.AuthEnabled = aws.LateInitializeBoolPtr(s.AuthEnabled, rg.AuthTokenEnabled)
-	s.AutomaticFailoverEnabled = aws.LateInitializeBoolPtr(s.AuthEnabled, automaticFailoverEnabled(rg.AutomaticFailover))
+	s.AutomaticFailoverEnabled = aws.LateInitializeBoolPtr(s.AutomaticFailoverEnabled, automaticFailoverEnabled(rg.AutomaticFailover))
 	s.SnapshotRetentionLimit = aws.LateInitializeIntPtr(s.SnapshotRetentionLimit, rg.SnapshotRetentionLimit)
 	s.SnapshotWindow = aws.LateInitializeStringPtr(s.SnapshotWindow, rg.SnapshotWindow)
 	s.SnapshottingClusterID = aws.LateInitializeStringPtr(s.SnapshottingClusterID, rg.SnapshottingClusterId)

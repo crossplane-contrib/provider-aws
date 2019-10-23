@@ -137,7 +137,7 @@ func resolveAWSClassInstanceValues(spec *v1alpha2.ReplicationGroupParameters, rc
 	case !strings.HasPrefix(aws.StringValue(spec.EngineVersion), rc.Spec.EngineVersion+"."):
 		// Both the claim and its class specified a version, but the class
 		// version is not a patch of the claim version.
-		err = errors.Errorf("class version %s is not a patch of claim version %s", spec.EngineVersion, rc.Spec.EngineVersion)
+		err = errors.Errorf("class version %s is not a patch of claim version %s", aws.StringValue(spec.EngineVersion), rc.Spec.EngineVersion)
 
 	default:
 		// Both the claim and its class specified a version, and the class
