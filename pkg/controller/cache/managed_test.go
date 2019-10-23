@@ -334,6 +334,68 @@ func TestObserve(t *testing.T) {
 			tokenCreated: true,
 		},
 		{
+			name: "SuccessfulObserveLateInitialized",
+			e: &external{
+				client: &fake.MockClient{
+					MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
+						return elasticache.DescribeReplicationGroupsRequest{
+							Request: &aws.Request{
+								HTTPRequest: &http.Request{},
+								Data: &elasticache.DescribeReplicationGroupsOutput{
+									ReplicationGroups: []elasticache.ReplicationGroup{
+										{
+											AuthTokenEnabled: aws.Bool(true),
+											Status:           aws.String(v1beta1.StatusCreating),
+										},
+									},
+								},
+							},
+						}
+					},
+				},
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+			},
+			r: replicationGroup(withReplicationGroupID(name)),
+			want: replicationGroup(
+				withProviderStatus(v1beta1.StatusCreating),
+				withReplicationGroupID(name),
+				withAuthEnabled(true),
+				withConditions(runtimev1alpha1.Creating()),
+			),
+		},
+		{
+			name: "FailedObserveLateInitializeError",
+			e: &external{
+				client: &fake.MockClient{
+					MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
+						return elasticache.DescribeReplicationGroupsRequest{
+							Request: &aws.Request{
+								HTTPRequest: &http.Request{},
+								Data: &elasticache.DescribeReplicationGroupsOutput{
+									ReplicationGroups: []elasticache.ReplicationGroup{
+										{
+											AuthTokenEnabled: aws.Bool(true),
+											Status:           aws.String(v1beta1.StatusCreating),
+										},
+									},
+								},
+							},
+						}
+					},
+				},
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(errorBoom),
+				},
+			},
+			r: replicationGroup(withReplicationGroupID(name)),
+			want: replicationGroup(
+				withReplicationGroupID(name),
+				withAuthEnabled(true)),
+			returnsErr: true,
+		},
+		{
 			name: "FailedDescribeReplicationGroups",
 			e: &external{client: &fake.MockClient{
 				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
@@ -395,6 +457,8 @@ func TestObserve(t *testing.T) {
 				withClusterEnabled(true),
 				withMemberClusters([]string{cacheClusterID}),
 				withProviderStatus(v1beta1.StatusAvailable),
+				withConditions(runtimev1alpha1.Available()),
+				withBindingPhase(runtimev1alpha1.BindingPhaseUnbound),
 				withAutomaticFailoverStatus(string(elasticache.AutomaticFailoverStatusEnabled)),
 			),
 			returnsErr: true,

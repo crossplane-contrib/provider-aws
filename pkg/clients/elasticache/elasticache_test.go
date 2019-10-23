@@ -357,6 +357,162 @@ func TestNewDescribeCacheClustersInput(t *testing.T) {
 	}
 }
 
+func TestLateInitialize(t *testing.T) {
+	cases := []struct {
+		name   string
+		params *v1beta1.ReplicationGroupParameters
+		rg     elasticache.ReplicationGroup
+		want   *v1beta1.ReplicationGroupParameters
+	}{
+		{
+			name: "NoChange",
+			params: &v1beta1.ReplicationGroupParameters{
+				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
+				AuthEnabled:              &authEnabled,
+				AutomaticFailoverEnabled: &autoFailoverEnabled,
+				SnapshotRetentionLimit:   &snapshotRetentionLimit,
+				SnapshotWindow:           &snapshotWindow,
+				SnapshottingClusterID:    &snapshottingClusterID,
+				TransitEncryptionEnabled: &transitEncryptionEnabled,
+			},
+			rg: elasticache.ReplicationGroup{
+				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
+				AuthTokenEnabled:         &authEnabled,
+				AutomaticFailover:        elasticache.AutomaticFailoverStatusEnabled,
+				SnapshotRetentionLimit:   aws.Int64(snapshotRetentionLimit),
+				SnapshotWindow:           aws.String(snapshotWindow),
+				SnapshottingClusterId:    aws.String(snapshottingClusterID),
+				TransitEncryptionEnabled: &transitEncryptionEnabled,
+			},
+			want: &v1beta1.ReplicationGroupParameters{
+				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
+				AuthEnabled:              &authEnabled,
+				AutomaticFailoverEnabled: &autoFailoverEnabled,
+				SnapshotRetentionLimit:   &snapshotRetentionLimit,
+				SnapshotWindow:           &snapshotWindow,
+				SnapshottingClusterID:    &snapshottingClusterID,
+				TransitEncryptionEnabled: &transitEncryptionEnabled,
+			},
+		},
+		{
+			name:   "AllChanged",
+			params: &v1beta1.ReplicationGroupParameters{},
+			rg: elasticache.ReplicationGroup{
+				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
+				AuthTokenEnabled:         &authEnabled,
+				AutomaticFailover:        elasticache.AutomaticFailoverStatusEnabled,
+				SnapshotRetentionLimit:   aws.Int64(snapshotRetentionLimit),
+				SnapshotWindow:           aws.String(snapshotWindow),
+				SnapshottingClusterId:    aws.String(snapshottingClusterID),
+				TransitEncryptionEnabled: &transitEncryptionEnabled,
+			},
+			want: &v1beta1.ReplicationGroupParameters{
+				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
+				AuthEnabled:              &authEnabled,
+				AutomaticFailoverEnabled: &autoFailoverEnabled,
+				SnapshotRetentionLimit:   &snapshotRetentionLimit,
+				SnapshotWindow:           &snapshotWindow,
+				SnapshottingClusterID:    &snapshottingClusterID,
+				TransitEncryptionEnabled: &transitEncryptionEnabled,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			LateInitialize(tc.params, tc.rg)
+			if diff := cmp.Diff(tc.want, tc.params); diff != "" {
+				t.Errorf("LateInitialize(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGenerateObservation(t *testing.T) {
+	automaticFailover := elasticache.AutomaticFailoverStatusEnabled
+	clusterEnabled := true
+	configurationEndpoint := &elasticache.Endpoint{
+		Address: aws.String("istanbul"),
+		Port:    aws.Int64(34),
+	}
+	memberClusters := []string{"member-1", "member-2"}
+	status := "creating"
+	nodeGroups := []elasticache.NodeGroup{
+		{
+			NodeGroupId: aws.String("my-id"),
+			Slots:       aws.String("special-slots"),
+			Status:      aws.String("creating"),
+			PrimaryEndpoint: &elasticache.Endpoint{
+				Address: aws.String("random-12"),
+				Port:    aws.Int64(124),
+			},
+			NodeGroupMembers: []elasticache.NodeGroupMember{
+				{
+					CacheClusterId:            aws.String("my-cache-cluster"),
+					CacheNodeId:               aws.String("cluster-0001"),
+					CurrentRole:               aws.String("secret-role"),
+					PreferredAvailabilityZone: aws.String("us-east-1"),
+					ReadEndpoint: &elasticache.Endpoint{
+						Address: aws.String("random-1"),
+						Port:    aws.Int64(123),
+					},
+				},
+			},
+		},
+	}
+	percentage := float64(54)
+	rgpmdv := elasticache.ReplicationGroupPendingModifiedValues{
+		AutomaticFailoverStatus: elasticache.PendingAutomaticFailoverStatusEnabled,
+		PrimaryClusterId:        aws.String("my-coolest-cluster"),
+		Resharding: &elasticache.ReshardingStatus{
+			SlotMigration: &elasticache.SlotMigration{
+				ProgressPercentage: &percentage,
+			},
+		},
+	}
+	cases := []struct {
+		name string
+		rg   elasticache.ReplicationGroup
+		want v1beta1.ReplicationGroupObservation
+	}{
+		{
+			name: "AllFields",
+			rg: elasticache.ReplicationGroup{
+				AutomaticFailover:     automaticFailover,
+				ClusterEnabled:        &clusterEnabled,
+				ConfigurationEndpoint: configurationEndpoint,
+				MemberClusters:        memberClusters,
+				Status:                &status,
+				NodeGroups:            nodeGroups,
+				PendingModifiedValues: &rgpmdv,
+			},
+			want: v1beta1.ReplicationGroupObservation{
+				AutomaticFailover: string(automaticFailover),
+				ClusterEnabled:    clusterEnabled,
+				ConfigurationEndpoint: v1beta1.Endpoint{
+					Address: *configurationEndpoint.Address,
+					Port:    int(*configurationEndpoint.Port),
+				},
+				MemberClusters: memberClusters,
+				NodeGroups: []v1beta1.NodeGroup{
+					generateNodeGroup(nodeGroups[0]),
+				},
+				PendingModifiedValues: generateReplicationGroupPendingModifiedValues(rgpmdv),
+				Status:                status,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			o := GenerateObservation(tc.rg)
+			if diff := cmp.Diff(tc.want, o); diff != "" {
+				t.Errorf("LateInitialize(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
 func TestReplicationGroupNeedsUpdate(t *testing.T) {
 	cases := []struct {
 		name   string

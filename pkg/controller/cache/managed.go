@@ -19,6 +19,7 @@ package cache
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strings"
 
 	commonaws "github.com/aws/aws-sdk-go-v2/aws"
@@ -41,13 +42,15 @@ import (
 
 // Error strings.
 const (
+	errUpdateReplicationGroupCR = "cannot update ReplicationGroup Custom Resource"
+	errGetCacheClusterList      = "cannot get cache cluster list"
+
 	errNewClient                = "cannot create new ElastiCache client"
 	errNotReplicationGroup      = "managed resource is not an ElastiCache replication group"
 	errDescribeReplicationGroup = "cannot describe ElastiCache replication group"
 	errGenerateAuthToken        = "cannot generate ElastiCache auth token"
 	errCreateReplicationGroup   = "cannot create ElastiCache replication group"
 	errModifyReplicationGroup   = "cannot modify ElastiCache replication group"
-	errDescribeCacheCluster     = "cannot describe ElastiCache cache cluster"
 	errDeleteReplicationGroup   = "cannot delete ElastiCache replication group"
 )
 
@@ -104,7 +107,10 @@ func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (resource.
 	return &external{client: awsClient}, errors.Wrap(err, errNewClient)
 }
 
-type external struct{ client elasticache.Client }
+type external struct {
+	client elasticache.Client
+	kube   client.Client
+}
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.ExternalObservation, error) {
 	cr, ok := mg.(*v1beta1.ReplicationGroup)
@@ -115,30 +121,22 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 	dr := e.client.DescribeReplicationGroupsRequest(elasticache.NewDescribeReplicationGroupsInput(meta.GetExternalName(cr)))
 	dr.SetContext(ctx)
 	rsp, err := dr.Send()
-	if elasticache.IsNotFound(err) {
-		return resource.ExternalObservation{ResourceExists: false}, nil
-	}
 	if err != nil {
-		return resource.ExternalObservation{}, errors.Wrap(err, errDescribeReplicationGroup)
+		return resource.ExternalObservation{ResourceExists: false}, errors.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDescribeReplicationGroup)
 	}
 	// DescribeReplicationGroups can return one or many replication groups. We
 	// ask for one group by name, so we should get either a single element list
 	// or an error.
 	rg := rsp.ReplicationGroups[0]
-
+	current := cr.Spec.ForProvider.DeepCopy()
 	elasticache.LateInitialize(&cr.Spec.ForProvider, rg)
+	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
+		if err := e.kube.Update(ctx, cr); err != nil {
+			return resource.ExternalObservation{}, errors.Wrap(err, errUpdateReplicationGroupCR)
+		}
+	}
 	cr.Status.AtProvider = elasticache.GenerateObservation(rg)
 
-	ccList := make([]elasticacheservice.CacheCluster, len(cr.Status.AtProvider.MemberClusters))
-	for i, cc := range cr.Status.AtProvider.MemberClusters {
-		dcc := e.client.DescribeCacheClustersRequest(elasticache.NewDescribeCacheClustersInput(cc))
-		dcc.SetContext(ctx)
-		rsp, err := dcc.Send()
-		if err != nil {
-			return resource.ExternalObservation{}, errors.Wrapf(err, errDescribeCacheCluster)
-		}
-		ccList[i] = rsp.CacheClusters[0]
-	}
 	switch cr.Status.AtProvider.Status {
 	case v1beta1.StatusAvailable:
 		cr.Status.SetConditions(runtimev1alpha1.Available())
@@ -151,6 +149,10 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
 	}
 
+	ccList, err := getCacheClusterList(ctx, e.client, cr.Status.AtProvider.MemberClusters)
+	if err != nil {
+		return resource.ExternalObservation{}, errors.Wrap(err, errGetCacheClusterList)
+	}
 	return resource.ExternalObservation{
 		ResourceExists:    true,
 		ResourceUpToDate:  !elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList),
@@ -214,4 +216,18 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	req.SetContext(ctx)
 	_, err := req.Send()
 	return errors.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDeleteReplicationGroup)
+}
+
+func getCacheClusterList(ctx context.Context, client elasticache.Client, idList []string) ([]elasticacheservice.CacheCluster, error) {
+	ccList := make([]elasticacheservice.CacheCluster, len(idList))
+	for i, cc := range idList {
+		dcc := client.DescribeCacheClustersRequest(elasticache.NewDescribeCacheClustersInput(cc))
+		dcc.SetContext(ctx)
+		rsp, err := dcc.Send()
+		if err != nil {
+			return nil, err
+		}
+		ccList[i] = rsp.CacheClusters[0]
+	}
+	return ccList, nil
 }

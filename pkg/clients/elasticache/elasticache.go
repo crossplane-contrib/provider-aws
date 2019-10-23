@@ -159,8 +159,8 @@ func LateInitialize(s *v1beta1.ReplicationGroupParameters, rg elasticache.Replic
 	s.TransitEncryptionEnabled = clients.LateInitializeBoolPtr(s.TransitEncryptionEnabled, rg.TransitEncryptionEnabled)
 }
 
-// ReplicationGroupNeedsUpdate returns true if the supplied Kubernetes resource
-// differs from the supplied AWS resource.
+// ReplicationGroupNeedsUpdate returns true if the supplied ReplicationGroup and
+// the configuration of its member clusters differ from given desired state.
 func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg elasticache.ReplicationGroup, ccList []elasticache.CacheCluster) bool {
 	switch {
 	case !reflect.DeepEqual(kube.AutomaticFailoverEnabled, automaticFailoverEnabled(rg.AutomaticFailover)):
