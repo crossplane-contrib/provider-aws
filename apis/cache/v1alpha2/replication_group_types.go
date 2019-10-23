@@ -17,9 +17,9 @@ limitations under the License.
 package v1alpha2
 
 import (
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 )
 
 // ReplicationGroup states.
@@ -34,7 +34,7 @@ const (
 
 // Supported cache engines.
 const (
-	CacheEngineRedis = "redis"
+	CacheEngineRedis     = "redis"
 	CacheEngineMemcached = "memcached"
 )
 
@@ -80,11 +80,11 @@ type Endpoint struct {
 // nodes are read-only Replica nodes.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/NodeGroup
 type NodeGroup struct {
-	// NodeGroupId is the identifier for the node group (shard). A Redis
+	// NodeGroupID is the identifier for the node group (shard). A Redis
 	// (cluster mode disabled) replication group contains only 1 node group;
 	// therefore, the node group ID is 0001. A Redis (cluster mode enabled)
 	// replication group contains 1 to 15 node groups numbered 0001 to 0015.
-	NodeGroupId string `json:"port,omitempty"`
+	NodeGroupID string `json:"port,omitempty"`
 
 	// NodeGroupMembers is a list containing information about individual nodes
 	// within the node group (shard).
@@ -104,12 +104,12 @@ type NodeGroup struct {
 // NodeGroupMember represents a single node within a node group (shard).
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/NodeGroupMember
 type NodeGroupMember struct {
-	// CacheClusterId is the ID of the cluster to which the node belongs.
-	CacheClusterId string `json:"cacheClusterId,omitempty"`
+	// CacheClusterID is the ID of the cluster to which the node belongs.
+	CacheClusterID string `json:"cacheClusterId,omitempty"`
 
-	// CacheNodeId is the ID of the node within its cluster. A node ID is a
+	// CacheNodeID is the ID of the node within its cluster. A node ID is a
 	// numeric identifier (0001, 0002, etc.).
-	CacheNodeId string `json:"cacheNodeId,omitempty"`
+	CacheNodeID string `json:"cacheNodeId,omitempty"`
 
 	// CurrentRole is the role that is currently assigned to the node - primary
 	// or replica. This member is only applicable for Redis (cluster mode
@@ -143,14 +143,14 @@ type ReplicationGroupPendingModifiedValues struct {
 	Resharding ReshardingStatus `json:"resharding,omitempty"`
 }
 
-// The status of an online resharding operation.
+// ReshardingStatus is the status of an online resharding operation.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ReshardingStatus
 type ReshardingStatus struct {
 	// Represents the progress of an online resharding operation.
 	SlotMigration SlotMigration `json:"slotMigration"`
 }
 
-// Represents the progress of an online resharding operation.
+// SlotMigration represents the progress of an online resharding operation.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/SlotMigration
 type SlotMigration struct {
 	// NOTE(muvaf): Type of ProgressPercentage is float64 in AWS SDK but
@@ -442,7 +442,7 @@ type ReplicationGroupParameters struct {
 	ReplicasPerNodeGroup *int `json:"replicasPerNodeGroup,omitempty"`
 
 	// ReplicationGroupDescription is the description for the replication group.
-	ReplicationGroupDescription string `json:"replicasPerNodeGroup"`
+	ReplicationGroupDescription string `json:"replicationGroupDescription"`
 
 	// SecurityGroupIDs specifies one or more Amazon VPC security groups
 	// associated with this replication group. Use this parameter only when you
@@ -490,7 +490,7 @@ type ReplicationGroupParameters struct {
 	// group. This parameter cannot be set for Redis (cluster mode enabled) replication
 	// groups.
 	// +optional
-	SnapshottingClusterID *string `json:"snapshottingClusterId,omitempty"`
+	SnapshottingClusterID *string `json:"snapshottingClusterID,omitempty"`
 
 	// A list of cost allocation tags to be added to this resource. A tag is a key-value
 	// pair.
