@@ -104,7 +104,7 @@ func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (resource.
 		return nil, errors.Wrapf(err, "cannot get provider secret %s", n)
 	}
 	awsClient, err := c.newClientFn(s.Data[p.Spec.Secret.Key], p.Spec.Region)
-	return &external{client: awsClient}, errors.Wrap(err, errNewClient)
+	return &external{client: awsClient, kube: c.client}, errors.Wrap(err, errNewClient)
 }
 
 type external struct {
