@@ -111,7 +111,9 @@ func (r *Reconciler) _connect(instance *bucketv1alpha2.S3Bucket) (s3.Service, er
 		return nil, err
 	}
 
-	// Bucket Region and client region must match.
+	// NOTE(negz): Buckets must specify a region for creation. They never use
+	// the provider's region. This should be addressed per the below issue.
+	// https://github.com/crossplaneio/stack-aws/issues/38
 	config.Region = instance.Spec.Region
 
 	// Create new S3 S3Client
