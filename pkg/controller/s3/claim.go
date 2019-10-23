@@ -23,7 +23,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
@@ -54,10 +53,7 @@ func (c *BucketClaimController) SetupWithManager(mgr ctrl.Manager) error {
 
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(storagev1alpha1.BucketGroupVersionKind),
-		resource.ClassKinds{
-			Portable:    storagev1alpha1.BucketClassGroupVersionKind,
-			NonPortable: v1alpha2.S3BucketClassGroupVersionKind,
-		},
+		resource.ClassKind(v1alpha2.S3BucketClassGroupVersionKind),
 		resource.ManagedKind(v1alpha2.S3BucketGroupVersionKind),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigureS3Bucket),
@@ -65,12 +61,10 @@ func (c *BucketClaimController) SetupWithManager(mgr ctrl.Manager) error {
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(
+		resource.HasClassReferenceKind(resource.ClassKind(v1alpha2.S3BucketClassGroupVersionKind)),
 		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.S3BucketGroupVersionKind)),
 		resource.IsManagedKind(resource.ManagedKind(v1alpha2.S3BucketGroupVersionKind), mgr.GetScheme()),
-		resource.HasIndirectClassReferenceKind(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{
-			Portable:    storagev1alpha1.BucketClassGroupVersionKind,
-			NonPortable: v1alpha2.S3BucketClassGroupVersionKind,
-		})))
+	))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -83,7 +77,7 @@ func (c *BucketClaimController) SetupWithManager(mgr ctrl.Manager) error {
 // ConfigureS3Bucket configures the supplied resource (presumed
 // to be a S3Bucket) using the supplied resource claim (presumed
 // to be a Bucket) and resource class.
-func ConfigureS3Bucket(_ context.Context, cm resource.Claim, cs resource.NonPortableClass, mg resource.Managed) error {
+func ConfigureS3Bucket(_ context.Context, cm resource.Claim, cs resource.Class, mg resource.Managed) error {
 	b, cmok := cm.(*storagev1alpha1.Bucket)
 	if !cmok {
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), storagev1alpha1.BucketGroupVersionKind)
@@ -118,7 +112,10 @@ func ConfigureS3Bucket(_ context.Context, cm resource.Claim, cs resource.NonPort
 		spec.LocalPermission = b.Spec.LocalPermission
 	}
 
-	spec.WriteConnectionSecretToReference = corev1.LocalObjectReference{Name: string(cm.GetUID())}
+	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
+		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,
+		Name:      string(cm.GetUID()),
+	}
 	spec.ProviderReference = rs.SpecTemplate.ProviderReference
 	spec.ReclaimPolicy = rs.SpecTemplate.ReclaimPolicy
 

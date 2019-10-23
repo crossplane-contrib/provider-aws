@@ -40,7 +40,7 @@ func TestConfigureBucket(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		cm  resource.Claim
-		cs  resource.NonPortableClass
+		cs  resource.Class
 		mg  resource.Managed
 	}
 
@@ -74,9 +74,10 @@ func TestConfigureBucket(t *testing.T) {
 				},
 				cs: &v1alpha2.S3BucketClass{
 					SpecTemplate: v1alpha2.S3BucketClassSpecTemplate{
-						NonPortableClassSpecTemplate: runtimev1alpha1.NonPortableClassSpecTemplate{
-							ProviderReference: &corev1.ObjectReference{Name: providerName},
-							ReclaimPolicy:     runtimev1alpha1.ReclaimDelete,
+						ClassSpecTemplate: runtimev1alpha1.ClassSpecTemplate{
+							WriteConnectionSecretsToNamespace: namespace,
+							ProviderReference:                 &corev1.ObjectReference{Name: providerName},
+							ReclaimPolicy:                     runtimev1alpha1.ReclaimDelete,
 						},
 					},
 				},
@@ -86,9 +87,12 @@ func TestConfigureBucket(t *testing.T) {
 				mg: &v1alpha2.S3Bucket{
 					Spec: v1alpha2.S3BucketSpec{
 						ResourceSpec: runtimev1alpha1.ResourceSpec{
-							ReclaimPolicy:                    runtimev1alpha1.ReclaimDelete,
-							WriteConnectionSecretToReference: corev1.LocalObjectReference{Name: string(claimUID)},
-							ProviderReference:                &corev1.ObjectReference{Name: providerName},
+							ReclaimPolicy: runtimev1alpha1.ReclaimDelete,
+							WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
+								Namespace: namespace,
+								Name:      string(claimUID),
+							},
+							ProviderReference: &corev1.ObjectReference{Name: providerName},
 						},
 						S3BucketParameters: v1alpha2.S3BucketParameters{
 							NameFormat:      bucketName,
@@ -108,9 +112,10 @@ func TestConfigureBucket(t *testing.T) {
 				},
 				cs: &v1alpha2.S3BucketClass{
 					SpecTemplate: v1alpha2.S3BucketClassSpecTemplate{
-						NonPortableClassSpecTemplate: runtimev1alpha1.NonPortableClassSpecTemplate{
-							ProviderReference: &corev1.ObjectReference{Name: providerName},
-							ReclaimPolicy:     runtimev1alpha1.ReclaimDelete,
+						ClassSpecTemplate: runtimev1alpha1.ClassSpecTemplate{
+							WriteConnectionSecretsToNamespace: namespace,
+							ProviderReference:                 &corev1.ObjectReference{Name: providerName},
+							ReclaimPolicy:                     runtimev1alpha1.ReclaimDelete,
 						},
 						S3BucketParameters: v1alpha2.S3BucketParameters{
 							CannedACL:       &s3BucketPrivate,
@@ -124,9 +129,11 @@ func TestConfigureBucket(t *testing.T) {
 				mg: &v1alpha2.S3Bucket{
 					Spec: v1alpha2.S3BucketSpec{
 						ResourceSpec: runtimev1alpha1.ResourceSpec{
-							ReclaimPolicy:                    runtimev1alpha1.ReclaimDelete,
-							WriteConnectionSecretToReference: corev1.LocalObjectReference{Name: string(claimUID)},
-							ProviderReference:                &corev1.ObjectReference{Name: providerName},
+							ReclaimPolicy: runtimev1alpha1.ReclaimDelete,
+							WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
+								Namespace: namespace,
+								Name:      string(claimUID)},
+							ProviderReference: &corev1.ObjectReference{Name: providerName},
 						},
 						S3BucketParameters: v1alpha2.S3BucketParameters{
 							CannedACL:       &s3BucketPrivate,
@@ -148,9 +155,10 @@ func TestConfigureBucket(t *testing.T) {
 				},
 				cs: &v1alpha2.S3BucketClass{
 					SpecTemplate: v1alpha2.S3BucketClassSpecTemplate{
-						NonPortableClassSpecTemplate: runtimev1alpha1.NonPortableClassSpecTemplate{
-							ProviderReference: &corev1.ObjectReference{Name: providerName},
-							ReclaimPolicy:     runtimev1alpha1.ReclaimDelete,
+						ClassSpecTemplate: runtimev1alpha1.ClassSpecTemplate{
+							WriteConnectionSecretsToNamespace: namespace,
+							ProviderReference:                 &corev1.ObjectReference{Name: providerName},
+							ReclaimPolicy:                     runtimev1alpha1.ReclaimDelete,
 						},
 						S3BucketParameters: v1alpha2.S3BucketParameters{
 							CannedACL:       &s3BucketPrivate,
@@ -164,9 +172,12 @@ func TestConfigureBucket(t *testing.T) {
 				mg: &v1alpha2.S3Bucket{
 					Spec: v1alpha2.S3BucketSpec{
 						ResourceSpec: runtimev1alpha1.ResourceSpec{
-							ReclaimPolicy:                    runtimev1alpha1.ReclaimDelete,
-							WriteConnectionSecretToReference: corev1.LocalObjectReference{Name: string(claimUID)},
-							ProviderReference:                &corev1.ObjectReference{Name: providerName},
+							ReclaimPolicy: runtimev1alpha1.ReclaimDelete,
+							WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
+								Namespace: namespace,
+								Name:      string(claimUID),
+							},
+							ProviderReference: &corev1.ObjectReference{Name: providerName},
 						},
 						S3BucketParameters: v1alpha2.S3BucketParameters{
 							CannedACL:       &s3BucketPrivate,
