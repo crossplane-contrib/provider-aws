@@ -28,7 +28,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"github.com/crossplaneio/stack-aws/apis/cache/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
@@ -43,16 +43,16 @@ type ReplicationGroupClaimController struct{}
 func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) error {
 	name := strings.ToLower(fmt.Sprintf("%s.%s.%s",
 		cachev1alpha1.RedisClusterKind,
-		v1alpha2.ReplicationGroupKind,
-		v1alpha2.Group))
+		v1beta1.ReplicationGroupKind,
+		v1beta1.Group))
 
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(cachev1alpha1.RedisClusterGroupVersionKind),
 		resource.ClassKinds{
 			Portable:    cachev1alpha1.RedisClusterClassGroupVersionKind,
-			NonPortable: v1alpha2.ReplicationGroupClassGroupVersionKind,
+			NonPortable: v1beta1.ReplicationGroupClassGroupVersionKind,
 		},
-		resource.ManagedKind(v1alpha2.ReplicationGroupGroupVersionKind),
+		resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind),
 		resource.WithManagedBinder(resource.NewAPIManagedStatusBinder(mgr.GetClient())),
 		resource.WithManagedFinalizer(resource.NewAPIManagedStatusUnbinder(mgr.GetClient())),
 		resource.WithManagedConfigurators(
@@ -61,16 +61,16 @@ func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) err
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(
-		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.ReplicationGroupGroupVersionKind)),
-		resource.IsManagedKind(resource.ManagedKind(v1alpha2.ReplicationGroupGroupVersionKind), mgr.GetScheme()),
+		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind)),
+		resource.IsManagedKind(resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind), mgr.GetScheme()),
 		resource.HasIndirectClassReferenceKind(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{
 			Portable:    cachev1alpha1.RedisClusterClassGroupVersionKind,
-			NonPortable: v1alpha2.ReplicationGroupClassGroupVersionKind,
+			NonPortable: v1beta1.ReplicationGroupClassGroupVersionKind,
 		})))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		Watches(&source.Kind{Type: &v1alpha2.ReplicationGroup{}}, &resource.EnqueueRequestForClaim{}).
+		Watches(&source.Kind{Type: &v1beta1.ReplicationGroup{}}, &resource.EnqueueRequestForClaim{}).
 		For(&cachev1alpha1.RedisCluster{}).
 		WithEventFilter(p).
 		Complete(r)
@@ -85,17 +85,17 @@ func ConfigureReplicationGroup(_ context.Context, cm resource.Claim, cs resource
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), cachev1alpha1.RedisClusterGroupVersionKind)
 	}
 
-	rgc, csok := cs.(*v1alpha2.ReplicationGroupClass)
+	rgc, csok := cs.(*v1beta1.ReplicationGroupClass)
 	if !csok {
-		return errors.Errorf("expected resource class %s to be %s", cs.GetName(), v1alpha2.ReplicationGroupClassGroupVersionKind)
+		return errors.Errorf("expected resource class %s to be %s", cs.GetName(), v1beta1.ReplicationGroupClassGroupVersionKind)
 	}
 
-	rg, mgok := mg.(*v1alpha2.ReplicationGroup)
+	rg, mgok := mg.(*v1beta1.ReplicationGroup)
 	if !mgok {
-		return errors.Errorf("expected managed resource %s to be %s", mg.GetName(), v1alpha2.ReplicationGroupGroupVersionKind)
+		return errors.Errorf("expected managed resource %s to be %s", mg.GetName(), v1beta1.ReplicationGroupGroupVersionKind)
 	}
 
-	spec := &v1alpha2.ReplicationGroupSpec{
+	spec := &v1beta1.ReplicationGroupSpec{
 		ResourceSpec: runtimev1alpha1.ResourceSpec{
 			ReclaimPolicy: runtimev1alpha1.ReclaimRetain,
 		},
@@ -115,12 +115,12 @@ func ConfigureReplicationGroup(_ context.Context, cm resource.Claim, cs resource
 	// NOTE(muvaf): ReplicationGroup actually supports memcached as well but the
 	// claim is a _Redis_Cluster, so, we override the value no matter what. Users
 	// should be able to get a memcached through manually creating the ReplicationGroup
-	rg.Spec.ForProvider.Engine = v1alpha2.CacheEngineRedis
+	rg.Spec.ForProvider.Engine = v1beta1.CacheEngineRedis
 
 	return nil
 }
 
-func resolveAWSClassInstanceValues(spec *v1alpha2.ReplicationGroupParameters, rc *cachev1alpha1.RedisCluster) error {
+func resolveAWSClassInstanceValues(spec *v1beta1.ReplicationGroupParameters, rc *cachev1alpha1.RedisCluster) error {
 	var err error
 	switch {
 	case aws.StringValue(spec.EngineVersion) == "" && rc.Spec.EngineVersion == "":
@@ -148,8 +148,8 @@ func resolveAWSClassInstanceValues(spec *v1alpha2.ReplicationGroupParameters, rc
 }
 
 func latestSupportedPatchVersion(minorVersion string) (*string, error) {
-	p := v1alpha2.LatestSupportedPatchVersion[v1alpha2.MinorVersion(minorVersion)]
-	if p == v1alpha2.UnsupportedVersion {
+	p := v1beta1.LatestSupportedPatchVersion[v1beta1.MinorVersion(minorVersion)]
+	if p == v1beta1.UnsupportedVersion {
 		return nil, errors.Errorf("minor version %s is not currently supported", minorVersion)
 	}
 	s := string(p)

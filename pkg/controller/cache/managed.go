@@ -29,7 +29,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplaneio/stack-aws/apis/cache/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
 	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/elasticache"
 
@@ -64,17 +64,17 @@ type ReplicationGroupController struct{}
 // start it when the Manager is Started.
 func (c *ReplicationGroupController) SetupWithManager(mgr ctrl.Manager) error {
 	r := resource.NewManagedReconciler(mgr,
-		resource.ManagedKind(v1alpha2.ReplicationGroupGroupVersionKind),
+		resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind),
 		resource.WithExternalConnecter(&connecter{
 			client:      mgr.GetClient(),
 			newClientFn: elasticache.NewClient,
 		}))
 
-	name := strings.ToLower(fmt.Sprintf("%s.%s", v1alpha2.ReplicationGroupKind, v1alpha2.Group))
+	name := strings.ToLower(fmt.Sprintf("%s.%s", v1beta1.ReplicationGroupKind, v1beta1.Group))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha2.ReplicationGroup{}).
+		For(&v1beta1.ReplicationGroup{}).
 		Complete(r)
 }
 
@@ -84,7 +84,7 @@ type connecter struct {
 }
 
 func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (resource.ExternalClient, error) {
-	g, ok := mg.(*v1alpha2.ReplicationGroup)
+	g, ok := mg.(*v1beta1.ReplicationGroup)
 	if !ok {
 		return nil, errors.New(errNotReplicationGroup)
 	}
@@ -107,7 +107,7 @@ func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (resource.
 type external struct{ client elasticache.Client }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.ExternalObservation, error) {
-	cr, ok := mg.(*v1alpha2.ReplicationGroup)
+	cr, ok := mg.(*v1beta1.ReplicationGroup)
 	if !ok {
 		return resource.ExternalObservation{}, errors.New(errNotReplicationGroup)
 	}
@@ -140,12 +140,12 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 		ccList[i] = rsp.CacheClusters[0]
 	}
 	switch cr.Status.AtProvider.Status {
-	case v1alpha2.StatusAvailable:
+	case v1beta1.StatusAvailable:
 		cr.Status.SetConditions(runtimev1alpha1.Available())
 		resource.SetBindable(cr)
-	case v1alpha2.StatusCreating:
+	case v1beta1.StatusCreating:
 		cr.Status.SetConditions(runtimev1alpha1.Creating())
-	case v1alpha2.StatusDeleting:
+	case v1beta1.StatusDeleting:
 		cr.Status.SetConditions(runtimev1alpha1.Deleting())
 	default:
 		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
@@ -159,7 +159,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.ExternalCreation, error) {
-	cr, ok := mg.(*v1alpha2.ReplicationGroup)
+	cr, ok := mg.(*v1beta1.ReplicationGroup)
 	if !ok {
 		return resource.ExternalCreation{}, errors.New(errNotReplicationGroup)
 	}
@@ -194,7 +194,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.Ex
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.ExternalUpdate, error) {
-	cr, ok := mg.(*v1alpha2.ReplicationGroup)
+	cr, ok := mg.(*v1beta1.ReplicationGroup)
 	if !ok {
 		return resource.ExternalUpdate{}, errors.New(errNotReplicationGroup)
 	}
@@ -205,7 +205,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1alpha2.ReplicationGroup)
+	cr, ok := mg.(*v1beta1.ReplicationGroup)
 	if !ok {
 		return errors.New(errNotReplicationGroup)
 	}
