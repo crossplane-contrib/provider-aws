@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
@@ -46,10 +45,7 @@ func (c *PostgreSQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) e
 
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(databasev1alpha1.PostgreSQLInstanceGroupVersionKind),
-		resource.ClassKinds{
-			Portable:    databasev1alpha1.PostgreSQLInstanceClassGroupVersionKind,
-			NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind,
-		},
+		resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
 		resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigurePostgreRDSInstance),
@@ -57,12 +53,10 @@ func (c *PostgreSQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) e
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(
+		resource.HasClassReferenceKind(resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind)),
 		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind)),
 		resource.IsManagedKind(resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind), mgr.GetScheme()),
-		resource.HasIndirectClassReferenceKind(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{
-			Portable:    databasev1alpha1.PostgreSQLInstanceClassGroupVersionKind,
-			NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind,
-		})))
+	))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -75,7 +69,7 @@ func (c *PostgreSQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) e
 // ConfigurePostgreRDSInstance configures the supplied resource (presumed
 // to be a RDSInstance) using the supplied resource claim (presumed to be a
 // PostgreSQLInstance) and resource class.
-func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resource.NonPortableClass, mg resource.Managed) error {
+func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resource.Class, mg resource.Managed) error {
 	pg, cmok := cm.(*databasev1alpha1.PostgreSQLInstance)
 	if !cmok {
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), databasev1alpha1.PostgreSQLInstanceGroupVersionKind)
@@ -104,7 +98,10 @@ func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resour
 	}
 	spec.EngineVersion = v
 
-	spec.WriteConnectionSecretToReference = corev1.LocalObjectReference{Name: string(cm.GetUID())}
+	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
+		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,
+		Name:      string(cm.GetUID()),
+	}
 	spec.ProviderReference = rs.SpecTemplate.ProviderReference
 	spec.ReclaimPolicy = rs.SpecTemplate.ReclaimPolicy
 
@@ -126,10 +123,7 @@ func (c *MySQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error 
 
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(databasev1alpha1.MySQLInstanceGroupVersionKind),
-		resource.ClassKinds{
-			Portable:    databasev1alpha1.MySQLInstanceClassGroupVersionKind,
-			NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind,
-		},
+		resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
 		resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigureMyRDSInstance),
@@ -137,12 +131,10 @@ func (c *MySQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error 
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(
+		resource.HasClassReferenceKind(resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind)),
 		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind)),
 		resource.IsManagedKind(resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind), mgr.GetScheme()),
-		resource.HasIndirectClassReferenceKind(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{
-			Portable:    databasev1alpha1.MySQLInstanceClassGroupVersionKind,
-			NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind,
-		})))
+	))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -155,7 +147,7 @@ func (c *MySQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error 
 // ConfigureMyRDSInstance configures the supplied resource (presumed to be
 // a RDSInstance) using the supplied resource claim (presumed to be a
 // MySQLInstance) and resource class.
-func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.NonPortableClass, mg resource.Managed) error {
+func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.Class, mg resource.Managed) error {
 	my, cmok := cm.(*databasev1alpha1.MySQLInstance)
 	if !cmok {
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), databasev1alpha1.MySQLInstanceGroupVersionKind)
@@ -184,7 +176,10 @@ func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.No
 	}
 	spec.EngineVersion = v
 
-	spec.WriteConnectionSecretToReference = corev1.LocalObjectReference{Name: string(cm.GetUID())}
+	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
+		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,
+		Name:      string(cm.GetUID()),
+	}
 	spec.ProviderReference = rs.SpecTemplate.ProviderReference
 	spec.ReclaimPolicy = rs.SpecTemplate.ReclaimPolicy
 
