@@ -332,15 +332,14 @@ type EKSClusterList struct {
 // An EKSClusterClassSpecTemplate is a template for the spec of a dynamically
 // provisioned EKSCluster.
 type EKSClusterClassSpecTemplate struct {
-	runtimev1alpha1.NonPortableClassSpecTemplate `json:",inline"`
-	EKSClusterParameters                         `json:",inline"`
+	runtimev1alpha1.ClassSpecTemplate `json:",inline"`
+	EKSClusterParameters              `json:",inline"`
 }
 
 // +kubebuilder:object:root=true
 
-// An EKSClusterClass is a non-portable resource class. It defines the desired
-// spec of resource claims that use it to dynamically provision a managed
-// resource.
+// An EKSClusterClass is a resource class. It defines the desired spec of
+// resource claims that use it to dynamically provision a managed resource.
 // +kubebuilder:printcolumn:name="PROVIDER-REF",type="string",JSONPath=".specTemplate.providerRef.name"
 // +kubebuilder:printcolumn:name="RECLAIM-POLICY",type="string",JSONPath=".specTemplate.reclaimPolicy"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"

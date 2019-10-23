@@ -26,9 +26,8 @@ spec:
   subresources: {}
   validation:
     openAPIV3Schema:
-      description: An S3BucketClass is a non-portable resource class. It defines the
-        desired spec of resource claims that use it to dynamically provision a managed
-        resource.
+      description: An S3BucketClass is a resource class. It defines the desired spec
+        of resource claims that use it to dynamically provision a managed resource.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -125,10 +124,16 @@ spec:
               description: Versioning enables versioning of objects stored in this
                 bucket.
               type: boolean
+            writeConnectionSecretsToNamespace:
+              description: WriteConnectionSecretsToNamespace specifies the namespace
+                in which the connection secrets of managed resources dynamically provisioned
+                using this claim will be created.
+              type: string
           required:
           - localPermission
           - providerRef
           - region
+          - writeConnectionSecretsToNamespace
           type: object
       required:
       - specTemplate

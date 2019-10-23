@@ -33,14 +33,14 @@ func (mg *ReplicationGroup) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
 }
 
+// GetClassReference of this ReplicationGroup.
+func (mg *ReplicationGroup) GetClassReference() *corev1.ObjectReference {
+	return mg.Spec.ClassReference
+}
+
 // GetCondition of this ReplicationGroup.
 func (mg *ReplicationGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
 	return mg.Status.GetCondition(ct)
-}
-
-// GetNonPortableClassReference of this ReplicationGroup.
-func (mg *ReplicationGroup) GetNonPortableClassReference() *corev1.ObjectReference {
-	return mg.Spec.NonPortableClassReference
 }
 
 // GetReclaimPolicy of this ReplicationGroup.
@@ -49,7 +49,7 @@ func (mg *ReplicationGroup) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
 }
 
 // GetWriteConnectionSecretToReference of this ReplicationGroup.
-func (mg *ReplicationGroup) GetWriteConnectionSecretToReference() corev1.LocalObjectReference {
+func (mg *ReplicationGroup) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
@@ -63,14 +63,14 @@ func (mg *ReplicationGroup) SetClaimReference(r *corev1.ObjectReference) {
 	mg.Spec.ClaimReference = r
 }
 
+// SetClassReference of this ReplicationGroup.
+func (mg *ReplicationGroup) SetClassReference(r *corev1.ObjectReference) {
+	mg.Spec.ClassReference = r
+}
+
 // SetConditions of this ReplicationGroup.
 func (mg *ReplicationGroup) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
-}
-
-// SetNonPortableClassReference of this ReplicationGroup.
-func (mg *ReplicationGroup) SetNonPortableClassReference(r *corev1.ObjectReference) {
-	mg.Spec.NonPortableClassReference = r
 }
 
 // SetReclaimPolicy of this ReplicationGroup.
@@ -79,6 +79,6 @@ func (mg *ReplicationGroup) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
 }
 
 // SetWriteConnectionSecretToReference of this ReplicationGroup.
-func (mg *ReplicationGroup) SetWriteConnectionSecretToReference(r corev1.LocalObjectReference) {
+func (mg *ReplicationGroup) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
