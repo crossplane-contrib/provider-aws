@@ -22,6 +22,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
@@ -32,10 +34,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplaneio/stack-aws/apis/cache/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
 	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
 	elasticacheclient "github.com/crossplaneio/stack-aws/pkg/clients/elasticache"
 	"github.com/crossplaneio/stack-aws/pkg/clients/elasticache/fake"
@@ -48,9 +49,16 @@ import (
 const (
 	namespace = "coolNamespace"
 	name      = "coolGroup"
-	uid       = types.UID("definitely-a-uuid")
-	id        = elasticacheclient.NamePrefix + "-efdd8494195d7940" // FNV-64a hash of uid
 
+	providerName       = "cool-aws"
+	providerSecretName = "cool-aws-secret"
+	providerSecretKey  = "credentials"
+	providerSecretData = "definitelyini"
+
+	connectionSecretName = "cool-connection-secret"
+)
+
+var (
 	cacheNodeType            = "n1.super.cool"
 	autoFailoverEnabled      = true
 	cacheParameterGroupName  = "coolParamGroup"
@@ -62,21 +70,12 @@ const (
 	snapshotWindow           = "thedayaftertomorrow"
 	transitEncryptionEnabled = true
 
-	cacheClusterID = id + "-0001"
+	cacheClusterID = name + "-0001"
 
-	providerName       = "cool-aws"
-	providerSecretName = "cool-aws-secret"
-	providerSecretKey  = "credentials"
-	providerSecretData = "definitelyini"
-
-	connectionSecretName = "cool-connection-secret"
-)
-
-var (
 	ctx       = context.Background()
 	errorBoom = errors.New("boom")
 
-	objectMeta = metav1.ObjectMeta{Namespace: namespace, Name: name, UID: uid}
+	objectMeta = metav1.ObjectMeta{Namespace: namespace, Name: name}
 
 	provider = awsv1alpha2.Provider{
 		ObjectMeta: metav1.ObjectMeta{Namespace: namespace, Name: providerName},
@@ -97,71 +96,75 @@ var (
 type testCase struct {
 	name         string
 	e            resource.ExternalClient
-	r            *v1alpha2.ReplicationGroup
-	want         *v1alpha2.ReplicationGroup
+	r            *v1beta1.ReplicationGroup
+	want         *v1beta1.ReplicationGroup
 	tokenCreated bool
 	returnsErr   bool
 }
 
-type replicationGroupModifier func(*v1alpha2.ReplicationGroup)
+type replicationGroupModifier func(*v1beta1.ReplicationGroup)
 
 func withConditions(c ...runtimev1alpha1.Condition) replicationGroupModifier {
-	return func(r *v1alpha2.ReplicationGroup) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.ReplicationGroup) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withBindingPhase(p runtimev1alpha1.BindingPhase) replicationGroupModifier {
-	return func(r *v1alpha2.ReplicationGroup) { r.Status.SetBindingPhase(p) }
+	return func(r *v1beta1.ReplicationGroup) { r.Status.SetBindingPhase(p) }
 }
 
-func withState(s string) replicationGroupModifier {
-	return func(r *v1alpha2.ReplicationGroup) { r.Status.State = s }
+func withProviderStatus(s string) replicationGroupModifier {
+	return func(r *v1beta1.ReplicationGroup) { r.Status.AtProvider.Status = s }
 }
 
-func withGroupName(n string) replicationGroupModifier {
-	return func(r *v1alpha2.ReplicationGroup) { r.Status.GroupName = n }
+func withReplicationGroupID(n string) replicationGroupModifier {
+	return func(r *v1beta1.ReplicationGroup) { meta.SetExternalName(r, n) }
 }
 
 func withEndpoint(e string) replicationGroupModifier {
-	return func(r *v1alpha2.ReplicationGroup) { r.Status.Endpoint = e }
+	return func(r *v1beta1.ReplicationGroup) { r.Status.AtProvider.ConfigurationEndpoint.Address = e }
 }
 
 func withPort(p int) replicationGroupModifier {
-	return func(r *v1alpha2.ReplicationGroup) { r.Status.Port = p }
+	return func(r *v1beta1.ReplicationGroup) { r.Status.AtProvider.ConfigurationEndpoint.Port = p }
 }
 
-func withAuth() replicationGroupModifier {
-	return func(r *v1alpha2.ReplicationGroup) { r.Spec.AuthEnabled = true }
+func withAuthEnabled(v bool) replicationGroupModifier {
+	return func(r *v1beta1.ReplicationGroup) { r.Spec.ForProvider.AuthEnabled = &v }
 }
 
 func withMemberClusters(members []string) replicationGroupModifier {
-	return func(r *v1alpha2.ReplicationGroup) { r.Status.MemberClusters = members }
+	return func(r *v1beta1.ReplicationGroup) { r.Status.AtProvider.MemberClusters = members }
 }
 
 func withClusterEnabled(e bool) replicationGroupModifier {
-	return func(r *v1alpha2.ReplicationGroup) { r.Status.ClusterEnabled = e }
+	return func(r *v1beta1.ReplicationGroup) { r.Status.AtProvider.ClusterEnabled = e }
 }
 
-func replicationGroup(rm ...replicationGroupModifier) *v1alpha2.ReplicationGroup {
-	r := &v1alpha2.ReplicationGroup{
+func withAutomaticFailoverStatus(s string) replicationGroupModifier {
+	return func(r *v1beta1.ReplicationGroup) { r.Status.AtProvider.AutomaticFailover = s }
+}
+
+func replicationGroup(rm ...replicationGroupModifier) *v1beta1.ReplicationGroup {
+	r := &v1beta1.ReplicationGroup{
 		ObjectMeta: objectMeta,
-		Spec: v1alpha2.ReplicationGroupSpec{
+		Spec: v1beta1.ReplicationGroupSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
 				ProviderReference:                &corev1.ObjectReference{Namespace: namespace, Name: providerName},
 				WriteConnectionSecretToReference: corev1.LocalObjectReference{Name: connectionSecretName},
 			},
-			ReplicationGroupParameters: v1alpha2.ReplicationGroupParameters{
-				AutomaticFailoverEnabled:   autoFailoverEnabled,
+			ForProvider: v1beta1.ReplicationGroupParameters{
+				AutomaticFailoverEnabled:   &autoFailoverEnabled,
 				CacheNodeType:              cacheNodeType,
-				CacheParameterGroupName:    cacheParameterGroupName,
-				EngineVersion:              engineVersion,
-				PreferredMaintenanceWindow: maintenanceWindow,
-				SnapshotRetentionLimit:     snapshotRetentionLimit,
-				SnapshotWindow:             snapshotWindow,
-				TransitEncryptionEnabled:   transitEncryptionEnabled,
+				CacheParameterGroupName:    &cacheParameterGroupName,
+				EngineVersion:              &engineVersion,
+				PreferredMaintenanceWindow: &maintenanceWindow,
+				SnapshotRetentionLimit:     &snapshotRetentionLimit,
+				SnapshotWindow:             &snapshotWindow,
+				TransitEncryptionEnabled:   &transitEncryptionEnabled,
 			},
 		},
 	}
-
+	meta.SetExternalName(r, r.Name)
 	for _, m := range rm {
 		m(r)
 	}
@@ -184,11 +187,11 @@ func TestCreate(t *testing.T) {
 					}
 				},
 			}},
-			r: replicationGroup(withAuth()),
+			r: replicationGroup(withAuthEnabled(true)),
 			want: replicationGroup(
-				withAuth(),
+				withAuthEnabled(true),
 				withConditions(runtimev1alpha1.Creating()),
-				withGroupName(id),
+				withReplicationGroupID(name),
 			),
 			tokenCreated: true,
 		},
@@ -204,7 +207,7 @@ func TestCreate(t *testing.T) {
 			r: replicationGroup(),
 			want: replicationGroup(
 				withConditions(runtimev1alpha1.Creating()),
-				withGroupName(id),
+				withReplicationGroupID(name),
 			),
 			returnsErr: true,
 		},
@@ -237,16 +240,16 @@ func TestObserve(t *testing.T) {
 						Request: &aws.Request{
 							HTTPRequest: &http.Request{},
 							Data: &elasticache.DescribeReplicationGroupsOutput{
-								ReplicationGroups: []elasticache.ReplicationGroup{{Status: aws.String(v1alpha2.StatusCreating)}},
+								ReplicationGroups: []elasticache.ReplicationGroup{{Status: aws.String(v1beta1.StatusCreating)}},
 							},
 						},
 					}
 				},
 			}},
-			r: replicationGroup(withGroupName(name)),
+			r: replicationGroup(withReplicationGroupID(name)),
 			want: replicationGroup(
-				withState(v1alpha2.StatusCreating),
-				withGroupName(name),
+				withProviderStatus(v1beta1.StatusCreating),
+				withReplicationGroupID(name),
 				withConditions(runtimev1alpha1.Creating()),
 			),
 		},
@@ -258,18 +261,18 @@ func TestObserve(t *testing.T) {
 						Request: &aws.Request{
 							HTTPRequest: &http.Request{},
 							Data: &elasticache.DescribeReplicationGroupsOutput{
-								ReplicationGroups: []elasticache.ReplicationGroup{{Status: aws.String(v1alpha2.StatusDeleting)}},
+								ReplicationGroups: []elasticache.ReplicationGroup{{Status: aws.String(v1beta1.StatusDeleting)}},
 							},
 						},
 					}
 				},
 			}},
 			r: replicationGroup(
-				withGroupName(name),
+				withReplicationGroupID(name),
 			),
 			want: replicationGroup(
-				withGroupName(name),
-				withState(v1alpha2.StatusDeleting),
+				withReplicationGroupID(name),
+				withProviderStatus(v1beta1.StatusDeleting),
 				withConditions(runtimev1alpha1.Deleting()),
 			),
 		},
@@ -281,18 +284,19 @@ func TestObserve(t *testing.T) {
 						Request: &aws.Request{
 							HTTPRequest: &http.Request{},
 							Data: &elasticache.DescribeReplicationGroupsOutput{
-								ReplicationGroups: []elasticache.ReplicationGroup{{Status: aws.String(v1alpha2.StatusModifying)}},
+								ReplicationGroups: []elasticache.ReplicationGroup{{Status: aws.String(v1beta1.StatusModifying)}},
 							},
 						},
 					}
 				},
 			}},
 			r: replicationGroup(
-				withGroupName(name),
+				withReplicationGroupID(name),
 			),
 			want: replicationGroup(
-				withState(v1alpha2.StatusModifying),
-				withGroupName(name),
+				withProviderStatus(v1beta1.StatusModifying),
+				withReplicationGroupID(name),
+				withConditions(runtimev1alpha1.Unavailable()),
 			),
 		},
 		{
@@ -305,8 +309,8 @@ func TestObserve(t *testing.T) {
 							Data: &elasticache.DescribeReplicationGroupsOutput{
 								ReplicationGroups: []elasticache.ReplicationGroup{{
 									ClusterEnabled:        aws.Bool(true),
-									Status:                aws.String(v1alpha2.StatusAvailable),
-									ConfigurationEndpoint: &elasticache.Endpoint{Address: aws.String(host), Port: aws.Int64(port)},
+									Status:                aws.String(v1beta1.StatusAvailable),
+									ConfigurationEndpoint: &elasticache.Endpoint{Address: aws.String(host), Port: aws.Int64(int64(port))},
 								}},
 							},
 						},
@@ -314,13 +318,13 @@ func TestObserve(t *testing.T) {
 				},
 			}},
 			r: replicationGroup(
-				withGroupName(name),
+				withReplicationGroupID(name),
 				withConditions(runtimev1alpha1.Creating()),
 				withClusterEnabled(true),
 			),
 			want: replicationGroup(
-				withGroupName(name),
-				withState(v1alpha2.StatusAvailable),
+				withReplicationGroupID(name),
+				withProviderStatus(v1beta1.StatusAvailable),
 				withConditions(runtimev1alpha1.Available()),
 				withBindingPhase(runtimev1alpha1.BindingPhaseUnbound),
 				withEndpoint(host),
@@ -328,6 +332,68 @@ func TestObserve(t *testing.T) {
 				withClusterEnabled(true),
 			),
 			tokenCreated: true,
+		},
+		{
+			name: "SuccessfulObserveLateInitialized",
+			e: &external{
+				client: &fake.MockClient{
+					MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
+						return elasticache.DescribeReplicationGroupsRequest{
+							Request: &aws.Request{
+								HTTPRequest: &http.Request{},
+								Data: &elasticache.DescribeReplicationGroupsOutput{
+									ReplicationGroups: []elasticache.ReplicationGroup{
+										{
+											AuthTokenEnabled: aws.Bool(true),
+											Status:           aws.String(v1beta1.StatusCreating),
+										},
+									},
+								},
+							},
+						}
+					},
+				},
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+			},
+			r: replicationGroup(withReplicationGroupID(name)),
+			want: replicationGroup(
+				withProviderStatus(v1beta1.StatusCreating),
+				withReplicationGroupID(name),
+				withAuthEnabled(true),
+				withConditions(runtimev1alpha1.Creating()),
+			),
+		},
+		{
+			name: "FailedObserveLateInitializeError",
+			e: &external{
+				client: &fake.MockClient{
+					MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
+						return elasticache.DescribeReplicationGroupsRequest{
+							Request: &aws.Request{
+								HTTPRequest: &http.Request{},
+								Data: &elasticache.DescribeReplicationGroupsOutput{
+									ReplicationGroups: []elasticache.ReplicationGroup{
+										{
+											AuthTokenEnabled: aws.Bool(true),
+											Status:           aws.String(v1beta1.StatusCreating),
+										},
+									},
+								},
+							},
+						}
+					},
+				},
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(errorBoom),
+				},
+			},
+			r: replicationGroup(withReplicationGroupID(name)),
+			want: replicationGroup(
+				withReplicationGroupID(name),
+				withAuthEnabled(true)),
+			returnsErr: true,
 		},
 		{
 			name: "FailedDescribeReplicationGroups",
@@ -339,12 +405,61 @@ func TestObserve(t *testing.T) {
 				},
 			}},
 			r: replicationGroup(
-				withGroupName(name),
+				withReplicationGroupID(name),
 				withConditions(runtimev1alpha1.Available()),
 			),
 			want: replicationGroup(
-				withGroupName(name),
+				withReplicationGroupID(name),
 				withConditions(runtimev1alpha1.Available()),
+			),
+			returnsErr: true,
+		},
+		{
+			name: "FailedDescribeCacheClusters",
+			e: &external{client: &fake.MockClient{
+				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
+					return elasticache.DescribeReplicationGroupsRequest{
+						Request: &aws.Request{
+							HTTPRequest: &http.Request{},
+							Data: &elasticache.DescribeReplicationGroupsOutput{
+								ReplicationGroups: []elasticache.ReplicationGroup{{
+									Status:                 aws.String(v1beta1.StatusAvailable),
+									AutomaticFailover:      elasticache.AutomaticFailoverStatusEnabled,
+									CacheNodeType:          aws.String(cacheNodeType),
+									SnapshotRetentionLimit: aws.Int64(int64(snapshotRetentionLimit)),
+									SnapshotWindow:         aws.String(snapshotWindow),
+									ClusterEnabled:         aws.Bool(true),
+									MemberClusters:         []string{cacheClusterID},
+								}},
+							},
+						},
+					}
+				},
+				MockDescribeCacheClustersRequest: func(_ *elasticache.DescribeCacheClustersInput) elasticache.DescribeCacheClustersRequest {
+					return elasticache.DescribeCacheClustersRequest{
+						Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errorBoom},
+					}
+				},
+				MockModifyReplicationGroupRequest: func(_ *elasticache.ModifyReplicationGroupInput) elasticache.ModifyReplicationGroupRequest {
+					return elasticache.ModifyReplicationGroupRequest{
+						Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &elasticache.ModifyReplicationGroupOutput{}},
+					}
+				},
+			}},
+			r: replicationGroup(
+				withReplicationGroupID(name),
+				withClusterEnabled(true),
+				withMemberClusters([]string{cacheClusterID}),
+				withProviderStatus(v1beta1.StatusAvailable),
+			),
+			want: replicationGroup(
+				withReplicationGroupID(name),
+				withClusterEnabled(true),
+				withMemberClusters([]string{cacheClusterID}),
+				withProviderStatus(v1beta1.StatusAvailable),
+				withConditions(runtimev1alpha1.Available()),
+				withBindingPhase(runtimev1alpha1.BindingPhaseUnbound),
+				withAutomaticFailoverStatus(string(elasticache.AutomaticFailoverStatusEnabled)),
 			),
 			returnsErr: true,
 		},
@@ -352,6 +467,8 @@ func TestObserve(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			name := tc.name
+			fmt.Println(name)
 			observation, err := tc.e.Observe(ctx, tc.r)
 			if tc.returnsErr != (err != nil) {
 				t.Errorf("tc.e.Observe(...) error: want: %t got: %t", tc.returnsErr, err != nil)
@@ -371,214 +488,6 @@ func TestObserve(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	cases := []testCase{
 		{
-			name: "SuccessfulGroupDoesNotNeedUpdate",
-			e: &external{client: &fake.MockClient{
-				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
-					return elasticache.DescribeReplicationGroupsRequest{
-						Request: &aws.Request{
-							HTTPRequest: &http.Request{},
-							Data: &elasticache.DescribeReplicationGroupsOutput{
-								ReplicationGroups: []elasticache.ReplicationGroup{{
-									Status:                 aws.String(v1alpha2.StatusAvailable),
-									MemberClusters:         []string{cacheClusterID},
-									AutomaticFailover:      elasticache.AutomaticFailoverStatusEnabled,
-									CacheNodeType:          aws.String(cacheNodeType),
-									SnapshotRetentionLimit: aws.Int64(snapshotRetentionLimit),
-									SnapshotWindow:         aws.String(snapshotWindow),
-									ClusterEnabled:         aws.Bool(true),
-									ConfigurationEndpoint:  &elasticache.Endpoint{Address: aws.String(host), Port: aws.Int64(port)},
-								}},
-							},
-						},
-					}
-				},
-				MockDescribeCacheClustersRequest: func(_ *elasticache.DescribeCacheClustersInput) elasticache.DescribeCacheClustersRequest {
-					return elasticache.DescribeCacheClustersRequest{
-						Request: &aws.Request{
-							HTTPRequest: &http.Request{},
-							Data: &elasticache.DescribeCacheClustersOutput{
-								CacheClusters: []elasticache.CacheCluster{{
-									EngineVersion:              aws.String(engineVersion),
-									PreferredMaintenanceWindow: aws.String(maintenanceWindow),
-								}},
-							},
-						},
-					}
-				},
-			}},
-			r: replicationGroup(
-				withGroupName(name),
-				withMemberClusters([]string{cacheClusterID}),
-			),
-			want: replicationGroup(
-				withGroupName(name),
-				withMemberClusters([]string{cacheClusterID}),
-			),
-		},
-		{
-			name: "SuccessfulGroupNeedsUpdate",
-			e: &external{client: &fake.MockClient{
-				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
-					return elasticache.DescribeReplicationGroupsRequest{
-						Request: &aws.Request{
-							HTTPRequest: &http.Request{},
-							Data: &elasticache.DescribeReplicationGroupsOutput{
-								ReplicationGroups: []elasticache.ReplicationGroup{{
-									Status:                 aws.String(v1alpha2.StatusAvailable),
-									MemberClusters:         []string{cacheClusterID},
-									AutomaticFailover:      elasticache.AutomaticFailoverStatusDisabled, // This field needs updating.
-									CacheNodeType:          aws.String(cacheNodeType),
-									SnapshotRetentionLimit: aws.Int64(snapshotRetentionLimit),
-									SnapshotWindow:         aws.String(snapshotWindow),
-									ClusterEnabled:         aws.Bool(true),
-									ConfigurationEndpoint:  &elasticache.Endpoint{Address: aws.String(host), Port: aws.Int64(port)},
-								}},
-							},
-						},
-					}
-				},
-				MockDescribeCacheClustersRequest: func(_ *elasticache.DescribeCacheClustersInput) elasticache.DescribeCacheClustersRequest {
-					return elasticache.DescribeCacheClustersRequest{
-						Request: &aws.Request{
-							HTTPRequest: &http.Request{},
-							Data: &elasticache.DescribeCacheClustersOutput{
-								CacheClusters: []elasticache.CacheCluster{{
-									EngineVersion:              aws.String(engineVersion),
-									PreferredMaintenanceWindow: aws.String(maintenanceWindow),
-								}},
-							},
-						},
-					}
-				},
-				MockModifyReplicationGroupRequest: func(_ *elasticache.ModifyReplicationGroupInput) elasticache.ModifyReplicationGroupRequest {
-					return elasticache.ModifyReplicationGroupRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &elasticache.ModifyReplicationGroupOutput{}},
-					}
-				},
-			}},
-			r: replicationGroup(
-				withGroupName(name),
-			),
-			want: replicationGroup(
-				withGroupName(name),
-			),
-		},
-		{
-			name: "SuccessfulGroupDoesNotNeedButCacheClustersNeedUpdate",
-			e: &external{client: &fake.MockClient{
-				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
-					return elasticache.DescribeReplicationGroupsRequest{
-						Request: &aws.Request{
-							HTTPRequest: &http.Request{},
-							Data: &elasticache.DescribeReplicationGroupsOutput{
-								ReplicationGroups: []elasticache.ReplicationGroup{{
-									Status:                 aws.String(v1alpha2.StatusAvailable),
-									MemberClusters:         []string{cacheClusterID},
-									AutomaticFailover:      elasticache.AutomaticFailoverStatusEnabled,
-									CacheNodeType:          aws.String(cacheNodeType),
-									SnapshotRetentionLimit: aws.Int64(snapshotRetentionLimit),
-									SnapshotWindow:         aws.String(snapshotWindow),
-									ClusterEnabled:         aws.Bool(true),
-									ConfigurationEndpoint:  &elasticache.Endpoint{Address: aws.String(host), Port: aws.Int64(port)},
-								}},
-							},
-						},
-					}
-				},
-				MockDescribeCacheClustersRequest: func(_ *elasticache.DescribeCacheClustersInput) elasticache.DescribeCacheClustersRequest {
-					return elasticache.DescribeCacheClustersRequest{
-						Request: &aws.Request{
-							HTTPRequest: &http.Request{},
-							Data: &elasticache.DescribeCacheClustersOutput{
-								CacheClusters: []elasticache.CacheCluster{{
-									EngineVersion:              aws.String(engineVersion),
-									PreferredMaintenanceWindow: aws.String("never!"), // This field needs to be updated.
-								}},
-							},
-						},
-					}
-				},
-				MockModifyReplicationGroupRequest: func(_ *elasticache.ModifyReplicationGroupInput) elasticache.ModifyReplicationGroupRequest {
-					return elasticache.ModifyReplicationGroupRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &elasticache.ModifyReplicationGroupOutput{}},
-					}
-				},
-			}},
-			r: replicationGroup(
-				withGroupName(name),
-				withMemberClusters([]string{cacheClusterID}),
-			),
-			want: replicationGroup(
-				withGroupName(name),
-				withMemberClusters([]string{cacheClusterID}),
-			),
-		},
-		{
-			name: "FailedDescribeReplicationGroups",
-			e: &external{client: &fake.MockClient{
-				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
-					return elasticache.DescribeReplicationGroupsRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errorBoom},
-					}
-				},
-			}},
-			r: replicationGroup(
-				withGroupName(name),
-				withConditions(runtimev1alpha1.Creating()),
-			),
-			want: replicationGroup(
-				withGroupName(name),
-				withConditions(runtimev1alpha1.Creating()),
-			),
-			returnsErr: true,
-		},
-		{
-			name: "FailedDescribeCacheClusters",
-			e: &external{client: &fake.MockClient{
-				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
-					return elasticache.DescribeReplicationGroupsRequest{
-						Request: &aws.Request{
-							HTTPRequest: &http.Request{},
-							Data: &elasticache.DescribeReplicationGroupsOutput{
-								ReplicationGroups: []elasticache.ReplicationGroup{{
-									Status:                 aws.String(v1alpha2.StatusAvailable),
-									AutomaticFailover:      elasticache.AutomaticFailoverStatusEnabled,
-									CacheNodeType:          aws.String(cacheNodeType),
-									SnapshotRetentionLimit: aws.Int64(snapshotRetentionLimit),
-									SnapshotWindow:         aws.String(snapshotWindow),
-									ClusterEnabled:         aws.Bool(true),
-									MemberClusters:         []string{cacheClusterID},
-								}},
-							},
-						},
-					}
-				},
-				MockDescribeCacheClustersRequest: func(_ *elasticache.DescribeCacheClustersInput) elasticache.DescribeCacheClustersRequest {
-					return elasticache.DescribeCacheClustersRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errorBoom},
-					}
-				},
-				MockModifyReplicationGroupRequest: func(_ *elasticache.ModifyReplicationGroupInput) elasticache.ModifyReplicationGroupRequest {
-					return elasticache.ModifyReplicationGroupRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &elasticache.ModifyReplicationGroupOutput{}},
-					}
-				},
-			}},
-			r: replicationGroup(
-				withGroupName(name),
-				withClusterEnabled(true),
-				withMemberClusters([]string{cacheClusterID}),
-				withState(v1alpha2.StatusAvailable),
-			),
-			want: replicationGroup(
-				withGroupName(name),
-				withClusterEnabled(true),
-				withMemberClusters([]string{cacheClusterID}),
-				withState(v1alpha2.StatusAvailable),
-			),
-			returnsErr: true,
-		},
-		{
 			name: "FailedModifyReplicationGroup",
 			e: &external{client: &fake.MockClient{
 				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
@@ -587,14 +496,14 @@ func TestUpdate(t *testing.T) {
 							HTTPRequest: &http.Request{},
 							Data: &elasticache.DescribeReplicationGroupsOutput{
 								ReplicationGroups: []elasticache.ReplicationGroup{{
-									Status:                 aws.String(v1alpha2.StatusAvailable),
+									Status:                 aws.String(v1beta1.StatusAvailable),
 									MemberClusters:         []string{cacheClusterID},
 									AutomaticFailover:      elasticache.AutomaticFailoverStatusEnabled,
 									CacheNodeType:          aws.String(cacheNodeType),
-									SnapshotRetentionLimit: aws.Int64(snapshotRetentionLimit),
+									SnapshotRetentionLimit: aws.Int64(int64(snapshotRetentionLimit)),
 									SnapshotWindow:         aws.String(snapshotWindow),
 									ClusterEnabled:         aws.Bool(true),
-									ConfigurationEndpoint:  &elasticache.Endpoint{Address: aws.String(host), Port: aws.Int64(port)},
+									ConfigurationEndpoint:  &elasticache.Endpoint{Address: aws.String(host), Port: aws.Int64(int64(port))},
 								}},
 							},
 						},
@@ -620,12 +529,12 @@ func TestUpdate(t *testing.T) {
 				},
 			}},
 			r: replicationGroup(
-				withGroupName(name),
+				withReplicationGroupID(name),
 				withConditions(runtimev1alpha1.Available()),
 				withMemberClusters([]string{cacheClusterID}),
 			),
 			want: replicationGroup(
-				withGroupName(name),
+				withReplicationGroupID(name),
 				withConditions(runtimev1alpha1.Available()),
 				withMemberClusters([]string{cacheClusterID}),
 			),
@@ -724,7 +633,7 @@ func TestConnect(t *testing.T) {
 	cases := []struct {
 		name    string
 		conn    *connecter
-		i       *v1alpha2.ReplicationGroup
+		i       *v1beta1.ReplicationGroup
 		want    resource.ExternalClient
 		wantErr error
 	}{
