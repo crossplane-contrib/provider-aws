@@ -3,10 +3,10 @@ module github.com/crossplaneio/stack-aws
 go 1.12
 
 require (
+	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/aws/aws-sdk-go-v2 v0.5.0
-	github.com/crossplaneio/crossplane v0.3.1-0.20191022183442-41bfc73a2725
-	github.com/crossplaneio/crossplane-runtime v0.0.0-20191022193131-1647c0818444
-	github.com/crossplaneio/crossplane-tools v0.0.0-20191022184929-086ccf793892 // indirect
+	github.com/crossplaneio/crossplane v0.3.1-0.20191023221351-518648b051cd
+	github.com/crossplaneio/crossplane-runtime v0.0.0-20191023215652-0f37bea5496e
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-ini/ini v1.46.0
 	github.com/google/go-cmp v0.3.1
