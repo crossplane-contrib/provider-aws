@@ -149,8 +149,11 @@ func replicationGroup(rm ...replicationGroupModifier) *v1beta1.ReplicationGroup 
 		ObjectMeta: objectMeta,
 		Spec: v1beta1.ReplicationGroupSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference:                &corev1.ObjectReference{Namespace: namespace, Name: providerName},
-				WriteConnectionSecretToReference: corev1.LocalObjectReference{Name: connectionSecretName},
+				ProviderReference: &corev1.ObjectReference{Namespace: namespace, Name: providerName},
+				WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
+					Namespace: namespace,
+					Name:      connectionSecretName,
+				},
 			},
 			ForProvider: v1beta1.ReplicationGroupParameters{
 				AutomaticFailoverEnabled:   &autoFailoverEnabled,
