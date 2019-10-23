@@ -634,7 +634,6 @@ func TestConnect(t *testing.T) {
 		name    string
 		conn    *connecter
 		i       *v1beta1.ReplicationGroup
-		want    resource.ExternalClient
 		wantErr error
 	}{
 		{
@@ -653,8 +652,7 @@ func TestConnect(t *testing.T) {
 				},
 				newClientFn: func(_ []byte, _ string) (elasticacheclient.Client, error) { return &fake.MockClient{}, nil },
 			},
-			i:    replicationGroup(),
-			want: &external{client: &fake.MockClient{}},
+			i: replicationGroup(),
 		},
 		{
 			name: "FailedToGetProvider",
@@ -699,21 +697,15 @@ func TestConnect(t *testing.T) {
 				newClientFn: func(_ []byte, _ string) (elasticacheclient.Client, error) { return nil, errorBoom },
 			},
 			i:       replicationGroup(),
-			want:    &external{},
 			wantErr: errors.Wrap(errorBoom, errNewClient),
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, gotErr := tc.conn.Connect(ctx, tc.i)
-
+			_, gotErr := tc.conn.Connect(ctx, tc.i)
 			if diff := cmp.Diff(tc.wantErr, gotErr, test.EquateErrors()); diff != "" {
 				t.Errorf("tc.conn.Connect(...): want error != got error:\n%s", diff)
-			}
-
-			if diff := cmp.Diff(tc.want, got, test.EquateConditions(), cmp.AllowUnexported(external{})); diff != "" {
-				t.Errorf("tc.conn.Connect(...): -want, +got:\n%s", diff)
 			}
 		})
 	}

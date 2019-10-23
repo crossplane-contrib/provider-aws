@@ -99,7 +99,7 @@ func ConfigureReplicationGroup(_ context.Context, cm resource.Claim, cs resource
 		ResourceSpec: runtimev1alpha1.ResourceSpec{
 			ReclaimPolicy: runtimev1alpha1.ReclaimRetain,
 		},
-		ForProvider: rgc.SpecTemplate.ReplicationGroupParameters,
+		ForProvider: rgc.SpecTemplate.ForProvider,
 	}
 
 	if err := resolveAWSClassInstanceValues(&spec.ForProvider, rc); err != nil {
@@ -111,11 +111,6 @@ func ConfigureReplicationGroup(_ context.Context, cm resource.Claim, cs resource
 	spec.ReclaimPolicy = rgc.SpecTemplate.ReclaimPolicy
 
 	rg.Spec = *spec
-
-	// NOTE(muvaf): ReplicationGroup actually supports memcached as well but the
-	// claim is a _Redis_Cluster, so, we override the value no matter what. Users
-	// should be able to get a memcached through manually creating the ReplicationGroup
-	rg.Spec.ForProvider.Engine = v1beta1.CacheEngineRedis
 
 	return nil
 }
