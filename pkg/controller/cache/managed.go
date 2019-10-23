@@ -93,15 +93,14 @@ func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (resource.
 	}
 
 	p := &awsv1alpha2.Provider{}
-	n := meta.NamespacedNameOf(g.Spec.ProviderReference)
-	if err := c.client.Get(ctx, n, p); err != nil {
-		return nil, errors.Wrapf(err, "cannot get provider %s", n)
+	if err := c.client.Get(ctx, meta.NamespacedNameOf(g.Spec.ProviderReference), p); err != nil {
+		return nil, errors.Wrap(err, "cannot get provider")
 	}
 
 	s := &corev1.Secret{}
-	n = types.NamespacedName{Namespace: p.GetNamespace(), Name: p.Spec.Secret.Name}
+	n := types.NamespacedName{Namespace: p.Spec.Secret.Namespace, Name: p.Spec.Secret.Name}
 	if err := c.client.Get(ctx, n, s); err != nil {
-		return nil, errors.Wrapf(err, "cannot get provider secret %s", n)
+		return nil, errors.Wrap(err, "cannot get provider secret")
 	}
 	awsClient, err := c.newClientFn(s.Data[p.Spec.Secret.Key], p.Spec.Region)
 	return &external{client: awsClient, kube: c.client}, errors.Wrap(err, errNewClient)
