@@ -28,7 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticache/elasticacheiface"
 	"github.com/pkg/errors"
 
-	"github.com/crossplaneio/stack-aws/apis/cache/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
 	clients "github.com/crossplaneio/stack-aws/pkg/clients"
 )
 
@@ -51,7 +51,7 @@ func NewClient(credentials []byte, region string) (Client, error) {
 
 // NewCreateReplicationGroupInput returns ElastiCache replication group creation
 // input suitable for use with the AWS API.
-func NewCreateReplicationGroupInput(g v1alpha2.ReplicationGroupParameters, id string, authToken *string) *elasticache.CreateReplicationGroupInput {
+func NewCreateReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id string, authToken *string) *elasticache.CreateReplicationGroupInput {
 	c := &elasticache.CreateReplicationGroupInput{
 		ReplicationGroupId:          &id,
 		ReplicationGroupDescription: &g.ReplicationGroupDescription,
@@ -105,7 +105,7 @@ func NewCreateReplicationGroupInput(g v1alpha2.ReplicationGroupParameters, id st
 
 // NewModifyReplicationGroupInput returns ElastiCache replication group
 // modification input suitable for use with the AWS API.
-func NewModifyReplicationGroupInput(g v1alpha2.ReplicationGroupParameters, id string) *elasticache.ModifyReplicationGroupInput {
+func NewModifyReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id string) *elasticache.ModifyReplicationGroupInput {
 	return &elasticache.ModifyReplicationGroupInput{
 		ReplicationGroupId:          &id,
 		ApplyImmediately:            &g.ApplyImmediately,
@@ -147,7 +147,7 @@ func NewDescribeCacheClustersInput(clusterID string) *elasticache.DescribeCacheC
 // LateInitialize assigns the observed configurations and assigns them to the
 // corresponding fields in ReplicationGroupParameters in order to let user
 // know the defaults and make the changes as wished on that value.
-func LateInitialize(s *v1alpha2.ReplicationGroupParameters, rg elasticache.ReplicationGroup) {
+func LateInitialize(s *v1beta1.ReplicationGroupParameters, rg elasticache.ReplicationGroup) {
 	// NOTE(muvaf): there are many other parameters that elasticache.ReplicationGroup
 	// does not include for some reason.
 	s.AtRestEncryptionEnabled = clients.LateInitializeBoolPtr(s.AtRestEncryptionEnabled, rg.AtRestEncryptionEnabled)
@@ -161,7 +161,7 @@ func LateInitialize(s *v1alpha2.ReplicationGroupParameters, rg elasticache.Repli
 
 // ReplicationGroupNeedsUpdate returns true if the supplied Kubernetes resource
 // differs from the supplied AWS resource.
-func ReplicationGroupNeedsUpdate(kube v1alpha2.ReplicationGroupParameters, rg elasticache.ReplicationGroup, ccList []elasticache.CacheCluster) bool {
+func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg elasticache.ReplicationGroup, ccList []elasticache.CacheCluster) bool {
 	switch {
 	case !reflect.DeepEqual(kube.AutomaticFailoverEnabled, automaticFailoverEnabled(rg.AutomaticFailover)):
 		return true
@@ -188,7 +188,7 @@ func automaticFailoverEnabled(af elasticache.AutomaticFailoverStatus) *bool {
 	return &r
 }
 
-func cacheClusterNeedsUpdate(kube v1alpha2.ReplicationGroupParameters, cc elasticache.CacheCluster) bool { // nolint:gocyclo
+func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elasticache.CacheCluster) bool { // nolint:gocyclo
 	// AWS will set and return a default version if we don't specify one.
 	if !reflect.DeepEqual(kube.EngineVersion, cc.EngineVersion) {
 		return true
@@ -246,8 +246,8 @@ func sgNamesNeedUpdate(kube []string, cc []elasticache.CacheSecurityGroupMembers
 
 // GenerateObservation produces a ReplicationGroupObservation object out of
 // received elasticache.ReplicationGroup object.
-func GenerateObservation(rg elasticache.ReplicationGroup) v1alpha2.ReplicationGroupObservation {
-	o := v1alpha2.ReplicationGroupObservation{
+func GenerateObservation(rg elasticache.ReplicationGroup) v1beta1.ReplicationGroupObservation {
+	o := v1beta1.ReplicationGroupObservation{
 		AutomaticFailover:     string(rg.AutomaticFailover),
 		ClusterEnabled:        aws.BoolValue(rg.ClusterEnabled),
 		ConfigurationEndpoint: newEndpoint(rg.ConfigurationEndpoint),
@@ -255,7 +255,7 @@ func GenerateObservation(rg elasticache.ReplicationGroup) v1alpha2.ReplicationGr
 		Status:                clients.StringValue(rg.Status),
 	}
 	if len(rg.NodeGroups) != 0 {
-		o.NodeGroups = make([]v1alpha2.NodeGroup, len(rg.NodeGroups))
+		o.NodeGroups = make([]v1beta1.NodeGroup, len(rg.NodeGroups))
 		for i, ng := range rg.NodeGroups {
 			o.NodeGroups[i] = generateNodeGroup(ng)
 		}
@@ -266,23 +266,23 @@ func GenerateObservation(rg elasticache.ReplicationGroup) v1alpha2.ReplicationGr
 	return o
 }
 
-func generateNodeGroup(ng elasticache.NodeGroup) v1alpha2.NodeGroup {
-	r := v1alpha2.NodeGroup{
+func generateNodeGroup(ng elasticache.NodeGroup) v1beta1.NodeGroup {
+	r := v1beta1.NodeGroup{
 		NodeGroupID: clients.StringValue(ng.NodeGroupId),
 		Slots:       clients.StringValue(ng.Slots),
 		Status:      clients.StringValue(ng.Status),
 	}
 	if len(ng.NodeGroupMembers) != 0 {
-		r.NodeGroupMembers = make([]v1alpha2.NodeGroupMember, len(ng.NodeGroupMembers))
+		r.NodeGroupMembers = make([]v1beta1.NodeGroupMember, len(ng.NodeGroupMembers))
 		for i, m := range ng.NodeGroupMembers {
-			r.NodeGroupMembers[i] = v1alpha2.NodeGroupMember{
+			r.NodeGroupMembers[i] = v1beta1.NodeGroupMember{
 				CacheClusterID:            clients.StringValue(m.CacheClusterId),
 				CacheNodeID:               clients.StringValue(m.CacheNodeId),
 				CurrentRole:               clients.StringValue(m.CurrentRole),
 				PreferredAvailabilityZone: clients.StringValue(m.PreferredAvailabilityZone),
 			}
 			if m.ReadEndpoint != nil {
-				r.NodeGroupMembers[i].ReadEndpoint = v1alpha2.Endpoint{
+				r.NodeGroupMembers[i].ReadEndpoint = v1beta1.Endpoint{
 					Address: clients.StringValue(m.ReadEndpoint.Address),
 					Port:    int(aws.Int64Value(m.ReadEndpoint.Port)),
 				}
@@ -292,14 +292,14 @@ func generateNodeGroup(ng elasticache.NodeGroup) v1alpha2.NodeGroup {
 	return r
 }
 
-func generateReplicationGroupPendingModifiedValues(in elasticache.ReplicationGroupPendingModifiedValues) v1alpha2.ReplicationGroupPendingModifiedValues {
-	r := v1alpha2.ReplicationGroupPendingModifiedValues{
+func generateReplicationGroupPendingModifiedValues(in elasticache.ReplicationGroupPendingModifiedValues) v1beta1.ReplicationGroupPendingModifiedValues {
+	r := v1beta1.ReplicationGroupPendingModifiedValues{
 		AutomaticFailoverStatus: string(in.AutomaticFailoverStatus),
 		PrimaryClusterID:        clients.StringValue(in.PrimaryClusterId),
 	}
 	if in.Resharding != nil && in.Resharding.SlotMigration != nil {
-		r.Resharding = v1alpha2.ReshardingStatus{
-			SlotMigration: v1alpha2.SlotMigration{
+		r.Resharding = v1beta1.ReshardingStatus{
+			SlotMigration: v1beta1.SlotMigration{
 				ProgressPercentage: int(aws.Float64Value(in.Resharding.SlotMigration.ProgressPercentage)),
 			},
 		}
@@ -307,12 +307,12 @@ func generateReplicationGroupPendingModifiedValues(in elasticache.ReplicationGro
 	return r
 }
 
-func newEndpoint(e *elasticache.Endpoint) v1alpha2.Endpoint {
+func newEndpoint(e *elasticache.Endpoint) v1beta1.Endpoint {
 	if e == nil {
-		return v1alpha2.Endpoint{}
+		return v1beta1.Endpoint{}
 	}
 
-	return v1alpha2.Endpoint{Address: clients.StringValue(e.Address), Port: int(aws.Int64Value(e.Port))}
+	return v1beta1.Endpoint{Address: clients.StringValue(e.Address), Port: int(aws.Int64Value(e.Port))}
 }
 
 // ConnectionEndpoint returns the connection endpoint for a Replication Group.

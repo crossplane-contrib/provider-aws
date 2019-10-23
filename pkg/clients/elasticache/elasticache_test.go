@@ -29,7 +29,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/crossplaneio/stack-aws/apis/cache/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
 	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 )
 
@@ -79,15 +79,15 @@ var (
 	securityGroupIDs         = []string{"coolID", "coolerID"}
 	snapshotARNs             = []string{"arn:aws:s3:snappy"}
 
-	description = "Crossplane managed " + v1alpha2.ReplicationGroupKindAPIVersion + " " + namespace + "/" + name
+	description = "Crossplane managed " + v1beta1.ReplicationGroupKindAPIVersion + " " + namespace + "/" + name
 
 	nodeGroupAZs = []string{"us-cool-1a", "us-cool-1b"}
 
 	meta             = metav1.ObjectMeta{Namespace: namespace, Name: name, UID: uid}
-	replicationGroup = &v1alpha2.ReplicationGroup{
+	replicationGroup = &v1beta1.ReplicationGroup{
 		ObjectMeta: meta,
-		Spec: v1alpha2.ReplicationGroupSpec{
-			ForProvider: v1alpha2.ReplicationGroupParameters{
+		Spec: v1beta1.ReplicationGroupSpec{
+			ForProvider: v1beta1.ReplicationGroupParameters{
 				ApplyImmediately:         true,
 				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
 				AuthEnabled:              &authEnabled,
@@ -98,7 +98,7 @@ var (
 				CacheSubnetGroupName:     &cacheSubnetGroupName,
 				Engine:                   engine,
 				EngineVersion:            &engineVersion,
-				NodeGroupConfiguration: []v1alpha2.NodeGroupConfigurationSpec{
+				NodeGroupConfiguration: []v1beta1.NodeGroupConfigurationSpec{
 					{
 						PrimaryAvailabilityZone:  &nodeGroupPrimaryAZ,
 						ReplicaAvailabilityZones: nodeGroupAZs,
@@ -122,7 +122,7 @@ var (
 				SnapshotRetentionLimit:      &snapshotRetentionLimit,
 				SnapshottingClusterID:       &snapshottingClusterID,
 				SnapshotWindow:              &snapshotWindow,
-				Tags: []v1alpha2.Tag{
+				Tags: []v1beta1.Tag{
 					{
 						Key:   tagKey,
 						Value: tagValue,
@@ -137,7 +137,7 @@ var (
 func TestNewCreateReplicationGroupInput(t *testing.T) {
 	cases := []struct {
 		name      string
-		params    v1alpha2.ReplicationGroupParameters
+		params    v1beta1.ReplicationGroupParameters
 		authToken *string
 		want      *elasticache.CreateReplicationGroupInput
 	}{
@@ -148,7 +148,7 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 			want: &elasticache.CreateReplicationGroupInput{
 				ReplicationGroupId:          aws.String(name, aws.FieldRequired),
 				ReplicationGroupDescription: aws.String(description, aws.FieldRequired),
-				Engine:                      aws.String(v1alpha2.CacheEngineRedis, aws.FieldRequired),
+				Engine:                      aws.String(v1beta1.CacheEngineRedis, aws.FieldRequired),
 				CacheNodeType:               aws.String(cacheNodeType, aws.FieldRequired),
 				AtRestEncryptionEnabled:     aws.Bool(atRestEncryptionEnabled),
 				AuthToken:                   aws.String(authToken),
@@ -189,7 +189,7 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 		},
 		{
 			name: "UnsetFieldsAreNilNotZeroType",
-			params: v1alpha2.ReplicationGroupParameters{
+			params: v1beta1.ReplicationGroupParameters{
 				CacheNodeType:               cacheNodeType,
 				ReplicationGroupDescription: description,
 				Engine:                      engine,
@@ -220,7 +220,7 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 func TestNewModifyReplicationGroupInput(t *testing.T) {
 	cases := []struct {
 		name   string
-		params v1alpha2.ReplicationGroupParameters
+		params v1beta1.ReplicationGroupParameters
 		want   *elasticache.ModifyReplicationGroupInput
 	}{
 		{
@@ -247,7 +247,7 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 		},
 		{
 			name: "UnsetFieldsAreNilNotZeroType",
-			params: v1alpha2.ReplicationGroupParameters{
+			params: v1beta1.ReplicationGroupParameters{
 				CacheNodeType:               cacheNodeType,
 				ReplicationGroupDescription: description,
 			},
@@ -260,7 +260,7 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 		},
 		{
 			name: "SuperfluousFields",
-			params: v1alpha2.ReplicationGroupParameters{
+			params: v1beta1.ReplicationGroupParameters{
 				AtRestEncryptionEnabled:     &atRestEncryptionEnabled,
 				CacheNodeType:               cacheNodeType,
 				ReplicationGroupDescription: description,
@@ -360,7 +360,7 @@ func TestNewDescribeCacheClustersInput(t *testing.T) {
 func TestReplicationGroupNeedsUpdate(t *testing.T) {
 	cases := []struct {
 		name   string
-		kube   v1alpha2.ReplicationGroupParameters
+		kube   v1beta1.ReplicationGroupParameters
 		rg     elasticache.ReplicationGroup
 		ccList []elasticache.CacheCluster
 		want   bool
@@ -467,7 +467,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 func TestCacheClusterNeedsUpdate(t *testing.T) {
 	cases := []struct {
 		name string
-		kube v1alpha2.ReplicationGroupParameters
+		kube v1beta1.ReplicationGroupParameters
 		cc   elasticache.CacheCluster
 		want bool
 	}{
