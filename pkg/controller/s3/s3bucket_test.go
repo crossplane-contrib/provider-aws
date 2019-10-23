@@ -35,7 +35,6 @@ import (
 
 	"github.com/crossplaneio/stack-aws/apis/storage/v1alpha2"
 	. "github.com/crossplaneio/stack-aws/apis/storage/v1alpha2"
-	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
 	client "github.com/crossplaneio/stack-aws/pkg/clients/s3"
 	. "github.com/crossplaneio/stack-aws/pkg/clients/s3/fake"
 
@@ -47,15 +46,13 @@ import (
 )
 
 const (
-	namespace    = "default"
-	providerName = "test-provider"
-	bucketName   = "test-bucket"
+	namespace  = "default"
+	bucketName = "test-bucket"
 )
 
 var (
 	key = types.NamespacedName{
-		Namespace: namespace,
-		Name:      bucketName,
+		Name: bucketName,
 	}
 	request = reconcile.Request{
 		NamespacedName: key,
@@ -68,22 +65,12 @@ func init() {
 	}
 }
 
-func testProvider() *awsv1alpha2.Provider {
-	return &awsv1alpha2.Provider{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      providerName,
-			Namespace: namespace,
-		},
-	}
-}
-
 func testResource() *S3Bucket {
 	perm := storagev1alpha1.ReadOnlyPermission
 	testIAMUsername := "test-username"
 	return &S3Bucket{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      bucketName,
-			Namespace: namespace,
+			Name: bucketName,
 		},
 		Spec: S3BucketSpec{
 			ResourceSpec:       runtimev1alpha1.ResourceSpec{ProviderReference: &corev1.ObjectReference{}},
