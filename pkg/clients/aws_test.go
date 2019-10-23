@@ -20,8 +20,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/go-ini/ini"
-
 	. "github.com/onsi/gomega"
 )
 
@@ -62,16 +60,4 @@ func TestLoadConfig(t *testing.T) {
 	config, err := LoadConfig(credentials, testProfile, testRegion)
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(config).NotTo(BeNil())
-}
-
-func TestValidateInvalid(t *testing.T) {
-	g := NewGomegaWithT(t)
-
-	data := []byte(fmt.Sprintf("[%s]\naws_access_key_id = %s\naws_secret_access_key = %s", "default", "foo", "barr"))
-
-	config, err := LoadConfig(data, ini.DefaultSection, "us-west-2")
-	g.Expect(err).NotTo(HaveOccurred())
-
-	err = ValidateConfig(config)
-	g.Expect(err).To(HaveOccurred())
 }
