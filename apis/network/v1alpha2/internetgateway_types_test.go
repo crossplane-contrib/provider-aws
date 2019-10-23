@@ -33,7 +33,7 @@ func TestVPCIDReferencerForInternetGateway_AssignInvalidType_ReturnsErr(t *testi
 	r := &VPCIDReferencerForInternetGateway{}
 	expectedErr := errors.New(errResourceIsNotInternetGateway)
 
-	err := r.Assign(&mockCanReference{}, "mockValue")
+	err := r.Assign(nil, "mockValue")
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}

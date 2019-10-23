@@ -36,9 +36,9 @@ type VPCIDReferencer struct {
 }
 
 // GetStatus implements GetStatus method of AttributeReferencer interface
-func (v *VPCIDReferencer) GetStatus(ctx context.Context, res resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
+func (v *VPCIDReferencer) GetStatus(ctx context.Context, _ resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
 	vpc := VPC{}
-	nn := types.NamespacedName{Name: v.Name, Namespace: res.GetNamespace()}
+	nn := types.NamespacedName{Name: v.Name}
 	if err := reader.Get(ctx, nn, &vpc); err != nil {
 		if kerrors.IsNotFound(err) {
 			return []resource.ReferenceStatus{{Name: v.Name, Status: resource.ReferenceNotFound}}, nil
@@ -55,9 +55,9 @@ func (v *VPCIDReferencer) GetStatus(ctx context.Context, res resource.CanReferen
 }
 
 // Build retrieves and builds the vpcId
-func (v *VPCIDReferencer) Build(ctx context.Context, res resource.CanReference, reader client.Reader) (string, error) {
+func (v *VPCIDReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
 	vpc := VPC{}
-	nn := types.NamespacedName{Name: v.Name, Namespace: res.GetNamespace()}
+	nn := types.NamespacedName{Name: v.Name}
 	if err := reader.Get(ctx, nn, &vpc); err != nil {
 		return "", err
 	}

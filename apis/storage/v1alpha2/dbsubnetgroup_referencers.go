@@ -36,9 +36,9 @@ type DBSubnetGroupNameReferencer struct {
 }
 
 // GetStatus implements GetStatus method of AttributeReferencer interface
-func (v *DBSubnetGroupNameReferencer) GetStatus(ctx context.Context, res resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
+func (v *DBSubnetGroupNameReferencer) GetStatus(ctx context.Context, _ resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
 	sg := DBSubnetGroup{}
-	nn := types.NamespacedName{Name: v.Name, Namespace: res.GetNamespace()}
+	nn := types.NamespacedName{Name: v.Name}
 	if err := reader.Get(ctx, nn, &sg); err != nil {
 		if kerrors.IsNotFound(err) {
 			return []resource.ReferenceStatus{{Name: v.Name, Status: resource.ReferenceNotFound}}, nil
@@ -55,9 +55,9 @@ func (v *DBSubnetGroupNameReferencer) GetStatus(ctx context.Context, res resourc
 }
 
 // Build retrieves the DBSubnetGroup and returns the name
-func (v *DBSubnetGroupNameReferencer) Build(ctx context.Context, res resource.CanReference, reader client.Reader) (string, error) {
+func (v *DBSubnetGroupNameReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
 	sg := DBSubnetGroup{}
-	nn := types.NamespacedName{Name: v.Name, Namespace: res.GetNamespace()}
+	nn := types.NamespacedName{Name: v.Name}
 	if err := reader.Get(ctx, nn, &sg); err != nil {
 		return "", err
 	}

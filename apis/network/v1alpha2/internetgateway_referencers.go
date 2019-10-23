@@ -36,9 +36,9 @@ type InternetGatewayIDReferencer struct {
 }
 
 // GetStatus implements GetStatus method of AttributeReferencer interface
-func (v *InternetGatewayIDReferencer) GetStatus(ctx context.Context, res resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
+func (v *InternetGatewayIDReferencer) GetStatus(ctx context.Context, _ resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
 	ig := InternetGateway{}
-	nn := types.NamespacedName{Name: v.Name, Namespace: res.GetNamespace()}
+	nn := types.NamespacedName{Name: v.Name}
 	if err := reader.Get(ctx, nn, &ig); err != nil {
 		if kerrors.IsNotFound(err) {
 			return []resource.ReferenceStatus{{Name: v.Name, Status: resource.ReferenceNotFound}}, nil
@@ -55,9 +55,9 @@ func (v *InternetGatewayIDReferencer) GetStatus(ctx context.Context, res resourc
 }
 
 // Build retrieves and builds the InternetGatewayID
-func (v *InternetGatewayIDReferencer) Build(ctx context.Context, res resource.CanReference, reader client.Reader) (string, error) {
+func (v *InternetGatewayIDReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
 	ig := InternetGateway{}
-	nn := types.NamespacedName{Name: v.Name, Namespace: res.GetNamespace()}
+	nn := types.NamespacedName{Name: v.Name}
 	if err := reader.Get(ctx, nn, &ig); err != nil {
 		return "", err
 	}

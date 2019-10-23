@@ -36,7 +36,7 @@ func TestVPCIDReferencerForRouteTable_AssignInvalidType_ReturnsErr(t *testing.T)
 	r := &VPCIDReferencerForRouteTable{}
 	expectedErr := errors.New(errResourceIsNotRouteTable)
 
-	err := r.Assign(&mockCanReference{}, "mockValue")
+	err := r.Assign(nil, "mockValue")
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
@@ -63,7 +63,7 @@ func TestSubnetIDReferencerForRouteTable_AssignInvalidType_ReturnsErr(t *testing
 	r := &SubnetIDReferencerForRouteTable{}
 	expectedErr := errors.New(errResourceIsNotRouteTable)
 
-	err := r.Assign(&mockCanReference{}, "mockValue")
+	err := r.Assign(nil, "mockValue")
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
@@ -124,7 +124,7 @@ func TestInternetGatewayIDReferencerForRouteTable_AssignInvalidType_ReturnsErr(t
 	r := &InternetGatewayIDReferencerForRouteTable{}
 	expectedErr := errors.New(errResourceIsNotRouteTable)
 
-	err := r.Assign(&mockCanReference{}, "mockValue")
+	err := r.Assign(nil, "mockValue")
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
