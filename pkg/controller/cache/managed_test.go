@@ -75,14 +75,17 @@ var (
 	ctx       = context.Background()
 	errorBoom = errors.New("boom")
 
-	objectMeta = metav1.ObjectMeta{Namespace: namespace, Name: name}
+	objectMeta = metav1.ObjectMeta{Name: name}
 
 	provider = awsv1alpha2.Provider{
-		ObjectMeta: metav1.ObjectMeta{Namespace: namespace, Name: providerName},
+		ObjectMeta: metav1.ObjectMeta{Name: providerName},
 		Spec: awsv1alpha2.ProviderSpec{
-			Secret: corev1.SecretKeySelector{
-				LocalObjectReference: corev1.LocalObjectReference{Name: providerSecretName},
-				Key:                  providerSecretKey,
+			Secret: runtimev1alpha1.SecretKeySelector{
+				SecretReference: runtimev1alpha1.SecretReference{
+					Namespace: namespace,
+					Name:      providerSecretName,
+				},
+				Key: providerSecretKey,
 			},
 		},
 	}
@@ -149,7 +152,7 @@ func replicationGroup(rm ...replicationGroupModifier) *v1beta1.ReplicationGroup 
 		ObjectMeta: objectMeta,
 		Spec: v1beta1.ReplicationGroupSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Namespace: namespace, Name: providerName},
+				ProviderReference: &corev1.ObjectReference{Name: providerName},
 				WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
 					Namespace: namespace,
 					Name:      connectionSecretName,
@@ -645,7 +648,7 @@ func TestConnect(t *testing.T) {
 				client: &test.MockClient{
 					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
 						switch key {
-						case client.ObjectKey{Namespace: namespace, Name: providerName}:
+						case client.ObjectKey{Name: providerName}:
 							*obj.(*awsv1alpha2.Provider) = provider
 						case client.ObjectKey{Namespace: namespace, Name: providerSecretName}:
 							*obj.(*corev1.Secret) = providerSecret
@@ -666,14 +669,14 @@ func TestConnect(t *testing.T) {
 				newClientFn: func(_ []byte, _ string) (elasticacheclient.Client, error) { return &fake.MockClient{}, nil },
 			},
 			i:       replicationGroup(),
-			wantErr: errors.WithStack(errors.Errorf("cannot get provider %s/%s:  \"%s\" not found", namespace, providerName, providerName)),
+			wantErr: errors.WithStack(errors.Errorf("cannot get provider:  \"%s\" not found", providerName)),
 		},
 		{
 			name: "FailedToGetProviderSecret",
 			conn: &connecter{
 				client: &test.MockClient{MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
 					switch key {
-					case client.ObjectKey{Namespace: namespace, Name: providerName}:
+					case client.ObjectKey{Name: providerName}:
 						*obj.(*awsv1alpha2.Provider) = provider
 					case client.ObjectKey{Namespace: namespace, Name: providerSecretName}:
 						return kerrors.NewNotFound(schema.GroupResource{}, providerSecretName)
@@ -683,14 +686,14 @@ func TestConnect(t *testing.T) {
 				newClientFn: func(_ []byte, _ string) (elasticacheclient.Client, error) { return &fake.MockClient{}, nil },
 			},
 			i:       replicationGroup(),
-			wantErr: errors.WithStack(errors.Errorf("cannot get provider secret %s/%s:  \"%s\" not found", namespace, providerSecretName, providerSecretName)),
+			wantErr: errors.WithStack(errors.Errorf("cannot get provider secret:  \"%s\" not found", providerSecretName)),
 		},
 		{
 			name: "FailedToCreateElastiCacheClient",
 			conn: &connecter{
 				client: &test.MockClient{MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
 					switch key {
-					case client.ObjectKey{Namespace: namespace, Name: providerName}:
+					case client.ObjectKey{Name: providerName}:
 						*obj.(*awsv1alpha2.Provider) = provider
 					case client.ObjectKey{Namespace: namespace, Name: providerSecretName}:
 						*obj.(*corev1.Secret) = providerSecret
