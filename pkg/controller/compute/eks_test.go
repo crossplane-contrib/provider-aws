@@ -52,8 +52,7 @@ const (
 
 var (
 	key = types.NamespacedName{
-		Namespace: namespace,
-		Name:      clusterName,
+		Name: clusterName,
 	}
 	request = reconcile.Request{
 		NamespacedName: key,
@@ -67,8 +66,7 @@ func init() {
 func testCluster() *EKSCluster {
 	return &EKSCluster{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      clusterName,
-			Namespace: namespace,
+			Name: clusterName,
 		},
 		Spec: EKSClusterSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{

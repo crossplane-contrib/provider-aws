@@ -29,7 +29,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -42,10 +41,9 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
 	awscomputev1alpha2 "github.com/crossplaneio/stack-aws/apis/compute/v1alpha2"
-	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 	cloudformationclient "github.com/crossplaneio/stack-aws/pkg/clients/cloudformation"
 	"github.com/crossplaneio/stack-aws/pkg/clients/eks"
+	"github.com/crossplaneio/stack-aws/pkg/controller/utils"
 )
 
 const (
@@ -140,24 +138,15 @@ func (r *Reconciler) fail(instance *awscomputev1alpha2.EKSCluster, err error) (r
 }
 
 func (r *Reconciler) _connect(instance *awscomputev1alpha2.EKSCluster) (eks.Client, error) {
-	p := &awsv1alpha2.Provider{}
-	if err := r.Get(ctx, meta.NamespacedNameOf(instance.Spec.ProviderReference), p); err != nil {
-		return nil, err
-	}
-
-	s := &v1.Secret{}
-	n := types.NamespacedName{Namespace: p.GetNamespace(), Name: p.Spec.Secret.Name}
-	if err := r.Get(ctx, n, s); err != nil {
+	config, err := utils.RetrieveAwsConfigFromProvider(ctx, r, instance.Spec.ProviderReference)
+	if err != nil {
 		return nil, err
 	}
 
 	// NOTE(negz): EKS clusters must specify a region for creation. They never
 	// use the provider's region. This should be addressed per the below issue.
 	// https://github.com/crossplaneio/stack-aws/issues/38
-	config, err := aws.LoadConfig(s.Data[p.Spec.Secret.Key], aws.DefaultSection, string(instance.Spec.Region))
-	if err != nil {
-		return nil, err
-	}
+	config.Region = string(instance.Spec.Region)
 
 	// Create new EKS Client
 	return eks.NewClient(config), nil
