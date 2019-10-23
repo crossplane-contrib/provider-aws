@@ -17,7 +17,7 @@ limitations under the License.
 package elasticache
 
 import (
-	"fmt"
+	"reflect"
 
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache/elasticacheiface"
@@ -40,29 +40,20 @@ func NewClient(credentials []byte, region string) (Client, error) {
 	return elasticache.New(*cfg), nil
 }
 
-// NewReplicationGroupDescription returns a description suitable for use with
-// the AWS API.
-func NewReplicationGroupDescription(g *v1alpha2.ReplicationGroup) string {
-	return fmt.Sprintf("Crossplane managed %s %s/%s", v1alpha2.ReplicationGroupKindAPIVersion, g.GetNamespace(), g.GetName())
-}
-
 // TODO(negz): Determine whether we have to handle converting zero values to
 // nil for the below types.
 
 // NewCreateReplicationGroupInput returns ElastiCache replication group creation
 // input suitable for use with the AWS API.
-func NewCreateReplicationGroupInput(g v1alpha2.ReplicationGroupParameters, id, authToken string) *elasticache.CreateReplicationGroupInput {
+func NewCreateReplicationGroupInput(g v1alpha2.ReplicationGroupParameters, id string, authToken *string) *elasticache.CreateReplicationGroupInput {
 	c := &elasticache.CreateReplicationGroupInput{
 		ReplicationGroupId:          &id,
 		ReplicationGroupDescription: &g.ReplicationGroupDescription,
-
-		// The AWS API docs state these fields are not required, but they are.
-		// The APi returns an error if they're omitted.
-		Engine:        aws.StringAddress(v1alpha2.CacheEngineRedis),
-		CacheNodeType: &g.CacheNodeType,
+		Engine:                      &g.Engine,
+		CacheNodeType:               &g.CacheNodeType,
 
 		AtRestEncryptionEnabled:    g.AtRestEncryptionEnabled,
-		AuthToken:                  &authToken,
+		AuthToken:                  authToken,
 		AutomaticFailoverEnabled:   g.AutomaticFailoverEnabled,
 		CacheParameterGroupName:    g.CacheParameterGroupName,
 		CacheSecurityGroupNames:    g.CacheSecurityGroupNames,
@@ -93,7 +84,7 @@ func NewCreateReplicationGroupInput(g v1alpha2.ReplicationGroupParameters, id, a
 		}
 	}
 	if len(g.NodeGroupConfiguration) != 0 {
-		c.NodeGroupConfiguration = make([]elasticache.NodeGroupConfiguration, len(c.NodeGroupConfiguration))
+		c.NodeGroupConfiguration = make([]elasticache.NodeGroupConfiguration, len(g.NodeGroupConfiguration))
 		for i, cfg := range g.NodeGroupConfiguration {
 			c.NodeGroupConfiguration[i] = elasticache.NodeGroupConfiguration{
 				PrimaryAvailabilityZone:  cfg.PrimaryAvailabilityZone,
@@ -152,7 +143,7 @@ func LateInitialize(s *v1alpha2.ReplicationGroupParameters, rg elasticache.Repli
 	// does not include for some reason.
 	s.AtRestEncryptionEnabled = aws.LateInitializeBoolPtr(s.AtRestEncryptionEnabled, rg.AtRestEncryptionEnabled)
 	s.AuthEnabled = aws.LateInitializeBoolPtr(s.AuthEnabled, rg.AuthTokenEnabled)
-	s.AutomaticFailoverEnabled = aws.LateInitializeBool(s.AuthEnabled, automaticFailoverEnabled(rg.AutomaticFailover))
+	s.AutomaticFailoverEnabled = aws.LateInitializeBoolPtr(s.AuthEnabled, automaticFailoverEnabled(rg.AutomaticFailover))
 	s.SnapshotRetentionLimit = aws.LateInitializeIntPtr(s.SnapshotRetentionLimit, rg.SnapshotRetentionLimit)
 	s.SnapshotWindow = aws.LateInitializeStringPtr(s.SnapshotWindow, rg.SnapshotWindow)
 	s.SnapshottingClusterID = aws.LateInitializeStringPtr(s.SnapshottingClusterID, rg.SnapshottingClusterId)
@@ -163,13 +154,13 @@ func LateInitialize(s *v1alpha2.ReplicationGroupParameters, rg elasticache.Repli
 // differs from the supplied AWS resource.
 func ReplicationGroupNeedsUpdate(kube v1alpha2.ReplicationGroupParameters, rg elasticache.ReplicationGroup, ccList []elasticache.CacheCluster) bool {
 	switch {
-	case aws.BoolValue(kube.AutomaticFailoverEnabled) != automaticFailoverEnabled(rg.AutomaticFailover):
+	case !reflect.DeepEqual(kube.AutomaticFailoverEnabled, automaticFailoverEnabled(rg.AutomaticFailover)):
 		return true
-	case kube.CacheNodeType != aws.StringValue(rg.CacheNodeType):
+	case !reflect.DeepEqual(&kube.CacheNodeType, rg.CacheNodeType):
 		return true
-	case aws.IntValue(kube.SnapshotRetentionLimit) != aws.Int64Value(rg.SnapshotRetentionLimit):
+	case !reflect.DeepEqual(kube.SnapshotRetentionLimit, aws.Int64Ref(rg.SnapshotRetentionLimit)):
 		return true
-	case kube.SnapshotWindow != rg.SnapshotWindow:
+	case !reflect.DeepEqual(kube.SnapshotWindow, rg.SnapshotWindow):
 		return true
 	}
 	for _, cc := range ccList {
@@ -180,29 +171,33 @@ func ReplicationGroupNeedsUpdate(kube v1alpha2.ReplicationGroupParameters, rg el
 	return false
 }
 
-func automaticFailoverEnabled(af elasticache.AutomaticFailoverStatus) bool {
-	return af == elasticache.AutomaticFailoverStatusEnabled || af == elasticache.AutomaticFailoverStatusEnabling
+func automaticFailoverEnabled(af elasticache.AutomaticFailoverStatus) *bool {
+	if af == "" {
+		return nil
+	}
+	r := af == elasticache.AutomaticFailoverStatusEnabled || af == elasticache.AutomaticFailoverStatusEnabling
+	return &r
 }
 
 func cacheClusterNeedsUpdate(kube v1alpha2.ReplicationGroupParameters, cc elasticache.CacheCluster) bool { // nolint:gocyclo
 	// AWS will set and return a default version if we don't specify one.
-	if kube.EngineVersion != cc.EngineVersion {
+	if !reflect.DeepEqual(kube.EngineVersion, cc.EngineVersion) {
 		return true
 	}
-	if pg, name := cc.CacheParameterGroup, kube.CacheParameterGroupName; pg != nil && name != pg.CacheParameterGroupName {
+	if pg, name := cc.CacheParameterGroup, kube.CacheParameterGroupName; pg != nil && !reflect.DeepEqual(name, pg.CacheParameterGroupName) {
 		return true
 	}
 	if cc.NotificationConfiguration != nil {
-		if kube.NotificationTopicARN != cc.NotificationConfiguration.TopicArn {
+		if !reflect.DeepEqual(kube.NotificationTopicARN, cc.NotificationConfiguration.TopicArn) {
 			return true
 		}
-		if cc.NotificationConfiguration.TopicStatus != kube.NotificationTopicStatus {
+		if !reflect.DeepEqual(cc.NotificationConfiguration.TopicStatus, kube.NotificationTopicStatus) {
 			return true
 		}
 	} else if aws.StringValue(kube.NotificationTopicARN) != "" {
 		return true
 	}
-	if kube.PreferredMaintenanceWindow != cc.PreferredMaintenanceWindow {
+	if !reflect.DeepEqual(kube.PreferredMaintenanceWindow, cc.PreferredMaintenanceWindow) {
 		return true
 	}
 	return sgIDsNeedUpdate(kube.SecurityGroupIDs, cc.SecurityGroups) || sgNamesNeedUpdate(kube.CacheSecurityGroupNames, cc.CacheSecurityGroups)
@@ -244,7 +239,7 @@ func GenerateObservation(rg elasticache.ReplicationGroup) v1alpha2.ReplicationGr
 	o := v1alpha2.ReplicationGroupObservation{
 		AutomaticFailover:     string(rg.AutomaticFailover),
 		ClusterEnabled:        aws.BoolValue(rg.ClusterEnabled),
-		ConfigurationEndpoint: ConnectionEndpoint(rg),
+		ConfigurationEndpoint: newEndpoint(rg.ConfigurationEndpoint),
 		MemberClusters:        rg.MemberClusters,
 		Status:                aws.StringValue(rg.Status),
 	}

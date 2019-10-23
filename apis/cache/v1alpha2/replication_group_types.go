@@ -35,6 +35,7 @@ const (
 // Supported cache engines.
 const (
 	CacheEngineRedis = "redis"
+	CacheEngineMemcached = "memcached"
 )
 
 // TODO(negz): Lookup supported patch versions in the ElastiCache API?
@@ -323,8 +324,8 @@ type ReplicationGroupParameters struct {
 	// +optional
 	CacheSubnetGroupName *string `json:"cacheSubnetGroupName,omitempty"`
 
-	// Engine is the name of the cache engine to be used for the clusters in
-	// this replication group.
+	// Engine is the name of the cache engine (memcached or redis) to be used
+	// for the clusters in this replication group.
 	// +immutable
 	Engine string `json:"engine"`
 

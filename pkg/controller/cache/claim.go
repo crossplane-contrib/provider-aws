@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"strings"
 
+	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -83,12 +85,12 @@ func ConfigureReplicationGroup(_ context.Context, cm resource.Claim, cs resource
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), cachev1alpha1.RedisClusterGroupVersionKind)
 	}
 
-	rs, csok := cs.(*v1alpha2.ReplicationGroupClass)
+	rgc, csok := cs.(*v1alpha2.ReplicationGroupClass)
 	if !csok {
 		return errors.Errorf("expected resource class %s to be %s", cs.GetName(), v1alpha2.ReplicationGroupClassGroupVersionKind)
 	}
 
-	i, mgok := mg.(*v1alpha2.ReplicationGroup)
+	rg, mgok := mg.(*v1alpha2.ReplicationGroup)
 	if !mgok {
 		return errors.Errorf("expected managed resource %s to be %s", mg.GetName(), v1alpha2.ReplicationGroupGroupVersionKind)
 	}
@@ -97,37 +99,42 @@ func ConfigureReplicationGroup(_ context.Context, cm resource.Claim, cs resource
 		ResourceSpec: runtimev1alpha1.ResourceSpec{
 			ReclaimPolicy: runtimev1alpha1.ReclaimRetain,
 		},
-		ReplicationGroupParameters: rs.SpecTemplate.ReplicationGroupParameters,
+		ForProvider: rgc.SpecTemplate.ReplicationGroupParameters,
 	}
 
-	if err := resolveAWSClassInstanceValues(spec, rc); err != nil {
+	if err := resolveAWSClassInstanceValues(&spec.ForProvider, rc); err != nil {
 		return errors.Wrap(err, "cannot resolve AWS class instance values")
 	}
 
 	spec.WriteConnectionSecretToReference = corev1.LocalObjectReference{Name: string(cm.GetUID())}
-	spec.ProviderReference = rs.SpecTemplate.ProviderReference
-	spec.ReclaimPolicy = rs.SpecTemplate.ReclaimPolicy
+	spec.ProviderReference = rgc.SpecTemplate.ProviderReference
+	spec.ReclaimPolicy = rgc.SpecTemplate.ReclaimPolicy
 
-	i.Spec = *spec
+	rg.Spec = *spec
+
+	// NOTE(muvaf): ReplicationGroup actually supports memcached as well but the
+	// claim is a _Redis_Cluster, so, we override the value no matter what. Users
+	// should be able to get a memcached through manually creating the ReplicationGroup
+	rg.Spec.ForProvider.Engine = v1alpha2.CacheEngineRedis
 
 	return nil
 }
 
-func resolveAWSClassInstanceValues(spec *v1alpha2.ReplicationGroupSpec, rc *cachev1alpha1.RedisCluster) error {
+func resolveAWSClassInstanceValues(spec *v1alpha2.ReplicationGroupParameters, rc *cachev1alpha1.RedisCluster) error {
 	var err error
 	switch {
-	case spec.EngineVersion == "" && rc.Spec.EngineVersion == "":
+	case aws.StringValue(spec.EngineVersion) == "" && rc.Spec.EngineVersion == "":
 	// Neither the claim nor its class specified a version. Let AWS pick.
 
-	case spec.EngineVersion == "" && rc.Spec.EngineVersion != "":
+	case aws.StringValue(spec.EngineVersion) == "" && rc.Spec.EngineVersion != "":
 		// Only the claim specified a version. Use the latest supported patch
 		// version for said claim (minor) version.
 		spec.EngineVersion, err = latestSupportedPatchVersion(rc.Spec.EngineVersion)
 
-	case spec.EngineVersion != "" && rc.Spec.EngineVersion == "":
+	case aws.StringValue(spec.EngineVersion) != "" && rc.Spec.EngineVersion == "":
 		// Only the class specified a version. Use it.
 
-	case !strings.HasPrefix(spec.EngineVersion, rc.Spec.EngineVersion+"."):
+	case !strings.HasPrefix(aws.StringValue(spec.EngineVersion), rc.Spec.EngineVersion+"."):
 		// Both the claim and its class specified a version, but the class
 		// version is not a patch of the claim version.
 		err = errors.Errorf("class version %s is not a patch of claim version %s", spec.EngineVersion, rc.Spec.EngineVersion)
@@ -140,10 +147,11 @@ func resolveAWSClassInstanceValues(spec *v1alpha2.ReplicationGroupSpec, rc *cach
 	return errors.Wrap(err, "cannot resolve class claim values")
 }
 
-func latestSupportedPatchVersion(minorVersion string) (string, error) {
+func latestSupportedPatchVersion(minorVersion string) (*string, error) {
 	p := v1alpha2.LatestSupportedPatchVersion[v1alpha2.MinorVersion(minorVersion)]
 	if p == v1alpha2.UnsupportedVersion {
-		return "", errors.Errorf("minor version %s is not currently supported", minorVersion)
+		return nil, errors.Errorf("minor version %s is not currently supported", minorVersion)
 	}
-	return string(p), nil
+	s := string(p)
+	return &s, nil
 }

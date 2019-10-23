@@ -183,6 +183,16 @@ func Int64Value(v *int64) int {
 	return int(aws.Int64Value(v))
 }
 
+// Int64Ref converts the supplied int64 pointer to an int pointer, returning nil if
+// the pointer is nil.
+func Int64Ref(i *int64) *int {
+	if i == nil {
+		return nil
+	}
+	r := int(*i)
+	return &r
+}
+
 // Float64Value converts the supplied float64 pointer to an int, returning zero if
 // the pointer is nil.
 func Float64Value(v *float64) int {
@@ -213,13 +223,6 @@ func LateInitializeBoolPtr(in *bool, from *bool) *bool {
 		return in
 	}
 	return from
-}
-
-func LateInitializeBool(in *bool, from bool) *bool {
-	if in != nil {
-		return in
-	}
-	return &from
 }
 
 func LateInitializeIntPtr(in *int, from *int64) *int {
