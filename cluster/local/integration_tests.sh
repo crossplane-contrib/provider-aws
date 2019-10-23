@@ -204,10 +204,11 @@ echo_step "wait for kind pods"
 kindpods=("kube-apiserver-${BUILD_REGISTRY}-inttests-control-plane" "kube-controller-manager-${BUILD_REGISTRY}-inttests-control-plane" "kube-scheduler-${BUILD_REGISTRY}-inttests-control-plane")
 wait_for_pods_in_namespace 120 "kube-system" "${kindpods[@]}"
 
-# install crossplane from alpha channel
-echo_step "installing crossplane from alpha channel"
-"${HELM}" repo add crossplane-alpha https://charts.crossplane.io/alpha
-"${HELM}" install --name crossplane --namespace crossplane-system crossplane-alpha/crossplane
+# install crossplane from master channel
+echo_step "installing crossplane from master channel"
+"${HELM}" repo add crossplane-master https://charts.crossplane.io/master/
+chart_version="$("${HELM}" search crossplane-master/crossplane | awk 'FNR == 2 {print $2}')"
+"${HELM}" install --name crossplane --namespace crossplane-system crossplane-master/crossplane --version ${chart_version}
 
 echo_step "waiting for deployment crossplane rollout to finish"
 "${KUBECTL}" -n "${CROSSPLANE_NAMESPACE}" rollout status "deploy/crossplane" --timeout=2m
