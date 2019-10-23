@@ -26,9 +26,8 @@ spec:
   subresources: {}
   validation:
     openAPIV3Schema:
-      description: A ReplicationGroupClass is a non-portable resource class. It defines
-        the desired spec of resource claims that use it to dynamically provision a
-        managed resource.
+      description: A ReplicationGroupClass is a resource class. It defines the desired
+        spec of resource claims that use it to dynamically provision a managed resource.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -370,8 +369,14 @@ spec:
                 other uses of the ReclaimPolicy concept within the Kubernetes ecosystem
                 per https://github.com/crossplaneio/crossplane-runtime/issues/21
               type: string
+            writeConnectionSecretsToNamespace:
+              description: WriteConnectionSecretsToNamespace specifies the namespace
+                in which the connection secrets of managed resources dynamically provisioned
+                using this claim will be created.
+              type: string
           required:
           - providerRef
+          - writeConnectionSecretsToNamespace
           type: object
       required:
       - specTemplate
