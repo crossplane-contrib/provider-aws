@@ -21,14 +21,12 @@ import (
 	"fmt"
 	"strings"
 
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
-
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
+	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
@@ -48,10 +46,7 @@ func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) err
 
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(cachev1alpha1.RedisClusterGroupVersionKind),
-		resource.ClassKinds{
-			Portable:    cachev1alpha1.RedisClusterClassGroupVersionKind,
-			NonPortable: v1beta1.ReplicationGroupClassGroupVersionKind,
-		},
+		resource.ClassKind(v1beta1.ReplicationGroupClassGroupVersionKind),
 		resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind),
 		resource.WithManagedBinder(resource.NewAPIManagedStatusBinder(mgr.GetClient())),
 		resource.WithManagedFinalizer(resource.NewAPIManagedStatusUnbinder(mgr.GetClient())),
@@ -61,12 +56,10 @@ func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) err
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(
+		resource.HasClassReferenceKind(resource.ClassKind(v1beta1.ReplicationGroupClassGroupVersionKind)),
 		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind)),
 		resource.IsManagedKind(resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind), mgr.GetScheme()),
-		resource.HasIndirectClassReferenceKind(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{
-			Portable:    cachev1alpha1.RedisClusterClassGroupVersionKind,
-			NonPortable: v1beta1.ReplicationGroupClassGroupVersionKind,
-		})))
+	))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -79,7 +72,7 @@ func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) err
 // ConfigureReplicationGroup configures the supplied resource (presumed
 // to be a ReplicationGroup) using the supplied resource claim (presumed
 // to be a RedisCluster) and resource class.
-func ConfigureReplicationGroup(_ context.Context, cm resource.Claim, cs resource.NonPortableClass, mg resource.Managed) error {
+func ConfigureReplicationGroup(_ context.Context, cm resource.Claim, cs resource.Class, mg resource.Managed) error {
 	rc, cmok := cm.(*cachev1alpha1.RedisCluster)
 	if !cmok {
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), cachev1alpha1.RedisClusterGroupVersionKind)
@@ -106,10 +99,12 @@ func ConfigureReplicationGroup(_ context.Context, cm resource.Claim, cs resource
 		return errors.Wrap(err, "cannot resolve AWS class instance values")
 	}
 
-	spec.WriteConnectionSecretToReference = corev1.LocalObjectReference{Name: string(cm.GetUID())}
+	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
+		Namespace: rgc.SpecTemplate.WriteConnectionSecretsToNamespace,
+		Name:      string(cm.GetUID()),
+	}
 	spec.ProviderReference = rgc.SpecTemplate.ProviderReference
 	spec.ReclaimPolicy = rgc.SpecTemplate.ReclaimPolicy
-
 	rg.Spec = *spec
 
 	return nil
