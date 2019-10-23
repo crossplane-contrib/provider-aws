@@ -91,7 +91,6 @@ func TestConfigureReplicationGroup(t *testing.T) {
 							ProviderReference:                &corev1.ObjectReference{Name: providerName},
 						},
 						ForProvider: v1beta1.ReplicationGroupParameters{
-							Engine:        v1beta1.CacheEngineRedis,
 							EngineVersion: &testEngineVersion,
 						},
 					},

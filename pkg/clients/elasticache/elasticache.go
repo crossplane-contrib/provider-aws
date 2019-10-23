@@ -108,7 +108,7 @@ func NewCreateReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id str
 func NewModifyReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id string) *elasticache.ModifyReplicationGroupInput {
 	return &elasticache.ModifyReplicationGroupInput{
 		ReplicationGroupId:          &id,
-		ApplyImmediately:            &g.ApplyImmediately,
+		ApplyImmediately:            &g.ApplyModificationsImmediately,
 		AutomaticFailoverEnabled:    g.AutomaticFailoverEnabled,
 		CacheNodeType:               &g.CacheNodeType,
 		CacheParameterGroupName:     g.CacheParameterGroupName,
