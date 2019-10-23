@@ -17,20 +17,20 @@ limitations under the License.
 package elasticache
 
 import (
-	"fmt"
-	"hash/fnv"
+	"reflect"
+	"strconv"
 
+	"github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache/elasticacheiface"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplaneio/stack-aws/apis/cache/v1alpha2"
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
+	clients "github.com/crossplaneio/stack-aws/pkg/clients"
 )
-
-// NamePrefix is the prefix for all created ElastiCache replication groups.
-const NamePrefix = "ec"
 
 // A Client handles CRUD operations for ElastiCache resources. This interface is
 // compatible with the upstream AWS redis client.
@@ -39,49 +39,11 @@ type Client elasticacheiface.ElastiCacheAPI
 // NewClient returns a new ElastiCache client. Credentials must be passed as
 // JSON encoded data.
 func NewClient(credentials []byte, region string) (Client, error) {
-	cfg, err := aws.LoadConfig(credentials, aws.DefaultSection, region)
+	cfg, err := clients.LoadConfig(credentials, clients.DefaultSection, region)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot create new AWS configuration")
 	}
 	return elasticache.New(*cfg), nil
-}
-
-// NewReplicationGroupID returns an identifier used to identify a Replication
-// Group in the AWS API.
-func NewReplicationGroupID(o metav1.Object) string {
-	/*
-		We want this ID to be deterministic and unique across time and space. We
-		should always return the same ID for a given Kubernetes ReplicationGroup
-		resource, but we should _not_ return the same ID for two identical
-		resources that existed at different points in time.
-
-		Assume a user creates a ReplicationGroup in the Kubernetes API, deletes
-		it, then immediately creates a identical one. We want our controller to
-		delete the first AWS Replication Group then create an identical
-		replacement, not try to sync the lingering first AWS Replication Group
-		with the second Kubernetes ReplicationGroup.
-
-		Kubernetes resources have a UID for this reason. Crossplane (often) uses
-		this UID to identify the cloud provider resources it manages. UIDs are
-		in practice 36 character V1 UUID strings, but Kubernetes requires we
-		treat them as opaque.
-
-		ElastiCache requires that Replication Groups be identified by a string
-		consisting of no more than 20 characters from the set [-a-z0-9], so we
-		can't use the Kubernetes UID. Instead we hash it, use the 64 bit hash's
-		16 character hex string, and hope we don't get a collision. ¯\_(ツ)_/¯
-	*/
-
-	// Hashes never error on write.
-	h := fnv.New64a()
-	h.Write([]byte(o.GetUID())) // nolint:errcheck
-	return fmt.Sprintf("%s-%x", NamePrefix, h.Sum64())
-}
-
-// NewReplicationGroupDescription returns a description suitable for use with
-// the AWS API.
-func NewReplicationGroupDescription(g *v1alpha2.ReplicationGroup) string {
-	return fmt.Sprintf("Crossplane managed %s %s/%s", v1alpha2.ReplicationGroupKindAPIVersion, g.GetNamespace(), g.GetName())
 }
 
 // TODO(negz): Determine whether we have to handle converting zero values to
@@ -89,168 +51,180 @@ func NewReplicationGroupDescription(g *v1alpha2.ReplicationGroup) string {
 
 // NewCreateReplicationGroupInput returns ElastiCache replication group creation
 // input suitable for use with the AWS API.
-func NewCreateReplicationGroupInput(g *v1alpha2.ReplicationGroup, authToken string) *elasticache.CreateReplicationGroupInput {
-	return &elasticache.CreateReplicationGroupInput{
-		ReplicationGroupId:          aws.String(NewReplicationGroupID(g), aws.FieldRequired),
-		ReplicationGroupDescription: aws.String(NewReplicationGroupDescription(g), aws.FieldRequired),
+func NewCreateReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id string, authToken *string) *elasticache.CreateReplicationGroupInput {
+	c := &elasticache.CreateReplicationGroupInput{
+		ReplicationGroupId:          &id,
+		ReplicationGroupDescription: &g.ReplicationGroupDescription,
+		Engine:                      &g.Engine,
+		CacheNodeType:               &g.CacheNodeType,
 
-		// The AWS API docs state these fields are not required, but they are.
-		// The APi returns an error if they're omitted.
-		Engine:        aws.String(v1alpha2.CacheEngineRedis, aws.FieldRequired),
-		CacheNodeType: aws.String(g.Spec.CacheNodeType, aws.FieldRequired),
-
-		AtRestEncryptionEnabled:    aws.Bool(g.Spec.AtRestEncryptionEnabled),
-		AuthToken:                  aws.String(authToken),
-		AutomaticFailoverEnabled:   aws.Bool(g.Spec.AutomaticFailoverEnabled),
-		CacheParameterGroupName:    aws.String(g.Spec.CacheParameterGroupName),
-		CacheSecurityGroupNames:    g.Spec.CacheSecurityGroupNames,
-		CacheSubnetGroupName:       aws.String(g.Spec.CacheSubnetGroupName),
-		EngineVersion:              aws.String(g.Spec.EngineVersion),
-		NodeGroupConfiguration:     newNodeGroupConfigurations(g),
-		NotificationTopicArn:       aws.String(g.Spec.NotificationTopicARN),
-		NumCacheClusters:           aws.Int64(g.Spec.NumCacheClusters),
-		NumNodeGroups:              aws.Int64(g.Spec.NumNodeGroups),
-		Port:                       aws.Int64(g.Spec.Port),
-		PreferredCacheClusterAZs:   g.Spec.PreferredCacheClusterAZs,
-		PreferredMaintenanceWindow: aws.String(g.Spec.PreferredMaintenanceWindow),
-		ReplicasPerNodeGroup:       aws.Int64(g.Spec.ReplicasPerNodeGroup),
-		SecurityGroupIds:           g.Spec.SecurityGroupIDs,
-		SnapshotArns:               g.Spec.SnapshotARNs,
-		SnapshotName:               aws.String(g.Spec.SnapshotName),
-		SnapshotRetentionLimit:     aws.Int64(g.Spec.SnapshotRetentionLimit),
-		SnapshotWindow:             aws.String(g.Spec.SnapshotWindow),
-		TransitEncryptionEnabled:   aws.Bool(g.Spec.TransitEncryptionEnabled),
+		AtRestEncryptionEnabled:    g.AtRestEncryptionEnabled,
+		AuthToken:                  authToken,
+		AutomaticFailoverEnabled:   g.AutomaticFailoverEnabled,
+		CacheParameterGroupName:    g.CacheParameterGroupName,
+		CacheSecurityGroupNames:    g.CacheSecurityGroupNames,
+		CacheSubnetGroupName:       g.CacheSubnetGroupName,
+		EngineVersion:              g.EngineVersion,
+		NotificationTopicArn:       g.NotificationTopicARN,
+		NumCacheClusters:           clients.Int64Address(g.NumCacheClusters),
+		NumNodeGroups:              clients.Int64Address(g.NumNodeGroups),
+		Port:                       clients.Int64Address(g.Port),
+		PreferredCacheClusterAZs:   g.PreferredCacheClusterAZs,
+		PreferredMaintenanceWindow: g.PreferredMaintenanceWindow,
+		PrimaryClusterId:           g.PrimaryClusterID,
+		ReplicasPerNodeGroup:       clients.Int64Address(g.ReplicasPerNodeGroup),
+		SecurityGroupIds:           g.SecurityGroupIDs,
+		SnapshotArns:               g.SnapshotARNs,
+		SnapshotName:               g.SnapshotName,
+		SnapshotRetentionLimit:     clients.Int64Address(g.SnapshotRetentionLimit),
+		SnapshotWindow:             g.SnapshotWindow,
+		TransitEncryptionEnabled:   g.TransitEncryptionEnabled,
 	}
-}
-
-func newNodeGroupConfigurations(g *v1alpha2.ReplicationGroup) []elasticache.NodeGroupConfiguration {
-	if len(g.Spec.NodeGroupConfiguration) == 0 {
-		return nil
-	}
-	nc := make([]elasticache.NodeGroupConfiguration, len(g.Spec.NodeGroupConfiguration))
-	for i, cfg := range g.Spec.NodeGroupConfiguration {
-		nc[i] = elasticache.NodeGroupConfiguration{
-			PrimaryAvailabilityZone:  aws.String(cfg.PrimaryAvailabilityZone),
-			ReplicaAvailabilityZones: cfg.ReplicaAvailabilityZones,
-			ReplicaCount:             aws.Int64(cfg.ReplicaCount),
-			Slots:                    aws.String(cfg.Slots),
+	if len(g.Tags) != 0 {
+		c.Tags = make([]elasticache.Tag, len(g.Tags))
+		for i, tag := range g.Tags {
+			c.Tags[i] = elasticache.Tag{
+				Key:   &tag.Key,
+				Value: &tag.Value,
+			}
 		}
 	}
-	return nc
+	if len(g.NodeGroupConfiguration) != 0 {
+		c.NodeGroupConfiguration = make([]elasticache.NodeGroupConfiguration, len(g.NodeGroupConfiguration))
+		for i, cfg := range g.NodeGroupConfiguration {
+			c.NodeGroupConfiguration[i] = elasticache.NodeGroupConfiguration{
+				PrimaryAvailabilityZone:  cfg.PrimaryAvailabilityZone,
+				ReplicaAvailabilityZones: cfg.ReplicaAvailabilityZones,
+				ReplicaCount:             clients.Int64Address(cfg.ReplicaCount),
+				Slots:                    cfg.Slots,
+			}
+		}
+	}
+	return c
 }
 
 // NewModifyReplicationGroupInput returns ElastiCache replication group
 // modification input suitable for use with the AWS API.
-func NewModifyReplicationGroupInput(g *v1alpha2.ReplicationGroup) *elasticache.ModifyReplicationGroupInput {
+func NewModifyReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id string) *elasticache.ModifyReplicationGroupInput {
 	return &elasticache.ModifyReplicationGroupInput{
-		ReplicationGroupId: aws.String(NewReplicationGroupID(g), aws.FieldRequired),
-
-		// TODO(negz): Should this be a configurable part of the replication
-		// group spec? If we did wait until the next maintenance window to apply
-		// changes we'd need some way to account for the pending changes during
-		// our sync logic.
-		ApplyImmediately: aws.Bool(true),
-
-		AutomaticFailoverEnabled:   aws.Bool(g.Spec.AutomaticFailoverEnabled),
-		CacheNodeType:              aws.String(g.Spec.CacheNodeType),
-		CacheParameterGroupName:    aws.String(g.Spec.CacheParameterGroupName),
-		CacheSecurityGroupNames:    g.Spec.CacheSecurityGroupNames,
-		EngineVersion:              aws.String(g.Spec.EngineVersion),
-		NotificationTopicArn:       aws.String(g.Spec.NotificationTopicARN),
-		PreferredMaintenanceWindow: aws.String(g.Spec.PreferredMaintenanceWindow),
-		SecurityGroupIds:           g.Spec.SecurityGroupIDs,
-		SnapshotRetentionLimit:     aws.Int64(g.Spec.SnapshotRetentionLimit),
-		SnapshotWindow:             aws.String(g.Spec.SnapshotWindow),
+		ReplicationGroupId:          &id,
+		ApplyImmediately:            &g.ApplyImmediately,
+		AutomaticFailoverEnabled:    g.AutomaticFailoverEnabled,
+		CacheNodeType:               &g.CacheNodeType,
+		CacheParameterGroupName:     g.CacheParameterGroupName,
+		CacheSecurityGroupNames:     g.CacheSecurityGroupNames,
+		EngineVersion:               g.EngineVersion,
+		NotificationTopicArn:        g.NotificationTopicARN,
+		NotificationTopicStatus:     g.NotificationTopicStatus,
+		PreferredMaintenanceWindow:  g.PreferredMaintenanceWindow,
+		PrimaryClusterId:            g.PrimaryClusterID,
+		ReplicationGroupDescription: &g.ReplicationGroupDescription,
+		SecurityGroupIds:            g.SecurityGroupIDs,
+		SnapshotRetentionLimit:      clients.Int64Address(g.SnapshotRetentionLimit),
+		SnapshotWindow:              g.SnapshotWindow,
+		SnapshottingClusterId:       g.SnapshottingClusterID,
 	}
 }
 
 // NewDeleteReplicationGroupInput returns ElastiCache replication group deletion
 // input suitable for use with the AWS API.
-func NewDeleteReplicationGroupInput(g *v1alpha2.ReplicationGroup) *elasticache.DeleteReplicationGroupInput {
-	return &elasticache.DeleteReplicationGroupInput{ReplicationGroupId: aws.String(NewReplicationGroupID(g), aws.FieldRequired)}
+func NewDeleteReplicationGroupInput(id string) *elasticache.DeleteReplicationGroupInput {
+	return &elasticache.DeleteReplicationGroupInput{ReplicationGroupId: &id}
 }
 
 // NewDescribeReplicationGroupsInput returns ElastiCache replication group describe
 // input suitable for use with the AWS API.
-func NewDescribeReplicationGroupsInput(g *v1alpha2.ReplicationGroup) *elasticache.DescribeReplicationGroupsInput {
-	return &elasticache.DescribeReplicationGroupsInput{ReplicationGroupId: aws.String(NewReplicationGroupID(g))}
+func NewDescribeReplicationGroupsInput(id string) *elasticache.DescribeReplicationGroupsInput {
+	return &elasticache.DescribeReplicationGroupsInput{ReplicationGroupId: &id}
 }
 
 // NewDescribeCacheClustersInput returns ElastiCache cache cluster describe
 // input suitable for use with the AWS API.
-func NewDescribeCacheClustersInput(cluster string) *elasticache.DescribeCacheClustersInput {
-	return &elasticache.DescribeCacheClustersInput{CacheClusterId: aws.String(cluster)}
+func NewDescribeCacheClustersInput(clusterID string) *elasticache.DescribeCacheClustersInput {
+	return &elasticache.DescribeCacheClustersInput{CacheClusterId: &clusterID}
 }
 
-// ReplicationGroupNeedsUpdate returns true if the supplied Kubernetes resource
-// differs from the supplied AWS resource. It considers only fields that can be
-// modified in place without deleting and recreating the group, and only fields
-// that are first class properties of the AWS replication group.
-func ReplicationGroupNeedsUpdate(kube *v1alpha2.ReplicationGroup, rg elasticache.ReplicationGroup) bool {
+// LateInitialize assigns the observed configurations and assigns them to the
+// corresponding fields in ReplicationGroupParameters in order to let user
+// know the defaults and make the changes as wished on that value.
+func LateInitialize(s *v1beta1.ReplicationGroupParameters, rg elasticache.ReplicationGroup) {
+	// NOTE(muvaf): there are many other parameters that elasticache.ReplicationGroup
+	// does not include for some reason.
+	s.AtRestEncryptionEnabled = clients.LateInitializeBoolPtr(s.AtRestEncryptionEnabled, rg.AtRestEncryptionEnabled)
+	s.AuthEnabled = clients.LateInitializeBoolPtr(s.AuthEnabled, rg.AuthTokenEnabled)
+	s.AutomaticFailoverEnabled = clients.LateInitializeBoolPtr(s.AutomaticFailoverEnabled, automaticFailoverEnabled(rg.AutomaticFailover))
+	s.SnapshotRetentionLimit = clients.LateInitializeIntPtr(s.SnapshotRetentionLimit, rg.SnapshotRetentionLimit)
+	s.SnapshotWindow = clients.LateInitializeStringPtr(s.SnapshotWindow, rg.SnapshotWindow)
+	s.SnapshottingClusterID = clients.LateInitializeStringPtr(s.SnapshottingClusterID, rg.SnapshottingClusterId)
+	s.TransitEncryptionEnabled = clients.LateInitializeBoolPtr(s.TransitEncryptionEnabled, rg.TransitEncryptionEnabled)
+}
+
+// ReplicationGroupNeedsUpdate returns true if the supplied ReplicationGroup and
+// the configuration of its member clusters differ from given desired state.
+func ReplicationGroupNeedsUpdate(kube v1beta1.ReplicationGroupParameters, rg elasticache.ReplicationGroup, ccList []elasticache.CacheCluster) bool {
 	switch {
-	case kube.Spec.AutomaticFailoverEnabled != automaticFailoverEnabled(rg):
+	case !reflect.DeepEqual(kube.AutomaticFailoverEnabled, automaticFailoverEnabled(rg.AutomaticFailover)):
 		return true
-	case kube.Spec.CacheNodeType != aws.StringValue(rg.CacheNodeType):
+	case !reflect.DeepEqual(&kube.CacheNodeType, rg.CacheNodeType):
 		return true
-	case kube.Spec.SnapshotRetentionLimit != aws.Int64Value(rg.SnapshotRetentionLimit):
+	case !reflect.DeepEqual(kube.SnapshotRetentionLimit, clients.IntAddress(rg.SnapshotRetentionLimit)):
 		return true
-	// AWS will return a snapshot window if we don't specify one.
-	case kube.Spec.SnapshotWindow != "" && kube.Spec.SnapshotWindow != aws.StringValue(rg.SnapshotWindow):
+	case !reflect.DeepEqual(kube.SnapshotWindow, rg.SnapshotWindow):
 		return true
+	}
+	for _, cc := range ccList {
+		if cacheClusterNeedsUpdate(kube, cc) {
+			return true
+		}
 	}
 	return false
 }
 
-func automaticFailoverEnabled(rg elasticache.ReplicationGroup) bool {
-	return rg.AutomaticFailover == elasticache.AutomaticFailoverStatusEnabled || rg.AutomaticFailover == elasticache.AutomaticFailoverStatusEnabling
+func automaticFailoverEnabled(af elasticache.AutomaticFailoverStatus) *bool {
+	if af == "" {
+		return nil
+	}
+	r := af == elasticache.AutomaticFailoverStatusEnabled || af == elasticache.AutomaticFailoverStatusEnabling
+	return &r
 }
 
-// CacheClusterNeedsUpdate returns true if the supplied Kubernetes resource
-// differs from the supplied AWS resource. It considers only fields that can be
-// modified in place without deleting and recreating the group, and only fields
-// that are first class properties of the AWS replication group.
-func CacheClusterNeedsUpdate(kube *v1alpha2.ReplicationGroup, cc elasticache.CacheCluster) bool { // nolint:gocyclo
+func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elasticache.CacheCluster) bool { // nolint:gocyclo
 	// AWS will set and return a default version if we don't specify one.
-	if v := kube.Spec.EngineVersion; v != "" && v != aws.StringValue(cc.EngineVersion) {
+	if !reflect.DeepEqual(kube.EngineVersion, cc.EngineVersion) {
 		return true
 	}
-
-	// AWS will set and return a default parameter group if we don't specify one.
-	// TODO(negz): Do we care about CacheNodeIdsToReboot or ParameterApplyStatus?
-	if pg, name := cc.CacheParameterGroup, kube.Spec.CacheParameterGroupName; pg != nil && name != "" && name != aws.StringValue(pg.CacheParameterGroupName) {
+	if pg, name := cc.CacheParameterGroup, kube.CacheParameterGroupName; pg != nil && !reflect.DeepEqual(name, pg.CacheParameterGroupName) {
 		return true
 	}
-
-	// TODO(negz): Do we care about TopicStatus?
-	if nc := cc.NotificationConfiguration; nc != nil && kube.Spec.NotificationTopicARN != aws.StringValue(nc.TopicArn) {
+	if cc.NotificationConfiguration != nil {
+		if !reflect.DeepEqual(kube.NotificationTopicARN, cc.NotificationConfiguration.TopicArn) {
+			return true
+		}
+		if !reflect.DeepEqual(cc.NotificationConfiguration.TopicStatus, kube.NotificationTopicStatus) {
+			return true
+		}
+	} else if clients.StringValue(kube.NotificationTopicARN) != "" {
 		return true
 	}
-
-	// AWS will set and return a maintenance window if we don't specify one.
-	if w := kube.Spec.PreferredMaintenanceWindow; w != "" && w != aws.StringValue(cc.PreferredMaintenanceWindow) {
+	if !reflect.DeepEqual(kube.PreferredMaintenanceWindow, cc.PreferredMaintenanceWindow) {
 		return true
 	}
-
-	return sgIDsNeedUpdate(kube.Spec.SecurityGroupIDs, cc.SecurityGroups) || sgNamesNeedUpdate(kube.Spec.CacheSecurityGroupNames, cc.CacheSecurityGroups)
+	return sgIDsNeedUpdate(kube.SecurityGroupIDs, cc.SecurityGroups) || sgNamesNeedUpdate(kube.CacheSecurityGroupNames, cc.CacheSecurityGroups)
 }
 
 func sgIDsNeedUpdate(kube []string, cc []elasticache.SecurityGroupMembership) bool {
 	if len(kube) != len(cc) {
 		return true
 	}
-
-	// TODO(negz): Do we care about sg.Status?
-	csgs := map[string]bool{}
+	existingOnes := map[string]bool{}
 	for _, sg := range cc {
-		csgs[aws.StringValue(sg.SecurityGroupId)] = true
+		existingOnes[clients.StringValue(sg.SecurityGroupId)] = true
 	}
-
-	for _, sg := range kube {
-		if !csgs[sg] {
+	for _, desired := range kube {
+		if !existingOnes[desired] {
 			return true
 		}
 	}
-
 	return false
 }
 
@@ -258,56 +232,118 @@ func sgNamesNeedUpdate(kube []string, cc []elasticache.CacheSecurityGroupMembers
 	if len(kube) != len(cc) {
 		return true
 	}
-
-	// TODO(negz): Do we care about sg.Status?
-	csgs := map[string]bool{}
+	existingOnes := map[string]bool{}
 	for _, sg := range cc {
-		csgs[aws.StringValue(sg.CacheSecurityGroupName)] = true
+		existingOnes[clients.StringValue(sg.CacheSecurityGroupName)] = true
 	}
-
-	for _, sg := range kube {
-		if !csgs[sg] {
+	for _, desired := range kube {
+		if !existingOnes[desired] {
 			return true
 		}
 	}
-
 	return false
 }
 
-// Endpoint represents the address and port used to connect to an ElastiCache
-// Replication Group.
-type Endpoint struct {
-	Address string
-	Port    int
+// GenerateObservation produces a ReplicationGroupObservation object out of
+// received elasticache.ReplicationGroup object.
+func GenerateObservation(rg elasticache.ReplicationGroup) v1beta1.ReplicationGroupObservation {
+	o := v1beta1.ReplicationGroupObservation{
+		AutomaticFailover:     string(rg.AutomaticFailover),
+		ClusterEnabled:        aws.BoolValue(rg.ClusterEnabled),
+		ConfigurationEndpoint: newEndpoint(rg.ConfigurationEndpoint),
+		MemberClusters:        rg.MemberClusters,
+		Status:                clients.StringValue(rg.Status),
+	}
+	if len(rg.NodeGroups) != 0 {
+		o.NodeGroups = make([]v1beta1.NodeGroup, len(rg.NodeGroups))
+		for i, ng := range rg.NodeGroups {
+			o.NodeGroups[i] = generateNodeGroup(ng)
+		}
+	}
+	if rg.PendingModifiedValues != nil {
+		o.PendingModifiedValues = generateReplicationGroupPendingModifiedValues(*rg.PendingModifiedValues)
+	}
+	return o
 }
 
-func newEndpoint(e *elasticache.Endpoint) Endpoint {
+func generateNodeGroup(ng elasticache.NodeGroup) v1beta1.NodeGroup {
+	r := v1beta1.NodeGroup{
+		NodeGroupID: clients.StringValue(ng.NodeGroupId),
+		Slots:       clients.StringValue(ng.Slots),
+		Status:      clients.StringValue(ng.Status),
+	}
+	if len(ng.NodeGroupMembers) != 0 {
+		r.NodeGroupMembers = make([]v1beta1.NodeGroupMember, len(ng.NodeGroupMembers))
+		for i, m := range ng.NodeGroupMembers {
+			r.NodeGroupMembers[i] = v1beta1.NodeGroupMember{
+				CacheClusterID:            clients.StringValue(m.CacheClusterId),
+				CacheNodeID:               clients.StringValue(m.CacheNodeId),
+				CurrentRole:               clients.StringValue(m.CurrentRole),
+				PreferredAvailabilityZone: clients.StringValue(m.PreferredAvailabilityZone),
+			}
+			if m.ReadEndpoint != nil {
+				r.NodeGroupMembers[i].ReadEndpoint = v1beta1.Endpoint{
+					Address: clients.StringValue(m.ReadEndpoint.Address),
+					Port:    int(aws.Int64Value(m.ReadEndpoint.Port)),
+				}
+			}
+		}
+	}
+	return r
+}
+
+func generateReplicationGroupPendingModifiedValues(in elasticache.ReplicationGroupPendingModifiedValues) v1beta1.ReplicationGroupPendingModifiedValues {
+	r := v1beta1.ReplicationGroupPendingModifiedValues{
+		AutomaticFailoverStatus: string(in.AutomaticFailoverStatus),
+		PrimaryClusterID:        clients.StringValue(in.PrimaryClusterId),
+	}
+	if in.Resharding != nil && in.Resharding.SlotMigration != nil {
+		r.Resharding = v1beta1.ReshardingStatus{
+			SlotMigration: v1beta1.SlotMigration{
+				ProgressPercentage: int(aws.Float64Value(in.Resharding.SlotMigration.ProgressPercentage)),
+			},
+		}
+	}
+	return r
+}
+
+func newEndpoint(e *elasticache.Endpoint) v1beta1.Endpoint {
 	if e == nil {
-		return Endpoint{}
+		return v1beta1.Endpoint{}
 	}
 
-	return Endpoint{Address: aws.StringValue(e.Address), Port: aws.Int64Value(e.Port)}
+	return v1beta1.Endpoint{Address: clients.StringValue(e.Address), Port: int(aws.Int64Value(e.Port))}
 }
 
 // ConnectionEndpoint returns the connection endpoint for a Replication Group.
 // https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/Endpoints.html
-func ConnectionEndpoint(rg elasticache.ReplicationGroup) Endpoint {
+func ConnectionEndpoint(rg elasticache.ReplicationGroup) resource.ConnectionDetails {
 	// "Cluster enabled" Replication Groups have multiple node groups, and an
 	// explicit configuration endpoint that should be used for read and write.
-	if aws.BoolValue(rg.ClusterEnabled) {
-		return newEndpoint(rg.ConfigurationEndpoint)
+	if aws.BoolValue(rg.ClusterEnabled) &&
+		rg.ConfigurationEndpoint != nil &&
+		rg.ConfigurationEndpoint.Address != nil {
+		return resource.ConnectionDetails{
+			v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(rg.ConfigurationEndpoint.Address)),
+			v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(aws.Int64Value(rg.ConfigurationEndpoint.Port)))),
+		}
 	}
 
 	// "Cluster disabled" Replication Groups have a single node group, with a
 	// primary endpoint that should be used for write. Any node's endpoint can
 	// be used for read, but we support only a single endpoint so we return the
 	// primary's.
-	if len(rg.NodeGroups) == 1 {
-		return newEndpoint(rg.NodeGroups[0].PrimaryEndpoint)
+	if len(rg.NodeGroups) > 0 &&
+		rg.NodeGroups[0].PrimaryEndpoint != nil &&
+		rg.NodeGroups[0].PrimaryEndpoint.Address != nil {
+		return resource.ConnectionDetails{
+			v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(rg.NodeGroups[0].PrimaryEndpoint.Address)),
+			v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(aws.Int64Value(rg.NodeGroups[0].PrimaryEndpoint.Port)))),
+		}
 	}
 
 	// If the AWS API docs are to be believed we should never get here.
-	return Endpoint{}
+	return nil
 }
 
 // IsNotFound returns true if the supplied error indicates a Replication Group

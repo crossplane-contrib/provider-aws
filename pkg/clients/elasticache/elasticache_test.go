@@ -17,14 +17,19 @@ limitations under the License.
 package elasticache
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
+
+	"github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/crossplaneio/stack-aws/apis/cache/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
 	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 )
 
@@ -32,32 +37,40 @@ const (
 	namespace = "coolNamespace"
 	name      = "coolGroup"
 	uid       = types.UID("definitely-a-uuid")
-	id        = NamePrefix + "-efdd8494195d7940" // FNV-64a hash of uid
+)
 
+var (
 	cacheNodeType            = "n1.super.cool"
 	atRestEncryptionEnabled  = true
+	authEnabled              = true
 	authToken                = "coolToken"
 	autoFailoverEnabled      = true
 	cacheParameterGroupName  = "coolParamGroup"
 	cacheSubnetGroupName     = "coolSubnet"
+	engine                   = "redis"
 	engineVersion            = "5.0.0"
 	notificationTopicARN     = "arn:aws:sns:cooltopic"
+	notificationTopicStatus  = "active"
 	numCacheClusters         = 2
 	numNodeGroups            = 2
 	host                     = "coolhost"
 	port                     = 6379
+	primaryClusterID         = "the-coolest-one"
 	maintenanceWindow        = "tomorrow"
 	replicasPerNodeGroup     = 2
 	snapshotName             = "coolSnapshot"
 	snapshotRetentionLimit   = 1
+	snapshottingClusterID    = "snapshot-cluster"
 	snapshotWindow           = "thedayaftertomorrow"
+	tagKey                   = "key-1"
+	tagValue                 = "value-1"
 	transitEncryptionEnabled = true
 
 	nodeGroupPrimaryAZ    = "us-cool-1a"
 	nodeGroupReplicaCount = 2
 	nodeGroupSlots        = "coolslots"
 
-	cacheClusterID = id + "-0001"
+	cacheClusterID = name + "-0001"
 )
 
 var (
@@ -66,109 +79,76 @@ var (
 	securityGroupIDs         = []string{"coolID", "coolerID"}
 	snapshotARNs             = []string{"arn:aws:s3:snappy"}
 
-	description = "Crossplane managed " + v1alpha2.ReplicationGroupKindAPIVersion + " " + namespace + "/" + name
+	description = "Crossplane managed " + v1beta1.ReplicationGroupKindAPIVersion + " " + namespace + "/" + name
 
 	nodeGroupAZs = []string{"us-cool-1a", "us-cool-1b"}
 
 	meta             = metav1.ObjectMeta{Namespace: namespace, Name: name, UID: uid}
-	replicationGroup = &v1alpha2.ReplicationGroup{
+	replicationGroup = &v1beta1.ReplicationGroup{
 		ObjectMeta: meta,
-		Spec: v1alpha2.ReplicationGroupSpec{
-			ReplicationGroupParameters: v1alpha2.ReplicationGroupParameters{
+		Spec: v1beta1.ReplicationGroupSpec{
+			ForProvider: v1beta1.ReplicationGroupParameters{
+				ApplyImmediately:         true,
+				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
+				AuthEnabled:              &authEnabled,
+				AutomaticFailoverEnabled: &autoFailoverEnabled,
 				CacheNodeType:            cacheNodeType,
-				AtRestEncryptionEnabled:  atRestEncryptionEnabled,
-				AutomaticFailoverEnabled: autoFailoverEnabled,
-				CacheParameterGroupName:  cacheParameterGroupName,
+				CacheParameterGroupName:  &cacheParameterGroupName,
 				CacheSecurityGroupNames:  cacheSecurityGroupNames,
-				CacheSubnetGroupName:     cacheSubnetGroupName,
-				EngineVersion:            engineVersion,
-				NodeGroupConfiguration: []v1alpha2.NodeGroupConfigurationSpec{
+				CacheSubnetGroupName:     &cacheSubnetGroupName,
+				Engine:                   engine,
+				EngineVersion:            &engineVersion,
+				NodeGroupConfiguration: []v1beta1.NodeGroupConfigurationSpec{
 					{
-						PrimaryAvailabilityZone:  nodeGroupPrimaryAZ,
+						PrimaryAvailabilityZone:  &nodeGroupPrimaryAZ,
 						ReplicaAvailabilityZones: nodeGroupAZs,
-						ReplicaCount:             nodeGroupReplicaCount,
-						Slots:                    nodeGroupSlots,
+						ReplicaCount:             &nodeGroupReplicaCount,
+						Slots:                    &nodeGroupSlots,
 					},
 				},
-				NotificationTopicARN:       notificationTopicARN,
-				NumCacheClusters:           numCacheClusters,
-				NumNodeGroups:              numNodeGroups,
-				Port:                       port,
-				PreferredCacheClusterAZs:   preferredCacheClusterAZs,
-				PreferredMaintenanceWindow: maintenanceWindow,
-				ReplicasPerNodeGroup:       replicasPerNodeGroup,
-				SecurityGroupIDs:           securityGroupIDs,
-				SnapshotARNs:               snapshotARNs,
-				SnapshotName:               snapshotName,
-				SnapshotRetentionLimit:     snapshotRetentionLimit,
-				SnapshotWindow:             snapshotWindow,
-				TransitEncryptionEnabled:   transitEncryptionEnabled,
+				NotificationTopicARN:        &notificationTopicARN,
+				NotificationTopicStatus:     &notificationTopicStatus,
+				NumCacheClusters:            &numCacheClusters,
+				NumNodeGroups:               &numNodeGroups,
+				PrimaryClusterID:            &primaryClusterID,
+				Port:                        &port,
+				PreferredCacheClusterAZs:    preferredCacheClusterAZs,
+				PreferredMaintenanceWindow:  &maintenanceWindow,
+				ReplicasPerNodeGroup:        &replicasPerNodeGroup,
+				ReplicationGroupDescription: description,
+				SecurityGroupIDs:            securityGroupIDs,
+				SnapshotARNs:                snapshotARNs,
+				SnapshotName:                &snapshotName,
+				SnapshotRetentionLimit:      &snapshotRetentionLimit,
+				SnapshottingClusterID:       &snapshottingClusterID,
+				SnapshotWindow:              &snapshotWindow,
+				Tags: []v1beta1.Tag{
+					{
+						Key:   tagKey,
+						Value: tagValue,
+					},
+				},
+				TransitEncryptionEnabled: &transitEncryptionEnabled,
 			},
 		},
 	}
 )
 
-func TestNewReplicationGroupID(t *testing.T) {
-	cases := []struct {
-		name   string
-		object metav1.Object
-		want   string
-	}{
-		{
-			name:   "Successful",
-			object: replicationGroup,
-			want:   id,
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			got := NewReplicationGroupID(tc.object)
-			if got != tc.want {
-				t.Errorf("NewReplicationGroupID(...): want %s, got %s", tc.want, got)
-			}
-		})
-	}
-}
-
-func TestNewReplicationGroupDescription(t *testing.T) {
-	cases := []struct {
-		name  string
-		group *v1alpha2.ReplicationGroup
-		want  string
-	}{
-		{
-			name:  "Successful",
-			group: replicationGroup,
-			want:  description,
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			got := NewReplicationGroupDescription(tc.group)
-			if got != tc.want {
-				t.Errorf("NewReplicationGroupDescription(...): want %s, got %s", tc.want, got)
-			}
-		})
-	}
-}
-
 func TestNewCreateReplicationGroupInput(t *testing.T) {
 	cases := []struct {
 		name      string
-		group     *v1alpha2.ReplicationGroup
-		authToken string
+		params    v1beta1.ReplicationGroupParameters
+		authToken *string
 		want      *elasticache.CreateReplicationGroupInput
 	}{
 		{
 			name:      "AllPossibleFields",
-			group:     replicationGroup,
-			authToken: authToken,
+			params:    replicationGroup.Spec.ForProvider,
+			authToken: &authToken,
 			want: &elasticache.CreateReplicationGroupInput{
-				ReplicationGroupId:          aws.String(id, aws.FieldRequired),
+				ReplicationGroupId:          aws.String(name, aws.FieldRequired),
 				ReplicationGroupDescription: aws.String(description, aws.FieldRequired),
-				Engine:                      aws.String(v1alpha2.CacheEngineRedis, aws.FieldRequired),
+				Engine:                      aws.String(v1beta1.CacheEngineRedis, aws.FieldRequired),
 				CacheNodeType:               aws.String(cacheNodeType, aws.FieldRequired),
 				AtRestEncryptionEnabled:     aws.Bool(atRestEncryptionEnabled),
 				AuthToken:                   aws.String(authToken),
@@ -191,28 +171,33 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 				Port:                       aws.Int64(port),
 				PreferredCacheClusterAZs:   preferredCacheClusterAZs,
 				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+				PrimaryClusterId:           aws.String(primaryClusterID),
 				ReplicasPerNodeGroup:       aws.Int64(replicasPerNodeGroup),
 				SecurityGroupIds:           securityGroupIDs,
 				SnapshotArns:               snapshotARNs,
 				SnapshotName:               aws.String(snapshotName),
 				SnapshotRetentionLimit:     aws.Int64(snapshotRetentionLimit),
 				SnapshotWindow:             aws.String(snapshotWindow),
-				TransitEncryptionEnabled:   aws.Bool(transitEncryptionEnabled),
+				Tags: []elasticache.Tag{
+					{
+						Key:   &tagKey,
+						Value: &tagValue,
+					},
+				},
+				TransitEncryptionEnabled: aws.Bool(transitEncryptionEnabled),
 			},
 		},
 		{
 			name: "UnsetFieldsAreNilNotZeroType",
-			group: &v1alpha2.ReplicationGroup{
-				ObjectMeta: meta,
-				Spec: v1alpha2.ReplicationGroupSpec{
-					ReplicationGroupParameters: v1alpha2.ReplicationGroupParameters{
-						CacheNodeType: cacheNodeType},
-				},
+			params: v1beta1.ReplicationGroupParameters{
+				CacheNodeType:               cacheNodeType,
+				ReplicationGroupDescription: description,
+				Engine:                      engine,
 			},
 			want: &elasticache.CreateReplicationGroupInput{
-				ReplicationGroupId:          aws.String(id, aws.FieldRequired),
+				ReplicationGroupId:          aws.String(name, aws.FieldRequired),
 				ReplicationGroupDescription: aws.String(description, aws.FieldRequired),
-				Engine:                      aws.String(v1alpha2.CacheEngineRedis, aws.FieldRequired),
+				Engine:                      aws.String(engine, aws.FieldRequired),
 				CacheNodeType:               aws.String(cacheNodeType, aws.FieldRequired),
 			},
 		},
@@ -220,7 +205,7 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := NewCreateReplicationGroupInput(tc.group, tc.authToken)
+			got := NewCreateReplicationGroupInput(tc.params, name, tc.authToken)
 
 			if err := got.Validate(); err != nil {
 				t.Errorf("NewCreateReplicationGroupInput(...): invalid input: %v", err)
@@ -234,57 +219,64 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 
 func TestNewModifyReplicationGroupInput(t *testing.T) {
 	cases := []struct {
-		name  string
-		group *v1alpha2.ReplicationGroup
-		want  *elasticache.ModifyReplicationGroupInput
+		name   string
+		params v1beta1.ReplicationGroupParameters
+		want   *elasticache.ModifyReplicationGroupInput
 	}{
 		{
-			name:  "AllPossibleFields",
-			group: replicationGroup,
+			name:   "AllPossibleFields",
+			params: replicationGroup.Spec.ForProvider,
 			want: &elasticache.ModifyReplicationGroupInput{
-				ReplicationGroupId:         aws.String(id, aws.FieldRequired),
-				ApplyImmediately:           aws.Bool(true),
-				AutomaticFailoverEnabled:   aws.Bool(autoFailoverEnabled),
-				CacheNodeType:              aws.String(cacheNodeType),
-				CacheParameterGroupName:    aws.String(cacheParameterGroupName),
-				CacheSecurityGroupNames:    cacheSecurityGroupNames,
-				EngineVersion:              aws.String(engineVersion),
-				NotificationTopicArn:       aws.String(notificationTopicARN),
-				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
-				SecurityGroupIds:           securityGroupIDs,
-				SnapshotRetentionLimit:     aws.Int64(snapshotRetentionLimit),
-				SnapshotWindow:             aws.String(snapshotWindow),
+				ReplicationGroupId:          aws.String(name, aws.FieldRequired),
+				ApplyImmediately:            aws.Bool(true),
+				AutomaticFailoverEnabled:    aws.Bool(autoFailoverEnabled),
+				CacheNodeType:               aws.String(cacheNodeType),
+				CacheParameterGroupName:     aws.String(cacheParameterGroupName),
+				CacheSecurityGroupNames:     cacheSecurityGroupNames,
+				EngineVersion:               aws.String(engineVersion),
+				NotificationTopicArn:        aws.String(notificationTopicARN),
+				NotificationTopicStatus:     aws.String(notificationTopicStatus),
+				PreferredMaintenanceWindow:  aws.String(maintenanceWindow),
+				PrimaryClusterId:            aws.String(primaryClusterID),
+				ReplicationGroupDescription: aws.String(description),
+				SecurityGroupIds:            securityGroupIDs,
+				SnapshotRetentionLimit:      aws.Int64(snapshotRetentionLimit),
+				SnapshotWindow:              aws.String(snapshotWindow),
+				SnapshottingClusterId:       aws.String(snapshottingClusterID),
 			},
 		},
 		{
-			name:  "UnsetFieldsAreNilNotZeroType",
-			group: &v1alpha2.ReplicationGroup{ObjectMeta: meta},
+			name: "UnsetFieldsAreNilNotZeroType",
+			params: v1beta1.ReplicationGroupParameters{
+				CacheNodeType:               cacheNodeType,
+				ReplicationGroupDescription: description,
+			},
 			want: &elasticache.ModifyReplicationGroupInput{
-				ReplicationGroupId: aws.String(id, aws.FieldRequired),
-				ApplyImmediately:   aws.Bool(true),
+				ApplyImmediately:            aws.Bool(false, aws.FieldRequired),
+				ReplicationGroupId:          aws.String(name, aws.FieldRequired),
+				ReplicationGroupDescription: aws.String(description, aws.FieldRequired),
+				CacheNodeType:               aws.String(cacheNodeType, aws.FieldRequired),
 			},
 		},
 		{
 			name: "SuperfluousFields",
-			group: &v1alpha2.ReplicationGroup{
-				ObjectMeta: meta,
-
-				// AtRestEncryptionEnabled cannot be modified
-				Spec: v1alpha2.ReplicationGroupSpec{
-					ReplicationGroupParameters: v1alpha2.ReplicationGroupParameters{
-						AtRestEncryptionEnabled: true},
-				},
+			params: v1beta1.ReplicationGroupParameters{
+				AtRestEncryptionEnabled:     &atRestEncryptionEnabled,
+				CacheNodeType:               cacheNodeType,
+				ReplicationGroupDescription: description,
 			},
 			want: &elasticache.ModifyReplicationGroupInput{
-				ReplicationGroupId: aws.String(id, aws.FieldRequired),
-				ApplyImmediately:   aws.Bool(true),
+				ApplyImmediately:            aws.Bool(false, aws.FieldRequired),
+				ReplicationGroupId:          aws.String(name, aws.FieldRequired),
+				ReplicationGroupDescription: aws.String(description, aws.FieldRequired),
+				CacheNodeType:               aws.String(cacheNodeType, aws.FieldRequired),
 			},
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := NewModifyReplicationGroupInput(tc.group)
+			got := NewModifyReplicationGroupInput(tc.params, name)
 
 			if err := got.Validate(); err != nil {
 				t.Errorf("NewModifyReplicationGroupInput(...): invalid input: %v", err)
@@ -298,20 +290,18 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 
 func TestNewDeleteReplicationGroupInput(t *testing.T) {
 	cases := []struct {
-		name  string
-		group *v1alpha2.ReplicationGroup
-		want  *elasticache.DeleteReplicationGroupInput
+		name string
+		want *elasticache.DeleteReplicationGroupInput
 	}{
 		{
-			name:  "Successful",
-			group: replicationGroup,
-			want:  &elasticache.DeleteReplicationGroupInput{ReplicationGroupId: aws.String(id, aws.FieldRequired)},
+			name: "Successful",
+			want: &elasticache.DeleteReplicationGroupInput{ReplicationGroupId: aws.String(name, aws.FieldRequired)},
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := NewDeleteReplicationGroupInput(tc.group)
+			got := NewDeleteReplicationGroupInput(name)
 
 			if err := got.Validate(); err != nil {
 				t.Errorf("NewDeleteReplicationGroupInput(...): invalid input: %v", err)
@@ -325,20 +315,18 @@ func TestNewDeleteReplicationGroupInput(t *testing.T) {
 
 func TestNewDescribeReplicationGroupsInput(t *testing.T) {
 	cases := []struct {
-		name  string
-		group *v1alpha2.ReplicationGroup
-		want  *elasticache.DescribeReplicationGroupsInput
+		name string
+		want *elasticache.DescribeReplicationGroupsInput
 	}{
 		{
-			name:  "Successful",
-			group: replicationGroup,
-			want:  &elasticache.DescribeReplicationGroupsInput{ReplicationGroupId: aws.String(id, aws.FieldRequired)},
+			name: "Successful",
+			want: &elasticache.DescribeReplicationGroupsInput{ReplicationGroupId: aws.String(name, aws.FieldRequired)},
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := NewDescribeReplicationGroupsInput(tc.group)
+			got := NewDescribeReplicationGroupsInput(name)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("NewDescribeReplicationGroupsInput(...): -want, +got:\n%s", diff)
 			}
@@ -369,22 +357,179 @@ func TestNewDescribeCacheClustersInput(t *testing.T) {
 	}
 }
 
-func TestReplicationGroupNeedsUpdate(t *testing.T) {
+func TestLateInitialize(t *testing.T) {
+	cases := []struct {
+		name   string
+		params *v1beta1.ReplicationGroupParameters
+		rg     elasticache.ReplicationGroup
+		want   *v1beta1.ReplicationGroupParameters
+	}{
+		{
+			name: "NoChange",
+			params: &v1beta1.ReplicationGroupParameters{
+				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
+				AuthEnabled:              &authEnabled,
+				AutomaticFailoverEnabled: &autoFailoverEnabled,
+				SnapshotRetentionLimit:   &snapshotRetentionLimit,
+				SnapshotWindow:           &snapshotWindow,
+				SnapshottingClusterID:    &snapshottingClusterID,
+				TransitEncryptionEnabled: &transitEncryptionEnabled,
+			},
+			rg: elasticache.ReplicationGroup{
+				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
+				AuthTokenEnabled:         &authEnabled,
+				AutomaticFailover:        elasticache.AutomaticFailoverStatusEnabled,
+				SnapshotRetentionLimit:   aws.Int64(snapshotRetentionLimit),
+				SnapshotWindow:           aws.String(snapshotWindow),
+				SnapshottingClusterId:    aws.String(snapshottingClusterID),
+				TransitEncryptionEnabled: &transitEncryptionEnabled,
+			},
+			want: &v1beta1.ReplicationGroupParameters{
+				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
+				AuthEnabled:              &authEnabled,
+				AutomaticFailoverEnabled: &autoFailoverEnabled,
+				SnapshotRetentionLimit:   &snapshotRetentionLimit,
+				SnapshotWindow:           &snapshotWindow,
+				SnapshottingClusterID:    &snapshottingClusterID,
+				TransitEncryptionEnabled: &transitEncryptionEnabled,
+			},
+		},
+		{
+			name:   "AllChanged",
+			params: &v1beta1.ReplicationGroupParameters{},
+			rg: elasticache.ReplicationGroup{
+				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
+				AuthTokenEnabled:         &authEnabled,
+				AutomaticFailover:        elasticache.AutomaticFailoverStatusEnabled,
+				SnapshotRetentionLimit:   aws.Int64(snapshotRetentionLimit),
+				SnapshotWindow:           aws.String(snapshotWindow),
+				SnapshottingClusterId:    aws.String(snapshottingClusterID),
+				TransitEncryptionEnabled: &transitEncryptionEnabled,
+			},
+			want: &v1beta1.ReplicationGroupParameters{
+				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
+				AuthEnabled:              &authEnabled,
+				AutomaticFailoverEnabled: &autoFailoverEnabled,
+				SnapshotRetentionLimit:   &snapshotRetentionLimit,
+				SnapshotWindow:           &snapshotWindow,
+				SnapshottingClusterID:    &snapshottingClusterID,
+				TransitEncryptionEnabled: &transitEncryptionEnabled,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			LateInitialize(tc.params, tc.rg)
+			if diff := cmp.Diff(tc.want, tc.params); diff != "" {
+				t.Errorf("LateInitialize(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGenerateObservation(t *testing.T) {
+	automaticFailover := elasticache.AutomaticFailoverStatusEnabled
+	clusterEnabled := true
+	configurationEndpoint := &elasticache.Endpoint{
+		Address: aws.String("istanbul"),
+		Port:    aws.Int64(34),
+	}
+	memberClusters := []string{"member-1", "member-2"}
+	status := "creating"
+	nodeGroups := []elasticache.NodeGroup{
+		{
+			NodeGroupId: aws.String("my-id"),
+			Slots:       aws.String("special-slots"),
+			Status:      aws.String("creating"),
+			PrimaryEndpoint: &elasticache.Endpoint{
+				Address: aws.String("random-12"),
+				Port:    aws.Int64(124),
+			},
+			NodeGroupMembers: []elasticache.NodeGroupMember{
+				{
+					CacheClusterId:            aws.String("my-cache-cluster"),
+					CacheNodeId:               aws.String("cluster-0001"),
+					CurrentRole:               aws.String("secret-role"),
+					PreferredAvailabilityZone: aws.String("us-east-1"),
+					ReadEndpoint: &elasticache.Endpoint{
+						Address: aws.String("random-1"),
+						Port:    aws.Int64(123),
+					},
+				},
+			},
+		},
+	}
+	percentage := float64(54)
+	rgpmdv := elasticache.ReplicationGroupPendingModifiedValues{
+		AutomaticFailoverStatus: elasticache.PendingAutomaticFailoverStatusEnabled,
+		PrimaryClusterId:        aws.String("my-coolest-cluster"),
+		Resharding: &elasticache.ReshardingStatus{
+			SlotMigration: &elasticache.SlotMigration{
+				ProgressPercentage: &percentage,
+			},
+		},
+	}
 	cases := []struct {
 		name string
-		kube *v1alpha2.ReplicationGroup
 		rg   elasticache.ReplicationGroup
-		want bool
+		want v1beta1.ReplicationGroupObservation
+	}{
+		{
+			name: "AllFields",
+			rg: elasticache.ReplicationGroup{
+				AutomaticFailover:     automaticFailover,
+				ClusterEnabled:        &clusterEnabled,
+				ConfigurationEndpoint: configurationEndpoint,
+				MemberClusters:        memberClusters,
+				Status:                &status,
+				NodeGroups:            nodeGroups,
+				PendingModifiedValues: &rgpmdv,
+			},
+			want: v1beta1.ReplicationGroupObservation{
+				AutomaticFailover: string(automaticFailover),
+				ClusterEnabled:    clusterEnabled,
+				ConfigurationEndpoint: v1beta1.Endpoint{
+					Address: *configurationEndpoint.Address,
+					Port:    int(*configurationEndpoint.Port),
+				},
+				MemberClusters: memberClusters,
+				NodeGroups: []v1beta1.NodeGroup{
+					generateNodeGroup(nodeGroups[0]),
+				},
+				PendingModifiedValues: generateReplicationGroupPendingModifiedValues(rgpmdv),
+				Status:                status,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			o := GenerateObservation(tc.rg)
+			if diff := cmp.Diff(tc.want, o); diff != "" {
+				t.Errorf("LateInitialize(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestReplicationGroupNeedsUpdate(t *testing.T) {
+	cases := []struct {
+		name   string
+		kube   v1beta1.ReplicationGroupParameters
+		rg     elasticache.ReplicationGroup
+		ccList []elasticache.CacheCluster
+		want   bool
 	}{
 		{
 			name: "NeedsFailoverEnabled",
-			kube: replicationGroup,
+			kube: replicationGroup.Spec.ForProvider,
 			rg:   elasticache.ReplicationGroup{AutomaticFailover: elasticache.AutomaticFailoverStatusDisabled},
 			want: true,
 		},
 		{
 			name: "NeedsNewCacheNodeType",
-			kube: replicationGroup,
+			kube: replicationGroup.Spec.ForProvider,
 			rg: elasticache.ReplicationGroup{
 				AutomaticFailover: elasticache.AutomaticFailoverStatusEnabling,
 				CacheNodeType:     aws.String("n1.insufficiently.cool"),
@@ -393,7 +538,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsNewSnapshotRetentionLimit",
-			kube: replicationGroup,
+			kube: replicationGroup.Spec.ForProvider,
 			rg: elasticache.ReplicationGroup{
 				AutomaticFailover:      elasticache.AutomaticFailoverStatusEnabling,
 				CacheNodeType:          aws.String(cacheNodeType),
@@ -403,7 +548,7 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsNewSnapshotWindow",
-			kube: replicationGroup,
+			kube: replicationGroup.Spec.ForProvider,
 			rg: elasticache.ReplicationGroup{
 				AutomaticFailover:      elasticache.AutomaticFailoverStatusEnabling,
 				CacheNodeType:          aws.String(cacheNodeType),
@@ -413,31 +558,51 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "NeedsNoUpdate",
-			kube: replicationGroup,
+			name: "CacheClusterNeedsUpdate",
+			kube: replicationGroup.Spec.ForProvider,
 			rg: elasticache.ReplicationGroup{
 				AutomaticFailover:      elasticache.AutomaticFailoverStatusEnabling,
 				CacheNodeType:          aws.String(cacheNodeType),
 				SnapshotRetentionLimit: aws.Int64(snapshotRetentionLimit),
 				SnapshotWindow:         aws.String(snapshotWindow),
 			},
-			want: false,
+			ccList: []elasticache.CacheCluster{
+				{
+					EngineVersion: aws.String("4.0.0"),
+				},
+			},
+			want: true,
 		},
 		{
-			// AWS autopopulates the snapshot window if we don't set it, so we
-			// want to make sure we don't consider it to need an update if we
-			// never specified a value in the first place.
-			name: "NeedsNoUpdateSnapshotWindowAutoPopulated",
-			kube: func() *v1alpha2.ReplicationGroup {
-				g := replicationGroup.DeepCopy()
-				g.Spec.SnapshotWindow = ""
-				return g
-			}(),
+			name: "NeedsNoUpdate",
+			kube: replicationGroup.Spec.ForProvider,
 			rg: elasticache.ReplicationGroup{
 				AutomaticFailover:      elasticache.AutomaticFailoverStatusEnabling,
 				CacheNodeType:          aws.String(cacheNodeType),
 				SnapshotRetentionLimit: aws.Int64(snapshotRetentionLimit),
 				SnapshotWindow:         aws.String(snapshotWindow),
+			},
+			ccList: []elasticache.CacheCluster{
+				{
+					EngineVersion:              aws.String(engineVersion),
+					CacheParameterGroup:        &elasticache.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
+					NotificationConfiguration:  &elasticache.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
+					PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+					SecurityGroups: func() []elasticache.SecurityGroupMembership {
+						ids := make([]elasticache.SecurityGroupMembership, len(securityGroupIDs))
+						for i, id := range securityGroupIDs {
+							ids[i] = elasticache.SecurityGroupMembership{SecurityGroupId: aws.String(id)}
+						}
+						return ids
+					}(),
+					CacheSecurityGroups: func() []elasticache.CacheSecurityGroupMembership {
+						names := make([]elasticache.CacheSecurityGroupMembership, len(cacheSecurityGroupNames))
+						for i, n := range cacheSecurityGroupNames {
+							names[i] = elasticache.CacheSecurityGroupMembership{CacheSecurityGroupName: aws.String(n)}
+						}
+						return names
+					}(),
+				},
 			},
 			want: false,
 		},
@@ -445,7 +610,9 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := ReplicationGroupNeedsUpdate(tc.kube, tc.rg)
+			name := tc.name
+			fmt.Println(name)
+			got := ReplicationGroupNeedsUpdate(tc.kube, tc.rg, tc.ccList)
 			if got != tc.want {
 				t.Errorf("ReplicationGroupNeedsUpdate(...): want %t, got %t", tc.want, got)
 			}
@@ -456,13 +623,13 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 func TestCacheClusterNeedsUpdate(t *testing.T) {
 	cases := []struct {
 		name string
-		kube *v1alpha2.ReplicationGroup
+		kube v1beta1.ReplicationGroupParameters
 		cc   elasticache.CacheCluster
 		want bool
 	}{
 		{
 			name: "NeedsNewEngineVersion",
-			kube: replicationGroup,
+			kube: replicationGroup.Spec.ForProvider,
 			cc: elasticache.CacheCluster{
 				EngineVersion: aws.String("4.0.0"),
 			},
@@ -470,7 +637,7 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsNewCacheParameterGroup",
-			kube: replicationGroup,
+			kube: replicationGroup.Spec.ForProvider,
 			cc: elasticache.CacheCluster{
 				EngineVersion:       aws.String(engineVersion),
 				CacheParameterGroup: &elasticache.CacheParameterGroupStatus{CacheParameterGroupName: aws.String("okaygroupiguess")},
@@ -479,32 +646,32 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsNewNotificationTopicARN",
-			kube: replicationGroup,
+			kube: replicationGroup.Spec.ForProvider,
 			cc: elasticache.CacheCluster{
 				EngineVersion:             aws.String(engineVersion),
 				CacheParameterGroup:       &elasticache.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-				NotificationConfiguration: &elasticache.NotificationConfiguration{TopicArn: aws.String("aws:arn:sqs:nope")},
+				NotificationConfiguration: &elasticache.NotificationConfiguration{TopicArn: aws.String("aws:arn:sqs:nope"), TopicStatus: aws.String(notificationTopicStatus)},
 			},
 			want: true,
 		},
 		{
 			name: "NeedsNewMaintenanceWindow",
-			kube: replicationGroup,
+			kube: replicationGroup.Spec.ForProvider,
 			cc: elasticache.CacheCluster{
 				EngineVersion:              aws.String(engineVersion),
 				CacheParameterGroup:        &elasticache.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticache.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN)},
+				NotificationConfiguration:  &elasticache.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
 				PreferredMaintenanceWindow: aws.String("never!"),
 			},
 			want: true,
 		},
 		{
 			name: "NeedsNewSecurityGroupIDs",
-			kube: replicationGroup,
+			kube: replicationGroup.Spec.ForProvider,
 			cc: elasticache.CacheCluster{
 				EngineVersion:              aws.String(engineVersion),
 				CacheParameterGroup:        &elasticache.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticache.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN)},
+				NotificationConfiguration:  &elasticache.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
 				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
 				SecurityGroups: []elasticache.SecurityGroupMembership{
 					{SecurityGroupId: aws.String("notaverysecuregroupid")},
@@ -515,22 +682,22 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsSecurityGroupIDs",
-			kube: replicationGroup,
+			kube: replicationGroup.Spec.ForProvider,
 			cc: elasticache.CacheCluster{
 				EngineVersion:              aws.String(engineVersion),
 				CacheParameterGroup:        &elasticache.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticache.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN)},
+				NotificationConfiguration:  &elasticache.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
 				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
 			},
 			want: true,
 		},
 		{
 			name: "NeedsNewSecurityGroupNames",
-			kube: replicationGroup,
+			kube: replicationGroup.Spec.ForProvider,
 			cc: elasticache.CacheCluster{
 				EngineVersion:              aws.String(engineVersion),
 				CacheParameterGroup:        &elasticache.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticache.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN)},
+				NotificationConfiguration:  &elasticache.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
 				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
 				SecurityGroups: func() []elasticache.SecurityGroupMembership {
 					ids := make([]elasticache.SecurityGroupMembership, len(securityGroupIDs))
@@ -548,11 +715,11 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsSecurityGroupNames",
-			kube: replicationGroup,
+			kube: replicationGroup.Spec.ForProvider,
 			cc: elasticache.CacheCluster{
 				EngineVersion:              aws.String(engineVersion),
 				CacheParameterGroup:        &elasticache.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticache.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN)},
+				NotificationConfiguration:  &elasticache.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
 				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
 				SecurityGroups: func() []elasticache.SecurityGroupMembership {
 					ids := make([]elasticache.SecurityGroupMembership, len(securityGroupIDs))
@@ -566,11 +733,11 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 		},
 		{
 			name: "NeedsNoUpdate",
-			kube: replicationGroup,
+			kube: replicationGroup.Spec.ForProvider,
 			cc: elasticache.CacheCluster{
 				EngineVersion:              aws.String(engineVersion),
 				CacheParameterGroup:        &elasticache.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
-				NotificationConfiguration:  &elasticache.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN)},
+				NotificationConfiguration:  &elasticache.NotificationConfiguration{TopicArn: aws.String(notificationTopicARN), TopicStatus: aws.String(notificationTopicStatus)},
 				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
 				SecurityGroups: func() []elasticache.SecurityGroupMembership {
 					ids := make([]elasticache.SecurityGroupMembership, len(securityGroupIDs))
@@ -593,9 +760,9 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := CacheClusterNeedsUpdate(tc.kube, tc.cc)
+			got := cacheClusterNeedsUpdate(tc.kube, tc.cc)
 			if got != tc.want {
-				t.Errorf("CacheClusterNeedsUpdate(...): want %t, got %t", tc.want, got)
+				t.Errorf("cacheClusterNeedsUpdate(...): want %t, got %t", tc.want, got)
 			}
 		})
 	}
@@ -606,7 +773,7 @@ func TestConnectionEndpoint(t *testing.T) {
 	cases := []struct {
 		name string
 		rg   elasticache.ReplicationGroup
-		want Endpoint
+		want resource.ConnectionDetails
 	}{
 		{
 			name: "ClusterModeEnabled",
@@ -617,14 +784,17 @@ func TestConnectionEndpoint(t *testing.T) {
 					Port:    aws.Int64(port),
 				},
 			},
-			want: Endpoint{Address: host, Port: port},
+			want: resource.ConnectionDetails{
+				v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(host),
+				v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(port)),
+			},
 		},
 		{
 			name: "ClusterModeEnabledMissingConfigurationEndpoint",
 			rg: elasticache.ReplicationGroup{
 				ClusterEnabled: aws.Bool(true),
 			},
-			want: Endpoint{},
+			want: nil,
 		},
 		{
 			name: "ClusterModeDisabled",
@@ -636,17 +806,20 @@ func TestConnectionEndpoint(t *testing.T) {
 					}},
 				},
 			},
-			want: Endpoint{Address: host, Port: port},
+			want: resource.ConnectionDetails{
+				v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(host),
+				v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(port)),
+			},
 		},
 		{
 			name: "ClusterModeDisabledMissingPrimaryEndpoint",
 			rg:   elasticache.ReplicationGroup{NodeGroups: []elasticache.NodeGroup{{}}},
-			want: Endpoint{},
+			want: nil,
 		},
 		{
 			name: "ClusterModeDisabledMissingNodeGroups",
 			rg:   elasticache.ReplicationGroup{},
-			want: Endpoint{},
+			want: nil,
 		},
 	}
 	for _, tc := range cases {

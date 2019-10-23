@@ -21,12 +21,14 @@ import (
 	"fmt"
 	"strings"
 
+	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"github.com/crossplaneio/stack-aws/apis/cache/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
@@ -41,16 +43,16 @@ type ReplicationGroupClaimController struct{}
 func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) error {
 	name := strings.ToLower(fmt.Sprintf("%s.%s.%s",
 		cachev1alpha1.RedisClusterKind,
-		v1alpha2.ReplicationGroupKind,
-		v1alpha2.Group))
+		v1beta1.ReplicationGroupKind,
+		v1beta1.Group))
 
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(cachev1alpha1.RedisClusterGroupVersionKind),
 		resource.ClassKinds{
 			Portable:    cachev1alpha1.RedisClusterClassGroupVersionKind,
-			NonPortable: v1alpha2.ReplicationGroupClassGroupVersionKind,
+			NonPortable: v1beta1.ReplicationGroupClassGroupVersionKind,
 		},
-		resource.ManagedKind(v1alpha2.ReplicationGroupGroupVersionKind),
+		resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind),
 		resource.WithManagedBinder(resource.NewAPIManagedStatusBinder(mgr.GetClient())),
 		resource.WithManagedFinalizer(resource.NewAPIManagedStatusUnbinder(mgr.GetClient())),
 		resource.WithManagedConfigurators(
@@ -59,16 +61,16 @@ func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) err
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(
-		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.ReplicationGroupGroupVersionKind)),
-		resource.IsManagedKind(resource.ManagedKind(v1alpha2.ReplicationGroupGroupVersionKind), mgr.GetScheme()),
+		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind)),
+		resource.IsManagedKind(resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind), mgr.GetScheme()),
 		resource.HasIndirectClassReferenceKind(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{
 			Portable:    cachev1alpha1.RedisClusterClassGroupVersionKind,
-			NonPortable: v1alpha2.ReplicationGroupClassGroupVersionKind,
+			NonPortable: v1beta1.ReplicationGroupClassGroupVersionKind,
 		})))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		Watches(&source.Kind{Type: &v1alpha2.ReplicationGroup{}}, &resource.EnqueueRequestForClaim{}).
+		Watches(&source.Kind{Type: &v1beta1.ReplicationGroup{}}, &resource.EnqueueRequestForClaim{}).
 		For(&cachev1alpha1.RedisCluster{}).
 		WithEventFilter(p).
 		Complete(r)
@@ -83,54 +85,59 @@ func ConfigureReplicationGroup(_ context.Context, cm resource.Claim, cs resource
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), cachev1alpha1.RedisClusterGroupVersionKind)
 	}
 
-	rs, csok := cs.(*v1alpha2.ReplicationGroupClass)
+	rgc, csok := cs.(*v1beta1.ReplicationGroupClass)
 	if !csok {
-		return errors.Errorf("expected resource class %s to be %s", cs.GetName(), v1alpha2.ReplicationGroupClassGroupVersionKind)
+		return errors.Errorf("expected resource class %s to be %s", cs.GetName(), v1beta1.ReplicationGroupClassGroupVersionKind)
 	}
 
-	i, mgok := mg.(*v1alpha2.ReplicationGroup)
+	rg, mgok := mg.(*v1beta1.ReplicationGroup)
 	if !mgok {
-		return errors.Errorf("expected managed resource %s to be %s", mg.GetName(), v1alpha2.ReplicationGroupGroupVersionKind)
+		return errors.Errorf("expected managed resource %s to be %s", mg.GetName(), v1beta1.ReplicationGroupGroupVersionKind)
 	}
 
-	spec := &v1alpha2.ReplicationGroupSpec{
+	spec := &v1beta1.ReplicationGroupSpec{
 		ResourceSpec: runtimev1alpha1.ResourceSpec{
 			ReclaimPolicy: runtimev1alpha1.ReclaimRetain,
 		},
-		ReplicationGroupParameters: rs.SpecTemplate.ReplicationGroupParameters,
+		ForProvider: rgc.SpecTemplate.ReplicationGroupParameters,
 	}
 
-	if err := resolveAWSClassInstanceValues(spec, rc); err != nil {
+	if err := resolveAWSClassInstanceValues(&spec.ForProvider, rc); err != nil {
 		return errors.Wrap(err, "cannot resolve AWS class instance values")
 	}
 
 	spec.WriteConnectionSecretToReference = corev1.LocalObjectReference{Name: string(cm.GetUID())}
-	spec.ProviderReference = rs.SpecTemplate.ProviderReference
-	spec.ReclaimPolicy = rs.SpecTemplate.ReclaimPolicy
+	spec.ProviderReference = rgc.SpecTemplate.ProviderReference
+	spec.ReclaimPolicy = rgc.SpecTemplate.ReclaimPolicy
 
-	i.Spec = *spec
+	rg.Spec = *spec
+
+	// NOTE(muvaf): ReplicationGroup actually supports memcached as well but the
+	// claim is a _Redis_Cluster, so, we override the value no matter what. Users
+	// should be able to get a memcached through manually creating the ReplicationGroup
+	rg.Spec.ForProvider.Engine = v1beta1.CacheEngineRedis
 
 	return nil
 }
 
-func resolveAWSClassInstanceValues(spec *v1alpha2.ReplicationGroupSpec, rc *cachev1alpha1.RedisCluster) error {
+func resolveAWSClassInstanceValues(spec *v1beta1.ReplicationGroupParameters, rc *cachev1alpha1.RedisCluster) error {
 	var err error
 	switch {
-	case spec.EngineVersion == "" && rc.Spec.EngineVersion == "":
+	case aws.StringValue(spec.EngineVersion) == "" && rc.Spec.EngineVersion == "":
 	// Neither the claim nor its class specified a version. Let AWS pick.
 
-	case spec.EngineVersion == "" && rc.Spec.EngineVersion != "":
+	case aws.StringValue(spec.EngineVersion) == "" && rc.Spec.EngineVersion != "":
 		// Only the claim specified a version. Use the latest supported patch
 		// version for said claim (minor) version.
 		spec.EngineVersion, err = latestSupportedPatchVersion(rc.Spec.EngineVersion)
 
-	case spec.EngineVersion != "" && rc.Spec.EngineVersion == "":
+	case aws.StringValue(spec.EngineVersion) != "" && rc.Spec.EngineVersion == "":
 		// Only the class specified a version. Use it.
 
-	case !strings.HasPrefix(spec.EngineVersion, rc.Spec.EngineVersion+"."):
+	case !strings.HasPrefix(aws.StringValue(spec.EngineVersion), rc.Spec.EngineVersion+"."):
 		// Both the claim and its class specified a version, but the class
 		// version is not a patch of the claim version.
-		err = errors.Errorf("class version %s is not a patch of claim version %s", spec.EngineVersion, rc.Spec.EngineVersion)
+		err = errors.Errorf("class version %s is not a patch of claim version %s", aws.StringValue(spec.EngineVersion), rc.Spec.EngineVersion)
 
 	default:
 		// Both the claim and its class specified a version, and the class
@@ -140,10 +147,11 @@ func resolveAWSClassInstanceValues(spec *v1alpha2.ReplicationGroupSpec, rc *cach
 	return errors.Wrap(err, "cannot resolve class claim values")
 }
 
-func latestSupportedPatchVersion(minorVersion string) (string, error) {
-	p := v1alpha2.LatestSupportedPatchVersion[v1alpha2.MinorVersion(minorVersion)]
-	if p == v1alpha2.UnsupportedVersion {
-		return "", errors.Errorf("minor version %s is not currently supported", minorVersion)
+func latestSupportedPatchVersion(minorVersion string) (*string, error) {
+	p := v1beta1.LatestSupportedPatchVersion[v1beta1.MinorVersion(minorVersion)]
+	if p == v1beta1.UnsupportedVersion {
+		return nil, errors.Errorf("minor version %s is not currently supported", minorVersion)
 	}
-	return string(p), nil
+	s := string(p)
+	return &s, nil
 }
