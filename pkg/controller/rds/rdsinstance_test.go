@@ -34,7 +34,6 @@ import (
 
 	"github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
 	. "github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
-	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
 	. "github.com/crossplaneio/stack-aws/pkg/clients/rds/fake"
 
@@ -45,7 +44,6 @@ import (
 
 const (
 	namespace    = "default"
-	providerName = "test-provider"
 	instanceName = "test-instance"
 
 	masterUserName = "testuser"
@@ -56,8 +54,7 @@ const (
 
 var (
 	key = types.NamespacedName{
-		Namespace: namespace,
-		Name:      instanceName,
+		Name: instanceName,
 	}
 	request = reconcile.Request{
 		NamespacedName: key,
@@ -70,20 +67,10 @@ func init() {
 	}
 }
 
-func testProvider() *awsv1alpha2.Provider {
-	return &awsv1alpha2.Provider{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      providerName,
-			Namespace: namespace,
-		},
-	}
-}
-
 func testResource() *RDSInstance {
 	return &RDSInstance{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      instanceName,
-			Namespace: namespace,
+			Name: instanceName,
 		},
 		Spec: RDSInstanceSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
