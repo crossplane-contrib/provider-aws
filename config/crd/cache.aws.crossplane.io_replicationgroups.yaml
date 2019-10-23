@@ -202,8 +202,8 @@ spec:
                     see Subnets and Subnet Groups (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/SubnetGroups.html).
                   type: string
                 engine:
-                  description: Engine is the name of the cache engine to be used for
-                    the clusters in this replication group.
+                  description: Engine is the name of the cache engine (memcached or
+                    redis) to be used for the clusters in this replication group.
                   type: string
                 engineVersion:
                   description: "EngineVersion specifies the version number of the

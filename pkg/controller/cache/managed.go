@@ -18,11 +18,11 @@ package cache
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
+	"strconv"
 	"strings"
 
-	elasticache2 "github.com/aws/aws-sdk-go-v2/service/elasticache"
+	elasticacheservice "github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -66,7 +66,10 @@ type ReplicationGroupController struct{}
 func (c *ReplicationGroupController) SetupWithManager(mgr ctrl.Manager) error {
 	r := resource.NewManagedReconciler(mgr,
 		resource.ManagedKind(v1alpha2.ReplicationGroupGroupVersionKind),
-		resource.WithExternalConnecter(&connecter{client: mgr.GetClient()}))
+		resource.WithExternalConnecter(&connecter{
+			client:      mgr.GetClient(),
+			newClientFn: elasticache.NewClient,
+		}))
 
 	name := strings.ToLower(fmt.Sprintf("%s.%s", v1alpha2.ReplicationGroupKind, v1alpha2.Group))
 
@@ -98,11 +101,7 @@ func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (resource.
 	if err := c.client.Get(ctx, n, s); err != nil {
 		return nil, errors.Wrapf(err, "cannot get provider secret %s", n)
 	}
-	newClientFn := elasticache.NewClient
-	if c.newClientFn != nil {
-		newClientFn = c.newClientFn
-	}
-	awsClient, err := newClientFn(s.Data[p.Spec.Secret.Key], p.Spec.Region)
+	awsClient, err := c.newClientFn(s.Data[p.Spec.Secret.Key], p.Spec.Region)
 	return &external{client: awsClient}, errors.Wrap(err, errNewClient)
 }
 
@@ -123,18 +122,15 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 	if err != nil {
 		return resource.ExternalObservation{}, errors.Wrap(err, errDescribeReplicationGroup)
 	}
-	rg := rsp.ReplicationGroups[0]
-	elasticache.LateInitialize(&cr.Spec.ForProvider, rg)
-
-	o := resource.ExternalObservation{
-		ResourceExists:    true,
-		ConnectionDetails: resource.ConnectionDetails{},
-	}
-
 	// DescribeReplicationGroups can return one or many replication groups. We
 	// ask for one group by name, so we should get either a single element list
 	// or an error.
-	ccList := make([]elasticache2.CacheCluster, len(cr.Status.AtProvider.MemberClusters))
+	rg := rsp.ReplicationGroups[0]
+
+	elasticache.LateInitialize(&cr.Spec.ForProvider, rg)
+	cr.Status.AtProvider = elasticache.GenerateObservation(rg)
+
+	ccList := make([]elasticacheservice.CacheCluster, len(cr.Status.AtProvider.MemberClusters))
 	for i, cc := range cr.Status.AtProvider.MemberClusters {
 		dcc := e.client.DescribeCacheClustersRequest(elasticache.NewDescribeCacheClustersInput(cc))
 		dcc.SetContext(ctx)
@@ -144,16 +140,18 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 		}
 		ccList[i] = rsp.CacheClusters[0]
 	}
-	o.ResourceUpToDate = !elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList)
 
-	if cr.Status.AtProvider.ConfigurationEndpoint.Address != "" {
-		o.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretEndpointKey] = []byte(cr.Status.AtProvider.ConfigurationEndpoint.Address)
-		b := make([]byte, binary.MaxVarintLen64)
-		binary.LittleEndian.PutUint64(b, uint64(cr.Status.AtProvider.ConfigurationEndpoint.Port))
-		o.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPortKey] = b
+	o := resource.ExternalObservation{
+		ResourceExists:    true,
+		ResourceUpToDate:  !elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList),
+		ConnectionDetails: resource.ConnectionDetails{},
+	}
+	conn := elasticache.ConnectionEndpoint(rg)
+	if conn.Address != "" {
+		o.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretEndpointKey] = []byte(conn.Address)
+		o.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPortKey] = []byte(strconv.Itoa(conn.Port))
 	}
 
-	cr.Status.AtProvider = elasticache.GenerateObservation(rg)
 	switch cr.Status.AtProvider.Status {
 	case v1alpha2.StatusAvailable:
 		cr.Status.SetConditions(runtimev1alpha1.Available())
@@ -181,25 +179,27 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.Ex
 	// submit the request as the operator intended and let the reconcile fail
 	// with an explanatory message from AWS explaining that transit encryption
 	// is required.
-	token := ""
+	var token *string
 	if aws.BoolValue(cr.Spec.ForProvider.AuthEnabled) {
 		t, err := util.GeneratePassword(maxAuthTokenData)
 		if err != nil {
 			return resource.ExternalCreation{}, errors.Wrap(err, errGenerateAuthToken)
 		}
-		token = t
+		token = &t
 	}
 	r := e.client.CreateReplicationGroupRequest(elasticache.NewCreateReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr), token))
 	r.SetContext(ctx)
 	if _, err := r.Send(); err != nil {
 		return resource.ExternalCreation{}, errors.Wrap(resource.Ignore(elasticache.IsAlreadyExists, err), errCreateReplicationGroup)
 	}
-	c := resource.ExternalCreation{
-		ConnectionDetails: resource.ConnectionDetails{
-			runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(token),
-		},
+	if token != nil {
+		return resource.ExternalCreation{
+			ConnectionDetails: resource.ConnectionDetails{
+				runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(*token),
+			},
+		}, nil
 	}
-	return c, nil
+	return resource.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.ExternalUpdate, error) {
