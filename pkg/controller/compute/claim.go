@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
@@ -46,10 +45,7 @@ func (c *EKSClusterClaimController) SetupWithManager(mgr ctrl.Manager) error {
 
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(computev1alpha1.KubernetesClusterGroupVersionKind),
-		resource.ClassKinds{
-			Portable:    computev1alpha1.KubernetesClusterClassGroupVersionKind,
-			NonPortable: v1alpha2.EKSClusterClassGroupVersionKind,
-		},
+		resource.ClassKind(v1alpha2.EKSClusterClassGroupVersionKind),
 		resource.ManagedKind(v1alpha2.EKSClusterGroupVersionKind),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigureEKSCluster),
@@ -57,12 +53,10 @@ func (c *EKSClusterClaimController) SetupWithManager(mgr ctrl.Manager) error {
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(
+		resource.HasClassReferenceKind(resource.ClassKind(v1alpha2.EKSClusterClassGroupVersionKind)),
 		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.EKSClusterGroupVersionKind)),
 		resource.IsManagedKind(resource.ManagedKind(v1alpha2.EKSClusterGroupVersionKind), mgr.GetScheme()),
-		resource.HasIndirectClassReferenceKind(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{
-			Portable:    computev1alpha1.KubernetesClusterClassGroupVersionKind,
-			NonPortable: v1alpha2.EKSClusterClassGroupVersionKind,
-		})))
+	))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -75,7 +69,7 @@ func (c *EKSClusterClaimController) SetupWithManager(mgr ctrl.Manager) error {
 // ConfigureEKSCluster configures the supplied resource (presumed to be a
 // EKSCluster) using the supplied resource claim (presumed to be a
 // KubernetesCluster) and resource class.
-func ConfigureEKSCluster(_ context.Context, cm resource.Claim, cs resource.NonPortableClass, mg resource.Managed) error {
+func ConfigureEKSCluster(_ context.Context, cm resource.Claim, cs resource.Class, mg resource.Managed) error {
 	if _, cmok := cm.(*computev1alpha1.KubernetesCluster); !cmok {
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), computev1alpha1.KubernetesClusterGroupVersionKind)
 	}
@@ -96,7 +90,10 @@ func ConfigureEKSCluster(_ context.Context, cm resource.Claim, cs resource.NonPo
 		},
 		EKSClusterParameters: rs.SpecTemplate.EKSClusterParameters,
 	}
-	spec.WriteConnectionSecretToReference = corev1.LocalObjectReference{Name: string(cm.GetUID())}
+	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
+		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,
+		Name:      string(cm.GetUID()),
+	}
 	spec.ProviderReference = rs.SpecTemplate.ProviderReference
 	spec.ReclaimPolicy = rs.SpecTemplate.ReclaimPolicy
 
