@@ -28,7 +28,7 @@ spec:
     listKind: IAMRoleList
     plural: iamroles
     singular: iamrole
-  scope: ""
+  scope: Cluster
   subresources:
     status: {}
   validation:

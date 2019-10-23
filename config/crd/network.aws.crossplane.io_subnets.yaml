@@ -37,7 +37,7 @@ spec:
     listKind: SubnetList
     plural: subnets
     singular: subnet
-  scope: ""
+  scope: Cluster
   subresources:
     status: {}
   validation:

@@ -31,7 +31,7 @@ spec:
     listKind: DBSubnetGroupList
     plural: dbsubnetgroups
     singular: dbsubnetgroup
-  scope: ""
+  scope: Cluster
   subresources:
     status: {}
   validation:

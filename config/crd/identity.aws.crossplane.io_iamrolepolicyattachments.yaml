@@ -28,7 +28,7 @@ spec:
     listKind: IAMRolePolicyAttachmentList
     plural: iamrolepolicyattachments
     singular: iamrolepolicyattachment
-  scope: ""
+  scope: Cluster
   subresources:
     status: {}
   validation:

@@ -37,7 +37,7 @@ spec:
     listKind: EKSClusterList
     plural: eksclusters
     singular: ekscluster
-  scope: ""
+  scope: Cluster
   subresources: {}
   validation:
     openAPIV3Schema:

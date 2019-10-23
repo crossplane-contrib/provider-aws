@@ -22,7 +22,7 @@ spec:
     listKind: EKSClusterClassList
     plural: eksclusterclasses
     singular: eksclusterclass
-  scope: ""
+  scope: Cluster
   subresources: {}
   validation:
     openAPIV3Schema:

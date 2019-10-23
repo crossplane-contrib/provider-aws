@@ -28,7 +28,7 @@ spec:
     listKind: InternetGatewayList
     plural: internetgateways
     singular: internetgateway
-  scope: ""
+  scope: Cluster
   subresources:
     status: {}
   validation:

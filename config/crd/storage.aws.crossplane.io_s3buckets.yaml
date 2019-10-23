@@ -25,7 +25,7 @@ spec:
     listKind: S3BucketList
     plural: s3buckets
     singular: s3bucket
-  scope: ""
+  scope: Cluster
   subresources: {}
   validation:
     openAPIV3Schema:
