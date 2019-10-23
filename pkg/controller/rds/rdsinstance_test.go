@@ -17,6 +17,7 @@ limitations under the License.
 package rds
 
 import (
+	"context"
 	"testing"
 
 	"github.com/crossplaneio/stack-aws/apis"
@@ -26,11 +27,8 @@ import (
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	. "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/kubernetes/scheme"
-	. "k8s.io/client-go/testing"
 	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -115,9 +113,9 @@ func TestSyncClusterError(t *testing.T) {
 
 	assert := func(instance *RDSInstance, client rds.Client, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) {
 		r := &Reconciler{
-			Client:                   NewFakeClient(instance),
-			kubeclient:               NewSimpleClientset(),
-			ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(instance)),
+			Client:                     NewFakeClient(instance),
+			ManagedReferenceResolver:   resource.NewAPIManagedReferenceResolver(NewFakeClient(instance)),
+			ManagedConnectionPublisher: resource.PublisherChain{}, // A no-op publisher.
 		}
 
 		rs, err := r._sync(instance, client)
@@ -186,12 +184,29 @@ func TestSyncClusterError(t *testing.T) {
 		},
 	}
 
+	testError = errors.New("test-error-publish-secret")
+
+	assert = func(instance *RDSInstance, client rds.Client, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) {
+		r := &Reconciler{
+			Client:                   NewFakeClient(instance),
+			ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(instance)),
+			ManagedConnectionPublisher: resource.ManagedConnectionPublisherFns{
+				PublishConnectionFn: func(_ context.Context, _ resource.Managed, _ resource.ConnectionDetails) error {
+					return testError
+				},
+			},
+		}
+
+		rs, err := r._sync(instance, client)
+
+		g.Expect(err).NotTo(HaveOccurred())
+		g.Expect(rs).To(Equal(expectedResult))
+		assertResource(g, r, expectedStatus)
+	}
+
 	tr := testResource()
 	expectedStatus = runtimev1alpha1.ConditionedStatus{}
-	expectedStatus.SetConditions(
-		runtimev1alpha1.Available(),
-		runtimev1alpha1.ReconcileError(errors.Errorf("secrets \"%s\" not found", tr.GetWriteConnectionSecretToReference().Name)),
-	)
+	expectedStatus.SetConditions(runtimev1alpha1.Available(), runtimev1alpha1.ReconcileError(testError))
 	assert(tr, cl, resultRequeue, expectedStatus)
 
 }
@@ -200,18 +215,17 @@ func TestSyncClusterUpdateSecretFailure(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	tr := testResource()
-	ts := connectionSecret(tr, "testPassword")
 
-	testError := errors.New("test-error-create-secret")
-	kc := NewSimpleClientset(ts)
-	kc.PrependReactor("update", "secrets", func(Action) (handled bool, ret runtime.Object, err error) {
-		return true, nil, testError
-	})
+	testError := errors.New("test-error-publish-secret")
 
 	r := &Reconciler{
 		Client:                   NewFakeClient(tr),
-		kubeclient:               kc,
 		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
+		ManagedConnectionPublisher: resource.ManagedConnectionPublisherFns{
+			PublishConnectionFn: func(_ context.Context, _ resource.Managed, _ resource.ConnectionDetails) error {
+				return testError
+			},
+		},
 	}
 
 	called := false
@@ -238,12 +252,11 @@ func TestSyncCluster(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	tr := testResource()
-	ts := connectionSecret(tr, "testPassword")
 
 	r := &Reconciler{
-		Client:                   NewFakeClient(tr),
-		kubeclient:               NewSimpleClientset(ts),
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
+		Client:                     NewFakeClient(tr),
+		ManagedReferenceResolver:   resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
+		ManagedConnectionPublisher: resource.PublisherChain{}, // A no-op publisher.
 	}
 
 	called := false
@@ -274,7 +287,6 @@ func TestDelete(t *testing.T) {
 
 	r := &Reconciler{
 		Client:                   NewFakeClient(tr),
-		kubeclient:               NewSimpleClientset(),
 		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
 	}
 
@@ -326,12 +338,10 @@ func TestCreate(t *testing.T) {
 
 	tr := testResource()
 
-	tk := NewSimpleClientset()
-
 	r := &Reconciler{
-		Client:                   NewFakeClient(tr),
-		kubeclient:               tk,
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
+		Client:                     NewFakeClient(tr),
+		ManagedReferenceResolver:   resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
+		ManagedConnectionPublisher: resource.PublisherChain{}, // A no-op publisher.
 	}
 
 	called := false
@@ -350,32 +360,30 @@ func TestCreate(t *testing.T) {
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(called).To(BeTrue())
 	assertResource(g, r, expectedStatus)
-	// assertSecret
-	g.Expect(tk.Actions()).To(HaveLen(2))
-	g.Expect(tk.Actions()[0].GetVerb()).To(Equal("get"))
-	g.Expect(tk.Actions()[1].GetVerb()).To(Equal("create"))
-	s, err := tk.CoreV1().Secrets(tr.GetNamespace()).Get(tr.GetWriteConnectionSecretToReference().Name, metav1.GetOptions{})
-	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(s).NotTo(BeNil())
 }
 
 func TestCreateFail(t *testing.T) {
 	g := NewGomegaWithT(t)
 	tr := testResource()
-	tk := NewSimpleClientset()
 	cl := &MockRDSClient{}
+
+	called := false
+	cl.MockCreateInstance = func(s string, s2 string, spec *RDSInstanceSpec) (instance *rds.Instance, e error) {
+		called = true
+		return nil, nil
+	}
+
+	testError := errors.New("test-publish-secret-error")
 
 	r := &Reconciler{
 		Client:                   NewFakeClient(tr),
-		kubeclient:               tk,
 		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
+		ManagedConnectionPublisher: resource.ManagedConnectionPublisherFns{
+			PublishConnectionFn: func(_ context.Context, _ resource.Managed, _ resource.ConnectionDetails) error {
+				return testError
+			},
+		},
 	}
-
-	// test apply secret error
-	testError := errors.New("test-get-secret-error")
-	tk.PrependReactor("get", "secrets", func(action Action) (handled bool, ret runtime.Object, err error) {
-		return true, nil, testError
-	})
 
 	expectedStatus := runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileError(testError))
@@ -387,8 +395,7 @@ func TestCreateFail(t *testing.T) {
 
 	// test create resource error
 	tr = testResource()
-	r.kubeclient = NewSimpleClientset()
-	called := false
+	called = false
 	testError = errors.New("test-create-error")
 	cl.MockCreateInstance = func(s string, s2 string, spec *RDSInstanceSpec) (instance *rds.Instance, e error) {
 		called = true
@@ -405,25 +412,6 @@ func TestCreateFail(t *testing.T) {
 	assertResource(g, r, expectedStatus)
 }
 
-func TestConnect(t *testing.T) {
-	g := NewGomegaWithT(t)
-
-	tp := testProvider()
-	tr := testResource()
-
-	r := &Reconciler{
-		Client:                   NewFakeClient(tp),
-		kubeclient:               NewSimpleClientset(),
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
-	}
-
-	// error getting aws config - secret is not found
-	r.Client = NewFakeClient(tp)
-	c, err := r._connect(tr)
-	g.Expect(c).To(BeNil())
-	g.Expect(err).To(Not(BeNil()))
-}
-
 func TestReconcile(t *testing.T) {
 	g := NewGomegaWithT(t)
 
@@ -431,7 +419,6 @@ func TestReconcile(t *testing.T) {
 
 	r := &Reconciler{
 		Client:                   NewFakeClient(tr),
-		kubeclient:               NewSimpleClientset(),
 		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
 	}
 
