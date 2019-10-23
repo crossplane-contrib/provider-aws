@@ -104,15 +104,14 @@ func TestInternetGatewayIDReferencerGetStatus(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			r := InternetGatewayIDReferencer{LocalObjectReference: corev1.LocalObjectReference{Name: mockName}}
 
-			canReference := &mockCanReference{ns: mockNamespace}
 			reader := &mockReader{readFn: func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error {
-				if diff := cmp.Diff(key, client.ObjectKey{Name: mockName, Namespace: mockNamespace}); diff != "" {
+				if diff := cmp.Diff(key, client.ObjectKey{Name: mockName}); diff != "" {
 					t.Errorf("reader.Get(...): -expected key, +got key:\n%s", diff)
 				}
 				return tc.input.readerFn(ctx, key, obj)
 			}}
 
-			statuses, err := r.GetStatus(context.Background(), canReference, reader)
+			statuses, err := r.GetStatus(context.Background(), nil, reader)
 			if diff := cmp.Diff(tc.expected.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("GetStatus(...): -want error, +got error:\n%s", diff)
 			}
@@ -164,15 +163,14 @@ func TestInternetGatewayIDReferencerBuild(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			r := InternetGatewayIDReferencer{LocalObjectReference: corev1.LocalObjectReference{Name: mockName}}
 
-			canReference := &mockCanReference{ns: mockNamespace}
 			reader := &mockReader{readFn: func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error {
-				if diff := cmp.Diff(key, client.ObjectKey{Name: mockName, Namespace: mockNamespace}); diff != "" {
+				if diff := cmp.Diff(key, client.ObjectKey{Name: mockName}); diff != "" {
 					t.Errorf("reader.Get(...): -expected key, +got key:\n%s", diff)
 				}
 				return tc.input.readerFn(ctx, key, obj)
 			}}
 
-			value, err := r.Build(context.Background(), canReference, reader)
+			value, err := r.Build(context.Background(), nil, reader)
 			if diff := cmp.Diff(tc.expected.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("Build(...): -want error, +got error:\n%s", diff)
 			}
