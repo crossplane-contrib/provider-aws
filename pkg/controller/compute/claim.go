@@ -32,8 +32,62 @@ import (
 	computev1alpha1 "github.com/crossplaneio/crossplane/apis/compute/v1alpha1"
 )
 
-// EKSClusterClaimController is responsible for adding the EKSCluster
-// claim controller and its corresponding reconciler to the manager with any runtime configuration.
+// A EKSClusterClaimSchedulingController reconciles KubernetesCluster claims
+// that include a class selector but omit their class and resource references by
+// picking a random matching EKSClusterClass, if any.
+type EKSClusterClaimSchedulingController struct{}
+
+// SetupWithManager sets up the EKSClusterClaimSchedulingController using the
+// supplied manager.
+func (c *EKSClusterClaimSchedulingController) SetupWithManager(mgr ctrl.Manager) error {
+	name := strings.ToLower(fmt.Sprintf("scheduler.%s.%s.%s",
+		computev1alpha1.KubernetesClusterKind,
+		v1alpha2.EKSClusterKind,
+		v1alpha2.Group))
+
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		For(&computev1alpha1.KubernetesCluster{}).
+		WithEventFilter(resource.NewPredicates(resource.AllOf(
+			resource.HasClassSelector(),
+			resource.HasNoClassReference(),
+			resource.HasNoManagedResourceReference(),
+		))).
+		Complete(resource.NewClaimSchedulingReconciler(mgr,
+			resource.ClaimKind(computev1alpha1.KubernetesClusterGroupVersionKind),
+			resource.ClassKind(v1alpha2.EKSClusterClassGroupVersionKind),
+		))
+}
+
+// A EKSClusterClaimDefaultingController reconciles KubernetesCluster claims
+// that omit their resource ref, class ref, and class selector by choosing a
+// default EKSClusterClass if one exists.
+type EKSClusterClaimDefaultingController struct{}
+
+// SetupWithManager sets up the EKSClusterClaimDefaultingController using the
+// supplied manager.
+func (c *EKSClusterClaimDefaultingController) SetupWithManager(mgr ctrl.Manager) error {
+	name := strings.ToLower(fmt.Sprintf("defaulter.%s.%s.%s",
+		computev1alpha1.KubernetesClusterKind,
+		v1alpha2.EKSClusterKind,
+		v1alpha2.Group))
+
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		For(&computev1alpha1.KubernetesCluster{}).
+		WithEventFilter(resource.NewPredicates(resource.AllOf(
+			resource.HasNoClassSelector(),
+			resource.HasNoClassReference(),
+			resource.HasNoManagedResourceReference(),
+		))).
+		Complete(resource.NewClaimDefaultingReconciler(mgr,
+			resource.ClaimKind(computev1alpha1.KubernetesClusterGroupVersionKind),
+			resource.ClassKind(v1alpha2.EKSClusterClassGroupVersionKind),
+		))
+}
+
+// A EKSClusterClaimController reconciles KubernetesCluster claims with
+// EKSClusters, dynamically provisioning them if needed.
 type EKSClusterClaimController struct{}
 
 // SetupWithManager adds a controller that reconciles KubernetesCluster resource claims.
