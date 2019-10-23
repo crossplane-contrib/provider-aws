@@ -244,7 +244,7 @@ type ReplicationGroupParameters struct {
 	//
 	// If false, changes to the nodes in the replication group are applied on the
 	// next maintenance reboot, or the next failure reboot, whichever occurs first.
-	ApplyImmediately bool `json:"applyImmediately"`
+	ApplyModificationsImmediately bool `json:"applyModificationsImmediately"`
 
 	// AtRestEncryptionEnabled enables encryption at rest when set to true.
 	//
@@ -564,7 +564,7 @@ type ReplicationGroupList struct {
 // dynamically provisioned ReplicationGroup.
 type ReplicationGroupClassSpecTemplate struct {
 	runtimev1alpha1.NonPortableClassSpecTemplate `json:",inline"`
-	ReplicationGroupParameters                   `json:",inline"`
+	ForProvider                                  ReplicationGroupParameters `json:"forProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

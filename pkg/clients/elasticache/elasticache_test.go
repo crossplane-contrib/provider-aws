@@ -88,16 +88,16 @@ var (
 		ObjectMeta: meta,
 		Spec: v1beta1.ReplicationGroupSpec{
 			ForProvider: v1beta1.ReplicationGroupParameters{
-				ApplyImmediately:         true,
-				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
-				AuthEnabled:              &authEnabled,
-				AutomaticFailoverEnabled: &autoFailoverEnabled,
-				CacheNodeType:            cacheNodeType,
-				CacheParameterGroupName:  &cacheParameterGroupName,
-				CacheSecurityGroupNames:  cacheSecurityGroupNames,
-				CacheSubnetGroupName:     &cacheSubnetGroupName,
-				Engine:                   engine,
-				EngineVersion:            &engineVersion,
+				ApplyModificationsImmediately: true,
+				AtRestEncryptionEnabled:       &atRestEncryptionEnabled,
+				AuthEnabled:                   &authEnabled,
+				AutomaticFailoverEnabled:      &autoFailoverEnabled,
+				CacheNodeType:                 cacheNodeType,
+				CacheParameterGroupName:       &cacheParameterGroupName,
+				CacheSecurityGroupNames:       cacheSecurityGroupNames,
+				CacheSubnetGroupName:          &cacheSubnetGroupName,
+				Engine:                        engine,
+				EngineVersion:                 &engineVersion,
 				NodeGroupConfiguration: []v1beta1.NodeGroupConfigurationSpec{
 					{
 						PrimaryAvailabilityZone:  &nodeGroupPrimaryAZ,

@@ -131,7 +131,7 @@ spec:
                 an AWS ElastiCache Replication Group. Most fields map directly to
                 an AWS ReplicationGroup: https://docs.aws.amazon.com/AmazonElastiCache/latest/APIReference/API_CreateReplicationGroup.html#API_CreateReplicationGroup_RequestParameters'
               properties:
-                applyImmediately:
+                applyModificationsImmediately:
                   description: "If true, this parameter causes the modifications in
                     this request and any pending modifications to be applied, asynchronously
                     and as soon as possible, regardless of the PreferredMaintenanceWindow
@@ -399,7 +399,7 @@ spec:
                     as true, an AuthToken, and a CacheSubnetGroup."
                   type: boolean
               required:
-              - applyImmediately
+              - applyModificationsImmediately
               - cacheNodeType
               - engine
               - replicationGroupDescription
