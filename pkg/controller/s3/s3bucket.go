@@ -20,21 +20,17 @@ import (
 	"context"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	bucketv1alpha2 "github.com/crossplaneio/stack-aws/apis/storage/v1alpha2"
-	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 	"github.com/crossplaneio/stack-aws/pkg/clients/s3"
+	"github.com/crossplaneio/stack-aws/pkg/controller/utils"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
@@ -68,10 +64,9 @@ var (
 // Reconciler reconciles a S3Bucket object
 type Reconciler struct {
 	client.Client
-	scheme     *runtime.Scheme
-	kubeclient kubernetes.Interface
-	recorder   record.EventRecorder
+	scheme *runtime.Scheme
 	resource.ManagedReferenceResolver
+	resource.ManagedConnectionPublisher
 
 	connect func(*bucketv1alpha2.S3Bucket) (s3.Service, error)
 	create  func(*bucketv1alpha2.S3Bucket, s3.Service) (reconcile.Result, error)
@@ -87,11 +82,10 @@ type BucketController struct{}
 // The Manager will set fields on the Controller and Start it when the Manager is Started.
 func (c *BucketController) SetupWithManager(mgr ctrl.Manager) error {
 	r := &Reconciler{
-		Client:                   mgr.GetClient(),
-		scheme:                   mgr.GetScheme(),
-		kubeclient:               kubernetes.NewForConfigOrDie(mgr.GetConfig()),
-		recorder:                 mgr.GetEventRecorderFor(controllerName),
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(mgr.GetClient()),
+		Client:                     mgr.GetClient(),
+		scheme:                     mgr.GetScheme(),
+		ManagedReferenceResolver:   resource.NewAPIManagedReferenceResolver(mgr.GetClient()),
+		ManagedConnectionPublisher: resource.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
 	}
 	r.connect = r._connect
 	r.create = r._create
@@ -111,27 +105,8 @@ func (r *Reconciler) fail(bucket *bucketv1alpha2.S3Bucket, err error) (reconcile
 	return reconcile.Result{Requeue: true}, r.Update(context.TODO(), bucket)
 }
 
-// connectionSecret return secret object for this resource
-func connectionSecret(bucket *bucketv1alpha2.S3Bucket, accessKey *iam.AccessKey) *corev1.Secret {
-	s := resource.ConnectionSecretFor(bucket, bucketv1alpha2.S3BucketGroupVersionKind)
-	s.Data = map[string][]byte{
-		runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(util.StringValue(accessKey.AccessKeyId)),
-		runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(util.StringValue(accessKey.SecretAccessKey)),
-		runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(bucket.Spec.Region),
-	}
-	return s
-}
-
 func (r *Reconciler) _connect(instance *bucketv1alpha2.S3Bucket) (s3.Service, error) {
-	// Fetch AWS Provider
-	p := &awsv1alpha2.Provider{}
-	err := r.Get(ctx, meta.NamespacedNameOf(instance.Spec.ProviderReference), p)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get Provider's AWS Config
-	config, err := aws.Config(r.kubeclient, p)
+	config, err := utils.RetrieveAwsConfigFromProvider(ctx, r, instance.Spec.ProviderReference)
 	if err != nil {
 		return nil, err
 	}
@@ -168,11 +143,11 @@ func (r *Reconciler) _create(bucket *bucketv1alpha2.S3Bucket, client s3.Service)
 		return r.fail(bucket, err)
 	}
 
-	// Set access keys into a secret for local access creds to s3 bucket
-	secret := connectionSecret(bucket, accessKeys)
-
-	_, err = util.ApplySecret(r.kubeclient, secret)
-	if err != nil {
+	if err := r.PublishConnection(ctx, bucket, resource.ConnectionDetails{
+		runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(util.StringValue(accessKeys.AccessKeyId)),
+		runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(util.StringValue(accessKeys.SecretAccessKey)),
+		runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(bucket.Spec.Region),
+	}); err != nil {
 		return r.fail(bucket, err)
 	}
 
