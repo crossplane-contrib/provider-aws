@@ -57,7 +57,7 @@ func (c *Controllers) SetupWithManager(mgr ctrl.Manager) error {
 		&rds.MySQLInstanceClaimSchedulingController{},
 		&rds.MySQLInstanceClaimDefaultingController{},
 		&rds.MySQLInstanceClaimController{},
-		&rds.InstanceController{},
+		&rds.RDSInstanceController{},
 		&s3.BucketClaimSchedulingController{},
 		&s3.BucketClaimDefaultingController{},
 		&s3.BucketClaimController{},

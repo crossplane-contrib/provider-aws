@@ -258,8 +258,8 @@ spec:
                   type: string
               type: object
             securityGroupIdRefs:
-              description: SecurityGroupIDRefs is a set of referencers that each retrieve
-                the ID from the referenced SecurityGroup
+              description: VPCSecurityGroupIDRefs is a set of referencers that each
+                retrieve the ID from the referenced SecurityGroup
               items:
                 description: SecurityGroupIDReferencerForEKSCluster is an attribute
                   referencer that resolves ID from a referenced SecurityGroup

@@ -17,13 +17,12 @@ limitations under the License.
 package rds
 
 import (
-	"fmt"
 	"strings"
+
+	awsclients "github.com/crossplaneio/stack-aws/pkg/clients"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
-	"github.com/aws/aws-sdk-go-v2/service/rds/rdsiface"
-
 	"github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
 )
 
@@ -52,59 +51,19 @@ func NewInstance(instance *rds.DBInstance) *Instance {
 
 // Client defines RDS RDSClient operations
 type Client interface {
-	CreateInstance(string, string, *v1alpha2.RDSInstanceSpec) (*Instance, error)
-	GetInstance(name string) (*Instance, error)
-	DeleteInstance(name string) (*Instance, error)
-}
-
-type rdsClient struct {
-	rds rdsiface.RDSAPI
+	CreateDBInstanceRequest(*rds.CreateDBInstanceInput) rds.CreateDBInstanceRequest
+	DescribeDBInstancesRequest(*rds.DescribeDBInstancesInput) rds.DescribeDBInstancesRequest
+	ModifyDBInstanceRequest(*rds.ModifyDBInstanceInput) rds.ModifyDBInstanceRequest
+	DeleteDBInstanceRequest(*rds.DeleteDBInstanceInput) rds.DeleteDBInstanceRequest
 }
 
 // NewClient creates new RDS RDSClient with provided AWS Configurations/Credentials
-func NewClient(config *aws.Config) Client {
-	return &rdsClient{rds.New(*config)}
-}
-
-// CreateInstance creates RDS Instance with provided Specification
-func (r *rdsClient) CreateInstance(name, password string, spec *v1alpha2.RDSInstanceSpec) (*Instance, error) {
-	input := CreateDBInstanceInput(name, password, spec)
-
-	output, err := r.rds.CreateDBInstanceRequest(input).Send()
+func NewClient(credentials []byte, region string) (Client, error) {
+	cfg, err := awsclients.LoadConfig(credentials, awsclients.DefaultSection, region)
 	if err != nil {
 		return nil, err
 	}
-	return NewInstance(output.DBInstance), nil
-}
-
-// GetInstance finds RDS Instance by name
-func (r *rdsClient) GetInstance(name string) (*Instance, error) {
-	input := rds.DescribeDBInstancesInput{DBInstanceIdentifier: &name}
-	output, err := r.rds.DescribeDBInstancesRequest(&input).Send()
-	if err != nil {
-		return nil, err
-	}
-
-	outputCount := len(output.DBInstances)
-	if outputCount == 0 || outputCount > 1 {
-		return nil, fmt.Errorf("rds instance [%s] is not found", name)
-	}
-
-	return NewInstance(&output.DBInstances[0]), nil
-}
-
-// DeleteInstance deletes RDS Instance
-func (r *rdsClient) DeleteInstance(name string) (*Instance, error) {
-	input := rds.DeleteDBInstanceInput{
-		DBInstanceIdentifier: &name,
-		SkipFinalSnapshot:    aws.Bool(true),
-	}
-	output, err := r.rds.DeleteDBInstanceRequest(&input).Send()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewInstance(output.DBInstance), nil
+	return rds.New(*cfg), nil
 }
 
 // IsErrorAlreadyExists returns true if the supplied error indicates an instance
@@ -124,19 +83,36 @@ func IsErrorNotFound(err error) bool {
 	return strings.Contains(err.Error(), rds.ErrCodeDBInstanceNotFoundFault)
 }
 
-// CreateDBInstanceInput from RDSInstanceSpec
-func CreateDBInstanceInput(name, password string, spec *v1alpha2.RDSInstanceSpec) *rds.CreateDBInstanceInput {
+// GenerateCreateDBInstanceInput from RDSInstanceSpec
+func GenerateCreateDBInstanceInput(name, password string, spec *v1alpha2.RDSInstanceSpec) *rds.CreateDBInstanceInput {
 	return &rds.CreateDBInstanceInput{
 		DBInstanceIdentifier:  aws.String(name),
-		AllocatedStorage:      aws.Int64(spec.Size),
-		DBInstanceClass:       aws.String(spec.Class),
-		Engine:                aws.String(spec.Engine),
-		EngineVersion:         aws.String(spec.EngineVersion),
-		MasterUsername:        aws.String(spec.MasterUsername),
+		AllocatedStorage:      aws.Int64(spec.ForProvider.Size),
+		DBInstanceClass:       aws.String(spec.ForProvider.Class),
+		Engine:                aws.String(spec.ForProvider.Engine),
+		EngineVersion:         aws.String(spec.ForProvider.EngineVersion),
+		MasterUsername:        aws.String(spec.ForProvider.MasterUsername),
 		MasterUserPassword:    aws.String(password),
 		BackupRetentionPeriod: aws.Int64(0),
-		VpcSecurityGroupIds:   spec.SecurityGroupIDs,
+		VpcSecurityGroupIds:   spec.ForProvider.SecurityGroupIDs,
 		PubliclyAccessible:    aws.Bool(true),
-		DBSubnetGroupName:     aws.String(spec.DBSubnetGroupName),
+		DBSubnetGroupName:     aws.String(spec.ForProvider.DBSubnetGroupName),
+	}
+}
+
+// GenerateModifyDBInstanceInput from RDSInstanceSpec
+func GenerateModifyDBInstanceInput(name string, spec *v1alpha2.RDSInstanceSpec) *rds.ModifyDBInstanceInput {
+	return &rds.ModifyDBInstanceInput{
+		DBInstanceIdentifier: aws.String(name),
+		AllocatedStorage:     aws.Int64(spec.ForProvider.Size),
+		DBInstanceClass:      aws.String(spec.ForProvider.Class),
+		//Engine:                aws.String(spec.ForProvider.Engine),
+		EngineVersion: aws.String(spec.ForProvider.EngineVersion),
+		//MasterUsername:        aws.String(spec.ForProvider.MasterUsername),
+		//MasterUserPassword:    aws.String(password),
+		BackupRetentionPeriod: aws.Int64(0),
+		VpcSecurityGroupIds:   spec.ForProvider.SecurityGroupIDs,
+		PubliclyAccessible:    aws.Bool(true),
+		DBSubnetGroupName:     aws.String(spec.ForProvider.DBSubnetGroupName),
 	}
 }

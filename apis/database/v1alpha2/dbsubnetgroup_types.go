@@ -34,14 +34,6 @@ const (
 	errResourceIsNotDBSubnetGroup = "The managed resource is not a DBSubnetGroup"
 )
 
-// Tag defines a tag
-type Tag struct {
-	// Key is the name of the tag.
-	Key string `json:"key"`
-	// Value is the value of the tag.
-	Value string `json:"value"`
-}
-
 // Subnet represents a aws subnet
 type Subnet struct {
 	// Specifies the identifier of the subnet.

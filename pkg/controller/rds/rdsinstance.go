@@ -19,46 +19,30 @@ package rds
 import (
 	"context"
 	"fmt"
-	"time"
+	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	rds2 "github.com/aws/aws-sdk-go-v2/service/rds"
+	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
-	kerrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	databasev1alpha2 "github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
-	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
-	"github.com/crossplaneio/stack-aws/pkg/controller/utils"
-
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
+
+	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
+	"github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
+	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
 )
 
 const (
-	controllerName = "rds.aws.crossplane.io"
-	finalizer      = "finalizer." + controllerName
-)
-
-// Amounts of time we wait before requeuing a reconcile.
-const (
-	aLongWait = 60 * time.Second
-)
-
-// Error strings
-const (
-	errUpdateManagedStatus = "cannot update managed resource status"
-)
-
-var (
-	log           = logging.Logger.WithName("controller." + controllerName)
-	ctx           = context.Background()
-	result        = reconcile.Result{}
-	resultRequeue = reconcile.Result{Requeue: true}
+	errNotRDSInstance = "managed resource is not an RDS instance custom resource"
 )
 
 // Reconciler reconciles a Instance object
@@ -67,186 +51,131 @@ type Reconciler struct {
 	resource.ManagedReferenceResolver
 	resource.ManagedConnectionPublisher
 
-	connect func(*databasev1alpha2.RDSInstance) (rds.Client, error)
-	create  func(*databasev1alpha2.RDSInstance, rds.Client) (reconcile.Result, error)
-	sync    func(*databasev1alpha2.RDSInstance, rds.Client) (reconcile.Result, error)
-	delete  func(*databasev1alpha2.RDSInstance, rds.Client) (reconcile.Result, error)
+	connect func(*v1alpha2.RDSInstance) (rds.Client, error)
+	create  func(*v1alpha2.RDSInstance, rds.Client) (reconcile.Result, error)
+	sync    func(*v1alpha2.RDSInstance, rds.Client) (reconcile.Result, error)
+	delete  func(*v1alpha2.RDSInstance, rds.Client) (reconcile.Result, error)
 }
 
-// InstanceController is responsible for adding the RDSInstance
+// RDSInstanceController is responsible for adding the RDSInstance
 // controller and its corresponding reconciler to the manager with any runtime configuration.
-type InstanceController struct{}
+type RDSInstanceController struct{}
 
 // SetupWithManager creates a new Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func (c *InstanceController) SetupWithManager(mgr ctrl.Manager) error {
-	r := &Reconciler{
-		Client:                     mgr.GetClient(),
-		ManagedReferenceResolver:   resource.NewAPIManagedReferenceResolver(mgr.GetClient()),
-		ManagedConnectionPublisher: resource.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
-	}
-	r.connect = r._connect
-	r.create = r._create
-	r.sync = r._sync
-	r.delete = r._delete
+func (c *RDSInstanceController) SetupWithManager(mgr ctrl.Manager) error {
+	r := resource.NewManagedReconciler(mgr,
+		resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind),
+		resource.WithExternalConnecter(&connector{
+			kube:        mgr.GetClient(),
+			newClientFn: rds.NewClient,
+		}))
+
+	name := strings.ToLower(fmt.Sprintf("%s.%s", v1beta1.ReplicationGroupKind, v1beta1.Group))
 
 	return ctrl.NewControllerManagedBy(mgr).
-		Named("instance-controller").
-		For(&databasev1alpha2.RDSInstance{}).
-		Owns(&corev1.Secret{}).
+		Named(name).
+		For(&v1beta1.ReplicationGroup{}).
 		Complete(r)
 }
 
-// fail - helper function to set fail condition with reason and message
-func (r *Reconciler) fail(instance *databasev1alpha2.RDSInstance, err error) (reconcile.Result, error) {
-	instance.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
-	return reconcile.Result{Requeue: true}, r.Update(context.TODO(), instance)
+type connector struct {
+	kube        client.Client
+	newClientFn func(credentials []byte, region string) (rds.Client, error)
 }
 
-func (r *Reconciler) _connect(instance *databasev1alpha2.RDSInstance) (rds.Client, error) {
-	config, err := utils.RetrieveAwsConfigFromProvider(ctx, r, instance.Spec.ProviderReference)
-	if err != nil {
-		return nil, err
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (resource.ExternalClient, error) {
+	cr, ok := mg.(*v1alpha2.RDSInstance)
+	if !ok {
+		return nil, errors.New(errNotRDSInstance)
 	}
 
-	// Create new RDS RDSClient
-	return rds.NewClient(config), nil
+	p := &awsv1alpha2.Provider{}
+	if err := c.kube.Get(ctx, meta.NamespacedNameOf(cr.Spec.ProviderReference), p); err != nil {
+		return nil, errors.Wrap(err, "cannot get provider")
+	}
+
+	s := &corev1.Secret{}
+	n := types.NamespacedName{Namespace: p.Spec.Secret.Namespace, Name: p.Spec.Secret.Name}
+	if err := c.kube.Get(ctx, n, s); err != nil {
+		return nil, errors.Wrap(err, "cannot get provider secret")
+	}
+
+	rdsClient, err := c.newClientFn(s.Data[p.Spec.Secret.Key], p.Spec.Region)
+	return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, "cannot create RDS client")
 }
 
-func (r *Reconciler) _create(instance *databasev1alpha2.RDSInstance, client rds.Client) (reconcile.Result, error) {
-	instance.Status.SetConditions(runtimev1alpha1.Creating())
-	resourceName := fmt.Sprintf("%s-%s", instance.Spec.Engine, instance.UID)
+type external struct {
+	client rds.Client
+	kube   client.Client
+}
 
+func (c *external) Observe(ctx context.Context, mg resource.Managed) (resource.ExternalObservation, error) {
+	cr, ok := mg.(*v1alpha2.RDSInstance)
+	if !ok {
+		return resource.ExternalObservation{}, errors.New(errNotRDSInstance)
+	}
+	output, err := c.client.DescribeDBInstancesRequest(&rds2.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))}).Send()
+	if rds.IsErrorNotFound(err) || len(output.DBInstances) == 0 {
+		return resource.ExternalObservation{ResourceExists: false}, nil
+	}
+	if err != nil {
+		return resource.ExternalObservation{}, errors.Wrap(err, "cannot get RDS instance from AWS")
+	}
+
+	switch cr.Status.State {
+	case string(v1alpha2.RDSInstanceStateAvailable):
+		cr.Status.SetConditions(runtimev1alpha1.Available())
+		resource.SetBindable(cr)
+	case string(v1alpha2.RDSInstanceStateCreating):
+		cr.Status.SetConditions(runtimev1alpha1.Creating())
+	case string(v1alpha2.RDSInstanceStateDeleting):
+		cr.Status.SetConditions(runtimev1alpha1.Deleting())
+	default:
+		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
+	}
+
+	//NewInstance(&output.DBInstances[0]), nil
+
+	return resource.ExternalObservation{ResourceExists: true}, nil
+}
+
+func (c *external) Create(ctx context.Context, mg resource.Managed) (resource.ExternalCreation, error) {
+	cr, ok := mg.(*v1alpha2.RDSInstance)
+	if !ok {
+		return resource.ExternalCreation{}, errors.New(errNotRDSInstance)
+	}
 	// generate new password
 	password, err := util.GeneratePassword(20)
 	if err != nil {
-		return r.fail(instance, err)
+		return resource.ExternalCreation{}, err
 	}
-
-	// Create DB Instance
-	_, err = client.CreateInstance(resourceName, password, &instance.Spec)
-	if resource.Ignore(rds.IsErrorAlreadyExists, err) != nil {
-		return r.fail(instance, err)
-	}
-
-	if !rds.IsErrorAlreadyExists(err) {
-		// NOTE(negz): If the resource already exists then it's almost certainly
-		// not using the password we randomly generated just now, so we avoid
-		// publishing the credentials.
-		if err := r.PublishConnection(ctx, instance, resource.ConnectionDetails{
-			runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(instance.Spec.MasterUsername),
+	_, err = c.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), password, &cr.Spec)).Send()
+	return resource.ExternalCreation{
+		ConnectionDetails: resource.ConnectionDetails{
+			runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(cr.Spec.ForProvider.MasterUsername),
 			runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(password),
-		}); err != nil {
-			return r.fail(instance, err)
-		}
-	}
-
-	instance.Status.InstanceName = resourceName
-	meta.AddFinalizer(instance, finalizer)
-	instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
-
-	return resultRequeue, r.Update(ctx, instance)
+		}}, errors.Wrap(err, "cannot create RDS instance")
 }
 
-func (r *Reconciler) _sync(instance *databasev1alpha2.RDSInstance, client rds.Client) (reconcile.Result, error) {
-	// Search for the RDS instance in AWS
-	db, err := client.GetInstance(instance.Status.InstanceName)
-	if err != nil {
-		return r.fail(instance, err)
+func (c *external) Update(ctx context.Context, mg resource.Managed) (resource.ExternalUpdate, error) {
+	cr, ok := mg.(*v1alpha2.RDSInstance)
+	if !ok {
+		return resource.ExternalUpdate{}, errors.New(errNotRDSInstance)
 	}
-
-	// Save resource status
-	instance.Status.State = db.Status
-	instance.Status.Endpoint = db.Endpoint
-	instance.Status.ProviderID = db.ARN
-
-	switch db.Status {
-	case string(databasev1alpha2.RDSInstanceStateCreating):
-		instance.Status.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileSuccess())
-		return resultRequeue, r.Update(ctx, instance)
-	case string(databasev1alpha2.RDSInstanceStateFailed):
-		instance.Status.SetConditions(runtimev1alpha1.Unavailable(), runtimev1alpha1.ReconcileSuccess())
-		return result, r.Update(ctx, instance)
-	case string(databasev1alpha2.RDSInstanceStateAvailable):
-		instance.Status.SetConditions(runtimev1alpha1.Available())
-		resource.SetBindable(instance)
-	default:
-		return r.fail(instance, errors.Errorf("unexpected resource status: %s", db.Status))
-	}
-
-	if err := r.PublishConnection(ctx, instance, resource.ConnectionDetails{
-		runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(instance.Spec.MasterUsername),
-		runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(instance.Status.Endpoint),
-	}); err != nil {
-		return r.fail(instance, err)
-	}
-
-	instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
-	return result, r.Update(ctx, instance)
+	_, err := c.client.ModifyDBInstanceRequest(rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), &cr.Spec)).Send()
+	return resource.ExternalUpdate{}, errors.Wrap(err, "cannot modify RDS instance")
 }
 
-func (r *Reconciler) _delete(instance *databasev1alpha2.RDSInstance, client rds.Client) (reconcile.Result, error) {
-	instance.Status.SetConditions(runtimev1alpha1.Deleting())
-
-	if instance.Spec.ReclaimPolicy == runtimev1alpha1.ReclaimDelete {
-		if _, err := client.DeleteInstance(instance.Status.InstanceName); err != nil && !rds.IsErrorNotFound(err) {
-			return r.fail(instance, err)
-		}
+func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
+	cr, ok := mg.(*v1alpha2.RDSInstance)
+	if !ok {
+		return errors.New(errNotRDSInstance)
 	}
-
-	meta.RemoveFinalizer(instance, finalizer)
-	instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
-	return result, r.Update(ctx, instance)
-}
-
-// Reconcile reads that state of the cluster for a Instance object and makes changes based on the state read
-// and what is in the Instance.Spec
-func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	log.V(logging.Debug).Info("reconciling", "kind", databasev1alpha2.RDSInstanceKindAPIVersion, "request", request)
-	// Fetch the CRD instance
-	instance := &databasev1alpha2.RDSInstance{}
-
-	err := r.Get(ctx, request.NamespacedName, instance)
-	if err != nil {
-		if kerrors.IsNotFound(err) {
-			// Object not found, return.  Created objects are automatically garbage collected.
-			// For additional cleanup logic use finalizers.
-			return reconcile.Result{}, nil
-		}
-		log.Error(err, "failed to get object at start of reconcile loop")
-		return reconcile.Result{}, err
+	input := rds2.DeleteDBInstanceInput{
+		DBInstanceIdentifier: aws.String(meta.GetExternalName(cr)),
+		SkipFinalSnapshot:    aws.Bool(true),
 	}
-
-	rdsClient, err := r.connect(instance)
-	if err != nil {
-		return r.fail(instance, err)
-	}
-
-	if !resource.IsConditionTrue(instance.GetCondition(runtimev1alpha1.TypeReferencesResolved)) {
-		if err := r.ResolveReferences(ctx, instance); err != nil {
-			condition := runtimev1alpha1.ReconcileError(err)
-			if resource.IsReferencesAccessError(err) {
-				condition = runtimev1alpha1.ReferenceResolutionBlocked(err)
-			}
-
-			instance.Status.SetConditions(condition)
-			return reconcile.Result{RequeueAfter: aLongWait}, errors.Wrap(r.Update(ctx, instance), errUpdateManagedStatus)
-		}
-
-		// Add ReferenceResolutionSuccess to the conditions
-		instance.Status.SetConditions(runtimev1alpha1.ReferenceResolutionSuccess())
-	}
-
-	// Check for deletion
-	if instance.DeletionTimestamp != nil {
-		return r.delete(instance, rdsClient)
-	}
-
-	// Create cluster instance
-	if instance.Status.InstanceName == "" {
-		return r.create(instance, rdsClient)
-	}
-
-	// Sync cluster instance status with cluster status
-	return r.sync(instance, rdsClient)
+	_, err := c.client.DeleteDBInstanceRequest(&input).Send()
+	return errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), "cannot delete RDS instance")
 }
