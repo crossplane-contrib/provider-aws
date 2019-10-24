@@ -120,7 +120,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 	req.SetContext(ctx)
 	rsp, err := req.Send()
 	if err != nil {
-		return resource.ExternalObservation{ResourceExists: false}, errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), "cannot describe RDS instance")
+		return resource.ExternalObservation{}, errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), "cannot describe RDS instance")
 	}
 
 	instance := rsp.DBInstances[0]
@@ -165,11 +165,13 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.Ex
 	req := e.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), password, &cr.Spec.ForProvider))
 	req.SetContext(ctx)
 	_, err = req.Send()
-	return resource.ExternalCreation{
-		ConnectionDetails: resource.ConnectionDetails{
-			runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername)),
-			runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(password),
-		}}, errors.Wrap(err, "cannot create RDS instance")
+	conn := resource.ConnectionDetails{
+		runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(password),
+	}
+	if cr.Spec.ForProvider.MasterUsername != nil {
+		conn[runtimev1alpha1.ResourceCredentialsSecretUserKey] = []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername))
+	}
+	return resource.ExternalCreation{ConnectionDetails: conn}, errors.Wrap(err, "cannot create RDS instance")
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.ExternalUpdate, error) {

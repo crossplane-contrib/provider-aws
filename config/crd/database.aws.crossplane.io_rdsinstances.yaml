@@ -777,7 +777,7 @@ spec:
                     the DB instance.
                   type: string
                 dbInstancePort:
-                  description: DbInstancePort specifies the port that the DB instance
+                  description: DBInstancePort specifies the port that the DB instance
                     listens on. If the DB instance is part of a DB cluster, this can
                     be a different port than the DB cluster port.
                   type: integer
@@ -835,7 +835,7 @@ spec:
                     and subnets in the subnet group.
                   properties:
                     dbSubnetGroupArn:
-                      description: DBSubnetGroupArn is the Amazon Resource Name (ARN)
+                      description: DBSubnetGroupARN is the Amazon Resource Name (ARN)
                         for the DB subnet group.
                       type: string
                     dbSubnetGroupDescription:
@@ -994,10 +994,6 @@ spec:
                       description: 'LicenseModel is the license model for the DB instance.
                         Valid values: license-included | bring-your-own-license |
                         general-public-license'
-                      type: string
-                    masterUserPassword:
-                      description: MasterUserPassword contains the pending or currently-in-progress
-                        change of the master credentials for the DB instance.
                       type: string
                     multiAZ:
                       description: MultiAZ indicates that the Single-AZ DB instance

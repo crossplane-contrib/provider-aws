@@ -827,8 +827,8 @@ type SubnetInRDS struct {
 // action.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/DBSubnetGroup
 type DBSubnetGroupInRDS struct {
-	// DBSubnetGroupArn is the Amazon Resource Name (ARN) for the DB subnet group.
-	DBSubnetGroupArn string `json:"dbSubnetGroupArn,omitempty"`
+	// DBSubnetGroupARN is the Amazon Resource Name (ARN) for the DB subnet group.
+	DBSubnetGroupARN string `json:"dbSubnetGroupArn,omitempty"`
 
 	// DBSubnetGroupDescription provides the description of the DB subnet group.
 	DBSubnetGroupDescription string `json:"dbSubnetGroupDescription,omitempty"`
@@ -934,15 +934,11 @@ type PendingModifiedValues struct {
 
 	// IOPS specifies the new Provisioned IOPS value for the DB instance that will be
 	// applied or is currently being applied.
-	Iops int `json:"iops,omitempty"`
+	IOPS int `json:"iops,omitempty"`
 
 	// LicenseModel is the license model for the DB instance.
 	// Valid values: license-included | bring-your-own-license | general-public-license
 	LicenseModel string `json:"licenseModel,omitempty"`
-
-	// MasterUserPassword contains the pending or currently-in-progress change of the master credentials
-	// for the DB instance.
-	MasterUserPassword string `json:"masterUserPassword,omitempty"`
 
 	// MultiAZ indicates that the Single-AZ DB instance is to change to a Multi-AZ deployment.
 	MultiAZ bool `json:"multiAZ,omitempty"`
@@ -1012,9 +1008,9 @@ type RDSInstanceObservation struct {
 	// including the name, description, and subnets in the subnet group.
 	DBSubnetGroup DBSubnetGroupInRDS `json:"dbSubnetGroup,omitempty"`
 
-	// DbInstancePort specifies the port that the DB instance listens on. If the DB instance is
+	// DBInstancePort specifies the port that the DB instance listens on. If the DB instance is
 	// part of a DB cluster, this can be a different port than the DB cluster port.
-	DbInstancePort int `json:"dbInstancePort,omitempty"`
+	DBInstancePort int `json:"dbInstancePort,omitempty"`
 
 	// DBResourceID is the AWS Region-unique, immutable identifier for the DB instance. This identifier
 	// is found in AWS CloudTrail log entries whenever the AWS KMS key for the DB
