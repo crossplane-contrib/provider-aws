@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"strings"
 
+	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
@@ -146,11 +148,11 @@ func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resour
 		ForProvider: rs.SpecTemplate.ForProvider,
 	}
 	spec.ForProvider.Engine = v1alpha2.PostgresqlEngine
-	v, err := validateEngineVersion(spec.ForProvider.EngineVersion, pg.Spec.EngineVersion)
+	v, err := validateEngineVersion(aws.StringValue(spec.ForProvider.EngineVersion), pg.Spec.EngineVersion)
 	if err != nil {
 		return err
 	}
-	spec.ForProvider.EngineVersion = v
+	spec.ForProvider.EngineVersion = &v
 
 	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
 		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,
@@ -278,11 +280,11 @@ func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.Cl
 		ForProvider: rs.SpecTemplate.ForProvider,
 	}
 	spec.ForProvider.Engine = v1alpha2.MysqlEngine
-	v, err := validateEngineVersion(spec.ForProvider.EngineVersion, my.Spec.EngineVersion)
+	v, err := validateEngineVersion(aws.StringValue(spec.ForProvider.EngineVersion), my.Spec.EngineVersion)
 	if err != nil {
 		return err
 	}
-	spec.ForProvider.EngineVersion = v
+	spec.ForProvider.EngineVersion = &v
 
 	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
 		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,
