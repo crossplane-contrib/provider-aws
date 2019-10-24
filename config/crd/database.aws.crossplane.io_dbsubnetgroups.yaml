@@ -4,7 +4,7 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
-  name: dbsubnetgroups.storage.aws.crossplane.io
+  name: dbsubnetgroups.database.aws.crossplane.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .spec.groupName
@@ -25,7 +25,7 @@ spec:
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
-  group: storage.aws.crossplane.io
+  group: database.aws.crossplane.io
   names:
     kind: DBSubnetGroup
     listKind: DBSubnetGroupList
