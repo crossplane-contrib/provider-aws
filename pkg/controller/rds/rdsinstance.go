@@ -19,6 +19,7 @@ package rds
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -110,18 +111,27 @@ type external struct {
 	kube   client.Client
 }
 
-func (c *external) Observe(ctx context.Context, mg resource.Managed) (resource.ExternalObservation, error) {
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.ExternalObservation, error) {
 	cr, ok := mg.(*v1alpha2.RDSInstance)
 	if !ok {
 		return resource.ExternalObservation{}, errors.New(errNotRDSInstance)
 	}
-	output, err := c.client.DescribeDBInstancesRequest(&rds2.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))}).Send()
-	if rds.IsErrorNotFound(err) || len(output.DBInstances) == 0 {
-		return resource.ExternalObservation{ResourceExists: false}, nil
-	}
+	req := e.client.DescribeDBInstancesRequest(&rds2.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
+	req.SetContext(ctx)
+	rsp, err := req.Send()
 	if err != nil {
-		return resource.ExternalObservation{}, errors.Wrap(err, "cannot get RDS instance from AWS")
+		return resource.ExternalObservation{ResourceExists: false}, errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), "cannot describe RDS instance")
 	}
+
+	instance := rsp.DBInstances[0]
+	current := cr.Spec.ForProvider.DeepCopy()
+	rds.LateInitialize(&cr.Spec.ForProvider, instance)
+	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
+		if err := e.kube.Update(ctx, cr); err != nil {
+			return resource.ExternalObservation{}, errors.Wrap(err, "cannot update RDS instance custom resource")
+		}
+	}
+	cr.Status.AtProvider = rds.GenerateObservation(instance)
 
 	switch cr.Status.AtProvider.DBInstanceStatus {
 	case string(v1alpha2.RDSInstanceStateAvailable):
@@ -135,12 +145,14 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
 	}
 
-	//NewInstance(&output.DBInstances[0]), nil
-
-	return resource.ExternalObservation{ResourceExists: true}, nil
+	return resource.ExternalObservation{
+		ResourceExists:    true,
+		ResourceUpToDate:  !rds.NeedsUpdate(cr.Spec.ForProvider, instance),
+		ConnectionDetails: rds.GetConnectionDetails(*cr),
+	}, nil
 }
 
-func (c *external) Create(ctx context.Context, mg resource.Managed) (resource.ExternalCreation, error) {
+func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.ExternalCreation, error) {
 	cr, ok := mg.(*v1alpha2.RDSInstance)
 	if !ok {
 		return resource.ExternalCreation{}, errors.New(errNotRDSInstance)
@@ -150,7 +162,9 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (resource.Ex
 	if err != nil {
 		return resource.ExternalCreation{}, err
 	}
-	_, err = c.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), password, &cr.Spec.ForProvider)).Send()
+	req := e.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), password, &cr.Spec.ForProvider))
+	req.SetContext(ctx)
+	_, err = req.Send()
 	return resource.ExternalCreation{
 		ConnectionDetails: resource.ConnectionDetails{
 			runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername)),
@@ -158,24 +172,28 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (resource.Ex
 		}}, errors.Wrap(err, "cannot create RDS instance")
 }
 
-func (c *external) Update(ctx context.Context, mg resource.Managed) (resource.ExternalUpdate, error) {
+func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.ExternalUpdate, error) {
 	cr, ok := mg.(*v1alpha2.RDSInstance)
 	if !ok {
 		return resource.ExternalUpdate{}, errors.New(errNotRDSInstance)
 	}
-	_, err := c.client.ModifyDBInstanceRequest(rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)).Send()
+	req := e.client.ModifyDBInstanceRequest(rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
+	req.SetContext(ctx)
+	_, err := req.Send()
 	return resource.ExternalUpdate{}, errors.Wrap(err, "cannot modify RDS instance")
 }
 
-func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	cr, ok := mg.(*v1alpha2.RDSInstance)
 	if !ok {
 		return errors.New(errNotRDSInstance)
 	}
 	input := rds2.DeleteDBInstanceInput{
 		DBInstanceIdentifier: aws.String(meta.GetExternalName(cr)),
-		SkipFinalSnapshot:    aws.Bool(true),
+		SkipFinalSnapshot:    cr.Spec.ForProvider.SkipFinalSnapshotBeforeDeletion,
 	}
-	_, err := c.client.DeleteDBInstanceRequest(&input).Send()
+	req := e.client.DeleteDBInstanceRequest(&input)
+	req.SetContext(ctx)
+	_, err := req.Send()
 	return errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), "cannot delete RDS instance")
 }

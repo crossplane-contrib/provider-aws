@@ -521,6 +521,17 @@ spec:
                         before an Aurora DB cluster in serverless mode is paused.
                       type: integer
                   type: object
+                skipFinalSnapshotBeforeDeletion:
+                  description: 'Determines whether a final DB snapshot is created
+                    before the DB instance is deleted. If true is specified, no DBSnapshot
+                    is created. If false is specified, a DB snapshot is created before
+                    the DB instance is deleted. Note that when a DB instance is in
+                    a failure state and has a status of ''failed'', ''incompatible-restore'',
+                    or ''incompatible-network'', it can only be deleted when the SkipFinalSnapshotBeforeDeletion
+                    parameter is set to "true". Specify true when deleting a Read
+                    Replica. The FinalDBSnapshotIdentifier parameter must be specified
+                    if SkipFinalSnapshotBeforeDeletion is false. Default: false'
+                  type: boolean
                 storageEncrypted:
                   description: 'StorageEncrypted specifies whether the DB instance
                     is encrypted. Amazon Aurora Not applicable. The encryption for

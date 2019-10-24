@@ -19,6 +19,8 @@ package rds
 import (
 	"strings"
 
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 
@@ -160,12 +162,20 @@ func GenerateModifyDBInstanceInput(name string, p *v1alpha2.RDSInstanceParameter
 	}
 }
 
-func GenerateObservation(db rds.DBInstance) *v1alpha2.RDSInstanceObservation {
-	return nil
+func GenerateObservation(db rds.DBInstance) v1alpha2.RDSInstanceObservation {
+	return v1alpha2.RDSInstanceObservation{}
 }
 
 func LateInitialize(in *v1alpha2.RDSInstanceParameters, db rds.DBInstance) {
 
+}
+
+func NeedsUpdate(in v1alpha2.RDSInstanceParameters, db rds.DBInstance) bool {
+	return true
+}
+
+func GetConnectionDetails(in v1alpha2.RDSInstance) resource.ConnectionDetails {
+	return resource.ConnectionDetails{}
 }
 
 func convertProcessorFeatures(in []v1alpha2.ProcessorFeature) []rds.ProcessorFeature {
