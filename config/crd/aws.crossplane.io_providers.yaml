@@ -23,7 +23,7 @@ spec:
     listKind: ProviderList
     plural: providers
     singular: provider
-  scope: ""
+  scope: Cluster
   subresources: {}
   validation:
     openAPIV3Schema:
@@ -50,18 +50,18 @@ spec:
                 IAM role that will be used to authenticate to this AWS account.
               properties:
                 key:
-                  description: The key of the secret to select from.  Must be a valid
-                    secret key.
+                  description: The key to select.
                   type: string
                 name:
-                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                    TODO: Add other useful fields. apiVersion, kind, uid?'
+                  description: Name of the secret.
                   type: string
-                optional:
-                  description: Specify whether the Secret or it's key must be defined
-                  type: boolean
+                namespace:
+                  description: Namespace of the secret.
+                  type: string
               required:
               - key
+              - name
+              - namespace
               type: object
             region:
               description: Region for managed resources created using this AWS provider.

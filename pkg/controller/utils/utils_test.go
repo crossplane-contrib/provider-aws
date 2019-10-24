@@ -22,6 +22,8 @@ import (
 	"os"
 	"testing"
 
+	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -63,9 +65,9 @@ aws_secret_access_key = mock_aws_secret_access_key`),
 		ObjectMeta: metav1.ObjectMeta{},
 		Spec: awsv1alpha2.ProviderSpec{
 			Region: "mock-region",
-			Secret: corev1.SecretKeySelector{
-				LocalObjectReference: corev1.LocalObjectReference{},
-				Key:                  "mockawskey",
+			Secret: runtimev1alpha1.SecretKeySelector{
+				SecretReference: runtimev1alpha1.SecretReference{},
+				Key:             "mockawskey",
 			},
 		},
 	}
@@ -91,6 +93,7 @@ aws_secret_access_key = mock_aws_secret_access_key`),
 	for _, tc := range []struct {
 		description     string
 		providerName    string
+		secretNamespace string
 		secretName      string
 		expectConfigNil bool
 		expectErrNil    bool
@@ -98,6 +101,7 @@ aws_secret_access_key = mock_aws_secret_access_key`),
 		{
 			"valid input should return expected",
 			"mockprovidername",
+			"mocksecretnamespace",
 			"mocksecretname",
 			false,
 			true,
@@ -105,6 +109,7 @@ aws_secret_access_key = mock_aws_secret_access_key`),
 		{
 			"invalid provider reference should return error",
 			"nonexisting",
+			"mocksecretnamespace",
 			"mocksecretname",
 			true,
 			false,
@@ -112,6 +117,7 @@ aws_secret_access_key = mock_aws_secret_access_key`),
 		{
 			"invalid secret should return error",
 			"mockprovidername",
+			"mocksecretnamespace",
 			"nonexisting",
 			true,
 			false,
@@ -119,7 +125,8 @@ aws_secret_access_key = mock_aws_secret_access_key`),
 	} {
 
 		mockProvider.ObjectMeta.Name = tc.providerName
-		mockProvider.Spec.Secret.LocalObjectReference.Name = tc.secretName
+		mockProvider.Spec.Secret.SecretReference.Namespace = tc.secretNamespace
+		mockProvider.Spec.Secret.SecretReference.Name = tc.secretName
 
 		config, err := RetrieveAwsConfigFromProvider(context.Background(), &m, &corev1.ObjectReference{Name: mockProvider.Name, Namespace: mockProvider.Namespace})
 		g.Expect(config == nil).To(gomega.Equal(tc.expectConfigNil), tc.description)

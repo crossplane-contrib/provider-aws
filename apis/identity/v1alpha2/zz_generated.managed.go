@@ -33,14 +33,14 @@ func (mg *IAMRole) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
 }
 
+// GetClassReference of this IAMRole.
+func (mg *IAMRole) GetClassReference() *corev1.ObjectReference {
+	return mg.Spec.ClassReference
+}
+
 // GetCondition of this IAMRole.
 func (mg *IAMRole) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
 	return mg.Status.GetCondition(ct)
-}
-
-// GetNonPortableClassReference of this IAMRole.
-func (mg *IAMRole) GetNonPortableClassReference() *corev1.ObjectReference {
-	return mg.Spec.NonPortableClassReference
 }
 
 // GetReclaimPolicy of this IAMRole.
@@ -49,7 +49,7 @@ func (mg *IAMRole) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
 }
 
 // GetWriteConnectionSecretToReference of this IAMRole.
-func (mg *IAMRole) GetWriteConnectionSecretToReference() corev1.LocalObjectReference {
+func (mg *IAMRole) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
@@ -63,14 +63,14 @@ func (mg *IAMRole) SetClaimReference(r *corev1.ObjectReference) {
 	mg.Spec.ClaimReference = r
 }
 
+// SetClassReference of this IAMRole.
+func (mg *IAMRole) SetClassReference(r *corev1.ObjectReference) {
+	mg.Spec.ClassReference = r
+}
+
 // SetConditions of this IAMRole.
 func (mg *IAMRole) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
-}
-
-// SetNonPortableClassReference of this IAMRole.
-func (mg *IAMRole) SetNonPortableClassReference(r *corev1.ObjectReference) {
-	mg.Spec.NonPortableClassReference = r
 }
 
 // SetReclaimPolicy of this IAMRole.
@@ -79,7 +79,7 @@ func (mg *IAMRole) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
 }
 
 // SetWriteConnectionSecretToReference of this IAMRole.
-func (mg *IAMRole) SetWriteConnectionSecretToReference(r corev1.LocalObjectReference) {
+func (mg *IAMRole) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
@@ -93,14 +93,14 @@ func (mg *IAMRolePolicyAttachment) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
 }
 
+// GetClassReference of this IAMRolePolicyAttachment.
+func (mg *IAMRolePolicyAttachment) GetClassReference() *corev1.ObjectReference {
+	return mg.Spec.ClassReference
+}
+
 // GetCondition of this IAMRolePolicyAttachment.
 func (mg *IAMRolePolicyAttachment) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
 	return mg.Status.GetCondition(ct)
-}
-
-// GetNonPortableClassReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) GetNonPortableClassReference() *corev1.ObjectReference {
-	return mg.Spec.NonPortableClassReference
 }
 
 // GetReclaimPolicy of this IAMRolePolicyAttachment.
@@ -109,7 +109,7 @@ func (mg *IAMRolePolicyAttachment) GetReclaimPolicy() runtimev1alpha1.ReclaimPol
 }
 
 // GetWriteConnectionSecretToReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) GetWriteConnectionSecretToReference() corev1.LocalObjectReference {
+func (mg *IAMRolePolicyAttachment) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
@@ -123,14 +123,14 @@ func (mg *IAMRolePolicyAttachment) SetClaimReference(r *corev1.ObjectReference) 
 	mg.Spec.ClaimReference = r
 }
 
+// SetClassReference of this IAMRolePolicyAttachment.
+func (mg *IAMRolePolicyAttachment) SetClassReference(r *corev1.ObjectReference) {
+	mg.Spec.ClassReference = r
+}
+
 // SetConditions of this IAMRolePolicyAttachment.
 func (mg *IAMRolePolicyAttachment) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
-}
-
-// SetNonPortableClassReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) SetNonPortableClassReference(r *corev1.ObjectReference) {
-	mg.Spec.NonPortableClassReference = r
 }
 
 // SetReclaimPolicy of this IAMRolePolicyAttachment.
@@ -139,6 +139,6 @@ func (mg *IAMRolePolicyAttachment) SetReclaimPolicy(r runtimev1alpha1.ReclaimPol
 }
 
 // SetWriteConnectionSecretToReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) SetWriteConnectionSecretToReference(r corev1.LocalObjectReference) {
+func (mg *IAMRolePolicyAttachment) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

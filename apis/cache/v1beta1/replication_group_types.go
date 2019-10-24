@@ -543,6 +543,7 @@ type ReplicationGroupStatus struct {
 // +kubebuilder:printcolumn:name="VERSION",type="string",JSONPath=".spec.engineVersion"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:scope=Cluster
 type ReplicationGroup struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -563,15 +564,14 @@ type ReplicationGroupList struct {
 // A ReplicationGroupClassSpecTemplate is a template for the spec of a
 // dynamically provisioned ReplicationGroup.
 type ReplicationGroupClassSpecTemplate struct {
-	runtimev1alpha1.NonPortableClassSpecTemplate `json:",inline"`
-	ForProvider                                  ReplicationGroupParameters `json:"forProvider,omitempty"`
+	runtimev1alpha1.ClassSpecTemplate `json:",inline"`
+	ForProvider                       ReplicationGroupParameters `json:"forProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// A ReplicationGroupClass is a non-portable resource class. It defines the
-// desired spec of resource claims that use it to dynamically provision a
-// managed resource.
+// A ReplicationGroupClass is a resource class. It defines the desired spec of
+// resource claims that use it to dynamically provision a managed resource.
 // +kubebuilder:printcolumn:name="PROVIDER-REF",type="string",JSONPath=".specTemplate.providerRef.name"
 // +kubebuilder:printcolumn:name="RECLAIM-POLICY",type="string",JSONPath=".specTemplate.reclaimPolicy"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"

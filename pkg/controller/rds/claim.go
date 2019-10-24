@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
@@ -33,8 +32,62 @@ import (
 	databasev1alpha1 "github.com/crossplaneio/crossplane/apis/database/v1alpha1"
 )
 
-// PostgreSQLInstanceClaimController is responsible for adding the PostgreSQLInstance
-// claim controller and its corresponding reconciler to the manager with any runtime configuration.
+// A PostgreSQLInstanceClaimSchedulingController reconciles PostgreSQLInstance
+// claims that include a class selector but omit their class and resource
+// references by picking a random matching RDSInstanceClass, if any.
+type PostgreSQLInstanceClaimSchedulingController struct{}
+
+// SetupWithManager sets up the
+// PostgreSQLInstanceClaimSchedulingController using the supplied manager.
+func (c *PostgreSQLInstanceClaimSchedulingController) SetupWithManager(mgr ctrl.Manager) error {
+	name := strings.ToLower(fmt.Sprintf("scheduler.%s.%s.%s",
+		databasev1alpha1.PostgreSQLInstanceKind,
+		v1alpha2.RDSInstanceKind,
+		v1alpha2.Group))
+
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		For(&databasev1alpha1.PostgreSQLInstance{}).
+		WithEventFilter(resource.NewPredicates(resource.AllOf(
+			resource.HasClassSelector(),
+			resource.HasNoClassReference(),
+			resource.HasNoManagedResourceReference(),
+		))).
+		Complete(resource.NewClaimSchedulingReconciler(mgr,
+			resource.ClaimKind(databasev1alpha1.PostgreSQLInstanceGroupVersionKind),
+			resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
+		))
+}
+
+// A PostgreSQLInstanceClaimDefaultingController reconciles PostgreSQLInstance
+// claims that omit their resource ref, class ref, and class selector by
+// choosing a default RDSInstanceClass if one exists.
+type PostgreSQLInstanceClaimDefaultingController struct{}
+
+// SetupWithManager sets up the PostgreSQLInstanceClaimDefaultingController
+// using the supplied manager.
+func (c *PostgreSQLInstanceClaimDefaultingController) SetupWithManager(mgr ctrl.Manager) error {
+	name := strings.ToLower(fmt.Sprintf("defaulter.%s.%s.%s",
+		databasev1alpha1.PostgreSQLInstanceKind,
+		v1alpha2.RDSInstanceKind,
+		v1alpha2.Group))
+
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		For(&databasev1alpha1.PostgreSQLInstance{}).
+		WithEventFilter(resource.NewPredicates(resource.AllOf(
+			resource.HasNoClassSelector(),
+			resource.HasNoClassReference(),
+			resource.HasNoManagedResourceReference(),
+		))).
+		Complete(resource.NewClaimDefaultingReconciler(mgr,
+			resource.ClaimKind(databasev1alpha1.PostgreSQLInstanceGroupVersionKind),
+			resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
+		))
+}
+
+// A PostgreSQLInstanceClaimController reconciles PostgreSQLInstance claims with
+// RDSInstances, dynamically provisioning them if needed
 type PostgreSQLInstanceClaimController struct{}
 
 // SetupWithManager adds a controller that reconciles PostgreSQLInstance instance claims.
@@ -46,10 +99,7 @@ func (c *PostgreSQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) e
 
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(databasev1alpha1.PostgreSQLInstanceGroupVersionKind),
-		resource.ClassKinds{
-			Portable:    databasev1alpha1.PostgreSQLInstanceClassGroupVersionKind,
-			NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind,
-		},
+		resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
 		resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigurePostgreRDSInstance),
@@ -57,12 +107,10 @@ func (c *PostgreSQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) e
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(
+		resource.HasClassReferenceKind(resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind)),
 		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind)),
 		resource.IsManagedKind(resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind), mgr.GetScheme()),
-		resource.HasIndirectClassReferenceKind(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{
-			Portable:    databasev1alpha1.PostgreSQLInstanceClassGroupVersionKind,
-			NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind,
-		})))
+	))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -75,7 +123,7 @@ func (c *PostgreSQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) e
 // ConfigurePostgreRDSInstance configures the supplied resource (presumed
 // to be a RDSInstance) using the supplied resource claim (presumed to be a
 // PostgreSQLInstance) and resource class.
-func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resource.NonPortableClass, mg resource.Managed) error {
+func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resource.Class, mg resource.Managed) error {
 	pg, cmok := cm.(*databasev1alpha1.PostgreSQLInstance)
 	if !cmok {
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), databasev1alpha1.PostgreSQLInstanceGroupVersionKind)
@@ -104,7 +152,10 @@ func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resour
 	}
 	spec.EngineVersion = v
 
-	spec.WriteConnectionSecretToReference = corev1.LocalObjectReference{Name: string(cm.GetUID())}
+	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
+		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,
+		Name:      string(cm.GetUID()),
+	}
 	spec.ProviderReference = rs.SpecTemplate.ProviderReference
 	spec.ReclaimPolicy = rs.SpecTemplate.ReclaimPolicy
 
@@ -113,8 +164,62 @@ func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resour
 	return nil
 }
 
-// MySQLInstanceClaimController is responsible for adding the MySQLInstance
-// claim controller and its corresponding reconciler to the manager with any runtime configuration.
+// A MySQLInstanceClaimSchedulingController reconciles MySQLInstance claims that
+// include a class selector but omit their class and resource references by
+// picking a random matching RDSInstanceClass, if any.
+type MySQLInstanceClaimSchedulingController struct{}
+
+// SetupWithManager sets up the MySQLInstanceClaimSchedulingController using the
+// supplied manager.
+func (c *MySQLInstanceClaimSchedulingController) SetupWithManager(mgr ctrl.Manager) error {
+	name := strings.ToLower(fmt.Sprintf("scheduler.%s.%s.%s",
+		databasev1alpha1.MySQLInstanceKind,
+		v1alpha2.RDSInstanceKind,
+		v1alpha2.Group))
+
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		For(&databasev1alpha1.MySQLInstance{}).
+		WithEventFilter(resource.NewPredicates(resource.AllOf(
+			resource.HasClassSelector(),
+			resource.HasNoClassReference(),
+			resource.HasNoManagedResourceReference(),
+		))).
+		Complete(resource.NewClaimSchedulingReconciler(mgr,
+			resource.ClaimKind(databasev1alpha1.MySQLInstanceGroupVersionKind),
+			resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
+		))
+}
+
+// A MySQLInstanceClaimDefaultingController reconciles MySQLInstance claims that
+// omit their resource ref, class ref, and class selector by choosing a default
+// RDSInstanceClass if one exists.
+type MySQLInstanceClaimDefaultingController struct{}
+
+// SetupWithManager sets up the MySQLInstanceClaimDefaultingController
+// using the supplied manager.
+func (c *MySQLInstanceClaimDefaultingController) SetupWithManager(mgr ctrl.Manager) error {
+	name := strings.ToLower(fmt.Sprintf("defaulter.%s.%s.%s",
+		databasev1alpha1.MySQLInstanceKind,
+		v1alpha2.RDSInstanceKind,
+		v1alpha2.Group))
+
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		For(&databasev1alpha1.MySQLInstance{}).
+		WithEventFilter(resource.NewPredicates(resource.AllOf(
+			resource.HasNoClassSelector(),
+			resource.HasNoClassReference(),
+			resource.HasNoManagedResourceReference(),
+		))).
+		Complete(resource.NewClaimDefaultingReconciler(mgr,
+			resource.ClaimKind(databasev1alpha1.MySQLInstanceGroupVersionKind),
+			resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
+		))
+}
+
+// A MySQLInstanceClaimController reconciles MySQLInstance claims with
+// RDSInstances, dynamically provisioning them if needed
 type MySQLInstanceClaimController struct{}
 
 // SetupWithManager adds a controller that reconciles MySQLInstance instance claims.
@@ -126,10 +231,7 @@ func (c *MySQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error 
 
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(databasev1alpha1.MySQLInstanceGroupVersionKind),
-		resource.ClassKinds{
-			Portable:    databasev1alpha1.MySQLInstanceClassGroupVersionKind,
-			NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind,
-		},
+		resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
 		resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigureMyRDSInstance),
@@ -137,12 +239,10 @@ func (c *MySQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error 
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(
+		resource.HasClassReferenceKind(resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind)),
 		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind)),
 		resource.IsManagedKind(resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind), mgr.GetScheme()),
-		resource.HasIndirectClassReferenceKind(mgr.GetClient(), mgr.GetScheme(), resource.ClassKinds{
-			Portable:    databasev1alpha1.MySQLInstanceClassGroupVersionKind,
-			NonPortable: v1alpha2.RDSInstanceClassGroupVersionKind,
-		})))
+	))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -155,7 +255,7 @@ func (c *MySQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error 
 // ConfigureMyRDSInstance configures the supplied resource (presumed to be
 // a RDSInstance) using the supplied resource claim (presumed to be a
 // MySQLInstance) and resource class.
-func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.NonPortableClass, mg resource.Managed) error {
+func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.Class, mg resource.Managed) error {
 	my, cmok := cm.(*databasev1alpha1.MySQLInstance)
 	if !cmok {
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), databasev1alpha1.MySQLInstanceGroupVersionKind)
@@ -184,7 +284,10 @@ func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.No
 	}
 	spec.EngineVersion = v
 
-	spec.WriteConnectionSecretToReference = corev1.LocalObjectReference{Name: string(cm.GetUID())}
+	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
+		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,
+		Name:      string(cm.GetUID()),
+	}
 	spec.ProviderReference = rs.SpecTemplate.ProviderReference
 	spec.ReclaimPolicy = rs.SpecTemplate.ReclaimPolicy
 

@@ -33,14 +33,14 @@ func (mg *DBSubnetGroup) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
 }
 
+// GetClassReference of this DBSubnetGroup.
+func (mg *DBSubnetGroup) GetClassReference() *corev1.ObjectReference {
+	return mg.Spec.ClassReference
+}
+
 // GetCondition of this DBSubnetGroup.
 func (mg *DBSubnetGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
 	return mg.Status.GetCondition(ct)
-}
-
-// GetNonPortableClassReference of this DBSubnetGroup.
-func (mg *DBSubnetGroup) GetNonPortableClassReference() *corev1.ObjectReference {
-	return mg.Spec.NonPortableClassReference
 }
 
 // GetReclaimPolicy of this DBSubnetGroup.
@@ -49,7 +49,7 @@ func (mg *DBSubnetGroup) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
 }
 
 // GetWriteConnectionSecretToReference of this DBSubnetGroup.
-func (mg *DBSubnetGroup) GetWriteConnectionSecretToReference() corev1.LocalObjectReference {
+func (mg *DBSubnetGroup) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
@@ -63,14 +63,14 @@ func (mg *DBSubnetGroup) SetClaimReference(r *corev1.ObjectReference) {
 	mg.Spec.ClaimReference = r
 }
 
+// SetClassReference of this DBSubnetGroup.
+func (mg *DBSubnetGroup) SetClassReference(r *corev1.ObjectReference) {
+	mg.Spec.ClassReference = r
+}
+
 // SetConditions of this DBSubnetGroup.
 func (mg *DBSubnetGroup) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
-}
-
-// SetNonPortableClassReference of this DBSubnetGroup.
-func (mg *DBSubnetGroup) SetNonPortableClassReference(r *corev1.ObjectReference) {
-	mg.Spec.NonPortableClassReference = r
 }
 
 // SetReclaimPolicy of this DBSubnetGroup.
@@ -79,7 +79,7 @@ func (mg *DBSubnetGroup) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
 }
 
 // SetWriteConnectionSecretToReference of this DBSubnetGroup.
-func (mg *DBSubnetGroup) SetWriteConnectionSecretToReference(r corev1.LocalObjectReference) {
+func (mg *DBSubnetGroup) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
@@ -93,14 +93,14 @@ func (mg *S3Bucket) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
 }
 
+// GetClassReference of this S3Bucket.
+func (mg *S3Bucket) GetClassReference() *corev1.ObjectReference {
+	return mg.Spec.ClassReference
+}
+
 // GetCondition of this S3Bucket.
 func (mg *S3Bucket) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
 	return mg.Status.GetCondition(ct)
-}
-
-// GetNonPortableClassReference of this S3Bucket.
-func (mg *S3Bucket) GetNonPortableClassReference() *corev1.ObjectReference {
-	return mg.Spec.NonPortableClassReference
 }
 
 // GetReclaimPolicy of this S3Bucket.
@@ -109,7 +109,7 @@ func (mg *S3Bucket) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
 }
 
 // GetWriteConnectionSecretToReference of this S3Bucket.
-func (mg *S3Bucket) GetWriteConnectionSecretToReference() corev1.LocalObjectReference {
+func (mg *S3Bucket) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
@@ -123,14 +123,14 @@ func (mg *S3Bucket) SetClaimReference(r *corev1.ObjectReference) {
 	mg.Spec.ClaimReference = r
 }
 
+// SetClassReference of this S3Bucket.
+func (mg *S3Bucket) SetClassReference(r *corev1.ObjectReference) {
+	mg.Spec.ClassReference = r
+}
+
 // SetConditions of this S3Bucket.
 func (mg *S3Bucket) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
-}
-
-// SetNonPortableClassReference of this S3Bucket.
-func (mg *S3Bucket) SetNonPortableClassReference(r *corev1.ObjectReference) {
-	mg.Spec.NonPortableClassReference = r
 }
 
 // SetReclaimPolicy of this S3Bucket.
@@ -139,6 +139,6 @@ func (mg *S3Bucket) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
 }
 
 // SetWriteConnectionSecretToReference of this S3Bucket.
-func (mg *S3Bucket) SetWriteConnectionSecretToReference(r corev1.LocalObjectReference) {
+func (mg *S3Bucket) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

@@ -43,7 +43,7 @@ func TestConfigurePostgreRDSInstance(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		cm  resource.Claim
-		cs  resource.NonPortableClass
+		cs  resource.Class
 		mg  resource.Managed
 	}
 
@@ -67,9 +67,10 @@ func TestConfigurePostgreRDSInstance(t *testing.T) {
 				},
 				cs: &v1alpha2.RDSInstanceClass{
 					SpecTemplate: v1alpha2.RDSInstanceClassSpecTemplate{
-						NonPortableClassSpecTemplate: runtimev1alpha1.NonPortableClassSpecTemplate{
-							ProviderReference: &corev1.ObjectReference{Name: providerName},
-							ReclaimPolicy:     runtimev1alpha1.ReclaimDelete,
+						ClassSpecTemplate: runtimev1alpha1.ClassSpecTemplate{
+							WriteConnectionSecretsToNamespace: namespace,
+							ProviderReference:                 &corev1.ObjectReference{Name: providerName},
+							ReclaimPolicy:                     runtimev1alpha1.ReclaimDelete,
 						},
 					},
 				},
@@ -79,9 +80,12 @@ func TestConfigurePostgreRDSInstance(t *testing.T) {
 				mg: &v1alpha2.RDSInstance{
 					Spec: v1alpha2.RDSInstanceSpec{
 						ResourceSpec: runtimev1alpha1.ResourceSpec{
-							ReclaimPolicy:                    runtimev1alpha1.ReclaimDelete,
-							WriteConnectionSecretToReference: corev1.LocalObjectReference{Name: string(claimUID)},
-							ProviderReference:                &corev1.ObjectReference{Name: providerName},
+							ReclaimPolicy: runtimev1alpha1.ReclaimDelete,
+							WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
+								Namespace: namespace,
+								Name:      string(claimUID),
+							},
+							ProviderReference: &corev1.ObjectReference{Name: providerName},
 						},
 						RDSInstanceParameters: v1alpha2.RDSInstanceParameters{
 							Engine:        v1alpha2.PostgresqlEngine,
@@ -111,7 +115,7 @@ func TestConfigureMyRDSInstance(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		cm  resource.Claim
-		cs  resource.NonPortableClass
+		cs  resource.Class
 		mg  resource.Managed
 	}
 
@@ -135,9 +139,10 @@ func TestConfigureMyRDSInstance(t *testing.T) {
 				},
 				cs: &v1alpha2.RDSInstanceClass{
 					SpecTemplate: v1alpha2.RDSInstanceClassSpecTemplate{
-						NonPortableClassSpecTemplate: runtimev1alpha1.NonPortableClassSpecTemplate{
-							ProviderReference: &corev1.ObjectReference{Name: providerName},
-							ReclaimPolicy:     runtimev1alpha1.ReclaimDelete,
+						ClassSpecTemplate: runtimev1alpha1.ClassSpecTemplate{
+							WriteConnectionSecretsToNamespace: namespace,
+							ProviderReference:                 &corev1.ObjectReference{Name: providerName},
+							ReclaimPolicy:                     runtimev1alpha1.ReclaimDelete,
 						},
 					},
 				},
@@ -147,9 +152,12 @@ func TestConfigureMyRDSInstance(t *testing.T) {
 				mg: &v1alpha2.RDSInstance{
 					Spec: v1alpha2.RDSInstanceSpec{
 						ResourceSpec: runtimev1alpha1.ResourceSpec{
-							ReclaimPolicy:                    runtimev1alpha1.ReclaimDelete,
-							WriteConnectionSecretToReference: corev1.LocalObjectReference{Name: string(claimUID)},
-							ProviderReference:                &corev1.ObjectReference{Name: providerName},
+							ReclaimPolicy: runtimev1alpha1.ReclaimDelete,
+							WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
+								Namespace: namespace,
+								Name:      string(claimUID),
+							},
+							ProviderReference: &corev1.ObjectReference{Name: providerName},
 						},
 						RDSInstanceParameters: v1alpha2.RDSInstanceParameters{
 							Engine:        v1alpha2.MysqlEngine,
