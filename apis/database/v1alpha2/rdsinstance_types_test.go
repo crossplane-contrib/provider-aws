@@ -26,12 +26,12 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 )
 
-var _ resource.AttributeReferencer = (*SecurityGroupIDReferencerForRDSInstance)(nil)
+var _ resource.AttributeReferencer = (*VPCSecurityGroupIDReferencerForRDSInstance)(nil)
 var _ resource.AttributeReferencer = (*DBSubnetGroupNameReferencerForRDSInstance)(nil)
 
 func TestSecurityGroupIDReferencerForRDSInstance_AssignInvalidType_ReturnsErr(t *testing.T) {
 
-	r := &SecurityGroupIDReferencerForRDSInstance{}
+	r := &VPCSecurityGroupIDReferencerForRDSInstance{}
 	expectedErr := errors.New(errResourceIsNotRDSInstance)
 
 	err := r.Assign(&struct{ resource.CanReference }{}, "mockValue")
@@ -42,7 +42,7 @@ func TestSecurityGroupIDReferencerForRDSInstance_AssignInvalidType_ReturnsErr(t 
 
 func TestSecurityGroupIDReferencerForRDSInstance_AssignValidType_ReturnsExpected(t *testing.T) {
 
-	r := &SecurityGroupIDReferencerForRDSInstance{}
+	r := &VPCSecurityGroupIDReferencerForRDSInstance{}
 	res := &RDSInstance{}
 	var expectedErr error
 
@@ -51,7 +51,7 @@ func TestSecurityGroupIDReferencerForRDSInstance_AssignValidType_ReturnsExpected
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
 
-	if diff := cmp.Diff(res.Spec.SecurityGroupIDs, []string{"mockValue"}); diff != "" {
+	if diff := cmp.Diff(res.Spec.ForProvider.VPCSecurityGroupIDs, []string{"mockValue"}); diff != "" {
 		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
 	}
 }
@@ -72,13 +72,14 @@ func TestDBSubnetGroupNameReferencerForRDSInstance_AssignValidType_ReturnsExpect
 	r := &DBSubnetGroupNameReferencerForRDSInstance{}
 	res := &RDSInstance{}
 	var expectedErr error
+	mockValue := "mockValue"
 
 	err := r.Assign(res, "mockValue")
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
 
-	if diff := cmp.Diff(res.Spec.DBSubnetGroupName, "mockValue"); diff != "" {
+	if diff := cmp.Diff(res.Spec.ForProvider.DBSubnetGroupName, &mockValue); diff != "" {
 		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
 	}
 }

@@ -89,9 +89,6 @@ spec:
                   description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                   type: string
               type: object
-            class:
-              description: Class of this RDS instance, for example "db.t2.micro".
-              type: string
             classRef:
               description: ClassReference specifies the resource class that was used
                 to dynamically provision this managed resource, if any. Crossplane
@@ -130,18 +127,569 @@ spec:
                   description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                   type: string
               type: object
-            engine:
-              description: Engine for this RDSInstance - either mysql or postgres.
-              enum:
-              - mysql
-              - postgres
-              type: string
-            engineVersion:
-              description: EngineVersion for this RDS instance, for example "5.6".
-              type: string
-            masterUsername:
-              description: MasterUsername for this RDSInstance.
-              type: string
+            forProvider:
+              description: RDSInstanceParameters define the desired state of an AWS
+                Relational Database Service instance.
+              properties:
+                TteCredentialPassword:
+                  description: TdeCredentialPassword is the password for the given
+                    ARN from the key store in order to access the device.
+                  type: string
+                allocatedStorage:
+                  description: 'AllocatedStorage is the amount of storage (in gibibytes)
+                    to allocate for the DB instance. Type: Integer Amazon Aurora Not
+                    applicable. Aurora cluster volumes automatically grow as the amount
+                    of data in your database increases, though you are only charged
+                    for the space that you use in an Aurora cluster volume. MySQL
+                    Constraints to the amount of storage for each storage type are
+                    the following:    * General Purpose (SSD) storage (gp2): Must
+                    be an integer from 20 to 16384.    * Provisioned IOPS storage
+                    (io1): Must be an integer from 100 to 16384.    * Magnetic storage
+                    (standard): Must be an integer from 5 to 3072. MariaDB Constraints
+                    to the amount of storage for each storage type are the following:    *
+                    General Purpose (SSD) storage (gp2): Must be an integer from 20
+                    to 16384.    * Provisioned IOPS storage (io1): Must be an integer
+                    from 100 to 16384.    * Magnetic storage (standard): Must be an
+                    integer from 5 to 3072. PostgreSQL Constraints to the amount of
+                    storage for each storage type are the following:    * General
+                    Purpose (SSD) storage (gp2): Must be an integer from 20 to 16384.    *
+                    Provisioned IOPS storage (io1): Must be an integer from 100 to
+                    16384.    * Magnetic storage (standard): Must be an integer from
+                    5 to 3072. Oracle Constraints to the amount of storage for each
+                    storage type are the following:    * General Purpose (SSD) storage
+                    (gp2): Must be an integer from 20 to 16384.    * Provisioned IOPS
+                    storage (io1): Must be an integer from 100 to 16384.    * Magnetic
+                    storage (standard): Must be an integer from 10 to 3072. SQL Server
+                    Constraints to the amount of storage for each storage type are
+                    the following:    * General Purpose (SSD) storage (gp2): Enterprise
+                    and Standard editions: Must be an integer from 200 to 16384. Web
+                    and Express editions: Must be an integer from 20 to 16384.    *
+                    Provisioned IOPS storage (io1): Enterprise and Standard editions:
+                    Must be an integer from 200 to 16384. Web and Express editions:
+                    Must be an integer from 100 to 16384.    * Magnetic storage (standard):
+                    Enterprise and Standard editions: Must be an integer from 200
+                    to 1024. Web and Express editions: Must be an integer from 20
+                    to 1024.'
+                  type: integer
+                allowMajorVersionUpgrade:
+                  description: 'AllowMajorVersionUpgrade indicates that major version
+                    upgrades are allowed. Changing this parameter doesn''t result
+                    in an outage and the change is asynchronously applied as soon
+                    as possible. Constraints: This parameter must be set to true when
+                    specifying a value for the EngineVersion parameter that is a different
+                    major version than the DB instance''s current version.'
+                  type: boolean
+                applyModificationsImmediately:
+                  description: 'ApplyModificationsImmediately specifies whether the
+                    modifications in this request and any pending modifications are
+                    asynchronously applied as soon as possible, regardless of the
+                    PreferredMaintenanceWindow setting for the DB instance. If this
+                    parameter is set to false, changes to the DB instance are applied
+                    during the next maintenance window. Some parameter changes can
+                    cause an outage and are applied on the next call to RebootDBInstance,
+                    or the next failure reboot. Review the table of parameters in
+                    Modifying a DB Instance and Using the Apply Immediately Parameter
+                    (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html)
+                    in the Amazon RDS User Guide. to see the impact that setting ApplyImmediately
+                    to true or false has for each modified parameter and to determine
+                    when the changes are applied. Default: false'
+                  type: boolean
+                autoMinorVersionUpgrade:
+                  description: 'AutoMinorVersionUpgrade indicates that minor engine
+                    upgrades are applied automatically to the DB instance during the
+                    maintenance window. Default: true'
+                  type: boolean
+                availabilityZone:
+                  description: 'AvailabilityZone is the EC2 Availability Zone that
+                    the DB instance is created in. For information on AWS Regions
+                    and Availability Zones, see Regions and Availability Zones (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html).
+                    Default: A random, system-chosen Availability Zone in the endpoint''s
+                    AWS Region. Example: us-east-1d Constraint: The AvailabilityZone
+                    parameter can''t be specified if the MultiAZ parameter is set
+                    to true. The specified Availability Zone must be in the same AWS
+                    Region as the current endpoint.'
+                  type: string
+                backupRetentionPeriod:
+                  description: 'BackupRetentionPeriod is the number of days for which
+                    automated backups are retained. Setting this parameter to a positive
+                    number enables backups. Setting this parameter to 0 disables automated
+                    backups. Amazon Aurora Not applicable. The retention period for
+                    automated backups is managed by the DB cluster. For more information,
+                    see CreateDBCluster. Default: 1 Constraints:    * Must be a value
+                    from 0 to 35    * Cannot be set to 0 if the DB instance is a source
+                    to Read Replicas'
+                  type: integer
+                caCertificateIdentifier:
+                  description: CACertificateIdentifier indicates the certificate that
+                    needs to be associated with the instance.
+                  type: string
+                characterSetName:
+                  description: CharacterSetName indicates that the DB instance should
+                    be associated with the specified CharacterSet for supported engines,
+                    Amazon Aurora Not applicable. The character set is managed by
+                    the DB cluster. For more information, see CreateDBCluster.
+                  type: string
+                cloudwatchLogsExportConfiguration:
+                  description: CloudwatchLogsExportConfiguration is the configuration
+                    setting for the log types to be enabled for export to CloudWatch
+                    Logs for a specific DB instance.
+                  properties:
+                    disableLogTypes:
+                      description: DisableLogTypes is the list of log types to disable.
+                      items:
+                        type: string
+                      type: array
+                    enableLogTypes:
+                      description: EnableLogTypes is the list of log types to enable.
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                copyTagsToSnapshot:
+                  description: CopyTagsToSnapshot should be true to copy all tags
+                    from the DB instance to snapshots of the DB instance, and otherwise
+                    false. The default is false.
+                  type: boolean
+                dbClusterIdentifier:
+                  description: 'DBClusterIdentifier is the identifier of the DB cluster
+                    that the instance will belong to. For information on creating
+                    a DB cluster, see CreateDBCluster. Type: String'
+                  type: string
+                dbClusterParameterGroupName:
+                  description: DBClusterParameterGroupName is the name of the DB cluster
+                    parameter group to use for the DB cluster.
+                  type: string
+                dbInstanceClass:
+                  description: DBInstanceClass is the compute and memory capacity
+                    of the DB instance, for example, db.m4.large. Not all DB instance
+                    classes are available in all AWS Regions, or for all database
+                    engines. For the full list of DB instance classes, and availability
+                    for your engine, see DB Instance Class (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html)
+                    in the Amazon RDS User Guide. DBInstanceClass is a required field
+                  type: string
+                dbInstanceIdentifier:
+                  description: 'DBInstanceIdentifier is stored as a lowercase string.
+                    Constraints:    * Must contain from 1 to 63 letters, numbers,
+                    or hyphens.    * First character must be a letter.    * Cannot
+                    end with a hyphen or contain two consecutive hyphens. Example:
+                    mydbinstance DBInstanceIdentifier is a required field'
+                  type: string
+                dbName:
+                  description: 'DBName is the meaning of this parameter differs according
+                    to the database engine you use. Type: String MySQL The name of
+                    the database to create when the DB instance is created. If this
+                    parameter is not specified, no database is created in the DB instance.
+                    Constraints:    * Must contain 1 to 64 letters or numbers.    *
+                    Cannot be a word reserved by the specified database engine MariaDB
+                    The name of the database to create when the DB instance is created.
+                    If this parameter is not specified, no database is created in
+                    the DB instance. Constraints:    * Must contain 1 to 64 letters
+                    or numbers.    * Cannot be a word reserved by the specified database
+                    engine PostgreSQL The name of the database to create when the
+                    DB instance is created. If this parameter is not specified, the
+                    default "postgres" database is created in the DB instance. Constraints:    *
+                    Must contain 1 to 63 letters, numbers, or underscores.    * Must
+                    begin with a letter or an underscore. Subsequent characters can    be
+                    letters, underscores, or digits (0-9).    * Cannot be a word reserved
+                    by the specified database engine Oracle The Oracle System ID (SID)
+                    of the created DB instance. If you specify null, the default value
+                    ORCL is used. You can''t specify the string NULL, or any other
+                    reserved word, for DBName. Default: ORCL Constraints:    * Cannot
+                    be longer than 8 characters SQL Server Not applicable. Must be
+                    null. Amazon Aurora The name of the database to create when the
+                    primary instance of the DB cluster is created. If this parameter
+                    is not specified, no database is created in the DB instance. Constraints:    *
+                    Must contain 1 to 64 letters or numbers.    * Cannot be a word
+                    reserved by the specified database engine'
+                  type: string
+                dbParameterGroupName:
+                  description: 'DBParameterGroupName is the name of the DB parameter
+                    group to associate with this DB instance. If this argument is
+                    omitted, the default DBParameterGroup for the specified engine
+                    is used. Constraints:    * Must be 1 to 255 letters, numbers,
+                    or hyphens.    * First character must be a letter    * Cannot
+                    end with a hyphen or contain two consecutive hyphens'
+                  type: string
+                dbSecurityGroups:
+                  description: 'DBSecurityGroups is a list of DB security groups to
+                    associate with this DB instance. Default: The default DB security
+                    group for the database engine.'
+                  items:
+                    type: string
+                  type: array
+                dbSubnetGroupName:
+                  description: DBSubnetGroupName is a DB subnet group to associate
+                    with this DB instance. If there is no DB subnet group, then it
+                    is a non-VPC DB instance.
+                  type: string
+                dbsubnetGroupNameRef:
+                  description: DBSubnetGroupNameRef references to a DBSubnetGroup
+                    to retrieve its name
+                  properties:
+                    name:
+                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                        TODO: Add other useful fields. apiVersion, kind, uid?'
+                      type: string
+                  type: object
+                deletionProtection:
+                  description: DeletionProtection indicates if the DB instance should
+                    have deletion protection enabled. The database can't be deleted
+                    when this value is set to true. The default is false. For more
+                    information, see  Deleting a DB Instance (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_DeleteInstance.html).
+                  type: boolean
+                domain:
+                  description: Domain specifies the Active Directory Domain to create
+                    the instance in.
+                  type: string
+                domainIAMRoleName:
+                  description: DomainIAMRoleName specifes the name of the IAM role
+                    to be used when making API calls to the Directory Service.
+                  type: string
+                enableCloudwatchLogsExports:
+                  description: EnableCloudwatchLogsExports is the list of log types
+                    that need to be enabled for exporting to CloudWatch Logs. The
+                    values in the list depend on the DB engine being used. For more
+                    information, see Publishing Database Logs to Amazon CloudWatch
+                    Logs  (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch)
+                    in the Amazon Relational Database Service User Guide.
+                  items:
+                    type: string
+                  type: array
+                enableIAMDatabaseAuthentication:
+                  description: 'EnableIAMDatabaseAuthentication should be true to
+                    enable mapping of AWS Identity and Access Management (IAM) accounts
+                    to database accounts, and otherwise false. You can enable IAM
+                    database authentication for the following database engines: Amazon
+                    Aurora Not applicable. Mapping AWS IAM accounts to database accounts
+                    is managed by the DB cluster. For more information, see CreateDBCluster.
+                    MySQL    * For MySQL 5.6, minor version 5.6.34 or higher    *
+                    For MySQL 5.7, minor version 5.7.16 or higher Default: false'
+                  type: boolean
+                enablePerformanceInsights:
+                  description: EnablePerformanceInsights should be true to enable
+                    Performance Insights for the DB instance, and otherwise false.
+                    For more information, see Using Amazon Performance Insights (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html)
+                    in the Amazon Relational Database Service User Guide.
+                  type: boolean
+                engine:
+                  description: 'Engine is the name of the database engine to be used
+                    for this instance. Not every database engine is available for
+                    every AWS Region. Valid Values:    * aurora (for MySQL 5.6-compatible
+                    Aurora)    * aurora-mysql (for MySQL 5.7-compatible Aurora)    *
+                    aurora-postgresql    * mariadb    * mysql    * oracle-ee    *
+                    oracle-se2    * oracle-se1    * oracle-se    * postgres    * sqlserver-ee    *
+                    sqlserver-se    * sqlserver-ex    * sqlserver-web Engine is a
+                    required field'
+                  type: string
+                engineVersion:
+                  description: EngineVersion is the version number of the database
+                    engine to use. For a list of valid engine versions, call DescribeDBEngineVersions.
+                    The following are the database engines and links to information
+                    about the major and minor versions that are available with Amazon
+                    RDS. Not every database engine is available for every AWS Region.
+                    Amazon Aurora Not applicable. The version number of the database
+                    engine to be used by the DB instance is managed by the DB cluster.
+                    For more information, see CreateDBCluster. MariaDB See MariaDB
+                    on Amazon RDS Versions (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MariaDB.html#MariaDB.Concepts.VersionMgmt)
+                    in the Amazon RDS User Guide. Microsoft SQL Server See Version
+                    and Feature Support on Amazon RDS (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.FeatureSupport)
+                    in the Amazon RDS User Guide. MySQL See MySQL on Amazon RDS Versions
+                    (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_MySQL.html#MySQL.Concepts.VersionMgmt)
+                    in the Amazon RDS User Guide. Oracle See Oracle Database Engine
+                    Release Notes (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.Oracle.PatchComposition.html)
+                    in the Amazon RDS User Guide. PostgreSQL See Supported PostgreSQL
+                    Database Versions (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.DBVersions)
+                    in the Amazon RDS User Guide.
+                  type: string
+                iops:
+                  description: 'Iops is the amount of Provisioned IOPS (input/output
+                    operations per second) to be initially allocated for the DB instance.
+                    For information about valid Iops values, see see Amazon RDS Provisioned
+                    IOPS Storage to Improve Performance (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#USER_PIOPS)
+                    in the Amazon RDS User Guide. Constraints: Must be a multiple
+                    between 1 and 50 of the storage amount for the DB instance. Must
+                    also be an integer multiple of 1000. For example, if the size
+                    of your DB instance is 500 GiB, then your Iops value can be 2000,
+                    3000, 4000, or 5000.'
+                  type: integer
+                kmsKeyId:
+                  description: KmsKeyID for an encrypted DB instance. The KMS key
+                    identifier is the Amazon Resource Name (ARN) for the KMS encryption
+                    key. If you are creating a DB instance with the same AWS account
+                    that owns the KMS encryption key used to encrypt the new DB instance,
+                    then you can use the KMS key alias instead of the ARN for the
+                    KM encryption key. Amazon Aurora Not applicable. The KMS key identifier
+                    is managed by the DB cluster. For more information, see CreateDBCluster.
+                    If the StorageEncrypted parameter is true, and you do not specify
+                    a value for the KmsKeyID parameter, then Amazon RDS will use your
+                    default encryption key. AWS KMS creates the default encryption
+                    key for your AWS account. Your AWS account has a different default
+                    encryption key for each AWS Region.
+                  type: string
+                licenseModel:
+                  description: 'LicenseModel information for this DB instance. Valid
+                    values: license-included | bring-your-own-license | general-public-license'
+                  type: string
+                masterUserPassword:
+                  description: 'MasterUserPassword is the password for the master
+                    user. The password can include any printable ASCII character except
+                    "/", """, or "@". Amazon Aurora Not applicable. The password for
+                    the master user is managed by the DB cluster. For more information,
+                    see CreateDBCluster. MariaDB Constraints: Must contain from 8
+                    to 41 characters. Microsoft SQL Server Constraints: Must contain
+                    from 8 to 128 characters. MySQL Constraints: Must contain from
+                    8 to 41 characters. Oracle Constraints: Must contain from 8 to
+                    30 characters. PostgreSQL Constraints: Must contain from 8 to
+                    128 characters.'
+                  type: string
+                masterUsername:
+                  description: 'MasterUsername is the name for the master user. Amazon
+                    Aurora Not applicable. The name for the master user is managed
+                    by the DB cluster. For more information, see CreateDBCluster.
+                    MariaDB Constraints:    * Required for MariaDB.    * Must be 1
+                    to 16 letters or numbers.    * Cannot be a reserved word for the
+                    chosen database engine. Microsoft SQL Server Constraints:    *
+                    Required for SQL Server.    * Must be 1 to 128 letters or numbers.    *
+                    The first character must be a letter.    * Cannot be a reserved
+                    word for the chosen database engine. MySQL Constraints:    * Required
+                    for MySQL.    * Must be 1 to 16 letters or numbers.    * First
+                    character must be a letter.    * Cannot be a reserved word for
+                    the chosen database engine. Oracle Constraints:    * Required
+                    for Oracle.    * Must be 1 to 30 letters or numbers.    * First
+                    character must be a letter.    * Cannot be a reserved word for
+                    the chosen database engine. PostgreSQL Constraints:    * Required
+                    for PostgreSQL.    * Must be 1 to 63 letters or numbers.    *
+                    First character must be a letter.    * Cannot be a reserved word
+                    for the chosen database engine.'
+                  type: string
+                monitoringInterval:
+                  description: 'MonitoringInterval is the interval, in seconds, between
+                    points when Enhanced Monitoring metrics are collected for the
+                    DB instance. To disable collecting Enhanced Monitoring metrics,
+                    specify 0. The default is 0. If MonitoringRoleArn is specified,
+                    then you must also set MonitoringInterval to a value other than
+                    0. Valid Values: 0, 1, 5, 10, 15, 30, 60'
+                  type: integer
+                monitoringRoleArn:
+                  description: MonitoringRoleArn is the ARN for the IAM role that
+                    permits RDS to send enhanced monitoring metrics to Amazon CloudWatch
+                    Logs. For example, arn:aws:iam:123456789012:role/emaccess. For
+                    information on creating a monitoring role, go to Setting Up and
+                    Enabling Enhanced Monitoring (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.html#USER_Monitoring.OS.Enabling)
+                    in the Amazon RDS User Guide. If MonitoringInterval is set to
+                    a value other than 0, then you must supply a MonitoringRoleArn
+                    value.
+                  type: string
+                multiAZ:
+                  description: MultiAZ specifies if the DB instance is a Multi-AZ
+                    deployment. You can't set the AvailabilityZone parameter if the
+                    MultiAZ parameter is set to true.
+                  type: boolean
+                optionGroupName:
+                  description: OptionGroupName indicates that the DB instance should
+                    be associated with the specified option group. Permanent options,
+                    such as the TDE option for Oracle Advanced Security TDE, can't
+                    be removed from an option group, and that option group can't be
+                    removed from a DB instance once it is associated with a DB instance
+                  type: string
+                performanceInsightsKMSKeyId:
+                  description: PerformanceInsightsKMSKeyID is the AWS KMS key identifier
+                    for encryption of Performance Insights data. The KMS key ID is
+                    the Amazon Resource Name (ARN), KMS key identifier, or the KMS
+                    key alias for the KMS encryption key.
+                  type: string
+                performanceInsightsRetentionPeriod:
+                  description: PerformanceInsightsRetentionPeriod is the amount of
+                    time, in days, to retain Performance Insights data. Valid values
+                    are 7 or 731 (2 years).
+                  type: integer
+                port:
+                  description: 'Port number on which the database accepts connections.
+                    MySQL Default: 3306 Valid Values: 1150-65535 Type: Integer MariaDB
+                    Default: 3306 Valid Values: 1150-65535 Type: Integer PostgreSQL
+                    Default: 5432 Valid Values: 1150-65535 Type: Integer Oracle Default:
+                    1521 Valid Values: 1150-65535 SQL Server Default: 1433 Valid Values:
+                    1150-65535 except for 1434, 3389, 47001, 49152, and 49152 through
+                    49156. Amazon Aurora Default: 3306 Valid Values: 1150-65535 Type:
+                    Integer'
+                  type: integer
+                preferredBackupWindow:
+                  description: 'PreferredBackupWindow is the daily time range during
+                    which automated backups are created if automated backups are enabled,
+                    using the BackupRetentionPeriod parameter. For more information,
+                    see The Backup Window (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html#USER_WorkingWithAutomatedBackups.BackupWindow)
+                    in the Amazon RDS User Guide. Amazon Aurora Not applicable. The
+                    daily time range for creating automated backups is managed by
+                    the DB cluster. For more information, see CreateDBCluster. The
+                    default is a 30-minute window selected at random from an 8-hour
+                    block of time for each AWS Region. To see the time blocks available,
+                    see  Adjusting the Preferred DB Instance Maintenance Window (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_UpgradeDBInstance.Maintenance.html#AdjustingTheMaintenanceWindow)
+                    in the Amazon RDS User Guide. Constraints:    * Must be in the
+                    format hh24:mi-hh24:mi.    * Must be in Universal Coordinated
+                    Time (UTC).    * Must not conflict with the preferred maintenance
+                    window.    * Must be at least 30 minutes.'
+                  type: string
+                preferredMaintenanceWindow:
+                  description: 'PreferredMaintenanceWindow is the time range each
+                    week during which system maintenance can occur, in Universal Coordinated
+                    Time (UTC). For more information, see Amazon RDS Maintenance Window
+                    (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_UpgradeDBInstance.Maintenance.html#Concepts.DBMaintenance).
+                    Format: ddd:hh24:mi-ddd:hh24:mi The default is a 30-minute window
+                    selected at random from an 8-hour block of time for each AWS Region,
+                    occurring on a random day of the week. Valid Days: Mon, Tue, Wed,
+                    Thu, Fri, Sat, Sun. Constraints: Minimum 30-minute window.'
+                  type: string
+                processorFeatures:
+                  description: ProcessorFeatures is the number of CPU cores and the
+                    number of threads per core for the DB instance class of the DB
+                    instance.
+                  items:
+                    description: ProcessorFeature is a processor feature entry. For
+                      more information, see Configuring the Processor of the DB Instance
+                      Class (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html#USER_ConfigureProcessor)
+                      in the Amazon RDS User Guide. Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/ProcessorFeature
+                    properties:
+                      name:
+                        description: Name of the processor feature. Valid names are
+                          coreCount and threadsPerCore.
+                        type: string
+                      value:
+                        description: Value of a processor feature name.
+                        type: string
+                    required:
+                    - name
+                    - value
+                    type: object
+                  type: array
+                promotionTier:
+                  description: 'PromotionTier specifies the order in which an Aurora
+                    Replica is promoted to the primary instance after a failure of
+                    the existing primary instance. For more information, see  Fault
+                    Tolerance for an Aurora DB Cluster (http://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Managing.Backups.html#Aurora.Managing.FaultTolerance)
+                    in the Amazon Aurora User Guide. Default: 1 Valid Values: 0 -
+                    15'
+                  type: integer
+                publiclyAccessible:
+                  description: 'PubliclyAccessible specifies the accessibility options
+                    for the DB instance. A value of true specifies an Internet-facing
+                    instance with a publicly resolvable DNS name, which resolves to
+                    a public IP address. A value of false specifies an internal instance
+                    with a DNS name that resolves to a private IP address. Default:
+                    The default behavior varies depending on whether DBSubnetGroupName
+                    is specified. If DBSubnetGroupName is not specified, and PubliclyAccessible
+                    is not specified, the following applies:    * If the default VPC
+                    in the target region doesn’t have an Internet gateway    attached
+                    to it, the DB instance is private.    * If the default VPC in
+                    the target region has an Internet gateway attached    to it, the
+                    DB instance is public. If DBSubnetGroupName is specified, and
+                    PubliclyAccessible is not specified, the following applies:    *
+                    If the subnets are part of a VPC that doesn’t have an Internet
+                    gateway    attached to it, the DB instance is private.    * If
+                    the subnets are part of a VPC that has an Internet gateway attached    to
+                    it, the DB instance is public.'
+                  type: boolean
+                scalingConfiguration:
+                  description: ScalingConfiguration is the scaling properties of the
+                    DB cluster. You can only modify scaling properties for DB clusters
+                    in serverless DB engine mode.
+                  properties:
+                    autoPause:
+                      description: AutoPause specifies whether to allow or disallow
+                        automatic pause for an Aurora DB cluster in serverless DB
+                        engine mode. A DB cluster can be paused only when it's idle
+                        (it has no connections). If a DB cluster is paused for more
+                        than seven days, the DB cluster might be backed up with a
+                        snapshot. In this case, the DB cluster is restored when there
+                        is a request to connect to it.
+                      type: boolean
+                    maxCapacity:
+                      description: MaxCapacity is the maximum capacity for an Aurora
+                        DB cluster in serverless DB engine mode. Valid capacity values
+                        are 2, 4, 8, 16, 32, 64, 128, and 256. The maximum capacity
+                        must be greater than or equal to the minimum capacity.
+                      type: integer
+                    minCapacity:
+                      description: MinCapacity is the minimum capacity for an Aurora
+                        DB cluster in serverless DB engine mode. Valid capacity values
+                        are 2, 4, 8, 16, 32, 64, 128, and 256. The minimum capacity
+                        must be less than or equal to the maximum capacity.
+                      type: integer
+                    secondsUntilAutoPause:
+                      description: SecondsUntilAutoPause is the time, in seconds,
+                        before an Aurora DB cluster in serverless mode is paused.
+                      type: integer
+                  type: object
+                storageEncrypted:
+                  description: 'StorageEncrypted specifies whether the DB instance
+                    is encrypted. Amazon Aurora Not applicable. The encryption for
+                    DB instances is managed by the DB cluster. For more information,
+                    see CreateDBCluster. Default: false'
+                  type: boolean
+                storageType:
+                  description: 'StorageType specifies the storage type to be associated
+                    with the DB instance. Valid values: standard | gp2 | io1 If you
+                    specify io1, you must also include a value for the Iops parameter.
+                    Default: io1 if the Iops parameter is specified, otherwise standard'
+                  type: string
+                tags:
+                  description: Tags. For more information, see Tagging Amazon RDS
+                    Resources (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
+                    in the Amazon RDS User Guide.
+                  items:
+                    description: Tag is a metadata assigned to an Amazon RDS resource
+                      consisting of a key-value pair. Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/Tag
+                    properties:
+                      key:
+                        description: 'A key is the required name of the tag. The string
+                          value can be from 1 to 128 Unicode characters in length
+                          and can''t be prefixed with "aws:" or "rds:". The string
+                          can only contain only the set of Unicode letters, digits,
+                          white-space, ''_'', ''.'', ''/'', ''='', ''+'', ''-'' (Java
+                          regex: "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-]*)$").'
+                        type: string
+                      value:
+                        description: 'A value is the optional value of the tag. The
+                          string value can be from 1 to 256 Unicode characters in
+                          length and can''t be prefixed with "aws:" or "rds:". The
+                          string can only contain only the set of Unicode letters,
+                          digits, white-space, ''_'', ''.'', ''/'', ''='', ''+'',
+                          ''-'' (Java regex: "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-]*)$").'
+                        type: string
+                    type: object
+                  type: array
+                tdeCredentialArn:
+                  description: TdeCredentialArn is the ARN from the key store with
+                    which to associate the instance for TDE encryption.
+                  type: string
+                timezone:
+                  description: Timezone of the DB instance. The time zone parameter
+                    is currently supported only by Microsoft SQL Server (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.TimeZone).
+                  type: string
+                vpcSecurityGroupIDRefs:
+                  description: VPCSecurityGroupIDRefs references to a list of SecurityGroups
+                    to retrieve a list of securityGroupIDs
+                  items:
+                    description: VPCSecurityGroupIDReferencerForRDSInstance is an
+                      attribute referencer that resolves SecurityGroupID from a referenced
+                      SecurityGroup
+                    properties:
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                    type: object
+                  type: array
+                vpcSecurityGroupIds:
+                  description: 'VPCSecurityGroupIDs is a list of EC2 VPC security
+                    groups to associate with this DB instance. Amazon Aurora Not applicable.
+                    The associated list of EC2 VPC security groups is managed by the
+                    DB cluster. For more information, see CreateDBCluster. Default:
+                    The default EC2 VPC security group for the DB subnet group''s
+                    VPC.'
+                  items:
+                    type: string
+                  type: array
+              type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
                 to create, observe, update, and delete this managed resource.
@@ -187,44 +735,6 @@ spec:
                 uses of the ReclaimPolicy concept within the Kubernetes ecosystem
                 per https://github.com/crossplaneio/crossplane-runtime/issues/21
               type: string
-            securityGroupIdRefs:
-              description: SecurityGroupRefs references to a list of SecurityGroups
-                to retrieve a list of securityGroupIDs
-              items:
-                description: SecurityGroupIDReferencerForRDSInstance is an attribute
-                  referencer that resolves SecurityGroupID from a referenced SecurityGroup
-                properties:
-                  name:
-                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                      TODO: Add other useful fields. apiVersion, kind, uid?'
-                    type: string
-                type: object
-              type: array
-            securityGroupIds:
-              description: SecurityGroups that will allow the RDS instance to be accessed
-                over the network.
-              items:
-                type: string
-              type: array
-            size:
-              description: Size in GB of this RDS instance.
-              format: int64
-              type: integer
-            subnetGroupName:
-              description: DBSubnetGroupName specifies a database subnet group for
-                the RDS instance. The new instance is created in the VPC associated
-                with the DB subnet group. If no DB subnet group is specified, then
-                the instance is not created in a VPC.
-              type: string
-            subnetGroupNameRef:
-              description: SubnetGroupNameRef references to a DBSubnetGroup to retrieve
-                its name
-              properties:
-                name:
-                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                    TODO: Add other useful fields. apiVersion, kind, uid?'
-                  type: string
-              type: object
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the namespace
                 and name of a Secret to which any connection details for this managed
@@ -243,15 +753,376 @@ spec:
               - namespace
               type: object
           required:
-          - class
-          - engine
-          - masterUsername
           - providerRef
-          - size
           type: object
         status:
           description: An RDSInstanceStatus represents the observed state of an RDSInstance.
           properties:
+            atProvider:
+              description: RDSInstanceObservation is the representation of the current
+                state that is observed.
+              properties:
+                dbInstanceArn:
+                  description: DBInstanceArn is the Amazon Resource Name (ARN) for
+                    the DB instance.
+                  type: string
+                dbInstancePort:
+                  description: DbInstancePort specifies the port that the DB instance
+                    listens on. If the DB instance is part of a DB cluster, this can
+                    be a different port than the DB cluster port.
+                  type: integer
+                dbInstanceStatus:
+                  description: DBInstanceStatus specifies the current state of this
+                    database.
+                  type: string
+                dbParameterGroups:
+                  description: DBParameterGroups provides the list of DB parameter
+                    groups applied to this DB instance.
+                  items:
+                    description: 'DBParameterGroupStatus is the status of the DB parameter
+                      group. This data type is used as a response element in the following
+                      actions:    * CreateDBInstance    * CreateDBInstanceReadReplica    *
+                      DeleteDBInstance    * ModifyDBInstance    * RebootDBInstance    *
+                      RestoreDBInstanceFromDBSnapshot Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/DBParameterGroupStatus'
+                    properties:
+                      dbParameterGroupName:
+                        description: DBParameterGroupName is the name of the DP parameter
+                          group.
+                        type: string
+                      parameterApplyStatus:
+                        description: ParameterApplyStatus is the status of parameter
+                          updates.
+                        type: string
+                    type: object
+                  type: array
+                dbResourceId:
+                  description: DBResourceID is the AWS Region-unique, immutable identifier
+                    for the DB instance. This identifier is found in AWS CloudTrail
+                    log entries whenever the AWS KMS key for the DB instance is accessed.
+                  type: string
+                dbSecurityGroups:
+                  description: DBSecurityGroups provides List of DB security group
+                    elements containing only DBSecurityGroup.Name and DBSecurityGroup.Status
+                    subelements.
+                  items:
+                    description: 'DBSecurityGroupMembership is used as a response
+                      element in the following actions:    * ModifyDBInstance    *
+                      RebootDBInstance    * RestoreDBInstanceFromDBSnapshot    * RestoreDBInstanceToPointInTime
+                      Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/DBSecurityGroupMembership'
+                    properties:
+                      dbSecurityGroupName:
+                        description: DBSecurityGroupName is the name of the DB security
+                          group.
+                        type: string
+                      status:
+                        description: Status is the status of the DB security group.
+                        type: string
+                    type: object
+                  type: array
+                dbSubnetGroup:
+                  description: DBSubnetGroup specifies information on the subnet group
+                    associated with the DB instance, including the name, description,
+                    and subnets in the subnet group.
+                  properties:
+                    dbSubnetGroupArn:
+                      description: DBSubnetGroupArn is the Amazon Resource Name (ARN)
+                        for the DB subnet group.
+                      type: string
+                    dbSubnetGroupDescription:
+                      description: DBSubnetGroupDescription provides the description
+                        of the DB subnet group.
+                      type: string
+                    dbSubnetGroupName:
+                      description: DBSubnetGroupName is the name of the DB subnet
+                        group.
+                      type: string
+                    subnetGroupStatus:
+                      description: SubnetGroupStatus provides the status of the DB
+                        subnet group.
+                      type: string
+                    subnets:
+                      description: Subnets contains a list of Subnet elements.
+                      items:
+                        description: SubnetInRDS is used as a response element in
+                          the DescribeDBSubnetGroups action. Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/Subnet
+                        properties:
+                          subnetAvailabilityZone:
+                            description: 'SubnetAvailabilityZone contains Availability
+                              Zone information. This data type is used as an element
+                              in the following data type:    * OrderableDBInstanceOption'
+                            properties:
+                              name:
+                                description: Name of the Availability Zone.
+                                type: string
+                            type: object
+                          subnetIdentifier:
+                            description: SubnetIdentifier specifies the identifier
+                              of the subnet.
+                            type: string
+                          subnetStatus:
+                            description: SubnetStatus specifies the status of the
+                              subnet.
+                            type: string
+                        type: object
+                      type: array
+                    vpcId:
+                      description: VPCID provides the VPCID of the DB subnet group.
+                      type: string
+                  type: object
+                domainMemberships:
+                  description: DomainMemberships is the Active Directory Domain membership
+                    records associated with the DB instance.
+                  items:
+                    description: DomainMembership is an Active Directory Domain membership
+                      record associated with the DB instance. Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/DomainMembership
+                    properties:
+                      domain:
+                        description: Domain is the identifier of the Active Directory
+                          Domain.
+                        type: string
+                      fqdn:
+                        description: FQDN us the fully qualified domain name of the
+                          Active Directory Domain.
+                        type: string
+                      iamRoleName:
+                        description: IAMRoleName is the name of the IAM role to be
+                          used when making API calls to the Directory Service.
+                        type: string
+                      status:
+                        description: Status of the DB instance's Active Directory
+                          Domain membership, such as joined, pending-join, failed
+                          etc).
+                        type: string
+                    type: object
+                  type: array
+                endpoint:
+                  description: Endpoint specifies the connection endpoint.
+                  properties:
+                    address:
+                      description: Address specifies the DNS address of the DB instance.
+                      type: string
+                    hostedZoneId:
+                      description: HostedZoneID specifies the ID that Amazon Route
+                        53 assigns when you create a hosted zone.
+                      type: string
+                    port:
+                      description: Port specifies the port that the database engine
+                        is listening on.
+                      type: integer
+                  type: object
+                enhancedMonitoringResourceArn:
+                  description: EnhancedMonitoringResourceArn is the Amazon Resource
+                    Name (ARN) of the Amazon CloudWatch Logs log stream that receives
+                    the Enhanced Monitoring metrics data for the DB instance.
+                  type: string
+                instanceCreateTime:
+                  description: InstanceCreateTime provides the date and time the DB
+                    instance was created.
+                  format: date-time
+                  type: string
+                latestRestorableTime:
+                  description: LatestRestorableTime specifies the latest time to which
+                    a database can be restored with point-in-time restore.
+                  format: date-time
+                  type: string
+                optionGroupMemberships:
+                  description: OptionGroupMemberships provides the list of option
+                    group memberships for this DB instance.
+                  items:
+                    description: OptionGroupMembership provides information on the
+                      option groups the DB instance is a member of. Please also see
+                      https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/OptionGroupMembership
+                    properties:
+                      optionGroupName:
+                        description: OptionGroupName is the name of the option group
+                          that the instance belongs to.
+                        type: string
+                      status:
+                        description: 'Status is the status of the DB instance''s option
+                          group membership. Valid values are: in-sync, pending-apply,
+                          pending-removal, pending-maintenance-apply, pending-maintenance-removal,
+                          applying, removing, and failed.'
+                        type: string
+                    type: object
+                  type: array
+                pendingModifiedValues:
+                  description: PendingModifiedValues specifies that changes to the
+                    DB instance are pending. This element is only included when changes
+                    are pending. Specific changes are identified by subelements.
+                  properties:
+                    allocatedStorage:
+                      description: AllocatedStorage contains the new AllocatedStorage
+                        size for the DB instance that will be applied or is currently
+                        being applied.
+                      type: integer
+                    backupRetentionPeriod:
+                      description: BackupRetentionPeriod specifies the pending number
+                        of days for which automated backups are retained.
+                      type: integer
+                    caCertificateIdentifier:
+                      description: CACertificateIdentifier specifies the identifier
+                        of the CA certificate for the DB instance.
+                      type: string
+                    dbInstanceClass:
+                      description: DBInstanceClass contains the new DBInstanceClass
+                        for the DB instance that will be applied or is currently being
+                        applied.
+                      type: string
+                    dbInstanceIdentifier:
+                      description: DBInstanceIdentifier contains the new DBInstanceIdentifier
+                        for the DB instance that will be applied or is currently being
+                        applied.
+                      type: string
+                    dbSubnetGroupName:
+                      description: DBSubnetGroupName is the new DB subnet group for
+                        the DB instance.
+                      type: string
+                    engineVersion:
+                      description: EngineVersion indicates the database engine version.
+                      type: string
+                    iops:
+                      description: Iops specifies the new Provisioned IOPS value for
+                        the DB instance that will be applied or is currently being
+                        applied.
+                      type: integer
+                    licenseModel:
+                      description: 'LicenseModel is the license model for the DB instance.
+                        Valid values: license-included | bring-your-own-license |
+                        general-public-license'
+                      type: string
+                    masterUserPassword:
+                      description: MasterUserPassword contains the pending or currently-in-progress
+                        change of the master credentials for the DB instance.
+                      type: string
+                    multiAZ:
+                      description: MultiAZ indicates that the Single-AZ DB instance
+                        is to change to a Multi-AZ deployment.
+                      type: boolean
+                    pendingCloudwatchLogsExports:
+                      description: PendingCloudwatchLogsExports is a list of the log
+                        types whose configuration is still pending. In other words,
+                        these log types are in the process of being activated or deactivated.
+                      properties:
+                        logTypesToDisable:
+                          description: LogTypesToDisable is list of log types that
+                            are in the process of being enabled. After they are enabled,
+                            these log types are exported to CloudWatch Logs.
+                          items:
+                            type: string
+                          type: array
+                        logTypesToEnable:
+                          description: LogTypesToEnable is the log types that are
+                            in the process of being deactivated. After they are deactivated,
+                            these log types aren't exported to CloudWatch Logs.
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    port:
+                      description: Port specifies the pending port for the DB instance.
+                      type: integer
+                    processorFeatures:
+                      description: ProcessorFeatures is the number of CPU cores and
+                        the number of threads per core for the DB instance class of
+                        the DB instance.
+                      items:
+                        description: ProcessorFeature is a processor feature entry.
+                          For more information, see Configuring the Processor of the
+                          DB Instance Class (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html#USER_ConfigureProcessor)
+                          in the Amazon RDS User Guide. Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/ProcessorFeature
+                        properties:
+                          name:
+                            description: Name of the processor feature. Valid names
+                              are coreCount and threadsPerCore.
+                            type: string
+                          value:
+                            description: Value of a processor feature name.
+                            type: string
+                        required:
+                        - name
+                        - value
+                        type: object
+                      type: array
+                    storageType:
+                      description: StorageType specifies the storage type to be associated
+                        with the DB instance.
+                      type: string
+                  type: object
+                performanceInsightsEnabled:
+                  description: PerformanceInsightsEnabled is true if Performance Insights
+                    is enabled for the DB instance, and otherwise false.
+                  type: boolean
+                readReplicaDBClusterIdentifiers:
+                  description: ReadReplicaDBClusterIdentifiers contains one or more
+                    identifiers of Aurora DB clusters to which the RDS DB instance
+                    is replicated as a Read Replica. For example, when you create
+                    an Aurora Read Replica of an RDS MySQL DB instance, the Aurora
+                    MySQL DB cluster for the Aurora Read Replica is shown. This output
+                    does not contain information about cross region Aurora Read Replicas.
+                  items:
+                    type: string
+                  type: array
+                readReplicaDBInstanceIdentifiers:
+                  description: ReadReplicaDBInstanceIdentifiers contains one or more
+                    identifiers of the Read Replicas associated with this DB instance.
+                  items:
+                    type: string
+                  type: array
+                readReplicaSourceDBInstanceIdentifier:
+                  description: ReadReplicaSourceDBInstanceIdentifier contains the
+                    identifier of the source DB instance if this DB instance is a
+                    Read Replica.
+                  type: string
+                secondaryAvailabilityZone:
+                  description: SecondaryAvailabilityZone specifies the name of the
+                    secondary Availability Zone for a DB instance with multi-AZ support
+                    when it is present.
+                  type: string
+                statusInfos:
+                  description: StatusInfos is the status of a Read Replica. If the
+                    instance is not a Read Replica, this is blank.
+                  items:
+                    description: DBInstanceStatusInfo provides a list of status information
+                      for a DB instance. Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/DBInstanceStatusInfo
+                    properties:
+                      message:
+                        description: Message is the details of the error if there
+                          is an error for the instance. If the instance is not in
+                          an error state, this value is blank.
+                        type: string
+                      normal:
+                        description: Normal is true if the instance is operating normally,
+                          or false if the instance is in an error state.
+                        type: boolean
+                      status:
+                        description: Status of the DB instance. For a StatusType of
+                          read replica, the values can be replicating, replication
+                          stop point set, replication stop point reached, error, stopped,
+                          or terminated.
+                        type: string
+                      statusType:
+                        description: StatusType is currently "read replication."
+                        type: string
+                    type: object
+                  type: array
+                vpcSecurityGroups:
+                  description: VPCSecurityGroups provides a list of VPC security group
+                    elements that the DB instance belongs to.
+                  items:
+                    description: VPCSecurityGroupMembership is used as a response
+                      element for queries on VPC security group membership. Please
+                      also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/VpcSecurityGroupMembership
+                    properties:
+                      status:
+                        description: Status is the status of the VPC security group.
+                        type: string
+                      vpcSecurityGroupId:
+                        description: VPCSecurityGroupID is the name of the VPC security
+                          group.
+                        type: string
+                    type: object
+                  type: array
+              type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource
                 or claim. Unbindable resources cannot be bound, typically because
@@ -296,18 +1167,6 @@ spec:
                 - type
                 type: object
               type: array
-            endpoint:
-              description: Endpoint of this RDS instance.
-              type: string
-            instanceName:
-              description: InstanceName of this RDS instance.
-              type: string
-            providerID:
-              description: ProviderID is the AWS identifier for this RDS instance.
-              type: string
-            state:
-              description: State of this RDS instance.
-              type: string
           type: object
       type: object
   version: v1alpha2

@@ -143,14 +143,14 @@ func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resour
 		ResourceSpec: runtimev1alpha1.ResourceSpec{
 			ReclaimPolicy: runtimev1alpha1.ReclaimRetain,
 		},
-		RDSInstanceParameters: rs.SpecTemplate.RDSInstanceParameters,
+		ForProvider: rs.SpecTemplate.ForProvider,
 	}
-	spec.Engine = v1alpha2.PostgresqlEngine
-	v, err := validateEngineVersion(spec.EngineVersion, pg.Spec.EngineVersion)
+	spec.ForProvider.Engine = v1alpha2.PostgresqlEngine
+	v, err := validateEngineVersion(spec.ForProvider.EngineVersion, pg.Spec.EngineVersion)
 	if err != nil {
 		return err
 	}
-	spec.EngineVersion = v
+	spec.ForProvider.EngineVersion = v
 
 	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
 		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,
@@ -275,14 +275,14 @@ func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.Cl
 		ResourceSpec: runtimev1alpha1.ResourceSpec{
 			ReclaimPolicy: runtimev1alpha1.ReclaimRetain,
 		},
-		RDSInstanceParameters: rs.SpecTemplate.RDSInstanceParameters,
+		ForProvider: rs.SpecTemplate.ForProvider,
 	}
-	spec.Engine = v1alpha2.MysqlEngine
-	v, err := validateEngineVersion(spec.EngineVersion, my.Spec.EngineVersion)
+	spec.ForProvider.Engine = v1alpha2.MysqlEngine
+	v, err := validateEngineVersion(spec.ForProvider.EngineVersion, my.Spec.EngineVersion)
 	if err != nil {
 		return err
 	}
-	spec.EngineVersion = v
+	spec.ForProvider.EngineVersion = v
 
 	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
 		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,
