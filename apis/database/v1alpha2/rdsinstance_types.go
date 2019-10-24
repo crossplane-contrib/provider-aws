@@ -24,7 +24,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	network "github.com/crossplaneio/stack-aws/apis/network/v1alpha2"
-	storage "github.com/crossplaneio/stack-aws/apis/storage/v1alpha2"
 )
 
 // Error strings
@@ -56,7 +55,7 @@ func (v *SecurityGroupIDReferencerForRDSInstance) Assign(res resource.CanReferen
 
 // DBSubnetGroupNameReferencerForRDSInstance is an attribute referencer that retrieves the name from a referenced DBSubnetGroup
 type DBSubnetGroupNameReferencerForRDSInstance struct {
-	storage.DBSubnetGroupNameReferencer `json:",inline"`
+	DBSubnetGroupNameReferencer `json:",inline"`
 }
 
 // Assign assigns the retrieved value to the managed resource
