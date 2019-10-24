@@ -24,6 +24,8 @@ import (
 
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
+
+	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 )
 
 var _ resource.AttributeReferencer = (*VPCSecurityGroupIDReferencerForRDSInstance)(nil)
@@ -40,7 +42,7 @@ func TestSecurityGroupIDReferencerForRDSInstance_AssignInvalidType_ReturnsErr(t 
 	}
 }
 
-func TestSecurityGroupIDReferencerForRDSInstance_AssignValidType_ReturnsExpected(t *testing.T) {
+func TestVPCSecurityGroupIDReferencerForRDSInstance_AssignValidType_ReturnsExpected(t *testing.T) {
 
 	r := &VPCSecurityGroupIDReferencerForRDSInstance{}
 	res := &RDSInstance{}
@@ -79,7 +81,7 @@ func TestDBSubnetGroupNameReferencerForRDSInstance_AssignValidType_ReturnsExpect
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
 
-	if diff := cmp.Diff(res.Spec.ForProvider.DBSubnetGroupName, &mockValue); diff != "" {
+	if diff := cmp.Diff(res.Spec.ForProvider.DBSubnetGroupName, aws.String("mockValue")); diff != "" {
 		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
 	}
 }

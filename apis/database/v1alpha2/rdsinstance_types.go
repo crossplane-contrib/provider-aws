@@ -534,21 +534,21 @@ type RDSInstanceParameters struct {
 	// MonitoringInterval is the interval, in seconds, between points when Enhanced Monitoring metrics
 	// are collected for the DB instance. To disable collecting Enhanced Monitoring
 	// metrics, specify 0. The default is 0.
-	// If MonitoringRoleArn is specified, then you must also set MonitoringInterval
+	// If MonitoringRoleARN is specified, then you must also set MonitoringInterval
 	// to a value other than 0.
 	// Valid Values: 0, 1, 5, 10, 15, 30, 60
 	// +optional
 	MonitoringInterval *int `json:"monitoringInterval,omitempty"`
 
-	// MonitoringRoleArn is the ARN for the IAM role that permits RDS to send enhanced monitoring metrics
+	// MonitoringRoleARN is the ARN for the IAM role that permits RDS to send enhanced monitoring metrics
 	// to Amazon CloudWatch Logs. For example, arn:aws:iam:123456789012:role/emaccess.
 	// For information on creating a monitoring role, go to Setting Up and Enabling
 	// Enhanced Monitoring (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.html#USER_Monitoring.OS.Enabling)
 	// in the Amazon RDS User Guide.
 	// If MonitoringInterval is set to a value other than 0, then you must supply
-	// a MonitoringRoleArn value.
+	// a MonitoringRoleARN value.
 	// +optional
-	MonitoringRoleArn *string `json:"monitoringRoleArn,omitempty"`
+	MonitoringRoleARN *string `json:"monitoringRoleArn,omitempty"`
 
 	// MultiAZ specifies if the DB instance is a Multi-AZ deployment. You can't set the
 	// AvailabilityZone parameter if the MultiAZ parameter is set to true.
@@ -707,14 +707,15 @@ type RDSInstanceParameters struct {
 	// +optional
 	Tags []Tag `json:"tags,omitempty"`
 
-	// TdeCredentialArn is the ARN from the key store with which to associate the instance for TDE encryption.
+	// TODO(muvaf): get this password as input when we have a way of supplying
+	// sensitive information as input from the user.
+	// TDECredentialArn is the ARN from the key store with which to associate the instance for TDE encryption.
 	// +optional
-	TdeCredentialArn *string `json:"tdeCredentialArn,omitempty"`
-
-	// TdeCredentialPassword is the password for the given ARN from the key store in order to access the
+	// TDECredentialArn *string `json:"tdeCredentialArn,omitempty"`
+	// TDECredentialPassword is the password for the given ARN from the key store in order to access the
 	// device.
 	// +optional
-	TdeCredentialPassword *string `json:"TteCredentialPassword,omitempty"`
+	//TDECredentialPassword *string `json:"tdeCredentialPassword,omitempty"`
 
 	// Timezone of the DB instance. The time zone parameter is currently supported
 	// only by Microsoft SQL Server (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.TimeZone).
@@ -1089,6 +1090,7 @@ type RDSInstanceStatus struct {
 // +kubebuilder:printcolumn:name="CLASS",type="string",JSONPath=".spec.classRef.name"
 // +kubebuilder:printcolumn:name="VERSION",type="string",JSONPath=".spec.engineVersion"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster
 type RDSInstance struct {
 	metav1.TypeMeta   `json:",inline"`

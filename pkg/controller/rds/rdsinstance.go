@@ -29,34 +29,30 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 
-	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
 	"github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
 	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
 )
 
 const (
-	errNotRDSInstance = "managed resource is not an RDS instance custom resource"
+	errNotRDSInstance   = "managed resource is not an RDS instance custom resource"
+	errKubeUpdateFailed = "cannot update RDS instance custom resource"
+
+	errCreateRDSClient   = "cannot create RDS client"
+	errGetProvider       = "cannot get provider"
+	errGetProviderSecret = "cannot get provider secret"
+
+	errCreateFailed   = "cannot create RDS instance"
+	errModifyFailed   = "cannot modify RDS instance"
+	errDeleteFailed   = "cannot delete RDS instance"
+	errDescribeFailed = "cannot describe RDS instance"
 )
-
-// Reconciler reconciles a Instance object
-type Reconciler struct {
-	client.Client
-	resource.ManagedReferenceResolver
-	resource.ManagedConnectionPublisher
-
-	connect func(*v1alpha2.RDSInstance) (rds.Client, error)
-	create  func(*v1alpha2.RDSInstance, rds.Client) (reconcile.Result, error)
-	sync    func(*v1alpha2.RDSInstance, rds.Client) (reconcile.Result, error)
-	delete  func(*v1alpha2.RDSInstance, rds.Client) (reconcile.Result, error)
-}
 
 // RDSInstanceController is responsible for adding the RDSInstance
 // controller and its corresponding reconciler to the manager with any runtime configuration.
@@ -72,11 +68,11 @@ func (c *RDSInstanceController) SetupWithManager(mgr ctrl.Manager) error {
 			newClientFn: rds.NewClient,
 		}))
 
-	name := strings.ToLower(fmt.Sprintf("%s.%s", v1beta1.ReplicationGroupKind, v1beta1.Group))
+	name := strings.ToLower(fmt.Sprintf("%s.%s", v1alpha2.RDSInstanceKind, v1alpha2.Group))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1beta1.ReplicationGroup{}).
+		For(&v1alpha2.RDSInstance{}).
 		Complete(r)
 }
 
@@ -93,17 +89,17 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (resource.
 
 	p := &awsv1alpha2.Provider{}
 	if err := c.kube.Get(ctx, meta.NamespacedNameOf(cr.Spec.ProviderReference), p); err != nil {
-		return nil, errors.Wrap(err, "cannot get provider")
+		return nil, errors.Wrap(err, errGetProvider)
 	}
 
 	s := &corev1.Secret{}
 	n := types.NamespacedName{Namespace: p.Spec.Secret.Namespace, Name: p.Spec.Secret.Name}
 	if err := c.kube.Get(ctx, n, s); err != nil {
-		return nil, errors.Wrap(err, "cannot get provider secret")
+		return nil, errors.Wrap(err, errGetProviderSecret)
 	}
 
 	rdsClient, err := c.newClientFn(s.Data[p.Spec.Secret.Key], p.Spec.Region)
-	return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, "cannot create RDS client")
+	return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, errCreateRDSClient)
 }
 
 type external struct {
@@ -120,15 +116,18 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 	req.SetContext(ctx)
 	rsp, err := req.Send()
 	if err != nil {
-		return resource.ExternalObservation{}, errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), "cannot describe RDS instance")
+		return resource.ExternalObservation{}, errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDescribeFailed)
 	}
 
+	// Describe requests can be used with filters, which then returns a list.
+	// But we use an explicit identifier, so, if there is no error, there should
+	// be only 1 element in the list.
 	instance := rsp.DBInstances[0]
 	current := cr.Spec.ForProvider.DeepCopy()
 	rds.LateInitialize(&cr.Spec.ForProvider, instance)
 	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
-			return resource.ExternalObservation{}, errors.Wrap(err, "cannot update RDS instance custom resource")
+			return resource.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
 		}
 	}
 	cr.Status.AtProvider = rds.GenerateObservation(instance)
@@ -147,7 +146,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 
 	return resource.ExternalObservation{
 		ResourceExists:    true,
-		ResourceUpToDate:  !rds.NeedsUpdate(cr.Spec.ForProvider, instance),
+		ResourceUpToDate:  rds.IsUpToDate(cr.Spec.ForProvider, instance),
 		ConnectionDetails: rds.GetConnectionDetails(*cr),
 	}, nil
 }
@@ -165,13 +164,16 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.Ex
 	req := e.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), password, &cr.Spec.ForProvider))
 	req.SetContext(ctx)
 	_, err = req.Send()
+	if err != nil {
+		return resource.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
+	}
 	conn := resource.ConnectionDetails{
 		runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(password),
 	}
 	if cr.Spec.ForProvider.MasterUsername != nil {
 		conn[runtimev1alpha1.ResourceCredentialsSecretUserKey] = []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername))
 	}
-	return resource.ExternalCreation{ConnectionDetails: conn}, errors.Wrap(err, "cannot create RDS instance")
+	return resource.ExternalCreation{ConnectionDetails: conn}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.ExternalUpdate, error) {
@@ -182,7 +184,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.Ex
 	req := e.client.ModifyDBInstanceRequest(rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
 	req.SetContext(ctx)
 	_, err := req.Send()
-	return resource.ExternalUpdate{}, errors.Wrap(err, "cannot modify RDS instance")
+	return resource.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -197,5 +199,5 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	req := e.client.DeleteDBInstanceRequest(&input)
 	req.SetContext(ctx)
 	_, err := req.Send()
-	return errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), "cannot delete RDS instance")
+	return errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
 }

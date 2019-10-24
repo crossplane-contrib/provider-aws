@@ -120,6 +120,15 @@ func LateInitializeStringPtr(in *string, from *string) *string {
 	return from
 }
 
+// LateInitializeString returns `from` if `in` is empty and `from` is non-nil,
+// in other cases it returns `in`.
+func LateInitializeString(in string, from *string) string {
+	if in == "" && from != nil {
+		return *from
+	}
+	return in
+}
+
 // Int64 converts the supplied int for use with the AWS Go SDK.
 func Int64(v int, o ...FieldOption) *int64 {
 	for _, fo := range o {

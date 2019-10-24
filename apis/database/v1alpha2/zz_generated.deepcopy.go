@@ -758,8 +758,8 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		*out = new(int)
 		**out = **in
 	}
-	if in.MonitoringRoleArn != nil {
-		in, out := &in.MonitoringRoleArn, &out.MonitoringRoleArn
+	if in.MonitoringRoleARN != nil {
+		in, out := &in.MonitoringRoleARN, &out.MonitoringRoleARN
 		*out = new(string)
 		**out = **in
 	}
@@ -837,16 +837,6 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		in, out := &in.Tags, &out.Tags
 		*out = make([]Tag, len(*in))
 		copy(*out, *in)
-	}
-	if in.TdeCredentialArn != nil {
-		in, out := &in.TdeCredentialArn, &out.TdeCredentialArn
-		*out = new(string)
-		**out = **in
-	}
-	if in.TdeCredentialPassword != nil {
-		in, out := &in.TdeCredentialPassword, &out.TdeCredentialPassword
-		*out = new(string)
-		**out = **in
 	}
 	if in.Timezone != nil {
 		in, out := &in.Timezone, &out.Timezone
