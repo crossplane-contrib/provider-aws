@@ -23,7 +23,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	rds2 "github.com/aws/aws-sdk-go-v2/service/rds"
-	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -38,6 +37,7 @@ import (
 
 	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
 	"github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
+	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
 )
 
@@ -123,7 +123,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 		return resource.ExternalObservation{}, errors.Wrap(err, "cannot get RDS instance from AWS")
 	}
 
-	switch cr.Status.State {
+	switch cr.Status.AtProvider.DBInstanceStatus {
 	case string(v1alpha2.RDSInstanceStateAvailable):
 		cr.Status.SetConditions(runtimev1alpha1.Available())
 		resource.SetBindable(cr)
@@ -150,10 +150,10 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (resource.Ex
 	if err != nil {
 		return resource.ExternalCreation{}, err
 	}
-	_, err = c.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), password, &cr.Spec)).Send()
+	_, err = c.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), password, &cr.Spec.ForProvider)).Send()
 	return resource.ExternalCreation{
 		ConnectionDetails: resource.ConnectionDetails{
-			runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(cr.Spec.ForProvider.MasterUsername),
+			runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername)),
 			runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(password),
 		}}, errors.Wrap(err, "cannot create RDS instance")
 }
@@ -163,7 +163,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (resource.Ex
 	if !ok {
 		return resource.ExternalUpdate{}, errors.New(errNotRDSInstance)
 	}
-	_, err := c.client.ModifyDBInstanceRequest(rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), &cr.Spec)).Send()
+	_, err := c.client.ModifyDBInstanceRequest(rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)).Send()
 	return resource.ExternalUpdate{}, errors.Wrap(err, "cannot modify RDS instance")
 }
 
