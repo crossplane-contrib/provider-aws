@@ -818,6 +818,11 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		*out = new(ScalingConfiguration)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.SkipFinalSnapshotBeforeDeletion != nil {
+		in, out := &in.SkipFinalSnapshotBeforeDeletion, &out.SkipFinalSnapshotBeforeDeletion
+		*out = new(bool)
+		**out = **in
+	}
 	if in.StorageEncrypted != nil {
 		in, out := &in.StorageEncrypted, &out.StorageEncrypted
 		*out = new(bool)

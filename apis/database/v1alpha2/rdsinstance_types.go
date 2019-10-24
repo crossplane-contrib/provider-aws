@@ -673,6 +673,18 @@ type RDSInstanceParameters struct {
 	// +optional
 	ScalingConfiguration *ScalingConfiguration `json:"scalingConfiguration,omitempty"`
 
+	// Determines whether a final DB snapshot is created before the DB instance
+	// is deleted. If true is specified, no DBSnapshot is created. If false is specified,
+	// a DB snapshot is created before the DB instance is deleted.
+	// Note that when a DB instance is in a failure state and has a status of 'failed',
+	// 'incompatible-restore', or 'incompatible-network', it can only be deleted
+	// when the SkipFinalSnapshotBeforeDeletion parameter is set to "true".
+	// Specify true when deleting a Read Replica.
+	// The FinalDBSnapshotIdentifier parameter must be specified if SkipFinalSnapshotBeforeDeletion
+	// is false.
+	// Default: false
+	SkipFinalSnapshotBeforeDeletion *bool `json:"skipFinalSnapshotBeforeDeletion,omitempty"`
+
 	// StorageEncrypted specifies whether the DB instance is encrypted.
 	// Amazon Aurora
 	// Not applicable. The encryption for DB instances is managed by the DB cluster.
