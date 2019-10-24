@@ -8,7 +8,7 @@ This `stack-aws` repository is the implementation of a Crossplane infrastructure
 The stack that is built from the source code in this repository can be installed into a Crossplane control plane and adds the following new functionality:
 
 * Custom Resource Definitions (CRDs) that model AWS infrastructure and services (e.g. [Amazon Relational Database Service (RDS)](https://aws.amazon.com/rds/), [EKS clusters](https://aws.amazon.com/eks/), etc.)
-* Controllers to provision these resources in AWS based on the users desired state captured in CRDs they create
+* Controllers to provide these resources in AWS based on the users desired state captured in CRDs they create
 * Implementations of Crossplane's [portable resource abstractions](https://crossplane.io/docs/master/running-resources.html), enabling AWS resources to fulfill a user's general need for cloud services
 
 ## Getting Started and Documentation
@@ -17,7 +17,7 @@ For getting started guides, installation, deployment, and administration, see ou
 
 ## Contributing
 
-Stack-AWS is a community driven project and we welcome contributions.
+Stack-AWS is a community-driven project and we welcome contributions.
 See the Crossplane [Contributing](https://github.com/crossplaneio/crossplane/blob/master/CONTRIBUTING.md) guidelines to get started.
 
 ## Report a Bug
