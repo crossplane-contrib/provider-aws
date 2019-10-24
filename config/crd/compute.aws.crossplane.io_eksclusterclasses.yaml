@@ -22,13 +22,12 @@ spec:
     listKind: EKSClusterClassList
     plural: eksclusterclasses
     singular: eksclusterclass
-  scope: ""
+  scope: Cluster
   subresources: {}
   validation:
     openAPIV3Schema:
-      description: An EKSClusterClass is a non-portable resource class. It defines
-        the desired spec of resource claims that use it to dynamically provision a
-        managed resource.
+      description: An EKSClusterClass is a resource class. It defines the desired
+        spec of resource claims that use it to dynamically provision a managed resource.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -346,10 +345,16 @@ spec:
               required:
               - nodeInstanceType
               type: object
+            writeConnectionSecretsToNamespace:
+              description: WriteConnectionSecretsToNamespace specifies the namespace
+                in which the connection secrets of managed resources dynamically provisioned
+                using this claim will be created.
+              type: string
           required:
           - providerRef
           - region
           - workerNodes
+          - writeConnectionSecretsToNamespace
           type: object
       required:
       - specTemplate

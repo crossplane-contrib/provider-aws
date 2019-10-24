@@ -19,13 +19,7 @@ package aws
 import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-ini/ini"
-	"k8s.io/client-go/kubernetes"
-
-	"github.com/crossplaneio/stack-aws/apis/v1alpha2"
-
-	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 )
 
 // DefaultSection for INI files.
@@ -93,24 +87,6 @@ func LoadConfig(data []byte, profile, region string) (*aws.Config, error) {
 
 	config, err := external.LoadDefaultAWSConfig(shared)
 	return &config, err
-}
-
-// ValidateConfig - validates AWS configuration by issuing list s3 buckets request
-// TODO: find a better way to validate credentials
-func ValidateConfig(config *aws.Config) error {
-	svc := s3.New(*config)
-	_, err := svc.ListBucketsRequest(nil).Send()
-	return err
-}
-
-// Config - crate AWS Config based on credentials data using [default] profile
-func Config(client kubernetes.Interface, p *v1alpha2.Provider) (*aws.Config, error) {
-	data, err := util.SecretData(client, p.Namespace, p.Spec.Secret)
-	if err != nil {
-		return nil, err
-	}
-
-	return LoadConfig(data, DefaultSection, p.Spec.Region)
 }
 
 // String converts the supplied string for use with the AWS Go SDK.

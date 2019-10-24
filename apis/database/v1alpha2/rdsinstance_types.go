@@ -155,6 +155,7 @@ type RDSInstanceStatus struct {
 // +kubebuilder:printcolumn:name="CLASS",type="string",JSONPath=".spec.classRef.name"
 // +kubebuilder:printcolumn:name="VERSION",type="string",JSONPath=".spec.engineVersion"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:resource:scope=Cluster
 type RDSInstance struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -162,8 +163,6 @@ type RDSInstance struct {
 	Spec   RDSInstanceSpec   `json:"spec,omitempty"`
 	Status RDSInstanceStatus `json:"status,omitempty"`
 }
-
-var _ resource.Managed = (*RDSInstance)(nil)
 
 // +kubebuilder:object:root=true
 
@@ -177,18 +176,18 @@ type RDSInstanceList struct {
 // An RDSInstanceClassSpecTemplate is a template for the spec of a dynamically
 // provisioned RDSInstance.
 type RDSInstanceClassSpecTemplate struct {
-	runtimev1alpha1.NonPortableClassSpecTemplate `json:",inline"`
-	RDSInstanceParameters                        `json:",inline"`
+	runtimev1alpha1.ClassSpecTemplate `json:",inline"`
+	RDSInstanceParameters             `json:",inline"`
 }
 
 // +kubebuilder:object:root=true
 
-// An RDSInstanceClass is a non-portable resource class. It defines the desired
-// spec of resource claims that use it to dynamically provision a managed
-// resource.
+// An RDSInstanceClass is a resource class. It defines the desired spec of
+// resource claims that use it to dynamically provision a managed resource.
 // +kubebuilder:printcolumn:name="PROVIDER-REF",type="string",JSONPath=".specTemplate.providerRef.name"
 // +kubebuilder:printcolumn:name="RECLAIM-POLICY",type="string",JSONPath=".specTemplate.reclaimPolicy"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:resource:scope=Cluster
 type RDSInstanceClass struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

@@ -36,10 +36,10 @@ type SecurityGroupIDReferencer struct {
 }
 
 // GetStatus implements GetStatus method of AttributeReferencer interface
-func (v *SecurityGroupIDReferencer) GetStatus(ctx context.Context, res resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
+func (v *SecurityGroupIDReferencer) GetStatus(ctx context.Context, _ resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
 	sg := SecurityGroup{}
 
-	nn := types.NamespacedName{Name: v.Name, Namespace: res.GetNamespace()}
+	nn := types.NamespacedName{Name: v.Name}
 	if err := reader.Get(ctx, nn, &sg); err != nil {
 		if kerrors.IsNotFound(err) {
 			return []resource.ReferenceStatus{{Name: v.Name, Status: resource.ReferenceNotFound}}, nil
@@ -56,9 +56,9 @@ func (v *SecurityGroupIDReferencer) GetStatus(ctx context.Context, res resource.
 }
 
 // Build retrieves and builds the SubnetID
-func (v *SecurityGroupIDReferencer) Build(ctx context.Context, res resource.CanReference, reader client.Reader) (string, error) {
+func (v *SecurityGroupIDReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
 	sg := SecurityGroup{}
-	nn := types.NamespacedName{Name: v.Name, Namespace: res.GetNamespace()}
+	nn := types.NamespacedName{Name: v.Name}
 	if err := reader.Get(ctx, nn, &sg); err != nil {
 		return "", err
 	}

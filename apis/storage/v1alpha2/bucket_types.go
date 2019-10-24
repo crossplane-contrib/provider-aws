@@ -89,6 +89,7 @@ type S3BucketStatus struct {
 // +kubebuilder:printcolumn:name="PREDEFINED-ACL",type="string",JSONPath=".spec.cannedACL"
 // +kubebuilder:printcolumn:name="LOCAL-PERMISSION",type="string",JSONPath=".spec.localPermission"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:resource:scope=Cluster
 type S3Bucket struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -109,18 +110,18 @@ type S3BucketList struct {
 // An S3BucketClassSpecTemplate is a template for the spec of a dynamically
 // provisioned S3Bucket.
 type S3BucketClassSpecTemplate struct {
-	runtimev1alpha1.NonPortableClassSpecTemplate `json:",inline"`
-	S3BucketParameters                           `json:",inline"`
+	runtimev1alpha1.ClassSpecTemplate `json:",inline"`
+	S3BucketParameters                `json:",inline"`
 }
 
 // +kubebuilder:object:root=true
 
-// An S3BucketClass is a non-portable resource class. It defines the desired
-// spec of resource claims that use it to dynamically provision a managed
-// resource.
+// An S3BucketClass is a resource class. It defines the desired spec of resource
+// claims that use it to dynamically provision a managed resource.
 // +kubebuilder:printcolumn:name="PROVIDER-REF",type="string",JSONPath=".specTemplate.providerRef.name"
 // +kubebuilder:printcolumn:name="RECLAIM-POLICY",type="string",JSONPath=".specTemplate.reclaimPolicy"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:resource:scope=Cluster
 type S3BucketClass struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

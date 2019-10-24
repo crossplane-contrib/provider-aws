@@ -36,14 +36,14 @@ type IAMRoleARNReferencer struct {
 }
 
 // GetStatus implements GetStatus method of AttributeReferencer interface
-func (v *IAMRoleARNReferencer) GetStatus(ctx context.Context, res resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
-	return getRoleStatus(ctx, v.Name, res, reader)
+func (v *IAMRoleARNReferencer) GetStatus(ctx context.Context, _ resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
+	return getRoleStatus(ctx, v.Name, reader)
 }
 
 // Build retrieves and builds the IAMRoleARN
-func (v *IAMRoleARNReferencer) Build(ctx context.Context, res resource.CanReference, reader client.Reader) (string, error) {
+func (v *IAMRoleARNReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
 	role := IAMRole{}
-	nn := types.NamespacedName{Name: v.Name, Namespace: res.GetNamespace()}
+	nn := types.NamespacedName{Name: v.Name}
 	if err := reader.Get(ctx, nn, &role); err != nil {
 		return "", err
 	}
@@ -57,14 +57,14 @@ type IAMRoleNameReferencer struct {
 }
 
 // GetStatus implements GetStatus method of AttributeReferencer interface
-func (v *IAMRoleNameReferencer) GetStatus(ctx context.Context, res resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
-	return getRoleStatus(ctx, v.Name, res, reader)
+func (v *IAMRoleNameReferencer) GetStatus(ctx context.Context, _ resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
+	return getRoleStatus(ctx, v.Name, reader)
 }
 
 // Build retrieves and builds the IAMRoleName
-func (v *IAMRoleNameReferencer) Build(ctx context.Context, res resource.CanReference, reader client.Reader) (string, error) {
+func (v *IAMRoleNameReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
 	role := IAMRole{}
-	nn := types.NamespacedName{Name: v.Name, Namespace: res.GetNamespace()}
+	nn := types.NamespacedName{Name: v.Name}
 	if err := reader.Get(ctx, nn, &role); err != nil {
 		return "", err
 	}
@@ -72,9 +72,9 @@ func (v *IAMRoleNameReferencer) Build(ctx context.Context, res resource.CanRefer
 	return role.Spec.RoleName, nil
 }
 
-func getRoleStatus(ctx context.Context, name string, res resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
+func getRoleStatus(ctx context.Context, name string, reader client.Reader) ([]resource.ReferenceStatus, error) {
 	role := IAMRole{}
-	nn := types.NamespacedName{Name: name, Namespace: res.GetNamespace()}
+	nn := types.NamespacedName{Name: name}
 	if err := reader.Get(ctx, nn, &role); err != nil {
 		if kerrors.IsNotFound(err) {
 			return []resource.ReferenceStatus{{Name: name, Status: resource.ReferenceNotFound}}, nil

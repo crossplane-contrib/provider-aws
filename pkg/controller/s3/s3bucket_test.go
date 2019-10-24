@@ -17,6 +17,7 @@ limitations under the License.
 package s3
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -27,17 +28,13 @@ import (
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	. "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/kubernetes/scheme"
-	. "k8s.io/client-go/testing"
 	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/crossplaneio/stack-aws/apis/storage/v1alpha2"
 	. "github.com/crossplaneio/stack-aws/apis/storage/v1alpha2"
-	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
 	client "github.com/crossplaneio/stack-aws/pkg/clients/s3"
 	. "github.com/crossplaneio/stack-aws/pkg/clients/s3/fake"
 
@@ -49,15 +46,13 @@ import (
 )
 
 const (
-	namespace    = "default"
-	providerName = "test-provider"
-	bucketName   = "test-bucket"
+	namespace  = "default"
+	bucketName = "test-bucket"
 )
 
 var (
 	key = types.NamespacedName{
-		Namespace: namespace,
-		Name:      bucketName,
+		Name: bucketName,
 	}
 	request = reconcile.Request{
 		NamespacedName: key,
@@ -70,22 +65,12 @@ func init() {
 	}
 }
 
-func testProvider() *awsv1alpha2.Provider {
-	return &awsv1alpha2.Provider{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      providerName,
-			Namespace: namespace,
-		},
-	}
-}
-
 func testResource() *S3Bucket {
 	perm := storagev1alpha1.ReadOnlyPermission
 	testIAMUsername := "test-username"
 	return &S3Bucket{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      bucketName,
-			Namespace: namespace,
+			Name: bucketName,
 		},
 		Spec: S3BucketSpec{
 			ResourceSpec:       runtimev1alpha1.ResourceSpec{ProviderReference: &corev1.ObjectReference{}},
@@ -112,7 +97,6 @@ func TestSyncBucketError(t *testing.T) {
 	assert := func(instance *S3Bucket, client client.Service, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) {
 		r := &Reconciler{
 			Client:                   NewFakeClient(instance),
-			kubeclient:               NewSimpleClientset(),
 			ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
 		}
 
@@ -197,7 +181,6 @@ func TestSyncBucket(t *testing.T) {
 
 	r := &Reconciler{
 		Client:                   NewFakeClient(tr),
-		kubeclient:               NewSimpleClientset(),
 		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
 	}
 	//
@@ -231,7 +214,6 @@ func TestDelete(t *testing.T) {
 
 	r := &Reconciler{
 		Client:                   NewFakeClient(tr),
-		kubeclient:               NewSimpleClientset(),
 		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
 	}
 
@@ -283,12 +265,10 @@ func TestCreate(t *testing.T) {
 
 	tr := testResource()
 
-	tk := NewSimpleClientset()
-
 	r := &Reconciler{
-		Client:                   NewFakeClient(tr),
-		kubeclient:               tk,
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
+		Client:                     NewFakeClient(tr),
+		ManagedReferenceResolver:   resource.NewAPIManagedReferenceResolver(NewFakeClient()),
+		ManagedConnectionPublisher: resource.PublisherChain{}, // A no-op publisher.
 	}
 
 	createOrUpdateBucketCalled := false
@@ -319,20 +299,11 @@ func TestCreate(t *testing.T) {
 	g.Expect(createUserCalled).To(BeTrue())
 	assertResource(g, r, expectedStatus)
 	g.Expect(resource.Status.LastUserPolicyVersion).To(Equal(2))
-
-	// assertSecret
-	g.Expect(tk.Actions()).To(HaveLen(2))
-	g.Expect(tk.Actions()[0].GetVerb()).To(Equal("get"))
-	g.Expect(tk.Actions()[1].GetVerb()).To(Equal("create"))
-	s, err := tk.CoreV1().Secrets(tr.GetNamespace()).Get(tr.GetWriteConnectionSecretToReference().Name, metav1.GetOptions{})
-	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(s).NotTo(BeNil())
 }
 
 func TestCreateFail(t *testing.T) {
 	g := NewGomegaWithT(t)
 	tr := testResource()
-	tk := NewSimpleClientset()
 	cl := &MockS3Client{
 		MockCreateUser: func(username string, bucket *S3Bucket) (*iam.AccessKey, string, error) {
 			fakeKey := &iam.AccessKey{
@@ -346,17 +317,16 @@ func TestCreateFail(t *testing.T) {
 		},
 	}
 
+	testError := errors.New("test-publish-secret-error")
 	r := &Reconciler{
 		Client:                   NewFakeClient(tr),
-		kubeclient:               tk,
 		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
+		ManagedConnectionPublisher: resource.ManagedConnectionPublisherFns{
+			PublishConnectionFn: func(_ context.Context, _ resource.Managed, _ resource.ConnectionDetails) error {
+				return testError
+			},
+		},
 	}
-
-	// test apply secret error
-	testError := errors.New("test-get-secret-error")
-	tk.PrependReactor("get", "secrets", func(action Action) (handled bool, ret runtime.Object, err error) {
-		return true, nil, testError
-	})
 
 	expectedStatus := runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileError(testError))
@@ -368,7 +338,6 @@ func TestCreateFail(t *testing.T) {
 
 	// test create resource error
 	tr = testResource()
-	r.kubeclient = NewSimpleClientset()
 	testError = errors.New("test-create-user--error")
 	called := false
 	cl.MockCreateUser = func(username string, bucket *S3Bucket) (*iam.AccessKey, string, error) {
@@ -395,7 +364,6 @@ func TestCreateFail(t *testing.T) {
 	}
 
 	tr = testResource()
-	r.kubeclient = NewSimpleClientset()
 	testError = errors.New("test-create-bucket--error")
 	called = false
 	cl.MockCreateOrUpdateBucket = func(bucket *S3Bucket) error {
@@ -413,25 +381,6 @@ func TestCreateFail(t *testing.T) {
 	assertResource(g, r, expectedStatus)
 }
 
-func TestConnect(t *testing.T) {
-	g := NewGomegaWithT(t)
-
-	tp := testProvider()
-	tr := testResource()
-
-	r := &Reconciler{
-		Client:                   NewFakeClient(tp),
-		kubeclient:               NewSimpleClientset(),
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
-	}
-
-	// error getting aws config - secret is not found
-	r.Client = NewFakeClient(tp)
-	c, err := r._connect(tr)
-	g.Expect(c).To(BeNil())
-	g.Expect(err).To(Not(BeNil()))
-}
-
 func TestReconcile(t *testing.T) {
 	g := NewGomegaWithT(t)
 
@@ -440,7 +389,6 @@ func TestReconcile(t *testing.T) {
 
 	r := &Reconciler{
 		Client:                   NewFakeClient(tr),
-		kubeclient:               NewSimpleClientset(),
 		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
 	}
 

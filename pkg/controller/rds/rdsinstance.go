@@ -24,18 +24,13 @@ import (
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	databasev1alpha2 "github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
-	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
+	"github.com/crossplaneio/stack-aws/pkg/controller/utils"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
@@ -69,10 +64,8 @@ var (
 // Reconciler reconciles a Instance object
 type Reconciler struct {
 	client.Client
-	scheme     *runtime.Scheme
-	kubeclient kubernetes.Interface
-	recorder   record.EventRecorder
 	resource.ManagedReferenceResolver
+	resource.ManagedConnectionPublisher
 
 	connect func(*databasev1alpha2.RDSInstance) (rds.Client, error)
 	create  func(*databasev1alpha2.RDSInstance, rds.Client) (reconcile.Result, error)
@@ -88,11 +81,9 @@ type InstanceController struct{}
 // and Start it when the Manager is Started.
 func (c *InstanceController) SetupWithManager(mgr ctrl.Manager) error {
 	r := &Reconciler{
-		Client:                   mgr.GetClient(),
-		scheme:                   mgr.GetScheme(),
-		kubeclient:               kubernetes.NewForConfigOrDie(mgr.GetConfig()),
-		recorder:                 mgr.GetEventRecorderFor(controllerName),
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(mgr.GetClient()),
+		Client:                     mgr.GetClient(),
+		ManagedReferenceResolver:   resource.NewAPIManagedReferenceResolver(mgr.GetClient()),
+		ManagedConnectionPublisher: resource.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
 	}
 	r.connect = r._connect
 	r.create = r._create
@@ -112,26 +103,8 @@ func (r *Reconciler) fail(instance *databasev1alpha2.RDSInstance, err error) (re
 	return reconcile.Result{Requeue: true}, r.Update(context.TODO(), instance)
 }
 
-// connectionSecret return secret object for this resource
-func connectionSecret(instance *databasev1alpha2.RDSInstance, password string) *corev1.Secret {
-	s := resource.ConnectionSecretFor(instance, databasev1alpha2.RDSInstanceGroupVersionKind)
-	s.Data = map[string][]byte{
-		runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(instance.Spec.MasterUsername),
-		runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(password),
-	}
-	return s
-}
-
 func (r *Reconciler) _connect(instance *databasev1alpha2.RDSInstance) (rds.Client, error) {
-	// Fetch AWS Provider
-	p := &awsv1alpha2.Provider{}
-	err := r.Get(ctx, meta.NamespacedNameOf(instance.Spec.ProviderReference), p)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get Provider's AWS Config
-	config, err := aws.Config(r.kubeclient, p)
+	config, err := utils.RetrieveAwsConfigFromProvider(ctx, r, instance.Spec.ProviderReference)
 	if err != nil {
 		return nil, err
 	}
@@ -150,15 +123,22 @@ func (r *Reconciler) _create(instance *databasev1alpha2.RDSInstance, client rds.
 		return r.fail(instance, err)
 	}
 
-	_, err = util.ApplySecret(r.kubeclient, connectionSecret(instance, password))
-	if err != nil {
+	// Create DB Instance
+	_, err = client.CreateInstance(resourceName, password, &instance.Spec)
+	if resource.Ignore(rds.IsErrorAlreadyExists, err) != nil {
 		return r.fail(instance, err)
 	}
 
-	// Create DB Instance
-	_, err = client.CreateInstance(resourceName, password, &instance.Spec)
-	if err != nil && !rds.IsErrorAlreadyExists(err) {
-		return r.fail(instance, err)
+	if !rds.IsErrorAlreadyExists(err) {
+		// NOTE(negz): If the resource already exists then it's almost certainly
+		// not using the password we randomly generated just now, so we avoid
+		// publishing the credentials.
+		if err := r.PublishConnection(ctx, instance, resource.ConnectionDetails{
+			runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(instance.Spec.MasterUsername),
+			runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(password),
+		}); err != nil {
+			return r.fail(instance, err)
+		}
 	}
 
 	instance.Status.InstanceName = resourceName
@@ -175,7 +155,10 @@ func (r *Reconciler) _sync(instance *databasev1alpha2.RDSInstance, client rds.Cl
 		return r.fail(instance, err)
 	}
 
+	// Save resource status
 	instance.Status.State = db.Status
+	instance.Status.Endpoint = db.Endpoint
+	instance.Status.ProviderID = db.ARN
 
 	switch db.Status {
 	case string(databasev1alpha2.RDSInstanceStateCreating):
@@ -191,22 +174,10 @@ func (r *Reconciler) _sync(instance *databasev1alpha2.RDSInstance, client rds.Cl
 		return r.fail(instance, errors.Errorf("unexpected resource status: %s", db.Status))
 	}
 
-	// Retrieve connection secret that was created during resource create phase
-	connSecret, err := r.kubeclient.CoreV1().
-		Secrets(instance.GetNamespace()).
-		Get(instance.GetWriteConnectionSecretToReference().Name, metav1.GetOptions{})
-	if err != nil {
-		return r.fail(instance, err)
-	}
-
-	// Save resource endpoint
-	instance.Status.Endpoint = db.Endpoint
-	instance.Status.ProviderID = db.ARN
-
-	// Update resource secret
-	connSecret.Data[runtimev1alpha1.ResourceCredentialsSecretEndpointKey] = []byte(db.Endpoint)
-	_, err = util.ApplySecret(r.kubeclient, connSecret)
-	if err != nil {
+	if err := r.PublishConnection(ctx, instance, resource.ConnectionDetails{
+		runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(instance.Spec.MasterUsername),
+		runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(instance.Status.Endpoint),
+	}); err != nil {
 		return r.fail(instance, err)
 	}
 

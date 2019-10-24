@@ -33,7 +33,7 @@ func TestVPCIDReferencerForSecurityGroup_AssignInvalidType_ReturnsErr(t *testing
 	r := &VPCIDReferencerForSecurityGroup{}
 	expectedErr := errors.New(errResourceIsNotSecurityGroup)
 
-	err := r.Assign(&mockCanReference{}, "mockValue")
+	err := r.Assign(nil, "mockValue")
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
