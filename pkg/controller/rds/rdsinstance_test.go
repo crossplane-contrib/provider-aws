@@ -1,470 +1,648 @@
-///*
-//Copyright 2019 The Crossplane Authors.
-//
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
-//*/
-//
+/*
+Copyright 2019 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package rds
-//
-//import (
-//	"context"
-//	"testing"
-//
-//	"github.com/crossplaneio/stack-aws/apis"
-//
-//	"github.com/google/go-cmp/cmp"
-//	. "github.com/onsi/gomega"
-//	"github.com/pkg/errors"
-//	corev1 "k8s.io/api/core/v1"
-//	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-//	"k8s.io/apimachinery/pkg/types"
-//	"k8s.io/client-go/kubernetes/scheme"
-//	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
-//	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-//
-//	"github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
-//	. "github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
-//	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
-//	. "github.com/crossplaneio/stack-aws/pkg/clients/rds/fake"
-//
-//	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-//	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-//	"github.com/crossplaneio/crossplane-runtime/pkg/test"
-//)
-//
-//const (
-//	namespace    = "default"
-//	instanceName = "test-instance"
-//
-//	masterUserName = "testuser"
-//	engine         = "mysql"
-//	class          = "db.t2.small"
-//	size           = int64(10)
-//)
-//
-//var (
-//	key = types.NamespacedName{
-//		Name: instanceName,
-//	}
-//	request = reconcile.Request{
-//		NamespacedName: key,
-//	}
-//)
-//
-//func init() {
-//	if err := apis.AddToScheme(scheme.Scheme); err != nil {
-//		panic(err)
-//	}
-//}
-//
-//func testResource() *RDSInstance {
-//	return &RDSInstance{
-//		ObjectMeta: metav1.ObjectMeta{
-//			Name: instanceName,
-//		},
-//		Spec: RDSInstanceSpec{
-//			ResourceSpec: runtimev1alpha1.ResourceSpec{
-//				ProviderReference: &corev1.ObjectReference{},
-//			},
-//			RDSInstanceParameters: v1alpha2.RDSInstanceParameters{
-//				MasterUsername: masterUserName,
-//				Engine:         engine,
-//				Class:          class,
-//				Size:           size,
-//			},
-//		},
-//	}
-//}
-//
-//// assertResource a helper function to check on cluster and its status
-//func assertResource(g *GomegaWithT, r *Reconciler, s runtimev1alpha1.ConditionedStatus) *RDSInstance {
-//	resource := &RDSInstance{}
-//	err := r.Get(ctx, key, resource)
-//	g.Expect(err).To(BeNil())
-//	g.Expect(cmp.Diff(s, resource.Status.ConditionedStatus, test.EquateConditions())).Should(BeZero())
-//	return resource
-//}
-//
-//func TestSyncClusterError(t *testing.T) {
-//	g := NewGomegaWithT(t)
-//
-//	assert := func(instance *RDSInstance, client rds.Client, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) {
-//		r := &Reconciler{
-//			Client:                     NewFakeClient(instance),
-//			ManagedReferenceResolver:   resource.NewAPIManagedReferenceResolver(NewFakeClient(instance)),
-//			ManagedConnectionPublisher: resource.PublisherChain{}, // A no-op publisher.
-//		}
-//
-//		rs, err := r._sync(instance, client)
-//
-//		g.Expect(err).NotTo(HaveOccurred())
-//		g.Expect(rs).To(Equal(expectedResult))
-//		assertResource(g, r, expectedStatus)
-//	}
-//
-//	// get error
-//	testError := errors.New("test-resource-retrieve-error")
-//	cl := &MockRDSClient{
-//		MockGetInstance: func(s string) (instance *rds.Instance, e error) {
-//			return nil, testError
-//		},
-//	}
-//	expectedStatus := runtimev1alpha1.ConditionedStatus{}
-//	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(testError))
-//	assert(testResource(), cl, resultRequeue, expectedStatus)
-//
-//	// instance is not ready
-//	cl = &MockRDSClient{
-//		MockGetInstance: func(s string) (instance *rds.Instance, e error) {
-//			return &rds.Instance{
-//				Status: string(RDSInstanceStateCreating),
-//			}, nil
-//		},
-//	}
-//	expectedStatus = runtimev1alpha1.ConditionedStatus{}
-//	expectedStatus.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileSuccess())
-//	assert(testResource(), cl, resultRequeue, expectedStatus)
-//
-//	// instance in failed state
-//	cl = &MockRDSClient{
-//		MockGetInstance: func(s string) (instance *rds.Instance, e error) {
-//			return &rds.Instance{
-//				Status: string(RDSInstanceStateFailed),
-//			}, nil
-//		},
-//	}
-//	expectedStatus = runtimev1alpha1.ConditionedStatus{}
-//	expectedStatus.SetConditions(runtimev1alpha1.Unavailable(), runtimev1alpha1.ReconcileSuccess())
-//	assert(testResource(), cl, result, expectedStatus)
-//
-//	// instance is in deleting state
-//	cl = &MockRDSClient{
-//		MockGetInstance: func(s string) (instance *rds.Instance, e error) {
-//			return &rds.Instance{
-//				Status: string(RDSInstanceStateDeleting),
-//			}, nil
-//		},
-//	}
-//
-//	expectedStatus = runtimev1alpha1.ConditionedStatus{}
-//	expectedStatus.SetConditions(
-//		runtimev1alpha1.ReconcileError(errors.Errorf("unexpected resource status: %s", RDSInstanceStateDeleting)),
-//	)
-//	assert(testResource(), cl, resultRequeue, expectedStatus)
-//
-//	// failed to retrieve instance secret
-//	cl = &MockRDSClient{
-//		MockGetInstance: func(s string) (instance *rds.Instance, e error) {
-//			return &rds.Instance{
-//				Status: string(RDSInstanceStateAvailable),
-//			}, nil
-//		},
-//	}
-//
-//	testError = errors.New("test-error-publish-secret")
-//
-//	assert = func(instance *RDSInstance, client rds.Client, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) {
-//		r := &Reconciler{
-//			Client:                   NewFakeClient(instance),
-//			ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(instance)),
-//			ManagedConnectionPublisher: resource.ManagedConnectionPublisherFns{
-//				PublishConnectionFn: func(_ context.Context, _ resource.Managed, _ resource.ConnectionDetails) error {
-//					return testError
-//				},
-//			},
-//		}
-//
-//		rs, err := r._sync(instance, client)
-//
-//		g.Expect(err).NotTo(HaveOccurred())
-//		g.Expect(rs).To(Equal(expectedResult))
-//		assertResource(g, r, expectedStatus)
-//	}
-//
-//	tr := testResource()
-//	expectedStatus = runtimev1alpha1.ConditionedStatus{}
-//	expectedStatus.SetConditions(runtimev1alpha1.Available(), runtimev1alpha1.ReconcileError(testError))
-//	assert(tr, cl, resultRequeue, expectedStatus)
-//
-//}
-//
-//func TestSyncClusterUpdateSecretFailure(t *testing.T) {
-//	g := NewGomegaWithT(t)
-//
-//	tr := testResource()
-//
-//	testError := errors.New("test-error-publish-secret")
-//
-//	r := &Reconciler{
-//		Client:                   NewFakeClient(tr),
-//		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
-//		ManagedConnectionPublisher: resource.ManagedConnectionPublisherFns{
-//			PublishConnectionFn: func(_ context.Context, _ resource.Managed, _ resource.ConnectionDetails) error {
-//				return testError
-//			},
-//		},
-//	}
-//
-//	called := false
-//	cl := &MockRDSClient{
-//		MockGetInstance: func(s string) (instance *rds.Instance, e error) {
-//			called = true
-//			return &rds.Instance{
-//				Status: string(RDSInstanceStateAvailable),
-//			}, nil
-//		},
-//	}
-//
-//	expectedStatus := runtimev1alpha1.ConditionedStatus{}
-//	expectedStatus.SetConditions(runtimev1alpha1.Available(), runtimev1alpha1.ReconcileError(testError))
-//
-//	rs, err := r._sync(tr, cl)
-//	g.Expect(rs).To(Equal(resultRequeue))
-//	g.Expect(err).NotTo(HaveOccurred())
-//	g.Expect(called).To(BeTrue())
-//	assertResource(g, r, expectedStatus)
-//}
-//
-//func TestSyncCluster(t *testing.T) {
-//	g := NewGomegaWithT(t)
-//
-//	tr := testResource()
-//
-//	r := &Reconciler{
-//		Client:                     NewFakeClient(tr),
-//		ManagedReferenceResolver:   resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
-//		ManagedConnectionPublisher: resource.PublisherChain{}, // A no-op publisher.
-//	}
-//
-//	called := false
-//	cl := &MockRDSClient{
-//		MockGetInstance: func(s string) (instance *rds.Instance, e error) {
-//			called = true
-//			return &rds.Instance{
-//				Status: string(RDSInstanceStateAvailable),
-//			}, nil
-//		},
-//	}
-//
-//	expectedStatus := runtimev1alpha1.ConditionedStatus{}
-//	expectedStatus.SetConditions(runtimev1alpha1.Available(), runtimev1alpha1.ReconcileSuccess())
-//
-//	rs, err := r._sync(tr, cl)
-//	g.Expect(rs).To(Equal(result))
-//	g.Expect(err).NotTo(HaveOccurred())
-//	g.Expect(called).To(BeTrue())
-//	rr := assertResource(g, r, expectedStatus)
-//	g.Expect(rr.Status.State).To(Equal(string(RDSInstanceStateAvailable)))
-//}
-//
-//func TestDelete(t *testing.T) {
-//	g := NewGomegaWithT(t)
-//
-//	tr := testResource()
-//
-//	r := &Reconciler{
-//		Client:                   NewFakeClient(tr),
-//		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
-//	}
-//
-//	cl := &MockRDSClient{}
-//
-//	// test delete w/ reclaim policy
-//	tr.Spec.ReclaimPolicy = runtimev1alpha1.ReclaimRetain
-//	expectedStatus := runtimev1alpha1.ConditionedStatus{}
-//	expectedStatus.SetConditions(runtimev1alpha1.Deleting(), runtimev1alpha1.ReconcileSuccess())
-//
-//	rs, err := r._delete(tr, cl)
-//	g.Expect(rs).To(Equal(result))
-//	g.Expect(err).NotTo(HaveOccurred())
-//	assertResource(g, r, expectedStatus)
-//
-//	// test delete w/ delete policy
-//	tr.Spec.ReclaimPolicy = runtimev1alpha1.ReclaimDelete
-//	called := false
-//	cl.MockDeleteInstance = func(name string) (instance *rds.Instance, e error) {
-//		called = true
-//		return nil, nil
-//	}
-//
-//	rs, err = r._delete(tr, cl)
-//	g.Expect(rs).To(Equal(result))
-//	g.Expect(err).NotTo(HaveOccurred())
-//	g.Expect(called).To(BeTrue())
-//	assertResource(g, r, expectedStatus)
-//
-//	// test delete w/ delete policy and delete error
-//	testError := errors.New("test-delete-error")
-//	called = false
-//	cl.MockDeleteInstance = func(name string) (instance *rds.Instance, e error) {
-//		called = true
-//		return nil, testError
-//	}
-//	expectedStatus = runtimev1alpha1.ConditionedStatus{}
-//	expectedStatus.SetConditions(runtimev1alpha1.Deleting(), runtimev1alpha1.ReconcileError(testError))
-//
-//	rs, err = r._delete(tr, cl)
-//	g.Expect(rs).To(Equal(resultRequeue))
-//	g.Expect(err).NotTo(HaveOccurred())
-//	g.Expect(called).To(BeTrue())
-//	assertResource(g, r, expectedStatus)
-//}
-//
-//func TestCreate(t *testing.T) {
-//	g := NewGomegaWithT(t)
-//
-//	tr := testResource()
-//
-//	r := &Reconciler{
-//		Client:                     NewFakeClient(tr),
-//		ManagedReferenceResolver:   resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
-//		ManagedConnectionPublisher: resource.PublisherChain{}, // A no-op publisher.
-//	}
-//
-//	called := false
-//	cl := &MockRDSClient{
-//		MockCreateInstance: func(s string, s2 string, spec *RDSInstanceSpec) (instance *rds.Instance, e error) {
-//			called = true
-//			return nil, nil
-//		},
-//	}
-//
-//	expectedStatus := runtimev1alpha1.ConditionedStatus{}
-//	expectedStatus.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileSuccess())
-//
-//	rs, err := r._create(testResource(), cl)
-//	g.Expect(rs).To(Equal(resultRequeue))
-//	g.Expect(err).NotTo(HaveOccurred())
-//	g.Expect(called).To(BeTrue())
-//	assertResource(g, r, expectedStatus)
-//}
-//
-//func TestCreateFail(t *testing.T) {
-//	g := NewGomegaWithT(t)
-//	tr := testResource()
-//	cl := &MockRDSClient{}
-//
-//	called := false
-//	cl.MockCreateInstance = func(s string, s2 string, spec *RDSInstanceSpec) (instance *rds.Instance, e error) {
-//		called = true
-//		return nil, nil
-//	}
-//
-//	testError := errors.New("test-publish-secret-error")
-//
-//	r := &Reconciler{
-//		Client:                   NewFakeClient(tr),
-//		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
-//		ManagedConnectionPublisher: resource.ManagedConnectionPublisherFns{
-//			PublishConnectionFn: func(_ context.Context, _ resource.Managed, _ resource.ConnectionDetails) error {
-//				return testError
-//			},
-//		},
-//	}
-//
-//	expectedStatus := runtimev1alpha1.ConditionedStatus{}
-//	expectedStatus.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileError(testError))
-//
-//	rs, err := r._create(tr, cl)
-//	g.Expect(rs).To(Equal(resultRequeue))
-//	g.Expect(err).NotTo(HaveOccurred())
-//	assertResource(g, r, expectedStatus)
-//
-//	// test create resource error
-//	tr = testResource()
-//	called = false
-//	testError = errors.New("test-create-error")
-//	cl.MockCreateInstance = func(s string, s2 string, spec *RDSInstanceSpec) (instance *rds.Instance, e error) {
-//		called = true
-//		return nil, testError
-//	}
-//
-//	expectedStatus = runtimev1alpha1.ConditionedStatus{}
-//	expectedStatus.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileError(testError))
-//
-//	rs, err = r._create(tr, cl)
-//	g.Expect(rs).To(Equal(resultRequeue))
-//	g.Expect(err).NotTo(HaveOccurred())
-//	g.Expect(called).To(BeTrue())
-//	assertResource(g, r, expectedStatus)
-//}
-//
-//func TestReconcile(t *testing.T) {
-//	g := NewGomegaWithT(t)
-//
-//	tr := testResource()
-//
-//	r := &Reconciler{
-//		Client:                   NewFakeClient(tr),
-//		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(tr)),
-//	}
-//
-//	// test connect error
-//	called := false
-//	testError := errors.New("test-connect-error")
-//	r.connect = func(instance *RDSInstance) (client rds.Client, e error) {
-//		called = true
-//		return nil, testError
-//	}
-//
-//	expectedStatus := runtimev1alpha1.ConditionedStatus{}
-//	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(testError))
-//
-//	rs, err := r.Reconcile(request)
-//	g.Expect(rs).To(Equal(resultRequeue))
-//	g.Expect(err).NotTo(HaveOccurred())
-//	g.Expect(called).To(BeTrue())
-//	assertResource(g, r, expectedStatus)
-//
-//	// test delete
-//	r.connect = func(instance *RDSInstance) (client rds.Client, e error) {
-//		t := metav1.Now()
-//		instance.DeletionTimestamp = &t
-//		return nil, nil
-//	}
-//	called = false
-//	r.delete = func(instance *RDSInstance, client rds.Client) (i reconcile.Result, e error) {
-//		called = true
-//		return result, nil
-//	}
-//	r.Reconcile(request)
-//	g.Expect(called).To(BeTrue())
-//
-//	// test create
-//	r.connect = func(instance *RDSInstance) (client rds.Client, e error) {
-//		return nil, nil
-//	}
-//	called = false
-//	r.delete = r._delete
-//	r.create = func(instance *RDSInstance, client rds.Client) (i reconcile.Result, e error) {
-//		called = true
-//		return result, nil
-//	}
-//	r.Reconcile(request)
-//	g.Expect(called).To(BeTrue())
-//
-//	// test sync
-//	r.connect = func(instance *RDSInstance) (client rds.Client, e error) {
-//		instance.Status.InstanceName = "foo"
-//		return nil, nil
-//	}
-//	called = false
-//	r.create = r._create
-//	r.sync = func(instance *RDSInstance, client rds.Client) (i reconcile.Result, e error) {
-//		called = true
-//		return result, nil
-//	}
-//	r.Reconcile(request)
-//	g.Expect(called).To(BeTrue())
-//
-//}
+
+import (
+	"context"
+	"net/http"
+	"testing"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	rds2 "github.com/aws/aws-sdk-go-v2/service/rds"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+	"github.com/crossplaneio/crossplane-runtime/pkg/test"
+
+	"github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
+	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
+	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
+	"github.com/crossplaneio/stack-aws/pkg/clients/rds/fake"
+)
+
+const (
+	providerName    = "aws-creds"
+	secretNamespace = "crossplane-system"
+	testRegion      = "us-east-1"
+
+	connectionSecretName = "my-little-secret"
+	secretKey            = "credentials"
+	credData             = "confidential!"
+)
+
+var (
+	masterUsername = "root"
+	engineVersion  = "5.6"
+
+	replaceMe = "replace-me!"
+	errBoom   = errors.New("boom")
+)
+
+type args struct {
+	rds  rds.Client
+	kube client.Client
+	cr   *v1alpha2.RDSInstance
+}
+
+type rdsModifier func(*v1alpha2.RDSInstance)
+
+func withMasterUsername(s *string) rdsModifier {
+	return func(r *v1alpha2.RDSInstance) { r.Spec.ForProvider.MasterUsername = s }
+}
+
+func withConditions(c ...runtimev1alpha1.Condition) rdsModifier {
+	return func(r *v1alpha2.RDSInstance) { r.Status.ConditionedStatus.Conditions = c }
+}
+
+func withBindingPhase(p runtimev1alpha1.BindingPhase) rdsModifier {
+	return func(r *v1alpha2.RDSInstance) { r.Status.SetBindingPhase(p) }
+}
+
+func withEngineVersion(s *string) rdsModifier {
+	return func(r *v1alpha2.RDSInstance) { r.Spec.ForProvider.EngineVersion = s }
+}
+
+func withDBInstanceStatus(s string) rdsModifier {
+	return func(r *v1alpha2.RDSInstance) { r.Status.AtProvider.DBInstanceStatus = s }
+}
+
+func instance(m ...rdsModifier) *v1alpha2.RDSInstance {
+	cr := &v1alpha2.RDSInstance{
+		Spec: v1alpha2.RDSInstanceSpec{
+			ResourceSpec: runtimev1alpha1.ResourceSpec{
+				ProviderReference: &corev1.ObjectReference{Name: providerName},
+			},
+			ForProvider: v1alpha2.RDSInstanceParameters{
+				MasterUsername: &masterUsername,
+			},
+		},
+	}
+	for _, f := range m {
+		f(cr)
+	}
+	return cr
+}
+
+var _ resource.ExternalClient = &external{}
+var _ resource.ExternalConnecter = &connector{}
+
+func TestConnect(t *testing.T) {
+	secret := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      connectionSecretName,
+			Namespace: secretNamespace,
+		},
+		Data: map[string][]byte{
+			secretKey: []byte(credData),
+		},
+	}
+	provider := awsv1alpha2.Provider{
+		Spec: awsv1alpha2.ProviderSpec{
+			Region: testRegion,
+			Secret: runtimev1alpha1.SecretKeySelector{
+				SecretReference: runtimev1alpha1.SecretReference{Namespace: secretNamespace, Name: connectionSecretName},
+				Key:             secretKey,
+			},
+		},
+	}
+	type args struct {
+		kube        client.Client
+		newClientFn func(credentials []byte, region string) (rds.Client, error)
+		cr          *v1alpha2.RDSInstance
+	}
+	type want struct {
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							provider.DeepCopyInto(obj.(*awsv1alpha2.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						}
+						return errBoom
+					},
+				},
+				newClientFn: func(credentials []byte, region string) (i rds.Client, e error) {
+					if diff := cmp.Diff(credData, string(credentials)); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
+				},
+				cr: instance(),
+			},
+		},
+		"ProviderGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						return errBoom
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProvider),
+			},
+		},
+		"SecretGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							provider.DeepCopyInto(obj.(*awsv1alpha2.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProviderSecret),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			c := &connector{kube: tc.kube, newClientFn: tc.newClientFn}
+			_, err := c.Connect(context.Background(), tc.args.cr)
+			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestObserve(t *testing.T) {
+	type want struct {
+		cr     *v1alpha2.RDSInstance
+		result resource.ExternalObservation
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"SuccessfulAvailable": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDescribe: func(input *rds2.DescribeDBInstancesInput) rds2.DescribeDBInstancesRequest {
+						return rds2.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.DescribeDBInstancesOutput{
+								DBInstances: []rds2.DBInstance{
+									{
+										DBInstanceStatus: aws.String(string(v1alpha2.RDSInstanceStateAvailable)),
+									},
+								},
+							}},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr: instance(
+					withConditions(runtimev1alpha1.Available()),
+					withBindingPhase(runtimev1alpha1.BindingPhaseUnbound),
+					withDBInstanceStatus(string(v1alpha2.RDSInstanceStateAvailable))),
+				result: resource.ExternalObservation{
+					ResourceExists:    true,
+					ResourceUpToDate:  true,
+					ConnectionDetails: rds.GetConnectionDetails(v1alpha2.RDSInstance{}),
+				},
+			},
+		},
+		"DeletingState": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDescribe: func(input *rds2.DescribeDBInstancesInput) rds2.DescribeDBInstancesRequest {
+						return rds2.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.DescribeDBInstancesOutput{
+								DBInstances: []rds2.DBInstance{
+									{
+										DBInstanceStatus: aws.String(string(v1alpha2.RDSInstanceStateDeleting)),
+									},
+								},
+							}},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr: instance(
+					withConditions(runtimev1alpha1.Deleting()),
+					withDBInstanceStatus(string(v1alpha2.RDSInstanceStateDeleting))),
+				result: resource.ExternalObservation{
+					ResourceExists:    true,
+					ResourceUpToDate:  true,
+					ConnectionDetails: rds.GetConnectionDetails(v1alpha2.RDSInstance{}),
+				},
+			},
+		},
+		"FailedState": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDescribe: func(input *rds2.DescribeDBInstancesInput) rds2.DescribeDBInstancesRequest {
+						return rds2.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.DescribeDBInstancesOutput{
+								DBInstances: []rds2.DBInstance{
+									{
+										DBInstanceStatus: aws.String(string(v1alpha2.RDSInstanceStateFailed)),
+									},
+								},
+							}},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr: instance(
+					withConditions(runtimev1alpha1.Unavailable()),
+					withDBInstanceStatus(string(v1alpha2.RDSInstanceStateFailed))),
+				result: resource.ExternalObservation{
+					ResourceExists:    true,
+					ResourceUpToDate:  true,
+					ConnectionDetails: rds.GetConnectionDetails(v1alpha2.RDSInstance{}),
+				},
+			},
+		},
+		"FailedDescribeRequest": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDescribe: func(input *rds2.DescribeDBInstancesInput) rds2.DescribeDBInstancesRequest {
+						return rds2.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr:  instance(),
+				err: errors.Wrap(errBoom, errDescribeFailed),
+			},
+		},
+		"NotFound": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDescribe: func(input *rds2.DescribeDBInstancesInput) rds2.DescribeDBInstancesRequest {
+						return rds2.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(rds2.ErrCodeDBInstanceNotFoundFault)},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr: instance(),
+			},
+		},
+		"LateInitSuccess": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+				rds: &fake.MockRDSClient{
+					MockDescribe: func(input *rds2.DescribeDBInstancesInput) rds2.DescribeDBInstancesRequest {
+						return rds2.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.DescribeDBInstancesOutput{
+								DBInstances: []rds2.DBInstance{
+									{
+										EngineVersion:    aws.String(engineVersion),
+										DBInstanceStatus: aws.String(string(v1alpha2.RDSInstanceStateCreating)),
+									},
+								},
+							}},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr: instance(
+					withEngineVersion(&engineVersion),
+					withDBInstanceStatus(string(v1alpha2.RDSInstanceStateCreating)),
+					withConditions(runtimev1alpha1.Creating()),
+				),
+				result: resource.ExternalObservation{
+					ResourceExists:    true,
+					ResourceUpToDate:  true,
+					ConnectionDetails: rds.GetConnectionDetails(v1alpha2.RDSInstance{}),
+				},
+			},
+		},
+		"LateInitFailedKubeUpdate": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(errBoom),
+				},
+				rds: &fake.MockRDSClient{
+					MockDescribe: func(input *rds2.DescribeDBInstancesInput) rds2.DescribeDBInstancesRequest {
+						return rds2.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.DescribeDBInstancesOutput{
+								DBInstances: []rds2.DBInstance{
+									{
+										EngineVersion:    aws.String(engineVersion),
+										DBInstanceStatus: aws.String(string(v1alpha2.RDSInstanceStateCreating)),
+									},
+								},
+							}},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr: instance(
+					withEngineVersion(&engineVersion),
+				),
+				err: errors.Wrap(errBoom, errKubeUpdateFailed),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.rds}
+			o, err := e.Observe(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestCreate(t *testing.T) {
+	type want struct {
+		cr     *v1alpha2.RDSInstance
+		result resource.ExternalCreation
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockCreate: func(input *rds2.CreateDBInstanceInput) rds2.CreateDBInstanceRequest {
+						return rds2.CreateDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.CreateDBInstanceOutput{}},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr: instance(),
+				result: resource.ExternalCreation{
+					ConnectionDetails: resource.ConnectionDetails{
+						runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
+						runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
+					},
+				},
+			},
+		},
+		"SuccessfulNoUsername": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockCreate: func(input *rds2.CreateDBInstanceInput) rds2.CreateDBInstanceRequest {
+						return rds2.CreateDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.CreateDBInstanceOutput{}},
+						}
+					},
+				},
+				cr: instance(withMasterUsername(nil)),
+			},
+			want: want{
+				cr: instance(withMasterUsername(nil)),
+				result: resource.ExternalCreation{
+					ConnectionDetails: resource.ConnectionDetails{
+						runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
+					},
+				},
+			},
+		},
+		"FailedRequest": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockCreate: func(input *rds2.CreateDBInstanceInput) rds2.CreateDBInstanceRequest {
+						return rds2.CreateDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr:  instance(),
+				err: errors.Wrap(errBoom, errCreateFailed),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.rds}
+			o, err := e.Create(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if string(tc.want.result.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPasswordKey]) == replaceMe {
+				tc.want.result.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPasswordKey] =
+					o.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPasswordKey]
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	type want struct {
+		cr     *v1alpha2.RDSInstance
+		result resource.ExternalUpdate
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockModify: func(input *rds2.ModifyDBInstanceInput) rds2.ModifyDBInstanceRequest {
+						return rds2.ModifyDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.ModifyDBInstanceOutput{}},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr: instance(),
+			},
+		},
+		"Failed": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockModify: func(input *rds2.ModifyDBInstanceInput) rds2.ModifyDBInstanceRequest {
+						return rds2.ModifyDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr:  instance(),
+				err: errors.Wrap(errBoom, errModifyFailed),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.rds}
+			u, err := e.Update(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, u); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestDelete(t *testing.T) {
+	type want struct {
+		cr  *v1alpha2.RDSInstance
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDelete: func(input *rds2.DeleteDBInstanceInput) rds2.DeleteDBInstanceRequest {
+						return rds2.DeleteDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.DeleteDBInstanceOutput{}},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr: instance(),
+			},
+		},
+		"AlreadyDeleted": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDelete: func(input *rds2.DeleteDBInstanceInput) rds2.DeleteDBInstanceRequest {
+						return rds2.DeleteDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(rds2.ErrCodeDBInstanceNotFoundFault)},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr: instance(),
+			},
+		},
+		"Failed": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDelete: func(input *rds2.DeleteDBInstanceInput) rds2.DeleteDBInstanceRequest {
+						return rds2.DeleteDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr:  instance(),
+				err: errors.Wrap(errBoom, errDeleteFailed),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.rds}
+			err := e.Delete(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}

@@ -473,8 +473,6 @@ func TestObserve(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			name := tc.name
-			fmt.Println(name)
 			observation, err := tc.e.Observe(ctx, tc.r)
 			if tc.returnsErr != (err != nil) {
 				t.Errorf("tc.e.Observe(...) error: want: %t got: %t", tc.returnsErr, err != nil)

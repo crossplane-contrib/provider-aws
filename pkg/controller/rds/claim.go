@@ -103,6 +103,8 @@ func (c *PostgreSQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) e
 		resource.ClaimKind(databasev1alpha1.PostgreSQLInstanceGroupVersionKind),
 		resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
 		resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind),
+		resource.WithManagedBinder(resource.NewAPIManagedStatusBinder(mgr.GetClient())),
+		resource.WithManagedFinalizer(resource.NewAPIManagedStatusUnbinder(mgr.GetClient())),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigurePostgreRDSInstance),
 			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
@@ -152,7 +154,7 @@ func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resour
 	if err != nil {
 		return err
 	}
-	spec.ForProvider.EngineVersion = &v
+	spec.ForProvider.EngineVersion = v
 
 	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
 		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,
@@ -235,6 +237,8 @@ func (c *MySQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error 
 		resource.ClaimKind(databasev1alpha1.MySQLInstanceGroupVersionKind),
 		resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
 		resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind),
+		resource.WithManagedBinder(resource.NewAPIManagedStatusBinder(mgr.GetClient())),
+		resource.WithManagedFinalizer(resource.NewAPIManagedStatusUnbinder(mgr.GetClient())),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigureMyRDSInstance),
 			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
@@ -284,7 +288,7 @@ func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.Cl
 	if err != nil {
 		return err
 	}
-	spec.ForProvider.EngineVersion = &v
+	spec.ForProvider.EngineVersion = v
 
 	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
 		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,
@@ -303,17 +307,21 @@ func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.Cl
 // otherwise if claim value is not a prefix of the class value - return an error
 // else return class value
 // Examples:
-// class: "", claim: "" - result: ""
+// class: "", claim: "" - result: "" (let the provider decide)
 // class: 5.6, claim: "" - result: 5.6
 // class: "", claim: 5.7 - result: 5.7
 // class: 5.6.45, claim 5.6 - result: 5.6.45
 // class: 5.6, claim 5.7 - result error
-func validateEngineVersion(class, claim string) (string, error) {
-	if class == "" {
-		return claim, nil
+func validateEngineVersion(class, claim string) (*string, error) {
+	if class == "" && claim == "" {
+		return nil, nil
 	}
+	if class == "" && claim != "" {
+		return &claim, nil
+	}
+	// class is definitely not empty string at this point.
 	if strings.HasPrefix(class, claim) {
-		return class, nil
+		return &class, nil
 	}
-	return "", errors.Errorf("claim value [%s] does not match class value [%s]", claim, class)
+	return nil, errors.Errorf("claim value [%s] does not match class value [%s]", claim, class)
 }

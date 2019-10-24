@@ -177,7 +177,7 @@ type EKSClusterParameters struct {
 	// SecurityGroupIDs of this EKS cluster.
 	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
 
-	// VPCSecurityGroupIDRefs is a set of referencers that each retrieve the ID from the referenced SecurityGroup
+	// SecurityGroupIDRefs is a set of referencers that each retrieve the ID from the referenced SecurityGroup
 	SecurityGroupIDRefs []*SecurityGroupIDReferencerForEKSCluster `json:"securityGroupIdRefs,omitempty" resource:"attributereferencer"`
 
 	// ClusterVersion: The desired Kubernetes version of this EKS Cluster. If

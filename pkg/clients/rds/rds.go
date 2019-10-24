@@ -17,6 +17,7 @@ limitations under the License.
 package rds
 
 import (
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -95,7 +96,7 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1alpha2.RDSInstanc
 		MasterUserPassword:                 aws.String(password),
 		MasterUsername:                     p.MasterUsername,
 		MonitoringInterval:                 awsclients.Int64Address(p.MonitoringInterval),
-		MonitoringRoleArn:                  p.MonitoringRoleArn,
+		MonitoringRoleArn:                  p.MonitoringRoleARN,
 		MultiAZ:                            p.MultiAZ,
 		OptionGroupName:                    p.OptionGroupName,
 		PerformanceInsightsKMSKeyId:        p.PerformanceInsightsKMSKeyID,
@@ -106,8 +107,6 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1alpha2.RDSInstanc
 		PromotionTier:                      awsclients.Int64Address(p.PromotionTier),
 		PubliclyAccessible:                 p.PubliclyAccessible,
 		StorageEncrypted:                   p.StorageEncrypted,
-		TdeCredentialArn:                   p.TdeCredentialArn,
-		TdeCredentialPassword:              p.TdeCredentialPassword,
 		Timezone:                           p.Timezone,
 		StorageType:                        p.StorageType,
 		VpcSecurityGroupIds:                p.VPCSecurityGroupIDs,
@@ -163,7 +162,7 @@ func GenerateModifyDBInstanceInput(name string, p *v1alpha2.RDSInstanceParameter
 		Iops:                               awsclients.Int64Address(p.IOPS),
 		LicenseModel:                       p.LicenseModel,
 		MonitoringInterval:                 awsclients.Int64Address(p.MonitoringInterval),
-		MonitoringRoleArn:                  p.MonitoringRoleArn,
+		MonitoringRoleArn:                  p.MonitoringRoleARN,
 		MultiAZ:                            p.MultiAZ,
 		OptionGroupName:                    p.OptionGroupName,
 		PerformanceInsightsKMSKeyId:        p.PerformanceInsightsKMSKeyID,
@@ -173,8 +172,6 @@ func GenerateModifyDBInstanceInput(name string, p *v1alpha2.RDSInstanceParameter
 		PromotionTier:                      awsclients.Int64Address(p.PromotionTier),
 		PubliclyAccessible:                 p.PubliclyAccessible,
 		StorageType:                        p.StorageType,
-		TdeCredentialArn:                   p.TdeCredentialArn,
-		TdeCredentialPassword:              p.TdeCredentialPassword,
 		UseDefaultProcessorFeatures:        p.UseDefaultProcessorFeatures,
 		VpcSecurityGroupIds:                p.VPCSecurityGroupIDs,
 	}
@@ -196,6 +193,8 @@ func GenerateModifyDBInstanceInput(name string, p *v1alpha2.RDSInstanceParameter
 	return m
 }
 
+// GenerateObservation is used to produce v1alpha2.RDSInstanceObservation from
+// rds.DBInstance.
 func GenerateObservation(db rds.DBInstance) v1alpha2.RDSInstanceObservation { // nolint:gocyclo
 	o := v1alpha2.RDSInstanceObservation{
 		DBInstanceStatus:                      aws.StringValue(db.DBInstanceStatus),
@@ -335,14 +334,81 @@ func GenerateObservation(db rds.DBInstance) v1alpha2.RDSInstanceObservation { //
 	return o
 }
 
-func LateInitialize(in *v1alpha2.RDSInstanceParameters, db rds.DBInstance) {
+// LateInitialize fills the empty fields in *v1alpha2.RDSInstanceParameters with
+// the values seen in rds.DBInstance.
+func LateInitialize(in *v1alpha2.RDSInstanceParameters, db rds.DBInstance) { // nolint:gocyclo
+	in.AllocatedStorage = awsclients.LateInitializeIntPtr(in.AllocatedStorage, db.AllocatedStorage)
+	in.AutoMinorVersionUpgrade = awsclients.LateInitializeBoolPtr(in.AutoMinorVersionUpgrade, db.AutoMinorVersionUpgrade)
+	in.AvailabilityZone = awsclients.LateInitializeStringPtr(in.AvailabilityZone, db.AvailabilityZone)
+	in.BackupRetentionPeriod = awsclients.LateInitializeIntPtr(in.BackupRetentionPeriod, db.BackupRetentionPeriod)
+	in.CACertificateIdentifier = awsclients.LateInitializeStringPtr(in.CACertificateIdentifier, db.CACertificateIdentifier)
+	in.CharacterSetName = awsclients.LateInitializeStringPtr(in.CharacterSetName, db.CharacterSetName)
+	in.CopyTagsToSnapshot = awsclients.LateInitializeBoolPtr(in.CopyTagsToSnapshot, db.CopyTagsToSnapshot)
+	in.DBClusterIdentifier = awsclients.LateInitializeStringPtr(in.DBClusterIdentifier, db.DBClusterIdentifier)
+	in.DBInstanceClass = awsclients.LateInitializeString(in.DBInstanceClass, db.DBInstanceClass)
+	in.DBName = awsclients.LateInitializeStringPtr(in.DBName, db.DBName)
+	in.DeletionProtection = awsclients.LateInitializeBoolPtr(in.DeletionProtection, db.DeletionProtection)
+	in.EnableIAMDatabaseAuthentication = awsclients.LateInitializeBoolPtr(in.EnableIAMDatabaseAuthentication, db.IAMDatabaseAuthenticationEnabled)
+	in.EnablePerformanceInsights = awsclients.LateInitializeBoolPtr(in.EnablePerformanceInsights, db.PerformanceInsightsEnabled)
+	in.Engine = awsclients.LateInitializeString(in.Engine, db.Engine)
+	in.EngineVersion = awsclients.LateInitializeStringPtr(in.EngineVersion, db.EngineVersion)
+	in.IOPS = awsclients.LateInitializeIntPtr(in.IOPS, db.Iops)
+	in.KMSKeyID = awsclients.LateInitializeStringPtr(in.KMSKeyID, db.KmsKeyId)
+	in.LicenseModel = awsclients.LateInitializeStringPtr(in.LicenseModel, db.LicenseModel)
+	in.MasterUsername = awsclients.LateInitializeStringPtr(in.MasterUsername, db.MasterUsername)
+	in.MonitoringInterval = awsclients.LateInitializeIntPtr(in.MonitoringInterval, db.MonitoringInterval)
+	in.MonitoringRoleARN = awsclients.LateInitializeStringPtr(in.MonitoringRoleARN, db.MonitoringRoleArn)
+	in.MultiAZ = awsclients.LateInitializeBoolPtr(in.MultiAZ, db.MultiAZ)
+	in.PerformanceInsightsKMSKeyID = awsclients.LateInitializeStringPtr(in.PerformanceInsightsKMSKeyID, db.PerformanceInsightsKMSKeyId)
+	in.PerformanceInsightsRetentionPeriod = awsclients.LateInitializeIntPtr(in.PerformanceInsightsRetentionPeriod, db.PerformanceInsightsRetentionPeriod)
+	in.Port = awsclients.LateInitializeIntPtr(in.Port, db.DbInstancePort)
+	in.PreferredBackupWindow = awsclients.LateInitializeStringPtr(in.PreferredBackupWindow, db.PreferredBackupWindow)
+	in.PreferredMaintenanceWindow = awsclients.LateInitializeStringPtr(in.PreferredMaintenanceWindow, db.PreferredMaintenanceWindow)
+	in.PromotionTier = awsclients.LateInitializeIntPtr(in.PromotionTier, db.PromotionTier)
+	in.PubliclyAccessible = awsclients.LateInitializeBoolPtr(in.PubliclyAccessible, db.PubliclyAccessible)
+	in.StorageEncrypted = awsclients.LateInitializeBoolPtr(in.StorageEncrypted, db.StorageEncrypted)
+	in.StorageType = awsclients.LateInitializeStringPtr(in.StorageType, db.StorageType)
+	in.Timezone = awsclients.LateInitializeStringPtr(in.Timezone, db.Timezone)
 
+	if len(in.DBSecurityGroups) == 0 && len(db.DBSecurityGroups) != 0 {
+		in.DBSecurityGroups = make([]string, len(db.DBSecurityGroups))
+		for i, val := range db.DBSecurityGroups {
+			in.DBSecurityGroups[i] = aws.StringValue(val.DBSecurityGroupName)
+		}
+	}
+	if aws.StringValue(in.DBSubnetGroupName) == "" && db.DBSubnetGroup != nil {
+		in.DBSubnetGroupName = db.DBSubnetGroup.DBSubnetGroupName
+	}
+	if len(in.EnableCloudwatchLogsExports) == 0 && len(db.EnabledCloudwatchLogsExports) != 0 {
+		in.EnableCloudwatchLogsExports = db.EnabledCloudwatchLogsExports
+	}
+	if len(in.ProcessorFeatures) == 0 && len(db.ProcessorFeatures) != 0 {
+		in.ProcessorFeatures = make([]v1alpha2.ProcessorFeature, len(db.ProcessorFeatures))
+		for i, val := range db.ProcessorFeatures {
+			in.ProcessorFeatures[i] = v1alpha2.ProcessorFeature{
+				Name:  aws.StringValue(val.Name),
+				Value: aws.StringValue(val.Value),
+			}
+		}
+	}
+	if len(in.VPCSecurityGroupIDs) == 0 && len(db.VpcSecurityGroups) != 0 {
+		in.VPCSecurityGroupIDs = make([]string, len(db.VpcSecurityGroups))
+		for i, val := range db.VpcSecurityGroups {
+			in.VPCSecurityGroupIDs[i] = aws.StringValue(val.VpcSecurityGroupId)
+		}
+	}
 }
 
-func NeedsUpdate(in v1alpha2.RDSInstanceParameters, db rds.DBInstance) bool {
-	return true
+// IsUpToDate checks whether there is a change in any of the modifiable fields.
+func IsUpToDate(in v1alpha2.RDSInstanceParameters, db rds.DBInstance) bool {
+	currentParams := &v1alpha2.RDSInstanceParameters{}
+	LateInitialize(currentParams, db)
+	currentModificationRequest := GenerateModifyDBInstanceInput("", currentParams)
+	candidateModificationRequest := GenerateModifyDBInstanceInput("", &in)
+	return reflect.DeepEqual(currentModificationRequest, candidateModificationRequest)
 }
 
+// GetConnectionDetails extracts resource.ConnectionDetails out of v1alpha2.RDSInstance.
 func GetConnectionDetails(in v1alpha2.RDSInstance) resource.ConnectionDetails {
 	if in.Status.AtProvider.Endpoint.Address == "" {
 		return nil

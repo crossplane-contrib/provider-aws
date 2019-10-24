@@ -29,7 +29,8 @@ spec:
     plural: rdsinstances
     singular: rdsinstance
   scope: Cluster
-  subresources: {}
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: An RDSInstance is a managed resource that represents an AWS Relational
@@ -140,10 +141,6 @@ spec:
               description: RDSInstanceParameters define the desired state of an AWS
                 Relational Database Service instance.
               properties:
-                TteCredentialPassword:
-                  description: TdeCredentialPassword is the password for the given
-                    ARN from the key store in order to access the device.
-                  type: string
                 allocatedStorage:
                   description: 'AllocatedStorage is the amount of storage (in gibibytes)
                     to allocate for the DB instance. Type: Integer Amazon Aurora Not
@@ -459,18 +456,18 @@ spec:
                   description: 'MonitoringInterval is the interval, in seconds, between
                     points when Enhanced Monitoring metrics are collected for the
                     DB instance. To disable collecting Enhanced Monitoring metrics,
-                    specify 0. The default is 0. If MonitoringRoleArn is specified,
+                    specify 0. The default is 0. If MonitoringRoleARN is specified,
                     then you must also set MonitoringInterval to a value other than
                     0. Valid Values: 0, 1, 5, 10, 15, 30, 60'
                   type: integer
                 monitoringRoleArn:
-                  description: MonitoringRoleArn is the ARN for the IAM role that
+                  description: MonitoringRoleARN is the ARN for the IAM role that
                     permits RDS to send enhanced monitoring metrics to Amazon CloudWatch
                     Logs. For example, arn:aws:iam:123456789012:role/emaccess. For
                     information on creating a monitoring role, go to Setting Up and
                     Enabling Enhanced Monitoring (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Monitoring.OS.html#USER_Monitoring.OS.Enabling)
                     in the Amazon RDS User Guide. If MonitoringInterval is set to
-                    a value other than 0, then you must supply a MonitoringRoleArn
+                    a value other than 0, then you must supply a MonitoringRoleARN
                     value.
                   type: string
                 multiAZ:
@@ -661,10 +658,6 @@ spec:
                         type: string
                     type: object
                   type: array
-                tdeCredentialArn:
-                  description: TdeCredentialArn is the ARN from the key store with
-                    which to associate the instance for TDE encryption.
-                  type: string
                 timezone:
                   description: Timezone of the DB instance. The time zone parameter
                     is currently supported only by Microsoft SQL Server (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.TimeZone).
