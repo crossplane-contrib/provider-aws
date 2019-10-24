@@ -17,28 +17,33 @@ limitations under the License.
 package fake
 
 import (
-	"github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
-	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
+	"github.com/aws/aws-sdk-go-v2/service/rds"
 )
 
 // MockRDSClient for testing.
 type MockRDSClient struct {
-	MockGetInstance    func(string) (*rds.Instance, error)
-	MockCreateInstance func(string, string, *v1alpha2.RDSInstanceSpec) (*rds.Instance, error)
-	MockDeleteInstance func(name string) (*rds.Instance, error)
+	MockCreate   func(*rds.CreateDBInstanceInput) rds.CreateDBInstanceRequest
+	MockDescribe func(*rds.DescribeDBInstancesInput) rds.DescribeDBInstancesRequest
+	MockModify   func(*rds.ModifyDBInstanceInput) rds.ModifyDBInstanceRequest
+	MockDelete   func(*rds.DeleteDBInstanceInput) rds.DeleteDBInstanceRequest
 }
 
-// GetInstance finds RDS Instance by name
-func (m *MockRDSClient) GetInstance(name string) (*rds.Instance, error) {
-	return m.MockGetInstance(name)
+// DescribeDBInstancesRequest finds RDS Instance by name
+func (m *MockRDSClient) DescribeDBInstancesRequest(i *rds.DescribeDBInstancesInput) rds.DescribeDBInstancesRequest {
+	return m.MockDescribe(i)
 }
 
-// CreateInstance creates RDS Instance with provided Specification
-func (m *MockRDSClient) CreateInstance(name, password string, spec *v1alpha2.RDSInstanceSpec) (*rds.Instance, error) {
-	return m.MockCreateInstance(name, password, spec)
+// CreateDBInstanceRequest creates RDS Instance with provided Specification
+func (m *MockRDSClient) CreateDBInstanceRequest(i *rds.CreateDBInstanceInput) rds.CreateDBInstanceRequest {
+	return m.MockCreate(i)
 }
 
-// DeleteInstance deletes RDS Instance
-func (m *MockRDSClient) DeleteInstance(name string) (*rds.Instance, error) {
-	return m.MockDeleteInstance(name)
+// ModifyDBInstanceRequest modifies RDS Instance with provided Specification
+func (m *MockRDSClient) ModifyDBInstanceRequest(i *rds.ModifyDBInstanceInput) rds.ModifyDBInstanceRequest {
+	return m.MockModify(i)
+}
+
+// DeleteDBInstanceRequest deletes RDS Instance
+func (m *MockRDSClient) DeleteDBInstanceRequest(i *rds.DeleteDBInstanceInput) rds.DeleteDBInstanceRequest {
+	return m.MockDelete(i)
 }

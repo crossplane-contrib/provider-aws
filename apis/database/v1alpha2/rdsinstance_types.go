@@ -288,19 +288,7 @@ type RDSInstanceParameters struct {
 	// database engines. For the full list of DB instance classes, and availability
 	// for your engine, see DB Instance Class (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html)
 	// in the Amazon RDS User Guide.
-	// DBInstanceClass is a required field
-	// +optional
-	DBInstanceClass *string `json:"dbInstanceClass,omitempty"`
-
-	// DBInstanceIdentifier is stored as a lowercase string.
-	// Constraints:
-	//    * Must contain from 1 to 63 letters, numbers, or hyphens.
-	//    * First character must be a letter.
-	//    * Cannot end with a hyphen or contain two consecutive hyphens.
-	// Example: mydbinstance
-	// DBInstanceIdentifier is a required field
-	// +optional
-	DBInstanceIdentifier *string `json:"dbInstanceIdentifier,omitempty"`
+	DBInstanceClass string `json:"dbInstanceClass"`
 
 	// DBName is the meaning of this parameter differs according to the database engine you
 	// use.
@@ -427,7 +415,6 @@ type RDSInstanceParameters struct {
 	//    * sqlserver-web
 	// Engine is a required field
 	// +immutable
-	// +optional
 	Engine string `json:"engine"`
 
 	// EngineVersion is the version number of the database engine to use.
@@ -456,19 +443,19 @@ type RDSInstanceParameters struct {
 	// +optional
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
-	// Iops is the amount of Provisioned IOPS (input/output operations per second) to be
-	// initially allocated for the DB instance. For information about valid Iops
+	// IOPS is the amount of Provisioned IOPS (input/output operations per second) to be
+	// initially allocated for the DB instance. For information about valid IOPS
 	// values, see see Amazon RDS Provisioned IOPS Storage to Improve Performance
 	// (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Storage.html#USER_PIOPS)
 	// in the Amazon RDS User Guide.
 	// Constraints: Must be a multiple between 1 and 50 of the storage amount for
 	// the DB instance. Must also be an integer multiple of 1000. For example, if
-	// the size of your DB instance is 500 GiB, then your Iops value can be 2000,
+	// the size of your DB instance is 500 GiB, then your IOPS value can be 2000,
 	// 3000, 4000, or 5000.
 	// +optional
-	Iops *int `json:"iops,omitempty"`
+	IOPS *int `json:"iops,omitempty"`
 
-	// KmsKeyID for an encrypted DB instance.
+	// KMSKeyID for an encrypted DB instance.
 	// The KMS key identifier is the Amazon Resource Name (ARN) for the KMS encryption
 	// key. If you are creating a DB instance with the same AWS account that owns
 	// the KMS encryption key used to encrypt the new DB instance, then you can
@@ -477,12 +464,12 @@ type RDSInstanceParameters struct {
 	// Not applicable. The KMS key identifier is managed by the DB cluster. For
 	// more information, see CreateDBCluster.
 	// If the StorageEncrypted parameter is true, and you do not specify a value
-	// for the KmsKeyID parameter, then Amazon RDS will use your default encryption
+	// for the KMSKeyID parameter, then Amazon RDS will use your default encryption
 	// key. AWS KMS creates the default encryption key for your AWS account. Your
 	// AWS account has a different default encryption key for each AWS Region.
 	// +immutable
 	// +optional
-	KmsKeyID *string `json:"kmsKeyId,omitempty"`
+	KMSKeyID *string `json:"kmsKeyId,omitempty"`
 
 	// LicenseModel information for this DB instance.
 	// Valid values: license-included | bring-your-own-license | general-public-license
@@ -697,8 +684,8 @@ type RDSInstanceParameters struct {
 
 	// StorageType specifies the storage type to be associated with the DB instance.
 	// Valid values: standard | gp2 | io1
-	// If you specify io1, you must also include a value for the Iops parameter.
-	// Default: io1 if the Iops parameter is specified, otherwise standard
+	// If you specify io1, you must also include a value for the IOPS parameter.
+	// Default: io1 if the IOPS parameter is specified, otherwise standard
 	// +optional
 	StorageType *string `json:"storageType,omitempty"`
 
@@ -731,6 +718,16 @@ type RDSInstanceParameters struct {
 	// +optional
 	VPCSecurityGroupIDs []string `json:"vpcSecurityGroupIds,omitempty"`
 
+	// A value that specifies that the DB instance class of the DB instance uses
+	// its default processor features.
+	UseDefaultProcessorFeatures *bool `json:"useDefaultProcessorFeatures,omitempty"`
+}
+
+// An RDSInstanceSpec defines the desired state of an RDSInstance.
+type RDSInstanceSpec struct {
+	runtimev1alpha1.ResourceSpec `json:",inline"`
+	ForProvider                  RDSInstanceParameters `json:"forProvider,omitempty"`
+
 	// DBSubnetGroupNameRef references to a DBSubnetGroup to retrieve its name
 	// +immutable
 	// +optional
@@ -740,12 +737,6 @@ type RDSInstanceParameters struct {
 	// +immutable
 	// +optional
 	VPCSecurityGroupIDRefs []*VPCSecurityGroupIDReferencerForRDSInstance `json:"vpcSecurityGroupIDRefs,omitempty" resource:"attributereferencer"`
-}
-
-// An RDSInstanceSpec defines the desired state of an RDSInstance.
-type RDSInstanceSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  RDSInstanceParameters `json:"forProvider,omitempty"`
 }
 
 // RDSInstanceState represents the state of an RDS instance.
@@ -923,17 +914,13 @@ type PendingModifiedValues struct {
 	// or is currently being applied.
 	DBInstanceClass string `json:"dbInstanceClass,omitempty"`
 
-	// DBInstanceIdentifier contains the new DBInstanceIdentifier for the DB instance that will be applied
-	// or is currently being applied.
-	DBInstanceIdentifier string `json:"dbInstanceIdentifier,omitempty"`
-
 	// DBSubnetGroupName is the new DB subnet group for the DB instance.
 	DBSubnetGroupName string `json:"dbSubnetGroupName,omitempty"`
 
 	// EngineVersion indicates the database engine version.
 	EngineVersion string `json:"engineVersion,omitempty"`
 
-	// Iops specifies the new Provisioned IOPS value for the DB instance that will be
+	// IOPS specifies the new Provisioned IOPS value for the DB instance that will be
 	// applied or is currently being applied.
 	Iops int `json:"iops,omitempty"`
 
