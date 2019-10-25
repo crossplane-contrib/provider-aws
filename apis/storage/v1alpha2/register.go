@@ -51,15 +51,7 @@ var (
 	S3BucketClassGroupVersionKind = SchemeGroupVersion.WithKind(S3BucketClassKind)
 )
 
-// DBSubnetGroup type metadata.
-var (
-	DBSubnetGroupKind             = reflect.TypeOf(DBSubnetGroup{}).Name()
-	DBSubnetGroupKindAPIVersion   = DBSubnetGroupKind + "." + SchemeGroupVersion.String()
-	DBSubnetGroupGroupVersionKind = SchemeGroupVersion.WithKind(DBSubnetGroupKind)
-)
-
 func init() {
 	SchemeBuilder.Register(&S3Bucket{}, &S3BucketList{})
 	SchemeBuilder.Register(&S3BucketClass{}, &S3BucketClassList{})
-	SchemeBuilder.Register(&DBSubnetGroup{}, &DBSubnetGroupList{})
 }
