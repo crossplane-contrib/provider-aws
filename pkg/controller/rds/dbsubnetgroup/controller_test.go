@@ -33,7 +33,7 @@ import (
 	corev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
-	v1alpha2 "github.com/crossplaneio/stack-aws/apis/storage/v1alpha2"
+	v1alpha2 "github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
 	"github.com/crossplaneio/stack-aws/pkg/clients/rds/fake"
 )
