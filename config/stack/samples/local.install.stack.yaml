@@ -2,7 +2,8 @@
 apiVersion: stacks.crossplane.io/v1alpha1
 kind: ClusterStackInstall
 metadata:
-  name: "crossplane/stack-aws"
+  name: stack-aws
+  namespace: aws
 spec:
   source: localhost:5000
   package: "crossplane/stack-aws"
