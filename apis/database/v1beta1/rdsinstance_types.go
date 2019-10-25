@@ -1022,7 +1022,7 @@ type RDSInstanceObservation struct {
 	DomainMemberships []DomainMembership `json:"domainMemberships,omitempty"`
 
 	// InstanceCreateTime provides the date and time the DB instance was created.
-	InstanceCreateTime metav1.Time `json:"instanceCreateTime,omitempty"`
+	InstanceCreateTime *metav1.Time `json:"instanceCreateTime,omitempty"`
 
 	// Endpoint specifies the connection endpoint.
 	Endpoint Endpoint `json:"endpoint,omitempty"`
@@ -1034,7 +1034,7 @@ type RDSInstanceObservation struct {
 
 	// LatestRestorableTime specifies the latest time to which a database can be
 	// restored with point-in-time restore.
-	LatestRestorableTime metav1.Time `json:"latestRestorableTime,omitempty"`
+	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
 
 	// OptionGroupMemberships provides the list of option group memberships for this DB instance.
 	OptionGroupMemberships []OptionGroupMembership `json:"optionGroupMemberships,omitempty"`

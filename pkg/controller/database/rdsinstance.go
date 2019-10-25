@@ -181,9 +181,25 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.Ex
 	if !ok {
 		return resource.ExternalUpdate{}, errors.New(errNotRDSInstance)
 	}
-	req := e.client.ModifyDBInstanceRequest(rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
-	req.SetContext(ctx)
-	_, err := req.Send()
+	if cr.Status.AtProvider.DBInstanceStatus != string(v1beta1.RDSInstanceStateAvailable) {
+		return resource.ExternalUpdate{}, nil
+	}
+	// AWS rejects modification requests if you send fields whose value is same
+	// as the current one. We have to create a patch out of the desired state
+	// and the current state.
+	get := e.client.DescribeDBInstancesRequest(&rds2.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
+	get.SetContext(ctx)
+	rsp, err := get.Send()
+	if err != nil {
+		return resource.ExternalUpdate{}, errors.Wrap(err, errDescribeFailed)
+	}
+	requestInput, err := rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), &cr.Spec.ForProvider, &rsp.DBInstances[0])
+	if err != nil {
+		return resource.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
+	}
+	post := e.client.ModifyDBInstanceRequest(requestInput)
+	post.SetContext(ctx)
+	_, err = post.Send()
 	return resource.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
 }
 
@@ -191,6 +207,9 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
 		return errors.New(errNotRDSInstance)
+	}
+	if cr.Status.AtProvider.DBInstanceStatus == string(v1beta1.RDSInstanceStateDeleting) {
+		return nil
 	}
 	input := rds2.DeleteDBInstanceInput{
 		DBInstanceIdentifier: aws.String(meta.GetExternalName(cr)),

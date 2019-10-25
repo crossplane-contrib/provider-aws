@@ -290,6 +290,10 @@ func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.Cl
 	}
 	spec.ForProvider.EngineVersion = v
 
+	if spec.ForProvider.ApplyModificationsImmediately == nil {
+		spec.ForProvider.ApplyModificationsImmediately = aws.Bool(true)
+	}
+
 	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
 		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,
 		Name:      string(cm.GetUID()),
