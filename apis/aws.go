@@ -28,7 +28,7 @@ import (
 
 	cachev1alpha2 "github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
 	computev1alpha2 "github.com/crossplaneio/stack-aws/apis/compute/v1alpha2"
-	databasev1alpha2 "github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
+	databasev1alpha2 "github.com/crossplaneio/stack-aws/apis/database/v1beta1"
 	identityv1alpha2 "github.com/crossplaneio/stack-aws/apis/identity/v1alpha2"
 	networkv1alpha2 "github.com/crossplaneio/stack-aws/apis/network/v1alpha2"
 	storagev1alpha2 "github.com/crossplaneio/stack-aws/apis/storage/v1alpha2"

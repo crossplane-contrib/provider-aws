@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rds
+package database
 
 import (
 	"context"
@@ -31,7 +31,7 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 	databasev1alpha1 "github.com/crossplaneio/crossplane/apis/database/v1alpha1"
 
-	"github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
 	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 )
 
@@ -71,8 +71,8 @@ func TestConfigurePostgreRDSInstance(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{UID: claimUID},
 					Spec:       databasev1alpha1.PostgreSQLInstanceSpec{EngineVersion: engineVersion},
 				},
-				cs: &v1alpha2.RDSInstanceClass{
-					SpecTemplate: v1alpha2.RDSInstanceClassSpecTemplate{
+				cs: &v1beta1.RDSInstanceClass{
+					SpecTemplate: v1beta1.RDSInstanceClassSpecTemplate{
 						ClassSpecTemplate: runtimev1alpha1.ClassSpecTemplate{
 							WriteConnectionSecretsToNamespace: claimNamespace,
 							ProviderReference:                 &corev1.ObjectReference{Name: providerName},
@@ -80,11 +80,11 @@ func TestConfigurePostgreRDSInstance(t *testing.T) {
 						},
 					},
 				},
-				mg: &v1alpha2.RDSInstance{},
+				mg: &v1beta1.RDSInstance{},
 			},
 			want: want{
-				mg: &v1alpha2.RDSInstance{
-					Spec: v1alpha2.RDSInstanceSpec{
+				mg: &v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
 						ResourceSpec: runtimev1alpha1.ResourceSpec{
 							ReclaimPolicy: runtimev1alpha1.ReclaimDelete,
 							WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
@@ -93,8 +93,8 @@ func TestConfigurePostgreRDSInstance(t *testing.T) {
 							},
 							ProviderReference: &corev1.ObjectReference{Name: providerName},
 						},
-						ForProvider: v1alpha2.RDSInstanceParameters{
-							Engine:        v1alpha2.PostgresqlEngine,
+						ForProvider: v1beta1.RDSInstanceParameters{
+							Engine:        v1beta1.PostgresqlEngine,
 							EngineVersion: &engineVersion,
 						},
 					},
@@ -144,8 +144,8 @@ func TestConfigureMyRDSInstance(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{UID: claimUID},
 					Spec:       databasev1alpha1.MySQLInstanceSpec{EngineVersion: engineVersion},
 				},
-				cs: &v1alpha2.RDSInstanceClass{
-					SpecTemplate: v1alpha2.RDSInstanceClassSpecTemplate{
+				cs: &v1beta1.RDSInstanceClass{
+					SpecTemplate: v1beta1.RDSInstanceClassSpecTemplate{
 						ClassSpecTemplate: runtimev1alpha1.ClassSpecTemplate{
 							WriteConnectionSecretsToNamespace: claimNamespace,
 							ProviderReference:                 &corev1.ObjectReference{Name: providerName},
@@ -153,11 +153,11 @@ func TestConfigureMyRDSInstance(t *testing.T) {
 						},
 					},
 				},
-				mg: &v1alpha2.RDSInstance{},
+				mg: &v1beta1.RDSInstance{},
 			},
 			want: want{
-				mg: &v1alpha2.RDSInstance{
-					Spec: v1alpha2.RDSInstanceSpec{
+				mg: &v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
 						ResourceSpec: runtimev1alpha1.ResourceSpec{
 							ReclaimPolicy: runtimev1alpha1.ReclaimDelete,
 							WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
@@ -166,8 +166,8 @@ func TestConfigureMyRDSInstance(t *testing.T) {
 							},
 							ProviderReference: &corev1.ObjectReference{Name: providerName},
 						},
-						ForProvider: v1alpha2.RDSInstanceParameters{
-							Engine:        v1alpha2.MysqlEngine,
+						ForProvider: v1beta1.RDSInstanceParameters{
+							Engine:        v1beta1.MysqlEngine,
 							EngineVersion: &engineVersion,
 						},
 					},
