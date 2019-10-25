@@ -569,9 +569,15 @@ func (in *RDSInstanceObservation) DeepCopyInto(out *RDSInstanceObservation) {
 		*out = make([]DomainMembership, len(*in))
 		copy(*out, *in)
 	}
-	in.InstanceCreateTime.DeepCopyInto(&out.InstanceCreateTime)
+	if in.InstanceCreateTime != nil {
+		in, out := &in.InstanceCreateTime, &out.InstanceCreateTime
+		*out = (*in).DeepCopy()
+	}
 	out.Endpoint = in.Endpoint
-	in.LatestRestorableTime.DeepCopyInto(&out.LatestRestorableTime)
+	if in.LatestRestorableTime != nil {
+		in, out := &in.LatestRestorableTime, &out.LatestRestorableTime
+		*out = (*in).DeepCopy()
+	}
 	if in.OptionGroupMemberships != nil {
 		in, out := &in.OptionGroupMemberships, &out.OptionGroupMemberships
 		*out = make([]OptionGroupMembership, len(*in))

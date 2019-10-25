@@ -17,12 +17,14 @@ limitations under the License.
 package rds
 
 import (
+	"encoding/json"
 	"reflect"
 	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
+	jsonpatch "github.com/evanphx/json-patch"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
@@ -133,7 +135,30 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstance
 }
 
 // GenerateModifyDBInstanceInput from RDSInstanceSpec
-func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters) *rds.ModifyDBInstanceInput {
+func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters, currentState *rds.DBInstance) (*rds.ModifyDBInstanceInput, error) {
+	patch := &v1beta1.RDSInstanceParameters{}
+	if currentState != nil {
+		current := &v1beta1.RDSInstanceParameters{}
+		LateInitialize(current, *currentState)
+		currentJSON, err := json.Marshal(current)
+		if err != nil {
+			return nil, err
+		}
+		desiredJSON, err := json.Marshal(p)
+		if err != nil {
+			return nil, err
+		}
+		patchJSON, err := jsonpatch.CreateMergePatch(currentJSON, desiredJSON)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := json.Unmarshal(patchJSON, patch); err != nil {
+			return nil, err
+		}
+	} else {
+		patch = p
+	}
 	// NOTE(muvaf): MasterUserPassword is not used here. So, password is set once
 	// and kept that way.
 	// NOTE(muvaf): Change of DBInstanceIdentifier is supported by AWS but
@@ -141,56 +166,56 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 	// it.
 	m := &rds.ModifyDBInstanceInput{
 		DBInstanceIdentifier:               aws.String(name),
-		AllocatedStorage:                   awsclients.Int64Address(p.AllocatedStorage),
-		AllowMajorVersionUpgrade:           p.AllowMajorVersionUpgrade,
-		ApplyImmediately:                   p.ApplyModificationsImmediately,
-		AutoMinorVersionUpgrade:            p.AutoMinorVersionUpgrade,
-		BackupRetentionPeriod:              awsclients.Int64Address(p.BackupRetentionPeriod),
-		CACertificateIdentifier:            p.CACertificateIdentifier,
-		CopyTagsToSnapshot:                 p.CopyTagsToSnapshot,
-		DBInstanceClass:                    aws.String(p.DBInstanceClass),
-		DBParameterGroupName:               p.DBParameterGroupName,
-		DBPortNumber:                       awsclients.Int64Address(p.Port),
-		DBSecurityGroups:                   p.DBSecurityGroups,
-		DBSubnetGroupName:                  p.DBSubnetGroupName,
-		DeletionProtection:                 p.DeletionProtection,
-		Domain:                             p.Domain,
-		DomainIAMRoleName:                  p.DomainIAMRoleName,
-		EnableIAMDatabaseAuthentication:    p.EnableIAMDatabaseAuthentication,
-		EnablePerformanceInsights:          p.EnablePerformanceInsights,
-		EngineVersion:                      p.EngineVersion,
-		Iops:                               awsclients.Int64Address(p.IOPS),
-		LicenseModel:                       p.LicenseModel,
-		MonitoringInterval:                 awsclients.Int64Address(p.MonitoringInterval),
-		MonitoringRoleArn:                  p.MonitoringRoleARN,
-		MultiAZ:                            p.MultiAZ,
-		OptionGroupName:                    p.OptionGroupName,
-		PerformanceInsightsKMSKeyId:        p.PerformanceInsightsKMSKeyID,
-		PerformanceInsightsRetentionPeriod: awsclients.Int64Address(p.PerformanceInsightsRetentionPeriod),
-		PreferredBackupWindow:              p.PreferredBackupWindow,
-		PreferredMaintenanceWindow:         p.PreferredMaintenanceWindow,
-		PromotionTier:                      awsclients.Int64Address(p.PromotionTier),
-		PubliclyAccessible:                 p.PubliclyAccessible,
-		StorageType:                        p.StorageType,
-		UseDefaultProcessorFeatures:        p.UseDefaultProcessorFeatures,
-		VpcSecurityGroupIds:                p.VPCSecurityGroupIDs,
+		AllocatedStorage:                   awsclients.Int64Address(patch.AllocatedStorage),
+		AllowMajorVersionUpgrade:           patch.AllowMajorVersionUpgrade,
+		ApplyImmediately:                   patch.ApplyModificationsImmediately,
+		AutoMinorVersionUpgrade:            patch.AutoMinorVersionUpgrade,
+		BackupRetentionPeriod:              awsclients.Int64Address(patch.BackupRetentionPeriod),
+		CACertificateIdentifier:            patch.CACertificateIdentifier,
+		CopyTagsToSnapshot:                 patch.CopyTagsToSnapshot,
+		DBInstanceClass:                    awsclients.String(patch.DBInstanceClass),
+		DBParameterGroupName:               patch.DBParameterGroupName,
+		DBPortNumber:                       awsclients.Int64Address(patch.Port),
+		DBSecurityGroups:                   patch.DBSecurityGroups,
+		DBSubnetGroupName:                  patch.DBSubnetGroupName,
+		DeletionProtection:                 patch.DeletionProtection,
+		Domain:                             patch.Domain,
+		DomainIAMRoleName:                  patch.DomainIAMRoleName,
+		EnableIAMDatabaseAuthentication:    patch.EnableIAMDatabaseAuthentication,
+		EnablePerformanceInsights:          patch.EnablePerformanceInsights,
+		EngineVersion:                      patch.EngineVersion,
+		Iops:                               awsclients.Int64Address(patch.IOPS),
+		LicenseModel:                       patch.LicenseModel,
+		MonitoringInterval:                 awsclients.Int64Address(patch.MonitoringInterval),
+		MonitoringRoleArn:                  patch.MonitoringRoleARN,
+		MultiAZ:                            patch.MultiAZ,
+		OptionGroupName:                    patch.OptionGroupName,
+		PerformanceInsightsKMSKeyId:        patch.PerformanceInsightsKMSKeyID,
+		PerformanceInsightsRetentionPeriod: awsclients.Int64Address(patch.PerformanceInsightsRetentionPeriod),
+		PreferredBackupWindow:              patch.PreferredBackupWindow,
+		PreferredMaintenanceWindow:         patch.PreferredMaintenanceWindow,
+		PromotionTier:                      awsclients.Int64Address(patch.PromotionTier),
+		PubliclyAccessible:                 patch.PubliclyAccessible,
+		StorageType:                        patch.StorageType,
+		UseDefaultProcessorFeatures:        patch.UseDefaultProcessorFeatures,
+		VpcSecurityGroupIds:                patch.VPCSecurityGroupIDs,
 	}
-	if len(p.ProcessorFeatures) != 0 {
-		m.ProcessorFeatures = make([]rds.ProcessorFeature, len(p.ProcessorFeatures))
-		for i, val := range p.ProcessorFeatures {
+	if len(patch.ProcessorFeatures) != 0 {
+		m.ProcessorFeatures = make([]rds.ProcessorFeature, len(patch.ProcessorFeatures))
+		for i, val := range patch.ProcessorFeatures {
 			m.ProcessorFeatures[i] = rds.ProcessorFeature{
 				Name:  &val.Name,
 				Value: &val.Value,
 			}
 		}
 	}
-	if p.CloudwatchLogsExportConfiguration != nil {
+	if patch.CloudwatchLogsExportConfiguration != nil {
 		m.CloudwatchLogsExportConfiguration = &rds.CloudwatchLogsExportConfiguration{
-			DisableLogTypes: p.CloudwatchLogsExportConfiguration.DisableLogTypes,
-			EnableLogTypes:  p.CloudwatchLogsExportConfiguration.EnableLogTypes,
+			DisableLogTypes: patch.CloudwatchLogsExportConfiguration.DisableLogTypes,
+			EnableLogTypes:  patch.CloudwatchLogsExportConfiguration.EnableLogTypes,
 		}
 	}
-	return m
+	return m, nil
 }
 
 // GenerateObservation is used to produce v1alpha2.RDSInstanceObservation from
@@ -209,10 +234,12 @@ func GenerateObservation(db rds.DBInstance) v1beta1.RDSInstanceObservation { // 
 		SecondaryAvailabilityZone:             aws.StringValue(db.SecondaryAvailabilityZone),
 	}
 	if db.LatestRestorableTime != nil {
-		o.LatestRestorableTime = metav1.NewTime(*db.LatestRestorableTime)
+		t := metav1.NewTime(*db.LatestRestorableTime)
+		o.LatestRestorableTime = &t
 	}
 	if db.InstanceCreateTime != nil {
-		o.InstanceCreateTime = metav1.NewTime(*db.InstanceCreateTime)
+		t := metav1.NewTime(*db.InstanceCreateTime)
+		o.InstanceCreateTime = &t
 	}
 	if len(db.DBParameterGroups) != 0 {
 		o.DBParameterGroups = make([]v1beta1.DBParameterGroupStatus, len(db.DBParameterGroups))
@@ -351,7 +378,6 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db rds.DBInstance) { // n
 	in.EnableIAMDatabaseAuthentication = awsclients.LateInitializeBoolPtr(in.EnableIAMDatabaseAuthentication, db.IAMDatabaseAuthenticationEnabled)
 	in.EnablePerformanceInsights = awsclients.LateInitializeBoolPtr(in.EnablePerformanceInsights, db.PerformanceInsightsEnabled)
 	in.Engine = awsclients.LateInitializeString(in.Engine, db.Engine)
-	in.EngineVersion = awsclients.LateInitializeStringPtr(in.EngineVersion, db.EngineVersion)
 	in.IOPS = awsclients.LateInitializeIntPtr(in.IOPS, db.Iops)
 	in.KMSKeyID = awsclients.LateInitializeStringPtr(in.KMSKeyID, db.KmsKeyId)
 	in.LicenseModel = awsclients.LateInitializeStringPtr(in.LicenseModel, db.LicenseModel)
@@ -397,14 +423,75 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db rds.DBInstance) { // n
 			in.VPCSecurityGroupIDs[i] = aws.StringValue(val.VpcSecurityGroupId)
 		}
 	}
+	in.EngineVersion = awsclients.LateInitializeStringPtr(in.EngineVersion, db.EngineVersion)
+	// When version 5.6 is chosen, AWS creates 5.6.41 and that's totally valid.
+	// But we detect as if we need to update it all the time. We assign
+	// the actual full version to our spec to avoid unnecessary update signals.
+	if strings.HasPrefix(aws.StringValue(db.EngineVersion), aws.StringValue(in.EngineVersion)) {
+		in.EngineVersion = db.EngineVersion
+	}
 }
+
+//func subtract(from, minus *string) *string {
+//	if reflect.DeepEqual(from, minus) {
+//		return nil
+//	}
+//	return from
+//}
+//
+//func SubtractFields(fullRequest *rds.ModifyDBInstanceInput, currentState *rds.DBInstance) {
+//	params := &v1beta1.RDSInstanceParameters{}
+//	LateInitialize(params, *currentState)
+//	minus := GenerateModifyDBInstanceInput(aws.StringValue(currentState.DBInstanceIdentifier), params)
+//	jsonpatch.Patch{}
+//
+//	fullRequest.AllocatedStorage = subtract(fullRequest.AllocatedStorage, minus.AllocatedStorage).(*int64)
+//	fullRequest.AllowMajorVersionUpgrade = subtract(fullRequest.AllowMajorVersionUpgrade, minus.AllowMajorVersionUpgrade).(*bool)
+//	fullRequest.ApplyImmediately = subtract(fullRequest.ApplyImmediately, minus.ApplyImmediately).(*bool)
+//	fullRequest.AutoMinorVersionUpgrade = subtract(fullRequest.AutoMinorVersionUpgrade, minus.AutoMinorVersionUpgrade).(*bool)
+//	fullRequest.BackupRetentionPeriod = subtract(fullRequest.BackupRetentionPeriod, minus.BackupRetentionPeriod).(*int64)
+//	fullRequest.CACertificateIdentifier = subtract(fullRequest.CACertificateIdentifier, minus.CACertificateIdentifier).(*string)
+//	fullRequest.CloudwatchLogsExportConfiguration = subtract(fullRequest.CloudwatchLogsExportConfiguration, minus.CloudwatchLogsExportConfiguration).(*rds.CloudwatchLogsExportConfiguration)
+//	fullRequest.CopyTagsToSnapshot = subtract(fullRequest.CopyTagsToSnapshot, minus.CopyTagsToSnapshot).(*bool)
+//	fullRequest.DBInstanceClass = subtract(fullRequest.DBInstanceClass, minus.DBInstanceClass).(*string)
+//	fullRequest.DBInstanceIdentifier = subtract(fullRequest.DBInstanceIdentifier, minus.DBInstanceIdentifier).(*string)
+//	fullRequest.DBParameterGroupName = subtract(fullRequest.DBParameterGroupName, minus.DBParameterGroupName).(*string)
+//	fullRequest.DBPortNumber = subtract(fullRequest.DBPortNumber, minus.DBPortNumber).(*int64)
+//	fullRequest.DBSecurityGroups = subtract(fullRequest.DBSecurityGroups, minus.DBSecurityGroups).([]string)
+//	fullRequest.DBSubnetGroupName = subtract(fullRequest.DBSubnetGroupName, minus.DBSubnetGroupName).(*string)
+//	fullRequest.DeletionProtection = subtract(fullRequest.DeletionProtection, minus.DeletionProtection).(*bool)
+//	fullRequest.Domain = subtract(fullRequest.Domain, minus.Domain).(*string)
+//	fullRequest.DomainIAMRoleName = subtract(fullRequest.DomainIAMRoleName, minus.DomainIAMRoleName).(*string)
+//	fullRequest.EnableIAMDatabaseAuthentication = subtract(fullRequest.EnableIAMDatabaseAuthentication, minus.EnableIAMDatabaseAuthentication).(*bool)
+//	fullRequest.EnablePerformanceInsights = subtract(fullRequest.EnablePerformanceInsights, minus.EnablePerformanceInsights).(*bool)
+//	fullRequest.EngineVersion = subtract(fullRequest.EngineVersion, minus.EngineVersion).(*string)
+//	fullRequest.Iops = subtract(fullRequest.Iops, minus.Iops).(*int64)
+//	fullRequest.LicenseModel = subtract(fullRequest.LicenseModel, minus.LicenseModel).(*string)
+//	fullRequest.MasterUserPassword = subtract(fullRequest.MasterUserPassword, minus.MasterUserPassword).(*string)
+//	fullRequest.MonitoringInterval = subtract(fullRequest.MonitoringInterval, minus.MonitoringInterval).(*int64)
+//	fullRequest.MonitoringRoleArn = subtract(fullRequest.MonitoringRoleArn, minus.MonitoringRoleArn).(*string)
+//	fullRequest.MultiAZ = subtract(fullRequest.MultiAZ, minus.MultiAZ).(*bool)
+//	fullRequest.NewDBInstanceIdentifier = subtract(fullRequest.NewDBInstanceIdentifier, minus.NewDBInstanceIdentifier).(*string)
+//	fullRequest.OptionGroupName = subtract(fullRequest.OptionGroupName, minus.OptionGroupName).(*string)
+//	fullRequest.PreferredBackupWindow = subtract(fullRequest.PreferredBackupWindow, minus.PreferredBackupWindow).(*string)
+//	fullRequest.PreferredMaintenanceWindow = subtract(fullRequest.PreferredMaintenanceWindow, minus.PreferredMaintenanceWindow).(*string)
+//	fullRequest.ProcessorFeatures = subtract(fullRequest.ProcessorFeatures, minus.ProcessorFeatures).([]rds.ProcessorFeature)
+//	fullRequest.PromotionTier = subtract(fullRequest.PromotionTier, minus.PromotionTier).(*int64)
+//	fullRequest.PubliclyAccessible = subtract(fullRequest.PubliclyAccessible, minus.PubliclyAccessible).(*bool)
+//	fullRequest.StorageType = subtract(fullRequest.StorageType, minus.StorageType).(*string)
+//	fullRequest.TdeCredentialArn = subtract(fullRequest.TdeCredentialArn, minus.TdeCredentialArn).(*string)
+//	fullRequest.TdeCredentialPassword = subtract(fullRequest.TdeCredentialPassword, minus.TdeCredentialPassword).(*string)
+//	fullRequest.UseDefaultProcessorFeatures = subtract(fullRequest.UseDefaultProcessorFeatures, minus.UseDefaultProcessorFeatures).(*bool)
+//	fullRequest.VpcSecurityGroupIds = subtract(fullRequest.VpcSecurityGroupIds, minus.VpcSecurityGroupIds).([]string)
+//}
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
 func IsUpToDate(in v1beta1.RDSInstanceParameters, db rds.DBInstance) bool {
 	currentParams := &v1beta1.RDSInstanceParameters{}
 	LateInitialize(currentParams, db)
-	currentModificationRequest := GenerateModifyDBInstanceInput("", currentParams)
-	candidateModificationRequest := GenerateModifyDBInstanceInput("", &in)
+	//TODO(muvaf): temp error skip, will fix
+	currentModificationRequest, _ := GenerateModifyDBInstanceInput("", currentParams, nil)
+	candidateModificationRequest, _ := GenerateModifyDBInstanceInput("", &in, nil)
 	return reflect.DeepEqual(currentModificationRequest, candidateModificationRequest)
 }
 

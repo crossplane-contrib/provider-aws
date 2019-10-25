@@ -7,6 +7,7 @@ require (
 	github.com/crossplaneio/crossplane v0.3.1-0.20191024053943-357372aa9710
 	github.com/crossplaneio/crossplane-runtime v0.0.0-20191023215652-0f37bea5496e
 	github.com/crossplaneio/crossplane-tools v0.0.0-20191023215726-61fa1eff2a2e // indirect
+	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-ini/ini v1.46.0
 	github.com/google/go-cmp v0.3.1
@@ -15,6 +16,7 @@ require (
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.4.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
+	gopkg.in/evanphx/json-patch.v4 v4.5.0 // indirect
 	gopkg.in/ini.v1 v1.47.0 // indirect
 	k8s.io/api v0.0.0-20190409021203-6e4e0e4f393b
 	k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
