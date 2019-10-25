@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package rds
+package database
 
 import (
 	"context"
@@ -33,7 +33,7 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 
-	"github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
 	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
 	"github.com/crossplaneio/stack-aws/pkg/clients/rds/fake"
@@ -60,38 +60,38 @@ var (
 type args struct {
 	rds  rds.Client
 	kube client.Client
-	cr   *v1alpha2.RDSInstance
+	cr   *v1beta1.RDSInstance
 }
 
-type rdsModifier func(*v1alpha2.RDSInstance)
+type rdsModifier func(*v1beta1.RDSInstance)
 
 func withMasterUsername(s *string) rdsModifier {
-	return func(r *v1alpha2.RDSInstance) { r.Spec.ForProvider.MasterUsername = s }
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.MasterUsername = s }
 }
 
 func withConditions(c ...runtimev1alpha1.Condition) rdsModifier {
-	return func(r *v1alpha2.RDSInstance) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.RDSInstance) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withBindingPhase(p runtimev1alpha1.BindingPhase) rdsModifier {
-	return func(r *v1alpha2.RDSInstance) { r.Status.SetBindingPhase(p) }
+	return func(r *v1beta1.RDSInstance) { r.Status.SetBindingPhase(p) }
 }
 
 func withEngineVersion(s *string) rdsModifier {
-	return func(r *v1alpha2.RDSInstance) { r.Spec.ForProvider.EngineVersion = s }
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.EngineVersion = s }
 }
 
 func withDBInstanceStatus(s string) rdsModifier {
-	return func(r *v1alpha2.RDSInstance) { r.Status.AtProvider.DBInstanceStatus = s }
+	return func(r *v1beta1.RDSInstance) { r.Status.AtProvider.DBInstanceStatus = s }
 }
 
-func instance(m ...rdsModifier) *v1alpha2.RDSInstance {
-	cr := &v1alpha2.RDSInstance{
-		Spec: v1alpha2.RDSInstanceSpec{
+func instance(m ...rdsModifier) *v1beta1.RDSInstance {
+	cr := &v1beta1.RDSInstance{
+		Spec: v1beta1.RDSInstanceSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
 				ProviderReference: &corev1.ObjectReference{Name: providerName},
 			},
-			ForProvider: v1alpha2.RDSInstanceParameters{
+			ForProvider: v1beta1.RDSInstanceParameters{
 				MasterUsername: &masterUsername,
 			},
 		},
@@ -127,7 +127,7 @@ func TestConnect(t *testing.T) {
 	type args struct {
 		kube        client.Client
 		newClientFn func(credentials []byte, region string) (rds.Client, error)
-		cr          *v1alpha2.RDSInstance
+		cr          *v1beta1.RDSInstance
 	}
 	type want struct {
 		err error
@@ -213,7 +213,7 @@ func TestConnect(t *testing.T) {
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1alpha2.RDSInstance
+		cr     *v1beta1.RDSInstance
 		result resource.ExternalObservation
 		err    error
 	}
@@ -230,7 +230,7 @@ func TestObserve(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.DescribeDBInstancesOutput{
 								DBInstances: []rds2.DBInstance{
 									{
-										DBInstanceStatus: aws.String(string(v1alpha2.RDSInstanceStateAvailable)),
+										DBInstanceStatus: aws.String(string(v1beta1.RDSInstanceStateAvailable)),
 									},
 								},
 							}},
@@ -243,11 +243,11 @@ func TestObserve(t *testing.T) {
 				cr: instance(
 					withConditions(runtimev1alpha1.Available()),
 					withBindingPhase(runtimev1alpha1.BindingPhaseUnbound),
-					withDBInstanceStatus(string(v1alpha2.RDSInstanceStateAvailable))),
+					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
 				result: resource.ExternalObservation{
 					ResourceExists:    true,
 					ResourceUpToDate:  true,
-					ConnectionDetails: rds.GetConnectionDetails(v1alpha2.RDSInstance{}),
+					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
 				},
 			},
 		},
@@ -259,7 +259,7 @@ func TestObserve(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.DescribeDBInstancesOutput{
 								DBInstances: []rds2.DBInstance{
 									{
-										DBInstanceStatus: aws.String(string(v1alpha2.RDSInstanceStateDeleting)),
+										DBInstanceStatus: aws.String(string(v1beta1.RDSInstanceStateDeleting)),
 									},
 								},
 							}},
@@ -271,11 +271,11 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: instance(
 					withConditions(runtimev1alpha1.Deleting()),
-					withDBInstanceStatus(string(v1alpha2.RDSInstanceStateDeleting))),
+					withDBInstanceStatus(string(v1beta1.RDSInstanceStateDeleting))),
 				result: resource.ExternalObservation{
 					ResourceExists:    true,
 					ResourceUpToDate:  true,
-					ConnectionDetails: rds.GetConnectionDetails(v1alpha2.RDSInstance{}),
+					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
 				},
 			},
 		},
@@ -287,7 +287,7 @@ func TestObserve(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.DescribeDBInstancesOutput{
 								DBInstances: []rds2.DBInstance{
 									{
-										DBInstanceStatus: aws.String(string(v1alpha2.RDSInstanceStateFailed)),
+										DBInstanceStatus: aws.String(string(v1beta1.RDSInstanceStateFailed)),
 									},
 								},
 							}},
@@ -299,11 +299,11 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: instance(
 					withConditions(runtimev1alpha1.Unavailable()),
-					withDBInstanceStatus(string(v1alpha2.RDSInstanceStateFailed))),
+					withDBInstanceStatus(string(v1beta1.RDSInstanceStateFailed))),
 				result: resource.ExternalObservation{
 					ResourceExists:    true,
 					ResourceUpToDate:  true,
-					ConnectionDetails: rds.GetConnectionDetails(v1alpha2.RDSInstance{}),
+					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
 				},
 			},
 		},
@@ -350,7 +350,7 @@ func TestObserve(t *testing.T) {
 								DBInstances: []rds2.DBInstance{
 									{
 										EngineVersion:    aws.String(engineVersion),
-										DBInstanceStatus: aws.String(string(v1alpha2.RDSInstanceStateCreating)),
+										DBInstanceStatus: aws.String(string(v1beta1.RDSInstanceStateCreating)),
 									},
 								},
 							}},
@@ -362,13 +362,13 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: instance(
 					withEngineVersion(&engineVersion),
-					withDBInstanceStatus(string(v1alpha2.RDSInstanceStateCreating)),
+					withDBInstanceStatus(string(v1beta1.RDSInstanceStateCreating)),
 					withConditions(runtimev1alpha1.Creating()),
 				),
 				result: resource.ExternalObservation{
 					ResourceExists:    true,
 					ResourceUpToDate:  true,
-					ConnectionDetails: rds.GetConnectionDetails(v1alpha2.RDSInstance{}),
+					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
 				},
 			},
 		},
@@ -384,7 +384,7 @@ func TestObserve(t *testing.T) {
 								DBInstances: []rds2.DBInstance{
 									{
 										EngineVersion:    aws.String(engineVersion),
-										DBInstanceStatus: aws.String(string(v1alpha2.RDSInstanceStateCreating)),
+										DBInstanceStatus: aws.String(string(v1beta1.RDSInstanceStateCreating)),
 									},
 								},
 							}},
@@ -422,7 +422,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha2.RDSInstance
+		cr     *v1beta1.RDSInstance
 		result resource.ExternalCreation
 		err    error
 	}
@@ -514,7 +514,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha2.RDSInstance
+		cr     *v1beta1.RDSInstance
 		result resource.ExternalUpdate
 		err    error
 	}
@@ -576,7 +576,7 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *v1alpha2.RDSInstance
+		cr  *v1beta1.RDSInstance
 		err error
 	}
 

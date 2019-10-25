@@ -28,7 +28,7 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
 	awsclients "github.com/crossplaneio/stack-aws/pkg/clients"
 )
 
@@ -67,7 +67,7 @@ func IsErrorNotFound(err error) bool {
 }
 
 // GenerateCreateDBInstanceInput from RDSInstanceSpec
-func GenerateCreateDBInstanceInput(name, password string, p *v1alpha2.RDSInstanceParameters) *rds.CreateDBInstanceInput {
+func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstanceParameters) *rds.CreateDBInstanceInput {
 	c := &rds.CreateDBInstanceInput{
 		DBInstanceIdentifier:               aws.String(name),
 		AllocatedStorage:                   awsclients.Int64Address(p.AllocatedStorage),
@@ -133,7 +133,7 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1alpha2.RDSInstanc
 }
 
 // GenerateModifyDBInstanceInput from RDSInstanceSpec
-func GenerateModifyDBInstanceInput(name string, p *v1alpha2.RDSInstanceParameters) *rds.ModifyDBInstanceInput {
+func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters) *rds.ModifyDBInstanceInput {
 	// NOTE(muvaf): MasterUserPassword is not used here. So, password is set once
 	// and kept that way.
 	// NOTE(muvaf): Change of DBInstanceIdentifier is supported by AWS but
@@ -195,8 +195,8 @@ func GenerateModifyDBInstanceInput(name string, p *v1alpha2.RDSInstanceParameter
 
 // GenerateObservation is used to produce v1alpha2.RDSInstanceObservation from
 // rds.DBInstance.
-func GenerateObservation(db rds.DBInstance) v1alpha2.RDSInstanceObservation { // nolint:gocyclo
-	o := v1alpha2.RDSInstanceObservation{
+func GenerateObservation(db rds.DBInstance) v1beta1.RDSInstanceObservation { // nolint:gocyclo
+	o := v1beta1.RDSInstanceObservation{
 		DBInstanceStatus:                      aws.StringValue(db.DBInstanceStatus),
 		DBInstanceArn:                         aws.StringValue(db.DBInstanceArn),
 		DBInstancePort:                        int(aws.Int64Value(db.DbInstancePort)),
@@ -215,25 +215,25 @@ func GenerateObservation(db rds.DBInstance) v1alpha2.RDSInstanceObservation { //
 		o.InstanceCreateTime = metav1.NewTime(*db.InstanceCreateTime)
 	}
 	if len(db.DBParameterGroups) != 0 {
-		o.DBParameterGroups = make([]v1alpha2.DBParameterGroupStatus, len(db.DBParameterGroups))
+		o.DBParameterGroups = make([]v1beta1.DBParameterGroupStatus, len(db.DBParameterGroups))
 		for i, val := range db.DBParameterGroups {
-			o.DBParameterGroups[i] = v1alpha2.DBParameterGroupStatus{
+			o.DBParameterGroups[i] = v1beta1.DBParameterGroupStatus{
 				DBParameterGroupName: aws.StringValue(val.DBParameterGroupName),
 				ParameterApplyStatus: aws.StringValue(val.ParameterApplyStatus),
 			}
 		}
 	}
 	if len(db.DBSecurityGroups) != 0 {
-		o.DBSecurityGroups = make([]v1alpha2.DBSecurityGroupMembership, len(db.DBSecurityGroups))
+		o.DBSecurityGroups = make([]v1beta1.DBSecurityGroupMembership, len(db.DBSecurityGroups))
 		for i, val := range db.DBSecurityGroups {
-			o.DBSecurityGroups[i] = v1alpha2.DBSecurityGroupMembership{
+			o.DBSecurityGroups[i] = v1beta1.DBSecurityGroupMembership{
 				DBSecurityGroupName: aws.StringValue(val.DBSecurityGroupName),
 				Status:              aws.StringValue(val.Status),
 			}
 		}
 	}
 	if db.DBSubnetGroup != nil {
-		o.DBSubnetGroup = v1alpha2.DBSubnetGroup{
+		o.DBSubnetGroup = v1beta1.DBSubnetGroup{
 			DBSubnetGroupARN:         aws.StringValue(db.DBSubnetGroup.DBSubnetGroupArn),
 			DBSubnetGroupDescription: aws.StringValue(db.DBSubnetGroup.DBSubnetGroupDescription),
 			DBSubnetGroupName:        aws.StringValue(db.DBSubnetGroup.DBSubnetGroupName),
@@ -241,14 +241,14 @@ func GenerateObservation(db rds.DBInstance) v1alpha2.RDSInstanceObservation { //
 			VPCID:                    aws.StringValue(db.DBSubnetGroup.VpcId),
 		}
 		if len(db.DBSubnetGroup.Subnets) != 0 {
-			o.DBSubnetGroup.Subnets = make([]v1alpha2.Subnet, len(db.DBSubnetGroup.Subnets))
+			o.DBSubnetGroup.Subnets = make([]v1beta1.Subnet, len(db.DBSubnetGroup.Subnets))
 			for i, val := range db.DBSubnetGroup.Subnets {
-				o.DBSubnetGroup.Subnets[i] = v1alpha2.Subnet{
+				o.DBSubnetGroup.Subnets[i] = v1beta1.Subnet{
 					SubnetIdentifier: aws.StringValue(val.SubnetIdentifier),
 					SubnetStatus:     aws.StringValue(val.SubnetStatus),
 				}
 				if val.SubnetAvailabilityZone != nil {
-					o.DBSubnetGroup.Subnets[i].SubnetAvailabilityZone = v1alpha2.AvailabilityZone{
+					o.DBSubnetGroup.Subnets[i].SubnetAvailabilityZone = v1beta1.AvailabilityZone{
 						Name: aws.StringValue(val.SubnetAvailabilityZone.Name),
 					}
 				}
@@ -256,9 +256,9 @@ func GenerateObservation(db rds.DBInstance) v1alpha2.RDSInstanceObservation { //
 		}
 	}
 	if len(db.DomainMemberships) != 0 {
-		o.DomainMemberships = make([]v1alpha2.DomainMembership, len(db.DomainMemberships))
+		o.DomainMemberships = make([]v1beta1.DomainMembership, len(db.DomainMemberships))
 		for i, val := range db.DomainMemberships {
-			o.DomainMemberships[i] = v1alpha2.DomainMembership{
+			o.DomainMemberships[i] = v1beta1.DomainMembership{
 				Domain:      aws.StringValue(val.Domain),
 				FQDN:        aws.StringValue(val.FQDN),
 				IAMRoleName: aws.StringValue(val.IAMRoleName),
@@ -267,23 +267,23 @@ func GenerateObservation(db rds.DBInstance) v1alpha2.RDSInstanceObservation { //
 		}
 	}
 	if db.Endpoint != nil {
-		o.Endpoint = v1alpha2.Endpoint{
+		o.Endpoint = v1beta1.Endpoint{
 			Address:      aws.StringValue(db.Endpoint.Address),
 			HostedZoneID: aws.StringValue(db.Endpoint.HostedZoneId),
 			Port:         int(aws.Int64Value(db.Endpoint.Port)),
 		}
 	}
 	if len(db.OptionGroupMemberships) != 0 {
-		o.OptionGroupMemberships = make([]v1alpha2.OptionGroupMembership, len(db.OptionGroupMemberships))
+		o.OptionGroupMemberships = make([]v1beta1.OptionGroupMembership, len(db.OptionGroupMemberships))
 		for i, val := range db.OptionGroupMemberships {
-			o.OptionGroupMemberships[i] = v1alpha2.OptionGroupMembership{
+			o.OptionGroupMemberships[i] = v1beta1.OptionGroupMembership{
 				OptionGroupName: aws.StringValue(val.OptionGroupName),
 				Status:          aws.StringValue(val.Status),
 			}
 		}
 	}
 	if db.PendingModifiedValues != nil {
-		o.PendingModifiedValues = v1alpha2.PendingModifiedValues{
+		o.PendingModifiedValues = v1beta1.PendingModifiedValues{
 			AllocatedStorage:        int(aws.Int64Value(db.PendingModifiedValues.AllocatedStorage)),
 			BackupRetentionPeriod:   int(aws.Int64Value(db.PendingModifiedValues.BackupRetentionPeriod)),
 			CACertificateIdentifier: aws.StringValue(db.PendingModifiedValues.CACertificateIdentifier),
@@ -296,15 +296,15 @@ func GenerateObservation(db rds.DBInstance) v1alpha2.RDSInstanceObservation { //
 			StorageType:             aws.StringValue(db.PendingModifiedValues.StorageType),
 		}
 		if db.PendingModifiedValues.PendingCloudwatchLogsExports != nil {
-			o.PendingModifiedValues.PendingCloudwatchLogsExports = v1alpha2.PendingCloudwatchLogsExports{
+			o.PendingModifiedValues.PendingCloudwatchLogsExports = v1beta1.PendingCloudwatchLogsExports{
 				LogTypesToDisable: db.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToDisable,
 				LogTypesToEnable:  db.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToEnable,
 			}
 		}
 		if len(db.PendingModifiedValues.ProcessorFeatures) != 0 {
-			o.PendingModifiedValues.ProcessorFeatures = make([]v1alpha2.ProcessorFeature, len(db.PendingModifiedValues.ProcessorFeatures))
+			o.PendingModifiedValues.ProcessorFeatures = make([]v1beta1.ProcessorFeature, len(db.PendingModifiedValues.ProcessorFeatures))
 			for i, val := range db.PendingModifiedValues.ProcessorFeatures {
-				o.PendingModifiedValues.ProcessorFeatures[i] = v1alpha2.ProcessorFeature{
+				o.PendingModifiedValues.ProcessorFeatures[i] = v1beta1.ProcessorFeature{
 					Name:  aws.StringValue(val.Name),
 					Value: aws.StringValue(val.Value),
 				}
@@ -312,9 +312,9 @@ func GenerateObservation(db rds.DBInstance) v1alpha2.RDSInstanceObservation { //
 		}
 	}
 	if len(db.StatusInfos) != 0 {
-		o.StatusInfos = make([]v1alpha2.DBInstanceStatusInfo, len(db.StatusInfos))
+		o.StatusInfos = make([]v1beta1.DBInstanceStatusInfo, len(db.StatusInfos))
 		for i, val := range db.StatusInfos {
-			o.StatusInfos[i] = v1alpha2.DBInstanceStatusInfo{
+			o.StatusInfos[i] = v1beta1.DBInstanceStatusInfo{
 				Message:    aws.StringValue(val.Message),
 				Status:     aws.StringValue(val.Status),
 				StatusType: aws.StringValue(val.StatusType),
@@ -323,9 +323,9 @@ func GenerateObservation(db rds.DBInstance) v1alpha2.RDSInstanceObservation { //
 		}
 	}
 	if len(db.VpcSecurityGroups) != 0 {
-		o.VPCSecurityGroups = make([]v1alpha2.VPCSecurityGroupMembership, len(db.VpcSecurityGroups))
+		o.VPCSecurityGroups = make([]v1beta1.VPCSecurityGroupMembership, len(db.VpcSecurityGroups))
 		for i, val := range db.VpcSecurityGroups {
-			o.VPCSecurityGroups[i] = v1alpha2.VPCSecurityGroupMembership{
+			o.VPCSecurityGroups[i] = v1beta1.VPCSecurityGroupMembership{
 				Status:             aws.StringValue(val.Status),
 				VPCSecurityGroupID: aws.StringValue(val.VpcSecurityGroupId),
 			}
@@ -336,7 +336,7 @@ func GenerateObservation(db rds.DBInstance) v1alpha2.RDSInstanceObservation { //
 
 // LateInitialize fills the empty fields in *v1alpha2.RDSInstanceParameters with
 // the values seen in rds.DBInstance.
-func LateInitialize(in *v1alpha2.RDSInstanceParameters, db rds.DBInstance) { // nolint:gocyclo
+func LateInitialize(in *v1beta1.RDSInstanceParameters, db rds.DBInstance) { // nolint:gocyclo
 	in.AllocatedStorage = awsclients.LateInitializeIntPtr(in.AllocatedStorage, db.AllocatedStorage)
 	in.AutoMinorVersionUpgrade = awsclients.LateInitializeBoolPtr(in.AutoMinorVersionUpgrade, db.AutoMinorVersionUpgrade)
 	in.AvailabilityZone = awsclients.LateInitializeStringPtr(in.AvailabilityZone, db.AvailabilityZone)
@@ -383,9 +383,9 @@ func LateInitialize(in *v1alpha2.RDSInstanceParameters, db rds.DBInstance) { // 
 		in.EnableCloudwatchLogsExports = db.EnabledCloudwatchLogsExports
 	}
 	if len(in.ProcessorFeatures) == 0 && len(db.ProcessorFeatures) != 0 {
-		in.ProcessorFeatures = make([]v1alpha2.ProcessorFeature, len(db.ProcessorFeatures))
+		in.ProcessorFeatures = make([]v1beta1.ProcessorFeature, len(db.ProcessorFeatures))
 		for i, val := range db.ProcessorFeatures {
-			in.ProcessorFeatures[i] = v1alpha2.ProcessorFeature{
+			in.ProcessorFeatures[i] = v1beta1.ProcessorFeature{
 				Name:  aws.StringValue(val.Name),
 				Value: aws.StringValue(val.Value),
 			}
@@ -400,8 +400,8 @@ func LateInitialize(in *v1alpha2.RDSInstanceParameters, db rds.DBInstance) { // 
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
-func IsUpToDate(in v1alpha2.RDSInstanceParameters, db rds.DBInstance) bool {
-	currentParams := &v1alpha2.RDSInstanceParameters{}
+func IsUpToDate(in v1beta1.RDSInstanceParameters, db rds.DBInstance) bool {
+	currentParams := &v1beta1.RDSInstanceParameters{}
 	LateInitialize(currentParams, db)
 	currentModificationRequest := GenerateModifyDBInstanceInput("", currentParams)
 	candidateModificationRequest := GenerateModifyDBInstanceInput("", &in)
@@ -409,7 +409,7 @@ func IsUpToDate(in v1alpha2.RDSInstanceParameters, db rds.DBInstance) bool {
 }
 
 // GetConnectionDetails extracts resource.ConnectionDetails out of v1alpha2.RDSInstance.
-func GetConnectionDetails(in v1alpha2.RDSInstance) resource.ConnectionDetails {
+func GetConnectionDetails(in v1beta1.RDSInstance) resource.ConnectionDetails {
 	if in.Status.AtProvider.Endpoint.Address == "" {
 		return nil
 	}

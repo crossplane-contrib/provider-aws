@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rds
+package database
 
 import (
 	"context"
@@ -35,7 +35,7 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 
-	"github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
 	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
 )
@@ -62,17 +62,17 @@ type RDSInstanceController struct{}
 // and Start it when the Manager is Started.
 func (c *RDSInstanceController) SetupWithManager(mgr ctrl.Manager) error {
 	r := resource.NewManagedReconciler(mgr,
-		resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind),
+		resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind),
 		resource.WithExternalConnecter(&connector{
 			kube:        mgr.GetClient(),
 			newClientFn: rds.NewClient,
 		}))
 
-	name := strings.ToLower(fmt.Sprintf("%s.%s", v1alpha2.RDSInstanceKind, v1alpha2.Group))
+	name := strings.ToLower(fmt.Sprintf("%s.%s", v1beta1.RDSInstanceKind, v1beta1.Group))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha2.RDSInstance{}).
+		For(&v1beta1.RDSInstance{}).
 		Complete(r)
 }
 
@@ -82,7 +82,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (resource.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha2.RDSInstance)
+	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
 		return nil, errors.New(errNotRDSInstance)
 	}
@@ -108,7 +108,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.ExternalObservation, error) {
-	cr, ok := mg.(*v1alpha2.RDSInstance)
+	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
 		return resource.ExternalObservation{}, errors.New(errNotRDSInstance)
 	}
@@ -133,12 +133,12 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 	cr.Status.AtProvider = rds.GenerateObservation(instance)
 
 	switch cr.Status.AtProvider.DBInstanceStatus {
-	case string(v1alpha2.RDSInstanceStateAvailable):
+	case string(v1beta1.RDSInstanceStateAvailable):
 		cr.Status.SetConditions(runtimev1alpha1.Available())
 		resource.SetBindable(cr)
-	case string(v1alpha2.RDSInstanceStateCreating):
+	case string(v1beta1.RDSInstanceStateCreating):
 		cr.Status.SetConditions(runtimev1alpha1.Creating())
-	case string(v1alpha2.RDSInstanceStateDeleting):
+	case string(v1beta1.RDSInstanceStateDeleting):
 		cr.Status.SetConditions(runtimev1alpha1.Deleting())
 	default:
 		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
@@ -152,7 +152,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.ExternalCreation, error) {
-	cr, ok := mg.(*v1alpha2.RDSInstance)
+	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
 		return resource.ExternalCreation{}, errors.New(errNotRDSInstance)
 	}
@@ -177,7 +177,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.Ex
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.ExternalUpdate, error) {
-	cr, ok := mg.(*v1alpha2.RDSInstance)
+	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
 		return resource.ExternalUpdate{}, errors.New(errNotRDSInstance)
 	}
@@ -188,7 +188,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1alpha2.RDSInstance)
+	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
 		return errors.New(errNotRDSInstance)
 	}

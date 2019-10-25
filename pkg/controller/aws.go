@@ -21,6 +21,8 @@ import (
 
 	"github.com/crossplaneio/stack-aws/pkg/controller/cache"
 	"github.com/crossplaneio/stack-aws/pkg/controller/compute"
+	"github.com/crossplaneio/stack-aws/pkg/controller/database"
+	"github.com/crossplaneio/stack-aws/pkg/controller/database/dbsubnetgroup"
 	"github.com/crossplaneio/stack-aws/pkg/controller/identity/iamrole"
 	"github.com/crossplaneio/stack-aws/pkg/controller/identity/iamrolepolicyattachment"
 	"github.com/crossplaneio/stack-aws/pkg/controller/network/internetgateway"
@@ -28,8 +30,6 @@ import (
 	"github.com/crossplaneio/stack-aws/pkg/controller/network/securitygroup"
 	"github.com/crossplaneio/stack-aws/pkg/controller/network/subnet"
 	"github.com/crossplaneio/stack-aws/pkg/controller/network/vpc"
-	"github.com/crossplaneio/stack-aws/pkg/controller/rds"
-	"github.com/crossplaneio/stack-aws/pkg/controller/rds/dbsubnetgroup"
 	"github.com/crossplaneio/stack-aws/pkg/controller/s3"
 )
 
@@ -51,13 +51,13 @@ func (c *Controllers) SetupWithManager(mgr ctrl.Manager) error {
 		&compute.EKSClusterClaimController{},
 		&compute.EKSClusterSecretController{},
 		&compute.EKSClusterController{},
-		&rds.PostgreSQLInstanceClaimSchedulingController{},
-		&rds.PostgreSQLInstanceClaimDefaultingController{},
-		&rds.PostgreSQLInstanceClaimController{},
-		&rds.MySQLInstanceClaimSchedulingController{},
-		&rds.MySQLInstanceClaimDefaultingController{},
-		&rds.MySQLInstanceClaimController{},
-		&rds.RDSInstanceController{},
+		&database.PostgreSQLInstanceClaimSchedulingController{},
+		&database.PostgreSQLInstanceClaimDefaultingController{},
+		&database.PostgreSQLInstanceClaimController{},
+		&database.MySQLInstanceClaimSchedulingController{},
+		&database.MySQLInstanceClaimDefaultingController{},
+		&database.MySQLInstanceClaimController{},
+		&database.RDSInstanceController{},
 		&s3.BucketClaimSchedulingController{},
 		&s3.BucketClaimDefaultingController{},
 		&s3.BucketClaimController{},
