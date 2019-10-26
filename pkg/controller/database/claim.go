@@ -290,6 +290,8 @@ func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.Cl
 	}
 	spec.ForProvider.EngineVersion = v
 
+	// TODO(muvaf): When ApplyModificationsImmediately is true, all up-to-date
+	// checks return false.
 	if spec.ForProvider.ApplyModificationsImmediately == nil {
 		spec.ForProvider.ApplyModificationsImmediately = aws.Bool(true)
 	}

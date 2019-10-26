@@ -431,9 +431,10 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rds.DBInstance) { // 
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
 func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error) {
-	// TODO(muvaf): ApplyImmediately and other configurations that exist in ModifyDBInstanceInput
-	//  but not in DBInstance object are not late-inited. So, this func always
-	//  returns true when those configurations are changed by the user.
+	// TODO(muvaf): ApplyImmediately and other configurations that exist in
+	//  <Modify/Create/Delete>DBInstanceInput objects but not in DBInstance
+	//  object are not late-inited. So, this func always returns true when
+	//  those configurations are changed by the user.
 	patch, err := CreatePatch(&db, &p)
 	if err != nil {
 		return false, err
