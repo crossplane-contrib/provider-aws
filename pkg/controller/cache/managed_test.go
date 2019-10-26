@@ -492,6 +492,13 @@ func TestObserve(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	cases := []testCase{
 		{
+			name:       "NotInAvailableState",
+			e:          &external{},
+			r:          replicationGroup(withProviderStatus(v1beta1.StatusCreating)),
+			want:       replicationGroup(withProviderStatus(v1beta1.StatusCreating)),
+			returnsErr: false,
+		},
+		{
 			name: "FailedModifyReplicationGroup",
 			e: &external{client: &fake.MockClient{
 				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
@@ -534,11 +541,13 @@ func TestUpdate(t *testing.T) {
 			}},
 			r: replicationGroup(
 				withReplicationGroupID(name),
+				withProviderStatus(v1beta1.StatusAvailable),
 				withConditions(runtimev1alpha1.Available()),
 				withMemberClusters([]string{cacheClusterID}),
 			),
 			want: replicationGroup(
 				withReplicationGroupID(name),
+				withProviderStatus(v1beta1.StatusAvailable),
 				withConditions(runtimev1alpha1.Available()),
 				withMemberClusters([]string{cacheClusterID}),
 			),
@@ -595,10 +604,17 @@ func TestDelete(t *testing.T) {
 					}
 				},
 			}},
-			r: replicationGroup(),
+			r:          replicationGroup(),
+			want:       replicationGroup(withConditions(runtimev1alpha1.Deleting())),
+			returnsErr: false,
+		},
+		{
+			name: "AlreadyDeletingState",
+			e:    &external{},
+			r:    replicationGroup(withProviderStatus(v1beta1.StatusDeleting)),
 			want: replicationGroup(
-				withConditions(runtimev1alpha1.Deleting()),
-			),
+				withProviderStatus(v1beta1.StatusDeleting),
+				withConditions(runtimev1alpha1.Deleting())),
 			returnsErr: false,
 		},
 		{
