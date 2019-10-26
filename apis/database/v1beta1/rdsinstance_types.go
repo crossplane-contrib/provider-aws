@@ -23,6 +23,7 @@ import (
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
+	databasev1alpha2 "github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
 	network "github.com/crossplaneio/stack-aws/apis/network/v1alpha2"
 )
 
@@ -55,7 +56,7 @@ func (v *VPCSecurityGroupIDReferencerForRDSInstance) Assign(res resource.CanRefe
 
 // DBSubnetGroupNameReferencerForRDSInstance is an attribute referencer that retrieves the name from a referenced DBSubnetGroup
 type DBSubnetGroupNameReferencerForRDSInstance struct {
-	DBSubnetGroupNameReferencer `json:",inline"`
+	databasev1alpha2.DBSubnetGroupNameReferencer `json:",inline"`
 }
 
 // Assign assigns the retrieved value to the managed resource

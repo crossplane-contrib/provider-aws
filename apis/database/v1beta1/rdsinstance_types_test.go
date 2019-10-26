@@ -74,7 +74,6 @@ func TestDBSubnetGroupNameReferencerForRDSInstance_AssignValidType_ReturnsExpect
 	r := &DBSubnetGroupNameReferencerForRDSInstance{}
 	res := &RDSInstance{}
 	var expectedErr error
-	mockValue := "mockValue"
 
 	err := r.Assign(res, "mockValue")
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
