@@ -253,7 +253,7 @@ func GenerateObservation(db rds.DBInstance) v1beta1.RDSInstanceObservation { // 
 		}
 	}
 	if db.DBSubnetGroup != nil {
-		o.DBSubnetGroup = v1beta1.DBSubnetGroup{
+		o.DBSubnetGroup = v1beta1.DBSubnetGroupInRDS{
 			DBSubnetGroupARN:         aws.StringValue(db.DBSubnetGroup.DBSubnetGroupArn),
 			DBSubnetGroupDescription: aws.StringValue(db.DBSubnetGroup.DBSubnetGroupDescription),
 			DBSubnetGroupName:        aws.StringValue(db.DBSubnetGroup.DBSubnetGroupName),
@@ -261,9 +261,9 @@ func GenerateObservation(db rds.DBInstance) v1beta1.RDSInstanceObservation { // 
 			VPCID:                    aws.StringValue(db.DBSubnetGroup.VpcId),
 		}
 		if len(db.DBSubnetGroup.Subnets) != 0 {
-			o.DBSubnetGroup.Subnets = make([]v1beta1.Subnet, len(db.DBSubnetGroup.Subnets))
+			o.DBSubnetGroup.Subnets = make([]v1beta1.SubnetInRDS, len(db.DBSubnetGroup.Subnets))
 			for i, val := range db.DBSubnetGroup.Subnets {
-				o.DBSubnetGroup.Subnets[i] = v1beta1.Subnet{
+				o.DBSubnetGroup.Subnets[i] = v1beta1.SubnetInRDS{
 					SubnetIdentifier: aws.StringValue(val.SubnetIdentifier),
 					SubnetStatus:     aws.StringValue(val.SubnetStatus),
 				}

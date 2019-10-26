@@ -206,23 +206,17 @@ spec:
                 RDS Resources (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
                 in the Amazon RDS User Guide.
               items:
-                description: Tag is a metadata assigned to an Amazon RDS resource
-                  consisting of a key-value pair. Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/Tag
+                description: Tag defines a tag
                 properties:
                   key:
-                    description: 'A key is the required name of the tag. The string
-                      value can be from 1 to 128 Unicode characters in length and
-                      can''t be prefixed with "aws:" or "rds:". The string can only
-                      contain only the set of Unicode letters, digits, white-space,
-                      ''_'', ''.'', ''/'', ''='', ''+'', ''-'' (Java regex: "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-]*)$").'
+                    description: Key is the name of the tag.
                     type: string
                   value:
-                    description: 'A value is the optional value of the tag. The string
-                      value can be from 1 to 256 Unicode characters in length and
-                      can''t be prefixed with "aws:" or "rds:". The string can only
-                      contain only the set of Unicode letters, digits, white-space,
-                      ''_'', ''.'', ''/'', ''='', ''+'', ''-'' (Java regex: "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-]*)$").'
+                    description: Value is the value of the tag.
                     type: string
+                required:
+                - key
+                - value
                 type: object
               type: array
             writeConnectionSecretToRef:
