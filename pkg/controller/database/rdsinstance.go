@@ -168,7 +168,6 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.Ex
 	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateCreating {
 		return resource.ExternalCreation{}, nil
 	}
-	// generate new password
 	password, err := util.GeneratePassword(20)
 	if err != nil {
 		return resource.ExternalCreation{}, err
@@ -231,7 +230,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	// protection is an example for that and it's pretty common to use it. So,
 	// until managed reconciler does Update before Delete, we do it here manually.
 	if _, err := e.Update(ctx, cr); err != nil {
-		return errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errModifyFailed)
+		return resource.Ignore(rds.IsErrorNotFound, err)
 	}
 	input := awsrds.DeleteDBInstanceInput{
 		DBInstanceIdentifier: aws.String(meta.GetExternalName(cr)),

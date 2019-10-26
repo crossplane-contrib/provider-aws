@@ -449,6 +449,14 @@ func TestCreate(t *testing.T) {
 				},
 			},
 		},
+		"SuccessfulNoNeedForCreate": {
+			args: args{
+				cr: instance(withDBInstanceStatus(v1beta1.RDSInstanceStateCreating)),
+			},
+			want: want{
+				cr: instance(withDBInstanceStatus(v1beta1.RDSInstanceStateCreating)),
+			},
+		},
 		"SuccessfulNoUsername": {
 			args: args{
 				rds: &fake.MockRDSClient{
@@ -542,6 +550,30 @@ func TestUpdate(t *testing.T) {
 				cr: instance(),
 			},
 		},
+		"AlreadyModifying": {
+			args: args{
+				cr: instance(withDBInstanceStatus(v1beta1.RDSInstanceStateModifying)),
+			},
+			want: want{
+				cr: instance(withDBInstanceStatus(v1beta1.RDSInstanceStateModifying)),
+			},
+		},
+		"FailedDescribe": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
+						return awsrds.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr:  instance(),
+				err: errors.Wrap(errBoom, errDescribeFailed),
+			},
+		},
 		"FailedModify": {
 			args: args{
 				rds: &fake.MockRDSClient{
@@ -622,24 +654,20 @@ func TestDelete(t *testing.T) {
 				cr: instance(),
 			},
 		},
+		"AlreadyDeleting": {
+			args: args{
+				cr: instance(withDBInstanceStatus(v1beta1.RDSInstanceStateDeleting)),
+			},
+			want: want{
+				cr: instance(withDBInstanceStatus(v1beta1.RDSInstanceStateDeleting)),
+			},
+		},
 		"AlreadyDeleted": {
 			args: args{
 				rds: &fake.MockRDSClient{
-					MockDelete: func(input *awsrds.DeleteDBInstanceInput) awsrds.DeleteDBInstanceRequest {
-						return awsrds.DeleteDBInstanceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awsrds.ErrCodeDBInstanceNotFoundFault)},
-						}
-					},
-					MockModify: func(input *awsrds.ModifyDBInstanceInput) awsrds.ModifyDBInstanceRequest {
-						return awsrds.ModifyDBInstanceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ModifyDBInstanceOutput{}},
-						}
-					},
 					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
 						return awsrds.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
-								DBInstances: []awsrds.DBInstance{{}},
-							}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awsrds.ErrCodeDBInstanceNotFoundFault)},
 						}
 					},
 				},
