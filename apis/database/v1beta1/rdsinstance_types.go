@@ -190,30 +190,6 @@ type RDSInstanceParameters struct {
 	// +optional
 	AllocatedStorage *int `json:"allocatedStorage,omitempty"`
 
-	// AllowMajorVersionUpgrade indicates that major version upgrades are allowed. Changing this parameter
-	// doesn't result in an outage and the change is asynchronously applied as soon
-	// as possible.
-	// Constraints: This parameter must be set to true when specifying a value for
-	// the EngineVersion parameter that is a different major version than the DB
-	// instance's current version.
-	// +optional
-	AllowMajorVersionUpgrade *bool `json:"allowMajorVersionUpgrade,omitempty"`
-
-	// ApplyModificationsImmediately specifies whether the modifications in this request and any pending modifications
-	// are asynchronously applied as soon as possible, regardless of the PreferredMaintenanceWindow
-	// setting for the DB instance.
-	// If this parameter is set to false, changes to the DB instance are applied
-	// during the next maintenance window. Some parameter changes can cause an outage
-	// and are applied on the next call to RebootDBInstance, or the next failure
-	// reboot. Review the table of parameters in Modifying a DB Instance and Using
-	// the Apply Immediately Parameter (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html)
-	// in the Amazon RDS User Guide. to see the impact that setting ApplyImmediately
-	// to true or false has for each modified parameter and to determine when the
-	// changes are applied.
-	// Default: false
-	// +optional
-	ApplyModificationsImmediately *bool `json:"applyModificationsImmediately,omitempty"`
-
 	// AutoMinorVersionUpgrade indicates that minor engine upgrades are applied automatically to the DB
 	// instance during the maintenance window.
 	// Default: true
@@ -250,12 +226,6 @@ type RDSInstanceParameters struct {
 	// CACertificateIdentifier indicates the certificate that needs to be associated with the instance.
 	// +optional
 	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
-
-	// CloudwatchLogsExportConfiguration is the configuration setting for the log types to be enabled for export to CloudWatch
-	// Logs for a specific DB instance.
-	// +immutable
-	// +optional
-	CloudwatchLogsExportConfiguration *CloudwatchLogsExportConfiguration `json:"cloudwatchLogsExportConfiguration,omitempty"`
 
 	// CharacterSetName indicates that the DB instance should be associated
 	// with the specified CharacterSet for supported engines,
@@ -334,16 +304,6 @@ type RDSInstanceParameters struct {
 	// +optional
 	DBName *string `json:"dbName,omitempty"`
 
-	// DBParameterGroupName is the name of the DB parameter group to associate with this DB instance. If
-	// this argument is omitted, the default DBParameterGroup for the specified
-	// engine is used.
-	// Constraints:
-	//    * Must be 1 to 255 letters, numbers, or hyphens.
-	//    * First character must be a letter
-	//    * Cannot end with a hyphen or contain two consecutive hyphens
-	// +optional
-	DBParameterGroupName *string `json:"dbParameterGroupName,omitempty"`
-
 	// DBSecurityGroups is a list of DB security groups to associate with this DB instance.
 	// Default: The default DB security group for the database engine.
 	// +optional
@@ -359,15 +319,6 @@ type RDSInstanceParameters struct {
 	// false. For more information, see  Deleting a DB Instance (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_DeleteInstance.html).
 	// +optional
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
-
-	// Domain specifies the Active Directory Domain to create the instance in.
-	// +optional
-	Domain *string `json:"domain,omitempty"`
-
-	// DomainIAMRoleName specifes the name of the IAM role to be used when making API calls to the
-	// Directory Service.
-	// +optional
-	DomainIAMRoleName *string `json:"domainIAMRoleName,omitempty"`
 
 	// EnableCloudwatchLogsExports is the list of log types that need to be enabled for exporting to CloudWatch
 	// Logs. The values in the list depend on the DB engine being used. For more
@@ -555,14 +506,6 @@ type RDSInstanceParameters struct {
 	// +optional
 	MultiAZ *bool `json:"multiAZ,omitempty"`
 
-	// OptionGroupName indicates that the DB instance should be associated with the specified option
-	// group.
-	// Permanent options, such as the TDE option for Oracle Advanced Security TDE,
-	// can't be removed from an option group, and that option group can't be removed
-	// from a DB instance once it is associated with a DB instance
-	// +optional
-	OptionGroupName *string `json:"optionGroupName,omitempty"`
-
 	// PerformanceInsightsKMSKeyID is the AWS KMS key identifier for encryption of Performance Insights data. The
 	// KMS key ID is the Amazon Resource Name (ARN), KMS key identifier, or the
 	// KMS key alias for the KMS encryption key.
@@ -673,18 +616,6 @@ type RDSInstanceParameters struct {
 	// +optional
 	ScalingConfiguration *ScalingConfiguration `json:"scalingConfiguration,omitempty"`
 
-	// Determines whether a final DB snapshot is created before the DB instance
-	// is deleted. If true is specified, no DBSnapshot is created. If false is specified,
-	// a DB snapshot is created before the DB instance is deleted.
-	// Note that when a DB instance is in a failure state and has a status of 'failed',
-	// 'incompatible-restore', or 'incompatible-network', it can only be deleted
-	// when the SkipFinalSnapshotBeforeDeletion parameter is set to "true".
-	// Specify true when deleting a Read Replica.
-	// The FinalDBSnapshotIdentifier parameter must be specified if SkipFinalSnapshotBeforeDeletion
-	// is false.
-	// Default: false
-	SkipFinalSnapshotBeforeDeletion *bool `json:"skipFinalSnapshotBeforeDeletion,omitempty"`
-
 	// StorageEncrypted specifies whether the DB instance is encrypted.
 	// Amazon Aurora
 	// Not applicable. The encryption for DB instances is managed by the DB cluster.
@@ -709,13 +640,14 @@ type RDSInstanceParameters struct {
 
 	// TODO(muvaf): get this password as input when we have a way of supplying
 	// sensitive information as input from the user.
+
 	// TDECredentialArn is the ARN from the key store with which to associate the instance for TDE encryption.
 	// +optional
 	// TDECredentialArn *string `json:"tdeCredentialArn,omitempty"`
 	// TDECredentialPassword is the password for the given ARN from the key store in order to access the
 	// device.
 	// +optional
-	//TDECredentialPassword *string `json:"tdeCredentialPassword,omitempty"`
+	// TDECredentialPassword *string `json:"tdeCredentialPassword,omitempty"`
 
 	// Timezone of the DB instance. The time zone parameter is currently supported
 	// only by Microsoft SQL Server (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html#SQLServer.Concepts.General.TimeZone).
@@ -731,9 +663,91 @@ type RDSInstanceParameters struct {
 	// +optional
 	VPCSecurityGroupIDs []string `json:"vpcSecurityGroupIds,omitempty"`
 
+	// Fields whose value cannot be retrieved from rds.DBInstance object.
+
+	// AllowMajorVersionUpgrade indicates that major version upgrades are allowed. Changing this parameter
+	// doesn't result in an outage and the change is asynchronously applied as soon
+	// as possible.
+	// Constraints: This parameter must be set to true when specifying a value for
+	// the EngineVersion parameter that is a different major version than the DB
+	// instance's current version.
+	// +optional
+	AllowMajorVersionUpgrade *bool `json:"allowMajorVersionUpgrade,omitempty"`
+
+	// ApplyModificationsImmediately specifies whether the modifications in this request and any pending modifications
+	// are asynchronously applied as soon as possible, regardless of the PreferredMaintenanceWindow
+	// setting for the DB instance.
+	// If this parameter is set to false, changes to the DB instance are applied
+	// during the next maintenance window. Some parameter changes can cause an outage
+	// and are applied on the next call to RebootDBInstance, or the next failure
+	// reboot. Review the table of parameters in Modifying a DB Instance and Using
+	// the Apply Immediately Parameter (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Modifying.html)
+	// in the Amazon RDS User Guide. to see the impact that setting ApplyImmediately
+	// to true or false has for each modified parameter and to determine when the
+	// changes are applied.
+	// Default: false
+	// +optional
+	ApplyModificationsImmediately *bool `json:"applyModificationsImmediately,omitempty"`
+
+	// CloudwatchLogsExportConfiguration is the configuration setting for the log types to be enabled for export to CloudWatch
+	// Logs for a specific DB instance.
+	// +immutable
+	// +optional
+	CloudwatchLogsExportConfiguration *CloudwatchLogsExportConfiguration `json:"cloudwatchLogsExportConfiguration,omitempty"`
+
+	// DBParameterGroupName is the name of the DB parameter group to associate with this DB instance. If
+	// this argument is omitted, the default DBParameterGroup for the specified
+	// engine is used.
+	// Constraints:
+	//    * Must be 1 to 255 letters, numbers, or hyphens.
+	//    * First character must be a letter
+	//    * Cannot end with a hyphen or contain two consecutive hyphens
+	// +optional
+	DBParameterGroupName *string `json:"dbParameterGroupName,omitempty"`
+
+	// Domain specifies the Active Directory Domain to create the instance in.
+	// +optional
+	Domain *string `json:"domain,omitempty"`
+
+	// DomainIAMRoleName specifes the name of the IAM role to be used when making API calls to the
+	// Directory Service.
+	// +optional
+	DomainIAMRoleName *string `json:"domainIAMRoleName,omitempty"`
+
+	// OptionGroupName indicates that the DB instance should be associated with the specified option
+	// group.
+	// Permanent options, such as the TDE option for Oracle Advanced Security TDE,
+	// can't be removed from an option group, and that option group can't be removed
+	// from a DB instance once it is associated with a DB instance
+	// +optional
+	OptionGroupName *string `json:"optionGroupName,omitempty"`
+
 	// A value that specifies that the DB instance class of the DB instance uses
 	// its default processor features.
 	UseDefaultProcessorFeatures *bool `json:"useDefaultProcessorFeatures,omitempty"`
+
+	// Determines whether a final DB snapshot is created before the DB instance
+	// is deleted. If true is specified, no DBSnapshot is created. If false is specified,
+	// a DB snapshot is created before the DB instance is deleted.
+	// Note that when a DB instance is in a failure state and has a status of 'failed',
+	// 'incompatible-restore', or 'incompatible-network', it can only be deleted
+	// when the SkipFinalSnapshotBeforeDeletion parameter is set to "true".
+	// Specify true when deleting a Read Replica.
+	// The FinalDBSnapshotIdentifier parameter must be specified if SkipFinalSnapshotBeforeDeletion
+	// is false.
+	// Default: false
+	SkipFinalSnapshotBeforeDeletion *bool `json:"skipFinalSnapshotBeforeDeletion,omitempty"`
+
+	// The DBSnapshotIdentifier of the new DBSnapshot created when SkipFinalSnapshot
+	// is set to false.
+	// Specifying this parameter and also setting the SkipFinalShapshot parameter
+	// to true results in an error.
+	// Constraints:
+	//    * Must be 1 to 255 letters or numbers.
+	//    * First character must be a letter
+	//    * Cannot end with a hyphen or contain two consecutive hyphens
+	//    * Cannot be specified when deleting a Read Replica.
+	FinalDBSnapshotIdentifier *string `json:"finalDBSnapshotIdentifier,omitempty"`
 }
 
 // An RDSInstanceSpec defines the desired state of an RDSInstance.
@@ -758,13 +772,15 @@ type RDSInstanceState string
 // RDS instance states.
 const (
 	// The instance is healthy and available
-	RDSInstanceStateAvailable RDSInstanceState = "available"
+	RDSInstanceStateAvailable = "available"
 	// The instance is being created. The instance is inaccessible while it is being created.
-	RDSInstanceStateCreating RDSInstanceState = "creating"
+	RDSInstanceStateCreating = "creating"
 	// The instance is being deleted.
-	RDSInstanceStateDeleting RDSInstanceState = "deleting"
+	RDSInstanceStateDeleting = "deleting"
+	// The instance is being modified.
+	RDSInstanceStateModifying = "modifying"
 	// The instance has failed and Amazon RDS can't recover it. Perform a point-in-time restore to the latest restorable time of the instance to recover the data.
-	RDSInstanceStateFailed RDSInstanceState = "failed"
+	RDSInstanceStateFailed = "failed"
 )
 
 // DBParameterGroupStatus is the status of the DB parameter group.

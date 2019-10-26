@@ -624,16 +624,6 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		*out = new(int)
 		**out = **in
 	}
-	if in.AllowMajorVersionUpgrade != nil {
-		in, out := &in.AllowMajorVersionUpgrade, &out.AllowMajorVersionUpgrade
-		*out = new(bool)
-		**out = **in
-	}
-	if in.ApplyModificationsImmediately != nil {
-		in, out := &in.ApplyModificationsImmediately, &out.ApplyModificationsImmediately
-		*out = new(bool)
-		**out = **in
-	}
 	if in.AutoMinorVersionUpgrade != nil {
 		in, out := &in.AutoMinorVersionUpgrade, &out.AutoMinorVersionUpgrade
 		*out = new(bool)
@@ -653,11 +643,6 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		in, out := &in.CACertificateIdentifier, &out.CACertificateIdentifier
 		*out = new(string)
 		**out = **in
-	}
-	if in.CloudwatchLogsExportConfiguration != nil {
-		in, out := &in.CloudwatchLogsExportConfiguration, &out.CloudwatchLogsExportConfiguration
-		*out = new(CloudwatchLogsExportConfiguration)
-		(*in).DeepCopyInto(*out)
 	}
 	if in.CharacterSetName != nil {
 		in, out := &in.CharacterSetName, &out.CharacterSetName
@@ -684,11 +669,6 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.DBParameterGroupName != nil {
-		in, out := &in.DBParameterGroupName, &out.DBParameterGroupName
-		*out = new(string)
-		**out = **in
-	}
 	if in.DBSecurityGroups != nil {
 		in, out := &in.DBSecurityGroups, &out.DBSecurityGroups
 		*out = make([]string, len(*in))
@@ -702,16 +682,6 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 	if in.DeletionProtection != nil {
 		in, out := &in.DeletionProtection, &out.DeletionProtection
 		*out = new(bool)
-		**out = **in
-	}
-	if in.Domain != nil {
-		in, out := &in.Domain, &out.Domain
-		*out = new(string)
-		**out = **in
-	}
-	if in.DomainIAMRoleName != nil {
-		in, out := &in.DomainIAMRoleName, &out.DomainIAMRoleName
-		*out = new(string)
 		**out = **in
 	}
 	if in.EnableCloudwatchLogsExports != nil {
@@ -774,11 +744,6 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		*out = new(bool)
 		**out = **in
 	}
-	if in.OptionGroupName != nil {
-		in, out := &in.OptionGroupName, &out.OptionGroupName
-		*out = new(string)
-		**out = **in
-	}
 	if in.PerformanceInsightsKMSKeyID != nil {
 		in, out := &in.PerformanceInsightsKMSKeyID, &out.PerformanceInsightsKMSKeyID
 		*out = new(string)
@@ -824,11 +789,6 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		*out = new(ScalingConfiguration)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.SkipFinalSnapshotBeforeDeletion != nil {
-		in, out := &in.SkipFinalSnapshotBeforeDeletion, &out.SkipFinalSnapshotBeforeDeletion
-		*out = new(bool)
-		**out = **in
-	}
 	if in.StorageEncrypted != nil {
 		in, out := &in.StorageEncrypted, &out.StorageEncrypted
 		*out = new(bool)
@@ -854,9 +814,54 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.AllowMajorVersionUpgrade != nil {
+		in, out := &in.AllowMajorVersionUpgrade, &out.AllowMajorVersionUpgrade
+		*out = new(bool)
+		**out = **in
+	}
+	if in.ApplyModificationsImmediately != nil {
+		in, out := &in.ApplyModificationsImmediately, &out.ApplyModificationsImmediately
+		*out = new(bool)
+		**out = **in
+	}
+	if in.CloudwatchLogsExportConfiguration != nil {
+		in, out := &in.CloudwatchLogsExportConfiguration, &out.CloudwatchLogsExportConfiguration
+		*out = new(CloudwatchLogsExportConfiguration)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.DBParameterGroupName != nil {
+		in, out := &in.DBParameterGroupName, &out.DBParameterGroupName
+		*out = new(string)
+		**out = **in
+	}
+	if in.Domain != nil {
+		in, out := &in.Domain, &out.Domain
+		*out = new(string)
+		**out = **in
+	}
+	if in.DomainIAMRoleName != nil {
+		in, out := &in.DomainIAMRoleName, &out.DomainIAMRoleName
+		*out = new(string)
+		**out = **in
+	}
+	if in.OptionGroupName != nil {
+		in, out := &in.OptionGroupName, &out.OptionGroupName
+		*out = new(string)
+		**out = **in
+	}
 	if in.UseDefaultProcessorFeatures != nil {
 		in, out := &in.UseDefaultProcessorFeatures, &out.UseDefaultProcessorFeatures
 		*out = new(bool)
+		**out = **in
+	}
+	if in.SkipFinalSnapshotBeforeDeletion != nil {
+		in, out := &in.SkipFinalSnapshotBeforeDeletion, &out.SkipFinalSnapshotBeforeDeletion
+		*out = new(bool)
+		**out = **in
+	}
+	if in.FinalDBSnapshotIdentifier != nil {
+		in, out := &in.FinalDBSnapshotIdentifier, &out.FinalDBSnapshotIdentifier
+		*out = new(string)
 		**out = **in
 	}
 }

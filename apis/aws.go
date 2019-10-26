@@ -26,9 +26,9 @@ package apis
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
-	cachev1alpha2 "github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
+	cachev1beta1 "github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
 	computev1alpha2 "github.com/crossplaneio/stack-aws/apis/compute/v1alpha2"
-	databasev1alpha2 "github.com/crossplaneio/stack-aws/apis/database/v1beta1"
+	databasev1beta1 "github.com/crossplaneio/stack-aws/apis/database/v1beta1"
 	identityv1alpha2 "github.com/crossplaneio/stack-aws/apis/identity/v1alpha2"
 	networkv1alpha2 "github.com/crossplaneio/stack-aws/apis/network/v1alpha2"
 	storagev1alpha2 "github.com/crossplaneio/stack-aws/apis/storage/v1alpha2"
@@ -38,9 +38,9 @@ import (
 func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes,
-		cachev1alpha2.SchemeBuilder.AddToScheme,
+		cachev1beta1.SchemeBuilder.AddToScheme,
 		computev1alpha2.SchemeBuilder.AddToScheme,
-		databasev1alpha2.SchemeBuilder.AddToScheme,
+		databasev1beta1.SchemeBuilder.AddToScheme,
 		identityv1alpha2.SchemeBuilder.AddToScheme,
 		networkv1alpha2.SchemeBuilder.AddToScheme,
 		awsv1alpha2.SchemeBuilder.AddToScheme,

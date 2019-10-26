@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	rds2 "github.com/aws/aws-sdk-go-v2/service/rds"
+	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -48,10 +48,12 @@ const (
 	errGetProvider       = "cannot get provider"
 	errGetProviderSecret = "cannot get provider secret"
 
-	errCreateFailed   = "cannot create RDS instance"
-	errModifyFailed   = "cannot modify RDS instance"
-	errDeleteFailed   = "cannot delete RDS instance"
-	errDescribeFailed = "cannot describe RDS instance"
+	errCreateFailed        = "cannot create RDS instance"
+	errModifyFailed        = "cannot modify RDS instance"
+	errDeleteFailed        = "cannot delete RDS instance"
+	errDescribeFailed      = "cannot describe RDS instance"
+	errPatchCreationFailed = "cannot create a patch object"
+	errUpToDateFailed      = "cannot check whether object is up-to-date"
 )
 
 // RDSInstanceController is responsible for adding the RDSInstance
@@ -112,7 +114,10 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 	if !ok {
 		return resource.ExternalObservation{}, errors.New(errNotRDSInstance)
 	}
-	req := e.client.DescribeDBInstancesRequest(&rds2.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
+	// TODO(muvaf): There are some parameters that require a specific call
+	// for retrieval. For example, DescribeDBInstancesOutput does not expose
+	// the tags map of the RDS instance, you have to make ListTagsForResourceRequest
+	req := e.client.DescribeDBInstancesRequest(&awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
 	req.SetContext(ctx)
 	rsp, err := req.Send()
 	if err != nil {
@@ -124,7 +129,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 	// be only 1 element in the list.
 	instance := rsp.DBInstances[0]
 	current := cr.Spec.ForProvider.DeepCopy()
-	rds.LateInitialize(&cr.Spec.ForProvider, instance)
+	rds.LateInitialize(&cr.Spec.ForProvider, &instance)
 	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
 			return resource.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
@@ -133,20 +138,24 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 	cr.Status.AtProvider = rds.GenerateObservation(instance)
 
 	switch cr.Status.AtProvider.DBInstanceStatus {
-	case string(v1beta1.RDSInstanceStateAvailable):
+	case v1beta1.RDSInstanceStateAvailable:
 		cr.Status.SetConditions(runtimev1alpha1.Available())
 		resource.SetBindable(cr)
-	case string(v1beta1.RDSInstanceStateCreating):
+	case v1beta1.RDSInstanceStateCreating:
 		cr.Status.SetConditions(runtimev1alpha1.Creating())
-	case string(v1beta1.RDSInstanceStateDeleting):
+	case v1beta1.RDSInstanceStateDeleting:
 		cr.Status.SetConditions(runtimev1alpha1.Deleting())
 	default:
 		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
 	}
+	upToDate, err := rds.IsUpToDate(cr.Spec.ForProvider, instance)
+	if err != nil {
+		return resource.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
+	}
 
 	return resource.ExternalObservation{
 		ResourceExists:    true,
-		ResourceUpToDate:  rds.IsUpToDate(cr.Spec.ForProvider, instance),
+		ResourceUpToDate:  upToDate,
 		ConnectionDetails: rds.GetConnectionDetails(*cr),
 	}, nil
 }
@@ -155,6 +164,9 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.Ex
 	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
 		return resource.ExternalCreation{}, errors.New(errNotRDSInstance)
+	}
+	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateCreating {
+		return resource.ExternalCreation{}, nil
 	}
 	// generate new password
 	password, err := util.GeneratePassword(20)
@@ -181,25 +193,27 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.Ex
 	if !ok {
 		return resource.ExternalUpdate{}, errors.New(errNotRDSInstance)
 	}
-	if cr.Status.AtProvider.DBInstanceStatus != string(v1beta1.RDSInstanceStateAvailable) {
+	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateModifying {
 		return resource.ExternalUpdate{}, nil
 	}
 	// AWS rejects modification requests if you send fields whose value is same
-	// as the current one. We have to create a patch out of the desired state
-	// and the current state.
-	get := e.client.DescribeDBInstancesRequest(&rds2.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
-	get.SetContext(ctx)
-	rsp, err := get.Send()
+	// as the current one. So, we have to create a patch out of the desired state
+	// and the current state. Since the DBInstance is not fully mirrored in status,
+	// we lose the current state after a change is made to spec, which forces us
+	// to make a DescribeDBInstancesRequest to get the current state.
+	describe := e.client.DescribeDBInstancesRequest(&awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
+	describe.SetContext(ctx)
+	rsp, err := describe.Send()
 	if err != nil {
 		return resource.ExternalUpdate{}, errors.Wrap(err, errDescribeFailed)
 	}
-	requestInput, err := rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), &cr.Spec.ForProvider, &rsp.DBInstances[0])
+	patch, err := rds.CreatePatch(&rsp.DBInstances[0], &cr.Spec.ForProvider)
 	if err != nil {
-		return resource.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
+		return resource.ExternalUpdate{}, errors.Wrap(err, errPatchCreationFailed)
 	}
-	post := e.client.ModifyDBInstanceRequest(requestInput)
-	post.SetContext(ctx)
-	_, err = post.Send()
+	modify := e.client.ModifyDBInstanceRequest(rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch))
+	modify.SetContext(ctx)
+	_, err = modify.Send()
 	return resource.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
 }
 
@@ -208,10 +222,18 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if !ok {
 		return errors.New(errNotRDSInstance)
 	}
-	if cr.Status.AtProvider.DBInstanceStatus == string(v1beta1.RDSInstanceStateDeleting) {
+	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateDeleting {
 		return nil
 	}
-	input := rds2.DeleteDBInstanceInput{
+	// TODO(muvaf): There are cases where deletion results in an error that can
+	// be solved only by a config change. But to do that, reconciler has to call
+	// Update before Delete, which is not the case currently. In RDS, deletion
+	// protection is an example for that and it's pretty common to use it. So,
+	// until managed reconciler does Update before Delete, we do it here manually.
+	if _, err := e.Update(ctx, cr); err != nil {
+		return errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errModifyFailed)
+	}
+	input := awsrds.DeleteDBInstanceInput{
 		DBInstanceIdentifier: aws.String(meta.GetExternalName(cr)),
 		SkipFinalSnapshot:    cr.Spec.ForProvider.SkipFinalSnapshotBeforeDeletion,
 	}
