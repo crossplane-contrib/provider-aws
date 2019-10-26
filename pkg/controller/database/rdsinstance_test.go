@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	rds2 "github.com/aws/aws-sdk-go-v2/service/rds"
+	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -90,9 +90,6 @@ func instance(m ...rdsModifier) *v1beta1.RDSInstance {
 		Spec: v1beta1.RDSInstanceSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
 				ProviderReference: &corev1.ObjectReference{Name: providerName},
-			},
-			ForProvider: v1beta1.RDSInstanceParameters{
-				MasterUsername: &masterUsername,
 			},
 		},
 	}
@@ -225,10 +222,10 @@ func TestObserve(t *testing.T) {
 		"SuccessfulAvailable": {
 			args: args{
 				rds: &fake.MockRDSClient{
-					MockDescribe: func(input *rds2.DescribeDBInstancesInput) rds2.DescribeDBInstancesRequest {
-						return rds2.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.DescribeDBInstancesOutput{
-								DBInstances: []rds2.DBInstance{
+					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
+						return awsrds.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+								DBInstances: []awsrds.DBInstance{
 									{
 										DBInstanceStatus: aws.String(string(v1beta1.RDSInstanceStateAvailable)),
 									},
@@ -254,10 +251,10 @@ func TestObserve(t *testing.T) {
 		"DeletingState": {
 			args: args{
 				rds: &fake.MockRDSClient{
-					MockDescribe: func(input *rds2.DescribeDBInstancesInput) rds2.DescribeDBInstancesRequest {
-						return rds2.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.DescribeDBInstancesOutput{
-								DBInstances: []rds2.DBInstance{
+					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
+						return awsrds.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+								DBInstances: []awsrds.DBInstance{
 									{
 										DBInstanceStatus: aws.String(string(v1beta1.RDSInstanceStateDeleting)),
 									},
@@ -282,10 +279,10 @@ func TestObserve(t *testing.T) {
 		"FailedState": {
 			args: args{
 				rds: &fake.MockRDSClient{
-					MockDescribe: func(input *rds2.DescribeDBInstancesInput) rds2.DescribeDBInstancesRequest {
-						return rds2.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.DescribeDBInstancesOutput{
-								DBInstances: []rds2.DBInstance{
+					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
+						return awsrds.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+								DBInstances: []awsrds.DBInstance{
 									{
 										DBInstanceStatus: aws.String(string(v1beta1.RDSInstanceStateFailed)),
 									},
@@ -310,8 +307,8 @@ func TestObserve(t *testing.T) {
 		"FailedDescribeRequest": {
 			args: args{
 				rds: &fake.MockRDSClient{
-					MockDescribe: func(input *rds2.DescribeDBInstancesInput) rds2.DescribeDBInstancesRequest {
-						return rds2.DescribeDBInstancesRequest{
+					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
+						return awsrds.DescribeDBInstancesRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
@@ -326,9 +323,9 @@ func TestObserve(t *testing.T) {
 		"NotFound": {
 			args: args{
 				rds: &fake.MockRDSClient{
-					MockDescribe: func(input *rds2.DescribeDBInstancesInput) rds2.DescribeDBInstancesRequest {
-						return rds2.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(rds2.ErrCodeDBInstanceNotFoundFault)},
+					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
+						return awsrds.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awsrds.ErrCodeDBInstanceNotFoundFault)},
 						}
 					},
 				},
@@ -344,10 +341,10 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockUpdateFn(nil),
 				},
 				rds: &fake.MockRDSClient{
-					MockDescribe: func(input *rds2.DescribeDBInstancesInput) rds2.DescribeDBInstancesRequest {
-						return rds2.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.DescribeDBInstancesOutput{
-								DBInstances: []rds2.DBInstance{
+					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
+						return awsrds.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+								DBInstances: []awsrds.DBInstance{
 									{
 										EngineVersion:    aws.String(engineVersion),
 										DBInstanceStatus: aws.String(string(v1beta1.RDSInstanceStateCreating)),
@@ -378,10 +375,10 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockUpdateFn(errBoom),
 				},
 				rds: &fake.MockRDSClient{
-					MockDescribe: func(input *rds2.DescribeDBInstancesInput) rds2.DescribeDBInstancesRequest {
-						return rds2.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.DescribeDBInstancesOutput{
-								DBInstances: []rds2.DBInstance{
+					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
+						return awsrds.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+								DBInstances: []awsrds.DBInstance{
 									{
 										EngineVersion:    aws.String(engineVersion),
 										DBInstanceStatus: aws.String(string(v1beta1.RDSInstanceStateCreating)),
@@ -434,16 +431,16 @@ func TestCreate(t *testing.T) {
 		"Successful": {
 			args: args{
 				rds: &fake.MockRDSClient{
-					MockCreate: func(input *rds2.CreateDBInstanceInput) rds2.CreateDBInstanceRequest {
-						return rds2.CreateDBInstanceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.CreateDBInstanceOutput{}},
+					MockCreate: func(input *awsrds.CreateDBInstanceInput) awsrds.CreateDBInstanceRequest {
+						return awsrds.CreateDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.CreateDBInstanceOutput{}},
 						}
 					},
 				},
-				cr: instance(),
+				cr: instance(withMasterUsername(&masterUsername)),
 			},
 			want: want{
-				cr: instance(),
+				cr: instance(withMasterUsername(&masterUsername)),
 				result: resource.ExternalCreation{
 					ConnectionDetails: resource.ConnectionDetails{
 						runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
@@ -455,9 +452,9 @@ func TestCreate(t *testing.T) {
 		"SuccessfulNoUsername": {
 			args: args{
 				rds: &fake.MockRDSClient{
-					MockCreate: func(input *rds2.CreateDBInstanceInput) rds2.CreateDBInstanceRequest {
-						return rds2.CreateDBInstanceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.CreateDBInstanceOutput{}},
+					MockCreate: func(input *awsrds.CreateDBInstanceInput) awsrds.CreateDBInstanceRequest {
+						return awsrds.CreateDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.CreateDBInstanceOutput{}},
 						}
 					},
 				},
@@ -475,8 +472,8 @@ func TestCreate(t *testing.T) {
 		"FailedRequest": {
 			args: args{
 				rds: &fake.MockRDSClient{
-					MockCreate: func(input *rds2.CreateDBInstanceInput) rds2.CreateDBInstanceRequest {
-						return rds2.CreateDBInstanceRequest{
+					MockCreate: func(input *awsrds.CreateDBInstanceInput) awsrds.CreateDBInstanceRequest {
+						return awsrds.CreateDBInstanceRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
@@ -526,9 +523,16 @@ func TestUpdate(t *testing.T) {
 		"Successful": {
 			args: args{
 				rds: &fake.MockRDSClient{
-					MockModify: func(input *rds2.ModifyDBInstanceInput) rds2.ModifyDBInstanceRequest {
-						return rds2.ModifyDBInstanceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.ModifyDBInstanceOutput{}},
+					MockModify: func(input *awsrds.ModifyDBInstanceInput) awsrds.ModifyDBInstanceRequest {
+						return awsrds.ModifyDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ModifyDBInstanceOutput{}},
+						}
+					},
+					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
+						return awsrds.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+								DBInstances: []awsrds.DBInstance{{}},
+							}},
 						}
 					},
 				},
@@ -538,12 +542,19 @@ func TestUpdate(t *testing.T) {
 				cr: instance(),
 			},
 		},
-		"Failed": {
+		"FailedModify": {
 			args: args{
 				rds: &fake.MockRDSClient{
-					MockModify: func(input *rds2.ModifyDBInstanceInput) rds2.ModifyDBInstanceRequest {
-						return rds2.ModifyDBInstanceRequest{
+					MockModify: func(input *awsrds.ModifyDBInstanceInput) awsrds.ModifyDBInstanceRequest {
+						return awsrds.ModifyDBInstanceRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
+						return awsrds.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+								DBInstances: []awsrds.DBInstance{{}},
+							}},
 						}
 					},
 				},
@@ -587,9 +598,21 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				rds: &fake.MockRDSClient{
-					MockDelete: func(input *rds2.DeleteDBInstanceInput) rds2.DeleteDBInstanceRequest {
-						return rds2.DeleteDBInstanceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &rds2.DeleteDBInstanceOutput{}},
+					MockDelete: func(input *awsrds.DeleteDBInstanceInput) awsrds.DeleteDBInstanceRequest {
+						return awsrds.DeleteDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DeleteDBInstanceOutput{}},
+						}
+					},
+					MockModify: func(input *awsrds.ModifyDBInstanceInput) awsrds.ModifyDBInstanceRequest {
+						return awsrds.ModifyDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ModifyDBInstanceOutput{}},
+						}
+					},
+					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
+						return awsrds.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+								DBInstances: []awsrds.DBInstance{{}},
+							}},
 						}
 					},
 				},
@@ -602,9 +625,21 @@ func TestDelete(t *testing.T) {
 		"AlreadyDeleted": {
 			args: args{
 				rds: &fake.MockRDSClient{
-					MockDelete: func(input *rds2.DeleteDBInstanceInput) rds2.DeleteDBInstanceRequest {
-						return rds2.DeleteDBInstanceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(rds2.ErrCodeDBInstanceNotFoundFault)},
+					MockDelete: func(input *awsrds.DeleteDBInstanceInput) awsrds.DeleteDBInstanceRequest {
+						return awsrds.DeleteDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awsrds.ErrCodeDBInstanceNotFoundFault)},
+						}
+					},
+					MockModify: func(input *awsrds.ModifyDBInstanceInput) awsrds.ModifyDBInstanceRequest {
+						return awsrds.ModifyDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ModifyDBInstanceOutput{}},
+						}
+					},
+					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
+						return awsrds.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+								DBInstances: []awsrds.DBInstance{{}},
+							}},
 						}
 					},
 				},
@@ -617,9 +652,21 @@ func TestDelete(t *testing.T) {
 		"Failed": {
 			args: args{
 				rds: &fake.MockRDSClient{
-					MockDelete: func(input *rds2.DeleteDBInstanceInput) rds2.DeleteDBInstanceRequest {
-						return rds2.DeleteDBInstanceRequest{
+					MockDelete: func(input *awsrds.DeleteDBInstanceInput) awsrds.DeleteDBInstanceRequest {
+						return awsrds.DeleteDBInstanceRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+					MockModify: func(input *awsrds.ModifyDBInstanceInput) awsrds.ModifyDBInstanceRequest {
+						return awsrds.ModifyDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ModifyDBInstanceOutput{}},
+						}
+					},
+					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
+						return awsrds.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+								DBInstances: []awsrds.DBInstance{{}},
+							}},
 						}
 					},
 				},

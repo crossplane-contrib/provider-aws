@@ -167,8 +167,9 @@ func TestConfigureMyRDSInstance(t *testing.T) {
 							ProviderReference: &corev1.ObjectReference{Name: providerName},
 						},
 						ForProvider: v1beta1.RDSInstanceParameters{
-							Engine:        v1beta1.MysqlEngine,
-							EngineVersion: &engineVersion,
+							Engine:                        v1beta1.MysqlEngine,
+							EngineVersion:                 &engineVersion,
+							ApplyModificationsImmediately: aws.Bool(true),
 						},
 					},
 				},

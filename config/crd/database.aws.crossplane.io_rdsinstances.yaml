@@ -391,6 +391,15 @@ spec:
                     Database Versions (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.DBVersions)
                     in the Amazon RDS User Guide.
                   type: string
+                finalDBSnapshotIdentifier:
+                  description: 'The DBSnapshotIdentifier of the new DBSnapshot created
+                    when SkipFinalSnapshot is set to false. Specifying this parameter
+                    and also setting the SkipFinalShapshot parameter to true results
+                    in an error. Constraints:    * Must be 1 to 255 letters or numbers.    *
+                    First character must be a letter    * Cannot end with a hyphen
+                    or contain two consecutive hyphens    * Cannot be specified when
+                    deleting a Read Replica.'
+                  type: string
                 iops:
                   description: 'IOPS is the amount of Provisioned IOPS (input/output
                     operations per second) to be initially allocated for the DB instance.
