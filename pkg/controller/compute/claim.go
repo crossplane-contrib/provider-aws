@@ -25,7 +25,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"github.com/crossplaneio/stack-aws/apis/compute/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
@@ -42,8 +42,8 @@ type EKSClusterClaimSchedulingController struct{}
 func (c *EKSClusterClaimSchedulingController) SetupWithManager(mgr ctrl.Manager) error {
 	name := strings.ToLower(fmt.Sprintf("scheduler.%s.%s.%s",
 		computev1alpha1.KubernetesClusterKind,
-		v1alpha2.EKSClusterKind,
-		v1alpha2.Group))
+		v1alpha3.EKSClusterKind,
+		v1alpha3.Group))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -55,7 +55,7 @@ func (c *EKSClusterClaimSchedulingController) SetupWithManager(mgr ctrl.Manager)
 		))).
 		Complete(resource.NewClaimSchedulingReconciler(mgr,
 			resource.ClaimKind(computev1alpha1.KubernetesClusterGroupVersionKind),
-			resource.ClassKind(v1alpha2.EKSClusterClassGroupVersionKind),
+			resource.ClassKind(v1alpha3.EKSClusterClassGroupVersionKind),
 		))
 }
 
@@ -69,8 +69,8 @@ type EKSClusterClaimDefaultingController struct{}
 func (c *EKSClusterClaimDefaultingController) SetupWithManager(mgr ctrl.Manager) error {
 	name := strings.ToLower(fmt.Sprintf("defaulter.%s.%s.%s",
 		computev1alpha1.KubernetesClusterKind,
-		v1alpha2.EKSClusterKind,
-		v1alpha2.Group))
+		v1alpha3.EKSClusterKind,
+		v1alpha3.Group))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -82,7 +82,7 @@ func (c *EKSClusterClaimDefaultingController) SetupWithManager(mgr ctrl.Manager)
 		))).
 		Complete(resource.NewClaimDefaultingReconciler(mgr,
 			resource.ClaimKind(computev1alpha1.KubernetesClusterGroupVersionKind),
-			resource.ClassKind(v1alpha2.EKSClusterClassGroupVersionKind),
+			resource.ClassKind(v1alpha3.EKSClusterClassGroupVersionKind),
 		))
 }
 
@@ -94,27 +94,27 @@ type EKSClusterClaimController struct{}
 func (c *EKSClusterClaimController) SetupWithManager(mgr ctrl.Manager) error {
 	name := strings.ToLower(fmt.Sprintf("%s.%s.%s",
 		computev1alpha1.KubernetesClusterKind,
-		v1alpha2.EKSClusterKind,
-		v1alpha2.Group))
+		v1alpha3.EKSClusterKind,
+		v1alpha3.Group))
 
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(computev1alpha1.KubernetesClusterGroupVersionKind),
-		resource.ClassKind(v1alpha2.EKSClusterClassGroupVersionKind),
-		resource.ManagedKind(v1alpha2.EKSClusterGroupVersionKind),
+		resource.ClassKind(v1alpha3.EKSClusterClassGroupVersionKind),
+		resource.ManagedKind(v1alpha3.EKSClusterGroupVersionKind),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigureEKSCluster),
 			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(
-		resource.HasClassReferenceKind(resource.ClassKind(v1alpha2.EKSClusterClassGroupVersionKind)),
-		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.EKSClusterGroupVersionKind)),
-		resource.IsManagedKind(resource.ManagedKind(v1alpha2.EKSClusterGroupVersionKind), mgr.GetScheme()),
+		resource.HasClassReferenceKind(resource.ClassKind(v1alpha3.EKSClusterClassGroupVersionKind)),
+		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha3.EKSClusterGroupVersionKind)),
+		resource.IsManagedKind(resource.ManagedKind(v1alpha3.EKSClusterGroupVersionKind), mgr.GetScheme()),
 	))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		Watches(&source.Kind{Type: &v1alpha2.EKSCluster{}}, &resource.EnqueueRequestForClaim{}).
+		Watches(&source.Kind{Type: &v1alpha3.EKSCluster{}}, &resource.EnqueueRequestForClaim{}).
 		For(&computev1alpha1.KubernetesCluster{}).
 		WithEventFilter(p).
 		Complete(r)
@@ -128,17 +128,17 @@ func ConfigureEKSCluster(_ context.Context, cm resource.Claim, cs resource.Class
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), computev1alpha1.KubernetesClusterGroupVersionKind)
 	}
 
-	rs, csok := cs.(*v1alpha2.EKSClusterClass)
+	rs, csok := cs.(*v1alpha3.EKSClusterClass)
 	if !csok {
-		return errors.Errorf("expected resource class %s to be %s", cs.GetName(), v1alpha2.EKSClusterClassGroupVersionKind)
+		return errors.Errorf("expected resource class %s to be %s", cs.GetName(), v1alpha3.EKSClusterClassGroupVersionKind)
 	}
 
-	i, mgok := mg.(*v1alpha2.EKSCluster)
+	i, mgok := mg.(*v1alpha3.EKSCluster)
 	if !mgok {
-		return errors.Errorf("expected managed resource %s to be %s", mg.GetName(), v1alpha2.EKSClusterGroupVersionKind)
+		return errors.Errorf("expected managed resource %s to be %s", mg.GetName(), v1alpha3.EKSClusterGroupVersionKind)
 	}
 
-	spec := &v1alpha2.EKSClusterSpec{
+	spec := &v1alpha3.EKSClusterSpec{
 		ResourceSpec: runtimev1alpha1.ResourceSpec{
 			ReclaimPolicy: runtimev1alpha1.ReclaimRetain,
 		},

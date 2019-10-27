@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/database/v1alpha3"
 	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
 	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 )
@@ -62,7 +62,7 @@ func TestCreatePatch(t *testing.T) {
 					DBName:            &dbName,
 					DBSubnetGroupName: &dbSubnetGroupName,
 					DBSubnetGroupNameRef: &v1beta1.DBSubnetGroupNameReferencerForRDSInstance{
-						DBSubnetGroupNameReferencer: v1alpha2.DBSubnetGroupNameReferencer{
+						DBSubnetGroupNameReferencer: v1alpha3.DBSubnetGroupNameReferencer{
 							LocalObjectReference: corev1.LocalObjectReference{Name: "coolgroup"},
 						},
 					},

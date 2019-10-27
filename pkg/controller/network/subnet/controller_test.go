@@ -33,7 +33,7 @@ import (
 	corev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
-	v1alpha2 "github.com/crossplaneio/stack-aws/apis/network/v1alpha2"
+	v1alpha3 "github.com/crossplaneio/stack-aws/apis/network/v1alpha3"
 	"github.com/crossplaneio/stack-aws/pkg/clients/ec2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/ec2/fake"
 )
@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 func Test_Connect(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := &v1alpha2.Subnet{}
+	mockManaged := &v1alpha3.Subnet{}
 	var clientErr error
 	var configErr error
 
@@ -124,9 +124,9 @@ func Test_Connect(t *testing.T) {
 func Test_Observe(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.Subnet{
-		Status: v1alpha2.SubnetStatus{
-			SubnetExternalStatus: v1alpha2.SubnetExternalStatus{
+	mockManaged := v1alpha3.Subnet{
+		Status: v1alpha3.SubnetStatus{
+			SubnetExternalStatus: v1alpha3.SubnetExternalStatus{
 				SubnetID: "some arbitrary id",
 			},
 		},
@@ -176,7 +176,7 @@ func Test_Observe(t *testing.T) {
 		},
 		{
 			"if item's identifier is not yet set, returns expected",
-			&v1alpha2.Subnet{},
+			&v1alpha3.Subnet{},
 			nil,
 			nil,
 			true,
@@ -215,7 +215,7 @@ func Test_Observe(t *testing.T) {
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		g.Expect(result.ResourceExists).To(gomega.Equal(tc.expectedResourceExist), tc.description)
 		if tc.expectedResourceExist {
-			mgd := tc.managedObj.(*v1alpha2.Subnet)
+			mgd := tc.managedObj.(*v1alpha3.Subnet)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionTrue), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonAvailable), tc.description)
@@ -227,9 +227,9 @@ func Test_Observe(t *testing.T) {
 func Test_Create(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.Subnet{
-		Spec: v1alpha2.SubnetSpec{
-			SubnetParameters: v1alpha2.SubnetParameters{
+	mockManaged := v1alpha3.Subnet{
+		Spec: v1alpha3.SubnetSpec{
+			SubnetParameters: v1alpha3.SubnetParameters{
 				CIDRBlock: "arbitrary cidr block string",
 			},
 		},
@@ -282,7 +282,7 @@ func Test_Create(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha2.Subnet)
+			mgd := tc.managedObj.(*v1alpha3.Subnet)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
@@ -294,7 +294,7 @@ func Test_Create(t *testing.T) {
 func Test_Update(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.Subnet{}
+	mockManaged := v1alpha3.Subnet{}
 
 	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
 
@@ -304,14 +304,14 @@ func Test_Update(t *testing.T) {
 func Test_Delete(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.Subnet{
-		Spec: v1alpha2.SubnetSpec{
-			SubnetParameters: v1alpha2.SubnetParameters{
+	mockManaged := v1alpha3.Subnet{
+		Spec: v1alpha3.SubnetSpec{
+			SubnetParameters: v1alpha3.SubnetParameters{
 				CIDRBlock: "arbitrary cidr block",
 			},
 		},
-		Status: v1alpha2.SubnetStatus{
-			SubnetExternalStatus: v1alpha2.SubnetExternalStatus{
+		Status: v1alpha3.SubnetStatus{
+			SubnetExternalStatus: v1alpha3.SubnetExternalStatus{
 				SubnetID: "some arbitrary id",
 			},
 		},
@@ -342,7 +342,7 @@ func Test_Delete(t *testing.T) {
 		},
 		{
 			"if status doesn't have the resource ID, it should return an error",
-			&v1alpha2.Subnet{},
+			&v1alpha3.Subnet{},
 			nil,
 			false,
 		},
@@ -371,7 +371,7 @@ func Test_Delete(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha2.Subnet)
+			mgd := tc.managedObj.(*v1alpha3.Subnet)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)

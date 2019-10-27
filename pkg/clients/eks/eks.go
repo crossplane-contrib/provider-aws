@@ -33,7 +33,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
-	awscomputev1alpha2 "github.com/crossplaneio/stack-aws/apis/compute/v1alpha2"
+	awscomputev1alpha3 "github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
 	cfc "github.com/crossplaneio/stack-aws/pkg/clients/cloudformation"
 )
 
@@ -90,10 +90,10 @@ func NewClusterWorkers(workerStackID string, workerStatus cloudformation.StackSt
 
 // Client interface to perform cluster operations
 type Client interface {
-	Create(string, awscomputev1alpha2.EKSClusterSpec) (*Cluster, error)
+	Create(string, awscomputev1alpha3.EKSClusterSpec) (*Cluster, error)
 	Get(string) (*Cluster, error)
 	Delete(string) error
-	CreateWorkerNodes(name string, version string, spec awscomputev1alpha2.EKSClusterSpec) (*ClusterWorkers, error)
+	CreateWorkerNodes(name string, version string, spec awscomputev1alpha3.EKSClusterSpec) (*ClusterWorkers, error)
 	GetWorkerNodes(stackID string) (*ClusterWorkers, error)
 	DeleteWorkerNodes(stackID string) error
 	ConnectionToken(string) (string, error)
@@ -118,7 +118,7 @@ func NewClient(config *aws.Config) Client {
 }
 
 // Create new EKS cluster
-func (e *eksClient) Create(name string, spec awscomputev1alpha2.EKSClusterSpec) (*Cluster, error) {
+func (e *eksClient) Create(name string, spec awscomputev1alpha3.EKSClusterSpec) (*Cluster, error) {
 	input := &eks.CreateClusterInput{
 		Name:    aws.String(name),
 		RoleArn: aws.String(spec.RoleARN),
@@ -139,7 +139,7 @@ func (e *eksClient) Create(name string, spec awscomputev1alpha2.EKSClusterSpec) 
 }
 
 // CreateWorkerNodes new EKS cluster workers nodes
-func (e *eksClient) CreateWorkerNodes(name string, clusterVersion string, spec awscomputev1alpha2.EKSClusterSpec) (*ClusterWorkers, error) {
+func (e *eksClient) CreateWorkerNodes(name string, clusterVersion string, spec awscomputev1alpha3.EKSClusterSpec) (*ClusterWorkers, error) {
 	// Cloud formation create workers
 	ami, err := e.getAMIImage(spec.WorkerNodes.NodeImageID, clusterVersion)
 	if err != nil {
