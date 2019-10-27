@@ -37,7 +37,7 @@ const (
 
 // Error strings
 const (
-	errResourceIsNotEKSCluster = "The managed resource is not an EKSCluster"
+	errResourceIsNotEKSCluster = "the managed resource is not an EKSCluster"
 )
 
 // EKSRegion represents an EKS enabled AWS region.

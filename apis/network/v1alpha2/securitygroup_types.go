@@ -30,7 +30,7 @@ import (
 
 // Error strings
 const (
-	errResourceIsNotSecurityGroup = "The managed resource is not a SecurityGroup"
+	errResourceIsNotSecurityGroup = "the managed resource is not a SecurityGroup"
 )
 
 // VPCIDReferencerForSecurityGroup is an attribute referencer that resolves VPCID from a referenced VPC
