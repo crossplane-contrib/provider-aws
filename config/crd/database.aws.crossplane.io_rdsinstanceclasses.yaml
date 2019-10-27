@@ -229,6 +229,15 @@ spec:
                     with this DB instance. If there is no DB subnet group, then it
                     is a non-VPC DB instance.
                   type: string
+                dbsubnetGroupNameRef:
+                  description: DBSubnetGroupNameRef is a reference to a DBSubnetGroup
+                    used to set DBSubnetGroupName.
+                  properties:
+                    name:
+                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                        TODO: Add other useful fields. apiVersion, kind, uid?'
+                      type: string
+                  type: object
                 deletionProtection:
                   description: DeletionProtection indicates if the DB instance should
                     have deletion protection enabled. The database can't be deleted
@@ -240,9 +249,18 @@ spec:
                     the instance in.
                   type: string
                 domainIAMRoleName:
-                  description: DomainIAMRoleName specifes the name of the IAM role
+                  description: DomainIAMRoleName specifies the name of the IAM role
                     to be used when making API calls to the Directory Service.
                   type: string
+                domainIAMRoleNameRef:
+                  description: DomainIAMRoleNameRef is a reference to an IAMRole used
+                    to set DomainIAMRoleName.
+                  properties:
+                    name:
+                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                        TODO: Add other useful fields. apiVersion, kind, uid?'
+                      type: string
+                  type: object
                 enableCloudwatchLogsExports:
                   description: EnableCloudwatchLogsExports is the list of log types
                     that need to be enabled for exporting to CloudWatch Logs. The
@@ -387,6 +405,15 @@ spec:
                     a value other than 0, then you must supply a MonitoringRoleARN
                     value.
                   type: string
+                monitoringRoleArnRef:
+                  description: MonitoringRoleARNRef is a reference to an IAMRole used
+                    to set MonitoringRoleARN.
+                  properties:
+                    name:
+                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                        TODO: Add other useful fields. apiVersion, kind, uid?'
+                      type: string
+                  type: object
                 multiAZ:
                   description: MultiAZ specifies if the DB instance is a Multi-AZ
                     deployment. You can't set the AvailabilityZone parameter if the
@@ -583,6 +610,20 @@ spec:
                   description: A value that specifies that the DB instance class of
                     the DB instance uses its default processor features.
                   type: boolean
+                vpcSecurityGroupIDRefs:
+                  description: VPCSecurityGroupIDRefs are references to VPCSecurityGroups
+                    used to set the VPCSecurityGroupIDs.
+                  items:
+                    description: VPCSecurityGroupIDReferencerForRDSInstance is an
+                      attribute referencer that resolves SecurityGroupID from a referenced
+                      SecurityGroup
+                    properties:
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                    type: object
+                  type: array
                 vpcSecurityGroupIds:
                   description: 'VPCSecurityGroupIDs is a list of EC2 VPC security
                     groups to associate with this DB instance. Amazon Aurora Not applicable.

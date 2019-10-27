@@ -139,7 +139,17 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstance
 func CreatePatch(in *rds.DBInstance, target *v1beta1.RDSInstanceParameters) (*v1beta1.RDSInstanceParameters, error) {
 	currentParams := &v1beta1.RDSInstanceParameters{}
 	LateInitialize(currentParams, in)
-	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
+
+	// TODO(negz): We need a better strategy here, but for now we just remove
+	// anything we know to be a reference to another resource before generating
+	// our diff.
+	withoutRefs := target.DeepCopy()
+	withoutRefs.DBSubnetGroupNameRef = nil
+	withoutRefs.VPCSecurityGroupIDRefs = nil
+	withoutRefs.MonitoringRoleARNRef = nil
+	withoutRefs.DomainIAMRoleNameRef = nil
+
+	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, withoutRefs)
 	if err != nil {
 		return nil, err
 	}
