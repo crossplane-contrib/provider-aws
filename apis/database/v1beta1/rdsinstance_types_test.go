@@ -63,7 +63,7 @@ func TestDBSubnetGroupNameReferencerForRDSInstance_AssignInvalidType_ReturnsErr(
 	r := &DBSubnetGroupNameReferencerForRDSInstance{}
 	expectedErr := errors.New(errResourceIsNotRDSInstance)
 
-	err := r.Assign(&struct{ resource.CanReference }{}, "mockValue")
+	err := r.Assign(nil, "mockValue")
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
@@ -81,6 +81,60 @@ func TestDBSubnetGroupNameReferencerForRDSInstance_AssignValidType_ReturnsExpect
 	}
 
 	if diff := cmp.Diff(res.Spec.ForProvider.DBSubnetGroupName, aws.String("mockValue")); diff != "" {
+		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
+	}
+}
+
+func TestIAMRoleARNReferencerForRDSInstanceMonitoringRole_AssignInvalidType_ReturnsErr(t *testing.T) {
+
+	r := &IAMRoleARNReferencerForRDSInstanceMonitoringRole{}
+	expectedErr := errors.New(errResourceIsNotRDSInstance)
+
+	err := r.Assign(nil, "mockValue")
+	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
+		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
+	}
+}
+
+func TestIAMRoleARNReferencerForRDSInstanceMonitoringRole_AssignValidType_ReturnsExpected(t *testing.T) {
+
+	r := &IAMRoleARNReferencerForRDSInstanceMonitoringRole{}
+	res := &RDSInstance{}
+	var expectedErr error
+
+	err := r.Assign(res, "mockValue")
+	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
+		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
+	}
+
+	if diff := cmp.Diff(res.Spec.ForProvider.MonitoringRoleARN, aws.String("mockValue")); diff != "" {
+		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
+	}
+}
+
+func TestIAMRoleNameReferencerForRDSInstanceDomainRole_AssignInvalidType_ReturnsErr(t *testing.T) {
+
+	r := &IAMRoleNameReferencerForRDSInstanceDomainRole{}
+	expectedErr := errors.New(errResourceIsNotRDSInstance)
+
+	err := r.Assign(nil, "mockValue")
+	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
+		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
+	}
+}
+
+func TestIAMRoleNameReferencerForRDSInstanceDomainRole_AssignValidType_ReturnsExpected(t *testing.T) {
+
+	r := &IAMRoleNameReferencerForRDSInstanceDomainRole{}
+	res := &RDSInstance{}
+	var expectedErr error
+
+	err := r.Assign(res, "mockValue")
+	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
+		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
+	}
+
+	if diff := cmp.Diff(res.Spec.ForProvider.DomainIAMRoleName, aws.String("mockValue")); diff != "" {
 		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
 	}
 }
