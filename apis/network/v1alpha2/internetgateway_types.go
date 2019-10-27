@@ -28,7 +28,7 @@ import (
 
 // Error strings
 const (
-	errResourceIsNotInternetGateway = "The managed resource is not a InternetGateway"
+	errResourceIsNotInternetGateway = "the managed resource is not a InternetGateway"
 )
 
 // VPCIDReferencerForInternetGateway is an attribute referencer that resolves VPCID from a referenced VPC

@@ -30,7 +30,7 @@ import (
 
 // Error strings
 const (
-	errResourceIsNotIAMRolePolicyAttachment = "The managed resource is not an IAMRolePolicyAttachment"
+	errResourceIsNotIAMRolePolicyAttachment = "the managed resource is not an IAMRolePolicyAttachment"
 )
 
 // IAMRoleNameReferencerForIAMRolePolicyAttachment is an attribute referencer that retrieves Name from a referenced IAMRole
