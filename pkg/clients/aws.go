@@ -17,8 +17,11 @@ limitations under the License.
 package aws
 
 import (
+	"encoding/json"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
+	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-ini/ini"
 )
 
@@ -89,6 +92,28 @@ func LoadConfig(data []byte, profile, region string) (*aws.Config, error) {
 	return &config, err
 }
 
+// TODO(muvaf): All the types that use CreateJSONPatch are known during
+// development time. In order to avoid unnecessary panic checks, we can generate
+// the code that creates a patch between two objects that share the same type.
+
+// CreateJSONPatch creates a diff JSON object that can be applied to any other
+// JSON object.
+func CreateJSONPatch(source, destination interface{}) ([]byte, error) {
+	sourceJSON, err := json.Marshal(source)
+	if err != nil {
+		return nil, err
+	}
+	destinationJSON, err := json.Marshal(destination)
+	if err != nil {
+		return nil, err
+	}
+	patchJSON, err := jsonpatch.CreateMergePatch(sourceJSON, destinationJSON)
+	if err != nil {
+		return nil, err
+	}
+	return patchJSON, nil
+}
+
 // String converts the supplied string for use with the AWS Go SDK.
 func String(v string, o ...FieldOption) *string {
 	for _, fo := range o {
@@ -118,6 +143,15 @@ func LateInitializeStringPtr(in *string, from *string) *string {
 		return in
 	}
 	return from
+}
+
+// LateInitializeString returns `from` if `in` is empty and `from` is non-nil,
+// in other cases it returns `in`.
+func LateInitializeString(in string, from *string) string {
+	if in == "" && from != nil {
+		return *from
+	}
+	return in
 }
 
 // Int64 converts the supplied int for use with the AWS Go SDK.

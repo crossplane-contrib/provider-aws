@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha2
+package v1beta1
 
 import (
 	"reflect"
@@ -26,7 +26,7 @@ import (
 // Package type metadata.
 const (
 	Group   = "database.aws.crossplane.io"
-	Version = "v1alpha2"
+	Version = "v1beta1"
 )
 
 var (
@@ -37,13 +37,21 @@ var (
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
-// DBSubnetGroup type metadata.
+// RDSInstance type metadata.
 var (
-	DBSubnetGroupKind             = reflect.TypeOf(DBSubnetGroup{}).Name()
-	DBSubnetGroupKindAPIVersion   = DBSubnetGroupKind + "." + SchemeGroupVersion.String()
-	DBSubnetGroupGroupVersionKind = SchemeGroupVersion.WithKind(DBSubnetGroupKind)
+	RDSInstanceKind             = reflect.TypeOf(RDSInstance{}).Name()
+	RDSInstanceKindAPIVersion   = RDSInstanceKind + "." + SchemeGroupVersion.String()
+	RDSInstanceGroupVersionKind = SchemeGroupVersion.WithKind(RDSInstanceKind)
+)
+
+// RDSInstanceClass type metadata.
+var (
+	RDSInstanceClassKind             = reflect.TypeOf(RDSInstanceClass{}).Name()
+	RDSInstanceClassKindAPIVersion   = RDSInstanceClassKind + "." + SchemeGroupVersion.String()
+	RDSInstanceClassGroupVersionKind = SchemeGroupVersion.WithKind(RDSInstanceClassKind)
 )
 
 func init() {
-	SchemeBuilder.Register(&DBSubnetGroup{}, &DBSubnetGroupList{})
+	SchemeBuilder.Register(&RDSInstance{}, &RDSInstanceList{})
+	SchemeBuilder.Register(&RDSInstanceClass{}, &RDSInstanceClassList{})
 }
