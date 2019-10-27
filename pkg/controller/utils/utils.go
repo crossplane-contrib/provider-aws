@@ -30,13 +30,13 @@ import (
 
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
 
-	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
+	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
 	awsclients "github.com/crossplaneio/stack-aws/pkg/clients"
 )
 
 // RetrieveAwsConfigFromProvider retrieves the aws config from the given aws provider reference
 func RetrieveAwsConfigFromProvider(ctx context.Context, client client.Reader, providerRef *corev1.ObjectReference) (*aws.Config, error) {
-	p := &awsv1alpha2.Provider{}
+	p := &awsv1alpha3.Provider{}
 	n := meta.NamespacedNameOf(providerRef)
 	if err := client.Get(ctx, n, p); err != nil {
 		return nil, errors.Wrapf(err, "cannot get provider %s", n)

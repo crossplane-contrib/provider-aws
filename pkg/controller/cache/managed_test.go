@@ -37,7 +37,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
-	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
+	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
 	elasticacheclient "github.com/crossplaneio/stack-aws/pkg/clients/elasticache"
 	"github.com/crossplaneio/stack-aws/pkg/clients/elasticache/fake"
 
@@ -77,9 +77,9 @@ var (
 
 	objectMeta = metav1.ObjectMeta{Name: name}
 
-	provider = awsv1alpha2.Provider{
+	provider = awsv1alpha3.Provider{
 		ObjectMeta: metav1.ObjectMeta{Name: providerName},
-		Spec: awsv1alpha2.ProviderSpec{
+		Spec: awsv1alpha3.ProviderSpec{
 			Secret: runtimev1alpha1.SecretKeySelector{
 				SecretReference: runtimev1alpha1.SecretReference{
 					Namespace: namespace,
@@ -647,7 +647,7 @@ func TestConnect(t *testing.T) {
 					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
 						switch key {
 						case client.ObjectKey{Name: providerName}:
-							*obj.(*awsv1alpha2.Provider) = provider
+							*obj.(*awsv1alpha3.Provider) = provider
 						case client.ObjectKey{Namespace: namespace, Name: providerSecretName}:
 							*obj.(*corev1.Secret) = providerSecret
 						}
@@ -675,7 +675,7 @@ func TestConnect(t *testing.T) {
 				client: &test.MockClient{MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
 					switch key {
 					case client.ObjectKey{Name: providerName}:
-						*obj.(*awsv1alpha2.Provider) = provider
+						*obj.(*awsv1alpha3.Provider) = provider
 					case client.ObjectKey{Namespace: namespace, Name: providerSecretName}:
 						return kerrors.NewNotFound(schema.GroupResource{}, providerSecretName)
 					}
@@ -692,7 +692,7 @@ func TestConnect(t *testing.T) {
 				client: &test.MockClient{MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
 					switch key {
 					case client.ObjectKey{Name: providerName}:
-						*obj.(*awsv1alpha2.Provider) = provider
+						*obj.(*awsv1alpha3.Provider) = provider
 					case client.ObjectKey{Namespace: namespace, Name: providerSecretName}:
 						*obj.(*corev1.Secret) = providerSecret
 					}

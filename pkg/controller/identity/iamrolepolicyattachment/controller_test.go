@@ -33,7 +33,7 @@ import (
 	corev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
-	v1alpha2 "github.com/crossplaneio/stack-aws/apis/identity/v1alpha2"
+	v1alpha3 "github.com/crossplaneio/stack-aws/apis/identity/v1alpha3"
 	"github.com/crossplaneio/stack-aws/pkg/clients/iam"
 	"github.com/crossplaneio/stack-aws/pkg/clients/iam/fake"
 )
@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 func Test_Connect(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := &v1alpha2.IAMRolePolicyAttachment{}
+	mockManaged := &v1alpha3.IAMRolePolicyAttachment{}
 	var clientErr error
 	var configErr error
 
@@ -124,9 +124,9 @@ func Test_Connect(t *testing.T) {
 func Test_Observe(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.IAMRolePolicyAttachment{
-		Spec: v1alpha2.IAMRolePolicyAttachmentSpec{
-			IAMRolePolicyAttachmentParameters: v1alpha2.IAMRolePolicyAttachmentParameters{
+	mockManaged := v1alpha3.IAMRolePolicyAttachment{
+		Spec: v1alpha3.IAMRolePolicyAttachmentSpec{
+			IAMRolePolicyAttachmentParameters: v1alpha3.IAMRolePolicyAttachmentParameters{
 				PolicyARN: "some arbitrary arn",
 			},
 		},
@@ -197,7 +197,7 @@ func Test_Observe(t *testing.T) {
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		g.Expect(result.ResourceExists).To(gomega.Equal(tc.expectedResourceExist), tc.description)
 		if tc.expectedResourceExist {
-			mgd := tc.managedObj.(*v1alpha2.IAMRolePolicyAttachment)
+			mgd := tc.managedObj.(*v1alpha3.IAMRolePolicyAttachment)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionTrue), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonAvailable), tc.description)
@@ -209,9 +209,9 @@ func Test_Observe(t *testing.T) {
 func Test_Create(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.IAMRolePolicyAttachment{
-		Spec: v1alpha2.IAMRolePolicyAttachmentSpec{
-			IAMRolePolicyAttachmentParameters: v1alpha2.IAMRolePolicyAttachmentParameters{
+	mockManaged := v1alpha3.IAMRolePolicyAttachment{
+		Spec: v1alpha3.IAMRolePolicyAttachmentSpec{
+			IAMRolePolicyAttachmentParameters: v1alpha3.IAMRolePolicyAttachmentParameters{
 				PolicyARN: "some arbitrary arn",
 			},
 		},
@@ -261,7 +261,7 @@ func Test_Create(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha2.IAMRolePolicyAttachment)
+			mgd := tc.managedObj.(*v1alpha3.IAMRolePolicyAttachment)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
@@ -272,14 +272,14 @@ func Test_Create(t *testing.T) {
 func Test_Update(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.IAMRolePolicyAttachment{
-		Spec: v1alpha2.IAMRolePolicyAttachmentSpec{
-			IAMRolePolicyAttachmentParameters: v1alpha2.IAMRolePolicyAttachmentParameters{
+	mockManaged := v1alpha3.IAMRolePolicyAttachment{
+		Spec: v1alpha3.IAMRolePolicyAttachmentSpec{
+			IAMRolePolicyAttachmentParameters: v1alpha3.IAMRolePolicyAttachmentParameters{
 				PolicyARN: "some arbitrary arn",
 			},
 		},
-		Status: v1alpha2.IAMRolePolicyAttachmentStatus{
-			IAMRolePolicyAttachmentExternalStatus: v1alpha2.IAMRolePolicyAttachmentExternalStatus{
+		Status: v1alpha3.IAMRolePolicyAttachmentStatus{
+			IAMRolePolicyAttachmentExternalStatus: v1alpha3.IAMRolePolicyAttachmentExternalStatus{
 				AttachedPolicyARN: "another arbitrary arn",
 			},
 		},
@@ -346,9 +346,9 @@ func Test_Update(t *testing.T) {
 		},
 		{
 			"if status has no policy attached, return expected",
-			&v1alpha2.IAMRolePolicyAttachment{
-				Spec: v1alpha2.IAMRolePolicyAttachmentSpec{
-					IAMRolePolicyAttachmentParameters: v1alpha2.IAMRolePolicyAttachmentParameters{
+			&v1alpha3.IAMRolePolicyAttachment{
+				Spec: v1alpha3.IAMRolePolicyAttachmentSpec{
+					IAMRolePolicyAttachmentParameters: v1alpha3.IAMRolePolicyAttachmentParameters{
 						PolicyARN: "some arbitrary arn",
 					},
 				},
@@ -361,14 +361,14 @@ func Test_Update(t *testing.T) {
 		},
 		{
 			"if status policy matches spec policy, return expected",
-			&v1alpha2.IAMRolePolicyAttachment{
-				Spec: v1alpha2.IAMRolePolicyAttachmentSpec{
-					IAMRolePolicyAttachmentParameters: v1alpha2.IAMRolePolicyAttachmentParameters{
+			&v1alpha3.IAMRolePolicyAttachment{
+				Spec: v1alpha3.IAMRolePolicyAttachmentSpec{
+					IAMRolePolicyAttachmentParameters: v1alpha3.IAMRolePolicyAttachmentParameters{
 						PolicyARN: "some arbitrary arn",
 					},
 				},
-				Status: v1alpha2.IAMRolePolicyAttachmentStatus{
-					IAMRolePolicyAttachmentExternalStatus: v1alpha2.IAMRolePolicyAttachmentExternalStatus{
+				Status: v1alpha3.IAMRolePolicyAttachmentStatus{
+					IAMRolePolicyAttachmentExternalStatus: v1alpha3.IAMRolePolicyAttachmentExternalStatus{
 						AttachedPolicyARN: "some arbitrary arn",
 					},
 				},
@@ -414,9 +414,9 @@ func Test_Update(t *testing.T) {
 func Test_Delete(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.IAMRolePolicyAttachment{
-		Spec: v1alpha2.IAMRolePolicyAttachmentSpec{
-			IAMRolePolicyAttachmentParameters: v1alpha2.IAMRolePolicyAttachmentParameters{
+	mockManaged := v1alpha3.IAMRolePolicyAttachment{
+		Spec: v1alpha3.IAMRolePolicyAttachmentSpec{
+			IAMRolePolicyAttachmentParameters: v1alpha3.IAMRolePolicyAttachmentParameters{
 				PolicyARN: "some arbitrary arn",
 			},
 		},
@@ -477,7 +477,7 @@ func Test_Delete(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha2.IAMRolePolicyAttachment)
+			mgd := tc.managedObj.(*v1alpha3.IAMRolePolicyAttachment)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)

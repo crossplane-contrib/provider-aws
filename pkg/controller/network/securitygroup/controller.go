@@ -31,7 +31,7 @@ import (
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
-	v1alpha2 "github.com/crossplaneio/stack-aws/apis/network/v1alpha2"
+	v1alpha3 "github.com/crossplaneio/stack-aws/apis/network/v1alpha3"
 	"github.com/crossplaneio/stack-aws/pkg/clients/ec2"
 	"github.com/crossplaneio/stack-aws/pkg/controller/utils"
 )
@@ -55,13 +55,13 @@ type Controller struct{}
 // and Start it when the Manager is Started.
 func (c *Controller) SetupWithManager(mgr ctrl.Manager) error {
 	r := resource.NewManagedReconciler(mgr,
-		resource.ManagedKind(v1alpha2.SecurityGroupGroupVersionKind),
+		resource.ManagedKind(v1alpha3.SecurityGroupGroupVersionKind),
 		resource.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewSecurityGroupClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
 		resource.WithManagedConnectionPublishers())
-	name := strings.ToLower(fmt.Sprintf("%s.%s", v1alpha2.SecurityGroupKindAPIVersion, v1alpha2.Group))
+	name := strings.ToLower(fmt.Sprintf("%s.%s", v1alpha3.SecurityGroupKindAPIVersion, v1alpha3.Group))
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha2.SecurityGroup{}).
+		For(&v1alpha3.SecurityGroup{}).
 		Complete(r)
 }
 
@@ -72,7 +72,7 @@ type connector struct {
 }
 
 func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (resource.ExternalClient, error) {
-	cr, ok := mgd.(*v1alpha2.SecurityGroup)
+	cr, ok := mgd.(*v1alpha3.SecurityGroup)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -95,7 +95,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (resource.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha2.SecurityGroup)
+	cr, ok := mgd.(*v1alpha3.SecurityGroup)
 	if !ok {
 		return resource.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -146,7 +146,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (resource.
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (resource.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha2.SecurityGroup)
+	cr, ok := mgd.(*v1alpha3.SecurityGroup)
 	if !ok {
 		return resource.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -173,7 +173,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (resource.E
 	}
 
 	// Authorizing Ingress permissions for the SecurityGroup
-	ingressPerms := v1alpha2.BuildEC2Permissions(cr.Spec.IngressPermissions)
+	ingressPerms := v1alpha3.BuildEC2Permissions(cr.Spec.IngressPermissions)
 	if len(ingressPerms) > 0 {
 		air := e.client.AuthorizeSecurityGroupIngressRequest(&awsec2.AuthorizeSecurityGroupIngressInput{
 			GroupId:       aws.String(cr.Status.SecurityGroupID),
@@ -188,7 +188,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (resource.E
 	}
 
 	// Authorizing Egress permissions for the SecurityGroup
-	egressPerms := v1alpha2.BuildEC2Permissions(cr.Spec.EgressPermissions)
+	egressPerms := v1alpha3.BuildEC2Permissions(cr.Spec.EgressPermissions)
 	if len(egressPerms) > 0 {
 		aer := e.client.AuthorizeSecurityGroupEgressRequest(&awsec2.AuthorizeSecurityGroupEgressInput{
 			GroupId:       aws.String(cr.Status.SecurityGroupID),
@@ -213,7 +213,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (resource.E
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha2.SecurityGroup)
+	cr, ok := mgd.(*v1alpha3.SecurityGroup)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

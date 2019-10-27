@@ -36,7 +36,7 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 
 	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
-	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
+	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
 	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
 )
 
@@ -89,7 +89,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (resource.
 		return nil, errors.New(errNotRDSInstance)
 	}
 
-	p := &awsv1alpha2.Provider{}
+	p := &awsv1alpha3.Provider{}
 	if err := c.kube.Get(ctx, meta.NamespacedNameOf(cr.Spec.ProviderReference), p); err != nil {
 		return nil, errors.Wrap(err, errGetProvider)
 	}

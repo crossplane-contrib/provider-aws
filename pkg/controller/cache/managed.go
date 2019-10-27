@@ -31,7 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
-	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
+	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
 	"github.com/crossplaneio/stack-aws/pkg/clients/elasticache"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
@@ -92,7 +92,7 @@ func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (resource.
 		return nil, errors.New(errNotReplicationGroup)
 	}
 
-	p := &awsv1alpha2.Provider{}
+	p := &awsv1alpha3.Provider{}
 	if err := c.client.Get(ctx, meta.NamespacedNameOf(g.Spec.ProviderReference), p); err != nil {
 		return nil, errors.Wrap(err, "cannot get provider")
 	}

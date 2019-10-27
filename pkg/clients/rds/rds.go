@@ -221,7 +221,7 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 	return m
 }
 
-// GenerateObservation is used to produce v1alpha2.RDSInstanceObservation from
+// GenerateObservation is used to produce v1alpha3.RDSInstanceObservation from
 // rds.DBInstance.
 func GenerateObservation(db rds.DBInstance) v1beta1.RDSInstanceObservation { // nolint:gocyclo
 	o := v1beta1.RDSInstanceObservation{
@@ -364,7 +364,7 @@ func GenerateObservation(db rds.DBInstance) v1beta1.RDSInstanceObservation { // 
 	return o
 }
 
-// LateInitialize fills the empty fields in *v1alpha2.RDSInstanceParameters with
+// LateInitialize fills the empty fields in *v1alpha3.RDSInstanceParameters with
 // the values seen in rds.DBInstance.
 func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rds.DBInstance) { // nolint:gocyclo
 	if db == nil {
@@ -452,7 +452,7 @@ func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error
 	return reflect.DeepEqual(&v1beta1.RDSInstanceParameters{}, patch), nil
 }
 
-// GetConnectionDetails extracts resource.ConnectionDetails out of v1alpha2.RDSInstance.
+// GetConnectionDetails extracts resource.ConnectionDetails out of v1alpha3.RDSInstance.
 func GetConnectionDetails(in v1beta1.RDSInstance) resource.ConnectionDetails {
 	if in.Status.AtProvider.Endpoint.Address == "" {
 		return nil

@@ -34,7 +34,7 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 
 	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
-	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
+	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
 	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
 	"github.com/crossplaneio/stack-aws/pkg/clients/rds/fake"
 )
@@ -112,8 +112,8 @@ func TestConnect(t *testing.T) {
 			secretKey: []byte(credData),
 		},
 	}
-	provider := awsv1alpha2.Provider{
-		Spec: awsv1alpha2.ProviderSpec{
+	provider := awsv1alpha3.Provider{
+		Spec: awsv1alpha3.ProviderSpec{
 			Region: testRegion,
 			Secret: runtimev1alpha1.SecretKeySelector{
 				SecretReference: runtimev1alpha1.SecretReference{Namespace: secretNamespace, Name: connectionSecretName},
@@ -140,7 +140,7 @@ func TestConnect(t *testing.T) {
 					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
 						switch key {
 						case client.ObjectKey{Name: providerName}:
-							provider.DeepCopyInto(obj.(*awsv1alpha2.Provider))
+							provider.DeepCopyInto(obj.(*awsv1alpha3.Provider))
 							return nil
 						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
 							secret.DeepCopyInto(obj.(*corev1.Secret))
@@ -180,7 +180,7 @@ func TestConnect(t *testing.T) {
 					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
 						switch key {
 						case client.ObjectKey{Name: providerName}:
-							provider.DeepCopyInto(obj.(*awsv1alpha2.Provider))
+							provider.DeepCopyInto(obj.(*awsv1alpha3.Provider))
 							return nil
 						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
 							return errBoom
