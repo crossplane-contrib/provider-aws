@@ -5,7 +5,9 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/google/go-cmp/cmp"
+	corev1 "k8s.io/api/core/v1"
 
+	"github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
 	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
 	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 )
@@ -16,6 +18,8 @@ var (
 )
 
 func TestCreatePatch(t *testing.T) {
+	dbSubnetGroupName := "example-subnet"
+
 	type args struct {
 		db *rds.DBInstance
 		p  *v1beta1.RDSInstanceParameters
@@ -46,6 +50,26 @@ func TestCreatePatch(t *testing.T) {
 				patch: &v1beta1.RDSInstanceParameters{
 					AllocatedStorage: aws.IntAddress(aws.Int64(30)),
 				},
+			},
+		},
+		"IgnoresRefs": {
+			args: args{
+				db: &rds.DBInstance{
+					DBName:        &dbName,
+					DBSubnetGroup: &rds.DBSubnetGroup{DBSubnetGroupName: &dbSubnetGroupName},
+				},
+				p: &v1beta1.RDSInstanceParameters{
+					DBName:            &dbName,
+					DBSubnetGroupName: &dbSubnetGroupName,
+					DBSubnetGroupNameRef: &v1beta1.DBSubnetGroupNameReferencerForRDSInstance{
+						DBSubnetGroupNameReferencer: v1alpha2.DBSubnetGroupNameReferencer{
+							LocalObjectReference: corev1.LocalObjectReference{Name: "coolgroup"},
+						},
+					},
+				},
+			},
+			want: want{
+				patch: &v1beta1.RDSInstanceParameters{},
 			},
 		},
 	}

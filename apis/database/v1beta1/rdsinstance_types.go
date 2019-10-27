@@ -24,6 +24,7 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
 	databasev1alpha2 "github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
+	identityv1alpha2 "github.com/crossplaneio/stack-aws/apis/identity/v1alpha2"
 	network "github.com/crossplaneio/stack-aws/apis/network/v1alpha2"
 )
 
@@ -38,7 +39,8 @@ const (
 	PostgresqlEngine = "postgres"
 )
 
-// VPCSecurityGroupIDReferencerForRDSInstance is an attribute referencer that resolves SecurityGroupID from a referenced SecurityGroup
+// VPCSecurityGroupIDReferencerForRDSInstance is an attribute referencer that
+// resolves SecurityGroupID from a referenced SecurityGroup
 type VPCSecurityGroupIDReferencerForRDSInstance struct {
 	network.SecurityGroupIDReferencer `json:",inline"`
 }
@@ -54,7 +56,8 @@ func (v *VPCSecurityGroupIDReferencerForRDSInstance) Assign(res resource.CanRefe
 	return nil
 }
 
-// DBSubnetGroupNameReferencerForRDSInstance is an attribute referencer that retrieves the name from a referenced DBSubnetGroup
+// DBSubnetGroupNameReferencerForRDSInstance is an attribute referencer that
+// retrieves the name from a referenced DBSubnetGroup
 type DBSubnetGroupNameReferencerForRDSInstance struct {
 	databasev1alpha2.DBSubnetGroupNameReferencer `json:",inline"`
 }
@@ -67,6 +70,40 @@ func (v *DBSubnetGroupNameReferencerForRDSInstance) Assign(res resource.CanRefer
 	}
 
 	rds.Spec.ForProvider.DBSubnetGroupName = &value
+	return nil
+}
+
+// IAMRoleARNReferencerForRDSInstanceMonitoringRole is an attribute referencer
+// that retrieves an RDSInstance's MonitoringRoleARN from a referenced IAMRole.
+type IAMRoleARNReferencerForRDSInstanceMonitoringRole struct {
+	identityv1alpha2.IAMRoleARNReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved value to the managed resource
+func (v *IAMRoleARNReferencerForRDSInstanceMonitoringRole) Assign(res resource.CanReference, value string) error {
+	eks, ok := res.(*RDSInstance)
+	if !ok {
+		return errors.New(errResourceIsNotRDSInstance)
+	}
+
+	eks.Spec.ForProvider.MonitoringRoleARN = &value
+	return nil
+}
+
+// IAMRoleNameReferencerForRDSInstanceDomainRole is an attribute referencer
+// that retrieves an RDSInstance's DomainRoleName from a referenced IAMRole.
+type IAMRoleNameReferencerForRDSInstanceDomainRole struct {
+	identityv1alpha2.IAMRoleNameReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved value to the managed resource
+func (v *IAMRoleNameReferencerForRDSInstanceDomainRole) Assign(res resource.CanReference, value string) error {
+	eks, ok := res.(*RDSInstance)
+	if !ok {
+		return errors.New(errResourceIsNotRDSInstance)
+	}
+
+	eks.Spec.ForProvider.DomainIAMRoleName = &value
 	return nil
 }
 
@@ -315,6 +352,12 @@ type RDSInstanceParameters struct {
 	// +optional
 	DBSubnetGroupName *string `json:"dbSubnetGroupName,omitempty"`
 
+	// DBSubnetGroupNameRef is a reference to a DBSubnetGroup used to set
+	// DBSubnetGroupName.
+	// +immutable
+	// +optional
+	DBSubnetGroupNameRef *DBSubnetGroupNameReferencerForRDSInstance `json:"dbsubnetGroupNameRef,omitempty" resource:"attributereferencer"`
+
 	// DeletionProtection indicates if the DB instance should have deletion protection enabled. The
 	// database can't be deleted when this value is set to true. The default is
 	// false. For more information, see  Deleting a DB Instance (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_DeleteInstance.html).
@@ -502,6 +545,12 @@ type RDSInstanceParameters struct {
 	// +optional
 	MonitoringRoleARN *string `json:"monitoringRoleArn,omitempty"`
 
+	// MonitoringRoleARNRef is a reference to an IAMRole used to set
+	// MonitoringRoleARN.
+	// +optional
+	// +immutable
+	MonitoringRoleARNRef *IAMRoleARNReferencerForRDSInstanceMonitoringRole `json:"monitoringRoleArnRef,omitempty" resource:"attributereferencer"`
+
 	// MultiAZ specifies if the DB instance is a Multi-AZ deployment. You can't set the
 	// AvailabilityZone parameter if the MultiAZ parameter is set to true.
 	// +optional
@@ -664,6 +713,12 @@ type RDSInstanceParameters struct {
 	// +optional
 	VPCSecurityGroupIDs []string `json:"vpcSecurityGroupIds,omitempty"`
 
+	// VPCSecurityGroupIDRefs are references to VPCSecurityGroups used to set
+	// the VPCSecurityGroupIDs.
+	// +immutable
+	// +optional
+	VPCSecurityGroupIDRefs []*VPCSecurityGroupIDReferencerForRDSInstance `json:"vpcSecurityGroupIDRefs,omitempty" resource:"attributereferencer"`
+
 	// Fields whose value cannot be retrieved from rds.DBInstance object.
 
 	// AllowMajorVersionUpgrade indicates that major version upgrades are allowed. Changing this parameter
@@ -710,10 +765,16 @@ type RDSInstanceParameters struct {
 	// +optional
 	Domain *string `json:"domain,omitempty"`
 
-	// DomainIAMRoleName specifes the name of the IAM role to be used when making API calls to the
+	// DomainIAMRoleName specifies the name of the IAM role to be used when making API calls to the
 	// Directory Service.
 	// +optional
 	DomainIAMRoleName *string `json:"domainIAMRoleName,omitempty"`
+
+	// DomainIAMRoleNameRef is a reference to an IAMRole used to set
+	// DomainIAMRoleName.
+	// +optional
+	// +immutable
+	DomainIAMRoleNameRef *IAMRoleNameReferencerForRDSInstanceDomainRole `json:"domainIAMRoleNameRef,omitempty" resource:"attributereferencer"`
 
 	// OptionGroupName indicates that the DB instance should be associated with the specified option
 	// group.
@@ -755,16 +816,6 @@ type RDSInstanceParameters struct {
 type RDSInstanceSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
 	ForProvider                  RDSInstanceParameters `json:"forProvider,omitempty"`
-
-	// DBSubnetGroupNameRef references to a DBSubnetGroup to retrieve its name
-	// +immutable
-	// +optional
-	DBSubnetGroupNameRef *DBSubnetGroupNameReferencerForRDSInstance `json:"dbsubnetGroupNameRef,omitempty" resource:"attributereferencer"`
-
-	// VPCSecurityGroupIDRefs references to a list of SecurityGroups to retrieve a list of securityGroupIDs
-	// +immutable
-	// +optional
-	VPCSecurityGroupIDRefs []*VPCSecurityGroupIDReferencerForRDSInstance `json:"vpcSecurityGroupIDRefs,omitempty" resource:"attributereferencer"`
 }
 
 // RDSInstanceState represents the state of an RDS instance.
