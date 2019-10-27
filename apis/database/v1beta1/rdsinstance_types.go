@@ -356,7 +356,7 @@ type RDSInstanceParameters struct {
 	// DBSubnetGroupName.
 	// +immutable
 	// +optional
-	DBSubnetGroupNameRef *DBSubnetGroupNameReferencerForRDSInstance `json:"dbsubnetGroupNameRef,omitempty" resource:"attributereferencer"`
+	DBSubnetGroupNameRef *DBSubnetGroupNameReferencerForRDSInstance `json:"dbSubnetGroupNameRef,omitempty" resource:"attributereferencer"`
 
 	// DeletionProtection indicates if the DB instance should have deletion protection enabled. The
 	// database can't be deleted when this value is set to true. The default is
