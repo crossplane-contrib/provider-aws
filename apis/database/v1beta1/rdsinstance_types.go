@@ -23,9 +23,9 @@ import (
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
-	databasev1alpha2 "github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
-	identityv1alpha2 "github.com/crossplaneio/stack-aws/apis/identity/v1alpha2"
-	network "github.com/crossplaneio/stack-aws/apis/network/v1alpha2"
+	databasev1alpha3 "github.com/crossplaneio/stack-aws/apis/database/v1alpha3"
+	identityv1alpha3 "github.com/crossplaneio/stack-aws/apis/identity/v1alpha3"
+	network "github.com/crossplaneio/stack-aws/apis/network/v1alpha3"
 )
 
 // Error strings
@@ -59,7 +59,7 @@ func (v *VPCSecurityGroupIDReferencerForRDSInstance) Assign(res resource.CanRefe
 // DBSubnetGroupNameReferencerForRDSInstance is an attribute referencer that
 // retrieves the name from a referenced DBSubnetGroup
 type DBSubnetGroupNameReferencerForRDSInstance struct {
-	databasev1alpha2.DBSubnetGroupNameReferencer `json:",inline"`
+	databasev1alpha3.DBSubnetGroupNameReferencer `json:",inline"`
 }
 
 // Assign assigns the retrieved value to the managed resource
@@ -76,7 +76,7 @@ func (v *DBSubnetGroupNameReferencerForRDSInstance) Assign(res resource.CanRefer
 // IAMRoleARNReferencerForRDSInstanceMonitoringRole is an attribute referencer
 // that retrieves an RDSInstance's MonitoringRoleARN from a referenced IAMRole.
 type IAMRoleARNReferencerForRDSInstanceMonitoringRole struct {
-	identityv1alpha2.IAMRoleARNReferencer `json:",inline"`
+	identityv1alpha3.IAMRoleARNReferencer `json:",inline"`
 }
 
 // Assign assigns the retrieved value to the managed resource
@@ -93,7 +93,7 @@ func (v *IAMRoleARNReferencerForRDSInstanceMonitoringRole) Assign(res resource.C
 // IAMRoleNameReferencerForRDSInstanceDomainRole is an attribute referencer
 // that retrieves an RDSInstance's DomainRoleName from a referenced IAMRole.
 type IAMRoleNameReferencerForRDSInstanceDomainRole struct {
-	identityv1alpha2.IAMRoleNameReferencer `json:",inline"`
+	identityv1alpha3.IAMRoleNameReferencer `json:",inline"`
 }
 
 // Assign assigns the retrieved value to the managed resource

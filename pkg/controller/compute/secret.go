@@ -27,7 +27,7 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane/apis/compute/v1alpha1"
 
-	"github.com/crossplaneio/stack-aws/apis/compute/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
 )
 
 // EKSClusterSecretController is responsible for adding the EKSCluster secret
@@ -39,11 +39,11 @@ type EKSClusterSecretController struct{}
 func (c *EKSClusterSecretController) SetupWithManager(mgr ctrl.Manager) error {
 	p := resource.NewPredicates(resource.AnyOf(
 		resource.AllOf(resource.IsControlledByKind(v1alpha1.KubernetesClusterGroupVersionKind), resource.IsPropagated()),
-		resource.AllOf(resource.IsControlledByKind(v1alpha2.EKSClusterGroupVersionKind), resource.IsPropagator()),
+		resource.AllOf(resource.IsControlledByKind(v1alpha3.EKSClusterGroupVersionKind), resource.IsPropagator()),
 	))
 
 	return ctrl.NewControllerManagedBy(mgr).
-		Named(strings.ToLower(fmt.Sprintf("connectionsecret.%s.%s", v1alpha2.EKSClusterKind, v1alpha2.Group))).
+		Named(strings.ToLower(fmt.Sprintf("connectionsecret.%s.%s", v1alpha3.EKSClusterKind, v1alpha3.Group))).
 		Watches(&source.Kind{Type: &corev1.Secret{}}, &resource.EnqueueRequestForPropagator{}).
 		For(&corev1.Secret{}).
 		WithEventFilter(p).

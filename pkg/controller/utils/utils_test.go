@@ -31,7 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	coption "sigs.k8s.io/controller-runtime/pkg/client"
 
-	awsv1alpha2 "github.com/crossplaneio/stack-aws/apis/v1alpha2"
+	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
 )
 
 type mockClient struct {
@@ -61,9 +61,9 @@ aws_secret_access_key = mock_aws_secret_access_key`),
 		},
 	}
 
-	mockProvider := &awsv1alpha2.Provider{
+	mockProvider := &awsv1alpha3.Provider{
 		ObjectMeta: metav1.ObjectMeta{},
-		Spec: awsv1alpha2.ProviderSpec{
+		Spec: awsv1alpha3.ProviderSpec{
 			Region: "mock-region",
 			Secret: runtimev1alpha1.SecretKeySelector{
 				SecretReference: runtimev1alpha1.SecretReference{},
@@ -76,7 +76,7 @@ aws_secret_access_key = mock_aws_secret_access_key`),
 		mockGet: func(ctx context.Context, n types.NamespacedName, o runtime.Object) error {
 			switch n.Name {
 			case "mockprovidername":
-				obj := o.(*awsv1alpha2.Provider)
+				obj := o.(*awsv1alpha3.Provider)
 				obj.ObjectMeta = *(mockProvider.ObjectMeta.DeepCopy())
 				obj.Spec = *(mockProvider.Spec.DeepCopy())
 				return nil

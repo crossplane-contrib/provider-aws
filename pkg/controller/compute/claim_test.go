@@ -25,7 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/crossplaneio/stack-aws/apis/compute/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
@@ -58,8 +58,8 @@ func TestConfigureEKSCluster(t *testing.T) {
 		"Successful": {
 			args: args{
 				cm: &computev1alpha1.KubernetesCluster{ObjectMeta: metav1.ObjectMeta{UID: claimUID}},
-				cs: &v1alpha2.EKSClusterClass{
-					SpecTemplate: v1alpha2.EKSClusterClassSpecTemplate{
+				cs: &v1alpha3.EKSClusterClass{
+					SpecTemplate: v1alpha3.EKSClusterClassSpecTemplate{
 						ClassSpecTemplate: runtimev1alpha1.ClassSpecTemplate{
 							WriteConnectionSecretsToNamespace: namespace,
 							ProviderReference:                 &corev1.ObjectReference{Name: providerName},
@@ -67,11 +67,11 @@ func TestConfigureEKSCluster(t *testing.T) {
 						},
 					},
 				},
-				mg: &v1alpha2.EKSCluster{},
+				mg: &v1alpha3.EKSCluster{},
 			},
 			want: want{
-				mg: &v1alpha2.EKSCluster{
-					Spec: v1alpha2.EKSClusterSpec{
+				mg: &v1alpha3.EKSCluster{
+					Spec: v1alpha3.EKSClusterSpec{
 						ResourceSpec: runtimev1alpha1.ResourceSpec{
 							ReclaimPolicy: runtimev1alpha1.ReclaimDelete,
 							WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{

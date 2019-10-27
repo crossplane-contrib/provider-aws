@@ -27,7 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
-	"github.com/crossplaneio/stack-aws/apis/storage/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/storage/v1alpha3"
 	iamc "github.com/crossplaneio/stack-aws/pkg/clients/iam"
 
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
@@ -44,13 +44,13 @@ const (
 
 // Service defines S3 Client operations
 type Service interface {
-	CreateOrUpdateBucket(bucket *v1alpha2.S3Bucket) error
-	GetBucketInfo(username string, bucket *v1alpha2.S3Bucket) (*Bucket, error)
-	CreateUser(username string, bucket *v1alpha2.S3Bucket) (*iam.AccessKey, string, error)
-	UpdateBucketACL(bucket *v1alpha2.S3Bucket) error
-	UpdateVersioning(bucket *v1alpha2.S3Bucket) error
-	UpdatePolicyDocument(username string, bucket *v1alpha2.S3Bucket) (string, error)
-	DeleteBucket(bucket *v1alpha2.S3Bucket) error
+	CreateOrUpdateBucket(bucket *v1alpha3.S3Bucket) error
+	GetBucketInfo(username string, bucket *v1alpha3.S3Bucket) (*Bucket, error)
+	CreateUser(username string, bucket *v1alpha3.S3Bucket) (*iam.AccessKey, string, error)
+	UpdateBucketACL(bucket *v1alpha3.S3Bucket) error
+	UpdateVersioning(bucket *v1alpha3.S3Bucket) error
+	UpdatePolicyDocument(username string, bucket *v1alpha3.S3Bucket) (string, error)
+	DeleteBucket(bucket *v1alpha3.S3Bucket) error
 }
 
 // Client implements S3 Client
@@ -67,7 +67,7 @@ func NewClient(config *aws.Config) Service {
 
 // CreateOrUpdateBucket creates or updates the supplied S3 bucket with provided
 // specification, and returns access keys with permissions of localPermission
-func (c *Client) CreateOrUpdateBucket(bucket *v1alpha2.S3Bucket) error {
+func (c *Client) CreateOrUpdateBucket(bucket *v1alpha3.S3Bucket) error {
 	input := CreateBucketInput(bucket)
 	_, err := c.s3.CreateBucketRequest(input).Send()
 	if err != nil {
@@ -85,7 +85,7 @@ type Bucket struct {
 }
 
 // GetBucketInfo returns the status of key bucket settings including user's policy version for permission status
-func (c *Client) GetBucketInfo(username string, bucket *v1alpha2.S3Bucket) (*Bucket, error) {
+func (c *Client) GetBucketInfo(username string, bucket *v1alpha3.S3Bucket) (*Bucket, error) {
 	b := Bucket{}
 	bucketVersioning, err := c.s3.GetBucketVersioningRequest(&s3.GetBucketVersioningInput{Bucket: aws.String(bucket.GetBucketName())}).Send()
 	if err != nil {
@@ -102,7 +102,7 @@ func (c *Client) GetBucketInfo(username string, bucket *v1alpha2.S3Bucket) (*Buc
 }
 
 // CreateUser - Create as user to access bucket per permissions in BucketSpec returing access key and policy version
-func (c *Client) CreateUser(username string, bucket *v1alpha2.S3Bucket) (*iam.AccessKey, string, error) {
+func (c *Client) CreateUser(username string, bucket *v1alpha3.S3Bucket) (*iam.AccessKey, string, error) {
 	policyDocument, err := newPolicyDocument(bucket)
 	if err != nil {
 		return nil, "", fmt.Errorf("could not update policy, %s", err.Error())
@@ -121,7 +121,7 @@ func (c *Client) CreateUser(username string, bucket *v1alpha2.S3Bucket) (*iam.Ac
 }
 
 // UpdateBucketACL - Updated CannedACL on Bucket
-func (c *Client) UpdateBucketACL(bucket *v1alpha2.S3Bucket) error {
+func (c *Client) UpdateBucketACL(bucket *v1alpha3.S3Bucket) error {
 	var err error
 	name := bucket.GetBucketName()
 	if bucket.Spec.CannedACL != nil {
@@ -136,7 +136,7 @@ func (c *Client) UpdateBucketACL(bucket *v1alpha2.S3Bucket) error {
 }
 
 // UpdateVersioning configuration for Bucket
-func (c *Client) UpdateVersioning(bucket *v1alpha2.S3Bucket) error {
+func (c *Client) UpdateVersioning(bucket *v1alpha3.S3Bucket) error {
 	versioningStatus := s3.BucketVersioningStatusSuspended
 	if bucket.Spec.Versioning {
 		versioningStatus = s3.BucketVersioningStatusEnabled
@@ -151,7 +151,7 @@ func (c *Client) UpdateVersioning(bucket *v1alpha2.S3Bucket) error {
 }
 
 // UpdatePolicyDocument based on localPermissions
-func (c *Client) UpdatePolicyDocument(username string, bucket *v1alpha2.S3Bucket) (string, error) {
+func (c *Client) UpdatePolicyDocument(username string, bucket *v1alpha3.S3Bucket) (string, error) {
 	policyDocument, err := newPolicyDocument(bucket)
 	if err != nil {
 		return "", fmt.Errorf("could not generate policy, %s", err.Error())
@@ -164,7 +164,7 @@ func (c *Client) UpdatePolicyDocument(username string, bucket *v1alpha2.S3Bucket
 }
 
 // DeleteBucket deletes s3 bucket, and related IAM
-func (c *Client) DeleteBucket(bucket *v1alpha2.S3Bucket) error {
+func (c *Client) DeleteBucket(bucket *v1alpha3.S3Bucket) error {
 	name := bucket.GetBucketName()
 	input := &s3.DeleteBucketInput{
 		Bucket: &name,
@@ -203,7 +203,7 @@ func isErrorNotFound(err error) bool {
 }
 
 // CreateBucketInput returns a CreateBucketInput from the supplied S3Bucket.
-func CreateBucketInput(bucket *v1alpha2.S3Bucket) *s3.CreateBucketInput {
+func CreateBucketInput(bucket *v1alpha3.S3Bucket) *s3.CreateBucketInput {
 	name := bucket.GetBucketName()
 	bucketInput := &s3.CreateBucketInput{
 		Bucket: &name,
@@ -220,11 +220,11 @@ func CreateBucketInput(bucket *v1alpha2.S3Bucket) *s3.CreateBucketInput {
 }
 
 // GenerateBucketUsername - Genereates a username that is within AWS size specifications, and adds a random suffix
-func GenerateBucketUsername(bucket *v1alpha2.S3Bucket) string {
+func GenerateBucketUsername(bucket *v1alpha3.S3Bucket) string {
 	return util.GenerateNameMaxLength(fmt.Sprintf(bucketUser, bucket.GetBucketName()), maxIAMUsernameLength)
 }
 
-func newPolicyDocument(bucket *v1alpha2.S3Bucket) (string, error) {
+func newPolicyDocument(bucket *v1alpha3.S3Bucket) (string, error) {
 	bucketARN := fmt.Sprintf(bucketObjectARN, bucket.GetBucketName())
 	read := iamc.StatementEntry{
 		Sid:    "crossplaneRead",
