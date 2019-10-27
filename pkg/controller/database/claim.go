@@ -14,18 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rds
+package database
 
 import (
 	"context"
 	"fmt"
 	"strings"
 
+	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"github.com/crossplaneio/stack-aws/apis/database/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
@@ -42,8 +44,8 @@ type PostgreSQLInstanceClaimSchedulingController struct{}
 func (c *PostgreSQLInstanceClaimSchedulingController) SetupWithManager(mgr ctrl.Manager) error {
 	name := strings.ToLower(fmt.Sprintf("scheduler.%s.%s.%s",
 		databasev1alpha1.PostgreSQLInstanceKind,
-		v1alpha2.RDSInstanceKind,
-		v1alpha2.Group))
+		v1beta1.RDSInstanceKind,
+		v1beta1.Group))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -55,7 +57,7 @@ func (c *PostgreSQLInstanceClaimSchedulingController) SetupWithManager(mgr ctrl.
 		))).
 		Complete(resource.NewClaimSchedulingReconciler(mgr,
 			resource.ClaimKind(databasev1alpha1.PostgreSQLInstanceGroupVersionKind),
-			resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
+			resource.ClassKind(v1beta1.RDSInstanceClassGroupVersionKind),
 		))
 }
 
@@ -69,8 +71,8 @@ type PostgreSQLInstanceClaimDefaultingController struct{}
 func (c *PostgreSQLInstanceClaimDefaultingController) SetupWithManager(mgr ctrl.Manager) error {
 	name := strings.ToLower(fmt.Sprintf("defaulter.%s.%s.%s",
 		databasev1alpha1.PostgreSQLInstanceKind,
-		v1alpha2.RDSInstanceKind,
-		v1alpha2.Group))
+		v1beta1.RDSInstanceKind,
+		v1beta1.Group))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -82,7 +84,7 @@ func (c *PostgreSQLInstanceClaimDefaultingController) SetupWithManager(mgr ctrl.
 		))).
 		Complete(resource.NewClaimDefaultingReconciler(mgr,
 			resource.ClaimKind(databasev1alpha1.PostgreSQLInstanceGroupVersionKind),
-			resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
+			resource.ClassKind(v1beta1.RDSInstanceClassGroupVersionKind),
 		))
 }
 
@@ -94,27 +96,29 @@ type PostgreSQLInstanceClaimController struct{}
 func (c *PostgreSQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error {
 	name := strings.ToLower(fmt.Sprintf("%s.%s.%s",
 		databasev1alpha1.PostgreSQLInstanceKind,
-		v1alpha2.RDSInstanceKind,
-		v1alpha2.Group))
+		v1beta1.RDSInstanceKind,
+		v1beta1.Group))
 
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(databasev1alpha1.PostgreSQLInstanceGroupVersionKind),
-		resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
-		resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind),
+		resource.ClassKind(v1beta1.RDSInstanceClassGroupVersionKind),
+		resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind),
+		resource.WithManagedBinder(resource.NewAPIManagedStatusBinder(mgr.GetClient(), mgr.GetScheme())),
+		resource.WithManagedFinalizer(resource.NewAPIManagedStatusUnbinder(mgr.GetClient())),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigurePostgreRDSInstance),
 			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(
-		resource.HasClassReferenceKind(resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind)),
-		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind)),
-		resource.IsManagedKind(resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind), mgr.GetScheme()),
+		resource.HasClassReferenceKind(resource.ClassKind(v1beta1.RDSInstanceClassGroupVersionKind)),
+		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind)),
+		resource.IsManagedKind(resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind), mgr.GetScheme()),
 	))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		Watches(&source.Kind{Type: &v1alpha2.RDSInstance{}}, &resource.EnqueueRequestForClaim{}).
+		Watches(&source.Kind{Type: &v1beta1.RDSInstance{}}, &resource.EnqueueRequestForClaim{}).
 		For(&databasev1alpha1.PostgreSQLInstance{}).
 		WithEventFilter(p).
 		Complete(r)
@@ -129,28 +133,28 @@ func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resour
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), databasev1alpha1.PostgreSQLInstanceGroupVersionKind)
 	}
 
-	rs, csok := cs.(*v1alpha2.RDSInstanceClass)
+	rs, csok := cs.(*v1beta1.RDSInstanceClass)
 	if !csok {
-		return errors.Errorf("expected resource class %s to be %s", cs.GetName(), v1alpha2.RDSInstanceClassGroupVersionKind)
+		return errors.Errorf("expected resource class %s to be %s", cs.GetName(), v1beta1.RDSInstanceClassGroupVersionKind)
 	}
 
-	i, mgok := mg.(*v1alpha2.RDSInstance)
+	i, mgok := mg.(*v1beta1.RDSInstance)
 	if !mgok {
-		return errors.Errorf("expected managed resource %s to be %s", mg.GetName(), v1alpha2.RDSInstanceGroupVersionKind)
+		return errors.Errorf("expected managed resource %s to be %s", mg.GetName(), v1beta1.RDSInstanceGroupVersionKind)
 	}
 
-	spec := &v1alpha2.RDSInstanceSpec{
+	spec := &v1beta1.RDSInstanceSpec{
 		ResourceSpec: runtimev1alpha1.ResourceSpec{
 			ReclaimPolicy: runtimev1alpha1.ReclaimRetain,
 		},
-		RDSInstanceParameters: rs.SpecTemplate.RDSInstanceParameters,
+		ForProvider: rs.SpecTemplate.ForProvider,
 	}
-	spec.Engine = v1alpha2.PostgresqlEngine
-	v, err := validateEngineVersion(spec.EngineVersion, pg.Spec.EngineVersion)
+	spec.ForProvider.Engine = v1beta1.PostgresqlEngine
+	v, err := validateEngineVersion(aws.StringValue(spec.ForProvider.EngineVersion), pg.Spec.EngineVersion)
 	if err != nil {
 		return err
 	}
-	spec.EngineVersion = v
+	spec.ForProvider.EngineVersion = v
 
 	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
 		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,
@@ -174,8 +178,8 @@ type MySQLInstanceClaimSchedulingController struct{}
 func (c *MySQLInstanceClaimSchedulingController) SetupWithManager(mgr ctrl.Manager) error {
 	name := strings.ToLower(fmt.Sprintf("scheduler.%s.%s.%s",
 		databasev1alpha1.MySQLInstanceKind,
-		v1alpha2.RDSInstanceKind,
-		v1alpha2.Group))
+		v1beta1.RDSInstanceKind,
+		v1beta1.Group))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -187,7 +191,7 @@ func (c *MySQLInstanceClaimSchedulingController) SetupWithManager(mgr ctrl.Manag
 		))).
 		Complete(resource.NewClaimSchedulingReconciler(mgr,
 			resource.ClaimKind(databasev1alpha1.MySQLInstanceGroupVersionKind),
-			resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
+			resource.ClassKind(v1beta1.RDSInstanceClassGroupVersionKind),
 		))
 }
 
@@ -201,8 +205,8 @@ type MySQLInstanceClaimDefaultingController struct{}
 func (c *MySQLInstanceClaimDefaultingController) SetupWithManager(mgr ctrl.Manager) error {
 	name := strings.ToLower(fmt.Sprintf("defaulter.%s.%s.%s",
 		databasev1alpha1.MySQLInstanceKind,
-		v1alpha2.RDSInstanceKind,
-		v1alpha2.Group))
+		v1beta1.RDSInstanceKind,
+		v1beta1.Group))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -214,7 +218,7 @@ func (c *MySQLInstanceClaimDefaultingController) SetupWithManager(mgr ctrl.Manag
 		))).
 		Complete(resource.NewClaimDefaultingReconciler(mgr,
 			resource.ClaimKind(databasev1alpha1.MySQLInstanceGroupVersionKind),
-			resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
+			resource.ClassKind(v1beta1.RDSInstanceClassGroupVersionKind),
 		))
 }
 
@@ -226,27 +230,29 @@ type MySQLInstanceClaimController struct{}
 func (c *MySQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error {
 	name := strings.ToLower(fmt.Sprintf("%s.%s.%s",
 		databasev1alpha1.MySQLInstanceKind,
-		v1alpha2.RDSInstanceKind,
-		v1alpha2.Group))
+		v1beta1.RDSInstanceKind,
+		v1beta1.Group))
 
 	r := resource.NewClaimReconciler(mgr,
 		resource.ClaimKind(databasev1alpha1.MySQLInstanceGroupVersionKind),
-		resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind),
-		resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind),
+		resource.ClassKind(v1beta1.RDSInstanceClassGroupVersionKind),
+		resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind),
+		resource.WithManagedBinder(resource.NewAPIManagedStatusBinder(mgr.GetClient(), mgr.GetScheme())),
+		resource.WithManagedFinalizer(resource.NewAPIManagedStatusUnbinder(mgr.GetClient())),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigureMyRDSInstance),
 			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(
-		resource.HasClassReferenceKind(resource.ClassKind(v1alpha2.RDSInstanceClassGroupVersionKind)),
-		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind)),
-		resource.IsManagedKind(resource.ManagedKind(v1alpha2.RDSInstanceGroupVersionKind), mgr.GetScheme()),
+		resource.HasClassReferenceKind(resource.ClassKind(v1beta1.RDSInstanceClassGroupVersionKind)),
+		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind)),
+		resource.IsManagedKind(resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind), mgr.GetScheme()),
 	))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		Watches(&source.Kind{Type: &v1alpha2.RDSInstance{}}, &resource.EnqueueRequestForClaim{}).
+		Watches(&source.Kind{Type: &v1beta1.RDSInstance{}}, &resource.EnqueueRequestForClaim{}).
 		For(&databasev1alpha1.MySQLInstance{}).
 		WithEventFilter(p).
 		Complete(r)
@@ -261,28 +267,34 @@ func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.Cl
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), databasev1alpha1.MySQLInstanceGroupVersionKind)
 	}
 
-	rs, csok := cs.(*v1alpha2.RDSInstanceClass)
+	rs, csok := cs.(*v1beta1.RDSInstanceClass)
 	if !csok {
-		return errors.Errorf("expected resource class %s to be %s", cs.GetName(), v1alpha2.RDSInstanceClassGroupVersionKind)
+		return errors.Errorf("expected resource class %s to be %s", cs.GetName(), v1beta1.RDSInstanceClassGroupVersionKind)
 	}
 
-	i, mgok := mg.(*v1alpha2.RDSInstance)
+	i, mgok := mg.(*v1beta1.RDSInstance)
 	if !mgok {
-		return errors.Errorf("expected managed resource %s to be %s", mg.GetName(), v1alpha2.RDSInstanceGroupVersionKind)
+		return errors.Errorf("expected managed resource %s to be %s", mg.GetName(), v1beta1.RDSInstanceGroupVersionKind)
 	}
 
-	spec := &v1alpha2.RDSInstanceSpec{
+	spec := &v1beta1.RDSInstanceSpec{
 		ResourceSpec: runtimev1alpha1.ResourceSpec{
 			ReclaimPolicy: runtimev1alpha1.ReclaimRetain,
 		},
-		RDSInstanceParameters: rs.SpecTemplate.RDSInstanceParameters,
+		ForProvider: rs.SpecTemplate.ForProvider,
 	}
-	spec.Engine = v1alpha2.MysqlEngine
-	v, err := validateEngineVersion(spec.EngineVersion, my.Spec.EngineVersion)
+	spec.ForProvider.Engine = v1beta1.MysqlEngine
+	v, err := validateEngineVersion(aws.StringValue(spec.ForProvider.EngineVersion), my.Spec.EngineVersion)
 	if err != nil {
 		return err
 	}
-	spec.EngineVersion = v
+	spec.ForProvider.EngineVersion = v
+
+	// TODO(muvaf): When ApplyModificationsImmediately is true, all up-to-date
+	// checks return false.
+	if spec.ForProvider.ApplyModificationsImmediately == nil {
+		spec.ForProvider.ApplyModificationsImmediately = aws.Bool(true)
+	}
 
 	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{
 		Namespace: rs.SpecTemplate.WriteConnectionSecretsToNamespace,
@@ -301,17 +313,21 @@ func ConfigureMyRDSInstance(_ context.Context, cm resource.Claim, cs resource.Cl
 // otherwise if claim value is not a prefix of the class value - return an error
 // else return class value
 // Examples:
-// class: "", claim: "" - result: ""
+// class: "", claim: "" - result: "" (let the provider decide)
 // class: 5.6, claim: "" - result: 5.6
 // class: "", claim: 5.7 - result: 5.7
 // class: 5.6.45, claim 5.6 - result: 5.6.45
 // class: 5.6, claim 5.7 - result error
-func validateEngineVersion(class, claim string) (string, error) {
-	if class == "" {
-		return claim, nil
+func validateEngineVersion(class, claim string) (*string, error) {
+	if class == "" && claim == "" {
+		return nil, nil
 	}
+	if class == "" && claim != "" {
+		return &claim, nil
+	}
+	// class is definitely not empty string at this point.
 	if strings.HasPrefix(class, claim) {
-		return class, nil
+		return &class, nil
 	}
-	return "", errors.Errorf("claim value [%s] does not match class value [%s]", claim, class)
+	return nil, errors.Errorf("claim value [%s] does not match class value [%s]", claim, class)
 }

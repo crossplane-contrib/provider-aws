@@ -19,15 +19,13 @@ package v1alpha2
 import (
 	"context"
 
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	corev1 "k8s.io/api/core/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-
-	kerrors "k8s.io/apimachinery/pkg/api/errors"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 )
 
 // DBSubnetGroupNameReferencer is used to get a Name from another DBSubnetGroup

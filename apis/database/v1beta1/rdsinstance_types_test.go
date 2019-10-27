@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha2
+package v1beta1
 
 import (
 	"testing"
@@ -24,14 +24,16 @@ import (
 
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
+
+	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 )
 
-var _ resource.AttributeReferencer = (*SecurityGroupIDReferencerForRDSInstance)(nil)
+var _ resource.AttributeReferencer = (*VPCSecurityGroupIDReferencerForRDSInstance)(nil)
 var _ resource.AttributeReferencer = (*DBSubnetGroupNameReferencerForRDSInstance)(nil)
 
 func TestSecurityGroupIDReferencerForRDSInstance_AssignInvalidType_ReturnsErr(t *testing.T) {
 
-	r := &SecurityGroupIDReferencerForRDSInstance{}
+	r := &VPCSecurityGroupIDReferencerForRDSInstance{}
 	expectedErr := errors.New(errResourceIsNotRDSInstance)
 
 	err := r.Assign(&struct{ resource.CanReference }{}, "mockValue")
@@ -40,9 +42,9 @@ func TestSecurityGroupIDReferencerForRDSInstance_AssignInvalidType_ReturnsErr(t 
 	}
 }
 
-func TestSecurityGroupIDReferencerForRDSInstance_AssignValidType_ReturnsExpected(t *testing.T) {
+func TestVPCSecurityGroupIDReferencerForRDSInstance_AssignValidType_ReturnsExpected(t *testing.T) {
 
-	r := &SecurityGroupIDReferencerForRDSInstance{}
+	r := &VPCSecurityGroupIDReferencerForRDSInstance{}
 	res := &RDSInstance{}
 	var expectedErr error
 
@@ -51,7 +53,7 @@ func TestSecurityGroupIDReferencerForRDSInstance_AssignValidType_ReturnsExpected
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
 
-	if diff := cmp.Diff(res.Spec.SecurityGroupIDs, []string{"mockValue"}); diff != "" {
+	if diff := cmp.Diff(res.Spec.ForProvider.VPCSecurityGroupIDs, []string{"mockValue"}); diff != "" {
 		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
 	}
 }
@@ -78,7 +80,7 @@ func TestDBSubnetGroupNameReferencerForRDSInstance_AssignValidType_ReturnsExpect
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
 
-	if diff := cmp.Diff(res.Spec.DBSubnetGroupName, "mockValue"); diff != "" {
+	if diff := cmp.Diff(res.Spec.ForProvider.DBSubnetGroupName, aws.String("mockValue")); diff != "" {
 		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
 	}
 }
