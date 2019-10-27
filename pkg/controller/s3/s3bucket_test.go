@@ -33,8 +33,8 @@ import (
 	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/crossplaneio/stack-aws/apis/storage/v1alpha2"
-	. "github.com/crossplaneio/stack-aws/apis/storage/v1alpha2"
+	"github.com/crossplaneio/stack-aws/apis/storage/v1alpha3"
+	. "github.com/crossplaneio/stack-aws/apis/storage/v1alpha3"
 	client "github.com/crossplaneio/stack-aws/pkg/clients/s3"
 	. "github.com/crossplaneio/stack-aws/pkg/clients/s3/fake"
 
@@ -74,7 +74,7 @@ func testResource() *S3Bucket {
 		},
 		Spec: S3BucketSpec{
 			ResourceSpec:       runtimev1alpha1.ResourceSpec{ProviderReference: &corev1.ObjectReference{}},
-			S3BucketParameters: v1alpha2.S3BucketParameters{LocalPermission: &perm},
+			S3BucketParameters: v1alpha3.S3BucketParameters{LocalPermission: &perm},
 		},
 		Status: S3BucketStatus{
 			IAMUsername: testIAMUsername,

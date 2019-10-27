@@ -35,7 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/crossplaneio/stack-aws/apis"
-	. "github.com/crossplaneio/stack-aws/apis/compute/v1alpha2"
+	. "github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
 	"github.com/crossplaneio/stack-aws/pkg/clients/eks"
 	"github.com/crossplaneio/stack-aws/pkg/clients/eks/fake"
 

@@ -20,7 +20,7 @@ import (
 	"errors"
 	"testing"
 
-	awsstorage "github.com/crossplaneio/stack-aws/apis/storage/v1alpha2"
+	awsstorage "github.com/crossplaneio/stack-aws/apis/storage/v1alpha3"
 	fakeiam "github.com/crossplaneio/stack-aws/pkg/clients/iam/fake"
 	fakeops "github.com/crossplaneio/stack-aws/pkg/clients/s3/operations/fake"
 

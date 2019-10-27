@@ -33,7 +33,7 @@ import (
 	corev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
-	v1alpha2 "github.com/crossplaneio/stack-aws/apis/network/v1alpha2"
+	v1alpha3 "github.com/crossplaneio/stack-aws/apis/network/v1alpha3"
 	"github.com/crossplaneio/stack-aws/pkg/clients/ec2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/ec2/fake"
 )
@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 func Test_Connect(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := &v1alpha2.InternetGateway{}
+	mockManaged := &v1alpha3.InternetGateway{}
 	var clientErr error
 	var configErr error
 
@@ -124,9 +124,9 @@ func Test_Connect(t *testing.T) {
 func Test_Observe(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.InternetGateway{
-		Status: v1alpha2.InternetGatewayStatus{
-			InternetGatewayExternalStatus: v1alpha2.InternetGatewayExternalStatus{
+	mockManaged := v1alpha3.InternetGateway{
+		Status: v1alpha3.InternetGatewayStatus{
+			InternetGatewayExternalStatus: v1alpha3.InternetGatewayExternalStatus{
 				InternetGatewayID: "some arbitrary id",
 			},
 		},
@@ -214,7 +214,7 @@ func Test_Observe(t *testing.T) {
 		},
 		{
 			"if item's identifier is not yet set, returns expected",
-			&v1alpha2.InternetGateway{},
+			&v1alpha3.InternetGateway{},
 			nil,
 			nil,
 			true,
@@ -258,7 +258,7 @@ func Test_Observe(t *testing.T) {
 		g.Expect(result.ResourceExists).To(gomega.Equal(tc.expectedResourceExist), tc.description)
 		if tc.expectedResourceExist {
 
-			mgd := tc.managedObj.(*v1alpha2.InternetGateway)
+			mgd := tc.managedObj.(*v1alpha3.InternetGateway)
 
 			if tc.expectedResoruceAbailable {
 				g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
@@ -276,9 +276,9 @@ func Test_Observe(t *testing.T) {
 func Test_Create(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.InternetGateway{
-		Spec: v1alpha2.InternetGatewaySpec{
-			InternetGatewayParameters: v1alpha2.InternetGatewayParameters{
+	mockManaged := v1alpha3.InternetGateway{
+		Spec: v1alpha3.InternetGatewaySpec{
+			InternetGatewayParameters: v1alpha3.InternetGatewayParameters{
 				VPCID: "arbitrary vpcId",
 			},
 		},
@@ -353,7 +353,7 @@ func Test_Create(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha2.InternetGateway)
+			mgd := tc.managedObj.(*v1alpha3.InternetGateway)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
@@ -365,7 +365,7 @@ func Test_Create(t *testing.T) {
 func Test_Update(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.InternetGateway{}
+	mockManaged := v1alpha3.InternetGateway{}
 
 	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
 
@@ -375,16 +375,16 @@ func Test_Update(t *testing.T) {
 func Test_Delete(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.InternetGateway{
-		Spec: v1alpha2.InternetGatewaySpec{
-			InternetGatewayParameters: v1alpha2.InternetGatewayParameters{
+	mockManaged := v1alpha3.InternetGateway{
+		Spec: v1alpha3.InternetGatewaySpec{
+			InternetGatewayParameters: v1alpha3.InternetGatewayParameters{
 				VPCID: "arbitrary vpcId",
 			},
 		},
-		Status: v1alpha2.InternetGatewayStatus{
-			InternetGatewayExternalStatus: v1alpha2.InternetGatewayExternalStatus{
+		Status: v1alpha3.InternetGatewayStatus{
+			InternetGatewayExternalStatus: v1alpha3.InternetGatewayExternalStatus{
 				InternetGatewayID: "some arbitrary id",
-				Attachments: []v1alpha2.InternetGatewayAttachment{
+				Attachments: []v1alpha3.InternetGatewayAttachment{
 					{VPCID: "arbitrary vpcId"},
 				},
 			},
@@ -431,7 +431,7 @@ func Test_Delete(t *testing.T) {
 		},
 		{
 			"if status doesn't have the resource ID, it should return an error",
-			&v1alpha2.InternetGateway{},
+			&v1alpha3.InternetGateway{},
 			nil,
 			nil,
 			false,
@@ -472,7 +472,7 @@ func Test_Delete(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha2.InternetGateway)
+			mgd := tc.managedObj.(*v1alpha3.InternetGateway)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)

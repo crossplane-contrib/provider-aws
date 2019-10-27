@@ -33,7 +33,7 @@ import (
 	corev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
-	v1alpha2 "github.com/crossplaneio/stack-aws/apis/network/v1alpha2"
+	v1alpha3 "github.com/crossplaneio/stack-aws/apis/network/v1alpha3"
 	"github.com/crossplaneio/stack-aws/pkg/clients/ec2"
 	"github.com/crossplaneio/stack-aws/pkg/clients/ec2/fake"
 )
@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 func Test_Connect(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := &v1alpha2.SecurityGroup{}
+	mockManaged := &v1alpha3.SecurityGroup{}
 	var clientErr error
 	var configErr error
 
@@ -124,9 +124,9 @@ func Test_Connect(t *testing.T) {
 func Test_Observe(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.SecurityGroup{
-		Status: v1alpha2.SecurityGroupStatus{
-			SecurityGroupExternalStatus: v1alpha2.SecurityGroupExternalStatus{
+	mockManaged := v1alpha3.SecurityGroup{
+		Status: v1alpha3.SecurityGroupStatus{
+			SecurityGroupExternalStatus: v1alpha3.SecurityGroupExternalStatus{
 				SecurityGroupID: "some arbitrary id",
 			},
 		},
@@ -179,7 +179,7 @@ func Test_Observe(t *testing.T) {
 		},
 		{
 			"if item's identifier is not yet set, returns expected",
-			&v1alpha2.SecurityGroup{},
+			&v1alpha3.SecurityGroup{},
 			nil,
 			nil,
 			true,
@@ -218,7 +218,7 @@ func Test_Observe(t *testing.T) {
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		g.Expect(result.ResourceExists).To(gomega.Equal(tc.expectedResourceExist), tc.description)
 		if tc.expectedResourceExist {
-			mgd := tc.managedObj.(*v1alpha2.SecurityGroup)
+			mgd := tc.managedObj.(*v1alpha3.SecurityGroup)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionTrue), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonAvailable), tc.description)
@@ -230,18 +230,18 @@ func Test_Observe(t *testing.T) {
 func Test_Create(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.SecurityGroup{
-		Spec: v1alpha2.SecurityGroupSpec{
-			SecurityGroupParameters: v1alpha2.SecurityGroupParameters{
+	mockManaged := v1alpha3.SecurityGroup{
+		Spec: v1alpha3.SecurityGroupSpec{
+			SecurityGroupParameters: v1alpha3.SecurityGroupParameters{
 				VPCID:       "arbitrary vpcId",
 				Description: "arbitrary description",
 				GroupName:   "arbitrary group name",
-				IngressPermissions: []v1alpha2.IPPermission{
+				IngressPermissions: []v1alpha3.IPPermission{
 					{
 						FromPort:   7766,
 						ToPort:     9988,
 						IPProtocol: "an arbitrary protocol",
-						CIDRBlocks: []v1alpha2.IPRange{
+						CIDRBlocks: []v1alpha3.IPRange{
 							{
 								"0.0.0.0/0",
 								"an arbitrary cidr block",
@@ -249,12 +249,12 @@ func Test_Create(t *testing.T) {
 						},
 					}, {}, {},
 				},
-				EgressPermissions: []v1alpha2.IPPermission{
+				EgressPermissions: []v1alpha3.IPPermission{
 					{
 						FromPort:   1122,
 						ToPort:     3344,
 						IPProtocol: "an arbitrary protocol",
-						CIDRBlocks: []v1alpha2.IPRange{
+						CIDRBlocks: []v1alpha3.IPRange{
 							{
 								"0.0.0.0/0",
 								"an arbitrary cidr block",
@@ -264,8 +264,8 @@ func Test_Create(t *testing.T) {
 				},
 			},
 		},
-		Status: v1alpha2.SecurityGroupStatus{
-			SecurityGroupExternalStatus: v1alpha2.SecurityGroupExternalStatus{
+		Status: v1alpha3.SecurityGroupStatus{
+			SecurityGroupExternalStatus: v1alpha3.SecurityGroupExternalStatus{
 				SecurityGroupID: "some arbitrary id",
 			},
 		},
@@ -369,9 +369,9 @@ func Test_Create(t *testing.T) {
 		},
 		{
 			"if there are no ingress rules fails, it should return expected",
-			(&v1alpha2.SecurityGroup{
-				Spec: v1alpha2.SecurityGroupSpec{
-					SecurityGroupParameters: v1alpha2.SecurityGroupParameters{
+			(&v1alpha3.SecurityGroup{
+				Spec: v1alpha3.SecurityGroupSpec{
+					SecurityGroupParameters: v1alpha3.SecurityGroupParameters{
 						VPCID:             "arbitrary vpcId",
 						Description:       "arbitrary description",
 						GroupName:         "arbitrary group name",
@@ -399,9 +399,9 @@ func Test_Create(t *testing.T) {
 		},
 		{
 			"if there are no egress rules fails, it should return expected",
-			(&v1alpha2.SecurityGroup{
-				Spec: v1alpha2.SecurityGroupSpec{
-					SecurityGroupParameters: v1alpha2.SecurityGroupParameters{
+			(&v1alpha3.SecurityGroup{
+				Spec: v1alpha3.SecurityGroupSpec{
+					SecurityGroupParameters: v1alpha3.SecurityGroupParameters{
 						VPCID:              "arbitrary vpcId",
 						Description:        "arbitrary description",
 						GroupName:          "arbitrary group name",
@@ -428,7 +428,7 @@ func Test_Create(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha2.SecurityGroup)
+			mgd := tc.managedObj.(*v1alpha3.SecurityGroup)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
@@ -443,7 +443,7 @@ func Test_Create(t *testing.T) {
 func Test_Update(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.SecurityGroup{}
+	mockManaged := v1alpha3.SecurityGroup{}
 
 	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
 
@@ -453,9 +453,9 @@ func Test_Update(t *testing.T) {
 func Test_Delete(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha2.SecurityGroup{
-		Status: v1alpha2.SecurityGroupStatus{
-			SecurityGroupExternalStatus: v1alpha2.SecurityGroupExternalStatus{
+	mockManaged := v1alpha3.SecurityGroup{
+		Status: v1alpha3.SecurityGroupStatus{
+			SecurityGroupExternalStatus: v1alpha3.SecurityGroupExternalStatus{
 				SecurityGroupID: "some arbitrary id",
 			},
 		},
@@ -487,7 +487,7 @@ func Test_Delete(t *testing.T) {
 		},
 		{
 			"if status doesn't have the resource ID, it should return an error",
-			&v1alpha2.SecurityGroup{},
+			&v1alpha3.SecurityGroup{},
 			nil,
 			false,
 		},
@@ -516,7 +516,7 @@ func Test_Delete(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha2.SecurityGroup)
+			mgd := tc.managedObj.(*v1alpha3.SecurityGroup)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)
