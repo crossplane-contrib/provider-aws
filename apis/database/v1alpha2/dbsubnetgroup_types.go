@@ -31,7 +31,7 @@ import (
 
 // Error strings
 const (
-	errResourceIsNotDBSubnetGroup = "The managed resource is not a DBSubnetGroup"
+	errResourceIsNotDBSubnetGroup = "the managed resource is not a DBSubnetGroup"
 )
 
 // Tag defines a tag
