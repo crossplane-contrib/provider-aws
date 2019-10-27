@@ -29,7 +29,7 @@ import (
 
 // Error strings
 const (
-	errResourceIsNotSubnet = "The managed resource is not a Subnet"
+	errResourceIsNotSubnet = "the managed resource is not a Subnet"
 )
 
 // VPCIDReferencerForSubnet is an attribute referencer that resolves VPCID from a referenced VPC

@@ -29,7 +29,7 @@ import (
 
 // Error strings
 const (
-	errResourceIsNotRDSInstance = "The managed resource is not an RDSInstance"
+	errResourceIsNotRDSInstance = "the managed resource is not an RDSInstance"
 )
 
 // SQL database engines.

@@ -28,7 +28,7 @@ import (
 
 // Error strings
 const (
-	errResourceIsNotRouteTable = "The managed resource is not a RouteTable"
+	errResourceIsNotRouteTable = "the managed resource is not a RouteTable"
 	errAssociationNotFound     = "Could not find an association in the array with the referred object name"
 	errRouteNotFound           = "Could not find a route in the array with the referred object name"
 )
