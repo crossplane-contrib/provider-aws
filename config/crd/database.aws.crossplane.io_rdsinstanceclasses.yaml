@@ -229,7 +229,7 @@ spec:
                     with this DB instance. If there is no DB subnet group, then it
                     is a non-VPC DB instance.
                   type: string
-                dbsubnetGroupNameRef:
+                dbSubnetGroupNameRef:
                   description: DBSubnetGroupNameRef is a reference to a DBSubnetGroup
                     used to set DBSubnetGroupName.
                   properties:
