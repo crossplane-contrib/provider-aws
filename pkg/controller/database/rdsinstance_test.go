@@ -440,7 +440,9 @@ func TestCreate(t *testing.T) {
 				cr: instance(withMasterUsername(&masterUsername)),
 			},
 			want: want{
-				cr: instance(withMasterUsername(&masterUsername)),
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withConditions(runtimev1alpha1.Creating())),
 				result: resource.ExternalCreation{
 					ConnectionDetails: resource.ConnectionDetails{
 						runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
@@ -454,7 +456,9 @@ func TestCreate(t *testing.T) {
 				cr: instance(withDBInstanceStatus(v1beta1.RDSInstanceStateCreating)),
 			},
 			want: want{
-				cr: instance(withDBInstanceStatus(v1beta1.RDSInstanceStateCreating)),
+				cr: instance(
+					withDBInstanceStatus(v1beta1.RDSInstanceStateCreating),
+					withConditions(runtimev1alpha1.Creating())),
 			},
 		},
 		"SuccessfulNoUsername": {
@@ -469,7 +473,9 @@ func TestCreate(t *testing.T) {
 				cr: instance(withMasterUsername(nil)),
 			},
 			want: want{
-				cr: instance(withMasterUsername(nil)),
+				cr: instance(
+					withMasterUsername(nil),
+					withConditions(runtimev1alpha1.Creating())),
 				result: resource.ExternalCreation{
 					ConnectionDetails: resource.ConnectionDetails{
 						runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
@@ -489,7 +495,7 @@ func TestCreate(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr:  instance(),
+				cr:  instance(withConditions(runtimev1alpha1.Creating())),
 				err: errors.Wrap(errBoom, errCreateFailed),
 			},
 		},
@@ -651,7 +657,7 @@ func TestDelete(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr: instance(),
+				cr: instance(withConditions(runtimev1alpha1.Deleting())),
 			},
 		},
 		"AlreadyDeleting": {
@@ -659,7 +665,8 @@ func TestDelete(t *testing.T) {
 				cr: instance(withDBInstanceStatus(v1beta1.RDSInstanceStateDeleting)),
 			},
 			want: want{
-				cr: instance(withDBInstanceStatus(v1beta1.RDSInstanceStateDeleting)),
+				cr: instance(withDBInstanceStatus(v1beta1.RDSInstanceStateDeleting),
+					withConditions(runtimev1alpha1.Deleting())),
 			},
 		},
 		"AlreadyDeleted": {
@@ -674,7 +681,7 @@ func TestDelete(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr: instance(),
+				cr: instance(withConditions(runtimev1alpha1.Deleting())),
 			},
 		},
 		"Failed": {
@@ -701,7 +708,7 @@ func TestDelete(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr:  instance(),
+				cr:  instance(withConditions(runtimev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDeleteFailed),
 			},
 		},

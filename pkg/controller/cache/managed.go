@@ -199,6 +199,11 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.Ex
 	if !ok {
 		return resource.ExternalUpdate{}, errors.New(errNotReplicationGroup)
 	}
+	// NOTE(muvaf): AWS API rejects modification requests if the state is not
+	// `available`
+	if cr.Status.AtProvider.Status != v1beta1.StatusAvailable {
+		return resource.ExternalUpdate{}, nil
+	}
 	mr := e.client.ModifyReplicationGroupRequest(elasticache.NewModifyReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
 	mr.SetContext(ctx)
 	_, err := mr.Send()
@@ -211,6 +216,9 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errNotReplicationGroup)
 	}
 	mg.SetConditions(runtimev1alpha1.Deleting())
+	if cr.Status.AtProvider.Status == v1beta1.StatusDeleting {
+		return nil
+	}
 	req := e.client.DeleteReplicationGroupRequest(elasticache.NewDeleteReplicationGroupInput(meta.GetExternalName(cr)))
 	req.SetContext(ctx)
 	_, err := req.Send()
