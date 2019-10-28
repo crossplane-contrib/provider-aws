@@ -28,6 +28,8 @@ github.com/crossplaneio/crossplane-runtime v0.0.0-20191023215652-0f37bea5496e h1
 github.com/crossplaneio/crossplane-runtime v0.0.0-20191023215652-0f37bea5496e/go.mod h1:FMlJ6k7pUZdxQrjh0B33D2b79iBac+xcMEHTWiruXao=
 github.com/crossplaneio/crossplane-runtime v0.0.0-20191026165313-6916b9475f81 h1:jSG2tq0tFWCzjTKEz+FOGWog9PRTx6yPq3UQutGbrKg=
 github.com/crossplaneio/crossplane-runtime v0.0.0-20191026165313-6916b9475f81/go.mod h1:FMlJ6k7pUZdxQrjh0B33D2b79iBac+xcMEHTWiruXao=
+github.com/crossplaneio/crossplane-runtime v0.1.0 h1:IoPxURwynfUaqOZ/oQ8aLTQq89ueOckm73nbuVZthow=
+github.com/crossplaneio/crossplane-runtime v0.1.0/go.mod h1:FMlJ6k7pUZdxQrjh0B33D2b79iBac+xcMEHTWiruXao=
 github.com/crossplaneio/crossplane-tools v0.0.0-20191023215726-61fa1eff2a2e h1:8Z29akSDYcbywc/brATpfeE425jBTMZdZQuD9eV6cCk=
 github.com/crossplaneio/crossplane-tools v0.0.0-20191023215726-61fa1eff2a2e/go.mod h1:fzQeWDvZvzaC4N8vPjTubQocGnwzQ4cuZM6949+T43U=
 github.com/dave/jennifer v1.3.0/go.mod h1:fIb+770HOpJ2fmN9EPPKOqm1vMGhB+TwXKMZhrIygKg=
