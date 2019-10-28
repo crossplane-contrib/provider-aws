@@ -7,13 +7,16 @@ metadata:
   name: replicationgroups.cache.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .status.state
+  - JSONPath: .status.atProvider.status
+    name: STATE
+    type: string
+  - JSONPath: .status.bindingPhase
     name: STATUS
     type: string
   - JSONPath: .spec.classRef.name
     name: CLASS
     type: string
-  - JSONPath: .spec.engineVersion
+  - JSONPath: .spec.forProvider.engineVersion
     name: VERSION
     type: string
   - JSONPath: .metadata.creationTimestamp
