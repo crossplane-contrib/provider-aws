@@ -165,6 +165,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.Ex
 	if !ok {
 		return resource.ExternalCreation{}, errors.New(errNotRDSInstance)
 	}
+	cr.SetConditions(runtimev1alpha1.Creating())
 	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateCreating {
 		return resource.ExternalCreation{}, nil
 	}
@@ -221,6 +222,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if !ok {
 		return errors.New(errNotRDSInstance)
 	}
+	cr.SetConditions(runtimev1alpha1.Deleting())
 	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateDeleting {
 		return nil
 	}
