@@ -21,7 +21,7 @@ readme: |
 # Version of project (optional)
 # If omitted the version will be filled with the docker tag
 # If set it must match the docker tag
-version: 0.0.1
+version: v0.2.0
 
 # Maintainer names and emails.
 maintainers:
