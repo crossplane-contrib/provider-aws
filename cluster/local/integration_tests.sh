@@ -167,7 +167,7 @@ BUILD_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-${HOSTARCH}"
 
 version_tag="$(cat ${projectdir}/_output/version)"
 # tag as master so that config/stack/install.yaml can be used
-STACK_IMAGE="${DOCKER_REGISTRY}/${PROJECT_NAME}:master"
+STACK_IMAGE="${DOCKER_REGISTRY}/${PROJECT_NAME}:v0.2.0"
 K8S_CLUSTER="${K8S_CLUSTER:-${BUILD_REGISTRY}-INTTESTS}"
 
 CROSSPLANE_NAMESPACE="crossplane-system"
