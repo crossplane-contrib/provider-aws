@@ -591,11 +591,6 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.MasterUserPassword != nil {
-		in, out := &in.MasterUserPassword, &out.MasterUserPassword
-		*out = new(string)
-		**out = **in
-	}
 	if in.MasterUsername != nil {
 		in, out := &in.MasterUsername, &out.MasterUsername
 		*out = new(string)
