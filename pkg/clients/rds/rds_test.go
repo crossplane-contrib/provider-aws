@@ -18,8 +18,6 @@ var (
 )
 
 func TestCreatePatch(t *testing.T) {
-	dbSubnetGroupName := "example-subnet"
-
 	type args struct {
 		db *rds.DBInstance
 		p  *v1beta1.RDSInstanceParameters
@@ -33,7 +31,24 @@ func TestCreatePatch(t *testing.T) {
 		args
 		want
 	}{
-		"SomeFields": {
+		"SameFields": {
+			args: args{
+				db: &rds.DBInstance{
+					AllocatedStorage: aws.Int64(20),
+					CharacterSetName: &characterSetName,
+					DBName:           &dbName,
+				},
+				p: &v1beta1.RDSInstanceParameters{
+					AllocatedStorage: aws.IntAddress(aws.Int64(20)),
+					CharacterSetName: &characterSetName,
+					DBName:           &dbName,
+				},
+			},
+			want: want{
+				patch: &v1beta1.RDSInstanceParameters{},
+			},
+		},
+		"DifferentFields": {
 			args: args{
 				db: &rds.DBInstance{
 					AllocatedStorage: aws.Int64(20),
@@ -52,13 +67,67 @@ func TestCreatePatch(t *testing.T) {
 				},
 			},
 		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			result, _ := CreatePatch(tc.args.db, tc.args.p)
+			if diff := cmp.Diff(tc.want.patch, result); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestIsUpToDate(t *testing.T) {
+	dbSubnetGroupName := "example-subnet"
+
+	type args struct {
+		db rds.DBInstance
+		p  v1beta1.RDSInstanceParameters
+	}
+
+	cases := map[string]struct {
+		args args
+		want bool
+	}{
+		"SameFields": {
+			args: args{
+				db: rds.DBInstance{
+					AllocatedStorage: aws.Int64(20),
+					CharacterSetName: &characterSetName,
+					DBName:           &dbName,
+				},
+				p: v1beta1.RDSInstanceParameters{
+					AllocatedStorage: aws.IntAddress(aws.Int64(20)),
+					CharacterSetName: &characterSetName,
+					DBName:           &dbName,
+				},
+			},
+			want: true,
+		},
+		"DifferentFields": {
+			args: args{
+				db: rds.DBInstance{
+					AllocatedStorage: aws.Int64(20),
+					CharacterSetName: &characterSetName,
+					DBName:           &dbName,
+				},
+				p: v1beta1.RDSInstanceParameters{
+					AllocatedStorage: aws.IntAddress(aws.Int64(30)),
+					CharacterSetName: &characterSetName,
+					DBName:           &dbName,
+				},
+			},
+			want: false,
+		},
 		"IgnoresRefs": {
 			args: args{
-				db: &rds.DBInstance{
+				db: rds.DBInstance{
 					DBName:        &dbName,
 					DBSubnetGroup: &rds.DBSubnetGroup{DBSubnetGroupName: &dbSubnetGroupName},
 				},
-				p: &v1beta1.RDSInstanceParameters{
+				p: v1beta1.RDSInstanceParameters{
 					DBName:            &dbName,
 					DBSubnetGroupName: &dbSubnetGroupName,
 					DBSubnetGroupNameRef: &v1beta1.DBSubnetGroupNameReferencerForRDSInstance{
@@ -68,16 +137,14 @@ func TestCreatePatch(t *testing.T) {
 					},
 				},
 			},
-			want: want{
-				patch: &v1beta1.RDSInstanceParameters{},
-			},
+			want: true,
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			result, _ := CreatePatch(tc.args.db, tc.args.p)
-			if diff := cmp.Diff(tc.want.patch, result); diff != "" {
+			got, _ := IsUpToDate(tc.args.p, tc.args.db)
+			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
