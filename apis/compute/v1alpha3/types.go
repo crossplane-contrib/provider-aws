@@ -99,6 +99,12 @@ func (v *SubnetIDReferencerForEKSCluster) Assign(res resource.CanReference, valu
 		return errors.New(errResourceIsNotEKSCluster)
 	}
 
+	for _, id := range eks.Spec.SubnetIDs {
+		if id == value {
+			return nil
+		}
+	}
+
 	eks.Spec.SubnetIDs = append(eks.Spec.SubnetIDs, value)
 	return nil
 }
@@ -113,6 +119,12 @@ func (v *SecurityGroupIDReferencerForEKSCluster) Assign(res resource.CanReferenc
 	eks, ok := res.(*EKSCluster)
 	if !ok {
 		return errors.New(errResourceIsNotEKSCluster)
+	}
+
+	for _, id := range eks.Spec.SecurityGroupIDs {
+		if id == value {
+			return nil
+		}
 	}
 
 	eks.Spec.SecurityGroupIDs = append(eks.Spec.SecurityGroupIDs, value)

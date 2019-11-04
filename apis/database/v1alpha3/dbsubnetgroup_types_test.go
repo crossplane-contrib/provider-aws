@@ -28,29 +28,76 @@ import (
 
 var _ resource.AttributeReferencer = (*SubnetIDReferencerForDBSubnetGroup)(nil)
 
-func TestSubnetIDReferencerForDBSubnetGroup_AssignInvalidType_ReturnsErr(t *testing.T) {
+func TestSubnetIDReferencerForDBSubnetGroup(t *testing.T) {
+	value := "cool"
 
-	r := &SubnetIDReferencerForDBSubnetGroup{}
-	expectedErr := errors.New(errResourceIsNotDBSubnetGroup)
-
-	err := r.Assign(nil, "mockValue")
-	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
-		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
+	type args struct {
+		res   resource.CanReference
+		value string
 	}
-}
-
-func TestSubnetIDReferencerForDBSubnetGroup_AssignValidType_ReturnsExpected(t *testing.T) {
-
-	r := &SubnetIDReferencerForDBSubnetGroup{}
-	res := &DBSubnetGroup{}
-	var expectedErr error
-
-	err := r.Assign(res, "mockValue")
-	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
-		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
+	type want struct {
+		res resource.CanReference
+		err error
 	}
 
-	if diff := cmp.Diff(res.Spec.SubnetIDs, []string{"mockValue"}); diff != "" {
-		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
+	cases := map[string]struct {
+		reason string
+		args   args
+		want   want
+	}{
+		"AssignWrongType": {
+			reason: "Assign should return an error when the supplied CanReference does not contain an *DBSubnetGroup.",
+			args: args{
+				res: nil,
+			},
+			want: want{
+				err: errors.New(errResourceIsNotDBSubnetGroup),
+			},
+		},
+		"AssignSuccessful": {
+			reason: "Assign should append to Spec.SubnetIDs.",
+			args: args{
+				res:   &DBSubnetGroup{},
+				value: value,
+			},
+			want: want{
+				res: &DBSubnetGroup{
+					Spec: DBSubnetGroupSpec{
+						DBSubnetGroupParameters: DBSubnetGroupParameters{SubnetIDs: []string{value}},
+					},
+				},
+			},
+		},
+		"AssignNoOp": {
+			reason: "Assign should not append existing values to Spec.SubnetIDs.",
+			args: args{
+				res: &DBSubnetGroup{
+					Spec: DBSubnetGroupSpec{
+						DBSubnetGroupParameters: DBSubnetGroupParameters{SubnetIDs: []string{value}},
+					},
+				},
+				value: value,
+			},
+			want: want{
+				res: &DBSubnetGroup{
+					Spec: DBSubnetGroupSpec{
+						DBSubnetGroupParameters: DBSubnetGroupParameters{SubnetIDs: []string{value}},
+					},
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			r := &SubnetIDReferencerForDBSubnetGroup{}
+			err := r.Assign(tc.args.res, tc.args.value)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("\nReason: %s\nAssign(...): -want error, +got error:\n%s", tc.reason, diff)
+			}
+			if diff := cmp.Diff(tc.want.res, tc.args.res, test.EquateErrors()); diff != "" {
+				t.Errorf("\nReason: %s\nAssign(...): -want, +got:\n%s", tc.reason, diff)
+			}
+		})
 	}
 }
