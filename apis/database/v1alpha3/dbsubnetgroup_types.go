@@ -63,6 +63,12 @@ func (v *SubnetIDReferencerForDBSubnetGroup) Assign(res resource.CanReference, v
 		return errors.New(errResourceIsNotDBSubnetGroup)
 	}
 
+	for _, id := range sg.Spec.SubnetIDs {
+		if id == value {
+			return nil
+		}
+	}
+
 	sg.Spec.SubnetIDs = append(sg.Spec.SubnetIDs, value)
 	return nil
 }

@@ -109,6 +109,7 @@ func (c *BucketClaimController) SetupWithManager(mgr ctrl.Manager) error {
 		resource.ClaimKind(storagev1alpha1.BucketGroupVersionKind),
 		resource.ClassKind(v1alpha3.S3BucketClassGroupVersionKind),
 		resource.ManagedKind(v1alpha3.S3BucketGroupVersionKind),
+		resource.WithBinder(resource.NewAPIBinder(mgr.GetClient(), mgr.GetScheme())),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigureS3Bucket),
 			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
