@@ -52,6 +52,12 @@ func (v *VPCSecurityGroupIDReferencerForRDSInstance) Assign(res resource.CanRefe
 		return errors.New(errResourceIsNotRDSInstance)
 	}
 
+	for _, id := range rds.Spec.ForProvider.VPCSecurityGroupIDs {
+		if id == value {
+			return nil
+		}
+	}
+
 	rds.Spec.ForProvider.VPCSecurityGroupIDs = append(rds.Spec.ForProvider.VPCSecurityGroupIDs, value)
 	return nil
 }
