@@ -103,8 +103,6 @@ func (c *PostgreSQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) e
 		resource.ClaimKind(databasev1alpha1.PostgreSQLInstanceGroupVersionKind),
 		resource.ClassKind(v1beta1.RDSInstanceClassGroupVersionKind),
 		resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind),
-		resource.WithManagedBinder(resource.NewAPIManagedStatusBinder(mgr.GetClient(), mgr.GetScheme())),
-		resource.WithManagedFinalizer(resource.NewAPIManagedStatusUnbinder(mgr.GetClient())),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigurePostgreRDSInstance),
 			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
@@ -237,8 +235,6 @@ func (c *MySQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error 
 		resource.ClaimKind(databasev1alpha1.MySQLInstanceGroupVersionKind),
 		resource.ClassKind(v1beta1.RDSInstanceClassGroupVersionKind),
 		resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind),
-		resource.WithManagedBinder(resource.NewAPIManagedStatusBinder(mgr.GetClient(), mgr.GetScheme())),
-		resource.WithManagedFinalizer(resource.NewAPIManagedStatusUnbinder(mgr.GetClient())),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigureMyRDSInstance),
 			resource.NewObjectMetaConfigurator(mgr.GetScheme()),

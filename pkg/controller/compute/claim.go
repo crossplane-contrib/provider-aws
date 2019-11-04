@@ -101,6 +101,7 @@ func (c *EKSClusterClaimController) SetupWithManager(mgr ctrl.Manager) error {
 		resource.ClaimKind(computev1alpha1.KubernetesClusterGroupVersionKind),
 		resource.ClassKind(v1alpha3.EKSClusterClassGroupVersionKind),
 		resource.ManagedKind(v1alpha3.EKSClusterGroupVersionKind),
+		resource.WithBinder(resource.NewAPIBinder(mgr.GetClient(), mgr.GetScheme())),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigureEKSCluster),
 			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
