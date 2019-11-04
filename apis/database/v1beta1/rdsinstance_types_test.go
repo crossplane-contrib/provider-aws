@@ -31,30 +31,77 @@ import (
 var _ resource.AttributeReferencer = (*VPCSecurityGroupIDReferencerForRDSInstance)(nil)
 var _ resource.AttributeReferencer = (*DBSubnetGroupNameReferencerForRDSInstance)(nil)
 
-func TestSecurityGroupIDReferencerForRDSInstance_AssignInvalidType_ReturnsErr(t *testing.T) {
+func TestVPCSecurityGroupIDReferencerForRDSInstance(t *testing.T) {
+	value := "cool"
 
-	r := &VPCSecurityGroupIDReferencerForRDSInstance{}
-	expectedErr := errors.New(errResourceIsNotRDSInstance)
-
-	err := r.Assign(&struct{ resource.CanReference }{}, "mockValue")
-	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
-		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
+	type args struct {
+		res   resource.CanReference
+		value string
 	}
-}
-
-func TestVPCSecurityGroupIDReferencerForRDSInstance_AssignValidType_ReturnsExpected(t *testing.T) {
-
-	r := &VPCSecurityGroupIDReferencerForRDSInstance{}
-	res := &RDSInstance{}
-	var expectedErr error
-
-	err := r.Assign(res, "mockValue")
-	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
-		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
+	type want struct {
+		res resource.CanReference
+		err error
 	}
 
-	if diff := cmp.Diff(res.Spec.ForProvider.VPCSecurityGroupIDs, []string{"mockValue"}); diff != "" {
-		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
+	cases := map[string]struct {
+		reason string
+		args   args
+		want   want
+	}{
+		"AssignWrongType": {
+			reason: "Assign should return an error when the supplied CanReference does not contain an *RDSInstance.",
+			args: args{
+				res: nil,
+			},
+			want: want{
+				err: errors.New(errResourceIsNotRDSInstance),
+			},
+		},
+		"AssignSuccessful": {
+			reason: "Assign should append to Spec.VPCSecurityGroupIDs.",
+			args: args{
+				res:   &RDSInstance{},
+				value: value,
+			},
+			want: want{
+				res: &RDSInstance{
+					Spec: RDSInstanceSpec{
+						ForProvider: RDSInstanceParameters{VPCSecurityGroupIDs: []string{value}},
+					},
+				},
+			},
+		},
+		"AssignNoOp": {
+			reason: "Assign should not append existing values to Spec.VPCSecurityGroupIDs.",
+			args: args{
+				res: &RDSInstance{
+					Spec: RDSInstanceSpec{
+						ForProvider: RDSInstanceParameters{VPCSecurityGroupIDs: []string{value}},
+					},
+				},
+				value: value,
+			},
+			want: want{
+				res: &RDSInstance{
+					Spec: RDSInstanceSpec{
+						ForProvider: RDSInstanceParameters{VPCSecurityGroupIDs: []string{value}},
+					},
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			r := &VPCSecurityGroupIDReferencerForRDSInstance{}
+			err := r.Assign(tc.args.res, tc.args.value)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("\nReason: %s\nAssign(...): -want error, +got error:\n%s", tc.reason, diff)
+			}
+			if diff := cmp.Diff(tc.want.res, tc.args.res, test.EquateErrors()); diff != "" {
+				t.Errorf("\nReason: %s\nAssign(...): -want, +got:\n%s", tc.reason, diff)
+			}
+		})
 	}
 }
 

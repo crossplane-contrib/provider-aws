@@ -86,57 +86,151 @@ func TestIAMRoleARNReferencerForEKSCluster_AssignValidType_ReturnsExpected(t *te
 	}
 }
 
-func TestSubnetIDReferencerForEKSCluster_AssignInvalidType_ReturnsErr(t *testing.T) {
+func TestSubnetIDReferencerForEKSCluster(t *testing.T) {
+	value := "cool"
 
-	r := &SubnetIDReferencerForEKSCluster{}
-	expectedErr := errors.New(errResourceIsNotEKSCluster)
+	type args struct {
+		res   resource.CanReference
+		value string
+	}
+	type want struct {
+		res resource.CanReference
+		err error
+	}
 
-	err := r.Assign(&struct{ resource.CanReference }{}, "mockValue")
-	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
-		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
+	cases := map[string]struct {
+		reason string
+		args   args
+		want   want
+	}{
+		"AssignWrongType": {
+			reason: "Assign should return an error when the supplied CanReference does not contain an *EKSCluster.",
+			args: args{
+				res: nil,
+			},
+			want: want{
+				err: errors.New(errResourceIsNotEKSCluster),
+			},
+		},
+		"AssignSuccessful": {
+			reason: "Assign should append to Spec.SubnetIDs.",
+			args: args{
+				res:   &EKSCluster{},
+				value: value,
+			},
+			want: want{
+				res: &EKSCluster{
+					Spec: EKSClusterSpec{
+						EKSClusterParameters: EKSClusterParameters{SubnetIDs: []string{value}},
+					},
+				},
+			},
+		},
+		"AssignNoOp": {
+			reason: "Assign should not append existing values to Spec.SubnetIDs.",
+			args: args{
+				res: &EKSCluster{
+					Spec: EKSClusterSpec{
+						EKSClusterParameters: EKSClusterParameters{SubnetIDs: []string{value}},
+					},
+				},
+				value: value,
+			},
+			want: want{
+				res: &EKSCluster{
+					Spec: EKSClusterSpec{
+						EKSClusterParameters: EKSClusterParameters{SubnetIDs: []string{value}},
+					},
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			r := &SubnetIDReferencerForEKSCluster{}
+			err := r.Assign(tc.args.res, tc.args.value)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("\nReason: %s\nAssign(...): -want error, +got error:\n%s", tc.reason, diff)
+			}
+			if diff := cmp.Diff(tc.want.res, tc.args.res, test.EquateErrors()); diff != "" {
+				t.Errorf("\nReason: %s\nAssign(...): -want, +got:\n%s", tc.reason, diff)
+			}
+		})
 	}
 }
 
-func TestSubnetIDReferencerForEKSCluster_AssignValidType_ReturnsExpected(t *testing.T) {
+func TestSecurityGroupIDReferencerForEKSCluster(t *testing.T) {
+	value := "cool"
 
-	r := &SubnetIDReferencerForEKSCluster{}
-	res := &EKSCluster{}
-	var expectedErr error
-
-	err := r.Assign(res, "mockValue")
-	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
-		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
+	type args struct {
+		res   resource.CanReference
+		value string
+	}
+	type want struct {
+		res resource.CanReference
+		err error
 	}
 
-	if diff := cmp.Diff(res.Spec.SubnetIDs, []string{"mockValue"}); diff != "" {
-		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
+	cases := map[string]struct {
+		reason string
+		args   args
+		want   want
+	}{
+		"AssignWrongType": {
+			reason: "Assign should return an error when the supplied CanReference does not contain an *EKSCluster.",
+			args: args{
+				res: nil,
+			},
+			want: want{
+				err: errors.New(errResourceIsNotEKSCluster),
+			},
+		},
+		"AssignSuccessful": {
+			reason: "Assign should append to Spec.SecurityGroupIDs.",
+			args: args{
+				res:   &EKSCluster{},
+				value: value,
+			},
+			want: want{
+				res: &EKSCluster{
+					Spec: EKSClusterSpec{
+						EKSClusterParameters: EKSClusterParameters{SecurityGroupIDs: []string{value}},
+					},
+				},
+			},
+		},
+		"AssignNoOp": {
+			reason: "Assign should not append existing values to Spec.SecurityGroupIDs.",
+			args: args{
+				res: &EKSCluster{
+					Spec: EKSClusterSpec{
+						EKSClusterParameters: EKSClusterParameters{SecurityGroupIDs: []string{value}},
+					},
+				},
+				value: value,
+			},
+			want: want{
+				res: &EKSCluster{
+					Spec: EKSClusterSpec{
+						EKSClusterParameters: EKSClusterParameters{SecurityGroupIDs: []string{value}},
+					},
+				},
+			},
+		},
 	}
-}
 
-func TestSecurityGroupIDReferencerForEKSCluster_AssignInvalidType_ReturnsErr(t *testing.T) {
-
-	r := &SecurityGroupIDReferencerForEKSCluster{}
-	expectedErr := errors.New(errResourceIsNotEKSCluster)
-
-	err := r.Assign(&struct{ resource.CanReference }{}, "mockValue")
-	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
-		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
-	}
-}
-
-func TestSecurityGroupIDReferencerForEKSCluster_AssignValidType_ReturnsExpected(t *testing.T) {
-
-	r := &SecurityGroupIDReferencerForEKSCluster{}
-	res := &EKSCluster{}
-	var expectedErr error
-
-	err := r.Assign(res, "mockValue")
-	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
-		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
-	}
-
-	if diff := cmp.Diff(res.Spec.SecurityGroupIDs, []string{"mockValue"}); diff != "" {
-		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			r := &SecurityGroupIDReferencerForEKSCluster{}
+			err := r.Assign(tc.args.res, tc.args.value)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("\nReason: %s\nAssign(...): -want error, +got error:\n%s", tc.reason, diff)
+			}
+			if diff := cmp.Diff(tc.want.res, tc.args.res, test.EquateErrors()); diff != "" {
+				t.Errorf("\nReason: %s\nAssign(...): -want, +got:\n%s", tc.reason, diff)
+			}
+		})
 	}
 }
 
