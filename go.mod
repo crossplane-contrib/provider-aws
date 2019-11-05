@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/aws/aws-sdk-go-v2 v0.5.0
-	github.com/crossplaneio/crossplane v0.3.1-0.20191026093543-dfa760ae9cd2
+	github.com/crossplaneio/crossplane v0.4.0
 	github.com/crossplaneio/crossplane-runtime v0.2.1
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/ghodss/yaml v1.0.0
