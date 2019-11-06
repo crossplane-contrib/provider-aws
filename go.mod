@@ -3,10 +3,10 @@ module github.com/crossplaneio/stack-aws
 go 1.12
 
 require (
-	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/aws/aws-sdk-go-v2 v0.5.0
 	github.com/crossplaneio/crossplane v0.4.0
 	github.com/crossplaneio/crossplane-runtime v0.2.1
+	github.com/crossplaneio/crossplane-tools v0.0.0-20191023215726-61fa1eff2a2e
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-ini/ini v1.46.0
@@ -21,4 +21,5 @@ require (
 	k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	sigs.k8s.io/controller-runtime v0.2.0
+	sigs.k8s.io/controller-tools v0.2.1
 )
