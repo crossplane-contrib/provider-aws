@@ -18,12 +18,13 @@ package rds
 
 import (
 	"encoding/json"
-	"reflect"
 	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
@@ -140,16 +141,7 @@ func CreatePatch(in *rds.DBInstance, target *v1beta1.RDSInstanceParameters) (*v1
 	currentParams := &v1beta1.RDSInstanceParameters{}
 	LateInitialize(currentParams, in)
 
-	// TODO(negz): We need a better strategy here, but for now we just remove
-	// anything we know to be a reference to another resource before generating
-	// our diff.
-	withoutRefs := target.DeepCopy()
-	withoutRefs.DBSubnetGroupNameRef = nil
-	withoutRefs.VPCSecurityGroupIDRefs = nil
-	withoutRefs.MonitoringRoleARNRef = nil
-	withoutRefs.DomainIAMRoleNameRef = nil
-
-	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, withoutRefs)
+	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
 	}
@@ -449,7 +441,7 @@ func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error
 	if err != nil {
 		return false, err
 	}
-	return reflect.DeepEqual(&v1beta1.RDSInstanceParameters{}, patch), nil
+	return cmp.Equal(&v1beta1.RDSInstanceParameters{}, patch, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{})), nil
 }
 
 // GetConnectionDetails extracts resource.ConnectionDetails out of v1alpha3.RDSInstance.
