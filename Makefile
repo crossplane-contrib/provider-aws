@@ -111,6 +111,7 @@ $(STACK_PACKAGE_REGISTRY):
 
 build.artifacts: build-stack-package
 
+CRD_DIR=config/crd
 build-stack-package: $(STACK_PACKAGE_REGISTRY)
 # Copy CRDs over
 #
