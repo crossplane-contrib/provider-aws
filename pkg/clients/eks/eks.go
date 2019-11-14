@@ -27,11 +27,11 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/aws/aws-sdk-go-v2/service/eks/eksiface"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
-
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
 	awscomputev1alpha3 "github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
 	cfc "github.com/crossplaneio/stack-aws/pkg/clients/cloudformation"
@@ -319,6 +319,35 @@ func getImageWithID(imgName string, images []*ec2.Image) (*ec2.Image, error) {
 	}
 
 	return nil, errors.New("The specified AMI image name is either invalid or is not available for this cluster version and region")
+}
+
+// GenerateClientConfig is used to generate a client config that can be used by
+// any kubernetes client.
+func GenerateClientConfig(cluster *Cluster, token string) (clientcmdapi.Config, error) {
+	caData, err := base64.StdEncoding.DecodeString(cluster.CA)
+	if err != nil {
+		return clientcmdapi.Config{}, err
+	}
+	return clientcmdapi.Config{
+		Clusters: map[string]*clientcmdapi.Cluster{
+			cluster.Name: {
+				Server:                   cluster.Endpoint,
+				CertificateAuthorityData: caData,
+			},
+		},
+		Contexts: map[string]*clientcmdapi.Context{
+			cluster.Name: {
+				Cluster:  cluster.Name,
+				AuthInfo: cluster.Name,
+			},
+		},
+		AuthInfos: map[string]*clientcmdapi.AuthInfo{
+			cluster.Name: {
+				Token: token,
+			},
+		},
+		CurrentContext: cluster.Name,
+	}, nil
 }
 
 // IsErrorAlreadyExists helper function

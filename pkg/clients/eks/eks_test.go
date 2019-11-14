@@ -17,13 +17,18 @@ limitations under the License.
 package eks
 
 import (
+	"encoding/base64"
 	"net/http"
 	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/google/go-cmp/cmp"
 	"github.com/onsi/gomega"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+
+	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 )
 
 // MockAMIClient mocks AMI client which is used to get information about AMI images
@@ -189,4 +194,70 @@ func Test_GetAMIImage_InvalidVersion_ReturnsError(t *testing.T) {
 
 	g.Expect(res).Should(gomega.BeNil())
 	g.Expect(err).ShouldNot(gomega.BeNil())
+}
+
+func TestGenerateClientConfig(t *testing.T) {
+	type args struct {
+		cluster *Cluster
+		token   string
+	}
+	type want struct {
+		cfg clientcmdapi.Config
+		err error
+	}
+	clusterCA := []byte("test-ca")
+	token := "test-token"
+	endpoint := "test-ep"
+	name := "my-eks-cluster"
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Full": {
+			args: args{
+				cluster: &Cluster{
+					Name:     name,
+					Endpoint: endpoint,
+					CA:       base64.StdEncoding.EncodeToString(clusterCA),
+				},
+				token: token,
+			},
+			want: want{
+				cfg: clientcmdapi.Config{
+					Clusters: map[string]*clientcmdapi.Cluster{
+						name: {
+							Server:                   endpoint,
+							CertificateAuthorityData: clusterCA,
+						},
+					},
+					Contexts: map[string]*clientcmdapi.Context{
+						name: {
+							Cluster:  name,
+							AuthInfo: name,
+						},
+					},
+					AuthInfos: map[string]*clientcmdapi.AuthInfo{
+						name: {
+							Token: token,
+						},
+					},
+					CurrentContext: name,
+				},
+				err: nil,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got, err := GenerateClientConfig(tc.cluster, tc.token)
+			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("GenerateClientConfig(...): -want error, +got error:\n%s", diff)
+				return
+			}
+			if diff := cmp.Diff(tc.cfg, got); diff != "" {
+				t.Errorf("GenerateClientConfig(...): -want error, +got error:\n%s", diff)
+			}
+		})
+	}
 }
