@@ -31,6 +31,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/clientcmd"
 	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -354,19 +355,22 @@ func TestSync(t *testing.T) {
 
 func TestSecret(t *testing.T) {
 	clusterCA := []byte("test-ca")
+	token := "test-token"
 	cluster := &eks.Cluster{
 		Status:   ClusterStatusActive,
 		Endpoint: "test-ep",
 		CA:       base64.StdEncoding.EncodeToString(clusterCA),
 	}
-
+	config, _ := eks.GenerateClientConfig(cluster, token)
+	rawConfig, _ := clientcmd.Write(config)
 	r := &Reconciler{
 		publisher: resource.ManagedConnectionPublisherFns{
 			PublishConnectionFn: func(_ context.Context, _ resource.Managed, got resource.ConnectionDetails) error {
 				want := resource.ConnectionDetails{
-					runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(cluster.Endpoint),
-					runtimev1alpha1.ResourceCredentialsSecretCAKey:       clusterCA,
-					runtimev1alpha1.ResourceCredentialsTokenKey:          []byte("test-token"),
+					runtimev1alpha1.ResourceCredentialsSecretEndpointKey:   []byte(cluster.Endpoint),
+					runtimev1alpha1.ResourceCredentialsSecretCAKey:         clusterCA,
+					runtimev1alpha1.ResourceCredentialsSecretTokenKey:      []byte(token),
+					runtimev1alpha1.ResourceCredentialsSecretKubeconfigKey: rawConfig,
 				}
 
 				if diff := cmp.Diff(want, got); diff != "" {

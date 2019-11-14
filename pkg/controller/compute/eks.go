@@ -31,6 +31,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -75,16 +76,16 @@ const (
 // CloudFormation States that are non-transitory
 var (
 	completedCFState = map[cf.StackStatus]bool{
-		cf.StackStatusCreateComplete: true,
-		cf.StackStatusUpdateComplete: true,
+		cf.StackStatusCreateComplete:   true,
+		cf.StackStatusUpdateComplete:   true,
+		cf.StackStatusRollbackComplete: true,
 	}
 
 	failedCFState = map[cf.StackStatus]bool{
-		cf.StackStatusCreateFailed:     true,
-		cf.StackStatusRollbackComplete: true,
-		cf.StackStatusRollbackFailed:   true,
-		cf.StackStatusDeleteComplete:   true,
-		cf.StackStatusDeleteFailed:     true,
+		cf.StackStatusCreateFailed:   true,
+		cf.StackStatusRollbackFailed: true,
+		cf.StackStatusDeleteComplete: true,
+		cf.StackStatusDeleteFailed:   true,
 	}
 )
 
@@ -329,7 +330,7 @@ func (r *Reconciler) _sync(instance *awscomputev1alpha3.EKSCluster, client eks.C
 	instance.Status.SetConditions(runtimev1alpha1.Available(), runtimev1alpha1.ReconcileSuccess())
 	resource.SetBindable(instance)
 
-	// Our cluster is available. Requeue speculative yafter a long wait in case
+	// Our cluster is available. Requeue speculatively after a long wait in case
 	// the cluster has changed.
 	return reconcile.Result{RequeueAfter: aLongWait}, r.Update(ctx, instance)
 }
@@ -340,16 +341,20 @@ func (r *Reconciler) _secret(cluster *eks.Cluster, instance *awscomputev1alpha3.
 		return err
 	}
 
-	// Avoid double base64 encoding on secret
-	caData, err := base64.StdEncoding.DecodeString(cluster.CA)
+	config, err := eks.GenerateClientConfig(cluster, token)
+	if err != nil {
+		return err
+	}
+	rawConfig, err := clientcmd.Write(config)
 	if err != nil {
 		return err
 	}
 
 	return r.publisher.PublishConnection(ctx, instance, resource.ConnectionDetails{
-		runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(cluster.Endpoint),
-		runtimev1alpha1.ResourceCredentialsSecretCAKey:       caData,
-		runtimev1alpha1.ResourceCredentialsTokenKey:          []byte(token),
+		runtimev1alpha1.ResourceCredentialsSecretEndpointKey:   []byte(config.Clusters[cluster.Name].Server),
+		runtimev1alpha1.ResourceCredentialsSecretCAKey:         config.Clusters[cluster.Name].CertificateAuthorityData,
+		runtimev1alpha1.ResourceCredentialsSecretTokenKey:      []byte(config.AuthInfos[cluster.Name].Token),
+		runtimev1alpha1.ResourceCredentialsSecretKubeconfigKey: rawConfig,
 	})
 }
 
