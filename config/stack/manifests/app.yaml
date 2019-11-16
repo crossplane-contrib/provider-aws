@@ -36,6 +36,9 @@ owners:
 # Human readable company name
 company: Crossplane
 
+# Primary category describing this stack
+category: Infrastructure
+
 # Keywords that describe this application and help search indexing
 keywords:
 - "amazon"
