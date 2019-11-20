@@ -20,17 +20,16 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/crossplaneio/stack-aws/pkg/clients/s3/operations"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"k8s.io/apimachinery/pkg/util/rand"
 
 	"github.com/crossplaneio/stack-aws/apis/storage/v1alpha3"
 	iamc "github.com/crossplaneio/stack-aws/pkg/clients/iam"
+	"github.com/crossplaneio/stack-aws/pkg/clients/s3/operations"
 
-	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 	storage "github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
 )
 
@@ -219,9 +218,15 @@ func CreateBucketInput(bucket *v1alpha3.S3Bucket) *s3.CreateBucketInput {
 	return bucketInput
 }
 
-// GenerateBucketUsername - Genereates a username that is within AWS size specifications, and adds a random suffix
+// GenerateBucketUsername generates a username that is within AWS size
+// specifications, and adds a random suffix.
 func GenerateBucketUsername(bucket *v1alpha3.S3Bucket) string {
-	return util.GenerateNameMaxLength(fmt.Sprintf(bucketUser, bucket.GetBucketName()), maxIAMUsernameLength)
+	name := fmt.Sprintf(bucketUser, bucket.GetBucketName())
+	max := maxIAMUsernameLength - 6
+	if len(name) > max {
+		name = name[:max]
+	}
+	return fmt.Sprintf("%s-%s", name, rand.String(5))
 }
 
 func newPolicyDocument(bucket *v1alpha3.S3Bucket) (string, error) {

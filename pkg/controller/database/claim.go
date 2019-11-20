@@ -105,7 +105,8 @@ func (c *PostgreSQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) e
 		resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigurePostgreRDSInstance),
-			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
+			resource.ManagedConfiguratorFn(resource.ConfigureReclaimPolicy),
+			resource.ManagedConfiguratorFn(resource.ConfigureNames),
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(
@@ -237,7 +238,8 @@ func (c *MySQLInstanceClaimController) SetupWithManager(mgr ctrl.Manager) error 
 		resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigureMyRDSInstance),
-			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
+			resource.ManagedConfiguratorFn(resource.ConfigureReclaimPolicy),
+			resource.ManagedConfiguratorFn(resource.ConfigureNames),
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(

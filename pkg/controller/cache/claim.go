@@ -104,7 +104,8 @@ func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) err
 		resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind),
 		resource.WithManagedConfigurators(
 			resource.ManagedConfiguratorFn(ConfigureReplicationGroup),
-			resource.NewObjectMetaConfigurator(mgr.GetScheme()),
+			resource.ManagedConfiguratorFn(resource.ConfigureReclaimPolicy),
+			resource.ManagedConfiguratorFn(resource.ConfigureNames),
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(
