@@ -183,12 +183,19 @@ spec:
                   type: string
               type: object
             reclaimPolicy:
-              description: ReclaimPolicy specifies what will happen to the external
-                resource this managed resource manages when the managed resource is
-                deleted. "Delete" deletes the external resource, while "Retain" (the
-                default) does not. Note this behaviour is subtly different from other
-                uses of the ReclaimPolicy concept within the Kubernetes ecosystem
-                per https://github.com/crossplaneio/crossplane-runtime/issues/21
+              description: ReclaimPolicy specifies what will happen to this managed
+                resource when its resource claim is deleted, and what will happen
+                to the underlying external resource when the managed resource is deleted.
+                The "Delete" policy causes the managed resource to be deleted when
+                its bound resource claim is deleted, and in turn causes the external
+                resource to be deleted when its managed resource is deleted. The "Retain"
+                policy causes the managed resource to be retained, in binding phase
+                "Released", when its resource claim is deleted, and in turn causes
+                the external resource to be retained when its managed resource is
+                deleted. The "Retain" policy is used when no policy is specified.
+              enum:
+              - Retain
+              - Delete
               type: string
             vpcId:
               description: VPCID is the ID of the VPC.
@@ -236,6 +243,7 @@ spec:
               - Unbindable
               - Unbound
               - Bound
+              - Released
               type: string
             conditions:
               description: Conditions of the resource.
