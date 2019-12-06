@@ -198,7 +198,7 @@ func (in *InternetGatewayIDReferencerForRouteTable) DeepCopy() *InternetGatewayI
 func (in *InternetGatewayList) DeepCopyInto(out *InternetGatewayList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]InternetGateway, len(*in))
@@ -376,7 +376,7 @@ func (in *RouteTableExternalStatus) DeepCopy() *RouteTableExternalStatus {
 func (in *RouteTableList) DeepCopyInto(out *RouteTableList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]RouteTable, len(*in))
@@ -539,7 +539,7 @@ func (in *SecurityGroupIDReferencer) DeepCopy() *SecurityGroupIDReferencer {
 func (in *SecurityGroupList) DeepCopyInto(out *SecurityGroupList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]SecurityGroup, len(*in))
@@ -718,7 +718,7 @@ func (in *SubnetIDReferencerForRouteTable) DeepCopy() *SubnetIDReferencerForRout
 func (in *SubnetList) DeepCopyInto(out *SubnetList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]Subnet, len(*in))
@@ -946,7 +946,7 @@ func (in *VPCIDReferencerForSubnet) DeepCopy() *VPCIDReferencerForSubnet {
 func (in *VPCList) DeepCopyInto(out *VPCList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]VPC, len(*in))

@@ -340,7 +340,7 @@ func (in *RDSInstanceClass) DeepCopyObject() runtime.Object {
 func (in *RDSInstanceClassList) DeepCopyInto(out *RDSInstanceClassList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]RDSInstanceClass, len(*in))
@@ -389,7 +389,7 @@ func (in *RDSInstanceClassSpecTemplate) DeepCopy() *RDSInstanceClassSpecTemplate
 func (in *RDSInstanceList) DeepCopyInto(out *RDSInstanceList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]RDSInstance, len(*in))

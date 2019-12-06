@@ -168,7 +168,7 @@ func (in *ReplicationGroupClass) DeepCopyObject() runtime.Object {
 func (in *ReplicationGroupClassList) DeepCopyInto(out *ReplicationGroupClassList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]ReplicationGroupClass, len(*in))
@@ -217,7 +217,7 @@ func (in *ReplicationGroupClassSpecTemplate) DeepCopy() *ReplicationGroupClassSp
 func (in *ReplicationGroupList) DeepCopyInto(out *ReplicationGroupList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]ReplicationGroup, len(*in))
