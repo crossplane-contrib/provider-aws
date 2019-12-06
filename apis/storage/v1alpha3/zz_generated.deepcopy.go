@@ -83,7 +83,7 @@ func (in *S3BucketClass) DeepCopyObject() runtime.Object {
 func (in *S3BucketClassList) DeepCopyInto(out *S3BucketClassList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]S3BucketClass, len(*in))
@@ -132,7 +132,7 @@ func (in *S3BucketClassSpecTemplate) DeepCopy() *S3BucketClassSpecTemplate {
 func (in *S3BucketList) DeepCopyInto(out *S3BucketList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]S3Bucket, len(*in))
