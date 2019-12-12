@@ -75,7 +75,7 @@ func (in *DBSubnetGroupExternalStatus) DeepCopy() *DBSubnetGroupExternalStatus {
 func (in *DBSubnetGroupList) DeepCopyInto(out *DBSubnetGroupList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]DBSubnetGroup, len(*in))

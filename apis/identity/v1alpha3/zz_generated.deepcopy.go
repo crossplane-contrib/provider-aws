@@ -86,7 +86,7 @@ func (in *IAMRoleExternalStatus) DeepCopy() *IAMRoleExternalStatus {
 func (in *IAMRoleList) DeepCopyInto(out *IAMRoleList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]IAMRole, len(*in))
@@ -207,7 +207,7 @@ func (in *IAMRolePolicyAttachmentExternalStatus) DeepCopy() *IAMRolePolicyAttach
 func (in *IAMRolePolicyAttachmentList) DeepCopyInto(out *IAMRolePolicyAttachmentList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]IAMRolePolicyAttachment, len(*in))
