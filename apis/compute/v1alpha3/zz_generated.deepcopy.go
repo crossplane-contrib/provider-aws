@@ -81,7 +81,7 @@ func (in *EKSClusterClass) DeepCopyObject() runtime.Object {
 func (in *EKSClusterClassList) DeepCopyInto(out *EKSClusterClassList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]EKSClusterClass, len(*in))
@@ -130,7 +130,7 @@ func (in *EKSClusterClassSpecTemplate) DeepCopy() *EKSClusterClassSpecTemplate {
 func (in *EKSClusterList) DeepCopyInto(out *EKSClusterList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]EKSCluster, len(*in))
