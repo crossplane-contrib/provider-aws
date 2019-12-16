@@ -45,7 +45,7 @@ type Provider struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec ProviderSpec `json:"spec,omitempty"`
+	Spec ProviderSpec `json:"spec"`
 }
 
 // +kubebuilder:object:root=true
