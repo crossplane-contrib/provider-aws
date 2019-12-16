@@ -297,6 +297,8 @@ spec:
               description: ProviderID is the AWS identifier for this bucket.
               type: string
           type: object
+      required:
+      - spec
       type: object
   version: v1alpha3
   versions:

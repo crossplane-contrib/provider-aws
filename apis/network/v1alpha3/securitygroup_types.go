@@ -146,7 +146,7 @@ type SecurityGroup struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   SecurityGroupSpec   `json:"spec,omitempty"`
+	Spec   SecurityGroupSpec   `json:"spec"`
 	Status SecurityGroupStatus `json:"status,omitempty"`
 }
 

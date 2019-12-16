@@ -478,6 +478,7 @@ spec:
               - namespace
               type: object
           required:
+          - forProvider
           - providerRef
           type: object
         status:
@@ -681,6 +682,8 @@ spec:
                 type: object
               type: array
           type: object
+      required:
+      - spec
       type: object
   version: v1beta1
   versions:

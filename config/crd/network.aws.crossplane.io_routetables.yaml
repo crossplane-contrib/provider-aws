@@ -371,6 +371,8 @@ spec:
           required:
           - routeTableId
           type: object
+      required:
+      - spec
       type: object
   version: v1alpha3
   versions:

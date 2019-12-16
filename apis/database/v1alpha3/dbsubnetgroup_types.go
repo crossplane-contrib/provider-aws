@@ -138,7 +138,7 @@ type DBSubnetGroup struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   DBSubnetGroupSpec   `json:"spec,omitempty"`
+	Spec   DBSubnetGroupSpec   `json:"spec"`
 	Status DBSubnetGroupStatus `json:"status,omitempty"`
 }
 

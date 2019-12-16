@@ -193,7 +193,7 @@ type RouteTable struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   RouteTableSpec   `json:"spec,omitempty"`
+	Spec   RouteTableSpec   `json:"spec"`
 	Status RouteTableStatus `json:"status,omitempty"`
 }
 
