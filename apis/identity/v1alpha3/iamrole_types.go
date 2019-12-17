@@ -81,7 +81,7 @@ type IAMRole struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   IAMRoleSpec   `json:"spec,omitempty"`
+	Spec   IAMRoleSpec   `json:"spec"`
 	Status IAMRoleStatus `json:"status,omitempty"`
 }
 

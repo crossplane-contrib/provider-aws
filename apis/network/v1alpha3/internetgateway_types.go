@@ -109,7 +109,7 @@ type InternetGateway struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   InternetGatewaySpec   `json:"spec,omitempty"`
+	Spec   InternetGatewaySpec   `json:"spec"`
 	Status InternetGatewayStatus `json:"status,omitempty"`
 }
 

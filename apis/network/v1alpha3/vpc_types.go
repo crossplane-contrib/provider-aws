@@ -78,7 +78,7 @@ type VPC struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   VPCSpec   `json:"spec,omitempty"`
+	Spec   VPCSpec   `json:"spec"`
 	Status VPCStatus `json:"status,omitempty"`
 }
 

@@ -803,7 +803,7 @@ type RDSInstanceParameters struct {
 // An RDSInstanceSpec defines the desired state of an RDSInstance.
 type RDSInstanceSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  RDSInstanceParameters `json:"forProvider,omitempty"`
+	ForProvider                  RDSInstanceParameters `json:"forProvider"`
 }
 
 // RDSInstanceState represents the state of an RDS instance.
@@ -1153,7 +1153,7 @@ type RDSInstance struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   RDSInstanceSpec   `json:"spec,omitempty"`
+	Spec   RDSInstanceSpec   `json:"spec"`
 	Status RDSInstanceStatus `json:"status,omitempty"`
 }
 
@@ -1170,7 +1170,7 @@ type RDSInstanceList struct {
 // provisioned RDSInstance.
 type RDSInstanceClassSpecTemplate struct {
 	runtimev1alpha1.ClassSpecTemplate `json:",inline"`
-	ForProvider                       RDSInstanceParameters `json:"forProvider,omitempty"`
+	ForProvider                       RDSInstanceParameters `json:"forProvider"`
 }
 
 // +kubebuilder:object:root=true

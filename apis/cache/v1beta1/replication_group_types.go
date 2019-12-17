@@ -525,7 +525,7 @@ type ReplicationGroupParameters struct {
 // A ReplicationGroupSpec defines the desired state of a ReplicationGroup.
 type ReplicationGroupSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  ReplicationGroupParameters `json:"forProvider,omitempty"`
+	ForProvider                  ReplicationGroupParameters `json:"forProvider"`
 }
 
 // A ReplicationGroupStatus defines the observed state of a ReplicationGroup.
@@ -549,7 +549,7 @@ type ReplicationGroup struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ReplicationGroupSpec   `json:"spec,omitempty"`
+	Spec   ReplicationGroupSpec   `json:"spec"`
 	Status ReplicationGroupStatus `json:"status,omitempty"`
 }
 
@@ -566,7 +566,7 @@ type ReplicationGroupList struct {
 // dynamically provisioned ReplicationGroup.
 type ReplicationGroupClassSpecTemplate struct {
 	runtimev1alpha1.ClassSpecTemplate `json:",inline"`
-	ForProvider                       ReplicationGroupParameters `json:"forProvider,omitempty"`
+	ForProvider                       ReplicationGroupParameters `json:"forProvider"`
 }
 
 // +kubebuilder:object:root=true

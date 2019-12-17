@@ -329,7 +329,7 @@ type EKSCluster struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   EKSClusterSpec   `json:"spec,omitempty"`
+	Spec   EKSClusterSpec   `json:"spec"`
 	Status EKSClusterStatus `json:"status,omitempty"`
 }
 

@@ -386,6 +386,7 @@ spec:
                 using this claim will be created.
               type: string
           required:
+          - forProvider
           - providerRef
           - writeConnectionSecretsToNamespace
           type: object

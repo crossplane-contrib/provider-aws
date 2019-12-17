@@ -101,7 +101,7 @@ type IAMRolePolicyAttachment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   IAMRolePolicyAttachmentSpec   `json:"spec,omitempty"`
+	Spec   IAMRolePolicyAttachmentSpec   `json:"spec"`
 	Status IAMRolePolicyAttachmentStatus `json:"status,omitempty"`
 }
 

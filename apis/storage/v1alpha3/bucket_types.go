@@ -94,7 +94,7 @@ type S3Bucket struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   S3BucketSpec   `json:"spec,omitempty"`
+	Spec   S3BucketSpec   `json:"spec"`
 	Status S3BucketStatus `json:"status,omitempty"`
 }
 
