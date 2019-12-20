@@ -115,9 +115,14 @@ func TestConnect(t *testing.T) {
 	provider := awsv1alpha3.Provider{
 		Spec: awsv1alpha3.ProviderSpec{
 			Region: testRegion,
-			Secret: runtimev1alpha1.SecretKeySelector{
-				SecretReference: runtimev1alpha1.SecretReference{Namespace: secretNamespace, Name: connectionSecretName},
-				Key:             secretKey,
+			ProviderSpec: runtimev1alpha1.ProviderSpec{
+				CredentialsSecretRef: runtimev1alpha1.SecretKeySelector{
+					SecretReference: runtimev1alpha1.SecretReference{
+						Namespace: secretNamespace,
+						Name:      connectionSecretName,
+					},
+					Key: secretKey,
+				},
 			},
 		},
 	}

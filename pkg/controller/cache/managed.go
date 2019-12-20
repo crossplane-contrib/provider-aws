@@ -98,11 +98,11 @@ func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (resource.
 	}
 
 	s := &corev1.Secret{}
-	n := types.NamespacedName{Namespace: p.Spec.Secret.Namespace, Name: p.Spec.Secret.Name}
+	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
 	if err := c.client.Get(ctx, n, s); err != nil {
 		return nil, errors.Wrap(err, "cannot get provider secret")
 	}
-	awsClient, err := c.newClientFn(s.Data[p.Spec.Secret.Key], p.Spec.Region)
+	awsClient, err := c.newClientFn(s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region)
 	return &external{client: awsClient, kube: c.client}, errors.Wrap(err, errNewClient)
 }
 
