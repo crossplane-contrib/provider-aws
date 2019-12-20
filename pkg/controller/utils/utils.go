@@ -43,13 +43,13 @@ func RetrieveAwsConfigFromProvider(ctx context.Context, client client.Reader, pr
 	}
 
 	secret := &corev1.Secret{}
-	n = types.NamespacedName{Namespace: p.Spec.Secret.Namespace, Name: p.Spec.Secret.Name}
+	n = types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
 	err := client.Get(ctx, n, secret)
 	if err != nil {
 		return nil, errors.Wrapf(err, "cannot get provider secret %s", n)
 	}
 
-	cfg, err := awsclients.LoadConfig(secret.Data[p.Spec.Secret.Key], awsclients.DefaultSection, p.Spec.Region)
+	cfg, err := awsclients.LoadConfig(secret.Data[p.Spec.CredentialsSecretRef.Key], awsclients.DefaultSection, p.Spec.Region)
 
 	return cfg, errors.Wrap(err, "cannot create new AWS configuration")
 }
