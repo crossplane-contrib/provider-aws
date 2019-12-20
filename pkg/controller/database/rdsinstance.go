@@ -95,12 +95,12 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (resource.
 	}
 
 	s := &corev1.Secret{}
-	n := types.NamespacedName{Namespace: p.Spec.Secret.Namespace, Name: p.Spec.Secret.Name}
+	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
 	if err := c.kube.Get(ctx, n, s); err != nil {
 		return nil, errors.Wrap(err, errGetProviderSecret)
 	}
 
-	rdsClient, err := c.newClientFn(s.Data[p.Spec.Secret.Key], p.Spec.Region)
+	rdsClient, err := c.newClientFn(s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region)
 	return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, errCreateRDSClient)
 }
 
