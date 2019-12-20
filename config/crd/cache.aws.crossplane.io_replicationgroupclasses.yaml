@@ -24,7 +24,7 @@ spec:
     listKind: ReplicationGroupClassList
     plural: replicationgroupclasses
     singular: replicationgroupclass
-  scope: Namespaced
+  scope: Cluster
   subresources: {}
   validation:
     openAPIV3Schema:
