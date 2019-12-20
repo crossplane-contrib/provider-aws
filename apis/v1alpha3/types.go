@@ -24,13 +24,10 @@ import (
 
 // A ProviderSpec defines the desired state of a Provider.
 type ProviderSpec struct {
+	runtimev1alpha1.ProviderSpec `json:",inline"`
 
 	// Region for managed resources created using this AWS provider.
 	Region string `json:"region"`
-
-	// A Secret containing INI encoded credentials for an AWS IAM role
-	// that will be used to authenticate to this AWS account.
-	Secret runtimev1alpha1.SecretKeySelector `json:"credentialsSecretRef"`
 }
 
 // +kubebuilder:object:root=true

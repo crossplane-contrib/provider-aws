@@ -48,8 +48,8 @@ spec:
           description: A ProviderSpec defines the desired state of a Provider.
           properties:
             credentialsSecretRef:
-              description: A Secret containing INI encoded credentials for an AWS
-                IAM role that will be used to authenticate to this AWS account.
+              description: CredentialsSecretRef references a specific secret's key
+                that contains the credentials that are used to connect to the provider.
               properties:
                 key:
                   description: The key to select.

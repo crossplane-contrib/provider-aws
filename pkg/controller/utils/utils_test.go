@@ -65,9 +65,11 @@ aws_secret_access_key = mock_aws_secret_access_key`),
 		ObjectMeta: metav1.ObjectMeta{},
 		Spec: awsv1alpha3.ProviderSpec{
 			Region: "mock-region",
-			Secret: runtimev1alpha1.SecretKeySelector{
-				SecretReference: runtimev1alpha1.SecretReference{},
-				Key:             "mockawskey",
+			ProviderSpec: runtimev1alpha1.ProviderSpec{
+				CredentialsSecretRef: runtimev1alpha1.SecretKeySelector{
+					SecretReference: runtimev1alpha1.SecretReference{},
+					Key:             "mockawskey",
+				},
 			},
 		},
 	}
@@ -125,8 +127,8 @@ aws_secret_access_key = mock_aws_secret_access_key`),
 	} {
 
 		mockProvider.ObjectMeta.Name = tc.providerName
-		mockProvider.Spec.Secret.SecretReference.Namespace = tc.secretNamespace
-		mockProvider.Spec.Secret.SecretReference.Name = tc.secretName
+		mockProvider.Spec.CredentialsSecretRef.SecretReference.Namespace = tc.secretNamespace
+		mockProvider.Spec.CredentialsSecretRef.SecretReference.Name = tc.secretName
 
 		config, err := RetrieveAwsConfigFromProvider(context.Background(), &m, &corev1.ObjectReference{Name: mockProvider.Name, Namespace: mockProvider.Namespace})
 		g.Expect(config == nil).To(gomega.Equal(tc.expectConfigNil), tc.description)
