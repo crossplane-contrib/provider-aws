@@ -18,7 +18,7 @@ echo_sub_step(){
 }
 
 echo_step_completed(){
-    printf "${GRN} [✔]${NOC}" 
+    printf "${GRN} [✔]${NOC}"
 }
 
 echo_success(){
@@ -59,7 +59,7 @@ wait_for_pods_in_namespace(){
     local timeout=$1
     shift
     namespace=$1
-    shift 
+    shift
     arr=("$@")
     local counter=0
     for i in "${arr[@]}";
@@ -85,7 +85,7 @@ check_deployments(){
             exit -1
         else
             echo_step_completed
-        fi 
+        fi
 
         echo_info "check if is ready"
         IFS='/' read -ra ready_status_parts <<< "$(echo "$dep_stat" | awk ' FNR > 1 {print $2}')"
@@ -102,7 +102,7 @@ check_deployments(){
 check_pods(){
     pods=$("${KUBECTL}" -n "$1" get pods)
     echo "$pods"
-    while read -r pod_stat; do 
+    while read -r pod_stat; do
         name=$(echo "$pod_stat" | awk '{print $1}')
         echo_sub_step "inspecting pod '${name}'"
 
@@ -112,7 +112,7 @@ check_pods(){
             echo_info "is completed, foregoing further checks"
             echo_step_completed
             continue
-        fi 
+        fi
 
         echo_info "check if is ready"
         IFS='/' read -ra ready_status_parts <<< "$(echo "$pod_stat" | awk '{print $2}')"
@@ -129,7 +129,7 @@ check_pods(){
             exit -1
         else
             echo_step_completed
-        fi 
+        fi
 
         echo_info "check if has restarts"
         if (( $(echo "$pod_stat" | awk '{print $4}') > 0 )); then
@@ -167,7 +167,7 @@ BUILD_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-${HOSTARCH}"
 
 version_tag="$(cat ${projectdir}/_output/version)"
 # tag as master so that config/stack/install.yaml can be used
-STACK_IMAGE="${DOCKER_REGISTRY}/${PROJECT_NAME}:master"
+STACK_IMAGE="${DOCKER_REGISTRY}/${PROJECT_NAME}:v0.4.0"
 K8S_CLUSTER="${K8S_CLUSTER:-${BUILD_REGISTRY}-INTTESTS}"
 
 CROSSPLANE_NAMESPACE="crossplane-system"
