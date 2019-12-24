@@ -61,8 +61,8 @@ github.com/crossplaneio/crossplane v0.5.0-rc.0.20191211203849-05517d46525d h1:Xi
 github.com/crossplaneio/crossplane v0.5.0-rc.0.20191211203849-05517d46525d/go.mod h1:f/e99LDWClmhkvMuvK7UMP1g5b718DGmdnpdrflK0HI=
 github.com/crossplaneio/crossplane-runtime v0.2.4-0.20191211004842-fa83d075257c h1:Xmv6RSdmFf2WeBpzVaqEBVxmGVAAUxA61eMgrdQ+Vsw=
 github.com/crossplaneio/crossplane-runtime v0.2.4-0.20191211004842-fa83d075257c/go.mod h1:aVLQmXiPeb/jhGGQFIxx4Rc1CFC6xq2BA6A3neLZIHA=
-github.com/crossplaneio/crossplane-runtime v0.2.4-0.20191220203046-1ab588031d3f h1:DoS6+TbC+QHEeg5XCZ7AQXumJ2k4LsE30EYqh2TRwLk=
-github.com/crossplaneio/crossplane-runtime v0.2.4-0.20191220203046-1ab588031d3f/go.mod h1:aVLQmXiPeb/jhGGQFIxx4Rc1CFC6xq2BA6A3neLZIHA=
+github.com/crossplaneio/crossplane-runtime v0.3.0 h1:d3937o6XhVUcm/bqgUPUjTo/OjVlAjh1c7rx4VPJoV8=
+github.com/crossplaneio/crossplane-runtime v0.3.0/go.mod h1:aVLQmXiPeb/jhGGQFIxx4Rc1CFC6xq2BA6A3neLZIHA=
 github.com/crossplaneio/crossplane-tools v0.0.0-20191023215726-61fa1eff2a2e h1:8Z29akSDYcbywc/brATpfeE425jBTMZdZQuD9eV6cCk=
 github.com/crossplaneio/crossplane-tools v0.0.0-20191023215726-61fa1eff2a2e/go.mod h1:fzQeWDvZvzaC4N8vPjTubQocGnwzQ4cuZM6949+T43U=
 github.com/crossplaneio/crossplane-tools v0.0.0-20191220202319-9033bd8a02ce h1:V7cUPRBxbJr0siRHn459gb6hfMXaEA+pGm0Yt5aXdhQ=
