@@ -2,6 +2,8 @@ module github.com/crossplaneio/stack-aws
 
 go 1.12
 
+replace github.com/crossplaneio/crossplane-runtime => github.com/hasheddan/crossplane-runtime v0.0.0-20191223175401-c4000e5e2b43
+
 require (
 	github.com/aws/aws-sdk-go-v2 v0.5.0
 	github.com/crossplaneio/crossplane v0.5.0-rc.0.20191211203849-05517d46525d
