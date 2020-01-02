@@ -17,9 +17,18 @@ limitations under the License.
 package v1beta1
 
 import (
+	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
+	network "github.com/crossplane/provider-aws/apis/network/v1alpha3"
+)
+
+// Error strings
+const (
+	errResourceIsNotReplicationGroup = "the managed resource is not a ReplicationGroup"
 )
 
 // ReplicationGroup states.
@@ -62,6 +71,52 @@ var LatestSupportedPatchVersion = map[MinorVersion]PatchVersion{
 	MinorVersion("4.0"): PatchVersion("4.0.10"),
 	MinorVersion("3.2"): PatchVersion("3.2.10"),
 	MinorVersion("2.8"): PatchVersion("2.8.24"),
+}
+
+// SecurityGroupNameReferencerForReplicationGroup is an attribute referencer that
+// resolves SecurityGroupName from a referenced SecurityGroup
+type SecurityGroupNameReferencerForReplicationGroup struct {
+	network.SecurityGroupNameReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved value to the managed resource
+func (v *SecurityGroupNameReferencerForReplicationGroup) Assign(res resource.CanReference, value string) error {
+	rg, ok := res.(*ReplicationGroup)
+	if !ok {
+		return errors.New(errResourceIsNotReplicationGroup)
+	}
+
+	for _, id := range rg.Spec.ForProvider.CacheSecurityGroupNames {
+		if id == value {
+			return nil
+		}
+	}
+
+	rg.Spec.ForProvider.CacheSecurityGroupNames = append(rg.Spec.ForProvider.CacheSecurityGroupNames, value)
+	return nil
+}
+
+// SecurityGroupIDReferencerForReplicationGroup is an attribute referencer that
+// resolves SecurityGroupID from a referenced SecurityGroup
+type SecurityGroupIDReferencerForReplicationGroup struct {
+	network.SecurityGroupIDReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved value to the managed resource
+func (v *SecurityGroupIDReferencerForReplicationGroup) Assign(res resource.CanReference, value string) error {
+	rg, ok := res.(*ReplicationGroup)
+	if !ok {
+		return errors.New(errResourceIsNotReplicationGroup)
+	}
+
+	for _, id := range rg.Spec.ForProvider.SecurityGroupIDs {
+		if id == value {
+			return nil
+		}
+	}
+
+	rg.Spec.ForProvider.SecurityGroupIDs = append(rg.Spec.ForProvider.SecurityGroupIDs, value)
+	return nil
 }
 
 // Endpoint represents the information required for client programs to connect
@@ -311,9 +366,18 @@ type ReplicationGroupParameters struct {
 	CacheParameterGroupName *string `json:"cacheParameterGroupName,omitempty"`
 
 	// CacheSecurityGroupNames specifies a list of cache security group names to
-	// associate with this replication group.
+	// associate with this replication group. Only for EC2-Classic mode.
 	// +optional
 	CacheSecurityGroupNames []string `json:"cacheSecurityGroupNames,omitempty"`
+
+	// CacheSecurityGroupNameRefs are references to SecurityGroups used to set
+	// the CacheSecurityGroupNames.
+	// +immutable
+	// +optional
+	CacheSecurityGroupNameRefs []*SecurityGroupNameReferencerForReplicationGroup `json:"cacheSecurityGroupNameRefs,omitempty"`
+
+	// TODO(muvaf): Implement SubnetGroup as managed resource so that we can
+	// refer to it here.
 
 	// CacheSubnetGroupName specifies the name of the cache subnet group to be
 	// used for the replication group. If you're going to launch your cluster in
@@ -449,6 +513,12 @@ type ReplicationGroupParameters struct {
 	// are creating a replication group in an Amazon VPC.
 	// +optional
 	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
+
+	// SecurityGroupIDRefs are references to SecurityGroups used to set
+	// the SecurityGroupIDs.
+	// +immutable
+	// +optional
+	SecurityGroupIDRefs []*SecurityGroupIDReferencerForReplicationGroup `json:"securityGroupIdRefs,omitempty"`
 
 	// SnapshotARNs specifies a list of Amazon Resource Names (ARN) that
 	// uniquely identify the Redis RDB snapshot files stored in Amazon S3. The

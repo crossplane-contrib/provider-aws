@@ -65,3 +65,39 @@ func (v *SecurityGroupIDReferencer) Build(ctx context.Context, _ resource.CanRef
 
 	return sg.Status.SecurityGroupID, nil
 }
+
+// SecurityGroupNameReferencer is used to get the name from another SecurityGroup
+type SecurityGroupNameReferencer struct {
+	corev1.LocalObjectReference `json:",inline"`
+}
+
+// GetStatus implements GetStatus method of AttributeReferencer interface
+func (v *SecurityGroupNameReferencer) GetStatus(ctx context.Context, _ resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
+	sg := SecurityGroup{}
+
+	nn := types.NamespacedName{Name: v.Name}
+	if err := reader.Get(ctx, nn, &sg); err != nil {
+		if kerrors.IsNotFound(err) {
+			return []resource.ReferenceStatus{{Name: v.Name, Status: resource.ReferenceNotFound}}, nil
+		}
+
+		return nil, err
+	}
+
+	if !resource.IsConditionTrue(sg.GetCondition(runtimev1alpha1.TypeReady)) {
+		return []resource.ReferenceStatus{{Name: v.Name, Status: resource.ReferenceNotReady}}, nil
+	}
+
+	return []resource.ReferenceStatus{{Name: v.Name, Status: resource.ReferenceReady}}, nil
+}
+
+// Build retrieves and builds the GroupName
+func (v *SecurityGroupNameReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
+	sg := SecurityGroup{}
+	nn := types.NamespacedName{Name: v.Name}
+	if err := reader.Get(ctx, nn, &sg); err != nil {
+		return "", err
+	}
+
+	return sg.Spec.GroupName, nil
+}
