@@ -1,5 +1,4 @@
 version: 0.4
 configSections: []
-
-resourceConditionPaths:
-- .status.conditionedStatus.conditions[?(@.type=='Ready')]
+printerColumns:
+  Ready: .status.conditionedStatus.conditions[?(@.type=='Ready')]
