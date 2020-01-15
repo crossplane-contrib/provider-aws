@@ -41,6 +41,7 @@ import (
 	"github.com/crossplaneio/stack-aws/pkg/clients/eks/fake"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 )
@@ -147,8 +148,8 @@ func TestCreate(t *testing.T) {
 
 	test := func(cluster *EKSCluster, client eks.Client, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) *EKSCluster {
 		r := &Reconciler{
-			Client:                   NewFakeClient(cluster),
-			ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(cluster)),
+			Client:            NewFakeClient(cluster),
+			ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient(cluster)),
 		}
 
 		rs, err := r._create(cluster, client)
@@ -213,10 +214,10 @@ func TestSync(t *testing.T) {
 	test := func(tc *EKSCluster, cl *fake.MockEKSClient, sec func(*eks.Cluster, *EKSCluster, eks.Client) error, auth func(*eks.Cluster, *EKSCluster, eks.Client, string) error,
 		rslt reconcile.Result, exp runtimev1alpha1.ConditionedStatus) *EKSCluster {
 		r := &Reconciler{
-			Client:                   NewFakeClient(tc),
-			secret:                   sec,
-			awsauth:                  auth,
-			ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
+			Client:            NewFakeClient(tc),
+			secret:            sec,
+			awsauth:           auth,
+			ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
 		}
 
 		rs, err := r._sync(tc, cl)
@@ -364,9 +365,9 @@ func TestSecret(t *testing.T) {
 	config, _ := eks.GenerateClientConfig(cluster, token)
 	rawConfig, _ := clientcmd.Write(config)
 	r := &Reconciler{
-		publisher: resource.ManagedConnectionPublisherFns{
-			PublishConnectionFn: func(_ context.Context, _ resource.Managed, got resource.ConnectionDetails) error {
-				want := resource.ConnectionDetails{
+		publisher: managed.ConnectionPublisherFns{
+			PublishConnectionFn: func(_ context.Context, _ resource.Managed, got managed.ConnectionDetails) error {
+				want := managed.ConnectionDetails{
 					runtimev1alpha1.ResourceCredentialsSecretEndpointKey:   []byte(cluster.Endpoint),
 					runtimev1alpha1.ResourceCredentialsSecretCAKey:         clusterCA,
 					runtimev1alpha1.ResourceCredentialsSecretTokenKey:      []byte(token),
@@ -380,7 +381,7 @@ func TestSecret(t *testing.T) {
 				return nil
 			},
 		},
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
+		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
 	}
 
 	tc := testCluster()
@@ -407,8 +408,8 @@ func TestDelete(t *testing.T) {
 
 	test := func(cluster *EKSCluster, client eks.Client, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) *EKSCluster {
 		r := &Reconciler{
-			Client:                   NewFakeClient(cluster),
-			ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient(cluster)),
+			Client:            NewFakeClient(cluster),
+			ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient(cluster)),
 		}
 
 		rs, err := r._delete(cluster, client)
@@ -495,8 +496,8 @@ func TestReconcileObjectNotFound(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	r := &Reconciler{
-		Client:                   NewFakeClient(),
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
+		Client:            NewFakeClient(),
+		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
 	}
 	rs, err := r.Reconcile(request)
 	g.Expect(rs).To(Equal(reconcile.Result{}))
@@ -516,7 +517,7 @@ func TestReconcileClientError(t *testing.T) {
 			called = true
 			return nil, testError
 		},
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
+		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
 	}
 
 	// expected to have a failed condition
@@ -550,7 +551,7 @@ func TestReconcileDelete(t *testing.T) {
 			called = true
 			return reconcile.Result{}, nil
 		},
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
+		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
 	}
 
 	rs, err := r.Reconcile(request)
@@ -574,7 +575,7 @@ func TestReconcileCreate(t *testing.T) {
 			called = true
 			return reconcile.Result{RequeueAfter: aShortWait}, nil
 		},
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
+		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
 	}
 
 	rs, err := r.Reconcile(request)
@@ -603,7 +604,7 @@ func TestReconcileSync(t *testing.T) {
 			called = true
 			return reconcile.Result{RequeueAfter: aShortWait}, nil
 		},
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
+		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
 	}
 
 	rs, err := r.Reconcile(request)

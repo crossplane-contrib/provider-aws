@@ -29,12 +29,13 @@ import (
 	"github.com/crossplaneio/stack-aws/apis/storage/v1alpha3"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimbinding"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 	storagev1alpha1 "github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
 )
 
-var _ resource.ManagedConfigurator = resource.ManagedConfiguratorFn(ConfigureS3Bucket)
+var _ claimbinding.ManagedConfigurator = claimbinding.ManagedConfiguratorFn(ConfigureS3Bucket)
 
 func TestConfigureBucket(t *testing.T) {
 	type args struct {

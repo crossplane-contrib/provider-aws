@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimbinding"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 	cachev1alpha1 "github.com/crossplaneio/crossplane/apis/cache/v1alpha1"
@@ -41,8 +42,8 @@ const (
 )
 
 var (
-	_                 resource.ManagedConfigurator = resource.ManagedConfiguratorFn(ConfigureReplicationGroup)
-	awsClassVersion32                              = string(v1beta1.LatestSupportedPatchVersion[claimVersion32])
+	_                 claimbinding.ManagedConfigurator = claimbinding.ManagedConfiguratorFn(ConfigureReplicationGroup)
+	awsClassVersion32                                  = string(v1beta1.LatestSupportedPatchVersion[claimVersion32])
 )
 
 func TestConfigureReplicationGroup(t *testing.T) {

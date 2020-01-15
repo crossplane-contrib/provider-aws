@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
 	v1alpha3 "github.com/crossplaneio/stack-aws/apis/network/v1alpha3"
@@ -54,10 +55,10 @@ type Controller struct{}
 // SetupWithManager creates a new Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func (c *Controller) SetupWithManager(mgr ctrl.Manager) error {
-	r := resource.NewManagedReconciler(mgr,
+	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1alpha3.SecurityGroupGroupVersionKind),
-		resource.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewSecurityGroupClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
-		resource.WithManagedConnectionPublishers())
+		managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewSecurityGroupClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+		managed.WithConnectionPublishers())
 	name := strings.ToLower(fmt.Sprintf("%s.%s", v1alpha3.SecurityGroupKindAPIVersion, v1alpha3.Group))
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -71,7 +72,7 @@ type connector struct {
 	awsConfigFn func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error)
 }
 
-func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (resource.ExternalClient, error) {
+func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
 	cr, ok := mgd.(*v1alpha3.SecurityGroup)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
@@ -94,17 +95,17 @@ type external struct {
 	client ec2.SecurityGroupClient
 }
 
-func (e *external) Observe(ctx context.Context, mgd resource.Managed) (resource.ExternalObservation, error) {
+func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mgd.(*v1alpha3.SecurityGroup)
 	if !ok {
-		return resource.ExternalObservation{}, errors.New(errUnexpectedObject)
+		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
 	// To find out whether a SecurityGroup exist:
 	// - the object's ExternalState should have securityGroupId populated
 	// - a SecurityGroup with the given securityGroupId should exist
 	if cr.Status.SecurityGroupID == "" {
-		return resource.ExternalObservation{
+		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
 	}
@@ -117,18 +118,18 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (resource.
 	response, err := req.Send()
 
 	if ec2.IsSecurityGroupNotFoundErr(err) {
-		return resource.ExternalObservation{
+		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
 	}
 
 	if err != nil {
-		return resource.ExternalObservation{}, errors.Wrapf(err, errDescribe, cr.Status.SecurityGroupID)
+		return managed.ExternalObservation{}, errors.Wrapf(err, errDescribe, cr.Status.SecurityGroupID)
 	}
 
 	// in a successful response, there should be one and only one object
 	if len(response.SecurityGroups) != 1 {
-		return resource.ExternalObservation{}, errors.Errorf(errMultipleItems, cr.Status.SecurityGroupID)
+		return managed.ExternalObservation{}, errors.Errorf(errMultipleItems, cr.Status.SecurityGroupID)
 	}
 
 	observed := response.SecurityGroups[0]
@@ -139,16 +140,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (resource.
 
 	cr.UpdateExternalStatus(observed)
 
-	return resource.ExternalObservation{
+	return managed.ExternalObservation{
 		ResourceExists:    true,
-		ConnectionDetails: resource.ConnectionDetails{},
+		ConnectionDetails: managed.ConnectionDetails{},
 	}, nil
 }
 
-func (e *external) Create(ctx context.Context, mgd resource.Managed) (resource.ExternalCreation, error) {
+func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
 	cr, ok := mgd.(*v1alpha3.SecurityGroup)
 	if !ok {
-		return resource.ExternalCreation{}, errors.New(errUnexpectedObject)
+		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
@@ -163,13 +164,13 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (resource.E
 
 	result, err := req.Send()
 	if err != nil {
-		return resource.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 
 	cr.UpdateExternalStatus(awsec2.SecurityGroup{GroupId: result.GroupId})
 
 	if err != nil {
-		return resource.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 
 	// Authorizing Ingress permissions for the SecurityGroup
@@ -183,7 +184,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (resource.E
 
 		_, err = air.Send()
 		if err != nil {
-			return resource.ExternalCreation{}, errors.Wrap(err, errAuthorizeIngress)
+			return managed.ExternalCreation{}, errors.Wrap(err, errAuthorizeIngress)
 		}
 	}
 
@@ -198,18 +199,18 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (resource.E
 
 		_, err = aer.Send()
 		if err != nil {
-			return resource.ExternalCreation{}, errors.Wrap(err, errAuthorizeEgress)
+			return managed.ExternalCreation{}, errors.Wrap(err, errAuthorizeEgress)
 		}
 	}
 
-	return resource.ExternalCreation{}, nil
+	return managed.ExternalCreation{}, nil
 }
 
-func (e *external) Update(ctx context.Context, mgd resource.Managed) (resource.ExternalUpdate, error) {
+func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
 	// TODO(soorena776): add more sophisticated Update logic, once we
 	// categorize immutable vs mutable fields (see #727)
 
-	return resource.ExternalUpdate{}, nil
+	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {

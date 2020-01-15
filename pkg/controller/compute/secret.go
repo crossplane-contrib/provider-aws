@@ -24,6 +24,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/secret"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane/apis/compute/v1alpha1"
 
@@ -44,8 +45,8 @@ func (c *EKSClusterSecretController) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(strings.ToLower(fmt.Sprintf("connectionsecret.%s.%s", v1alpha3.EKSClusterKind, v1alpha3.Group))).
-		Watches(&source.Kind{Type: &corev1.Secret{}}, &resource.EnqueueRequestForPropagator{}).
+		Watches(&source.Kind{Type: &corev1.Secret{}}, &resource.EnqueueRequestForPropagated{}).
 		For(&corev1.Secret{}).
 		WithEventFilter(p).
-		Complete(resource.NewSecretPropagatingReconciler(mgr))
+		Complete(secret.NewReconciler(mgr))
 }
