@@ -28,6 +28,9 @@ import (
 	"github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimbinding"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimdefaulting"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimscheduling"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	computev1alpha1 "github.com/crossplaneio/crossplane/apis/compute/v1alpha1"
 )
@@ -53,7 +56,7 @@ func (c *EKSClusterClaimSchedulingController) SetupWithManager(mgr ctrl.Manager)
 			resource.HasNoClassReference(),
 			resource.HasNoManagedResourceReference(),
 		))).
-		Complete(resource.NewClaimSchedulingReconciler(mgr,
+		Complete(claimscheduling.NewReconciler(mgr,
 			resource.ClaimKind(computev1alpha1.KubernetesClusterGroupVersionKind),
 			resource.ClassKind(v1alpha3.EKSClusterClassGroupVersionKind),
 		))
@@ -80,7 +83,7 @@ func (c *EKSClusterClaimDefaultingController) SetupWithManager(mgr ctrl.Manager)
 			resource.HasNoClassReference(),
 			resource.HasNoManagedResourceReference(),
 		))).
-		Complete(resource.NewClaimDefaultingReconciler(mgr,
+		Complete(claimdefaulting.NewReconciler(mgr,
 			resource.ClaimKind(computev1alpha1.KubernetesClusterGroupVersionKind),
 			resource.ClassKind(v1alpha3.EKSClusterClassGroupVersionKind),
 		))
@@ -97,15 +100,15 @@ func (c *EKSClusterClaimController) SetupWithManager(mgr ctrl.Manager) error {
 		v1alpha3.EKSClusterKind,
 		v1alpha3.Group))
 
-	r := resource.NewClaimReconciler(mgr,
+	r := claimbinding.NewReconciler(mgr,
 		resource.ClaimKind(computev1alpha1.KubernetesClusterGroupVersionKind),
 		resource.ClassKind(v1alpha3.EKSClusterClassGroupVersionKind),
 		resource.ManagedKind(v1alpha3.EKSClusterGroupVersionKind),
-		resource.WithBinder(resource.NewAPIBinder(mgr.GetClient(), mgr.GetScheme())),
-		resource.WithManagedConfigurators(
-			resource.ManagedConfiguratorFn(ConfigureEKSCluster),
-			resource.ManagedConfiguratorFn(resource.ConfigureReclaimPolicy),
-			resource.ManagedConfiguratorFn(resource.ConfigureNames),
+		claimbinding.WithBinder(claimbinding.NewAPIBinder(mgr.GetClient(), mgr.GetScheme())),
+		claimbinding.WithManagedConfigurators(
+			claimbinding.ManagedConfiguratorFn(ConfigureEKSCluster),
+			claimbinding.ManagedConfiguratorFn(claimbinding.ConfigureReclaimPolicy),
+			claimbinding.ManagedConfiguratorFn(claimbinding.ConfigureNames),
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(

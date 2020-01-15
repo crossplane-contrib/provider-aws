@@ -35,6 +35,7 @@ import (
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 )
@@ -65,8 +66,8 @@ var (
 type Reconciler struct {
 	client.Client
 	scheme *runtime.Scheme
-	resource.ManagedReferenceResolver
-	resource.ManagedConnectionPublisher
+	managed.ReferenceResolver
+	managed.ConnectionPublisher
 
 	connect func(*bucketv1alpha3.S3Bucket) (s3.Service, error)
 	create  func(*bucketv1alpha3.S3Bucket, s3.Service) (reconcile.Result, error)
@@ -82,10 +83,10 @@ type BucketController struct{}
 // The Manager will set fields on the Controller and Start it when the Manager is Started.
 func (c *BucketController) SetupWithManager(mgr ctrl.Manager) error {
 	r := &Reconciler{
-		Client:                     mgr.GetClient(),
-		scheme:                     mgr.GetScheme(),
-		ManagedReferenceResolver:   resource.NewAPIManagedReferenceResolver(mgr.GetClient()),
-		ManagedConnectionPublisher: resource.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
+		Client:              mgr.GetClient(),
+		scheme:              mgr.GetScheme(),
+		ReferenceResolver:   managed.NewAPIReferenceResolver(mgr.GetClient()),
+		ConnectionPublisher: managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
 	}
 	r.connect = r._connect
 	r.create = r._create
@@ -145,7 +146,7 @@ func (r *Reconciler) _create(bucket *bucketv1alpha3.S3Bucket, client s3.Service)
 		return r.fail(bucket, err)
 	}
 
-	if err := r.PublishConnection(ctx, bucket, resource.ConnectionDetails{
+	if err := r.PublishConnection(ctx, bucket, managed.ConnectionDetails{
 		runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(util.StringValue(accessKeys.AccessKeyId)),
 		runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(util.StringValue(accessKeys.SecretAccessKey)),
 		runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(bucket.Spec.Region),
@@ -240,7 +241,7 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	if !resource.IsConditionTrue(bucket.GetCondition(runtimev1alpha1.TypeReferencesResolved)) {
 		if err := r.ResolveReferences(ctx, bucket); err != nil {
 			condition := runtimev1alpha1.ReconcileError(err)
-			if resource.IsReferencesAccessError(err) {
+			if managed.IsReferencesAccessError(err) {
 				condition = runtimev1alpha1.ReferenceResolutionBlocked(err)
 			}
 

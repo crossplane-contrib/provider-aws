@@ -32,6 +32,7 @@ import (
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 
@@ -63,9 +64,9 @@ type RDSInstanceController struct{}
 // SetupWithManager creates a new Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func (c *RDSInstanceController) SetupWithManager(mgr ctrl.Manager) error {
-	r := resource.NewManagedReconciler(mgr,
+	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind),
-		resource.WithExternalConnecter(&connector{
+		managed.WithExternalConnecter(&connector{
 			kube:        mgr.GetClient(),
 			newClientFn: rds.NewClient,
 		}))
@@ -83,7 +84,7 @@ type connector struct {
 	newClientFn func(credentials []byte, region string) (rds.Client, error)
 }
 
-func (c *connector) Connect(ctx context.Context, mg resource.Managed) (resource.ExternalClient, error) {
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
 	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
 		return nil, errors.New(errNotRDSInstance)
@@ -109,10 +110,10 @@ type external struct {
 	kube   client.Client
 }
 
-func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.ExternalObservation, error) {
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
-		return resource.ExternalObservation{}, errors.New(errNotRDSInstance)
+		return managed.ExternalObservation{}, errors.New(errNotRDSInstance)
 	}
 	// TODO(muvaf): There are some parameters that require a specific call
 	// for retrieval. For example, DescribeDBInstancesOutput does not expose
@@ -121,7 +122,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 	req.SetContext(ctx)
 	rsp, err := req.Send()
 	if err != nil {
-		return resource.ExternalObservation{}, errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDescribeFailed)
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDescribeFailed)
 	}
 
 	// Describe requests can be used with filters, which then returns a list.
@@ -132,7 +133,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 	rds.LateInitialize(&cr.Spec.ForProvider, &instance)
 	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
-			return resource.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
+			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
 		}
 	}
 	cr.Status.AtProvider = rds.GenerateObservation(instance)
@@ -150,51 +151,51 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 	}
 	upToDate, err := rds.IsUpToDate(cr.Spec.ForProvider, instance)
 	if err != nil {
-		return resource.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
+		return managed.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
 	}
 
-	return resource.ExternalObservation{
+	return managed.ExternalObservation{
 		ResourceExists:    true,
 		ResourceUpToDate:  upToDate,
 		ConnectionDetails: rds.GetConnectionDetails(*cr),
 	}, nil
 }
 
-func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.ExternalCreation, error) {
+func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
 	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
-		return resource.ExternalCreation{}, errors.New(errNotRDSInstance)
+		return managed.ExternalCreation{}, errors.New(errNotRDSInstance)
 	}
 	cr.SetConditions(runtimev1alpha1.Creating())
 	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateCreating {
-		return resource.ExternalCreation{}, nil
+		return managed.ExternalCreation{}, nil
 	}
 	password, err := util.GeneratePassword(20)
 	if err != nil {
-		return resource.ExternalCreation{}, err
+		return managed.ExternalCreation{}, err
 	}
 	req := e.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), password, &cr.Spec.ForProvider))
 	req.SetContext(ctx)
 	_, err = req.Send()
 	if err != nil {
-		return resource.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
+		return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
 	}
-	conn := resource.ConnectionDetails{
+	conn := managed.ConnectionDetails{
 		runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(password),
 	}
 	if cr.Spec.ForProvider.MasterUsername != nil {
 		conn[runtimev1alpha1.ResourceCredentialsSecretUserKey] = []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername))
 	}
-	return resource.ExternalCreation{ConnectionDetails: conn}, nil
+	return managed.ExternalCreation{ConnectionDetails: conn}, nil
 }
 
-func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.ExternalUpdate, error) {
+func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
 	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
-		return resource.ExternalUpdate{}, errors.New(errNotRDSInstance)
+		return managed.ExternalUpdate{}, errors.New(errNotRDSInstance)
 	}
 	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateModifying {
-		return resource.ExternalUpdate{}, nil
+		return managed.ExternalUpdate{}, nil
 	}
 	// AWS rejects modification requests if you send fields whose value is same
 	// as the current one. So, we have to create a patch out of the desired state
@@ -205,16 +206,16 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.Ex
 	describe.SetContext(ctx)
 	rsp, err := describe.Send()
 	if err != nil {
-		return resource.ExternalUpdate{}, errors.Wrap(err, errDescribeFailed)
+		return managed.ExternalUpdate{}, errors.Wrap(err, errDescribeFailed)
 	}
 	patch, err := rds.CreatePatch(&rsp.DBInstances[0], &cr.Spec.ForProvider)
 	if err != nil {
-		return resource.ExternalUpdate{}, errors.Wrap(err, errPatchCreationFailed)
+		return managed.ExternalUpdate{}, errors.Wrap(err, errPatchCreationFailed)
 	}
 	modify := e.client.ModifyDBInstanceRequest(rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch))
 	modify.SetContext(ctx)
 	_, err = modify.Send()
-	return resource.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
+	return managed.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {

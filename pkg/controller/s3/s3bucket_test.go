@@ -39,6 +39,7 @@ import (
 	. "github.com/crossplaneio/stack-aws/pkg/clients/s3/fake"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
@@ -96,8 +97,8 @@ func TestSyncBucketError(t *testing.T) {
 
 	assert := func(instance *S3Bucket, client client.Service, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) {
 		r := &Reconciler{
-			Client:                   NewFakeClient(instance),
-			ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
+			Client:            NewFakeClient(instance),
+			ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
 		}
 
 		rs, err := r._sync(instance, client)
@@ -180,8 +181,8 @@ func TestSyncBucket(t *testing.T) {
 	tr.Status.LastLocalPermission = storagev1alpha1.ReadOnlyPermission
 
 	r := &Reconciler{
-		Client:                   NewFakeClient(tr),
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
+		Client:            NewFakeClient(tr),
+		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
 	}
 	//
 	updateBucketACLCalled := false
@@ -213,8 +214,8 @@ func TestDelete(t *testing.T) {
 	tr := testResource()
 
 	r := &Reconciler{
-		Client:                   NewFakeClient(tr),
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
+		Client:            NewFakeClient(tr),
+		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
 	}
 
 	cl := &MockS3Client{}
@@ -266,9 +267,9 @@ func TestCreate(t *testing.T) {
 	tr := testResource()
 
 	r := &Reconciler{
-		Client:                     NewFakeClient(tr),
-		ManagedReferenceResolver:   resource.NewAPIManagedReferenceResolver(NewFakeClient()),
-		ManagedConnectionPublisher: resource.PublisherChain{}, // A no-op publisher.
+		Client:              NewFakeClient(tr),
+		ReferenceResolver:   managed.NewAPIReferenceResolver(NewFakeClient()),
+		ConnectionPublisher: managed.PublisherChain{}, // A no-op publisher.
 	}
 
 	createOrUpdateBucketCalled := false
@@ -319,10 +320,10 @@ func TestCreateFail(t *testing.T) {
 
 	testError := errors.New("test-publish-secret-error")
 	r := &Reconciler{
-		Client:                   NewFakeClient(tr),
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
-		ManagedConnectionPublisher: resource.ManagedConnectionPublisherFns{
-			PublishConnectionFn: func(_ context.Context, _ resource.Managed, _ resource.ConnectionDetails) error {
+		Client:            NewFakeClient(tr),
+		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		ConnectionPublisher: managed.ConnectionPublisherFns{
+			PublishConnectionFn: func(_ context.Context, _ resource.Managed, _ managed.ConnectionDetails) error {
 				return testError
 			},
 		},
@@ -388,8 +389,8 @@ func TestReconcile(t *testing.T) {
 	tr.Status.IAMUsername = ""
 
 	r := &Reconciler{
-		Client:                   NewFakeClient(tr),
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(NewFakeClient()),
+		Client:            NewFakeClient(tr),
+		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
 	}
 
 	// test connect error

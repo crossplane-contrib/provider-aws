@@ -21,7 +21,7 @@ import (
 	"strconv"
 
 	"github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
@@ -317,13 +317,13 @@ func newEndpoint(e *elasticache.Endpoint) v1beta1.Endpoint {
 
 // ConnectionEndpoint returns the connection endpoint for a Replication Group.
 // https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/Endpoints.html
-func ConnectionEndpoint(rg elasticache.ReplicationGroup) resource.ConnectionDetails {
+func ConnectionEndpoint(rg elasticache.ReplicationGroup) managed.ConnectionDetails {
 	// "Cluster enabled" Replication Groups have multiple node groups, and an
 	// explicit configuration endpoint that should be used for read and write.
 	if aws.BoolValue(rg.ClusterEnabled) &&
 		rg.ConfigurationEndpoint != nil &&
 		rg.ConfigurationEndpoint.Address != nil {
-		return resource.ConnectionDetails{
+		return managed.ConnectionDetails{
 			v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(rg.ConfigurationEndpoint.Address)),
 			v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(aws.Int64Value(rg.ConfigurationEndpoint.Port)))),
 		}
@@ -336,7 +336,7 @@ func ConnectionEndpoint(rg elasticache.ReplicationGroup) resource.ConnectionDeta
 	if len(rg.NodeGroups) > 0 &&
 		rg.NodeGroups[0].PrimaryEndpoint != nil &&
 		rg.NodeGroups[0].PrimaryEndpoint.Address != nil {
-		return resource.ConnectionDetails{
+		return managed.ConnectionDetails{
 			v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(rg.NodeGroups[0].PrimaryEndpoint.Address)),
 			v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(aws.Int64Value(rg.NodeGroups[0].PrimaryEndpoint.Port)))),
 		}

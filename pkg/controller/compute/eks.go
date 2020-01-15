@@ -39,6 +39,7 @@ import (
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
 	awscomputev1alpha3 "github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
@@ -92,8 +93,8 @@ var (
 // Reconciler reconciles a Provider object
 type Reconciler struct {
 	client.Client
-	publisher resource.ManagedConnectionPublisher
-	resource.ManagedReferenceResolver
+	publisher managed.ConnectionPublisher
+	managed.ReferenceResolver
 
 	connect func(*awscomputev1alpha3.EKSCluster) (eks.Client, error)
 	create  func(*awscomputev1alpha3.EKSCluster, eks.Client) (reconcile.Result, error)
@@ -111,9 +112,9 @@ type EKSClusterController struct{}
 // and Start it when the Manager is Started.
 func (c *EKSClusterController) SetupWithManager(mgr ctrl.Manager) error {
 	r := &Reconciler{
-		Client:                   mgr.GetClient(),
-		publisher:                resource.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
-		ManagedReferenceResolver: resource.NewAPIManagedReferenceResolver(mgr.GetClient()),
+		Client:            mgr.GetClient(),
+		publisher:         managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
+		ReferenceResolver: managed.NewAPIReferenceResolver(mgr.GetClient()),
 	}
 	r.connect = r._connect
 	r.create = r._create
@@ -350,7 +351,7 @@ func (r *Reconciler) _secret(cluster *eks.Cluster, instance *awscomputev1alpha3.
 		return err
 	}
 
-	return r.publisher.PublishConnection(ctx, instance, resource.ConnectionDetails{
+	return r.publisher.PublishConnection(ctx, instance, managed.ConnectionDetails{
 		runtimev1alpha1.ResourceCredentialsSecretEndpointKey:   []byte(config.Clusters[cluster.Name].Server),
 		runtimev1alpha1.ResourceCredentialsSecretCAKey:         config.Clusters[cluster.Name].CertificateAuthorityData,
 		runtimev1alpha1.ResourceCredentialsSecretTokenKey:      []byte(config.AuthInfos[cluster.Name].Token),
@@ -408,7 +409,7 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	if !resource.IsConditionTrue(instance.GetCondition(runtimev1alpha1.TypeReferencesResolved)) {
 		if err := r.ResolveReferences(ctx, instance); err != nil {
 			condition := runtimev1alpha1.ReconcileError(err)
-			if resource.IsReferencesAccessError(err) {
+			if managed.IsReferencesAccessError(err) {
 				condition = runtimev1alpha1.ReferenceResolutionBlocked(err)
 			}
 
