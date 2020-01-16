@@ -27,6 +27,7 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/secret"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane/apis/compute/v1alpha1"
+	workloadv1alpha1 "github.com/crossplaneio/crossplane/apis/workload/v1alpha1"
 
 	"github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
 )
@@ -40,6 +41,7 @@ type EKSClusterSecretController struct{}
 func (c *EKSClusterSecretController) SetupWithManager(mgr ctrl.Manager) error {
 	p := resource.NewPredicates(resource.AnyOf(
 		resource.AllOf(resource.IsControlledByKind(v1alpha1.KubernetesClusterGroupVersionKind), resource.IsPropagated()),
+		resource.AllOf(resource.IsControlledByKind(workloadv1alpha1.KubernetesTargetGroupVersionKind), resource.IsPropagated()),
 		resource.AllOf(resource.IsControlledByKind(v1alpha3.EKSClusterGroupVersionKind), resource.IsPropagator()),
 	))
 
