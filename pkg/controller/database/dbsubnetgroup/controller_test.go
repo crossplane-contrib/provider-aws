@@ -229,7 +229,8 @@ func Test_Create(t *testing.T) {
 				DBSubnetGroupName:        "arbitrary group name",
 				SubnetIDs:                []string{"subnetid1", "subnetid2"},
 				Tags: []v1alpha3.Tag{
-					{"tagKey1", "tagValue1"}, {"tagKey2", "tagValue2"},
+					{Key: "tagKey1", Value: "tagValue1"},
+					{Key: "tagKey2", Value: "tagValue2"},
 				},
 			},
 		},

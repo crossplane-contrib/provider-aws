@@ -133,6 +133,11 @@ issues:
         - gosec
         - scopelint
         - unparam
+    
+    # Exclude gocyclo on generated files
+    - path: zz_generated\.deepcopy\.go
+      linters:
+        - gocyclo
 
     # Ease some gocritic warnings on test files.
     - path: _test\.go

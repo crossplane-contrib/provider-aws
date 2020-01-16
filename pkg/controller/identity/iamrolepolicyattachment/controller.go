@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
 	v1alpha3 "github.com/crossplaneio/stack-aws/apis/identity/v1alpha3"
@@ -50,10 +51,10 @@ type Controller struct{}
 // SetupWithManager creates a new Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func (c *Controller) SetupWithManager(mgr ctrl.Manager) error {
-	r := resource.NewManagedReconciler(mgr,
+	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1alpha3.IAMRolePolicyAttachmentGroupVersionKind),
-		resource.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: iam.NewRolePolicyAttachmentClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
-		resource.WithManagedConnectionPublishers())
+		managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: iam.NewRolePolicyAttachmentClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+		managed.WithConnectionPublishers())
 	name := strings.ToLower(fmt.Sprintf("%s.%s", v1alpha3.IAMRolePolicyAttachmentKindAPIVersion, v1alpha3.Group))
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -67,7 +68,7 @@ type connector struct {
 	awsConfigFn func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error)
 }
 
-func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (resource.ExternalClient, error) {
+func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
 	cr, ok := mgd.(*v1alpha3.IAMRolePolicyAttachment)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
@@ -90,10 +91,10 @@ type external struct {
 	client iam.RolePolicyAttachmentClient
 }
 
-func (e *external) Observe(ctx context.Context, mgd resource.Managed) (resource.ExternalObservation, error) {
+func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mgd.(*v1alpha3.IAMRolePolicyAttachment)
 	if !ok {
-		return resource.ExternalObservation{}, errors.New(errUnexpectedObject)
+		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
 	req := e.client.ListAttachedRolePoliciesRequest(&awsiam.ListAttachedRolePoliciesInput{
@@ -104,12 +105,12 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (resource.
 	observed, err := req.Send()
 	if err != nil {
 		if iam.IsErrorNotFound(err) {
-			return resource.ExternalObservation{
+			return managed.ExternalObservation{
 				ResourceExists: false,
 			}, nil
 		}
 
-		return resource.ExternalObservation{}, errors.Wrapf(err, errGet, cr.Spec.RoleName)
+		return managed.ExternalObservation{}, errors.Wrapf(err, errGet, cr.Spec.RoleName)
 	}
 
 	var attachedPolicyObject *awsiam.AttachedPolicy
@@ -121,7 +122,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (resource.
 	}
 
 	if attachedPolicyObject == nil {
-		return resource.ExternalObservation{
+		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
 	}
@@ -130,15 +131,15 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (resource.
 
 	cr.UpdateExternalStatus(*attachedPolicyObject)
 
-	return resource.ExternalObservation{
+	return managed.ExternalObservation{
 		ResourceExists: true,
 	}, nil
 }
 
-func (e *external) Create(ctx context.Context, mgd resource.Managed) (resource.ExternalCreation, error) {
+func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
 	cr, ok := mgd.(*v1alpha3.IAMRolePolicyAttachment)
 	if !ok {
-		return resource.ExternalCreation{}, errors.New(errUnexpectedObject)
+		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
 	cr.SetConditions(runtimev1alpha1.Creating())
@@ -151,13 +152,13 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (resource.E
 
 	_, err := req.Send()
 
-	return resource.ExternalCreation{}, errors.Wrapf(err, errAttach, cr.Spec.PolicyARN, cr.Spec.RoleName)
+	return managed.ExternalCreation{}, errors.Wrapf(err, errAttach, cr.Spec.PolicyARN, cr.Spec.RoleName)
 }
 
-func (e *external) Update(ctx context.Context, mgd resource.Managed) (resource.ExternalUpdate, error) {
+func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
 	cr, ok := mgd.(*v1alpha3.IAMRolePolicyAttachment)
 	if !ok {
-		return resource.ExternalUpdate{}, errors.New(errUnexpectedObject)
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
 	// TODO(soorena776): add more sophisticated Update logic, once we
@@ -170,7 +171,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (resource.E
 	if cr.Status.AttachedPolicyARN == "" || cr.Spec.PolicyARN == cr.Status.AttachedPolicyARN {
 		// update is only necessary if the PolicyArn in the Status is set and is different
 		// from the one in Spec
-		return resource.ExternalUpdate{}, nil
+		return managed.ExternalUpdate{}, nil
 	}
 
 	aReq := e.client.AttachRolePolicyRequest(&awsiam.AttachRolePolicyInput{
@@ -179,7 +180,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (resource.E
 	})
 	aReq.SetContext(ctx)
 	if _, err := aReq.Send(); err != nil {
-		return resource.ExternalUpdate{}, errors.Wrapf(err, errAttach, cr.Spec.PolicyARN, cr.Spec.RoleName)
+		return managed.ExternalUpdate{}, errors.Wrapf(err, errAttach, cr.Spec.PolicyARN, cr.Spec.RoleName)
 	}
 
 	dReq := e.client.DetachRolePolicyRequest(&awsiam.DetachRolePolicyInput{
@@ -189,10 +190,10 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (resource.E
 	dReq.SetContext(ctx)
 
 	if _, err := dReq.Send(); err != nil {
-		return resource.ExternalUpdate{}, errors.Wrapf(err, errDetach, cr.Status.AttachedPolicyARN, cr.Spec.RoleName)
+		return managed.ExternalUpdate{}, errors.Wrapf(err, errDetach, cr.Status.AttachedPolicyARN, cr.Spec.RoleName)
 	}
 
-	return resource.ExternalUpdate{}, nil
+	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {

@@ -30,7 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 
 	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
@@ -99,8 +99,8 @@ func instance(m ...rdsModifier) *v1beta1.RDSInstance {
 	return cr
 }
 
-var _ resource.ExternalClient = &external{}
-var _ resource.ExternalConnecter = &connector{}
+var _ managed.ExternalClient = &external{}
+var _ managed.ExternalConnecter = &connector{}
 
 func TestConnect(t *testing.T) {
 	secret := corev1.Secret{
@@ -216,7 +216,7 @@ func TestConnect(t *testing.T) {
 func TestObserve(t *testing.T) {
 	type want struct {
 		cr     *v1beta1.RDSInstance
-		result resource.ExternalObservation
+		result managed.ExternalObservation
 		err    error
 	}
 
@@ -246,7 +246,7 @@ func TestObserve(t *testing.T) {
 					withConditions(runtimev1alpha1.Available()),
 					withBindingPhase(runtimev1alpha1.BindingPhaseUnbound),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
-				result: resource.ExternalObservation{
+				result: managed.ExternalObservation{
 					ResourceExists:    true,
 					ResourceUpToDate:  true,
 					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
@@ -274,7 +274,7 @@ func TestObserve(t *testing.T) {
 				cr: instance(
 					withConditions(runtimev1alpha1.Deleting()),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateDeleting))),
-				result: resource.ExternalObservation{
+				result: managed.ExternalObservation{
 					ResourceExists:    true,
 					ResourceUpToDate:  true,
 					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
@@ -302,7 +302,7 @@ func TestObserve(t *testing.T) {
 				cr: instance(
 					withConditions(runtimev1alpha1.Unavailable()),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateFailed))),
-				result: resource.ExternalObservation{
+				result: managed.ExternalObservation{
 					ResourceExists:    true,
 					ResourceUpToDate:  true,
 					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
@@ -367,7 +367,7 @@ func TestObserve(t *testing.T) {
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateCreating)),
 					withConditions(runtimev1alpha1.Creating()),
 				),
-				result: resource.ExternalObservation{
+				result: managed.ExternalObservation{
 					ResourceExists:    true,
 					ResourceUpToDate:  true,
 					ConnectionDetails: rds.GetConnectionDetails(v1beta1.RDSInstance{}),
@@ -425,7 +425,7 @@ func TestObserve(t *testing.T) {
 func TestCreate(t *testing.T) {
 	type want struct {
 		cr     *v1beta1.RDSInstance
-		result resource.ExternalCreation
+		result managed.ExternalCreation
 		err    error
 	}
 
@@ -448,8 +448,8 @@ func TestCreate(t *testing.T) {
 				cr: instance(
 					withMasterUsername(&masterUsername),
 					withConditions(runtimev1alpha1.Creating())),
-				result: resource.ExternalCreation{
-					ConnectionDetails: resource.ConnectionDetails{
+				result: managed.ExternalCreation{
+					ConnectionDetails: managed.ConnectionDetails{
 						runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
 						runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
 					},
@@ -481,8 +481,8 @@ func TestCreate(t *testing.T) {
 				cr: instance(
 					withMasterUsername(nil),
 					withConditions(runtimev1alpha1.Creating())),
-				result: resource.ExternalCreation{
-					ConnectionDetails: resource.ConnectionDetails{
+				result: managed.ExternalCreation{
+					ConnectionDetails: managed.ConnectionDetails{
 						runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
 					},
 				},
@@ -531,7 +531,7 @@ func TestCreate(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	type want struct {
 		cr     *v1beta1.RDSInstance
-		result resource.ExternalUpdate
+		result managed.ExternalUpdate
 		err    error
 	}
 

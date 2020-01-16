@@ -243,8 +243,8 @@ func Test_Create(t *testing.T) {
 						IPProtocol: "an arbitrary protocol",
 						CIDRBlocks: []v1alpha3.IPRange{
 							{
-								"0.0.0.0/0",
-								"an arbitrary cidr block",
+								CIDRIP:      "0.0.0.0/0",
+								Description: "an arbitrary cidr block",
 							},
 						},
 					}, {}, {},
@@ -256,8 +256,8 @@ func Test_Create(t *testing.T) {
 						IPProtocol: "an arbitrary protocol",
 						CIDRBlocks: []v1alpha3.IPRange{
 							{
-								"0.0.0.0/0",
-								"an arbitrary cidr block",
+								CIDRIP:      "0.0.0.0/0",
+								Description: "an arbitrary cidr block",
 							},
 						},
 					}, {},

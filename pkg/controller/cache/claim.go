@@ -29,6 +29,9 @@ import (
 	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimbinding"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimdefaulting"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimscheduling"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	cachev1alpha1 "github.com/crossplaneio/crossplane/apis/cache/v1alpha1"
 )
@@ -54,7 +57,7 @@ func (c *ReplicationGroupClaimSchedulingController) SetupWithManager(mgr ctrl.Ma
 			resource.HasNoClassReference(),
 			resource.HasNoManagedResourceReference(),
 		))).
-		Complete(resource.NewClaimSchedulingReconciler(mgr,
+		Complete(claimscheduling.NewReconciler(mgr,
 			resource.ClaimKind(cachev1alpha1.RedisClusterGroupVersionKind),
 			resource.ClassKind(v1beta1.ReplicationGroupClassGroupVersionKind),
 		))
@@ -81,7 +84,7 @@ func (c *ReplicationGroupClaimDefaultingController) SetupWithManager(mgr ctrl.Ma
 			resource.HasNoClassReference(),
 			resource.HasNoManagedResourceReference(),
 		))).
-		Complete(resource.NewClaimDefaultingReconciler(mgr,
+		Complete(claimdefaulting.NewReconciler(mgr,
 			resource.ClaimKind(cachev1alpha1.RedisClusterGroupVersionKind),
 			resource.ClassKind(v1beta1.ReplicationGroupClassGroupVersionKind),
 		))
@@ -98,14 +101,14 @@ func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) err
 		v1beta1.ReplicationGroupKind,
 		v1beta1.Group))
 
-	r := resource.NewClaimReconciler(mgr,
+	r := claimbinding.NewReconciler(mgr,
 		resource.ClaimKind(cachev1alpha1.RedisClusterGroupVersionKind),
 		resource.ClassKind(v1beta1.ReplicationGroupClassGroupVersionKind),
 		resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind),
-		resource.WithManagedConfigurators(
-			resource.ManagedConfiguratorFn(ConfigureReplicationGroup),
-			resource.ManagedConfiguratorFn(resource.ConfigureReclaimPolicy),
-			resource.ManagedConfiguratorFn(resource.ConfigureNames),
+		claimbinding.WithManagedConfigurators(
+			claimbinding.ManagedConfiguratorFn(ConfigureReplicationGroup),
+			claimbinding.ManagedConfiguratorFn(claimbinding.ConfigureReclaimPolicy),
+			claimbinding.ManagedConfiguratorFn(claimbinding.ConfigureNames),
 		))
 
 	p := resource.NewPredicates(resource.AnyOf(

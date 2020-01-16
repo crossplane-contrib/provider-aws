@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
@@ -42,7 +43,6 @@ import (
 	"github.com/crossplaneio/stack-aws/pkg/clients/elasticache/fake"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 )
 
@@ -100,7 +100,7 @@ var (
 
 type testCase struct {
 	name         string
-	e            resource.ExternalClient
+	e            managed.ExternalClient
 	r            *v1beta1.ReplicationGroup
 	want         *v1beta1.ReplicationGroup
 	tokenCreated bool
@@ -181,8 +181,8 @@ func replicationGroup(rm ...replicationGroupModifier) *v1beta1.ReplicationGroup 
 }
 
 // Test that our Reconciler implementation satisfies the Reconciler interface.
-var _ resource.ExternalClient = &external{}
-var _ resource.ExternalConnecter = &connecter{}
+var _ managed.ExternalClient = &external{}
+var _ managed.ExternalConnecter = &connecter{}
 
 func TestCreate(t *testing.T) {
 	cases := []testCase{

@@ -28,6 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
@@ -444,12 +445,12 @@ func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error
 	return cmp.Equal(&v1beta1.RDSInstanceParameters{}, patch, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{})), nil
 }
 
-// GetConnectionDetails extracts resource.ConnectionDetails out of v1alpha3.RDSInstance.
-func GetConnectionDetails(in v1beta1.RDSInstance) resource.ConnectionDetails {
+// GetConnectionDetails extracts managed.ConnectionDetails out of v1alpha3.RDSInstance.
+func GetConnectionDetails(in v1beta1.RDSInstance) managed.ConnectionDetails {
 	if in.Status.AtProvider.Endpoint.Address == "" {
 		return nil
 	}
-	return resource.ConnectionDetails{
+	return managed.ConnectionDetails{
 		v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(in.Status.AtProvider.Endpoint.Address),
 		v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(in.Status.AtProvider.Endpoint.Port)),
 	}
