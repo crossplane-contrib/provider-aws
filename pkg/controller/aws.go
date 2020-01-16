@@ -50,6 +50,7 @@ func (c *Controllers) SetupWithManager(mgr ctrl.Manager) error {
 		&compute.EKSClusterClaimDefaultingController{},
 		&compute.EKSClusterClaimController{},
 		&compute.EKSClusterSecretController{},
+		&compute.EKSClusterTargetController{},
 		&compute.EKSClusterController{},
 		&database.PostgreSQLInstanceClaimSchedulingController{},
 		&database.PostgreSQLInstanceClaimDefaultingController{},
