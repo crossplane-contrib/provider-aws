@@ -1,11 +1,11 @@
 module github.com/crossplaneio/stack-aws
 
-go 1.12
+go 1.13
 
 require (
 	github.com/aws/aws-sdk-go-v2 v0.5.0
-	github.com/crossplaneio/crossplane v0.6.0-rc.0.20191226165033-a452562456e0
-	github.com/crossplaneio/crossplane-runtime v0.3.0
+	github.com/crossplaneio/crossplane v0.6.0-rc.0.20200115221822-c06433fc39c6
+	github.com/crossplaneio/crossplane-runtime v0.3.1-0.20200115232149-cd8c52b483c3
 	github.com/crossplaneio/crossplane-tools v0.0.0-20191220202319-9033bd8a02ce
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/ghodss/yaml v1.0.0

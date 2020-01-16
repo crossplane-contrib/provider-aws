@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimbinding"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
 	databasev1alpha1 "github.com/crossplaneio/crossplane/apis/database/v1alpha1"
@@ -40,8 +41,8 @@ const (
 )
 
 var (
-	_ resource.ManagedConfigurator = resource.ManagedConfiguratorFn(ConfigurePostgreRDSInstance)
-	_ resource.ManagedConfigurator = resource.ManagedConfiguratorFn(ConfigureMyRDSInstance)
+	_ claimbinding.ManagedConfigurator = claimbinding.ManagedConfiguratorFn(ConfigurePostgreRDSInstance)
+	_ claimbinding.ManagedConfigurator = claimbinding.ManagedConfiguratorFn(ConfigureMyRDSInstance)
 )
 
 func TestConfigurePostgreRDSInstance(t *testing.T) {

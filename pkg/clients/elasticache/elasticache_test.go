@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/google/go-cmp/cmp"
@@ -773,7 +773,7 @@ func TestConnectionEndpoint(t *testing.T) {
 	cases := []struct {
 		name string
 		rg   elasticache.ReplicationGroup
-		want resource.ConnectionDetails
+		want managed.ConnectionDetails
 	}{
 		{
 			name: "ClusterModeEnabled",
@@ -784,7 +784,7 @@ func TestConnectionEndpoint(t *testing.T) {
 					Port:    aws.Int64(port),
 				},
 			},
-			want: resource.ConnectionDetails{
+			want: managed.ConnectionDetails{
 				v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(host),
 				v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(port)),
 			},
@@ -806,7 +806,7 @@ func TestConnectionEndpoint(t *testing.T) {
 					}},
 				},
 			},
-			want: resource.ConnectionDetails{
+			want: managed.ConnectionDetails{
 				v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(host),
 				v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(port)),
 			},

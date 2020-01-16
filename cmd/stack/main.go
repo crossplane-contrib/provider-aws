@@ -23,9 +23,10 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	runtimelog "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	runtimelog "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
+	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 
 	apis "github.com/crossplaneio/stack-aws/apis"
 	"github.com/crossplaneio/stack-aws/pkg/controller"
@@ -50,7 +51,7 @@ func main() {
 	)
 	cmd := kingpin.MustParse(app.Parse(os.Args[1:]))
 
-	zl := runtimelog.ZapLogger(*debug)
+	zl := zap.Logger(*debug)
 	logging.SetLogger(zl)
 	if *debug {
 		// The controller-runtime runs with a no-op logger by default. It is

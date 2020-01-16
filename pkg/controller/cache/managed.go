@@ -36,6 +36,7 @@ import (
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
+	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 )
@@ -66,9 +67,9 @@ type ReplicationGroupController struct{}
 // Manager with default RBAC. The Manager will set fields on the Controller and
 // start it when the Manager is Started.
 func (c *ReplicationGroupController) SetupWithManager(mgr ctrl.Manager) error {
-	r := resource.NewManagedReconciler(mgr,
+	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind),
-		resource.WithExternalConnecter(&connecter{
+		managed.WithExternalConnecter(&connecter{
 			client:      mgr.GetClient(),
 			newClientFn: elasticache.NewClient,
 		}))
@@ -86,7 +87,7 @@ type connecter struct {
 	newClientFn func(credentials []byte, region string) (elasticache.Client, error)
 }
 
-func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (resource.ExternalClient, error) {
+func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
 	g, ok := mg.(*v1beta1.ReplicationGroup)
 	if !ok {
 		return nil, errors.New(errNotReplicationGroup)
@@ -111,17 +112,17 @@ type external struct {
 	kube   client.Client
 }
 
-func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.ExternalObservation, error) {
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mg.(*v1beta1.ReplicationGroup)
 	if !ok {
-		return resource.ExternalObservation{}, errors.New(errNotReplicationGroup)
+		return managed.ExternalObservation{}, errors.New(errNotReplicationGroup)
 	}
 
 	dr := e.client.DescribeReplicationGroupsRequest(elasticache.NewDescribeReplicationGroupsInput(meta.GetExternalName(cr)))
 	dr.SetContext(ctx)
 	rsp, err := dr.Send()
 	if err != nil {
-		return resource.ExternalObservation{ResourceExists: false}, errors.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDescribeReplicationGroup)
+		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDescribeReplicationGroup)
 	}
 	// DescribeReplicationGroups can return one or many replication groups. We
 	// ask for one group by name, so we should get either a single element list
@@ -131,7 +132,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 	elasticache.LateInitialize(&cr.Spec.ForProvider, rg)
 	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
-			return resource.ExternalObservation{}, errors.Wrap(err, errUpdateReplicationGroupCR)
+			return managed.ExternalObservation{}, errors.Wrap(err, errUpdateReplicationGroupCR)
 		}
 	}
 	cr.Status.AtProvider = elasticache.GenerateObservation(rg)
@@ -150,19 +151,19 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (resource.E
 
 	ccList, err := getCacheClusterList(ctx, e.client, cr.Status.AtProvider.MemberClusters)
 	if err != nil {
-		return resource.ExternalObservation{}, errors.Wrap(err, errGetCacheClusterList)
+		return managed.ExternalObservation{}, errors.Wrap(err, errGetCacheClusterList)
 	}
-	return resource.ExternalObservation{
+	return managed.ExternalObservation{
 		ResourceExists:    true,
 		ResourceUpToDate:  !elasticache.ReplicationGroupNeedsUpdate(cr.Spec.ForProvider, rg, ccList),
 		ConnectionDetails: elasticache.ConnectionEndpoint(rg),
 	}, nil
 }
 
-func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.ExternalCreation, error) {
+func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
 	cr, ok := mg.(*v1beta1.ReplicationGroup)
 	if !ok {
-		return resource.ExternalCreation{}, errors.New(errNotReplicationGroup)
+		return managed.ExternalCreation{}, errors.New(errNotReplicationGroup)
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
@@ -175,39 +176,39 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (resource.Ex
 	if commonaws.BoolValue(cr.Spec.ForProvider.AuthEnabled) {
 		t, err := util.GeneratePassword(maxAuthTokenData)
 		if err != nil {
-			return resource.ExternalCreation{}, errors.Wrap(err, errGenerateAuthToken)
+			return managed.ExternalCreation{}, errors.Wrap(err, errGenerateAuthToken)
 		}
 		token = &t
 	}
 	r := e.client.CreateReplicationGroupRequest(elasticache.NewCreateReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr), token))
 	r.SetContext(ctx)
 	if _, err := r.Send(); err != nil {
-		return resource.ExternalCreation{}, errors.Wrap(resource.Ignore(elasticache.IsAlreadyExists, err), errCreateReplicationGroup)
+		return managed.ExternalCreation{}, errors.Wrap(resource.Ignore(elasticache.IsAlreadyExists, err), errCreateReplicationGroup)
 	}
 	if token != nil {
-		return resource.ExternalCreation{
-			ConnectionDetails: resource.ConnectionDetails{
+		return managed.ExternalCreation{
+			ConnectionDetails: managed.ConnectionDetails{
 				runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(*token),
 			},
 		}, nil
 	}
-	return resource.ExternalCreation{}, nil
+	return managed.ExternalCreation{}, nil
 }
 
-func (e *external) Update(ctx context.Context, mg resource.Managed) (resource.ExternalUpdate, error) {
+func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
 	cr, ok := mg.(*v1beta1.ReplicationGroup)
 	if !ok {
-		return resource.ExternalUpdate{}, errors.New(errNotReplicationGroup)
+		return managed.ExternalUpdate{}, errors.New(errNotReplicationGroup)
 	}
 	// NOTE(muvaf): AWS API rejects modification requests if the state is not
 	// `available`
 	if cr.Status.AtProvider.Status != v1beta1.StatusAvailable {
-		return resource.ExternalUpdate{}, nil
+		return managed.ExternalUpdate{}, nil
 	}
 	mr := e.client.ModifyReplicationGroupRequest(elasticache.NewModifyReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
 	mr.SetContext(ctx)
 	_, err := mr.Send()
-	return resource.ExternalUpdate{}, errors.Wrap(err, errModifyReplicationGroup)
+	return managed.ExternalUpdate{}, errors.Wrap(err, errModifyReplicationGroup)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
