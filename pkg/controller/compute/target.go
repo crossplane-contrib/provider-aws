@@ -22,6 +22,8 @@ import (
 
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplaneio/crossplane-runtime/pkg/event"
+	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/target"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane/apis/workload/v1alpha1"
@@ -29,22 +31,20 @@ import (
 	"github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
 )
 
-// EKSClusterTargetController is responsible for adding the EKSCluster target
-// controller and its corresponding reconciler to the manager with any runtime configuration.
-type EKSClusterTargetController struct{}
-
-// SetupWithManager adds a controller that propagates EKSCluster connection
+// SetupEKSClusterTarget adds a controller that propagates EKSCluster connection
 // secrets to the connection secrets of their targets.
-func (c *EKSClusterTargetController) SetupWithManager(mgr ctrl.Manager) error {
+func SetupEKSClusterTarget(mgr ctrl.Manager, l logging.Logger) error {
+	name := target.ControllerName(v1alpha3.EKSClusterKind)
 	p := resource.NewPredicates(resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha3.EKSClusterGroupVersionKind)))
-
-	r := target.NewReconciler(mgr,
-		resource.TargetKind(v1alpha1.KubernetesTargetGroupVersionKind),
-		resource.ManagedKind(v1alpha3.EKSClusterGroupVersionKind))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(strings.ToLower(fmt.Sprintf("kubernetestarget.%s.%s", v1alpha3.EKSClusterKind, v1alpha3.Group))).
 		For(&v1alpha1.KubernetesTarget{}).
 		WithEventFilter(p).
-		Complete(r)
+		Complete(target.NewReconciler(mgr,
+			resource.TargetKind(v1alpha1.KubernetesTargetGroupVersionKind),
+			resource.ManagedKind(v1alpha3.EKSClusterGroupVersionKind),
+			target.WithLogger(l.WithValues("controller", name)),
+			target.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+		))
 }

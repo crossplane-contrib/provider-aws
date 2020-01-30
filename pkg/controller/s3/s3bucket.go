@@ -56,7 +56,6 @@ const (
 )
 
 var (
-	log           = logging.Logger.WithName("controller." + controllerName)
 	ctx           = context.Background()
 	result        = reconcile.Result{}
 	resultRequeue = reconcile.Result{Requeue: true}
@@ -73,20 +72,20 @@ type Reconciler struct {
 	create  func(*bucketv1alpha3.S3Bucket, s3.Service) (reconcile.Result, error)
 	sync    func(*bucketv1alpha3.S3Bucket, s3.Service) (reconcile.Result, error)
 	delete  func(*bucketv1alpha3.S3Bucket, s3.Service) (reconcile.Result, error)
+
+	log logging.Logger
 }
 
-// BucketController is responsible for adding the Bucket controller and its
-// corresponding reconciler to the manager with any runtime configuration.
-type BucketController struct{}
+// SetupS3Bucket adds a controller that reconciles S3Buckets.
+func SetupS3Bucket(mgr ctrl.Manager, l logging.Logger) error {
+	name := managed.ControllerName(bucketv1alpha3.S3BucketClassKind)
 
-// SetupWithManager creates a newSyncDeleter Controller and adds it to the Manager with default RBAC.
-// The Manager will set fields on the Controller and Start it when the Manager is Started.
-func (c *BucketController) SetupWithManager(mgr ctrl.Manager) error {
 	r := &Reconciler{
 		Client:              mgr.GetClient(),
 		scheme:              mgr.GetScheme(),
 		ReferenceResolver:   managed.NewAPIReferenceResolver(mgr.GetClient()),
 		ConnectionPublisher: managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
+		log:                 l.WithValues("controller", name),
 	}
 	r.connect = r._connect
 	r.create = r._create
@@ -94,7 +93,7 @@ func (c *BucketController) SetupWithManager(mgr ctrl.Manager) error {
 	r.sync = r._sync
 
 	return ctrl.NewControllerManagedBy(mgr).
-		Named(controllerName).
+		Named(name).
 		For(&bucketv1alpha3.S3Bucket{}).
 		Owns(&corev1.Secret{}).
 		Complete(r)
@@ -217,7 +216,7 @@ func (r *Reconciler) _delete(bucket *bucketv1alpha3.S3Bucket, client s3.Service)
 // Reconcile reads that state of the bucket for an Instance object and makes changes based on the state read
 // and what is in the Instance.Spec
 func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	log.V(logging.Debug).Info("reconciling", "kind", bucketv1alpha3.S3BucketKindAPIVersion, "request", request)
+	r.log.Debug("Reconciling", "request", request)
 
 	// Fetch the CRD instance
 	bucket := &bucketv1alpha3.S3Bucket{}
@@ -229,7 +228,6 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			// For additional cleanup logic use finalizers.
 			return result, nil
 		}
-		log.Error(err, "failed to get object at start of reconcile loop")
 		return result, err
 	}
 
