@@ -17,13 +17,12 @@ limitations under the License.
 package compute
 
 import (
-	"fmt"
-	"strings"
-
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	"github.com/crossplaneio/crossplane-runtime/pkg/event"
+	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/secret"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane/apis/compute/v1alpha1"
@@ -32,23 +31,20 @@ import (
 	"github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
 )
 
-// EKSClusterSecretController is responsible for adding the EKSCluster secret
-// controller and its corresponding reconciler to the manager with any runtime configuration.
-type EKSClusterSecretController struct{}
-
-// SetupWithManager adds a controller that propagates EKSCluster connection
+// SetupEKSClusterSecret adds a controller that propagates EKSCluster connection
 // secrets to the connection secrets of their resource claims.
-func (c *EKSClusterSecretController) SetupWithManager(mgr ctrl.Manager) error {
-	p := resource.NewPredicates(resource.AnyOf(
-		resource.AllOf(resource.IsControlledByKind(v1alpha1.KubernetesClusterGroupVersionKind), resource.IsPropagated()),
-		resource.AllOf(resource.IsControlledByKind(workloadv1alpha1.KubernetesTargetGroupVersionKind), resource.IsPropagated()),
-		resource.AllOf(resource.IsControlledByKind(v1alpha3.EKSClusterGroupVersionKind), resource.IsPropagator()),
-	))
+func SetupEKSClusterSecret(mgr ctrl.Manager, l logging.Logger) error {
+	name := secret.ControllerName(v1alpha3.EKSClusterKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
-		Named(strings.ToLower(fmt.Sprintf("connectionsecret.%s.%s", v1alpha3.EKSClusterKind, v1alpha3.Group))).
+		Named(name).
 		Watches(&source.Kind{Type: &corev1.Secret{}}, &resource.EnqueueRequestForPropagated{}).
 		For(&corev1.Secret{}).
-		WithEventFilter(p).
-		Complete(secret.NewReconciler(mgr))
+		WithEventFilter(resource.NewPredicates(resource.AnyOf(
+			resource.AllOf(resource.IsControlledByKind(v1alpha1.KubernetesClusterGroupVersionKind), resource.IsPropagated()),
+			resource.AllOf(resource.IsControlledByKind(workloadv1alpha1.KubernetesTargetGroupVersionKind), resource.IsPropagated()),
+			resource.AllOf(resource.IsControlledByKind(v1alpha3.EKSClusterGroupVersionKind), resource.IsPropagator())))).
+		Complete(secret.NewReconciler(mgr,
+			secret.WithLogger(l.WithValues("controller", name)),
+			secret.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

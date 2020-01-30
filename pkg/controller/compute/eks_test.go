@@ -41,6 +41,7 @@ import (
 	"github.com/crossplaneio/stack-aws/pkg/clients/eks/fake"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
@@ -498,6 +499,7 @@ func TestReconcileObjectNotFound(t *testing.T) {
 	r := &Reconciler{
 		Client:            NewFakeClient(),
 		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		log:               logging.NewNopLogger(),
 	}
 	rs, err := r.Reconcile(request)
 	g.Expect(rs).To(Equal(reconcile.Result{}))
@@ -518,6 +520,7 @@ func TestReconcileClientError(t *testing.T) {
 			return nil, testError
 		},
 		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		log:               logging.NewNopLogger(),
 	}
 
 	// expected to have a failed condition
@@ -552,6 +555,7 @@ func TestReconcileDelete(t *testing.T) {
 			return reconcile.Result{}, nil
 		},
 		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		log:               logging.NewNopLogger(),
 	}
 
 	rs, err := r.Reconcile(request)
@@ -576,6 +580,7 @@ func TestReconcileCreate(t *testing.T) {
 			return reconcile.Result{RequeueAfter: aShortWait}, nil
 		},
 		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		log:               logging.NewNopLogger(),
 	}
 
 	rs, err := r.Reconcile(request)
@@ -605,6 +610,7 @@ func TestReconcileSync(t *testing.T) {
 			return reconcile.Result{RequeueAfter: aShortWait}, nil
 		},
 		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		log:               logging.NewNopLogger(),
 	}
 
 	rs, err := r.Reconcile(request)

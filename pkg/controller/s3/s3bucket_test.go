@@ -39,6 +39,7 @@ import (
 	. "github.com/crossplaneio/stack-aws/pkg/clients/s3/fake"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
@@ -99,6 +100,7 @@ func TestSyncBucketError(t *testing.T) {
 		r := &Reconciler{
 			Client:            NewFakeClient(instance),
 			ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+			log:               logging.NewNopLogger(),
 		}
 
 		rs, err := r._sync(instance, client)
@@ -183,6 +185,7 @@ func TestSyncBucket(t *testing.T) {
 	r := &Reconciler{
 		Client:            NewFakeClient(tr),
 		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		log:               logging.NewNopLogger(),
 	}
 	//
 	updateBucketACLCalled := false
@@ -216,6 +219,7 @@ func TestDelete(t *testing.T) {
 	r := &Reconciler{
 		Client:            NewFakeClient(tr),
 		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		log:               logging.NewNopLogger(),
 	}
 
 	cl := &MockS3Client{}
@@ -270,6 +274,7 @@ func TestCreate(t *testing.T) {
 		Client:              NewFakeClient(tr),
 		ReferenceResolver:   managed.NewAPIReferenceResolver(NewFakeClient()),
 		ConnectionPublisher: managed.PublisherChain{}, // A no-op publisher.
+		log:                 logging.NewNopLogger(),
 	}
 
 	createOrUpdateBucketCalled := false
@@ -327,6 +332,7 @@ func TestCreateFail(t *testing.T) {
 				return testError
 			},
 		},
+		log: logging.NewNopLogger(),
 	}
 
 	expectedStatus := runtimev1alpha1.ConditionedStatus{}
@@ -391,6 +397,7 @@ func TestReconcile(t *testing.T) {
 	r := &Reconciler{
 		Client:            NewFakeClient(tr),
 		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		log:               logging.NewNopLogger(),
 	}
 
 	// test connect error

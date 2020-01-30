@@ -18,36 +18,31 @@ package cache
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
-
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/event"
+	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimbinding"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimdefaulting"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimscheduling"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	cachev1alpha1 "github.com/crossplaneio/crossplane/apis/cache/v1alpha1"
+
+	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
+	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 )
 
-// A ReplicationGroupClaimSchedulingController reconciles RedisCluster claims
-// that include a class selector but omit their class and resource references by
-// picking a random matching ReplicationGroupClass, if any.
-type ReplicationGroupClaimSchedulingController struct{}
-
-// SetupWithManager sets up the
-// ReplicationGroupClaimSchedulingController using the supplied manager.
-func (c *ReplicationGroupClaimSchedulingController) SetupWithManager(mgr ctrl.Manager) error {
-	name := strings.ToLower(fmt.Sprintf("scheduler.%s.%s.%s",
-		cachev1alpha1.RedisClusterKind,
-		v1beta1.ReplicationGroupKind,
-		v1beta1.Group))
+// SetupReplicationGroupClaimScheduling adds a controller that reconciles
+// RedisCluster claims that include a class selector but omit their class and
+// resource references by picking a random matching ReplicationGroupClass, if
+// any.
+func SetupReplicationGroupClaimScheduling(mgr ctrl.Manager, l logging.Logger) error {
+	name := claimscheduling.ControllerName(cachev1alpha1.RedisClusterKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -60,21 +55,16 @@ func (c *ReplicationGroupClaimSchedulingController) SetupWithManager(mgr ctrl.Ma
 		Complete(claimscheduling.NewReconciler(mgr,
 			resource.ClaimKind(cachev1alpha1.RedisClusterGroupVersionKind),
 			resource.ClassKind(v1beta1.ReplicationGroupClassGroupVersionKind),
+			claimscheduling.WithLogger(l.WithValues("controller", name)),
+			claimscheduling.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		))
 }
 
-// A ReplicationGroupClaimDefaultingController reconciles RedisCluster claims
-// that omit their resource ref, class ref, and class selector by choosing a
-// default ReplicationGroupClass if one exists.
-type ReplicationGroupClaimDefaultingController struct{}
-
-// SetupWithManager sets up the
-// ReplicationGroupClaimDefaultingController using the supplied manager.
-func (c *ReplicationGroupClaimDefaultingController) SetupWithManager(mgr ctrl.Manager) error {
-	name := strings.ToLower(fmt.Sprintf("defaulter.%s.%s.%s",
-		cachev1alpha1.RedisClusterKind,
-		v1beta1.ReplicationGroupKind,
-		v1beta1.Group))
+// SetupReplicationGroupClaimDefaulting adds a controller that reconciles
+// RedisCluster claims that omit their resource ref, class ref, and class
+// selector by choosing a default ReplicationGroupClass if one exists.
+func SetupReplicationGroupClaimDefaulting(mgr ctrl.Manager, l logging.Logger) error {
+	name := claimdefaulting.ControllerName(cachev1alpha1.RedisClusterKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -87,19 +77,16 @@ func (c *ReplicationGroupClaimDefaultingController) SetupWithManager(mgr ctrl.Ma
 		Complete(claimdefaulting.NewReconciler(mgr,
 			resource.ClaimKind(cachev1alpha1.RedisClusterGroupVersionKind),
 			resource.ClassKind(v1beta1.ReplicationGroupClassGroupVersionKind),
+			claimdefaulting.WithLogger(l.WithValues("controller", name)),
+			claimdefaulting.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		))
 }
 
-// A ReplicationGroupClaimController reconciles RedisCluster claims with
-// ReplicationGroups, dynamically provisioning them if needed.
-type ReplicationGroupClaimController struct{}
-
-// SetupWithManager adds a controller that reconciles RedisCluster resource claims.
-func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) error {
-	name := strings.ToLower(fmt.Sprintf("%s.%s.%s",
-		cachev1alpha1.RedisClusterKind,
-		v1beta1.ReplicationGroupKind,
-		v1beta1.Group))
+// SetupReplicationGroupClaimBinding adds a controller that reconciles
+// RedisCluster claims with ReplicationGroups, dynamically provisioning them if
+// needed.
+func SetupReplicationGroupClaimBinding(mgr ctrl.Manager, l logging.Logger) error {
+	name := claimbinding.ControllerName(cachev1alpha1.RedisClusterKind)
 
 	r := claimbinding.NewReconciler(mgr,
 		resource.ClaimKind(cachev1alpha1.RedisClusterGroupVersionKind),
@@ -108,8 +95,10 @@ func (c *ReplicationGroupClaimController) SetupWithManager(mgr ctrl.Manager) err
 		claimbinding.WithManagedConfigurators(
 			claimbinding.ManagedConfiguratorFn(ConfigureReplicationGroup),
 			claimbinding.ManagedConfiguratorFn(claimbinding.ConfigureReclaimPolicy),
-			claimbinding.ManagedConfiguratorFn(claimbinding.ConfigureNames),
-		))
+			claimbinding.ManagedConfiguratorFn(claimbinding.ConfigureNames)),
+		claimbinding.WithLogger(l.WithValues("controller", name)),
+		claimbinding.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+	)
 
 	p := resource.NewPredicates(resource.AnyOf(
 		resource.HasClassReferenceKind(resource.ClassKind(v1beta1.ReplicationGroupClassGroupVersionKind)),

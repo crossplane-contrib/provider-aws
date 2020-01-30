@@ -18,8 +18,6 @@ package dbsubnetgroup
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
@@ -29,6 +27,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/event"
+	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 
@@ -46,21 +46,19 @@ const (
 	errDelete           = "failed to delete the DBSubnetGroup resource"
 )
 
-// Controller is the controller for DBSubnetGroup objects
-type Controller struct{}
+// SetupDBSubnetGroup adds a controller that reconciles DBSubnetGroups.
+func SetupDBSubnetGroup(mgr ctrl.Manager, l logging.Logger) error {
+	name := managed.ControllerName(v1alpha3.DBSubnetGroupKind)
 
-// SetupWithManager creates a new Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
-// and Start it when the Manager is Started.
-func (c *Controller) SetupWithManager(mgr ctrl.Manager) error {
-	r := managed.NewReconciler(mgr,
-		resource.ManagedKind(v1alpha3.DBSubnetGroupGroupVersionKind),
-		managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: rds.NewDBSubnetGroupClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
-		managed.WithConnectionPublishers())
-	name := strings.ToLower(fmt.Sprintf("%s.%s", v1alpha3.DBSubnetGroupKindAPIVersion, v1alpha3.Group))
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&v1alpha3.DBSubnetGroup{}).
-		Complete(r)
+		Complete(managed.NewReconciler(mgr,
+			resource.ManagedKind(v1alpha3.DBSubnetGroupGroupVersionKind),
+			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: rds.NewDBSubnetGroupClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			managed.WithConnectionPublishers(),
+			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
 type connector struct {
