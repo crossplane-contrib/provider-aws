@@ -18,9 +18,7 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
@@ -31,6 +29,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/event"
+	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
@@ -57,26 +57,18 @@ const (
 	errUpToDateFailed      = "cannot check whether object is up-to-date"
 )
 
-// RDSInstanceController is responsible for adding the RDSInstance
-// controller and its corresponding reconciler to the manager with any runtime configuration.
-type RDSInstanceController struct{}
-
-// SetupWithManager creates a new Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
-// and Start it when the Manager is Started.
-func (c *RDSInstanceController) SetupWithManager(mgr ctrl.Manager) error {
-	r := managed.NewReconciler(mgr,
-		resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind),
-		managed.WithExternalConnecter(&connector{
-			kube:        mgr.GetClient(),
-			newClientFn: rds.NewClient,
-		}))
-
-	name := strings.ToLower(fmt.Sprintf("%s.%s", v1beta1.RDSInstanceKind, v1beta1.Group))
+// SetupRDSInstance adds a controller that reconciles RDSInstances.
+func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
+	name := managed.ControllerName(v1beta1.RDSInstanceKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&v1beta1.RDSInstance{}).
-		Complete(r)
+		Complete(managed.NewReconciler(mgr,
+			resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: rds.NewClient}),
+			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
 type connector struct {

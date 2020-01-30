@@ -59,7 +59,6 @@ const (
 )
 
 var (
-	log = logging.Logger.WithName("controller." + controllerName)
 	ctx = context.Background()
 )
 
@@ -102,19 +101,19 @@ type Reconciler struct {
 	delete  func(*awscomputev1alpha3.EKSCluster, eks.Client) (reconcile.Result, error)
 	secret  func(*eks.Cluster, *awscomputev1alpha3.EKSCluster, eks.Client) error
 	awsauth func(*eks.Cluster, *awscomputev1alpha3.EKSCluster, eks.Client, string) error
+
+	log logging.Logger
 }
 
-// EKSClusterController is responsible for adding the EKSCluster
-// controller and its corresponding reconciler to the manager with any runtime configuration.
-type EKSClusterController struct{}
+// SetupEKSCluster adds a controller that reconciles EKSClusters.
+func SetupEKSCluster(mgr ctrl.Manager, l logging.Logger) error {
+	name := managed.ControllerName(awscomputev1alpha3.EKSClusterKind)
 
-// SetupWithManager creates a new Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
-// and Start it when the Manager is Started.
-func (c *EKSClusterController) SetupWithManager(mgr ctrl.Manager) error {
 	r := &Reconciler{
 		Client:            mgr.GetClient(),
 		publisher:         managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
 		ReferenceResolver: managed.NewAPIReferenceResolver(mgr.GetClient()),
+		log:               l.WithValues("controller", name),
 	}
 	r.connect = r._connect
 	r.create = r._create
@@ -124,7 +123,7 @@ func (c *EKSClusterController) SetupWithManager(mgr ctrl.Manager) error {
 	r.awsauth = r._awsauth
 
 	return ctrl.NewControllerManagedBy(mgr).
-		Named(controllerName).
+		Named(name).
 		For(&awscomputev1alpha3.EKSCluster{}).
 		Complete(r)
 }
@@ -390,7 +389,7 @@ func (r *Reconciler) _delete(instance *awscomputev1alpha3.EKSCluster, client eks
 // Reconcile reads that state of the cluster for a Provider object and makes changes based on the state read
 // and what is in the Provider.Spec
 func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	log.V(logging.Debug).Info("reconciling", "kind", awscomputev1alpha3.EKSClusterKindAPIVersion, "request", request)
+	r.log.Debug("Reconciling", "request", request)
 	// Fetch the Provider instance
 	instance := &awscomputev1alpha3.EKSCluster{}
 	err := r.Get(ctx, request.NamespacedName, instance)

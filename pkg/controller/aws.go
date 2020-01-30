@@ -19,6 +19,8 @@ package controller
 import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
+
 	"github.com/crossplaneio/stack-aws/pkg/controller/cache"
 	"github.com/crossplaneio/stack-aws/pkg/controller/compute"
 	"github.com/crossplaneio/stack-aws/pkg/controller/database"
@@ -33,50 +35,44 @@ import (
 	"github.com/crossplaneio/stack-aws/pkg/controller/s3"
 )
 
-// Controllers passes down config and adds individual controllers to the manager.
-type Controllers struct{}
-
-// SetupWithManager adds all AWS controllers to the manager.
-func (c *Controllers) SetupWithManager(mgr ctrl.Manager) error {
-
-	controllers := []interface {
-		SetupWithManager(ctrl.Manager) error
-	}{
-		&cache.ReplicationGroupClaimSchedulingController{},
-		&cache.ReplicationGroupClaimDefaultingController{},
-		&cache.ReplicationGroupClaimController{},
-		&cache.ReplicationGroupController{},
-		&compute.EKSClusterClaimSchedulingController{},
-		&compute.EKSClusterClaimDefaultingController{},
-		&compute.EKSClusterClaimController{},
-		&compute.EKSClusterSecretController{},
-		&compute.EKSClusterTargetController{},
-		&compute.EKSClusterController{},
-		&database.PostgreSQLInstanceClaimSchedulingController{},
-		&database.PostgreSQLInstanceClaimDefaultingController{},
-		&database.PostgreSQLInstanceClaimController{},
-		&database.MySQLInstanceClaimSchedulingController{},
-		&database.MySQLInstanceClaimDefaultingController{},
-		&database.MySQLInstanceClaimController{},
-		&database.RDSInstanceController{},
-		&s3.BucketClaimSchedulingController{},
-		&s3.BucketClaimDefaultingController{},
-		&s3.BucketClaimController{},
-		&s3.BucketController{},
-		&iamrole.Controller{},
-		&iamrolepolicyattachment.Controller{},
-		&vpc.Controller{},
-		&subnet.Controller{},
-		&securitygroup.Controller{},
-		&internetgateway.Controller{},
-		&routetable.Controller{},
-		&dbsubnetgroup.Controller{},
-	}
-
-	for _, c := range controllers {
-		if err := c.SetupWithManager(mgr); err != nil {
+// Setup creates all AWS controllers with the supplied logger and adds them to
+// the supplied manager.
+func Setup(mgr ctrl.Manager, l logging.Logger) error {
+	for _, setup := range []func(ctrl.Manager, logging.Logger) error{
+		cache.SetupReplicationGroupClaimScheduling,
+		cache.SetupReplicationGroupClaimDefaulting,
+		cache.SetupReplicationGroupClaimBinding,
+		cache.SetupReplicationGroup,
+		compute.SetupEKSClusterClaimScheduling,
+		compute.SetupEKSClusterClaimDefaulting,
+		compute.SetupEKSClusterClaimBinding,
+		compute.SetupEKSClusterSecret,
+		compute.SetupEKSClusterTarget,
+		compute.SetupEKSCluster,
+		database.SetupPostgreSQLInstanceClaimScheduling,
+		database.SetupPostgreSQLInstanceClaimDefaulting,
+		database.SetupPostgreSQLInstanceClaimBinding,
+		database.SetupMySQLInstanceClaimScheduling,
+		database.SetupMySQLInstanceClaimDefaulting,
+		database.SetupMySQLInstanceClaimBinding,
+		database.SetupRDSInstance,
+		s3.SetupBucketClaimScheduling,
+		s3.SetupBucketClaimDefaulting,
+		s3.SetupBucketClaimBinding,
+		s3.SetupS3Bucket,
+		iamrole.SetupIAMRole,
+		iamrolepolicyattachment.SetupIAMRolePolicyAttachment,
+		vpc.SetupVPC,
+		subnet.SetupSubnet,
+		securitygroup.SetupSecurityGroup,
+		internetgateway.SetupInternetGateway,
+		routetable.SetupRouteTable,
+		dbsubnetgroup.SetupDBSubnetGroup,
+	} {
+		if err := setup(mgr, l); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
