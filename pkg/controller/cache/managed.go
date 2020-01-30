@@ -18,9 +18,7 @@ package cache
 
 import (
 	"context"
-	"fmt"
 	"reflect"
-	"strings"
 
 	commonaws "github.com/aws/aws-sdk-go-v2/aws"
 	elasticacheservice "github.com/aws/aws-sdk-go-v2/service/elasticache"
@@ -30,15 +28,17 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
-	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
-	"github.com/crossplaneio/stack-aws/pkg/clients/elasticache"
-
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/event"
+	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/util"
+
+	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
+	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
+	"github.com/crossplaneio/stack-aws/pkg/clients/elasticache"
 )
 
 // Error strings.
@@ -59,27 +59,19 @@ const (
 // encoding, which adds ~33% overhead.
 const maxAuthTokenData = 32
 
-// ReplicationGroupController is responsible for adding the ReplicationGroup
-// controller and its corresponding reconciler to the manager with any runtime configuration.
-type ReplicationGroupController struct{}
-
-// SetupWithManager creates a new ReplicationGroup Controller and adds it to the
-// Manager with default RBAC. The Manager will set fields on the Controller and
-// start it when the Manager is Started.
-func (c *ReplicationGroupController) SetupWithManager(mgr ctrl.Manager) error {
-	r := managed.NewReconciler(mgr,
-		resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind),
-		managed.WithExternalConnecter(&connecter{
-			client:      mgr.GetClient(),
-			newClientFn: elasticache.NewClient,
-		}))
-
-	name := strings.ToLower(fmt.Sprintf("%s.%s", v1beta1.ReplicationGroupKind, v1beta1.Group))
+// SetupReplicationGroup adds a controller that reconciles ReplicationGroups.
+func SetupReplicationGroup(mgr ctrl.Manager, l logging.Logger) error {
+	name := managed.ControllerName(v1beta1.ReplicationGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&v1beta1.ReplicationGroup{}).
-		Complete(r)
+		Complete(managed.NewReconciler(mgr,
+			resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind),
+			managed.WithExternalConnecter(&connecter{client: mgr.GetClient(), newClientFn: elasticache.NewClient}),
+			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+		))
 }
 
 type connecter struct {

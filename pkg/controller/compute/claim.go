@@ -18,35 +18,28 @@ package compute
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
-
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplaneio/crossplane-runtime/pkg/event"
+	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimbinding"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimdefaulting"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimscheduling"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	computev1alpha1 "github.com/crossplaneio/crossplane/apis/compute/v1alpha1"
+
+	"github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
 )
 
-// A EKSClusterClaimSchedulingController reconciles KubernetesCluster claims
-// that include a class selector but omit their class and resource references by
-// picking a random matching EKSClusterClass, if any.
-type EKSClusterClaimSchedulingController struct{}
-
-// SetupWithManager sets up the EKSClusterClaimSchedulingController using the
-// supplied manager.
-func (c *EKSClusterClaimSchedulingController) SetupWithManager(mgr ctrl.Manager) error {
-	name := strings.ToLower(fmt.Sprintf("scheduler.%s.%s.%s",
-		computev1alpha1.KubernetesClusterKind,
-		v1alpha3.EKSClusterKind,
-		v1alpha3.Group))
+// SetupEKSClusterClaimScheduling adds a controller that reconciles
+// KubernetesCluster claims that include a class selector but omit their class
+// and resource references by picking a random matching EKSClusterClass, if any.
+func SetupEKSClusterClaimScheduling(mgr ctrl.Manager, l logging.Logger) error {
+	name := claimscheduling.ControllerName(computev1alpha1.KubernetesClusterKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -59,21 +52,16 @@ func (c *EKSClusterClaimSchedulingController) SetupWithManager(mgr ctrl.Manager)
 		Complete(claimscheduling.NewReconciler(mgr,
 			resource.ClaimKind(computev1alpha1.KubernetesClusterGroupVersionKind),
 			resource.ClassKind(v1alpha3.EKSClusterClassGroupVersionKind),
+			claimscheduling.WithLogger(l.WithValues("controller", name)),
+			claimscheduling.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		))
 }
 
-// A EKSClusterClaimDefaultingController reconciles KubernetesCluster claims
-// that omit their resource ref, class ref, and class selector by choosing a
-// default EKSClusterClass if one exists.
-type EKSClusterClaimDefaultingController struct{}
-
-// SetupWithManager sets up the EKSClusterClaimDefaultingController using the
-// supplied manager.
-func (c *EKSClusterClaimDefaultingController) SetupWithManager(mgr ctrl.Manager) error {
-	name := strings.ToLower(fmt.Sprintf("defaulter.%s.%s.%s",
-		computev1alpha1.KubernetesClusterKind,
-		v1alpha3.EKSClusterKind,
-		v1alpha3.Group))
+// SetupEKSClusterClaimDefaulting adds a controller that reconciles
+// KubernetesCluster claims that omit their resource ref, class ref, and class
+// selector by choosing a default EKSClusterClass if one exists.
+func SetupEKSClusterClaimDefaulting(mgr ctrl.Manager, l logging.Logger) error {
+	name := claimdefaulting.ControllerName(computev1alpha1.KubernetesClusterKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -86,19 +74,16 @@ func (c *EKSClusterClaimDefaultingController) SetupWithManager(mgr ctrl.Manager)
 		Complete(claimdefaulting.NewReconciler(mgr,
 			resource.ClaimKind(computev1alpha1.KubernetesClusterGroupVersionKind),
 			resource.ClassKind(v1alpha3.EKSClusterClassGroupVersionKind),
+			claimdefaulting.WithLogger(l.WithValues("controller", name)),
+			claimdefaulting.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		))
 }
 
-// A EKSClusterClaimController reconciles KubernetesCluster claims with
-// EKSClusters, dynamically provisioning them if needed.
-type EKSClusterClaimController struct{}
-
-// SetupWithManager adds a controller that reconciles KubernetesCluster resource claims.
-func (c *EKSClusterClaimController) SetupWithManager(mgr ctrl.Manager) error {
-	name := strings.ToLower(fmt.Sprintf("%s.%s.%s",
-		computev1alpha1.KubernetesClusterKind,
-		v1alpha3.EKSClusterKind,
-		v1alpha3.Group))
+// SetupEKSClusterClaimBinding adds a controller that reconciles
+// KubernetesCluster claims with EKSClusters, dynamically provisioning them if
+// needed.
+func SetupEKSClusterClaimBinding(mgr ctrl.Manager, l logging.Logger) error {
+	name := claimbinding.ControllerName(computev1alpha1.KubernetesClusterKind)
 
 	r := claimbinding.NewReconciler(mgr,
 		resource.ClaimKind(computev1alpha1.KubernetesClusterGroupVersionKind),
@@ -109,7 +94,9 @@ func (c *EKSClusterClaimController) SetupWithManager(mgr ctrl.Manager) error {
 			claimbinding.ManagedConfiguratorFn(ConfigureEKSCluster),
 			claimbinding.ManagedConfiguratorFn(claimbinding.ConfigureReclaimPolicy),
 			claimbinding.ManagedConfiguratorFn(claimbinding.ConfigureNames),
-		))
+		),
+		claimbinding.WithLogger(l.WithValues("controller", name)),
+		claimbinding.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))))
 
 	p := resource.NewPredicates(resource.AnyOf(
 		resource.HasClassReferenceKind(resource.ClassKind(v1alpha3.EKSClusterClassGroupVersionKind)),
