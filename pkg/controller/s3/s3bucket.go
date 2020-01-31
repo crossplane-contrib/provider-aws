@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	bucketv1alpha3 "github.com/crossplaneio/stack-aws/apis/storage/v1alpha3"
+	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 	"github.com/crossplaneio/stack-aws/pkg/clients/s3"
 	"github.com/crossplaneio/stack-aws/pkg/controller/utils"
 
@@ -37,7 +38,6 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 )
 
 const (
@@ -146,8 +146,8 @@ func (r *Reconciler) _create(bucket *bucketv1alpha3.S3Bucket, client s3.Service)
 	}
 
 	if err := r.PublishConnection(ctx, bucket, managed.ConnectionDetails{
-		runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(util.StringValue(accessKeys.AccessKeyId)),
-		runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(util.StringValue(accessKeys.SecretAccessKey)),
+		runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(accessKeys.AccessKeyId)),
+		runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(aws.StringValue(accessKeys.SecretAccessKey)),
 		runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(bucket.Spec.Region),
 	}); err != nil {
 		return r.fail(bucket, err)
