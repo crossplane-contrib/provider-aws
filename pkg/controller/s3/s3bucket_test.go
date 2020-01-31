@@ -21,8 +21,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/crossplaneio/stack-aws/apis"
-
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
@@ -33,8 +31,10 @@ import (
 	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	"github.com/crossplaneio/stack-aws/apis"
 	"github.com/crossplaneio/stack-aws/apis/storage/v1alpha3"
 	. "github.com/crossplaneio/stack-aws/apis/storage/v1alpha3"
+	aws "github.com/crossplaneio/stack-aws/pkg/clients"
 	client "github.com/crossplaneio/stack-aws/pkg/clients/s3"
 	. "github.com/crossplaneio/stack-aws/pkg/clients/s3/fake"
 
@@ -283,8 +283,8 @@ func TestCreate(t *testing.T) {
 		MockCreateUser: func(username string, bucket *S3Bucket) (*iam.AccessKey, string, error) {
 			createUserCalled = true
 			fakeKey := &iam.AccessKey{
-				AccessKeyId:     util.String("fake-string"),
-				SecretAccessKey: util.String(""),
+				AccessKeyId:     aws.String("fake-string"),
+				SecretAccessKey: aws.String(""),
 			}
 			return fakeKey, "v2", nil
 		},
