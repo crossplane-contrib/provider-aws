@@ -43,7 +43,6 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
 	"github.com/crossplaneio/crossplane-runtime/pkg/test"
-	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 	storagev1alpha1 "github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
 )
 
@@ -313,8 +312,8 @@ func TestCreateFail(t *testing.T) {
 	cl := &MockS3Client{
 		MockCreateUser: func(username string, bucket *S3Bucket) (*iam.AccessKey, string, error) {
 			fakeKey := &iam.AccessKey{
-				AccessKeyId:     util.String("fake-string"),
-				SecretAccessKey: util.String(""),
+				AccessKeyId:     aws.String("fake-string"),
+				SecretAccessKey: aws.String(""),
 			}
 			return fakeKey, "v2", nil
 		},
@@ -364,8 +363,8 @@ func TestCreateFail(t *testing.T) {
 	// test create bucket error
 	cl.MockCreateUser = func(username string, bucket *S3Bucket) (*iam.AccessKey, string, error) {
 		fakeKey := &iam.AccessKey{
-			AccessKeyId:     util.String("fake-string"),
-			SecretAccessKey: util.String(""),
+			AccessKeyId:     aws.String("fake-string"),
+			SecretAccessKey: aws.String(""),
 		}
 		return fakeKey, "v2", nil
 	}
