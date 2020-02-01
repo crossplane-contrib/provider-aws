@@ -32,9 +32,9 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/event"
 	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
+	"github.com/crossplaneio/crossplane-runtime/pkg/password"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 
 	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
 	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
@@ -162,18 +162,18 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateCreating {
 		return managed.ExternalCreation{}, nil
 	}
-	password, err := util.GeneratePassword(20)
+	pw, err := password.Generate()
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	req := e.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), password, &cr.Spec.ForProvider))
+	req := e.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 	req.SetContext(ctx)
 	_, err = req.Send()
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
 	}
 	conn := managed.ConnectionDetails{
-		runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(password),
+		runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(pw),
 	}
 	if cr.Spec.ForProvider.MasterUsername != nil {
 		conn[runtimev1alpha1.ResourceCredentialsSecretUserKey] = []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername))
