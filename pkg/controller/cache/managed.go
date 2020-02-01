@@ -32,9 +32,9 @@ import (
 	"github.com/crossplaneio/crossplane-runtime/pkg/event"
 	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
 	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
+	"github.com/crossplaneio/crossplane-runtime/pkg/password"
 	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 
 	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
 	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
@@ -54,10 +54,6 @@ const (
 	errModifyReplicationGroup   = "cannot modify ElastiCache replication group"
 	errDeleteReplicationGroup   = "cannot delete ElastiCache replication group"
 )
-
-// Note this is the length of the generated random byte slice before base64
-// encoding, which adds ~33% overhead.
-const maxAuthTokenData = 32
 
 // SetupReplicationGroup adds a controller that reconciles ReplicationGroups.
 func SetupReplicationGroup(mgr ctrl.Manager, l logging.Logger) error {
@@ -166,7 +162,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	// is required.
 	var token *string
 	if commonaws.BoolValue(cr.Spec.ForProvider.AuthEnabled) {
-		t, err := util.GeneratePassword(maxAuthTokenData)
+		t, err := password.Generate()
 		if err != nil {
 			return managed.ExternalCreation{}, errors.Wrap(err, errGenerateAuthToken)
 		}
