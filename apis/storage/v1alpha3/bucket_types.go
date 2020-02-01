@@ -17,7 +17,9 @@ limitations under the License.
 package v1alpha3
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,7 +27,6 @@ import (
 	storagev1alpha1 "github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
 
 	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/util"
 )
 
 // S3BucketParameters define the desired state of an AWS S3 Bucket.
@@ -155,7 +156,13 @@ type S3BucketClassList struct {
 //   4. NameFormat = "foo-%s", BucketName = "foo-test-uid"
 //   5. NameFormat = "foo-%s-bar-%s", BucketName = "foo-test-uid-bar-%!s(MISSING)"
 func (b *S3Bucket) GetBucketName() string {
-	return util.ConditionalStringFormat(b.Spec.NameFormat, string(b.GetUID()))
+	if b.Spec.NameFormat == "" {
+		return string(b.GetUID())
+	}
+	if strings.Contains(b.Spec.NameFormat, "%s") {
+		return fmt.Sprintf(b.Spec.NameFormat, string(b.GetUID()))
+	}
+	return b.Spec.NameFormat
 }
 
 // SetUserPolicyVersion specifies this bucket's policy version.
