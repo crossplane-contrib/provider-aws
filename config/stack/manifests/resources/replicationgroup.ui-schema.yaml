@@ -1,4 +1,2 @@
-version: 0.4
+version: 0.5
 configSections: []
-printerColumns:
-  Ready: .status.conditionedStatus.conditions[?(@.type=='Ready')]
