@@ -17,6 +17,7 @@ limitations under the License.
 package s3
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -68,10 +69,10 @@ func TestClient_CreateOrUpdateBucket(t *testing.T) {
 
 			// Set up mocks
 			createBucketReq := new(fakeops.CreateBucketRequest)
-			createBucketReq.On("Send").Return(vals.createBucketRet...)
+			createBucketReq.On("Send", context.TODO()).Return(vals.createBucketRet...)
 
 			putBucketACLReq := new(fakeops.PutBucketACLRequest)
-			putBucketACLReq.On("Send").Return(vals.putBucketACLRet...)
+			putBucketACLReq.On("Send", context.TODO()).Return(vals.putBucketACLRet...)
 
 			ops := new(fakeops.Operations)
 			ops.On("CreateBucketRequest", mock.Anything).Return(createBucketReq)
@@ -93,7 +94,12 @@ func TestClient_GetBucketInfo(t *testing.T) {
 	// Set up args
 	name := "han"
 	s3Bucket := &awsstorage.S3Bucket{}
-	versioningOut := new(s3.GetBucketVersioningOutput)
+	versioningRes := &s3.GetBucketVersioningResponse{
+		GetBucketVersioningOutput: &s3.GetBucketVersioningOutput{
+			MFADelete: s3.MFADeleteStatusEnabled,
+			Status:    s3.BucketVersioningStatusEnabled,
+		},
+	}
 	boom := errors.New("boom")
 
 	// Define test cases
@@ -129,7 +135,7 @@ func TestClient_GetBucketInfo(t *testing.T) {
 
 			// Set up mocks
 			versioningReq := new(fakeops.GetBucketVersioningRequest)
-			versioningReq.On("Send").Return(versioningOut, vals.sendErr)
+			versioningReq.On("Send", context.TODO()).Return(versioningRes, vals.sendErr)
 
 			ops := new(fakeops.Operations)
 			ops.On("GetBucketVersioningRequest", mock.Anything).Return(versioningReq)
@@ -232,7 +238,7 @@ func TestClient_UpdateBucketACL(t *testing.T) {
 	}{
 		"HappyPath": {
 			bucket:  &awsstorage.S3Bucket{},
-			sendRet: []interface{}{&s3.PutBucketAclOutput{}, nil},
+			sendRet: []interface{}{&s3.PutBucketAclResponse{}, nil},
 			ret:     []types.GomegaMatcher{gomega.BeNil()},
 		},
 		"WithACL": {
@@ -243,7 +249,7 @@ func TestClient_UpdateBucketACL(t *testing.T) {
 					},
 				},
 			},
-			sendRet: []interface{}{&s3.PutBucketAclOutput{}, nil},
+			sendRet: []interface{}{&s3.PutBucketAclResponse{}, nil},
 			ret:     []types.GomegaMatcher{gomega.BeNil()},
 		},
 	}
@@ -254,7 +260,7 @@ func TestClient_UpdateBucketACL(t *testing.T) {
 
 			// Set up mocks
 			putBucketACL := new(fakeops.PutBucketACLRequest)
-			putBucketACL.On("Send").Return(vals.sendRet...)
+			putBucketACL.On("Send", context.TODO()).Return(vals.sendRet...)
 
 			ops := new(fakeops.Operations)
 			ops.On("PutBucketACLRequest", mock.Anything).Return(putBucketACL)
@@ -287,12 +293,12 @@ func TestClient_UpdateVersioning(t *testing.T) {
 					},
 				},
 			},
-			sendRet: []interface{}{&s3.PutBucketVersioningOutput{}, nil},
+			sendRet: []interface{}{&s3.PutBucketVersioningResponse{}, nil},
 			ret:     []types.GomegaMatcher{gomega.BeNil()},
 		},
 		"SendError": {
 			bucket:  &awsstorage.S3Bucket{},
-			sendRet: []interface{}{&s3.PutBucketVersioningOutput{}, boom},
+			sendRet: []interface{}{&s3.PutBucketVersioningResponse{}, boom},
 			ret:     []types.GomegaMatcher{gomega.Equal(boom)},
 		},
 	}
@@ -303,7 +309,7 @@ func TestClient_UpdateVersioning(t *testing.T) {
 
 			// Set up mocks
 			putBucketVer := new(fakeops.PutBucketVersioningRequest)
-			putBucketVer.On("Send").Return(vals.sendRet...)
+			putBucketVer.On("Send", context.TODO()).Return(vals.sendRet...)
 
 			ops := new(fakeops.Operations)
 			ops.On("PutBucketVersioningRequest", mock.Anything).Return(putBucketVer)
@@ -424,7 +430,7 @@ func TestClient_DeleteBucket(t *testing.T) {
 
 			// Set up mocks
 			delBucketReq := new(fakeops.DeleteBucketRequest)
-			delBucketReq.On("Send").Return(vals.deleteBucketRet...)
+			delBucketReq.On("Send", context.TODO()).Return(vals.deleteBucketRet...)
 
 			ops := new(fakeops.Operations)
 			ops.On("DeleteBucketRequest", mock.Anything).Return(delBucketReq)
