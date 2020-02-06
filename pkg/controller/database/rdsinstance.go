@@ -73,7 +73,7 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 
 type connector struct {
 	kube        client.Client
-	newClientFn func(credentials []byte, region string) (rds.Client, error)
+	newClientFn func(ctx context.Context, credentials []byte, region string, useSA bool) (rds.Client, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
@@ -87,13 +87,18 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetProvider)
 	}
 
+	if p.Spec.UseServiceAccount != nil && *p.Spec.UseServiceAccount {
+		rdsClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, true)
+		return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, errCreateRDSClient)
+	}
+
 	s := &corev1.Secret{}
 	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
 	if err := c.kube.Get(ctx, n, s); err != nil {
 		return nil, errors.Wrap(err, errGetProviderSecret)
 	}
 
-	rdsClient, err := c.newClientFn(s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region)
+	rdsClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, false)
 	return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, errCreateRDSClient)
 }
 
@@ -111,8 +116,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	// for retrieval. For example, DescribeDBInstancesOutput does not expose
 	// the tags map of the RDS instance, you have to make ListTagsForResourceRequest
 	req := e.client.DescribeDBInstancesRequest(&awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
-	req.SetContext(ctx)
-	rsp, err := req.Send()
+	rsp, err := req.Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDescribeFailed)
 	}
@@ -167,8 +171,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, err
 	}
 	req := e.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
-	req.SetContext(ctx)
-	_, err = req.Send()
+	_, err = req.Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
 	}
@@ -195,8 +198,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	// we lose the current state after a change is made to spec, which forces us
 	// to make a DescribeDBInstancesRequest to get the current state.
 	describe := e.client.DescribeDBInstancesRequest(&awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
-	describe.SetContext(ctx)
-	rsp, err := describe.Send()
+	rsp, err := describe.Send(ctx)
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errDescribeFailed)
 	}
@@ -205,8 +207,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.Wrap(err, errPatchCreationFailed)
 	}
 	modify := e.client.ModifyDBInstanceRequest(rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch))
-	modify.SetContext(ctx)
-	_, err = modify.Send()
+	_, err = modify.Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
 }
 
@@ -232,7 +233,6 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		SkipFinalSnapshot:    cr.Spec.ForProvider.SkipFinalSnapshotBeforeDeletion,
 	}
 	req := e.client.DeleteDBInstanceRequest(&input)
-	req.SetContext(ctx)
-	_, err := req.Send()
+	_, err := req.Send(ctx)
 	return errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
 }

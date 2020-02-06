@@ -34,7 +34,7 @@ import (
 
 // A Client handles CRUD operations for ElastiCache resources. This interface is
 // compatible with the upstream AWS redis client.
-type Client elasticacheiface.ElastiCacheAPI
+type Client elasticacheiface.ClientAPI
 
 // NewClient returns a new ElastiCache client. Credentials must be passed as
 // JSON encoded data.

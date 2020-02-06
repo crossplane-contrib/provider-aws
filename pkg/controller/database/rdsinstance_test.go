@@ -112,23 +112,27 @@ func TestConnect(t *testing.T) {
 			secretKey: []byte(credData),
 		},
 	}
-	provider := awsv1alpha3.Provider{
-		Spec: awsv1alpha3.ProviderSpec{
-			Region: testRegion,
-			ProviderSpec: runtimev1alpha1.ProviderSpec{
-				CredentialsSecretRef: runtimev1alpha1.SecretKeySelector{
-					SecretReference: runtimev1alpha1.SecretReference{
-						Namespace: secretNamespace,
-						Name:      connectionSecretName,
+
+	providerSA := func(saVal bool) awsv1alpha3.Provider {
+		return awsv1alpha3.Provider{
+			Spec: awsv1alpha3.ProviderSpec{
+				Region:            testRegion,
+				UseServiceAccount: &saVal,
+				ProviderSpec: runtimev1alpha1.ProviderSpec{
+					CredentialsSecretRef: runtimev1alpha1.SecretKeySelector{
+						SecretReference: runtimev1alpha1.SecretReference{
+							Namespace: secretNamespace,
+							Name:      connectionSecretName,
+						},
+						Key: secretKey,
 					},
-					Key: secretKey,
 				},
 			},
-		},
+		}
 	}
 	type args struct {
 		kube        client.Client
-		newClientFn func(credentials []byte, region string) (rds.Client, error)
+		newClientFn func(ctx context.Context, credentials []byte, region string, useSA bool) (rds.Client, error)
 		cr          *v1beta1.RDSInstance
 	}
 	type want struct {
@@ -145,7 +149,8 @@ func TestConnect(t *testing.T) {
 					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
 						switch key {
 						case client.ObjectKey{Name: providerName}:
-							provider.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
 							return nil
 						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
 							secret.DeepCopyInto(obj.(*corev1.Secret))
@@ -154,11 +159,41 @@ func TestConnect(t *testing.T) {
 						return errBoom
 					},
 				},
-				newClientFn: func(credentials []byte, region string) (i rds.Client, e error) {
+				newClientFn: func(ctx context.Context, credentials []byte, region string, useSA bool) (i rds.Client, e error) {
 					if diff := cmp.Diff(credData, string(credentials)); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
 					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(false, useSA); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
+				},
+				cr: instance(),
+			},
+		},
+		"SuccessfulUseSA": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						if key == (client.ObjectKey{Name: providerName}) {
+							p := providerSA(true)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						}
+						return errBoom
+					},
+				},
+				newClientFn: func(ctx context.Context, credentials []byte, region string, useSA bool) (i rds.Client, e error) {
+					if diff := cmp.Diff("", string(credentials)); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(true, useSA); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
 					return nil, nil
@@ -185,7 +220,8 @@ func TestConnect(t *testing.T) {
 					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
 						switch key {
 						case client.ObjectKey{Name: providerName}:
-							provider.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
 							return nil
 						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
 							return errBoom

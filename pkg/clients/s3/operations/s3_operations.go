@@ -23,11 +23,11 @@ import (
 
 // S3Operations provides methods for common S3 operations
 type S3Operations struct {
-	s3 s3iface.S3API
+	s3 s3iface.ClientAPI
 }
 
 // NewS3Operations creates a new instance of S3Operations
-func NewS3Operations(s3 s3iface.S3API) *S3Operations {
+func NewS3Operations(s3 s3iface.ClientAPI) *S3Operations {
 	return &S3Operations{s3: s3}
 }
 

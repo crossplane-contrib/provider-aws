@@ -108,9 +108,8 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	req := e.client.DescribeVpcsRequest(&awsec2.DescribeVpcsInput{
 		VpcIds: []string{cr.Status.VPCID},
 	})
-	req.SetContext(ctx)
 
-	response, err := req.Send()
+	response, err := req.Send(ctx)
 
 	if ec2.IsVPCNotFoundErr(err) {
 		return managed.ExternalObservation{
@@ -156,9 +155,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		req := e.client.CreateVpcRequest(&awsec2.CreateVpcInput{
 			CidrBlock: aws.String(cr.Spec.CIDRBlock),
 		})
-		req.SetContext(ctx)
 
-		result, err := req.Send()
+		result, err := req.Send(ctx)
 		if err != nil {
 			return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 		}
@@ -178,9 +176,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		},
 	} {
 		attrReq := e.client.ModifyVpcAttributeRequest(input)
-		attrReq.SetContext(ctx)
 
-		if _, err := attrReq.Send(); err != nil {
+		if _, err := attrReq.Send(ctx); err != nil {
 			return managed.ExternalCreation{}, errors.Wrap(err, errModifyVPCAttributes)
 		}
 	}
@@ -210,9 +207,8 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	req := e.client.DeleteVpcRequest(&awsec2.DeleteVpcInput{
 		VpcId: aws.String(cr.Status.VPCID),
 	})
-	req.SetContext(ctx)
 
-	_, err := req.Send()
+	_, err := req.Send(ctx)
 
 	if ec2.IsVPCNotFoundErr(err) {
 		return nil

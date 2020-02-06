@@ -98,9 +98,8 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	req := e.client.DescribeDBSubnetGroupsRequest(&awsrds.DescribeDBSubnetGroupsInput{
 		DBSubnetGroupName: aws.String(cr.Spec.DBSubnetGroupName),
 	})
-	req.SetContext(ctx)
 
-	response, err := req.Send()
+	response, err := req.Send(ctx)
 
 	if err != nil {
 		if rds.IsDBSubnetGroupNotFoundErr(err) {
@@ -152,9 +151,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	req := e.client.CreateDBSubnetGroupRequest(input)
-	req.SetContext(ctx)
 
-	response, err := req.Send()
+	response, err := req.Send(ctx)
 
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrapf(err, errCreate, cr.Spec.DBSubnetGroupName)
@@ -183,9 +181,8 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	req := e.client.DeleteDBSubnetGroupRequest(&awsrds.DeleteDBSubnetGroupInput{
 		DBSubnetGroupName: aws.String(cr.Spec.DBSubnetGroupName),
 	})
-	req.SetContext(ctx)
 
-	_, err := req.Send()
+	_, err := req.Send(ctx)
 
 	if rds.IsDBSubnetGroupNotFoundErr(err) {
 		return nil

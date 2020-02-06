@@ -110,9 +110,8 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	req := e.client.DescribeInternetGatewaysRequest(&awsec2.DescribeInternetGatewaysInput{
 		InternetGatewayIds: []string{cr.Status.InternetGatewayID},
 	})
-	req.SetContext(ctx)
 
-	response, err := req.Send()
+	response, err := req.Send(ctx)
 
 	if ec2.IsInternetGatewayNotFoundErr(err) {
 		return managed.ExternalObservation{
@@ -161,9 +160,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
 	req := e.client.CreateInternetGatewayRequest(&awsec2.CreateInternetGatewayInput{})
-	req.SetContext(ctx)
 
-	ig, err := req.Send()
+	ig, err := req.Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
@@ -175,9 +173,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		InternetGatewayId: ig.InternetGateway.InternetGatewayId,
 		VpcId:             aws.String(cr.Spec.VPCID),
 	})
-	aReq.SetContext(ctx)
 
-	_, err = aReq.Send()
+	_, err = aReq.Send(ctx)
 
 	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 }
@@ -208,9 +205,8 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 			InternetGatewayId: aws.String(cr.Status.InternetGatewayID),
 			VpcId:             aws.String(a.VPCID),
 		})
-		dReq.SetContext(ctx)
 
-		if _, err := dReq.Send(); err != nil {
+		if _, err := dReq.Send(ctx); err != nil {
 			if ec2.IsInternetGatewayNotFoundErr(err) {
 				continue
 			}
@@ -222,9 +218,8 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	req := e.client.DeleteInternetGatewayRequest(&awsec2.DeleteInternetGatewayInput{
 		InternetGatewayId: aws.String(cr.Status.InternetGatewayID),
 	})
-	req.SetContext(ctx)
 
-	_, err := req.Send()
+	_, err := req.Send(ctx)
 	if ec2.IsInternetGatewayNotFoundErr(err) {
 		return nil
 	}
