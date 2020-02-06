@@ -108,9 +108,8 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	req := e.client.DescribeSubnetsRequest(&awsec2.DescribeSubnetsInput{
 		SubnetIds: []string{cr.Status.SubnetID},
 	})
-	req.SetContext(ctx)
 
-	response, err := req.Send()
+	response, err := req.Send(ctx)
 
 	if ec2.IsSubnetNotFoundErr(err) {
 		return managed.ExternalObservation{
@@ -156,9 +155,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		AvailabilityZone: aws.String(cr.Spec.AvailabilityZone),
 		CidrBlock:        aws.String(cr.Spec.CIDRBlock),
 	})
-	req.SetContext(ctx)
 
-	result, err := req.Send()
+	result, err := req.Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
@@ -190,9 +188,8 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	req := e.client.DeleteSubnetRequest(&awsec2.DeleteSubnetInput{
 		SubnetId: aws.String(cr.Status.SubnetID),
 	})
-	req.SetContext(ctx)
 
-	_, err := req.Send()
+	_, err := req.Send(ctx)
 
 	if ec2.IsSubnetNotFoundErr(err) {
 		return nil

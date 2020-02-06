@@ -107,8 +107,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	dr := e.client.DescribeReplicationGroupsRequest(elasticache.NewDescribeReplicationGroupsInput(meta.GetExternalName(cr)))
-	dr.SetContext(ctx)
-	rsp, err := dr.Send()
+	rsp, err := dr.Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDescribeReplicationGroup)
 	}
@@ -169,8 +168,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		token = &t
 	}
 	r := e.client.CreateReplicationGroupRequest(elasticache.NewCreateReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr), token))
-	r.SetContext(ctx)
-	if _, err := r.Send(); err != nil {
+	if _, err := r.Send(ctx); err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(resource.Ignore(elasticache.IsAlreadyExists, err), errCreateReplicationGroup)
 	}
 	if token != nil {
@@ -194,8 +192,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, nil
 	}
 	mr := e.client.ModifyReplicationGroupRequest(elasticache.NewModifyReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
-	mr.SetContext(ctx)
-	_, err := mr.Send()
+	_, err := mr.Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, errModifyReplicationGroup)
 }
 
@@ -209,8 +206,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return nil
 	}
 	req := e.client.DeleteReplicationGroupRequest(elasticache.NewDeleteReplicationGroupInput(meta.GetExternalName(cr)))
-	req.SetContext(ctx)
-	_, err := req.Send()
+	_, err := req.Send(ctx)
 	return errors.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDeleteReplicationGroup)
 }
 
@@ -219,7 +215,7 @@ func getCacheClusterList(ctx context.Context, client elasticache.Client, idList 
 	for i, cc := range idList {
 		dcc := client.DescribeCacheClustersRequest(elasticache.NewDescribeCacheClustersInput(cc))
 		dcc.SetContext(ctx)
-		rsp, err := dcc.Send()
+		rsp, err := dcc.Send(ctx)
 		if err != nil {
 			return nil, err
 		}

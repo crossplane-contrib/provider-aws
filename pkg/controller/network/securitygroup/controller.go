@@ -111,9 +111,8 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	req := e.client.DescribeSecurityGroupsRequest(&awsec2.DescribeSecurityGroupsInput{
 		GroupIds: []string{cr.Status.SecurityGroupID},
 	})
-	req.SetContext(ctx)
 
-	response, err := req.Send()
+	response, err := req.Send(ctx)
 
 	if ec2.IsSecurityGroupNotFoundErr(err) {
 		return managed.ExternalObservation{
@@ -158,18 +157,13 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		VpcId:       aws.String(cr.Spec.VPCID),
 		Description: aws.String(cr.Spec.Description),
 	})
-	req.SetContext(ctx)
 
-	result, err := req.Send()
+	result, err := req.Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 
 	cr.UpdateExternalStatus(awsec2.SecurityGroup{GroupId: result.GroupId})
-
-	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
-	}
 
 	// Authorizing Ingress permissions for the SecurityGroup
 	ingressPerms := v1alpha3.BuildEC2Permissions(cr.Spec.IngressPermissions)
@@ -178,9 +172,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 			GroupId:       aws.String(cr.Status.SecurityGroupID),
 			IpPermissions: ingressPerms,
 		})
-		air.SetContext(ctx)
 
-		_, err = air.Send()
+		_, err = air.Send(ctx)
 		if err != nil {
 			return managed.ExternalCreation{}, errors.Wrap(err, errAuthorizeIngress)
 		}
@@ -193,9 +186,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 			GroupId:       aws.String(cr.Status.SecurityGroupID),
 			IpPermissions: egressPerms,
 		})
-		aer.SetContext(ctx)
 
-		_, err = aer.Send()
+		_, err = aer.Send(ctx)
 		if err != nil {
 			return managed.ExternalCreation{}, errors.Wrap(err, errAuthorizeEgress)
 		}
@@ -227,9 +219,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		GroupId: aws.String(cr.Status.SecurityGroupID),
 	})
 
-	req.SetContext(ctx)
-
-	_, err := req.Send()
+	_, err := req.Send(ctx)
 
 	if ec2.IsSecurityGroupNotFoundErr(err) {
 		return nil

@@ -17,6 +17,7 @@ limitations under the License.
 package eks
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -105,9 +106,9 @@ type AMIClient interface {
 }
 
 type eksClient struct {
-	eks            eksiface.EKSAPI
+	eks            eksiface.ClientAPI
 	amiClient      AMIClient
-	sts            *sts.STS
+	sts            *sts.Client
 	cloudformation cfc.Client
 }
 
@@ -131,7 +132,7 @@ func (e *eksClient) Create(name string, spec awscomputev1alpha3.EKSClusterSpec) 
 		input.Version = aws.String(spec.ClusterVersion)
 	}
 
-	output, err := e.eks.CreateClusterRequest(input).Send()
+	output, err := e.eks.CreateClusterRequest(input).Send(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +185,7 @@ func (e *eksClient) CreateWorkerNodes(name string, clusterVersion string, spec a
 // Get an existing EKS cluster
 func (e *eksClient) Get(name string) (*Cluster, error) {
 	input := &eks.DescribeClusterInput{Name: aws.String(name)}
-	output, err := e.eks.DescribeClusterRequest(input).Send()
+	output, err := e.eks.DescribeClusterRequest(input).Send(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +216,7 @@ func (e *eksClient) GetWorkerNodes(stackID string) (*ClusterWorkers, error) {
 // Delete a EKS cluster
 func (e *eksClient) Delete(name string) error {
 	input := &eks.DeleteClusterInput{Name: aws.String(name)}
-	_, err := e.eks.DeleteClusterRequest(input).Send()
+	_, err := e.eks.DeleteClusterRequest(input).Send(context.TODO())
 	return err
 }
 
@@ -286,7 +287,7 @@ func (e *eksClient) getAvailableImages(clusterVersion string) ([]*ec2.Image, err
 	request := e.amiClient.DescribeImagesRequest(&ec2.DescribeImagesInput{
 		Filters: ec2Filters,
 	})
-	out, err := request.Send()
+	out, err := request.Send(context.TODO())
 
 	if err != nil {
 		return nil, err

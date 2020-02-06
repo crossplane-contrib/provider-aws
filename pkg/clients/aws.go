@@ -17,10 +17,16 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"encoding/json"
+	"io/ioutil"
+	"os"
+	"strconv"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-ini/ini"
 )
@@ -88,6 +94,45 @@ func LoadConfig(data []byte, profile, region string) (*aws.Config, error) {
 		Region:      region,
 	}
 
+	config, err := external.LoadDefaultAWSConfig(shared)
+	return &config, err
+}
+
+// LoadSAConfig assumes an IAM role configured via a ServiceAccount.
+// https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
+func LoadSAConfig(ctx context.Context, region string) (*aws.Config, error) {
+	cfg, err := external.LoadDefaultAWSConfig()
+	if err != nil {
+		return nil, err
+	}
+	cfg.Region = region
+	svc := sts.New(cfg)
+
+	b, err := ioutil.ReadFile(os.Getenv("AWS_WEB_IDENTITY_TOKEN_FILE"))
+	if err != nil {
+		return nil, err
+	}
+	token := string(b)
+	sess := strconv.FormatInt(time.Now().UnixNano(), 10)
+	role := os.Getenv("AWS_ROLE_ARN")
+	resp, err := svc.AssumeRoleWithWebIdentityRequest(
+		&sts.AssumeRoleWithWebIdentityInput{
+			RoleSessionName:  &sess,
+			WebIdentityToken: &token,
+			RoleArn:          &role,
+		}).Send(ctx)
+	if err != nil {
+		return nil, err
+	}
+	creds := aws.Credentials{
+		AccessKeyID:     aws.StringValue(resp.Credentials.AccessKeyId),
+		SecretAccessKey: aws.StringValue(resp.Credentials.SecretAccessKey),
+		SessionToken:    aws.StringValue(resp.Credentials.SessionToken),
+	}
+	shared := external.SharedConfig{
+		Credentials: creds,
+		Region:      region,
+	}
 	config, err := external.LoadDefaultAWSConfig(shared)
 	return &config, err
 }

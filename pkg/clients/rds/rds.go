@@ -17,6 +17,7 @@ limitations under the License.
 package rds
 
 import (
+	"context"
 	"encoding/json"
 	"strconv"
 	"strings"
@@ -44,12 +45,17 @@ type Client interface {
 }
 
 // NewClient creates new RDS RDSClient with provided AWS Configurations/Credentials
-func NewClient(credentials []byte, region string) (Client, error) {
-	cfg, err := awsclients.LoadConfig(credentials, awsclients.DefaultSection, region)
-	if err != nil {
-		return nil, err
+func NewClient(ctx context.Context, credentials []byte, region string, useSA bool) (Client, error) {
+	if useSA {
+		cfg, err := awsclients.LoadSAConfig(ctx, region)
+		if cfg == nil {
+			return nil, err
+		}
+		return rds.New(*cfg), err
 	}
-	return rds.New(*cfg), nil
+
+	cfg, err := awsclients.LoadConfig(credentials, awsclients.DefaultSection, region)
+	return rds.New(*cfg), err
 }
 
 // IsErrorAlreadyExists returns true if the supplied error indicates an instance

@@ -17,6 +17,7 @@ limitations under the License.
 package cloudformation
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -33,7 +34,7 @@ type Client interface {
 }
 
 type cloudFormationClient struct {
-	cloudformation cfiface.CloudFormationAPI
+	cloudformation cfiface.ClientAPI
 }
 
 // NewClient return new instance of the crossplane client for a specific AWS configuration
@@ -50,7 +51,7 @@ func (c *cloudFormationClient) CreateStack(stackName *string, templateBody *stri
 		}
 	}
 
-	createStackResponse, err := c.cloudformation.CreateStackRequest(&cf.CreateStackInput{Capabilities: []cf.Capability{cf.CapabilityCapabilityIam}, StackName: stackName, TemplateBody: templateBody, Parameters: cfParams}).Send()
+	createStackResponse, err := c.cloudformation.CreateStackRequest(&cf.CreateStackInput{Capabilities: []cf.Capability{cf.CapabilityCapabilityIam}, StackName: stackName, TemplateBody: templateBody, Parameters: cfParams}).Send(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +60,7 @@ func (c *cloudFormationClient) CreateStack(stackName *string, templateBody *stri
 
 // GetStack info
 func (c *cloudFormationClient) GetStack(stackID *string) (stack *cf.Stack, err error) {
-	describeStackResponse, err := c.cloudformation.DescribeStacksRequest(&cf.DescribeStacksInput{StackName: stackID}).Send()
+	describeStackResponse, err := c.cloudformation.DescribeStacksRequest(&cf.DescribeStacksInput{StackName: stackID}).Send(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +76,7 @@ func (c *cloudFormationClient) GetStack(stackID *string) (stack *cf.Stack, err e
 
 // DeleteStack deletes a stack
 func (c *cloudFormationClient) DeleteStack(stackID *string) error {
-	_, err := c.cloudformation.DeleteStackRequest(&cf.DeleteStackInput{StackName: stackID}).Send()
+	_, err := c.cloudformation.DeleteStackRequest(&cf.DeleteStackInput{StackName: stackID}).Send(context.TODO())
 	return err
 }
 

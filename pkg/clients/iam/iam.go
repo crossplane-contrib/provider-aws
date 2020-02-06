@@ -1,6 +1,7 @@
 package iam
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -27,7 +28,7 @@ type Client interface {
 
 type iamClient struct {
 	accountID *string
-	iam       iamiface.IAMAPI
+	iam       iamiface.ClientAPI
 }
 
 // NewClient creates new AWS Client with provided AWS Configurations/Credentials
@@ -74,7 +75,7 @@ func (c *iamClient) GetPolicyVersion(username string) (string, error) {
 
 	policyResponse, err := c.iam.GetPolicyRequest(&iam.GetPolicyInput{
 		PolicyArn: aws.String(policyARN),
-	}).Send()
+	}).Send(context.TODO())
 
 	if err != nil {
 		return "", err
@@ -90,21 +91,21 @@ func (c *iamClient) UpdatePolicy(policyName string, policyDocument string) (stri
 		return "", err
 	}
 	// Create a new policy version
-	policyVersionResponse, err := c.iam.CreatePolicyVersionRequest(&iam.CreatePolicyVersionInput{PolicyArn: aws.String(policyARN), PolicyDocument: aws.String(policyDocument), SetAsDefault: aws.Bool(true)}).Send()
+	policyVersionResponse, err := c.iam.CreatePolicyVersionRequest(&iam.CreatePolicyVersionInput{PolicyArn: aws.String(policyARN), PolicyDocument: aws.String(policyDocument), SetAsDefault: aws.Bool(true)}).Send(context.TODO())
 	if err != nil {
 		return "", err
 	}
 
 	currentPolicyVersion := policyVersionResponse.PolicyVersion.VersionId
 	// Delete old versions of policy - Max 5 allowed
-	policyVersions, err := c.iam.ListPolicyVersionsRequest(&iam.ListPolicyVersionsInput{PolicyArn: aws.String(policyARN)}).Send()
+	policyVersions, err := c.iam.ListPolicyVersionsRequest(&iam.ListPolicyVersionsInput{PolicyArn: aws.String(policyARN)}).Send(context.TODO())
 	if err != nil {
 		return "", err
 	}
 
 	for _, policy := range policyVersions.Versions {
 		if aws.StringValue(policy.VersionId) != aws.StringValue(currentPolicyVersion) {
-			_, err := c.iam.DeletePolicyVersionRequest(&iam.DeletePolicyVersionInput{PolicyArn: aws.String(policyARN), VersionId: policy.VersionId}).Send()
+			_, err := c.iam.DeletePolicyVersionRequest(&iam.DeletePolicyVersionInput{PolicyArn: aws.String(policyARN), VersionId: policy.VersionId}).Send(context.TODO())
 			if err != nil {
 				return "", err
 			}
@@ -121,12 +122,12 @@ func (c *iamClient) DeletePolicyAndDetach(username string, policyName string) er
 		return err
 	}
 
-	_, err = c.iam.DetachUserPolicyRequest(&iam.DetachUserPolicyInput{PolicyArn: aws.String(policyARN), UserName: aws.String(username)}).Send()
+	_, err = c.iam.DetachUserPolicyRequest(&iam.DetachUserPolicyInput{PolicyArn: aws.String(policyARN), UserName: aws.String(username)}).Send(context.TODO())
 	if err != nil && !IsErrorNotFound(err) {
 		return err
 	}
 
-	_, err = c.iam.DeletePolicyRequest(&iam.DeletePolicyInput{PolicyArn: aws.String(policyARN)}).Send()
+	_, err = c.iam.DeletePolicyRequest(&iam.DeletePolicyInput{PolicyArn: aws.String(policyARN)}).Send(context.TODO())
 	if err != nil && !IsErrorNotFound(err) {
 		return err
 	}
@@ -135,19 +136,19 @@ func (c *iamClient) DeletePolicyAndDetach(username string, policyName string) er
 
 // DeleteUser Policy and IAM User
 func (c *iamClient) DeleteUser(username string) error {
-	keys, err := c.iam.ListAccessKeysRequest(&iam.ListAccessKeysInput{UserName: aws.String(username)}).Send()
+	keys, err := c.iam.ListAccessKeysRequest(&iam.ListAccessKeysInput{UserName: aws.String(username)}).Send(context.TODO())
 	if err != nil {
 		return err
 	}
 
 	for _, key := range keys.AccessKeyMetadata {
-		_, err = c.iam.DeleteAccessKeyRequest(&iam.DeleteAccessKeyInput{AccessKeyId: key.AccessKeyId, UserName: aws.String(username)}).Send()
+		_, err = c.iam.DeleteAccessKeyRequest(&iam.DeleteAccessKeyInput{AccessKeyId: key.AccessKeyId, UserName: aws.String(username)}).Send(context.TODO())
 		if err != nil {
 			return err
 		}
 	}
 
-	_, err = c.iam.DeleteUserRequest(&iam.DeleteUserInput{UserName: aws.String(username)}).Send()
+	_, err = c.iam.DeleteUserRequest(&iam.DeleteUserInput{UserName: aws.String(username)}).Send(context.TODO())
 	if err != nil && !IsErrorNotFound(err) {
 		return err
 	}
@@ -158,7 +159,7 @@ func (c *iamClient) DeleteUser(username string) error {
 // getAccountID - Gets the accountID of the authenticated session.
 func (c *iamClient) getAccountID() (string, error) {
 	if c.accountID == nil {
-		user, err := c.iam.GetUserRequest(&iam.GetUserInput{}).Send()
+		user, err := c.iam.GetUserRequest(&iam.GetUserInput{}).Send(context.TODO())
 		if err != nil {
 			return "", err
 		}
@@ -183,7 +184,7 @@ func (c *iamClient) getPolicyARN(policyName string) (string, error) {
 }
 
 func (c *iamClient) createUser(username string) error {
-	_, err := c.iam.CreateUserRequest(&iam.CreateUserInput{UserName: aws.String(username)}).Send()
+	_, err := c.iam.CreateUserRequest(&iam.CreateUserInput{UserName: aws.String(username)}).Send(context.TODO())
 	if err != nil && isErrorAlreadyExists(err) {
 		return nil
 	}
@@ -191,7 +192,7 @@ func (c *iamClient) createUser(username string) error {
 }
 
 func (c *iamClient) createAccessKey(username string) (*iam.AccessKey, error) {
-	keysResponse, err := c.iam.CreateAccessKeyRequest(&iam.CreateAccessKeyInput{UserName: aws.String(username)}).Send()
+	keysResponse, err := c.iam.CreateAccessKeyRequest(&iam.CreateAccessKeyInput{UserName: aws.String(username)}).Send(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +201,7 @@ func (c *iamClient) createAccessKey(username string) (*iam.AccessKey, error) {
 }
 
 func (c *iamClient) createPolicy(policyName string, policyDocument string) (string, error) {
-	response, err := c.iam.CreatePolicyRequest(&iam.CreatePolicyInput{PolicyName: aws.String(policyName), PolicyDocument: aws.String(policyDocument)}).Send()
+	response, err := c.iam.CreatePolicyRequest(&iam.CreatePolicyInput{PolicyName: aws.String(policyName), PolicyDocument: aws.String(policyDocument)}).Send(context.TODO())
 	if err != nil {
 		if isErrorAlreadyExists(err) {
 			return c.UpdatePolicy(policyName, policyDocument)
@@ -215,7 +216,7 @@ func (c *iamClient) attachPolicyToUser(policyName string, username string) error
 	if err != nil {
 		return err
 	}
-	_, err = c.iam.AttachUserPolicyRequest(&iam.AttachUserPolicyInput{PolicyArn: aws.String(policyArn), UserName: aws.String(username)}).Send()
+	_, err = c.iam.AttachUserPolicyRequest(&iam.AttachUserPolicyInput{PolicyArn: aws.String(policyArn), UserName: aws.String(username)}).Send(context.TODO())
 	return err
 }
 
