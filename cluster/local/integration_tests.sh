@@ -261,9 +261,9 @@ wait_for_deployment_create 120 "${STACK_NAMESPACE}"
 "${KUBECTL}" -n "${STACK_NAMESPACE}" get pods
 
 echo_step "waiting for deployment ${STACK_NAME} rollout to finish"
-"${KUBECTL}" -n "${STACK_NAMESPACE}" rollout status "deploy/${PROJECT_NAME}" --timeout=2m
+"${KUBECTL}" -n "${STACK_NAMESPACE}" rollout status "deploy/${PROJECT_NAME}-controller" --timeout=2m
 
-check_deployments "${STACK_NAME}" "${STACK_NAMESPACE}"
+check_deployments "${STACK_NAME}-controller" "${STACK_NAMESPACE}"
 
 echo_step "check for stack pods statuses"
 echo
