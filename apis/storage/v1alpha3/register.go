@@ -40,6 +40,7 @@ var (
 // S3Bucket type metadata.
 var (
 	S3BucketKind             = reflect.TypeOf(S3Bucket{}).Name()
+	S3BucketGroupKind        = schema.GroupKind{Group: Group, Kind: S3BucketKind}.String()
 	S3BucketKindAPIVersion   = "s3bucket" + "." + SchemeGroupVersion.String()
 	S3BucketGroupVersionKind = SchemeGroupVersion.WithKind(S3BucketKind)
 )
@@ -47,6 +48,7 @@ var (
 // S3BucketClass type metadata.
 var (
 	S3BucketClassKind             = reflect.TypeOf(S3BucketClass{}).Name()
+	S3BucketClassGroupKind        = schema.GroupKind{Group: Group, Kind: S3BucketClassKind}.String()
 	S3BucketClassKindAPIVersion   = S3BucketClassKind + "." + SchemeGroupVersion.String()
 	S3BucketClassGroupVersionKind = SchemeGroupVersion.WithKind(S3BucketClassKind)
 )

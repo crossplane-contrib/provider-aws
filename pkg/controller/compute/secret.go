@@ -34,7 +34,7 @@ import (
 // SetupEKSClusterSecret adds a controller that propagates EKSCluster connection
 // secrets to the connection secrets of their resource claims.
 func SetupEKSClusterSecret(mgr ctrl.Manager, l logging.Logger) error {
-	name := secret.ControllerName(v1alpha3.EKSClusterKind)
+	name := secret.ControllerName(v1alpha3.EKSClusterGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).

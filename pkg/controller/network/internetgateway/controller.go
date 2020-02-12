@@ -50,7 +50,7 @@ const (
 
 // SetupInternetGateway adds a controller that reconciles InternetGateways.
 func SetupInternetGateway(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha3.InternetGatewayKind)
+	name := managed.ControllerName(v1alpha3.InternetGatewayGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).

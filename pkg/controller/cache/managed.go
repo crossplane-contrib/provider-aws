@@ -57,7 +57,7 @@ const (
 
 // SetupReplicationGroup adds a controller that reconciles ReplicationGroups.
 func SetupReplicationGroup(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1beta1.ReplicationGroupKind)
+	name := managed.ControllerName(v1beta1.ReplicationGroupGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).

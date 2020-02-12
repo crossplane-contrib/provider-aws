@@ -40,6 +40,7 @@ var (
 // EKSCluster type metadata.
 var (
 	EKSClusterKind             = reflect.TypeOf(EKSCluster{}).Name()
+	EKSClusterGroupKind        = schema.GroupKind{Group: Group, Kind: EKSClusterKind}.String()
 	EKSClusterKindAPIVersion   = EKSClusterKind + "." + SchemeGroupVersion.String()
 	EKSClusterGroupVersionKind = SchemeGroupVersion.WithKind(EKSClusterKind)
 )
@@ -47,6 +48,7 @@ var (
 // EKSClusterClass type metadata.
 var (
 	EKSClusterClassKind             = reflect.TypeOf(EKSClusterClass{}).Name()
+	EKSClusterClassGroupKind        = schema.GroupKind{Group: Group, Kind: EKSClusterClassKind}.String()
 	EKSClusterClassKindAPIVersion   = EKSClusterClassKind + "." + SchemeGroupVersion.String()
 	EKSClusterClassGroupVersionKind = SchemeGroupVersion.WithKind(EKSClusterClassKind)
 )

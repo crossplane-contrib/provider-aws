@@ -53,7 +53,7 @@ const (
 
 // SetupRouteTable adds a controller that reconciles RouteTables.
 func SetupRouteTable(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha3.RouteTableKind)
+	name := managed.ControllerName(v1alpha3.RouteTableGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
