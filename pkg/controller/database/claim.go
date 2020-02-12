@@ -42,7 +42,7 @@ import (
 // and resource references by picking a random matching RDSInstanceClass, if
 // any.
 func SetupPostgreSQLInstanceClaimScheduling(mgr ctrl.Manager, l logging.Logger) error {
-	name := claimscheduling.ControllerName(databasev1alpha1.PostgreSQLInstanceKind)
+	name := claimscheduling.ControllerName(databasev1alpha1.PostgreSQLInstanceGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -64,7 +64,7 @@ func SetupPostgreSQLInstanceClaimScheduling(mgr ctrl.Manager, l logging.Logger) 
 // PostgreSQLInstance claims that omit their resource ref, class ref, and class
 // selector by choosing a default RDSInstanceClass if one exists.
 func SetupPostgreSQLInstanceClaimDefaulting(mgr ctrl.Manager, l logging.Logger) error {
-	name := claimdefaulting.ControllerName(databasev1alpha1.PostgreSQLInstanceKind)
+	name := claimdefaulting.ControllerName(databasev1alpha1.PostgreSQLInstanceGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -86,7 +86,7 @@ func SetupPostgreSQLInstanceClaimDefaulting(mgr ctrl.Manager, l logging.Logger) 
 // PostgreSQLInstance claims with RDSInstances, dynamically provisioning them if
 // needed.
 func SetupPostgreSQLInstanceClaimBinding(mgr ctrl.Manager, l logging.Logger) error {
-	name := claimbinding.ControllerName(databasev1alpha1.PostgreSQLInstanceKind)
+	name := claimbinding.ControllerName(databasev1alpha1.PostgreSQLInstanceGroupKind)
 
 	r := claimbinding.NewReconciler(mgr,
 		resource.ClaimKind(databasev1alpha1.PostgreSQLInstanceGroupVersionKind),
@@ -162,7 +162,7 @@ func ConfigurePostgreRDSInstance(_ context.Context, cm resource.Claim, cs resour
 // MySQLInstance claims that include a class selector but omit their class and
 // resource references by picking a random matching RDSInstanceClass, if any.
 func SetupMySQLInstanceClaimScheduling(mgr ctrl.Manager, l logging.Logger) error {
-	name := claimscheduling.ControllerName(databasev1alpha1.MySQLInstanceKind)
+	name := claimscheduling.ControllerName(databasev1alpha1.MySQLInstanceGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -184,7 +184,7 @@ func SetupMySQLInstanceClaimScheduling(mgr ctrl.Manager, l logging.Logger) error
 // MySQLInstance claims that omit their resource ref, class ref, and class
 // selector by choosing a default RDSInstanceClass if one exists.
 func SetupMySQLInstanceClaimDefaulting(mgr ctrl.Manager, l logging.Logger) error {
-	name := claimdefaulting.ControllerName(databasev1alpha1.MySQLInstanceKind)
+	name := claimdefaulting.ControllerName(databasev1alpha1.MySQLInstanceGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -206,7 +206,7 @@ func SetupMySQLInstanceClaimDefaulting(mgr ctrl.Manager, l logging.Logger) error
 // MySQLInstance claims with RDSInstances, dynamically provisioning them if
 // needed
 func SetupMySQLInstanceClaimBinding(mgr ctrl.Manager, l logging.Logger) error {
-	name := claimbinding.ControllerName(databasev1alpha1.MySQLInstanceKind)
+	name := claimbinding.ControllerName(databasev1alpha1.MySQLInstanceGroupKind)
 
 	r := claimbinding.NewReconciler(mgr,
 		resource.ClaimKind(databasev1alpha1.MySQLInstanceGroupVersionKind),

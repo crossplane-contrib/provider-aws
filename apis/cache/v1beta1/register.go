@@ -40,6 +40,7 @@ var (
 // ReplicationGroup type metadata.
 var (
 	ReplicationGroupKind             = reflect.TypeOf(ReplicationGroup{}).Name()
+	ReplicationGroupGroupKind        = schema.GroupKind{Group: Group, Kind: ReplicationGroupKind}.String()
 	ReplicationGroupKindAPIVersion   = ReplicationGroupKind + "." + SchemeGroupVersion.String()
 	ReplicationGroupGroupVersionKind = SchemeGroupVersion.WithKind(ReplicationGroupKind)
 )
@@ -47,6 +48,7 @@ var (
 // ReplicationGroupClass type metadata.
 var (
 	ReplicationGroupClassKind             = reflect.TypeOf(ReplicationGroupClass{}).Name()
+	ReplicationGroupClassGroupKind        = schema.GroupKind{Group: Group, Kind: ReplicationGroupClassKind}.String()
 	ReplicationGroupClassKindAPIVersion   = ReplicationGroupClassKind + "." + SchemeGroupVersion.String()
 	ReplicationGroupClassGroupVersionKind = SchemeGroupVersion.WithKind(ReplicationGroupClassKind)
 )

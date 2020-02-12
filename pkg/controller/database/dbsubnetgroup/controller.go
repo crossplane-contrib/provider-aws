@@ -48,7 +48,7 @@ const (
 
 // SetupDBSubnetGroup adds a controller that reconciles DBSubnetGroups.
 func SetupDBSubnetGroup(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha3.DBSubnetGroupKind)
+	name := managed.ControllerName(v1alpha3.DBSubnetGroupGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).

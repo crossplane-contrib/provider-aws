@@ -48,7 +48,7 @@ const (
 // SetupIAMRolePolicyAttachment adds a controller that reconciles
 // IAMRolePolicyAttachments.
 func SetupIAMRolePolicyAttachment(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha3.IAMRolePolicyAttachmentKind)
+	name := managed.ControllerName(v1alpha3.IAMRolePolicyAttachmentGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).

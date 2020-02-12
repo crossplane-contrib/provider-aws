@@ -43,6 +43,7 @@ var (
 // IAMRole type metadata.
 var (
 	IAMRoleKind             = reflect.TypeOf(IAMRole{}).Name()
+	IAMRoleGroupKind        = schema.GroupKind{Group: Group, Kind: IAMRoleKind}.String()
 	IAMRoleKindAPIVersion   = IAMRoleKind + "." + SchemeGroupVersion.String()
 	IAMRoleGroupVersionKind = SchemeGroupVersion.WithKind(IAMRoleKind)
 )
@@ -50,6 +51,7 @@ var (
 // IAMRolePolicyAttachment type metadata.
 var (
 	IAMRolePolicyAttachmentKind             = reflect.TypeOf(IAMRolePolicyAttachment{}).Name()
+	IAMRolePolicyAttachmentGroupKind        = schema.GroupKind{Group: Group, Kind: IAMRolePolicyAttachmentKind}.String()
 	IAMRolePolicyAttachmentKindAPIVersion   = IAMRolePolicyAttachmentKind + "." + SchemeGroupVersion.String()
 	IAMRolePolicyAttachmentGroupVersionKind = SchemeGroupVersion.WithKind(IAMRolePolicyAttachmentKind)
 )

@@ -42,7 +42,7 @@ import (
 // resource references by picking a random matching ReplicationGroupClass, if
 // any.
 func SetupReplicationGroupClaimScheduling(mgr ctrl.Manager, l logging.Logger) error {
-	name := claimscheduling.ControllerName(cachev1alpha1.RedisClusterKind)
+	name := claimscheduling.ControllerName(cachev1alpha1.RedisClusterGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -64,7 +64,7 @@ func SetupReplicationGroupClaimScheduling(mgr ctrl.Manager, l logging.Logger) er
 // RedisCluster claims that omit their resource ref, class ref, and class
 // selector by choosing a default ReplicationGroupClass if one exists.
 func SetupReplicationGroupClaimDefaulting(mgr ctrl.Manager, l logging.Logger) error {
-	name := claimdefaulting.ControllerName(cachev1alpha1.RedisClusterKind)
+	name := claimdefaulting.ControllerName(cachev1alpha1.RedisClusterGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -86,7 +86,7 @@ func SetupReplicationGroupClaimDefaulting(mgr ctrl.Manager, l logging.Logger) er
 // RedisCluster claims with ReplicationGroups, dynamically provisioning them if
 // needed.
 func SetupReplicationGroupClaimBinding(mgr ctrl.Manager, l logging.Logger) error {
-	name := claimbinding.ControllerName(cachev1alpha1.RedisClusterKind)
+	name := claimbinding.ControllerName(cachev1alpha1.RedisClusterGroupKind)
 
 	r := claimbinding.NewReconciler(mgr,
 		resource.ClaimKind(cachev1alpha1.RedisClusterGroupVersionKind),

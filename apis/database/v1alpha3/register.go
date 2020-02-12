@@ -40,6 +40,7 @@ var (
 // DBSubnetGroup type metadata.
 var (
 	DBSubnetGroupKind             = reflect.TypeOf(DBSubnetGroup{}).Name()
+	DBSubnetGroupGroupKind        = schema.GroupKind{Group: Group, Kind: DBSubnetGroupKind}.String()
 	DBSubnetGroupKindAPIVersion   = DBSubnetGroupKind + "." + SchemeGroupVersion.String()
 	DBSubnetGroupGroupVersionKind = SchemeGroupVersion.WithKind(DBSubnetGroupKind)
 )

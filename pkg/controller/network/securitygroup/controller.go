@@ -51,7 +51,7 @@ const (
 
 // SetupSecurityGroup adds a controller that reconciles SecurityGroups.
 func SetupSecurityGroup(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha3.SecurityGroupKind)
+	name := managed.ControllerName(v1alpha3.SecurityGroupGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).

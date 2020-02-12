@@ -50,7 +50,7 @@ const (
 
 // SetupVPC adds a controller that reconciles VPCs.
 func SetupVPC(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha3.VPCKind)
+	name := managed.ControllerName(v1alpha3.VPCGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&v1alpha3.VPC{}).
