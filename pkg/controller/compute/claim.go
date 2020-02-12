@@ -39,7 +39,7 @@ import (
 // KubernetesCluster claims that include a class selector but omit their class
 // and resource references by picking a random matching EKSClusterClass, if any.
 func SetupEKSClusterClaimScheduling(mgr ctrl.Manager, l logging.Logger) error {
-	name := claimscheduling.ControllerName(computev1alpha1.KubernetesClusterKind)
+	name := claimscheduling.ControllerName(computev1alpha1.KubernetesClusterGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -61,7 +61,7 @@ func SetupEKSClusterClaimScheduling(mgr ctrl.Manager, l logging.Logger) error {
 // KubernetesCluster claims that omit their resource ref, class ref, and class
 // selector by choosing a default EKSClusterClass if one exists.
 func SetupEKSClusterClaimDefaulting(mgr ctrl.Manager, l logging.Logger) error {
-	name := claimdefaulting.ControllerName(computev1alpha1.KubernetesClusterKind)
+	name := claimdefaulting.ControllerName(computev1alpha1.KubernetesClusterGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -83,7 +83,7 @@ func SetupEKSClusterClaimDefaulting(mgr ctrl.Manager, l logging.Logger) error {
 // KubernetesCluster claims with EKSClusters, dynamically provisioning them if
 // needed.
 func SetupEKSClusterClaimBinding(mgr ctrl.Manager, l logging.Logger) error {
-	name := claimbinding.ControllerName(computev1alpha1.KubernetesClusterKind)
+	name := claimbinding.ControllerName(computev1alpha1.KubernetesClusterGroupKind)
 
 	r := claimbinding.NewReconciler(mgr,
 		resource.ClaimKind(computev1alpha1.KubernetesClusterGroupVersionKind),

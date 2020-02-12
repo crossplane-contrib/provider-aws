@@ -59,7 +59,7 @@ const (
 
 // SetupRDSInstance adds a controller that reconciles RDSInstances.
 func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1beta1.RDSInstanceKind)
+	name := managed.ControllerName(v1beta1.RDSInstanceGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
