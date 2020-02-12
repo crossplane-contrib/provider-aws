@@ -47,7 +47,7 @@ const (
 
 // SetupIAMRole adds a controller that reconciles IAMRoles.
 func SetupIAMRole(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha3.IAMRoleKind)
+	name := managed.ControllerName(v1alpha3.IAMRoleGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).

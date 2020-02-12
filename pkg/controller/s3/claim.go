@@ -47,7 +47,7 @@ var s3ACL = map[storagev1alpha1.PredefinedACL]s3.BucketCannedACL{
 // that include a class selector but omit their class and resource references by
 // picking a random matching S3BucketClass, if any.
 func SetupBucketClaimScheduling(mgr ctrl.Manager, l logging.Logger) error {
-	name := claimscheduling.ControllerName(storagev1alpha1.BucketKind)
+	name := claimscheduling.ControllerName(storagev1alpha1.BucketGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -68,7 +68,7 @@ func SetupBucketClaimScheduling(mgr ctrl.Manager, l logging.Logger) error {
 // SetupBucketClaimDefaulting sets up the BucketClaimDefaultingController using the
 // supplied manager.
 func SetupBucketClaimDefaulting(mgr ctrl.Manager, l logging.Logger) error {
-	name := claimdefaulting.ControllerName(storagev1alpha1.BucketKind)
+	name := claimdefaulting.ControllerName(storagev1alpha1.BucketGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -89,7 +89,7 @@ func SetupBucketClaimDefaulting(mgr ctrl.Manager, l logging.Logger) error {
 // SetupBucketClaimBinding adds a controller that reconciles Bucket claims with
 // S3Buckets, dynamically provisioning them if needed.
 func SetupBucketClaimBinding(mgr ctrl.Manager, l logging.Logger) error {
-	name := claimbinding.ControllerName(storagev1alpha1.BucketKind)
+	name := claimbinding.ControllerName(storagev1alpha1.BucketGroupKind)
 
 	r := claimbinding.NewReconciler(mgr,
 		resource.ClaimKind(storagev1alpha1.BucketGroupVersionKind),

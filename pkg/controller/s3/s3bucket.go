@@ -78,7 +78,7 @@ type Reconciler struct {
 
 // SetupS3Bucket adds a controller that reconciles S3Buckets.
 func SetupS3Bucket(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(bucketv1alpha3.S3BucketClassKind)
+	name := managed.ControllerName(bucketv1alpha3.S3BucketClassGroupKind)
 
 	r := &Reconciler{
 		Client:              mgr.GetClient(),

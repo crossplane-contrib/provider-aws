@@ -107,7 +107,7 @@ type Reconciler struct {
 
 // SetupEKSCluster adds a controller that reconciles EKSClusters.
 func SetupEKSCluster(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(awscomputev1alpha3.EKSClusterKind)
+	name := managed.ControllerName(awscomputev1alpha3.EKSClusterGroupKind)
 
 	r := &Reconciler{
 		Client:            mgr.GetClient(),

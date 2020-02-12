@@ -40,6 +40,7 @@ var (
 // RDSInstance type metadata.
 var (
 	RDSInstanceKind             = reflect.TypeOf(RDSInstance{}).Name()
+	RDSInstanceGroupKind        = schema.GroupKind{Group: Group, Kind: RDSInstanceKind}.String()
 	RDSInstanceKindAPIVersion   = RDSInstanceKind + "." + SchemeGroupVersion.String()
 	RDSInstanceGroupVersionKind = SchemeGroupVersion.WithKind(RDSInstanceKind)
 )
@@ -47,6 +48,7 @@ var (
 // RDSInstanceClass type metadata.
 var (
 	RDSInstanceClassKind             = reflect.TypeOf(RDSInstanceClass{}).Name()
+	RDSInstanceClassGroupKind        = schema.GroupKind{Group: Group, Kind: RDSInstanceClassKind}.String()
 	RDSInstanceClassKindAPIVersion   = RDSInstanceClassKind + "." + SchemeGroupVersion.String()
 	RDSInstanceClassGroupVersionKind = SchemeGroupVersion.WithKind(RDSInstanceClassKind)
 )

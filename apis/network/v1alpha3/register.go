@@ -43,6 +43,7 @@ var (
 // VPC type metadata.
 var (
 	VPCKind             = reflect.TypeOf(VPC{}).Name()
+	VPCGroupKind        = schema.GroupKind{Group: Group, Kind: VPCKind}.String()
 	VPCKindAPIVersion   = VPCKind + "." + SchemeGroupVersion.String()
 	VPCGroupVersionKind = SchemeGroupVersion.WithKind(VPCKind)
 )
@@ -50,6 +51,7 @@ var (
 // Subnet type metadata.
 var (
 	SubnetKind             = reflect.TypeOf(Subnet{}).Name()
+	SubnetGroupKind        = schema.GroupKind{Group: Group, Kind: SubnetKind}.String()
 	SubnetKindAPIVersion   = SubnetKind + "." + SchemeGroupVersion.String()
 	SubnetGroupVersionKind = SchemeGroupVersion.WithKind(SubnetKind)
 )
@@ -57,6 +59,7 @@ var (
 // SecurityGroup type metadata.
 var (
 	SecurityGroupKind             = reflect.TypeOf(SecurityGroup{}).Name()
+	SecurityGroupGroupKind        = schema.GroupKind{Group: Group, Kind: SecurityGroupKind}.String()
 	SecurityGroupKindAPIVersion   = SecurityGroupKind + "." + SchemeGroupVersion.String()
 	SecurityGroupGroupVersionKind = SchemeGroupVersion.WithKind(SecurityGroupKind)
 )
@@ -64,6 +67,7 @@ var (
 // InternetGateway type metadata.
 var (
 	InternetGatewayKind             = reflect.TypeOf(InternetGateway{}).Name()
+	InternetGatewayGroupKind        = schema.GroupKind{Group: Group, Kind: InternetGatewayKind}.String()
 	InternetGatewayKindAPIVersion   = InternetGatewayKind + "." + SchemeGroupVersion.String()
 	InternetGatewayGroupVersionKind = SchemeGroupVersion.WithKind(InternetGatewayKind)
 )
@@ -71,6 +75,7 @@ var (
 // RouteTable type metadata.
 var (
 	RouteTableKind             = reflect.TypeOf(RouteTable{}).Name()
+	RouteTableGroupKind        = schema.GroupKind{Group: Group, Kind: RouteTableKind}.String()
 	RouteTableKindAPIVersion   = RouteTableKind + "." + SchemeGroupVersion.String()
 	RouteTableGroupVersionKind = SchemeGroupVersion.WithKind(RouteTableKind)
 )
