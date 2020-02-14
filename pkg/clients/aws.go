@@ -29,6 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-ini/ini"
+	"github.com/pkg/errors"
 )
 
 // DefaultSection for INI files.
@@ -77,11 +78,14 @@ func CredentialsIDSecret(data []byte, profile string) (string, string, error) {
 	return id.Value(), secret.Value(), err
 }
 
-// LoadConfig - AWS configuration which can be used to issue requests against AWS API
-func LoadConfig(data []byte, profile, region string) (*aws.Config, error) {
+// AuthMethod is a method of authenticating to the AWS API
+type AuthMethod func(context.Context, []byte, string, string) (*aws.Config, error)
+
+// UseProviderSecret - AWS configuration which can be used to issue requests against AWS API
+func UseProviderSecret(_ context.Context, data []byte, profile, region string) (*aws.Config, error) {
 	id, secret, err := CredentialsIDSecret(data, profile)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "unable to parse credentials")
 	}
 
 	creds := aws.Credentials{
@@ -98,19 +102,19 @@ func LoadConfig(data []byte, profile, region string) (*aws.Config, error) {
 	return &config, err
 }
 
-// LoadSAConfig assumes an IAM role configured via a ServiceAccount.
+// UsePodServiceAccount assumes an IAM role configured via a ServiceAccount.
 // https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
-func LoadSAConfig(ctx context.Context, region string) (*aws.Config, error) {
+func UsePodServiceAccount(ctx context.Context, _ []byte, _, region string) (*aws.Config, error) {
 	cfg, err := external.LoadDefaultAWSConfig()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to load default AWS config")
 	}
 	cfg.Region = region
 	svc := sts.New(cfg)
 
 	b, err := ioutil.ReadFile(os.Getenv("AWS_WEB_IDENTITY_TOKEN_FILE"))
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "unable to read web identity token file in pod")
 	}
 	token := string(b)
 	sess := strconv.FormatInt(time.Now().UnixNano(), 10)

@@ -38,6 +38,7 @@ import (
 
 	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
 	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
+	awsclients "github.com/crossplaneio/stack-aws/pkg/clients"
 	"github.com/crossplaneio/stack-aws/pkg/clients/elasticache"
 )
 
@@ -45,6 +46,8 @@ import (
 const (
 	errUpdateReplicationGroupCR = "cannot update ReplicationGroup Custom Resource"
 	errGetCacheClusterList      = "cannot get cache cluster list"
+	errGetProvider              = "cannot get provider"
+	errGetProviderSecret        = "cannot get provider secret"
 
 	errNewClient                = "cannot create new ElastiCache client"
 	errNotReplicationGroup      = "managed resource is not an ElastiCache replication group"
@@ -72,7 +75,7 @@ func SetupReplicationGroup(mgr ctrl.Manager, l logging.Logger) error {
 
 type connecter struct {
 	client      client.Client
-	newClientFn func(credentials []byte, region string) (elasticache.Client, error)
+	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (elasticache.Client, error)
 }
 
 func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
@@ -83,15 +86,24 @@ func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (managed.E
 
 	p := &awsv1alpha3.Provider{}
 	if err := c.client.Get(ctx, meta.NamespacedNameOf(g.Spec.ProviderReference), p); err != nil {
-		return nil, errors.Wrap(err, "cannot get provider")
+		return nil, errors.Wrap(err, errGetProvider)
+	}
+
+	if p.Spec.UseServiceAccount != nil && *p.Spec.UseServiceAccount {
+		awsClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
+		return &external{client: awsClient, kube: c.client}, errors.Wrap(err, errNewClient)
+	}
+
+	if p.GetCredentialsSecretReference() == nil {
+		return nil, errors.New(errGetProviderSecret)
 	}
 
 	s := &corev1.Secret{}
 	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
 	if err := c.client.Get(ctx, n, s); err != nil {
-		return nil, errors.Wrap(err, "cannot get provider secret")
+		return nil, errors.Wrap(err, errGetProviderSecret)
 	}
-	awsClient, err := c.newClientFn(s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region)
+	awsClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
 	return &external{client: awsClient, kube: c.client}, errors.Wrap(err, errNewClient)
 }
 

@@ -35,6 +35,7 @@ import (
 
 	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
 	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
+	awsclients "github.com/crossplaneio/stack-aws/pkg/clients"
 	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
 	"github.com/crossplaneio/stack-aws/pkg/clients/rds/fake"
 )
@@ -119,7 +120,7 @@ func TestConnect(t *testing.T) {
 				Region:            testRegion,
 				UseServiceAccount: &saVal,
 				ProviderSpec: runtimev1alpha1.ProviderSpec{
-					CredentialsSecretRef: runtimev1alpha1.SecretKeySelector{
+					CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
 						SecretReference: runtimev1alpha1.SecretReference{
 							Namespace: secretNamespace,
 							Name:      connectionSecretName,
@@ -132,7 +133,7 @@ func TestConnect(t *testing.T) {
 	}
 	type args struct {
 		kube        client.Client
-		newClientFn func(ctx context.Context, credentials []byte, region string, useSA bool) (rds.Client, error)
+		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (rds.Client, error)
 		cr          *v1beta1.RDSInstance
 	}
 	type want struct {
@@ -159,14 +160,11 @@ func TestConnect(t *testing.T) {
 						return errBoom
 					},
 				},
-				newClientFn: func(ctx context.Context, credentials []byte, region string, useSA bool) (i rds.Client, e error) {
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i rds.Client, e error) {
 					if diff := cmp.Diff(credData, string(credentials)); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
 					if diff := cmp.Diff(testRegion, region); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					if diff := cmp.Diff(false, useSA); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
 					return nil, nil
@@ -186,14 +184,11 @@ func TestConnect(t *testing.T) {
 						return errBoom
 					},
 				},
-				newClientFn: func(ctx context.Context, credentials []byte, region string, useSA bool) (i rds.Client, e error) {
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i rds.Client, e error) {
 					if diff := cmp.Diff("", string(credentials)); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
 					if diff := cmp.Diff(testRegion, region); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					if diff := cmp.Diff(true, useSA); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
 					return nil, nil
@@ -234,6 +229,29 @@ func TestConnect(t *testing.T) {
 			},
 			want: want{
 				err: errors.Wrap(errBoom, errGetProviderSecret),
+			},
+		},
+		"SecretGetFailedNil": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.SetCredentialsSecretReference(nil)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				err: errors.New(errGetProviderSecret),
 			},
 		},
 	}

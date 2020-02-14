@@ -45,16 +45,11 @@ type Client interface {
 }
 
 // NewClient creates new RDS RDSClient with provided AWS Configurations/Credentials
-func NewClient(ctx context.Context, credentials []byte, region string, useSA bool) (Client, error) {
-	if useSA {
-		cfg, err := awsclients.LoadSAConfig(ctx, region)
-		if cfg == nil {
-			return nil, err
-		}
-		return rds.New(*cfg), err
+func NewClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (Client, error) {
+	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
+	if cfg == nil {
+		return nil, err
 	}
-
-	cfg, err := awsclients.LoadConfig(credentials, awsclients.DefaultSection, region)
 	return rds.New(*cfg), err
 }
 

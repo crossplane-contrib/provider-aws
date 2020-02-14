@@ -66,7 +66,7 @@ aws_secret_access_key = mock_aws_secret_access_key`),
 		Spec: awsv1alpha3.ProviderSpec{
 			Region: "mock-region",
 			ProviderSpec: runtimev1alpha1.ProviderSpec{
-				CredentialsSecretRef: runtimev1alpha1.SecretKeySelector{
+				CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
 					SecretReference: runtimev1alpha1.SecretReference{},
 					Key:             "mockawskey",
 				},
