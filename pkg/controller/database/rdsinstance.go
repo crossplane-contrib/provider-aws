@@ -38,6 +38,7 @@ import (
 
 	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
 	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
+	awsclients "github.com/crossplaneio/stack-aws/pkg/clients"
 	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
 )
 
@@ -73,7 +74,7 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 
 type connector struct {
 	kube        client.Client
-	newClientFn func(ctx context.Context, credentials []byte, region string, useSA bool) (rds.Client, error)
+	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (rds.Client, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
@@ -88,8 +89,12 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	}
 
 	if p.Spec.UseServiceAccount != nil && *p.Spec.UseServiceAccount {
-		rdsClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, true)
+		rdsClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
 		return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, errCreateRDSClient)
+	}
+
+	if p.GetCredentialsSecretReference() == nil {
+		return nil, errors.New(errGetProviderSecret)
 	}
 
 	s := &corev1.Secret{}
@@ -98,7 +103,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetProviderSecret)
 	}
 
-	rdsClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, false)
+	rdsClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
 	return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, errCreateRDSClient)
 }
 

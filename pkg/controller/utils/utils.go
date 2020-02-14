@@ -42,6 +42,15 @@ func RetrieveAwsConfigFromProvider(ctx context.Context, client client.Reader, pr
 		return nil, errors.Wrapf(err, "cannot get provider %s", n)
 	}
 
+	if p.Spec.UseServiceAccount != nil && *p.Spec.UseServiceAccount {
+		cfg, err := awsclients.UsePodServiceAccount(ctx, []byte{}, awsclients.DefaultSection, p.Spec.Region)
+		return cfg, errors.Wrap(err, "cannot create new AWS configuration using IAM roles for ServiceAccount")
+	}
+
+	if p.GetCredentialsSecretReference() == nil {
+		return nil, errors.New("provider does not have a secret reference")
+	}
+
 	secret := &corev1.Secret{}
 	n = types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
 	err := client.Get(ctx, n, secret)
@@ -49,7 +58,7 @@ func RetrieveAwsConfigFromProvider(ctx context.Context, client client.Reader, pr
 		return nil, errors.Wrapf(err, "cannot get provider secret %s", n)
 	}
 
-	cfg, err := awsclients.LoadConfig(secret.Data[p.Spec.CredentialsSecretRef.Key], awsclients.DefaultSection, p.Spec.Region)
+	cfg, err := awsclients.UseProviderSecret(ctx, secret.Data[p.Spec.CredentialsSecretRef.Key], awsclients.DefaultSection, p.Spec.Region)
 
 	return cfg, errors.Wrap(err, "cannot create new AWS configuration")
 }

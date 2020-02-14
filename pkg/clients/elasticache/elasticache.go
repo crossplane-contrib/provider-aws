@@ -17,6 +17,7 @@ limitations under the License.
 package elasticache
 
 import (
+	"context"
 	"reflect"
 	"strconv"
 
@@ -26,7 +27,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache/elasticacheiface"
-	"github.com/pkg/errors"
 
 	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
 	clients "github.com/crossplaneio/stack-aws/pkg/clients"
@@ -38,12 +38,12 @@ type Client elasticacheiface.ClientAPI
 
 // NewClient returns a new ElastiCache client. Credentials must be passed as
 // JSON encoded data.
-func NewClient(credentials []byte, region string) (Client, error) {
-	cfg, err := clients.LoadConfig(credentials, clients.DefaultSection, region)
-	if err != nil {
-		return nil, errors.Wrap(err, "cannot create new AWS configuration")
+func NewClient(ctx context.Context, credentials []byte, region string, auth clients.AuthMethod) (Client, error) {
+	cfg, err := auth(ctx, credentials, clients.DefaultSection, region)
+	if cfg == nil {
+		return nil, err
 	}
-	return elasticache.New(*cfg), nil
+	return elasticache.New(*cfg), err
 }
 
 // TODO(negz): Determine whether we have to handle converting zero values to
