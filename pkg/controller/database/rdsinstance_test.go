@@ -172,7 +172,7 @@ func TestConnect(t *testing.T) {
 				cr: instance(),
 			},
 		},
-		"SuccessfulUseSA": {
+		"SuccessfulUseServiceAccount": {
 			args: args{
 				kube: &test.MockClient{
 					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {

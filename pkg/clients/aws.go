@@ -104,6 +104,10 @@ func UseProviderSecret(_ context.Context, data []byte, profile, region string) (
 
 // UsePodServiceAccount assumes an IAM role configured via a ServiceAccount.
 // https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
+//
+// TODO(hasheddan): This should be replaced by the implementation of the Web
+// Identity Token Provider in the following PR after merge and subsequent
+// release of AWS SDK: https://github.com/aws/aws-sdk-go-v2/pull/488
 func UsePodServiceAccount(ctx context.Context, _ []byte, _, region string) (*aws.Config, error) {
 	cfg, err := external.LoadDefaultAWSConfig()
 	if err != nil {

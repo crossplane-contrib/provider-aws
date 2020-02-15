@@ -689,7 +689,7 @@ func TestConnect(t *testing.T) {
 			i: replicationGroup(),
 		},
 		{
-			name: "SuccessfulConnectSA",
+			name: "SuccessfulConnectWithServiceAccount",
 			conn: &connecter{
 				client: &test.MockClient{
 					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
