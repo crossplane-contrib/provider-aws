@@ -89,7 +89,7 @@ func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetProvider)
 	}
 
-	if p.Spec.UseServiceAccount != nil && *p.Spec.UseServiceAccount {
+	if commonaws.BoolValue(p.Spec.UseServiceAccount) {
 		awsClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
 		return &external{client: awsClient, kube: c.client}, errors.Wrap(err, errNewClient)
 	}

@@ -42,7 +42,7 @@ func RetrieveAwsConfigFromProvider(ctx context.Context, client client.Reader, pr
 		return nil, errors.Wrapf(err, "cannot get provider %s", n)
 	}
 
-	if p.Spec.UseServiceAccount != nil && *p.Spec.UseServiceAccount {
+	if aws.BoolValue(p.Spec.UseServiceAccount) {
 		cfg, err := awsclients.UsePodServiceAccount(ctx, []byte{}, awsclients.DefaultSection, p.Spec.Region)
 		return cfg, errors.Wrap(err, "cannot create new AWS configuration using IAM roles for ServiceAccount")
 	}

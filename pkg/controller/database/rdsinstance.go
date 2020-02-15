@@ -88,7 +88,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetProvider)
 	}
 
-	if p.Spec.UseServiceAccount != nil && *p.Spec.UseServiceAccount {
+	if aws.BoolValue(p.Spec.UseServiceAccount) {
 		rdsClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
 		return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, errCreateRDSClient)
 	}
