@@ -39,6 +39,7 @@ import (
 
 	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
 	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
+	awsclients "github.com/crossplaneio/stack-aws/pkg/clients"
 	elasticacheclient "github.com/crossplaneio/stack-aws/pkg/clients/elasticache"
 	"github.com/crossplaneio/stack-aws/pkg/clients/elasticache/fake"
 
@@ -81,7 +82,7 @@ var (
 		ObjectMeta: metav1.ObjectMeta{Name: providerName},
 		Spec: awsv1alpha3.ProviderSpec{
 			ProviderSpec: runtimev1alpha1.ProviderSpec{
-				CredentialsSecretRef: runtimev1alpha1.SecretKeySelector{
+				CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
 					SecretReference: runtimev1alpha1.SecretReference{
 						Namespace: namespace,
 						Name:      providerSecretName,
@@ -652,6 +653,15 @@ func TestDelete(t *testing.T) {
 }
 
 func TestConnect(t *testing.T) {
+	providerSA := func(saVal bool) awsv1alpha3.Provider {
+		return awsv1alpha3.Provider{
+			Spec: awsv1alpha3.ProviderSpec{
+				UseServiceAccount: &saVal,
+				ProviderSpec:      runtimev1alpha1.ProviderSpec{},
+			},
+		}
+	}
+
 	cases := []struct {
 		name    string
 		conn    *connecter
@@ -672,7 +682,29 @@ func TestConnect(t *testing.T) {
 						return nil
 					},
 				},
-				newClientFn: func(_ []byte, _ string) (elasticacheclient.Client, error) { return &fake.MockClient{}, nil },
+				newClientFn: func(_ context.Context, _ []byte, _ string, _ awsclients.AuthMethod) (elasticacheclient.Client, error) {
+					return &fake.MockClient{}, nil
+				},
+			},
+			i: replicationGroup(),
+		},
+		{
+			name: "SuccessfulConnectWithServiceAccount",
+			conn: &connecter{
+				client: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							*obj.(*awsv1alpha3.Provider) = providerSA(true)
+						case client.ObjectKey{Namespace: namespace, Name: providerSecretName}:
+							*obj.(*corev1.Secret) = providerSecret
+						}
+						return nil
+					},
+				},
+				newClientFn: func(_ context.Context, _ []byte, _ string, _ awsclients.AuthMethod) (elasticacheclient.Client, error) {
+					return &fake.MockClient{}, nil
+				},
 			},
 			i: replicationGroup(),
 		},
@@ -682,7 +714,9 @@ func TestConnect(t *testing.T) {
 				client: &test.MockClient{MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
 					return kerrors.NewNotFound(schema.GroupResource{}, providerName)
 				}},
-				newClientFn: func(_ []byte, _ string) (elasticacheclient.Client, error) { return &fake.MockClient{}, nil },
+				newClientFn: func(_ context.Context, _ []byte, _ string, _ awsclients.AuthMethod) (elasticacheclient.Client, error) {
+					return &fake.MockClient{}, nil
+				},
 			},
 			i:       replicationGroup(),
 			wantErr: errors.WithStack(errors.Errorf("cannot get provider:  \"%s\" not found", providerName)),
@@ -699,10 +733,31 @@ func TestConnect(t *testing.T) {
 					}
 					return nil
 				}},
-				newClientFn: func(_ []byte, _ string) (elasticacheclient.Client, error) { return &fake.MockClient{}, nil },
+				newClientFn: func(_ context.Context, _ []byte, _ string, _ awsclients.AuthMethod) (elasticacheclient.Client, error) {
+					return &fake.MockClient{}, nil
+				},
 			},
 			i:       replicationGroup(),
 			wantErr: errors.WithStack(errors.Errorf("cannot get provider secret:  \"%s\" not found", providerSecretName)),
+		},
+		{
+			name: "FailedToGetProviderSecretNil",
+			conn: &connecter{
+				client: &test.MockClient{MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+					switch key {
+					case client.ObjectKey{Name: providerName}:
+						*obj.(*awsv1alpha3.Provider) = providerSA(false)
+					case client.ObjectKey{Namespace: namespace, Name: providerSecretName}:
+						return kerrors.NewNotFound(schema.GroupResource{}, providerSecretName)
+					}
+					return nil
+				}},
+				newClientFn: func(_ context.Context, _ []byte, _ string, _ awsclients.AuthMethod) (elasticacheclient.Client, error) {
+					return &fake.MockClient{}, nil
+				},
+			},
+			i:       replicationGroup(),
+			wantErr: errors.New("cannot get provider secret"),
 		},
 		{
 			name: "FailedToCreateElastiCacheClient",
@@ -716,7 +771,9 @@ func TestConnect(t *testing.T) {
 					}
 					return nil
 				}},
-				newClientFn: func(_ []byte, _ string) (elasticacheclient.Client, error) { return nil, errorBoom },
+				newClientFn: func(_ context.Context, _ []byte, _ string, _ awsclients.AuthMethod) (elasticacheclient.Client, error) {
+					return nil, errorBoom
+				},
 			},
 			i:       replicationGroup(),
 			wantErr: errors.Wrap(errorBoom, errNewClient),

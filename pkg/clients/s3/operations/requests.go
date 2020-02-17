@@ -16,31 +16,35 @@ limitations under the License.
 
 package operations
 
-import "github.com/aws/aws-sdk-go-v2/service/s3"
+import (
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+)
 
 // mockery -case snake -all -output fake -outpkg fake
 
 // CreateBucketRequest is a API request type for the CreateBucket API operation.
 type CreateBucketRequest interface {
-	Send() (*s3.CreateBucketOutput, error)
+	Send(context.Context) (*s3.CreateBucketResponse, error)
 }
 
 // GetBucketVersioningRequest is a API request type for the GetBucketVersioning API operation.
 type GetBucketVersioningRequest interface {
-	Send() (*s3.GetBucketVersioningOutput, error)
+	Send(context.Context) (*s3.GetBucketVersioningResponse, error)
 }
 
 // PutBucketACLRequest is a API request type for the PutBucketAcl API operation.
 type PutBucketACLRequest interface {
-	Send() (*s3.PutBucketAclOutput, error)
+	Send(context.Context) (*s3.PutBucketAclResponse, error)
 }
 
 // PutBucketVersioningRequest is a API request type for the PutBucketVersioning API operation.
 type PutBucketVersioningRequest interface {
-	Send() (*s3.PutBucketVersioningOutput, error)
+	Send(context.Context) (*s3.PutBucketVersioningResponse, error)
 }
 
 // DeleteBucketRequest is a API request type for the DeleteBucket API operation.
 type DeleteBucketRequest interface {
-	Send() (*s3.DeleteBucketOutput, error)
+	Send(context.Context) (*s3.DeleteBucketResponse, error)
 }

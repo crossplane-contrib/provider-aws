@@ -17,12 +17,19 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"encoding/json"
+	"io/ioutil"
+	"os"
+	"strconv"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-ini/ini"
+	"github.com/pkg/errors"
 )
 
 // DefaultSection for INI files.
@@ -71,11 +78,14 @@ func CredentialsIDSecret(data []byte, profile string) (string, string, error) {
 	return id.Value(), secret.Value(), err
 }
 
-// LoadConfig - AWS configuration which can be used to issue requests against AWS API
-func LoadConfig(data []byte, profile, region string) (*aws.Config, error) {
+// AuthMethod is a method of authenticating to the AWS API
+type AuthMethod func(context.Context, []byte, string, string) (*aws.Config, error)
+
+// UseProviderSecret - AWS configuration which can be used to issue requests against AWS API
+func UseProviderSecret(_ context.Context, data []byte, profile, region string) (*aws.Config, error) {
 	id, secret, err := CredentialsIDSecret(data, profile)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "unable to parse credentials")
 	}
 
 	creds := aws.Credentials{
@@ -88,6 +98,49 @@ func LoadConfig(data []byte, profile, region string) (*aws.Config, error) {
 		Region:      region,
 	}
 
+	config, err := external.LoadDefaultAWSConfig(shared)
+	return &config, err
+}
+
+// UsePodServiceAccount assumes an IAM role configured via a ServiceAccount.
+// https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
+//
+// TODO(hasheddan): This should be replaced by the implementation of the Web
+// Identity Token Provider in the following PR after merge and subsequent
+// release of AWS SDK: https://github.com/aws/aws-sdk-go-v2/pull/488
+func UsePodServiceAccount(ctx context.Context, _ []byte, _, region string) (*aws.Config, error) {
+	cfg, err := external.LoadDefaultAWSConfig()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load default AWS config")
+	}
+	cfg.Region = region
+	svc := sts.New(cfg)
+
+	b, err := ioutil.ReadFile(os.Getenv("AWS_WEB_IDENTITY_TOKEN_FILE"))
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to read web identity token file in pod")
+	}
+	token := string(b)
+	sess := strconv.FormatInt(time.Now().UnixNano(), 10)
+	role := os.Getenv("AWS_ROLE_ARN")
+	resp, err := svc.AssumeRoleWithWebIdentityRequest(
+		&sts.AssumeRoleWithWebIdentityInput{
+			RoleSessionName:  &sess,
+			WebIdentityToken: &token,
+			RoleArn:          &role,
+		}).Send(ctx)
+	if err != nil {
+		return nil, err
+	}
+	creds := aws.Credentials{
+		AccessKeyID:     aws.StringValue(resp.Credentials.AccessKeyId),
+		SecretAccessKey: aws.StringValue(resp.Credentials.SecretAccessKey),
+		SessionToken:    aws.StringValue(resp.Credentials.SessionToken),
+	}
+	shared := external.SharedConfig{
+		Credentials: creds,
+		Region:      region,
+	}
 	config, err := external.LoadDefaultAWSConfig(shared)
 	return &config, err
 }

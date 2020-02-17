@@ -3,6 +3,8 @@
 package fake
 
 import (
+	context "context"
+
 	mock "github.com/stretchr/testify/mock"
 
 	s3 "github.com/aws/aws-sdk-go-v2/service/s3"
@@ -13,22 +15,22 @@ type DeleteBucketRequest struct {
 	mock.Mock
 }
 
-// Send provides a mock function with given fields:
-func (_m *DeleteBucketRequest) Send() (*s3.DeleteBucketOutput, error) {
-	ret := _m.Called()
+// Send provides a mock function with given fields: _a0
+func (_m *DeleteBucketRequest) Send(_a0 context.Context) (*s3.DeleteBucketResponse, error) {
+	ret := _m.Called(_a0)
 
-	var r0 *s3.DeleteBucketOutput
-	if rf, ok := ret.Get(0).(func() *s3.DeleteBucketOutput); ok {
-		r0 = rf()
+	var r0 *s3.DeleteBucketResponse
+	if rf, ok := ret.Get(0).(func(context.Context) *s3.DeleteBucketResponse); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*s3.DeleteBucketOutput)
+			r0 = ret.Get(0).(*s3.DeleteBucketResponse)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}

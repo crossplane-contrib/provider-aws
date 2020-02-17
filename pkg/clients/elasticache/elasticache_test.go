@@ -17,7 +17,6 @@ limitations under the License.
 package elasticache
 
 import (
-	"fmt"
 	"strconv"
 	"testing"
 
@@ -610,8 +609,6 @@ func TestReplicationGroupNeedsUpdate(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			name := tc.name
-			fmt.Println(name)
 			got := ReplicationGroupNeedsUpdate(tc.kube, tc.rg, tc.ccList)
 			if got != tc.want {
 				t.Errorf("ReplicationGroupNeedsUpdate(...): want %t, got %t", tc.want, got)

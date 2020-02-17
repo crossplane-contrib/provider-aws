@@ -97,9 +97,8 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	req := e.client.GetRoleRequest(&awsiam.GetRoleInput{
 		RoleName: aws.String(cr.Spec.RoleName),
 	})
-	req.SetContext(ctx)
 
-	observed, err := req.Send()
+	observed, err := req.Send(ctx)
 
 	if iam.IsErrorNotFound(err) {
 		return managed.ExternalObservation{
@@ -133,9 +132,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		AssumeRolePolicyDocument: aws.String(cr.Spec.AssumeRolePolicyDocument),
 		Description:              aws.String(cr.Spec.Description),
 	})
-	req.SetContext(ctx)
 
-	result, err := req.Send()
+	result, err := req.Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
@@ -163,9 +161,8 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	req := e.client.DeleteRoleRequest(&awsiam.DeleteRoleInput{
 		RoleName: aws.String(cr.Spec.RoleName),
 	})
-	req.SetContext(ctx)
 
-	_, err := req.Send()
+	_, err := req.Send(ctx)
 
 	if iam.IsErrorNotFound(err) {
 		return nil
