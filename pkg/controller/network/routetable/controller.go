@@ -113,9 +113,8 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	req := e.client.DescribeRouteTablesRequest(&awsec2.DescribeRouteTablesInput{
 		RouteTableIds: []string{cr.Status.RouteTableID},
 	})
-	req.SetContext(ctx)
 
-	response, err := req.Send()
+	response, err := req.Send(ctx)
 
 	if ec2.IsRouteTableNotFoundErr(err) {
 		return managed.ExternalObservation{
@@ -164,8 +163,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	req := e.client.CreateRouteTableRequest(&awsec2.CreateRouteTableInput{
 		VpcId: aws.String(cr.Spec.VPCID),
 	})
-	req.SetContext(ctx)
-	result, err := req.Send()
+	result, err := req.Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
@@ -220,9 +218,8 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	req := e.client.DeleteRouteTableRequest(&awsec2.DeleteRouteTableInput{
 		RouteTableId: aws.String(cr.Status.RouteTableID),
 	})
-	req.SetContext(ctx)
 
-	_, err := req.Send()
+	_, err := req.Send(ctx)
 
 	if ec2.IsRouteTableNotFoundErr(err) {
 		return nil
@@ -247,9 +244,8 @@ func (e *external) createRoutes(ctx context.Context, tableID string, desired []v
 				DestinationCidrBlock: aws.String(rt.DestinationCIDRBlock),
 				GatewayId:            aws.String(rt.GatewayID),
 			})
-			req.SetContext(ctx)
 
-			if _, err := req.Send(); err != nil {
+			if _, err := req.Send(ctx); err != nil {
 				return errors.Wrap(err, errCreateRoute)
 			}
 		}
@@ -269,9 +265,8 @@ func (e *external) deleteRoutes(ctx context.Context, tableID string, observed []
 			RouteTableId:         aws.String(tableID),
 			DestinationCidrBlock: aws.String(rt.DestinationCIDRBlock),
 		})
-		req.SetContext(ctx)
 
-		if _, err := req.Send(); err != nil {
+		if _, err := req.Send(ctx); err != nil {
 			if ec2.IsRouteNotFoundErr(err) {
 				continue
 			}
@@ -297,9 +292,8 @@ func (e *external) createAssociations(ctx context.Context, tableID string, desir
 				RouteTableId: aws.String(tableID),
 				SubnetId:     aws.String(asc.SubnetID),
 			})
-			req.SetContext(ctx)
 
-			if _, err := req.Send(); err != nil {
+			if _, err := req.Send(ctx); err != nil {
 				return errors.Wrapf(err, errAssociateSubnet, asc.SubnetID)
 			}
 		}
@@ -313,9 +307,8 @@ func (e *external) deleteAssociations(ctx context.Context, observed []v1alpha3.A
 		req := e.client.DisassociateRouteTableRequest(&awsec2.DisassociateRouteTableInput{
 			AssociationId: aws.String(asc.AssociationID),
 		})
-		req.SetContext(ctx)
 
-		if _, err := req.Send(); err != nil {
+		if _, err := req.Send(ctx); err != nil {
 			if ec2.IsAssociationIDNotFoundErr(err) {
 				continue
 			}

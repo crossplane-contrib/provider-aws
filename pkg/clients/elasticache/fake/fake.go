@@ -21,11 +21,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticache/elasticacheiface"
 )
 
-var _ elasticacheiface.ElastiCacheAPI = &MockClient{}
+var _ elasticacheiface.ClientAPI = &MockClient{}
 
 // MockClient is a fake implementation of cloudmemorystore.Client.
 type MockClient struct {
-	elasticacheiface.ElastiCacheAPI
+	elasticacheiface.ClientAPI
 
 	MockDescribeReplicationGroupsRequest func(*elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest
 	MockCreateReplicationGroupRequest    func(*elasticache.CreateReplicationGroupInput) elasticache.CreateReplicationGroupRequest

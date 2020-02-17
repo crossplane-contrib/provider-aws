@@ -21,11 +21,11 @@ package v1alpha3
 import runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
 
 // GetCredentialsSecretReference of this Provider.
-func (p *Provider) GetCredentialsSecretReference() runtimev1alpha1.SecretKeySelector {
+func (p *Provider) GetCredentialsSecretReference() *runtimev1alpha1.SecretKeySelector {
 	return p.Spec.CredentialsSecretRef
 }
 
 // SetCredentialsSecretReference of this Provider.
-func (p *Provider) SetCredentialsSecretReference(r runtimev1alpha1.SecretKeySelector) {
+func (p *Provider) SetCredentialsSecretReference(r *runtimev1alpha1.SecretKeySelector) {
 	p.Spec.CredentialsSecretRef = r
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package s3
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -68,7 +69,7 @@ func NewClient(config *aws.Config) Service {
 // specification, and returns access keys with permissions of localPermission
 func (c *Client) CreateOrUpdateBucket(bucket *v1alpha3.S3Bucket) error {
 	input := CreateBucketInput(bucket)
-	_, err := c.s3.CreateBucketRequest(input).Send()
+	_, err := c.s3.CreateBucketRequest(input).Send(context.TODO())
 	if err != nil {
 		if isErrorAlreadyExists(err) {
 			return c.UpdateBucketACL(bucket)
@@ -86,7 +87,7 @@ type Bucket struct {
 // GetBucketInfo returns the status of key bucket settings including user's policy version for permission status
 func (c *Client) GetBucketInfo(username string, bucket *v1alpha3.S3Bucket) (*Bucket, error) {
 	b := Bucket{}
-	bucketVersioning, err := c.s3.GetBucketVersioningRequest(&s3.GetBucketVersioningInput{Bucket: aws.String(bucket.GetBucketName())}).Send()
+	bucketVersioning, err := c.s3.GetBucketVersioningRequest(&s3.GetBucketVersioningInput{Bucket: aws.String(bucket.GetBucketName())}).Send(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +129,7 @@ func (c *Client) UpdateBucketACL(bucket *v1alpha3.S3Bucket) error {
 			ACL:    *bucket.Spec.CannedACL,
 			Bucket: &name,
 		}
-		_, err = c.s3.PutBucketACLRequest(input).Send()
+		_, err = c.s3.PutBucketACLRequest(input).Send(context.TODO())
 	}
 
 	return err
@@ -142,7 +143,7 @@ func (c *Client) UpdateVersioning(bucket *v1alpha3.S3Bucket) error {
 	}
 	name := bucket.GetBucketName()
 	input := &s3.PutBucketVersioningInput{Bucket: &name, VersioningConfiguration: &s3.VersioningConfiguration{Status: versioningStatus}}
-	_, err := c.s3.PutBucketVersioningRequest(input).Send()
+	_, err := c.s3.PutBucketVersioningRequest(input).Send(context.TODO())
 	if err != nil {
 		return err
 	}
@@ -168,7 +169,7 @@ func (c *Client) DeleteBucket(bucket *v1alpha3.S3Bucket) error {
 	input := &s3.DeleteBucketInput{
 		Bucket: &name,
 	}
-	_, err := c.s3.DeleteBucketRequest(input).Send()
+	_, err := c.s3.DeleteBucketRequest(input).Send(context.TODO())
 	if err != nil && !isErrorNotFound(err) {
 		return err
 	}

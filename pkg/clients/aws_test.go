@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -48,7 +49,7 @@ func TestCredentialsIdSecret(t *testing.T) {
 	g.Expect(secret).To(Equal(""))
 }
 
-func TestLoadConfig(t *testing.T) {
+func TestUseProviderSecret(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	testProfile := "default"
@@ -57,7 +58,7 @@ func TestLoadConfig(t *testing.T) {
 	testRegion := "us-west-2"
 	credentials := []byte(fmt.Sprintf(awsCredentialsFileFormat, testProfile, testID, testSecret))
 
-	config, err := LoadConfig(credentials, testProfile, testRegion)
+	config, err := UseProviderSecret(context.TODO(), credentials, testProfile, testRegion)
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(config).NotTo(BeNil())
 }

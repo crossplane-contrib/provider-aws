@@ -99,9 +99,8 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	req := e.client.ListAttachedRolePoliciesRequest(&awsiam.ListAttachedRolePoliciesInput{
 		RoleName: aws.String(cr.Spec.RoleName),
 	})
-	req.SetContext(ctx)
 
-	observed, err := req.Send()
+	observed, err := req.Send(ctx)
 	if err != nil {
 		if iam.IsErrorNotFound(err) {
 			return managed.ExternalObservation{
@@ -147,9 +146,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		PolicyArn: aws.String(cr.Spec.PolicyARN),
 		RoleName:  aws.String(cr.Spec.RoleName),
 	})
-	req.SetContext(ctx)
 
-	_, err := req.Send()
+	_, err := req.Send(ctx)
 
 	return managed.ExternalCreation{}, errors.Wrapf(err, errAttach, cr.Spec.PolicyARN, cr.Spec.RoleName)
 }
@@ -177,8 +175,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		PolicyArn: aws.String(cr.Spec.PolicyARN),
 		RoleName:  aws.String(cr.Spec.RoleName),
 	})
-	aReq.SetContext(ctx)
-	if _, err := aReq.Send(); err != nil {
+	if _, err := aReq.Send(ctx); err != nil {
 		return managed.ExternalUpdate{}, errors.Wrapf(err, errAttach, cr.Spec.PolicyARN, cr.Spec.RoleName)
 	}
 
@@ -186,9 +183,8 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		PolicyArn: aws.String(cr.Status.AttachedPolicyARN),
 		RoleName:  aws.String(cr.Spec.RoleName),
 	})
-	dReq.SetContext(ctx)
 
-	if _, err := dReq.Send(); err != nil {
+	if _, err := dReq.Send(ctx); err != nil {
 		return managed.ExternalUpdate{}, errors.Wrapf(err, errDetach, cr.Status.AttachedPolicyARN, cr.Spec.RoleName)
 	}
 
@@ -207,9 +203,8 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		PolicyArn: aws.String(cr.Spec.PolicyARN),
 		RoleName:  aws.String(cr.Spec.RoleName),
 	})
-	req.SetContext(ctx)
 
-	_, err := req.Send()
+	_, err := req.Send(ctx)
 
 	if iam.IsErrorNotFound(err) {
 		return nil
