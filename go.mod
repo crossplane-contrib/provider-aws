@@ -4,8 +4,8 @@ go 1.13
 
 require (
 	github.com/aws/aws-sdk-go-v2 v0.19.0
-	github.com/crossplaneio/crossplane v0.7.0-rc.0.20200211212229-e3c5715e39d8
-	github.com/crossplaneio/crossplane-runtime v0.4.1-0.20200213015649-e59980916293
+	github.com/crossplaneio/crossplane v0.8.0
+	github.com/crossplaneio/crossplane-runtime v0.5.0
 	github.com/crossplaneio/crossplane-tools v0.0.0-20200214190114-c7c4365eeb95
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/ghodss/yaml v1.0.0
