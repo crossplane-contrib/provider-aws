@@ -10,7 +10,7 @@ overview: |-
 # Markdown description of this entry
 readme: |
  This `stack-aws` repository is the implementation of a Crossplane infrastructure
- [stack](https://github.com/crossplaneio/crossplane/blob/master/design/design-doc-stacks.md) for
+ [stack](https://github.com/crossplane/crossplane/blob/master/design/design-doc-stacks.md) for
  [Amazon Web Services (AWS)](https://aws.amazon.com).
  The stack that is built from the source code in this repository can be installed into a Crossplane control plane and adds the following new functionality:
 
@@ -47,7 +47,7 @@ keywords:
 
 # Links to more information about the application (about page, source code, etc.)
 website: "https://crossplane.io"
-source: "https://github.com/crossplaneio/stack-aws"
+source: "https://github.com/crossplane/stack-aws"
 
 # RBAC ClusterRoles will be generated permitting this stack to use all verbs on all
 # resources in the groups listed below.

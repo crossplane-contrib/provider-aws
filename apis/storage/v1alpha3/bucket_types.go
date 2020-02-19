@@ -24,9 +24,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	storagev1alpha1 "github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
+	storagev1alpha1 "github.com/crossplane/crossplane/apis/storage/v1alpha1"
 
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
 
 // S3BucketParameters define the desired state of an AWS S3 Bucket.

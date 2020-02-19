@@ -29,7 +29,7 @@ I have:
 - [ ] Updated any relevant [documentation], [examples], or [release notes].
 - [ ] Updated the dependencies in [`app.yaml`] to include any new role permissions.
 
-[documentation]: https://github.com/crossplaneio/crossplane/tree/master/docs
-[examples]: https://github.com/crossplaneio/crossplane/tree/master/cluster/examples
-[release notes]: https://github.com/crossplaneio/crossplane/tree/master/PendingReleaseNotes.md
-[`app.yaml`]: https://github.com/crossplaneio/stack-aws/blob/master/config/stack/manifests/app.yaml
+[documentation]: https://github.com/crossplane/crossplane/tree/master/docs
+[examples]: https://github.com/crossplane/crossplane/tree/master/cluster/examples
+[release notes]: https://github.com/crossplane/crossplane/tree/master/PendingReleaseNotes.md
+[`app.yaml`]: https://github.com/crossplane/stack-aws/blob/master/config/stack/manifests/app.yaml

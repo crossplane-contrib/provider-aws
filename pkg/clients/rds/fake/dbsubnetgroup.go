@@ -19,7 +19,7 @@ package fake
 import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 
-	clientset "github.com/crossplaneio/stack-aws/pkg/clients/rds"
+	clientset "github.com/crossplane/stack-aws/pkg/clients/rds"
 )
 
 // this ensures that the mock implements the client interface

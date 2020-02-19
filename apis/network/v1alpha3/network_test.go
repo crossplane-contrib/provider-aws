@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/onsi/gomega"
 
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+	aws "github.com/crossplane/stack-aws/pkg/clients"
 )
 
 func TestMain(m *testing.M) {

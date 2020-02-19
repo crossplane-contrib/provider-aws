@@ -21,9 +21,9 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+	aws "github.com/crossplane/stack-aws/pkg/clients"
 
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
 
 // IAMRoleParameters define the desired state of an AWS IAM Role.

@@ -28,12 +28,12 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
-	awsclients "github.com/crossplaneio/stack-aws/pkg/clients"
+	"github.com/crossplane/stack-aws/apis/database/v1beta1"
+	awsclients "github.com/crossplane/stack-aws/pkg/clients"
 )
 
 // Client defines RDS RDSClient operations

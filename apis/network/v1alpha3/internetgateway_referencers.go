@@ -19,11 +19,11 @@ package v1alpha3
 import (
 	"context"
 
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 

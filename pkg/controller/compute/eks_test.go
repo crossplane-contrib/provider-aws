@@ -35,16 +35,16 @@ import (
 	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/crossplaneio/stack-aws/apis"
-	. "github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
-	"github.com/crossplaneio/stack-aws/pkg/clients/eks"
-	"github.com/crossplaneio/stack-aws/pkg/clients/eks/fake"
+	"github.com/crossplane/stack-aws/apis"
+	. "github.com/crossplane/stack-aws/apis/compute/v1alpha3"
+	"github.com/crossplane/stack-aws/pkg/clients/eks"
+	"github.com/crossplane/stack-aws/pkg/clients/eks/fake"
 
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
-	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-	"github.com/crossplaneio/crossplane-runtime/pkg/test"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
 )
 
 const (

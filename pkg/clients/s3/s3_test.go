@@ -21,11 +21,11 @@ import (
 	"errors"
 	"testing"
 
-	awsstorage "github.com/crossplaneio/stack-aws/apis/storage/v1alpha3"
-	fakeiam "github.com/crossplaneio/stack-aws/pkg/clients/iam/fake"
-	fakeops "github.com/crossplaneio/stack-aws/pkg/clients/s3/operations/fake"
+	awsstorage "github.com/crossplane/stack-aws/apis/storage/v1alpha3"
+	fakeiam "github.com/crossplane/stack-aws/pkg/clients/iam/fake"
+	fakeops "github.com/crossplane/stack-aws/pkg/clients/s3/operations/fake"
 
-	storage "github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
+	storage "github.com/crossplane/crossplane/apis/storage/v1alpha1"
 
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/iam"

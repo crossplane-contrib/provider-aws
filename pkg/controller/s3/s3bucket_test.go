@@ -31,19 +31,19 @@ import (
 	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/crossplaneio/stack-aws/apis"
-	"github.com/crossplaneio/stack-aws/apis/storage/v1alpha3"
-	. "github.com/crossplaneio/stack-aws/apis/storage/v1alpha3"
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
-	client "github.com/crossplaneio/stack-aws/pkg/clients/s3"
-	. "github.com/crossplaneio/stack-aws/pkg/clients/s3/fake"
+	"github.com/crossplane/stack-aws/apis"
+	"github.com/crossplane/stack-aws/apis/storage/v1alpha3"
+	. "github.com/crossplane/stack-aws/apis/storage/v1alpha3"
+	aws "github.com/crossplane/stack-aws/pkg/clients"
+	client "github.com/crossplane/stack-aws/pkg/clients/s3"
+	. "github.com/crossplane/stack-aws/pkg/clients/s3/fake"
 
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
-	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-	"github.com/crossplaneio/crossplane-runtime/pkg/test"
-	storagev1alpha1 "github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
+	storagev1alpha1 "github.com/crossplane/crossplane/apis/storage/v1alpha1"
 )
 
 const (

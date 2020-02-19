@@ -20,12 +20,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/pkg/errors"
 
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+	aws "github.com/crossplane/stack-aws/pkg/clients"
 )
 
 // Error strings

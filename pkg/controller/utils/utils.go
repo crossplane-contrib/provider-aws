@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // NOTE(negz): Please do not add methods to this package. See below issue.
-// https://github.com/crossplaneio/crossplane-runtime/issues/1
+// https://github.com/crossplane/crossplane-runtime/issues/1
 
 package utils
 
@@ -28,10 +28,10 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
-	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
-	awsclients "github.com/crossplaneio/stack-aws/pkg/clients"
+	awsv1alpha3 "github.com/crossplane/stack-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/stack-aws/pkg/clients"
 )
 
 // RetrieveAwsConfigFromProvider retrieves the aws config from the given aws provider reference
