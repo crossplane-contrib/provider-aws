@@ -66,27 +66,6 @@ pipeline {
                 sh './build/run make -j\$(nproc) test'
                 sh './build/run make -j\$(nproc) cobertura'
             }
-            post {
-                always {
-                    archiveArtifacts "_output/tests/**/*"
-                    junit "_output/tests/**/unit-tests.xml"
-                    cobertura coberturaReportFile: '_output/tests/**/cobertura-coverage.xml',
-                            classCoverageTargets: '50, 0, 0',
-                            conditionalCoverageTargets: '70, 0, 0',
-                            lineCoverageTargets: '40, 0, 0',
-                            methodCoverageTargets: '30, 0, 0',
-                            packageCoverageTargets: '80, 0, 0',
-                            autoUpdateHealth: false,
-                            autoUpdateStability: false,
-                            enableNewApi: false,
-                            failUnhealthy: false,
-                            failUnstable: false,
-                            maxNumberOfBuilds: 0,
-                            onlyStable: false,
-                            sourceEncoding: 'ASCII',
-                            zoomCoverageChart: false
-                }
-            }
         }
 
         stage("Integration Tests"){
