@@ -50,4 +50,4 @@ Stack-AWS adheres to the same [Code of Conduct](https://github.com/crossplane/cr
 
 Stack-AWS is under the Apache 2.0 license.
 
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcrossplaneio%2Fstack-aws.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcrossplaneio%2Fstack-aws?ref=badge_large)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcrossplane%2Fstack-aws.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcrossplane%2Fstack-aws?ref=badge_large)
