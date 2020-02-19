@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1alpha3
 
-import runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 
 // GetReclaimPolicy of this EKSClusterClass.
 func (cs *EKSClusterClass) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {

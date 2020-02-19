@@ -36,16 +36,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
-	"github.com/crossplaneio/crossplane-runtime/pkg/meta"
-	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	awscomputev1alpha3 "github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
-	cloudformationclient "github.com/crossplaneio/stack-aws/pkg/clients/cloudformation"
-	"github.com/crossplaneio/stack-aws/pkg/clients/eks"
-	"github.com/crossplaneio/stack-aws/pkg/controller/utils"
+	awscomputev1alpha3 "github.com/crossplane/stack-aws/apis/compute/v1alpha3"
+	cloudformationclient "github.com/crossplane/stack-aws/pkg/clients/cloudformation"
+	"github.com/crossplane/stack-aws/pkg/clients/eks"
+	"github.com/crossplane/stack-aws/pkg/controller/utils"
 )
 
 const (
@@ -146,7 +146,7 @@ func (r *Reconciler) _connect(instance *awscomputev1alpha3.EKSCluster) (eks.Clie
 
 	// NOTE(negz): EKS clusters must specify a region for creation. They never
 	// use the provider's region. This should be addressed per the below issue.
-	// https://github.com/crossplaneio/stack-aws/issues/38
+	// https://github.com/crossplane/stack-aws/issues/38
 	config.Region = string(instance.Spec.Region)
 
 	// Create new EKS Client

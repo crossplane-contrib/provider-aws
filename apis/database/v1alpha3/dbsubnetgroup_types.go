@@ -22,11 +22,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/pkg/errors"
 
-	network "github.com/crossplaneio/stack-aws/apis/network/v1alpha3"
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+	network "github.com/crossplane/stack-aws/apis/network/v1alpha3"
+	aws "github.com/crossplane/stack-aws/pkg/clients"
 
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 )
 
 // Error strings

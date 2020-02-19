@@ -29,15 +29,15 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplaneio/crossplane-runtime/pkg/test"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
-	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
-	awsclients "github.com/crossplaneio/stack-aws/pkg/clients"
-	"github.com/crossplaneio/stack-aws/pkg/clients/rds"
-	"github.com/crossplaneio/stack-aws/pkg/clients/rds/fake"
+	"github.com/crossplane/stack-aws/apis/database/v1beta1"
+	awsv1alpha3 "github.com/crossplane/stack-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/stack-aws/pkg/clients"
+	"github.com/crossplane/stack-aws/pkg/clients/rds"
+	"github.com/crossplane/stack-aws/pkg/clients/rds/fake"
 )
 
 const (

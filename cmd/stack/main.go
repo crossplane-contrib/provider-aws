@@ -23,12 +23,12 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
-	crossplaneapis "github.com/crossplaneio/crossplane/apis"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	crossplaneapis "github.com/crossplane/crossplane/apis"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"github.com/crossplaneio/stack-aws/apis"
-	"github.com/crossplaneio/stack-aws/pkg/controller"
+	"github.com/crossplane/stack-aws/apis"
+	"github.com/crossplane/stack-aws/pkg/controller"
 )
 
 func main() {

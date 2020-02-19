@@ -4,7 +4,7 @@ package fake
 
 import (
 	s3 "github.com/aws/aws-sdk-go-v2/service/s3"
-	operations "github.com/crossplaneio/stack-aws/pkg/clients/s3/operations"
+	operations "github.com/crossplane/stack-aws/pkg/clients/s3/operations"
 	mock "github.com/stretchr/testify/mock"
 )
 

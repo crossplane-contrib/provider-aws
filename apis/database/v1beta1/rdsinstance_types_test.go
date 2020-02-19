@@ -22,10 +22,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-	"github.com/crossplaneio/crossplane-runtime/pkg/test"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+	aws "github.com/crossplane/stack-aws/pkg/clients"
 )
 
 var _ resource.AttributeReferencer = (*VPCSecurityGroupIDReferencerForRDSInstance)(nil)

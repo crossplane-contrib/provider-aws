@@ -22,7 +22,7 @@ package v1alpha3
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
+	"github.com/crossplane/crossplane/apis/storage/v1alpha1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
