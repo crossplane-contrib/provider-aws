@@ -28,7 +28,7 @@ import (
 	"github.com/onsi/gomega"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/crossplaneio/crossplane-runtime/pkg/test"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
 )
 
 // MockAMIClient mocks AMI client which is used to get information about AMI images

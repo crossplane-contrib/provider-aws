@@ -34,8 +34,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	awscomputev1alpha3 "github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
-	cfc "github.com/crossplaneio/stack-aws/pkg/clients/cloudformation"
+	awscomputev1alpha3 "github.com/crossplane/stack-aws/apis/compute/v1alpha3"
+	cfc "github.com/crossplane/stack-aws/pkg/clients/cloudformation"
 )
 
 const (

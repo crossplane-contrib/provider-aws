@@ -21,15 +21,15 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache/elasticacheiface"
 
-	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
-	clients "github.com/crossplaneio/stack-aws/pkg/clients"
+	"github.com/crossplane/stack-aws/apis/cache/v1beta1"
+	clients "github.com/crossplane/stack-aws/pkg/clients"
 )
 
 // A Client handles CRUD operations for ElastiCache resources. This interface is

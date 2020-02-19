@@ -27,11 +27,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"k8s.io/apimachinery/pkg/util/rand"
 
-	"github.com/crossplaneio/stack-aws/apis/storage/v1alpha3"
-	iamc "github.com/crossplaneio/stack-aws/pkg/clients/iam"
-	"github.com/crossplaneio/stack-aws/pkg/clients/s3/operations"
+	"github.com/crossplane/stack-aws/apis/storage/v1alpha3"
+	iamc "github.com/crossplane/stack-aws/pkg/clients/iam"
+	"github.com/crossplane/stack-aws/pkg/clients/s3/operations"
 
-	storage "github.com/crossplaneio/crossplane/apis/storage/v1alpha1"
+	storage "github.com/crossplane/crossplane/apis/storage/v1alpha1"
 )
 
 const (

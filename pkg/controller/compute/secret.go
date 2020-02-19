@@ -21,14 +21,14 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"github.com/crossplaneio/crossplane-runtime/pkg/event"
-	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
-	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/secret"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-	"github.com/crossplaneio/crossplane/apis/compute/v1alpha1"
-	workloadv1alpha1 "github.com/crossplaneio/crossplane/apis/workload/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/secret"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane/apis/compute/v1alpha1"
+	workloadv1alpha1 "github.com/crossplane/crossplane/apis/workload/v1alpha1"
 
-	"github.com/crossplaneio/stack-aws/apis/compute/v1alpha3"
+	"github.com/crossplane/stack-aws/apis/compute/v1alpha3"
 )
 
 // SetupEKSClusterSecret adds a controller that propagates EKSCluster connection

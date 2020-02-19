@@ -22,7 +22,7 @@ import (
 	"os"
 	"testing"
 
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -31,7 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	coption "sigs.k8s.io/controller-runtime/pkg/client"
 
-	awsv1alpha3 "github.com/crossplaneio/stack-aws/apis/v1alpha3"
+	awsv1alpha3 "github.com/crossplane/stack-aws/apis/v1alpha3"
 )
 
 type mockClient struct {

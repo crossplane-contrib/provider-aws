@@ -24,17 +24,17 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/event"
-	"github.com/crossplaneio/crossplane-runtime/pkg/logging"
-	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimbinding"
-	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimdefaulting"
-	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/claimscheduling"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
-	databasev1alpha1 "github.com/crossplaneio/crossplane/apis/database/v1alpha1"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/claimbinding"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/claimdefaulting"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/claimscheduling"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	databasev1alpha1 "github.com/crossplane/crossplane/apis/database/v1alpha1"
 
-	"github.com/crossplaneio/stack-aws/apis/database/v1beta1"
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+	"github.com/crossplane/stack-aws/apis/database/v1beta1"
+	aws "github.com/crossplane/stack-aws/pkg/clients"
 )
 
 // SetupPostgreSQLInstanceClaimScheduling adds a controller that reconciles

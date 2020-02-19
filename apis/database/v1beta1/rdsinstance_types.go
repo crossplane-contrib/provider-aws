@@ -20,12 +20,12 @@ import (
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/resource"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	databasev1alpha3 "github.com/crossplaneio/stack-aws/apis/database/v1alpha3"
-	identityv1alpha3 "github.com/crossplaneio/stack-aws/apis/identity/v1alpha3"
-	network "github.com/crossplaneio/stack-aws/apis/network/v1alpha3"
+	databasev1alpha3 "github.com/crossplane/stack-aws/apis/database/v1alpha3"
+	identityv1alpha3 "github.com/crossplane/stack-aws/apis/identity/v1alpha3"
+	network "github.com/crossplane/stack-aws/apis/network/v1alpha3"
 )
 
 // Error strings
