@@ -22,7 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/onsi/gomega"
 
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+	aws "github.com/crossplane/stack-aws/pkg/clients"
 )
 
 func Test_DBSubnetGroup_BuildExternalStatusFromObservation(t *testing.T) {

@@ -20,16 +20,16 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/crossplaneio/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplaneio/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/crossplaneio/stack-aws/apis/cache/v1beta1"
-	aws "github.com/crossplaneio/stack-aws/pkg/clients"
+	"github.com/crossplane/stack-aws/apis/cache/v1beta1"
+	aws "github.com/crossplane/stack-aws/pkg/clients"
 )
 
 const (
