@@ -147,7 +147,7 @@ func (r *Reconciler) _connect(instance *awscomputev1alpha3.EKSCluster) (eks.Clie
 	// NOTE(negz): EKS clusters must specify a region for creation. They never
 	// use the provider's region. This should be addressed per the below issue.
 	// https://github.com/crossplane/stack-aws/issues/38
-	config.Region = string(instance.Spec.Region)
+	config.Region = instance.Spec.Region
 
 	// Create new EKS Client
 	return eks.NewClient(config), nil

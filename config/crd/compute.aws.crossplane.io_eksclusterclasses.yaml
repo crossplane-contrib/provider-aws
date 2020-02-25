@@ -159,10 +159,6 @@ spec:
               type: string
             region:
               description: Region for this EKS Cluster.
-              enum:
-              - us-west-2
-              - us-east-1
-              - eu-west-1
               type: string
             roleARN:
               description: 'RoleARN: The Amazon Resource Name (ARN) of the IAM role
