@@ -40,9 +40,6 @@ const (
 	errResourceIsNotEKSCluster = "the managed resource is not an EKSCluster"
 )
 
-// EKSRegion represents an EKS enabled AWS region.
-type EKSRegion string
-
 // VPCIDReferencerForEKSCluster is an attribute referencer that resolves VPCID from a referenced VPC
 type VPCIDReferencerForEKSCluster struct {
 	network.VPCIDReferencer `json:",inline"`
@@ -142,7 +139,7 @@ type EKSClusterParameters struct {
 	// https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
 
 	// Region for this EKS Cluster.
-	Region EKSRegion `json:"region"`
+	Region string `json:"region"`
 
 	// RoleARN: The Amazon Resource Name (ARN) of the IAM role that provides
 	// permis sions for Amazon EKS to make calls to other AWS  API  operations
