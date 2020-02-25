@@ -40,21 +40,6 @@ const (
 	errResourceIsNotEKSCluster = "the managed resource is not an EKSCluster"
 )
 
-// EKSRegion represents an EKS enabled AWS region.
-type EKSRegion string
-
-// EKS regions.
-const (
-	// EKSRegionUSWest2 - us-west-2 (Oregon) region for eks cluster
-	EKSRegionUSWest2 EKSRegion = "us-west-2"
-	// EKSRegionUSEast1 - us-east-1 (N. Virginia) region for eks cluster
-	EKSRegionUSEast1 EKSRegion = "us-east-1"
-	// EKSRegionUSEast2 - us-east-2 (Ohio) region for eks worker only
-	EKSRegionUSEast2 EKSRegion = "us-east-2"
-	// EKSRegionEUWest1 - eu-west-1 (Ireland) region for eks cluster
-	EKSRegionEUWest1 EKSRegion = "eu-west-1"
-)
-
 // VPCIDReferencerForEKSCluster is an attribute referencer that resolves VPCID from a referenced VPC
 type VPCIDReferencerForEKSCluster struct {
 	network.VPCIDReferencer `json:",inline"`
@@ -154,8 +139,7 @@ type EKSClusterParameters struct {
 	// https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
 
 	// Region for this EKS Cluster.
-	// +kubebuilder:validation:Enum=us-west-2;us-east-1;eu-west-1
-	Region EKSRegion `json:"region"`
+	Region string `json:"region"`
 
 	// RoleARN: The Amazon Resource Name (ARN) of the IAM role that provides
 	// permis sions for Amazon EKS to make calls to other AWS  API  operations
