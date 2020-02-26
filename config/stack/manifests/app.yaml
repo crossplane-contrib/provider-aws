@@ -39,6 +39,9 @@ company: Crossplane
 # Primary category describing this stack
 category: Infrastructure
 
+# Type of package: Provider, Stack, or Application
+packageType: Provider
+
 # Keywords that describe this application and help search indexing
 keywords:
 - "amazon"
