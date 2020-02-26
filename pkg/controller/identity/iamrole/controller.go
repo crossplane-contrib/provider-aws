@@ -29,10 +29,11 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha3 "github.com/crossplane/provider-aws/apis/identity/v1alpha3"
+	v1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
@@ -43,17 +44,18 @@ const (
 	errGet              = "failed to get IAMRole with name: %v"
 	errCreate           = "failed to create the IAMRole resource"
 	errDelete           = "failed to delete the IAMRole resource"
+	errUpdate           = "failed to update the IAMRole resource"
 )
 
 // SetupIAMRole adds a controller that reconciles IAMRoles.
 func SetupIAMRole(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha3.IAMRoleGroupKind)
+	name := managed.ControllerName(v1beta1.IAMRoleGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha3.IAMRole{}).
+		For(&v1beta1.IAMRole{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha3.IAMRoleGroupVersionKind),
+			resource.ManagedKind(v1beta1.IAMRoleGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: iam.NewRoleClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -67,7 +69,7 @@ type connector struct {
 }
 
 func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mgd.(*v1alpha3.IAMRole)
+	cr, ok := mgd.(*v1beta1.IAMRole)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -89,13 +91,13 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha3.IAMRole)
+	cr, ok := mgd.(*v1beta1.IAMRole)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
 	req := e.client.GetRoleRequest(&awsiam.GetRoleInput{
-		RoleName: aws.String(cr.Spec.RoleName),
+		RoleName: aws.String(meta.GetExternalName(cr)),
 	})
 
 	observed, err := req.Send(ctx)
@@ -107,12 +109,12 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrapf(err, errGet, cr.Spec.RoleName)
+		return managed.ExternalObservation{}, errors.Wrapf(err, errGet, meta.GetExternalName(cr))
 	}
 
 	cr.SetConditions(runtimev1alpha1.Available())
 
-	cr.UpdateExternalStatus(*observed.Role)
+	iam.UpdateRoleExternalStatus(cr, *observed.Role)
 
 	return managed.ExternalObservation{
 		ResourceExists: true,
@@ -120,25 +122,26 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha3.IAMRole)
+	cr, ok := mgd.(*v1beta1.IAMRole)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
-	req := e.client.CreateRoleRequest(&awsiam.CreateRoleInput{
-		RoleName:                 aws.String(cr.Spec.RoleName),
-		AssumeRolePolicyDocument: aws.String(cr.Spec.AssumeRolePolicyDocument),
-		Description:              aws.String(cr.Spec.Description),
-	})
+	name := meta.GetExternalName(cr)
+	if name == "" {
+		name = cr.GetGenerateName()
+	}
+
+	req := e.client.CreateRoleRequest(iam.GenerateCreateRoleInput(name, &cr.Spec.ForProvider))
 
 	result, err := req.Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 
-	cr.UpdateExternalStatus(*result.Role)
+	iam.UpdateRoleExternalStatus(cr, *result.Role)
 
 	return managed.ExternalCreation{}, nil
 }
@@ -147,20 +150,26 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// TODO(soorena776): add more sophisticated Update logic, once we
 	// categorize immutable vs mutable fields (see #727)
 
-	return managed.ExternalUpdate{}, nil
+	cr, ok := mgd.(*v1beta1.IAMRole)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+
+	mr := e.client.UpdateRoleRequest(iam.GenerateUpdateRoleInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
+	_, err := mr.Send(ctx)
+	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha3.IAMRole)
+	cr, ok := mgd.(*v1beta1.IAMRole)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
-	req := e.client.DeleteRoleRequest(&awsiam.DeleteRoleInput{
-		RoleName: aws.String(cr.Spec.RoleName),
-	})
+	req := e.client.DeleteRoleRequest(iam.GenerateDeleteRoleInput(meta.GetExternalName(cr)))
+	req.SetContext(ctx)
 
 	_, err := req.Send(ctx)
 

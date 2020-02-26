@@ -14,14 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha3
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/aws/aws-sdk-go-v2/service/iam"
-
-	aws "github.com/crossplane/provider-aws/pkg/clients"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
@@ -38,13 +34,13 @@ type IAMRoleParameters struct {
 	Description string `json:"description,omitempty"`
 
 	// RoleName presents the name of the IAM role.
-	RoleName string `json:"roleName"`
+	// RoleName string `json:"roleName"`
 }
 
 // An IAMRoleSpec defines the desired state of an IAMRole.
 type IAMRoleSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	IAMRoleParameters            `json:",inline"`
+	ForProvider                  IAMRoleParameters `json:"forProvider"`
 }
 
 // IAMRoleExternalStatus keeps the state for the external resource
@@ -63,15 +59,14 @@ type IAMRoleExternalStatus struct {
 // An IAMRoleStatus represents the observed state of an IAMRole.
 type IAMRoleStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-
-	IAMRoleExternalStatus `json:",inline"`
+	AtProvider                     IAMRoleExternalStatus `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true
 
 // An IAMRole is a managed resource that represents an AWS IAM Role.
 // +kubebuilder:printcolumn:name="ROLENAME",type="string",JSONPath=".spec.roleName"
-// +kubebuilder:printcolumn:name="DESCRIPTION",type="string",JSONPath=".spec.description"
+// +kubebuilder:printcolumn:name="DESCRIPTION",type="string",JSONPath=".spec.forProvider.description"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
@@ -92,12 +87,4 @@ type IAMRoleList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []IAMRole `json:"items"`
-}
-
-// UpdateExternalStatus updates the external status object, given the observation
-func (r *IAMRole) UpdateExternalStatus(observation iam.Role) {
-	r.Status.IAMRoleExternalStatus = IAMRoleExternalStatus{
-		ARN:    aws.StringValue(observation.Arn),
-		RoleID: aws.StringValue(observation.RoleId),
-	}
 }

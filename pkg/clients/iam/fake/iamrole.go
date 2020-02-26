@@ -30,6 +30,7 @@ type MockRoleClient struct {
 	MockGetRoleRequest    func(*iam.GetRoleInput) iam.GetRoleRequest
 	MockCreateRoleRequest func(*iam.CreateRoleInput) iam.CreateRoleRequest
 	MockDeleteRoleRequest func(*iam.DeleteRoleInput) iam.DeleteRoleRequest
+	MockUpdateRoleRequest func(*iam.UpdateRoleInput) iam.UpdateRoleRequest
 }
 
 // GetRoleRequest mocks GetRoleRequest method
@@ -45,4 +46,9 @@ func (m *MockRoleClient) CreateRoleRequest(input *iam.CreateRoleInput) iam.Creat
 // DeleteRoleRequest mocks DeleteRoleRequest method
 func (m *MockRoleClient) DeleteRoleRequest(input *iam.DeleteRoleInput) iam.DeleteRoleRequest {
 	return m.MockDeleteRoleRequest(input)
+}
+
+// UpdateRoleRequest mocks UpdateRoleRequest method
+func (m *MockRoleClient) UpdateRoleRequest(input *iam.UpdateRoleInput) iam.UpdateRoleRequest {
+	return m.MockUpdateRoleRequest(input)
 }

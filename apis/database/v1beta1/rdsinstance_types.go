@@ -24,7 +24,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	databasev1alpha3 "github.com/crossplane/provider-aws/apis/database/v1alpha3"
-	identityv1alpha3 "github.com/crossplane/provider-aws/apis/identity/v1alpha3"
+	identityv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	network "github.com/crossplane/provider-aws/apis/network/v1alpha3"
 )
 
@@ -82,7 +82,7 @@ func (v *DBSubnetGroupNameReferencerForRDSInstance) Assign(res resource.CanRefer
 // IAMRoleARNReferencerForRDSInstanceMonitoringRole is an attribute referencer
 // that retrieves an RDSInstance's MonitoringRoleARN from a referenced IAMRole.
 type IAMRoleARNReferencerForRDSInstanceMonitoringRole struct {
-	identityv1alpha3.IAMRoleARNReferencer `json:",inline"`
+	identityv1beta1.IAMRoleARNReferencer `json:",inline"`
 }
 
 // Assign assigns the retrieved value to the managed resource
@@ -99,7 +99,7 @@ func (v *IAMRoleARNReferencerForRDSInstanceMonitoringRole) Assign(res resource.C
 // IAMRoleNameReferencerForRDSInstanceDomainRole is an attribute referencer
 // that retrieves an RDSInstance's DomainRoleName from a referenced IAMRole.
 type IAMRoleNameReferencerForRDSInstanceDomainRole struct {
-	identityv1alpha3.IAMRoleNameReferencer `json:",inline"`
+	identityv1beta1.IAMRoleNameReferencer `json:",inline"`
 }
 
 // Assign assigns the retrieved value to the managed resource

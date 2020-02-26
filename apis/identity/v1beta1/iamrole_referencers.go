@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha3
+package v1beta1
 
 import (
 	"context"
 
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -48,7 +49,7 @@ func (v *IAMRoleARNReferencer) Build(ctx context.Context, _ resource.CanReferenc
 		return "", err
 	}
 
-	return role.Status.ARN, nil
+	return role.Status.AtProvider.ARN, nil
 }
 
 // IAMRoleNameReferencer is used to get the Name from a referenced IAMRole object
@@ -69,7 +70,7 @@ func (v *IAMRoleNameReferencer) Build(ctx context.Context, _ resource.CanReferen
 		return "", err
 	}
 
-	return role.Spec.RoleName, nil
+	return meta.GetExternalName(&role), nil
 }
 
 func getRoleStatus(ctx context.Context, name string, reader client.Reader) ([]resource.ReferenceStatus, error) {

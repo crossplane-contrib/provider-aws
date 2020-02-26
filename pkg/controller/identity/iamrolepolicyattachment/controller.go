@@ -32,7 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha3 "github.com/crossplane/provider-aws/apis/identity/v1alpha3"
+	v1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
@@ -48,13 +48,13 @@ const (
 // SetupIAMRolePolicyAttachment adds a controller that reconciles
 // IAMRolePolicyAttachments.
 func SetupIAMRolePolicyAttachment(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha3.IAMRolePolicyAttachmentGroupKind)
+	name := managed.ControllerName(v1beta1.IAMRolePolicyAttachmentGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha3.IAMRolePolicyAttachment{}).
+		For(&v1beta1.IAMRolePolicyAttachment{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha3.IAMRolePolicyAttachmentGroupVersionKind),
+			resource.ManagedKind(v1beta1.IAMRolePolicyAttachmentGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: iam.NewRolePolicyAttachmentClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -68,7 +68,7 @@ type connector struct {
 }
 
 func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mgd.(*v1alpha3.IAMRolePolicyAttachment)
+	cr, ok := mgd.(*v1beta1.IAMRolePolicyAttachment)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -91,13 +91,13 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha3.IAMRolePolicyAttachment)
+	cr, ok := mgd.(*v1beta1.IAMRolePolicyAttachment)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
 	req := e.client.ListAttachedRolePoliciesRequest(&awsiam.ListAttachedRolePoliciesInput{
-		RoleName: aws.String(cr.Spec.RoleName),
+		RoleName: aws.String(cr.Spec.ForProvider.RoleName),
 	})
 
 	observed, err := req.Send(ctx)
@@ -108,12 +108,12 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			}, nil
 		}
 
-		return managed.ExternalObservation{}, errors.Wrapf(err, errGet, cr.Spec.RoleName)
+		return managed.ExternalObservation{}, errors.Wrapf(err, errGet, cr.Spec.ForProvider.RoleName)
 	}
 
 	var attachedPolicyObject *awsiam.AttachedPolicy
 	for i := 0; i < len(observed.AttachedPolicies); i++ {
-		if cr.Spec.PolicyARN == aws.StringValue(observed.AttachedPolicies[i].PolicyArn) {
+		if cr.Spec.ForProvider.PolicyARN == aws.StringValue(observed.AttachedPolicies[i].PolicyArn) {
 			attachedPolicyObject = &(observed.AttachedPolicies[i])
 			break
 		}
@@ -127,7 +127,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.SetConditions(runtimev1alpha1.Available())
 
-	cr.UpdateExternalStatus(*attachedPolicyObject)
+	iam.UpdateRolePolicyExternalStatus(cr, *attachedPolicyObject)
 
 	return managed.ExternalObservation{
 		ResourceExists: true,
@@ -135,25 +135,23 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha3.IAMRolePolicyAttachment)
+	cr, ok := mgd.(*v1beta1.IAMRolePolicyAttachment)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
 	cr.SetConditions(runtimev1alpha1.Creating())
 
-	req := e.client.AttachRolePolicyRequest(&awsiam.AttachRolePolicyInput{
-		PolicyArn: aws.String(cr.Spec.PolicyARN),
-		RoleName:  aws.String(cr.Spec.RoleName),
-	})
+	req := e.client.AttachRolePolicyRequest(iam.GenerateAttachRolePolicyInput(&cr.Spec.ForProvider))
+	req.SetContext(ctx)
 
 	_, err := req.Send(ctx)
 
-	return managed.ExternalCreation{}, errors.Wrapf(err, errAttach, cr.Spec.PolicyARN, cr.Spec.RoleName)
+	return managed.ExternalCreation{}, errors.Wrapf(err, errAttach, cr.Spec.ForProvider.PolicyARN, cr.Spec.ForProvider.RoleName)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1alpha3.IAMRolePolicyAttachment)
+	cr, ok := mgd.(*v1beta1.IAMRolePolicyAttachment)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -165,44 +163,36 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// based on changes on PolicyArn:
 	// if the previously attached policy is different than what is stated in the spec,
 	// for update it needs to first attach the updated one, and then detach the previous one
-	if cr.Status.AttachedPolicyARN == "" || cr.Spec.PolicyARN == cr.Status.AttachedPolicyARN {
+	if cr.Status.AtProvider.AttachedPolicyARN == "" || cr.Spec.ForProvider.PolicyARN == cr.Status.AtProvider.AttachedPolicyARN {
 		// update is only necessary if the PolicyArn in the Status is set and is different
 		// from the one in Spec
 		return managed.ExternalUpdate{}, nil
 	}
 
-	aReq := e.client.AttachRolePolicyRequest(&awsiam.AttachRolePolicyInput{
-		PolicyArn: aws.String(cr.Spec.PolicyARN),
-		RoleName:  aws.String(cr.Spec.RoleName),
-	})
+	aReq := e.client.AttachRolePolicyRequest(iam.GenerateAttachRolePolicyInput(&cr.Spec.ForProvider))
 	if _, err := aReq.Send(ctx); err != nil {
-		return managed.ExternalUpdate{}, errors.Wrapf(err, errAttach, cr.Spec.PolicyARN, cr.Spec.RoleName)
+		return managed.ExternalUpdate{}, errors.Wrapf(err, errAttach, cr.Spec.ForProvider.PolicyARN, cr.Spec.ForProvider.RoleName)
 	}
 
-	dReq := e.client.DetachRolePolicyRequest(&awsiam.DetachRolePolicyInput{
-		PolicyArn: aws.String(cr.Status.AttachedPolicyARN),
-		RoleName:  aws.String(cr.Spec.RoleName),
-	})
+	dReq := e.client.DetachRolePolicyRequest(iam.GenerateDetachRolePolicyInput(&cr.Spec.ForProvider))
 
 	if _, err := dReq.Send(ctx); err != nil {
-		return managed.ExternalUpdate{}, errors.Wrapf(err, errDetach, cr.Status.AttachedPolicyARN, cr.Spec.RoleName)
+		return managed.ExternalUpdate{}, errors.Wrapf(err, errDetach, cr.Status.AtProvider.AttachedPolicyARN, cr.Spec.ForProvider.RoleName)
 	}
 
 	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha3.IAMRolePolicyAttachment)
+	cr, ok := mgd.(*v1beta1.IAMRolePolicyAttachment)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
-	req := e.client.DetachRolePolicyRequest(&awsiam.DetachRolePolicyInput{
-		PolicyArn: aws.String(cr.Spec.PolicyARN),
-		RoleName:  aws.String(cr.Spec.RoleName),
-	})
+	req := e.client.DetachRolePolicyRequest(iam.GenerateDetachRolePolicyInput(&cr.Spec.ForProvider))
+	req.SetContext(ctx)
 
 	_, err := req.Send(ctx)
 
@@ -210,5 +200,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return nil
 	}
 
-	return errors.Wrapf(err, errDetach, cr.Spec.PolicyARN, cr.Spec.RoleName)
+	return errors.Wrapf(err, errDetach, cr.Spec.ForProvider.PolicyARN, cr.Spec.ForProvider.RoleName)
 }

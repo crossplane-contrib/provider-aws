@@ -31,9 +31,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha3 "github.com/crossplane/provider-aws/apis/identity/v1alpha3"
+	v1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
 )
@@ -57,7 +58,7 @@ func TestMain(m *testing.M) {
 func Test_Connect(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := &v1alpha3.IAMRole{}
+	mockManaged := &v1beta1.IAMRole{}
 	var clientErr error
 	var configErr error
 
@@ -116,7 +117,7 @@ func Test_Connect(t *testing.T) {
 func Test_Observe(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha3.IAMRole{}
+	mockManaged := v1beta1.IAMRole{}
 	mockExternal := &awsiam.Role{
 		Arn: aws.String("some arbitrary arn"),
 	}
@@ -176,11 +177,11 @@ func Test_Observe(t *testing.T) {
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		g.Expect(result.ResourceExists).To(gomega.Equal(tc.expectedResourceExist), tc.description)
 		if tc.expectedResourceExist {
-			mgd := tc.managedObj.(*v1alpha3.IAMRole)
+			mgd := tc.managedObj.(*v1beta1.IAMRole)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionTrue), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonAvailable), tc.description)
-			g.Expect(mgd.Status.IAMRoleExternalStatus.ARN).To(gomega.Equal(aws.StringValue(mockExternal.Arn)), tc.description)
+			g.Expect(mgd.Status.AtProvider.ARN).To(gomega.Equal(aws.StringValue(mockExternal.Arn)), tc.description)
 		}
 	}
 }
@@ -188,23 +189,23 @@ func Test_Observe(t *testing.T) {
 func Test_Create(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha3.IAMRole{
-		Spec: v1alpha3.IAMRoleSpec{
-			IAMRoleParameters: v1alpha3.IAMRoleParameters{
+	mockManaged := v1beta1.IAMRole{
+		Spec: v1beta1.IAMRoleSpec{
+			ForProvider: v1beta1.IAMRoleParameters{
 				AssumeRolePolicyDocument: "arbitrary role policy doc",
 				Description:              "arbitrary role description",
-				RoleName:                 "arbitrary role name",
 			},
 		},
 	}
+	meta.SetExternalName(&mockManaged, "arbitrary role name")
 	mockExternal := &awsiam.Role{
 		Arn: aws.String("some arbitrary arn"),
 	}
 	var mockClientErr error
 	mockClient.MockCreateRoleRequest = func(input *awsiam.CreateRoleInput) awsiam.CreateRoleRequest {
-		g.Expect(aws.StringValue(input.RoleName)).To(gomega.Equal(mockManaged.Spec.RoleName), "the passed parameters are not valid")
-		g.Expect(aws.StringValue(input.AssumeRolePolicyDocument)).To(gomega.Equal(mockManaged.Spec.AssumeRolePolicyDocument), "the passed parameters are not valid")
-		g.Expect(aws.StringValue(input.Description)).To(gomega.Equal(mockManaged.Spec.Description), "the passed parameters are not valid")
+		g.Expect(aws.StringValue(input.RoleName)).To(gomega.Equal(meta.GetExternalName(&mockManaged)), "the passed parameters are not valid")
+		g.Expect(aws.StringValue(input.AssumeRolePolicyDocument)).To(gomega.Equal(mockManaged.Spec.ForProvider.AssumeRolePolicyDocument), "the passed parameters are not valid")
+		g.Expect(aws.StringValue(input.Description)).To(gomega.Equal(mockManaged.Spec.ForProvider.Description), "the passed parameters are not valid")
 		return awsiam.CreateRoleRequest{
 			Request: &aws.Request{
 				HTTPRequest: &http.Request{},
@@ -247,11 +248,11 @@ func Test_Create(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.IAMRole)
+			mgd := tc.managedObj.(*v1beta1.IAMRole)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
-			g.Expect(mgd.Status.IAMRoleExternalStatus.ARN).To(gomega.Equal(aws.StringValue(mockExternal.Arn)), tc.description)
+			g.Expect(mgd.Status.AtProvider.ARN).To(gomega.Equal(aws.StringValue(mockExternal.Arn)), tc.description)
 		}
 	}
 }
@@ -259,7 +260,7 @@ func Test_Create(t *testing.T) {
 func Test_Update(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha3.IAMRole{}
+	mockManaged := v1beta1.IAMRole{}
 
 	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
 
@@ -269,16 +270,12 @@ func Test_Update(t *testing.T) {
 func Test_Delete(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha3.IAMRole{
-		Spec: v1alpha3.IAMRoleSpec{
-			IAMRoleParameters: v1alpha3.IAMRoleParameters{
-				RoleName: "arbitrary role name",
-			},
-		},
-	}
+	mockManaged := v1beta1.IAMRole{}
+	meta.SetExternalName(&mockManaged, "arbitrary role name")
+
 	var mockClientErr error
 	mockClient.MockDeleteRoleRequest = func(input *awsiam.DeleteRoleInput) awsiam.DeleteRoleRequest {
-		g.Expect(aws.StringValue(input.RoleName)).To(gomega.Equal(mockManaged.Spec.RoleName), "the passed parameters are not valid")
+		g.Expect(aws.StringValue(input.RoleName)).To(gomega.Equal(meta.GetExternalName(&mockManaged)), "the passed parameters are not valid")
 		return awsiam.DeleteRoleRequest{
 			Request: &aws.Request{
 				HTTPRequest: &http.Request{},
@@ -325,7 +322,7 @@ func Test_Delete(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.IAMRole)
+			mgd := tc.managedObj.(*v1beta1.IAMRole)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)
