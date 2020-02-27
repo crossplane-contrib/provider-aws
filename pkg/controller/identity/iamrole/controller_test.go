@@ -260,11 +260,60 @@ func Test_Create(t *testing.T) {
 func Test_Update(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1beta1.IAMRole{}
+	mockManaged := v1beta1.IAMRole{
+		Spec: v1beta1.IAMRoleSpec{
+			ForProvider: v1beta1.IAMRoleParameters{
+				AssumeRolePolicyDocument: "arbitrary role policy doc",
+				Description:              "arbitrary role description",
+			},
+		},
+	}
+	meta.SetExternalName(&mockManaged, "arbitrary role name")
 
-	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
+	var mockClientErr error
+	mockClient.MockUpdateRoleRequest = func(input *awsiam.UpdateRoleInput) awsiam.UpdateRoleRequest {
+		g.Expect(aws.StringValue(input.RoleName)).To(gomega.Equal(meta.GetExternalName(&mockManaged)), "the passed parameters are not valid")
+		g.Expect(aws.StringValue(input.Description)).To(gomega.Equal(mockManaged.Spec.ForProvider.Description), "the passed parameters are not valid")
+		return awsiam.UpdateRoleRequest{
+			Request: &aws.Request{
+				HTTPRequest: &http.Request{},
+				Data:        &awsiam.UpdateRoleOutput{},
+				Error:       mockClientErr,
+			},
+		}
+	}
 
-	g.Expect(err).To(gomega.BeNil())
+	for _, tc := range []struct {
+		description    string
+		managedObj     resource.Managed
+		clientErr      error
+		expectedErrNil bool
+	}{
+		{
+			"valid input should return expected",
+			mockManaged.DeepCopy(),
+			nil,
+			true,
+		},
+		{
+			"unexpected managed resource should return error",
+			unexpecedItem,
+			nil,
+			false,
+		},
+		{
+			"if creating resource fails, it should return error",
+			mockManaged.DeepCopy(),
+			errors.New("some error"),
+			false,
+		},
+	} {
+		mockClientErr = tc.clientErr
+
+		_, err := mockExternalClient.Update(context.Background(), tc.managedObj)
+
+		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
+	}
 }
 
 func Test_Delete(t *testing.T) {

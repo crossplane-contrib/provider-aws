@@ -174,7 +174,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.Wrapf(err, errAttach, cr.Spec.ForProvider.PolicyARN, cr.Spec.ForProvider.RoleName)
 	}
 
-	dReq := e.client.DetachRolePolicyRequest(iam.GenerateDetachRolePolicyInput(&cr.Spec.ForProvider))
+	dReq := e.client.DetachRolePolicyRequest(iam.GenerateUpdateRolePolicyInput(&cr.Status.AtProvider))
 
 	if _, err := dReq.Send(ctx); err != nil {
 		return managed.ExternalUpdate{}, errors.Wrapf(err, errDetach, cr.Status.AtProvider.AttachedPolicyARN, cr.Spec.ForProvider.RoleName)

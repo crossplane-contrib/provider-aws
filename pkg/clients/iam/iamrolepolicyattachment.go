@@ -37,6 +37,14 @@ func GenerateDetachRolePolicyInput(p *v1beta1.IAMRolePolicyAttachmentParameters)
 	return m
 }
 
+// GenerateUpdateRolePolicyInput from IAMRolePolicyAttachmentStatus
+func GenerateUpdateRolePolicyInput(p *v1beta1.IAMRolePolicyAttachmentExternalStatus) *iam.DetachRolePolicyInput {
+	m := &iam.DetachRolePolicyInput{
+		PolicyArn: aws.String(p.AttachedPolicyARN),
+	}
+	return m
+}
+
 // UpdateRolePolicyExternalStatus updates the external status object, given the observation
 func UpdateRolePolicyExternalStatus(r *v1beta1.IAMRolePolicyAttachment, observation iam.AttachedPolicy) {
 	r.Status.AtProvider = v1beta1.IAMRolePolicyAttachmentExternalStatus{
