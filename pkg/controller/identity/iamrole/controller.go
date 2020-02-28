@@ -102,19 +102,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	observed, err := req.Send(ctx)
 
-	if iam.IsErrorNotFound(err) {
-		return managed.ExternalObservation{
-			ResourceExists: false,
-		}, nil
-	}
-
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrapf(err, errGet, meta.GetExternalName(cr))
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	cr.SetConditions(runtimev1alpha1.Available())
 
-	iam.UpdateRoleExternalStatus(cr, *observed.Role)
+	cr.Status.AtProvider = iam.GenerateRoleObservation(*observed.Role)
 
 	return managed.ExternalObservation{
 		ResourceExists: true,
@@ -136,12 +130,10 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	req := e.client.CreateRoleRequest(iam.GenerateCreateRoleInput(name, &cr.Spec.ForProvider))
 
-	result, err := req.Send(ctx)
+	_, err := req.Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
-
-	iam.UpdateRoleExternalStatus(cr, *result.Role)
 
 	return managed.ExternalCreation{}, nil
 }

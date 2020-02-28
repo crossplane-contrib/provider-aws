@@ -47,10 +47,10 @@ func GenerateDeleteRoleInput(name string) *iam.DeleteRoleInput {
 	return m
 }
 
-// UpdateRoleExternalStatus updates the external status object, given the observation
-func UpdateRoleExternalStatus(cr *v1beta1.IAMRole, observed iam.Role) {
-	cr.Status.AtProvider = v1beta1.IAMRoleExternalStatus{
-		ARN:    aws.StringValue(observed.Arn),
-		RoleID: aws.StringValue(observed.RoleId),
+// GenerateRoleObservation is used to produce IAMRoleExternalStatus from iam.Role
+func GenerateRoleObservation(role iam.Role) v1beta1.IAMRoleExternalStatus {
+	return v1beta1.IAMRoleExternalStatus{
+		ARN:    aws.StringValue(role.Arn),
+		RoleID: aws.StringValue(role.RoleId),
 	}
 }

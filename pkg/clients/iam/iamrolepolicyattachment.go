@@ -45,9 +45,9 @@ func GenerateUpdateRolePolicyInput(p *v1beta1.IAMRolePolicyAttachmentExternalSta
 	return m
 }
 
-// UpdateRolePolicyExternalStatus updates the external status object, given the observation
-func UpdateRolePolicyExternalStatus(r *v1beta1.IAMRolePolicyAttachment, observation iam.AttachedPolicy) {
-	r.Status.AtProvider = v1beta1.IAMRolePolicyAttachmentExternalStatus{
-		AttachedPolicyARN: aws.StringValue(observation.PolicyArn),
+// GenerateRolePolicyObservation is used to produce IAMRolePolicyAttachmentExternalStatus from iam.AttachedPolicy
+func GenerateRolePolicyObservation(policy iam.AttachedPolicy) v1beta1.IAMRolePolicyAttachmentExternalStatus {
+	return v1beta1.IAMRolePolicyAttachmentExternalStatus{
+		AttachedPolicyARN: aws.StringValue(policy.PolicyArn),
 	}
 }

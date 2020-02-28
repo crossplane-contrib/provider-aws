@@ -252,7 +252,6 @@ func Test_Create(t *testing.T) {
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
-			g.Expect(mgd.Status.AtProvider.ARN).To(gomega.Equal(aws.StringValue(mockExternal.Arn)), tc.description)
 		}
 	}
 }

@@ -108,7 +108,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			}, nil
 		}
 
-		return managed.ExternalObservation{}, errors.Wrapf(err, errGet, cr.Spec.ForProvider.RoleName)
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	var attachedPolicyObject *awsiam.AttachedPolicy
@@ -127,7 +127,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.SetConditions(runtimev1alpha1.Available())
 
-	iam.UpdateRolePolicyExternalStatus(cr, *attachedPolicyObject)
+	cr.Status.AtProvider = iam.GenerateRolePolicyObservation(*attachedPolicyObject)
 
 	return managed.ExternalObservation{
 		ResourceExists: true,
