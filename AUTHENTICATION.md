@@ -129,7 +129,7 @@ with the desired IAM role:
 
 ```
 kubectl annotate serviceaccount -n $SERVICE_ACCOUNT_NAMESPACE $SERVICE_ACCOUNT_NAME \
-eks.amazonaws.com/role-arn=arn:aws:iam::$AWS_ACCOUNT_ID:role/$IAM_ROLE_NAME
+eks.amazonaws.com/role-arn=arn:aws:iam::$AWS_ACCOUNT_ID\:role/$IAM_ROLE_NAME
 ```
 
 Because the credentials get injected when the `Pod` starts, we need to restart
