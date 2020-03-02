@@ -102,12 +102,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	observed, err := req.Send(ctx)
 	if err != nil {
-		if iam.IsErrorNotFound(err) {
-			return managed.ExternalObservation{
-				ResourceExists: false,
-			}, nil
-		}
-
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
