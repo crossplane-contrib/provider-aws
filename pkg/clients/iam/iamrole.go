@@ -25,16 +25,31 @@ func GenerateCreateRoleInput(name string, p *v1beta1.IAMRoleParameters) *iam.Cre
 	m := &iam.CreateRoleInput{
 		RoleName:                 aws.String(name),
 		AssumeRolePolicyDocument: aws.String(p.AssumeRolePolicyDocument),
-		Description:              aws.String(p.Description),
+		Description:              p.Description,
+		MaxSessionDuration:       p.MaxSessionDuration,
+		Path:                     p.Path,
+		PermissionsBoundary:      p.PermissionsBoundary,
 	}
+
+	if len(p.Tags) != 0 {
+		m.Tags = make([]iam.Tag, len(p.Tags))
+		for i, val := range p.Tags {
+			m.Tags[i] = iam.Tag{
+				Key:   &val.Key,
+				Value: &val.Value,
+			}
+		}
+	}
+
 	return m
 }
 
 // GenerateUpdateRoleInput from IAMRoleSpec
 func GenerateUpdateRoleInput(name string, p *v1beta1.IAMRoleParameters) *iam.UpdateRoleInput {
 	m := &iam.UpdateRoleInput{
-		RoleName:    aws.String(name),
-		Description: aws.String(p.Description),
+		RoleName:           aws.String(name),
+		Description:        p.Description,
+		MaxSessionDuration: p.MaxSessionDuration,
 	}
 	return m
 }

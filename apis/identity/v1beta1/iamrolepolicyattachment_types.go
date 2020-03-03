@@ -58,6 +58,7 @@ type IAMRolePolicyAttachmentParameters struct {
 	RoleName string `json:"roleName,omitempty"`
 
 	// RoleNameRef references to an IAMRole to retrieve its Name
+	// +optional
 	RoleNameRef *IAMRoleNameReferencerForIAMRolePolicyAttachment `json:"roleNameRef,omitempty" resource:"attributereferencer"`
 }
 
