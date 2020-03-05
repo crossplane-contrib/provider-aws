@@ -35,10 +35,10 @@ import (
 	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/crossplane/stack-aws/apis"
-	. "github.com/crossplane/stack-aws/apis/compute/v1alpha3"
-	"github.com/crossplane/stack-aws/pkg/clients/eks"
-	"github.com/crossplane/stack-aws/pkg/clients/eks/fake"
+	"github.com/crossplane/provider-aws/apis"
+	. "github.com/crossplane/provider-aws/apis/compute/v1alpha3"
+	"github.com/crossplane/provider-aws/pkg/clients/eks"
+	"github.com/crossplane/provider-aws/pkg/clients/eks/fake"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"

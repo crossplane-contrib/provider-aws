@@ -32,7 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	computev1alpha1 "github.com/crossplane/crossplane/apis/compute/v1alpha1"
 
-	"github.com/crossplane/stack-aws/apis/compute/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/compute/v1alpha3"
 )
 
 // SetupEKSClusterClaimScheduling adds a controller that reconciles

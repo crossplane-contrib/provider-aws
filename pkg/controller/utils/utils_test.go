@@ -31,7 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	coption "sigs.k8s.io/controller-runtime/pkg/client"
 
-	awsv1alpha3 "github.com/crossplane/stack-aws/apis/v1alpha3"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 )
 
 type mockClient struct {

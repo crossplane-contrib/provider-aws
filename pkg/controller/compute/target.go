@@ -28,7 +28,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane/apis/workload/v1alpha1"
 
-	"github.com/crossplane/stack-aws/apis/compute/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/compute/v1alpha3"
 )
 
 // SetupEKSClusterTarget adds a controller that propagates EKSCluster connection

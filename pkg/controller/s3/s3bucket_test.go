@@ -31,12 +31,12 @@ import (
 	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/crossplane/stack-aws/apis"
-	"github.com/crossplane/stack-aws/apis/storage/v1alpha3"
-	. "github.com/crossplane/stack-aws/apis/storage/v1alpha3"
-	aws "github.com/crossplane/stack-aws/pkg/clients"
-	client "github.com/crossplane/stack-aws/pkg/clients/s3"
-	. "github.com/crossplane/stack-aws/pkg/clients/s3/fake"
+	"github.com/crossplane/provider-aws/apis"
+	"github.com/crossplane/provider-aws/apis/storage/v1alpha3"
+	. "github.com/crossplane/provider-aws/apis/storage/v1alpha3"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
+	client "github.com/crossplane/provider-aws/pkg/clients/s3"
+	. "github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"

@@ -1,6 +1,6 @@
 # Authenticating to AWS API
 
-`stack-aws` requires credentials to be provided in order to authenticate to the
+`provider-aws` requires credentials to be provided in order to authenticate to the
 AWS API. This can be done in one of two ways:
 
 1. Base64 encoding static credentials in a Kubernetes `Secret`. This is
@@ -37,18 +37,18 @@ Console](https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-s
 eksctl utils associate-iam-oidc-provider --cluster <cluster-name> --region <region> --approve
 ```
 
-4. Create IAM Role that stack-aws will use
+4. Create IAM Role that provider-aws will use
 
 Set environment variables that will be used in subsequent commands:
 
 ```
 AWS_ACCOUNT_ID=$(aws2 sts get-caller-identity --query "Account" --output text)
 OIDC_PROVIDER=$(aws2 eks describe-cluster --name <cluster-name> --region <region> --query "cluster.identity.oidc.issuer" --output text | sed -e "s/^https:\/\///")
-# namespace for stack-aws should match namespace of your ClusterStackInstall
+# namespace for provider-aws should match namespace of your ClusterStackInstall
 SERVICE_ACCOUNT_NAMESPACE=crossplane-system
-# service account name for stack-aws should match name of your ClusterStackInstall
-SERVICE_ACCOUNT_NAME=stack-aws
-IAM_ROLE_NAME=stack-aws # name for IAM role, can be anything you want
+# service account name for provider-aws should match name of your ClusterStackInstall
+SERVICE_ACCOUNT_NAME=provider-aws
+IAM_ROLE_NAME=provider-aws # name for IAM role, can be anything you want
 ```
 
 Create trust relationship for IAM role:
@@ -79,7 +79,7 @@ echo "${TRUST_RELATIONSHIP}" > trust.json
 Create IAM role:
 
 ```
-aws iam create-role --role-name $IAM_ROLE_NAME --assume-role-policy-document file://trust.json --description "IAM role for stack-aws"
+aws iam create-role --role-name $IAM_ROLE_NAME --assume-role-policy-document file://trust.json --description "IAM role for provider-aws"
 ```
 
 Associate a policy with the IAM role. This example uses `AdministratorAccess`,
@@ -90,7 +90,7 @@ provision your resources.
 aws iam attach-role-policy --role-name $IAM_ROLE_NAME --policy-arn=arn:aws:iam::aws:policy/AdministratorAccess
 ```
 
-5. Install Crossplane and stack-aws
+5. Install Crossplane and provider-aws
 
 Install Crossplane from `alpha` channel:
 
@@ -101,19 +101,19 @@ helm repo add crossplane-alpha https://charts.crossplane.io/alpha
 helm install crossplane --namespace crossplane-system crossplane-alpha/crossplane
 ```
 
-Install `stack-aws`:
+Install `provider-aws`:
 
 ```yaml
 apiVersion: stacks.crossplane.io/v1alpha1
 kind: ClusterStackInstall
 metadata:
-  name: stack-aws # crossplane will create service account with this name
+  name: provider-aws # crossplane will create service account with this name
   namespace: crossplane-system # service account will be created in this namespace
 spec:
-  package: "crossplane/stack-aws:v0.6.0"
+  package: "crossplane/provider-aws:v0.6.0"
 ```
 
-6. Enable IAM Role for stack-aws Service Account
+6. Enable IAM Role for provider-aws Service Account
 
 First, check to make sure that the appropriate `ServiceAccount` exists:
 
@@ -122,7 +122,7 @@ kubectl get serviceaccounts -n crossplane-system
 ```
 
 If you used the `ClusterStackInstall` above you should see a `ServiceAccount` in
-the output named `stack-aws`. You should also see the `stack-aws` controller
+the output named `provider-aws`. You should also see the `provider-aws` controller
 `Pod` running if you execute `kubectl get pods -n crossplane-system`. To inject
 the credential information into the Pod, we must annotate its `ServiceAccount`
 with the desired IAM role:
@@ -140,7 +140,7 @@ it:
 kubectl delete pod <pod-name> -n crossplane-system
 ```
 
-You should immediately see another `Pod` be created for the `stack-aws`
+You should immediately see another `Pod` be created for the `provider-aws`
 controller. It will have access to credentials used to assume the IAM role.
 
 7. Create `Provider`
@@ -162,4 +162,4 @@ EOF
 kubectl apply -f aws-provider.yaml
 ```
 
-You can now reference this `Provider` to provision any `stack-aws` resources.
+You can now reference this `Provider` to provision any `provider-aws` resources.

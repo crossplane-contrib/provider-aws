@@ -21,9 +21,9 @@ import (
 	"errors"
 	"testing"
 
-	awsstorage "github.com/crossplane/stack-aws/apis/storage/v1alpha3"
-	fakeiam "github.com/crossplane/stack-aws/pkg/clients/iam/fake"
-	fakeops "github.com/crossplane/stack-aws/pkg/clients/s3/operations/fake"
+	awsstorage "github.com/crossplane/provider-aws/apis/storage/v1alpha3"
+	fakeiam "github.com/crossplane/provider-aws/pkg/clients/iam/fake"
+	fakeops "github.com/crossplane/provider-aws/pkg/clients/s3/operations/fake"
 
 	storage "github.com/crossplane/crossplane/apis/storage/v1alpha1"
 

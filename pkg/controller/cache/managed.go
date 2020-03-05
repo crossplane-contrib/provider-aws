@@ -36,10 +36,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/stack-aws/apis/cache/v1beta1"
-	awsv1alpha3 "github.com/crossplane/stack-aws/apis/v1alpha3"
-	awsclients "github.com/crossplane/stack-aws/pkg/clients"
-	"github.com/crossplane/stack-aws/pkg/clients/elasticache"
+	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/clients/elasticache"
 )
 
 // Error strings.
