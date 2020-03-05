@@ -32,4 +32,4 @@ I have:
 [documentation]: https://github.com/crossplane/crossplane/tree/master/docs
 [examples]: https://github.com/crossplane/crossplane/tree/master/cluster/examples
 [release notes]: https://github.com/crossplane/crossplane/tree/master/PendingReleaseNotes.md
-[`app.yaml`]: https://github.com/crossplane/stack-aws/blob/master/config/stack/manifests/app.yaml
+[`app.yaml`]: https://github.com/crossplane/provider-aws/blob/master/config/stack/manifests/app.yaml

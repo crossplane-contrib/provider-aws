@@ -27,9 +27,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"k8s.io/apimachinery/pkg/util/rand"
 
-	"github.com/crossplane/stack-aws/apis/storage/v1alpha3"
-	iamc "github.com/crossplane/stack-aws/pkg/clients/iam"
-	"github.com/crossplane/stack-aws/pkg/clients/s3/operations"
+	"github.com/crossplane/provider-aws/apis/storage/v1alpha3"
+	iamc "github.com/crossplane/provider-aws/pkg/clients/iam"
+	"github.com/crossplane/provider-aws/pkg/clients/s3/operations"
 
 	storage "github.com/crossplane/crossplane/apis/storage/v1alpha1"
 )

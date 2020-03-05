@@ -1,7 +1,7 @@
 # ====================================================================================
 # Setup Project
 
-PROJECT_NAME := stack-aws
+PROJECT_NAME := provider-aws
 PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
 
 PLATFORMS ?= linux_amd64 linux_arm64
@@ -49,7 +49,7 @@ STACK_PACKAGE_REGISTRY=$(STACK_PACKAGE)/.registry
 STACK_PACKAGE_REGISTRY_SOURCE=config/stack/manifests
 
 DOCKER_REGISTRY = crossplane
-IMAGES = stack-aws
+IMAGES = provider-aws
 -include build/makelib/image.mk
 
 # ====================================================================================

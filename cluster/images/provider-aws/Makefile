@@ -6,7 +6,7 @@ include ../../../build/makelib/common.mk
 
 # ====================================================================================
 #  Options
-IMAGE = $(BUILD_REGISTRY)/stack-aws-$(ARCH)
+IMAGE = $(BUILD_REGISTRY)/provider-aws-$(ARCH)
 include ../../../build/makelib/image.mk
 
 # ====================================================================================

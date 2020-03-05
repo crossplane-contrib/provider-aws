@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
-	aws "github.com/crossplane/stack-aws/pkg/clients"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )

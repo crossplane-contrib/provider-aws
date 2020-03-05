@@ -23,9 +23,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/crossplane/stack-aws/apis/database/v1alpha3"
-	"github.com/crossplane/stack-aws/apis/database/v1beta1"
-	aws "github.com/crossplane/stack-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/apis/database/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/database/v1beta1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 var (

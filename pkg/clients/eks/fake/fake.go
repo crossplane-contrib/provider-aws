@@ -17,8 +17,8 @@ limitations under the License.
 package fake
 
 import (
-	"github.com/crossplane/stack-aws/apis/compute/v1alpha3"
-	"github.com/crossplane/stack-aws/pkg/clients/eks"
+	"github.com/crossplane/provider-aws/apis/compute/v1alpha3"
+	"github.com/crossplane/provider-aws/pkg/clients/eks"
 )
 
 // MockEKSClient mock client for EKS

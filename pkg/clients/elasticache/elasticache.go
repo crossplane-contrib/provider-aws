@@ -28,8 +28,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache/elasticacheiface"
 
-	"github.com/crossplane/stack-aws/apis/cache/v1beta1"
-	clients "github.com/crossplane/stack-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
+	clients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // A Client handles CRUD operations for ElastiCache resources. This interface is
