@@ -28,7 +28,7 @@ import (
 	"github.com/crossplane/crossplane/apis/compute/v1alpha1"
 	workloadv1alpha1 "github.com/crossplane/crossplane/apis/workload/v1alpha1"
 
-	"github.com/crossplane/stack-aws/apis/compute/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/compute/v1alpha3"
 )
 
 // SetupEKSClusterSecret adds a controller that propagates EKSCluster connection

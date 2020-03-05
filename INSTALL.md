@@ -1,6 +1,6 @@
 # Building and Installing the Crossplane AWS Stack
 
-`stack-aws` is composed of a golang project and can be built directly with standard `golang` tools. We currently support two different platforms for building:
+`provider-aws` is composed of a golang project and can be built directly with standard `golang` tools. We currently support two different platforms for building:
 
 * Linux: most modern distros should work although most testing has been done on Ubuntu
 * Mac: macOS 10.6+ is supported

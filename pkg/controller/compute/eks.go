@@ -42,10 +42,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	awscomputev1alpha3 "github.com/crossplane/stack-aws/apis/compute/v1alpha3"
-	cloudformationclient "github.com/crossplane/stack-aws/pkg/clients/cloudformation"
-	"github.com/crossplane/stack-aws/pkg/clients/eks"
-	"github.com/crossplane/stack-aws/pkg/controller/utils"
+	awscomputev1alpha3 "github.com/crossplane/provider-aws/apis/compute/v1alpha3"
+	cloudformationclient "github.com/crossplane/provider-aws/pkg/clients/cloudformation"
+	"github.com/crossplane/provider-aws/pkg/clients/eks"
+	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 
 const (
@@ -146,7 +146,7 @@ func (r *Reconciler) _connect(instance *awscomputev1alpha3.EKSCluster) (eks.Clie
 
 	// NOTE(negz): EKS clusters must specify a region for creation. They never
 	// use the provider's region. This should be addressed per the below issue.
-	// https://github.com/crossplane/stack-aws/issues/38
+	// https://github.com/crossplane/provider-aws/issues/38
 	config.Region = instance.Spec.Region
 
 	// Create new EKS Client

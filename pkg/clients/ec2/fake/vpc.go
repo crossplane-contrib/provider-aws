@@ -19,7 +19,7 @@ package fake
 import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
-	clientset "github.com/crossplane/stack-aws/pkg/clients/ec2"
+	clientset "github.com/crossplane/provider-aws/pkg/clients/ec2"
 )
 
 // this ensures that the mock implements the client interface

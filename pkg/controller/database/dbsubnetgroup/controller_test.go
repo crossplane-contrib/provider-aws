@@ -33,9 +33,9 @@ import (
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha3 "github.com/crossplane/stack-aws/apis/database/v1alpha3"
-	"github.com/crossplane/stack-aws/pkg/clients/rds"
-	"github.com/crossplane/stack-aws/pkg/clients/rds/fake"
+	v1alpha3 "github.com/crossplane/provider-aws/apis/database/v1alpha3"
+	"github.com/crossplane/provider-aws/pkg/clients/rds"
+	"github.com/crossplane/provider-aws/pkg/clients/rds/fake"
 )
 
 var (

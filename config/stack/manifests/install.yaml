@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: stack-aws
+  name: provider-aws
   labels:
-    core.crossplane.io/name: "stack-aws"
+    core.crossplane.io/name: "provider-aws"
 spec:
   selector:
     matchLabels:
-      core.crossplane.io/name: "stack-aws"
+      core.crossplane.io/name: "provider-aws"
   replicas: 1
   template:
     metadata:
-      name: "stack-aws-controller"
+      name: "provider-aws-controller"
       labels:
-        core.crossplane.io/name: "stack-aws"
+        core.crossplane.io/name: "provider-aws"
     spec:
       containers:
-      - name: "stack-aws-controller"
-        image: "crossplane/stack-aws:master"
+      - name: "provider-aws-controller"
+        image: "crossplane/provider-aws:master"
         env:
         - name: POD_NAME
           valueFrom:

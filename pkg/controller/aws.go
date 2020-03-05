@@ -21,18 +21,18 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
-	"github.com/crossplane/stack-aws/pkg/controller/cache"
-	"github.com/crossplane/stack-aws/pkg/controller/compute"
-	"github.com/crossplane/stack-aws/pkg/controller/database"
-	"github.com/crossplane/stack-aws/pkg/controller/database/dbsubnetgroup"
-	"github.com/crossplane/stack-aws/pkg/controller/identity/iamrole"
-	"github.com/crossplane/stack-aws/pkg/controller/identity/iamrolepolicyattachment"
-	"github.com/crossplane/stack-aws/pkg/controller/network/internetgateway"
-	"github.com/crossplane/stack-aws/pkg/controller/network/routetable"
-	"github.com/crossplane/stack-aws/pkg/controller/network/securitygroup"
-	"github.com/crossplane/stack-aws/pkg/controller/network/subnet"
-	"github.com/crossplane/stack-aws/pkg/controller/network/vpc"
-	"github.com/crossplane/stack-aws/pkg/controller/s3"
+	"github.com/crossplane/provider-aws/pkg/controller/cache"
+	"github.com/crossplane/provider-aws/pkg/controller/compute"
+	"github.com/crossplane/provider-aws/pkg/controller/database"
+	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
+	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrole"
+	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrolepolicyattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/network/internetgateway"
+	"github.com/crossplane/provider-aws/pkg/controller/network/routetable"
+	"github.com/crossplane/provider-aws/pkg/controller/network/securitygroup"
+	"github.com/crossplane/provider-aws/pkg/controller/network/subnet"
+	"github.com/crossplane/provider-aws/pkg/controller/network/vpc"
+	"github.com/crossplane/provider-aws/pkg/controller/s3"
 )
 
 // Setup creates all AWS controllers with the supplied logger and adds them to

@@ -30,8 +30,8 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
-	awsv1alpha3 "github.com/crossplane/stack-aws/apis/v1alpha3"
-	awsclients "github.com/crossplane/stack-aws/pkg/clients"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // RetrieveAwsConfigFromProvider retrieves the aws config from the given aws provider reference

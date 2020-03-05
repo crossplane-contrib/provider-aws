@@ -1,4 +1,4 @@
-module github.com/crossplane/stack-aws
+module github.com/crossplane/provider-aws
 
 go 1.13
 

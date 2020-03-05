@@ -37,11 +37,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplane/stack-aws/apis/cache/v1beta1"
-	awsv1alpha3 "github.com/crossplane/stack-aws/apis/v1alpha3"
-	awsclients "github.com/crossplane/stack-aws/pkg/clients"
-	elasticacheclient "github.com/crossplane/stack-aws/pkg/clients/elasticache"
-	"github.com/crossplane/stack-aws/pkg/clients/elasticache/fake"
+	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	elasticacheclient "github.com/crossplane/provider-aws/pkg/clients/elasticache"
+	"github.com/crossplane/provider-aws/pkg/clients/elasticache/fake"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/test"

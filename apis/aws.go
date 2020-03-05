@@ -20,14 +20,14 @@ package apis
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
-	cachev1beta1 "github.com/crossplane/stack-aws/apis/cache/v1beta1"
-	computev1alpha3 "github.com/crossplane/stack-aws/apis/compute/v1alpha3"
-	databasev1alpha3 "github.com/crossplane/stack-aws/apis/database/v1alpha3"
-	databasev1beta1 "github.com/crossplane/stack-aws/apis/database/v1beta1"
-	identityv1alpha3 "github.com/crossplane/stack-aws/apis/identity/v1alpha3"
-	networkv1alpha3 "github.com/crossplane/stack-aws/apis/network/v1alpha3"
-	storagev1alpha3 "github.com/crossplane/stack-aws/apis/storage/v1alpha3"
-	awsv1alpha3 "github.com/crossplane/stack-aws/apis/v1alpha3"
+	cachev1beta1 "github.com/crossplane/provider-aws/apis/cache/v1beta1"
+	computev1alpha3 "github.com/crossplane/provider-aws/apis/compute/v1alpha3"
+	databasev1alpha3 "github.com/crossplane/provider-aws/apis/database/v1alpha3"
+	databasev1beta1 "github.com/crossplane/provider-aws/apis/database/v1beta1"
+	identityv1alpha3 "github.com/crossplane/provider-aws/apis/identity/v1alpha3"
+	networkv1alpha3 "github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	storagev1alpha3 "github.com/crossplane/provider-aws/apis/storage/v1alpha3"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 )
 
 func init() {

@@ -25,7 +25,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	aws "github.com/crossplane/stack-aws/pkg/clients"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 var _ resource.AttributeReferencer = (*VPCSecurityGroupIDReferencerForRDSInstance)(nil)
