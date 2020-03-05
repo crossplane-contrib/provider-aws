@@ -33,8 +33,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	cachev1alpha1 "github.com/crossplane/crossplane/apis/cache/v1alpha1"
 
-	"github.com/crossplane/stack-aws/apis/cache/v1beta1"
-	aws "github.com/crossplane/stack-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupReplicationGroupClaimScheduling adds a controller that reconciles

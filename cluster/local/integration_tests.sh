@@ -171,7 +171,7 @@ STACK_IMAGE="${DOCKER_REGISTRY}/${PROJECT_NAME}:master"
 K8S_CLUSTER="${K8S_CLUSTER:-${BUILD_REGISTRY}-INTTESTS}"
 
 CROSSPLANE_NAMESPACE="crossplane-system"
-STACK_NAME="stack-aws"
+STACK_NAME="provider-aws"
 STACK_NAMESPACE="aws"
 
 # cleanup on exit

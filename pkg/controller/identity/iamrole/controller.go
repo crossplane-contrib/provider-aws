@@ -32,9 +32,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha3 "github.com/crossplane/stack-aws/apis/identity/v1alpha3"
-	"github.com/crossplane/stack-aws/pkg/clients/iam"
-	"github.com/crossplane/stack-aws/pkg/controller/utils"
+	v1alpha3 "github.com/crossplane/provider-aws/apis/identity/v1alpha3"
+	"github.com/crossplane/provider-aws/pkg/clients/iam"
+	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 
 const (

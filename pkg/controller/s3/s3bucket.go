@@ -28,10 +28,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	bucketv1alpha3 "github.com/crossplane/stack-aws/apis/storage/v1alpha3"
-	aws "github.com/crossplane/stack-aws/pkg/clients"
-	"github.com/crossplane/stack-aws/pkg/clients/s3"
-	"github.com/crossplane/stack-aws/pkg/controller/utils"
+	bucketv1alpha3 "github.com/crossplane/provider-aws/apis/storage/v1alpha3"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/clients/s3"
+	"github.com/crossplane/provider-aws/pkg/controller/utils"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
@@ -113,7 +113,7 @@ func (r *Reconciler) _connect(instance *bucketv1alpha3.S3Bucket) (s3.Service, er
 
 	// NOTE(negz): Buckets must specify a region for creation. They never use
 	// the provider's region. This should be addressed per the below issue.
-	// https://github.com/crossplane/stack-aws/issues/38
+	// https://github.com/crossplane/provider-aws/issues/38
 	config.Region = instance.Spec.Region
 
 	// Create new S3 S3Client

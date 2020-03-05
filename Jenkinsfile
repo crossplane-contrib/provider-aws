@@ -17,7 +17,7 @@ pipeline {
         DOCKER = credentials('dockerhub-upboundci')
         AWS = credentials('aws-upbound-bot')
         GITHUB_UPBOUND_BOT = credentials('github-upbound-jenkins')
-        CODECOV_TOKEN = credentials('codecov-stack-aws')
+        CODECOV_TOKEN = credentials('codecov-provider-aws')
     }
 
     stages {
@@ -26,7 +26,7 @@ pipeline {
             steps {
                 script {
                     if (env.CHANGE_ID != null) {
-                        def json = sh (script: "curl -s https://api.github.com/repos/crossplane/stack-aws/pulls/${env.CHANGE_ID}", returnStdout: true).trim()
+                        def json = sh (script: "curl -s https://api.github.com/repos/crossplane/provider-aws/pulls/${env.CHANGE_ID}", returnStdout: true).trim()
                         def body = evaluateJson(json,'${json.body}')
                         if (body.contains("[skip ci]")) {
                             echo ("'[skip ci]' spotted in PR body text.")

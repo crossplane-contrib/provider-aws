@@ -23,8 +23,8 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	identity "github.com/crossplane/stack-aws/apis/identity/v1alpha3"
-	network "github.com/crossplane/stack-aws/apis/network/v1alpha3"
+	identity "github.com/crossplane/provider-aws/apis/identity/v1alpha3"
+	network "github.com/crossplane/provider-aws/apis/network/v1alpha3"
 )
 
 // Cluster statuses.

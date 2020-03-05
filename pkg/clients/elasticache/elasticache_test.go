@@ -28,8 +28,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/crossplane/stack-aws/apis/cache/v1beta1"
-	aws "github.com/crossplane/stack-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 const (

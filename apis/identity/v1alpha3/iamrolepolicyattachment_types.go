@@ -25,7 +25,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	aws "github.com/crossplane/stack-aws/pkg/clients"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // Error strings

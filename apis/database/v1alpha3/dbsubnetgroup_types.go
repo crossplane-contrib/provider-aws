@@ -22,8 +22,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/pkg/errors"
 
-	network "github.com/crossplane/stack-aws/apis/network/v1alpha3"
-	aws "github.com/crossplane/stack-aws/pkg/clients"
+	network "github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"

@@ -33,11 +33,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/stack-aws/apis/database/v1beta1"
-	awsv1alpha3 "github.com/crossplane/stack-aws/apis/v1alpha3"
-	awsclients "github.com/crossplane/stack-aws/pkg/clients"
-	"github.com/crossplane/stack-aws/pkg/clients/rds"
-	"github.com/crossplane/stack-aws/pkg/clients/rds/fake"
+	"github.com/crossplane/provider-aws/apis/database/v1beta1"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/clients/rds"
+	"github.com/crossplane/provider-aws/pkg/clients/rds/fake"
 )
 
 const (
