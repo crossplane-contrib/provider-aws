@@ -13,6 +13,7 @@ require (
 	github.com/google/go-cmp v0.3.1
 	github.com/gopherjs/gopherjs v0.0.0-20180825215210-0210a2f0f73c // indirect
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
+	github.com/mitchellh/copystructure v1.0.0
 	github.com/onsi/gomega v1.7.0
 	github.com/pkg/errors v0.8.1
 	github.com/smartystreets/assertions v0.0.0-20180820201707-7c9eb446e3cf // indirect
