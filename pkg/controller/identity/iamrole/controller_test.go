@@ -185,7 +185,8 @@ func Test_Observe(t *testing.T) {
 					withRoleName(&roleName),
 					withConditions(corev1alpha1.Available())),
 				result: managed.ExternalObservation{
-					ResourceExists: true,
+					ResourceExists:   true,
+					ResourceUpToDate: true,
 				},
 			},
 		},

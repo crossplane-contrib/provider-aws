@@ -46,10 +46,9 @@ const (
 
 var (
 	// an arbitrary managed resource
-	unexpecedItem   resource.Managed
-	roleName        = "some arbitrary name"
-	specPolicyArn   = "some arbitrary arn"
-	statusPolicyArn = "some other arbitrary arn"
+	unexpecedItem resource.Managed
+	roleName      = "some arbitrary name"
+	specPolicyArn = "some arbitrary arn"
 
 	errBoom = errors.New("boom")
 )
@@ -198,7 +197,8 @@ func Test_Observe(t *testing.T) {
 					withConditions(corev1alpha1.Available()),
 					withStatusPolicyArn(&specPolicyArn)),
 				result: managed.ExternalObservation{
-					ResourceExists: true,
+					ResourceExists:   true,
+					ResourceUpToDate: true,
 				},
 			},
 		},
@@ -374,72 +374,6 @@ func Test_Update(t *testing.T) {
 				cr: rolePolicy(
 					withRoleName(&roleName),
 					withSpecPolicyArn(&specPolicyArn)),
-			},
-		},
-		"InValidInput": {
-			args: args{
-				cr: unexpecedItem,
-			},
-			want: want{
-				cr:  unexpecedItem,
-				err: errors.New(errUnexpectedObject),
-			},
-		},
-		"DuplicatePolicy": {
-			args: args{
-				cr: rolePolicy(
-					withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn),
-					withStatusPolicyArn(&specPolicyArn)),
-			},
-			want: want{
-				cr: rolePolicy(
-					withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn),
-					withStatusPolicyArn(&specPolicyArn)),
-			},
-		},
-		"AttachFail": {
-			args: args{
-				iam: &fake.MockRolePolicyAttachmentClient{
-					MockAttachRolePolicyRequest: func(input *awsiam.AttachRolePolicyInput) awsiam.AttachRolePolicyRequest {
-						return awsiam.AttachRolePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
-					},
-				},
-				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn),
-					withStatusPolicyArn(&statusPolicyArn)),
-			},
-			want: want{
-				cr: rolePolicy(withRoleName(&roleName),
-					withSpecPolicyArn(&specPolicyArn),
-					withStatusPolicyArn(&statusPolicyArn)),
-				err: errors.Wrap(errBoom, errors.Errorf(errAttach, specPolicyArn, roleName).Error()),
-			},
-		},
-		"DetachFail": {
-			args: args{
-				iam: &fake.MockRolePolicyAttachmentClient{
-					MockAttachRolePolicyRequest: func(input *awsiam.AttachRolePolicyInput) awsiam.AttachRolePolicyRequest {
-						return awsiam.AttachRolePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.AttachRolePolicyOutput{}},
-						}
-					},
-					MockDetachRolePolicyRequest: func(input *awsiam.DetachRolePolicyInput) awsiam.DetachRolePolicyRequest {
-						return awsiam.DetachRolePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
-					},
-				},
-				cr: rolePolicy(withRoleName(&roleName),
-					withStatusPolicyArn(&statusPolicyArn)),
-			},
-			want: want{
-				cr: rolePolicy(withRoleName(&roleName),
-					withStatusPolicyArn(&statusPolicyArn)),
-				err: errors.Wrap(errBoom, errors.Errorf(errDetach, statusPolicyArn, roleName).Error()),
 			},
 		},
 	}

@@ -18,6 +18,7 @@ package iamrolepolicyattachment
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
@@ -43,6 +44,8 @@ const (
 	errGet              = "failed to get IAMRolePolicyAttachments for role with name: %v"
 	errAttach           = "failed to attach the policy with arn %v to role %v"
 	errDetach           = "failed to detach the policy with arn %v to role %v"
+
+	errKubeUpdateFailed = "cannot update RDS instance custom resource"
 )
 
 // SetupIAMRolePolicyAttachment adds a controller that reconciles
@@ -83,11 +86,12 @@ func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (manag
 		return nil, errors.Wrap(err, errClient)
 	}
 
-	return &external{c}, nil
+	return &external{c, conn.client}, nil
 }
 
 type external struct {
 	client iam.RolePolicyAttachmentClient
+	kube   client.Client
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
@@ -119,12 +123,21 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
+	current := cr.Spec.ForProvider.DeepCopy()
+	iam.LateInitializePolicy(&cr.Spec.ForProvider, attachedPolicyObject)
+	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
+		if err := e.kube.Update(ctx, cr); err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
+		}
+	}
+
 	cr.SetConditions(runtimev1alpha1.Available())
 
 	cr.Status.AtProvider = iam.GenerateRolePolicyObservation(*attachedPolicyObject)
 
 	return managed.ExternalObservation{
-		ResourceExists: true,
+		ResourceExists:   true,
+		ResourceUpToDate: cr.Spec.ForProvider.PolicyARN == cr.Status.AtProvider.AttachedPolicyARN,
 	}, nil
 }
 
@@ -145,35 +158,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1beta1.IAMRolePolicyAttachment)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
-
-	// TODO(soorena776): add more sophisticated Update logic, once we
-	// categorize immutable vs mutable fields (see #727)
-
-	// there is not a dedicated update method, so a basic update is implemented below
-	// based on changes on PolicyArn:
-	// if the previously attached policy is different than what is stated in the spec,
-	// for update it needs to first attach the updated one, and then detach the previous one
-	if cr.Status.AtProvider.AttachedPolicyARN == "" || cr.Spec.ForProvider.PolicyARN == cr.Status.AtProvider.AttachedPolicyARN {
-		// update is only necessary if the PolicyArn in the Status is set and is different
-		// from the one in Spec
-		return managed.ExternalUpdate{}, nil
-	}
-
-	aReq := e.client.AttachRolePolicyRequest(iam.GenerateAttachRolePolicyInput(&cr.Spec.ForProvider))
-	if _, err := aReq.Send(ctx); err != nil {
-		return managed.ExternalUpdate{}, errors.Wrapf(err, errAttach, cr.Spec.ForProvider.PolicyARN, cr.Spec.ForProvider.RoleName)
-	}
-
-	dReq := e.client.DetachRolePolicyRequest(iam.GenerateUpdateRolePolicyInput(&cr.Status.AtProvider))
-
-	if _, err := dReq.Send(ctx); err != nil {
-		return managed.ExternalUpdate{}, errors.Wrapf(err, errDetach, cr.Status.AtProvider.AttachedPolicyARN, cr.Spec.ForProvider.RoleName)
-	}
-
+	// PolivyARN is the only distinguishing field and on update to that, new policy is attached
 	return managed.ExternalUpdate{}, nil
 }
 

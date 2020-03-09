@@ -18,6 +18,7 @@ package iamrole
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
@@ -45,6 +46,9 @@ const (
 	errCreate           = "failed to create the IAMRole resource"
 	errDelete           = "failed to delete the IAMRole resource"
 	errUpdate           = "failed to update the IAMRole resource"
+
+	errKubeUpdateFailed = "cannot update RDS instance custom resource"
+	errUpToDateFailed   = "cannot check whether object is up-to-date"
 )
 
 // SetupIAMRole adds a controller that reconciles IAMRoles.
@@ -83,11 +87,12 @@ func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (manag
 	if err != nil {
 		return nil, errors.Wrap(err, errClient)
 	}
-	return &external{c}, nil
+	return &external{c, conn.client}, nil
 }
 
 type external struct {
 	client iam.RoleClient
+	kube   client.Client
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
@@ -106,12 +111,27 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
+	role := *observed.Role
+	current := cr.Spec.ForProvider.DeepCopy()
+	iam.LateInitializeRole(&cr.Spec.ForProvider, &role)
+	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
+		if err := e.kube.Update(ctx, cr); err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
+		}
+	}
+
 	cr.SetConditions(runtimev1alpha1.Available())
 
 	cr.Status.AtProvider = iam.GenerateRoleObservation(*observed.Role)
 
+	upToDate, err := iam.IsRoleUpToDate(&cr.Spec.ForProvider, &role)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
+	}
+
 	return managed.ExternalObservation{
-		ResourceExists: true,
+		ResourceExists:   true,
+		ResourceUpToDate: upToDate,
 	}, nil
 }
 

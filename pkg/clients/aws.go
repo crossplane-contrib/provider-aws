@@ -253,6 +253,18 @@ func LateInitializeIntPtr(in *int, from *int64) *int {
 	return nil
 }
 
+// LateInitializeInt64Ptr returns in if it's non-nil, otherwise returns from
+// which is the backup for the cases in is nil.
+func LateInitializeInt64Ptr(in *int64, from *int64) *int64 {
+	if in != nil {
+		return in
+	}
+	if from != nil {
+		return from
+	}
+	return nil
+}
+
 // Bool converts the supplied bool for use with the AWS Go SDK.
 func Bool(v bool, o ...FieldOption) *bool {
 	for _, fo := range o {

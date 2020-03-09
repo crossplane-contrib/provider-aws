@@ -4,7 +4,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
-	"github.com/crossplane/stack-aws/apis/identity/v1beta1"
+	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // RolePolicyAttachmentClient is the external client used for IAMRolePolicyAttachment Custom Resource
@@ -50,4 +51,13 @@ func GenerateRolePolicyObservation(policy iam.AttachedPolicy) v1beta1.IAMRolePol
 	return v1beta1.IAMRolePolicyAttachmentExternalStatus{
 		AttachedPolicyARN: aws.StringValue(policy.PolicyArn),
 	}
+}
+
+// LateInitializePolicy fills the empty fields in *v1beta1.IAMRolePolicyAttachmentParameters with
+// the values seen in iam.AttachedPolicy.
+func LateInitializePolicy(in *v1beta1.IAMRolePolicyAttachmentParameters, policy *iam.AttachedPolicy) {
+	if policy == nil {
+		return
+	}
+	in.PolicyARN = awsclients.LateInitializeString(in.PolicyARN, policy.PolicyArn)
 }
