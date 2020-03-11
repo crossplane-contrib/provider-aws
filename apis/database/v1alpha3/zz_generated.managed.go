@@ -43,6 +43,11 @@ func (mg *DBSubnetGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev
 	return mg.Status.GetCondition(ct)
 }
 
+// GetProviderReference of this DBSubnetGroup.
+func (mg *DBSubnetGroup) GetProviderReference() *corev1.ObjectReference {
+	return mg.Spec.ProviderReference
+}
+
 // GetReclaimPolicy of this DBSubnetGroup.
 func (mg *DBSubnetGroup) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
 	return mg.Spec.ReclaimPolicy
@@ -71,6 +76,11 @@ func (mg *DBSubnetGroup) SetClassReference(r *corev1.ObjectReference) {
 // SetConditions of this DBSubnetGroup.
 func (mg *DBSubnetGroup) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this DBSubnetGroup.
+func (mg *DBSubnetGroup) SetProviderReference(r *corev1.ObjectReference) {
+	mg.Spec.ProviderReference = r
 }
 
 // SetReclaimPolicy of this DBSubnetGroup.
