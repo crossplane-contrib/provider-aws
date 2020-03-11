@@ -4,9 +4,9 @@ go 1.13
 
 require (
 	github.com/aws/aws-sdk-go-v2 v0.19.0
-	github.com/crossplane/crossplane v0.8.0-rc.0.20200219030944-557074689d71
-	github.com/crossplane/crossplane-runtime v0.5.1-0.20200219022054-8948e50564b1
-	github.com/crossplane/crossplane-tools v0.0.0-20200219001116-bb8b2ce46330
+	github.com/crossplane/crossplane v0.8.0-rc.0.20200306224957-b724d2eba282
+	github.com/crossplane/crossplane-runtime v0.5.1-0.20200303183616-3d4c771a3062
+	github.com/crossplane/crossplane-tools v0.0.0-20200303232609-b3831cbb446d
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-ini/ini v1.46.0
@@ -20,9 +20,9 @@ require (
 	github.com/stretchr/testify v1.4.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/ini.v1 v1.47.0 // indirect
-	k8s.io/api v0.17.0
-	k8s.io/apimachinery v0.17.0
-	k8s.io/client-go v0.17.0
+	k8s.io/api v0.17.3
+	k8s.io/apimachinery v0.17.3
+	k8s.io/client-go v0.17.3
 	sigs.k8s.io/controller-runtime v0.4.0
 	sigs.k8s.io/controller-tools v0.2.4
 )
