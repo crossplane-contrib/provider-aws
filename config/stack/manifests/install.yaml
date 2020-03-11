@@ -17,7 +17,6 @@ spec:
     spec:
       containers:
       - name: "provider-aws-controller"
-        image: "crossplane/provider-aws:master"
         env:
         - name: POD_NAME
           valueFrom:
