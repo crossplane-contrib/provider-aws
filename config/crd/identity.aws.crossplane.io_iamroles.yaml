@@ -182,6 +182,8 @@ spec:
                           array, you can store comma-separated values in the string.
                           However, you must interpret the value in your code."
                         type: string
+                    required:
+                    - key
                     type: object
                   type: array
               required:

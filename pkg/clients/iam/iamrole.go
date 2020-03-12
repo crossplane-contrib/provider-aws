@@ -120,8 +120,8 @@ func LateInitializeRole(in *v1beta1.IAMRoleParameters, role *iam.Role) {
 }
 
 // IsRoleUpToDate checks whether there is a change in any of the modifiable fields in role.
-func IsRoleUpToDate(in *v1beta1.IAMRoleParameters, observed *iam.Role) (bool, error) {
-	generated, err := copystructure.Copy(observed)
+func IsRoleUpToDate(in v1beta1.IAMRoleParameters, observed iam.Role) (bool, error) {
+	generated, err := copystructure.Copy(&observed)
 	if err != nil {
 		return true, errors.Wrap(err, errCheckUpToDate)
 	}
@@ -130,9 +130,9 @@ func IsRoleUpToDate(in *v1beta1.IAMRoleParameters, observed *iam.Role) (bool, er
 		return true, errors.New(errCheckUpToDate)
 	}
 
-	GenerateIAMRole(*in, desired)
+	GenerateIAMRole(in, desired)
 
 	// 'AssumeRolePolicyDocument' is an escaped string in iam.Role and a normal string  in v1beta.IAMRole.
 	// There is no proper way to compare them.
-	return cmp.Equal(desired, observed, cmpopts.IgnoreFields(iam.Role{}, "AssumeRolePolicyDocument")), nil
+	return cmp.Equal(desired, &observed, cmpopts.IgnoreFields(iam.Role{}, "AssumeRolePolicyDocument")), nil
 }

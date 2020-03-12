@@ -30,7 +30,7 @@ type Tag struct {
 
 	// The key name that can be used to look up or retrieve the associated value.
 	// For example, Department or Cost Center are common choices.
-	Key string `json:"key,omitempty"`
+	Key string `json:"key"`
 
 	// The value associated with this tag. For example, tags with a key name of
 	// Department could have values such as Human Resources, Accounting, and Support.
@@ -41,6 +41,7 @@ type Tag struct {
 	// AWS always interprets the tag Value as a single string. If you need to store
 	// an array, you can store comma-separated values in the string. However, you
 	// must interpret the value in your code.
+	// +optional
 	Value string `json:"value,omitempty"`
 }
 
