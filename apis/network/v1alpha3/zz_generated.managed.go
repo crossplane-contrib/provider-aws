@@ -43,6 +43,11 @@ func (mg *InternetGateway) GetCondition(ct runtimev1alpha1.ConditionType) runtim
 	return mg.Status.GetCondition(ct)
 }
 
+// GetProviderReference of this InternetGateway.
+func (mg *InternetGateway) GetProviderReference() *corev1.ObjectReference {
+	return mg.Spec.ProviderReference
+}
+
 // GetReclaimPolicy of this InternetGateway.
 func (mg *InternetGateway) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
 	return mg.Spec.ReclaimPolicy
@@ -71,6 +76,11 @@ func (mg *InternetGateway) SetClassReference(r *corev1.ObjectReference) {
 // SetConditions of this InternetGateway.
 func (mg *InternetGateway) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this InternetGateway.
+func (mg *InternetGateway) SetProviderReference(r *corev1.ObjectReference) {
+	mg.Spec.ProviderReference = r
 }
 
 // SetReclaimPolicy of this InternetGateway.
@@ -103,6 +113,11 @@ func (mg *RouteTable) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1al
 	return mg.Status.GetCondition(ct)
 }
 
+// GetProviderReference of this RouteTable.
+func (mg *RouteTable) GetProviderReference() *corev1.ObjectReference {
+	return mg.Spec.ProviderReference
+}
+
 // GetReclaimPolicy of this RouteTable.
 func (mg *RouteTable) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
 	return mg.Spec.ReclaimPolicy
@@ -131,6 +146,11 @@ func (mg *RouteTable) SetClassReference(r *corev1.ObjectReference) {
 // SetConditions of this RouteTable.
 func (mg *RouteTable) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this RouteTable.
+func (mg *RouteTable) SetProviderReference(r *corev1.ObjectReference) {
+	mg.Spec.ProviderReference = r
 }
 
 // SetReclaimPolicy of this RouteTable.
@@ -163,6 +183,11 @@ func (mg *SecurityGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev
 	return mg.Status.GetCondition(ct)
 }
 
+// GetProviderReference of this SecurityGroup.
+func (mg *SecurityGroup) GetProviderReference() *corev1.ObjectReference {
+	return mg.Spec.ProviderReference
+}
+
 // GetReclaimPolicy of this SecurityGroup.
 func (mg *SecurityGroup) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
 	return mg.Spec.ReclaimPolicy
@@ -191,6 +216,11 @@ func (mg *SecurityGroup) SetClassReference(r *corev1.ObjectReference) {
 // SetConditions of this SecurityGroup.
 func (mg *SecurityGroup) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this SecurityGroup.
+func (mg *SecurityGroup) SetProviderReference(r *corev1.ObjectReference) {
+	mg.Spec.ProviderReference = r
 }
 
 // SetReclaimPolicy of this SecurityGroup.
@@ -223,6 +253,11 @@ func (mg *Subnet) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1
 	return mg.Status.GetCondition(ct)
 }
 
+// GetProviderReference of this Subnet.
+func (mg *Subnet) GetProviderReference() *corev1.ObjectReference {
+	return mg.Spec.ProviderReference
+}
+
 // GetReclaimPolicy of this Subnet.
 func (mg *Subnet) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
 	return mg.Spec.ReclaimPolicy
@@ -251,6 +286,11 @@ func (mg *Subnet) SetClassReference(r *corev1.ObjectReference) {
 // SetConditions of this Subnet.
 func (mg *Subnet) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this Subnet.
+func (mg *Subnet) SetProviderReference(r *corev1.ObjectReference) {
+	mg.Spec.ProviderReference = r
 }
 
 // SetReclaimPolicy of this Subnet.
@@ -283,6 +323,11 @@ func (mg *VPC) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Co
 	return mg.Status.GetCondition(ct)
 }
 
+// GetProviderReference of this VPC.
+func (mg *VPC) GetProviderReference() *corev1.ObjectReference {
+	return mg.Spec.ProviderReference
+}
+
 // GetReclaimPolicy of this VPC.
 func (mg *VPC) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
 	return mg.Spec.ReclaimPolicy
@@ -311,6 +356,11 @@ func (mg *VPC) SetClassReference(r *corev1.ObjectReference) {
 // SetConditions of this VPC.
 func (mg *VPC) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this VPC.
+func (mg *VPC) SetProviderReference(r *corev1.ObjectReference) {
+	mg.Spec.ProviderReference = r
 }
 
 // SetReclaimPolicy of this VPC.

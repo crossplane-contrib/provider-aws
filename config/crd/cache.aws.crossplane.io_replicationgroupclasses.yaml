@@ -109,9 +109,24 @@ spec:
                     group, use CacheParameterGroupName=default.redis3.2. * To create
                     a Redis (cluster mode enabled) replication group, use CacheParameterGroupName=default.redis3.2.cluster.on."
                   type: string
+                cacheSecurityGroupNameRefs:
+                  description: CacheSecurityGroupNameRefs are references to SecurityGroups
+                    used to set the CacheSecurityGroupNames.
+                  items:
+                    description: SecurityGroupNameReferencerForReplicationGroup is
+                      an attribute referencer that resolves SecurityGroupName from
+                      a referenced SecurityGroup
+                    properties:
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                    type: object
+                  type: array
                 cacheSecurityGroupNames:
                   description: CacheSecurityGroupNames specifies a list of cache security
-                    group names to associate with this replication group.
+                    group names to associate with this replication group. Only for
+                    EC2-Classic mode.
                   items:
                     type: string
                   type: array
@@ -243,6 +258,20 @@ spec:
                   description: ReplicationGroupDescription is the description for
                     the replication group.
                   type: string
+                securityGroupIdRefs:
+                  description: SecurityGroupIDRefs are references to SecurityGroups
+                    used to set the SecurityGroupIDs.
+                  items:
+                    description: SecurityGroupIDReferencerForReplicationGroup is an
+                      attribute referencer that resolves SecurityGroupID from a referenced
+                      SecurityGroup
+                    properties:
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                    type: object
+                  type: array
                 securityGroupIds:
                   description: SecurityGroupIDs specifies one or more Amazon VPC security
                     groups associated with this replication group. Use this parameter

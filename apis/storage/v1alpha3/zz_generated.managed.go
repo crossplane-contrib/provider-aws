@@ -43,6 +43,11 @@ func (mg *S3Bucket) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alph
 	return mg.Status.GetCondition(ct)
 }
 
+// GetProviderReference of this S3Bucket.
+func (mg *S3Bucket) GetProviderReference() *corev1.ObjectReference {
+	return mg.Spec.ProviderReference
+}
+
 // GetReclaimPolicy of this S3Bucket.
 func (mg *S3Bucket) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
 	return mg.Spec.ReclaimPolicy
@@ -71,6 +76,11 @@ func (mg *S3Bucket) SetClassReference(r *corev1.ObjectReference) {
 // SetConditions of this S3Bucket.
 func (mg *S3Bucket) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this S3Bucket.
+func (mg *S3Bucket) SetProviderReference(r *corev1.ObjectReference) {
+	mg.Spec.ProviderReference = r
 }
 
 // SetReclaimPolicy of this S3Bucket.
