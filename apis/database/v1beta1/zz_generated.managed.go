@@ -43,6 +43,11 @@ func (mg *RDSInstance) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1a
 	return mg.Status.GetCondition(ct)
 }
 
+// GetProviderReference of this RDSInstance.
+func (mg *RDSInstance) GetProviderReference() *corev1.ObjectReference {
+	return mg.Spec.ProviderReference
+}
+
 // GetReclaimPolicy of this RDSInstance.
 func (mg *RDSInstance) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
 	return mg.Spec.ReclaimPolicy
@@ -71,6 +76,11 @@ func (mg *RDSInstance) SetClassReference(r *corev1.ObjectReference) {
 // SetConditions of this RDSInstance.
 func (mg *RDSInstance) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this RDSInstance.
+func (mg *RDSInstance) SetProviderReference(r *corev1.ObjectReference) {
+	mg.Spec.ProviderReference = r
 }
 
 // SetReclaimPolicy of this RDSInstance.

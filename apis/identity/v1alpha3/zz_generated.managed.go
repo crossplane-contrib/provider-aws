@@ -43,6 +43,11 @@ func (mg *IAMRole) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha
 	return mg.Status.GetCondition(ct)
 }
 
+// GetProviderReference of this IAMRole.
+func (mg *IAMRole) GetProviderReference() *corev1.ObjectReference {
+	return mg.Spec.ProviderReference
+}
+
 // GetReclaimPolicy of this IAMRole.
 func (mg *IAMRole) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
 	return mg.Spec.ReclaimPolicy
@@ -71,6 +76,11 @@ func (mg *IAMRole) SetClassReference(r *corev1.ObjectReference) {
 // SetConditions of this IAMRole.
 func (mg *IAMRole) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this IAMRole.
+func (mg *IAMRole) SetProviderReference(r *corev1.ObjectReference) {
+	mg.Spec.ProviderReference = r
 }
 
 // SetReclaimPolicy of this IAMRole.
@@ -103,6 +113,11 @@ func (mg *IAMRolePolicyAttachment) GetCondition(ct runtimev1alpha1.ConditionType
 	return mg.Status.GetCondition(ct)
 }
 
+// GetProviderReference of this IAMRolePolicyAttachment.
+func (mg *IAMRolePolicyAttachment) GetProviderReference() *corev1.ObjectReference {
+	return mg.Spec.ProviderReference
+}
+
 // GetReclaimPolicy of this IAMRolePolicyAttachment.
 func (mg *IAMRolePolicyAttachment) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
 	return mg.Spec.ReclaimPolicy
@@ -131,6 +146,11 @@ func (mg *IAMRolePolicyAttachment) SetClassReference(r *corev1.ObjectReference) 
 // SetConditions of this IAMRolePolicyAttachment.
 func (mg *IAMRolePolicyAttachment) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this IAMRolePolicyAttachment.
+func (mg *IAMRolePolicyAttachment) SetProviderReference(r *corev1.ObjectReference) {
+	mg.Spec.ProviderReference = r
 }
 
 // SetReclaimPolicy of this IAMRolePolicyAttachment.
