@@ -32,18 +32,20 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha3 "github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/network/v1alpha3"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 
 const (
 	errUnexpectedObject    = "The managed resource is not an VPC resource"
+	errKubeUpdateFailed    = "cannot update VPC custom resource"
 	errClient              = "cannot create a new VPCClient"
 	errDescribe            = "failed to describe VPC with id: %v"
 	errMultipleItems       = "retrieved multiple VPCs for the given vpcId: %v"
 	errCreate              = "failed to create the VPC resource"
 	errModifyVPCAttributes = "failed to modify the VPC resource attributes"
+	errCreateTags          = "failed to create tags for the VPC resource"
 	errDeleteNotPresent    = "cannot delete the VPC, since the VPCID is not present"
 	errDelete              = "failed to delete the VPC resource"
 )
@@ -58,6 +60,7 @@ func SetupVPC(mgr ctrl.Manager, l logging.Logger) error {
 			resource.ManagedKind(v1alpha3.VPCGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewVPCClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
 			managed.WithConnectionPublishers(),
+			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -137,6 +140,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	return managed.ExternalObservation{
 		ResourceExists:    true,
 		ConnectionDetails: managed.ConnectionDetails{},
+		ResourceUpToDate:  ec2.IsUpToDate(cr.Spec.VPCParameters, observed),
 	}, nil
 }
 
@@ -186,9 +190,22 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mgd.(*v1alpha3.VPC)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+
 	// TODO(soorena776): add more sophisticated Update logic, once we
 	// categorize immutable vs mutable fields (see #727)
 
+	// NOTE(muvaf): VPCs can only be tagged after the creation and this request
+	// is idempotent.
+	if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+		Resources: []string{cr.Status.VPCID},
+		Tags:      v1alpha3.GenerateEC2Tags(cr.Spec.Tags),
+	}).Send(ctx); err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errCreateTags)
+	}
 	return managed.ExternalUpdate{}, nil
 }
 
@@ -215,4 +232,29 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	}
 
 	return errors.Wrap(err, errDelete)
+}
+
+type tagger struct {
+	kube client.Client
+}
+
+func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
+	cr, ok := mgd.(*v1alpha3.VPC)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
+	tagMap := map[string]string{}
+	for _, t := range cr.Spec.Tags {
+		tagMap[t.Key] = t.Value
+	}
+	for k, v := range resource.GetExternalTags(mgd) {
+		tagMap[k] = v
+	}
+	cr.Spec.Tags = make([]v1alpha3.Tag, len(tagMap))
+	i := 0
+	for k, v := range tagMap {
+		cr.Spec.Tags[i] = v1alpha3.Tag{Key: k, Value: v}
+		i++
+	}
+	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

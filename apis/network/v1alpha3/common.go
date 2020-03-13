@@ -19,6 +19,8 @@ package v1alpha3
 import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // Tag defines a tag
@@ -38,5 +40,14 @@ func BuildFromEC2Tags(tags []ec2.Tag) []Tag {
 		res[i] = Tag{aws.StringValue(t.Key), aws.StringValue(t.Value)}
 	}
 
+	return res
+}
+
+// GenerateEC2Tags generates a tag array with type that EC2 client expects.
+func GenerateEC2Tags(tags []Tag) []ec2.Tag {
+	res := make([]ec2.Tag, len(tags))
+	for i, t := range tags {
+		res[i] = ec2.Tag{Key: awsclient.String(t.Key), Value: awsclient.String(t.Value)}
+	}
 	return res
 }
