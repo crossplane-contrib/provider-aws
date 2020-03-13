@@ -354,16 +354,6 @@ func Test_Create(t *testing.T) {
 	}
 }
 
-func Test_Update(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := v1alpha3.VPC{}
-
-	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
-
-	g.Expect(err).To(gomega.BeNil())
-}
-
 func Test_Delete(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
