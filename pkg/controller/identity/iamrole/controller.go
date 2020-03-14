@@ -159,7 +159,12 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	_, err := e.client.UpdateRoleRequest(iam.GenerateUpdateRoleInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)).Send(ctx)
+	_, err := e.client.UpdateRoleRequest(&awsiam.UpdateRoleInput{
+		RoleName:           aws.String(meta.GetExternalName(cr)),
+		Description:        cr.Spec.ForProvider.Description,
+		MaxSessionDuration: cr.Spec.ForProvider.MaxSessionDuration,
+	}).Send(ctx)
+
 	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 }
 
@@ -171,7 +176,9 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
-	_, err := e.client.DeleteRoleRequest(iam.GenerateDeleteRoleInput(meta.GetExternalName(cr))).Send(ctx)
+	_, err := e.client.DeleteRoleRequest(&awsiam.DeleteRoleInput{
+		RoleName: aws.String(meta.GetExternalName(cr)),
+	}).Send(ctx)
 
 	return errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }

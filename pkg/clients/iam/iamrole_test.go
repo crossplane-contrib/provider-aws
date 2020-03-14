@@ -16,6 +16,7 @@ var (
 	description              = "some-description"
 	assumeRolePolicyDocument = "some-arn"
 	roleID                   = "some Id"
+	roleName                 = "some name"
 )
 
 func roleParams(m ...func(*v1beta1.IAMRoleParameters)) *v1beta1.IAMRoleParameters {
@@ -63,6 +64,33 @@ func roleObservation(m ...func(*v1beta1.IAMRoleExternalStatus)) *v1beta1.IAMRole
 
 	return o
 }
+
+func TestGenerateCreateRoleInput(t *testing.T) {
+	cases := map[string]struct {
+		in  v1beta1.IAMRoleParameters
+		out iam.CreateRoleInput
+	}{
+		"FilledInput": {
+			in: *roleParams(),
+			out: iam.CreateRoleInput{
+				RoleName:                 aws.String(roleName),
+				Description:              &description,
+				AssumeRolePolicyDocument: aws.String(assumeRolePolicyDocument),
+				MaxSessionDuration:       aws.Int64(1),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			r := GenerateCreateRoleInput(roleName, &tc.in)
+			if diff := cmp.Diff(r, &tc.out); diff != "" {
+				t.Errorf("GenerateNetworkObservation(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
 func TestGenerateRoleObservation(t *testing.T) {
 	cases := map[string]struct {
 		in  iam.Role

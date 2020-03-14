@@ -147,7 +147,10 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	cr.SetConditions(runtimev1alpha1.Creating())
 
-	_, err := e.client.AttachRolePolicyRequest(iam.GenerateAttachRolePolicyInput(&cr.Spec.ForProvider)).Send(ctx)
+	_, err := e.client.AttachRolePolicyRequest(&awsiam.AttachRolePolicyInput{
+		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
+		RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
+	}).Send(ctx)
 
 	return managed.ExternalCreation{}, errors.Wrapf(err, errAttach, cr.Spec.ForProvider.PolicyARN, cr.Spec.ForProvider.RoleName)
 }
@@ -165,7 +168,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
-	_, err := e.client.DetachRolePolicyRequest(iam.GenerateDetachRolePolicyInput(&cr.Spec.ForProvider)).Send(ctx)
+	_, err := e.client.DetachRolePolicyRequest(&awsiam.DetachRolePolicyInput{
+		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
+		RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
+	}).Send(ctx)
 
 	if iam.IsErrorNotFound(err) {
 		return nil

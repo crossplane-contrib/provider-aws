@@ -54,24 +54,6 @@ func GenerateCreateRoleInput(name string, p *v1beta1.IAMRoleParameters) *iam.Cre
 	return m
 }
 
-// GenerateUpdateRoleInput from IAMRoleSpec
-func GenerateUpdateRoleInput(name string, p *v1beta1.IAMRoleParameters) *iam.UpdateRoleInput {
-	m := &iam.UpdateRoleInput{
-		RoleName:           aws.String(name),
-		Description:        p.Description,
-		MaxSessionDuration: p.MaxSessionDuration,
-	}
-	return m
-}
-
-// GenerateDeleteRoleInput from IAMRoleSpec
-func GenerateDeleteRoleInput(name string) *iam.DeleteRoleInput {
-	m := &iam.DeleteRoleInput{
-		RoleName: aws.String(name),
-	}
-	return m
-}
-
 // GenerateRoleObservation is used to produce IAMRoleExternalStatus from iam.Role
 func GenerateRoleObservation(role iam.Role) v1beta1.IAMRoleExternalStatus {
 	return v1beta1.IAMRoleExternalStatus{
