@@ -18,10 +18,10 @@ package iamrole
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -46,6 +46,7 @@ const (
 	errCreate           = "failed to create the IAMRole resource"
 	errDelete           = "failed to delete the IAMRole resource"
 	errUpdate           = "failed to update the IAMRole resource"
+	errSDK              = "empty IAMRole received from IAM API"
 
 	errKubeUpdateFailed = "cannot update RDS instance custom resource"
 	errUpToDateFailed   = "cannot check whether object is up-to-date"
@@ -101,20 +102,22 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	req := e.client.GetRoleRequest(&awsiam.GetRoleInput{
+	observed, err := e.client.GetRoleRequest(&awsiam.GetRoleInput{
 		RoleName: aws.String(meta.GetExternalName(cr)),
-	})
-
-	observed, err := req.Send(ctx)
+	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, errors.Wrapf(resource.Ignore(iam.IsErrorNotFound, err), errGet, meta.GetExternalName(cr))
+	}
+
+	if observed.Role == nil {
+		return managed.ExternalObservation{}, errors.New(errSDK)
 	}
 
 	role := *observed.Role
 	current := cr.Spec.ForProvider.DeepCopy()
 	iam.LateInitializeRole(&cr.Spec.ForProvider, &role)
-	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
+	if !cmp.Equal(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
 			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
 		}
@@ -143,19 +146,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
-	name := meta.GetExternalName(cr)
-	if name == "" {
-		name = cr.GetGenerateName()
-	}
-
-	req := e.client.CreateRoleRequest(iam.GenerateCreateRoleInput(name, &cr.Spec.ForProvider))
-
-	_, err := req.Send(ctx)
-	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
-	}
-
-	return managed.ExternalCreation{}, nil
+	_, err := e.client.CreateRoleRequest(iam.GenerateCreateRoleInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)).Send(ctx)
+	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -167,8 +159,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	mr := e.client.UpdateRoleRequest(iam.GenerateUpdateRoleInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
-	_, err := mr.Send(ctx)
+	_, err := e.client.UpdateRoleRequest(iam.GenerateUpdateRoleInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 }
 
@@ -180,14 +171,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
-	req := e.client.DeleteRoleRequest(iam.GenerateDeleteRoleInput(meta.GetExternalName(cr)))
-	req.SetContext(ctx)
+	_, err := e.client.DeleteRoleRequest(iam.GenerateDeleteRoleInput(meta.GetExternalName(cr))).Send(ctx)
 
-	_, err := req.Send(ctx)
-
-	if iam.IsErrorNotFound(err) {
-		return nil
-	}
-
-	return errors.Wrap(err, errDelete)
+	return errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }

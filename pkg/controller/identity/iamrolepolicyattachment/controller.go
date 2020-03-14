@@ -18,10 +18,10 @@ package iamrolepolicyattachment
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -100,13 +100,11 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	req := e.client.ListAttachedRolePoliciesRequest(&awsiam.ListAttachedRolePoliciesInput{
+	observed, err := e.client.ListAttachedRolePoliciesRequest(&awsiam.ListAttachedRolePoliciesInput{
 		RoleName: aws.String(cr.Spec.ForProvider.RoleName),
-	})
-
-	observed, err := req.Send(ctx)
+	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, errors.Wrapf(resource.Ignore(iam.IsErrorNotFound, err), errGet, cr.Spec.ForProvider.RoleName)
 	}
 
 	var attachedPolicyObject *awsiam.AttachedPolicy
@@ -125,7 +123,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	current := cr.Spec.ForProvider.DeepCopy()
 	iam.LateInitializePolicy(&cr.Spec.ForProvider, attachedPolicyObject)
-	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
+	if !cmp.Equal(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
 			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
 		}
@@ -137,7 +135,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: cr.Spec.ForProvider.PolicyARN == cr.Status.AtProvider.AttachedPolicyARN,
+		ResourceUpToDate: true,
 	}, nil
 }
 
@@ -149,16 +147,13 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	cr.SetConditions(runtimev1alpha1.Creating())
 
-	req := e.client.AttachRolePolicyRequest(iam.GenerateAttachRolePolicyInput(&cr.Spec.ForProvider))
-	req.SetContext(ctx)
-
-	_, err := req.Send(ctx)
+	_, err := e.client.AttachRolePolicyRequest(iam.GenerateAttachRolePolicyInput(&cr.Spec.ForProvider)).Send(ctx)
 
 	return managed.ExternalCreation{}, errors.Wrapf(err, errAttach, cr.Spec.ForProvider.PolicyARN, cr.Spec.ForProvider.RoleName)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	// PolivyARN is the only distinguishing field and on update to that, new policy is attached
+	// PolicyARN is the only distinguishing field and on update to that, new policy is attached
 	return managed.ExternalUpdate{}, nil
 }
 
@@ -170,10 +165,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
-	req := e.client.DetachRolePolicyRequest(iam.GenerateDetachRolePolicyInput(&cr.Spec.ForProvider))
-	req.SetContext(ctx)
-
-	_, err := req.Send(ctx)
+	_, err := e.client.DetachRolePolicyRequest(iam.GenerateDetachRolePolicyInput(&cr.Spec.ForProvider)).Send(ctx)
 
 	if iam.IsErrorNotFound(err) {
 		return nil

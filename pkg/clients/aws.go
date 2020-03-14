@@ -259,10 +259,7 @@ func LateInitializeInt64Ptr(in *int64, from *int64) *int64 {
 	if in != nil {
 		return in
 	}
-	if from != nil {
-		return from
-	}
-	return nil
+	return from
 }
 
 // Bool converts the supplied bool for use with the AWS Go SDK.

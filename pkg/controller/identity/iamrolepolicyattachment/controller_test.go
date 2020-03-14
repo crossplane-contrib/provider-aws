@@ -220,11 +220,11 @@ func Test_Observe(t *testing.T) {
 						}
 					},
 				},
-				cr: rolePolicy(),
+				cr: rolePolicy(withRoleName(&roleName)),
 			},
 			want: want{
-				cr:  rolePolicy(),
-				err: errors.Wrap(errBoom, errGet),
+				cr:  rolePolicy(withRoleName(&roleName)),
+				err: errors.Wrapf(errBoom, errGet, roleName),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -318,7 +318,7 @@ func Test_Create(t *testing.T) {
 				cr: rolePolicy(withRoleName(&roleName),
 					withSpecPolicyArn(&specPolicyArn),
 					withConditions(corev1alpha1.Creating())),
-				err: errors.Wrap(errBoom, errors.Errorf(errAttach, specPolicyArn, roleName).Error()),
+				err: errors.Wrapf(errBoom, errAttach, specPolicyArn, roleName),
 			},
 		},
 	}
@@ -451,7 +451,7 @@ func Test_Delete(t *testing.T) {
 				cr: rolePolicy(withRoleName(&roleName),
 					withSpecPolicyArn(&specPolicyArn),
 					withConditions(corev1alpha1.Deleting())),
-				err: errors.Wrap(errBoom, errors.Errorf(errDetach, specPolicyArn, roleName).Error()),
+				err: errors.Wrapf(errBoom, errDetach, specPolicyArn, roleName),
 			},
 		},
 		"ResourceDoesNotExist": {

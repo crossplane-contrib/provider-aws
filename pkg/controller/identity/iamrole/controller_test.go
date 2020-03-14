@@ -208,11 +208,11 @@ func Test_Observe(t *testing.T) {
 						}
 					},
 				},
-				cr: role(),
+				cr: role(withRoleName(&roleName)),
 			},
 			want: want{
-				cr:  role(),
-				err: errors.Wrap(errBoom, errGet),
+				cr:  role(withRoleName(&roleName)),
+				err: errors.Wrapf(errBoom, errGet, roleName),
 			},
 		},
 		"ResourceDoesNotExist": {
