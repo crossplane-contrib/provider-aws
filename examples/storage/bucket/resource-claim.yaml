@@ -2,6 +2,8 @@ apiVersion: storage.crossplane.io/v1alpha1
 kind: Bucket
 metadata:
   name: app-bucket
+  annotations:
+    crossplane.io/external-name: external-bucket
 spec:
   classSelector:
     matchLabels:

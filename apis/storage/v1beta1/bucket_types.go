@@ -14,13 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha3
+package v1beta1
 
 import (
-	"fmt"
-	"strconv"
-	"strings"
-
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -31,13 +27,8 @@ import (
 
 // S3BucketParameters define the desired state of an AWS S3 Bucket.
 type S3BucketParameters struct {
-	// NameFormat specifies the name of the external S3Bucket instance. The
-	// first instance of the string '%s' will be replaced with the Kubernetes
-	// UID of this S3Bucket. Omit this field to use the UID alone as the name.
-	// +optional
-	NameFormat string `json:"nameFormat,omitempty"`
-
 	// Region of the bucket.
+	// +immutable
 	Region string `json:"region"`
 
 	// CannedACL applies a standard AWS built-in ACL for common bucket use
@@ -55,41 +46,38 @@ type S3BucketParameters struct {
 	// provisioning.
 	// +kubebuilder:validation:Enum=Read;Write;ReadWrite
 	LocalPermission *storagev1alpha1.LocalPermissionType `json:"localPermission"`
+
+	// Poicy JSON of the bucket
+	// +optional
+	Policy *string `json:"policy,omitempty"`
 }
 
 // S3BucketSpec defines the desired state of S3Bucket
 type S3BucketSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	S3BucketParameters           `json:",inline"`
+	ForProvider                  S3BucketParameters `json:"forProvider"`
+}
+
+// S3BucketObservation defines the observed state of S3Bucket.
+type S3BucketObservation struct {
+	Policy string `json:"policy,omitempty"`
 }
 
 // S3BucketStatus defines the observed state of S3Bucket
 type S3BucketStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-
-	// ProviderID is the AWS identifier for this bucket.
-	ProviderID string `json:"providerID,omitempty"`
-
-	// IAMUsername is the name of an IAM user that is automatically created and
-	// granted access to this bucket by Crossplane at bucket creation time.
-	IAMUsername string `json:"iamUsername,omitempty"`
-
-	// LastUserPolicyVersion is the most recent version of the policy associated
-	// with this bucket's IAMUser.
-	LastUserPolicyVersion int `json:"lastUserPolicyVersion,omitempty"`
-
-	// LastLocalPermission is the most recent local permission that was set for
-	// this bucket.
-	LastLocalPermission storagev1alpha1.LocalPermissionType `json:"lastLocalPermission,omitempty"`
+	runtimev1alpha1.ResourceStatus `json:"inline"`
+	AtProvider                     S3BucketObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true
 
 // An S3Bucket is a managed resource that represents an AWS S3 Bucket.
 // +kubebuilder:printcolumn:name="CLASS",type="string",JSONPath=".spec.classRef.name"
-// +kubebuilder:printcolumn:name="PREDEFINED-ACL",type="string",JSONPath=".spec.cannedACL"
-// +kubebuilder:printcolumn:name="LOCAL-PERMISSION",type="string",JSONPath=".spec.localPermission"
+// +kubebuilder:printcolumn:name="PREDEFINED-ACL",type="string",JSONPath=".spec.forProvider.cannedACL"
+// +kubebuilder:printcolumn:name="LOCAL-PERMISSION",type="string",JSONPath=".spec.forProvider.localPermission"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
+// +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:resource:scope=Cluster
 type S3Bucket struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -112,7 +100,8 @@ type S3BucketList struct {
 // provisioned S3Bucket.
 type S3BucketClassSpecTemplate struct {
 	runtimev1alpha1.ClassSpecTemplate `json:",inline"`
-	S3BucketParameters                `json:",inline"`
+
+	ForProvider S3BucketParameters `json:"forProvider"`
 }
 
 // +kubebuilder:object:root=true
@@ -139,57 +128,4 @@ type S3BucketClassList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []S3BucketClass `json:"items"`
-}
-
-// GetBucketName based on the NameFormat spec value,
-// If name format is not provided, bucket name defaults to UID
-// If name format provided with '%s' value, bucket name will result in formatted string + UID,
-//   NOTE: only single %s substitution is supported
-// If name format does not contain '%s' substitution, i.e. a constant string, the
-// constant string value is returned back
-//
-// Examples:
-//   For all examples assume "UID" = "test-uid"
-//   1. NameFormat = "", BucketName = "test-uid"
-//   2. NameFormat = "%s", BucketName = "test-uid"
-//   3. NameFormat = "foo", BucketName = "foo"
-//   4. NameFormat = "foo-%s", BucketName = "foo-test-uid"
-//   5. NameFormat = "foo-%s-bar-%s", BucketName = "foo-test-uid-bar-%!s(MISSING)"
-func (b *S3Bucket) GetBucketName() string {
-	if b.Spec.NameFormat == "" {
-		return string(b.GetUID())
-	}
-	if strings.Contains(b.Spec.NameFormat, "%s") {
-		return fmt.Sprintf(b.Spec.NameFormat, string(b.GetUID()))
-	}
-	return b.Spec.NameFormat
-}
-
-// SetUserPolicyVersion specifies this bucket's policy version.
-func (b *S3Bucket) SetUserPolicyVersion(policyVersion string) error {
-	policyInt, err := strconv.Atoi(policyVersion[1:])
-	if err != nil {
-		return err
-	}
-	b.Status.LastUserPolicyVersion = policyInt
-	b.Status.LastLocalPermission = *b.Spec.LocalPermission
-
-	return nil
-}
-
-// HasPolicyChanged returns true if the bucket's policy is older than the
-// supplied version.
-func (b *S3Bucket) HasPolicyChanged(policyVersion string) (bool, error) {
-	if *b.Spec.LocalPermission != b.Status.LastLocalPermission {
-		return true, nil
-	}
-	policyInt, err := strconv.Atoi(policyVersion[1:])
-	if err != nil {
-		return false, err
-	}
-	if b.Status.LastUserPolicyVersion != policyInt && b.Status.LastUserPolicyVersion < policyInt {
-		return true, nil
-	}
-
-	return false, nil
 }

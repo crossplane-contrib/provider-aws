@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/crossplane/provider-aws/apis/storage/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/storage/v1beta1"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/claimbinding"
@@ -73,8 +73,8 @@ func TestConfigureBucket(t *testing.T) {
 						LocalPermission: &ro,
 					},
 				},
-				cs: &v1alpha3.S3BucketClass{
-					SpecTemplate: v1alpha3.S3BucketClassSpecTemplate{
+				cs: &v1beta1.S3BucketClass{
+					SpecTemplate: v1beta1.S3BucketClassSpecTemplate{
 						ClassSpecTemplate: runtimev1alpha1.ClassSpecTemplate{
 							WriteConnectionSecretsToNamespace: namespace,
 							ProviderReference:                 &corev1.ObjectReference{Name: providerName},
@@ -82,11 +82,11 @@ func TestConfigureBucket(t *testing.T) {
 						},
 					},
 				},
-				mg: &v1alpha3.S3Bucket{},
+				mg: &v1beta1.S3Bucket{},
 			},
 			want: want{
-				mg: &v1alpha3.S3Bucket{
-					Spec: v1alpha3.S3BucketSpec{
+				mg: &v1beta1.S3Bucket{
+					Spec: v1beta1.S3BucketSpec{
 						ResourceSpec: runtimev1alpha1.ResourceSpec{
 							ReclaimPolicy: runtimev1alpha1.ReclaimDelete,
 							WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
@@ -95,8 +95,7 @@ func TestConfigureBucket(t *testing.T) {
 							},
 							ProviderReference: &corev1.ObjectReference{Name: providerName},
 						},
-						S3BucketParameters: v1alpha3.S3BucketParameters{
-							NameFormat:      bucketName,
+						ForProvider: v1beta1.S3BucketParameters{
 							CannedACL:       &s3BucketPrivate,
 							LocalPermission: &ro,
 						},
@@ -111,24 +110,24 @@ func TestConfigureBucket(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{UID: claimUID},
 					Spec:       storagev1alpha1.BucketSpec{},
 				},
-				cs: &v1alpha3.S3BucketClass{
-					SpecTemplate: v1alpha3.S3BucketClassSpecTemplate{
+				cs: &v1beta1.S3BucketClass{
+					SpecTemplate: v1beta1.S3BucketClassSpecTemplate{
 						ClassSpecTemplate: runtimev1alpha1.ClassSpecTemplate{
 							WriteConnectionSecretsToNamespace: namespace,
 							ProviderReference:                 &corev1.ObjectReference{Name: providerName},
 							ReclaimPolicy:                     runtimev1alpha1.ReclaimDelete,
 						},
-						S3BucketParameters: v1alpha3.S3BucketParameters{
+						ForProvider: v1beta1.S3BucketParameters{
 							CannedACL:       &s3BucketPrivate,
 							LocalPermission: &ro,
 						},
 					},
 				},
-				mg: &v1alpha3.S3Bucket{},
+				mg: &v1beta1.S3Bucket{},
 			},
 			want: want{
-				mg: &v1alpha3.S3Bucket{
-					Spec: v1alpha3.S3BucketSpec{
+				mg: &v1beta1.S3Bucket{
+					Spec: v1beta1.S3BucketSpec{
 						ResourceSpec: runtimev1alpha1.ResourceSpec{
 							ReclaimPolicy: runtimev1alpha1.ReclaimDelete,
 							WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
@@ -136,7 +135,7 @@ func TestConfigureBucket(t *testing.T) {
 								Name:      string(claimUID)},
 							ProviderReference: &corev1.ObjectReference{Name: providerName},
 						},
-						S3BucketParameters: v1alpha3.S3BucketParameters{
+						ForProvider: v1beta1.S3BucketParameters{
 							CannedACL:       &s3BucketPrivate,
 							LocalPermission: &ro,
 						},
@@ -154,24 +153,24 @@ func TestConfigureBucket(t *testing.T) {
 						LocalPermission: &ro,
 					},
 				},
-				cs: &v1alpha3.S3BucketClass{
-					SpecTemplate: v1alpha3.S3BucketClassSpecTemplate{
+				cs: &v1beta1.S3BucketClass{
+					SpecTemplate: v1beta1.S3BucketClassSpecTemplate{
 						ClassSpecTemplate: runtimev1alpha1.ClassSpecTemplate{
 							WriteConnectionSecretsToNamespace: namespace,
 							ProviderReference:                 &corev1.ObjectReference{Name: providerName},
 							ReclaimPolicy:                     runtimev1alpha1.ReclaimDelete,
 						},
-						S3BucketParameters: v1alpha3.S3BucketParameters{
+						ForProvider: v1beta1.S3BucketParameters{
 							CannedACL:       &s3BucketPrivate,
 							LocalPermission: &ro,
 						},
 					},
 				},
-				mg: &v1alpha3.S3Bucket{},
+				mg: &v1beta1.S3Bucket{},
 			},
 			want: want{
-				mg: &v1alpha3.S3Bucket{
-					Spec: v1alpha3.S3BucketSpec{
+				mg: &v1beta1.S3Bucket{
+					Spec: v1beta1.S3BucketSpec{
 						ResourceSpec: runtimev1alpha1.ResourceSpec{
 							ReclaimPolicy: runtimev1alpha1.ReclaimDelete,
 							WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
@@ -180,7 +179,7 @@ func TestConfigureBucket(t *testing.T) {
 							},
 							ProviderReference: &corev1.ObjectReference{Name: providerName},
 						},
-						S3BucketParameters: v1alpha3.S3BucketParameters{
+						ForProvider: v1beta1.S3BucketParameters{
 							CannedACL:       &s3BucketPrivate,
 							LocalPermission: &ro,
 						},

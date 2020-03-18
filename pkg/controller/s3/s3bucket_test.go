@@ -18,442 +18,570 @@ package s3
 
 import (
 	"context"
-	"errors"
+	"net/http"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsS3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/go-cmp/cmp"
-	. "github.com/onsi/gomega"
+	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/kubernetes/scheme"
-	. "sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	"github.com/crossplane/provider-aws/apis"
-	"github.com/crossplane/provider-aws/apis/storage/v1alpha3"
-	. "github.com/crossplane/provider-aws/apis/storage/v1alpha3"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
-	client "github.com/crossplane/provider-aws/pkg/clients/s3"
-	. "github.com/crossplane/provider-aws/pkg/clients/s3/fake"
+	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
-	storagev1alpha1 "github.com/crossplane/crossplane/apis/storage/v1alpha1"
+
+	storage "github.com/crossplane/provider-aws/apis/storage/v1beta1"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/clients/s3"
+	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 )
 
 const (
-	namespace  = "default"
-	bucketName = "test-bucket"
+	namespace   = "default"
+	bucketName  = "test-bucket"
+	policy      = "some-policy"
+	otherPolicy = "some otherPolicy"
+
+	providerName    = "aws-creds"
+	secretNamespace = "crossplane-system"
+	testRegion      = "us-east-1"
+
+	connectionSecretName = "my-little-secret"
+	secretKey            = "credentials"
+	credData             = "confidential!"
 )
 
 var (
-	key = types.NamespacedName{
-		Name: bucketName,
-	}
-	request = reconcile.Request{
-		NamespacedName: key,
-	}
+	errBoom = errors.New("boom")
 )
 
-func init() {
-	if err := apis.AddToScheme(scheme.Scheme); err != nil {
-		panic(err)
-	}
+type args struct {
+	s3   s3.Client
+	kube client.Client
+	cr   *storage.S3Bucket
 }
 
-func testResource() *S3Bucket {
-	perm := storagev1alpha1.ReadOnlyPermission
-	testIAMUsername := "test-username"
-	return &S3Bucket{
+func bucket(m ...func(b *storage.S3Bucket)) *storage.S3Bucket {
+	cr := &storage.S3Bucket{
+		Spec: storage.S3BucketSpec{
+			ResourceSpec: runtimev1alpha1.ResourceSpec{
+				ProviderReference: &corev1.ObjectReference{Name: providerName},
+			},
+		},
+	}
+	for _, f := range m {
+		f(cr)
+	}
+	return cr
+}
+
+var _ managed.ExternalClient = &external{}
+var _ managed.ExternalConnecter = &connector{}
+
+func TestConnect(t *testing.T) {
+	secret := corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: bucketName,
+			Name:      connectionSecretName,
+			Namespace: secretNamespace,
 		},
-		Spec: S3BucketSpec{
-			ResourceSpec:       runtimev1alpha1.ResourceSpec{ProviderReference: &corev1.ObjectReference{}},
-			S3BucketParameters: v1alpha3.S3BucketParameters{LocalPermission: &perm},
-		},
-		Status: S3BucketStatus{
-			IAMUsername: testIAMUsername,
+		Data: map[string][]byte{
+			secretKey: []byte(credData),
 		},
 	}
-}
 
-// assertResource a helper function to check on cluster and its status
-func assertResource(g *GomegaWithT, r *Reconciler, s runtimev1alpha1.ConditionedStatus) *S3Bucket {
-	resource := &S3Bucket{}
-	err := r.Get(ctx, key, resource)
-	g.Expect(err).To(BeNil())
-	g.Expect(cmp.Diff(s, resource.Status.ConditionedStatus, test.EquateConditions())).Should(BeZero())
-	return resource
-}
-
-func TestSyncBucketError(t *testing.T) {
-	g := NewGomegaWithT(t)
-
-	assert := func(instance *S3Bucket, client client.Service, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) {
-		r := &Reconciler{
-			Client:            NewFakeClient(instance),
-			ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
-			log:               logging.NewNopLogger(),
+	providerSA := func(saVal bool) awsv1alpha3.Provider {
+		return awsv1alpha3.Provider{
+			Spec: awsv1alpha3.ProviderSpec{
+				Region:            testRegion,
+				UseServiceAccount: &saVal,
+				ProviderSpec: runtimev1alpha1.ProviderSpec{
+					CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
+						SecretReference: runtimev1alpha1.SecretReference{
+							Namespace: secretNamespace,
+							Name:      connectionSecretName,
+						},
+						Key: secretKey,
+					},
+				},
+			},
 		}
-
-		rs, err := r._sync(instance, client)
-
-		g.Expect(err).NotTo(HaveOccurred())
-		g.Expect(rs).To(Equal(expectedResult))
-		assertResource(g, r, expectedStatus)
+	}
+	type args struct {
+		kube        client.Client
+		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (s3.Client, error)
+		cr          *storage.S3Bucket
+	}
+	type want struct {
+		err error
 	}
 
-	// error iam username not set
-	testError := errors.New("username not set, .Status.IAMUsername")
-	cl := &MockS3Client{}
-
-	expectedStatus := runtimev1alpha1.ConditionedStatus{}
-	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(testError))
-	noUserResource := testResource()
-	noUserResource.Status.IAMUsername = ""
-	assert(noUserResource, cl, resultRequeue, expectedStatus)
-
-	// error get bucket info
-	testError = errors.New("mock get bucket info err")
-	cl.MockGetBucketInfo = func(username string, bucket *S3Bucket) (*client.Bucket, error) {
-		return nil, testError
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						}
+						return errBoom
+					},
+				},
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i s3.Client, e error) {
+					if diff := cmp.Diff(credData, string(credentials)); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
+				},
+				cr: bucket(),
+			},
+		},
+		"SuccessfulUseServiceAccount": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						if key == (client.ObjectKey{Name: providerName}) {
+							p := providerSA(true)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						}
+						return errBoom
+					},
+				},
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i s3.Client, e error) {
+					if diff := cmp.Diff("", string(credentials)); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
+				},
+				cr: bucket(),
+			},
+		},
+		"ProviderGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						return errBoom
+					},
+				},
+				cr: bucket(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProvider),
+			},
+		},
+		"SecretGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: bucket(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProviderSecret),
+			},
+		},
+		"SecretGetFailedNil": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.SetCredentialsSecretReference(nil)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: bucket(),
+			},
+			want: want{
+				err: errors.New(errGetProviderSecret),
+			},
+		},
 	}
-	expectedStatus = runtimev1alpha1.ConditionedStatus{}
-	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(testError))
-	assert(testResource(), cl, resultRequeue, expectedStatus)
 
-	//update versioning error
-	cl.MockGetBucketInfo = func(username string, bucket *S3Bucket) (*client.Bucket, error) {
-		return &client.Bucket{Versioning: true, UserPolicyVersion: "v1"}, nil
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			c := &connector{kube: tc.kube, newClientFn: tc.newClientFn}
+			_, err := c.Connect(context.Background(), tc.args.cr)
+			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
 	}
-
-	testError = errors.New("bucket-versioning-update-error")
-	cl.MockUpdateVersioning = func(bucket *S3Bucket) error {
-		return testError
-	}
-	expectedStatus = runtimev1alpha1.ConditionedStatus{}
-	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(testError))
-	assert(testResource(), cl, resultRequeue, expectedStatus)
-
-	// update bucket acl error
-	cl.MockGetBucketInfo = func(username string, bucket *S3Bucket) (*client.Bucket, error) {
-		return &client.Bucket{Versioning: false, UserPolicyVersion: "v1"}, nil
-	}
-
-	testError = errors.New("bucket-acl-update-error")
-	cl.MockUpdateBucketACL = func(bucket *S3Bucket) error {
-		return testError
-	}
-
-	expectedStatus = runtimev1alpha1.ConditionedStatus{}
-	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(testError))
-	assert(testResource(), cl, resultRequeue, expectedStatus)
-
-	cl.MockUpdateBucketACL = func(bucket *S3Bucket) error {
-		return nil
-	}
-
-	// Update policy error
-	perm := storagev1alpha1.WriteOnlyPermission
-	bucketWithPolicyChanges := testResource()
-	bucketWithPolicyChanges.Spec.LocalPermission = &perm
-	bucketWithPolicyChanges.Status.LastUserPolicyVersion = 1
-	bucketWithPolicyChanges.Status.LastLocalPermission = storagev1alpha1.ReadOnlyPermission
-
-	testError = errors.New("policy-update-err")
-	cl.MockUpdatePolicyDocument = func(username string, bucket *S3Bucket) (string, error) {
-		return "", testError
-	}
-	expectedStatus = runtimev1alpha1.ConditionedStatus{}
-	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(testError))
-	assert(testResource(), cl, resultRequeue, expectedStatus)
 }
 
-func TestSyncBucket(t *testing.T) {
-	g := NewGomegaWithT(t)
-	tr := testResource()
-	tr.Status.LastUserPolicyVersion = 1
-	tr.Status.LastLocalPermission = storagev1alpha1.ReadOnlyPermission
-
-	r := &Reconciler{
-		Client:            NewFakeClient(tr),
-		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
-		log:               logging.NewNopLogger(),
+func TestObserve(t *testing.T) {
+	type want struct {
+		cr     *storage.S3Bucket
+		result managed.ExternalObservation
+		err    error
 	}
-	//
-	updateBucketACLCalled := false
-	getBucketInfoCalled := false
-	cl := &MockS3Client{
-		MockUpdateBucketACL: func(bucket *S3Bucket) error {
-			updateBucketACLCalled = true
-			return nil
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"SuccessfulAvailable": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: test.NewMockGetFn(errBoom),
+				},
+				s3: &fake.MockS3Client{
+					MockHeadBucket: func(input *awsS3.HeadBucketInput) awsS3.HeadBucketRequest {
+						return awsS3.HeadBucketRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsS3.HeadBucketOutput{}},
+						}
+					},
+					MockGetBucketPolicy: func(input *awsS3.GetBucketPolicyInput) awsS3.GetBucketPolicyRequest {
+						return awsS3.GetBucketPolicyRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsS3.GetBucketPolicyOutput{}},
+						}
+					},
+				},
+				cr: bucket(),
+			},
+			want: want{
+				cr: bucket(func(b *storage.S3Bucket) {
+					b.SetConditions(runtimev1alpha1.Available())
+				}),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
 		},
-		MockGetBucketInfo: func(username string, bucket *S3Bucket) (*client.Bucket, error) {
-			getBucketInfoCalled = true
-			return &client.Bucket{Versioning: false, UserPolicyVersion: "v1"}, nil
+		"ClientError": {
+			args: args{
+				s3: &fake.MockS3Client{
+					MockHeadBucket: func(input *awsS3.HeadBucketInput) awsS3.HeadBucketRequest {
+						return awsS3.HeadBucketRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: bucket(),
+			},
+			want: want{
+				cr: bucket(),
+				//),
+				err: errors.Wrap(errBoom, errGetBucket),
+			},
 		},
 	}
 
-	expectedStatus := runtimev1alpha1.ConditionedStatus{}
-	expectedStatus.SetConditions(runtimev1alpha1.ReconcileSuccess())
-	rs, err := r._sync(tr, cl)
-	g.Expect(rs).To(Equal(result))
-	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(updateBucketACLCalled).To(BeTrue())
-	g.Expect(getBucketInfoCalled).To(BeTrue())
-	assertResource(g, r, expectedStatus)
-}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.s3}
+			o, err := e.Observe(context.Background(), tc.args.cr)
 
-func TestDelete(t *testing.T) {
-	g := NewGomegaWithT(t)
-
-	tr := testResource()
-
-	r := &Reconciler{
-		Client:            NewFakeClient(tr),
-		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
-		log:               logging.NewNopLogger(),
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
 	}
-
-	cl := &MockS3Client{}
-
-	// test delete w/ reclaim policy
-	tr.Spec.ReclaimPolicy = runtimev1alpha1.ReclaimRetain
-	expectedStatus := runtimev1alpha1.ConditionedStatus{}
-	expectedStatus.SetConditions(runtimev1alpha1.Deleting(), runtimev1alpha1.ReconcileSuccess())
-
-	rs, err := r._delete(tr, cl)
-	g.Expect(rs).To(Equal(result))
-	g.Expect(err).NotTo(HaveOccurred())
-	assertResource(g, r, expectedStatus)
-
-	// test delete w/ delete policy
-	tr.Spec.ReclaimPolicy = runtimev1alpha1.ReclaimDelete
-	called := false
-	cl.MockDelete = func(bucket *S3Bucket) error {
-		called = true
-		return nil
-	}
-
-	rs, err = r._delete(tr, cl)
-	g.Expect(rs).To(Equal(result))
-	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(called).To(BeTrue())
-	assertResource(g, r, expectedStatus)
-
-	// test delete w/ delete policy error
-	testError := errors.New("test-delete-error")
-	called = false
-	cl.MockDelete = func(bucket *S3Bucket) error {
-		called = true
-		return testError
-	}
-	expectedStatus = runtimev1alpha1.ConditionedStatus{}
-	expectedStatus.SetConditions(runtimev1alpha1.Deleting(), runtimev1alpha1.ReconcileError(testError))
-
-	rs, err = r._delete(tr, cl)
-	g.Expect(rs).To(Equal(resultRequeue))
-	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(called).To(BeTrue())
-	assertResource(g, r, expectedStatus)
 }
 
 func TestCreate(t *testing.T) {
-	g := NewGomegaWithT(t)
-
-	tr := testResource()
-
-	r := &Reconciler{
-		Client:              NewFakeClient(tr),
-		ReferenceResolver:   managed.NewAPIReferenceResolver(NewFakeClient()),
-		ConnectionPublisher: managed.PublisherChain{}, // A no-op publisher.
-		log:                 logging.NewNopLogger(),
+	type want struct {
+		cr     *storage.S3Bucket
+		result managed.ExternalCreation
+		err    error
 	}
 
-	createOrUpdateBucketCalled := false
-	createUserCalled := false
-	cl := &MockS3Client{
-		MockCreateUser: func(username string, bucket *S3Bucket) (*iam.AccessKey, string, error) {
-			createUserCalled = true
-			fakeKey := &iam.AccessKey{
-				AccessKeyId:     aws.String("fake-string"),
-				SecretAccessKey: aws.String(""),
-			}
-			return fakeKey, "v2", nil
-		},
-		MockCreateOrUpdateBucket: func(bucket *S3Bucket) error {
-			createOrUpdateBucketCalled = true
-			return nil
-		},
-	}
-
-	expectedStatus := runtimev1alpha1.ConditionedStatus{}
-	expectedStatus.SetConditions(runtimev1alpha1.Available(), runtimev1alpha1.ReconcileSuccess())
-
-	resource := testResource()
-	rs, err := r._create(resource, cl)
-	g.Expect(rs).To(Equal(result))
-	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(createOrUpdateBucketCalled).To(BeTrue())
-	g.Expect(createUserCalled).To(BeTrue())
-	assertResource(g, r, expectedStatus)
-	g.Expect(resource.Status.LastUserPolicyVersion).To(Equal(2))
-}
-
-func TestCreateFail(t *testing.T) {
-	g := NewGomegaWithT(t)
-	tr := testResource()
-	cl := &MockS3Client{
-		MockCreateUser: func(username string, bucket *S3Bucket) (*iam.AccessKey, string, error) {
-			fakeKey := &iam.AccessKey{
-				AccessKeyId:     aws.String("fake-string"),
-				SecretAccessKey: aws.String(""),
-			}
-			return fakeKey, "v2", nil
-		},
-		MockCreateOrUpdateBucket: func(bucket *S3Bucket) error {
-			return nil
-		},
-	}
-
-	testError := errors.New("test-publish-secret-error")
-	r := &Reconciler{
-		Client:            NewFakeClient(tr),
-		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
-		ConnectionPublisher: managed.ConnectionPublisherFns{
-			PublishConnectionFn: func(_ context.Context, _ resource.Managed, _ managed.ConnectionDetails) error {
-				return testError
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"SuccessfulCreate": {
+			args: args{
+				s3: &fake.MockS3Client{
+					MockCreateBucket: func(input *awsS3.CreateBucketInput) awsS3.CreateBucketRequest {
+						return awsS3.CreateBucketRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsS3.CreateBucketOutput{}},
+						}
+					},
+					MockPutBucketPolicy: func(input *awsS3.PutBucketPolicyInput) awsS3.PutBucketPolicyRequest {
+						return awsS3.PutBucketPolicyRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsS3.PutBucketPolicyOutput{}},
+						}
+					},
+				},
+				cr: bucket(func(b *storage.S3Bucket) {
+					meta.SetExternalName(b, bucketName)
+				}),
+			},
+			want: want{
+				cr: bucket(func(b *storage.S3Bucket) {
+					meta.SetExternalName(b, bucketName)
+					b.SetConditions(runtimev1alpha1.Creating())
+				}),
 			},
 		},
-		log: logging.NewNopLogger(),
+		"CreateError": {
+			args: args{
+				s3: &fake.MockS3Client{
+					MockCreateBucket: func(input *awsS3.CreateBucketInput) awsS3.CreateBucketRequest {
+						return awsS3.CreateBucketRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: bucket(func(b *storage.S3Bucket) {
+					meta.SetExternalName(b, bucketName)
+				}),
+			},
+			want: want{
+				cr: bucket(func(b *storage.S3Bucket) {
+					meta.SetExternalName(b, bucketName)
+					b.SetConditions(runtimev1alpha1.Creating())
+				}),
+				err: errors.Wrap(errBoom, errCreateBucket),
+			},
+		},
+		"PolicyAttachError": {
+			args: args{
+				s3: &fake.MockS3Client{
+					MockCreateBucket: func(input *awsS3.CreateBucketInput) awsS3.CreateBucketRequest {
+						return awsS3.CreateBucketRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsS3.CreateBucketOutput{}},
+						}
+					},
+					MockPutBucketPolicy: func(input *awsS3.PutBucketPolicyInput) awsS3.PutBucketPolicyRequest {
+						return awsS3.PutBucketPolicyRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: bucket(func(b *storage.S3Bucket) {
+					meta.SetExternalName(b, bucketName)
+					b.Spec.ForProvider.Policy = aws.String(policy)
+				}),
+			},
+			want: want{
+				cr: bucket(func(b *storage.S3Bucket) {
+					meta.SetExternalName(b, bucketName)
+					b.Spec.ForProvider.Policy = aws.String(policy)
+					b.SetConditions(runtimev1alpha1.Creating())
+				}),
+				err: errors.Wrap(errBoom, errPolicyAttach),
+			},
+		},
 	}
 
-	expectedStatus := runtimev1alpha1.ConditionedStatus{}
-	expectedStatus.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileError(testError))
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.s3}
+			o, err := e.Create(context.Background(), tc.args.cr)
 
-	rs, err := r._create(tr, cl)
-	g.Expect(rs).To(Equal(resultRequeue))
-	g.Expect(err).NotTo(HaveOccurred())
-	assertResource(g, r, expectedStatus)
-
-	// test create resource error
-	tr = testResource()
-	testError = errors.New("test-create-user--error")
-	called := false
-	cl.MockCreateUser = func(username string, bucket *S3Bucket) (*iam.AccessKey, string, error) {
-		called = true
-		return nil, "", testError
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
 	}
-
-	expectedStatus = runtimev1alpha1.ConditionedStatus{}
-	expectedStatus.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileError(testError))
-
-	rs, err = r._create(tr, cl)
-	g.Expect(rs).To(Equal(resultRequeue))
-	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(called).To(BeTrue())
-	assertResource(g, r, expectedStatus)
-
-	// test create bucket error
-	cl.MockCreateUser = func(username string, bucket *S3Bucket) (*iam.AccessKey, string, error) {
-		fakeKey := &iam.AccessKey{
-			AccessKeyId:     aws.String("fake-string"),
-			SecretAccessKey: aws.String(""),
-		}
-		return fakeKey, "v2", nil
-	}
-
-	tr = testResource()
-	testError = errors.New("test-create-bucket--error")
-	called = false
-	cl.MockCreateOrUpdateBucket = func(bucket *S3Bucket) error {
-		called = true
-		return testError
-	}
-
-	expectedStatus = runtimev1alpha1.ConditionedStatus{}
-	expectedStatus.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileError(testError))
-
-	rs, err = r._create(tr, cl)
-	g.Expect(rs).To(Equal(resultRequeue))
-	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(called).To(BeTrue())
-	assertResource(g, r, expectedStatus)
 }
 
-func TestReconcile(t *testing.T) {
-	g := NewGomegaWithT(t)
-
-	tr := testResource()
-	tr.Status.IAMUsername = ""
-
-	r := &Reconciler{
-		Client:            NewFakeClient(tr),
-		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
-		log:               logging.NewNopLogger(),
+func TestUpdate(t *testing.T) {
+	type want struct {
+		cr     *storage.S3Bucket
+		result managed.ExternalUpdate
+		err    error
 	}
 
-	// test connect error
-	called := false
-	testError := errors.New("test-connect-error")
-	r.connect = func(*S3Bucket) (client.Service, error) {
-		called = true
-		return nil, testError
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				s3: &fake.MockS3Client{
+					MockGetBucketPolicy: func(input *awsS3.GetBucketPolicyInput) awsS3.GetBucketPolicyRequest {
+						return awsS3.GetBucketPolicyRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsS3.GetBucketPolicyOutput{
+								Policy: aws.String(policy),
+							}},
+						}
+					},
+					MockPutBucketPolicy: func(input *awsS3.PutBucketPolicyInput) awsS3.PutBucketPolicyRequest {
+						return awsS3.PutBucketPolicyRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsS3.PutBucketPolicyOutput{}},
+						}
+					},
+				},
+				cr: bucket(func(b *storage.S3Bucket) {
+					meta.SetExternalName(b, bucketName)
+					b.Spec.ForProvider.Policy = aws.String(otherPolicy)
+				}),
+			},
+			want: want{
+				cr: bucket(func(b *storage.S3Bucket) {
+					meta.SetExternalName(b, bucketName)
+					b.Spec.ForProvider.Policy = aws.String(otherPolicy)
+				}),
+			},
+		},
+		"PutPolicyFail": {
+			args: args{
+				s3: &fake.MockS3Client{
+					MockGetBucketPolicy: func(input *awsS3.GetBucketPolicyInput) awsS3.GetBucketPolicyRequest {
+						return awsS3.GetBucketPolicyRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsS3.GetBucketPolicyOutput{
+								Policy: aws.String(policy),
+							}},
+						}
+					},
+					MockPutBucketPolicy: func(input *awsS3.PutBucketPolicyInput) awsS3.PutBucketPolicyRequest {
+						return awsS3.PutBucketPolicyRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: bucket(func(b *storage.S3Bucket) {
+					meta.SetExternalName(b, bucketName)
+					b.Spec.ForProvider.Policy = aws.String(otherPolicy)
+				}),
+			},
+			want: want{
+				cr: bucket(func(b *storage.S3Bucket) {
+					meta.SetExternalName(b, bucketName)
+					b.Spec.ForProvider.Policy = aws.String(otherPolicy)
+				}),
+				err: errors.Wrap(errBoom, errUpdate),
+			},
+		},
 	}
 
-	expectedStatus := runtimev1alpha1.ConditionedStatus{}
-	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(testError))
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.s3}
+			u, err := e.Update(context.Background(), tc.args.cr)
 
-	rs, err := r.Reconcile(request)
-	g.Expect(rs).To(Equal(resultRequeue))
-	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(called).To(BeTrue())
-	assertResource(g, r, expectedStatus)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, u); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
 
-	// test delete
-	r.connect = func(instance *S3Bucket) (client client.Service, e error) {
-		t := metav1.Now()
-		instance.DeletionTimestamp = &t
-		return nil, nil
+func TestDelete(t *testing.T) {
+	type want struct {
+		cr  *storage.S3Bucket
+		err error
 	}
-	called = false
-	r.delete = func(instance *S3Bucket, client client.Service) (i reconcile.Result, e error) {
-		called = true
-		return result, nil
-	}
-	r.Reconcile(request)
-	g.Expect(called).To(BeTrue())
 
-	// test create
-	r.connect = func(instance *S3Bucket) (client client.Service, e error) {
-		return nil, nil
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				s3: &fake.MockS3Client{
+					MockDeleteBucket: func(input *awsS3.DeleteBucketInput) awsS3.DeleteBucketRequest {
+						return awsS3.DeleteBucketRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsS3.DeleteBucketOutput{}},
+						}
+					},
+				},
+				cr: bucket(func(b *storage.S3Bucket) {
+					meta.SetExternalName(b, bucketName)
+				}),
+			},
+			want: want{
+				cr: bucket(func(b *storage.S3Bucket) {
+					meta.SetExternalName(b, bucketName)
+					b.SetConditions(runtimev1alpha1.Deleting())
+				}),
+			},
+		},
+		"DeleteFail": {
+			args: args{
+				s3: &fake.MockS3Client{
+					MockDeleteBucket: func(input *awsS3.DeleteBucketInput) awsS3.DeleteBucketRequest {
+						return awsS3.DeleteBucketRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: bucket(func(b *storage.S3Bucket) {
+					meta.SetExternalName(b, bucketName)
+				}),
+			},
+			want: want{
+				cr: bucket(func(b *storage.S3Bucket) {
+					meta.SetExternalName(b, bucketName)
+					b.SetConditions(runtimev1alpha1.Deleting())
+				}),
+				err: errors.Wrap(errBoom, errDeleteBucket),
+			},
+		},
 	}
-	called = false
-	r.delete = r._delete
-	r.create = func(instance *S3Bucket, client client.Service) (i reconcile.Result, e error) {
-		called = true
-		return result, nil
-	}
-	r.Reconcile(request)
-	g.Expect(called).To(BeTrue())
 
-	// test sync
-	r.connect = func(instance *S3Bucket) (client client.Service, e error) {
-		instance.Status.IAMUsername = "foo-user"
-		return nil, nil
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.s3}
+			err := e.Delete(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
 	}
-	called = false
-	r.create = r._create
-	r.sync = func(instance *S3Bucket, client client.Service) (i reconcile.Result, e error) {
-		called = true
-		return result, nil
-	}
-	r.Reconcile(request)
-	g.Expect(called).To(BeTrue())
 }

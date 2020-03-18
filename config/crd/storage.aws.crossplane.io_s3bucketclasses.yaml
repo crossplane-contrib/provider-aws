@@ -47,32 +47,44 @@ spec:
           description: SpecTemplate is a template for the spec of a dynamically provisioned
             S3Bucket.
           properties:
-            cannedACL:
-              description: CannedACL applies a standard AWS built-in ACL for common
-                bucket use cases.
-              enum:
-              - private
-              - public-read
-              - public-read-write
-              - authenticated-read
-              - log-delivery-write
-              - aws-exec-read
-              type: string
-            localPermission:
-              description: LocalPermission is the permissions granted on the bucket
-                for the provider specific bucket service account that is available
-                in a secret after provisioning.
-              enum:
-              - Read
-              - Write
-              - ReadWrite
-              type: string
-            nameFormat:
-              description: NameFormat specifies the name of the external S3Bucket
-                instance. The first instance of the string '%s' will be replaced with
-                the Kubernetes UID of this S3Bucket. Omit this field to use the UID
-                alone as the name.
-              type: string
+            forProvider:
+              description: S3BucketParameters define the desired state of an AWS S3
+                Bucket.
+              properties:
+                cannedACL:
+                  description: CannedACL applies a standard AWS built-in ACL for common
+                    bucket use cases.
+                  enum:
+                  - private
+                  - public-read
+                  - public-read-write
+                  - authenticated-read
+                  - log-delivery-write
+                  - aws-exec-read
+                  type: string
+                localPermission:
+                  description: LocalPermission is the permissions granted on the bucket
+                    for the provider specific bucket service account that is available
+                    in a secret after provisioning.
+                  enum:
+                  - Read
+                  - Write
+                  - ReadWrite
+                  type: string
+                policy:
+                  description: Poicy JSON of the bucket
+                  type: string
+                region:
+                  description: Region of the bucket.
+                  type: string
+                versioning:
+                  description: Versioning enables versioning of objects stored in
+                    this bucket.
+                  type: boolean
+              required:
+              - localPermission
+              - region
+              type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
                 to create, observe, update, and delete managed resources that are
@@ -128,30 +140,22 @@ spec:
               - Retain
               - Delete
               type: string
-            region:
-              description: Region of the bucket.
-              type: string
-            versioning:
-              description: Versioning enables versioning of objects stored in this
-                bucket.
-              type: boolean
             writeConnectionSecretsToNamespace:
               description: WriteConnectionSecretsToNamespace specifies the namespace
                 in which the connection secrets of managed resources dynamically provisioned
                 using this claim will be created.
               type: string
           required:
-          - localPermission
+          - forProvider
           - providerRef
-          - region
           - writeConnectionSecretsToNamespace
           type: object
       required:
       - specTemplate
       type: object
-  version: v1alpha3
+  version: v1beta1
   versions:
-  - name: v1alpha3
+  - name: v1beta1
     served: true
     storage: true
 status:

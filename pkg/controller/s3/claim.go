@@ -24,7 +24,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"github.com/crossplane/provider-aws/apis/storage/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/storage/v1beta1"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -59,7 +59,7 @@ func SetupBucketClaimScheduling(mgr ctrl.Manager, l logging.Logger) error {
 		))).
 		Complete(claimscheduling.NewReconciler(mgr,
 			resource.ClaimKind(storagev1alpha1.BucketGroupVersionKind),
-			resource.ClassKind(v1alpha3.S3BucketClassGroupVersionKind),
+			resource.ClassKind(v1beta1.S3BucketClassGroupVersionKind),
 			claimscheduling.WithLogger(l.WithValues("controller", name)),
 			claimscheduling.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		))
@@ -80,7 +80,7 @@ func SetupBucketClaimDefaulting(mgr ctrl.Manager, l logging.Logger) error {
 		))).
 		Complete(claimdefaulting.NewReconciler(mgr,
 			resource.ClaimKind(storagev1alpha1.BucketGroupVersionKind),
-			resource.ClassKind(v1alpha3.S3BucketClassGroupVersionKind),
+			resource.ClassKind(v1beta1.S3BucketClassGroupVersionKind),
 			claimdefaulting.WithLogger(l.WithValues("controller", name)),
 			claimdefaulting.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		))
@@ -93,8 +93,8 @@ func SetupBucketClaimBinding(mgr ctrl.Manager, l logging.Logger) error {
 
 	r := claimbinding.NewReconciler(mgr,
 		resource.ClaimKind(storagev1alpha1.BucketGroupVersionKind),
-		resource.ClassKind(v1alpha3.S3BucketClassGroupVersionKind),
-		resource.ManagedKind(v1alpha3.S3BucketGroupVersionKind),
+		resource.ClassKind(v1beta1.S3BucketClassGroupVersionKind),
+		resource.ManagedKind(v1beta1.S3BucketGroupVersionKind),
 		claimbinding.WithBinder(claimbinding.NewAPIBinder(mgr.GetClient(), mgr.GetScheme())),
 		claimbinding.WithManagedConfigurators(
 			claimbinding.ManagedConfiguratorFn(ConfigureS3Bucket),
@@ -105,14 +105,14 @@ func SetupBucketClaimBinding(mgr ctrl.Manager, l logging.Logger) error {
 	)
 
 	p := resource.NewPredicates(resource.AnyOf(
-		resource.HasClassReferenceKind(resource.ClassKind(v1alpha3.S3BucketClassGroupVersionKind)),
-		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1alpha3.S3BucketGroupVersionKind)),
-		resource.IsManagedKind(resource.ManagedKind(v1alpha3.S3BucketGroupVersionKind), mgr.GetScheme()),
+		resource.HasClassReferenceKind(resource.ClassKind(v1beta1.S3BucketClassGroupVersionKind)),
+		resource.HasManagedResourceReferenceKind(resource.ManagedKind(v1beta1.S3BucketGroupVersionKind)),
+		resource.IsManagedKind(resource.ManagedKind(v1beta1.S3BucketGroupVersionKind), mgr.GetScheme()),
 	))
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		Watches(&source.Kind{Type: &v1alpha3.S3Bucket{}}, &resource.EnqueueRequestForClaim{}).
+		Watches(&source.Kind{Type: &v1beta1.S3Bucket{}}, &resource.EnqueueRequestForClaim{}).
 		For(&storagev1alpha1.Bucket{}).
 		WithEventFilter(p).
 		Complete(r)
@@ -127,33 +127,33 @@ func ConfigureS3Bucket(_ context.Context, cm resource.Claim, cs resource.Class, 
 		return errors.Errorf("expected resource claim %s to be %s", cm.GetName(), storagev1alpha1.BucketGroupVersionKind)
 	}
 
-	rs, csok := cs.(*v1alpha3.S3BucketClass)
+	rs, csok := cs.(*v1beta1.S3BucketClass)
 	if !csok {
-		return errors.Errorf("expected resource class %s to be %s", cs.GetName(), v1alpha3.S3BucketClassGroupVersionKind)
+		return errors.Errorf("expected resource class %s to be %s", cs.GetName(), v1beta1.S3BucketClassGroupVersionKind)
 	}
 
-	s3b, mgok := mg.(*v1alpha3.S3Bucket)
+	s3b, mgok := mg.(*v1beta1.S3Bucket)
 	if !mgok {
-		return errors.Errorf("expected managed resource %s to be %s", mg.GetName(), v1alpha3.S3BucketGroupVersionKind)
+		return errors.Errorf("expected managed resource %s to be %s", mg.GetName(), v1beta1.S3BucketGroupVersionKind)
 	}
 
-	spec := &v1alpha3.S3BucketSpec{
+	spec := &v1beta1.S3BucketSpec{
 		ResourceSpec: runtimev1alpha1.ResourceSpec{
 			ReclaimPolicy: runtimev1alpha1.ReclaimRetain,
 		},
-		S3BucketParameters: rs.SpecTemplate.S3BucketParameters,
+		ForProvider: rs.SpecTemplate.ForProvider,
 	}
 
-	if b.Spec.Name != "" {
-		spec.NameFormat = b.Spec.Name
-	}
+	// if b.Spec.Name != "" {
+	// 	spec.ForProvider.NameFormat = b.Spec.Name
+	// }
 
 	if b.Spec.PredefinedACL != nil {
-		spec.CannedACL = translateACL(b.Spec.PredefinedACL)
+		spec.ForProvider.CannedACL = translateACL(b.Spec.PredefinedACL)
 	}
 
 	if b.Spec.LocalPermission != nil {
-		spec.LocalPermission = b.Spec.LocalPermission
+		spec.ForProvider.LocalPermission = b.Spec.LocalPermission
 	}
 
 	spec.WriteConnectionSecretToReference = &runtimev1alpha1.SecretReference{

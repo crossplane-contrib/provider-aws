@@ -12,15 +12,21 @@ spec:
   - JSONPath: .spec.classRef.name
     name: CLASS
     type: string
-  - JSONPath: .spec.cannedACL
+  - JSONPath: .spec.forProvider.cannedACL
     name: PREDEFINED-ACL
     type: string
-  - JSONPath: .spec.localPermission
+  - JSONPath: .spec.forProvider.localPermission
     name: LOCAL-PERMISSION
     type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
+  - JSONPath: .status.conditions[?(@.type=='Ready')].status
+    name: READY
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Synced')].status
+    name: SYNCED
+    type: string
   group: storage.aws.crossplane.io
   names:
     kind: S3Bucket
@@ -48,17 +54,6 @@ spec:
         spec:
           description: S3BucketSpec defines the desired state of S3Bucket
           properties:
-            cannedACL:
-              description: CannedACL applies a standard AWS built-in ACL for common
-                bucket use cases.
-              enum:
-              - private
-              - public-read
-              - public-read-write
-              - authenticated-read
-              - log-delivery-write
-              - aws-exec-read
-              type: string
             claimRef:
               description: ClaimReference specifies the resource claim to which this
                 managed resource will be bound. ClaimReference is set automatically
@@ -136,21 +131,44 @@ spec:
                   description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                   type: string
               type: object
-            localPermission:
-              description: LocalPermission is the permissions granted on the bucket
-                for the provider specific bucket service account that is available
-                in a secret after provisioning.
-              enum:
-              - Read
-              - Write
-              - ReadWrite
-              type: string
-            nameFormat:
-              description: NameFormat specifies the name of the external S3Bucket
-                instance. The first instance of the string '%s' will be replaced with
-                the Kubernetes UID of this S3Bucket. Omit this field to use the UID
-                alone as the name.
-              type: string
+            forProvider:
+              description: S3BucketParameters define the desired state of an AWS S3
+                Bucket.
+              properties:
+                cannedACL:
+                  description: CannedACL applies a standard AWS built-in ACL for common
+                    bucket use cases.
+                  enum:
+                  - private
+                  - public-read
+                  - public-read-write
+                  - authenticated-read
+                  - log-delivery-write
+                  - aws-exec-read
+                  type: string
+                localPermission:
+                  description: LocalPermission is the permissions granted on the bucket
+                    for the provider specific bucket service account that is available
+                    in a secret after provisioning.
+                  enum:
+                  - Read
+                  - Write
+                  - ReadWrite
+                  type: string
+                policy:
+                  description: Poicy JSON of the bucket
+                  type: string
+                region:
+                  description: Region of the bucket.
+                  type: string
+                versioning:
+                  description: Versioning enables versioning of objects stored in
+                    this bucket.
+                  type: boolean
+              required:
+              - localPermission
+              - region
+              type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
                 to create, observe, update, and delete this managed resource.
@@ -203,13 +221,6 @@ spec:
               - Retain
               - Delete
               type: string
-            region:
-              description: Region of the bucket.
-              type: string
-            versioning:
-              description: Versioning enables versioning of objects stored in this
-                bucket.
-              type: boolean
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the namespace
                 and name of a Secret to which any connection details for this managed
@@ -228,81 +239,78 @@ spec:
               - namespace
               type: object
           required:
-          - localPermission
+          - forProvider
           - providerRef
-          - region
           type: object
         status:
           description: S3BucketStatus defines the observed state of S3Bucket
           properties:
-            bindingPhase:
-              description: Phase represents the binding phase of a managed resource
-                or claim. Unbindable resources cannot be bound, typically because
-                they are currently unavailable, or still being created. Unbound resource
-                are available for binding, and Bound resources have successfully bound
-                to another resource.
-              enum:
-              - Unbindable
-              - Unbound
-              - Bound
-              - Released
-              type: string
-            conditions:
-              description: Conditions of the resource.
-              items:
-                description: A Condition that may apply to a resource.
-                properties:
-                  lastTransitionTime:
-                    description: LastTransitionTime is the last time this condition
-                      transitioned from one status to another.
-                    format: date-time
-                    type: string
-                  message:
-                    description: A Message containing details about this condition's
-                      last transition from one status to another, if any.
-                    type: string
-                  reason:
-                    description: A Reason for this condition's last transition from
-                      one status to another.
-                    type: string
-                  status:
-                    description: Status of this condition; is it currently True, False,
-                      or Unknown?
-                    type: string
-                  type:
-                    description: Type of this condition. At most one of each condition
-                      type may apply to a resource at any point in time.
-                    type: string
-                required:
-                - lastTransitionTime
-                - reason
-                - status
-                - type
-                type: object
-              type: array
-            iamUsername:
-              description: IAMUsername is the name of an IAM user that is automatically
-                created and granted access to this bucket by Crossplane at bucket
-                creation time.
-              type: string
-            lastLocalPermission:
-              description: LastLocalPermission is the most recent local permission
-                that was set for this bucket.
-              type: string
-            lastUserPolicyVersion:
-              description: LastUserPolicyVersion is the most recent version of the
-                policy associated with this bucket's IAMUser.
-              type: integer
-            providerID:
-              description: ProviderID is the AWS identifier for this bucket.
-              type: string
+            atProvider:
+              description: S3BucketObservation defines the observed state of S3Bucket.
+              properties:
+                policy:
+                  type: string
+              type: object
+            inline:
+              description: ResourceStatus represents the observed state of a managed
+                resource.
+              properties:
+                bindingPhase:
+                  description: Phase represents the binding phase of a managed resource
+                    or claim. Unbindable resources cannot be bound, typically because
+                    they are currently unavailable, or still being created. Unbound
+                    resource are available for binding, and Bound resources have successfully
+                    bound to another resource.
+                  enum:
+                  - Unbindable
+                  - Unbound
+                  - Bound
+                  - Released
+                  type: string
+                conditions:
+                  description: Conditions of the resource.
+                  items:
+                    description: A Condition that may apply to a resource.
+                    properties:
+                      lastTransitionTime:
+                        description: LastTransitionTime is the last time this condition
+                          transitioned from one status to another.
+                        format: date-time
+                        type: string
+                      message:
+                        description: A Message containing details about this condition's
+                          last transition from one status to another, if any.
+                        type: string
+                      reason:
+                        description: A Reason for this condition's last transition
+                          from one status to another.
+                        type: string
+                      status:
+                        description: Status of this condition; is it currently True,
+                          False, or Unknown?
+                        type: string
+                      type:
+                        description: Type of this condition. At most one of each condition
+                          type may apply to a resource at any point in time.
+                        type: string
+                    required:
+                    - lastTransitionTime
+                    - reason
+                    - status
+                    - type
+                    type: object
+                  type: array
+              type: object
+          required:
+          - atProvider
+          - inline
           type: object
       required:
       - spec
       type: object
-  version: v1alpha3
+  version: v1beta1
   versions:
-  - name: v1alpha3
+  - name: v1beta1
     served: true
     storage: true
 status:
