@@ -45,56 +45,20 @@ func (v *VPCIDReferencerForSecurityGroup) Assign(res resource.CanReference, valu
 		return errors.New(errResourceIsNotSecurityGroup)
 	}
 
-	sg.Spec.VPCID = value
+	sg.Spec.VPCID = aws.String(value)
 	return nil
-}
-
-// IPRange describes an IPv4 range.
-type IPRange struct {
-	// The IPv4 CIDR range. You can either specify a CIDR range or a source
-	// security group, not both. To specify a single IPv4 address, use the /32
-	// prefix length.
-	CIDRIP string `json:"cidrIp"`
-
-	// A description for the ip range
-	Description string `json:"description,omitempty"`
-}
-
-// IPPermission Describes a set of permissions for a security group rule.
-type IPPermission struct {
-	// The start of port range for the TCP and UDP protocols, or an ICMP/ICMPv6
-	// type number. A value of -1 indicates all ICMP/ICMPv6 types. If you
-	// specify all ICMP/ICMPv6 types, you must specify all codes.
-	FromPort int64 `json:"fromPort"`
-
-	// The end of port range for the TCP and UDP protocols, or an ICMP/ICMPv6
-	// code. A value of -1 indicates all ICMP/ICMPv6 codes for the specified
-	// ICMP type. If you specify all ICMP/ICMPv6 types, you must specify all
-	// codes.
-	ToPort int64 `json:"toPort"`
-
-	// The IP protocol name (tcp, udp, icmp) or number (see Protocol Numbers (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
-	//
-	// [EC2-VPC only] Use -1 to specify all protocols. When authorizing security
-	// group rules, specifying -1 or a protocol number other than tcp, udp, icmp,
-	// or 58 (ICMPv6) allows traffic on all ports, regardless of any port range
-	// you specify. For tcp, udp, and icmp, you must specify a port range. For 58
-	// (ICMPv6), you can optionally specify a port range; if you don't, traffic
-	// for all types and codes is allowed when authorizing rules.
-	IPProtocol string `json:"protocol"`
-
-	// One or more IPv4 ranges.
-	CIDRBlocks []IPRange `json:"cidrBlocks,omitempty"`
 }
 
 // SecurityGroupParameters define the desired state of an AWS VPC Security
 // Group.
 type SecurityGroupParameters struct {
 	// VPCID is the ID of the VPC.
-	VPCID string `json:"vpcId,omitempty"`
+	// +optional
+	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef references to a VPC to and retrieves its vpcId
-	VPCIDRef *VPCIDReferencerForSecurityGroup `json:"vpcIdRef,omitempty" resource:"attributereferencer"`
+	// +optional
+	VPCIDRef *VPCIDReferencerForSecurityGroup `json:"vpcIdRef,omitempty"`
 
 	// A description of the security group.
 	Description string `json:"description"`
@@ -103,10 +67,155 @@ type SecurityGroupParameters struct {
 	GroupName string `json:"groupName"`
 
 	// One or more inbound rules associated with the security group.
-	IngressPermissions []IPPermission `json:"ingress,omitempty"`
+	// +optional
+	Ingress []IPPermission `json:"ingress,omitempty"`
 
 	// [EC2-VPC] One or more outbound rules associated with the security group.
-	EgressPermissions []IPPermission `json:"egress,omitempty"`
+	// +optional
+	Egress []IPPermission `json:"egress,omitempty"`
+}
+
+// IPRange describes an IPv4 range.
+type IPRange struct {
+	// The IPv4 CIDR range. You can either specify a CIDR range or a source security
+	// group, not both. To specify a single IPv4 address, use the /32 prefix length.
+	CIDRIP string `json:"cidrIp"`
+
+	// A description for the security group rule that references this IPv4 address
+	// range.
+	//
+	// Constraints: Up to 255 characters in length. Allowed characters are a-z,
+	// A-Z, 0-9, spaces, and ._-:/()#,@[]+=&;{}!$*
+	// +optional
+	Description *string `json:"description,omitempty"`
+}
+
+// IPv6Range describes an IPv6 range.
+type IPv6Range struct {
+	// The IPv6 CIDR range. You can either specify a CIDR range or a source security
+	// group, not both. To specify a single IPv6 address, use the /128 prefix length.
+	CIDRIPv6 string `json:"cidrIPv6"`
+
+	// A description for the security group rule that references this IPv6 address
+	// range.
+	//
+	// Constraints: Up to 255 characters in length. Allowed characters are a-z,
+	// A-Z, 0-9, spaces, and ._-:/()#,@[]+=&;{}!$*
+	// +optional
+	Description *string `json:"description,omitempty"`
+}
+
+// PrefixListID describes a prefix list ID.
+type PrefixListID struct {
+	// A description for the security group rule that references this prefix list
+	// ID.
+	//
+	// Constraints: Up to 255 characters in length. Allowed characters are a-z,
+	// A-Z, 0-9, spaces, and ._-:/()#,@[]+=;{}!$*
+	// +optional
+	Description *string `json:"description,omitempty"`
+
+	// The ID of the prefix.
+	PrefixListID string `json:"prefixListId"`
+}
+
+// UserIDGroupPair describes a security group and AWS account ID pair.
+type UserIDGroupPair struct {
+	// A description for the security group rule that references this user ID group
+	// pair.
+	//
+	// Constraints: Up to 255 characters in length. Allowed characters are a-z,
+	// A-Z, 0-9, spaces, and ._-:/()#,@[]+=;{}!$*
+	// +optional
+	Description *string `json:"description,omitempty"`
+
+	// The ID of the security group.
+	// +optional
+	GroupID *string `json:"groupId,omitempty"`
+
+	// The name of the security group. In a request, use this parameter for a security
+	// group in EC2-Classic or a default VPC only. For a security group in a nondefault
+	// VPC, use the security group ID.
+	//
+	// For a referenced security group in another VPC, this value is not returned
+	// if the referenced security group is deleted.
+	// +optional
+	GroupName *string `json:"groupName,omitempty"`
+
+	// The ID of an AWS account.
+	//
+	// For a referenced security group in another VPC, the account ID of the referenced
+	// security group is returned in the response. If the referenced security group
+	// is deleted, this value is not returned.
+	//
+	// [EC2-Classic] Required when adding or removing rules that reference a security
+	// group in another AWS account.
+	// +optional
+	UserID *string `json:"userId,omitempty"`
+
+	// The ID of the VPC for the referenced security group, if applicable.
+	// +optional
+	VPCID *string `json:"vpcId,omitempty"`
+
+	// The ID of the VPC peering connection, if applicable.
+	// +optional
+	VPCPeeringConnectionID *string `json:"vpcPeeringConnectionId,omitempty"`
+}
+
+// IPPermission Describes a set of permissions for a security group rule.
+type IPPermission struct {
+	// The start of port range for the TCP and UDP protocols, or an ICMP/ICMPv6
+	// type number. A value of -1 indicates all ICMP/ICMPv6 types. If you specify
+	// all ICMP/ICMPv6 types, you must specify all codes.
+	// +optional
+	FromPort *int64 `json:"fromPort,omitempty"`
+
+	// TODO(muvaf): jsontag of this should be ipProtocol when we make this resource
+	// v1beta1
+
+	// The IP protocol name (tcp, udp, icmp, icmpv6) or number (see Protocol Numbers
+	// (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
+	//
+	// [VPC only] Use -1 to specify all protocols. When authorizing security group
+	// rules, specifying -1 or a protocol number other than tcp, udp, icmp, or icmpv6
+	// allows traffic on all ports, regardless of any port range you specify. For
+	// tcp, udp, and icmp, you must specify a port range. For icmpv6, the port range
+	// is optional; if you omit the port range, traffic for all types and codes
+	// is allowed.
+	IPProtocol string `json:"protocol"`
+
+	// TODO(muvaf): The jsontag should be ipRanges instead of cidrBlocks, do that
+	// when we bump the version.
+
+	// The IPv4 ranges.
+	// +optional
+	IPRanges []IPRange `json:"cidrBlocks,omitempty"`
+
+	// The IPv6 ranges.
+	//
+	// [VPC only]
+	// +optional
+	IPv6Ranges []IPv6Range `json:"ipv6Ranges,omitempty"`
+
+	// PrefixListIDs for an AWS service. With outbound rules, this
+	// is the AWS service to access through a VPC endpoint from instances associated
+	// with the security group.
+	//
+	// [VPC only]
+	// +optional
+	PrefixListIDs []PrefixListID `json:"prefixListIds,omitempty"`
+
+	// The end of port range for the TCP and UDP protocols, or an ICMP/ICMPv6 code.
+	// A value of -1 indicates all ICMP/ICMPv6 codes. If you specify all ICMP/ICMPv6
+	// types, you must specify all codes.
+	// +optional
+	ToPort *int64 `json:"toPort,omitempty"`
+
+	// UserIDGroupPairs are the source security group and AWS account ID pairs.
+	// It contains one or more accounts and security groups to allow flows from
+	// security groups of other accounts.
+	// +optional
+	UserIDGroupPairs []UserIDGroupPair `json:"userIdGroupPairs,omitempty"`
 }
 
 // A SecurityGroupSpec defines the desired state of a SecurityGroup.
@@ -165,29 +274,4 @@ func (s *SecurityGroup) UpdateExternalStatus(observation ec2.SecurityGroup) {
 		SecurityGroupID: aws.StringValue(observation.GroupId),
 		Tags:            BuildFromEC2Tags(observation.Tags),
 	}
-}
-
-// BuildEC2Permissions converts object Permissions to ec2 format
-func BuildEC2Permissions(objectPerms []IPPermission) []ec2.IpPermission {
-	permissions := make([]ec2.IpPermission, len(objectPerms))
-	for i, p := range objectPerms {
-
-		ipPerm := ec2.IpPermission{
-			FromPort:   aws.Int64(int(p.FromPort)),
-			ToPort:     aws.Int64(int(p.ToPort)),
-			IpProtocol: aws.String(p.IPProtocol),
-		}
-
-		ipPerm.IpRanges = make([]ec2.IpRange, len(p.CIDRBlocks))
-		for j, c := range p.CIDRBlocks {
-			ipPerm.IpRanges[j] = ec2.IpRange{
-				CidrIp:      aws.String(c.CIDRIP),
-				Description: aws.String(c.Description),
-			}
-		}
-
-		permissions[i] = ipPerm
-	}
-
-	return permissions
 }
