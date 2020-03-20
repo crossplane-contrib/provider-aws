@@ -112,7 +112,7 @@ type DBSubnetGroupExternalStatus struct {
 	// Contains a list of Subnet elements.
 	Subnets []Subnet `json:"subnets,omitempty"`
 
-	// Provides the VpcId of the DB subnet group.
+	// Provides the VPCID of the DB subnet group.
 	VPCID string `json:"vpcId,omitempty"`
 }
 

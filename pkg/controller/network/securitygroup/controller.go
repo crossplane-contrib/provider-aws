@@ -29,10 +29,11 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha3 "github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/network/v1alpha3"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
@@ -45,8 +46,9 @@ const (
 	errCreate           = "failed to create the SecurityGroup resource"
 	errAuthorizeIngress = "failed to authorize ingress rules"
 	errAuthorizeEgress  = "failed to authorize egress rules"
-	errDeleteNotPresent = "cannot delete the SecurityGroup, since the SecurityGroupID is not present"
 	errDelete           = "failed to delete the SecurityGroup resource"
+	errStatusUpdate     = "cannot update status"
+	errSpecUpdate       = "cannot update spec"
 )
 
 // SetupSecurityGroup adds a controller that reconciles SecurityGroups.
@@ -58,14 +60,15 @@ func SetupSecurityGroup(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha3.SecurityGroup{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha3.SecurityGroupGroupVersionKind),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewSecurityGroupClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewSecurityGroupClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
 type connector struct {
-	client      client.Client
+	kube        client.Client
 	newClientFn func(*aws.Config) (ec2.SecurityGroupClient, error)
 	awsConfigFn func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error)
 }
@@ -76,7 +79,7 @@ func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (manag
 		return nil, errors.New(errUnexpectedObject)
 	}
 
-	awsconfig, err := conn.awsConfigFn(ctx, conn.client, cr.Spec.ProviderReference)
+	awsconfig, err := conn.awsConfigFn(ctx, conn.kube, cr.Spec.ProviderReference)
 	if err != nil {
 		return nil, err
 	}
@@ -86,11 +89,12 @@ func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (manag
 		return nil, errors.Wrap(err, errClient)
 	}
 
-	return &external{c}, nil
+	return &external{sg: c, kube: conn.kube}, nil
 }
 
 type external struct {
-	client ec2.SecurityGroupClient
+	sg   ec2.SecurityGroupClient
+	kube client.Client
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
@@ -98,35 +102,20 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
-
-	// To find out whether a SecurityGroup exist:
-	// - the object's ExternalState should have securityGroupId populated
-	// - a SecurityGroup with the given securityGroupId should exist
-	if cr.Status.SecurityGroupID == "" {
-		return managed.ExternalObservation{
-			ResourceExists: false,
-		}, nil
+	if meta.GetExternalName(cr) == "" {
+		return managed.ExternalObservation{}, nil
 	}
 
-	req := e.client.DescribeSecurityGroupsRequest(&awsec2.DescribeSecurityGroupsInput{
-		GroupIds: []string{cr.Status.SecurityGroupID},
-	})
-
-	response, err := req.Send(ctx)
-
-	if ec2.IsSecurityGroupNotFoundErr(err) {
-		return managed.ExternalObservation{
-			ResourceExists: false,
-		}, nil
-	}
-
+	response, err := e.sg.DescribeSecurityGroupsRequest(&awsec2.DescribeSecurityGroupsInput{
+		GroupIds: []string{meta.GetExternalName(cr)},
+	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrapf(err, errDescribe, cr.Status.SecurityGroupID)
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
 	if len(response.SecurityGroups) != 1 {
-		return managed.ExternalObservation{}, errors.Errorf(errMultipleItems, cr.Status.SecurityGroupID)
+		return managed.ExternalObservation{}, errors.New(errMultipleItems)
 	}
 
 	observed := response.SecurityGroups[0]
@@ -138,8 +127,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	cr.UpdateExternalStatus(observed)
 
 	return managed.ExternalObservation{
-		ResourceExists:    true,
-		ConnectionDetails: managed.ConnectionDetails{},
+		ResourceExists: true,
 	}, nil
 }
 
@@ -152,9 +140,9 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
 	// Creating the SecurityGroup itself
-	req := e.client.CreateSecurityGroupRequest(&awsec2.CreateSecurityGroupInput{
+	req := e.sg.CreateSecurityGroupRequest(&awsec2.CreateSecurityGroupInput{
 		GroupName:   aws.String(cr.Spec.GroupName),
-		VpcId:       aws.String(cr.Spec.VPCID),
+		VpcId:       cr.Spec.VPCID,
 		Description: aws.String(cr.Spec.Description),
 	})
 
@@ -162,44 +150,44 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
-
 	cr.UpdateExternalStatus(awsec2.SecurityGroup{GroupId: result.GroupId})
-
-	// Authorizing Ingress permissions for the SecurityGroup
-	ingressPerms := v1alpha3.BuildEC2Permissions(cr.Spec.IngressPermissions)
-	if len(ingressPerms) > 0 {
-		air := e.client.AuthorizeSecurityGroupIngressRequest(&awsec2.AuthorizeSecurityGroupIngressInput{
-			GroupId:       aws.String(cr.Status.SecurityGroupID),
-			IpPermissions: ingressPerms,
-		})
-
-		_, err = air.Send(ctx)
-		if err != nil {
-			return managed.ExternalCreation{}, errors.Wrap(err, errAuthorizeIngress)
-		}
+	// We need to save status before spec update so that it's not lost.
+	if err := e.kube.Status().Update(ctx, cr); err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
 	}
 
-	// Authorizing Egress permissions for the SecurityGroup
-	egressPerms := v1alpha3.BuildEC2Permissions(cr.Spec.EgressPermissions)
-	if len(egressPerms) > 0 {
-		aer := e.client.AuthorizeSecurityGroupEgressRequest(&awsec2.AuthorizeSecurityGroupEgressInput{
-			GroupId:       aws.String(cr.Status.SecurityGroupID),
-			IpPermissions: egressPerms,
-		})
-
-		_, err = aer.Send(ctx)
-		if err != nil {
-			return managed.ExternalCreation{}, errors.Wrap(err, errAuthorizeEgress)
-		}
-	}
-
-	return managed.ExternalCreation{}, nil
+	// NOTE(muvaf): GroupID is used as external name instead of GroupName because
+	// there are cases where only GroupID is accepted as identifier.
+	meta.SetExternalName(cr, aws.StringValue(result.GroupId))
+	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mgd.(*v1alpha3.SecurityGroup)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
 	// TODO(soorena776): add more sophisticated Update logic, once we
 	// categorize immutable vs mutable fields (see #727)
 
+	if len(cr.Spec.Ingress) > 0 {
+		_, err := e.sg.AuthorizeSecurityGroupIngressRequest(&awsec2.AuthorizeSecurityGroupIngressInput{
+			GroupId:       aws.String(meta.GetExternalName(cr)),
+			IpPermissions: ec2.GenerateEC2Permissions(cr.Spec.Ingress),
+		}).Send(ctx)
+		if err != nil && !ec2.IsRuleAlreadyExistsErr(err) {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errAuthorizeIngress)
+		}
+	}
+	if len(cr.Spec.Egress) > 0 {
+		_, err := e.sg.AuthorizeSecurityGroupEgressRequest(&awsec2.AuthorizeSecurityGroupEgressInput{
+			GroupId:       aws.String(meta.GetExternalName(cr)),
+			IpPermissions: ec2.GenerateEC2Permissions(cr.Spec.Egress),
+		}).Send(ctx)
+		if err != nil && !ec2.IsRuleAlreadyExistsErr(err) {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errAuthorizeEgress)
+		}
+	}
 	return managed.ExternalUpdate{}, nil
 }
 
@@ -209,21 +197,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	if cr.Status.SecurityGroupID == "" {
-		return errors.New(errDeleteNotPresent)
-	}
-
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
-	req := e.client.DeleteSecurityGroupRequest(&awsec2.DeleteSecurityGroupInput{
-		GroupId: aws.String(cr.Status.SecurityGroupID),
-	})
-
-	_, err := req.Send(ctx)
-
-	if ec2.IsSecurityGroupNotFoundErr(err) {
-		return nil
-	}
-
-	return errors.Wrap(err, errDelete)
+	_, err := e.sg.DeleteSecurityGroupRequest(&awsec2.DeleteSecurityGroupInput{
+		GroupId: aws.String(meta.GetExternalName(cr)),
+	}).Send(ctx)
+	return errors.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errDelete)
 }

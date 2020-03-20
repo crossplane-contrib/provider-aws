@@ -321,7 +321,7 @@ spec:
                 type: object
               type: array
             vpcId:
-              description: Provides the VpcId of the DB subnet group.
+              description: Provides the VPCID of the DB subnet group.
               type: string
           type: object
       required:

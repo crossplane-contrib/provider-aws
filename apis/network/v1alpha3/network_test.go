@@ -57,20 +57,6 @@ func Test_SecurityGroup_BuildExternalStatusFromObservation(t *testing.T) {
 	g.Expect(r.Status.SecurityGroupExternalStatus).ToNot(gomega.BeNil())
 }
 
-func Test_SecurityGroup_BuildEC2Permissions(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	res := BuildEC2Permissions([]IPPermission{
-		{
-			CIDRBlocks: []IPRange{
-				{CIDRIP: "arbitranry cidrip"},
-			},
-		},
-	})
-
-	g.Expect(res).ToNot(gomega.BeNil())
-}
-
 func Test_InternetGateway_BuildEC2Permissions(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 	r := InternetGateway{}
