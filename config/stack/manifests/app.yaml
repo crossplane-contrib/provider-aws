@@ -1,5 +1,5 @@
 # Human readable title of application.
-title: Crossplane AWS Provider
+title: AWS Provider
 
 overviewShort: The AWS Crossplane provider enables infrastructure management for Amazon Web Services.
 overview: |-
