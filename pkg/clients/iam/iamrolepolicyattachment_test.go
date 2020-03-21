@@ -69,7 +69,7 @@ func TestGeneratePolicyObservation(t *testing.T) {
 	}
 }
 
-func TestLateInitializepolicy(t *testing.T) {
+func TestLateInitializePolicy(t *testing.T) {
 	type args struct {
 		spec *v1beta1.IAMRolePolicyAttachmentParameters
 		in   iam.AttachedPolicy

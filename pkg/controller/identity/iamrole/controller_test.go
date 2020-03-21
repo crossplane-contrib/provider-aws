@@ -36,6 +36,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	v1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
 )
@@ -49,6 +50,19 @@ var (
 	// an arbitrary managed resource
 	unexpecedItem resource.Managed
 	roleName      = "some arbitrary name"
+	description   = "some description"
+	policy        = `{
+		"Version": "2012-10-17",
+		"Statement": [
+		  {
+			"Effect": "Allow",
+			"Principal": {
+			  "Service": "eks.amazonaws.com"
+			},
+			"Action": "sts:AssumeRole"
+		  }
+		]
+	   }`
 
 	errBoom = errors.New("boom")
 )
@@ -68,6 +82,22 @@ func withRoleName(s *string) roleModifier {
 	return func(r *v1beta1.IAMRole) { meta.SetExternalName(r, *s) }
 }
 
+func withPolicy() roleModifier {
+	return func(r *v1beta1.IAMRole) {
+		p, err := awsclients.CompactAndEscapeJSON(policy)
+		if err != nil {
+			return
+		}
+		r.Spec.ForProvider.AssumeRolePolicyDocument = p
+	}
+}
+
+func withDescription() roleModifier {
+	return func(r *v1beta1.IAMRole) {
+		r.Spec.ForProvider.Description = aws.String(description)
+	}
+}
+
 func role(m ...roleModifier) *v1beta1.IAMRole {
 	cr := &v1beta1.IAMRole{
 		Spec: v1beta1.IAMRoleSpec{
@@ -82,7 +112,7 @@ func role(m ...roleModifier) *v1beta1.IAMRole {
 	return cr
 }
 
-func Test_Connect(t *testing.T) {
+func TestConnect(t *testing.T) {
 
 	type args struct {
 		newClientFn func(*aws.Config) (iam.RoleClient, error)
@@ -155,7 +185,7 @@ func Test_Connect(t *testing.T) {
 	}
 }
 
-func Test_Observe(t *testing.T) {
+func TestObserve(t *testing.T) {
 
 	type want struct {
 		cr     resource.Managed
@@ -212,7 +242,7 @@ func Test_Observe(t *testing.T) {
 			},
 			want: want{
 				cr:  role(withRoleName(&roleName)),
-				err: errors.Wrapf(errBoom, errGet, roleName),
+				err: errors.Wrap(errBoom, errGet),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -250,7 +280,7 @@ func Test_Observe(t *testing.T) {
 	}
 }
 
-func Test_Create(t *testing.T) {
+func TestCreate(t *testing.T) {
 
 	type want struct {
 		cr     resource.Managed
@@ -324,7 +354,7 @@ func Test_Create(t *testing.T) {
 	}
 }
 
-func Test_Update(t *testing.T) {
+func TestUpdate(t *testing.T) {
 
 	type want struct {
 		cr     resource.Managed
@@ -339,6 +369,13 @@ func Test_Update(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockRoleClient{
+					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
+						return awsiam.GetRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetRoleOutput{
+								Role: &awsiam.Role{},
+							}},
+						}
+					},
 					MockUpdateRoleRequest: func(input *awsiam.UpdateRoleInput) awsiam.UpdateRoleRequest {
 						return awsiam.UpdateRoleRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.UpdateRoleOutput{}},
@@ -360,19 +397,54 @@ func Test_Update(t *testing.T) {
 				err: errors.New(errUnexpectedObject),
 			},
 		},
-		"ClientError": {
+		"ClientUpdateRoleError": {
 			args: args{
 				iam: &fake.MockRoleClient{
+					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
+						return awsiam.GetRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetRoleOutput{
+								Role: &awsiam.Role{},
+							}},
+						}
+					},
 					MockUpdateRoleRequest: func(input *awsiam.UpdateRoleInput) awsiam.UpdateRoleRequest {
 						return awsiam.UpdateRoleRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: role(),
+				cr: role(withDescription()),
 			},
 			want: want{
-				cr:  role(),
+				cr:  role(withDescription()),
+				err: errors.Wrap(errBoom, errUpdate),
+			},
+		},
+		"ClientUpdatePolicyError": {
+			args: args{
+				iam: &fake.MockRoleClient{
+					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
+						return awsiam.GetRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetRoleOutput{
+								Role: &awsiam.Role{},
+							}},
+						}
+					},
+					MockUpdateRoleRequest: func(input *awsiam.UpdateRoleInput) awsiam.UpdateRoleRequest {
+						return awsiam.UpdateRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.UpdateRoleOutput{}},
+						}
+					},
+					MockUpdateAssumeRolePolicyRequest: func(input *awsiam.UpdateAssumeRolePolicyInput) awsiam.UpdateAssumeRolePolicyRequest {
+						return awsiam.UpdateAssumeRolePolicyRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: role(withPolicy()),
+			},
+			want: want{
+				cr:  role(withPolicy()),
 				err: errors.Wrap(errBoom, errUpdate),
 			},
 		},
@@ -396,7 +468,7 @@ func Test_Update(t *testing.T) {
 	}
 }
 
-func Test_Delete(t *testing.T) {
+func TestDelete(t *testing.T) {
 
 	type want struct {
 		cr  resource.Managed

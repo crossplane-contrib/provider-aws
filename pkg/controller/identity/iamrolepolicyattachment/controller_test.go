@@ -46,9 +46,9 @@ const (
 
 var (
 	// an arbitrary managed resource
-	unexpecedItem resource.Managed
-	roleName      = "some arbitrary name"
-	specPolicyArn = "some arbitrary arn"
+	unexpectedItem resource.Managed
+	roleName       = "some arbitrary name"
+	specPolicyArn  = "some arbitrary arn"
 
 	errBoom = errors.New("boom")
 )
@@ -90,7 +90,7 @@ func rolePolicy(m ...rolePolicyModifier) *v1beta1.IAMRolePolicyAttachment {
 	return cr
 }
 
-func Test_Connect(t *testing.T) {
+func TestConnect(t *testing.T) {
 
 	type args struct {
 		newClientFn func(*aws.Config) (iam.RolePolicyAttachmentClient, error)
@@ -124,7 +124,7 @@ func Test_Connect(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
 				err: errors.New(errUnexpectedObject),
@@ -163,7 +163,7 @@ func Test_Connect(t *testing.T) {
 	}
 }
 
-func Test_Observe(t *testing.T) {
+func TestObserve(t *testing.T) {
 
 	type want struct {
 		cr     resource.Managed
@@ -204,10 +204,10 @@ func Test_Observe(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
@@ -224,7 +224,7 @@ func Test_Observe(t *testing.T) {
 			},
 			want: want{
 				cr:  rolePolicy(withRoleName(&roleName)),
-				err: errors.Wrapf(errBoom, errGet, roleName),
+				err: errors.Wrap(errBoom, errGet),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -262,7 +262,7 @@ func Test_Observe(t *testing.T) {
 	}
 }
 
-func Test_Create(t *testing.T) {
+func TestCreate(t *testing.T) {
 
 	type want struct {
 		cr     resource.Managed
@@ -295,10 +295,10 @@ func Test_Create(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
@@ -318,7 +318,7 @@ func Test_Create(t *testing.T) {
 				cr: rolePolicy(withRoleName(&roleName),
 					withSpecPolicyArn(&specPolicyArn),
 					withConditions(corev1alpha1.Creating())),
-				err: errors.Wrapf(errBoom, errAttach, specPolicyArn, roleName),
+				err: errors.Wrap(errBoom, errAttach),
 			},
 		},
 	}
@@ -341,7 +341,7 @@ func Test_Create(t *testing.T) {
 	}
 }
 
-func Test_Update(t *testing.T) {
+func TestUpdate(t *testing.T) {
 
 	type want struct {
 		cr     resource.Managed
@@ -396,7 +396,7 @@ func Test_Update(t *testing.T) {
 	}
 }
 
-func Test_Delete(t *testing.T) {
+func TestDelete(t *testing.T) {
 
 	type want struct {
 		cr  resource.Managed
@@ -428,10 +428,10 @@ func Test_Delete(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
@@ -451,7 +451,7 @@ func Test_Delete(t *testing.T) {
 				cr: rolePolicy(withRoleName(&roleName),
 					withSpecPolicyArn(&specPolicyArn),
 					withConditions(corev1alpha1.Deleting())),
-				err: errors.Wrapf(errBoom, errDetach, specPolicyArn, roleName),
+				err: errors.Wrap(errBoom, errDetach),
 			},
 		},
 		"ResourceDoesNotExist": {

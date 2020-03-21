@@ -60,7 +60,7 @@ type IAMRolePolicyAttachmentParameters struct {
 
 	// RoleNameRef references to an IAMRole to retrieve its Name
 	// +optional
-	RoleNameRef *IAMRoleNameReferencerForIAMRolePolicyAttachment `json:"roleNameRef,omitempty" resource:"attributereferencer"`
+	RoleNameRef *IAMRoleNameReferencerForIAMRolePolicyAttachment `json:"roleNameRef,omitempty"`
 }
 
 // An IAMRolePolicyAttachmentSpec defines the desired state of an

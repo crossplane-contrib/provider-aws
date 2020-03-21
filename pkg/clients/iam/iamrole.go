@@ -1,11 +1,11 @@
 package iam
 
 import (
-	"net/url"
-	"strings"
+	"encoding/json"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/mitchellh/copystructure"
@@ -15,7 +15,10 @@ import (
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
-const errCheckUpToDate = "unable to determine if external resource is up to date"
+const (
+	errCheckUpToDate    = "unable to determine if external resource is up to date"
+	errPolicyJSONEscape = "malformed AssumeRolePolicyDocument JSON"
+)
 
 // RoleClient is the external client used for IAMRole Custom Resource
 type RoleClient interface {
@@ -23,6 +26,7 @@ type RoleClient interface {
 	CreateRoleRequest(*iam.CreateRoleInput) iam.CreateRoleRequest
 	DeleteRoleRequest(*iam.DeleteRoleInput) iam.DeleteRoleRequest
 	UpdateRoleRequest(*iam.UpdateRoleInput) iam.UpdateRoleRequest
+	UpdateAssumeRolePolicyRequest(*iam.UpdateAssumeRolePolicyInput) iam.UpdateAssumeRolePolicyRequest
 }
 
 // NewRoleClient returns a new client using AWS credentials as JSON encoded data.
@@ -63,9 +67,16 @@ func GenerateRoleObservation(role iam.Role) v1beta1.IAMRoleExternalStatus {
 }
 
 // GenerateIAMRole assigns the in IAMRoleParamters to role.
-func GenerateIAMRole(in v1beta1.IAMRoleParameters, role *iam.Role) {
-	s := strings.ReplaceAll(url.PathEscape(in.AssumeRolePolicyDocument), " ", "")
-	role.AssumeRolePolicyDocument = &s
+func GenerateIAMRole(in v1beta1.IAMRoleParameters, role *iam.Role) error {
+
+	if in.AssumeRolePolicyDocument != "" {
+		s, err := awsclients.CompactAndEscapeJSON(in.AssumeRolePolicyDocument)
+		if err != nil {
+			return errors.Wrap(err, errPolicyJSONEscape)
+		}
+
+		role.AssumeRolePolicyDocument = &s
+	}
 	role.Description = in.Description
 	role.MaxSessionDuration = in.MaxSessionDuration
 	role.Path = in.Path
@@ -79,6 +90,7 @@ func GenerateIAMRole(in v1beta1.IAMRoleParameters, role *iam.Role) {
 			}
 		}
 	}
+	return nil
 }
 
 // LateInitializeRole fills the empty fields in *v1beta1.IAMRoleParameters with
@@ -96,9 +108,27 @@ func LateInitializeRole(in *v1beta1.IAMRoleParameters, role *iam.Role) {
 		in.PermissionsBoundary = awsclients.LateInitializeStringPtr(in.PermissionsBoundary, role.PermissionsBoundary.PermissionsBoundaryArn)
 	}
 
-	for _, tag := range in.Tags {
-		role.Tags = append(role.Tags, iam.Tag{Key: &tag.Key, Value: &tag.Value})
+	for _, tag := range role.Tags {
+		in.Tags = append(in.Tags, v1beta1.Tag{Key: *tag.Key, Value: *tag.Value})
 	}
+}
+
+// CreatePatch creates a *v1beta1.IAMRoleParameters that has only the changed
+// values between the target *v1beta1.IAMRoleParameters and the current
+// *iam.Role
+func CreatePatch(in *iam.Role, target *v1beta1.IAMRoleParameters) (*v1beta1.IAMRoleParameters, error) {
+	currentParams := &v1beta1.IAMRoleParameters{}
+	LateInitializeRole(currentParams, in)
+
+	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
+	if err != nil {
+		return nil, err
+	}
+	patch := &v1beta1.IAMRoleParameters{}
+	if err := json.Unmarshal(jsonPatch, patch); err != nil {
+		return nil, err
+	}
+	return patch, nil
 }
 
 // IsRoleUpToDate checks whether there is a change in any of the modifiable fields in role.
@@ -112,9 +142,9 @@ func IsRoleUpToDate(in v1beta1.IAMRoleParameters, observed iam.Role) (bool, erro
 		return true, errors.New(errCheckUpToDate)
 	}
 
-	GenerateIAMRole(in, desired)
+	if err = GenerateIAMRole(in, desired); err != nil {
+		return false, err
+	}
 
-	// 'AssumeRolePolicyDocument' is an escaped string in iam.Role and a normal string  in v1beta.IAMRole.
-	// There is no proper way to compare them.
-	return cmp.Equal(desired, &observed, cmpopts.IgnoreFields(iam.Role{}, "AssumeRolePolicyDocument")), nil
+	return cmp.Equal(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{})), nil
 }

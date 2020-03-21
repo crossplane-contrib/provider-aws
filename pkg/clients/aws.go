@@ -17,9 +17,11 @@ limitations under the License.
 package aws
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -283,4 +285,13 @@ func LateInitializeBoolPtr(in *bool, from *bool) *bool {
 		return in
 	}
 	return from
+}
+
+// CompactAndEscapeJSON removes space characters and URL-encodes the JSON string.
+func CompactAndEscapeJSON(s string) (string, error) {
+	buffer := new(bytes.Buffer)
+	if err := json.Compact(buffer, []byte(s)); err != nil {
+		return "", err
+	}
+	return url.QueryEscape(buffer.String()), nil
 }

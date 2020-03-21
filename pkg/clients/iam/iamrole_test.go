@@ -14,9 +14,20 @@ import (
 var (
 	roleARN                  = "some arn"
 	description              = "some-description"
-	assumeRolePolicyDocument = "some-arn"
-	roleID                   = "some Id"
-	roleName                 = "some name"
+	assumeRolePolicyDocument = `{
+		"Version": "2012-10-17",
+		"Statement": [
+		  {
+			"Effect": "Allow",
+			"Principal": {
+			  "Service": "eks.amazonaws.com"
+			},
+			"Action": "sts:AssumeRole"
+		  }
+		]
+	   }`
+	roleID   = "some Id"
+	roleName = "some name"
 )
 
 func roleParams(m ...func(*v1beta1.IAMRoleParameters)) *v1beta1.IAMRoleParameters {
@@ -31,6 +42,14 @@ func roleParams(m ...func(*v1beta1.IAMRoleParameters)) *v1beta1.IAMRoleParameter
 	}
 
 	return o
+}
+
+func escapedPolicyJSON() *string {
+	p, err := aws.CompactAndEscapeJSON(assumeRolePolicyDocument)
+	if err == nil {
+		return &p
+	}
+	return nil
 }
 
 func role(m ...func(*iam.Role)) *iam.Role {
@@ -169,8 +188,6 @@ func TestLateInitializeRole(t *testing.T) {
 }
 
 func TestIsRoleUpToDate(t *testing.T) {
-	// roleName := "example-role"
-
 	type args struct {
 		role iam.Role
 		p    v1beta1.IAMRoleParameters
@@ -183,7 +200,7 @@ func TestIsRoleUpToDate(t *testing.T) {
 		"SameFields": {
 			args: args{
 				role: iam.Role{
-					AssumeRolePolicyDocument: &assumeRolePolicyDocument,
+					AssumeRolePolicyDocument: escapedPolicyJSON(),
 					Description:              &description,
 					MaxSessionDuration:       aws.Int64(1),
 					Path:                     aws.String("/"),

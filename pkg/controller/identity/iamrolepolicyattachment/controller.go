@@ -41,11 +41,11 @@ import (
 const (
 	errUnexpectedObject = "The managed resource is not an IAMRolePolicyAttachment resource"
 	errClient           = "cannot create a new RolePolicyAttachmentClient"
-	errGet              = "failed to get IAMRolePolicyAttachments for role with name: %v"
-	errAttach           = "failed to attach the policy with arn %v to role %v"
-	errDetach           = "failed to detach the policy with arn %v to role %v"
+	errGet              = "failed to get IAMRolePolicyAttachments for role with name"
+	errAttach           = "failed to attach the policy to role"
+	errDetach           = "failed to detach the policy to role"
 
-	errKubeUpdateFailed = "cannot update RDS instance custom resource"
+	errKubeUpdateFailed = "cannot late initialize IAMRolePolicyAttachment"
 )
 
 // SetupIAMRolePolicyAttachment adds a controller that reconciles
@@ -104,13 +104,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		RoleName: aws.String(cr.Spec.ForProvider.RoleName),
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrapf(resource.Ignore(iam.IsErrorNotFound, err), errGet, cr.Spec.ForProvider.RoleName)
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	var attachedPolicyObject *awsiam.AttachedPolicy
-	for i := 0; i < len(observed.AttachedPolicies); i++ {
-		if cr.Spec.ForProvider.PolicyARN == aws.StringValue(observed.AttachedPolicies[i].PolicyArn) {
-			attachedPolicyObject = &(observed.AttachedPolicies[i])
+	for i, policy := range observed.AttachedPolicies {
+		if cr.Spec.ForProvider.PolicyARN == aws.StringValue(policy.PolicyArn) {
+			attachedPolicyObject = &observed.AttachedPolicies[i]
 			break
 		}
 	}
@@ -152,7 +152,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
 	}).Send(ctx)
 
-	return managed.ExternalCreation{}, errors.Wrapf(err, errAttach, cr.Spec.ForProvider.PolicyARN, cr.Spec.ForProvider.RoleName)
+	return managed.ExternalCreation{}, errors.Wrap(err, errAttach)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -177,5 +177,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return nil
 	}
 
-	return errors.Wrapf(err, errDetach, cr.Spec.ForProvider.PolicyARN, cr.Spec.ForProvider.RoleName)
+	return errors.Wrap(err, errDetach)
 }

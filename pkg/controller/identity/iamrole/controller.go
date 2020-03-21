@@ -42,13 +42,13 @@ import (
 const (
 	errUnexpectedObject = "The managed resource is not an IAMRole resource"
 	errClient           = "cannot create a new IAMRole client"
-	errGet              = "failed to get IAMRole with name: %v"
+	errGet              = "failed to get IAMRole with name"
 	errCreate           = "failed to create the IAMRole resource"
 	errDelete           = "failed to delete the IAMRole resource"
 	errUpdate           = "failed to update the IAMRole resource"
 	errSDK              = "empty IAMRole received from IAM API"
 
-	errKubeUpdateFailed = "cannot update RDS instance custom resource"
+	errKubeUpdateFailed = "cannot late initialize IAMRole"
 	errUpToDateFailed   = "cannot check whether object is up-to-date"
 )
 
@@ -107,7 +107,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrapf(resource.Ignore(iam.IsErrorNotFound, err), errGet, meta.GetExternalName(cr))
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	if observed.Role == nil {
@@ -151,19 +151,43 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	// TODO(soorena776): add more sophisticated Update logic, once we
-	// categorize immutable vs mutable fields (see #727)
-
 	cr, ok := mgd.(*v1beta1.IAMRole)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	_, err := e.client.UpdateRoleRequest(&awsiam.UpdateRoleInput{
-		RoleName:           aws.String(meta.GetExternalName(cr)),
-		Description:        cr.Spec.ForProvider.Description,
-		MaxSessionDuration: cr.Spec.ForProvider.MaxSessionDuration,
+	observed, err := e.client.GetRoleRequest(&awsiam.GetRoleInput{
+		RoleName: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
+
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+	}
+
+	if observed.Role == nil {
+		return managed.ExternalUpdate{}, errors.New(errSDK)
+	}
+
+	patch, err := iam.CreatePatch(observed.Role, &cr.Spec.ForProvider)
+
+	if patch.Description != nil || patch.MaxSessionDuration != nil {
+		_, err = e.client.UpdateRoleRequest(&awsiam.UpdateRoleInput{
+			RoleName:           aws.String(meta.GetExternalName(cr)),
+			Description:        cr.Spec.ForProvider.Description,
+			MaxSessionDuration: cr.Spec.ForProvider.MaxSessionDuration,
+		}).Send(ctx)
+
+		if err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		}
+	}
+
+	if patch.AssumeRolePolicyDocument != "" {
+		_, err = e.client.UpdateAssumeRolePolicyRequest(&awsiam.UpdateAssumeRolePolicyInput{
+			PolicyDocument: &cr.Spec.ForProvider.AssumeRolePolicyDocument,
+			RoleName:       aws.String(meta.GetExternalName(cr)),
+		}).Send(ctx)
+	}
 
 	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 }
