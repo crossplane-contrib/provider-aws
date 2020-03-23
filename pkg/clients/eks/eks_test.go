@@ -33,8 +33,10 @@ import (
 
 // MockAMIClient mocks AMI client which is used to get information about AMI images
 type MockAMIClient struct {
-	MockImages  []ec2.Image
-	VerifyInput func(input *ec2.DescribeImagesInput)
+	MockImages    []ec2.Image
+	MockSubnets   []ec2.Subnet
+	VerifyInput   func(input *ec2.DescribeImagesInput)
+	VerifySubnets func(input *ec2.DescribeSubnetsInput)
 }
 
 // DescribeImagesRequest creates a DescribesImagesRequest
@@ -48,6 +50,22 @@ func (m *MockAMIClient) DescribeImagesRequest(input *ec2.DescribeImagesInput) ec
 			HTTPRequest: &http.Request{},
 			Data: &ec2.DescribeImagesOutput{
 				Images: m.MockImages,
+			},
+		},
+	}
+}
+
+// DescribeImagesRequest creates a DescribeSubnetsRequest
+func (m *MockAMIClient) DescribeSubnetsRequest(input *ec2.DescribeSubnetsInput) ec2.DescribeSubnetsRequest {
+	if m.VerifySubnets != nil {
+		m.VerifySubnets(input)
+	}
+
+	return ec2.DescribeSubnetsRequest{
+		Request: &aws.Request{
+			HTTPRequest: &http.Request{},
+			Data: &ec2.DescribeSubnetsOutput{
+				Subnets: m.MockSubnets,
 			},
 		},
 	}
@@ -115,6 +133,17 @@ func Test_GetAvailableImages_ValidVersion_ReturnsExpected(t *testing.T) {
 	mockEKSClient := eksClient{amiClient: &MockAMIClient{
 
 		VerifyInput: func(input *ec2.DescribeImagesInput) {
+			g.Expect(len(input.Filters)).To(gomega.Equal(2))
+			for _, f := range input.Filters {
+				switch *f.Name {
+				case "name":
+					g.Expect(f.Values[0]).To(gomega.Equal("*amazon-eks-node-1.13*"))
+				case "state":
+					g.Expect(f.Values[0]).To(gomega.Equal("available"))
+				}
+			}
+		},
+		VerifySubnets: func(input *ec2.DescribeSubnetsInput) {
 			g.Expect(len(input.Filters)).To(gomega.Equal(2))
 			for _, f := range input.Filters {
 				switch *f.Name {

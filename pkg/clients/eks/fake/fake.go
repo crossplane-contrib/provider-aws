@@ -27,6 +27,7 @@ type MockEKSClient struct {
 	MockGet               func(string) (*eks.Cluster, error)
 	MockDelete            func(name string) error
 	MockConnectionToken   func(string) (string, error)
+	MockGetSubnetZone     func(subnets []string) (map[string]string, error)
 	MockCreateWorkerNodes func(string, string, v1alpha3.EKSClusterSpec) (*eks.ClusterWorkers, error)
 	MockGetWorkerNodes    func(string) (*eks.ClusterWorkers, error)
 	MockDeleteWorkerNodes func(string) error
@@ -45,6 +46,11 @@ func (m *MockEKSClient) Get(name string) (*eks.Cluster, error) {
 // Delete mock EKS Cluster
 func (m *MockEKSClient) Delete(name string) error {
 	return m.MockDelete(name)
+}
+
+// GetSubnetZone mock
+func (m *MockEKSClient) GetSubnetZone(subnets []string) (map[string]string, error) {
+	return m.MockGetSubnetZone(subnets)
 }
 
 // ConnectionToken mock

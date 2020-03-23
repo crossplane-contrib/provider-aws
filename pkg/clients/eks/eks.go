@@ -39,9 +39,10 @@ import (
 )
 
 const (
-	clusterIDHeader                = "x-k8s-aws-id"
-	v1Prefix                       = "k8s-aws-v1."
-	cloudFormationNodeInstanceRole = "NodeInstanceRole"
+	clusterIDHeader                 = "x-k8s-aws-id"
+	v1Prefix                        = "k8s-aws-v1."
+	cloudFormationNodeInstanceRole  = "NodeInstanceRole"
+	cloudFormationNodeSecurityGroup = "NodeSecurityGroup"
 )
 
 // Cluster crossplane representation of the AWS EKS Cluster
@@ -73,19 +74,21 @@ func NewCluster(c *eks.Cluster) *Cluster {
 
 // ClusterWorkers crossplane representation of the AWS EKS cluster worker nodes
 type ClusterWorkers struct {
-	WorkersStatus cloudformation.StackStatus
-	WorkerReason  string
-	WorkerStackID string
-	WorkerARN     string
+	WorkersStatus       cloudformation.StackStatus
+	WorkerReason        string
+	WorkerStackID       string
+	WorkerARN           string
+	WorkerSecurityGroup string
 }
 
 // NewClusterWorkers returns crossplane representation of the AWS EKS cluster worker nodes
-func NewClusterWorkers(workerStackID string, workerStatus cloudformation.StackStatus, workerReason string, workerARN string) *ClusterWorkers {
+func NewClusterWorkers(workerStackID string, workerStatus cloudformation.StackStatus, workerReason string, workerARN string, workerSecurityGroup string) *ClusterWorkers {
 	return &ClusterWorkers{
-		WorkerStackID: workerStackID,
-		WorkersStatus: workerStatus,
-		WorkerReason:  workerReason,
-		WorkerARN:     workerARN,
+		WorkerStackID:       workerStackID,
+		WorkersStatus:       workerStatus,
+		WorkerReason:        workerReason,
+		WorkerARN:           workerARN,
+		WorkerSecurityGroup: workerSecurityGroup,
 	}
 }
 
@@ -93,6 +96,7 @@ func NewClusterWorkers(workerStackID string, workerStatus cloudformation.StackSt
 type Client interface {
 	Create(string, awscomputev1alpha3.EKSClusterSpec) (*Cluster, error)
 	Get(string) (*Cluster, error)
+	GetSubnetZone(subnets []string) (map[string]string, error)
 	Delete(string) error
 	CreateWorkerNodes(name string, version string, spec awscomputev1alpha3.EKSClusterSpec) (*ClusterWorkers, error)
 	GetWorkerNodes(stackID string) (*ClusterWorkers, error)
@@ -103,6 +107,7 @@ type Client interface {
 // AMIClient the interface for getting AMI images information
 type AMIClient interface {
 	DescribeImagesRequest(*ec2.DescribeImagesInput) ec2.DescribeImagesRequest
+	DescribeSubnetsRequest(*ec2.DescribeSubnetsInput) ec2.DescribeSubnetsRequest
 }
 
 type eksClient struct {
@@ -137,6 +142,23 @@ func (e *eksClient) Create(name string, spec awscomputev1alpha3.EKSClusterSpec) 
 		return nil, err
 	}
 	return NewCluster(output.Cluster), nil
+}
+
+// Get AvailabilityZone per Subnet
+func (e *eksClient) GetSubnetZone(subnets []string) (map[string]string, error) {
+
+	subnetAZs := map[string]string{}
+	input := &ec2.DescribeSubnetsInput{SubnetIds: subnets}
+	output, err := e.amiClient.DescribeSubnetsRequest(input).Send(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+
+	for _, v := range output.Subnets {
+		subnetAZs[*v.AvailabilityZone] = *v.SubnetId
+	}
+
+	return subnetAZs, err
 }
 
 // CreateWorkerNodes new EKS cluster workers nodes
@@ -179,7 +201,7 @@ func (e *eksClient) CreateWorkerNodes(name string, clusterVersion string, spec a
 		return nil, err
 	}
 
-	return NewClusterWorkers(*stackID, cloudformation.StackStatusCreateInProgress, "", ""), nil
+	return NewClusterWorkers(*stackID, cloudformation.StackStatusCreateInProgress, "", "", ""), nil
 }
 
 // Get an existing EKS cluster
@@ -201,16 +223,19 @@ func (e *eksClient) GetWorkerNodes(stackID string) (*ClusterWorkers, error) {
 	}
 
 	nodeARN := ""
+	nodeSecurityGroup := ""
 	if stack.Outputs != nil {
 		for _, item := range stack.Outputs {
 			if aws.StringValue(item.OutputKey) == cloudFormationNodeInstanceRole {
 				nodeARN = aws.StringValue(item.OutputValue)
-				break
+			}
+			if aws.StringValue(item.OutputKey) == cloudFormationNodeSecurityGroup {
+				nodeSecurityGroup = aws.StringValue(item.OutputValue)
 			}
 		}
 	}
 
-	return NewClusterWorkers(stackID, stack.StackStatus, aws.StringValue(stack.StackStatusReason), nodeARN), nil
+	return NewClusterWorkers(stackID, stack.StackStatus, aws.StringValue(stack.StackStatusReason), nodeARN, nodeSecurityGroup), nil
 }
 
 // Delete a EKS cluster

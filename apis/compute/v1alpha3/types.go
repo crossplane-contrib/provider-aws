@@ -77,6 +77,28 @@ type SubnetIDReferencerForEKSCluster struct {
 	network.SubnetIDReferencer `json:",inline"`
 }
 
+// CustomSubnetIDReferencerForEKSCluster is an attribute referencer that resolves SubnetID from a referenced Subnet
+type CustomSubnetIDReferencerForEKSCluster struct {
+	network.SubnetIDReferencer `json:",inline"`
+}
+
+// Assign assigns the retrieved subnetId to the managed resource
+func (v *CustomSubnetIDReferencerForEKSCluster) Assign(res resource.CanReference, value string) error {
+	eks, ok := res.(*EKSCluster)
+	if !ok {
+		return errors.New(errResourceIsNotEKSCluster)
+	}
+
+	for _, id := range eks.Spec.CustomSubnetIDs {
+		if id == value {
+			return nil
+		}
+	}
+
+	eks.Spec.CustomSubnetIDs = append(eks.Spec.CustomSubnetIDs, value)
+	return nil
+}
+
 // Assign assigns the retrieved subnetId to the managed resource
 func (v *SubnetIDReferencerForEKSCluster) Assign(res resource.CanReference, value string) error {
 	eks, ok := res.(*EKSCluster)
@@ -166,6 +188,12 @@ type EKSClusterParameters struct {
 
 	// SubnetIDs of this EKS cluster.
 	SubnetIDs []string `json:"subnetIds,omitempty"`
+
+	// SubnetIDs for custom network of this EKS cluster.
+	CustomSubnetIDs []string `json:"customSubnetIds,omitempty"`
+
+	// CustomSubnetIDRefs is a set of referencers that each retrieve the subnetID from the referenced Subnet
+	CustomSubnetIDRefs []*CustomSubnetIDReferencerForEKSCluster `json:"customSubnetIdRefs,omitempty" resource:"attributereferencer"`
 
 	// SubnetIDRefs is a set of referencers that each retrieve the subnetID from the referenced Subnet
 	SubnetIDRefs []*SubnetIDReferencerForEKSCluster `json:"subnetIdRefs,omitempty" resource:"attributereferencer"`

@@ -52,6 +52,24 @@ spec:
                 EKS Cluster. If you do not specify a value here, the latest version
                 available is used.'
               type: string
+            customSubnetIdRefs:
+              description: CustomSubnetIDRefs is a set of referencers that each retrieve
+                the subnetID from the referenced Subnet
+              items:
+                description: CustomSubnetIDReferencerForEKSCluster is an attribute
+                  referencer that resolves SubnetID from a referenced Subnet
+                properties:
+                  name:
+                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                      TODO: Add other useful fields. apiVersion, kind, uid?'
+                    type: string
+                type: object
+              type: array
+            customSubnetIds:
+              description: SubnetIDs for custom network of this EKS cluster.
+              items:
+                type: string
+              type: array
             mapRoles:
               description: MapRoles map AWS roles to one or more Kubernetes groups.
                 A Default role that allows nodes access to communicate with master
