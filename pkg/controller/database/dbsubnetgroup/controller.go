@@ -44,6 +44,7 @@ const (
 	errMultipleItems    = "retrieved multiple DBSubnetGroups for the given groupName: %v"
 	errCreate           = "failed to create the DBSubnetGroup resource with name: %v"
 	errDelete           = "failed to delete the DBSubnetGroup resource"
+	errUpdate           = "failed to update the DBSubnetGroup resource"
 )
 
 // SetupDBSubnetGroup adds a controller that reconciles DBSubnetGroups.
@@ -164,10 +165,18 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	// TODO(soorena776): add more sophisticated Update logic, once we
-	// categorize immutable vs mutable fields (see #727)
+	cr, ok := mgd.(*v1beta1.DBSubnetGroup)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
 
-	return managed.ExternalUpdate{}, nil
+	_, err := e.client.ModifyDBSubnetGroupRequest(&awsrds.ModifyDBSubnetGroupInput{
+		DBSubnetGroupName:        aws.String(cr.Spec.ForProvider.DBSubnetGroupName),
+		DBSubnetGroupDescription: aws.String(cr.Spec.ForProvider.DBSubnetGroupDescription),
+		SubnetIds:                cr.Spec.ForProvider.SubnetIDs,
+	}).Send(ctx)
+
+	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {

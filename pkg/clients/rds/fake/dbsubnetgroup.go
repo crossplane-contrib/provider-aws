@@ -30,6 +30,7 @@ type MockDBSubnetGroupClient struct {
 	MockCreateDBSubnetGroupRequest    func(*rds.CreateDBSubnetGroupInput) rds.CreateDBSubnetGroupRequest
 	MockDeleteDBSubnetGroupRequest    func(*rds.DeleteDBSubnetGroupInput) rds.DeleteDBSubnetGroupRequest
 	MockDescribeDBSubnetGroupsRequest func(*rds.DescribeDBSubnetGroupsInput) rds.DescribeDBSubnetGroupsRequest
+	MockModifyDBSubnetGroupRequest    func(*rds.ModifyDBSubnetGroupInput) rds.ModifyDBSubnetGroupRequest
 }
 
 // CreateDBSubnetGroupRequest mocks CreateDBSubnetGroupRequest method
@@ -45,4 +46,9 @@ func (m *MockDBSubnetGroupClient) DeleteDBSubnetGroupRequest(input *rds.DeleteDB
 // DescribeDBSubnetGroupsRequest mocks DescribeDBSubnetGroupsRequest method
 func (m *MockDBSubnetGroupClient) DescribeDBSubnetGroupsRequest(input *rds.DescribeDBSubnetGroupsInput) rds.DescribeDBSubnetGroupsRequest {
 	return m.MockDescribeDBSubnetGroupsRequest(input)
+}
+
+// ModifyDBSubnetGroupRequest mocks ModifyDBSubnetGroupRequest method
+func (m *MockDBSubnetGroupClient) ModifyDBSubnetGroupRequest(input *rds.ModifyDBSubnetGroupInput) rds.ModifyDBSubnetGroupRequest {
+	return m.MockModifyDBSubnetGroupRequest(input)
 }

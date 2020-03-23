@@ -301,8 +301,28 @@ func Test_Update(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
 	mockManaged := v1beta1.DBSubnetGroup{
-	mockManaged := v1alpha3.DBSubnetGroup{}
+		Spec: v1beta1.DBSubnetGroupSpec{
+			ForProvider: v1beta1.DBSubnetGroupParameters{
+				DBSubnetGroupDescription: "arbitrary description",
+				DBSubnetGroupName:        "arbitrary group name",
+				SubnetIDs:                []string{"subnetid1", "subnetid2"},
+			},
+		},
+	}
 
+	var mockClientErr error
+	mockClient.MockModifyDBSubnetGroupRequest = func(input *awsrds.ModifyDBSubnetGroupInput) awsrds.ModifyDBSubnetGroupRequest {
+		g.Expect(aws.StringValue(input.DBSubnetGroupName)).To(gomega.Equal(mockManaged.Spec.ForProvider.DBSubnetGroupName), "the passed parameters are not valid")
+		g.Expect(aws.StringValue(input.DBSubnetGroupDescription)).To(gomega.Equal(mockManaged.Spec.ForProvider.DBSubnetGroupDescription), "the passed parameters are not valid")
+		g.Expect(input.SubnetIds).To(gomega.Equal(mockManaged.Spec.ForProvider.SubnetIDs), "the passed parameters are not valid")
+		return awsrds.ModifyDBSubnetGroupRequest{
+			Request: &aws.Request{
+				HTTPRequest: &http.Request{},
+				Data:        &awsrds.ModifyDBSubnetGroupOutput{},
+				Error:       mockClientErr,
+			},
+		}
+	}
 	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
 
 	g.Expect(err).To(gomega.BeNil())

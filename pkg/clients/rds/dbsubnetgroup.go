@@ -27,6 +27,7 @@ type DBSubnetGroupClient interface {
 	CreateDBSubnetGroupRequest(input *rds.CreateDBSubnetGroupInput) rds.CreateDBSubnetGroupRequest
 	DeleteDBSubnetGroupRequest(input *rds.DeleteDBSubnetGroupInput) rds.DeleteDBSubnetGroupRequest
 	DescribeDBSubnetGroupsRequest(input *rds.DescribeDBSubnetGroupsInput) rds.DescribeDBSubnetGroupsRequest
+	ModifyDBSubnetGroupRequest(input *rds.ModifyDBSubnetGroupInput) rds.ModifyDBSubnetGroupRequest
 }
 
 // NewDBSubnetGroupClient returns a new client using AWS credentials as JSON encoded data.
