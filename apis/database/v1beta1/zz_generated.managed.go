@@ -23,6 +23,76 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// GetBindingPhase of this DBSubnetGroup.
+func (mg *DBSubnetGroup) GetBindingPhase() runtimev1alpha1.BindingPhase {
+	return mg.Status.GetBindingPhase()
+}
+
+// GetClaimReference of this DBSubnetGroup.
+func (mg *DBSubnetGroup) GetClaimReference() *corev1.ObjectReference {
+	return mg.Spec.ClaimReference
+}
+
+// GetClassReference of this DBSubnetGroup.
+func (mg *DBSubnetGroup) GetClassReference() *corev1.ObjectReference {
+	return mg.Spec.ClassReference
+}
+
+// GetCondition of this DBSubnetGroup.
+func (mg *DBSubnetGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetProviderReference of this DBSubnetGroup.
+func (mg *DBSubnetGroup) GetProviderReference() *corev1.ObjectReference {
+	return mg.Spec.ProviderReference
+}
+
+// GetReclaimPolicy of this DBSubnetGroup.
+func (mg *DBSubnetGroup) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
+	return mg.Spec.ReclaimPolicy
+}
+
+// GetWriteConnectionSecretToReference of this DBSubnetGroup.
+func (mg *DBSubnetGroup) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetBindingPhase of this DBSubnetGroup.
+func (mg *DBSubnetGroup) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
+	mg.Status.SetBindingPhase(p)
+}
+
+// SetClaimReference of this DBSubnetGroup.
+func (mg *DBSubnetGroup) SetClaimReference(r *corev1.ObjectReference) {
+	mg.Spec.ClaimReference = r
+}
+
+// SetClassReference of this DBSubnetGroup.
+func (mg *DBSubnetGroup) SetClassReference(r *corev1.ObjectReference) {
+	mg.Spec.ClassReference = r
+}
+
+// SetConditions of this DBSubnetGroup.
+func (mg *DBSubnetGroup) SetConditions(c ...runtimev1alpha1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this DBSubnetGroup.
+func (mg *DBSubnetGroup) SetProviderReference(r *corev1.ObjectReference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetReclaimPolicy of this DBSubnetGroup.
+func (mg *DBSubnetGroup) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
+	mg.Spec.ReclaimPolicy = r
+}
+
+// SetWriteConnectionSecretToReference of this DBSubnetGroup.
+func (mg *DBSubnetGroup) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
 // GetBindingPhase of this RDSInstance.
 func (mg *RDSInstance) GetBindingPhase() runtimev1alpha1.BindingPhase {
 	return mg.Status.GetBindingPhase()

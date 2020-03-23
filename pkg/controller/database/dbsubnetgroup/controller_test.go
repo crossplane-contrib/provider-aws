@@ -33,7 +33,7 @@ import (
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha3 "github.com/crossplane/provider-aws/apis/database/v1alpha3"
+	v1beta1 "github.com/crossplane/provider-aws/apis/database/v1beta1"
 	"github.com/crossplane/provider-aws/pkg/clients/rds"
 	"github.com/crossplane/provider-aws/pkg/clients/rds/fake"
 )
@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 func Test_Connect(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := &v1alpha3.DBSubnetGroup{}
+	mockManaged := &v1beta1.DBSubnetGroup{}
 	var clientErr error
 	var configErr error
 
@@ -124,9 +124,9 @@ func Test_Connect(t *testing.T) {
 func Test_Observe(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha3.DBSubnetGroup{
-		Spec: v1alpha3.DBSubnetGroupSpec{
-			DBSubnetGroupParameters: v1alpha3.DBSubnetGroupParameters{
+	mockManaged := v1beta1.DBSubnetGroup{
+		Spec: v1beta1.DBSubnetGroupSpec{
+			ForProvider: v1beta1.DBSubnetGroupParameters{
 				DBSubnetGroupDescription: "arbitrary description",
 				DBSubnetGroupName:        "arbitrary group name",
 				SubnetIDs:                []string{"subnetid1", "subnetid2"},
@@ -210,11 +210,11 @@ func Test_Observe(t *testing.T) {
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		g.Expect(result.ResourceExists).To(gomega.Equal(tc.expectedResourceExist), tc.description)
 		if tc.expectedResourceExist {
-			mgd := tc.managedObj.(*v1alpha3.DBSubnetGroup)
+			mgd := tc.managedObj.(*v1beta1.DBSubnetGroup)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionTrue), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonAvailable), tc.description)
-			g.Expect(mgd.Status.DBSubnetGroupExternalStatus.SubnetGroupStatus).To(gomega.Equal(aws.StringValue(mockExternal.SubnetGroupStatus)), tc.description)
+			g.Expect(mgd.Status.AtProvider.SubnetGroupStatus).To(gomega.Equal(aws.StringValue(mockExternal.SubnetGroupStatus)), tc.description)
 		}
 	}
 }
@@ -222,13 +222,13 @@ func Test_Observe(t *testing.T) {
 func Test_Create(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha3.DBSubnetGroup{
-		Spec: v1alpha3.DBSubnetGroupSpec{
-			DBSubnetGroupParameters: v1alpha3.DBSubnetGroupParameters{
+	mockManaged := v1beta1.DBSubnetGroup{
+		Spec: v1beta1.DBSubnetGroupSpec{
+			ForProvider: v1beta1.DBSubnetGroupParameters{
 				DBSubnetGroupDescription: "arbitrary description",
 				DBSubnetGroupName:        "arbitrary group name",
 				SubnetIDs:                []string{"subnetid1", "subnetid2"},
-				Tags: []v1alpha3.Tag{
+				Tags: []v1beta1.Tag{
 					{Key: "tagKey1", Value: "tagValue1"},
 					{Key: "tagKey2", Value: "tagValue2"},
 				},
@@ -242,10 +242,10 @@ func Test_Create(t *testing.T) {
 	}
 	var mockClientErr error
 	mockClient.MockCreateDBSubnetGroupRequest = func(input *awsrds.CreateDBSubnetGroupInput) awsrds.CreateDBSubnetGroupRequest {
-		g.Expect(aws.StringValue(input.DBSubnetGroupDescription)).To(gomega.Equal(mockManaged.Spec.DBSubnetGroupDescription), "the passed parameters are not valid")
-		g.Expect(aws.StringValue(input.DBSubnetGroupName)).To(gomega.Equal(mockManaged.Spec.DBSubnetGroupName), "the passed parameters are not valid")
-		g.Expect(input.SubnetIds).To(gomega.Equal(mockManaged.Spec.SubnetIDs), "the passed parameters are not valid")
-		g.Expect(len(input.Tags)).To(gomega.Equal(len(mockManaged.Spec.Tags)), "the passed parameters are not valid")
+		g.Expect(aws.StringValue(input.DBSubnetGroupDescription)).To(gomega.Equal(mockManaged.Spec.ForProvider.DBSubnetGroupDescription), "the passed parameters are not valid")
+		g.Expect(aws.StringValue(input.DBSubnetGroupName)).To(gomega.Equal(mockManaged.Spec.ForProvider.DBSubnetGroupName), "the passed parameters are not valid")
+		g.Expect(input.SubnetIds).To(gomega.Equal(mockManaged.Spec.ForProvider.SubnetIDs), "the passed parameters are not valid")
+		g.Expect(len(input.Tags)).To(gomega.Equal(len(mockManaged.Spec.ForProvider.Tags)), "the passed parameters are not valid")
 		return awsrds.CreateDBSubnetGroupRequest{
 			Request: &aws.Request{
 				HTTPRequest: &http.Request{},
@@ -288,11 +288,11 @@ func Test_Create(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.DBSubnetGroup)
+			mgd := tc.managedObj.(*v1beta1.DBSubnetGroup)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
-			g.Expect(mgd.Status.SubnetGroupStatus).To(gomega.Equal(aws.StringValue(mockExternal.SubnetGroupStatus)))
+			g.Expect(mgd.Status.AtProvider.SubnetGroupStatus).To(gomega.Equal(aws.StringValue(mockExternal.SubnetGroupStatus)))
 		}
 	}
 }
@@ -300,6 +300,7 @@ func Test_Create(t *testing.T) {
 func Test_Update(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
+	mockManaged := v1beta1.DBSubnetGroup{
 	mockManaged := v1alpha3.DBSubnetGroup{}
 
 	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
@@ -310,9 +311,9 @@ func Test_Update(t *testing.T) {
 func Test_Delete(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha3.DBSubnetGroup{
-		Spec: v1alpha3.DBSubnetGroupSpec{
-			DBSubnetGroupParameters: v1alpha3.DBSubnetGroupParameters{
+	mockManaged := v1beta1.DBSubnetGroup{
+		Spec: v1beta1.DBSubnetGroupSpec{
+			ForProvider: v1beta1.DBSubnetGroupParameters{
 				DBSubnetGroupDescription: "arbitrary description",
 				DBSubnetGroupName:        "arbitrary group name",
 				SubnetIDs:                []string{"subnetid1", "subnetid2"},
@@ -321,7 +322,7 @@ func Test_Delete(t *testing.T) {
 	}
 	var mockClientErr error
 	mockClient.MockDeleteDBSubnetGroupRequest = func(input *awsrds.DeleteDBSubnetGroupInput) awsrds.DeleteDBSubnetGroupRequest {
-		g.Expect(aws.StringValue(input.DBSubnetGroupName)).To(gomega.Equal(mockManaged.Spec.DBSubnetGroupName), "the passed parameters are not valid")
+		g.Expect(aws.StringValue(input.DBSubnetGroupName)).To(gomega.Equal(mockManaged.Spec.ForProvider.DBSubnetGroupName), "the passed parameters are not valid")
 		return awsrds.DeleteDBSubnetGroupRequest{
 			Request: &aws.Request{
 				HTTPRequest: &http.Request{},
@@ -368,7 +369,7 @@ func Test_Delete(t *testing.T) {
 
 		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.DBSubnetGroup)
+			mgd := tc.managedObj.(*v1beta1.DBSubnetGroup)
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)

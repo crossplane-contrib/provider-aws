@@ -32,7 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha3 "github.com/crossplane/provider-aws/apis/database/v1alpha3"
+	v1beta1 "github.com/crossplane/provider-aws/apis/database/v1beta1"
 	"github.com/crossplane/provider-aws/pkg/clients/rds"
 	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
@@ -48,13 +48,13 @@ const (
 
 // SetupDBSubnetGroup adds a controller that reconciles DBSubnetGroups.
 func SetupDBSubnetGroup(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha3.DBSubnetGroupGroupKind)
+	name := managed.ControllerName(v1beta1.DBSubnetGroupGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha3.DBSubnetGroup{}).
+		For(&v1beta1.DBSubnetGroup{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha3.DBSubnetGroupGroupVersionKind),
+			resource.ManagedKind(v1beta1.DBSubnetGroupGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: rds.NewDBSubnetGroupClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -68,7 +68,7 @@ type connector struct {
 }
 
 func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mgd.(*v1alpha3.DBSubnetGroup)
+	cr, ok := mgd.(*v1beta1.DBSubnetGroup)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -90,13 +90,13 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha3.DBSubnetGroup)
+	cr, ok := mgd.(*v1beta1.DBSubnetGroup)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
 	req := e.client.DescribeDBSubnetGroupsRequest(&awsrds.DescribeDBSubnetGroupsInput{
-		DBSubnetGroupName: aws.String(cr.Spec.DBSubnetGroupName),
+		DBSubnetGroupName: aws.String(cr.Spec.ForProvider.DBSubnetGroupName),
 	})
 
 	response, err := req.Send(ctx)
@@ -108,12 +108,12 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			}, nil
 		}
 
-		return managed.ExternalObservation{}, errors.Wrapf(err, errDescribe, cr.Spec.DBSubnetGroupName)
+		return managed.ExternalObservation{}, errors.Wrapf(err, errDescribe, cr.Spec.ForProvider.DBSubnetGroupName)
 	}
 
 	// in a successful response, there should be one and only one object
 	if len(response.DBSubnetGroups) != 1 {
-		return managed.ExternalObservation{}, errors.Errorf(errMultipleItems, cr.Spec.DBSubnetGroupName)
+		return managed.ExternalObservation{}, errors.Errorf(errMultipleItems, cr.Spec.ForProvider.DBSubnetGroupName)
 	}
 
 	observed := response.DBSubnetGroups[0]
@@ -129,7 +129,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha3.DBSubnetGroup)
+	cr, ok := mgd.(*v1beta1.DBSubnetGroup)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -137,13 +137,13 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
 	input := &awsrds.CreateDBSubnetGroupInput{
-		DBSubnetGroupDescription: aws.String(cr.Spec.DBSubnetGroupDescription),
-		DBSubnetGroupName:        aws.String(cr.Spec.DBSubnetGroupName),
-		SubnetIds:                cr.Spec.SubnetIDs,
+		DBSubnetGroupDescription: aws.String(cr.Spec.ForProvider.DBSubnetGroupDescription),
+		DBSubnetGroupName:        aws.String(cr.Spec.ForProvider.DBSubnetGroupName),
+		SubnetIds:                cr.Spec.ForProvider.SubnetIDs,
 		Tags:                     []awsrds.Tag{},
 	}
 
-	for _, t := range cr.Spec.Tags {
+	for _, t := range cr.Spec.ForProvider.Tags {
 		input.Tags = append(input.Tags, awsrds.Tag{
 			Key:   aws.String(t.Key),
 			Value: aws.String(t.Value),
@@ -155,7 +155,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	response, err := req.Send(ctx)
 
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrapf(err, errCreate, cr.Spec.DBSubnetGroupName)
+		return managed.ExternalCreation{}, errors.Wrapf(err, errCreate, cr.Spec.ForProvider.DBSubnetGroupName)
 	}
 
 	cr.UpdateExternalStatus(*response.DBSubnetGroup)
@@ -171,7 +171,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha3.DBSubnetGroup)
+	cr, ok := mgd.(*v1beta1.DBSubnetGroup)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
@@ -179,7 +179,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
 	req := e.client.DeleteDBSubnetGroupRequest(&awsrds.DeleteDBSubnetGroupInput{
-		DBSubnetGroupName: aws.String(cr.Spec.DBSubnetGroupName),
+		DBSubnetGroupName: aws.String(cr.Spec.ForProvider.DBSubnetGroupName),
 	})
 
 	_, err := req.Send(ctx)

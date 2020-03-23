@@ -53,7 +53,16 @@ var (
 	RDSInstanceClassGroupVersionKind = SchemeGroupVersion.WithKind(RDSInstanceClassKind)
 )
 
+// DBSubnetGroup type metadata.
+var (
+	DBSubnetGroupKind             = reflect.TypeOf(DBSubnetGroup{}).Name()
+	DBSubnetGroupGroupKind        = schema.GroupKind{Group: Group, Kind: DBSubnetGroupKind}.String()
+	DBSubnetGroupKindAPIVersion   = DBSubnetGroupKind + "." + SchemeGroupVersion.String()
+	DBSubnetGroupGroupVersionKind = SchemeGroupVersion.WithKind(DBSubnetGroupKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&RDSInstance{}, &RDSInstanceList{})
 	SchemeBuilder.Register(&RDSInstanceClass{}, &RDSInstanceClassList{})
+	SchemeBuilder.Register(&DBSubnetGroup{}, &DBSubnetGroupList{})
 }
