@@ -52,6 +52,7 @@ const (
 
 	errCreateFailed        = "cannot create RDS instance"
 	errModifyFailed        = "cannot modify RDS instance"
+	errAddTagsFailed       = "cannot add tags to RDS instance"
 	errDeleteFailed        = "cannot delete RDS instance"
 	errDescribeFailed      = "cannot describe RDS instance"
 	errPatchCreationFailed = "cannot create a patch object"
@@ -212,8 +213,23 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errPatchCreationFailed)
 	}
-	modify := e.client.ModifyDBInstanceRequest(rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch))
-	_, err = modify.Send(ctx)
+	_, err = e.client.ModifyDBInstanceRequest(rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch)).Send(ctx)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
+	}
+	if len(patch.Tags) > 0 {
+		tags := make([]awsrds.Tag, len(patch.Tags))
+		for i, t := range patch.Tags {
+			tags[i] = awsrds.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
+		}
+		_, err = e.client.AddTagsToResourceRequest(&awsrds.AddTagsToResourceInput{
+			ResourceName: aws.String(cr.Status.AtProvider.DBInstanceArn),
+			Tags:         tags,
+		}).Send(ctx)
+		if err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errAddTagsFailed)
+		}
+	}
 	return managed.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
 }
 
