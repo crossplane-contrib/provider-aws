@@ -25,6 +25,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/compute"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
+	"github.com/crossplane/provider-aws/pkg/controller/database/dynamodb"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrole"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrolepolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/network/internetgateway"
@@ -68,6 +69,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		internetgateway.SetupInternetGateway,
 		routetable.SetupRouteTable,
 		dbsubnetgroup.SetupDBSubnetGroup,
+		dynamodb.SetupDynamoTable,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err

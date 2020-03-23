@@ -1,0 +1,673 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: dynamotables.database.aws.crossplane.io
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.atProvider.tableName
+    name: TABLE_NAME
+    type: string
+  - JSONPath: .status.atProvider.tableStatus
+    name: TABLE_STATUS
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Ready')].status
+    name: READY
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Synced')].status
+    name: SYNCED
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: AGE
+    type: date
+  group: database.aws.crossplane.io
+  names:
+    kind: DynamoTable
+    listKind: DynamoTableList
+    plural: dynamotables
+    singular: dynamotable
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: A DynamoTable is a managed resource that represents an AWS DynamoDB
+        Table
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: A DynamoTableSpec defines the desired state of a DynamoDB Table.
+          properties:
+            claimRef:
+              description: ClaimReference specifies the resource claim to which this
+                managed resource will be bound. ClaimReference is set automatically
+                during dynamic provisioning. Crossplane does not currently support
+                setting this field manually, per https://github.com/crossplane/crossplane-runtime/issues/19
+              properties:
+                apiVersion:
+                  description: API version of the referent.
+                  type: string
+                fieldPath:
+                  description: 'If referring to a piece of an object instead of an
+                    entire object, this string should contain a valid JSON/Go field
+                    access statement, such as desiredState.manifest.containers[2].
+                    For example, if the object reference is to a container within
+                    a pod, this would take on a value like: "spec.containers{name}"
+                    (where "name" refers to the name of the container that triggered
+                    the event) or if no container name is specified "spec.containers[2]"
+                    (container with index 2 in this pod). This syntax is chosen only
+                    to have some well-defined way of referencing a part of an object.
+                    TODO: this design is not final and this field is subject to change
+                    in the future.'
+                  type: string
+                kind:
+                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                  type: string
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+                namespace:
+                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                  type: string
+                resourceVersion:
+                  description: 'Specific resourceVersion to which this reference is
+                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                  type: string
+                uid:
+                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                  type: string
+              type: object
+            classRef:
+              description: ClassReference specifies the resource class that was used
+                to dynamically provision this managed resource, if any. Crossplane
+                does not currently support setting this field manually, per https://github.com/crossplane/crossplane-runtime/issues/20
+              properties:
+                apiVersion:
+                  description: API version of the referent.
+                  type: string
+                fieldPath:
+                  description: 'If referring to a piece of an object instead of an
+                    entire object, this string should contain a valid JSON/Go field
+                    access statement, such as desiredState.manifest.containers[2].
+                    For example, if the object reference is to a container within
+                    a pod, this would take on a value like: "spec.containers{name}"
+                    (where "name" refers to the name of the container that triggered
+                    the event) or if no container name is specified "spec.containers[2]"
+                    (container with index 2 in this pod). This syntax is chosen only
+                    to have some well-defined way of referencing a part of an object.
+                    TODO: this design is not final and this field is subject to change
+                    in the future.'
+                  type: string
+                kind:
+                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                  type: string
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+                namespace:
+                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                  type: string
+                resourceVersion:
+                  description: 'Specific resourceVersion to which this reference is
+                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                  type: string
+                uid:
+                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                  type: string
+              type: object
+            forProvider:
+              description: DynamoTableParameters define the desired state of an AWS
+                DynomoDBTable
+              properties:
+                attributeDefinitions:
+                  description: An array of attributes that describe the key schema
+                    for the table and indexes.
+                  items:
+                    description: AttributeDefinition  represents an attribute for
+                      describing the key schema for the table and indexes.
+                    properties:
+                      attributeName:
+                        description: A name for the attribute.
+                        type: string
+                      attributeType:
+                        description: "The data type for the attribute, where: \n    *
+                          S - the attribute is of type String \n    * N - the attribute
+                          is of type Number \n    * B - the attribute is of type Binary"
+                        type: string
+                    required:
+                    - attributeName
+                    - attributeType
+                    type: object
+                  type: array
+                globalSecondaryIndexes:
+                  description: One or more global secondary indexes (the maximum is
+                    20) to be created on the table.
+                  items:
+                    description: GlobalSecondaryIndex represents the properties of
+                      a global secondary index.
+                    properties:
+                      indexName:
+                        description: The name of the global secondary index. The name
+                          must be unique among all
+                        type: string
+                      keySchema:
+                        description: The complete key schema for a global secondary
+                          index, which consists of one
+                        items:
+                          description: KeySchemaElement represents a single element
+                            of a key schema which make up the primary key.
+                          properties:
+                            attributeName:
+                              description: The name of a key attribute.
+                              type: string
+                            keyType:
+                              description: 'The role that this key attribute will
+                                assume:'
+                              type: string
+                          required:
+                          - attributeName
+                          - keyType
+                          type: object
+                        type: array
+                      projection:
+                        description: Represents attributes that are copied (projected)
+                          from the table into the global secondary index. These are
+                          in addition to the primary key attributes and index key
+                          attributes, which are automatically projected.
+                        properties:
+                          keyType:
+                            description: Represents the non-key attribute names which
+                              will be projected into the index.
+                            items:
+                              type: string
+                            type: array
+                          projectionType:
+                            description: 'The set of attributes that are projected
+                              into the index:'
+                            type: string
+                        required:
+                        - projectionType
+                        type: object
+                      provisionedThroughput:
+                        description: Represents the provisioned throughput settings
+                          for the specified global secondary index.
+                        properties:
+                          readCapacityUnits:
+                            description: The maximum number of strongly consistent
+                              reads consumed per second before
+                            format: int64
+                            type: integer
+                          writeCapacityUnits:
+                            description: The maximum number of writes consumed per
+                              second before DynamoDB returns a ThrottlingException.
+                            format: int64
+                            type: integer
+                        type: object
+                    type: object
+                  type: array
+                keySchema:
+                  description: KeySchema specifies the attributes that make up the
+                    primary key for a table or an index.
+                  items:
+                    description: KeySchemaElement represents a single element of a
+                      key schema which make up the primary key.
+                    properties:
+                      attributeName:
+                        description: The name of a key attribute.
+                        type: string
+                      keyType:
+                        description: 'The role that this key attribute will assume:'
+                        type: string
+                    required:
+                    - attributeName
+                    - keyType
+                    type: object
+                  type: array
+                localSecondaryIndexes:
+                  description: One or more local secondary indexes (the maximum is
+                    5) to be created on the table.
+                  items:
+                    description: LocalSecondaryIndex represents the properties of
+                      a local secondary index.
+                    properties:
+                      indexName:
+                        description: The name of the local secondary index. The name
+                          must be unique among all other indexes on this table.
+                        type: string
+                      keySchema:
+                        description: The complete key schema for the local secondary
+                          index, consisting of one
+                        items:
+                          description: KeySchemaElement represents a single element
+                            of a key schema which make up the primary key.
+                          properties:
+                            attributeName:
+                              description: The name of a key attribute.
+                              type: string
+                            keyType:
+                              description: 'The role that this key attribute will
+                                assume:'
+                              type: string
+                          required:
+                          - attributeName
+                          - keyType
+                          type: object
+                        type: array
+                      projection:
+                        description: Represents attributes that are copied (projected)
+                          from the table into the local secondary index.
+                        properties:
+                          keyType:
+                            description: Represents the non-key attribute names which
+                              will be projected into the index.
+                            items:
+                              type: string
+                            type: array
+                          projectionType:
+                            description: 'The set of attributes that are projected
+                              into the index:'
+                            type: string
+                        required:
+                        - projectionType
+                        type: object
+                    type: object
+                  type: array
+                provisionedThroughput:
+                  description: Represents the provisioned throughput settings for
+                    a specified table or index.
+                  properties:
+                    readCapacityUnits:
+                      description: The maximum number of strongly consistent reads
+                        consumed per second before
+                      format: int64
+                      type: integer
+                    writeCapacityUnits:
+                      description: The maximum number of writes consumed per second
+                        before DynamoDB returns a ThrottlingException.
+                      format: int64
+                      type: integer
+                  type: object
+                sseSpecification:
+                  description: Represents the settings used to enable server-side
+                    encryption.
+                  properties:
+                    SSEType:
+                      description: Server-side encryption type.
+                      type: string
+                    enabled:
+                      description: Indicates whether server-side encryption is done
+                        using an AWS managed CMK or an AWS owned CMK.
+                      type: boolean
+                    kmsMasterKeyId:
+                      description: The AWS KMS customer master key (CMK) that should
+                        be used for the AWS KMS encryption.
+                      type: string
+                  type: object
+                streamSpecification:
+                  description: 'The stream settings for DynamoDB Streams on the table.
+                    These settings consist of:'
+                  properties:
+                    StreamViewType:
+                      description: When an item in the table is modified, StreamViewType
+                        determines what information is written to the stream for this
+                        table.
+                      type: string
+                    streamEnabled:
+                      description: Indicates whether DynamoDB Streams is enabled (true)
+                        or disabled (false) on the table.
+                      type: boolean
+                  type: object
+              required:
+              - attributeDefinitions
+              - keySchema
+              type: object
+            providerRef:
+              description: ProviderReference specifies the provider that will be used
+                to create, observe, update, and delete this managed resource.
+              properties:
+                apiVersion:
+                  description: API version of the referent.
+                  type: string
+                fieldPath:
+                  description: 'If referring to a piece of an object instead of an
+                    entire object, this string should contain a valid JSON/Go field
+                    access statement, such as desiredState.manifest.containers[2].
+                    For example, if the object reference is to a container within
+                    a pod, this would take on a value like: "spec.containers{name}"
+                    (where "name" refers to the name of the container that triggered
+                    the event) or if no container name is specified "spec.containers[2]"
+                    (container with index 2 in this pod). This syntax is chosen only
+                    to have some well-defined way of referencing a part of an object.
+                    TODO: this design is not final and this field is subject to change
+                    in the future.'
+                  type: string
+                kind:
+                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                  type: string
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+                namespace:
+                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                  type: string
+                resourceVersion:
+                  description: 'Specific resourceVersion to which this reference is
+                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                  type: string
+                uid:
+                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                  type: string
+              type: object
+            reclaimPolicy:
+              description: ReclaimPolicy specifies what will happen to this managed
+                resource when its resource claim is deleted, and what will happen
+                to the underlying external resource when the managed resource is deleted.
+                The "Delete" policy causes the managed resource to be deleted when
+                its bound resource claim is deleted, and in turn causes the external
+                resource to be deleted when its managed resource is deleted. The "Retain"
+                policy causes the managed resource to be retained, in binding phase
+                "Released", when its resource claim is deleted, and in turn causes
+                the external resource to be retained when its managed resource is
+                deleted. The "Retain" policy is used when no policy is specified.
+              enum:
+              - Retain
+              - Delete
+              type: string
+            writeConnectionSecretToRef:
+              description: WriteConnectionSecretToReference specifies the namespace
+                and name of a Secret to which any connection details for this managed
+                resource should be written. Connection details frequently include
+                the endpoint, username, and password required to connect to the managed
+                resource.
+              properties:
+                name:
+                  description: Name of the secret.
+                  type: string
+                namespace:
+                  description: Namespace of the secret.
+                  type: string
+              required:
+              - name
+              - namespace
+              type: object
+          required:
+          - forProvider
+          - providerRef
+          type: object
+        status:
+          description: A DynamoTableStatus represents the observed state of a DBSubnetGroup.
+          properties:
+            atProvider:
+              description: DynamoTableObservation keeps the state for the external
+                resource
+              properties:
+                attributeDefinitions:
+                  description: An array of AttributeDefinition objects. Each of these
+                    objects describes one attribute in the table and index key schema.
+                  items:
+                    description: AttributeDefinition  represents an attribute for
+                      describing the key schema for the table and indexes.
+                    properties:
+                      attributeName:
+                        description: A name for the attribute.
+                        type: string
+                      attributeType:
+                        description: "The data type for the attribute, where: \n    *
+                          S - the attribute is of type String \n    * N - the attribute
+                          is of type Number \n    * B - the attribute is of type Binary"
+                        type: string
+                    required:
+                    - attributeName
+                    - attributeType
+                    type: object
+                  type: array
+                globalSecondaryIndexes:
+                  description: The global secondary indexes, if any, on the table.
+                    Each index is scoped to a given partition key value.
+                  items:
+                    description: GlobalSecondaryIndex represents the properties of
+                      a global secondary index.
+                    properties:
+                      indexName:
+                        description: The name of the global secondary index. The name
+                          must be unique among all
+                        type: string
+                      keySchema:
+                        description: The complete key schema for a global secondary
+                          index, which consists of one
+                        items:
+                          description: KeySchemaElement represents a single element
+                            of a key schema which make up the primary key.
+                          properties:
+                            attributeName:
+                              description: The name of a key attribute.
+                              type: string
+                            keyType:
+                              description: 'The role that this key attribute will
+                                assume:'
+                              type: string
+                          required:
+                          - attributeName
+                          - keyType
+                          type: object
+                        type: array
+                      projection:
+                        description: Represents attributes that are copied (projected)
+                          from the table into the global secondary index. These are
+                          in addition to the primary key attributes and index key
+                          attributes, which are automatically projected.
+                        properties:
+                          keyType:
+                            description: Represents the non-key attribute names which
+                              will be projected into the index.
+                            items:
+                              type: string
+                            type: array
+                          projectionType:
+                            description: 'The set of attributes that are projected
+                              into the index:'
+                            type: string
+                        required:
+                        - projectionType
+                        type: object
+                      provisionedThroughput:
+                        description: Represents the provisioned throughput settings
+                          for the specified global secondary index.
+                        properties:
+                          readCapacityUnits:
+                            description: The maximum number of strongly consistent
+                              reads consumed per second before
+                            format: int64
+                            type: integer
+                          writeCapacityUnits:
+                            description: The maximum number of writes consumed per
+                              second before DynamoDB returns a ThrottlingException.
+                            format: int64
+                            type: integer
+                        type: object
+                    type: object
+                  type: array
+                globalTableVersion:
+                  description: Represents the version of global tables (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GlobalTables.html)
+                    in use, if the table is replicated across AWS Regions.
+                  type: string
+                itemCount:
+                  description: The number of items in the specified table.
+                  format: int64
+                  type: integer
+                keySchema:
+                  description: 'The primary key structure for the table. Each KeySchemaElement
+                    consists of:'
+                  items:
+                    description: KeySchemaElement represents a single element of a
+                      key schema which make up the primary key.
+                    properties:
+                      attributeName:
+                        description: The name of a key attribute.
+                        type: string
+                      keyType:
+                        description: 'The role that this key attribute will assume:'
+                        type: string
+                    required:
+                    - attributeName
+                    - keyType
+                    type: object
+                  type: array
+                localSecondaryIndexes:
+                  description: Represents one or more local secondary indexes on the
+                    table.
+                  items:
+                    description: LocalSecondaryIndex represents the properties of
+                      a local secondary index.
+                    properties:
+                      indexName:
+                        description: The name of the local secondary index. The name
+                          must be unique among all other indexes on this table.
+                        type: string
+                      keySchema:
+                        description: The complete key schema for the local secondary
+                          index, consisting of one
+                        items:
+                          description: KeySchemaElement represents a single element
+                            of a key schema which make up the primary key.
+                          properties:
+                            attributeName:
+                              description: The name of a key attribute.
+                              type: string
+                            keyType:
+                              description: 'The role that this key attribute will
+                                assume:'
+                              type: string
+                          required:
+                          - attributeName
+                          - keyType
+                          type: object
+                        type: array
+                      projection:
+                        description: Represents attributes that are copied (projected)
+                          from the table into the local secondary index.
+                        properties:
+                          keyType:
+                            description: Represents the non-key attribute names which
+                              will be projected into the index.
+                            items:
+                              type: string
+                            type: array
+                          projectionType:
+                            description: 'The set of attributes that are projected
+                              into the index:'
+                            type: string
+                        required:
+                        - projectionType
+                        type: object
+                    type: object
+                  type: array
+                provisionedThroughput:
+                  description: The provisioned throughput settings for the table,
+                    consisting of read and write capacity units, along with data about
+                    increases and decreases.
+                  properties:
+                    readCapacityUnits:
+                      description: The maximum number of strongly consistent reads
+                        consumed per second before
+                      format: int64
+                      type: integer
+                    writeCapacityUnits:
+                      description: The maximum number of writes consumed per second
+                        before DynamoDB returns a ThrottlingException.
+                      format: int64
+                      type: integer
+                  type: object
+                tableArn:
+                  description: The Amazon Resource Name (ARN) that uniquely identifies
+                    the table.
+                  type: string
+                tableId:
+                  description: Unique identifier for the table for which the backup
+                    was created.
+                  type: string
+                tableName:
+                  description: Unique identifier for the table for which the backup
+                    was created.
+                  type: string
+                tableStatus:
+                  description: 'The current state of the table:'
+                  type: string
+              type: object
+            bindingPhase:
+              description: Phase represents the binding phase of a managed resource
+                or claim. Unbindable resources cannot be bound, typically because
+                they are currently unavailable, or still being created. Unbound resource
+                are available for binding, and Bound resources have successfully bound
+                to another resource.
+              enum:
+              - Unbindable
+              - Unbound
+              - Bound
+              - Released
+              type: string
+            conditions:
+              description: Conditions of the resource.
+              items:
+                description: A Condition that may apply to a resource.
+                properties:
+                  lastTransitionTime:
+                    description: LastTransitionTime is the last time this condition
+                      transitioned from one status to another.
+                    format: date-time
+                    type: string
+                  message:
+                    description: A Message containing details about this condition's
+                      last transition from one status to another, if any.
+                    type: string
+                  reason:
+                    description: A Reason for this condition's last transition from
+                      one status to another.
+                    type: string
+                  status:
+                    description: Status of this condition; is it currently True, False,
+                      or Unknown?
+                    type: string
+                  type:
+                    description: Type of this condition. At most one of each condition
+                      type may apply to a resource at any point in time.
+                    type: string
+                required:
+                - lastTransitionTime
+                - reason
+                - status
+                - type
+                type: object
+              type: array
+          required:
+          - atProvider
+          type: object
+      required:
+      - spec
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
