@@ -19,15 +19,14 @@ package v1alpha3
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	corev1 "k8s.io/api/core/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-
-	kerrors "k8s.io/apimachinery/pkg/api/errors"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 )
 
 // SecurityGroupIDReferencer is used to get the ID from another SecurityGroup
@@ -37,33 +36,28 @@ type SecurityGroupIDReferencer struct {
 
 // GetStatus implements GetStatus method of AttributeReferencer interface
 func (v *SecurityGroupIDReferencer) GetStatus(ctx context.Context, _ resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
-	sg := SecurityGroup{}
-
+	cr := &SecurityGroup{}
 	nn := types.NamespacedName{Name: v.Name}
-	if err := reader.Get(ctx, nn, &sg); err != nil {
+	if err := reader.Get(ctx, nn, cr); err != nil {
 		if kerrors.IsNotFound(err) {
 			return []resource.ReferenceStatus{{Name: v.Name, Status: resource.ReferenceNotFound}}, nil
 		}
-
 		return nil, err
 	}
-
-	if !resource.IsConditionTrue(sg.GetCondition(runtimev1alpha1.TypeReady)) {
+	if !resource.IsConditionTrue(cr.GetCondition(runtimev1alpha1.TypeReady)) {
 		return []resource.ReferenceStatus{{Name: v.Name, Status: resource.ReferenceNotReady}}, nil
 	}
-
 	return []resource.ReferenceStatus{{Name: v.Name, Status: resource.ReferenceReady}}, nil
 }
 
 // Build retrieves and builds the SubnetID
 func (v *SecurityGroupIDReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
-	sg := SecurityGroup{}
+	cr := &SecurityGroup{}
 	nn := types.NamespacedName{Name: v.Name}
-	if err := reader.Get(ctx, nn, &sg); err != nil {
+	if err := reader.Get(ctx, nn, cr); err != nil {
 		return "", err
 	}
-
-	return sg.Status.SecurityGroupID, nil
+	return meta.GetExternalName(cr), nil
 }
 
 // SecurityGroupNameReferencer is used to get the name from another SecurityGroup
@@ -73,31 +67,26 @@ type SecurityGroupNameReferencer struct {
 
 // GetStatus implements GetStatus method of AttributeReferencer interface
 func (v *SecurityGroupNameReferencer) GetStatus(ctx context.Context, _ resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
-	sg := SecurityGroup{}
-
+	cr := &SecurityGroup{}
 	nn := types.NamespacedName{Name: v.Name}
-	if err := reader.Get(ctx, nn, &sg); err != nil {
+	if err := reader.Get(ctx, nn, cr); err != nil {
 		if kerrors.IsNotFound(err) {
 			return []resource.ReferenceStatus{{Name: v.Name, Status: resource.ReferenceNotFound}}, nil
 		}
-
 		return nil, err
 	}
-
-	if !resource.IsConditionTrue(sg.GetCondition(runtimev1alpha1.TypeReady)) {
+	if !resource.IsConditionTrue(cr.GetCondition(runtimev1alpha1.TypeReady)) {
 		return []resource.ReferenceStatus{{Name: v.Name, Status: resource.ReferenceNotReady}}, nil
 	}
-
 	return []resource.ReferenceStatus{{Name: v.Name, Status: resource.ReferenceReady}}, nil
 }
 
 // Build retrieves and builds the GroupName
 func (v *SecurityGroupNameReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
-	sg := SecurityGroup{}
+	cr := &SecurityGroup{}
 	nn := types.NamespacedName{Name: v.Name}
-	if err := reader.Get(ctx, nn, &sg); err != nil {
+	if err := reader.Get(ctx, nn, cr); err != nil {
 		return "", err
 	}
-
-	return sg.Spec.GroupName, nil
+	return cr.Spec.GroupName, nil
 }

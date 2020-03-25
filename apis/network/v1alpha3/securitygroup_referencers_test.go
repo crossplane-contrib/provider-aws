@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 )
@@ -151,7 +152,7 @@ func TestSecurityGroupIDReferencerBuild(t *testing.T) {
 			input: input{
 				readerFn: func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error {
 					p := obj.(*SecurityGroup)
-					p.Status.SecurityGroupID = "mockSecurityGroupID"
+					meta.SetExternalName(p, "mockSecurityGroupID")
 					return nil
 				},
 			},

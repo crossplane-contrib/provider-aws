@@ -23,8 +23,11 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/google/go-cmp/cmp"
+	"github.com/onsi/gomega"
 
 	"github.com/crossplane/crossplane-runtime/pkg/test"
+
+	"github.com/crossplane/provider-aws/apis/network/v1alpha3"
 )
 
 func TestMain(m *testing.M) {
@@ -268,4 +271,18 @@ func Test_IsVPCNotFoundErr(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_SecurityGroup_BuildEC2Permissions(t *testing.T) {
+	g := gomega.NewGomegaWithT(t)
+
+	res := GenerateEC2Permissions([]v1alpha3.IPPermission{
+		{
+			IPRanges: []v1alpha3.IPRange{
+				{CIDRIP: "arbitranry cidrip"},
+			},
+		},
+	})
+
+	g.Expect(res).ToNot(gomega.BeNil())
 }
