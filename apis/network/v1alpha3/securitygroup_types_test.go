@@ -50,7 +50,7 @@ func TestVPCIDReferencerForSecurityGroup_AssignValidType_ReturnsExpected(t *test
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
 
-	if diff := cmp.Diff(res.Spec.VPCID, "mockValue"); diff != "" {
+	if diff := cmp.Diff(*res.Spec.VPCID, "mockValue"); diff != "" {
 		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
 	}
 }
