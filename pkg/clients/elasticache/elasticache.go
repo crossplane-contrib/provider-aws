@@ -84,8 +84,8 @@ func NewCreateReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id str
 		c.Tags = make([]elasticache.Tag, len(g.Tags))
 		for i, tag := range g.Tags {
 			c.Tags[i] = elasticache.Tag{
-				Key:   &tag.Key,
-				Value: &tag.Value,
+				Key:   clients.String(tag.Key),
+				Value: clients.String(tag.Value),
 			}
 		}
 	}

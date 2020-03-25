@@ -42,6 +42,7 @@ type Client interface {
 	DescribeDBInstancesRequest(*rds.DescribeDBInstancesInput) rds.DescribeDBInstancesRequest
 	ModifyDBInstanceRequest(*rds.ModifyDBInstanceInput) rds.ModifyDBInstanceRequest
 	DeleteDBInstanceRequest(*rds.DeleteDBInstanceInput) rds.DeleteDBInstanceRequest
+	AddTagsToResourceRequest(*rds.AddTagsToResourceInput) rds.AddTagsToResourceRequest
 }
 
 // NewClient creates new RDS RDSClient with provided AWS Configurations/Credentials

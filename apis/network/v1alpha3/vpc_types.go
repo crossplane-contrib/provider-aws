@@ -36,6 +36,9 @@ type VPCParameters struct {
 
 	// A boolean flag to enable/disable DNS hostnames in the VPC
 	EnableDNSHostNames bool `json:"enableDnsHostNames,omitempty"`
+
+	// Tags are used as identification helpers between AWS resources.
+	Tags []Tag `json:"tags,omitempty"`
 }
 
 // A VPCSpec defines the desired state of a VPC.

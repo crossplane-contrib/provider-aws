@@ -22,6 +22,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/crossplane/crossplane-runtime/pkg/test"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -354,16 +358,6 @@ func Test_Create(t *testing.T) {
 	}
 }
 
-func Test_Update(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := v1alpha3.VPC{}
-
-	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
-
-	g.Expect(err).To(gomega.BeNil())
-}
-
 func Test_Delete(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
@@ -439,5 +433,88 @@ func Test_Delete(t *testing.T) {
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)
 		}
+	}
+}
+
+const (
+	providerName = "aws-creds"
+)
+
+var (
+	errBoom = errors.New("boom")
+)
+
+type vpcModifier func(vpc *v1alpha3.VPC)
+
+func withTags(tagMaps ...map[string]string) vpcModifier {
+	var tagList []v1alpha3.Tag
+	for _, tagMap := range tagMaps {
+		for k, v := range tagMap {
+			tagList = append(tagList, v1alpha3.Tag{Key: k, Value: v})
+		}
+	}
+	return func(r *v1alpha3.VPC) { r.Spec.Tags = tagList }
+}
+
+func instance(m ...vpcModifier) *v1alpha3.VPC {
+	cr := &v1alpha3.VPC{
+		Spec: v1alpha3.VPCSpec{
+			ResourceSpec: corev1alpha1.ResourceSpec{
+				ProviderReference: &corev1.ObjectReference{Name: providerName},
+			},
+		},
+	}
+	for _, f := range m {
+		f(cr)
+	}
+	return cr
+}
+
+func TestInitialize(t *testing.T) {
+	type args struct {
+		cr   *v1alpha3.VPC
+		kube client.Client
+	}
+	type want struct {
+		cr  *v1alpha3.VPC
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				cr:   instance(withTags(map[string]string{"foo": "bar"})),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+			},
+			want: want{
+				cr: instance(withTags(resource.GetExternalTags(instance()), map[string]string{"foo": "bar"})),
+			},
+		},
+		"UpdateFailed": {
+			args: args{
+				cr:   instance(),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errKubeUpdateFailed),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &tagger{kube: tc.kube}
+			err := e.Initialize(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1alpha3.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
 	}
 }

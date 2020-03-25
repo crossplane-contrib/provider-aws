@@ -22,13 +22,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
@@ -37,14 +35,17 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
+
 	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	elasticacheclient "github.com/crossplane/provider-aws/pkg/clients/elasticache"
 	"github.com/crossplane/provider-aws/pkg/clients/elasticache/fake"
-
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/test"
 )
 
 const (
@@ -148,6 +149,16 @@ func withClusterEnabled(e bool) replicationGroupModifier {
 
 func withAutomaticFailoverStatus(s string) replicationGroupModifier {
 	return func(r *v1beta1.ReplicationGroup) { r.Status.AtProvider.AutomaticFailover = s }
+}
+
+func withTags(tagMaps ...map[string]string) replicationGroupModifier {
+	var tagList []v1beta1.Tag
+	for _, tagMap := range tagMaps {
+		for k, v := range tagMap {
+			tagList = append(tagList, v1beta1.Tag{Key: k, Value: v})
+		}
+	}
+	return func(r *v1beta1.ReplicationGroup) { r.Spec.ForProvider.Tags = tagList }
 }
 
 func replicationGroup(rm ...replicationGroupModifier) *v1beta1.ReplicationGroup {
@@ -785,6 +796,55 @@ func TestConnect(t *testing.T) {
 			_, gotErr := tc.conn.Connect(ctx, tc.i)
 			if diff := cmp.Diff(tc.wantErr, gotErr, test.EquateErrors()); diff != "" {
 				t.Errorf("tc.conn.Connect(...): want error != got error:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestInitialize(t *testing.T) {
+	type args struct {
+		cr   *v1beta1.ReplicationGroup
+		kube client.Client
+	}
+	type want struct {
+		cr  *v1beta1.ReplicationGroup
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				cr:   replicationGroup(withTags(map[string]string{"foo": "bar"})),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+			},
+			want: want{
+				cr: replicationGroup(withTags(resource.GetExternalTags(replicationGroup()), map[string]string{"foo": "bar"})),
+			},
+		},
+		"UpdateFailed": {
+			args: args{
+				cr:   replicationGroup(),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errorBoom)},
+			},
+			want: want{
+				err: errors.Wrap(errorBoom, errUpdateReplicationGroupCR),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &tagger{kube: tc.kube}
+			err := e.Initialize(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1beta1.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
 	}
