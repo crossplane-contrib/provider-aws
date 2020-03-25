@@ -195,6 +195,22 @@ spec:
               - Retain
               - Delete
               type: string
+            tags:
+              description: Tags are used as identification helpers between AWS resources.
+              items:
+                description: Tag defines a tag
+                properties:
+                  key:
+                    description: Key is the name of the tag.
+                    type: string
+                  value:
+                    description: Value is the value of the tag.
+                    type: string
+                required:
+                - key
+                - value
+                type: object
+              type: array
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the namespace
                 and name of a Secret to which any connection details for this managed

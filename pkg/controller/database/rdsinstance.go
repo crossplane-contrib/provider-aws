@@ -52,6 +52,7 @@ const (
 
 	errCreateFailed        = "cannot create RDS instance"
 	errModifyFailed        = "cannot modify RDS instance"
+	errAddTagsFailed       = "cannot add tags to RDS instance"
 	errDeleteFailed        = "cannot delete RDS instance"
 	errDescribeFailed      = "cannot describe RDS instance"
 	errPatchCreationFailed = "cannot create a patch object"
@@ -68,6 +69,7 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: rds.NewClient}),
+			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -211,8 +213,23 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errPatchCreationFailed)
 	}
-	modify := e.client.ModifyDBInstanceRequest(rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch))
-	_, err = modify.Send(ctx)
+	_, err = e.client.ModifyDBInstanceRequest(rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch)).Send(ctx)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
+	}
+	if len(patch.Tags) > 0 {
+		tags := make([]awsrds.Tag, len(patch.Tags))
+		for i, t := range patch.Tags {
+			tags[i] = awsrds.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
+		}
+		_, err = e.client.AddTagsToResourceRequest(&awsrds.AddTagsToResourceInput{
+			ResourceName: aws.String(cr.Status.AtProvider.DBInstanceArn),
+			Tags:         tags,
+		}).Send(ctx)
+		if err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errAddTagsFailed)
+		}
+	}
 	return managed.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
 }
 
@@ -240,4 +257,29 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	req := e.client.DeleteDBInstanceRequest(&input)
 	_, err := req.Send(ctx)
 	return errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
+}
+
+type tagger struct {
+	kube client.Client
+}
+
+func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
+	cr, ok := mg.(*v1beta1.RDSInstance)
+	if !ok {
+		return errors.New(errNotRDSInstance)
+	}
+	tagMap := map[string]string{}
+	for _, t := range cr.Spec.ForProvider.Tags {
+		tagMap[t.Key] = t.Value
+	}
+	for k, v := range resource.GetExternalTags(mg) {
+		tagMap[k] = v
+	}
+	cr.Spec.ForProvider.Tags = make([]v1beta1.Tag, len(tagMap))
+	i := 0
+	for k, v := range tagMap {
+		cr.Spec.ForProvider.Tags[i] = v1beta1.Tag{Key: k, Value: v}
+		i++
+	}
+	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

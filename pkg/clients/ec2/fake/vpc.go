@@ -31,6 +31,7 @@ type MockVPCClient struct {
 	MockDeleteVpcRequest          func(*ec2.DeleteVpcInput) ec2.DeleteVpcRequest
 	MockDescribeVpcsRequest       func(*ec2.DescribeVpcsInput) ec2.DescribeVpcsRequest
 	MockModifyVpcAttributeRequest func(*ec2.ModifyVpcAttributeInput) ec2.ModifyVpcAttributeRequest
+	MockCreateTagsRequest         func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
 }
 
 // CreateVpcRequest mocks CreateVpcRequest method
@@ -51,4 +52,9 @@ func (m *MockVPCClient) DescribeVpcsRequest(input *ec2.DescribeVpcsInput) ec2.De
 // ModifyVpcAttributeRequest mocks ModifyVpcAttributeRequest method
 func (m *MockVPCClient) ModifyVpcAttributeRequest(input *ec2.ModifyVpcAttributeInput) ec2.ModifyVpcAttributeRequest {
 	return m.MockModifyVpcAttributeRequest(input)
+}
+
+// CreateTagsRequest mocks CreateTagsRequest method
+func (m *MockVPCClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
+	return m.MockCreateTagsRequest(input)
 }

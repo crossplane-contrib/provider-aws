@@ -20,6 +20,10 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/google/go-cmp/cmp/cmpopts"
+
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/google/go-cmp/cmp"
@@ -80,6 +84,16 @@ func withBindingPhase(p runtimev1alpha1.BindingPhase) rdsModifier {
 
 func withEngineVersion(s *string) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.EngineVersion = s }
+}
+
+func withTags(tagMaps ...map[string]string) rdsModifier {
+	var tagList []v1beta1.Tag
+	for _, tagMap := range tagMaps {
+		for k, v := range tagMap {
+			tagList = append(tagList, v1beta1.Tag{Key: k, Value: v})
+		}
+	}
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.Tags = tagList }
 }
 
 func withDBInstanceStatus(s string) rdsModifier {
@@ -608,11 +622,16 @@ func TestUpdate(t *testing.T) {
 							}},
 						}
 					},
+					MockAddTags: func(input *awsrds.AddTagsToResourceInput) awsrds.AddTagsToResourceRequest {
+						return awsrds.AddTagsToResourceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.AddTagsToResourceOutput{}},
+						}
+					},
 				},
-				cr: instance(),
+				cr: instance(withTags(map[string]string{"foo": "bar"})),
 			},
 			want: want{
-				cr: instance(),
+				cr: instance(withTags(map[string]string{"foo": "bar"})),
 			},
 		},
 		"AlreadyModifying": {
@@ -660,6 +679,34 @@ func TestUpdate(t *testing.T) {
 			want: want{
 				cr:  instance(),
 				err: errors.Wrap(errBoom, errModifyFailed),
+			},
+		},
+		"FailedAddTags": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockModify: func(input *awsrds.ModifyDBInstanceInput) awsrds.ModifyDBInstanceRequest {
+						return awsrds.ModifyDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ModifyDBInstanceOutput{}},
+						}
+					},
+					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
+						return awsrds.DescribeDBInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+								DBInstances: []awsrds.DBInstance{{}},
+							}},
+						}
+					},
+					MockAddTags: func(input *awsrds.AddTagsToResourceInput) awsrds.AddTagsToResourceRequest {
+						return awsrds.AddTagsToResourceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: instance(withTags(map[string]string{"foo": "bar"})),
+			},
+			want: want{
+				cr:  instance(withTags(map[string]string{"foo": "bar"})),
+				err: errors.Wrap(errBoom, errAddTagsFailed),
 			},
 		},
 	}
@@ -782,6 +829,51 @@ func TestDelete(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestInitialize(t *testing.T) {
+	type want struct {
+		cr  *v1beta1.RDSInstance
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				cr:   instance(withTags(map[string]string{"foo": "bar"})),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+			},
+			want: want{
+				cr: instance(withTags(resource.GetExternalTags(instance()), map[string]string{"foo": "bar"})),
+			},
+		},
+		"UpdateFailed": {
+			args: args{
+				cr:   instance(),
+				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errKubeUpdateFailed),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &tagger{kube: tc.kube}
+			err := e.Initialize(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1beta1.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
