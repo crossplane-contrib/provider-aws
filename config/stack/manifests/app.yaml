@@ -12,7 +12,7 @@ readme: |
 
  * Custom Resource Definitions (CRDs) that model AWS infrastructure and services (e.g. [Amazon Relational Database Service (RDS)](https://aws.amazon.com/rds/), [EKS clusters](https://aws.amazon.com/eks/), etc.)
  * Controllers to provision these resources in AWS based on the users desired state captured in CRDs they create
- * Implementations of Crossplane's [portable resource abstractions](https://crossplane.io/docs/master/concepts.html), enabling AWS resources to fulfill a user's general need for cloud services
+ * Implementations of Crossplane's portable resource abstractions, enabling AWS resources to fulfill a user's general need for cloud services
 
 # Maintainer names and emails.
 maintainers:

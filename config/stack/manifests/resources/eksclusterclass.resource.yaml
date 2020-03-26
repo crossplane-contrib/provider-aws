@@ -8,4 +8,4 @@ overview: |
 readme: |
  Cloud-specific resource classes are used to define a reusable configuration for a specific managed service. This class provides a managed Kubernetes cluster, which is satisfied by [Amazon Elastic Kubernetes Service (EKS)](https://aws.amazon.com/eks).
 
- Full documentation can be found in the Crossplane [API Reference docs](https://crossplane.io/docs/master/api/crossplane/provider-aws/compute-aws-crossplane-io-v1alpha3.html#EKSClusterClass).
+ Full documentation can be found in the Crossplane [API Reference docs](https://doc.crds.dev/github.com/crossplane/provider-aws/compute.aws.crossplane.io_eksclusterclasses.yaml).
