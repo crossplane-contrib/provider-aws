@@ -8,4 +8,4 @@ overview: |
 readme: |
  Cloud-specific resource classes are used to define a reusable configuration for a specific managed service. This class provides a relational database, which is satisfied by [Amazon Relational Database Service (RDS)](https://aws.amazon.com/rds/).
 
- Full documentation can be found in the Crossplane [API Reference docs](https://crossplane.io/docs/master/api/crossplane/provider-aws/database-aws-crossplane-io-v1beta1.html#RDSInstanceClass).
+ Full documentation can be found in the Crossplane [API Reference docs](https://doc.crds.dev/github.com/crossplane/provider-aws/database.aws.crossplane.io_rdsinstanceclasses.yaml).
