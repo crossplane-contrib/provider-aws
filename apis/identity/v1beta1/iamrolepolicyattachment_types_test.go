@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha3
+package v1beta1
 
 import (
 	"testing"
@@ -50,7 +50,7 @@ func TestIAMRoleNameReferencerForIAMRolePolicyAttachment_AssignValidType_Returns
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
 
-	if diff := cmp.Diff(res.Spec.RoleName, "mockValue"); diff != "" {
+	if diff := cmp.Diff(res.Spec.ForProvider.RoleName, "mockValue"); diff != "" {
 		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
 	}
 }

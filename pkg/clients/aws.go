@@ -17,9 +17,11 @@ limitations under the License.
 package aws
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -253,6 +255,15 @@ func LateInitializeIntPtr(in *int, from *int64) *int {
 	return nil
 }
 
+// LateInitializeInt64Ptr returns in if it's non-nil, otherwise returns from
+// which is the backup for the cases in is nil.
+func LateInitializeInt64Ptr(in *int64, from *int64) *int64 {
+	if in != nil {
+		return in
+	}
+	return from
+}
+
 // Bool converts the supplied bool for use with the AWS Go SDK.
 func Bool(v bool, o ...FieldOption) *bool {
 	for _, fo := range o {
@@ -274,4 +285,13 @@ func LateInitializeBoolPtr(in *bool, from *bool) *bool {
 		return in
 	}
 	return from
+}
+
+// CompactAndEscapeJSON removes space characters and URL-encodes the JSON string.
+func CompactAndEscapeJSON(s string) (string, error) {
+	buffer := new(bytes.Buffer)
+	if err := json.Compact(buffer, []byte(s)); err != nil {
+		return "", err
+	}
+	return url.QueryEscape(buffer.String()), nil
 }

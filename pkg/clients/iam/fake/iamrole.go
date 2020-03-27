@@ -27,9 +27,11 @@ var _ clientset.RoleClient = (*MockRoleClient)(nil)
 
 // MockRoleClient is a type that implements all the methods for RoleClient interface
 type MockRoleClient struct {
-	MockGetRoleRequest    func(*iam.GetRoleInput) iam.GetRoleRequest
-	MockCreateRoleRequest func(*iam.CreateRoleInput) iam.CreateRoleRequest
-	MockDeleteRoleRequest func(*iam.DeleteRoleInput) iam.DeleteRoleRequest
+	MockGetRoleRequest                func(*iam.GetRoleInput) iam.GetRoleRequest
+	MockCreateRoleRequest             func(*iam.CreateRoleInput) iam.CreateRoleRequest
+	MockDeleteRoleRequest             func(*iam.DeleteRoleInput) iam.DeleteRoleRequest
+	MockUpdateRoleRequest             func(*iam.UpdateRoleInput) iam.UpdateRoleRequest
+	MockUpdateAssumeRolePolicyRequest func(*iam.UpdateAssumeRolePolicyInput) iam.UpdateAssumeRolePolicyRequest
 }
 
 // GetRoleRequest mocks GetRoleRequest method
@@ -45,4 +47,14 @@ func (m *MockRoleClient) CreateRoleRequest(input *iam.CreateRoleInput) iam.Creat
 // DeleteRoleRequest mocks DeleteRoleRequest method
 func (m *MockRoleClient) DeleteRoleRequest(input *iam.DeleteRoleInput) iam.DeleteRoleRequest {
 	return m.MockDeleteRoleRequest(input)
+}
+
+// UpdateRoleRequest mocks UpdateRoleRequest method
+func (m *MockRoleClient) UpdateRoleRequest(input *iam.UpdateRoleInput) iam.UpdateRoleRequest {
+	return m.MockUpdateRoleRequest(input)
+}
+
+// UpdateAssumeRolePolicyRequest mocks UpdateAssumeRolePolicyRequest method
+func (m *MockRoleClient) UpdateAssumeRolePolicyRequest(input *iam.UpdateAssumeRolePolicyInput) iam.UpdateAssumeRolePolicyRequest {
+	return m.MockUpdateAssumeRolePolicyRequest(input)
 }
