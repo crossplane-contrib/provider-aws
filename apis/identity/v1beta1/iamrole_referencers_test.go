@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha3
+package v1beta1
 
 import (
 	"context"
@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 )
@@ -58,7 +59,7 @@ func TestIAMRoleARNReferencerGetStatus(t *testing.T) {
 
 	readyResource := IAMRole{
 		Status: IAMRoleStatus{
-			IAMRoleExternalStatus: IAMRoleExternalStatus{
+			AtProvider: IAMRoleExternalStatus{
 				ARN: mockIAMRoleARN,
 			},
 		},
@@ -169,7 +170,7 @@ func TestIAMRoleARNReferencerBuild(t *testing.T) {
 			input: input{
 				readerFn: func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error {
 					p := obj.(*IAMRole)
-					p.Status.ARN = mockIAMRoleARN
+					p.Status.AtProvider.ARN = mockIAMRoleARN
 					return nil
 				},
 			},
@@ -204,13 +205,9 @@ func TestIAMRoleNameReferencerGetStatus(t *testing.T) {
 
 	errResourceNotFound := &kerrors.StatusError{ErrStatus: metav1.Status{Reason: metav1.StatusReasonNotFound}}
 
-	readyResource := IAMRole{
-		Spec: IAMRoleSpec{
-			IAMRoleParameters: IAMRoleParameters{
-				RoleName: mockIAMRoleName,
-			},
-		},
-	}
+	readyResource := IAMRole{}
+
+	meta.SetExternalName(&readyResource, mockIAMRoleName)
 
 	readyResource.Status.SetConditions(runtimev1alpha1.Available())
 
@@ -317,7 +314,7 @@ func TestIAMRoleNameReferencerBuild(t *testing.T) {
 			input: input{
 				readerFn: func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error {
 					p := obj.(*IAMRole)
-					p.Spec.RoleName = mockIAMRoleName
+					meta.SetExternalName(p, mockIAMRoleName)
 					return nil
 				},
 			},

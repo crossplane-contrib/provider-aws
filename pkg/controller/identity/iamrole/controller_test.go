@@ -19,316 +19,535 @@ package iamrole
 import (
 	"context"
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
-	"github.com/onsi/gomega"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	v1alpha3 "github.com/crossplane/provider-aws/apis/identity/v1alpha3"
+	v1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
 )
 
-var (
-	mockExternalClient external
-	mockClient         fake.MockRoleClient
-
-	// an arbitrary managed resource
-	unexpecedItem resource.Managed
+const (
+	providerName = "aws-creds"
+	testRegion   = "us-east-1"
 )
 
-func TestMain(m *testing.M) {
+var (
+	// an arbitrary managed resource
+	unexpecedItem resource.Managed
+	roleName      = "some arbitrary name"
+	description   = "some description"
+	policy        = `{
+		"Version": "2012-10-17",
+		"Statement": [
+		  {
+			"Effect": "Allow",
+			"Principal": {
+			  "Service": "eks.amazonaws.com"
+			},
+			"Action": "sts:AssumeRole"
+		  }
+		]
+	   }`
 
-	mockClient = fake.MockRoleClient{}
-	mockExternalClient = external{&mockClient}
+	errBoom = errors.New("boom")
+)
 
-	os.Exit(m.Run())
+type args struct {
+	iam iam.RoleClient
+	cr  resource.Managed
 }
 
-func Test_Connect(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+type roleModifier func(*v1beta1.IAMRole)
 
-	mockManaged := &v1alpha3.IAMRole{}
-	var clientErr error
-	var configErr error
+func withConditions(c ...corev1alpha1.Condition) roleModifier {
+	return func(r *v1beta1.IAMRole) { r.Status.ConditionedStatus.Conditions = c }
+}
 
-	conn := connector{
-		client: nil,
-		newClientFn: func(conf *aws.Config) (iam.RoleClient, error) {
-			return &mockClient, clientErr
-		},
-		awsConfigFn: func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error) {
-			return &aws.Config{}, configErr
+func withRoleName(s *string) roleModifier {
+	return func(r *v1beta1.IAMRole) { meta.SetExternalName(r, *s) }
+}
+
+func withPolicy() roleModifier {
+	return func(r *v1beta1.IAMRole) {
+		p, err := awsclients.CompactAndEscapeJSON(policy)
+		if err != nil {
+			return
+		}
+		r.Spec.ForProvider.AssumeRolePolicyDocument = p
+	}
+}
+
+func withDescription() roleModifier {
+	return func(r *v1beta1.IAMRole) {
+		r.Spec.ForProvider.Description = aws.String(description)
+	}
+}
+
+func role(m ...roleModifier) *v1beta1.IAMRole {
+	cr := &v1beta1.IAMRole{
+		Spec: v1beta1.IAMRoleSpec{
+			ResourceSpec: corev1alpha1.ResourceSpec{
+				ProviderReference: &corev1.ObjectReference{Name: providerName},
+			},
 		},
 	}
+	for _, f := range m {
+		f(cr)
+	}
+	return cr
+}
 
-	for _, tc := range []struct {
-		description       string
-		managedObj        resource.Managed
-		configErr         error
-		clientErr         error
-		expectedClientNil bool
-		expectedErrNil    bool
+func TestConnect(t *testing.T) {
+
+	type args struct {
+		newClientFn func(*aws.Config) (iam.RoleClient, error)
+		awsConfigFn func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error)
+		cr          resource.Managed
+	}
+	type want struct {
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
 	}{
-		{
-			"valid input should return expected",
-			mockManaged,
-			nil,
-			nil,
-			false,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpecedItem,
-			nil,
-			nil,
-			true,
-			false,
-		},
-		{
-			"if aws config provider fails, should return error",
-			mockManaged,
-			errors.New("some error"),
-			nil,
-			true,
-			false,
-		},
-	} {
-		clientErr = tc.clientErr
-		configErr = tc.configErr
-
-		res, err := conn.Connect(context.Background(), tc.managedObj)
-		g.Expect(res == nil).To(gomega.Equal(tc.expectedClientNil), tc.description)
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-	}
-}
-
-func Test_Observe(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := v1alpha3.IAMRole{}
-	mockExternal := &awsiam.Role{
-		Arn: aws.String("some arbitrary arn"),
-	}
-	var mockClientErr error
-	mockClient.MockGetRoleRequest = func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
-		return awsiam.GetRoleRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data: &awsiam.GetRoleOutput{
-					Role: mockExternal,
+		"ValidInput": {
+			args: args{
+				newClientFn: func(config *aws.Config) (iam.RoleClient, error) {
+					if diff := cmp.Diff(testRegion, config.Region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
 				},
-				Error: mockClientErr,
-			},
-		}
-	}
-
-	for _, tc := range []struct {
-		description           string
-		managedObj            resource.Managed
-		clientErr             error
-		expectedErrNil        bool
-		expectedResourceExist bool
-	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			true,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpecedItem,
-			nil,
-			false,
-			false,
-		},
-		{
-			"if external resource doesn't exist, it should return expected",
-			mockManaged.DeepCopy(),
-			awserr.New(awsiam.ErrCodeNoSuchEntityException, "", nil),
-			true,
-			false,
-		},
-		{
-			"if external resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			errors.New("some error"),
-			false,
-			false,
-		},
-	} {
-		mockClientErr = tc.clientErr
-
-		result, err := mockExternalClient.Observe(context.Background(), tc.managedObj)
-
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		g.Expect(result.ResourceExists).To(gomega.Equal(tc.expectedResourceExist), tc.description)
-		if tc.expectedResourceExist {
-			mgd := tc.managedObj.(*v1alpha3.IAMRole)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionTrue), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonAvailable), tc.description)
-			g.Expect(mgd.Status.IAMRoleExternalStatus.ARN).To(gomega.Equal(aws.StringValue(mockExternal.Arn)), tc.description)
-		}
-	}
-}
-
-func Test_Create(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := v1alpha3.IAMRole{
-		Spec: v1alpha3.IAMRoleSpec{
-			IAMRoleParameters: v1alpha3.IAMRoleParameters{
-				AssumeRolePolicyDocument: "arbitrary role policy doc",
-				Description:              "arbitrary role description",
-				RoleName:                 "arbitrary role name",
-			},
-		},
-	}
-	mockExternal := &awsiam.Role{
-		Arn: aws.String("some arbitrary arn"),
-	}
-	var mockClientErr error
-	mockClient.MockCreateRoleRequest = func(input *awsiam.CreateRoleInput) awsiam.CreateRoleRequest {
-		g.Expect(aws.StringValue(input.RoleName)).To(gomega.Equal(mockManaged.Spec.RoleName), "the passed parameters are not valid")
-		g.Expect(aws.StringValue(input.AssumeRolePolicyDocument)).To(gomega.Equal(mockManaged.Spec.AssumeRolePolicyDocument), "the passed parameters are not valid")
-		g.Expect(aws.StringValue(input.Description)).To(gomega.Equal(mockManaged.Spec.Description), "the passed parameters are not valid")
-		return awsiam.CreateRoleRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data: &awsiam.CreateRoleOutput{
-					Role: mockExternal,
+				awsConfigFn: func(_ context.Context, _ client.Reader, p *corev1.ObjectReference) (*aws.Config, error) {
+					if diff := cmp.Diff(providerName, p.Name); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return &aws.Config{Region: testRegion}, nil
 				},
-				Error: mockClientErr,
+				cr: role(),
 			},
-		}
+		},
+		"InValidInput": {
+			args: args{
+				cr: unexpecedItem,
+			},
+			want: want{
+				err: errors.New(errUnexpectedObject),
+			},
+		},
+		"ProviderFailure": {
+			args: args{
+				newClientFn: func(config *aws.Config) (iam.RoleClient, error) {
+					if diff := cmp.Diff(testRegion, config.Region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, errBoom
+				},
+				awsConfigFn: func(_ context.Context, _ client.Reader, p *corev1.ObjectReference) (*aws.Config, error) {
+					if diff := cmp.Diff(providerName, p.Name); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return &aws.Config{Region: testRegion}, nil
+				},
+				cr: role(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errClient),
+			},
+		},
 	}
 
-	for _, tc := range []struct {
-		description    string
-		managedObj     resource.Managed
-		clientErr      error
-		expectedErrNil bool
-	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpecedItem,
-			nil,
-			false,
-		},
-		{
-			"if creating resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			errors.New("some error"),
-			false,
-		},
-	} {
-		mockClientErr = tc.clientErr
-
-		_, err := mockExternalClient.Create(context.Background(), tc.managedObj)
-
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.IAMRole)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
-			g.Expect(mgd.Status.IAMRoleExternalStatus.ARN).To(gomega.Equal(aws.StringValue(mockExternal.Arn)), tc.description)
-		}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			c := &connector{newClientFn: tc.newClientFn, awsConfigFn: tc.awsConfigFn}
+			_, err := c.Connect(context.Background(), tc.args.cr)
+			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
 	}
 }
 
-func Test_Update(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+func TestObserve(t *testing.T) {
 
-	mockManaged := v1alpha3.IAMRole{}
+	type want struct {
+		cr     resource.Managed
+		result managed.ExternalObservation
+		err    error
+	}
 
-	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"VaildInput": {
+			args: args{
+				iam: &fake.MockRoleClient{
+					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
+						return awsiam.GetRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetRoleOutput{
+								Role: &awsiam.Role{},
+							}},
+						}
+					},
+				},
+				cr: role(withRoleName(&roleName)),
+			},
+			want: want{
+				cr: role(
+					withRoleName(&roleName),
+					withConditions(corev1alpha1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"InValidInput": {
+			args: args{
+				cr: unexpecedItem,
+			},
+			want: want{
+				cr:  unexpecedItem,
+				err: errors.New(errUnexpectedObject),
+			},
+		},
+		"ClientError": {
+			args: args{
+				iam: &fake.MockRoleClient{
+					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
+						return awsiam.GetRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: role(withRoleName(&roleName)),
+			},
+			want: want{
+				cr:  role(withRoleName(&roleName)),
+				err: errors.Wrap(errBoom, errGet),
+			},
+		},
+		"ResourceDoesNotExist": {
+			args: args{
+				iam: &fake.MockRoleClient{
+					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
+						return awsiam.GetRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: awserr.New(awsiam.ErrCodeNoSuchEntityException, "", nil)},
+						}
+					},
+				},
+				cr: role(),
+			},
+			want: want{
+				cr: role(),
+			},
+		},
+	}
 
-	g.Expect(err).To(gomega.BeNil())
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{client: tc.iam}
+			o, err := e.Observe(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
 }
 
-func Test_Delete(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+func TestCreate(t *testing.T) {
 
-	mockManaged := v1alpha3.IAMRole{
-		Spec: v1alpha3.IAMRoleSpec{
-			IAMRoleParameters: v1alpha3.IAMRoleParameters{
-				RoleName: "arbitrary role name",
-			},
-		},
-	}
-	var mockClientErr error
-	mockClient.MockDeleteRoleRequest = func(input *awsiam.DeleteRoleInput) awsiam.DeleteRoleRequest {
-		g.Expect(aws.StringValue(input.RoleName)).To(gomega.Equal(mockManaged.Spec.RoleName), "the passed parameters are not valid")
-		return awsiam.DeleteRoleRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data:        &awsiam.DeleteRoleOutput{},
-				Error:       mockClientErr,
-			},
-		}
+	type want struct {
+		cr     resource.Managed
+		result managed.ExternalCreation
+		err    error
 	}
 
-	for _, tc := range []struct {
-		description    string
-		managedObj     resource.Managed
-		clientErr      error
-		expectedErrNil bool
+	cases := map[string]struct {
+		args
+		want
 	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			true,
+		"VaildInput": {
+			args: args{
+				iam: &fake.MockRoleClient{
+					MockCreateRoleRequest: func(input *awsiam.CreateRoleInput) awsiam.CreateRoleRequest {
+						return awsiam.CreateRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.CreateRoleOutput{}},
+						}
+					},
+				},
+				cr: role(withRoleName(&roleName)),
+			},
+			want: want{
+				cr: role(
+					withRoleName(&roleName),
+					withConditions(corev1alpha1.Creating())),
+			},
 		},
-		{
-			"unexpected managed resource should return error",
-			unexpecedItem,
-			nil,
-			false,
+		"InValidInput": {
+			args: args{
+				cr: unexpecedItem,
+			},
+			want: want{
+				cr:  unexpecedItem,
+				err: errors.New(errUnexpectedObject),
+			},
 		},
-		{
-			"if the resource doesn't exist deleting resource should not return an error",
-			mockManaged.DeepCopy(),
-			awserr.New(awsiam.ErrCodeNoSuchEntityException, "", nil),
-			true,
+		"ClientError": {
+			args: args{
+				iam: &fake.MockRoleClient{
+					MockCreateRoleRequest: func(input *awsiam.CreateRoleInput) awsiam.CreateRoleRequest {
+						return awsiam.CreateRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: role(),
+			},
+			want: want{
+				cr:  role(withConditions(corev1alpha1.Creating())),
+				err: errors.Wrap(errBoom, errCreate),
+			},
 		},
-		{
-			"if deleting resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			errors.New("some error"),
-			false,
-		},
-	} {
-		mockClientErr = tc.clientErr
+	}
 
-		err := mockExternalClient.Delete(context.Background(), tc.managedObj)
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{client: tc.iam}
+			o, err := e.Create(context.Background(), tc.args.cr)
 
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.IAMRole)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)
-		}
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestUpdate(t *testing.T) {
+
+	type want struct {
+		cr     resource.Managed
+		result managed.ExternalUpdate
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"VaildInput": {
+			args: args{
+				iam: &fake.MockRoleClient{
+					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
+						return awsiam.GetRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetRoleOutput{
+								Role: &awsiam.Role{},
+							}},
+						}
+					},
+					MockUpdateRoleRequest: func(input *awsiam.UpdateRoleInput) awsiam.UpdateRoleRequest {
+						return awsiam.UpdateRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.UpdateRoleOutput{}},
+						}
+					},
+				},
+				cr: role(withRoleName(&roleName)),
+			},
+			want: want{
+				cr: role(withRoleName(&roleName)),
+			},
+		},
+		"InValidInput": {
+			args: args{
+				cr: unexpecedItem,
+			},
+			want: want{
+				cr:  unexpecedItem,
+				err: errors.New(errUnexpectedObject),
+			},
+		},
+		"ClientUpdateRoleError": {
+			args: args{
+				iam: &fake.MockRoleClient{
+					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
+						return awsiam.GetRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetRoleOutput{
+								Role: &awsiam.Role{},
+							}},
+						}
+					},
+					MockUpdateRoleRequest: func(input *awsiam.UpdateRoleInput) awsiam.UpdateRoleRequest {
+						return awsiam.UpdateRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: role(withDescription()),
+			},
+			want: want{
+				cr:  role(withDescription()),
+				err: errors.Wrap(errBoom, errUpdate),
+			},
+		},
+		"ClientUpdatePolicyError": {
+			args: args{
+				iam: &fake.MockRoleClient{
+					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
+						return awsiam.GetRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetRoleOutput{
+								Role: &awsiam.Role{},
+							}},
+						}
+					},
+					MockUpdateRoleRequest: func(input *awsiam.UpdateRoleInput) awsiam.UpdateRoleRequest {
+						return awsiam.UpdateRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.UpdateRoleOutput{}},
+						}
+					},
+					MockUpdateAssumeRolePolicyRequest: func(input *awsiam.UpdateAssumeRolePolicyInput) awsiam.UpdateAssumeRolePolicyRequest {
+						return awsiam.UpdateAssumeRolePolicyRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: role(withPolicy()),
+			},
+			want: want{
+				cr:  role(withPolicy()),
+				err: errors.Wrap(errBoom, errUpdate),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{client: tc.iam}
+			o, err := e.Update(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestDelete(t *testing.T) {
+
+	type want struct {
+		cr  resource.Managed
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"VaildInput": {
+			args: args{
+				iam: &fake.MockRoleClient{
+					MockDeleteRoleRequest: func(input *awsiam.DeleteRoleInput) awsiam.DeleteRoleRequest {
+						return awsiam.DeleteRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.DeleteRoleOutput{}},
+						}
+					},
+				},
+				cr: role(withRoleName(&roleName)),
+			},
+			want: want{
+				cr: role(withRoleName(&roleName),
+					withConditions(corev1alpha1.Deleting())),
+			},
+		},
+		"InValidInput": {
+			args: args{
+				cr: unexpecedItem,
+			},
+			want: want{
+				cr:  unexpecedItem,
+				err: errors.New(errUnexpectedObject),
+			},
+		},
+		"ClientError": {
+			args: args{
+				iam: &fake.MockRoleClient{
+					MockDeleteRoleRequest: func(input *awsiam.DeleteRoleInput) awsiam.DeleteRoleRequest {
+						return awsiam.DeleteRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: role(),
+			},
+			want: want{
+				cr:  role(withConditions(corev1alpha1.Deleting())),
+				err: errors.Wrap(errBoom, errDelete),
+			},
+		},
+		"ResourceDoesNotExist": {
+			args: args{
+				iam: &fake.MockRoleClient{
+					MockDeleteRoleRequest: func(input *awsiam.DeleteRoleInput) awsiam.DeleteRoleRequest {
+						return awsiam.DeleteRoleRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: awserr.New(awsiam.ErrCodeNoSuchEntityException, "", nil)},
+						}
+					},
+				},
+				cr: role(),
+			},
+			want: want{
+				cr: role(withConditions(corev1alpha1.Deleting())),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{client: tc.iam}
+			err := e.Delete(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
 	}
 }

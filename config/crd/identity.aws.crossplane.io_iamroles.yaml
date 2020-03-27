@@ -12,7 +12,7 @@ spec:
   - JSONPath: .spec.roleName
     name: ROLENAME
     type: string
-  - JSONPath: .spec.description
+  - JSONPath: .spec.forProvider.description
     name: DESCRIPTION
     type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
@@ -52,10 +52,6 @@ spec:
         spec:
           description: An IAMRoleSpec defines the desired state of an IAMRole.
           properties:
-            assumeRolePolicyDocument:
-              description: AssumeRolePolicyDocument is the the trust relationship
-                policy document that grants an entity permission to assume the role.
-              type: string
             claimRef:
               description: ClaimReference specifies the resource claim to which this
                 managed resource will be bound. ClaimReference is set automatically
@@ -133,9 +129,66 @@ spec:
                   description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                   type: string
               type: object
-            description:
-              description: Description is a description of the role.
-              type: string
+            forProvider:
+              description: IAMRoleParameters define the desired state of an AWS IAM
+                Role.
+              properties:
+                assumeRolePolicyDocument:
+                  description: AssumeRolePolicyDocument is the the trust relationship
+                    policy document that grants an entity permission to assume the
+                    role.
+                  type: string
+                description:
+                  description: Description is a description of the role.
+                  type: string
+                maxSessionDuration:
+                  description: 'MaxSessionDuration is the duration (in seconds) that
+                    you want to set for the specified role. The default maximum of
+                    one hour is applied. This setting can have a value from 1 hour
+                    to 12 hours. Default: 3600'
+                  format: int64
+                  type: integer
+                path:
+                  description: 'Path is the path to the role. Default: /'
+                  type: string
+                permissionsBoundary:
+                  description: PermissionsBoundary is the ARN of the policy that is
+                    used to set the permissions boundary for the role.
+                  type: string
+                tags:
+                  description: Tags. For more information about tagging, see Tagging
+                    IAM Identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
+                    in the IAM User Guide.
+                  items:
+                    description: Tag represents user-provided metadata that can be
+                      associated with a IAM role. For more information about tagging,
+                      see Tagging IAM Identities (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html)
+                      in the IAM User Guide.
+                    properties:
+                      key:
+                        description: The key name that can be used to look up or retrieve
+                          the associated value. For example, Department or Cost Center
+                          are common choices.
+                        type: string
+                      value:
+                        description: "The value associated with this tag. For example,
+                          tags with a key name of Department could have values such
+                          as Human Resources, Accounting, and Support. Tags with a
+                          key name of Cost Center might have values that consist of
+                          the number associated with the different cost centers in
+                          your company. Typically, many resources have tags with the
+                          same key name but with different values. \n AWS always interprets
+                          the tag Value as a single string. If you need to store an
+                          array, you can store comma-separated values in the string.
+                          However, you must interpret the value in your code."
+                        type: string
+                    required:
+                    - key
+                    type: object
+                  type: array
+              required:
+              - assumeRolePolicyDocument
+              type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
                 to create, observe, update, and delete this managed resource.
@@ -188,9 +241,6 @@ spec:
               - Retain
               - Delete
               type: string
-            roleName:
-              description: RoleName presents the name of the IAM role.
-              type: string
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the namespace
                 and name of a Secret to which any connection details for this managed
@@ -209,19 +259,32 @@ spec:
               - namespace
               type: object
           required:
-          - assumeRolePolicyDocument
+          - forProvider
           - providerRef
-          - roleName
           type: object
         status:
           description: An IAMRoleStatus represents the observed state of an IAMRole.
           properties:
-            arn:
-              description: ARN is the Amazon Resource Name (ARN) specifying the role.
-                For more information about ARNs and how to use them in policies, see
-                IAM Identifiers (http://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html)
-                in the IAM User Guide guide.
-              type: string
+            atProvider:
+              description: IAMRoleExternalStatus keeps the state for the external
+                resource
+              properties:
+                arn:
+                  description: ARN is the Amazon Resource Name (ARN) specifying the
+                    role. For more information about ARNs and how to use them in policies,
+                    see IAM Identifiers (http://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html)
+                    in the IAM User Guide guide.
+                  type: string
+                roleID:
+                  description: RoleID is the stable and unique string identifying
+                    the role. For more information about IDs, see IAM Identifiers
+                    (http://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html)
+                    in the Using IAM guide.
+                  type: string
+              required:
+              - arn
+              - roleID
+              type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource
                 or claim. Unbindable resources cannot be bound, typically because
@@ -267,21 +330,15 @@ spec:
                 - type
                 type: object
               type: array
-            roleID:
-              description: RoleID is the stable and unique string identifying the
-                role. For more information about IDs, see IAM Identifiers (http://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html)
-                in the Using IAM guide.
-              type: string
           required:
-          - arn
-          - roleID
+          - atProvider
           type: object
       required:
       - spec
       type: object
-  version: v1alpha3
+  version: v1beta1
   versions:
-  - name: v1alpha3
+  - name: v1beta1
     served: true
     storage: true
 status:

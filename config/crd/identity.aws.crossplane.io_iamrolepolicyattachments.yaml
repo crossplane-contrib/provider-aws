@@ -9,10 +9,10 @@ metadata:
   name: iamrolepolicyattachments.identity.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .spec.roleName
+  - JSONPath: .spec.forProvider.roleName
     name: ROLENAME
     type: string
-  - JSONPath: .spec.policyArn
+  - JSONPath: .spec.forProvider.policyArn
     name: POLICYARN
     type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
@@ -131,10 +131,29 @@ spec:
                   description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                   type: string
               type: object
-            policyArn:
-              description: PolicyARN is the Amazon Resource Name (ARN) of the IAM
-                policy you want to attach.
-              type: string
+            forProvider:
+              description: IAMRolePolicyAttachmentParameters define the desired state
+                of an AWS IAM Role policy attachment.
+              properties:
+                policyArn:
+                  description: PolicyARN is the Amazon Resource Name (ARN) of the
+                    IAM policy you want to attach.
+                  type: string
+                roleName:
+                  description: RoleName presents the name of the IAM role.
+                  type: string
+                roleNameRef:
+                  description: RoleNameRef references to an IAMRole to retrieve its
+                    Name
+                  properties:
+                    name:
+                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                        TODO: Add other useful fields. apiVersion, kind, uid?'
+                      type: string
+                  type: object
+              required:
+              - policyArn
+              type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
                 to create, observe, update, and delete this managed resource.
@@ -187,17 +206,6 @@ spec:
               - Retain
               - Delete
               type: string
-            roleName:
-              description: RoleName presents the name of the IAM role.
-              type: string
-            roleNameRef:
-              description: RoleNameRef references to an IAMRole to retrieve its Name
-              properties:
-                name:
-                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                    TODO: Add other useful fields. apiVersion, kind, uid?'
-                  type: string
-              type: object
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the namespace
                 and name of a Secret to which any connection details for this managed
@@ -216,17 +224,24 @@ spec:
               - namespace
               type: object
           required:
-          - policyArn
+          - forProvider
           - providerRef
           type: object
         status:
           description: An IAMRolePolicyAttachmentStatus represents the observed state
             of an IAMRolePolicyAttachment.
           properties:
-            attachedPolicyArn:
-              description: AttachedPolicyARN is the arn for the attached policy. If
-                nil, the policy is not yet attached
-              type: string
+            atProvider:
+              description: IAMRolePolicyAttachmentExternalStatus keeps the state for
+                the external resource
+              properties:
+                attachedPolicyArn:
+                  description: AttachedPolicyARN is the arn for the attached policy.
+                    If nil, the policy is not yet attached
+                  type: string
+              required:
+              - attachedPolicyArn
+              type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource
                 or claim. Unbindable resources cannot be bound, typically because
@@ -273,14 +288,14 @@ spec:
                 type: object
               type: array
           required:
-          - attachedPolicyArn
+          - atProvider
           type: object
       required:
       - spec
       type: object
-  version: v1alpha3
+  version: v1beta1
   versions:
-  - name: v1alpha3
+  - name: v1beta1
     served: true
     storage: true
 status:

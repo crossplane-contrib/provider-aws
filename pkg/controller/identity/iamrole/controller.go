@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -29,10 +30,11 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha3 "github.com/crossplane/provider-aws/apis/identity/v1alpha3"
+	v1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
@@ -40,20 +42,25 @@ import (
 const (
 	errUnexpectedObject = "The managed resource is not an IAMRole resource"
 	errClient           = "cannot create a new IAMRole client"
-	errGet              = "failed to get IAMRole with name: %v"
+	errGet              = "failed to get IAMRole with name"
 	errCreate           = "failed to create the IAMRole resource"
 	errDelete           = "failed to delete the IAMRole resource"
+	errUpdate           = "failed to update the IAMRole resource"
+	errSDK              = "empty IAMRole received from IAM API"
+
+	errKubeUpdateFailed = "cannot late initialize IAMRole"
+	errUpToDateFailed   = "cannot check whether object is up-to-date"
 )
 
 // SetupIAMRole adds a controller that reconciles IAMRoles.
 func SetupIAMRole(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha3.IAMRoleGroupKind)
+	name := managed.ControllerName(v1beta1.IAMRoleGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha3.IAMRole{}).
+		For(&v1beta1.IAMRole{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha3.IAMRoleGroupVersionKind),
+			resource.ManagedKind(v1beta1.IAMRoleGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: iam.NewRoleClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -67,7 +74,7 @@ type connector struct {
 }
 
 func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mgd.(*v1alpha3.IAMRole)
+	cr, ok := mgd.(*v1beta1.IAMRole)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -81,92 +88,121 @@ func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (manag
 	if err != nil {
 		return nil, errors.Wrap(err, errClient)
 	}
-	return &external{c}, nil
+	return &external{c, conn.client}, nil
 }
 
 type external struct {
 	client iam.RoleClient
+	kube   client.Client
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha3.IAMRole)
+	cr, ok := mgd.(*v1beta1.IAMRole)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	req := e.client.GetRoleRequest(&awsiam.GetRoleInput{
-		RoleName: aws.String(cr.Spec.RoleName),
-	})
-
-	observed, err := req.Send(ctx)
-
-	if iam.IsErrorNotFound(err) {
-		return managed.ExternalObservation{
-			ResourceExists: false,
-		}, nil
-	}
+	observed, err := e.client.GetRoleRequest(&awsiam.GetRoleInput{
+		RoleName: aws.String(meta.GetExternalName(cr)),
+	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrapf(err, errGet, cr.Spec.RoleName)
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+	}
+
+	if observed.Role == nil {
+		return managed.ExternalObservation{}, errors.New(errSDK)
+	}
+
+	role := *observed.Role
+	current := cr.Spec.ForProvider.DeepCopy()
+	iam.LateInitializeRole(&cr.Spec.ForProvider, &role)
+	if !cmp.Equal(current, &cr.Spec.ForProvider) {
+		if err := e.kube.Update(ctx, cr); err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
+		}
 	}
 
 	cr.SetConditions(runtimev1alpha1.Available())
 
-	cr.UpdateExternalStatus(*observed.Role)
+	cr.Status.AtProvider = iam.GenerateRoleObservation(*observed.Role)
+
+	upToDate, err := iam.IsRoleUpToDate(cr.Spec.ForProvider, role)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
+	}
 
 	return managed.ExternalObservation{
-		ResourceExists: true,
+		ResourceExists:   true,
+		ResourceUpToDate: upToDate,
 	}, nil
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha3.IAMRole)
+	cr, ok := mgd.(*v1beta1.IAMRole)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
-	req := e.client.CreateRoleRequest(&awsiam.CreateRoleInput{
-		RoleName:                 aws.String(cr.Spec.RoleName),
-		AssumeRolePolicyDocument: aws.String(cr.Spec.AssumeRolePolicyDocument),
-		Description:              aws.String(cr.Spec.Description),
-	})
-
-	result, err := req.Send(ctx)
-	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
-	}
-
-	cr.UpdateExternalStatus(*result.Role)
-
-	return managed.ExternalCreation{}, nil
+	_, err := e.client.CreateRoleRequest(iam.GenerateCreateRoleInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)).Send(ctx)
+	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	// TODO(soorena776): add more sophisticated Update logic, once we
-	// categorize immutable vs mutable fields (see #727)
+	cr, ok := mgd.(*v1beta1.IAMRole)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
 
-	return managed.ExternalUpdate{}, nil
+	observed, err := e.client.GetRoleRequest(&awsiam.GetRoleInput{
+		RoleName: aws.String(meta.GetExternalName(cr)),
+	}).Send(ctx)
+
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+	}
+
+	if observed.Role == nil {
+		return managed.ExternalUpdate{}, errors.New(errSDK)
+	}
+
+	patch, err := iam.CreatePatch(observed.Role, &cr.Spec.ForProvider)
+
+	if patch.Description != nil || patch.MaxSessionDuration != nil {
+		_, err = e.client.UpdateRoleRequest(&awsiam.UpdateRoleInput{
+			RoleName:           aws.String(meta.GetExternalName(cr)),
+			Description:        cr.Spec.ForProvider.Description,
+			MaxSessionDuration: cr.Spec.ForProvider.MaxSessionDuration,
+		}).Send(ctx)
+
+		if err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		}
+	}
+
+	if patch.AssumeRolePolicyDocument != "" {
+		_, err = e.client.UpdateAssumeRolePolicyRequest(&awsiam.UpdateAssumeRolePolicyInput{
+			PolicyDocument: &cr.Spec.ForProvider.AssumeRolePolicyDocument,
+			RoleName:       aws.String(meta.GetExternalName(cr)),
+		}).Send(ctx)
+	}
+
+	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha3.IAMRole)
+	cr, ok := mgd.(*v1beta1.IAMRole)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
-	req := e.client.DeleteRoleRequest(&awsiam.DeleteRoleInput{
-		RoleName: aws.String(cr.Spec.RoleName),
-	})
+	_, err := e.client.DeleteRoleRequest(&awsiam.DeleteRoleInput{
+		RoleName: aws.String(meta.GetExternalName(cr)),
+	}).Send(ctx)
 
-	_, err := req.Send(ctx)
-
-	if iam.IsErrorNotFound(err) {
-		return nil
-	}
-
-	return errors.Wrap(err, errDelete)
+	return errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }
