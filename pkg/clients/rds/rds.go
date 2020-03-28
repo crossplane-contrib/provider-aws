@@ -120,8 +120,8 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstance
 		c.ProcessorFeatures = make([]rds.ProcessorFeature, len(p.ProcessorFeatures))
 		for i, val := range p.ProcessorFeatures {
 			c.ProcessorFeatures[i] = rds.ProcessorFeature{
-				Name:  &val.Name,
-				Value: &val.Value,
+				Name:  aws.String(val.Name),
+				Value: aws.String(val.Value),
 			}
 		}
 	}
@@ -129,8 +129,8 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstance
 		c.Tags = make([]rds.Tag, len(p.Tags))
 		for i, val := range p.Tags {
 			c.Tags[i] = rds.Tag{
-				Key:   &val.Key,
-				Value: &val.Value,
+				Key:   aws.String(val.Key),
+				Value: aws.String(val.Value),
 			}
 		}
 	}
@@ -202,8 +202,8 @@ func GenerateModifyDBInstanceInput(name string, p *v1beta1.RDSInstanceParameters
 		m.ProcessorFeatures = make([]rds.ProcessorFeature, len(p.ProcessorFeatures))
 		for i, val := range p.ProcessorFeatures {
 			m.ProcessorFeatures[i] = rds.ProcessorFeature{
-				Name:  &val.Name,
-				Value: &val.Value,
+				Name:  aws.String(val.Name),
+				Value: aws.String(val.Value),
 			}
 		}
 	}
