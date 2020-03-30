@@ -19,11 +19,11 @@ package fake
 import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 
-	clientset "github.com/crossplane/provider-aws/pkg/clients/rds"
+	clientset "github.com/crossplane/provider-aws/pkg/clients/dbsubnetgroup"
 )
 
 // this ensures that the mock implements the client interface
-var _ clientset.DBSubnetGroupClient = (*MockDBSubnetGroupClient)(nil)
+var _ clientset.Client = (*MockDBSubnetGroupClient)(nil)
 
 // MockDBSubnetGroupClient is a type that implements all the methods for DBSubnetGroupClient interface
 type MockDBSubnetGroupClient struct {
