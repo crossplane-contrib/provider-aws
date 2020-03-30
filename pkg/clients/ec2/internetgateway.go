@@ -1,9 +1,14 @@
 package ec2
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+
+	"github.com/crossplane/provider-aws/apis/network/v1beta1"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 const (
@@ -21,8 +26,12 @@ type InternetGatewayClient interface {
 }
 
 // NewInternetGatewayClient returns a new client using AWS credentials as JSON encoded data.
-func NewInternetGatewayClient(cfg *aws.Config) (InternetGatewayClient, error) {
-	return ec2.New(*cfg), nil
+func NewInternetGatewayClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (InternetGatewayClient, error) {
+	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
+	if cfg == nil {
+		return nil, err
+	}
+	return ec2.New(*cfg), err
 }
 
 // IsInternetGatewayNotFoundErr returns true if the error is because the item doesn't exist
@@ -33,5 +42,40 @@ func IsInternetGatewayNotFoundErr(err error) bool {
 		}
 	}
 
+	return false
+}
+
+// GenerateIGObservation is used to produce v1beta1.InternetGatewayExternalStatus from
+// ec2.InternetGateway.
+func GenerateIGObservation(ig ec2.InternetGateway) v1beta1.InternetGatewayExternalStatus {
+	attachments := make([]v1beta1.InternetGatewayAttachment, len(ig.Attachments))
+	for k, a := range ig.Attachments {
+		attachments[k] = v1beta1.InternetGatewayAttachment{
+			AttachmentStatus: string(a.State),
+			VPCID:            aws.StringValue(a.VpcId),
+		}
+	}
+
+	return v1beta1.InternetGatewayExternalStatus{
+		InternetGatewayID: aws.StringValue(ig.InternetGatewayId),
+		Attachments:       attachments,
+		OwnerID:           aws.StringValue(ig.OwnerId),
+	}
+}
+
+// IsIgUpToDate checks whether there is a change in any of the modifiable fields.
+func IsIgUpToDate(p v1beta1.InternetGatewayParameters, ig ec2.InternetGateway) bool {
+	attachments := ig.Attachments
+
+	// if there are no attachments for obsreved IG and in spec.
+	if len(attachments) == 0 && p.VPCID == "" {
+		return true
+	}
+
+	for _, ig := range attachments {
+		if p.VPCID == aws.StringValue(ig.VpcId) {
+			return true
+		}
+	}
 	return false
 }

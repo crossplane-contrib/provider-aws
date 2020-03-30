@@ -27,22 +27,28 @@ var _ clientset.SubnetClient = (*MockSubnetClient)(nil)
 
 // MockSubnetClient is a type that implements all the methods for SubnetClient interface
 type MockSubnetClient struct {
-	MockCreateSubnetRequest    func(*ec2.CreateSubnetInput) ec2.CreateSubnetRequest
-	MockDeleteSubnetRequest    func(*ec2.DeleteSubnetInput) ec2.DeleteSubnetRequest
-	MockDescribeSubnetsRequest func(*ec2.DescribeSubnetsInput) ec2.DescribeSubnetsRequest
+	MockCreate   func(*ec2.CreateSubnetInput) ec2.CreateSubnetRequest
+	MockDelete   func(*ec2.DeleteSubnetInput) ec2.DeleteSubnetRequest
+	MockDescribe func(*ec2.DescribeSubnetsInput) ec2.DescribeSubnetsRequest
+	MockModify   func(*ec2.ModifySubnetAttributeInput) ec2.ModifySubnetAttributeRequest
 }
 
 // CreateSubnetRequest mocks CreateSubnetRequest method
 func (m *MockSubnetClient) CreateSubnetRequest(input *ec2.CreateSubnetInput) ec2.CreateSubnetRequest {
-	return m.MockCreateSubnetRequest(input)
+	return m.MockCreate(input)
 }
 
 // DeleteSubnetRequest mocks DeleteSubnetRequest method
 func (m *MockSubnetClient) DeleteSubnetRequest(input *ec2.DeleteSubnetInput) ec2.DeleteSubnetRequest {
-	return m.MockDeleteSubnetRequest(input)
+	return m.MockDelete(input)
 }
 
 // DescribeSubnetsRequest mocks DescribeSubnetsRequest method
 func (m *MockSubnetClient) DescribeSubnetsRequest(input *ec2.DescribeSubnetsInput) ec2.DescribeSubnetsRequest {
-	return m.MockDescribeSubnetsRequest(input)
+	return m.MockDescribe(input)
+}
+
+// ModifySubnetAttributeRequest mocks ModifySubnetAttributeInput method
+func (m *MockSubnetClient) ModifySubnetAttributeRequest(input *ec2.ModifySubnetAttributeInput) ec2.ModifySubnetAttributeRequest {
+	return m.MockModify(input)
 }

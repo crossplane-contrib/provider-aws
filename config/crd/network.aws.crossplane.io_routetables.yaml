@@ -9,14 +9,14 @@ metadata:
   name: routetables.network.aws.crossplane.io
 spec:
   additionalPrinterColumns:
+  - JSONPath: .status.atProvider.routeTableId
+    name: TABLEID
+    type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
     type: string
   - JSONPath: .status.conditions[?(@.type=='Synced')].status
     name: SYNCED
-    type: string
-  - JSONPath: .status.routeTableId
-    name: TABLEID
     type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE
@@ -54,43 +54,6 @@ spec:
         spec:
           description: A RouteTableSpec defines the desired state of a RouteTable.
           properties:
-            associations:
-              description: The associations between the route table and one or more
-                subnets.
-              items:
-                description: Association describes an association between a route
-                  table and a subnet.
-                properties:
-                  subnetId:
-                    description: The ID of the subnet. A subnet ID is not returned
-                      for an implicit association.
-                    type: string
-                  subnetIdRef:
-                    description: A referencer to retrieve the ID of a subnet
-                    properties:
-                      name:
-                        description: Name of the referenced object.
-                        type: string
-                    required:
-                    - name
-                    type: object
-                  subnetIdSelector:
-                    description: A selector to select a referencer to retrieve the
-                      ID of a subnet
-                    properties:
-                      matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
-                        type: boolean
-                      matchLabels:
-                        additionalProperties:
-                          type: string
-                        description: MatchLabels ensures an object with matching labels
-                          is selected.
-                        type: object
-                    type: object
-                type: object
-              type: array
             claimRef:
               description: ClaimReference specifies the resource claim to which this
                 managed resource will be bound. ClaimReference is set automatically
@@ -168,6 +131,121 @@ spec:
                   description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                   type: string
               type: object
+            forProvider:
+              description: RouteTableParameters define the desired state of an AWS
+                VPC Route Table.
+              properties:
+                associations:
+                  description: The associations between the route table and one or
+                    more subnets.
+                  items:
+                    description: Association describes an association between a route
+                      table and a subnet.
+                    properties:
+                      subnetId:
+                        description: The ID of the subnet. A subnet ID is not returned
+                          for an implicit association.
+                        type: string
+                      subnetIdRef:
+                        description: A referencer to retrieve the ID of a subnet
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      subnetIdSelector:
+                        description: A selector to select a referencer to retrieve
+                          the ID of a subnet
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                        type: object
+                    type: object
+                  type: array
+                routes:
+                  description: the routes in the route table
+                  items:
+                    description: Route describes a route in a route table.
+                    properties:
+                      destinationCidrBlock:
+                        description: The IPv4 CIDR address block used for the destination
+                          match. Routing decisions are based on the most specific
+                          match.
+                        type: string
+                      gatewayId:
+                        description: The ID of an internet gateway or virtual private
+                          gateway attached to your VPC.
+                        type: string
+                      gatewayIdRef:
+                        description: A referencer to retrieve the ID of a gateway
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      gatewayIdSelector:
+                        description: A selector to select a referencer to retrieve
+                          the ID of a gateway
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                        type: object
+                    type: object
+                  type: array
+                vpcId:
+                  description: VPCID is the ID of the VPC.
+                  type: string
+                vpcIdRef:
+                  description: VPCIDRef references a VPC to retrieve its vpcId
+                  properties:
+                    name:
+                      description: Name of the referenced object.
+                      type: string
+                  required:
+                  - name
+                  type: object
+                vpcIdSelector:
+                  description: VPCIDSelector selects a reference to a VPC to retrieve
+                    its vpcId
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
+                  type: object
+              required:
+              - associations
+              - routes
+              - vpcId
+              type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
                 to create, observe, update, and delete this managed resource.
@@ -220,74 +298,6 @@ spec:
               - Retain
               - Delete
               type: string
-            routes:
-              description: the routes in the route table
-              items:
-                description: Route describes a route in a route table.
-                properties:
-                  destinationCidrBlock:
-                    description: The IPv4 CIDR address block used for the destination
-                      match. Routing decisions are based on the most specific match.
-                    type: string
-                  gatewayId:
-                    description: The ID of an internet gateway or virtual private
-                      gateway attached to your VPC.
-                    type: string
-                  gatewayIdRef:
-                    description: A referencer to retrieve the ID of a gateway
-                    properties:
-                      name:
-                        description: Name of the referenced object.
-                        type: string
-                    required:
-                    - name
-                    type: object
-                  gatewayIdSelector:
-                    description: A selector to select a referencer to retrieve the
-                      ID of a gateway
-                    properties:
-                      matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
-                        type: boolean
-                      matchLabels:
-                        additionalProperties:
-                          type: string
-                        description: MatchLabels ensures an object with matching labels
-                          is selected.
-                        type: object
-                    type: object
-                required:
-                - destinationCidrBlock
-                type: object
-              type: array
-            vpcId:
-              description: VPCID is the ID of the VPC.
-              type: string
-            vpcIdRef:
-              description: VPCIDRef references a VPC to retrieve its vpcId
-              properties:
-                name:
-                  description: Name of the referenced object.
-                  type: string
-              required:
-              - name
-              type: object
-            vpcIdSelector:
-              description: VPCIDSelector selects a reference to a VPC to retrieve
-                its vpcId
-              properties:
-                matchControllerRef:
-                  description: MatchControllerRef ensures an object with the same
-                    controller reference as the selecting object is selected.
-                  type: boolean
-                matchLabels:
-                  additionalProperties:
-                    type: string
-                  description: MatchLabels ensures an object with matching labels
-                    is selected.
-                  type: object
-              type: object
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the namespace
                 and name of a Secret to which any connection details for this managed
@@ -306,57 +316,119 @@ spec:
               - namespace
               type: object
           required:
+          - forProvider
           - providerRef
           type: object
         status:
           description: A RouteTableStatus represents the observed state of a RouteTable.
           properties:
-            associations:
-              description: The actual associations created for the route table.
-              items:
-                description: AssociationState describes an association state in the
-                  route table.
-                properties:
-                  associationId:
-                    description: The ID of the association between a route table and
-                      a subnet.
-                    type: string
-                  main:
-                    description: Indicates whether this is the main route table.
-                    type: boolean
-                  subnetId:
-                    description: The ID of the subnet. A subnet ID is not returned
-                      for an implicit association.
-                    type: string
-                  subnetIdRef:
-                    description: A referencer to retrieve the ID of a subnet
+            atProvider:
+              description: RouteTableExternalStatus keeps the state for the external
+                resource
+              properties:
+                associations:
+                  description: The actual associations created for the route table.
+                  items:
+                    description: AssociationState describes an association state in
+                      the route table.
                     properties:
-                      name:
-                        description: Name of the referenced object.
+                      associationId:
+                        description: The ID of the association between a route table
+                          and a subnet.
                         type: string
-                    required:
-                    - name
-                    type: object
-                  subnetIdSelector:
-                    description: A selector to select a referencer to retrieve the
-                      ID of a subnet
-                    properties:
-                      matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
+                      main:
+                        description: Indicates whether this is the main route table.
                         type: boolean
-                      matchLabels:
-                        additionalProperties:
-                          type: string
-                        description: MatchLabels ensures an object with matching labels
-                          is selected.
+                      subnetId:
+                        description: The ID of the subnet. A subnet ID is not returned
+                          for an implicit association.
+                        type: string
+                      subnetIdRef:
+                        description: A referencer to retrieve the ID of a subnet
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
                         type: object
+                      subnetIdSelector:
+                        description: A selector to select a referencer to retrieve
+                          the ID of a subnet
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                        type: object
+                    required:
+                    - associationId
+                    - main
                     type: object
-                required:
-                - associationId
-                - main
-                type: object
-              type: array
+                  type: array
+                ownerId:
+                  description: The ID of the AWS account that owns the route table.
+                  type: string
+                routeTableId:
+                  description: RouteTableID is the ID of the RouteTable.
+                  type: string
+                routes:
+                  description: The actual routes created for the route table.
+                  items:
+                    description: RouteState describes a route state in the route table.
+                    properties:
+                      destinationCidrBlock:
+                        description: The IPv4 CIDR address block used for the destination
+                          match. Routing decisions are based on the most specific
+                          match.
+                        type: string
+                      gatewayId:
+                        description: The ID of an internet gateway or virtual private
+                          gateway attached to your VPC.
+                        type: string
+                      gatewayIdRef:
+                        description: A referencer to retrieve the ID of a gateway
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      gatewayIdSelector:
+                        description: A selector to select a referencer to retrieve
+                          the ID of a gateway
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with
+                              the same controller reference as the selecting object
+                              is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching
+                              labels is selected.
+                            type: object
+                        type: object
+                      routeState:
+                        description: The state of the route. The blackhole state indicates
+                          that the route's target isn't available (for example, the
+                          specified gateway isn't attached to the VPC, or the specified
+                          NAT instance has been terminated).
+                        type: string
+                    type: object
+                  type: array
+              required:
+              - routeTableId
+              type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource
                 or claim. Unbindable resources cannot be bound, typically because
@@ -402,60 +474,15 @@ spec:
                 - type
                 type: object
               type: array
-            routes:
-              description: The actual routes created for the route table.
-              items:
-                description: RouteState describes a route state in the route table.
-                properties:
-                  destinationCidrBlock:
-                    description: The IPv4 CIDR address block used for the destination
-                      match. Routing decisions are based on the most specific match.
-                    type: string
-                  gatewayId:
-                    description: The ID of an internet gateway or virtual private
-                      gateway attached to your VPC.
-                    type: string
-                  gatewayIdRef:
-                    description: A referencer to retrieve the ID of a gateway
-                    properties:
-                      name:
-                        description: Name of the referenced object.
-                        type: string
-                    required:
-                    - name
-                    type: object
-                  gatewayIdSelector:
-                    description: A selector to select a referencer to retrieve the
-                      ID of a gateway
-                    properties:
-                      matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
-                        type: boolean
-                      matchLabels:
-                        additionalProperties:
-                          type: string
-                        description: MatchLabels ensures an object with matching labels
-                          is selected.
-                        type: object
-                    type: object
-                  routeState:
-                    description: The state of the route. The blackhole state indicates
-                      that the route's target isn't available (for example, the specified
-                      gateway isn't attached to the VPC, or the specified NAT instance
-                      has been terminated).
-                    type: string
-                required:
-                - destinationCidrBlock
-                type: object
-              type: array
+          required:
+          - atProvider
           type: object
       required:
       - spec
       type: object
-  version: v1alpha3
+  version: v1beta1
   versions:
-  - name: v1alpha3
+  - name: v1beta1
     served: true
     storage: true
 status:

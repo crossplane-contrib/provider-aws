@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha3
+package v1beta1
 
 import (
 	"context"
@@ -31,7 +31,7 @@ func SecurityGroupName() reference.ExtractValueFn {
 		if !ok {
 			return ""
 		}
-		return sg.Spec.GroupName
+		return sg.Spec.ForProvider.GroupName
 	}
 }
 
@@ -41,17 +41,17 @@ func (mg *InternetGateway) ResolveReferences(ctx context.Context, c client.Reade
 
 	// Resolve spec.vpcID
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: mg.Spec.VPCID,
-		Reference:    mg.Spec.VPCIDRef,
-		Selector:     mg.Spec.VPCIDSelector,
+		CurrentValue: mg.Spec.ForProvider.VPCID,
+		Reference:    mg.Spec.ForProvider.VPCIDRef,
+		Selector:     mg.Spec.ForProvider.VPCIDSelector,
 		To:           reference.To{Managed: &VPC{}, List: &VPCList{}},
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return err
 	}
-	mg.Spec.VPCID = rsp.ResolvedValue
-	mg.Spec.VPCIDRef = rsp.ResolvedReference
+	mg.Spec.ForProvider.VPCID = rsp.ResolvedValue
+	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference
 
 	return nil
 }
@@ -62,48 +62,48 @@ func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) er
 
 	// Resolve spec.vpcID
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: mg.Spec.VPCID,
-		Reference:    mg.Spec.VPCIDRef,
-		Selector:     mg.Spec.VPCIDSelector,
+		CurrentValue: mg.Spec.ForProvider.VPCID,
+		Reference:    mg.Spec.ForProvider.VPCIDRef,
+		Selector:     mg.Spec.ForProvider.VPCIDSelector,
 		To:           reference.To{Managed: &VPC{}, List: &VPCList{}},
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return err
 	}
-	mg.Spec.VPCID = rsp.ResolvedValue
-	mg.Spec.VPCIDRef = rsp.ResolvedReference
+	mg.Spec.ForProvider.VPCID = rsp.ResolvedValue
+	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference
 
 	// Resolve spec.routes[].gatewayID
-	for i := range mg.Spec.Routes {
+	for i := range mg.Spec.ForProvider.Routes {
 		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-			CurrentValue: mg.Spec.Routes[i].GatewayID,
-			Reference:    mg.Spec.Routes[i].GatewayIDRef,
-			Selector:     mg.Spec.Routes[i].GatewayIDSelector,
+			CurrentValue: mg.Spec.ForProvider.Routes[i].GatewayID,
+			Reference:    mg.Spec.ForProvider.Routes[i].GatewayIDRef,
+			Selector:     mg.Spec.ForProvider.Routes[i].GatewayIDSelector,
 			To:           reference.To{Managed: &InternetGateway{}, List: &InternetGatewayList{}},
 			Extract:      reference.ExternalName(),
 		})
 		if err != nil {
 			return err
 		}
-		mg.Spec.Routes[i].GatewayID = rsp.ResolvedValue
-		mg.Spec.Routes[i].GatewayIDRef = rsp.ResolvedReference
+		mg.Spec.ForProvider.Routes[i].GatewayID = rsp.ResolvedValue
+		mg.Spec.ForProvider.Routes[i].GatewayIDRef = rsp.ResolvedReference
 	}
 
 	// Resolve spec.associations[].subnetID
-	for i := range mg.Spec.Associations {
+	for i := range mg.Spec.ForProvider.Associations {
 		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-			CurrentValue: mg.Spec.Associations[i].SubnetID,
-			Reference:    mg.Spec.Associations[i].SubnetIDRef,
-			Selector:     mg.Spec.Associations[i].SubnetIDSelector,
+			CurrentValue: mg.Spec.ForProvider.Associations[i].SubnetID,
+			Reference:    mg.Spec.ForProvider.Associations[i].SubnetIDRef,
+			Selector:     mg.Spec.ForProvider.Associations[i].SubnetIDSelector,
 			To:           reference.To{Managed: &Subnet{}, List: &SubnetList{}},
 			Extract:      reference.ExternalName(),
 		})
 		if err != nil {
 			return err
 		}
-		mg.Spec.Associations[i].SubnetID = rsp.ResolvedValue
-		mg.Spec.Associations[i].SubnetIDRef = rsp.ResolvedReference
+		mg.Spec.ForProvider.Associations[i].SubnetID = rsp.ResolvedValue
+		mg.Spec.ForProvider.Associations[i].SubnetIDRef = rsp.ResolvedReference
 	}
 
 	return nil
@@ -115,17 +115,17 @@ func (mg *SecurityGroup) ResolveReferences(ctx context.Context, c client.Reader)
 
 	// Resolve spec.vpcID
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: reference.FromPtrValue(mg.Spec.VPCID),
-		Reference:    mg.Spec.VPCIDRef,
-		Selector:     mg.Spec.VPCIDSelector,
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.VPCID),
+		Reference:    mg.Spec.ForProvider.VPCIDRef,
+		Selector:     mg.Spec.ForProvider.VPCIDSelector,
 		To:           reference.To{Managed: &VPC{}, List: &VPCList{}},
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return err
 	}
-	mg.Spec.VPCID = reference.ToPtrValue(rsp.ResolvedValue)
-	mg.Spec.VPCIDRef = rsp.ResolvedReference
+	mg.Spec.ForProvider.VPCID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference
 
 	return nil
 }
@@ -136,17 +136,17 @@ func (mg *Subnet) ResolveReferences(ctx context.Context, c client.Reader) error 
 
 	// Resolve spec.vpcID
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: mg.Spec.VPCID,
-		Reference:    mg.Spec.VPCIDRef,
-		Selector:     mg.Spec.VPCIDSelector,
+		CurrentValue: mg.Spec.ForProvider.VPCID,
+		Reference:    mg.Spec.ForProvider.VPCIDRef,
+		Selector:     mg.Spec.ForProvider.VPCIDSelector,
 		To:           reference.To{Managed: &VPC{}, List: &VPCList{}},
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return err
 	}
-	mg.Spec.VPCID = rsp.ResolvedValue
-	mg.Spec.VPCIDRef = rsp.ResolvedReference
+	mg.Spec.ForProvider.VPCID = rsp.ResolvedValue
+	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference
 
 	return nil
 }

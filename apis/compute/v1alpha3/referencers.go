@@ -24,7 +24,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
-	"github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	network "github.com/crossplane/provider-aws/apis/network/v1beta1"
 )
 
 // ResolveReferences of this EKSCluster
@@ -50,7 +50,7 @@ func (mg *EKSCluster) ResolveReferences(ctx context.Context, c client.Reader) er
 		CurrentValue: mg.Spec.VPCID,
 		Reference:    mg.Spec.VPCIDRef,
 		Selector:     mg.Spec.VPCIDSelector,
-		To:           reference.To{Managed: &v1alpha3.VPC{}, List: &v1alpha3.VPCList{}},
+		To:           reference.To{Managed: &network.VPC{}, List: &network.VPCList{}},
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
@@ -64,7 +64,7 @@ func (mg *EKSCluster) ResolveReferences(ctx context.Context, c client.Reader) er
 		CurrentValue: mg.Spec.WorkerNodes.ClusterControlPlaneSecurityGroup,
 		Reference:    mg.Spec.WorkerNodes.ClusterControlPlaneSecurityGroupRef,
 		Selector:     mg.Spec.WorkerNodes.ClusterControlPlaneSecurityGroupSelector,
-		To:           reference.To{Managed: &v1alpha3.SecurityGroup{}, List: &v1alpha3.SecurityGroupList{}},
+		To:           reference.To{Managed: &network.SecurityGroup{}, List: &network.SecurityGroupList{}},
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
@@ -78,7 +78,7 @@ func (mg *EKSCluster) ResolveReferences(ctx context.Context, c client.Reader) er
 		CurrentValues: mg.Spec.SubnetIDs,
 		References:    mg.Spec.SubnetIDRefs,
 		Selector:      mg.Spec.SubnetIDSelector,
-		To:            reference.To{Managed: &v1alpha3.Subnet{}, List: &v1alpha3.SubnetList{}},
+		To:            reference.To{Managed: &network.Subnet{}, List: &network.SubnetList{}},
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
@@ -92,7 +92,7 @@ func (mg *EKSCluster) ResolveReferences(ctx context.Context, c client.Reader) er
 		CurrentValues: mg.Spec.SecurityGroupIDs,
 		References:    mg.Spec.SecurityGroupIDRefs,
 		Selector:      mg.Spec.SecurityGroupIDSelector,
-		To:            reference.To{Managed: &v1alpha3.SecurityGroup{}, List: &v1alpha3.SecurityGroupList{}},
+		To:            reference.To{Managed: &network.SecurityGroup{}, List: &network.SecurityGroupList{}},
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {

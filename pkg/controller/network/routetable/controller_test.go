@@ -19,628 +19,639 @@ package routetable
 import (
 	"context"
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/onsi/gomega"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	v1alpha3 "github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/network/v1beta1"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
 )
 
-var (
-	mockExternalClient external
-	mockClient         fake.MockRouteTableClient
+const (
+	providerName    = "aws-creds"
+	secretNamespace = "crossplane-system"
+	testRegion      = "us-east-1"
 
-	// an arbitrary managed resource
-	unexpectedItem resource.Managed
+	connectionSecretName = "my-little-secret"
+	secretKey            = "credentials"
+	credData             = "confidential!"
 )
 
-func TestMain(m *testing.M) {
+var (
+	rtID     = "some rt"
+	vpcID    = "some vpc"
+	igID     = "some ig"
+	subnetID = "some subnet"
 
-	mockClient = fake.MockRouteTableClient{}
-	mockExternalClient = external{
-		client: &mockClient,
-		kube: &test.MockClient{
-			MockUpdate: test.NewMockUpdateFn(nil),
-		},
-	}
+	errBoom = errors.New("boom")
+)
 
-	os.Exit(m.Run())
+type args struct {
+	rt   ec2.RouteTableClient
+	kube client.Client
+	cr   *v1beta1.RouteTable
 }
 
-func Test_Connect(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+type rtModifier func(*v1beta1.RouteTable)
 
-	mockManaged := &v1alpha3.RouteTable{}
-	var clientErr error
-	var configErr error
-
-	conn := connector{
-		client: nil,
-		newClientFn: func(conf *aws.Config) (ec2.RouteTableClient, error) {
-			return &mockClient, clientErr
-		},
-		awsConfigFn: func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error) {
-			return &aws.Config{}, configErr
-		},
-	}
-
-	for _, tc := range []struct {
-		description       string
-		managedObj        resource.Managed
-		configErr         error
-		clientErr         error
-		expectedClientNil bool
-		expectedErrNil    bool
-	}{
-		{
-			"valid input should return expected",
-			mockManaged,
-			nil,
-			nil,
-			false,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			nil,
-			nil,
-			true,
-			false,
-		},
-		{
-			"if aws config provider fails, should return error",
-			mockManaged, // an arbitrary managed resource which is not expected
-			errors.New("some error"),
-			nil,
-			true,
-			false,
-		},
-		{
-			"if aws client provider fails, should return error",
-			mockManaged, // an arbitrary managed resource which is not expected
-			nil,
-			errors.New("some error"),
-			true,
-			false,
-		},
-	} {
-		clientErr = tc.clientErr
-		configErr = tc.configErr
-
-		res, err := conn.Connect(context.Background(), tc.managedObj)
-		g.Expect(res == nil).To(gomega.Equal(tc.expectedClientNil), tc.description)
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-	}
+func withExternalName(name string) rtModifier {
+	return func(r *v1beta1.RouteTable) { meta.SetExternalName(r, name) }
 }
 
-func Test_Observe(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+func withSpec(p v1beta1.RouteTableParameters) rtModifier {
+	return func(r *v1beta1.RouteTable) { r.Spec.ForProvider = p }
+}
 
-	mockManaged := v1alpha3.RouteTable{}
-	meta.SetExternalName(&mockManaged, "some arbitrary id")
+func withStatus(s v1beta1.RouteTableExternalStatus) rtModifier {
+	return func(r *v1beta1.RouteTable) { r.Status.AtProvider = s }
+}
 
-	mockExternal := &awsec2.RouteTable{
-		RouteTableId: aws.String("some arbitrary id"),
-	}
-	var mockClientErr error
-	var itemsList []awsec2.RouteTable
-	mockClient.MockDescribeRouteTablesRequest = func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
-		return awsec2.DescribeRouteTablesRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data: &awsec2.DescribeRouteTablesOutput{
-					RouteTables: itemsList,
-				},
-				Error: mockClientErr,
+func withConditions(c ...runtimev1alpha1.Condition) rtModifier {
+	return func(r *v1beta1.RouteTable) { r.Status.ConditionedStatus.Conditions = c }
+}
+
+func rt(m ...rtModifier) *v1beta1.RouteTable {
+	cr := &v1beta1.RouteTable{
+		Spec: v1beta1.RouteTableSpec{
+			ResourceSpec: runtimev1alpha1.ResourceSpec{
+				ProviderReference: &corev1.ObjectReference{Name: providerName},
 			},
-		}
+		},
+	}
+	for _, f := range m {
+		f(cr)
+	}
+	return cr
+}
+
+var _ managed.ExternalClient = &external{}
+var _ managed.ExternalConnecter = &connector{}
+
+func TestConnect(t *testing.T) {
+	secret := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      connectionSecretName,
+			Namespace: secretNamespace,
+		},
+		Data: map[string][]byte{
+			secretKey: []byte(credData),
+		},
 	}
 
-	for _, tc := range []struct {
-		description               string
-		managedObj                resource.Managed
-		itemsReturned             []awsec2.RouteTable
-		clientErr                 error
-		expectedErrNil            bool
-		expectedResourceExist     bool
-		expectedResoruceAbailable bool
-	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			[]awsec2.RouteTable{*mockExternal},
-			nil,
-			true,
-			true,
-			true,
-		},
-		{
-			"if any route is not active, then the resource should not be available",
-			mockManaged.DeepCopy(),
-			[]awsec2.RouteTable{
-				{
-					RouteTableId: aws.String("some arbitrary Id"),
-					Routes: []awsec2.Route{
-						{
-							State: awsec2.RouteStateBlackhole,
+	providerSA := func(saVal bool) awsv1alpha3.Provider {
+		return awsv1alpha3.Provider{
+			Spec: awsv1alpha3.ProviderSpec{
+				Region:            testRegion,
+				UseServiceAccount: &saVal,
+				ProviderSpec: runtimev1alpha1.ProviderSpec{
+					CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
+						SecretReference: runtimev1alpha1.SecretReference{
+							Namespace: secretNamespace,
+							Name:      connectionSecretName,
 						},
+						Key: secretKey,
 					},
 				},
 			},
-			nil,
-			true,
-			true,
-			false,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			nil,
-			nil,
-			false,
-			false,
-			false,
-		},
-		{
-			"if item's identifier is not yet set, returns expected",
-			&v1alpha3.RouteTable{},
-			nil,
-			nil,
-			true,
-			false,
-			false,
-		},
-		{
-			"if external resource doesn't exist, it should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			awserr.New(ec2.RouteTableIDNotFound, "", nil),
-			true,
-			false,
-			false,
-		},
-		{
-			"if external resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			nil,
-			errors.New("some error"),
-			false,
-			false,
-			false,
-		},
-		{
-			"if external resource returns a list with other than one item, it should return error",
-			mockManaged.DeepCopy(),
-			[]awsec2.RouteTable{},
-			nil,
-			false,
-			false,
-			false,
-		},
-	} {
-		mockClientErr = tc.clientErr
-		itemsList = tc.itemsReturned
+		}
+	}
+	type args struct {
+		kube        client.Client
+		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (ec2.RouteTableClient, error)
+		cr          *v1beta1.RouteTable
+	}
+	type want struct {
+		err error
+	}
 
-		result, err := mockExternalClient.Observe(context.Background(), tc.managedObj)
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						}
+						return errBoom
+					},
+				},
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.RouteTableClient, e error) {
+					if diff := cmp.Diff(credData, string(credentials)); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
+				},
+				cr: rt(),
+			},
+		},
+		"SuccessfulUseServiceAccount": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						if key == (client.ObjectKey{Name: providerName}) {
+							p := providerSA(true)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						}
+						return errBoom
+					},
+				},
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.RouteTableClient, e error) {
+					if diff := cmp.Diff("", string(credentials)); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
+				},
+				cr: rt(),
+			},
+		},
+		"ProviderGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						return errBoom
+					},
+				},
+				cr: rt(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProvider),
+			},
+		},
+		"SecretGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: rt(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProviderSecret),
+			},
+		},
+		"SecretGetFailedNil": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.SetCredentialsSecretReference(nil)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: rt(),
+			},
+			want: want{
+				err: errors.New(errGetProviderSecret),
+			},
+		},
+	}
 
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		g.Expect(result.ResourceExists).To(gomega.Equal(tc.expectedResourceExist), tc.description)
-		if tc.expectedResourceExist {
-
-			mgd := tc.managedObj.(*v1alpha3.RouteTable)
-
-			if tc.expectedResoruceAbailable {
-				g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-				g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionTrue), tc.description)
-				g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonAvailable), tc.description)
-
-			} else {
-				g.Expect(len(mgd.Status.Conditions)).To(gomega.Equal(0), tc.description)
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			c := &connector{client: tc.kube, newClientFn: tc.newClientFn}
+			_, err := c.Connect(context.Background(), tc.args.cr)
+			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			g.Expect(meta.GetExternalName(mgd)).To(gomega.Equal(aws.StringValue(mockExternal.RouteTableId)), tc.description)
-		}
+		})
 	}
 }
 
-func Test_Create(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := v1alpha3.RouteTable{
-		Spec: v1alpha3.RouteTableSpec{
-			RouteTableParameters: v1alpha3.RouteTableParameters{
-				VPCID: "arbitrary vpcId",
-				Routes: []v1alpha3.Route{
-					{
-						DestinationCIDRBlock: "arbitrary dcb 0",
-						GatewayID:            "arbitrary gi 0",
-					},
-				},
-				Associations: []v1alpha3.Association{
-					{
-						SubnetID: "arbitrary subnet 0",
-					},
-				},
-			},
-		},
-	}
-	mockExternal := &awsec2.RouteTable{
-		RouteTableId: aws.String("some arbitrary arn"),
-	}
-	var externalObj *awsec2.RouteTable
-	var mockClientErr error
-	mockClient.MockCreateRouteTableRequest = func(input *awsec2.CreateRouteTableInput) awsec2.CreateRouteTableRequest {
-		g.Expect(aws.StringValue(input.VpcId)).To(gomega.Equal(mockManaged.Spec.VPCID), "the passed parameters are not valid")
-		return awsec2.CreateRouteTableRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data: &awsec2.CreateRouteTableOutput{
-					RouteTable: externalObj,
-				},
-				Error: mockClientErr,
-			},
-		}
+func TestObserve(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.RouteTable
+		result managed.ExternalObservation
+		err    error
 	}
 
-	var mockClientCreateRouteErr error
-	var createRouteCalled bool
-	mockClient.MockCreateRouteRequest = func(input *awsec2.CreateRouteInput) awsec2.CreateRouteRequest {
-		createRouteCalled = true
-		g.Expect(aws.StringValue(input.RouteTableId)).To(gomega.Equal(aws.StringValue(mockExternal.RouteTableId)), "the passed parameters are not valid")
-		return awsec2.CreateRouteRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data:        &awsec2.CreateRouteOutput{},
-				Error:       mockClientCreateRouteErr,
-			},
-		}
-	}
-
-	var mockClientAssociateRouteErr error
-	var associateCalled bool
-	mockClient.MockAssociateRouteTableRequest = func(input *awsec2.AssociateRouteTableInput) awsec2.AssociateRouteTableRequest {
-		associateCalled = true
-		g.Expect(aws.StringValue(input.RouteTableId)).To(gomega.Equal(aws.StringValue(mockExternal.RouteTableId)), "the passed parameters are not valid")
-		return awsec2.AssociateRouteTableRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data:        &awsec2.AssociateRouteTableOutput{},
-				Error:       mockClientAssociateRouteErr,
-			},
-		}
-	}
-
-	for _, tc := range []struct {
-		description             string
-		managedObj              resource.Managed
-		extObj                  *awsec2.RouteTable
-		clientErr               error
-		clientCreateRouteErr    error
-		clientAssociateErr      error
-		expectedErrNil          bool
-		expectedCreateRouteCall bool
-		expectedAssociateCall   bool
+	cases := map[string]struct {
+		args
+		want
 	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			mockExternal,
-			nil,
-			nil,
-			nil,
-			true,
-			true,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			mockExternal,
-			nil,
-			nil,
-			nil,
-			false,
-			false,
-			false,
-		},
-		{
-			"if creating resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			mockExternal,
-			errors.New("some error"),
-			nil,
-			nil,
-			false,
-			false,
-			false,
-		},
-		{
-			"if creating a route fails, it should return error",
-			mockManaged.DeepCopy(),
-			mockExternal,
-			nil,
-			errors.New("some error"),
-			nil,
-			false,
-			true,
-			false,
-		},
-		{
-			"if a route is already created, it should return expected",
-			mockManaged.DeepCopy(),
-			&awsec2.RouteTable{
-				RouteTableId: aws.String("some arbitrary arn"),
-				Routes: []awsec2.Route{
-					{
-						DestinationCidrBlock: aws.String("arbitrary dcb 0"),
-						GatewayId:            aws.String("arbitrary gi 0"),
-					},
-				},
-			},
-			nil,
-			nil,
-			nil,
-			true,
-			false,
-			true,
-		},
-		{
-			"if associating a subnet fails, it should return error",
-			mockManaged.DeepCopy(),
-			mockExternal,
-			nil,
-			nil,
-			errors.New("some error"),
-			false,
-			true,
-			true,
-		},
-		{
-			"if a subnet is already associated, it should return expected",
-			mockManaged.DeepCopy(),
-			&awsec2.RouteTable{
-				RouteTableId: aws.String("some arbitrary arn"),
-				Associations: []awsec2.RouteTableAssociation{
-					{
-						SubnetId: aws.String("arbitrary subnet 0"),
-					},
-				},
-			},
-			nil,
-			nil,
-			nil,
-			true,
-			true,
-			false,
-		},
-	} {
-		associateCalled = false
-		createRouteCalled = false
-		mockClientErr = tc.clientErr
-		mockClientCreateRouteErr = tc.clientCreateRouteErr
-		mockClientAssociateRouteErr = tc.clientAssociateErr
-
-		externalObj = tc.extObj
-
-		_, err := mockExternalClient.Create(context.Background(), tc.managedObj)
-
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.RouteTable)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
-			g.Expect(meta.GetExternalName(mgd)).To(gomega.Equal(aws.StringValue(mockExternal.RouteTableId)), tc.description)
-		}
-
-		g.Expect(associateCalled).To(gomega.Equal(tc.expectedAssociateCall), tc.description)
-		g.Expect(createRouteCalled).To(gomega.Equal(tc.expectedCreateRouteCall), tc.description)
-	}
-}
-
-func Test_Update(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := v1alpha3.RouteTable{}
-
-	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
-
-	g.Expect(err).To(gomega.BeNil())
-}
-
-func Test_Delete(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := v1alpha3.RouteTable{
-		Status: v1alpha3.RouteTableStatus{
-			RouteTableExternalStatus: v1alpha3.RouteTableExternalStatus{
-				Routes: []v1alpha3.RouteState{
-					{
-						Route: v1alpha3.Route{
-							DestinationCIDRBlock: "arbitrary dcb 0",
-							GatewayID:            "arbitrary gatewayid 0",
-						},
-					},
-				},
-				Associations: []v1alpha3.AssociationState{
-					{
-						AssociationID: "arbitrary association id 0",
-					},
-				},
-			},
-		},
-	}
-	meta.SetExternalName(&mockManaged, "an arbitrary id")
-
-	var mockClientErr error
-	mockClient.MockDeleteRouteTableRequest = func(input *awsec2.DeleteRouteTableInput) awsec2.DeleteRouteTableRequest {
-		g.Expect(aws.StringValue(input.RouteTableId)).To(gomega.Equal(meta.GetExternalName(&mockManaged)), "the passed parameters are not valid")
-		return awsec2.DeleteRouteTableRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data:        &awsec2.DeleteRouteTableOutput{},
-				Error:       mockClientErr,
-			},
-		}
-	}
-
-	var mockClientDeleteRouteErr error
-	var deleteRouteCalled bool
-	mockClient.MockDeleteRouteRequest = func(input *awsec2.DeleteRouteInput) awsec2.DeleteRouteRequest {
-		deleteRouteCalled = true
-		g.Expect(aws.StringValue(input.RouteTableId)).To(gomega.Equal(meta.GetExternalName(&mockManaged)), "the passed parameters for DeleteRouteRequest are not valid")
-		return awsec2.DeleteRouteRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data:        &awsec2.DeleteRouteOutput{},
-				Error:       mockClientDeleteRouteErr,
-			},
-		}
-	}
-
-	var mockClientDisassociateErr error
-	var disassociateCalled bool
-	mockClient.MockDisassociateRouteTableRequest = func(input *awsec2.DisassociateRouteTableInput) awsec2.DisassociateRouteTableRequest {
-		disassociateCalled = true
-		return awsec2.DisassociateRouteTableRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data:        &awsec2.DisassociateRouteTableOutput{},
-				Error:       mockClientDisassociateErr,
-			},
-		}
-	}
-
-	testCases := []struct {
-		description              string
-		managedObj               resource.Managed
-		clientErr                error
-		clientDeleteRouteErr     error
-		clientDissassociateErr   error
-		expectedErrNil           bool
-		expectedDeleteRouteCall  bool
-		expectedDisassociateCall bool
-	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			nil,
-			nil,
-			true,
-			true,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			nil,
-			nil,
-			nil,
-			false,
-			false,
-			false,
-		},
-
-		{
-			"if deleting resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			errors.New("some error"),
-			nil,
-			nil,
-			false,
-			true,
-			true,
-		},
-		{
-			"if the resource doesn't exist deleting resource should not return an error",
-			mockManaged.DeepCopy(),
-			awserr.New(ec2.RouteTableIDNotFound, "", nil),
-			nil,
-			nil,
-			true,
-			true,
-			true,
-		},
-		{
-			"if deleting a route fails, it should return error",
-			mockManaged.DeepCopy(),
-			nil,
-			errors.New("some error"),
-			nil,
-			false,
-			true,
-			false,
-		},
-		{
-			// TODO(negz): Set name somehow.
-			"if a route is local, it should not be deleted",
-			func() *v1alpha3.RouteTable {
-				t := &v1alpha3.RouteTable{
-					Status: v1alpha3.RouteTableStatus{
-						RouteTableExternalStatus: v1alpha3.RouteTableExternalStatus{
-							Routes: []v1alpha3.RouteState{{Route: v1alpha3.Route{
-								DestinationCIDRBlock: "arbitrary dcb 0",
-								GatewayID:            ec2.LocalGatewayID,
+		"SuccessfulAvailable": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{
+									VpcId: aws.String(vpcID),
+								}},
 							}},
-							},
-						},
+						}
 					},
-				}
-				meta.SetExternalName(t, "an arbitrary id")
-				return t
-			}(),
-			nil,
-			errors.New("some error"),
-			nil,
-			true,
-			false,
-			false,
+				},
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					VPCID: vpcID,
+				}), withStatus(v1beta1.RouteTableExternalStatus{
+					RouteTableID: rtID,
+				})),
+			},
+			want: want{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					VPCID: vpcID,
+				}), withConditions(runtimev1alpha1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
 		},
-		{
-			"if disassociating a subnet fails, it should return error",
-			mockManaged.DeepCopy(),
-			nil,
-			nil,
-			errors.New("some error"),
-			false,
-			true,
-			true,
+		"MulitpleTables": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{}, {}},
+							}},
+						}
+					},
+				},
+				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
+					RouteTableID: rtID,
+				})),
+			},
+			want: want{
+				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
+					RouteTableID: rtID,
+				})),
+				err: errors.New(errMultipleItems),
+			},
+		},
+		"DescribeFail": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
+					RouteTableID: rtID,
+				})),
+			},
+			want: want{
+				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
+					RouteTableID: rtID,
+				})),
+				err: errors.Wrap(errBoom, errDescribe),
+			},
 		},
 	}
 
-	for _, tc := range testCases {
-		deleteRouteCalled = false
-		disassociateCalled = false
-		mockClientErr = tc.clientErr
-		mockClientDeleteRouteErr = tc.clientDeleteRouteErr
-		mockClientDisassociateErr = tc.clientDissassociateErr
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.rt}
+			o, err := e.Observe(context.Background(), tc.args.cr)
 
-		err := mockExternalClient.Delete(context.Background(), tc.managedObj)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
 
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.RouteTable)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)
-		}
+func TestCreate(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.RouteTable
+		result managed.ExternalCreation
+		err    error
+	}
 
-		g.Expect(deleteRouteCalled).To(gomega.Equal(tc.expectedDeleteRouteCall), tc.description)
-		g.Expect(disassociateCalled).To(gomega.Equal(tc.expectedDisassociateCall), tc.description)
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockClient().MockUpdate,
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
+				rt: &fake.MockRouteTableClient{
+					MockCreate: func(input *awsec2.CreateRouteTableInput) awsec2.CreateRouteTableRequest {
+						return awsec2.CreateRouteTableRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateRouteTableOutput{
+								RouteTable: &awsec2.RouteTable{RouteTableId: aws.String(rtID)},
+							}},
+						}
+					},
+				},
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					VPCID: vpcID,
+				})),
+			},
+			want: want{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					VPCID: vpcID,
+				}), withStatus(v1beta1.RouteTableExternalStatus{
+					RouteTableID: rtID,
+				}), withExternalName(rtID),
+					withConditions(runtimev1alpha1.Creating())),
+			},
+		},
+		"EmptyResult": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockClient().MockUpdate,
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
+				rt: &fake.MockRouteTableClient{
+					MockCreate: func(input *awsec2.CreateRouteTableInput) awsec2.CreateRouteTableRequest {
+						return awsec2.CreateRouteTableRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateRouteTableOutput{}},
+						}
+					},
+				},
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					VPCID: vpcID,
+				})),
+			},
+			want: want{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					VPCID: vpcID,
+				}), withConditions(runtimev1alpha1.Creating())),
+				err: errors.New(errCreate),
+			},
+		},
+		"CreateFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockClient().MockUpdate,
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
+				rt: &fake.MockRouteTableClient{
+					MockCreate: func(input *awsec2.CreateRouteTableInput) awsec2.CreateRouteTableRequest {
+						return awsec2.CreateRouteTableRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					VPCID: vpcID,
+				})),
+			},
+			want: want{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					VPCID: vpcID,
+				}), withConditions(runtimev1alpha1.Creating())),
+				err: errors.Wrap(errBoom, errCreate),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.rt}
+			o, err := e.Create(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.RouteTable
+		result managed.ExternalUpdate
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{}},
+							}},
+						}
+					},
+					MockAssociate: func(input *awsec2.AssociateRouteTableInput) awsec2.AssociateRouteTableRequest {
+						return awsec2.AssociateRouteTableRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.AssociateRouteTableOutput{}},
+						}
+					},
+					MockCreateRoute: func(input *awsec2.CreateRouteInput) awsec2.CreateRouteRequest {
+						return awsec2.CreateRouteRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateRouteOutput{}},
+						}
+					},
+				},
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Routes: []v1beta1.Route{{
+						GatewayID: igID,
+					}},
+					Associations: []v1beta1.Association{{
+						SubnetID: subnetID,
+					}},
+				}),
+					withStatus(v1beta1.RouteTableExternalStatus{
+						RouteTableID: rtID,
+					})),
+			},
+			want: want{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Routes: []v1beta1.Route{{
+						GatewayID: igID,
+					}},
+					Associations: []v1beta1.Association{{
+						SubnetID: subnetID,
+					}},
+				}),
+					withStatus(v1beta1.RouteTableExternalStatus{
+						RouteTableID: rtID,
+					})),
+			},
+		},
+		"CreateRouteFail": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{}},
+							}},
+						}
+					},
+					MockCreateRoute: func(input *awsec2.CreateRouteInput) awsec2.CreateRouteRequest {
+						return awsec2.CreateRouteRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Routes: []v1beta1.Route{{
+						GatewayID: igID,
+					}},
+				}),
+					withStatus(v1beta1.RouteTableExternalStatus{
+						RouteTableID: rtID,
+					})),
+			},
+			want: want{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Routes: []v1beta1.Route{{
+						GatewayID: igID,
+					}},
+				}),
+					withStatus(v1beta1.RouteTableExternalStatus{
+						RouteTableID: rtID,
+					})),
+				err: errors.Wrap(errBoom, errCreateRoute),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.rt}
+			o, err := e.Update(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestDelete(t *testing.T) {
+	type want struct {
+		cr  *v1beta1.RouteTable
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDelete: func(input *awsec2.DeleteRouteTableInput) awsec2.DeleteRouteTableRequest {
+						return awsec2.DeleteRouteTableRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteRouteTableOutput{}},
+						}
+					},
+				},
+				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
+					RouteTableID: rtID,
+				})),
+			},
+			want: want{
+				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
+					RouteTableID: rtID,
+				}), withConditions(runtimev1alpha1.Deleting())),
+			},
+		},
+		"DeleteFail": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDelete: func(input *awsec2.DeleteRouteTableInput) awsec2.DeleteRouteTableRequest {
+						return awsec2.DeleteRouteTableRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
+					RouteTableID: rtID,
+				})),
+			},
+			want: want{
+				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
+					RouteTableID: rtID,
+				}), withConditions(runtimev1alpha1.Deleting())),
+				err: errors.Wrap(errBoom, errDelete),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.rt}
+			err := e.Delete(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
 	}
 }
