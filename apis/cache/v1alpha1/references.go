@@ -23,7 +23,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
-	"github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/network/v1beta1"
 )
 
 // ResolveReferences of this CacheSubnetGroup
@@ -35,7 +35,7 @@ func (mg *CacheSubnetGroup) ResolveReferences(ctx context.Context, c client.Read
 		CurrentValues: mg.Spec.ForProvider.SubnetIDs,
 		References:    mg.Spec.ForProvider.SubnetIDRefs,
 		Selector:      mg.Spec.ForProvider.SubnetIDSelector,
-		To:            reference.To{Managed: &v1alpha3.Subnet{}, List: &v1alpha3.SubnetList{}},
+		To:            reference.To{Managed: &v1beta1.Subnet{}, List: &v1beta1.SubnetList{}},
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {

@@ -19,354 +19,626 @@ package subnet
 import (
 	"context"
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/onsi/gomega"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	v1alpha3 "github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/network/v1beta1"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
 )
 
-var (
-	mockExternalClient external
-	mockClient         fake.MockSubnetClient
+const (
+	providerName    = "aws-creds"
+	secretNamespace = "crossplane-system"
+	testRegion      = "us-east-1"
 
-	// an arbitrary managed resource
-	unexpectedItem resource.Managed
+	connectionSecretName = "my-little-secret"
+	secretKey            = "credentials"
+	credData             = "confidential!"
 )
 
-func TestMain(m *testing.M) {
+var (
+	subnetID = "some Id"
 
-	mockClient = fake.MockSubnetClient{}
-	mockExternalClient = external{
-		client: &mockClient,
-		kube: &test.MockClient{
-			MockUpdate: test.NewMockUpdateFn(nil),
-		},
-	}
+	errBoom = errors.New("boom")
+)
 
-	os.Exit(m.Run())
+type args struct {
+	subnet ec2.SubnetClient
+	kube   client.Client
+	cr     *v1beta1.Subnet
 }
 
-func Test_Connect(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+type subnetModifier func(*v1beta1.Subnet)
 
-	mockManaged := &v1alpha3.Subnet{}
-	var clientErr error
-	var configErr error
-
-	conn := connector{
-		client: nil,
-		newClientFn: func(conf *aws.Config) (ec2.SubnetClient, error) {
-			return &mockClient, clientErr
-		},
-		awsConfigFn: func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error) {
-			return &aws.Config{}, configErr
-		},
-	}
-
-	for _, tc := range []struct {
-		description       string
-		managedObj        resource.Managed
-		configErr         error
-		clientErr         error
-		expectedClientNil bool
-		expectedErrNil    bool
-	}{
-		{
-			"valid input should return expected",
-			mockManaged,
-			nil,
-			nil,
-			false,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			nil,
-			nil,
-			true,
-			false,
-		},
-		{
-			"if aws config provider fails, should return error",
-			mockManaged, // an arbitrary managed resource which is not expected
-			errors.New("some error"),
-			nil,
-			true,
-			false,
-		},
-		{
-			"if aws client provider fails, should return error",
-			mockManaged, // an arbitrary managed resource which is not expected
-			nil,
-			errors.New("some error"),
-			true,
-			false,
-		},
-	} {
-		clientErr = tc.clientErr
-		configErr = tc.configErr
-
-		res, err := conn.Connect(context.Background(), tc.managedObj)
-		g.Expect(res == nil).To(gomega.Equal(tc.expectedClientNil), tc.description)
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-	}
+func withExternalName(name string) subnetModifier {
+	return func(r *v1beta1.Subnet) { meta.SetExternalName(r, name) }
 }
 
-func Test_Observe(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+func withConditions(c ...runtimev1alpha1.Condition) subnetModifier {
+	return func(r *v1beta1.Subnet) { r.Status.ConditionedStatus.Conditions = c }
+}
 
-	mockManaged := v1alpha3.Subnet{}
-	meta.SetExternalName(&mockManaged, "some arbitrary id")
+func withSpec(p v1beta1.SubnetParameters) subnetModifier {
+	return func(r *v1beta1.Subnet) { r.Spec.ForProvider = p }
+}
 
-	mockExternal := &awsec2.Subnet{
-		SubnetId: aws.String("some arbitrary id"),
-		State:    awsec2.SubnetStateAvailable,
+func withStatus(s v1beta1.SubnetExternalStatus) subnetModifier {
+	return func(r *v1beta1.Subnet) { r.Status.AtProvider = s }
+}
+
+func subnet(m ...subnetModifier) *v1beta1.Subnet {
+	cr := &v1beta1.Subnet{
+		Spec: v1beta1.SubnetSpec{
+			ResourceSpec: runtimev1alpha1.ResourceSpec{
+				ProviderReference: &corev1.ObjectReference{Name: providerName},
+			},
+		},
 	}
-	var mockClientErr error
-	var itemsList []awsec2.Subnet
-	mockClient.MockDescribeSubnetsRequest = func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
-		return awsec2.DescribeSubnetsRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data: &awsec2.DescribeSubnetsOutput{
-					Subnets: itemsList,
+	for _, f := range m {
+		f(cr)
+	}
+	return cr
+}
+
+var _ managed.ExternalClient = &external{}
+var _ managed.ExternalConnecter = &connector{}
+
+func TestConnect(t *testing.T) {
+	secret := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      connectionSecretName,
+			Namespace: secretNamespace,
+		},
+		Data: map[string][]byte{
+			secretKey: []byte(credData),
+		},
+	}
+
+	providerSA := func(saVal bool) awsv1alpha3.Provider {
+		return awsv1alpha3.Provider{
+			Spec: awsv1alpha3.ProviderSpec{
+				Region:            testRegion,
+				UseServiceAccount: &saVal,
+				ProviderSpec: runtimev1alpha1.ProviderSpec{
+					CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
+						SecretReference: runtimev1alpha1.SecretReference{
+							Namespace: secretNamespace,
+							Name:      connectionSecretName,
+						},
+						Key: secretKey,
+					},
 				},
-				Error: mockClientErr,
 			},
 		}
 	}
+	type args struct {
+		kube        client.Client
+		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (ec2.SubnetClient, error)
+		cr          *v1beta1.Subnet
+	}
+	type want struct {
+		err error
+	}
 
-	for _, tc := range []struct {
-		description           string
-		managedObj            resource.Managed
-		itemsReturned         []awsec2.Subnet
-		clientErr             error
-		expectedErrNil        bool
-		expectedResourceExist bool
+	cases := map[string]struct {
+		args
+		want
 	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			[]awsec2.Subnet{*mockExternal},
-			nil,
-			true,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			nil,
-			nil,
-			false,
-			false,
-		},
-		{
-			"if item's identifier is not yet set, returns expected",
-			&v1alpha3.Subnet{},
-			nil,
-			nil,
-			true,
-			false,
-		},
-		{
-			"if external resource doesn't exist, it should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			awserr.New(ec2.SubnetIDNotFound, "", nil),
-			true,
-			false,
-		},
-		{
-			"if external resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			nil,
-			errors.New("some error"),
-			false,
-			false,
-		},
-		{
-			"if external resource returns a list with other than one item, it should return error",
-			mockManaged.DeepCopy(),
-			[]awsec2.Subnet{},
-			nil,
-			false,
-			false,
-		},
-	} {
-		mockClientErr = tc.clientErr
-		itemsList = tc.itemsReturned
-
-		result, err := mockExternalClient.Observe(context.Background(), tc.managedObj)
-
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		g.Expect(result.ResourceExists).To(gomega.Equal(tc.expectedResourceExist), tc.description)
-		if tc.expectedResourceExist {
-			mgd := tc.managedObj.(*v1alpha3.Subnet)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionTrue), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonAvailable), tc.description)
-			g.Expect(mgd.Status.SubnetExternalStatus.SubnetState).To(gomega.Equal(string(mockExternal.State)), tc.description)
-		}
-	}
-}
-
-func Test_Create(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := v1alpha3.Subnet{
-		Spec: v1alpha3.SubnetSpec{
-			SubnetParameters: v1alpha3.SubnetParameters{
-				CIDRBlock: "arbitrary cidr block string",
-			},
-		},
-	}
-	mockExternal := &awsec2.Subnet{
-		SubnetId: aws.String("some arbitrary arn"),
-	}
-	var mockClientErr error
-	mockClient.MockCreateSubnetRequest = func(input *awsec2.CreateSubnetInput) awsec2.CreateSubnetRequest {
-		g.Expect(aws.StringValue(input.CidrBlock)).To(gomega.Equal(mockManaged.Spec.CIDRBlock), "the passed parameters are not valid")
-		return awsec2.CreateSubnetRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data: &awsec2.CreateSubnetOutput{
-					Subnet: mockExternal,
+		"Successful": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						}
+						return errBoom
+					},
 				},
-				Error: mockClientErr,
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.SubnetClient, e error) {
+					if diff := cmp.Diff(credData, string(credentials)); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
+				},
+				cr: subnet(),
 			},
-		}
+		},
+		"SuccessfulUseServiceAccount": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						if key == (client.ObjectKey{Name: providerName}) {
+							p := providerSA(true)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						}
+						return errBoom
+					},
+				},
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.SubnetClient, e error) {
+					if diff := cmp.Diff("", string(credentials)); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
+				},
+				cr: subnet(),
+			},
+		},
+		"ProviderGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						return errBoom
+					},
+				},
+				cr: subnet(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProvider),
+			},
+		},
+		"SecretGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: subnet(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProviderSecret),
+			},
+		},
+		"SecretGetFailedNil": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.SetCredentialsSecretReference(nil)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: subnet(),
+			},
+			want: want{
+				err: errors.New(errGetProviderSecret),
+			},
+		},
 	}
 
-	for _, tc := range []struct {
-		description    string
-		managedObj     resource.Managed
-		clientErr      error
-		expectedErrNil bool
-	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			nil,
-			false,
-		},
-		{
-			"if creating resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			errors.New("some error"),
-			false,
-		},
-	} {
-		mockClientErr = tc.clientErr
-
-		_, err := mockExternalClient.Create(context.Background(), tc.managedObj)
-
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.Subnet)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
-			g.Expect(meta.GetExternalName(mgd)).To(gomega.Equal(aws.StringValue(mockExternal.SubnetId)), tc.description)
-		}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			c := &connector{client: tc.kube, newClientFn: tc.newClientFn}
+			_, err := c.Connect(context.Background(), tc.args.cr)
+			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
 	}
 }
 
-func Test_Update(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+func TestObserve(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.Subnet
+		result managed.ExternalObservation
+		err    error
+	}
 
-	mockManaged := v1alpha3.Subnet{}
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"SuccessfulAvailable": {
+			args: args{
+				subnet: &fake.MockSubnetClient{
+					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
+						return awsec2.DescribeSubnetsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSubnetsOutput{
+								Subnets: []awsec2.Subnet{
+									{
+										State: awsec2.SubnetStateAvailable,
+									},
+								},
+							}},
+						}
+					},
+				},
+				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
+					SubnetID: subnetID,
+				})),
+			},
+			want: want{
+				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
+					SubnetState: string(awsec2.SubnetStateAvailable),
+				}),
+					withConditions(runtimev1alpha1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"MultipleSubnets": {
+			args: args{
+				subnet: &fake.MockSubnetClient{
+					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
+						return awsec2.DescribeSubnetsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSubnetsOutput{
+								Subnets: []awsec2.Subnet{{}, {}},
+							}},
+						}
+					},
+				},
+				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
+					SubnetID: subnetID,
+				})),
+			},
+			want: want{
+				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
+					SubnetID: subnetID,
+				})),
+				err: errors.New(errMultipleItems),
+			},
+		},
+		"NotUpToDate": {
+			args: args{
+				subnet: &fake.MockSubnetClient{
+					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
+						return awsec2.DescribeSubnetsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSubnetsOutput{
+								Subnets: []awsec2.Subnet{
+									{
+										State:               awsec2.SubnetStateAvailable,
+										MapPublicIpOnLaunch: aws.Bool(false),
+									},
+								},
+							}},
+						}
+					},
+				},
+				cr: subnet(withSpec(v1beta1.SubnetParameters{
+					MapPublicIPOnLaunch: aws.Bool(true),
+				}),
+					withStatus(v1beta1.SubnetExternalStatus{
+						SubnetID: subnetID,
+					})),
+			},
+			want: want{
+				cr: subnet(withSpec(v1beta1.SubnetParameters{
+					MapPublicIPOnLaunch: aws.Bool(true),
+				}), withStatus(v1beta1.SubnetExternalStatus{
+					SubnetState: string(awsec2.SubnetStateAvailable),
+				}),
+					withConditions(runtimev1alpha1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
+			},
+		},
+		"DescribeFailed": {
+			args: args{
+				subnet: &fake.MockSubnetClient{
+					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
+						return awsec2.DescribeSubnetsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
+					SubnetID: subnetID,
+				})),
+			},
+			want: want{
+				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
+					SubnetID: subnetID,
+				})),
+				err: errors.Wrap(errBoom, errDescribe),
+			},
+		},
+	}
 
-	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.subnet}
+			o, err := e.Observe(context.Background(), tc.args.cr)
 
-	g.Expect(err).To(gomega.BeNil())
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
 }
 
-func Test_Delete(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := v1alpha3.Subnet{
-		Spec: v1alpha3.SubnetSpec{
-			SubnetParameters: v1alpha3.SubnetParameters{
-				CIDRBlock: "arbitrary cidr block",
-			},
-		},
-	}
-	meta.SetExternalName(&mockManaged, "some arbitrary id")
-	var mockClientErr error
-	mockClient.MockDeleteSubnetRequest = func(input *awsec2.DeleteSubnetInput) awsec2.DeleteSubnetRequest {
-		g.Expect(aws.StringValue(input.SubnetId)).To(gomega.Equal(meta.GetExternalName(&mockManaged)), "the passed parameters are not valid")
-		return awsec2.DeleteSubnetRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data:        &awsec2.DeleteSubnetOutput{},
-				Error:       mockClientErr,
-			},
-		}
+func TestCreate(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.Subnet
+		result managed.ExternalCreation
+		err    error
 	}
 
-	for _, tc := range []struct {
-		description    string
-		managedObj     resource.Managed
-		clientErr      error
-		expectedErrNil bool
+	cases := map[string]struct {
+		args
+		want
 	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			true,
+		"Successful": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockClient().Update,
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
+				subnet: &fake.MockSubnetClient{
+					MockCreate: func(input *awsec2.CreateSubnetInput) awsec2.CreateSubnetRequest {
+						return awsec2.CreateSubnetRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateSubnetOutput{
+								Subnet: &awsec2.Subnet{
+									SubnetId: aws.String(subnetID),
+								},
+							}},
+						}
+					},
+				},
+				cr: subnet(),
+			},
+			want: want{
+				cr: subnet(withExternalName(subnetID),
+					withStatus(v1beta1.SubnetExternalStatus{
+						SubnetID: subnetID,
+					}),
+					withConditions(runtimev1alpha1.Creating())),
+			},
 		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			nil,
-			false,
+		"CreateFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockClient().Update,
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
+				subnet: &fake.MockSubnetClient{
+					MockCreate: func(input *awsec2.CreateSubnetInput) awsec2.CreateSubnetRequest {
+						return awsec2.CreateSubnetRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: subnet(),
+			},
+			want: want{
+				cr:  subnet(withConditions(runtimev1alpha1.Creating())),
+				err: errors.Wrap(errBoom, errCreate),
+			},
 		},
-		{
-			"if the resource doesn't exist deleting resource should not return an error",
-			mockManaged.DeepCopy(),
-			awserr.New(ec2.SubnetIDNotFound, "", nil),
-			true,
-		},
-		{
-			"if deleting resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			errors.New("some error"),
-			false,
-		},
-	} {
-		mockClientErr = tc.clientErr
+	}
 
-		err := mockExternalClient.Delete(context.Background(), tc.managedObj)
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.subnet}
+			o, err := e.Create(context.Background(), tc.args.cr)
 
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.Subnet)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)
-		}
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.Subnet
+		result managed.ExternalUpdate
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				subnet: &fake.MockSubnetClient{
+					MockModify: func(input *awsec2.ModifySubnetAttributeInput) awsec2.ModifySubnetAttributeRequest {
+						return awsec2.ModifySubnetAttributeRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifySubnetAttributeOutput{}},
+						}
+					},
+					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
+						return awsec2.DescribeSubnetsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSubnetsOutput{
+								Subnets: []awsec2.Subnet{{
+									SubnetId:            aws.String(subnetID),
+									MapPublicIpOnLaunch: aws.Bool(false),
+								}},
+							}},
+						}
+					},
+				},
+				cr: subnet(withSpec(v1beta1.SubnetParameters{
+					MapPublicIPOnLaunch: aws.Bool(true),
+				}), withStatus(v1beta1.SubnetExternalStatus{
+					SubnetID: subnetID,
+				})),
+			},
+			want: want{
+				cr: subnet(withSpec(v1beta1.SubnetParameters{
+					MapPublicIPOnLaunch: aws.Bool(true),
+				}), withStatus(v1beta1.SubnetExternalStatus{
+					SubnetID: subnetID,
+				})),
+			},
+		},
+		"ModifyFailed": {
+			args: args{
+				subnet: &fake.MockSubnetClient{
+					MockModify: func(input *awsec2.ModifySubnetAttributeInput) awsec2.ModifySubnetAttributeRequest {
+						return awsec2.ModifySubnetAttributeRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifySubnetAttributeOutput{}},
+						}
+					},
+					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
+						return awsec2.DescribeSubnetsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSubnetsOutput{
+								Subnets: []awsec2.Subnet{{
+									SubnetId:            aws.String(subnetID),
+									MapPublicIpOnLaunch: aws.Bool(false),
+								}},
+							}},
+						}
+					},
+				},
+				cr: subnet(withSpec(v1beta1.SubnetParameters{
+					MapPublicIPOnLaunch: aws.Bool(true),
+				}), withStatus(v1beta1.SubnetExternalStatus{
+					SubnetID: subnetID,
+				})),
+			},
+			want: want{
+				cr: subnet(withSpec(v1beta1.SubnetParameters{
+					MapPublicIPOnLaunch: aws.Bool(true),
+				}), withStatus(v1beta1.SubnetExternalStatus{
+					SubnetID: subnetID,
+				})),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.subnet}
+			u, err := e.Update(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, u); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestDelete(t *testing.T) {
+	type want struct {
+		cr  *v1beta1.Subnet
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				subnet: &fake.MockSubnetClient{
+					MockDelete: func(input *awsec2.DeleteSubnetInput) awsec2.DeleteSubnetRequest {
+						return awsec2.DeleteSubnetRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteSubnetOutput{}},
+						}
+					},
+				},
+				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
+					SubnetID: subnetID,
+				})),
+			},
+			want: want{
+				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
+					SubnetID: subnetID,
+				}), withConditions(runtimev1alpha1.Deleting())),
+			},
+		},
+		"DeleteFailed": {
+			args: args{
+				subnet: &fake.MockSubnetClient{
+					MockDelete: func(input *awsec2.DeleteSubnetInput) awsec2.DeleteSubnetRequest {
+						return awsec2.DeleteSubnetRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
+					SubnetID: subnetID,
+				})),
+			},
+			want: want{
+				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
+					SubnetID: subnetID,
+				}), withConditions(runtimev1alpha1.Deleting())),
+				err: errors.Wrap(errBoom, errDelete),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.subnet}
+			err := e.Delete(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
 	}
 }

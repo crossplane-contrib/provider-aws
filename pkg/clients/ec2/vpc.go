@@ -1,12 +1,15 @@
 package ec2
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/network/v1beta1"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 const (
@@ -21,10 +24,15 @@ type VPCClient interface {
 	DescribeVpcsRequest(*ec2.DescribeVpcsInput) ec2.DescribeVpcsRequest
 	ModifyVpcAttributeRequest(*ec2.ModifyVpcAttributeInput) ec2.ModifyVpcAttributeRequest
 	CreateTagsRequest(*ec2.CreateTagsInput) ec2.CreateTagsRequest
+	ModifyVpcTenancyRequest(*ec2.ModifyVpcTenancyInput) ec2.ModifyVpcTenancyRequest
 }
 
-// NewVPCClient returns a new client using AWS credentials as JSON encoded data.
-func NewVPCClient(cfg *aws.Config) (VPCClient, error) {
+// NewVpcClient returns a new client using AWS credentials as JSON encoded data.
+func NewVpcClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (VPCClient, error) {
+	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
+	if cfg == nil {
+		return nil, err
+	}
 	return ec2.New(*cfg), nil
 }
 
@@ -39,9 +47,34 @@ func IsVPCNotFoundErr(err error) bool {
 	return false
 }
 
-// IsUpToDate returns true if there is no update-able difference between desired
+// IsVpcUpToDate returns true if there is no update-able difference between desired
 // and observed state of the resource.
-func IsUpToDate(spec v1alpha3.VPCParameters, o ec2.Vpc) bool {
-	actual := v1alpha3.BuildFromEC2Tags(o.Tags)
-	return cmp.Equal(spec.Tags, actual)
+func IsVpcUpToDate(spec v1beta1.VPCParameters, o ec2.Vpc) bool {
+	actual := v1beta1.BuildFromEC2Tags(o.Tags)
+	return cmp.Equal(spec.Tags, actual) && (aws.StringValue(spec.InstanceTenancy) == string(o.InstanceTenancy))
+}
+
+// GenerateVpcObservation is used to produce v1beta1.VPCExternalStatus from
+// ec2.Vpc.
+func GenerateVpcObservation(vpc ec2.Vpc) v1beta1.VPCExternalStatus {
+	o := v1beta1.VPCExternalStatus{
+		IsDefault: aws.BoolValue(vpc.IsDefault),
+		OwnerID:   aws.StringValue(vpc.OwnerId),
+		VPCID:     aws.StringValue(vpc.VpcId),
+		Tags:      v1beta1.BuildFromEC2Tags(vpc.Tags),
+		VPCState:  string(vpc.State),
+	}
+
+	return o
+}
+
+// LateInitializeVPC fills the empty fields in *v1beta1.VPCParameters with
+// the values seen in ec2.Vpc.
+func LateInitializeVPC(in *v1beta1.VPCParameters, v *ec2.Vpc) { // nolint:gocyclo
+	if v == nil {
+		return
+	}
+
+	in.CIDRBlock = awsclients.LateInitializeString(in.CIDRBlock, v.CidrBlock)
+	in.InstanceTenancy = awsclients.LateInitializeStringPtr(in.InstanceTenancy, aws.String(string(v.InstanceTenancy)))
 }

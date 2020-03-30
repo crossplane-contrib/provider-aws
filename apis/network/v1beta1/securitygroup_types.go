@@ -14,12 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha3
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
@@ -200,11 +198,17 @@ type IPPermission struct {
 // A SecurityGroupSpec defines the desired state of a SecurityGroup.
 type SecurityGroupSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	SecurityGroupParameters      `json:",inline"`
+	ForProvider                  SecurityGroupParameters `json:"forProvider"`
 }
 
 // SecurityGroupExternalStatus keeps the state for the external resource
 type SecurityGroupExternalStatus struct {
+	// The AWS account ID of the owner of the security group.
+	OwnerID string `json:"ownerId"`
+
+	// SecurityGroupID is the ID of the SecurityGroup.
+	SecurityGroupID string `json:"securityGroupID"`
+
 	// Tags represents to current ec2 tags.
 	Tags []Tag `json:"tags,omitempty"`
 }
@@ -212,18 +216,18 @@ type SecurityGroupExternalStatus struct {
 // A SecurityGroupStatus represents the observed state of a SecurityGroup.
 type SecurityGroupStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	SecurityGroupExternalStatus    `json:",inline"`
+	AtProvider                     SecurityGroupExternalStatus `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true
 
 // A SecurityGroup is a managed resource that represents an AWS VPC Security
 // Group.
+// +kubebuilder:printcolumn:name="GROUPNAME",type="string",JSONPath=".spec.forProvider.groupName"
+// +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".spec.forProvider.vpcId"
+// +kubebuilder:printcolumn:name="DESCRIPTION",type="string",JSONPath=".spec.forProvider.description"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
-// +kubebuilder:printcolumn:name="GROUPNAME",type="string",JSONPath=".spec.groupName"
-// +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".spec.vpcId"
-// +kubebuilder:printcolumn:name="DESCRIPTION",type="string",JSONPath=".spec.description"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
@@ -242,11 +246,4 @@ type SecurityGroupList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []SecurityGroup `json:"items"`
-}
-
-// UpdateExternalStatus updates the external status object, given the observation
-func (s *SecurityGroup) UpdateExternalStatus(observation ec2.SecurityGroup) {
-	s.Status.SecurityGroupExternalStatus = SecurityGroupExternalStatus{
-		Tags: BuildFromEC2Tags(observation.Tags),
-	}
 }

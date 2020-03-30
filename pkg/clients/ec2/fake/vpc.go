@@ -27,31 +27,37 @@ var _ clientset.VPCClient = (*MockVPCClient)(nil)
 
 // MockVPCClient is a type that implements all the methods for VPCClient interface
 type MockVPCClient struct {
-	MockCreateVpcRequest          func(*ec2.CreateVpcInput) ec2.CreateVpcRequest
-	MockDeleteVpcRequest          func(*ec2.DeleteVpcInput) ec2.DeleteVpcRequest
-	MockDescribeVpcsRequest       func(*ec2.DescribeVpcsInput) ec2.DescribeVpcsRequest
-	MockModifyVpcAttributeRequest func(*ec2.ModifyVpcAttributeInput) ec2.ModifyVpcAttributeRequest
-	MockCreateTagsRequest         func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
+	MockCreate            func(*ec2.CreateVpcInput) ec2.CreateVpcRequest
+	MockDelete            func(*ec2.DeleteVpcInput) ec2.DeleteVpcRequest
+	MockDescribe          func(*ec2.DescribeVpcsInput) ec2.DescribeVpcsRequest
+	MockModifyAttribute   func(*ec2.ModifyVpcAttributeInput) ec2.ModifyVpcAttributeRequest
+	MockModifyTenancy     func(*ec2.ModifyVpcTenancyInput) ec2.ModifyVpcTenancyRequest
+	MockCreateTagsRequest func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
 }
 
 // CreateVpcRequest mocks CreateVpcRequest method
 func (m *MockVPCClient) CreateVpcRequest(input *ec2.CreateVpcInput) ec2.CreateVpcRequest {
-	return m.MockCreateVpcRequest(input)
+	return m.MockCreate(input)
 }
 
 // DeleteVpcRequest mocks DeleteVpcRequest method
 func (m *MockVPCClient) DeleteVpcRequest(input *ec2.DeleteVpcInput) ec2.DeleteVpcRequest {
-	return m.MockDeleteVpcRequest(input)
+	return m.MockDelete(input)
 }
 
 // DescribeVpcsRequest mocks DescribeVpcsRequest method
 func (m *MockVPCClient) DescribeVpcsRequest(input *ec2.DescribeVpcsInput) ec2.DescribeVpcsRequest {
-	return m.MockDescribeVpcsRequest(input)
+	return m.MockDescribe(input)
 }
 
 // ModifyVpcAttributeRequest mocks ModifyVpcAttributeRequest method
 func (m *MockVPCClient) ModifyVpcAttributeRequest(input *ec2.ModifyVpcAttributeInput) ec2.ModifyVpcAttributeRequest {
-	return m.MockModifyVpcAttributeRequest(input)
+	return m.MockModifyAttribute(input)
+}
+
+// ModifyVpcTenancyRequest mocks ModifyVpcTenancyRequest method
+func (m *MockVPCClient) ModifyVpcTenancyRequest(input *ec2.ModifyVpcTenancyInput) ec2.ModifyVpcTenancyRequest {
+	return m.MockModifyTenancy(input)
 }
 
 // CreateTagsRequest mocks CreateTagsRequest method

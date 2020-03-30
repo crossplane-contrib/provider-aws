@@ -1,0 +1,12 @@
+apiVersion: network.aws.crossplane.io/v1beta1
+kind: Subnet
+metadata:
+  name: sample-subnet1
+spec:
+  forProvider:
+    cidrBlock: 192.168.0.0/28
+    vpcId: vpc-0bbb38080c157a793
+    mapPublicIPOnLaunch: true
+  reclaimPolicy: Delete
+  providerRef:
+    name: example

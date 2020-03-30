@@ -14,12 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha3
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
 
@@ -31,45 +30,58 @@ type VPCParameters struct {
 	CIDRBlock string `json:"cidrBlock"`
 
 	// A boolean flag to enable/disable DNS support in the VPC
-	EnableDNSSupport bool `json:"enableDnsSupport,omitempty"`
-
-	// A boolean flag to enable/disable DNS hostnames in the VPC
-	EnableDNSHostNames bool `json:"enableDnsHostNames,omitempty"`
+	// +optional
+	EnableDNSSupport *bool `json:"enableDnsSupport,omitempty"`
 
 	// Tags are used as identification helpers between AWS resources.
 	Tags []Tag `json:"tags,omitempty"`
+
+	// +optional
+	EnableDNSHostNames *bool `json:"enableDnsHostNames,omitempty"`
+
+	// The allowed tenancy of instances launched into the VPC.
+	// +optinal
+	InstanceTenancy *string `json:"instanceTenancy,omitempty"`
 }
 
 // A VPCSpec defines the desired state of a VPC.
 type VPCSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	VPCParameters                `json:",inline"`
+	ForProvider                  VPCParameters `json:"forProvider"`
 }
 
 // VPCExternalStatus keeps the state for the external resource
 type VPCExternalStatus struct {
+	// Indicates whether the VPC is the default VPC.
+	IsDefault bool `json:"isDefault,omitempty"`
+
+	// The ID of the AWS account that owns the VPC.
+	OwnerID string `json:"ownerID,omitempty"`
+
 	// VPCState is the current state of the VPC.
 	// +kubebuilder:validation:Enum=pending;available
 	VPCState string `json:"vpcState,omitempty"`
 
 	// Tags represents to current ec2 tags.
 	Tags []Tag `json:"tags,omitempty"`
+
+	VPCID string `json:"vpcId,omitempty"`
 }
 
 // A VPCStatus represents the observed state of a VPC.
 type VPCStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	VPCExternalStatus              `json:",inline"`
+	AtProvider                     VPCExternalStatus `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true
 
 // A VPC is a managed resource that represents an AWS Virtual Private Cloud.
+// +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".status.atProvider.vpcId"
+// +kubebuilder:printcolumn:name="CIDRBLOCK",type="string",JSONPath=".spec.forProvider.cidrBlock"
+// +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.atProvider.vpcState"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
-// +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".status.vpcId"
-// +kubebuilder:printcolumn:name="CIDRBLOCK",type="string",JSONPath=".spec.cidrBlock"
-// +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.vpcState"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
@@ -88,12 +100,4 @@ type VPCList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []VPC `json:"items"`
-}
-
-// UpdateExternalStatus updates the external status object,  given the observation
-func (v *VPC) UpdateExternalStatus(observation ec2.Vpc) {
-	v.Status.VPCExternalStatus = VPCExternalStatus{
-		Tags:     BuildFromEC2Tags(observation.Tags),
-		VPCState: string(observation.State),
-	}
 }

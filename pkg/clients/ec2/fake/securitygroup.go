@@ -27,34 +27,34 @@ var _ clientset.SecurityGroupClient = (*MockSecurityGroupClient)(nil)
 
 // MockSecurityGroupClient is a type that implements all the methods for SecurityGroupClient interface
 type MockSecurityGroupClient struct {
-	MockCreateSecurityGroupRequest           func(*ec2.CreateSecurityGroupInput) ec2.CreateSecurityGroupRequest
-	MockDeleteSecurityGroupRequest           func(*ec2.DeleteSecurityGroupInput) ec2.DeleteSecurityGroupRequest
-	MockDescribeSecurityGroupsRequest        func(*ec2.DescribeSecurityGroupsInput) ec2.DescribeSecurityGroupsRequest
-	MockAuthorizeSecurityGroupIngressRequest func(*ec2.AuthorizeSecurityGroupIngressInput) ec2.AuthorizeSecurityGroupIngressRequest
-	MockAuthorizeSecurityGroupEgressRequest  func(*ec2.AuthorizeSecurityGroupEgressInput) ec2.AuthorizeSecurityGroupEgressRequest
+	MockCreate          func(*ec2.CreateSecurityGroupInput) ec2.CreateSecurityGroupRequest
+	MockDelete          func(*ec2.DeleteSecurityGroupInput) ec2.DeleteSecurityGroupRequest
+	MockDescribe        func(*ec2.DescribeSecurityGroupsInput) ec2.DescribeSecurityGroupsRequest
+	MockAuthorizeIgress func(*ec2.AuthorizeSecurityGroupIngressInput) ec2.AuthorizeSecurityGroupIngressRequest
+	MockAuthorizeEgress func(*ec2.AuthorizeSecurityGroupEgressInput) ec2.AuthorizeSecurityGroupEgressRequest
 }
 
 // CreateSecurityGroupRequest mocks CreateSecurityGroupRequest method
 func (m *MockSecurityGroupClient) CreateSecurityGroupRequest(input *ec2.CreateSecurityGroupInput) ec2.CreateSecurityGroupRequest {
-	return m.MockCreateSecurityGroupRequest(input)
+	return m.MockCreate(input)
 }
 
 // DeleteSecurityGroupRequest mocks DeleteSecurityGroupRequest method
 func (m *MockSecurityGroupClient) DeleteSecurityGroupRequest(input *ec2.DeleteSecurityGroupInput) ec2.DeleteSecurityGroupRequest {
-	return m.MockDeleteSecurityGroupRequest(input)
+	return m.MockDelete(input)
 }
 
 // DescribeSecurityGroupsRequest mocks DescribeSecurityGroupsRequest method
 func (m *MockSecurityGroupClient) DescribeSecurityGroupsRequest(input *ec2.DescribeSecurityGroupsInput) ec2.DescribeSecurityGroupsRequest {
-	return m.MockDescribeSecurityGroupsRequest(input)
+	return m.MockDescribe(input)
 }
 
 // AuthorizeSecurityGroupIngressRequest mocks AuthorizeSecurityGroupIngressRequest method
 func (m *MockSecurityGroupClient) AuthorizeSecurityGroupIngressRequest(input *ec2.AuthorizeSecurityGroupIngressInput) ec2.AuthorizeSecurityGroupIngressRequest {
-	return m.MockAuthorizeSecurityGroupIngressRequest(input)
+	return m.MockAuthorizeIgress(input)
 }
 
 // AuthorizeSecurityGroupEgressRequest mocks AuthorizeSecurityGroupEgressRequest method
 func (m *MockSecurityGroupClient) AuthorizeSecurityGroupEgressRequest(input *ec2.AuthorizeSecurityGroupEgressInput) ec2.AuthorizeSecurityGroupEgressRequest {
-	return m.MockAuthorizeSecurityGroupEgressRequest(input)
+	return m.MockAuthorizeEgress(input)
 }

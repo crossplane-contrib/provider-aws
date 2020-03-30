@@ -14,13 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha3
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
 
@@ -28,7 +26,7 @@ import (
 type Route struct {
 	// The IPv4 CIDR address block used for the destination match. Routing
 	// decisions are based on the most specific match.
-	DestinationCIDRBlock string `json:"destinationCidrBlock"`
+	DestinationCIDRBlock string `json:"destinationCidrBlock,omitempty"`
 
 	// The ID of an internet gateway or virtual private gateway attached to your
 	// VPC.
@@ -48,7 +46,7 @@ type RouteState struct {
 	// to the VPC, or the specified NAT instance has been terminated).
 	RouteState string `json:"routeState,omitempty"`
 
-	Route `json:",inline"`
+	Route Route `json:",inline"`
 }
 
 // Association describes an association between a route table and a subnet.
@@ -72,13 +70,14 @@ type AssociationState struct {
 	// The ID of the association between a route table and a subnet.
 	AssociationID string `json:"associationId"`
 
-	Association `json:",inline"`
+	Association Association `json:",inline"`
 }
 
 // RouteTableParameters define the desired state of an AWS VPC Route Table.
 type RouteTableParameters struct {
 	// VPCID is the ID of the VPC.
-	VPCID string `json:"vpcId,omitempty"`
+	// +immutable
+	VPCID string `json:"vpcId"`
 
 	// VPCIDRef references a VPC to retrieve its vpcId
 	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
@@ -87,20 +86,26 @@ type RouteTableParameters struct {
 	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
 
 	// the routes in the route table
-	Routes []Route `json:"routes,omitempty"`
+	Routes []Route `json:"routes"`
 
 	// The associations between the route table and one or more subnets.
-	Associations []Association `json:"associations,omitempty"`
+	Associations []Association `json:"associations"`
 }
 
 // A RouteTableSpec defines the desired state of a RouteTable.
 type RouteTableSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	RouteTableParameters         `json:",inline"`
+	ForProvider                  RouteTableParameters `json:"forProvider"`
 }
 
 // RouteTableExternalStatus keeps the state for the external resource
 type RouteTableExternalStatus struct {
+	// The ID of the AWS account that owns the route table.
+	OwnerID string `json:"ownerId,omitempty"`
+
+	// RouteTableID is the ID of the RouteTable.
+	RouteTableID string `json:"routeTableId"`
+
 	// The actual routes created for the route table.
 	Routes []RouteState `json:"routes,omitempty"`
 
@@ -111,15 +116,15 @@ type RouteTableExternalStatus struct {
 // A RouteTableStatus represents the observed state of a RouteTable.
 type RouteTableStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	RouteTableExternalStatus       `json:",inline"`
+	AtProvider                     RouteTableExternalStatus `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true
 
 // A RouteTable is a managed resource that represents an AWS VPC Route Table.
+// +kubebuilder:printcolumn:name="TABLEID",type="string",JSONPath=".status.atProvider.routeTableId"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
-// +kubebuilder:printcolumn:name="TABLEID",type="string",JSONPath=".status.routeTableId"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
@@ -138,36 +143,4 @@ type RouteTableList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []RouteTable `json:"items"`
-}
-
-// UpdateExternalStatus updates the external status object, given the observation
-func (t *RouteTable) UpdateExternalStatus(observation ec2.RouteTable) {
-	st := RouteTableExternalStatus{
-		Routes:       []RouteState{},
-		Associations: []AssociationState{},
-	}
-
-	st.Routes = make([]RouteState, len(observation.Routes))
-	for i, rt := range observation.Routes {
-		st.Routes[i] = RouteState{
-			RouteState: string(rt.State),
-			Route: Route{
-				DestinationCIDRBlock: aws.StringValue(rt.DestinationCidrBlock),
-				GatewayID:            aws.StringValue(rt.GatewayId),
-			},
-		}
-	}
-
-	st.Associations = make([]AssociationState, len(observation.Associations))
-	for i, asc := range observation.Associations {
-		st.Associations[i] = AssociationState{
-			Main:          aws.BoolValue(asc.Main),
-			AssociationID: aws.StringValue(asc.RouteTableAssociationId),
-			Association: Association{
-				SubnetID: aws.StringValue(asc.SubnetId),
-			},
-		}
-	}
-
-	t.Status.RouteTableExternalStatus = st
 }

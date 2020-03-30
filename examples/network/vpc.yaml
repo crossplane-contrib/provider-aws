@@ -1,0 +1,13 @@
+apiVersion: network.aws.crossplane.io/v1beta1
+kind: VPC
+metadata:
+  name: sample-vpc
+spec:
+  forProvider:
+    cidrBlock: 192.168.0.0/16
+    enableDnsSupport: true
+    enableDnsHostNames: true
+    instanceTenancy: default
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
