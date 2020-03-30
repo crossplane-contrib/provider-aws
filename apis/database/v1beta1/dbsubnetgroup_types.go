@@ -34,6 +34,20 @@ const (
 	errResourceIsNotDBSubnetGroup = "the managed resource is not a DBSubnetGroup"
 )
 
+// DBSubnetGroup states.
+const (
+	// The DB subnet group is healthy and available
+	DBSubnetGroupStateAvailable = "available"
+	// The DB subnet group is being created. The DB subnet group is inaccessible while it is being created.
+	DBSubnetGroupStateCreating = "creating"
+	// The DB subnet group is being deleted.
+	DBSubnetGroupStateDeleting = "deleting"
+	// The DB subnet group is being modified.
+	DBSubnetGroupStateModifying = "modifying"
+	// The DB subnet group has failed and Amazon RDS can't recover it. Perform a point-in-time restore to the latest restorable time of the instance to recover the data.
+	DBSubnetGroupStateFailed = "failed"
+)
+
 // Subnet represents a aws subnet
 type Subnet struct {
 	// Specifies the identifier of the subnet.
@@ -74,6 +88,7 @@ type DBSubnetGroupParameters struct {
 	DBSubnetGroupDescription string `json:"description"`
 
 	// The name for the DB subnet group. This value is stored as a lowercase string.
+	// +immutable
 	DBSubnetGroupName string `json:"groupName"`
 
 	// The EC2 Subnet IDs for the DB subnet group.
@@ -84,6 +99,7 @@ type DBSubnetGroupParameters struct {
 
 	// A list of tags. For more information, see Tagging Amazon RDS Resources (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
 	// in the Amazon RDS User Guide.
+	// +optional
 	Tags []Tag `json:"tags,omitempty"`
 }
 
@@ -111,7 +127,7 @@ type DBSubnetGroupExternalStatus struct {
 // A DBSubnetGroupStatus represents the observed state of a DBSubnetGroup.
 type DBSubnetGroupStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     DBSubnetGroupExternalStatus `json:"atProvider,omitempty"`
+	AtProvider                     DBSubnetGroupObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -143,6 +159,21 @@ type DBSubnetGroupList struct {
 	Items           []DBSubnetGroup `json:"items"`
 }
 
+// DBSubnetGroupObservation is the representation of the current state that is observed
+type DBSubnetGroupObservation struct {
+	// SubnetGroupStatus specifies the current state of this DB subnet group.
+	SubnetGroupStatus string `json:"subnetGroupStatus,omitempty"`
+
+	// DBSubnetGroupArn is the Amazon Resource Name (ARN) for this DB subnet group.
+	DBSubnetGroupArn string `json:"dbSubnetGroupArn,omitempty"`
+
+	// Subnets contains a list of Subnet elements.
+	Subnets []Subnet `json:"subnets,omitempty"`
+
+	// VPCID provides the VPCID of the DB subnet group.
+	VPCID string `json:"vpcId,omitempty"`
+}
+
 // UpdateExternalStatus updates the external status object, given the observation
 func (b *DBSubnetGroup) UpdateExternalStatus(observation rds.DBSubnetGroup) {
 
@@ -154,8 +185,8 @@ func (b *DBSubnetGroup) UpdateExternalStatus(observation rds.DBSubnetGroup) {
 		}
 	}
 
-	b.Status.AtProvider = DBSubnetGroupExternalStatus{
-		DBSubnetGroupARN:  aws.StringValue(observation.DBSubnetGroupArn),
+	b.Status.AtProvider = DBSubnetGroupObservation{
+		DBSubnetGroupArn:  aws.StringValue(observation.DBSubnetGroupArn),
 		SubnetGroupStatus: aws.StringValue(observation.SubnetGroupStatus),
 		Subnets:           subnets,
 		VPCID:             aws.StringValue(observation.VpcId),

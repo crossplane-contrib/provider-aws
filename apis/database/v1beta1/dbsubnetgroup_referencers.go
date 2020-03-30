@@ -55,11 +55,11 @@ func (v *DBSubnetGroupNameReferencer) GetStatus(ctx context.Context, _ resource.
 
 // Build retrieves the DBSubnetGroup and returns the name
 func (v *DBSubnetGroupNameReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
-	sg := DBSubnetGroup{}
+	sg := &DBSubnetGroup{}
 	nn := types.NamespacedName{Name: v.Name}
-	if err := reader.Get(ctx, nn, &sg); err != nil {
+	if err := reader.Get(ctx, nn, sg); err != nil {
 		return "", err
 	}
 
-	return meta.GetExternalName(&sg), nil
+	return meta.GetExternalName(sg), nil
 }
