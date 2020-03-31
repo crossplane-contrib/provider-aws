@@ -47,6 +47,10 @@ spec:
           description: SpecTemplate is a template for the spec of a dynamically provisioned
             EKSCluster.
           properties:
+            cloudformationStackId:
+              description: CloudFormationStackID of the Stack used to create node
+                groups.
+              type: string
             clusterVersion:
               description: 'ClusterVersion: The desired Kubernetes version of this
                 EKS Cluster. If you do not specify a value here, the latest version

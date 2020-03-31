@@ -274,12 +274,12 @@ func (r *Reconciler) _sync(instance *awscomputev1alpha3.EKSCluster, cluster *eks
 	}
 
 	// Create workers
-	if instance.Status.CloudFormationStackID == "" {
+	if instance.Spec.CloudFormationStackID == "" {
 		clusterWorkers, err := client.CreateWorkerNodes(meta.GetExternalName(instance), cluster.Version, instance.Spec)
 		if err != nil {
 			return r.fail(instance, err)
 		}
-		instance.Status.CloudFormationStackID = clusterWorkers.WorkerStackID
+		instance.Spec.CloudFormationStackID = clusterWorkers.WorkerStackID
 		instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
 
 		// We'll likely be requeued implicitly due to the status update, but
@@ -288,7 +288,7 @@ func (r *Reconciler) _sync(instance *awscomputev1alpha3.EKSCluster, cluster *eks
 		return reconcile.Result{RequeueAfter: aShortWait}, r.Update(ctx, instance)
 	}
 
-	clusterWorker, err := client.GetWorkerNodes(instance.Status.CloudFormationStackID)
+	clusterWorker, err := client.GetWorkerNodes(instance.Spec.CloudFormationStackID)
 	if err != nil {
 		return r.fail(instance, err)
 	}
@@ -355,8 +355,8 @@ func (r *Reconciler) _delete(instance *awscomputev1alpha3.EKSCluster, client eks
 			deleteErrors = append(deleteErrors, fmt.Sprintf("Master Delete Error: %s", err.Error()))
 		}
 
-		if instance.Status.CloudFormationStackID != "" {
-			if err := client.DeleteWorkerNodes(instance.Status.CloudFormationStackID); err != nil && !cloudformationclient.IsErrorNotFound(err) {
+		if instance.Spec.CloudFormationStackID != "" {
+			if err := client.DeleteWorkerNodes(instance.Spec.CloudFormationStackID); err != nil && !cloudformationclient.IsErrorNotFound(err) {
 				deleteErrors = append(deleteErrors, fmt.Sprintf("Worker Delete Error: %s", err.Error()))
 			}
 		}
@@ -421,10 +421,10 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 	cluster, err := eksClient.Get(meta.GetExternalName(instance))
 	switch {
-	case resource.Ignore(eks.IsErrorNotFound, err) != nil:
-		return r.fail(instance, err)
 	case eks.IsErrorNotFound(err):
 		return r.create(instance, eksClient)
+	case err != nil:
+		return r.fail(instance, err)
 	}
 	// Sync cluster instance status with cluster status
 	return r.sync(instance, cluster, eksClient)
