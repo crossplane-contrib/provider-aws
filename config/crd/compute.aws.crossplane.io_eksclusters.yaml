@@ -517,9 +517,6 @@ spec:
             endpoint:
               description: Endpoint for connecting to the cluster.
               type: string
-            resourceName:
-              description: ClusterName of the cluster.
-              type: string
             resourceVersion:
               description: ClusterVersion of the cluster.
               type: string

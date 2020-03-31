@@ -19,8 +19,9 @@ package compute
 import (
 	"context"
 	"encoding/base64"
-	"fmt"
 	"testing"
+
+	eks2 "github.com/aws/aws-sdk-go-v2/service/eks"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/ghodss/yaml"
@@ -161,7 +162,6 @@ func TestCreate(t *testing.T) {
 
 	// new cluster
 	cluster := testCluster()
-	cluster.ObjectMeta.UID = types.UID("test-uid")
 
 	client := &fake.MockEKSClient{
 		MockCreate: func(string, EKSClusterSpec) (*eks.Cluster, error) { return &eks.Cluster{}, nil },
@@ -171,13 +171,10 @@ func TestCreate(t *testing.T) {
 	expectedStatus.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileSuccess())
 
 	reconciledCluster := test(cluster, client, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
-
-	g.Expect(reconciledCluster.Status.ClusterName).To(Equal(fmt.Sprintf("%s%s", clusterNamePrefix, cluster.UID)))
 	g.Expect(reconciledCluster.Status.State).To(Equal(ClusterStatusCreating))
 
 	// cluster create error - bad request
 	cluster = testCluster()
-	cluster.ObjectMeta.UID = types.UID("test-uid")
 	errorBadRequest := errors.New("InvalidParameterException")
 	client.MockCreate = func(string, EKSClusterSpec) (*eks.Cluster, error) {
 		return &eks.Cluster{}, errorBadRequest
@@ -187,7 +184,6 @@ func TestCreate(t *testing.T) {
 
 	reconciledCluster = test(cluster, client, reconcile.Result{}, expectedStatus)
 	g.Expect(reconciledCluster.Finalizers).To(BeEmpty())
-	g.Expect(reconciledCluster.Status.ClusterName).To(BeEmpty())
 	g.Expect(reconciledCluster.Status.State).To(BeEmpty())
 	g.Expect(reconciledCluster.Status.CloudFormationStackID).To(BeEmpty())
 
@@ -203,7 +199,6 @@ func TestCreate(t *testing.T) {
 
 	reconciledCluster = test(cluster, client, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 	g.Expect(reconciledCluster.Finalizers).To(BeEmpty())
-	g.Expect(reconciledCluster.Status.ClusterName).To(BeEmpty())
 	g.Expect(reconciledCluster.Status.State).To(BeEmpty())
 	g.Expect(reconciledCluster.Status.CloudFormationStackID).To(BeEmpty())
 }
@@ -212,7 +207,7 @@ func TestSync(t *testing.T) {
 	g := NewGomegaWithT(t)
 	fakeStackID := "fake-stack-id"
 
-	test := func(tc *EKSCluster, cl *fake.MockEKSClient, sec func(*eks.Cluster, *EKSCluster, eks.Client) error, auth func(*eks.Cluster, *EKSCluster, eks.Client, string) error,
+	test := func(tc *EKSCluster, cluster *eks.Cluster, client *fake.MockEKSClient, sec func(*eks.Cluster, *EKSCluster, eks.Client) error, auth func(*eks.Cluster, *EKSCluster, eks.Client, string) error,
 		rslt reconcile.Result, exp runtimev1alpha1.ConditionedStatus) *EKSCluster {
 		r := &Reconciler{
 			Client:            NewFakeClient(tc),
@@ -221,7 +216,7 @@ func TestSync(t *testing.T) {
 			ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
 		}
 
-		rs, err := r._sync(tc, cl)
+		rs, err := r._sync(tc, cluster, client)
 		g.Expect(rs).To(Equal(rslt))
 		g.Expect(err).NotTo(HaveOccurred())
 		return assertResource(g, r, exp)
@@ -233,42 +228,26 @@ func TestSync(t *testing.T) {
 		WorkerARN:     fakeWorkerARN,
 	}
 
-	// error retrieving the cluster
-	errorGet := errors.New("retrieving cluster")
-	cl := &fake.MockEKSClient{
-		MockGet: func(string) (*eks.Cluster, error) {
-			return nil, errorGet
-		},
-		MockCreateWorkerNodes: func(string, string, EKSClusterSpec) (*eks.ClusterWorkers, error) { return &mockClusterWorker, nil },
-	}
-
-	cl.MockGetWorkerNodes = func(string) (*eks.ClusterWorkers, error) {
-		return &eks.ClusterWorkers{
-			WorkersStatus: cloudformation.StackStatusCreateInProgress,
-			WorkerReason:  "",
-			WorkerStackID: fakeStackID}, nil
-	}
-
-	expectedStatus := runtimev1alpha1.ConditionedStatus{}
-	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(errorGet))
-	tc := testCluster()
-	test(tc, cl, nil, nil, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
-
 	// cluster is not ready
-	cl.MockGet = func(string) (*eks.Cluster, error) {
-		return &eks.Cluster{
-			Status: ClusterStatusCreating,
-		}, nil
+	cluster := &eks.Cluster{
+		Status: ClusterStatusCreating,
 	}
-	expectedStatus = runtimev1alpha1.ConditionedStatus{}
-	tc = testCluster()
-	test(tc, cl, nil, nil, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
+	cl := &fake.MockEKSClient{
+		MockCreateWorkerNodes: func(string, string, EKSClusterSpec) (*eks.ClusterWorkers, error) { return &mockClusterWorker, nil },
+		MockGetWorkerNodes: func(string) (*eks.ClusterWorkers, error) {
+			return &eks.ClusterWorkers{
+				WorkersStatus: cloudformation.StackStatusCreateInProgress,
+				WorkerReason:  "",
+				WorkerStackID: fakeStackID}, nil
+		},
+	}
+	expectedStatus := runtimev1alpha1.ConditionedStatus{}
+	tc := testCluster()
+	test(tc, cluster, cl, nil, nil, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 
 	// cluster is ready, but lets create workers that error
-	cl.MockGet = func(string) (*eks.Cluster, error) {
-		return &eks.Cluster{
-			Status: ClusterStatusActive,
-		}, nil
+	cluster = &eks.Cluster{
+		Status: ClusterStatusActive,
 	}
 
 	errorCreateNodes := errors.New("create nodes")
@@ -279,14 +258,12 @@ func TestSync(t *testing.T) {
 	expectedStatus = runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(errorCreateNodes))
 	tc = testCluster()
-	reconciledCluster := test(tc, cl, nil, nil, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
+	reconciledCluster := test(tc, cluster, cl, nil, nil, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 	g.Expect(reconciledCluster.Status.CloudFormationStackID).To(BeEmpty())
 
 	// cluster is ready, lets create workers
-	cl.MockGet = func(string) (*eks.Cluster, error) {
-		return &eks.Cluster{
-			Status: ClusterStatusActive,
-		}, nil
+	cluster = &eks.Cluster{
+		Status: ClusterStatusActive,
 	}
 
 	cl.MockCreateWorkerNodes = func(string, string, EKSClusterSpec) (*eks.ClusterWorkers, error) {
@@ -296,7 +273,7 @@ func TestSync(t *testing.T) {
 	expectedStatus = runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.ReconcileSuccess())
 	tc = testCluster()
-	reconciledCluster = test(tc, cl, nil, nil, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
+	reconciledCluster = test(tc, cluster, cl, nil, nil, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 	g.Expect(reconciledCluster.Status.CloudFormationStackID).To(Equal(fakeStackID))
 
 	// cluster is ready, but auth sync failed
@@ -316,9 +293,8 @@ func TestSync(t *testing.T) {
 	tc.Status.CloudFormationStackID = fakeStackID
 	auth := func(*eks.Cluster, *EKSCluster, eks.Client, string) error {
 		return errorAuth
-
 	}
-	test(tc, cl, nil, auth, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
+	test(tc, cluster, cl, nil, auth, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 
 	// cluster is ready, but secret failed
 	cl.MockGetWorkerNodes = func(string) (*eks.ClusterWorkers, error) {
@@ -342,7 +318,7 @@ func TestSync(t *testing.T) {
 	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(errorSecret))
 	tc = testCluster()
 	tc.Status.CloudFormationStackID = fakeStackID
-	test(tc, cl, fSec, auth, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
+	test(tc, cluster, cl, fSec, auth, reconcile.Result{RequeueAfter: aShortWait}, expectedStatus)
 
 	// cluster is ready
 	fSec = func(*eks.Cluster, *EKSCluster, eks.Client) error {
@@ -352,7 +328,7 @@ func TestSync(t *testing.T) {
 	expectedStatus.SetConditions(runtimev1alpha1.Available(), runtimev1alpha1.ReconcileSuccess())
 	tc = testCluster()
 	tc.Status.CloudFormationStackID = fakeStackID
-	test(tc, cl, fSec, auth, reconcile.Result{RequeueAfter: aLongWait}, expectedStatus)
+	test(tc, cluster, cl, fSec, auth, reconcile.Result{RequeueAfter: aLongWait}, expectedStatus)
 }
 
 func TestSecret(t *testing.T) {
@@ -512,15 +488,16 @@ func TestReconcileClientError(t *testing.T) {
 	testError := errors.New("test-client-error")
 
 	called := false
-
+	kube := NewFakeClient(testCluster())
 	r := &Reconciler{
-		Client: NewFakeClient(testCluster()),
+		Client: kube,
 		connect: func(*EKSCluster) (eks.Client, error) {
 			called = true
 			return nil, testError
 		},
-		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		ReferenceResolver: managed.NewAPIReferenceResolver(kube),
 		log:               logging.NewNopLogger(),
+		initializer:       managed.NewNameAsExternalName(kube),
 	}
 
 	// expected to have a failed condition
@@ -544,9 +521,9 @@ func TestReconcileDelete(t *testing.T) {
 	tc.DeletionTimestamp = &dt
 
 	called := false
-
+	kube := NewFakeClient(tc)
 	r := &Reconciler{
-		Client: NewFakeClient(tc),
+		Client: kube,
 		connect: func(*EKSCluster) (eks.Client, error) {
 			return nil, nil
 		},
@@ -554,8 +531,9 @@ func TestReconcileDelete(t *testing.T) {
 			called = true
 			return reconcile.Result{}, nil
 		},
-		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		ReferenceResolver: managed.NewAPIReferenceResolver(kube),
 		log:               logging.NewNopLogger(),
+		initializer:       managed.NewNameAsExternalName(kube),
 	}
 
 	rs, err := r.Reconcile(request)
@@ -569,18 +547,21 @@ func TestReconcileCreate(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	called := false
-
+	kube := NewFakeClient(testCluster())
 	r := &Reconciler{
-		Client: NewFakeClient(testCluster()),
+		Client: kube,
 		connect: func(*EKSCluster) (eks.Client, error) {
-			return nil, nil
+			return &fake.MockEKSClient{MockGet: func(_ string) (*eks.Cluster, error) {
+				return nil, errors.New(eks2.ErrCodeResourceNotFoundException)
+			}}, nil
 		},
 		create: func(*EKSCluster, eks.Client) (reconcile.Result, error) {
 			called = true
 			return reconcile.Result{RequeueAfter: aShortWait}, nil
 		},
-		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		ReferenceResolver: managed.NewAPIReferenceResolver(kube),
 		log:               logging.NewNopLogger(),
+		initializer:       managed.NewNameAsExternalName(kube),
 	}
 
 	rs, err := r.Reconcile(request)
@@ -597,20 +578,22 @@ func TestReconcileSync(t *testing.T) {
 	called := false
 
 	tc := testCluster()
-	tc.Status.ClusterName = "test-status- cluster-name"
 	tc.Finalizers = []string{finalizer}
-
+	kube := NewFakeClient(tc)
 	r := &Reconciler{
-		Client: NewFakeClient(tc),
+		Client: kube,
 		connect: func(*EKSCluster) (eks.Client, error) {
-			return nil, nil
+			return &fake.MockEKSClient{MockGet: func(_ string) (*eks.Cluster, error) {
+				return &eks.Cluster{}, nil
+			}}, nil
 		},
-		sync: func(*EKSCluster, eks.Client) (reconcile.Result, error) {
+		sync: func(*EKSCluster, *eks.Cluster, eks.Client) (reconcile.Result, error) {
 			called = true
 			return reconcile.Result{RequeueAfter: aShortWait}, nil
 		},
-		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		ReferenceResolver: managed.NewAPIReferenceResolver(kube),
 		log:               logging.NewNopLogger(),
+		initializer:       managed.NewNameAsExternalName(kube),
 	}
 
 	rs, err := r.Reconcile(request)
