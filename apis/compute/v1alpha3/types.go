@@ -283,9 +283,6 @@ type EKSClusterStatus struct {
 	// State of the cluster.
 	State string `json:"state,omitempty"`
 
-	// ClusterName of the cluster.
-	ClusterName string `json:"resourceName,omitempty"`
-
 	// ClusterVersion of the cluster.
 	ClusterVersion string `json:"resourceVersion,omitempty"`
 
