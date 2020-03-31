@@ -158,7 +158,7 @@ func (r *Reconciler) _create(instance *awscomputev1alpha3.EKSCluster, client eks
 	instance.Status.SetConditions(runtimev1alpha1.Creating())
 
 	// Create Master
-	createdCluster, err := client.Create(meta.GetExternalName(instance), instance.Spec)
+	_, err := client.Create(meta.GetExternalName(instance), instance.Spec)
 	if err != nil && !eks.IsErrorAlreadyExists(err) {
 		if eks.IsErrorBadRequest(err) {
 			// If this was the first time we encountered this error we'll be
@@ -170,14 +170,8 @@ func (r *Reconciler) _create(instance *awscomputev1alpha3.EKSCluster, client eks
 		}
 		return r.fail(instance, err)
 	}
-
-	// we will need to set State.ClusterVersion it. this is needed to retrieve
-	// the right ami image for the worker nodes
-	instance.Status.ClusterVersion = createdCluster.Version
-
 	// Update status
 	instance.Status.State = awscomputev1alpha3.ClusterStatusCreating
-
 	instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
 
 	// We'll be requeued immediately the first time we update our status
@@ -273,17 +267,15 @@ func (r *Reconciler) _awsauth(cluster *eks.Cluster, instance *awscomputev1alpha3
 }
 
 func (r *Reconciler) _sync(instance *awscomputev1alpha3.EKSCluster, cluster *eks.Cluster, client eks.Client) (reconcile.Result, error) {
-
 	if cluster.Status != awscomputev1alpha3.ClusterStatusActive {
 		instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
-
 		// Requeue after a short wait to see if the cluster has become ready.
 		return reconcile.Result{RequeueAfter: aShortWait}, nil
 	}
 
 	// Create workers
 	if instance.Status.CloudFormationStackID == "" {
-		clusterWorkers, err := client.CreateWorkerNodes(meta.GetExternalName(instance), instance.Status.ClusterVersion, instance.Spec)
+		clusterWorkers, err := client.CreateWorkerNodes(meta.GetExternalName(instance), cluster.Version, instance.Spec)
 		if err != nil {
 			return r.fail(instance, err)
 		}
@@ -322,6 +314,7 @@ func (r *Reconciler) _sync(instance *awscomputev1alpha3.EKSCluster, cluster *eks
 	// update resource status
 	instance.Status.Endpoint = cluster.Endpoint
 	instance.Status.State = awscomputev1alpha3.ClusterStatusActive
+	instance.Status.ClusterVersion = cluster.Version
 	instance.Status.SetConditions(runtimev1alpha1.Available(), runtimev1alpha1.ReconcileSuccess())
 	resource.SetBindable(instance)
 
