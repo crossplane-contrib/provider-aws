@@ -138,6 +138,10 @@ spec:
                   description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                   type: string
               type: object
+            cloudformationStackId:
+              description: CloudFormationStackID of the Stack used to create node
+                groups.
+              type: string
             clusterVersion:
               description: 'ClusterVersion: The desired Kubernetes version of this
                 EKS Cluster. If you do not specify a value here, the latest version
@@ -476,10 +480,6 @@ spec:
               - Unbound
               - Bound
               - Released
-              type: string
-            cloudformationStackId:
-              description: CloudFormationStackID of the Stack used to create node
-                groups.
               type: string
             conditions:
               description: Conditions of the resource.

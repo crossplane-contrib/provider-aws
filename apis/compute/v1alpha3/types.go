@@ -181,6 +181,9 @@ type EKSClusterParameters struct {
 	// +optional
 	ClusterVersion string `json:"clusterVersion,omitempty"`
 
+	// CloudFormationStackID of the Stack used to create node groups.
+	CloudFormationStackID string `json:"cloudformationStackId,omitempty"`
+
 	// WorkerNodes configuration for cloudformation
 	WorkerNodes WorkerNodesSpec `json:"workerNodes"`
 
@@ -288,9 +291,6 @@ type EKSClusterStatus struct {
 
 	// Endpoint for connecting to the cluster.
 	Endpoint string `json:"endpoint,omitempty"`
-
-	// CloudFormationStackID of the Stack used to create node groups.
-	CloudFormationStackID string `json:"cloudformationStackId,omitempty"`
 }
 
 // +kubebuilder:object:root=true
