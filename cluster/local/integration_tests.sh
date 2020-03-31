@@ -166,8 +166,8 @@ HOSTARCH="${HOSTARCH:-amd64}"
 BUILD_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-${HOSTARCH}"
 
 version_tag="$(cat ${projectdir}/_output/version)"
-# tag as v0.7.0. so that config/stack/install.yaml can be used
-STACK_IMAGE="${DOCKER_REGISTRY}/${PROJECT_NAME}:v0.7.0"
+# tag as v0.7.1. so that config/stack/install.yaml can be used
+STACK_IMAGE="${DOCKER_REGISTRY}/${PROJECT_NAME}:v0.7.1"
 K8S_CLUSTER="${K8S_CLUSTER:-${BUILD_REGISTRY}-INTTESTS}"
 
 CROSSPLANE_NAMESPACE="crossplane-system"
