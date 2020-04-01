@@ -150,12 +150,6 @@ spec:
               - Write
               - ReadWrite
               type: string
-            nameFormat:
-              description: NameFormat specifies the name of the external S3Bucket
-                instance. The first instance of the string '%s' will be replaced with
-                the Kubernetes UID of this S3Bucket. Omit this field to use the UID
-                alone as the name.
-              type: string
             providerRef:
               description: ProviderReference specifies the provider that will be used
                 to create, observe, update, and delete this managed resource.

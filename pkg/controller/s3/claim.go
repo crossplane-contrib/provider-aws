@@ -144,10 +144,6 @@ func ConfigureS3Bucket(_ context.Context, cm resource.Claim, cs resource.Class, 
 		S3BucketParameters: rs.SpecTemplate.S3BucketParameters,
 	}
 
-	if b.Spec.Name != "" {
-		spec.NameFormat = b.Spec.Name
-	}
-
 	if b.Spec.PredefinedACL != nil {
 		spec.CannedACL = translateACL(b.Spec.PredefinedACL)
 	}

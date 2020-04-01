@@ -67,6 +67,7 @@ type Reconciler struct {
 	scheme *runtime.Scheme
 	managed.ReferenceResolver
 	managed.ConnectionPublisher
+	initializer managed.Initializer
 
 	connect func(*bucketv1alpha3.S3Bucket) (s3.Service, error)
 	create  func(*bucketv1alpha3.S3Bucket, s3.Service) (reconcile.Result, error)
@@ -86,6 +87,7 @@ func SetupS3Bucket(mgr ctrl.Manager, l logging.Logger) error {
 		ReferenceResolver:   managed.NewAPIReferenceResolver(mgr.GetClient()),
 		ConnectionPublisher: managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
 		log:                 l.WithValues("controller", name),
+		initializer:         managed.NewNameAsExternalName(mgr.GetClient()),
 	}
 	r.connect = r._connect
 	r.create = r._create
@@ -220,7 +222,6 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 
 	// Fetch the CRD instance
 	bucket := &bucketv1alpha3.S3Bucket{}
-
 	err := r.Get(ctx, request.NamespacedName, bucket)
 	if err != nil {
 		if kerrors.IsNotFound(err) {
@@ -228,6 +229,9 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			// For additional cleanup logic use finalizers.
 			return result, nil
 		}
+		return result, err
+	}
+	if err := r.initializer.Initialize(ctx, bucket); err != nil {
 		return result, err
 	}
 

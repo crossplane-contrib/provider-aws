@@ -389,11 +389,12 @@ func TestReconcile(t *testing.T) {
 
 	tr := testResource()
 	tr.Spec.IAMUsername = ""
-
+	kube := NewFakeClient(tr)
 	r := &Reconciler{
-		Client:            NewFakeClient(tr),
-		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		Client:            kube,
+		ReferenceResolver: managed.NewAPIReferenceResolver(kube),
 		log:               logging.NewNopLogger(),
+		initializer:       managed.NewNameAsExternalName(kube),
 	}
 
 	// test connect error

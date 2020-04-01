@@ -9,6 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/iam/iamiface"
+
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 )
 
 const (
@@ -123,12 +125,12 @@ func (c *iamClient) DeletePolicyAndDetach(username string, policyName string) er
 	}
 
 	_, err = c.iam.DetachUserPolicyRequest(&iam.DetachUserPolicyInput{PolicyArn: aws.String(policyARN), UserName: aws.String(username)}).Send(context.TODO())
-	if err != nil && !IsErrorNotFound(err) {
+	if resource.Ignore(IsErrorNotFound, err) != nil {
 		return err
 	}
 
 	_, err = c.iam.DeletePolicyRequest(&iam.DeletePolicyInput{PolicyArn: aws.String(policyARN)}).Send(context.TODO())
-	if err != nil && !IsErrorNotFound(err) {
+	if resource.Ignore(IsErrorNotFound, err) != nil {
 		return err
 	}
 	return nil
@@ -149,10 +151,9 @@ func (c *iamClient) DeleteUser(username string) error {
 	}
 
 	_, err = c.iam.DeleteUserRequest(&iam.DeleteUserInput{UserName: aws.String(username)}).Send(context.TODO())
-	if err != nil && !IsErrorNotFound(err) {
+	if resource.Ignore(IsErrorNotFound, err) != nil {
 		return err
 	}
-
 	return nil
 }
 
