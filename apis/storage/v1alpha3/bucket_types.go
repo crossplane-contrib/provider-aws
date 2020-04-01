@@ -17,9 +17,7 @@ limitations under the License.
 package v1alpha3
 
 import (
-	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,12 +29,6 @@ import (
 
 // S3BucketParameters define the desired state of an AWS S3 Bucket.
 type S3BucketParameters struct {
-	// NameFormat specifies the name of the external S3Bucket instance. The
-	// first instance of the string '%s' will be replaced with the Kubernetes
-	// UID of this S3Bucket. Omit this field to use the UID alone as the name.
-	// +optional
-	NameFormat string `json:"nameFormat,omitempty"`
-
 	// Region of the bucket.
 	Region string `json:"region"`
 
@@ -139,30 +131,6 @@ type S3BucketClassList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []S3BucketClass `json:"items"`
-}
-
-// GetBucketName based on the NameFormat spec value,
-// If name format is not provided, bucket name defaults to UID
-// If name format provided with '%s' value, bucket name will result in formatted string + UID,
-//   NOTE: only single %s substitution is supported
-// If name format does not contain '%s' substitution, i.e. a constant string, the
-// constant string value is returned back
-//
-// Examples:
-//   For all examples assume "UID" = "test-uid"
-//   1. NameFormat = "", BucketName = "test-uid"
-//   2. NameFormat = "%s", BucketName = "test-uid"
-//   3. NameFormat = "foo", BucketName = "foo"
-//   4. NameFormat = "foo-%s", BucketName = "foo-test-uid"
-//   5. NameFormat = "foo-%s-bar-%s", BucketName = "foo-test-uid-bar-%!s(MISSING)"
-func (b *S3Bucket) GetBucketName() string {
-	if b.Spec.NameFormat == "" {
-		return string(b.GetUID())
-	}
-	if strings.Contains(b.Spec.NameFormat, "%s") {
-		return fmt.Sprintf(b.Spec.NameFormat, string(b.GetUID()))
-	}
-	return b.Spec.NameFormat
 }
 
 // SetUserPolicyVersion specifies this bucket's policy version.

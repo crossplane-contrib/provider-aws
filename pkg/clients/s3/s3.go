@@ -27,11 +27,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"k8s.io/apimachinery/pkg/util/rand"
 
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	storage "github.com/crossplane/crossplane/apis/storage/v1alpha1"
+
 	"github.com/crossplane/provider-aws/apis/storage/v1alpha3"
 	iamc "github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/operations"
-
-	storage "github.com/crossplane/crossplane/apis/storage/v1alpha1"
 )
 
 const (
@@ -87,7 +89,7 @@ type Bucket struct {
 // GetBucketInfo returns the status of key bucket settings including user's policy version for permission status
 func (c *Client) GetBucketInfo(username string, bucket *v1alpha3.S3Bucket) (*Bucket, error) {
 	b := Bucket{}
-	bucketVersioning, err := c.s3.GetBucketVersioningRequest(&s3.GetBucketVersioningInput{Bucket: aws.String(bucket.GetBucketName())}).Send(context.TODO())
+	bucketVersioning, err := c.s3.GetBucketVersioningRequest(&s3.GetBucketVersioningInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(context.TODO())
 	if err != nil {
 		return nil, err
 	}
@@ -122,16 +124,14 @@ func (c *Client) CreateUser(username string, bucket *v1alpha3.S3Bucket) (*iam.Ac
 
 // UpdateBucketACL - Updated CannedACL on Bucket
 func (c *Client) UpdateBucketACL(bucket *v1alpha3.S3Bucket) error {
-	var err error
-	name := bucket.GetBucketName()
-	if bucket.Spec.CannedACL != nil {
-		input := &s3.PutBucketAclInput{
-			ACL:    *bucket.Spec.CannedACL,
-			Bucket: &name,
-		}
-		_, err = c.s3.PutBucketACLRequest(input).Send(context.TODO())
+	if bucket.Spec.CannedACL == nil {
+		return nil
 	}
-
+	input := &s3.PutBucketAclInput{
+		ACL:    *bucket.Spec.CannedACL,
+		Bucket: aws.String(meta.GetExternalName(bucket)),
+	}
+	_, err := c.s3.PutBucketACLRequest(input).Send(context.TODO())
 	return err
 }
 
@@ -141,8 +141,7 @@ func (c *Client) UpdateVersioning(bucket *v1alpha3.S3Bucket) error {
 	if bucket.Spec.Versioning {
 		versioningStatus = s3.BucketVersioningStatusEnabled
 	}
-	name := bucket.GetBucketName()
-	input := &s3.PutBucketVersioningInput{Bucket: &name, VersioningConfiguration: &s3.VersioningConfiguration{Status: versioningStatus}}
+	input := &s3.PutBucketVersioningInput{Bucket: aws.String(meta.GetExternalName(bucket)), VersioningConfiguration: &s3.VersioningConfiguration{Status: versioningStatus}}
 	_, err := c.s3.PutBucketVersioningRequest(input).Send(context.TODO())
 	if err != nil {
 		return err
@@ -165,12 +164,8 @@ func (c *Client) UpdatePolicyDocument(username string, bucket *v1alpha3.S3Bucket
 
 // DeleteBucket deletes s3 bucket, and related IAM
 func (c *Client) DeleteBucket(bucket *v1alpha3.S3Bucket) error {
-	name := bucket.GetBucketName()
-	input := &s3.DeleteBucketInput{
-		Bucket: &name,
-	}
-	_, err := c.s3.DeleteBucketRequest(input).Send(context.TODO())
-	if err != nil && !isErrorNotFound(err) {
+	_, err := c.s3.DeleteBucketRequest(&s3.DeleteBucketInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(context.TODO())
+	if resource.Ignore(isErrorNotFound, err) != nil {
 		return err
 	}
 
@@ -179,7 +174,6 @@ func (c *Client) DeleteBucket(bucket *v1alpha3.S3Bucket) error {
 		if err != nil {
 			return err
 		}
-
 		return c.iamClient.DeleteUser(bucket.Spec.IAMUsername)
 	}
 
@@ -188,6 +182,9 @@ func (c *Client) DeleteBucket(bucket *v1alpha3.S3Bucket) error {
 
 // isErrorAlreadyExists helper function to test for ErrCodeBucketAlreadyOwnedByYou error
 func isErrorAlreadyExists(err error) bool {
+	if err == nil {
+		return false
+	}
 	if bucketErr, ok := err.(awserr.Error); ok && bucketErr.Code() == s3.ErrCodeBucketAlreadyOwnedByYou {
 		return true
 	}
@@ -196,6 +193,9 @@ func isErrorAlreadyExists(err error) bool {
 
 // isErrorNotFound helper function to test for ErrCodeNoSuchEntityException error
 func isErrorNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
 	if bucketErr, ok := err.(awserr.Error); ok && bucketErr.Code() == s3.ErrCodeNoSuchBucket {
 		return true
 	}
@@ -204,9 +204,8 @@ func isErrorNotFound(err error) bool {
 
 // CreateBucketInput returns a CreateBucketInput from the supplied S3Bucket.
 func CreateBucketInput(bucket *v1alpha3.S3Bucket) *s3.CreateBucketInput {
-	name := bucket.GetBucketName()
 	bucketInput := &s3.CreateBucketInput{
-		Bucket: &name,
+		Bucket: aws.String(meta.GetExternalName(bucket)),
 	}
 
 	if bucket.Spec.Region != regionWithNoConstraint {
@@ -222,16 +221,16 @@ func CreateBucketInput(bucket *v1alpha3.S3Bucket) *s3.CreateBucketInput {
 // GenerateBucketUsername generates a username that is within AWS size
 // specifications, and adds a random suffix.
 func GenerateBucketUsername(bucket *v1alpha3.S3Bucket) string {
-	name := fmt.Sprintf(bucketUser, bucket.GetBucketName())
+	name := fmt.Sprintf(bucketUser, meta.GetExternalName(bucket))
 	max := maxIAMUsernameLength - 6
-	if len(name) > max {
-		name = name[:max]
+	if len(name) <= max {
+		return name
 	}
-	return fmt.Sprintf("%s-%s", name, rand.String(5))
+	return fmt.Sprintf("%s-%s", name[:max], rand.String(5))
 }
 
 func newPolicyDocument(bucket *v1alpha3.S3Bucket) (string, error) {
-	bucketARN := fmt.Sprintf(bucketObjectARN, bucket.GetBucketName())
+	bucketARN := fmt.Sprintf(bucketObjectARN, meta.GetExternalName(bucket))
 	read := iamc.StatementEntry{
 		Sid:    "crossplaneRead",
 		Effect: "Allow",
