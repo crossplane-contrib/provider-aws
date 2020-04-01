@@ -75,10 +75,7 @@ func testResource() *S3Bucket {
 		},
 		Spec: S3BucketSpec{
 			ResourceSpec:       runtimev1alpha1.ResourceSpec{ProviderReference: &corev1.ObjectReference{}},
-			S3BucketParameters: v1alpha3.S3BucketParameters{LocalPermission: &perm},
-		},
-		Status: S3BucketStatus{
-			IAMUsername: testIAMUsername,
+			S3BucketParameters: v1alpha3.S3BucketParameters{LocalPermission: &perm, IAMUsername: testIAMUsername},
 		},
 	}
 }
@@ -116,7 +113,7 @@ func TestSyncBucketError(t *testing.T) {
 	expectedStatus := runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(testError))
 	noUserResource := testResource()
-	noUserResource.Status.IAMUsername = ""
+	noUserResource.Spec.IAMUsername = ""
 	assert(noUserResource, cl, resultRequeue, expectedStatus)
 
 	// error get bucket info
@@ -391,7 +388,7 @@ func TestReconcile(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	tr := testResource()
-	tr.Status.IAMUsername = ""
+	tr.Spec.IAMUsername = ""
 
 	r := &Reconciler{
 		Client:            NewFakeClient(tr),
@@ -445,7 +442,7 @@ func TestReconcile(t *testing.T) {
 
 	// test sync
 	r.connect = func(instance *S3Bucket) (client client.Service, e error) {
-		instance.Status.IAMUsername = "foo-user"
+		instance.Spec.IAMUsername = "foo-user"
 		return nil, nil
 	}
 	called = false

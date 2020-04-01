@@ -129,12 +129,12 @@ func (r *Reconciler) _create(bucket *bucketv1alpha3.S3Bucket, client s3.Service)
 	}
 
 	// Set username for iam user
-	if bucket.Status.IAMUsername == "" {
-		bucket.Status.IAMUsername = s3.GenerateBucketUsername(bucket)
+	if bucket.Spec.IAMUsername == "" {
+		bucket.Spec.IAMUsername = s3.GenerateBucketUsername(bucket)
 	}
 
 	// Get access keys for iam user
-	accessKeys, currentVersion, err := client.CreateUser(bucket.Status.IAMUsername, bucket)
+	accessKeys, currentVersion, err := client.CreateUser(bucket.Spec.IAMUsername, bucket)
 	if err != nil {
 		return r.fail(bucket, err)
 	}
@@ -160,10 +160,10 @@ func (r *Reconciler) _create(bucket *bucketv1alpha3.S3Bucket, client s3.Service)
 }
 
 func (r *Reconciler) _sync(bucket *bucketv1alpha3.S3Bucket, client s3.Service) (reconcile.Result, error) {
-	if bucket.Status.IAMUsername == "" {
+	if bucket.Spec.IAMUsername == "" {
 		return r.fail(bucket, errors.New("username not set, .Status.IAMUsername"))
 	}
-	bucketInfo, err := client.GetBucketInfo(bucket.Status.IAMUsername, bucket)
+	bucketInfo, err := client.GetBucketInfo(bucket.Spec.IAMUsername, bucket)
 	if err != nil {
 		return r.fail(bucket, err)
 	}
@@ -187,7 +187,7 @@ func (r *Reconciler) _sync(bucket *bucketv1alpha3.S3Bucket, client s3.Service) (
 		return r.fail(bucket, err)
 	}
 	if changed {
-		currentVersion, err := client.UpdatePolicyDocument(bucket.Status.IAMUsername, bucket)
+		currentVersion, err := client.UpdatePolicyDocument(bucket.Spec.IAMUsername, bucket)
 		if err != nil {
 			return r.fail(bucket, err)
 		}
@@ -257,7 +257,7 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	}
 
 	// Create s3 bucket
-	if bucket.Status.IAMUsername == "" {
+	if bucket.Spec.IAMUsername == "" {
 		return r.create(bucket, s3Client)
 	}
 

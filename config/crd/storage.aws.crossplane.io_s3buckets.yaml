@@ -136,6 +136,11 @@ spec:
                   description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                   type: string
               type: object
+            iamUsername:
+              description: IAMUsername is the name of an IAM user that is automatically
+                created and granted access to this bucket by Crossplane at bucket
+                creation time.
+              type: string
             localPermission:
               description: LocalPermission is the permissions granted on the bucket
                 for the provider specific bucket service account that is available
@@ -280,11 +285,6 @@ spec:
                 - type
                 type: object
               type: array
-            iamUsername:
-              description: IAMUsername is the name of an IAM user that is automatically
-                created and granted access to this bucket by Crossplane at bucket
-                creation time.
-              type: string
             lastLocalPermission:
               description: LastLocalPermission is the most recent local permission
                 that was set for this bucket.

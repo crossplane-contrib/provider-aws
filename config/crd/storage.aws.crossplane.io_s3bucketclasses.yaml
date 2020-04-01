@@ -58,6 +58,11 @@ spec:
               - log-delivery-write
               - aws-exec-read
               type: string
+            iamUsername:
+              description: IAMUsername is the name of an IAM user that is automatically
+                created and granted access to this bucket by Crossplane at bucket
+                creation time.
+              type: string
             localPermission:
               description: LocalPermission is the permissions granted on the bucket
                 for the provider specific bucket service account that is available
