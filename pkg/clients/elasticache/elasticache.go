@@ -28,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache/elasticacheiface"
 
+	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
 	clients "github.com/crossplane/provider-aws/pkg/clients"
 )
@@ -352,6 +353,12 @@ func IsNotFound(err error) bool {
 	return isErrorCodeEqual(elasticache.ErrCodeReplicationGroupNotFoundFault, err)
 }
 
+// IsSubnetGroupNotFound returns true if the supplied error indicates a Cache Subnet Group
+// was not found.
+func IsSubnetGroupNotFound(err error) bool {
+	return isErrorCodeEqual(elasticache.ErrCodeCacheSubnetGroupNotFoundFault, err)
+}
+
 // IsAlreadyExists returns true if the supplied error indicates a Replication Group
 // already exists.
 func IsAlreadyExists(err error) bool {
@@ -367,4 +374,24 @@ func isErrorCodeEqual(errorCode string, err error) bool {
 	}
 
 	return ce.Code() == errorCode
+}
+
+// IsSubnetGroupUpToDate checks if CacheSubnetGroupParameters are in sync with provider values
+func IsSubnetGroupUpToDate(p cachev1alpha1.CacheSubnetGroupParameters, sg elasticache.CacheSubnetGroup) bool {
+	subnetEqual := len(p.SubnetIds) == len(sg.Subnets) && (func() bool {
+		r := false
+		for _, id := range p.SubnetIds {
+			for _, subnet := range sg.Subnets {
+				if id == *subnet.SubnetIdentifier {
+					r = true
+					break
+				} else {
+					r = false
+				}
+			}
+		}
+		return r
+	})()
+
+	return subnetEqual && p.Description == aws.StringValue(sg.CacheSubnetGroupDescription)
 }
