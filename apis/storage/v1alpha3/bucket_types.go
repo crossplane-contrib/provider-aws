@@ -50,6 +50,10 @@ type S3BucketParameters struct {
 	// +optional
 	Versioning bool `json:"versioning,omitempty"`
 
+	// IAMUsername is the name of an IAM user that is automatically created and
+	// granted access to this bucket by Crossplane at bucket creation time.
+	IAMUsername string `json:"iamUsername,omitempty"`
+
 	// LocalPermission is the permissions granted on the bucket for the provider
 	// specific bucket service account that is available in a secret after
 	// provisioning.
@@ -69,10 +73,6 @@ type S3BucketStatus struct {
 
 	// ProviderID is the AWS identifier for this bucket.
 	ProviderID string `json:"providerID,omitempty"`
-
-	// IAMUsername is the name of an IAM user that is automatically created and
-	// granted access to this bucket by Crossplane at bucket creation time.
-	IAMUsername string `json:"iamUsername,omitempty"`
 
 	// LastUserPolicyVersion is the most recent version of the policy associated
 	// with this bucket's IAMUser.

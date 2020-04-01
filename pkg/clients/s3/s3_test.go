@@ -395,7 +395,7 @@ func TestClient_DeleteBucket(t *testing.T) {
 		ret             []types.GomegaMatcher
 	}{
 		"HappyPath": {
-			bucket:          &awsstorage.S3Bucket{Status: awsstorage.S3BucketStatus{IAMUsername: user}},
+			bucket:          &awsstorage.S3Bucket{Spec: awsstorage.S3BucketSpec{S3BucketParameters: awsstorage.S3BucketParameters{IAMUsername: user}}},
 			deleteBucketRet: []interface{}{nil, nil},
 			deletePolicyRet: []interface{}{nil},
 			deleteUserRet:   []interface{}{nil},
@@ -409,14 +409,14 @@ func TestClient_DeleteBucket(t *testing.T) {
 			ret:             []types.GomegaMatcher{gomega.BeNil()},
 		},
 		"SendError": {
-			bucket:          &awsstorage.S3Bucket{Status: awsstorage.S3BucketStatus{IAMUsername: user}},
+			bucket:          &awsstorage.S3Bucket{Spec: awsstorage.S3BucketSpec{S3BucketParameters: awsstorage.S3BucketParameters{IAMUsername: user}}},
 			deleteBucketRet: []interface{}{nil, boom},
 			deletePolicyRet: []interface{}{nil},
 			deleteUserRet:   []interface{}{nil},
 			ret:             []types.GomegaMatcher{gomega.Equal(boom)},
 		},
 		"DeletePolicyError": {
-			bucket:          &awsstorage.S3Bucket{Status: awsstorage.S3BucketStatus{IAMUsername: user}},
+			bucket:          &awsstorage.S3Bucket{Spec: awsstorage.S3BucketSpec{S3BucketParameters: awsstorage.S3BucketParameters{IAMUsername: user}}},
 			deleteBucketRet: []interface{}{nil, nil},
 			deletePolicyRet: []interface{}{boom},
 			deleteUserRet:   []interface{}{nil},

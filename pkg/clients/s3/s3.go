@@ -174,13 +174,13 @@ func (c *Client) DeleteBucket(bucket *v1alpha3.S3Bucket) error {
 		return err
 	}
 
-	if bucket.Status.IAMUsername != "" {
-		err := c.iamClient.DeletePolicyAndDetach(bucket.Status.IAMUsername, bucket.Status.IAMUsername)
+	if bucket.Spec.IAMUsername != "" {
+		err := c.iamClient.DeletePolicyAndDetach(bucket.Spec.IAMUsername, bucket.Spec.IAMUsername)
 		if err != nil {
 			return err
 		}
 
-		return c.iamClient.DeleteUser(bucket.Status.IAMUsername)
+		return c.iamClient.DeleteUser(bucket.Spec.IAMUsername)
 	}
 
 	return nil
