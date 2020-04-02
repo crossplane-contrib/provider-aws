@@ -31,6 +31,8 @@ type MockDBSubnetGroupClient struct {
 	MockDeleteDBSubnetGroupRequest    func(*rds.DeleteDBSubnetGroupInput) rds.DeleteDBSubnetGroupRequest
 	MockDescribeDBSubnetGroupsRequest func(*rds.DescribeDBSubnetGroupsInput) rds.DescribeDBSubnetGroupsRequest
 	MockModifyDBSubnetGroupRequest    func(*rds.ModifyDBSubnetGroupInput) rds.ModifyDBSubnetGroupRequest
+	MockAddTagsToResourceRequest      func(*rds.AddTagsToResourceInput) rds.AddTagsToResourceRequest
+	MockListTagsForResourceRequest    func(*rds.ListTagsForResourceInput) rds.ListTagsForResourceRequest
 }
 
 // CreateDBSubnetGroupRequest mocks CreateDBSubnetGroupRequest method
@@ -51,4 +53,14 @@ func (m *MockDBSubnetGroupClient) DescribeDBSubnetGroupsRequest(input *rds.Descr
 // ModifyDBSubnetGroupRequest mocks ModifyDBSubnetGroupRequest method
 func (m *MockDBSubnetGroupClient) ModifyDBSubnetGroupRequest(input *rds.ModifyDBSubnetGroupInput) rds.ModifyDBSubnetGroupRequest {
 	return m.MockModifyDBSubnetGroupRequest(input)
+}
+
+// AddTagsToResourceRequest mocks AddTagsToResourceRequest method
+func (m *MockDBSubnetGroupClient) AddTagsToResourceRequest(input *rds.AddTagsToResourceInput) rds.AddTagsToResourceRequest {
+	return m.MockAddTagsToResourceRequest(input)
+}
+
+// ListTagsForResourceRequest mocks ListTagsForResourceRequest method
+func (m *MockDBSubnetGroupClient) ListTagsForResourceRequest(input *rds.ListTagsForResourceInput) rds.ListTagsForResourceRequest {
+	return m.MockListTagsForResourceRequest(input)
 }

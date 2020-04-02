@@ -9,13 +9,7 @@ metadata:
   name: dbsubnetgroups.database.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .spec.forProvider.groupName
-    name: GROUPNAME
-    type: string
-  - JSONPath: .spec.forProvider.description
-    name: DESCRIPTION
-    type: string
-  - JSONPath: .status.atProvider.groupStatus
+  - JSONPath: .status.atProvider.state
     name: STATUS
     type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
@@ -140,10 +134,6 @@ spec:
                 description:
                   description: The description for the DB subnet group.
                   type: string
-                groupName:
-                  description: The name for the DB subnet group. This value is stored
-                    as a lowercase string.
-                  type: string
                 subnetIdRefs:
                   description: SubnetIDRefs is a set of referencers that each retrieve
                     the subnetID from the referenced Subnet
@@ -190,7 +180,6 @@ spec:
                   type: array
               required:
               - description
-              - groupName
               type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
@@ -271,13 +260,13 @@ spec:
               description: DBSubnetGroupObservation is the representation of the current
                 state that is observed
               properties:
-                dbSubnetGroupArn:
-                  description: DBSubnetGroupArn is the Amazon Resource Name (ARN)
-                    for this DB subnet group.
+                arn:
+                  description: ARN is the Amazon Resource Name (ARN) for this DB subnet
+                    group.
                   type: string
-                subnetGroupStatus:
-                  description: SubnetGroupStatus specifies the current state of this
-                    DB subnet group.
+                state:
+                  description: State specifies the current state of this DB subnet
+                    group.
                   type: string
                 subnets:
                   description: Subnets contains a list of Subnet elements.

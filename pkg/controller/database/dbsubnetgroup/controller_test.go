@@ -38,7 +38,7 @@ import (
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	dbsg "github.com/crossplane/provider-aws/pkg/clients/dbsubnetgroup"
-	"github.com/crossplane/provider-aws/pkg/clients/rds/fake"
+	"github.com/crossplane/provider-aws/pkg/clients/dbsubnetgroup/fake"
 )
 
 const (
@@ -73,11 +73,23 @@ func withBindingPhase(p runtimev1alpha1.BindingPhase) dbSubnetGroupModifier {
 }
 
 func withDBSubnetGroupStatus(s string) dbSubnetGroupModifier {
-	return func(sg *v1beta1.DBSubnetGroup) { sg.Status.AtProvider.SubnetGroupStatus = s }
+	return func(sg *v1beta1.DBSubnetGroup) { sg.Status.AtProvider.State = s }
 }
 
 func withDBSubnetGroupDescription(s string) dbSubnetGroupModifier {
-	return func(sg *v1beta1.DBSubnetGroup) { sg.Spec.ForProvider.DBSubnetGroupDescription = s }
+	return func(sg *v1beta1.DBSubnetGroup) { sg.Spec.ForProvider.Description = s }
+}
+
+func withDBSubnetGroupTags() dbSubnetGroupModifier {
+	return func(sg *v1beta1.DBSubnetGroup) {
+		sg.Spec.ForProvider.Tags = []v1beta1.Tag{{Key: "arbitrary key", Value: "arbitrary value"}}
+	}
+}
+
+func mockListTagsForResourceRequest(input *awsrds.ListTagsForResourceInput) awsrds.ListTagsForResourceRequest {
+	return awsrds.ListTagsForResourceRequest{
+		Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ListTagsForResourceOutput{TagList: []awsrds.Tag{}}},
+	}
 }
 
 func dbSubnetGroup(m ...dbSubnetGroupModifier) *v1beta1.DBSubnetGroup {
@@ -288,6 +300,7 @@ func TestObserve(t *testing.T) {
 							}},
 						}
 					},
+					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
 				},
 				cr: dbSubnetGroup(),
 			},
@@ -309,21 +322,17 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
 						return awsrds.DescribeDBSubnetGroupsRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
-								DBSubnetGroups: []awsrds.DBSubnetGroup{
-									{
-										SubnetGroupStatus: aws.String(string(v1beta1.DBSubnetGroupStateDeleting)),
-									},
-								},
+								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
 							}},
 						}
 					},
+					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
 				},
 				cr: dbSubnetGroup(),
 			},
 			want: want{
 				cr: dbSubnetGroup(
-					withConditions(runtimev1alpha1.Deleting()),
-					withDBSubnetGroupStatus(string(v1beta1.DBSubnetGroupStateDeleting))),
+					withConditions(runtimev1alpha1.Unavailable())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -336,21 +345,17 @@ func TestObserve(t *testing.T) {
 					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
 						return awsrds.DescribeDBSubnetGroupsRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
-								DBSubnetGroups: []awsrds.DBSubnetGroup{
-									{
-										SubnetGroupStatus: aws.String(string(v1beta1.DBSubnetGroupStateFailed)),
-									},
-								},
+								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
 							}},
 						}
 					},
+					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
 				},
 				cr: dbSubnetGroup(),
 			},
 			want: want{
 				cr: dbSubnetGroup(
-					withConditions(runtimev1alpha1.Unavailable()),
-					withDBSubnetGroupStatus(string(v1beta1.DBSubnetGroupStateFailed))),
+					withConditions(runtimev1alpha1.Unavailable())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -365,6 +370,7 @@ func TestObserve(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
+					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
 				},
 				cr: dbSubnetGroup(),
 			},
@@ -381,6 +387,7 @@ func TestObserve(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awsrds.ErrCodeDBSubnetGroupNotFoundFault)},
 						}
 					},
+					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
 				},
 				cr: dbSubnetGroup(),
 			},
@@ -400,20 +407,19 @@ func TestObserve(t *testing.T) {
 								DBSubnetGroups: []awsrds.DBSubnetGroup{
 									{
 										DBSubnetGroupDescription: aws.String(dbSubnetGroupDescription),
-										SubnetGroupStatus:        aws.String(string(v1beta1.DBSubnetGroupStateCreating)),
 									},
 								},
 							}},
 						}
 					},
+					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
 				},
 				cr: dbSubnetGroup(),
 			},
 			want: want{
 				cr: dbSubnetGroup(
 					withDBSubnetGroupDescription(dbSubnetGroupDescription),
-					withConditions(runtimev1alpha1.Creating()),
-					withDBSubnetGroupStatus(string(v1beta1.DBSubnetGroupStateCreating))),
+					withConditions(runtimev1alpha1.Unavailable())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -432,12 +438,12 @@ func TestObserve(t *testing.T) {
 								DBSubnetGroups: []awsrds.DBSubnetGroup{
 									{
 										DBSubnetGroupDescription: aws.String(dbSubnetGroupDescription),
-										SubnetGroupStatus:        aws.String(string(v1beta1.DBSubnetGroupStateCreating)),
 									},
 								},
 							}},
 						}
 					},
+					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
 				},
 				cr: dbSubnetGroup(),
 			},
@@ -493,16 +499,6 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: dbSubnetGroup(
 					withDBSubnetGroupDescription(dbSubnetGroupDescription),
-					withConditions(runtimev1alpha1.Creating())),
-			},
-		},
-		"SuccessfulNoNeedForCreate": {
-			args: args{
-				cr: dbSubnetGroup(withDBSubnetGroupStatus(v1beta1.DBSubnetGroupStateCreating)),
-			},
-			want: want{
-				cr: dbSubnetGroup(
-					withDBSubnetGroupStatus(v1beta1.DBSubnetGroupStateCreating),
 					withConditions(runtimev1alpha1.Creating())),
 			},
 		},
@@ -575,14 +571,6 @@ func TestUpdate(t *testing.T) {
 				cr: dbSubnetGroup(),
 			},
 		},
-		"AlreadyModifying": {
-			args: args{
-				cr: dbSubnetGroup(withDBSubnetGroupStatus(v1beta1.DBSubnetGroupStateModifying)),
-			},
-			want: want{
-				cr: dbSubnetGroup(withDBSubnetGroupStatus(v1beta1.DBSubnetGroupStateModifying)),
-			},
-		},
 		"FailedModify": {
 			args: args{
 				client: &fake.MockDBSubnetGroupClient{
@@ -604,6 +592,33 @@ func TestUpdate(t *testing.T) {
 			want: want{
 				cr:  dbSubnetGroup(),
 				err: errors.Wrap(errBoom, errUpdate),
+			},
+		},
+		"SuccessfulWithTags": {
+			args: args{
+				client: &fake.MockDBSubnetGroupClient{
+					MockModifyDBSubnetGroupRequest: func(input *awsrds.ModifyDBSubnetGroupInput) awsrds.ModifyDBSubnetGroupRequest {
+						return awsrds.ModifyDBSubnetGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ModifyDBSubnetGroupOutput{}},
+						}
+					},
+					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
+						return awsrds.DescribeDBSubnetGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
+								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
+							}},
+						}
+					},
+					MockAddTagsToResourceRequest: func(input *awsrds.AddTagsToResourceInput) awsrds.AddTagsToResourceRequest {
+						return awsrds.AddTagsToResourceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.AddTagsToResourceOutput{}},
+						}
+					},
+				},
+				cr: dbSubnetGroup(withDBSubnetGroupTags()),
+			},
+			want: want{
+				cr: dbSubnetGroup(withDBSubnetGroupTags()),
 			},
 		},
 	}
@@ -661,15 +676,6 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: dbSubnetGroup(withConditions(runtimev1alpha1.Deleting())),
-			},
-		},
-		"AlreadyDeleting": {
-			args: args{
-				cr: dbSubnetGroup(withDBSubnetGroupStatus(v1beta1.DBSubnetGroupStateDeleting)),
-			},
-			want: want{
-				cr: dbSubnetGroup(withDBSubnetGroupStatus(v1beta1.DBSubnetGroupStateDeleting),
-					withConditions(runtimev1alpha1.Deleting())),
 			},
 		},
 		"AlreadyDeleted": {

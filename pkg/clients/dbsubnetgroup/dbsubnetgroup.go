@@ -18,26 +18,23 @@ package dbsubnetgroup
 
 import (
 	"context"
-	"encoding/json"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/database/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
-
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 // Client is the external client used for DBSubnetGroup Custom Resource
-type Client interface { // nolint:gocyclo
+type Client interface {
 	CreateDBSubnetGroupRequest(input *rds.CreateDBSubnetGroupInput) rds.CreateDBSubnetGroupRequest
 	DeleteDBSubnetGroupRequest(input *rds.DeleteDBSubnetGroupInput) rds.DeleteDBSubnetGroupRequest
 	DescribeDBSubnetGroupsRequest(input *rds.DescribeDBSubnetGroupsInput) rds.DescribeDBSubnetGroupsRequest
 	ModifyDBSubnetGroupRequest(input *rds.ModifyDBSubnetGroupInput) rds.ModifyDBSubnetGroupRequest
+	AddTagsToResourceRequest(input *rds.AddTagsToResourceInput) rds.AddTagsToResourceRequest
+	ListTagsForResourceRequest(input *rds.ListTagsForResourceInput) rds.ListTagsForResourceRequest
 }
 
 // NewClient returns a new client using AWS credentials as JSON encoded data.
@@ -58,38 +55,49 @@ func IsDBSubnetGroupNotFoundErr(err error) bool {
 }
 
 // IsDBSubnetGroupUpToDate checks whether there is a change in any of the modifiable fields.
-func IsDBSubnetGroupUpToDate(p v1beta1.DBSubnetGroupParameters, sg rds.DBSubnetGroup) (bool, error) {
-	patch, err := CreatePatch(&sg, &p)
-	if err != nil {
-		return false, err
+func IsDBSubnetGroupUpToDate(p v1beta1.DBSubnetGroupParameters, sg rds.DBSubnetGroup, tags []rds.Tag) bool { // nolint:gocyclo
+	if p.Description != aws.StringValue(sg.DBSubnetGroupDescription) {
+		return false
 	}
-	return cmp.Equal(&v1beta1.DBSubnetGroupParameters{}, patch, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{})), nil
-}
 
-// CreatePatch creates a *v1beta1.DBSubnetGroupParameters that has only the changed
-// values between the target *v1beta1.DBSubnetGroupParameters and the current *rds.DBSubnetGroup
-func CreatePatch(in *rds.DBSubnetGroup, target *v1beta1.DBSubnetGroupParameters) (*v1beta1.DBSubnetGroupParameters, error) {
-	currentParams := &v1beta1.DBSubnetGroupParameters{}
-	LateInitialize(currentParams, in)
+	if len(p.SubnetIDs) != len(sg.Subnets) {
+		return false
+	}
 
-	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
-	if err != nil {
-		return nil, err
+	pSubnets := make(map[string]struct{}, len(p.SubnetIDs))
+	for _, id := range p.SubnetIDs {
+		pSubnets[id] = struct{}{}
 	}
-	patch := &v1beta1.DBSubnetGroupParameters{}
-	if err := json.Unmarshal(jsonPatch, patch); err != nil {
-		return nil, err
+	for _, id := range sg.Subnets {
+		if _, ok := pSubnets[aws.StringValue(id.SubnetIdentifier)]; !ok {
+			return false
+		}
 	}
-	return patch, nil
+
+	if len(p.Tags) != len(tags) {
+		return false
+	}
+
+	pTags := make(map[string]string, len(p.Tags))
+	for _, tag := range p.Tags {
+		pTags[tag.Key] = tag.Value
+	}
+	for _, tag := range tags {
+		val, ok := pTags[aws.StringValue(tag.Key)]
+		if !ok || !strings.EqualFold(val, aws.StringValue(tag.Value)) {
+			return false
+		}
+	}
+	return true
 }
 
 // GenerateObservation is used to produce v1alpha3.RDSInstanceObservation from
 // rds.DBSubnetGroup
 func GenerateObservation(sg rds.DBSubnetGroup) v1beta1.DBSubnetGroupObservation {
 	o := v1beta1.DBSubnetGroupObservation{
-		SubnetGroupStatus: aws.StringValue(sg.SubnetGroupStatus),
-		DBSubnetGroupArn:  aws.StringValue(sg.DBSubnetGroupArn),
-		VPCID:             aws.StringValue(sg.VpcId),
+		State: aws.StringValue(sg.SubnetGroupStatus),
+		ARN:   aws.StringValue(sg.DBSubnetGroupArn),
+		VPCID: aws.StringValue(sg.VpcId),
 	}
 
 	if len(sg.Subnets) != 0 {
@@ -110,24 +118,13 @@ func LateInitialize(in *v1beta1.DBSubnetGroupParameters, sg *rds.DBSubnetGroup) 
 		return
 	}
 
-	in.DBSubnetGroupDescription = awsclients.LateInitializeString(in.DBSubnetGroupDescription, sg.DBSubnetGroupDescription)
-	in.DBSubnetGroupName = awsclients.LateInitializeString(in.DBSubnetGroupName, sg.DBSubnetGroupName)
-
+	in.Description = awsclients.LateInitializeString(in.Description, sg.DBSubnetGroupDescription)
 	if len(in.SubnetIDs) == 0 && len(sg.Subnets) != 0 {
 		in.SubnetIDs = make([]string, len(sg.Subnets))
 		for i, val := range sg.Subnets {
 			in.SubnetIDs[i] = aws.StringValue(val.SubnetIdentifier)
 		}
 	}
-}
-
-// IsErrorAlreadyExists returns true if the supplied error indicates a DB subnet
-// group already exists.
-func IsErrorAlreadyExists(err error) bool {
-	if err == nil {
-		return false
-	}
-	return strings.Contains(err.Error(), rds.ErrCodeDBSubnetGroupAlreadyExistsFault)
 }
 
 // IsErrorNotFound helper function to test for ErrCodeDBSubnetGroupNotFoundFault error

@@ -58,9 +58,7 @@ func TestDBSubnetGroupNameReferencerGetStatus(t *testing.T) {
 
 	readyResource := DBSubnetGroup{
 		Spec: DBSubnetGroupSpec{
-			ForProvider: DBSubnetGroupParameters{
-				DBSubnetGroupName: mockDBSubnetGroupName,
-			},
+			ForProvider: DBSubnetGroupParameters{},
 		},
 	}
 
@@ -168,7 +166,6 @@ func TestDBSubnetGroupNameReferencerBuild(t *testing.T) {
 			input: input{
 				readerFn: func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error {
 					p := obj.(*DBSubnetGroup)
-					// p.Spec.ForProvider.DBSubnetGroupName = mockDBSubnetGroupName
 					meta.SetExternalName(p, mockDBSubnetGroupName)
 					return nil
 				},

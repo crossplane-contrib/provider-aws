@@ -26,8 +26,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 )
 
-var _ resource.AttributeReferencer = (*SubnetIDReferencerForDBSubnetGroup)(nil)
-
 func TestSubnetIDReferencerForDBSubnetGroup(t *testing.T) {
 	value := "cool"
 
