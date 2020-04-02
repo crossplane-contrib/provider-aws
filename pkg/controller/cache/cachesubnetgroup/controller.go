@@ -88,7 +88,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 
 	if commonaws.BoolValue(p.Spec.UseServiceAccount) {
 		awsClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{client: awsClient, kube: c.client}, errors.Wrap(err, errNewClient)
+		return &external{client: awsClient}, errors.Wrap(err, errNewClient)
 	}
 
 	if p.GetCredentialsSecretReference() == nil {
@@ -101,12 +101,11 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetProviderSecret)
 	}
 	awsClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: awsClient, kube: c.client}, errors.Wrap(err, errNewClient)
+	return &external{client: awsClient}, errors.Wrap(err, errNewClient)
 }
 
 type external struct {
 	client elasticache.Client
-	kube   client.Client
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {

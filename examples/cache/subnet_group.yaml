@@ -7,7 +7,7 @@ metadata:
 spec:
   forProvider:
     description: desc for subnet
-    subnetRef:
+    subnetIdRef:
       - name: sample-subnet1
       - name: sample-subnet2
       - name: sample-subnet3

@@ -28,6 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
+	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
@@ -131,6 +132,12 @@ var (
 			},
 		},
 	}
+)
+
+var (
+	subnetGroupDesc = "some description"
+	subnetID1       = "subnetId1"
+	subnetID2       = "subnetId2"
 )
 
 func TestNewCreateReplicationGroupInput(t *testing.T) {
@@ -824,6 +831,68 @@ func TestConnectionEndpoint(t *testing.T) {
 			got := ConnectionEndpoint(tc.rg)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("ConnectionEndpoint(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestIsSubnetGroupUpToDate(t *testing.T) {
+	type args struct {
+		subnetGroup elasticache.CacheSubnetGroup
+		p           cachev1alpha1.CacheSubnetGroupParameters
+	}
+
+	cases := map[string]struct {
+		args args
+		want bool
+	}{
+		"SameFields": {
+			args: args{
+				subnetGroup: elasticache.CacheSubnetGroup{
+					CacheSubnetGroupDescription: aws.String(subnetGroupDesc),
+					Subnets: []elasticache.Subnet{
+						{
+							SubnetIdentifier: aws.String(subnetID1),
+						},
+						{
+							SubnetIdentifier: aws.String(subnetID2),
+						},
+					},
+				},
+				p: cachev1alpha1.CacheSubnetGroupParameters{
+					Description: subnetGroupDesc,
+					SubnetIds:   []string{subnetID1, subnetID2},
+				},
+			},
+			want: true,
+		},
+		"DifferentFields": {
+			args: args{
+				subnetGroup: elasticache.CacheSubnetGroup{
+					CacheSubnetGroupDescription: aws.String(subnetGroupDesc),
+					Subnets: []elasticache.Subnet{
+						{
+							SubnetIdentifier: aws.String(subnetID1),
+						},
+						{
+							SubnetIdentifier: aws.String(subnetID2),
+						},
+					},
+				},
+				p: cachev1alpha1.CacheSubnetGroupParameters{
+					Description: subnetGroupDesc,
+					SubnetIds:   []string{subnetID1},
+				},
+			},
+			want: false,
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := IsSubnetGroupUpToDate(tc.args.p, tc.args.subnetGroup)
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
 	}
