@@ -353,18 +353,18 @@ func GenerateClientConfig(cluster *Cluster, token string) (clientcmdapi.Config, 
 
 // IsErrorAlreadyExists helper function
 func IsErrorAlreadyExists(err error) bool {
-	return strings.Contains(err.Error(), eks.ErrCodeResourceInUseException)
+	return err != nil && strings.Contains(err.Error(), eks.ErrCodeResourceInUseException)
 }
 
 // IsErrorBadRequest helper function
 func IsErrorBadRequest(err error) bool {
-	return strings.Contains(err.Error(), eks.ErrCodeInvalidParameterException) ||
-		strings.Contains(err.Error(), eks.ErrCodeUnsupportedAvailabilityZoneException)
+	return err != nil && (strings.Contains(err.Error(), eks.ErrCodeInvalidParameterException) ||
+		strings.Contains(err.Error(), eks.ErrCodeUnsupportedAvailabilityZoneException))
 }
 
 // IsErrorNotFound helper function
 func IsErrorNotFound(err error) bool {
-	return strings.Contains(err.Error(), eks.ErrCodeResourceNotFoundException)
+	return err != nil && strings.Contains(err.Error(), eks.ErrCodeResourceNotFoundException)
 }
 
 const (

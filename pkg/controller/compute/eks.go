@@ -49,9 +49,8 @@ import (
 )
 
 const (
-	controllerName    = "eks.compute.aws.crossplane.io"
-	finalizer         = "finalizer." + controllerName
-	clusterNamePrefix = "eks-"
+	controllerName = "eks.compute.aws.crossplane.io"
+	finalizer      = "finalizer." + controllerName
 
 	eksAuthConfigMapName = "aws-auth"
 	eksAuthMapRolesKey   = "mapRoles"
@@ -70,7 +69,7 @@ const (
 
 // Error strings
 const (
-	errUpdateManagedStatus = "cannot update managed resource status"
+	errUpdateCustomResource = "cannot update ekscluster custom resource"
 )
 
 // CloudFormation States that are non-transitory
@@ -94,10 +93,11 @@ type Reconciler struct {
 	client.Client
 	publisher managed.ConnectionPublisher
 	managed.ReferenceResolver
+	initializer managed.Initializer
 
 	connect func(*awscomputev1alpha3.EKSCluster) (eks.Client, error)
 	create  func(*awscomputev1alpha3.EKSCluster, eks.Client) (reconcile.Result, error)
-	sync    func(*awscomputev1alpha3.EKSCluster, eks.Client) (reconcile.Result, error)
+	sync    func(*awscomputev1alpha3.EKSCluster, *eks.Cluster, eks.Client) (reconcile.Result, error)
 	delete  func(*awscomputev1alpha3.EKSCluster, eks.Client) (reconcile.Result, error)
 	secret  func(*eks.Cluster, *awscomputev1alpha3.EKSCluster, eks.Client) error
 	awsauth func(*eks.Cluster, *awscomputev1alpha3.EKSCluster, eks.Client, string) error
@@ -114,6 +114,7 @@ func SetupEKSCluster(mgr ctrl.Manager, l logging.Logger) error {
 		publisher:         managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
 		ReferenceResolver: managed.NewAPIReferenceResolver(mgr.GetClient()),
 		log:               l.WithValues("controller", name),
+		initializer:       managed.NewNameAsExternalName(mgr.GetClient()),
 	}
 	r.connect = r._connect
 	r.create = r._create
@@ -155,10 +156,9 @@ func (r *Reconciler) _connect(instance *awscomputev1alpha3.EKSCluster) (eks.Clie
 
 func (r *Reconciler) _create(instance *awscomputev1alpha3.EKSCluster, client eks.Client) (reconcile.Result, error) {
 	instance.Status.SetConditions(runtimev1alpha1.Creating())
-	clusterName := fmt.Sprintf("%s%s", clusterNamePrefix, instance.UID)
 
 	// Create Master
-	createdCluster, err := client.Create(clusterName, instance.Spec)
+	_, err := client.Create(meta.GetExternalName(instance), instance.Spec)
 	if err != nil && !eks.IsErrorAlreadyExists(err) {
 		if eks.IsErrorBadRequest(err) {
 			// If this was the first time we encountered this error we'll be
@@ -170,15 +170,8 @@ func (r *Reconciler) _create(instance *awscomputev1alpha3.EKSCluster, client eks
 		}
 		return r.fail(instance, err)
 	}
-
-	// we will need to set State.ClusterVersion it. this is needed to retrieve
-	// the right ami image for the worker nodes
-	instance.Status.ClusterVersion = createdCluster.Version
-
 	// Update status
 	instance.Status.State = awscomputev1alpha3.ClusterStatusCreating
-	instance.Status.ClusterName = clusterName
-
 	instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
 
 	// We'll be requeued immediately the first time we update our status
@@ -238,7 +231,7 @@ func (r *Reconciler) _awsauth(cluster *eks.Cluster, instance *awscomputev1alpha3
 	}
 
 	// Sync aws-auth to remote eks cluster to configure it's auth.
-	token, err := client.ConnectionToken(instance.Status.ClusterName)
+	token, err := client.ConnectionToken(meta.GetExternalName(instance))
 	if err != nil {
 		return err
 	}
@@ -273,26 +266,20 @@ func (r *Reconciler) _awsauth(cluster *eks.Cluster, instance *awscomputev1alpha3
 	return err
 }
 
-func (r *Reconciler) _sync(instance *awscomputev1alpha3.EKSCluster, client eks.Client) (reconcile.Result, error) {
-	cluster, err := client.Get(instance.Status.ClusterName)
-	if err != nil {
-		return r.fail(instance, err)
-	}
-
+func (r *Reconciler) _sync(instance *awscomputev1alpha3.EKSCluster, cluster *eks.Cluster, client eks.Client) (reconcile.Result, error) {
 	if cluster.Status != awscomputev1alpha3.ClusterStatusActive {
 		instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
-
 		// Requeue after a short wait to see if the cluster has become ready.
 		return reconcile.Result{RequeueAfter: aShortWait}, nil
 	}
 
 	// Create workers
-	if instance.Status.CloudFormationStackID == "" {
-		clusterWorkers, err := client.CreateWorkerNodes(instance.Status.ClusterName, instance.Status.ClusterVersion, instance.Spec)
+	if instance.Spec.CloudFormationStackID == "" {
+		clusterWorkers, err := client.CreateWorkerNodes(meta.GetExternalName(instance), cluster.Version, instance.Spec)
 		if err != nil {
 			return r.fail(instance, err)
 		}
-		instance.Status.CloudFormationStackID = clusterWorkers.WorkerStackID
+		instance.Spec.CloudFormationStackID = clusterWorkers.WorkerStackID
 		instance.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
 
 		// We'll likely be requeued implicitly due to the status update, but
@@ -301,7 +288,7 @@ func (r *Reconciler) _sync(instance *awscomputev1alpha3.EKSCluster, client eks.C
 		return reconcile.Result{RequeueAfter: aShortWait}, r.Update(ctx, instance)
 	}
 
-	clusterWorker, err := client.GetWorkerNodes(instance.Status.CloudFormationStackID)
+	clusterWorker, err := client.GetWorkerNodes(instance.Spec.CloudFormationStackID)
 	if err != nil {
 		return r.fail(instance, err)
 	}
@@ -327,6 +314,7 @@ func (r *Reconciler) _sync(instance *awscomputev1alpha3.EKSCluster, client eks.C
 	// update resource status
 	instance.Status.Endpoint = cluster.Endpoint
 	instance.Status.State = awscomputev1alpha3.ClusterStatusActive
+	instance.Status.ClusterVersion = cluster.Version
 	instance.Status.SetConditions(runtimev1alpha1.Available(), runtimev1alpha1.ReconcileSuccess())
 	resource.SetBindable(instance)
 
@@ -336,7 +324,7 @@ func (r *Reconciler) _sync(instance *awscomputev1alpha3.EKSCluster, client eks.C
 }
 
 func (r *Reconciler) _secret(cluster *eks.Cluster, instance *awscomputev1alpha3.EKSCluster, client eks.Client) error {
-	token, err := client.ConnectionToken(instance.Status.ClusterName)
+	token, err := client.ConnectionToken(meta.GetExternalName(instance))
 	if err != nil {
 		return err
 	}
@@ -363,12 +351,12 @@ func (r *Reconciler) _delete(instance *awscomputev1alpha3.EKSCluster, client eks
 	instance.Status.SetConditions(runtimev1alpha1.Deleting())
 	if instance.Spec.ReclaimPolicy == runtimev1alpha1.ReclaimDelete {
 		var deleteErrors []string
-		if err := client.Delete(instance.Status.ClusterName); err != nil && !eks.IsErrorNotFound(err) {
+		if err := client.Delete(meta.GetExternalName(instance)); err != nil && !eks.IsErrorNotFound(err) {
 			deleteErrors = append(deleteErrors, fmt.Sprintf("Master Delete Error: %s", err.Error()))
 		}
 
-		if instance.Status.CloudFormationStackID != "" {
-			if err := client.DeleteWorkerNodes(instance.Status.CloudFormationStackID); err != nil && !cloudformationclient.IsErrorNotFound(err) {
+		if instance.Spec.CloudFormationStackID != "" {
+			if err := client.DeleteWorkerNodes(instance.Spec.CloudFormationStackID); err != nil && !cloudformationclient.IsErrorNotFound(err) {
 				deleteErrors = append(deleteErrors, fmt.Sprintf("Worker Delete Error: %s", err.Error()))
 			}
 		}
@@ -398,6 +386,9 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		// be requeued because we return an error.
 		return reconcile.Result{}, resource.IgnoreNotFound(err)
 	}
+	if err := r.initializer.Initialize(ctx, instance); err != nil {
+		return reconcile.Result{}, err
+	}
 
 	// Create EKS Client
 	eksClient, err := r.connect(instance)
@@ -413,7 +404,7 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 			}
 
 			instance.Status.SetConditions(condition)
-			return reconcile.Result{RequeueAfter: aLongWait}, errors.Wrap(r.Update(ctx, instance), errUpdateManagedStatus)
+			return reconcile.Result{RequeueAfter: aLongWait}, errors.Wrap(r.Update(ctx, instance), errUpdateCustomResource)
 		}
 
 		// Add ReferenceResolutionSuccess to the conditions
@@ -428,11 +419,13 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		return r.delete(instance, eksClient)
 	}
 
-	// Create cluster instance
-	if instance.Status.ClusterName == "" {
+	cluster, err := eksClient.Get(meta.GetExternalName(instance))
+	switch {
+	case eks.IsErrorNotFound(err):
 		return r.create(instance, eksClient)
+	case err != nil:
+		return r.fail(instance, err)
 	}
-
 	// Sync cluster instance status with cluster status
-	return r.sync(instance, eksClient)
+	return r.sync(instance, cluster, eksClient)
 }
