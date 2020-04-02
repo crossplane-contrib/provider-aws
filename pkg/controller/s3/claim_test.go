@@ -96,7 +96,6 @@ func TestConfigureBucket(t *testing.T) {
 							ProviderReference: &corev1.ObjectReference{Name: providerName},
 						},
 						S3BucketParameters: v1alpha3.S3BucketParameters{
-							NameFormat:      bucketName,
 							CannedACL:       &s3BucketPrivate,
 							LocalPermission: &ro,
 						},
