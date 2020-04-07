@@ -54,8 +54,8 @@ type InternetGatewayAttachment struct {
 	VPCID string `json:"vpcId"`
 }
 
-// InternetGatewayExternalStatus keeps the state for the external resource
-type InternetGatewayExternalStatus struct {
+// InternetGatewayObservation keeps the state for the external resource
+type InternetGatewayObservation struct {
 	// Any VPCs attached to the internet gateway.
 	Attachments []InternetGatewayAttachment `json:"attachments,omitempty"`
 
@@ -72,7 +72,7 @@ type InternetGatewayExternalStatus struct {
 // An InternetGatewayStatus represents the observed state of an InternetGateway.
 type InternetGatewayStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     InternetGatewayExternalStatus `json:"atProvider"`
+	AtProvider                     InternetGatewayObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

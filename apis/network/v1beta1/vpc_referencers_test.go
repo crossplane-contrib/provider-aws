@@ -57,7 +57,7 @@ func TestVPCIDReferencerGetStatus(t *testing.T) {
 
 	readyResource := VPC{
 		Status: VPCStatus{
-			AtProvider: VPCExternalStatus{
+			AtProvider: VPCObservation{
 				VPCID: mockVPCID,
 			},
 		},

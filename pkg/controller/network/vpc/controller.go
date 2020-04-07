@@ -58,7 +58,6 @@ const (
 	errCreateTags          = "failed to create tags for the VPC resource"
 	errDelete              = "failed to delete the VPC resource"
 	errSpecUpdate          = "cannot update spec"
-	errStatusUpdate        = "cannot update status"
 )
 
 // SetupVPC adds a controller that reconciles VPCs.
@@ -123,10 +122,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	// To find out whether a VPC exist:
-	// - the object's ExternalState should have vpcId populated
-	// - a VPC with the given vpcId should exist
-	if meta.GetExternalName(cr) == "" {
+	name := meta.GetExternalName(cr)
+
+	if name == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
@@ -188,16 +186,16 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 
-	cr.Status.AtProvider = ec2.GenerateVpcObservation(*result.Vpc)
+	meta.SetExternalName(cr, aws.StringValue(result.Vpc.VpcId))
 
 	// modify vpc attributes
 	for _, input := range []*awsec2.ModifyVpcAttributeInput{
 		{
-			VpcId:            aws.String(cr.Status.AtProvider.VPCID),
+			VpcId:            aws.String(meta.GetExternalName(cr)),
 			EnableDnsSupport: &awsec2.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableDNSSupport},
 		},
 		{
-			VpcId:              aws.String(cr.Status.AtProvider.VPCID),
+			VpcId:              aws.String(meta.GetExternalName(cr)),
 			EnableDnsHostnames: &awsec2.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableDNSHostNames},
 		},
 	} {
@@ -205,13 +203,6 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 			return managed.ExternalCreation{}, errors.Wrap(err, errModifyVPCAttributes)
 		}
 	}
-
-	// We need to save status before spec update so that it's not lost.
-	if err := e.kube.Status().Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
-	}
-
-	meta.SetExternalName(cr, aws.StringValue(result.Vpc.VpcId))
 
 	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
 }
@@ -225,7 +216,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// NOTE(muvaf): VPCs can only be tagged after the creation and this request
 	// is idempotent.
 	if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
-		Resources: []string{cr.Status.AtProvider.VPCID},
+		Resources: []string{meta.GetExternalName(cr)},
 		Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
 	}).Send(ctx); err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errCreateTags)
@@ -233,7 +224,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	_, err := e.client.ModifyVpcTenancyRequest(&awsec2.ModifyVpcTenancyInput{
 		InstanceTenancy: awsec2.VpcTenancy(aws.StringValue(cr.Spec.ForProvider.InstanceTenancy)),
-		VpcId:           aws.String(cr.Status.AtProvider.VPCID),
+		VpcId:           aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
 	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
@@ -245,14 +236,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	if cr.Status.AtProvider.VPCID == "" {
-		return errors.New(errDeleteNotPresent)
-	}
-
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
 	_, err := e.client.DeleteVpcRequest(&awsec2.DeleteVpcInput{
-		VpcId: aws.String(cr.Status.AtProvider.VPCID),
+		VpcId: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
 	return errors.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDelete)

@@ -279,7 +279,7 @@ spec:
           description: A SubnetStatus represents the observed state of a Subnet.
           properties:
             atProvider:
-              description: SubnetExternalStatus keeps the state for the external resource
+              description: SubnetObservation keeps the state for the external resource
               properties:
                 availableIpAddressCount:
                   description: The number of unused private IPv4 addresses in the

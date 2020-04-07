@@ -109,14 +109,14 @@ func TestIsSGUpToDate(t *testing.T) {
 func TestGenerateSGObservation(t *testing.T) {
 	cases := map[string]struct {
 		in  ec2.SecurityGroup
-		out v1beta1.SecurityGroupExternalStatus
+		out v1beta1.SecurityGroupObservation
 	}{
 		"AllFilled": {
 			in: ec2.SecurityGroup{
 				OwnerId: aws.String(sgOwner),
 				GroupId: aws.String(sgID),
 			},
-			out: v1beta1.SecurityGroupExternalStatus{
+			out: v1beta1.SecurityGroupObservation{
 				OwnerID:         sgOwner,
 				SecurityGroupID: sgID,
 			},
@@ -125,7 +125,7 @@ func TestGenerateSGObservation(t *testing.T) {
 			in: ec2.SecurityGroup{
 				OwnerId: aws.String(sgOwner),
 			},
-			out: v1beta1.SecurityGroupExternalStatus{
+			out: v1beta1.SecurityGroupObservation{
 				OwnerID: sgOwner,
 			},
 		},

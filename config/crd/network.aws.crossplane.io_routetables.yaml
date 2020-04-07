@@ -323,7 +323,7 @@ spec:
           description: A RouteTableStatus represents the observed state of a RouteTable.
           properties:
             atProvider:
-              description: RouteTableExternalStatus keeps the state for the external
+              description: RouteTableObservation keeps the state for the external
                 resource
               properties:
                 associations:

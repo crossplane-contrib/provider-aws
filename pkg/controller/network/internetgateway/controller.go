@@ -46,17 +46,15 @@ const (
 	errGetProvider       = "cannot get provider"
 	errGetProviderSecret = "cannot get provider secret"
 
-	errUnexpectedObject = "The managed resource is not an InternetGateway resource"
-	errDescribe         = "failed to describe InternetGateway"
-	errMultipleItems    = "retrieved multiple InternetGateways for the given internetGatewaysId"
-	errCreate           = "failed to create the InternetGateway resource"
-	errUpdatePresent    = "cannot delete the InternetGateway, since the internetGatewayID is not present"
-	errDeleteNotPresent = "cannot delete the InternetGateway, since the internetGatewayID is not present"
-	errDetach           = "failed to detach the InternetGateway from VPC"
-	errDelete           = "failed to delete the InternetGateway resource"
-	errUpdate           = "failed to update the InternetGateway resource"
-	errStatusUpdate     = "cannot update status"
-	errSpecUpdate       = "cannot update spec"
+	errUnexpectedObject    = "The managed resource is not an InternetGateway resource"
+	errDescribe            = "failed to describe InternetGateway"
+	errNotSingleItem       = "either no or multiple InternetGateways retrieved for the given internetGatewayId"
+	errMultipleAttachments = "multiple Attachments retrieved for the given internetGatewayId"
+	errCreate              = "failed to create the InternetGateway resource"
+	errDetach              = "failed to detach the InternetGateway from VPC"
+	errDelete              = "failed to delete the InternetGateway resource"
+	errUpdate              = "failed to update the InternetGateway resource"
+	errSpecUpdate          = "cannot update spec"
 )
 
 // SetupInternetGateway adds a controller that reconciles InternetGateways.
@@ -123,9 +121,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	// To find out whether an InternetGateway exist:
-	// - the object's ExternalState should have internetGatewayID populated
-	// - an InternetGateway with the given internetGatewayID should exist
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
@@ -141,20 +136,12 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	// in a successful response, there should be one and only one object
 	if len(response.InternetGateways) != 1 {
-		return managed.ExternalObservation{}, errors.Errorf(errMultipleItems)
+		return managed.ExternalObservation{}, errors.Errorf(errNotSingleItem)
 	}
+
+	cr.SetConditions(runtimev1alpha1.Available())
 
 	observed := response.InternetGateways[0]
-
-	// if non of the attachments are currently in progress, then the IG is available
-	for _, a := range observed.Attachments {
-		switch a.State {
-		case v1beta1.AttachmentStatusAvailable:
-			cr.SetConditions(runtimev1alpha1.Available())
-		case v1beta1.AttachmentStatusAttaching:
-			cr.SetConditions(runtimev1alpha1.Creating())
-		}
-	}
 
 	cr.Status.AtProvider = ec2.GenerateIGObservation(observed)
 
@@ -179,15 +166,6 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 
-	// An update to cr.Status is required because InternetGatewayID is required for describing
-	// internet gateways.
-	cr.Status.AtProvider = ec2.GenerateIGObservation(*ig.InternetGateway)
-
-	// We need to save status before spec update so that it's not lost.
-	if err := e.kube.Status().Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
-	}
-
 	meta.SetExternalName(cr, aws.StringValue(ig.InternetGateway.InternetGatewayId))
 
 	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
@@ -199,48 +177,40 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	if cr.Status.AtProvider.InternetGatewayID == "" {
-		return managed.ExternalUpdate{}, errors.New(errUpdatePresent)
-	}
-
 	response, err := e.client.DescribeInternetGatewaysRequest(&awsec2.DescribeInternetGatewaysInput{
-		InternetGatewayIds: []string{cr.Status.AtProvider.InternetGatewayID},
+		InternetGatewayIds: []string{meta.GetExternalName(cr)},
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err), errDescribe)
 	}
 
+	if len(response.InternetGateways) != 1 {
+		return managed.ExternalUpdate{}, errors.New(errNotSingleItem)
+	}
+
 	observed := response.InternetGateways[0]
 
-	// Although, observed.Attachments is a list, an internet gateway can be attached to only one
-	// VPC. DetachInternetGatewayRequest returns error for an unattached VPCID.
-	// Detaching the currently attached VPC below.
-	var attached bool
-	if observed.Attachments != nil {
-		for _, attachment := range observed.Attachments {
-			if *attachment.VpcId == cr.Spec.ForProvider.VPCID {
-				attached = true
-				break
-			} else {
-				_, err := e.client.DetachInternetGatewayRequest(&awsec2.DetachInternetGatewayInput{
-					InternetGatewayId: aws.String(cr.Status.AtProvider.InternetGatewayID),
-					VpcId:             aws.String(*attachment.VpcId),
-				}).Send(ctx)
+	// There can only be one attachmemt and if that is attached to
+	// spec.VpcID, no action is required.
+	if len(observed.Attachments) > 1 {
+		return managed.ExternalUpdate{}, errors.New(errMultipleAttachments)
+	}
 
-				if err != nil {
-					return managed.ExternalUpdate{}, errors.Wrapf(err, errUpdate)
-				}
-			}
+	if len(observed.Attachments) == 1 &&
+		*observed.Attachments[0].VpcId != cr.Spec.ForProvider.VPCID {
+		if _, err = e.client.DetachInternetGatewayRequest(&awsec2.DetachInternetGatewayInput{
+			InternetGatewayId: aws.String(meta.GetExternalName(cr)),
+			VpcId:             observed.Attachments[0].VpcId,
+		}).Send(ctx); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errDetach)
 		}
 	}
 
-	if !attached && cr.Spec.ForProvider.VPCID != "" {
-		// Attach IG to VPC in spec.
-		_, err = e.client.AttachInternetGatewayRequest(&awsec2.AttachInternetGatewayInput{
-			InternetGatewayId: aws.String(cr.Status.AtProvider.InternetGatewayID),
-			VpcId:             aws.String(cr.Spec.ForProvider.VPCID),
-		}).Send(ctx)
-	}
+	// Attach IG to VPC in spec.
+	_, err = e.client.AttachInternetGatewayRequest(&awsec2.AttachInternetGatewayInput{
+		InternetGatewayId: aws.String(meta.GetExternalName(cr)),
+		VpcId:             aws.String(cr.Spec.ForProvider.VPCID),
+	}).Send(ctx)
 
 	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 }
@@ -251,16 +221,12 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	if cr.Status.AtProvider.InternetGatewayID == "" {
-		return errors.New(errDeleteNotPresent)
-	}
-
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
 	// first detach all vpc attachments
 	for _, a := range cr.Status.AtProvider.Attachments {
 		_, err := e.client.DetachInternetGatewayRequest(&awsec2.DetachInternetGatewayInput{
-			InternetGatewayId: aws.String(cr.Status.AtProvider.InternetGatewayID),
+			InternetGatewayId: aws.String(meta.GetExternalName(cr)),
 			VpcId:             aws.String(a.VPCID),
 		}).Send(ctx)
 
@@ -274,7 +240,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	// now delete the IG
 	_, err := e.client.DeleteInternetGatewayRequest(&awsec2.DeleteInternetGatewayInput{
-		InternetGatewayId: aws.String(cr.Status.AtProvider.InternetGatewayID),
+		InternetGatewayId: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
 	return errors.Wrap(resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err), errDelete)

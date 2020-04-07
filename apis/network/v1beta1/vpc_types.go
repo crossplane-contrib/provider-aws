@@ -50,8 +50,8 @@ type VPCSpec struct {
 	ForProvider                  VPCParameters `json:"forProvider"`
 }
 
-// VPCExternalStatus keeps the state for the external resource
-type VPCExternalStatus struct {
+// VPCObservation keeps the state for the external resource
+type VPCObservation struct {
 	// Indicates whether the VPC is the default VPC.
 	IsDefault bool `json:"isDefault,omitempty"`
 
@@ -71,7 +71,7 @@ type VPCExternalStatus struct {
 // A VPCStatus represents the observed state of a VPC.
 type VPCStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     VPCExternalStatus `json:"atProvider"`
+	AtProvider                     VPCObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

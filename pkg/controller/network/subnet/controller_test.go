@@ -78,7 +78,7 @@ func withSpec(p v1beta1.SubnetParameters) subnetModifier {
 	return func(r *v1beta1.Subnet) { r.Spec.ForProvider = p }
 }
 
-func withStatus(s v1beta1.SubnetExternalStatus) subnetModifier {
+func withStatus(s v1beta1.SubnetObservation) subnetModifier {
 	return func(r *v1beta1.Subnet) { r.Status.AtProvider = s }
 }
 
@@ -289,14 +289,12 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
-					SubnetID: subnetID,
-				})),
+				cr: subnet(withExternalName(subnetID)),
 			},
 			want: want{
-				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
-					SubnetState: string(awsec2.SubnetStateAvailable),
-				}),
+				cr: subnet(withStatus(v1beta1.SubnetObservation{
+					SubnetState: "available",
+				}), withExternalName(subnetID),
 					withConditions(runtimev1alpha1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -315,14 +313,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
-					SubnetID: subnetID,
-				})),
+				cr: subnet(withExternalName(subnetID)),
 			},
 			want: want{
-				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
-					SubnetID: subnetID,
-				})),
+				cr:  subnet(withExternalName(subnetID)),
 				err: errors.New(errMultipleItems),
 			},
 		},
@@ -345,16 +339,14 @@ func TestObserve(t *testing.T) {
 				cr: subnet(withSpec(v1beta1.SubnetParameters{
 					MapPublicIPOnLaunch: aws.Bool(true),
 				}),
-					withStatus(v1beta1.SubnetExternalStatus{
-						SubnetID: subnetID,
-					})),
+					withExternalName(subnetID)),
 			},
 			want: want{
 				cr: subnet(withSpec(v1beta1.SubnetParameters{
 					MapPublicIPOnLaunch: aws.Bool(true),
-				}), withStatus(v1beta1.SubnetExternalStatus{
+				}), withStatus(v1beta1.SubnetObservation{
 					SubnetState: string(awsec2.SubnetStateAvailable),
-				}),
+				}), withExternalName(subnetID),
 					withConditions(runtimev1alpha1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -371,14 +363,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
-					SubnetID: subnetID,
-				})),
+				cr: subnet(withExternalName(subnetID)),
 			},
 			want: want{
-				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
-					SubnetID: subnetID,
-				})),
+				cr:  subnet(withExternalName(subnetID)),
 				err: errors.Wrap(errBoom, errDescribe),
 			},
 		},
@@ -434,9 +422,6 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: subnet(withExternalName(subnetID),
-					withStatus(v1beta1.SubnetExternalStatus{
-						SubnetID: subnetID,
-					}),
 					withConditions(runtimev1alpha1.Creating())),
 			},
 		},
@@ -512,14 +497,14 @@ func TestUpdate(t *testing.T) {
 				},
 				cr: subnet(withSpec(v1beta1.SubnetParameters{
 					MapPublicIPOnLaunch: aws.Bool(true),
-				}), withStatus(v1beta1.SubnetExternalStatus{
+				}), withStatus(v1beta1.SubnetObservation{
 					SubnetID: subnetID,
 				})),
 			},
 			want: want{
 				cr: subnet(withSpec(v1beta1.SubnetParameters{
 					MapPublicIPOnLaunch: aws.Bool(true),
-				}), withStatus(v1beta1.SubnetExternalStatus{
+				}), withStatus(v1beta1.SubnetObservation{
 					SubnetID: subnetID,
 				})),
 			},
@@ -545,14 +530,14 @@ func TestUpdate(t *testing.T) {
 				},
 				cr: subnet(withSpec(v1beta1.SubnetParameters{
 					MapPublicIPOnLaunch: aws.Bool(true),
-				}), withStatus(v1beta1.SubnetExternalStatus{
+				}), withStatus(v1beta1.SubnetObservation{
 					SubnetID: subnetID,
 				})),
 			},
 			want: want{
 				cr: subnet(withSpec(v1beta1.SubnetParameters{
 					MapPublicIPOnLaunch: aws.Bool(true),
-				}), withStatus(v1beta1.SubnetExternalStatus{
+				}), withStatus(v1beta1.SubnetObservation{
 					SubnetID: subnetID,
 				})),
 			},
@@ -596,12 +581,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
+				cr: subnet(withStatus(v1beta1.SubnetObservation{
 					SubnetID: subnetID,
 				})),
 			},
 			want: want{
-				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
+				cr: subnet(withStatus(v1beta1.SubnetObservation{
 					SubnetID: subnetID,
 				}), withConditions(runtimev1alpha1.Deleting())),
 			},
@@ -615,12 +600,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
+				cr: subnet(withStatus(v1beta1.SubnetObservation{
 					SubnetID: subnetID,
 				})),
 			},
 			want: want{
-				cr: subnet(withStatus(v1beta1.SubnetExternalStatus{
+				cr: subnet(withStatus(v1beta1.SubnetObservation{
 					SubnetID: subnetID,
 				}), withConditions(runtimev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),

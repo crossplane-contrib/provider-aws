@@ -77,7 +77,7 @@ func TestIsSubnetUpToDate(t *testing.T) {
 func TestGenerateSubnetObservation(t *testing.T) {
 	cases := map[string]struct {
 		in  ec2.Subnet
-		out v1beta1.SubnetExternalStatus
+		out v1beta1.SubnetObservation
 	}{
 		"AllFilled": {
 			in: ec2.Subnet{
@@ -86,7 +86,7 @@ func TestGenerateSubnetObservation(t *testing.T) {
 				SubnetId:                aws.String(subnetID),
 				State:                   ec2.SubnetStateAvailable,
 			},
-			out: v1beta1.SubnetExternalStatus{
+			out: v1beta1.SubnetObservation{
 				AvailableIPAddressCount: int64(availableIPCount),
 				DefaultForAz:            true,
 				SubnetID:                subnetID,
@@ -99,7 +99,7 @@ func TestGenerateSubnetObservation(t *testing.T) {
 				SubnetId:     aws.String(subnetID),
 				State:        ec2.SubnetStateAvailable,
 			},
-			out: v1beta1.SubnetExternalStatus{
+			out: v1beta1.SubnetObservation{
 				DefaultForAz: true,
 				SubnetID:     subnetID,
 				SubnetState:  state,

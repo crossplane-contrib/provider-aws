@@ -39,7 +39,7 @@ func TestSubnetIDReferencerGetStatus(t *testing.T) {
 
 	readyResource := Subnet{
 		Status: SubnetStatus{
-			AtProvider: SubnetExternalStatus{
+			AtProvider: SubnetObservation{
 				SubnetID: "mockSubnetID",
 			},
 		},

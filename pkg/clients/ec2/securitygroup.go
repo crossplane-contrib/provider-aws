@@ -108,8 +108,8 @@ func GenerateEC2Permissions(objectPerms []v1beta1.IPPermission) []ec2.IpPermissi
 
 // GenerateSGObservation is used to produce v1beta1.SecurityGroupExternalStatus from
 // ec2.SecurityGroup.
-func GenerateSGObservation(sg ec2.SecurityGroup) v1beta1.SecurityGroupExternalStatus {
-	o := v1beta1.SecurityGroupExternalStatus{
+func GenerateSGObservation(sg ec2.SecurityGroup) v1beta1.SecurityGroupObservation {
+	o := v1beta1.SecurityGroupObservation{
 		OwnerID:         aws.StringValue(sg.OwnerId),
 		SecurityGroupID: aws.StringValue(sg.GroupId),
 	}

@@ -98,8 +98,8 @@ type RouteTableSpec struct {
 	ForProvider                  RouteTableParameters `json:"forProvider"`
 }
 
-// RouteTableExternalStatus keeps the state for the external resource
-type RouteTableExternalStatus struct {
+// RouteTableObservation keeps the state for the external resource
+type RouteTableObservation struct {
 	// The ID of the AWS account that owns the route table.
 	OwnerID string `json:"ownerId,omitempty"`
 
@@ -116,7 +116,7 @@ type RouteTableExternalStatus struct {
 // A RouteTableStatus represents the observed state of a RouteTable.
 type RouteTableStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     RouteTableExternalStatus `json:"atProvider"`
+	AtProvider                     RouteTableObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

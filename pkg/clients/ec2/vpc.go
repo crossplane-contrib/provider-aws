@@ -54,10 +54,10 @@ func IsVpcUpToDate(spec v1beta1.VPCParameters, o ec2.Vpc) bool {
 	return cmp.Equal(spec.Tags, actual) && (aws.StringValue(spec.InstanceTenancy) == string(o.InstanceTenancy))
 }
 
-// GenerateVpcObservation is used to produce v1beta1.VPCExternalStatus from
+// GenerateVpcObservation is used to produce v1beta1.VPCObservation from
 // ec2.Vpc.
-func GenerateVpcObservation(vpc ec2.Vpc) v1beta1.VPCExternalStatus {
-	o := v1beta1.VPCExternalStatus{
+func GenerateVpcObservation(vpc ec2.Vpc) v1beta1.VPCObservation {
+	o := v1beta1.VPCObservation{
 		IsDefault: aws.BoolValue(vpc.IsDefault),
 		OwnerID:   aws.StringValue(vpc.OwnerId),
 		VPCID:     aws.StringValue(vpc.VpcId),

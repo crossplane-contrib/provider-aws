@@ -93,7 +93,7 @@ func withSpec(p v1beta1.VPCParameters) vpcModifier {
 	return func(r *v1beta1.VPC) { r.Spec.ForProvider = p }
 }
 
-func withStatus(s v1beta1.VPCExternalStatus) vpcModifier {
+func withStatus(s v1beta1.VPCObservation) vpcModifier {
 	return func(r *v1beta1.VPC) { r.Status.AtProvider = s }
 }
 
@@ -315,7 +315,7 @@ func TestObserve(t *testing.T) {
 				cr: vpc(withSpec(v1beta1.VPCParameters{
 					InstanceTenancy: aws.String(tenancyDefault),
 					CIDRBlock:       cidr,
-				}), withStatus(v1beta1.VPCExternalStatus{
+				}), withStatus(v1beta1.VPCObservation{
 					VPCState: "available",
 				}), withExternalName(vpcID),
 					withConditions(runtimev1alpha1.Available())),
@@ -435,9 +435,6 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: vpc(withExternalName(vpcID),
-					withStatus(v1beta1.VPCExternalStatus{
-						VPCID: vpcID,
-					}),
 					withConditions(runtimev1alpha1.Creating())),
 			},
 		},
@@ -508,14 +505,14 @@ func TestUpdate(t *testing.T) {
 				},
 				cr: vpc(withSpec(v1beta1.VPCParameters{
 					InstanceTenancy: aws.String(tenancyDefault),
-				}), withStatus(v1beta1.VPCExternalStatus{
+				}), withStatus(v1beta1.VPCObservation{
 					VPCID: vpcID,
 				})),
 			},
 			want: want{
 				cr: vpc(withSpec(v1beta1.VPCParameters{
 					InstanceTenancy: aws.String(tenancyDefault),
-				}), withStatus(v1beta1.VPCExternalStatus{
+				}), withStatus(v1beta1.VPCObservation{
 					VPCID: vpcID,
 				})),
 			},
@@ -536,14 +533,14 @@ func TestUpdate(t *testing.T) {
 				},
 				cr: vpc(withSpec(v1beta1.VPCParameters{
 					InstanceTenancy: aws.String(tenancyDefault),
-				}), withStatus(v1beta1.VPCExternalStatus{
+				}), withStatus(v1beta1.VPCObservation{
 					VPCID: vpcID,
 				})),
 			},
 			want: want{
 				cr: vpc(withSpec(v1beta1.VPCParameters{
 					InstanceTenancy: aws.String(tenancyDefault),
-				}), withStatus(v1beta1.VPCExternalStatus{
+				}), withStatus(v1beta1.VPCObservation{
 					VPCID: vpcID,
 				})),
 				err: errors.Wrap(errBoom, errUpdate),
@@ -588,12 +585,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: vpc(withStatus(v1beta1.VPCExternalStatus{
+				cr: vpc(withStatus(v1beta1.VPCObservation{
 					VPCID: vpcID,
 				})),
 			},
 			want: want{
-				cr: vpc(withStatus(v1beta1.VPCExternalStatus{
+				cr: vpc(withStatus(v1beta1.VPCObservation{
 					VPCID: vpcID,
 				}), withConditions(runtimev1alpha1.Deleting())),
 			},
@@ -607,12 +604,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: vpc(withStatus(v1beta1.VPCExternalStatus{
+				cr: vpc(withStatus(v1beta1.VPCObservation{
 					VPCID: vpcID,
 				})),
 			},
 			want: want{
-				cr: vpc(withStatus(v1beta1.VPCExternalStatus{
+				cr: vpc(withStatus(v1beta1.VPCObservation{
 					VPCID: vpcID,
 				}), withConditions(runtimev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),

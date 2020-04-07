@@ -67,8 +67,8 @@ type SubnetSpec struct {
 	ForProvider                  SubnetParameters `json:"forProvider"`
 }
 
-// SubnetExternalStatus keeps the state for the external resource
-type SubnetExternalStatus struct {
+// SubnetObservation keeps the state for the external resource
+type SubnetObservation struct {
 	// The number of unused private IPv4 addresses in the subnet.
 	AvailableIPAddressCount int64 `json:"availableIpAddressCount,omitempty"`
 
@@ -89,7 +89,7 @@ type SubnetExternalStatus struct {
 // A SubnetStatus represents the observed state of a Subnet.
 type SubnetStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     SubnetExternalStatus `json:"atProvider"`
+	AtProvider                     SubnetObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

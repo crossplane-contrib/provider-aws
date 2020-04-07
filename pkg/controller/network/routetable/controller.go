@@ -53,12 +53,10 @@ const (
 	errCreate             = "failed to create the RouteTable resource"
 	errUpdate             = "failed to update the RouteTable"
 	errUpdateNotFound     = "cannot update the RouteTable, since the RouteTableID is not present"
-	errDeleteNotPresent   = "cannot delete the RouteTable, since the RouteTableID is not present"
 	errDelete             = "failed to delete the RouteTable resource"
 	errCreateRoute        = "failed to create a route in the RouteTable resource"
 	errAssociateSubnet    = "failed to associate subnet %v to the RouteTable resource"
 	errDisassociateSubnet = "failed to disassociate subnet %v from the RouteTable resource"
-	errStatusUpdate       = "cannot update status"
 	errSpecUpdate         = "cannot update spec"
 )
 
@@ -129,7 +127,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	// To find out whether a RouteTable exist:
 	// - the object's ExternalState should have routeTableId populated
 	// - a RouteTable with the given routeTableId should exist
-	if cr.Status.AtProvider.RouteTableID == "" {
+	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
@@ -194,13 +192,6 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errCreate)
 	}
 
-	cr.Status.AtProvider = ec2.GenerateRTObservation(*result.RouteTable)
-
-	// We need to save status before spec update so that it's not lost.
-	if err := e.kube.Status().Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
-	}
-
 	meta.SetExternalName(cr, aws.StringValue(result.RouteTable.RouteTableId))
 
 	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
@@ -213,7 +204,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	response, err := e.client.DescribeRouteTablesRequest(&awsec2.DescribeRouteTablesInput{
-		RouteTableIds: []string{cr.Status.AtProvider.RouteTableID},
+		RouteTableIds: []string{meta.GetExternalName(cr)},
 	}).Send(ctx)
 
 	if err != nil {
@@ -233,14 +224,14 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	if patch.Routes != nil {
 		// Attach the routes in Spec
-		if err := e.createRoutes(ctx, cr.Status.AtProvider.RouteTableID, cr.Spec.ForProvider.Routes, cr.Status.AtProvider.Routes); err != nil {
+		if err := e.createRoutes(ctx, meta.GetExternalName(cr), cr.Spec.ForProvider.Routes, cr.Status.AtProvider.Routes); err != nil {
 			return managed.ExternalUpdate{}, err
 		}
 	}
 
 	if patch.Associations != nil {
 		// Associate route table to subnets in Spec.
-		if err := e.createAssociations(ctx, cr.Status.AtProvider.RouteTableID, cr.Spec.ForProvider.Associations, cr.Status.AtProvider.Associations); err != nil {
+		if err := e.createAssociations(ctx, meta.GetExternalName(cr), cr.Spec.ForProvider.Associations, cr.Status.AtProvider.Associations); err != nil {
 			return managed.ExternalUpdate{}, err
 		}
 	}
@@ -254,10 +245,6 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	if cr.Status.AtProvider.RouteTableID == "" {
-		return errors.New(errDeleteNotPresent)
-	}
-
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
 	// the subnet associations have to be deleted before deleting the route table.
@@ -266,7 +253,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	}
 
 	_, err := e.client.DeleteRouteTableRequest(&awsec2.DeleteRouteTableInput{
-		RouteTableId: aws.String(cr.Status.AtProvider.RouteTableID),
+		RouteTableId: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
 	return errors.Wrap(resource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDelete)

@@ -39,7 +39,7 @@ func TestInternetGatewayIDReferencerGetStatus(t *testing.T) {
 
 	readyResource := InternetGateway{
 		Status: InternetGatewayStatus{
-			AtProvider: InternetGatewayExternalStatus{
+			AtProvider: InternetGatewayObservation{
 				InternetGatewayID: "mockInternetGatewayID",
 			},
 		},

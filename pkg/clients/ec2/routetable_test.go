@@ -81,14 +81,14 @@ func TestIsRTUpToDate(t *testing.T) {
 func TestGenerateRTObservation(t *testing.T) {
 	cases := map[string]struct {
 		in  ec2.RouteTable
-		out v1beta1.RouteTableExternalStatus
+		out v1beta1.RouteTableObservation
 	}{
 		"AllFilled": {
 			in: ec2.RouteTable{
 				OwnerId:      aws.String(rtOwner),
 				RouteTableId: aws.String(rtID),
 			},
-			out: v1beta1.RouteTableExternalStatus{
+			out: v1beta1.RouteTableObservation{
 				OwnerID:      rtOwner,
 				RouteTableID: rtID,
 			},
@@ -97,7 +97,7 @@ func TestGenerateRTObservation(t *testing.T) {
 			in: ec2.RouteTable{
 				RouteTableId: aws.String(rtID),
 			},
-			out: v1beta1.RouteTableExternalStatus{
+			out: v1beta1.RouteTableObservation{
 				RouteTableID: rtID,
 			},
 		},

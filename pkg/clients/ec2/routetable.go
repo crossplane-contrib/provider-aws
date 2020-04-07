@@ -81,8 +81,8 @@ func IsAssociationIDNotFoundErr(err error) bool {
 
 // GenerateRTObservation is used to produce v1beta1.RouteTableExternalStatus from
 // ec2.RouteTable.
-func GenerateRTObservation(rt ec2.RouteTable) v1beta1.RouteTableExternalStatus {
-	o := v1beta1.RouteTableExternalStatus{
+func GenerateRTObservation(rt ec2.RouteTable) v1beta1.RouteTableObservation {
+	o := v1beta1.RouteTableObservation{
 		OwnerID:      aws.StringValue(rt.OwnerId),
 		RouteTableID: aws.StringValue(rt.RouteTableId),
 	}

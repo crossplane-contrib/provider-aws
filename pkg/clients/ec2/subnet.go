@@ -50,8 +50,8 @@ func IsSubnetNotFoundErr(err error) bool {
 
 // GenerateSubnetObservation is used to produce v1beta1.SubnetExternalStatus from
 // ec2.Subnet
-func GenerateSubnetObservation(subnet ec2.Subnet) v1beta1.SubnetExternalStatus {
-	o := v1beta1.SubnetExternalStatus{
+func GenerateSubnetObservation(subnet ec2.Subnet) v1beta1.SubnetObservation {
+	o := v1beta1.SubnetObservation{
 		AvailableIPAddressCount: aws.Int64Value(subnet.AvailableIpAddressCount),
 		DefaultForAz:            aws.BoolValue(subnet.DefaultForAz),
 		SubnetID:                aws.StringValue(subnet.SubnetId),

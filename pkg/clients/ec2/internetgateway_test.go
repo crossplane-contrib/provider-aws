@@ -80,7 +80,7 @@ func TestIsIGUpToDate(t *testing.T) {
 func TestGenerateIGObservation(t *testing.T) {
 	cases := map[string]struct {
 		in  ec2.InternetGateway
-		out v1beta1.InternetGatewayExternalStatus
+		out v1beta1.InternetGatewayObservation
 	}{
 		"AllFilled": {
 			in: ec2.InternetGateway{
@@ -88,7 +88,7 @@ func TestGenerateIGObservation(t *testing.T) {
 				InternetGatewayId: aws.String(igID),
 				OwnerId:           aws.String(ownerID),
 			},
-			out: v1beta1.InternetGatewayExternalStatus{
+			out: v1beta1.InternetGatewayObservation{
 				Attachments:       specAttachments(),
 				InternetGatewayID: igID,
 				OwnerID:           ownerID,
@@ -99,7 +99,7 @@ func TestGenerateIGObservation(t *testing.T) {
 				Attachments:       igAttachments(),
 				InternetGatewayId: aws.String(igID),
 			},
-			out: v1beta1.InternetGatewayExternalStatus{
+			out: v1beta1.InternetGatewayObservation{
 				Attachments:       specAttachments(),
 				InternetGatewayID: igID,
 			},
