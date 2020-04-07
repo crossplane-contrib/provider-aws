@@ -119,8 +119,8 @@ func TestGenerateSubnetObservation(t *testing.T) {
 
 func TestCreateSubnetPatch(t *testing.T) {
 	type args struct {
-		subnet *ec2.Subnet
-		p      *v1beta1.SubnetParameters
+		subnet ec2.Subnet
+		p      v1beta1.SubnetParameters
 	}
 
 	type want struct {
@@ -133,13 +133,13 @@ func TestCreateSubnetPatch(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				subnet: &ec2.Subnet{
+				subnet: ec2.Subnet{
 					CidrBlock:                   aws.String(cidr),
 					VpcId:                       aws.String(vpc),
 					AssignIpv6AddressOnCreation: aws.Bool(true),
 					MapPublicIpOnLaunch:         aws.Bool(true),
 				},
-				p: &v1beta1.SubnetParameters{
+				p: v1beta1.SubnetParameters{
 					CIDRBlock:                   cidr,
 					VPCID:                       vpc,
 					AssignIpv6AddressOnCreation: aws.Bool(true),
@@ -152,13 +152,13 @@ func TestCreateSubnetPatch(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				subnet: &ec2.Subnet{
+				subnet: ec2.Subnet{
 					CidrBlock:                   aws.String(cidr),
 					VpcId:                       aws.String(vpc),
 					AssignIpv6AddressOnCreation: aws.Bool(true),
 					MapPublicIpOnLaunch:         aws.Bool(false),
 				},
-				p: &v1beta1.SubnetParameters{
+				p: v1beta1.SubnetParameters{
 					CIDRBlock:                   cidr,
 					VPCID:                       vpc,
 					AssignIpv6AddressOnCreation: aws.Bool(true),

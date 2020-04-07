@@ -58,6 +58,7 @@ const (
 	errAssociateSubnet    = "failed to associate subnet %v to the RouteTable resource"
 	errDisassociateSubnet = "failed to disassociate subnet %v from the RouteTable resource"
 	errSpecUpdate         = "cannot update spec"
+	errCreateTags         = "failed to create tags for the RouteTable resource"
 )
 
 // SetupRouteTable adds a controller that reconciles RouteTables.
@@ -108,8 +109,8 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetProviderSecret)
 	}
 
-	rdsClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: rdsClient, kube: c.client}, errors.Wrap(err, errClient)
+	rtClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
+	return &external{client: rtClient, kube: c.client}, errors.Wrap(err, errClient)
 }
 
 type external struct {
@@ -197,7 +198,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
 }
 
-func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
 	cr, ok := mgd.(*v1beta1.RouteTable)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
@@ -217,9 +218,19 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	table := response.RouteTables[0]
 
-	patch, err := ec2.CreateRTPatch(&table, cr.Spec.ForProvider)
+	patch, err := ec2.CreateRTPatch(table, cr.Spec.ForProvider)
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	}
+
+	if len(patch.Tags) != 0 {
+		// tagging the RouteTable
+		if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+			Resources: []string{meta.GetExternalName(cr)},
+			Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+		}).Send(ctx); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errCreateTags)
+		}
 	}
 
 	if patch.Routes != nil {

@@ -23,6 +23,7 @@ type InternetGatewayClient interface {
 	DescribeInternetGatewaysRequest(input *ec2.DescribeInternetGatewaysInput) ec2.DescribeInternetGatewaysRequest
 	AttachInternetGatewayRequest(input *ec2.AttachInternetGatewayInput) ec2.AttachInternetGatewayRequest
 	DetachInternetGatewayRequest(input *ec2.DetachInternetGatewayInput) ec2.DetachInternetGatewayRequest
+	CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest
 }
 
 // NewInternetGatewayClient returns a new client using AWS credentials as JSON encoded data.
@@ -66,16 +67,20 @@ func GenerateIGObservation(ig ec2.InternetGateway) v1beta1.InternetGatewayObserv
 // IsIgUpToDate checks whether there is a change in any of the modifiable fields.
 func IsIgUpToDate(p v1beta1.InternetGatewayParameters, ig ec2.InternetGateway) bool {
 	attachments := ig.Attachments
+	upToDate := false
 
 	// if there are no attachments for obsreved IG and in spec.
 	if len(attachments) == 0 && p.VPCID == "" {
-		return true
+		upToDate = true
 	}
 
+	// if the attachment in spec exists in ig.Attachments(if any).
 	for _, a := range attachments {
 		if p.VPCID == aws.StringValue(a.VpcId) {
-			return true
+			upToDate = true
+			break
 		}
 	}
-	return false
+
+	return upToDate && v1beta1.CompareTags(p.Tags, ig.Tags)
 }

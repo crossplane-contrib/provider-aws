@@ -115,7 +115,7 @@ func TestGenerateRTObservation(t *testing.T) {
 
 func TestCreateRTPatch(t *testing.T) {
 	type args struct {
-		rt *ec2.RouteTable
+		rt ec2.RouteTable
 		p  *v1beta1.RouteTableParameters
 	}
 
@@ -129,7 +129,7 @@ func TestCreateRTPatch(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				rt: &ec2.RouteTable{
+				rt: ec2.RouteTable{
 					Associations: rtAssociations(),
 					VpcId:        aws.String(vpcID),
 				},
@@ -144,7 +144,7 @@ func TestCreateRTPatch(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				rt: &ec2.RouteTable{
+				rt: ec2.RouteTable{
 					Associations: rtAssociations(),
 					VpcId:        aws.String(rtVPC),
 				},

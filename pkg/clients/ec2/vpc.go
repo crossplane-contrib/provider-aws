@@ -50,6 +50,7 @@ func IsVPCNotFoundErr(err error) bool {
 // IsVpcUpToDate returns true if there is no update-able difference between desired
 // and observed state of the resource.
 func IsVpcUpToDate(spec v1beta1.VPCParameters, o ec2.Vpc) bool {
+	v1beta1.SortTags(spec.Tags, o.Tags)
 	actual := v1beta1.BuildFromEC2Tags(o.Tags)
 	return cmp.Equal(spec.Tags, actual) && (aws.StringValue(spec.InstanceTenancy) == string(o.InstanceTenancy))
 }

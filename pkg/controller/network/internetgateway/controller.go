@@ -55,6 +55,7 @@ const (
 	errDelete              = "failed to delete the InternetGateway resource"
 	errUpdate              = "failed to update the InternetGateway resource"
 	errSpecUpdate          = "cannot update spec"
+	errCreateTags          = "failed to create tags for the InternetGateway resource"
 )
 
 // SetupInternetGateway adds a controller that reconciles InternetGateways.
@@ -175,6 +176,14 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	cr, ok := mgd.(*v1beta1.InternetGateway)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+
+	// Tagging the created InternetGateway
+	if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+		Resources: []string{meta.GetExternalName(cr)},
+		Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+	}).Send(ctx); err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errCreateTags)
 	}
 
 	response, err := e.client.DescribeInternetGatewaysRequest(&awsec2.DescribeInternetGatewaysInput{

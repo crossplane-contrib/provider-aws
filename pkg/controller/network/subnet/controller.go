@@ -43,11 +43,11 @@ import (
 
 const (
 	errUnexpectedObject = "The managed resource is not an Subnet resource"
-	errKubeUpdateFailed = "cannot update RDS instance custom resource"
+	errKubeUpdateFailed = "cannot update Subnet custom resource"
 
-	errCreateRDSClient   = "cannot create RDS client"
-	errGetProvider       = "cannot get provider"
-	errGetProviderSecret = "cannot get provider secret"
+	errCreateSubnetClient = "cannot create Subnet client"
+	errGetProvider        = "cannot get provider"
+	errGetProviderSecret  = "cannot get provider secret"
 
 	errDescribe      = "failed to describe Subnet"
 	errMultipleItems = "retrieved multiple Subnets"
@@ -55,6 +55,7 @@ const (
 	errDelete        = "failed to delete the Subnet resource"
 	errUpdate        = "failed to update the Subnet resource"
 	errSpecUpdate    = "cannot update spec"
+	errCreateTags    = "failed to create tags for the Subnet resource"
 )
 
 // SetupSubnet adds a controller that reconciles Subnets.
@@ -91,7 +92,7 @@ func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (manag
 
 	if aws.BoolValue(p.Spec.UseServiceAccount) {
 		subnetClient, err := conn.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{client: subnetClient, kube: conn.client}, errors.Wrap(err, errCreateRDSClient)
+		return &external{client: subnetClient, kube: conn.client}, errors.Wrap(err, errCreateSubnetClient)
 	}
 
 	if p.GetCredentialsSecretReference() == nil {
@@ -105,7 +106,7 @@ func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (manag
 	}
 
 	subnetClient, err := conn.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: subnetClient, kube: conn.client}, errors.Wrap(err, errCreateRDSClient)
+	return &external{client: subnetClient, kube: conn.client}, errors.Wrap(err, errCreateSubnetClient)
 }
 
 type external struct {
@@ -210,9 +211,18 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUpdate)
 	}
 
-	patch, err := ec2.CreateSubnetPatch(&response.Subnets[0], &cr.Spec.ForProvider)
+	patch, err := ec2.CreateSubnetPatch(response.Subnets[0], cr.Spec.ForProvider)
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.New(errUpdate)
+	}
+
+	if len(patch.Tags) != 0 {
+		if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+			Resources: []string{meta.GetExternalName(cr)},
+			Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+		}).Send(ctx); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errCreateTags)
+		}
 	}
 
 	if patch.MapPublicIPOnLaunch != nil {

@@ -75,6 +75,15 @@ type AssociationState struct {
 
 // RouteTableParameters define the desired state of an AWS VPC Route Table.
 type RouteTableParameters struct {
+	// The associations between the route table and one or more subnets.
+	Associations []Association `json:"associations"`
+
+	// the routes in the route table
+	Routes []Route `json:"routes"`
+
+	// Tags represents to current ec2 tags.
+	Tags []Tag `json:"tags,omitempty"`
+
 	// VPCID is the ID of the VPC.
 	// +immutable
 	VPCID string `json:"vpcId"`
@@ -84,12 +93,6 @@ type RouteTableParameters struct {
 
 	// VPCIDSelector selects a reference to a VPC to retrieve its vpcId
 	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
-
-	// the routes in the route table
-	Routes []Route `json:"routes"`
-
-	// The associations between the route table and one or more subnets.
-	Associations []Association `json:"associations"`
 }
 
 // A RouteTableSpec defines the desired state of a RouteTable.

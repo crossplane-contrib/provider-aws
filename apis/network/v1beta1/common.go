@@ -17,6 +17,8 @@ limitations under the License.
 package v1beta1
 
 import (
+	"sort"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 )
@@ -101,4 +103,32 @@ func BuildIPPermissions(objectPerms []ec2.IpPermission) []IPPermission {
 	}
 
 	return permissions
+}
+
+// CompareTags compares arrays of v1beta1.Tag and ec2.Tag
+func CompareTags(tags []Tag, ec2Tags []ec2.Tag) bool {
+	if len(tags) != len(ec2Tags) {
+		return false
+	}
+
+	SortTags(tags, ec2Tags)
+
+	for i, t := range tags {
+		if t.Key != *ec2Tags[i].Key || t.Value != *ec2Tags[i].Value {
+			return false
+		}
+	}
+
+	return true
+}
+
+// SortTags sorts array of v1beta1.Tag and ec2.Tag on 'Key'
+func SortTags(tags []Tag, ec2Tags []ec2.Tag) {
+	sort.Slice(tags, func(i, j int) bool {
+		return tags[i].Key < tags[j].Key
+	})
+
+	sort.Slice(ec2Tags, func(i, j int) bool {
+		return *ec2Tags[i].Key < *ec2Tags[j].Key
+	})
 }

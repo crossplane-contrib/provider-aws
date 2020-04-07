@@ -514,6 +514,11 @@ func TestUpdate(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DetachInternetGatewayOutput{}},
 						}
 					},
+					MockCreateTags: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
+						return awsec2.CreateTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateTagsOutput{}},
+						}
+					},
 				},
 				cr: ig(withSpec(v1beta1.InternetGatewayParameters{
 					VPCID: anotherVpcID,
@@ -551,6 +556,11 @@ func TestUpdate(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DetachInternetGatewayOutput{}},
 						}
 					},
+					MockCreateTags: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
+						return awsec2.CreateTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateTagsOutput{}},
+						}
+					},
 				},
 				cr: ig(withStatus(v1beta1.InternetGatewayObservation{
 					InternetGatewayID: igID,
@@ -577,6 +587,11 @@ func TestUpdate(t *testing.T) {
 					MockDetach: func(input *awsec2.DetachInternetGatewayInput) awsec2.DetachInternetGatewayRequest {
 						return awsec2.DetachInternetGatewayRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+					MockCreateTags: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
+						return awsec2.CreateTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateTagsOutput{}},
 						}
 					},
 				},
@@ -696,34 +711,34 @@ func TestDelete(t *testing.T) {
 				err: errors.Wrap(errBoom, errDetach),
 			},
 		},
-		// "DeleteFail": {
-		// 	args: args{
-		// 		ig: &fake.MockInternetGatewayClient{
-		// 			MockDelete: func(input *awsec2.DeleteInternetGatewayInput) awsec2.DeleteInternetGatewayRequest {
-		// 				return awsec2.DeleteInternetGatewayRequest{
-		// 					Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-		// 				}
-		// 			},
-		// 			MockDetach: func(input *awsec2.DetachInternetGatewayInput) awsec2.DetachInternetGatewayRequest {
-		// 				return awsec2.DetachInternetGatewayRequest{
-		// 					Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DetachInternetGatewayOutput{}},
-		// 				}
-		// 			},
-		// 		},
-		// 		cr: ig(withStatus(v1beta1.InternetGatewayObservation{
-		// 			InternetGatewayID: igID,
-		// 			Attachments:       specAttachments(),
-		// 		}), withExternalName(igID)),
-		// 	},
-		// 	want: want{
-		// 		cr: ig(withStatus(v1beta1.InternetGatewayObservation{
-		// 			InternetGatewayID: igID,
-		// 			Attachments:       specAttachments(),
-		// 		}), withExternalName(igID),
-		// 			withConditions(runtimev1alpha1.Deleting())),
-		// 		err: errors.Wrap(errBoom, errDelete),
-		// 	},
-		// },
+		"DeleteFail": {
+			args: args{
+				ig: &fake.MockInternetGatewayClient{
+					MockDelete: func(input *awsec2.DeleteInternetGatewayInput) awsec2.DeleteInternetGatewayRequest {
+						return awsec2.DeleteInternetGatewayRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+					MockDetach: func(input *awsec2.DetachInternetGatewayInput) awsec2.DetachInternetGatewayRequest {
+						return awsec2.DetachInternetGatewayRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DetachInternetGatewayOutput{}},
+						}
+					},
+				},
+				cr: ig(withStatus(v1beta1.InternetGatewayObservation{
+					InternetGatewayID: igID,
+					Attachments:       specAttachments(),
+				}), withExternalName(igID)),
+			},
+			want: want{
+				cr: ig(withStatus(v1beta1.InternetGatewayObservation{
+					InternetGatewayID: igID,
+					Attachments:       specAttachments(),
+				}), withExternalName(igID),
+					withConditions(runtimev1alpha1.Deleting())),
+				err: errors.Wrap(errBoom, errDelete),
+			},
+		},
 	}
 
 	for name, tc := range cases {

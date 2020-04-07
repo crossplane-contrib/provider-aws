@@ -38,6 +38,7 @@ type RouteTableClient interface {
 	DeleteRouteRequest(*ec2.DeleteRouteInput) ec2.DeleteRouteRequest
 	AssociateRouteTableRequest(*ec2.AssociateRouteTableInput) ec2.AssociateRouteTableRequest
 	DisassociateRouteTableRequest(*ec2.DisassociateRouteTableInput) ec2.DisassociateRouteTableRequest
+	CreateTagsRequest(*ec2.CreateTagsInput) ec2.CreateTagsRequest
 }
 
 // NewRouteTableClient returns a new client using AWS credentials as JSON encoded data.
@@ -142,14 +143,20 @@ func LateInitializeRT(in *v1beta1.RouteTableParameters, rt *ec2.RouteTable) { //
 			}
 		}
 	}
+
+	if len(in.Tags) == 0 && len(rt.Tags) != 0 {
+		in.Tags = v1beta1.BuildFromEC2Tags(rt.Tags)
+	}
 }
 
 // CreateRTPatch creates a *v1beta1.RouteTableParameters that has only the changed
 // values between the target *v1beta1.RouteTableParameters and the current
 // *ec2.RouteTable
-func CreateRTPatch(in *ec2.RouteTable, target v1beta1.RouteTableParameters) (*v1beta1.RouteTableParameters, error) {
+func CreateRTPatch(in ec2.RouteTable, target v1beta1.RouteTableParameters) (*v1beta1.RouteTableParameters, error) {
 	currentParams := &v1beta1.RouteTableParameters{}
-	LateInitializeRT(currentParams, in)
+
+	v1beta1.SortTags(target.Tags, in.Tags)
+	LateInitializeRT(currentParams, &in)
 
 	// Add the default route for fair comparison.
 	for _, val := range in.Routes {
@@ -174,7 +181,7 @@ func CreateRTPatch(in *ec2.RouteTable, target v1beta1.RouteTableParameters) (*v1
 
 // IsRtUpToDate checks whether there is a change in any of the modifiable fields.
 func IsRtUpToDate(p v1beta1.RouteTableParameters, rt ec2.RouteTable) (bool, error) {
-	patch, err := CreateRTPatch(&rt, p)
+	patch, err := CreateRTPatch(rt, p)
 	if err != nil {
 		return false, err
 	}
