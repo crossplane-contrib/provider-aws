@@ -26,6 +26,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/applicationintegration/sqs"
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
+	"github.com/crossplane/provider-aws/pkg/controller/cache/cluster"
 	"github.com/crossplane/provider-aws/pkg/controller/compute"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
@@ -59,6 +60,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		cache.SetupReplicationGroupClaimBinding,
 		cache.SetupReplicationGroup,
 		cachesubnetgroup.SetupCacheSubnetGroup,
+		cluster.SetupCacheCluster,
 		compute.SetupEKSClusterClaimScheduling,
 		compute.SetupEKSClusterClaimDefaulting,
 		compute.SetupEKSClusterClaimBinding,
