@@ -246,7 +246,7 @@ spec:
             InternetGateway.
           properties:
             atProvider:
-              description: InternetGatewayExternalStatus keeps the state for the external
+              description: InternetGatewayObservation keeps the state for the external
                 resource
               properties:
                 attachments:

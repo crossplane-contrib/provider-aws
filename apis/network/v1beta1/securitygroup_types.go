@@ -201,8 +201,8 @@ type SecurityGroupSpec struct {
 	ForProvider                  SecurityGroupParameters `json:"forProvider"`
 }
 
-// SecurityGroupExternalStatus keeps the state for the external resource
-type SecurityGroupExternalStatus struct {
+// SecurityGroupObservation keeps the state for the external resource
+type SecurityGroupObservation struct {
 	// The AWS account ID of the owner of the security group.
 	OwnerID string `json:"ownerId"`
 
@@ -216,7 +216,7 @@ type SecurityGroupExternalStatus struct {
 // A SecurityGroupStatus represents the observed state of a SecurityGroup.
 type SecurityGroupStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     SecurityGroupExternalStatus `json:"atProvider"`
+	AtProvider                     SecurityGroupObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

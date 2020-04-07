@@ -77,7 +77,7 @@ func withSpec(p v1beta1.RouteTableParameters) rtModifier {
 	return func(r *v1beta1.RouteTable) { r.Spec.ForProvider = p }
 }
 
-func withStatus(s v1beta1.RouteTableExternalStatus) rtModifier {
+func withStatus(s v1beta1.RouteTableObservation) rtModifier {
 	return func(r *v1beta1.RouteTable) { r.Status.AtProvider = s }
 }
 
@@ -292,14 +292,12 @@ func TestObserve(t *testing.T) {
 				},
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					VPCID: vpcID,
-				}), withStatus(v1beta1.RouteTableExternalStatus{
-					RouteTableID: rtID,
-				})),
+				}), withExternalName(rtID)),
 			},
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					VPCID: vpcID,
-				}), withConditions(runtimev1alpha1.Available())),
+				}), withExternalName(rtID), withConditions(runtimev1alpha1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -317,14 +315,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
-					RouteTableID: rtID,
-				})),
+				cr: rt(withExternalName(rtID)),
 			},
 			want: want{
-				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
-					RouteTableID: rtID,
-				})),
+				cr:  rt(withExternalName(rtID)),
 				err: errors.New(errMultipleItems),
 			},
 		},
@@ -337,14 +331,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
-					RouteTableID: rtID,
-				})),
+				cr: rt(withExternalName(rtID)),
 			},
 			want: want{
-				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
-					RouteTableID: rtID,
-				})),
+				cr:  rt(withExternalName(rtID)),
 				err: errors.Wrap(errBoom, errDescribe),
 			},
 		},
@@ -401,8 +391,6 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					VPCID: vpcID,
-				}), withStatus(v1beta1.RouteTableExternalStatus{
-					RouteTableID: rtID,
 				}), withExternalName(rtID),
 					withConditions(runtimev1alpha1.Creating())),
 			},
@@ -422,12 +410,12 @@ func TestCreate(t *testing.T) {
 				},
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					VPCID: vpcID,
-				})),
+				}), withExternalName(rtID)),
 			},
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					VPCID: vpcID,
-				}), withConditions(runtimev1alpha1.Creating())),
+				}), withExternalName(rtID), withConditions(runtimev1alpha1.Creating())),
 				err: errors.New(errCreate),
 			},
 		},
@@ -515,7 +503,7 @@ func TestUpdate(t *testing.T) {
 						SubnetID: subnetID,
 					}},
 				}),
-					withStatus(v1beta1.RouteTableExternalStatus{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
@@ -528,7 +516,7 @@ func TestUpdate(t *testing.T) {
 						SubnetID: subnetID,
 					}},
 				}),
-					withStatus(v1beta1.RouteTableExternalStatus{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
@@ -554,7 +542,7 @@ func TestUpdate(t *testing.T) {
 						GatewayID: igID,
 					}},
 				}),
-					withStatus(v1beta1.RouteTableExternalStatus{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
@@ -564,7 +552,7 @@ func TestUpdate(t *testing.T) {
 						GatewayID: igID,
 					}},
 				}),
-					withStatus(v1beta1.RouteTableExternalStatus{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 				err: errors.Wrap(errBoom, errCreateRoute),
@@ -609,12 +597,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
+				cr: rt(withStatus(v1beta1.RouteTableObservation{
 					RouteTableID: rtID,
 				})),
 			},
 			want: want{
-				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
+				cr: rt(withStatus(v1beta1.RouteTableObservation{
 					RouteTableID: rtID,
 				}), withConditions(runtimev1alpha1.Deleting())),
 			},
@@ -628,12 +616,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
+				cr: rt(withStatus(v1beta1.RouteTableObservation{
 					RouteTableID: rtID,
 				})),
 			},
 			want: want{
-				cr: rt(withStatus(v1beta1.RouteTableExternalStatus{
+				cr: rt(withStatus(v1beta1.RouteTableObservation{
 					RouteTableID: rtID,
 				}), withConditions(runtimev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),

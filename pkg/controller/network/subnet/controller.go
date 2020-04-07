@@ -49,14 +49,12 @@ const (
 	errGetProvider       = "cannot get provider"
 	errGetProviderSecret = "cannot get provider secret"
 
-	errDescribe         = "failed to describe Subnet"
-	errMultipleItems    = "retrieved multiple Subnets"
-	errCreate           = "failed to create the Subnet resource"
-	errDeleteNotPresent = "cannot delete the Subnet, since the SubnetId is not present"
-	errDelete           = "failed to delete the Subnet resource"
-	errUpdate           = "failed to update the Subnet resource"
-	errSpecUpdate       = "cannot update spec"
-	errStatusUpdate     = "cannot update status"
+	errDescribe      = "failed to describe Subnet"
+	errMultipleItems = "retrieved multiple Subnets"
+	errCreate        = "failed to create the Subnet resource"
+	errDelete        = "failed to delete the Subnet resource"
+	errUpdate        = "failed to update the Subnet resource"
+	errSpecUpdate    = "cannot update spec"
 )
 
 // SetupSubnet adds a controller that reconciles Subnets.
@@ -121,10 +119,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	// To find out whether a Subnet exist:
-	// - the object's ExternalState should have subnetId populated
-	// - a Subnet with the given subnetId should exist
-	if cr.Status.AtProvider.SubnetID == "" {
+	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
@@ -192,13 +187,6 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 
-	cr.Status.AtProvider = ec2.GenerateSubnetObservation(*result.Subnet)
-
-	// We need to save status before spec update so that it's not lost.
-	if err := e.kube.Status().Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
-	}
-
 	meta.SetExternalName(cr, aws.StringValue(result.Subnet.SubnetId))
 
 	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
@@ -211,7 +199,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	response, err := e.client.DescribeSubnetsRequest(&awsec2.DescribeSubnetsInput{
-		SubnetIds: []string{cr.Status.AtProvider.SubnetID},
+		SubnetIds: []string{meta.GetExternalName(cr)},
 	}).Send(ctx)
 
 	if err != nil {
@@ -232,7 +220,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			MapPublicIpOnLaunch: &awsec2.AttributeBooleanValue{
 				Value: cr.Spec.ForProvider.MapPublicIPOnLaunch,
 			},
-			SubnetId: aws.String(cr.Status.AtProvider.SubnetID),
+			SubnetId: aws.String(meta.GetExternalName(cr)),
 		}).Send((ctx))
 		if err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
@@ -244,7 +232,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			AssignIpv6AddressOnCreation: &awsec2.AttributeBooleanValue{
 				Value: cr.Spec.ForProvider.AssignIpv6AddressOnCreation,
 			},
-			SubnetId: aws.String(cr.Status.AtProvider.SubnetID),
+			SubnetId: aws.String(meta.GetExternalName(cr)),
 		}).Send((ctx))
 
 	}
@@ -258,14 +246,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	if cr.Status.AtProvider.SubnetID == "" {
-		return errors.New(errDeleteNotPresent)
-	}
-
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
 	_, err := e.client.DeleteSubnetRequest(&awsec2.DeleteSubnetInput{
-		SubnetId: aws.String(cr.Status.AtProvider.SubnetID),
+		SubnetId: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
 	return errors.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDelete)

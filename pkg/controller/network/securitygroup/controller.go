@@ -56,10 +56,8 @@ const (
 	errAuthorizeIngress = "failed to authorize ingress rules"
 	errAuthorizeEgress  = "failed to authorize egress rules"
 	errDelete           = "failed to delete the SecurityGroup resource"
-	errStatusUpdate     = "cannot update status"
 	errSpecUpdate       = "cannot update spec"
 	errUpdate           = "failed to update the SecurityGroup resource"
-	errDeleteNotPresent = "cannot find Security Group to delete"
 )
 
 // SetupSecurityGroup adds a controller that reconciles SecurityGroups.
@@ -124,6 +122,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
+
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{}, nil
 	}
@@ -187,28 +186,9 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errCreate)
 	}
 
-	// SecurityGroupID received after creation is needed for describing a secuity group
-	// Setting cr.Status.AtProvider.SecurityGroupID here.
-	cr.Status.AtProvider = ec2.GenerateSGObservation(awsec2.SecurityGroup{
-		GroupId: result.GroupId,
-	})
+	meta.SetExternalName(cr, aws.StringValue(result.GroupId))
 
-	// We need to save status before spec update so that it's not lost.
-	if err := e.kube.Status().Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
-	}
-
-	// NOTE(muvaf): GroupID is used as external name instead of GroupName because
-	// there are cases where only GroupID is accepted as identifier.
-	meta.SetExternalName(cr, aws.StringValue(rsp.GroupId))
-	if err := e.kube.Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errPersistExternalName)
-	}
-
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-	cr.UpdateExternalStatus(awsec2.SecurityGroup{GroupId: rsp.GroupId})
-
-	return managed.ExternalCreation{}, nil
+	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
@@ -218,7 +198,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	response, err := e.sg.DescribeSecurityGroupsRequest(&awsec2.DescribeSecurityGroupsInput{
-		GroupIds: []string{cr.Status.AtProvider.SecurityGroupID},
+		GroupIds: []string{meta.GetExternalName(cr)},
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errDescribe)
@@ -231,7 +211,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	if patch.Ingress != nil {
 		if _, err := e.sg.AuthorizeSecurityGroupIngressRequest(&awsec2.AuthorizeSecurityGroupIngressInput{
-			GroupId:       aws.String(cr.Status.AtProvider.SecurityGroupID),
+			GroupId:       aws.String(meta.GetExternalName(cr)),
 			IpPermissions: v1beta1.BuildEC2Permissions(cr.Spec.ForProvider.Ingress),
 		}).Send(ctx); err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errAuthorizeIngress)
@@ -240,7 +220,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	if patch.Egress != nil {
 		if _, err = e.sg.AuthorizeSecurityGroupEgressRequest(&awsec2.AuthorizeSecurityGroupEgressInput{
-			GroupId:       aws.String(cr.Status.AtProvider.SecurityGroupID),
+			GroupId:       aws.String(meta.GetExternalName(cr)),
 			IpPermissions: v1beta1.BuildEC2Permissions(cr.Spec.ForProvider.Egress),
 		}).Send(ctx); err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errAuthorizeEgress)
@@ -256,14 +236,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	if cr.Status.AtProvider.SecurityGroupID == "" {
-		return errors.New(errDeleteNotPresent)
-	}
-
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
 	_, err := e.sg.DeleteSecurityGroupRequest(&awsec2.DeleteSecurityGroupInput{
-		GroupId: aws.String(cr.Status.AtProvider.SecurityGroupID),
+		GroupId: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
 	return errors.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errDelete)

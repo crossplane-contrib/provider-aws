@@ -104,7 +104,7 @@ func withSpec(p v1beta1.SecurityGroupParameters) sgModifier {
 	return func(r *v1beta1.SecurityGroup) { r.Spec.ForProvider = p }
 }
 
-func withStatus(s v1beta1.SecurityGroupExternalStatus) sgModifier {
+func withStatus(s v1beta1.SecurityGroupObservation) sgModifier {
 	return func(r *v1beta1.SecurityGroup) { r.Status.AtProvider = s }
 }
 
@@ -315,7 +315,7 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: sg(withStatus(v1beta1.SecurityGroupExternalStatus{
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
 					SecurityGroupID: sgID,
 				}),
 					withExternalName(sgID)),
@@ -340,13 +340,13 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: sg(withStatus(v1beta1.SecurityGroupExternalStatus{
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
 					SecurityGroupID: sgID,
 				}),
 					withExternalName(sgID)),
 			},
 			want: want{
-				cr: sg(withStatus(v1beta1.SecurityGroupExternalStatus{
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
 					SecurityGroupID: sgID,
 				}),
 					withExternalName(sgID)),
@@ -362,13 +362,13 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: sg(withStatus(v1beta1.SecurityGroupExternalStatus{
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
 					SecurityGroupID: sgID,
 				}),
 					withExternalName(sgID)),
 			},
 			want: want{
-				cr: sg(withStatus(v1beta1.SecurityGroupExternalStatus{
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
 					SecurityGroupID: sgID,
 				}),
 					withExternalName(sgID)),
@@ -424,9 +424,7 @@ func TestCreate(t *testing.T) {
 				cr: sg(),
 			},
 			want: want{
-				cr: sg(withStatus(v1beta1.SecurityGroupExternalStatus{
-					SecurityGroupID: sgID,
-				}), withExternalName(sgID),
+				cr: sg(withExternalName(sgID),
 					withConditions(runtimev1alpha1.Creating())),
 			},
 		},
@@ -505,7 +503,7 @@ func TestUpdate(t *testing.T) {
 					Ingress: specPermissions(),
 					Egress:  specPermissions(),
 				}),
-					withStatus(v1beta1.SecurityGroupExternalStatus{
+					withStatus(v1beta1.SecurityGroupObservation{
 						SecurityGroupID: sgID,
 					})),
 			},
@@ -514,7 +512,7 @@ func TestUpdate(t *testing.T) {
 					Ingress: specPermissions(),
 					Egress:  specPermissions(),
 				}),
-					withStatus(v1beta1.SecurityGroupExternalStatus{
+					withStatus(v1beta1.SecurityGroupObservation{
 						SecurityGroupID: sgID,
 					})),
 			},
@@ -542,7 +540,7 @@ func TestUpdate(t *testing.T) {
 					Ingress: specPermissions(),
 					Egress:  specPermissions(),
 				}),
-					withStatus(v1beta1.SecurityGroupExternalStatus{
+					withStatus(v1beta1.SecurityGroupObservation{
 						SecurityGroupID: sgID,
 					})),
 			},
@@ -551,7 +549,7 @@ func TestUpdate(t *testing.T) {
 					Ingress: specPermissions(),
 					Egress:  specPermissions(),
 				}),
-					withStatus(v1beta1.SecurityGroupExternalStatus{
+					withStatus(v1beta1.SecurityGroupObservation{
 						SecurityGroupID: sgID,
 					})),
 				err: errors.Wrap(errBoom, errAuthorizeIngress),
@@ -596,12 +594,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: sg(withStatus(v1beta1.SecurityGroupExternalStatus{
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
 					SecurityGroupID: sgID,
 				})),
 			},
 			want: want{
-				cr: sg(withStatus(v1beta1.SecurityGroupExternalStatus{
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
 					SecurityGroupID: sgID,
 				}), withConditions(runtimev1alpha1.Deleting())),
 			},
@@ -618,8 +616,7 @@ func TestDelete(t *testing.T) {
 				cr: sg(),
 			},
 			want: want{
-				cr:  sg(),
-				err: errors.New(errDeleteNotPresent),
+				cr: sg(withConditions(runtimev1alpha1.Deleting())),
 			},
 		},
 		"DeleteFailure": {
@@ -631,12 +628,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: sg(withStatus(v1beta1.SecurityGroupExternalStatus{
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
 					SecurityGroupID: sgID,
 				})),
 			},
 			want: want{
-				cr: sg(withStatus(v1beta1.SecurityGroupExternalStatus{
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
 					SecurityGroupID: sgID,
 				}), withConditions(runtimev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),

@@ -40,7 +40,7 @@ func TestSecurityGroupIDReferencerGetStatus(t *testing.T) {
 
 	readyResource := SecurityGroup{
 		Status: SecurityGroupStatus{
-			AtProvider: SecurityGroupExternalStatus{
+			AtProvider: SecurityGroupObservation{
 				SecurityGroupID: "mockSecurityGroupID",
 			},
 		},

@@ -47,7 +47,7 @@ func IsInternetGatewayNotFoundErr(err error) bool {
 
 // GenerateIGObservation is used to produce v1beta1.InternetGatewayExternalStatus from
 // ec2.InternetGateway.
-func GenerateIGObservation(ig ec2.InternetGateway) v1beta1.InternetGatewayExternalStatus {
+func GenerateIGObservation(ig ec2.InternetGateway) v1beta1.InternetGatewayObservation {
 	attachments := make([]v1beta1.InternetGatewayAttachment, len(ig.Attachments))
 	for k, a := range ig.Attachments {
 		attachments[k] = v1beta1.InternetGatewayAttachment{
@@ -56,7 +56,7 @@ func GenerateIGObservation(ig ec2.InternetGateway) v1beta1.InternetGatewayExtern
 		}
 	}
 
-	return v1beta1.InternetGatewayExternalStatus{
+	return v1beta1.InternetGatewayObservation{
 		InternetGatewayID: aws.StringValue(ig.InternetGatewayId),
 		Attachments:       attachments,
 		OwnerID:           aws.StringValue(ig.OwnerId),
@@ -72,8 +72,8 @@ func IsIgUpToDate(p v1beta1.InternetGatewayParameters, ig ec2.InternetGateway) b
 		return true
 	}
 
-	for _, ig := range attachments {
-		if p.VPCID == aws.StringValue(ig.VpcId) {
+	for _, a := range attachments {
+		if p.VPCID == aws.StringValue(a.VpcId) {
 			return true
 		}
 	}

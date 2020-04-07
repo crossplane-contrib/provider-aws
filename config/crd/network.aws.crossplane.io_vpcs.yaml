@@ -252,7 +252,7 @@ spec:
           description: A VPCStatus represents the observed state of a VPC.
           properties:
             atProvider:
-              description: VPCExternalStatus keeps the state for the external resource
+              description: VPCObservation keeps the state for the external resource
               properties:
                 isDefault:
                   description: Indicates whether the VPC is the default VPC.

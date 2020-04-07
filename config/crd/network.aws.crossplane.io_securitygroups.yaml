@@ -543,7 +543,7 @@ spec:
           description: A SecurityGroupStatus represents the observed state of a SecurityGroup.
           properties:
             atProvider:
-              description: SecurityGroupExternalStatus keeps the state for the external
+              description: SecurityGroupObservation keeps the state for the external
                 resource
               properties:
                 ownerId:

@@ -19,7 +19,7 @@ var (
 func TestGenerateVPCObservation(t *testing.T) {
 	cases := map[string]struct {
 		in  ec2.Vpc
-		out v1beta1.VPCExternalStatus
+		out v1beta1.VPCObservation
 	}{
 		"AllFilled": {
 			in: ec2.Vpc{
@@ -28,7 +28,7 @@ func TestGenerateVPCObservation(t *testing.T) {
 				VpcId:     aws.String(vpcID),
 				State:     ec2.VpcStateAvailable,
 			},
-			out: v1beta1.VPCExternalStatus{
+			out: v1beta1.VPCObservation{
 				IsDefault: boolFalse,
 				OwnerID:   vpcOwner,
 				VPCID:     vpcID,
@@ -41,7 +41,7 @@ func TestGenerateVPCObservation(t *testing.T) {
 				VpcId:     aws.String(vpcID),
 				State:     ec2.VpcStateAvailable,
 			},
-			out: v1beta1.VPCExternalStatus{
+			out: v1beta1.VPCObservation{
 				IsDefault: boolFalse,
 				VPCID:     vpcID,
 				VPCState:  vpcStateAvailable,
