@@ -171,6 +171,22 @@ spec:
                   description: Indicates whether instances launched in this subnet
                     receive a public IPv4 address.
                   type: boolean
+                tags:
+                  description: Tags represents to current ec2 tags.
+                  items:
+                    description: Tag defines a tag
+                    properties:
+                      key:
+                        description: Key is the name of the tag.
+                        type: string
+                      value:
+                        description: Value is the value of the tag.
+                        type: string
+                    required:
+                    - key
+                    - value
+                    type: object
+                  type: array
                 vpcId:
                   description: VPCID is the ID of the VPC.
                   type: string
@@ -299,22 +315,6 @@ spec:
                   - pending
                   - available
                   type: string
-                tags:
-                  description: Tags represents to current ec2 tags.
-                  items:
-                    description: Tag defines a tag
-                    properties:
-                      key:
-                        description: Key is the name of the tag.
-                        type: string
-                      value:
-                        description: Value is the value of the tag.
-                        type: string
-                    required:
-                    - key
-                    - value
-                    type: object
-                  type: array
               type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource

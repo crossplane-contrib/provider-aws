@@ -51,6 +51,9 @@ type SubnetParameters struct {
 	// +optional
 	MapPublicIPOnLaunch *bool `json:"mapPublicIPOnLaunch,omitempty"`
 
+	// Tags represents to current ec2 tags.
+	Tags []Tag `json:"tags,omitempty"`
+
 	// VPCID is the ID of the VPC.
 	VPCID string `json:"vpcId"`
 
@@ -81,9 +84,6 @@ type SubnetObservation struct {
 
 	// SubnetID is the ID of the Subnet.
 	SubnetID string `json:"subnetId,omitempty"`
-
-	// Tags represents to current ec2 tags.
-	Tags []Tag `json:"tags,omitempty"`
 }
 
 // A SubnetStatus represents the observed state of a Subnet.

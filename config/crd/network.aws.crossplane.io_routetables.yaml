@@ -214,6 +214,22 @@ spec:
                         type: object
                     type: object
                   type: array
+                tags:
+                  description: Tags represents to current ec2 tags.
+                  items:
+                    description: Tag defines a tag
+                    properties:
+                      key:
+                        description: Key is the name of the tag.
+                        type: string
+                      value:
+                        description: Value is the value of the tag.
+                        type: string
+                    required:
+                    - key
+                    - value
+                    type: object
+                  type: array
                 vpcId:
                   description: VPCID is the ID of the VPC.
                   type: string

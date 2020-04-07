@@ -33,6 +33,9 @@ type InternetGatewayParameters struct {
 
 	// VPCIDSelector selects a reference to a VPC to and retrieves its vpcId
 	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
+
+	// Tags represents to current ec2 tags.
+	Tags []Tag `json:"tags,omitempty"`
 }
 
 // An InternetGatewaySpec defines the desired state of an InternetGateway.
@@ -64,9 +67,6 @@ type InternetGatewayObservation struct {
 
 	// The ID of the AWS account that owns the internet gateway.
 	OwnerID string `json:"ownerID"`
-
-	// Tags represents to current ec2 tags.
-	Tags []Tag `json:"tags,omitempty"`
 }
 
 // An InternetGatewayStatus represents the observed state of an InternetGateway.

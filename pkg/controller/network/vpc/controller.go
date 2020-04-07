@@ -44,9 +44,9 @@ import (
 
 const (
 	errUnexpectedObject = "The managed resource is not an VPC resource"
-	errKubeUpdateFailed = "cannot update RDS instance custom resource"
+	errKubeUpdateFailed = "cannot update VPC custom resource"
 
-	errCreateRDSClient   = "cannot create RDS client"
+	errCreateVpcClient   = "cannot create VPC client"
 	errGetProvider       = "cannot get provider"
 	errGetProviderSecret = "cannot get provider secret"
 
@@ -93,8 +93,8 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	}
 
 	if aws.BoolValue(p.Spec.UseServiceAccount) {
-		rdsClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, errCreateRDSClient)
+		vpcClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
+		return &external{client: vpcClient, kube: c.kube}, errors.Wrap(err, errCreateVpcClient)
 	}
 
 	if p.GetCredentialsSecretReference() == nil {
@@ -107,8 +107,8 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetProviderSecret)
 	}
 
-	rdsClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, errCreateRDSClient)
+	vpcClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
+	return &external{client: vpcClient, kube: c.kube}, errors.Wrap(err, errCreateVpcClient)
 }
 
 type external struct {
@@ -122,9 +122,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	name := meta.GetExternalName(cr)
-
-	if name == "" {
+	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
@@ -161,11 +159,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 	cr.Status.AtProvider = ec2.GenerateVpcObservation(observed)
 
-	isUpToDate := ec2.IsVpcUpToDate(cr.Spec.ForProvider, observed)
-
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: isUpToDate,
+		ResourceUpToDate: ec2.IsVpcUpToDate(cr.Spec.ForProvider, observed),
 	}, nil
 }
 

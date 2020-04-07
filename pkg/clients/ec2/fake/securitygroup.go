@@ -32,6 +32,7 @@ type MockSecurityGroupClient struct {
 	MockDescribe        func(*ec2.DescribeSecurityGroupsInput) ec2.DescribeSecurityGroupsRequest
 	MockAuthorizeIgress func(*ec2.AuthorizeSecurityGroupIngressInput) ec2.AuthorizeSecurityGroupIngressRequest
 	MockAuthorizeEgress func(*ec2.AuthorizeSecurityGroupEgressInput) ec2.AuthorizeSecurityGroupEgressRequest
+	MockCreateTags      func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
 }
 
 // CreateSecurityGroupRequest mocks CreateSecurityGroupRequest method
@@ -57,4 +58,9 @@ func (m *MockSecurityGroupClient) AuthorizeSecurityGroupIngressRequest(input *ec
 // AuthorizeSecurityGroupEgressRequest mocks AuthorizeSecurityGroupEgressRequest method
 func (m *MockSecurityGroupClient) AuthorizeSecurityGroupEgressRequest(input *ec2.AuthorizeSecurityGroupEgressInput) ec2.AuthorizeSecurityGroupEgressRequest {
 	return m.MockAuthorizeEgress(input)
+}
+
+// CreateTagsRequest mocks CreateTagsInput method
+func (m *MockSecurityGroupClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
+	return m.MockCreateTags(input)
 }

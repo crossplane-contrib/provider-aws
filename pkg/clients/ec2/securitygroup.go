@@ -30,6 +30,7 @@ type SecurityGroupClient interface {
 	DescribeSecurityGroupsRequest(input *ec2.DescribeSecurityGroupsInput) ec2.DescribeSecurityGroupsRequest
 	AuthorizeSecurityGroupIngressRequest(input *ec2.AuthorizeSecurityGroupIngressInput) ec2.AuthorizeSecurityGroupIngressRequest
 	AuthorizeSecurityGroupEgressRequest(input *ec2.AuthorizeSecurityGroupEgressInput) ec2.AuthorizeSecurityGroupEgressRequest
+	CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest
 }
 
 // NewSecurityGroupClient generates client for AWS Security Group API
@@ -114,10 +115,6 @@ func GenerateSGObservation(sg ec2.SecurityGroup) v1beta1.SecurityGroupObservatio
 		SecurityGroupID: aws.StringValue(sg.GroupId),
 	}
 
-	if len(sg.Tags) > 0 {
-		o.Tags = v1beta1.BuildFromEC2Tags(sg.Tags)
-	}
-
 	return o
 }
 
@@ -139,14 +136,20 @@ func LateInitializeSG(in *v1beta1.SecurityGroupParameters, sg *ec2.SecurityGroup
 	if len(in.Ingress) == 0 && len(sg.IpPermissions) != 0 {
 		in.Ingress = v1beta1.BuildIPPermissions(sg.IpPermissions)
 	}
+
+	if len(in.Tags) == 0 && len(sg.Tags) != 0 {
+		in.Tags = v1beta1.BuildFromEC2Tags(sg.Tags)
+	}
 }
 
 // CreateSGPatch creates a *v1beta1.SecurityGroupParameters that has only the changed
 // values between the target *v1beta1.SecurityGroupParameters and the current
 // *ec2.SecurityGroup
-func CreateSGPatch(in *ec2.SecurityGroup, target v1beta1.SecurityGroupParameters) (*v1beta1.SecurityGroupParameters, error) {
+func CreateSGPatch(in ec2.SecurityGroup, target v1beta1.SecurityGroupParameters) (*v1beta1.SecurityGroupParameters, error) {
 	currentParams := &v1beta1.SecurityGroupParameters{}
-	LateInitializeSG(currentParams, in)
+
+	v1beta1.SortTags(target.Tags, in.Tags)
+	LateInitializeSG(currentParams, &in)
 
 	jsonPatch, err := awsclients.CreateJSONPatch(*currentParams, target)
 	if err != nil {
@@ -161,7 +164,7 @@ func CreateSGPatch(in *ec2.SecurityGroup, target v1beta1.SecurityGroupParameters
 
 // IsSGUpToDate checks whether there is a change in any of the modifiable fields.
 func IsSGUpToDate(p v1beta1.SecurityGroupParameters, sg ec2.SecurityGroup) (bool, error) {
-	patch, err := CreateSGPatch(&sg, p)
+	patch, err := CreateSGPatch(sg, p)
 	if err != nil {
 		return false, err
 	}

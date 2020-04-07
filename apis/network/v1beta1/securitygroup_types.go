@@ -25,18 +25,6 @@ import (
 // SecurityGroupParameters define the desired state of an AWS VPC Security
 // Group.
 type SecurityGroupParameters struct {
-	// VPCID is the ID of the VPC.
-	// +optional
-	VPCID *string `json:"vpcId,omitempty"`
-
-	// VPCIDRef references a VPC to and retrieves its vpcId
-	// +optional
-	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
-
-	// VPCIDSelector selects a reference to a VPC to and retrieves its vpcId
-	// +optional
-	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
-
 	// A description of the security group.
 	Description string `json:"description"`
 
@@ -50,6 +38,21 @@ type SecurityGroupParameters struct {
 	// [EC2-VPC] One or more outbound rules associated with the security group.
 	// +optional
 	Egress []IPPermission `json:"egress,omitempty"`
+
+	// Tags represents to current ec2 tags.
+	Tags []Tag `json:"tags,omitempty"`
+
+	// VPCID is the ID of the VPC.
+	// +optional
+	VPCID *string `json:"vpcId,omitempty"`
+
+	// VPCIDRef references a VPC to and retrieves its vpcId
+	// +optional
+	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
+
+	// VPCIDSelector selects a reference to a VPC to and retrieves its vpcId
+	// +optional
+	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
 }
 
 // IPRange describes an IPv4 range.
@@ -208,9 +211,6 @@ type SecurityGroupObservation struct {
 
 	// SecurityGroupID is the ID of the SecurityGroup.
 	SecurityGroupID string `json:"securityGroupID"`
-
-	// Tags represents to current ec2 tags.
-	Tags []Tag `json:"tags,omitempty"`
 }
 
 // A SecurityGroupStatus represents the observed state of a SecurityGroup.

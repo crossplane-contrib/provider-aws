@@ -27,11 +27,12 @@ var _ clientset.InternetGatewayClient = (*MockInternetGatewayClient)(nil)
 
 // MockInternetGatewayClient is a type that implements all the methods for InternetGatewayClient interface
 type MockInternetGatewayClient struct {
-	MockCreate   func(*ec2.CreateInternetGatewayInput) ec2.CreateInternetGatewayRequest
-	MockDelete   func(*ec2.DeleteInternetGatewayInput) ec2.DeleteInternetGatewayRequest
-	MockDescribe func(*ec2.DescribeInternetGatewaysInput) ec2.DescribeInternetGatewaysRequest
-	MockAttach   func(*ec2.AttachInternetGatewayInput) ec2.AttachInternetGatewayRequest
-	MockDetach   func(*ec2.DetachInternetGatewayInput) ec2.DetachInternetGatewayRequest
+	MockCreate     func(*ec2.CreateInternetGatewayInput) ec2.CreateInternetGatewayRequest
+	MockDelete     func(*ec2.DeleteInternetGatewayInput) ec2.DeleteInternetGatewayRequest
+	MockDescribe   func(*ec2.DescribeInternetGatewaysInput) ec2.DescribeInternetGatewaysRequest
+	MockAttach     func(*ec2.AttachInternetGatewayInput) ec2.AttachInternetGatewayRequest
+	MockDetach     func(*ec2.DetachInternetGatewayInput) ec2.DetachInternetGatewayRequest
+	MockCreateTags func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
 }
 
 // CreateInternetGatewayRequest mocks CreateInternetGatewayRequest method
@@ -57,4 +58,9 @@ func (m *MockInternetGatewayClient) AttachInternetGatewayRequest(input *ec2.Atta
 // DetachInternetGatewayRequest mocks DetachInternetGatewayRequest
 func (m *MockInternetGatewayClient) DetachInternetGatewayRequest(input *ec2.DetachInternetGatewayInput) ec2.DetachInternetGatewayRequest {
 	return m.MockDetach(input)
+}
+
+// CreateTagsRequest mocks CreateTagsInput method
+func (m *MockInternetGatewayClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
+	return m.MockCreateTags(input)
 }

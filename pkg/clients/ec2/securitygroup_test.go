@@ -143,7 +143,7 @@ func TestGenerateSGObservation(t *testing.T) {
 
 func TestCreateSGPatch(t *testing.T) {
 	type args struct {
-		sg *ec2.SecurityGroup
+		sg ec2.SecurityGroup
 		p  *v1beta1.SecurityGroupParameters
 	}
 
@@ -157,7 +157,7 @@ func TestCreateSGPatch(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				sg: &ec2.SecurityGroup{
+				sg: ec2.SecurityGroup{
 					Description:         aws.String(sgDesc),
 					GroupName:           aws.String(sgName),
 					IpPermissions:       sgIPPermission(80),
@@ -178,7 +178,7 @@ func TestCreateSGPatch(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				sg: &ec2.SecurityGroup{
+				sg: ec2.SecurityGroup{
 					Description:         aws.String(sgDesc),
 					GroupName:           aws.String(sgName),
 					IpPermissions:       sgIPPermission(80),

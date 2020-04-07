@@ -27,10 +27,11 @@ var _ clientset.SubnetClient = (*MockSubnetClient)(nil)
 
 // MockSubnetClient is a type that implements all the methods for SubnetClient interface
 type MockSubnetClient struct {
-	MockCreate   func(*ec2.CreateSubnetInput) ec2.CreateSubnetRequest
-	MockDelete   func(*ec2.DeleteSubnetInput) ec2.DeleteSubnetRequest
-	MockDescribe func(*ec2.DescribeSubnetsInput) ec2.DescribeSubnetsRequest
-	MockModify   func(*ec2.ModifySubnetAttributeInput) ec2.ModifySubnetAttributeRequest
+	MockCreate     func(*ec2.CreateSubnetInput) ec2.CreateSubnetRequest
+	MockDelete     func(*ec2.DeleteSubnetInput) ec2.DeleteSubnetRequest
+	MockDescribe   func(*ec2.DescribeSubnetsInput) ec2.DescribeSubnetsRequest
+	MockModify     func(*ec2.ModifySubnetAttributeInput) ec2.ModifySubnetAttributeRequest
+	MockCreateTags func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
 }
 
 // CreateSubnetRequest mocks CreateSubnetRequest method
@@ -51,4 +52,9 @@ func (m *MockSubnetClient) DescribeSubnetsRequest(input *ec2.DescribeSubnetsInpu
 // ModifySubnetAttributeRequest mocks ModifySubnetAttributeInput method
 func (m *MockSubnetClient) ModifySubnetAttributeRequest(input *ec2.ModifySubnetAttributeInput) ec2.ModifySubnetAttributeRequest {
 	return m.MockModify(input)
+}
+
+// CreateTagsRequest mocks CreateTagsInput method
+func (m *MockSubnetClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
+	return m.MockCreateTags(input)
 }

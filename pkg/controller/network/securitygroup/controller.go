@@ -44,9 +44,9 @@ import (
 
 const (
 	errUnexpectedObject = "The managed resource is not an SecurityGroup resource"
-	errKubeUpdateFailed = "cannot update RDS instance custom resource"
+	errKubeUpdateFailed = "cannot update Security Group instance custom resource"
 
-	errCreateRDSClient   = "cannot create RDS client"
+	errCreateClient      = "cannot create Security Group client"
 	errGetProvider       = "cannot get provider"
 	errGetProviderSecret = "cannot get provider secret"
 
@@ -58,6 +58,7 @@ const (
 	errDelete           = "failed to delete the SecurityGroup resource"
 	errSpecUpdate       = "cannot update spec"
 	errUpdate           = "failed to update the SecurityGroup resource"
+	errCreateTags       = "failed to create tags for the Security Group resource"
 )
 
 // SetupSecurityGroup adds a controller that reconciles SecurityGroups.
@@ -95,7 +96,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 
 	if aws.BoolValue(p.Spec.UseServiceAccount) {
 		sgClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{sg: sgClient, kube: c.kube}, errors.Wrap(err, errCreateRDSClient)
+		return &external{sg: sgClient, kube: c.kube}, errors.Wrap(err, errCreateClient)
 	}
 
 	if p.GetCredentialsSecretReference() == nil {
@@ -108,8 +109,8 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetProviderSecret)
 	}
 
-	rdsClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{sg: rdsClient, kube: c.kube}, errors.Wrap(err, errCreateRDSClient)
+	sgClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
+	return &external{sg: sgClient, kube: c.kube}, errors.Wrap(err, errCreateClient)
 }
 
 type external struct {
@@ -204,9 +205,18 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errDescribe)
 	}
 
-	patch, err := ec2.CreateSGPatch(&response.SecurityGroups[0], cr.Spec.ForProvider)
+	patch, err := ec2.CreateSGPatch(response.SecurityGroups[0], cr.Spec.ForProvider)
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.New(errUpdate)
+	}
+
+	if len(patch.Tags) != 0 {
+		if _, err := e.sg.CreateTagsRequest(&awsec2.CreateTagsInput{
+			Resources: []string{meta.GetExternalName(cr)},
+			Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+		}).Send(ctx); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errCreateTags)
+		}
 	}
 
 	if patch.Ingress != nil {

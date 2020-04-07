@@ -26,6 +26,7 @@ type SubnetClient interface {
 	DescribeSubnetsRequest(input *ec2.DescribeSubnetsInput) ec2.DescribeSubnetsRequest
 	DeleteSubnetRequest(input *ec2.DeleteSubnetInput) ec2.DeleteSubnetRequest
 	ModifySubnetAttributeRequest(input *ec2.ModifySubnetAttributeInput) ec2.ModifySubnetAttributeRequest
+	CreateTagsRequest(*ec2.CreateTagsInput) ec2.CreateTagsRequest
 }
 
 // NewSubnetClient returns a new client using AWS credentials as JSON encoded data.
@@ -83,14 +84,20 @@ func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2.Subnet) { // noli
 	if s.Ipv6CidrBlockAssociationSet != nil {
 		in.Ipv6CIDRBlock = awsclients.LateInitializeStringPtr(in.Ipv6CIDRBlock, s.Ipv6CidrBlockAssociationSet[0].Ipv6CidrBlock)
 	}
+
+	if len(in.Tags) == 0 && len(s.Tags) != 0 {
+		in.Tags = v1beta1.BuildFromEC2Tags(s.Tags)
+	}
 }
 
 // CreateSubnetPatch creates a *v1beta1.SubnetParameters that has only the changed
 // values between the target *v1beta1.SubnetParameters and the current
 // *ec2.Subnet
-func CreateSubnetPatch(in *ec2.Subnet, target *v1beta1.SubnetParameters) (*v1beta1.SubnetParameters, error) {
+func CreateSubnetPatch(in ec2.Subnet, target v1beta1.SubnetParameters) (*v1beta1.SubnetParameters, error) {
 	currentParams := &v1beta1.SubnetParameters{}
-	LateInitializeSubnet(currentParams, in)
+
+	v1beta1.SortTags(target.Tags, in.Tags)
+	LateInitializeSubnet(currentParams, &in)
 
 	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
 	if err != nil {
@@ -105,7 +112,7 @@ func CreateSubnetPatch(in *ec2.Subnet, target *v1beta1.SubnetParameters) (*v1bet
 
 // IsSubnetUpToDate checks whether there is a change in any of the modifiable fields.
 func IsSubnetUpToDate(p v1beta1.SubnetParameters, s ec2.Subnet) (bool, error) {
-	patch, err := CreateSubnetPatch(&s, &p)
+	patch, err := CreateSubnetPatch(s, p)
 	if err != nil {
 		return false, err
 	}
