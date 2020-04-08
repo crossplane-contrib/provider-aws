@@ -421,7 +421,7 @@ func Test_Update(t *testing.T) {
 			(&v1alpha3.SecurityGroup{
 				ObjectMeta: v1.ObjectMeta{
 					Annotations: map[string]string{
-						meta.ExternalNameAnnotationKey: mockManaged.Status.SecurityGroupID,
+						meta.AnnotationKeyExternalName: mockManaged.Status.SecurityGroupID,
 					},
 				},
 				Spec: v1alpha3.SecurityGroupSpec{
@@ -454,7 +454,7 @@ func Test_Update(t *testing.T) {
 			(&v1alpha3.SecurityGroup{
 				ObjectMeta: v1.ObjectMeta{
 					Annotations: map[string]string{
-						meta.ExternalNameAnnotationKey: mockManaged.Status.SecurityGroupID,
+						meta.AnnotationKeyExternalName: mockManaged.Status.SecurityGroupID,
 					},
 				},
 				Spec: v1alpha3.SecurityGroupSpec{
