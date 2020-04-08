@@ -9,13 +9,7 @@ metadata:
   name: dbsubnetgroups.database.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .spec.groupName
-    name: GROUPNAME
-    type: string
-  - JSONPath: .spec.description
-    name: DESCRIPTION
-    type: string
-  - JSONPath: .status.groupStatus
+  - JSONPath: .status.atProvider.state
     name: STATUS
     type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
@@ -133,13 +127,60 @@ spec:
                   description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                   type: string
               type: object
-            description:
-              description: The description for the DB subnet group.
-              type: string
-            groupName:
-              description: The name for the DB subnet group. This value is stored
-                as a lowercase string.
-              type: string
+            forProvider:
+              description: DBSubnetGroupParameters define the desired state of an
+                AWS VPC Database Subnet Group.
+              properties:
+                description:
+                  description: The description for the DB subnet group.
+                  type: string
+                subnetIdRefs:
+                  description: SubnetIDRefs is a set of referencers that each retrieve
+                    the subnetID from the referenced Subnet
+                  items:
+                    description: SubnetIDReferencerForDBSubnetGroup is an attribute
+                      referencer that resolves SubnetID from a referenced Subnet
+                    properties:
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                    type: object
+                  type: array
+                subnetIds:
+                  description: The EC2 Subnet IDs for the DB subnet group.
+                  items:
+                    type: string
+                  type: array
+                tags:
+                  description: A list of tags. For more information, see Tagging Amazon
+                    RDS Resources (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
+                    in the Amazon RDS User Guide.
+                  items:
+                    description: Tag is a metadata assigned to an Amazon RDS resource
+                      consisting of a key-value pair. Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/Tag
+                    properties:
+                      key:
+                        description: 'A key is the required name of the tag. The string
+                          value can be from 1 to 128 Unicode characters in length
+                          and can''t be prefixed with "aws:" or "rds:". The string
+                          can only contain only the set of Unicode letters, digits,
+                          white-space, ''_'', ''.'', ''/'', ''='', ''+'', ''-'' (Java
+                          regex: "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-]*)$").'
+                        type: string
+                      value:
+                        description: 'A value is the optional value of the tag. The
+                          string value can be from 1 to 256 Unicode characters in
+                          length and can''t be prefixed with "aws:" or "rds:". The
+                          string can only contain only the set of Unicode letters,
+                          digits, white-space, ''_'', ''.'', ''/'', ''='', ''+'',
+                          ''-'' (Java regex: "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-]*)$").'
+                        type: string
+                    type: object
+                  type: array
+              required:
+              - description
+              type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
                 to create, observe, update, and delete this managed resource.
@@ -192,42 +233,6 @@ spec:
               - Retain
               - Delete
               type: string
-            subnetIdRefs:
-              description: SubnetIDRefs is a set of referencers that each retrieve
-                the subnetID from the referenced Subnet
-              items:
-                description: SubnetIDReferencerForDBSubnetGroup is an attribute referencer
-                  that resolves SubnetID from a referenced Subnet
-                properties:
-                  name:
-                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                      TODO: Add other useful fields. apiVersion, kind, uid?'
-                    type: string
-                type: object
-              type: array
-            subnetIds:
-              description: The EC2 Subnet IDs for the DB subnet group.
-              items:
-                type: string
-              type: array
-            tags:
-              description: A list of tags. For more information, see Tagging Amazon
-                RDS Resources (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
-                in the Amazon RDS User Guide.
-              items:
-                description: Tag defines a tag
-                properties:
-                  key:
-                    description: Key is the name of the tag.
-                    type: string
-                  value:
-                    description: Value is the value of the tag.
-                    type: string
-                required:
-                - key
-                - value
-                type: object
-              type: array
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the namespace
                 and name of a Secret to which any connection details for this managed
@@ -246,13 +251,43 @@ spec:
               - namespace
               type: object
           required:
-          - description
-          - groupName
           - providerRef
           type: object
         status:
           description: A DBSubnetGroupStatus represents the observed state of a DBSubnetGroup.
           properties:
+            atProvider:
+              description: DBSubnetGroupObservation is the representation of the current
+                state that is observed
+              properties:
+                arn:
+                  description: ARN is the Amazon Resource Name (ARN) for this DB subnet
+                    group.
+                  type: string
+                state:
+                  description: State specifies the current state of this DB subnet
+                    group.
+                  type: string
+                subnets:
+                  description: Subnets contains a list of Subnet elements.
+                  items:
+                    description: Subnet represents a aws subnet
+                    properties:
+                      subnetID:
+                        description: Specifies the identifier of the subnet.
+                        type: string
+                      subnetStatus:
+                        description: Specifies the status of the subnet.
+                        type: string
+                    required:
+                    - subnetID
+                    - subnetStatus
+                    type: object
+                  type: array
+                vpcId:
+                  description: VPCID provides the VPCID of the DB subnet group.
+                  type: string
+              type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource
                 or claim. Unbindable resources cannot be bound, typically because
@@ -298,38 +333,13 @@ spec:
                 - type
                 type: object
               type: array
-            groupArn:
-              description: The Amazon Resource Name (ARN) for the DB subnet group.
-              type: string
-            groupStatus:
-              description: Provides the status of the DB subnet group.
-              type: string
-            subnets:
-              description: Contains a list of Subnet elements.
-              items:
-                description: Subnet represents a aws subnet
-                properties:
-                  subnetID:
-                    description: Specifies the identifier of the subnet.
-                    type: string
-                  subnetStatus:
-                    description: Specifies the status of the subnet.
-                    type: string
-                required:
-                - subnetID
-                - subnetStatus
-                type: object
-              type: array
-            vpcId:
-              description: Provides the VPCID of the DB subnet group.
-              type: string
           type: object
       required:
       - spec
       type: object
-  version: v1alpha3
+  version: v1beta1
   versions:
-  - name: v1alpha3
+  - name: v1beta1
     served: true
     storage: true
 status:

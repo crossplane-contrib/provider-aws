@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha3
+package v1beta1
 
 import (
 	"context"
@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 )
@@ -57,9 +58,7 @@ func TestDBSubnetGroupNameReferencerGetStatus(t *testing.T) {
 
 	readyResource := DBSubnetGroup{
 		Spec: DBSubnetGroupSpec{
-			DBSubnetGroupParameters: DBSubnetGroupParameters{
-				DBSubnetGroupName: mockDBSubnetGroupName,
-			},
+			ForProvider: DBSubnetGroupParameters{},
 		},
 	}
 
@@ -167,7 +166,7 @@ func TestDBSubnetGroupNameReferencerBuild(t *testing.T) {
 			input: input{
 				readerFn: func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error {
 					p := obj.(*DBSubnetGroup)
-					p.Spec.DBSubnetGroupName = mockDBSubnetGroupName
+					meta.SetExternalName(p, mockDBSubnetGroupName)
 					return nil
 				},
 			},
