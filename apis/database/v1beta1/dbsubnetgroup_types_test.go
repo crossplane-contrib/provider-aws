@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha3
+package v1beta1
 
 import (
 	"testing"
@@ -25,8 +25,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 )
-
-var _ resource.AttributeReferencer = (*SubnetIDReferencerForDBSubnetGroup)(nil)
 
 func TestSubnetIDReferencerForDBSubnetGroup(t *testing.T) {
 	value := "cool"
@@ -63,7 +61,7 @@ func TestSubnetIDReferencerForDBSubnetGroup(t *testing.T) {
 			want: want{
 				res: &DBSubnetGroup{
 					Spec: DBSubnetGroupSpec{
-						DBSubnetGroupParameters: DBSubnetGroupParameters{SubnetIDs: []string{value}},
+						ForProvider: DBSubnetGroupParameters{SubnetIDs: []string{value}},
 					},
 				},
 			},
@@ -73,7 +71,7 @@ func TestSubnetIDReferencerForDBSubnetGroup(t *testing.T) {
 			args: args{
 				res: &DBSubnetGroup{
 					Spec: DBSubnetGroupSpec{
-						DBSubnetGroupParameters: DBSubnetGroupParameters{SubnetIDs: []string{value}},
+						ForProvider: DBSubnetGroupParameters{SubnetIDs: []string{value}},
 					},
 				},
 				value: value,
@@ -81,7 +79,7 @@ func TestSubnetIDReferencerForDBSubnetGroup(t *testing.T) {
 			want: want{
 				res: &DBSubnetGroup{
 					Spec: DBSubnetGroupSpec{
-						DBSubnetGroupParameters: DBSubnetGroupParameters{SubnetIDs: []string{value}},
+						ForProvider: DBSubnetGroupParameters{SubnetIDs: []string{value}},
 					},
 				},
 			},

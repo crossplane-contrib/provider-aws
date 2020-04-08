@@ -18,175 +18,215 @@ package dbsubnetgroup
 
 import (
 	"context"
+	"reflect"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha3 "github.com/crossplane/provider-aws/apis/database/v1alpha3"
-	"github.com/crossplane/provider-aws/pkg/clients/rds"
-	"github.com/crossplane/provider-aws/pkg/controller/utils"
+	v1beta1 "github.com/crossplane/provider-aws/apis/database/v1beta1"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	dbsg "github.com/crossplane/provider-aws/pkg/clients/dbsubnetgroup"
 )
 
 const (
-	errUnexpectedObject = "The managed resource is not an DBSubnetGroup resource"
-	errClient           = "cannot create a new DBSubnetGroup client"
-	errDescribe         = "failed to describe DBSubnetGroup with groupName: %v"
-	errMultipleItems    = "retrieved multiple DBSubnetGroups for the given groupName: %v"
-	errCreate           = "failed to create the DBSubnetGroup resource with name: %v"
-	errDelete           = "failed to delete the DBSubnetGroup resource"
+	errKubeUpdateFailed          = "cannot update DBSubnetGroup custom resource"
+	errGetProvider               = "cannot get provider"
+	errCreateDBSubnetGroupClient = "cannot create DBSubnetGroup client"
+	errGetProviderSecret         = "cannot get provider secret"
+
+	errUnexpectedObject   = "The managed resource is not an DBSubnetGroup resource"
+	errDescribe           = "failed to describe DBSubnetGroup with groupName: %v"
+	errZeroOrMoreResource = "received zero or more than one DBSubnetGroups for the given groupName: %v"
+	errCreate             = "failed to create the DBSubnetGroup resource with name: %v"
+	errDelete             = "failed to delete the DBSubnetGroup resource: %v"
+	errUpdate             = "failed to update the DBSubnetGroup resource: %v"
+	errAddTagsFailed      = "cannot add tags to DB Subnet Group: %v"
+	errListTagsFailed     = "failed to list tags for DB Subnet Group: %v"
 )
 
 // SetupDBSubnetGroup adds a controller that reconciles DBSubnetGroups.
 func SetupDBSubnetGroup(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha3.DBSubnetGroupGroupKind)
+	name := managed.ControllerName(v1beta1.DBSubnetGroupGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha3.DBSubnetGroup{}).
+		For(&v1beta1.DBSubnetGroup{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha3.DBSubnetGroupGroupVersionKind),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: rds.NewDBSubnetGroupClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			resource.ManagedKind(v1beta1.DBSubnetGroupGroupVersionKind),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: dbsg.NewClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
 type connector struct {
-	client      client.Client
-	newClientFn func(*aws.Config) (rds.DBSubnetGroupClient, error)
-	awsConfigFn func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error)
+	kube        client.Client
+	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (dbsg.Client, error)
 }
 
 func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mgd.(*v1alpha3.DBSubnetGroup)
+	cr, ok := mgd.(*v1beta1.DBSubnetGroup)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
 
-	awsconfig, err := conn.awsConfigFn(ctx, conn.client, cr.Spec.ProviderReference)
-	if err != nil {
-		return nil, err
+	p := &awsv1alpha3.Provider{}
+	if err := conn.kube.Get(ctx, meta.NamespacedNameOf(cr.Spec.ProviderReference), p); err != nil {
+		return nil, errors.Wrap(err, errGetProvider)
 	}
 
-	c, err := conn.newClientFn(awsconfig)
-	if err != nil {
-		return nil, errors.Wrap(err, errClient)
+	if aws.BoolValue(p.Spec.UseServiceAccount) {
+		dbSubnetGroupclient, err := conn.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
+		return &external{client: dbSubnetGroupclient, kube: conn.kube}, errors.Wrap(err, errCreateDBSubnetGroupClient)
 	}
-	return &external{c}, nil
+
+	if p.GetCredentialsSecretReference() == nil {
+		return nil, errors.New(errGetProviderSecret)
+	}
+
+	s := &corev1.Secret{}
+	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
+	if err := conn.kube.Get(ctx, n, s); err != nil {
+		return nil, errors.Wrap(err, errGetProviderSecret)
+	}
+
+	dbSubnetGroupclient, err := conn.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
+	return &external{client: dbSubnetGroupclient, kube: conn.kube}, errors.Wrap(err, errCreateDBSubnetGroupClient)
 }
 
 type external struct {
-	client rds.DBSubnetGroupClient
+	client dbsg.Client
+	kube   client.Client
 }
 
-func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha3.DBSubnetGroup)
+func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
+	cr, ok := mgd.(*v1beta1.DBSubnetGroup)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
 	req := e.client.DescribeDBSubnetGroupsRequest(&awsrds.DescribeDBSubnetGroupsInput{
-		DBSubnetGroupName: aws.String(cr.Spec.DBSubnetGroupName),
+		DBSubnetGroupName: aws.String(meta.GetExternalName(cr)),
 	})
-
-	response, err := req.Send(ctx)
-
+	res, err := req.Send(ctx)
 	if err != nil {
-		if rds.IsDBSubnetGroupNotFoundErr(err) {
-			return managed.ExternalObservation{
-				ResourceExists: false,
-			}, nil
-		}
-
-		return managed.ExternalObservation{}, errors.Wrapf(err, errDescribe, cr.Spec.DBSubnetGroupName)
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(dbsg.IsErrorNotFound, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
-	if len(response.DBSubnetGroups) != 1 {
-		return managed.ExternalObservation{}, errors.Errorf(errMultipleItems, cr.Spec.DBSubnetGroupName)
+	if len(res.DBSubnetGroups) != 1 {
+		return managed.ExternalObservation{}, errors.Errorf(errZeroOrMoreResource, meta.GetExternalName(cr))
 	}
 
-	observed := response.DBSubnetGroups[0]
+	observed := res.DBSubnetGroups[0]
+	current := cr.Spec.ForProvider.DeepCopy()
+	dbsg.LateInitialize(&cr.Spec.ForProvider, &observed)
+	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
+		if err := e.kube.Update(ctx, cr); err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
+		}
+	}
+	cr.Status.AtProvider = dbsg.GenerateObservation(observed)
 
-	cr.SetConditions(runtimev1alpha1.Available())
+	if strings.EqualFold(cr.Status.AtProvider.State, v1beta1.DBSubnetGroupStateAvailable) {
+		cr.Status.SetConditions(runtimev1alpha1.Available())
+		resource.SetBindable(cr)
+	} else {
+		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
+	}
 
-	cr.UpdateExternalStatus(observed)
+	tags, err := e.client.ListTagsForResourceRequest(&awsrds.ListTagsForResourceInput{
+		ResourceName: aws.String(cr.Status.AtProvider.ARN),
+	}).Send(ctx)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, errListTagsFailed)
+	}
 
 	return managed.ExternalObservation{
-		ResourceExists:    true,
-		ConnectionDetails: managed.ConnectionDetails{},
+		ResourceUpToDate: dbsg.IsDBSubnetGroupUpToDate(cr.Spec.ForProvider, observed, tags.TagList),
+		ResourceExists:   true,
 	}, nil
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha3.DBSubnetGroup)
+	cr, ok := mgd.(*v1beta1.DBSubnetGroup)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-
+	cr.SetConditions(runtimev1alpha1.Creating())
 	input := &awsrds.CreateDBSubnetGroupInput{
-		DBSubnetGroupDescription: aws.String(cr.Spec.DBSubnetGroupDescription),
-		DBSubnetGroupName:        aws.String(cr.Spec.DBSubnetGroupName),
-		SubnetIds:                cr.Spec.SubnetIDs,
-		Tags:                     []awsrds.Tag{},
+		DBSubnetGroupDescription: aws.String(cr.Spec.ForProvider.Description),
+		DBSubnetGroupName:        aws.String(meta.GetExternalName(cr)),
+		SubnetIds:                cr.Spec.ForProvider.SubnetIDs,
 	}
 
-	for _, t := range cr.Spec.Tags {
-		input.Tags = append(input.Tags, awsrds.Tag{
-			Key:   aws.String(t.Key),
-			Value: aws.String(t.Value),
-		})
+	if len(cr.Spec.ForProvider.Tags) != 0 {
+		input.Tags = make([]awsrds.Tag, len(cr.Spec.ForProvider.Tags))
+		for i, val := range cr.Spec.ForProvider.Tags {
+			input.Tags[i] = awsrds.Tag{Key: aws.String(val.Key), Value: aws.String(val.Value)}
+		}
 	}
 
-	req := e.client.CreateDBSubnetGroupRequest(input)
-
-	response, err := req.Send(ctx)
-
-	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrapf(err, errCreate, cr.Spec.DBSubnetGroupName)
-	}
-
-	cr.UpdateExternalStatus(*response.DBSubnetGroup)
-
-	return managed.ExternalCreation{}, nil
+	_, err := e.client.CreateDBSubnetGroupRequest(input).Send(ctx)
+	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	// TODO(soorena776): add more sophisticated Update logic, once we
-	// categorize immutable vs mutable fields (see #727)
+	cr, ok := mgd.(*v1beta1.DBSubnetGroup)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
 
+	_, err := e.client.ModifyDBSubnetGroupRequest(&awsrds.ModifyDBSubnetGroupInput{
+		DBSubnetGroupName:        aws.String(meta.GetExternalName(cr)),
+		DBSubnetGroupDescription: aws.String(cr.Spec.ForProvider.Description),
+		SubnetIds:                cr.Spec.ForProvider.SubnetIDs,
+	}).Send(ctx)
+
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	}
+
+	if len(cr.Spec.ForProvider.Tags) > 0 {
+		tags := make([]awsrds.Tag, len(cr.Spec.ForProvider.Tags))
+		for i, t := range cr.Spec.ForProvider.Tags {
+			tags[i] = awsrds.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
+		}
+		_, err = e.client.AddTagsToResourceRequest(&awsrds.AddTagsToResourceInput{
+			ResourceName: aws.String(cr.Status.AtProvider.ARN),
+			Tags:         tags,
+		}).Send(ctx)
+		if err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errAddTagsFailed)
+		}
+	}
 	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha3.DBSubnetGroup)
+	cr, ok := mgd.(*v1beta1.DBSubnetGroup)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Deleting())
-
-	req := e.client.DeleteDBSubnetGroupRequest(&awsrds.DeleteDBSubnetGroupInput{
-		DBSubnetGroupName: aws.String(cr.Spec.DBSubnetGroupName),
-	})
-
-	_, err := req.Send(ctx)
-
-	if rds.IsDBSubnetGroupNotFoundErr(err) {
-		return nil
-	}
-
-	return errors.Wrap(err, errDelete)
+	cr.SetConditions(runtimev1alpha1.Deleting())
+	_, err := e.client.DeleteDBSubnetGroupRequest(&awsrds.DeleteDBSubnetGroupInput{
+		DBSubnetGroupName: aws.String(meta.GetExternalName(cr)),
+	}).Send(ctx)
+	return errors.Wrap(resource.Ignore(dbsg.IsDBSubnetGroupNotFoundErr, err), errDelete)
 }

@@ -19,359 +19,721 @@ package dbsubnetgroup
 import (
 	"context"
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
-	"github.com/onsi/gomega"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	v1alpha3 "github.com/crossplane/provider-aws/apis/database/v1alpha3"
-	"github.com/crossplane/provider-aws/pkg/clients/rds"
-	"github.com/crossplane/provider-aws/pkg/clients/rds/fake"
+	v1beta1 "github.com/crossplane/provider-aws/apis/database/v1beta1"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	dbsg "github.com/crossplane/provider-aws/pkg/clients/dbsubnetgroup"
+	"github.com/crossplane/provider-aws/pkg/clients/dbsubnetgroup/fake"
+)
+
+const (
+	providerName    = "aws-creds"
+	secretNamespace = "crossplane-system"
+	testRegion      = "us-east-1"
+
+	connectionSecretName = "my-little-secret"
+	secretKey            = "credentials"
+	credData             = "confidential!"
 )
 
 var (
-	mockExternalClient external
-	mockClient         fake.MockDBSubnetGroupClient
-
-	// an arbitrary managed resource
-	unexpecedItem resource.Managed
+	dbSubnetGroupDescription = "arbitrary description"
+	errBoom                  = errors.New("boom")
 )
 
-func TestMain(m *testing.M) {
-
-	mockClient = fake.MockDBSubnetGroupClient{}
-	mockExternalClient = external{&mockClient}
-
-	os.Exit(m.Run())
+type args struct {
+	client dbsg.Client
+	kube   client.Client
+	cr     *v1beta1.DBSubnetGroup
 }
+
+type dbSubnetGroupModifier func(*v1beta1.DBSubnetGroup)
+
+func withConditions(c ...runtimev1alpha1.Condition) dbSubnetGroupModifier {
+	return func(sg *v1beta1.DBSubnetGroup) { sg.Status.ConditionedStatus.Conditions = c }
+}
+
+func withBindingPhase(p runtimev1alpha1.BindingPhase) dbSubnetGroupModifier {
+	return func(sg *v1beta1.DBSubnetGroup) { sg.Status.SetBindingPhase(p) }
+}
+
+func withDBSubnetGroupStatus(s string) dbSubnetGroupModifier {
+	return func(sg *v1beta1.DBSubnetGroup) { sg.Status.AtProvider.State = s }
+}
+
+func withDBSubnetGroupDescription(s string) dbSubnetGroupModifier {
+	return func(sg *v1beta1.DBSubnetGroup) { sg.Spec.ForProvider.Description = s }
+}
+
+func withDBSubnetGroupTags() dbSubnetGroupModifier {
+	return func(sg *v1beta1.DBSubnetGroup) {
+		sg.Spec.ForProvider.Tags = []v1beta1.Tag{{Key: "arbitrary key", Value: "arbitrary value"}}
+	}
+}
+
+func mockListTagsForResourceRequest(input *awsrds.ListTagsForResourceInput) awsrds.ListTagsForResourceRequest {
+	return awsrds.ListTagsForResourceRequest{
+		Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ListTagsForResourceOutput{TagList: []awsrds.Tag{}}},
+	}
+}
+
+func dbSubnetGroup(m ...dbSubnetGroupModifier) *v1beta1.DBSubnetGroup {
+	cr := &v1beta1.DBSubnetGroup{
+		Spec: v1beta1.DBSubnetGroupSpec{
+			ResourceSpec: runtimev1alpha1.ResourceSpec{
+				ProviderReference: &corev1.ObjectReference{Name: providerName},
+			},
+		},
+	}
+	for _, f := range m {
+		f(cr)
+	}
+	return cr
+}
+
+var _ managed.ExternalClient = &external{}
+var _ managed.ExternalConnecter = &connector{}
 
 func Test_Connect(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := &v1alpha3.DBSubnetGroup{}
-	var clientErr error
-	var configErr error
-
-	conn := connector{
-		client: nil,
-		newClientFn: func(conf *aws.Config) (rds.DBSubnetGroupClient, error) {
-			return &mockClient, clientErr
+	secret := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      connectionSecretName,
+			Namespace: secretNamespace,
 		},
-		awsConfigFn: func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error) {
-			return &aws.Config{}, configErr
+		Data: map[string][]byte{
+			secretKey: []byte(credData),
 		},
 	}
 
-	for _, tc := range []struct {
-		description       string
-		managedObj        resource.Managed
-		configErr         error
-		clientErr         error
-		expectedClientNil bool
-		expectedErrNil    bool
-	}{
-		{
-			"valid input should return expected",
-			mockManaged,
-			nil,
-			nil,
-			false,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpecedItem,
-			nil,
-			nil,
-			true,
-			false,
-		},
-		{
-			"if aws config provider fails, should return error",
-			mockManaged, // an arbitrary managed resource which is not expected
-			errors.New("some error"),
-			nil,
-			true,
-			false,
-		},
-		{
-			"if aws client provider fails, should return error",
-			mockManaged, // an arbitrary managed resource which is not expected
-			nil,
-			errors.New("some error"),
-			true,
-			false,
-		},
-	} {
-		clientErr = tc.clientErr
-		configErr = tc.configErr
-
-		res, err := conn.Connect(context.Background(), tc.managedObj)
-		g.Expect(res == nil).To(gomega.Equal(tc.expectedClientNil), tc.description)
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-	}
-}
-
-func Test_Observe(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := v1alpha3.DBSubnetGroup{
-		Spec: v1alpha3.DBSubnetGroupSpec{
-			DBSubnetGroupParameters: v1alpha3.DBSubnetGroupParameters{
-				DBSubnetGroupDescription: "arbitrary description",
-				DBSubnetGroupName:        "arbitrary group name",
-				SubnetIDs:                []string{"subnetid1", "subnetid2"},
-			},
-		},
-	}
-
-	mockExternal := &awsrds.DBSubnetGroup{
-		VpcId:             aws.String("arbitrary vpcId"),
-		DBSubnetGroupArn:  aws.String("arbitrary group arn"),
-		SubnetGroupStatus: aws.String("arbitrary group status"),
-	}
-	var mockClientErr error
-	var itemsList []awsrds.DBSubnetGroup
-	mockClient.MockDescribeDBSubnetGroupsRequest = func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
-		return awsrds.DescribeDBSubnetGroupsRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data: &awsrds.DescribeDBSubnetGroupsOutput{
-					DBSubnetGroups: itemsList,
-				},
-				Error: mockClientErr,
-			},
-		}
-	}
-
-	for _, tc := range []struct {
-		description           string
-		managedObj            resource.Managed
-		itemsReturned         []awsrds.DBSubnetGroup
-		clientErr             error
-		expectedErrNil        bool
-		expectedResourceExist bool
-	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			[]awsrds.DBSubnetGroup{*mockExternal},
-			nil,
-			true,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpecedItem,
-			nil,
-			nil,
-			false,
-			false,
-		},
-		{
-			"if external resource doesn't exist, it should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			awserr.New(awsrds.ErrCodeDBSubnetGroupNotFoundFault, "", nil),
-			true,
-			false,
-		},
-		{
-			"if external resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			nil,
-			errors.New("some error"),
-			false,
-			false,
-		},
-		{
-			"if external resource returns a list with other than one item, it should return error",
-			mockManaged.DeepCopy(),
-			[]awsrds.DBSubnetGroup{},
-			nil,
-			false,
-			false,
-		},
-	} {
-		mockClientErr = tc.clientErr
-		itemsList = tc.itemsReturned
-
-		result, err := mockExternalClient.Observe(context.Background(), tc.managedObj)
-
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		g.Expect(result.ResourceExists).To(gomega.Equal(tc.expectedResourceExist), tc.description)
-		if tc.expectedResourceExist {
-			mgd := tc.managedObj.(*v1alpha3.DBSubnetGroup)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionTrue), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonAvailable), tc.description)
-			g.Expect(mgd.Status.DBSubnetGroupExternalStatus.SubnetGroupStatus).To(gomega.Equal(aws.StringValue(mockExternal.SubnetGroupStatus)), tc.description)
-		}
-	}
-}
-
-func Test_Create(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := v1alpha3.DBSubnetGroup{
-		Spec: v1alpha3.DBSubnetGroupSpec{
-			DBSubnetGroupParameters: v1alpha3.DBSubnetGroupParameters{
-				DBSubnetGroupDescription: "arbitrary description",
-				DBSubnetGroupName:        "arbitrary group name",
-				SubnetIDs:                []string{"subnetid1", "subnetid2"},
-				Tags: []v1alpha3.Tag{
-					{Key: "tagKey1", Value: "tagValue1"},
-					{Key: "tagKey2", Value: "tagValue2"},
+	providerSA := func(saVal bool) awsv1alpha3.Provider {
+		return awsv1alpha3.Provider{
+			Spec: awsv1alpha3.ProviderSpec{
+				Region:            testRegion,
+				UseServiceAccount: &saVal,
+				ProviderSpec: runtimev1alpha1.ProviderSpec{
+					CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
+						SecretReference: runtimev1alpha1.SecretReference{
+							Namespace: secretNamespace,
+							Name:      connectionSecretName,
+						},
+						Key: secretKey,
+					},
 				},
 			},
-		},
+		}
 	}
-	mockExternal := &awsrds.DBSubnetGroup{
-		VpcId:             aws.String("arbitrary vpcId"),
-		DBSubnetGroupArn:  aws.String("arbitrary group arn"),
-		SubnetGroupStatus: aws.String("arbitrary group status"),
+
+	type args struct {
+		kube        client.Client
+		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (dbsg.Client, error)
+		cr          *v1beta1.DBSubnetGroup
 	}
-	var mockClientErr error
-	mockClient.MockCreateDBSubnetGroupRequest = func(input *awsrds.CreateDBSubnetGroupInput) awsrds.CreateDBSubnetGroupRequest {
-		g.Expect(aws.StringValue(input.DBSubnetGroupDescription)).To(gomega.Equal(mockManaged.Spec.DBSubnetGroupDescription), "the passed parameters are not valid")
-		g.Expect(aws.StringValue(input.DBSubnetGroupName)).To(gomega.Equal(mockManaged.Spec.DBSubnetGroupName), "the passed parameters are not valid")
-		g.Expect(input.SubnetIds).To(gomega.Equal(mockManaged.Spec.SubnetIDs), "the passed parameters are not valid")
-		g.Expect(len(input.Tags)).To(gomega.Equal(len(mockManaged.Spec.Tags)), "the passed parameters are not valid")
-		return awsrds.CreateDBSubnetGroupRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data: &awsrds.CreateDBSubnetGroupOutput{
-					DBSubnetGroup: mockExternal,
+
+	type want struct {
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						}
+						return errBoom
+					},
 				},
-				Error: mockClientErr,
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i dbsg.Client, e error) {
+					if diff := cmp.Diff(credData, string(credentials)); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
+				},
+				cr: dbSubnetGroup(),
 			},
-		}
+		},
+		"SuccessfulUseServiceAccount": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						if key == (client.ObjectKey{Name: providerName}) {
+							p := providerSA(true)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						}
+						return errBoom
+					},
+				},
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i dbsg.Client, e error) {
+					if diff := cmp.Diff("", string(credentials)); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
+				},
+				cr: dbSubnetGroup(),
+			},
+		},
+		"ProviderGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						return errBoom
+					},
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProvider),
+			},
+		},
+		"SecretGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProviderSecret),
+			},
+		},
+		"SecretGetFailedNil": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.SetCredentialsSecretReference(nil)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				err: errors.New(errGetProviderSecret),
+			},
+		},
 	}
 
-	for _, tc := range []struct {
-		description    string
-		managedObj     resource.Managed
-		clientErr      error
-		expectedErrNil bool
-	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpecedItem,
-			nil,
-			false,
-		},
-		{
-			"if creating resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			errors.New("some error"),
-			false,
-		},
-	} {
-		mockClientErr = tc.clientErr
-
-		_, err := mockExternalClient.Create(context.Background(), tc.managedObj)
-
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.DBSubnetGroup)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
-			g.Expect(mgd.Status.SubnetGroupStatus).To(gomega.Equal(aws.StringValue(mockExternal.SubnetGroupStatus)))
-		}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			c := &connector{kube: tc.kube, newClientFn: tc.newClientFn}
+			_, err := c.Connect(context.Background(), tc.args.cr)
+			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
 	}
 }
 
-func Test_Update(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
+func TestObserve(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.DBSubnetGroup
+		result managed.ExternalObservation
+		err    error
+	}
 
-	mockManaged := v1alpha3.DBSubnetGroup{}
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"SuccessfulAvailable": {
+			args: args{
+				client: &fake.MockDBSubnetGroupClient{
+					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
+						return awsrds.DescribeDBSubnetGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
+								DBSubnetGroups: []awsrds.DBSubnetGroup{
+									{
+										SubnetGroupStatus: aws.String(string(v1beta1.DBSubnetGroupStateAvailable)),
+									},
+								},
+							}},
+						}
+					},
+					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				cr: dbSubnetGroup(
+					withConditions(runtimev1alpha1.Available()),
+					withBindingPhase(runtimev1alpha1.BindingPhaseUnbound),
+					withDBSubnetGroupStatus(string(v1beta1.DBSubnetGroupStateAvailable)),
+				),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"DeletingState": {
+			args: args{
+				client: &fake.MockDBSubnetGroupClient{
+					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
+						return awsrds.DescribeDBSubnetGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
+								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
+							}},
+						}
+					},
+					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				cr: dbSubnetGroup(
+					withConditions(runtimev1alpha1.Unavailable())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"FailedState": {
+			args: args{
+				client: &fake.MockDBSubnetGroupClient{
+					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
+						return awsrds.DescribeDBSubnetGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
+								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
+							}},
+						}
+					},
+					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				cr: dbSubnetGroup(
+					withConditions(runtimev1alpha1.Unavailable())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"FailedDescribeRequest": {
+			args: args{
+				client: &fake.MockDBSubnetGroupClient{
+					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
+						return awsrds.DescribeDBSubnetGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				cr:  dbSubnetGroup(),
+				err: errors.Wrap(errBoom, errDescribe),
+			},
+		},
+		"NotFound": {
+			args: args{
+				client: &fake.MockDBSubnetGroupClient{
+					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
+						return awsrds.DescribeDBSubnetGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awsrds.ErrCodeDBSubnetGroupNotFoundFault)},
+						}
+					},
+					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				cr: dbSubnetGroup(),
+			},
+		},
+		"LateInitSuccess": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+				client: &fake.MockDBSubnetGroupClient{
+					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
+						return awsrds.DescribeDBSubnetGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
+								DBSubnetGroups: []awsrds.DBSubnetGroup{
+									{
+										DBSubnetGroupDescription: aws.String(dbSubnetGroupDescription),
+									},
+								},
+							}},
+						}
+					},
+					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				cr: dbSubnetGroup(
+					withDBSubnetGroupDescription(dbSubnetGroupDescription),
+					withConditions(runtimev1alpha1.Unavailable())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"LateInitFailedKubeUpdate": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(errBoom),
+				},
+				client: &fake.MockDBSubnetGroupClient{
+					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
+						return awsrds.DescribeDBSubnetGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
+								DBSubnetGroups: []awsrds.DBSubnetGroup{
+									{
+										DBSubnetGroupDescription: aws.String(dbSubnetGroupDescription),
+									},
+								},
+							}},
+						}
+					},
+					MockListTagsForResourceRequest: mockListTagsForResourceRequest,
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				cr: dbSubnetGroup(
+					withDBSubnetGroupDescription(dbSubnetGroupDescription),
+				),
+				err: errors.Wrap(errBoom, errKubeUpdateFailed),
+			},
+		},
+	}
 
-	_, err := mockExternalClient.Update(context.Background(), &mockManaged)
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.client}
+			o, err := e.Observe(context.Background(), tc.args.cr)
 
-	g.Expect(err).To(gomega.BeNil())
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
 }
 
-func Test_Delete(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := v1alpha3.DBSubnetGroup{
-		Spec: v1alpha3.DBSubnetGroupSpec{
-			DBSubnetGroupParameters: v1alpha3.DBSubnetGroupParameters{
-				DBSubnetGroupDescription: "arbitrary description",
-				DBSubnetGroupName:        "arbitrary group name",
-				SubnetIDs:                []string{"subnetid1", "subnetid2"},
-			},
-		},
-	}
-	var mockClientErr error
-	mockClient.MockDeleteDBSubnetGroupRequest = func(input *awsrds.DeleteDBSubnetGroupInput) awsrds.DeleteDBSubnetGroupRequest {
-		g.Expect(aws.StringValue(input.DBSubnetGroupName)).To(gomega.Equal(mockManaged.Spec.DBSubnetGroupName), "the passed parameters are not valid")
-		return awsrds.DeleteDBSubnetGroupRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data:        &awsrds.DeleteDBSubnetGroupOutput{},
-				Error:       mockClientErr,
-			},
-		}
+func TestCreate(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.DBSubnetGroup
+		result managed.ExternalCreation
+		err    error
 	}
 
-	for _, tc := range []struct {
-		description    string
-		managedObj     resource.Managed
-		clientErr      error
-		expectedErrNil bool
+	cases := map[string]struct {
+		args
+		want
 	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			true,
+		"Successful": {
+			args: args{
+				client: &fake.MockDBSubnetGroupClient{
+					MockCreateDBSubnetGroupRequest: func(input *awsrds.CreateDBSubnetGroupInput) awsrds.CreateDBSubnetGroupRequest {
+						return awsrds.CreateDBSubnetGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.CreateDBSubnetGroupOutput{}},
+						}
+					},
+				},
+				cr: dbSubnetGroup(withDBSubnetGroupDescription(dbSubnetGroupDescription)),
+			},
+			want: want{
+				cr: dbSubnetGroup(
+					withDBSubnetGroupDescription(dbSubnetGroupDescription),
+					withConditions(runtimev1alpha1.Creating())),
+			},
 		},
-		{
-			"unexpected managed resource should return error",
-			unexpecedItem,
-			nil,
-			false,
+		"FailedRequest": {
+			args: args{
+				client: &fake.MockDBSubnetGroupClient{
+					MockCreateDBSubnetGroupRequest: func(input *awsrds.CreateDBSubnetGroupInput) awsrds.CreateDBSubnetGroupRequest {
+						return awsrds.CreateDBSubnetGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				cr:  dbSubnetGroup(withConditions(runtimev1alpha1.Creating())),
+				err: errors.Wrap(errBoom, errCreate),
+			},
 		},
-		{
-			"if the resource doesn't exist deleting resource should not return an error",
-			mockManaged.DeepCopy(),
-			awserr.New(awsrds.ErrCodeDBSubnetGroupNotFoundFault, "", nil),
-			true,
-		},
-		{
-			"if deleting resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			errors.New("some error"),
-			false,
-		},
-	} {
-		mockClientErr = tc.clientErr
+	}
 
-		err := mockExternalClient.Delete(context.Background(), tc.managedObj)
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.client}
+			o, err := e.Create(context.Background(), tc.args.cr)
 
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.DBSubnetGroup)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)
-		}
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.DBSubnetGroup
+		result managed.ExternalUpdate
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				client: &fake.MockDBSubnetGroupClient{
+					MockModifyDBSubnetGroupRequest: func(input *awsrds.ModifyDBSubnetGroupInput) awsrds.ModifyDBSubnetGroupRequest {
+						return awsrds.ModifyDBSubnetGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ModifyDBSubnetGroupOutput{}},
+						}
+					},
+					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
+						return awsrds.DescribeDBSubnetGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
+								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
+							}},
+						}
+					},
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				cr: dbSubnetGroup(),
+			},
+		},
+		"FailedModify": {
+			args: args{
+				client: &fake.MockDBSubnetGroupClient{
+					MockModifyDBSubnetGroupRequest: func(input *awsrds.ModifyDBSubnetGroupInput) awsrds.ModifyDBSubnetGroupRequest {
+						return awsrds.ModifyDBSubnetGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
+						return awsrds.DescribeDBSubnetGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
+								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
+							}},
+						}
+					},
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				cr:  dbSubnetGroup(),
+				err: errors.Wrap(errBoom, errUpdate),
+			},
+		},
+		"SuccessfulWithTags": {
+			args: args{
+				client: &fake.MockDBSubnetGroupClient{
+					MockModifyDBSubnetGroupRequest: func(input *awsrds.ModifyDBSubnetGroupInput) awsrds.ModifyDBSubnetGroupRequest {
+						return awsrds.ModifyDBSubnetGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ModifyDBSubnetGroupOutput{}},
+						}
+					},
+					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
+						return awsrds.DescribeDBSubnetGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
+								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
+							}},
+						}
+					},
+					MockAddTagsToResourceRequest: func(input *awsrds.AddTagsToResourceInput) awsrds.AddTagsToResourceRequest {
+						return awsrds.AddTagsToResourceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.AddTagsToResourceOutput{}},
+						}
+					},
+				},
+				cr: dbSubnetGroup(withDBSubnetGroupTags()),
+			},
+			want: want{
+				cr: dbSubnetGroup(withDBSubnetGroupTags()),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.client}
+			u, err := e.Update(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, u); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestDelete(t *testing.T) {
+	type want struct {
+		cr  *v1beta1.DBSubnetGroup
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				client: &fake.MockDBSubnetGroupClient{
+					MockDeleteDBSubnetGroupRequest: func(input *awsrds.DeleteDBSubnetGroupInput) awsrds.DeleteDBSubnetGroupRequest {
+						return awsrds.DeleteDBSubnetGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DeleteDBSubnetGroupOutput{}},
+						}
+					},
+					MockModifyDBSubnetGroupRequest: func(input *awsrds.ModifyDBSubnetGroupInput) awsrds.ModifyDBSubnetGroupRequest {
+						return awsrds.ModifyDBSubnetGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ModifyDBSubnetGroupOutput{}},
+						}
+					},
+					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
+						return awsrds.DescribeDBSubnetGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
+								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
+							}},
+						}
+					},
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				cr: dbSubnetGroup(withConditions(runtimev1alpha1.Deleting())),
+			},
+		},
+		"AlreadyDeleted": {
+			args: args{
+				client: &fake.MockDBSubnetGroupClient{
+					MockDeleteDBSubnetGroupRequest: func(input *awsrds.DeleteDBSubnetGroupInput) awsrds.DeleteDBSubnetGroupRequest {
+						return awsrds.DeleteDBSubnetGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awsrds.ErrCodeDBSubnetGroupNotFoundFault)},
+						}
+					},
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				cr: dbSubnetGroup(withConditions(runtimev1alpha1.Deleting())),
+			},
+		},
+		"Failed": {
+			args: args{
+				client: &fake.MockDBSubnetGroupClient{
+					MockDeleteDBSubnetGroupRequest: func(input *awsrds.DeleteDBSubnetGroupInput) awsrds.DeleteDBSubnetGroupRequest {
+						return awsrds.DeleteDBSubnetGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+					MockModifyDBSubnetGroupRequest: func(input *awsrds.ModifyDBSubnetGroupInput) awsrds.ModifyDBSubnetGroupRequest {
+						return awsrds.ModifyDBSubnetGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ModifyDBSubnetGroupOutput{}},
+						}
+					},
+					MockDescribeDBSubnetGroupsRequest: func(input *awsrds.DescribeDBSubnetGroupsInput) awsrds.DescribeDBSubnetGroupsRequest {
+						return awsrds.DescribeDBSubnetGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBSubnetGroupsOutput{
+								DBSubnetGroups: []awsrds.DBSubnetGroup{{}},
+							}},
+						}
+					},
+				},
+				cr: dbSubnetGroup(),
+			},
+			want: want{
+				cr:  dbSubnetGroup(withConditions(runtimev1alpha1.Deleting())),
+				err: errors.Wrap(errBoom, errDelete),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.client}
+			err := e.Delete(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
 	}
 }

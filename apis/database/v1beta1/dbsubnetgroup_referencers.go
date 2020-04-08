@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha3
+package v1beta1
 
 import (
 	"context"
@@ -25,6 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 )
 
@@ -54,11 +55,11 @@ func (v *DBSubnetGroupNameReferencer) GetStatus(ctx context.Context, _ resource.
 
 // Build retrieves the DBSubnetGroup and returns the name
 func (v *DBSubnetGroupNameReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
-	sg := DBSubnetGroup{}
+	sg := &DBSubnetGroup{}
 	nn := types.NamespacedName{Name: v.Name}
-	if err := reader.Get(ctx, nn, &sg); err != nil {
+	if err := reader.Get(ctx, nn, sg); err != nil {
 		return "", err
 	}
 
-	return sg.Spec.DBSubnetGroupName, nil
+	return meta.GetExternalName(sg), nil
 }
