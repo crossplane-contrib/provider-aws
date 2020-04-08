@@ -52,7 +52,6 @@ func TestConfigureBucket(t *testing.T) {
 
 	claimUID := types.UID("definitely-a-uuid")
 	providerName := "coolprovider"
-	bucketName := "coolbucket"
 
 	bucketPrivate := storagev1alpha1.ACLPrivate
 	s3BucketPrivate := s3.BucketCannedACLPrivate
@@ -68,7 +67,6 @@ func TestConfigureBucket(t *testing.T) {
 				cm: &storagev1alpha1.Bucket{
 					ObjectMeta: metav1.ObjectMeta{UID: claimUID},
 					Spec: storagev1alpha1.BucketSpec{
-						Name:            bucketName,
 						PredefinedACL:   &bucketPrivate,
 						LocalPermission: &ro,
 					},
