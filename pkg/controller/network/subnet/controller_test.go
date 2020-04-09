@@ -31,7 +31,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	v1alpha3 "github.com/crossplane/provider-aws/apis/network/v1alpha3"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -43,13 +45,18 @@ var (
 	mockClient         fake.MockSubnetClient
 
 	// an arbitrary managed resource
-	unexpecedItem resource.Managed
+	unexpectedItem resource.Managed
 )
 
 func TestMain(m *testing.M) {
 
 	mockClient = fake.MockSubnetClient{}
-	mockExternalClient = external{&mockClient}
+	mockExternalClient = external{
+		client: &mockClient,
+		kube: &test.MockClient{
+			MockUpdate: test.NewMockUpdateFn(nil),
+		},
+	}
 
 	os.Exit(m.Run())
 }
@@ -89,7 +96,7 @@ func Test_Connect(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			nil,
 			true,
@@ -124,16 +131,11 @@ func Test_Connect(t *testing.T) {
 func Test_Observe(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha3.Subnet{
-		Status: v1alpha3.SubnetStatus{
-			SubnetExternalStatus: v1alpha3.SubnetExternalStatus{
-				SubnetID: "some arbitrary id",
-			},
-		},
-	}
+	mockManaged := v1alpha3.Subnet{}
+	meta.SetExternalName(&mockManaged, "some arbitrary id")
 
 	mockExternal := &awsec2.Subnet{
-		SubnetId: aws.String("some arbitrary Id"),
+		SubnetId: aws.String("some arbitrary id"),
 		State:    awsec2.SubnetStateAvailable,
 	}
 	var mockClientErr error
@@ -168,7 +170,7 @@ func Test_Observe(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			nil,
 			false,
@@ -265,7 +267,7 @@ func Test_Create(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			false,
 		},
@@ -286,7 +288,7 @@ func Test_Create(t *testing.T) {
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
-			g.Expect(mgd.Status.SubnetID).To(gomega.Equal(aws.StringValue(mockExternal.SubnetId)), tc.description)
+			g.Expect(meta.GetExternalName(mgd)).To(gomega.Equal(aws.StringValue(mockExternal.SubnetId)), tc.description)
 		}
 	}
 }
@@ -310,15 +312,11 @@ func Test_Delete(t *testing.T) {
 				CIDRBlock: "arbitrary cidr block",
 			},
 		},
-		Status: v1alpha3.SubnetStatus{
-			SubnetExternalStatus: v1alpha3.SubnetExternalStatus{
-				SubnetID: "some arbitrary id",
-			},
-		},
 	}
+	meta.SetExternalName(&mockManaged, "some arbitrary id")
 	var mockClientErr error
 	mockClient.MockDeleteSubnetRequest = func(input *awsec2.DeleteSubnetInput) awsec2.DeleteSubnetRequest {
-		g.Expect(aws.StringValue(input.SubnetId)).To(gomega.Equal(mockManaged.Status.SubnetID), "the passed parameters are not valid")
+		g.Expect(aws.StringValue(input.SubnetId)).To(gomega.Equal(meta.GetExternalName(&mockManaged)), "the passed parameters are not valid")
 		return awsec2.DeleteSubnetRequest{
 			Request: &aws.Request{
 				HTTPRequest: &http.Request{},
@@ -341,14 +339,8 @@ func Test_Delete(t *testing.T) {
 			true,
 		},
 		{
-			"if status doesn't have the resource ID, it should return an error",
-			&v1alpha3.Subnet{},
-			nil,
-			false,
-		},
-		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			false,
 		},

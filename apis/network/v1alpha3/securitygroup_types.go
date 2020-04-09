@@ -226,9 +226,6 @@ type SecurityGroupSpec struct {
 
 // SecurityGroupExternalStatus keeps the state for the external resource
 type SecurityGroupExternalStatus struct {
-	// SecurityGroupID is the ID of the SecurityGroup.
-	SecurityGroupID string `json:"securityGroupID"`
-
 	// Tags represents to current ec2 tags.
 	Tags []Tag `json:"tags,omitempty"`
 }
@@ -271,7 +268,6 @@ type SecurityGroupList struct {
 // UpdateExternalStatus updates the external status object, given the observation
 func (s *SecurityGroup) UpdateExternalStatus(observation ec2.SecurityGroup) {
 	s.Status.SecurityGroupExternalStatus = SecurityGroupExternalStatus{
-		SecurityGroupID: aws.StringValue(observation.GroupId),
-		Tags:            BuildFromEC2Tags(observation.Tags),
+		Tags: BuildFromEC2Tags(observation.Tags),
 	}
 }

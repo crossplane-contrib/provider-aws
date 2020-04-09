@@ -19,6 +19,7 @@ package v1alpha3
 import (
 	"context"
 
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -56,11 +57,11 @@ func (v *SubnetIDReferencer) GetStatus(ctx context.Context, _ resource.CanRefere
 
 // Build retrieves and builds the SubnetID
 func (v *SubnetIDReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
-	subnet := Subnet{}
+	subnet := &Subnet{}
 	nn := types.NamespacedName{Name: v.Name}
-	if err := reader.Get(ctx, nn, &subnet); err != nil {
+	if err := reader.Get(ctx, nn, subnet); err != nil {
 		return "", err
 	}
 
-	return subnet.Status.SubnetID, nil
+	return meta.GetExternalName(subnet), nil
 }
