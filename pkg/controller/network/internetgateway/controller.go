@@ -239,12 +239,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 			VpcId:             aws.String(a.VPCID),
 		}).Send(ctx)
 
-		if err != nil {
-			if ec2.IsInternetGatewayNotFoundErr(err) {
-				continue
-			}
-			return errors.Wrap(err, errDetach)
+		if resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err) == nil {
+			continue
 		}
+		return errors.Wrap(err, errDetach)
 	}
 
 	// now delete the IG
