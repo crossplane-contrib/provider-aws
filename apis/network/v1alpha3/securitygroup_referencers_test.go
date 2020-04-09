@@ -38,16 +38,6 @@ func TestSecurityGroupIDReferencerGetStatus(t *testing.T) {
 	errBoom = errors.New("boom")
 	errResourceNotFound := &kerrors.StatusError{ErrStatus: metav1.Status{Reason: metav1.StatusReasonNotFound}}
 
-	readyResource := SecurityGroup{
-		Status: SecurityGroupStatus{
-			SecurityGroupExternalStatus: SecurityGroupExternalStatus{
-				SecurityGroupID: "mockSecurityGroupID",
-			},
-		},
-	}
-
-	readyResource.Status.SetConditions(runtimev1alpha1.Available())
-
 	type input struct {
 		readerFn func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error
 	}
@@ -92,8 +82,7 @@ func TestSecurityGroupIDReferencerGetStatus(t *testing.T) {
 		"ReferenceReady_ReturnsExpected": {
 			input: input{
 				readerFn: func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error {
-					p := obj.(*SecurityGroup)
-					p.Status = readyResource.Status
+					obj.(*SecurityGroup).SetConditions(runtimev1alpha1.Available())
 					return nil
 				},
 			},

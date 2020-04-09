@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 )
@@ -36,16 +37,6 @@ import (
 func TestInternetGatewayIDReferencerGetStatus(t *testing.T) {
 	errBoom = errors.New("boom")
 	errResourceNotFound := &kerrors.StatusError{ErrStatus: metav1.Status{Reason: metav1.StatusReasonNotFound}}
-
-	readyResource := InternetGateway{
-		Status: InternetGatewayStatus{
-			InternetGatewayExternalStatus: InternetGatewayExternalStatus{
-				InternetGatewayID: "mockInternetGatewayID",
-			},
-		},
-	}
-
-	readyResource.Status.SetConditions(runtimev1alpha1.Available())
 
 	type input struct {
 		readerFn func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error
@@ -91,8 +82,7 @@ func TestInternetGatewayIDReferencerGetStatus(t *testing.T) {
 		"ReferenceReady_ReturnsExpected": {
 			input: input{
 				readerFn: func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error {
-					p := obj.(*InternetGateway)
-					p.Status = readyResource.Status
+					obj.(*InternetGateway).SetConditions(runtimev1alpha1.Available())
 					return nil
 				},
 			},
@@ -150,8 +140,7 @@ func TestInternetGatewayIDReferencerBuild(t *testing.T) {
 		"ReferenceRetrieved_ReturnsExpected": {
 			input: input{
 				readerFn: func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error {
-					p := obj.(*InternetGateway)
-					p.Status.InternetGatewayID = "mockInternetGatewayID"
+					meta.SetExternalName(obj.(metav1.Object), "mockInternetGatewayID")
 					return nil
 				},
 			},

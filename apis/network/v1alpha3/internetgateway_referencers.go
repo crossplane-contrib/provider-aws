@@ -19,15 +19,14 @@ package v1alpha3
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	corev1 "k8s.io/api/core/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-
-	kerrors "k8s.io/apimachinery/pkg/api/errors"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 )
 
 // InternetGatewayIDReferencer is used to get a InternetGatewayID from a InternetGateway
@@ -56,11 +55,11 @@ func (v *InternetGatewayIDReferencer) GetStatus(ctx context.Context, _ resource.
 
 // Build retrieves and builds the InternetGatewayID
 func (v *InternetGatewayIDReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
-	ig := InternetGateway{}
+	ig := &InternetGateway{}
 	nn := types.NamespacedName{Name: v.Name}
-	if err := reader.Get(ctx, nn, &ig); err != nil {
+	if err := reader.Get(ctx, nn, ig); err != nil {
 		return "", err
 	}
 
-	return ig.Status.InternetGatewayID, nil
+	return meta.GetExternalName(ig), nil
 }

@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 )
@@ -36,16 +37,6 @@ import (
 func TestSubnetIDReferencerGetStatus(t *testing.T) {
 	errBoom = errors.New("boom")
 	errResourceNotFound := &kerrors.StatusError{ErrStatus: metav1.Status{Reason: metav1.StatusReasonNotFound}}
-
-	readyResource := Subnet{
-		Status: SubnetStatus{
-			SubnetExternalStatus: SubnetExternalStatus{
-				SubnetID: "mockSubnetID",
-			},
-		},
-	}
-
-	readyResource.Status.SetConditions(runtimev1alpha1.Available())
 
 	type input struct {
 		readerFn func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error
@@ -91,8 +82,7 @@ func TestSubnetIDReferencerGetStatus(t *testing.T) {
 		"ReferenceReady_ReturnsExpected": {
 			input: input{
 				readerFn: func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error {
-					p := obj.(*Subnet)
-					p.Status = readyResource.Status
+					obj.(*Subnet).SetConditions(runtimev1alpha1.Available())
 					return nil
 				},
 			},
@@ -150,8 +140,7 @@ func TestSubnetIDReferencerBuild(t *testing.T) {
 		"ReferenceRetrieved_ReturnsExpected": {
 			input: input{
 				readerFn: func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error {
-					p := obj.(*Subnet)
-					p.Status.SubnetID = "mockSubnetID"
+					meta.SetExternalName(obj.(*Subnet), "mockSubnetID")
 					return nil
 				},
 			},

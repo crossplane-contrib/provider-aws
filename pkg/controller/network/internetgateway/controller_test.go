@@ -31,7 +31,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	v1alpha3 "github.com/crossplane/provider-aws/apis/network/v1alpha3"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -43,13 +45,16 @@ var (
 	mockClient         fake.MockInternetGatewayClient
 
 	// an arbitrary managed resource
-	unexpecedItem resource.Managed
+	unexpectedItem resource.Managed
 )
 
 func TestMain(m *testing.M) {
 
 	mockClient = fake.MockInternetGatewayClient{}
-	mockExternalClient = external{&mockClient}
+	mockExternalClient = external{
+		client: &mockClient,
+		kube:   &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
+	}
 
 	os.Exit(m.Run())
 }
@@ -89,7 +94,7 @@ func Test_Connect(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			nil,
 			true,
@@ -124,16 +129,11 @@ func Test_Connect(t *testing.T) {
 func Test_Observe(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha3.InternetGateway{
-		Status: v1alpha3.InternetGatewayStatus{
-			InternetGatewayExternalStatus: v1alpha3.InternetGatewayExternalStatus{
-				InternetGatewayID: "some arbitrary id",
-			},
-		},
-	}
+	mockManaged := v1alpha3.InternetGateway{}
+	meta.SetExternalName(&mockManaged, "some arbitrary id")
 
 	mockExternal := &awsec2.InternetGateway{
-		InternetGatewayId: aws.String("some arbitrary Id"),
+		InternetGatewayId: aws.String("some arbitrary id"),
 	}
 	var mockClientErr error
 	var itemsList []awsec2.InternetGateway
@@ -205,7 +205,7 @@ func Test_Observe(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			nil,
 			false,
@@ -268,7 +268,7 @@ func Test_Observe(t *testing.T) {
 			} else {
 				g.Expect(len(mgd.Status.Conditions)).To(gomega.Equal(0), tc.description)
 			}
-			g.Expect(mgd.Status.InternetGatewayExternalStatus.InternetGatewayID).To(gomega.Equal(aws.StringValue(mockExternal.InternetGatewayId)), tc.description)
+			g.Expect(meta.GetExternalName(mgd)).To(gomega.Equal(aws.StringValue(mockExternal.InternetGatewayId)), tc.description)
 		}
 	}
 }
@@ -326,7 +326,7 @@ func Test_Create(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			nil,
 			false,
@@ -357,7 +357,7 @@ func Test_Create(t *testing.T) {
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
-			g.Expect(mgd.Status.InternetGatewayExternalStatus.InternetGatewayID).To(gomega.Equal(aws.StringValue(mockExternal.InternetGatewayId)), tc.description)
+			g.Expect(meta.GetExternalName(mgd)).To(gomega.Equal(aws.StringValue(mockExternal.InternetGatewayId)), tc.description)
 		}
 	}
 }
@@ -383,16 +383,16 @@ func Test_Delete(t *testing.T) {
 		},
 		Status: v1alpha3.InternetGatewayStatus{
 			InternetGatewayExternalStatus: v1alpha3.InternetGatewayExternalStatus{
-				InternetGatewayID: "some arbitrary id",
 				Attachments: []v1alpha3.InternetGatewayAttachment{
 					{VPCID: "arbitrary vpcId"},
 				},
 			},
 		},
 	}
+	meta.SetExternalName(&mockManaged, "some arbitrary id")
 	var mockClientErr error
 	mockClient.MockDeleteInternetGatewayRequest = func(input *awsec2.DeleteInternetGatewayInput) awsec2.DeleteInternetGatewayRequest {
-		g.Expect(aws.StringValue(input.InternetGatewayId)).To(gomega.Equal(mockManaged.Status.InternetGatewayID), "the passed parameters are not valid")
+		g.Expect(aws.StringValue(input.InternetGatewayId)).To(gomega.Equal(meta.GetExternalName(&mockManaged)), "the passed parameters are not valid")
 		return awsec2.DeleteInternetGatewayRequest{
 			Request: &aws.Request{
 				HTTPRequest: &http.Request{},
@@ -404,7 +404,7 @@ func Test_Delete(t *testing.T) {
 
 	var mockClientDetachErr error
 	mockClient.MockDetachInternetGatewayRequest = func(input *awsec2.DetachInternetGatewayInput) awsec2.DetachInternetGatewayRequest {
-		g.Expect(aws.StringValue(input.InternetGatewayId)).To(gomega.Equal(mockManaged.Status.InternetGatewayID), "the passed parameters for DetachInternetGatewayRequest are not valid")
+		g.Expect(aws.StringValue(input.InternetGatewayId)).To(gomega.Equal(meta.GetExternalName(&mockManaged)), "the passed parameters for DetachInternetGatewayRequest are not valid")
 		g.Expect(aws.StringValue(input.VpcId)).To(gomega.Equal(mockManaged.Spec.VPCID), "the passed parameters for DetachInternetGatewayRequest are not valid")
 		return awsec2.DetachInternetGatewayRequest{
 			Request: &aws.Request{
@@ -430,15 +430,8 @@ func Test_Delete(t *testing.T) {
 			true,
 		},
 		{
-			"if status doesn't have the resource ID, it should return an error",
-			&v1alpha3.InternetGateway{},
-			nil,
-			nil,
-			false,
-		},
-		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			nil,
 			false,
