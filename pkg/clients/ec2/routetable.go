@@ -123,7 +123,7 @@ func LateInitializeRT(in *v1beta1.RouteTableParameters, rt *ec2.RouteTable) { //
 	if rt == nil {
 		return
 	}
-	in.VPCID = awsclients.LateInitializeString(in.VPCID, rt.VpcId)
+	in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, rt.VpcId)
 
 	if len(in.Routes) == 0 && len(rt.Routes) != 0 {
 		in.Routes = make([]v1beta1.Route, len(rt.Routes))

@@ -31,12 +31,14 @@ var _ resource.AttributeReferencer = (*VPCIDReferencerForRouteTable)(nil)
 var _ resource.AttributeReferencer = (*SubnetIDReferencerForRouteTable)(nil)
 var _ resource.AttributeReferencer = (*InternetGatewayIDReferencerForRouteTable)(nil)
 
+var rtMockValue = "mockValue"
+
 func TestVPCIDReferencerForRouteTable_AssignInvalidType_ReturnsErr(t *testing.T) {
 
 	r := &VPCIDReferencerForRouteTable{}
 	expectedErr := errors.New(errResourceIsNotRouteTable)
 
-	err := r.Assign(nil, "mockValue")
+	err := r.Assign(nil, rtMockValue)
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
@@ -48,12 +50,12 @@ func TestVPCIDReferencerForRouteTable_AssignValidType_ReturnsExpected(t *testing
 	res := &RouteTable{}
 	var expectedErr error
 
-	err := r.Assign(res, "mockValue")
+	err := r.Assign(res, rtMockValue)
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
 
-	if diff := cmp.Diff(res.Spec.ForProvider.VPCID, "mockValue"); diff != "" {
+	if diff := cmp.Diff(res.Spec.ForProvider.VPCID, &rtMockValue); diff != "" {
 		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
 	}
 }
@@ -63,7 +65,7 @@ func TestSubnetIDReferencerForRouteTable_AssignInvalidType_ReturnsErr(t *testing
 	r := &SubnetIDReferencerForRouteTable{}
 	expectedErr := errors.New(errResourceIsNotRouteTable)
 
-	err := r.Assign(nil, "mockValue")
+	err := r.Assign(nil, rtMockValue)
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
@@ -79,7 +81,7 @@ func TestSubnetIDReferencerForRouteTable_AssociationWithSameNameNotExist_Returns
 
 	expectedErr := errors.New(errAssociationNotFound)
 
-	err := r.Assign(&RouteTable{}, "mockValue")
+	err := r.Assign(&RouteTable{}, rtMockValue)
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
@@ -124,7 +126,7 @@ func TestInternetGatewayIDReferencerForRouteTable_AssignInvalidType_ReturnsErr(t
 	r := &InternetGatewayIDReferencerForRouteTable{}
 	expectedErr := errors.New(errResourceIsNotRouteTable)
 
-	err := r.Assign(nil, "mockValue")
+	err := r.Assign(nil, rtMockValue)
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
@@ -140,7 +142,7 @@ func TestInternetGatewayIDReferencerForRouteTable_RouteWithSameNameNotExist_Retu
 
 	expectedErr := errors.New(errRouteNotFound)
 
-	err := r.Assign(&RouteTable{}, "mockValue")
+	err := r.Assign(&RouteTable{}, rtMockValue)
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}

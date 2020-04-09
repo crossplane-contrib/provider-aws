@@ -216,7 +216,6 @@ spec:
                   type: object
               required:
               - cidrBlock
-              - vpcId
               type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used

@@ -26,7 +26,8 @@ import (
 // Gateway.
 type InternetGatewayParameters struct {
 	// VPCID is the ID of the VPC.
-	VPCID string `json:"vpcId"`
+	// +optional
+	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef references a VPC to and retrieves its vpcId
 	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`

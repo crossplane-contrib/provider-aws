@@ -50,7 +50,7 @@ func TestIsRTUpToDate(t *testing.T) {
 					VpcId: aws.String(rtVPC),
 				},
 				p: v1beta1.RouteTableParameters{
-					VPCID: rtVPC,
+					VPCID: aws.String(rtVPC),
 				},
 			},
 			want: true,
@@ -61,7 +61,7 @@ func TestIsRTUpToDate(t *testing.T) {
 					VpcId: aws.String(rtVPC),
 				},
 				p: v1beta1.RouteTableParameters{
-					VPCID: otherRtVPC,
+					VPCID: aws.String(otherRtVPC),
 				},
 			},
 			want: false,
@@ -135,7 +135,7 @@ func TestCreateRTPatch(t *testing.T) {
 				},
 				p: &v1beta1.RouteTableParameters{
 					Associations: specAssociations(),
-					VPCID:        rtVPC,
+					VPCID:        aws.String(rtVPC),
 				},
 			},
 			want: want{
@@ -150,12 +150,12 @@ func TestCreateRTPatch(t *testing.T) {
 				},
 				p: &v1beta1.RouteTableParameters{
 					Associations: specAssociations(),
-					VPCID:        otherRtVPC,
+					VPCID:        aws.String(otherRtVPC),
 				},
 			},
 			want: want{
 				patch: &v1beta1.RouteTableParameters{
-					VPCID: otherRtVPC,
+					VPCID: aws.String(otherRtVPC),
 				},
 			},
 		},

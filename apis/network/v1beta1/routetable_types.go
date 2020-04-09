@@ -85,8 +85,9 @@ type RouteTableParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 
 	// VPCID is the ID of the VPC.
+	// +optional
 	// +immutable
-	VPCID string `json:"vpcId"`
+	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef references a VPC to retrieve its vpcId
 	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`

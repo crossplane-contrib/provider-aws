@@ -182,7 +182,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
 	result, err := e.client.CreateRouteTableRequest(&awsec2.CreateRouteTableInput{
-		VpcId: aws.String(cr.Spec.ForProvider.VPCID),
+		VpcId: cr.Spec.ForProvider.VPCID,
 	}).Send(ctx)
 
 	if err != nil {

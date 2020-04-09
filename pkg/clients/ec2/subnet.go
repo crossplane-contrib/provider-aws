@@ -79,7 +79,7 @@ func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2.Subnet) { // noli
 	in.AvailabilityZoneID = awsclients.LateInitializeStringPtr(in.AvailabilityZoneID, s.AvailabilityZoneId)
 	in.CIDRBlock = awsclients.LateInitializeString(in.CIDRBlock, s.CidrBlock)
 	in.MapPublicIPOnLaunch = awsclients.LateInitializeBoolPtr(in.MapPublicIPOnLaunch, s.MapPublicIpOnLaunch)
-	in.VPCID = awsclients.LateInitializeString(in.VPCID, s.VpcId)
+	in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, s.VpcId)
 
 	if s.Ipv6CidrBlockAssociationSet != nil {
 		in.Ipv6CIDRBlock = awsclients.LateInitializeStringPtr(in.Ipv6CIDRBlock, s.Ipv6CidrBlockAssociationSet[0].Ipv6CidrBlock)

@@ -38,7 +38,7 @@ func TestIsSubnetUpToDate(t *testing.T) {
 				},
 				p: v1beta1.SubnetParameters{
 					CIDRBlock:                   cidr,
-					VPCID:                       vpc,
+					VPCID:                       aws.String(vpc),
 					AssignIpv6AddressOnCreation: aws.Bool(true),
 					MapPublicIPOnLaunch:         aws.Bool(true),
 				},
@@ -55,7 +55,7 @@ func TestIsSubnetUpToDate(t *testing.T) {
 				},
 				p: v1beta1.SubnetParameters{
 					CIDRBlock:                   cidr,
-					VPCID:                       vpc,
+					VPCID:                       aws.String(vpc),
 					AssignIpv6AddressOnCreation: aws.Bool(true),
 					MapPublicIPOnLaunch:         aws.Bool(true),
 				},
@@ -141,7 +141,7 @@ func TestCreateSubnetPatch(t *testing.T) {
 				},
 				p: v1beta1.SubnetParameters{
 					CIDRBlock:                   cidr,
-					VPCID:                       vpc,
+					VPCID:                       aws.String(vpc),
 					AssignIpv6AddressOnCreation: aws.Bool(true),
 					MapPublicIPOnLaunch:         aws.Bool(true),
 				},
@@ -160,7 +160,7 @@ func TestCreateSubnetPatch(t *testing.T) {
 				},
 				p: v1beta1.SubnetParameters{
 					CIDRBlock:                   cidr,
-					VPCID:                       vpc,
+					VPCID:                       aws.String(vpc),
 					AssignIpv6AddressOnCreation: aws.Bool(true),
 					MapPublicIPOnLaunch:         aws.Bool(true),
 				},

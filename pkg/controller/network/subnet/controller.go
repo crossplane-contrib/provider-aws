@@ -181,7 +181,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		AvailabilityZoneId: cr.Spec.ForProvider.AvailabilityZoneID,
 		CidrBlock:          aws.String(cr.Spec.ForProvider.CIDRBlock),
 		Ipv6CidrBlock:      cr.Spec.ForProvider.Ipv6CIDRBlock,
-		VpcId:              aws.String(cr.Spec.ForProvider.VPCID),
+		VpcId:              cr.Spec.ForProvider.VPCID,
 	}).Send(ctx)
 
 	if err != nil {

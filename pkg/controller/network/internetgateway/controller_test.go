@@ -310,7 +310,7 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: ig(withSpec(v1beta1.InternetGatewayParameters{
-					VPCID: vpcID,
+					VPCID: aws.String(vpcID),
 				}),
 					withStatus(v1beta1.InternetGatewayObservation{
 						InternetGatewayID: igID,
@@ -320,7 +320,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: ig(withSpec(v1beta1.InternetGatewayParameters{
-					VPCID: vpcID,
+					VPCID: aws.String(vpcID),
 				}),
 					withStatus(v1beta1.InternetGatewayObservation{
 						Attachments: specAttachments(),
@@ -434,12 +434,12 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				cr: ig(withSpec(v1beta1.InternetGatewayParameters{
-					VPCID: vpcID,
+					VPCID: aws.String(vpcID),
 				})),
 			},
 			want: want{
 				cr: ig(withSpec(v1beta1.InternetGatewayParameters{
-					VPCID: vpcID,
+					VPCID: aws.String(vpcID),
 				}),
 					withExternalName(igID),
 					withConditions(runtimev1alpha1.Creating())),
@@ -521,14 +521,14 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: ig(withSpec(v1beta1.InternetGatewayParameters{
-					VPCID: anotherVpcID,
+					VPCID: aws.String(anotherVpcID),
 				}), withStatus(v1beta1.InternetGatewayObservation{
 					InternetGatewayID: igID,
 				})),
 			},
 			want: want{
 				cr: ig(withSpec(v1beta1.InternetGatewayParameters{
-					VPCID: anotherVpcID,
+					VPCID: aws.String(anotherVpcID),
 				}), withStatus(v1beta1.InternetGatewayObservation{
 					InternetGatewayID: igID,
 				})),
@@ -596,12 +596,12 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: ig(withSpec(v1beta1.InternetGatewayParameters{
-					VPCID: anotherVpcID,
+					VPCID: aws.String(anotherVpcID),
 				}), withExternalName(igID)),
 			},
 			want: want{
 				cr: ig(withSpec(v1beta1.InternetGatewayParameters{
-					VPCID: anotherVpcID,
+					VPCID: aws.String(anotherVpcID),
 				}), withExternalName(igID)),
 				err: errors.Wrap(errBoom, errDetach),
 			},

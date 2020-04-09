@@ -260,7 +260,6 @@ spec:
               required:
               - associations
               - routes
-              - vpcId
               type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
