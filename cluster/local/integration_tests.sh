@@ -18,7 +18,7 @@ echo_sub_step(){
 }
 
 echo_step_completed(){
-    printf "${GRN} [✔]${NOC}" 
+    printf "${GRN} [✔]${NOC}"
 }
 
 echo_success(){
@@ -59,7 +59,7 @@ wait_for_pods_in_namespace(){
     local timeout=$1
     shift
     namespace=$1
-    shift 
+    shift
     arr=("$@")
     local counter=0
     for i in "${arr[@]}";
@@ -85,7 +85,7 @@ check_deployments(){
             exit -1
         else
             echo_step_completed
-        fi 
+        fi
 
         echo_info "check if is ready"
         IFS='/' read -ra ready_status_parts <<< "$(echo "$dep_stat" | awk ' FNR > 1 {print $2}')"
@@ -102,7 +102,7 @@ check_deployments(){
 check_pods(){
     pods=$("${KUBECTL}" -n "$1" get pods)
     echo "$pods"
-    while read -r pod_stat; do 
+    while read -r pod_stat; do
         name=$(echo "$pod_stat" | awk '{print $1}')
         echo_sub_step "inspecting pod '${name}'"
 
@@ -112,7 +112,7 @@ check_pods(){
             echo_info "is completed, foregoing further checks"
             echo_step_completed
             continue
-        fi 
+        fi
 
         echo_info "check if is ready"
         IFS='/' read -ra ready_status_parts <<< "$(echo "$pod_stat" | awk '{print $2}')"
@@ -129,7 +129,7 @@ check_pods(){
             exit -1
         else
             echo_step_completed
-        fi 
+        fi
 
         echo_info "check if has restarts"
         if (( $(echo "$pod_stat" | awk '{print $4}') > 0 )); then
@@ -150,17 +150,17 @@ eval $(make --no-print-directory -C ${projectdir} build.vars)
 
 # ------------------------------
 
-HELM_VERSION="helm-v2.10.0"
+HELM_VERSION="helm-v2.16.0"
 HOST_PLATFORM="${HOSTOS}_${HOSTARCH}"
 TOOLS_DIR="${CACHE_DIR}/tools"
 TOOLS_HOST_DIR="${TOOLS_DIR}/${HOST_PLATFORM}"
 HELM="${TOOLS_HOST_DIR}/${HELM_VERSION}"
-echo_step "installing helm ${HOSTOS}-${HOSTARCH}"
+echo_step "installing ${HELM_VERSION} ${HOSTOS}-${HOSTARCH}"
 mkdir -p ${TOOLS_HOST_DIR}/tmp-helm
 curl -fsSL https://storage.googleapis.com/kubernetes-helm/${HELM_VERSION}-${HOSTOS}-${HOSTARCH}.tar.gz | tar -xz -C ${TOOLS_HOST_DIR}/tmp-helm
 mv ${TOOLS_HOST_DIR}/tmp-helm/${HOSTOS}-${HOSTARCH}/helm ${HELM}
 rm -fr ${TOOLS_HOST_DIR}/tmp-helm
-echo_success "installing helm ${HOSTOS}-${HOSTARCH}"
+echo_success "installing ${HELM_VERSION} ${HOSTOS}-${HOSTARCH}"
 
 HOSTARCH="${HOSTARCH:-amd64}"
 BUILD_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-${HOSTARCH}"
@@ -187,7 +187,6 @@ fi
 
 echo_step "creating k8s cluster using kind"
 "${KIND}" create cluster --name="${K8S_CLUSTER}"
-export KUBECONFIG="$("${KIND}" get kubeconfig-path --name="${K8S_CLUSTER}")"
 
 # tag stack image and load it to kind cluster
 docker tag "${BUILD_IMAGE}" "${STACK_IMAGE}"
