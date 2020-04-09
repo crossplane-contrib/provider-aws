@@ -179,11 +179,13 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	// Tagging the created InternetGateway
-	if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
-		Resources: []string{meta.GetExternalName(cr)},
-		Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
-	}).Send(ctx); err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errCreateTags)
+	if len(cr.Spec.ForProvider.Tags) > 0 {
+		if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+			Resources: []string{meta.GetExternalName(cr)},
+			Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+		}).Send(ctx); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errCreateTags)
+		}
 	}
 
 	response, err := e.client.DescribeInternetGatewaysRequest(&awsec2.DescribeInternetGatewaysInput{
@@ -221,7 +223,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		VpcId:             aws.String(cr.Spec.ForProvider.VPCID),
 	}).Send(ctx)
 
-	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(ec2.IsInternetGatewayAlreadyAttached, err), errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
