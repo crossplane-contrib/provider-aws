@@ -50,7 +50,7 @@ func TestIsIGUpToDate(t *testing.T) {
 					InternetGatewayId: aws.String(igID),
 				},
 				p: v1beta1.InternetGatewayParameters{
-					VPCID: vpcID,
+					VPCID: aws.String(vpcID),
 				},
 			},
 			want: true,

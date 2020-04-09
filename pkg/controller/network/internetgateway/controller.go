@@ -208,7 +208,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	if len(observed.Attachments) == 1 &&
-		*observed.Attachments[0].VpcId != cr.Spec.ForProvider.VPCID {
+		aws.StringValue(observed.Attachments[0].VpcId) != aws.StringValue(cr.Spec.ForProvider.VPCID) {
 		if _, err = e.client.DetachInternetGatewayRequest(&awsec2.DetachInternetGatewayInput{
 			InternetGatewayId: aws.String(meta.GetExternalName(cr)),
 			VpcId:             observed.Attachments[0].VpcId,
@@ -220,7 +220,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// Attach IG to VPC in spec.
 	_, err = e.client.AttachInternetGatewayRequest(&awsec2.AttachInternetGatewayInput{
 		InternetGatewayId: aws.String(meta.GetExternalName(cr)),
-		VpcId:             aws.String(cr.Spec.ForProvider.VPCID),
+		VpcId:             cr.Spec.ForProvider.VPCID,
 	}).Send(ctx)
 
 	return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(ec2.IsInternetGatewayAlreadyAttached, err), errUpdate)

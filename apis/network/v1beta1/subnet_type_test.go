@@ -28,6 +28,8 @@ import (
 
 var _ resource.AttributeReferencer = (*VPCIDReferencerForSubnet)(nil)
 
+var subnetMockValue = "mockValue"
+
 func TestVPCIDReferencerForSubnet_AssignInvalidType_ReturnsErr(t *testing.T) {
 
 	r := &VPCIDReferencerForSubnet{}
@@ -45,12 +47,12 @@ func TestVPCIDReferencerForSubnet_AssignValidType_ReturnsExpected(t *testing.T) 
 	res := &Subnet{}
 	var expectedErr error
 
-	err := r.Assign(res, "mockValue")
+	err := r.Assign(res, subnetMockValue)
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
 
-	if diff := cmp.Diff(res.Spec.ForProvider.VPCID, "mockValue"); diff != "" {
+	if diff := cmp.Diff(res.Spec.ForProvider.VPCID, &subnetMockValue); diff != "" {
 		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
 	}
 }

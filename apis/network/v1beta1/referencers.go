@@ -21,6 +21,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -41,7 +42,7 @@ func (mg *InternetGateway) ResolveReferences(ctx context.Context, c client.Reade
 
 	// Resolve spec.vpcID
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: mg.Spec.ForProvider.VPCID,
+		CurrentValue: aws.StringValue(mg.Spec.ForProvider.VPCID),
 		Reference:    mg.Spec.ForProvider.VPCIDRef,
 		Selector:     mg.Spec.ForProvider.VPCIDSelector,
 		To:           reference.To{Managed: &VPC{}, List: &VPCList{}},
@@ -50,7 +51,7 @@ func (mg *InternetGateway) ResolveReferences(ctx context.Context, c client.Reade
 	if err != nil {
 		return err
 	}
-	mg.Spec.ForProvider.VPCID = rsp.ResolvedValue
+	mg.Spec.ForProvider.VPCID = aws.String(rsp.ResolvedValue)
 	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference
 
 	return nil
@@ -62,7 +63,7 @@ func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) er
 
 	// Resolve spec.vpcID
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: mg.Spec.ForProvider.VPCID,
+		CurrentValue: aws.StringValue(mg.Spec.ForProvider.VPCID),
 		Reference:    mg.Spec.ForProvider.VPCIDRef,
 		Selector:     mg.Spec.ForProvider.VPCIDSelector,
 		To:           reference.To{Managed: &VPC{}, List: &VPCList{}},
@@ -71,7 +72,7 @@ func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) er
 	if err != nil {
 		return err
 	}
-	mg.Spec.ForProvider.VPCID = rsp.ResolvedValue
+	mg.Spec.ForProvider.VPCID = aws.String(rsp.ResolvedValue)
 	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference
 
 	// Resolve spec.routes[].gatewayID
@@ -136,7 +137,7 @@ func (mg *Subnet) ResolveReferences(ctx context.Context, c client.Reader) error 
 
 	// Resolve spec.vpcID
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: mg.Spec.ForProvider.VPCID,
+		CurrentValue: aws.StringValue(mg.Spec.ForProvider.VPCID),
 		Reference:    mg.Spec.ForProvider.VPCIDRef,
 		Selector:     mg.Spec.ForProvider.VPCIDSelector,
 		To:           reference.To{Managed: &VPC{}, List: &VPCList{}},
@@ -145,7 +146,7 @@ func (mg *Subnet) ResolveReferences(ctx context.Context, c client.Reader) error 
 	if err != nil {
 		return err
 	}
-	mg.Spec.ForProvider.VPCID = rsp.ResolvedValue
+	mg.Spec.ForProvider.VPCID = aws.String(rsp.ResolvedValue)
 	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference
 
 	return nil

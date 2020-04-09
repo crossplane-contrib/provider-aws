@@ -55,7 +55,8 @@ type SubnetParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 
 	// VPCID is the ID of the VPC.
-	VPCID string `json:"vpcId"`
+	// +optional
+	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef reference a VPC to retrieve its vpcId
 	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`

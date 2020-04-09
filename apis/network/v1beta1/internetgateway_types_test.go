@@ -28,12 +28,16 @@ import (
 
 var _ resource.AttributeReferencer = (*VPCIDReferencerForInternetGateway)(nil)
 
+var (
+	igMockValue = "mockValue"
+)
+
 func TestVPCIDReferencerForInternetGateway_AssignInvalidType_ReturnsErr(t *testing.T) {
 
 	r := &VPCIDReferencerForInternetGateway{}
 	expectedErr := errors.New(errResourceIsNotInternetGateway)
 
-	err := r.Assign(nil, "mockValue")
+	err := r.Assign(nil, igMockValue)
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
@@ -45,12 +49,12 @@ func TestVPCIDReferencerForInternetGateway_AssignValidType_ReturnsExpected(t *te
 	res := &InternetGateway{}
 	var expectedErr error
 
-	err := r.Assign(res, "mockValue")
+	err := r.Assign(res, igMockValue)
 	if diff := cmp.Diff(expectedErr, err, test.EquateErrors()); diff != "" {
 		t.Errorf("Assign(...): -want error, +got error:\n%s", diff)
 	}
 
-	if diff := cmp.Diff(res.Spec.ForProvider.VPCID, "mockValue"); diff != "" {
+	if diff := cmp.Diff(res.Spec.ForProvider.VPCID, &igMockValue); diff != "" {
 		t.Errorf("Assign(...): -want value, +got value:\n%s", diff)
 	}
 }

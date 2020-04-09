@@ -291,12 +291,12 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					VPCID: vpcID,
+					VPCID: aws.String(vpcID),
 				}), withExternalName(rtID)),
 			},
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					VPCID: vpcID,
+					VPCID: aws.String(vpcID),
 				}), withExternalName(rtID), withConditions(runtimev1alpha1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -385,12 +385,12 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					VPCID: vpcID,
+					VPCID: aws.String(vpcID),
 				})),
 			},
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					VPCID: vpcID,
+					VPCID: aws.String(vpcID),
 				}), withExternalName(rtID),
 					withConditions(runtimev1alpha1.Creating())),
 			},
@@ -409,12 +409,12 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					VPCID: vpcID,
+					VPCID: aws.String(vpcID),
 				}), withExternalName(rtID)),
 			},
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					VPCID: vpcID,
+					VPCID: aws.String(vpcID),
 				}), withExternalName(rtID), withConditions(runtimev1alpha1.Creating())),
 				err: errors.New(errCreate),
 			},
@@ -433,12 +433,12 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					VPCID: vpcID,
+					VPCID: aws.String(vpcID),
 				})),
 			},
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					VPCID: vpcID,
+					VPCID: aws.String(vpcID),
 				}), withConditions(runtimev1alpha1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
 			},

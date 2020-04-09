@@ -84,13 +84,13 @@ func IsIgUpToDate(p v1beta1.InternetGatewayParameters, ig ec2.InternetGateway) b
 	upToDate := false
 
 	// if there are no attachments for obsreved IG and in spec.
-	if len(attachments) == 0 && p.VPCID == "" {
+	if len(attachments) == 0 && p.VPCID == nil {
 		upToDate = true
 	}
 
 	// if the attachment in spec exists in ig.Attachments(if any).
 	for _, a := range attachments {
-		if p.VPCID == aws.StringValue(a.VpcId) {
+		if aws.StringValue(p.VPCID) == aws.StringValue(a.VpcId) {
 			upToDate = true
 			break
 		}
