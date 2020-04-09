@@ -12,8 +12,11 @@ import (
 )
 
 const (
-	// InternetGatewayIDNotFound is the code that is returned by ec2 when the given SubnetID is not valid
+	// InternetGatewayIDNotFound is the code that is returned by ec2 when the given InternetGatewayID is not valid
 	InternetGatewayIDNotFound = "InvalidInternetGatewayID.NotFound"
+	// InternetGatewayAlreadyAttached is code for error returned by AWS API
+	// for AttachInternetGatewayRequest when an InternetGatway is already atatched to specified VPC in the request.
+	InternetGatewayAlreadyAttached = "Resource.AlreadyAssociated"
 )
 
 // InternetGatewayClient is the external client used for InternetGateway Custom Resource
@@ -39,6 +42,17 @@ func NewInternetGatewayClient(ctx context.Context, credentials []byte, region st
 func IsInternetGatewayNotFoundErr(err error) bool {
 	if awsErr, ok := err.(awserr.Error); ok {
 		if awsErr.Code() == InternetGatewayIDNotFound {
+			return true
+		}
+	}
+
+	return false
+}
+
+// IsInternetGatewayAlreadyAttached returns true if the error is because the item doesn't exist
+func IsInternetGatewayAlreadyAttached(err error) bool {
+	if awsErr, ok := err.(awserr.Error); ok {
+		if awsErr.Code() == InternetGatewayAlreadyAttached {
 			return true
 		}
 	}
