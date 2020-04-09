@@ -14,7 +14,6 @@ PLATFORMS ?= linux_amd64 linux_arm64
 # ====================================================================================
 # Setup Output
 
-S3_BUCKET ?= crossplane.releases
 -include build/makelib/output.mk
 
 # ====================================================================================
@@ -166,4 +165,3 @@ crossplane.help:
 help-special: crossplane.help
 
 .PHONY: crossplane.help help-special
-
