@@ -12,8 +12,7 @@ control plane and adds the following new functionality:
   [EKS clusters](https://aws.amazon.com/eks/), etc.)
 * Controllers to provision these resources in AWS based on the users desired
   state captured in CRDs they create
-* Implementations of Crossplane's [portable resource
-  abstractions](https://crossplane.io/docs/master/concepts.html), enabling AWS
+* Implementations of Crossplane's portable resource abstractions, enabling AWS
   resources to fulfill a user's general need for cloud services
 
 ## Getting Started and Documentation
