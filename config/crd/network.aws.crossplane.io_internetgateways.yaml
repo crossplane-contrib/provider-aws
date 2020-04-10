@@ -287,9 +287,6 @@ spec:
                 - type
                 type: object
               type: array
-            internetGatewayId:
-              description: The ID of the internet gateway.
-              type: string
             tags:
               description: Tags represents to current ec2 tags.
               items:
@@ -306,8 +303,6 @@ spec:
                 - value
                 type: object
               type: array
-          required:
-          - internetGatewayId
           type: object
       required:
       - spec

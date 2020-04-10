@@ -19,7 +19,6 @@ package v1alpha3
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/pkg/errors"
 
@@ -79,9 +78,6 @@ type SubnetExternalStatus struct {
 
 	// Tags represents to current ec2 tags.
 	Tags []Tag `json:"tags,omitempty"`
-
-	// SubnetID is the ID of the Subnet.
-	SubnetID string `json:"subnetId,omitempty"`
 }
 
 // A SubnetStatus represents the observed state of a Subnet.
@@ -123,7 +119,6 @@ type SubnetList struct {
 // UpdateExternalStatus updates the external status object,  given the observation
 func (s *Subnet) UpdateExternalStatus(observation ec2.Subnet) {
 	s.Status.SubnetExternalStatus = SubnetExternalStatus{
-		SubnetID:    aws.StringValue(observation.SubnetId),
 		Tags:        BuildFromEC2Tags(observation.Tags),
 		SubnetState: string(observation.State),
 	}

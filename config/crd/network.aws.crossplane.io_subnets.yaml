@@ -280,9 +280,6 @@ spec:
                 - type
                 type: object
               type: array
-            subnetId:
-              description: SubnetID is the ID of the Subnet.
-              type: string
             subnetState:
               description: SubnetState is the current state of the Subnet.
               enum:

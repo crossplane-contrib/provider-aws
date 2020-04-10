@@ -296,9 +296,6 @@ spec:
                 - value
                 type: object
               type: array
-            vpcId:
-              description: VPCID is the ID of the VPC.
-              type: string
             vpcState:
               description: VPCState is the current state of the VPC.
               enum:

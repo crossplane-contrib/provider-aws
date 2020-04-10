@@ -334,9 +334,6 @@ spec:
                 - type
                 type: object
               type: array
-            routeTableId:
-              description: RouteTableID is the ID of the RouteTable.
-              type: string
             routes:
               description: The actual routes created for the route table.
               items:
@@ -368,8 +365,6 @@ spec:
                 - destinationCidrBlock
                 type: object
               type: array
-          required:
-          - routeTableId
           type: object
       required:
       - spec

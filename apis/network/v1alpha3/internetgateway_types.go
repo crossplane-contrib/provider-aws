@@ -81,9 +81,6 @@ type InternetGatewayExternalStatus struct {
 	// Any VPCs attached to the internet gateway.
 	Attachments []InternetGatewayAttachment `json:"attachments,omitempty"`
 
-	// The ID of the internet gateway.
-	InternetGatewayID string `json:"internetGatewayId"`
-
 	// Tags represents to current ec2 tags.
 	Tags []Tag `json:"tags,omitempty"`
 }
@@ -133,7 +130,6 @@ func (i *InternetGateway) UpdateExternalStatus(observation ec2.InternetGateway) 
 	}
 
 	i.Status.InternetGatewayExternalStatus = InternetGatewayExternalStatus{
-		InternetGatewayID: aws.StringValue(observation.InternetGatewayId),
-		Attachments:       attachments,
+		Attachments: attachments,
 	}
 }

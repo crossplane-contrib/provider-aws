@@ -28,7 +28,6 @@ import (
 	"github.com/onsi/gomega"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
@@ -43,7 +42,7 @@ import (
 
 var (
 	// an arbitrary managed resource
-	unexpecedItem resource.Managed
+	unexpectedItem resource.Managed
 )
 
 func TestMain(m *testing.M) {
@@ -85,7 +84,7 @@ func Test_Connect(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			nil,
 			true,
@@ -163,7 +162,7 @@ func Test_Observe(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			nil,
 			false,
@@ -259,12 +258,8 @@ func Test_Create(t *testing.T) {
 				},
 			},
 		},
-		Status: v1alpha3.SecurityGroupStatus{
-			SecurityGroupExternalStatus: v1alpha3.SecurityGroupExternalStatus{
-				SecurityGroupID: "some arbitrary id",
-			},
-		},
 	}
+	meta.SetExternalName(&mockManaged, "some arbitrary id")
 	mockExternal := &awsec2.SecurityGroup{
 		GroupId: aws.String("some arbitrary id"),
 	}
@@ -296,7 +291,7 @@ func Test_Create(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			false,
 		},
@@ -317,7 +312,7 @@ func Test_Create(t *testing.T) {
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
-			g.Expect(mgd.Status.SecurityGroupID).To(gomega.Equal(aws.StringValue(mockExternal.GroupId)), tc.description)
+			g.Expect(meta.GetExternalName(mgd)).To(gomega.Equal(aws.StringValue(mockExternal.GroupId)), tc.description)
 		}
 	}
 }
@@ -360,13 +355,8 @@ func Test_Update(t *testing.T) {
 				},
 			},
 		},
-		Status: v1alpha3.SecurityGroupStatus{
-			SecurityGroupExternalStatus: v1alpha3.SecurityGroupExternalStatus{
-				SecurityGroupID: "some arbitrary id",
-			},
-		},
 	}
-	meta.SetExternalName(mockManaged, mockManaged.Status.SecurityGroupID)
+	meta.SetExternalName(mockManaged, "some arbitrary id")
 
 	var mockClientIngressErr error
 	var ingressCalled bool
@@ -387,7 +377,7 @@ func Test_Update(t *testing.T) {
 	var egressCalled bool
 	mockClient.MockAuthorizeSecurityGroupEgressRequest = func(input *awsec2.AuthorizeSecurityGroupEgressInput) awsec2.AuthorizeSecurityGroupEgressRequest {
 		egressCalled = true
-		g.Expect(aws.StringValue(input.GroupId)).To(gomega.Equal(mockManaged.Status.SecurityGroupID), "the passed parameters are not valid")
+		g.Expect(aws.StringValue(input.GroupId)).To(gomega.Equal(meta.GetExternalName(mockManaged)), "the passed parameters are not valid")
 		g.Expect(len(input.IpPermissions)).To(gomega.Equal(len(mockManaged.Spec.Egress)), "the passed parameters are not valid")
 		return awsec2.AuthorizeSecurityGroupEgressRequest{
 			Request: &aws.Request{
@@ -418,22 +408,21 @@ func Test_Update(t *testing.T) {
 		},
 		{
 			"if there are no ingress rules fails, it should return expected",
-			(&v1alpha3.SecurityGroup{
-				ObjectMeta: v1.ObjectMeta{
-					Annotations: map[string]string{
-						meta.AnnotationKeyExternalName: mockManaged.Status.SecurityGroupID,
+			func() *v1alpha3.SecurityGroup {
+				g := &v1alpha3.SecurityGroup{
+					Spec: v1alpha3.SecurityGroupSpec{
+						SecurityGroupParameters: v1alpha3.SecurityGroupParameters{
+							VPCID:       aws.String("arbitrary vpcId"),
+							Description: "arbitrary description",
+							GroupName:   "arbitrary group name",
+							Egress:      mockManaged.Spec.Egress,
+						},
 					},
-				},
-				Spec: v1alpha3.SecurityGroupSpec{
-					SecurityGroupParameters: v1alpha3.SecurityGroupParameters{
-						VPCID:       aws.String("arbitrary vpcId"),
-						Description: "arbitrary description",
-						GroupName:   "arbitrary group name",
-						Egress:      mockManaged.Spec.Egress,
-					},
-				},
-				Status: mockManaged.Status,
-			}).DeepCopy(),
+					Status: mockManaged.Status,
+				}
+				meta.SetExternalName(g, "some arbitrary id")
+				return g
+			}(),
 			nil,
 			nil,
 			false,
@@ -451,22 +440,21 @@ func Test_Update(t *testing.T) {
 		},
 		{
 			"if there are no egress rules fails, it should return expected",
-			(&v1alpha3.SecurityGroup{
-				ObjectMeta: v1.ObjectMeta{
-					Annotations: map[string]string{
-						meta.AnnotationKeyExternalName: mockManaged.Status.SecurityGroupID,
+			func() *v1alpha3.SecurityGroup {
+				g := &v1alpha3.SecurityGroup{
+					Spec: v1alpha3.SecurityGroupSpec{
+						SecurityGroupParameters: v1alpha3.SecurityGroupParameters{
+							VPCID:       aws.String("arbitrary vpcId"),
+							Description: "arbitrary description",
+							GroupName:   "arbitrary group name",
+							Ingress:     mockManaged.Spec.Ingress,
+						},
 					},
-				},
-				Spec: v1alpha3.SecurityGroupSpec{
-					SecurityGroupParameters: v1alpha3.SecurityGroupParameters{
-						VPCID:       aws.String("arbitrary vpcId"),
-						Description: "arbitrary description",
-						GroupName:   "arbitrary group name",
-						Ingress:     mockManaged.Spec.Ingress,
-					},
-				},
-				Status: mockManaged.Status,
-			}).DeepCopy(),
+					Status: mockManaged.Status,
+				}
+				meta.SetExternalName(g, "some arbitrary id")
+				return g
+			}(),
 			nil,
 			nil,
 			true,
@@ -521,7 +509,7 @@ func Test_Delete(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			false,
 		},
