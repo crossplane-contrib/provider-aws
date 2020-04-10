@@ -1,0 +1,97 @@
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: VPC
+metadata:
+  name: eks-example
+spec:
+  cidrBlock: 192.168.0.0/16
+  enableDnsSupport: true
+  enableDnsHostNames: true
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: Subnet
+metadata:
+  name: eks-example-1
+spec:
+  cidrBlock: 192.168.64.0/18
+  vpcIdRef:
+    name: eks-example
+  availabilityZone: us-east-1a
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: Subnet
+metadata:
+  name: eks-example-2
+spec:
+  cidrBlock: 192.168.128.0/18
+  vpcIdRef:
+    name: eks-example
+  availabilityZone: us-east-1b
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: Subnet
+metadata:
+  name: eks-example-3
+spec:
+  cidrBlock: 192.168.192.0/18
+  vpcIdRef:
+    name: eks-example
+  availabilityZone: us-east-1c
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: InternetGateway
+metadata:
+  name: eks-example
+spec:
+  vpcIdRef:
+    name: eks-example
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: RouteTable
+metadata:
+  name: eks-example
+spec:
+  vpcIdRef:
+    name: eks-example
+  routes:
+    - destinationCidrBlock: 0.0.0.0/0
+      gatewayIdRef:
+        name: eks-example
+  associations:
+    - subnetIdRef:
+        name: eks-example-1
+    - subnetIdRef:
+        name: eks-example-2
+    - subnetIdRef:
+        name: eks-example-3
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: SecurityGroup
+metadata:
+  name: eks-example
+spec:
+  vpcIdRef:
+    name: eks-example
+  groupName: my-cool-ekscluster-sg
+  description: Cluster communication with worker nodes
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
