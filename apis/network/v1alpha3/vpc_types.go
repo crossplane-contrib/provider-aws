@@ -19,7 +19,6 @@ package v1alpha3
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
@@ -55,9 +54,6 @@ type VPCExternalStatus struct {
 
 	// Tags represents to current ec2 tags.
 	Tags []Tag `json:"tags,omitempty"`
-
-	// VPCID is the ID of the VPC.
-	VPCID string `json:"vpcId,omitempty"`
 }
 
 // A VPCStatus represents the observed state of a VPC.
@@ -97,7 +93,6 @@ type VPCList struct {
 // UpdateExternalStatus updates the external status object,  given the observation
 func (v *VPC) UpdateExternalStatus(observation ec2.Vpc) {
 	v.Status.VPCExternalStatus = VPCExternalStatus{
-		VPCID:    aws.StringValue(observation.VpcId),
 		Tags:     BuildFromEC2Tags(observation.Tags),
 		VPCState: string(observation.State),
 	}

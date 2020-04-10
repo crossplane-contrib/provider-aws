@@ -163,10 +163,6 @@ type RouteTableSpec struct {
 
 // RouteTableExternalStatus keeps the state for the external resource
 type RouteTableExternalStatus struct {
-
-	// RouteTableID is the ID of the RouteTable.
-	RouteTableID string `json:"routeTableId"`
-
 	// The actual routes created for the route table.
 	Routes []RouteState `json:"routes,omitempty"`
 
@@ -209,7 +205,6 @@ type RouteTableList struct {
 // UpdateExternalStatus updates the external status object, given the observation
 func (t *RouteTable) UpdateExternalStatus(observation ec2.RouteTable) {
 	st := RouteTableExternalStatus{
-		RouteTableID: aws.StringValue(observation.RouteTableId),
 		Routes:       []RouteState{},
 		Associations: []AssociationState{},
 	}

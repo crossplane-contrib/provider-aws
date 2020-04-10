@@ -1,0 +1,52 @@
+---
+apiVersion: identity.aws.crossplane.io/v1beta1
+kind: IAMRole
+metadata:
+  name: eks-example
+spec:
+  forProvider:
+    description: Example EKS IAM role
+    assumeRolePolicyDocument: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "eks.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }
+        ]
+      }
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: identity.aws.crossplane.io/v1beta1
+kind: IAMRolePolicyAttachment
+metadata:
+  name: eks-example-servicepolicy
+spec:
+  forProvider:
+    roleNameRef:
+      name: eks-example
+    # A well known policy ARN
+    policyArn: arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: identity.aws.crossplane.io/v1beta1
+kind: IAMRolePolicyAttachment
+metadata:
+  name: eks-example-clusterpolicy
+spec:
+  forProvider:
+    roleNameRef:
+      name: eks-example
+    # A well known policy ARN
+    policyArn: arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+  reclaimPolicy: Delete
+  providerRef:
+    name: example

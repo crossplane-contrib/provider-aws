@@ -39,16 +39,15 @@ import (
 )
 
 const (
-	errUnexpectedObject = "The managed resource is not an SecurityGroup resource"
-	errClient           = "cannot create a new SecurityGroupClient"
-	errDescribe         = "failed to describe SecurityGroup with id: %v"
-	errMultipleItems    = "retrieved multiple SecurityGroups for the given securityGroupId: %v"
-	errCreate           = "failed to create the SecurityGroup resource"
-	errAuthorizeIngress = "failed to authorize ingress rules"
-	errAuthorizeEgress  = "failed to authorize egress rules"
-	errDelete           = "failed to delete the SecurityGroup resource"
-	errStatusUpdate     = "cannot update status"
-	errSpecUpdate       = "cannot update spec"
+	errUnexpectedObject    = "The managed resource is not an SecurityGroup resource"
+	errClient              = "cannot create a new SecurityGroupClient"
+	errDescribe            = "failed to describe SecurityGroup"
+	errMultipleItems       = "retrieved multiple SecurityGroups for the given securityGroupId"
+	errCreate              = "failed to create the SecurityGroup resource"
+	errPersistExternalName = "failed to persist InternetGateway ID"
+	errAuthorizeIngress    = "failed to authorize ingress rules"
+	errAuthorizeEgress     = "failed to authorize egress rules"
+	errDelete              = "failed to delete the SecurityGroup resource"
 )
 
 // SetupSecurityGroup adds a controller that reconciles SecurityGroups.
@@ -137,8 +136,6 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-
 	// Creating the SecurityGroup itself
 	req := e.sg.CreateSecurityGroupRequest(&awsec2.CreateSecurityGroupInput{
 		GroupName:   aws.String(cr.Spec.GroupName),
@@ -146,20 +143,22 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		Description: aws.String(cr.Spec.Description),
 	})
 
-	result, err := req.Send(ctx)
+	rsp, err := req.Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
-	}
-	cr.UpdateExternalStatus(awsec2.SecurityGroup{GroupId: result.GroupId})
-	// We need to save status before spec update so that it's not lost.
-	if err := e.kube.Status().Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
 	}
 
 	// NOTE(muvaf): GroupID is used as external name instead of GroupName because
 	// there are cases where only GroupID is accepted as identifier.
-	meta.SetExternalName(cr, aws.StringValue(result.GroupId))
-	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
+	meta.SetExternalName(cr, aws.StringValue(rsp.GroupId))
+	if err := e.kube.Update(ctx, cr); err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errPersistExternalName)
+	}
+
+	cr.Status.SetConditions(runtimev1alpha1.Creating())
+	cr.UpdateExternalStatus(awsec2.SecurityGroup{GroupId: rsp.GroupId})
+
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {

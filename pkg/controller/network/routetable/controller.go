@@ -29,6 +29,7 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -38,17 +39,17 @@ import (
 )
 
 const (
-	errUnexpectedObject   = "The managed resource is not an RouteTable resource"
-	errClient             = "cannot create a new RouteTable client"
-	errDescribe           = "failed to describe RouteTable with id: %v"
-	errMultipleItems      = "retrieved multiple RouteTables for the given routeTableId: %v"
-	errCreate             = "failed to create the RouteTable resource"
-	errDeleteNotPresent   = "cannot delete the RouteTable, since the RouteTableID is not present"
-	errDelete             = "failed to delete the RouteTable resource"
-	errCreateRoute        = "failed to create a route in the RouteTable resource"
-	errDeleteRoute        = "failed to delete a route in the RouteTable resource"
-	errAssociateSubnet    = "failed to associate subnet %v to the RouteTable resource"
-	errDisassociateSubnet = "failed to disassociate subnet %v from the RouteTable resource"
+	errUnexpectedObject    = "The managed resource is not an RouteTable resource"
+	errClient              = "cannot create a new RouteTable client"
+	errDescribe            = "failed to describe RouteTable"
+	errMultipleItems       = "retrieved multiple RouteTables for the given routeTableId"
+	errCreate              = "failed to create the RouteTable resource"
+	errDelete              = "failed to delete the RouteTable resource"
+	errCreateRoute         = "failed to create a route in the RouteTable resource"
+	errPersistExternalName = "failed to persist RouteTable"
+	errDeleteRoute         = "failed to delete a route in the RouteTable resource"
+	errAssociateSubnet     = "failed to associate subnet with the RouteTable resource"
+	errDisassociateSubnet  = "failed to disassociate subnet from the RouteTable resource"
 )
 
 // SetupRouteTable adds a controller that reconciles RouteTables.
@@ -61,6 +62,7 @@ func SetupRouteTable(mgr ctrl.Manager, l logging.Logger) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha3.RouteTableGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewRouteTableClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -88,10 +90,11 @@ func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (manag
 		return nil, errors.Wrap(err, errClient)
 	}
 
-	return &external{c}, nil
+	return &external{kube: conn.client, client: c}, nil
 }
 
 type external struct {
+	kube   client.Client
 	client ec2.RouteTableClient
 }
 
@@ -101,34 +104,28 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	// To find out whether a RouteTable exist:
-	// - the object's ExternalState should have routeTableId populated
-	// - a RouteTable with the given routeTableId should exist
-	if cr.Status.RouteTableID == "" {
-		return managed.ExternalObservation{
-			ResourceExists: false,
-		}, nil
+	// AWS network resources are uniquely identified by an ID that is returned
+	// on create time; we can't tell whether they exist unless we have recorded
+	// their ID.
+	if meta.GetExternalName(cr) == "" {
+		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 
 	req := e.client.DescribeRouteTablesRequest(&awsec2.DescribeRouteTablesInput{
-		RouteTableIds: []string{cr.Status.RouteTableID},
+		RouteTableIds: []string{meta.GetExternalName(cr)},
 	})
 
 	response, err := req.Send(ctx)
-
 	if ec2.IsRouteTableNotFoundErr(err) {
-		return managed.ExternalObservation{
-			ResourceExists: false,
-		}, nil
+		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
-
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrapf(err, errDescribe, cr.Status.RouteTableID)
+		return managed.ExternalObservation{}, errors.Wrap(err, errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
 	if len(response.RouteTables) != 1 {
-		return managed.ExternalObservation{}, errors.Errorf(errMultipleItems, cr.Status.RouteTableID)
+		return managed.ExternalObservation{}, errors.New(errMultipleItems)
 	}
 
 	observed := response.RouteTables[0]
@@ -152,31 +149,33 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}, nil
 }
 
-func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) { // nolint:gocyclo
+func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
 	cr, ok := mgd.(*v1alpha3.RouteTable)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-
 	req := e.client.CreateRouteTableRequest(&awsec2.CreateRouteTableInput{
 		VpcId: aws.String(cr.Spec.VPCID),
 	})
-	result, err := req.Send(ctx)
+	rsp, err := req.Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 
-	cr.UpdateExternalStatus(*result.RouteTable)
+	meta.SetExternalName(cr, aws.StringValue(rsp.RouteTable.RouteTableId))
+	if err := e.kube.Update(ctx, cr); err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errPersistExternalName)
+	}
 
-	// Create Routes
-	if err := e.createRoutes(ctx, cr.Status.RouteTableID, cr.Spec.Routes, cr.Status.Routes); err != nil {
+	cr.SetConditions(runtimev1alpha1.Creating())
+	cr.UpdateExternalStatus(*rsp.RouteTable)
+
+	if err := e.createRoutes(ctx, meta.GetExternalName(cr), cr.Spec.Routes, cr.Status.Routes); err != nil {
 		return managed.ExternalCreation{}, err
 	}
 
-	// Create Associations
-	if err := e.createAssociations(ctx, cr.Status.RouteTableID, cr.Spec.Associations, cr.Status.Associations); err != nil {
+	if err := e.createAssociations(ctx, meta.GetExternalName(cr), cr.Spec.Associations, cr.Status.Associations); err != nil {
 		return managed.ExternalCreation{}, err
 	}
 
@@ -196,36 +195,25 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	if cr.Status.RouteTableID == "" {
-		return errors.New(errDeleteNotPresent)
-	}
-
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
 	// in order to delete a route table, all of its dependencies need to be
 	// deleted first
 
-	// delete routes
-	if err := e.deleteRoutes(ctx, cr.Status.RouteTableID, cr.Status.Routes); err != nil {
+	if err := e.deleteRoutes(ctx, meta.GetExternalName(cr), cr.Status.Routes); err != nil {
 		return err
 	}
 
-	// delete subnet associations
 	if err := e.deleteAssociations(ctx, cr.Status.Associations); err != nil {
 		return err
 	}
 
 	req := e.client.DeleteRouteTableRequest(&awsec2.DeleteRouteTableInput{
-		RouteTableId: aws.String(cr.Status.RouteTableID),
+		RouteTableId: aws.String(meta.GetExternalName(cr)),
 	})
 
 	_, err := req.Send(ctx)
-
-	if ec2.IsRouteTableNotFoundErr(err) {
-		return nil
-	}
-
-	return errors.Wrap(err, errDelete)
+	return errors.Wrap(resource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDelete)
 }
 
 func (e *external) createRoutes(ctx context.Context, tableID string, desired []v1alpha3.Route, observed []v1alpha3.RouteState) error {
@@ -294,7 +282,7 @@ func (e *external) createAssociations(ctx context.Context, tableID string, desir
 			})
 
 			if _, err := req.Send(ctx); err != nil {
-				return errors.Wrapf(err, errAssociateSubnet, asc.SubnetID)
+				return errors.Wrap(err, errAssociateSubnet)
 			}
 		}
 	}
@@ -312,7 +300,7 @@ func (e *external) deleteAssociations(ctx context.Context, observed []v1alpha3.A
 			if ec2.IsAssociationIDNotFoundErr(err) {
 				continue
 			}
-			return errors.Wrapf(err, errDisassociateSubnet, asc.SubnetID)
+			return errors.Wrap(err, errDisassociateSubnet)
 		}
 	}
 

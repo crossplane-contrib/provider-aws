@@ -19,6 +19,7 @@ package v1alpha3
 import (
 	"context"
 
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -56,11 +57,11 @@ func (v *VPCIDReferencer) GetStatus(ctx context.Context, _ resource.CanReference
 
 // Build retrieves and builds the vpcId
 func (v *VPCIDReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
-	vpc := VPC{}
+	vpc := &VPC{}
 	nn := types.NamespacedName{Name: v.Name}
-	if err := reader.Get(ctx, nn, &vpc); err != nil {
+	if err := reader.Get(ctx, nn, vpc); err != nil {
 		return "", err
 	}
 
-	return vpc.Status.VPCID, nil
+	return meta.GetExternalName(vpc), nil
 }
