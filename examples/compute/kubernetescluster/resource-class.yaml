@@ -2,25 +2,29 @@
 apiVersion: compute.aws.crossplane.io/v1alpha3
 kind: EKSClusterClass
 metadata:
-  name: ekscluster-standard
+  name: standard-cluster
   labels:
     example: "true"
 specTemplate:
   writeConnectionSecretsToNamespace: crossplane-system
   region: us-east-1
-  roleARN: # arn:aws:iam::<account-id>:role/<role-name>
-  vpcId: #vpc-01
-  subnetIds:
-   - #subnet-01
-   - #subnet-02
-   - #subnet-03
-  securityGroupIds:
-   - #sg-01
+  roleARNRef:
+    name: eks-example
+  vpcIdRef:
+    name: eks-example
+  subnetIdRefs:
+    - name: eks-example-1
+    - name: eks-example-2
+    - name: eks-example-3
+  securityGroupIdRefs:
+    - name: eks-example
   workerNodes:
-    keyName: #named ec2 keypair
     nodeInstanceType: m3.medium
+    nodeAutoScalingGroupMinSize: 1
+    nodeAutoScalingGroupMaxSize: 1
     nodeGroupName: demo-nodes
-    clusterControlPlaneSecurityGroup: #sg-01
+    clusterControlPlaneSecurityGroupRef:
+      name: eks-example
   providerRef:
     name: example
   reclaimPolicy: Delete
