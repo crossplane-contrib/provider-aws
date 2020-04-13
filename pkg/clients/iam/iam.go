@@ -11,6 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/iam/iamiface"
 
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
+	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
 )
 
 const (
@@ -248,4 +250,13 @@ type StatementEntry struct {
 	Effect   string
 	Action   []string
 	Resource []string
+}
+
+// BuildIAMTags build a tag array with type that IAM client expects.
+func BuildIAMTags(tags []v1alpha1.Tag) []iam.Tag {
+	res := make([]iam.Tag, len(tags))
+	for i, t := range tags {
+		res[i] = iam.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
+	}
+	return res
 }
