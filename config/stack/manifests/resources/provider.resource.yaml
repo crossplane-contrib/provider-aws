@@ -10,4 +10,4 @@ readme: |
 
  The Crossplane AWS Provider Resource configures an AWS 'provider', i.e. a connection to a particular AWS account using a particular AWS IAM Role.
 
- Full documentation can be found in the Crossplane [API Reference docs](https://crossplane.io/docs/master/api/crossplane/provider-aws/aws-crossplane-io-v1alpha3.html#Provider).
+ Full documentation can be found in the Crossplane [API Reference docs](https://doc.crds.dev/github.com/crossplane/provider-aws/aws.crossplane.io_providers.yaml).
