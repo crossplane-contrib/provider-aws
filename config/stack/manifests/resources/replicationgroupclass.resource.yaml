@@ -8,4 +8,4 @@ overview: |
 readme: |
  Cloud-specific resource classes are used to define a reusable configuration for a specific managed service. This class provides a Redis Replication Group, which is satisfied by [Amazon ElastiCache for Redis](https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/Replication.CreatingRepGroup.html).
 
- Full documentation can be found in the Crossplane [API Reference docs](https://crossplane.io/docs/master/api/crossplane/provider-aws/cache-aws-crossplane-io-v1beta1.html#ReplicationGroupClass).
+ Full documentation can be found in the Crossplane [API Reference docs](https://doc.crds.dev/github.com/crossplane/provider-aws/cache.aws.crossplane.io_replicationgroupclasses.yaml).
