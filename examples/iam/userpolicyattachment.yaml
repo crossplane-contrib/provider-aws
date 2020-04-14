@@ -1,0 +1,12 @@
+---
+apiVersion: identity.aws.crossplane.io/v1alpha1
+kind: UserPolicyAttachment
+metadata:
+  name: sample-userpolicyattachment
+spec:
+  forProvider:
+    policyArn: arn:aws:iam::aws:policy/AmazonEC2FullAccess
+    userName: john
+  providerRef:
+    name: example
+  reclaimPolicy: Delete
