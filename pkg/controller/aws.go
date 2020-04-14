@@ -31,6 +31,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrole"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrolepolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuser"
+	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuserpolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/network/internetgateway"
 	"github.com/crossplane/provider-aws/pkg/controller/network/routetable"
 	"github.com/crossplane/provider-aws/pkg/controller/network/securitygroup"
@@ -67,6 +68,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		s3.SetupS3Bucket,
 		iamuser.SetupIAMUser,
 		iamrole.SetupIAMRole,
+		iamuserpolicyattachment.SetupIAMUserPolicyAttachment,
 		iamrolepolicyattachment.SetupIAMRolePolicyAttachment,
 		vpc.SetupVPC,
 		subnet.SetupSubnet,
