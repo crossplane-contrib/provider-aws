@@ -20,34 +20,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/pkg/errors"
-
-	aws "github.com/crossplane/provider-aws/pkg/clients"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 )
-
-// Error strings
-const (
-	errResourceIsNotSecurityGroup = "the managed resource is not a SecurityGroup"
-)
-
-// VPCIDReferencerForSecurityGroup is an attribute referencer that resolves VPCID from a referenced VPC
-type VPCIDReferencerForSecurityGroup struct {
-	VPCIDReferencer `json:",inline"`
-}
-
-// Assign assigns the retrieved value to the managed resource
-func (v *VPCIDReferencerForSecurityGroup) Assign(res resource.CanReference, value string) error {
-	sg, ok := res.(*SecurityGroup)
-	if !ok {
-		return errors.New(errResourceIsNotSecurityGroup)
-	}
-
-	sg.Spec.VPCID = aws.String(value)
-	return nil
-}
 
 // SecurityGroupParameters define the desired state of an AWS VPC Security
 // Group.
@@ -56,9 +31,13 @@ type SecurityGroupParameters struct {
 	// +optional
 	VPCID *string `json:"vpcId,omitempty"`
 
-	// VPCIDRef references to a VPC to and retrieves its vpcId
+	// VPCIDRef references a VPC to and retrieves its vpcId
 	// +optional
-	VPCIDRef *VPCIDReferencerForSecurityGroup `json:"vpcIdRef,omitempty"`
+	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
+
+	// VPCIDSelector selects a reference to a VPC to and retrieves its vpcId
+	// +optional
+	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
 
 	// A description of the security group.
 	Description string `json:"description"`

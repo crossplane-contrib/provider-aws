@@ -17,19 +17,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-
-	identityv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
-	network "github.com/crossplane/provider-aws/apis/network/v1alpha3"
-)
-
-// Error strings
-const (
-	errResourceIsNotRDSInstance = "the managed resource is not an RDSInstance"
 )
 
 // SQL database engines.
@@ -37,80 +27,6 @@ const (
 	MysqlEngine      = "mysql"
 	PostgresqlEngine = "postgres"
 )
-
-// VPCSecurityGroupIDReferencerForRDSInstance is an attribute referencer that
-// resolves SecurityGroupID from a referenced SecurityGroup
-type VPCSecurityGroupIDReferencerForRDSInstance struct {
-	network.SecurityGroupIDReferencer `json:",inline"`
-}
-
-// Assign assigns the retrieved value to the managed resource
-func (v *VPCSecurityGroupIDReferencerForRDSInstance) Assign(res resource.CanReference, value string) error {
-	rds, ok := res.(*RDSInstance)
-	if !ok {
-		return errors.New(errResourceIsNotRDSInstance)
-	}
-
-	for _, id := range rds.Spec.ForProvider.VPCSecurityGroupIDs {
-		if id == value {
-			return nil
-		}
-	}
-
-	rds.Spec.ForProvider.VPCSecurityGroupIDs = append(rds.Spec.ForProvider.VPCSecurityGroupIDs, value)
-	return nil
-}
-
-// DBSubnetGroupNameReferencerForRDSInstance is an attribute referencer that
-// retrieves the name from a referenced DBSubnetGroup
-type DBSubnetGroupNameReferencerForRDSInstance struct {
-	DBSubnetGroupNameReferencer `json:",inline"`
-}
-
-// Assign assigns the retrieved value to the managed resource
-func (v *DBSubnetGroupNameReferencerForRDSInstance) Assign(res resource.CanReference, value string) error {
-	rds, ok := res.(*RDSInstance)
-	if !ok {
-		return errors.New(errResourceIsNotRDSInstance)
-	}
-
-	rds.Spec.ForProvider.DBSubnetGroupName = &value
-	return nil
-}
-
-// IAMRoleARNReferencerForRDSInstanceMonitoringRole is an attribute referencer
-// that retrieves an RDSInstance's MonitoringRoleARN from a referenced IAMRole.
-type IAMRoleARNReferencerForRDSInstanceMonitoringRole struct {
-	identityv1beta1.IAMRoleARNReferencer `json:",inline"`
-}
-
-// Assign assigns the retrieved value to the managed resource
-func (v *IAMRoleARNReferencerForRDSInstanceMonitoringRole) Assign(res resource.CanReference, value string) error {
-	eks, ok := res.(*RDSInstance)
-	if !ok {
-		return errors.New(errResourceIsNotRDSInstance)
-	}
-
-	eks.Spec.ForProvider.MonitoringRoleARN = &value
-	return nil
-}
-
-// IAMRoleNameReferencerForRDSInstanceDomainRole is an attribute referencer
-// that retrieves an RDSInstance's DomainRoleName from a referenced IAMRole.
-type IAMRoleNameReferencerForRDSInstanceDomainRole struct {
-	identityv1beta1.IAMRoleNameReferencer `json:",inline"`
-}
-
-// Assign assigns the retrieved value to the managed resource
-func (v *IAMRoleNameReferencerForRDSInstanceDomainRole) Assign(res resource.CanReference, value string) error {
-	eks, ok := res.(*RDSInstance)
-	if !ok {
-		return errors.New(errResourceIsNotRDSInstance)
-	}
-
-	eks.Spec.ForProvider.DomainIAMRoleName = &value
-	return nil
-}
 
 // Tag is a metadata assigned to an Amazon RDS resource consisting of a key-value pair.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/rds-2014-10-31/Tag
@@ -361,7 +277,13 @@ type RDSInstanceParameters struct {
 	// DBSubnetGroupName.
 	// +immutable
 	// +optional
-	DBSubnetGroupNameRef *DBSubnetGroupNameReferencerForRDSInstance `json:"dbSubnetGroupNameRef,omitempty" resource:"attributereferencer"`
+	DBSubnetGroupNameRef *runtimev1alpha1.Reference `json:"dbSubnetGroupNameRef,omitempty"`
+
+	// DBSubnetGroupNameSelector selects a reference to a DBSubnetGroup used to
+	// set DBSubnetGroupName.
+	// +immutable
+	// +optional
+	DBSubnetGroupNameSelector *runtimev1alpha1.Selector `json:"dbSubnetGroupNameSelector,omitempty"`
 
 	// DeletionProtection indicates if the DB instance should have deletion protection enabled. The
 	// database can't be deleted when this value is set to true. The default is
@@ -536,7 +458,13 @@ type RDSInstanceParameters struct {
 	// MonitoringRoleARN.
 	// +optional
 	// +immutable
-	MonitoringRoleARNRef *IAMRoleARNReferencerForRDSInstanceMonitoringRole `json:"monitoringRoleArnRef,omitempty" resource:"attributereferencer"`
+	MonitoringRoleARNRef *runtimev1alpha1.Reference `json:"monitoringRoleArnRef,omitempty"`
+
+	// MonitoringRoleARNSelector selects a reference to an IAMRole used to set
+	// MonitoringRoleARN.
+	// +optional
+	// +immutable
+	MonitoringRoleARNSelector *runtimev1alpha1.Selector `json:"monitoringRoleArnSelector,omitempty"`
 
 	// MultiAZ specifies if the DB instance is a Multi-AZ deployment. You can't set the
 	// AvailabilityZone parameter if the MultiAZ parameter is set to true.
@@ -704,7 +632,13 @@ type RDSInstanceParameters struct {
 	// the VPCSecurityGroupIDs.
 	// +immutable
 	// +optional
-	VPCSecurityGroupIDRefs []*VPCSecurityGroupIDReferencerForRDSInstance `json:"vpcSecurityGroupIDRefs,omitempty" resource:"attributereferencer"`
+	VPCSecurityGroupIDRefs []runtimev1alpha1.Reference `json:"vpcSecurityGroupIDRefs,omitempty"`
+
+	// VPCSecurityGroupIDSelector selects references to VPCSecurityGroups used
+	// to set the VPCSecurityGroupIDs.
+	// +immutable
+	// +optional
+	VPCSecurityGroupIDSelector *runtimev1alpha1.Selector `json:"vpcSecurityGroupIDSelector,omitempty"`
 
 	// Fields whose value cannot be retrieved from rds.DBInstance object.
 
@@ -761,7 +695,13 @@ type RDSInstanceParameters struct {
 	// DomainIAMRoleName.
 	// +optional
 	// +immutable
-	DomainIAMRoleNameRef *IAMRoleNameReferencerForRDSInstanceDomainRole `json:"domainIAMRoleNameRef,omitempty" resource:"attributereferencer"`
+	DomainIAMRoleNameRef *runtimev1alpha1.Reference `json:"domainIAMRoleNameRef,omitempty"`
+
+	// DomainIAMRoleNameSelector selects a reference to an IAMRole used to set
+	// DomainIAMRoleName.
+	// +optional
+	// +immutable
+	DomainIAMRoleNameSelector *runtimev1alpha1.Selector `json:"domainIAMRoleNameSelector,omitempty"`
 
 	// OptionGroupName indicates that the DB instance should be associated with the specified option
 	// group.
