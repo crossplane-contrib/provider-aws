@@ -22,78 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
 )
-
-// Error strings
-const (
-	errResourceIsNotRouteTable = "the managed resource is not a RouteTable"
-	errAssociationNotFound     = "Could not find an association in the array with the referred object name"
-	errRouteNotFound           = "Could not find a route in the array with the referred object name"
-)
-
-// VPCIDReferencerForRouteTable is an attribute referencer that resolves VPCID from a referenced VPC
-type VPCIDReferencerForRouteTable struct {
-	VPCIDReferencer `json:",inline"`
-}
-
-// Assign assigns the retrieved vpcId to the managed resource
-func (v *VPCIDReferencerForRouteTable) Assign(res resource.CanReference, value string) error {
-	rt, ok := res.(*RouteTable)
-	if !ok {
-		return errors.New(errResourceIsNotRouteTable)
-	}
-
-	rt.Spec.VPCID = value
-	return nil
-}
-
-// SubnetIDReferencerForRouteTable is an attribute referencer that resolves SubnetID from a referenced Subnet
-type SubnetIDReferencerForRouteTable struct {
-	SubnetIDReferencer `json:",inline"`
-}
-
-// Assign assigns the retrieved subnetId to the managed resource
-func (v *SubnetIDReferencerForRouteTable) Assign(res resource.CanReference, value string) error {
-	rt, ok := res.(*RouteTable)
-	if !ok {
-		return errors.New(errResourceIsNotRouteTable)
-	}
-
-	// find the association that this field belongs to, and assign its subnetID
-	for i := 0; i < len(rt.Spec.Associations); i++ {
-		if rt.Spec.Associations[i].SubnetIDRef.Name == v.Name {
-			rt.Spec.Associations[i].SubnetID = value
-			return nil
-		}
-	}
-
-	return errors.New(errAssociationNotFound)
-}
-
-// InternetGatewayIDReferencerForRouteTable is an attribute referencer that resolves VPCID from a referenced VPC
-type InternetGatewayIDReferencerForRouteTable struct {
-	InternetGatewayIDReferencer `json:",inline"`
-}
-
-// Assign assigns the retrieved value to the managed resource
-func (v *InternetGatewayIDReferencerForRouteTable) Assign(res resource.CanReference, value string) error {
-	rt, ok := res.(*RouteTable)
-	if !ok {
-		return errors.New(errResourceIsNotRouteTable)
-	}
-
-	// find the route that this field belongs to, and assign its gatewayID
-	for i := 0; i < len(rt.Spec.Routes); i++ {
-		if rt.Spec.Routes[i].GatewayIDRef.Name == v.Name {
-			rt.Spec.Routes[i].GatewayID = value
-			return nil
-		}
-	}
-
-	return errors.New(errRouteNotFound)
-}
 
 // Route describes a route in a route table.
 type Route struct {
@@ -106,7 +35,10 @@ type Route struct {
 	GatewayID string `json:"gatewayId,omitempty"`
 
 	// A referencer to retrieve the ID of a gateway
-	GatewayIDRef *InternetGatewayIDReferencerForRouteTable `json:"gatewayIdRef,omitempty" resource:"attributereferencer"`
+	GatewayIDRef *runtimev1alpha1.Reference `json:"gatewayIdRef,omitempty"`
+
+	// A selector to select a referencer to retrieve the ID of a gateway
+	GatewayIDSelector *runtimev1alpha1.Selector `json:"gatewayIdSelector,omitempty"`
 }
 
 // RouteState describes a route state in the route table.
@@ -126,7 +58,10 @@ type Association struct {
 	SubnetID string `json:"subnetId,omitempty"`
 
 	// A referencer to retrieve the ID of a subnet
-	SubnetIDRef *SubnetIDReferencerForRouteTable `json:"subnetIdRef,omitempty" resource:"attributereferencer"`
+	SubnetIDRef *runtimev1alpha1.Reference `json:"subnetIdRef,omitempty"`
+
+	// A selector to select a referencer to retrieve the ID of a subnet
+	SubnetIDSelector *runtimev1alpha1.Selector `json:"subnetIdSelector,omitempty"`
 }
 
 // AssociationState describes an association state in the route table.
@@ -145,8 +80,11 @@ type RouteTableParameters struct {
 	// VPCID is the ID of the VPC.
 	VPCID string `json:"vpcId,omitempty"`
 
-	// VPCIDRef references to a VPC to and retrieves its vpcId
-	VPCIDRef *VPCIDReferencerForRouteTable `json:"vpcIdRef,omitempty" resource:"attributereferencer"`
+	// VPCIDRef references a VPC to retrieve its vpcId
+	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
+
+	// VPCIDSelector selects a reference to a VPC to retrieve its vpcId
+	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
 
 	// the routes in the route table
 	Routes []Route `json:"routes,omitempty"`

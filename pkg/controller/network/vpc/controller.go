@@ -60,6 +60,7 @@ func SetupVPC(mgr ctrl.Manager, l logging.Logger) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha3.VPCGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewVPCClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
 			managed.WithLogger(l.WithValues("controller", name)),

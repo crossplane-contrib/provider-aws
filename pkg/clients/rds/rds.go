@@ -30,7 +30,6 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/database/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -444,7 +443,7 @@ func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error
 	if err != nil {
 		return false, err
 	}
-	return cmp.Equal(&v1beta1.RDSInstanceParameters{}, patch, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{})), nil
+	return cmp.Equal(&v1beta1.RDSInstanceParameters{}, patch, cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{})), nil
 }
 
 // GetConnectionDetails extracts managed.ConnectionDetails out of v1alpha3.RDSInstance.

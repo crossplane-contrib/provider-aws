@@ -65,9 +65,25 @@ spec:
                     description: A referencer to retrieve the ID of a subnet
                     properties:
                       name:
-                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        description: Name of the referenced object.
                         type: string
+                    required:
+                    - name
+                    type: object
+                  subnetIdSelector:
+                    description: A selector to select a referencer to retrieve the
+                      ID of a subnet
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
                     type: object
                 type: object
               type: array
@@ -217,9 +233,25 @@ spec:
                     description: A referencer to retrieve the ID of a gateway
                     properties:
                       name:
-                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        description: Name of the referenced object.
                         type: string
+                    required:
+                    - name
+                    type: object
+                  gatewayIdSelector:
+                    description: A selector to select a referencer to retrieve the
+                      ID of a gateway
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
                     type: object
                 required:
                 - destinationCidrBlock
@@ -229,12 +261,28 @@ spec:
               description: VPCID is the ID of the VPC.
               type: string
             vpcIdRef:
-              description: VPCIDRef references to a VPC to and retrieves its vpcId
+              description: VPCIDRef references a VPC to retrieve its vpcId
               properties:
                 name:
-                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                    TODO: Add other useful fields. apiVersion, kind, uid?'
+                  description: Name of the referenced object.
                   type: string
+              required:
+              - name
+              type: object
+            vpcIdSelector:
+              description: VPCIDSelector selects a reference to a VPC to retrieve
+                its vpcId
+              properties:
+                matchControllerRef:
+                  description: MatchControllerRef ensures an object with the same
+                    controller reference as the selecting object is selected.
+                  type: boolean
+                matchLabels:
+                  additionalProperties:
+                    type: string
+                  description: MatchLabels ensures an object with matching labels
+                    is selected.
+                  type: object
               type: object
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the namespace
@@ -280,9 +328,25 @@ spec:
                     description: A referencer to retrieve the ID of a subnet
                     properties:
                       name:
-                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        description: Name of the referenced object.
                         type: string
+                    required:
+                    - name
+                    type: object
+                  subnetIdSelector:
+                    description: A selector to select a referencer to retrieve the
+                      ID of a subnet
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
                     type: object
                 required:
                 - associationId
@@ -351,9 +415,25 @@ spec:
                     description: A referencer to retrieve the ID of a gateway
                     properties:
                       name:
-                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        description: Name of the referenced object.
                         type: string
+                    required:
+                    - name
+                    type: object
+                  gatewayIdSelector:
+                    description: A selector to select a referencer to retrieve the
+                      ID of a gateway
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
                     type: object
                   routeState:
                     description: The state of the route. The blackhole state indicates
