@@ -7,6 +7,7 @@ spec:
   classSelector:
     matchLabels:
       example: "true"
+      engine: mysql
   writeConnectionSecretToRef:
     name: mysqlconn
   engineVersion: "5.6"
