@@ -7,6 +7,7 @@ spec:
   classSelector:
     matchLabels:
       example: "true"
+      engine: postgresql
   writeConnectionSecretToRef:
     name: postgresqlconn
   engineVersion: "9.6"
