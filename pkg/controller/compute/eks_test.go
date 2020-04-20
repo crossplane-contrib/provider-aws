@@ -150,7 +150,7 @@ func TestCreate(t *testing.T) {
 	test := func(cluster *EKSCluster, client eksclients.Client, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) *EKSCluster {
 		r := &Reconciler{
 			Client:            NewFakeClient(cluster),
-			ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient(cluster)),
+			ReferenceResolver: managed.NewAPISimpleReferenceResolver(NewFakeClient(cluster)),
 		}
 
 		rs, err := r._create(cluster, client)
@@ -212,7 +212,7 @@ func TestSync(t *testing.T) {
 			Client:            NewFakeClient(tc),
 			secret:            sec,
 			awsauth:           auth,
-			ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+			ReferenceResolver: managed.NewAPISimpleReferenceResolver(NewFakeClient()),
 		}
 
 		rs, err := r._sync(tc, cluster, client)
@@ -359,7 +359,7 @@ func TestSecret(t *testing.T) {
 				return nil
 			},
 		},
-		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		ReferenceResolver: managed.NewAPISimpleReferenceResolver(NewFakeClient()),
 	}
 
 	tc := testCluster()
@@ -387,7 +387,7 @@ func TestDelete(t *testing.T) {
 	test := func(cluster *EKSCluster, client eksclients.Client, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) *EKSCluster {
 		r := &Reconciler{
 			Client:            NewFakeClient(cluster),
-			ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient(cluster)),
+			ReferenceResolver: managed.NewAPISimpleReferenceResolver(NewFakeClient(cluster)),
 		}
 
 		rs, err := r._delete(cluster, client)
@@ -475,7 +475,7 @@ func TestReconcileObjectNotFound(t *testing.T) {
 
 	r := &Reconciler{
 		Client:            NewFakeClient(),
-		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		ReferenceResolver: managed.NewAPISimpleReferenceResolver(NewFakeClient()),
 		log:               logging.NewNopLogger(),
 	}
 	rs, err := r.Reconcile(request)
@@ -496,7 +496,7 @@ func TestReconcileClientError(t *testing.T) {
 			called = true
 			return nil, testError
 		},
-		ReferenceResolver: managed.NewAPIReferenceResolver(kube),
+		ReferenceResolver: managed.NewAPISimpleReferenceResolver(kube),
 		log:               logging.NewNopLogger(),
 		initializer:       managed.NewNameAsExternalName(kube),
 	}
@@ -532,7 +532,7 @@ func TestReconcileDelete(t *testing.T) {
 			called = true
 			return reconcile.Result{}, nil
 		},
-		ReferenceResolver: managed.NewAPIReferenceResolver(kube),
+		ReferenceResolver: managed.NewAPISimpleReferenceResolver(kube),
 		log:               logging.NewNopLogger(),
 		initializer:       managed.NewNameAsExternalName(kube),
 	}
@@ -560,7 +560,7 @@ func TestReconcileCreate(t *testing.T) {
 			called = true
 			return reconcile.Result{RequeueAfter: aShortWait}, nil
 		},
-		ReferenceResolver: managed.NewAPIReferenceResolver(kube),
+		ReferenceResolver: managed.NewAPISimpleReferenceResolver(kube),
 		log:               logging.NewNopLogger(),
 		initializer:       managed.NewNameAsExternalName(kube),
 	}
@@ -592,7 +592,7 @@ func TestReconcileSync(t *testing.T) {
 			called = true
 			return reconcile.Result{RequeueAfter: aShortWait}, nil
 		},
-		ReferenceResolver: managed.NewAPIReferenceResolver(kube),
+		ReferenceResolver: managed.NewAPISimpleReferenceResolver(kube),
 		log:               logging.NewNopLogger(),
 		initializer:       managed.NewNameAsExternalName(kube),
 	}

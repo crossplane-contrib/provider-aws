@@ -322,9 +322,25 @@ spec:
                     used to set DBSubnetGroupName.
                   properties:
                     name:
-                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                        TODO: Add other useful fields. apiVersion, kind, uid?'
+                      description: Name of the referenced object.
                       type: string
+                  required:
+                  - name
+                  type: object
+                dbSubnetGroupNameSelector:
+                  description: DBSubnetGroupNameSelector selects a reference to a
+                    DBSubnetGroup used to set DBSubnetGroupName.
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
                   type: object
                 deletionProtection:
                   description: DeletionProtection indicates if the DB instance should
@@ -345,9 +361,25 @@ spec:
                     to set DomainIAMRoleName.
                   properties:
                     name:
-                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                        TODO: Add other useful fields. apiVersion, kind, uid?'
+                      description: Name of the referenced object.
                       type: string
+                  required:
+                  - name
+                  type: object
+                domainIAMRoleNameSelector:
+                  description: DomainIAMRoleNameSelector selects a reference to an
+                    IAMRole used to set DomainIAMRoleName.
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
                   type: object
                 enableCloudwatchLogsExports:
                   description: EnableCloudwatchLogsExports is the list of log types
@@ -486,9 +518,25 @@ spec:
                     to set MonitoringRoleARN.
                   properties:
                     name:
-                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                        TODO: Add other useful fields. apiVersion, kind, uid?'
+                      description: Name of the referenced object.
                       type: string
+                  required:
+                  - name
+                  type: object
+                monitoringRoleArnSelector:
+                  description: MonitoringRoleARNSelector selects a reference to an
+                    IAMRole used to set MonitoringRoleARN.
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
                   type: object
                 multiAZ:
                   description: MultiAZ specifies if the DB instance is a Multi-AZ
@@ -690,16 +738,30 @@ spec:
                   description: VPCSecurityGroupIDRefs are references to VPCSecurityGroups
                     used to set the VPCSecurityGroupIDs.
                   items:
-                    description: VPCSecurityGroupIDReferencerForRDSInstance is an
-                      attribute referencer that resolves SecurityGroupID from a referenced
-                      SecurityGroup
+                    description: A Reference to a named object.
                     properties:
                       name:
-                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        description: Name of the referenced object.
                         type: string
+                    required:
+                    - name
                     type: object
                   type: array
+                vpcSecurityGroupIDSelector:
+                  description: VPCSecurityGroupIDSelector selects references to VPCSecurityGroups
+                    used to set the VPCSecurityGroupIDs.
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
+                  type: object
                 vpcSecurityGroupIds:
                   description: 'VPCSecurityGroupIDs is a list of EC2 VPC security
                     groups to associate with this DB instance. Amazon Aurora Not applicable.

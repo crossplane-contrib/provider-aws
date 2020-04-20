@@ -94,9 +94,8 @@ func TestSyncBucketError(t *testing.T) {
 
 	assert := func(instance *S3Bucket, client client.Service, expectedResult reconcile.Result, expectedStatus runtimev1alpha1.ConditionedStatus) {
 		r := &Reconciler{
-			Client:            NewFakeClient(instance),
-			ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
-			log:               logging.NewNopLogger(),
+			Client: NewFakeClient(instance),
+			log:    logging.NewNopLogger(),
 		}
 
 		rs, err := r._sync(instance, client)
@@ -179,9 +178,8 @@ func TestSyncBucket(t *testing.T) {
 	tr.Status.LastLocalPermission = storagev1alpha1.ReadOnlyPermission
 
 	r := &Reconciler{
-		Client:            NewFakeClient(tr),
-		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
-		log:               logging.NewNopLogger(),
+		Client: NewFakeClient(tr),
+		log:    logging.NewNopLogger(),
 	}
 	//
 	updateBucketACLCalled := false
@@ -213,9 +211,8 @@ func TestDelete(t *testing.T) {
 	tr := testResource()
 
 	r := &Reconciler{
-		Client:            NewFakeClient(tr),
-		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
-		log:               logging.NewNopLogger(),
+		Client: NewFakeClient(tr),
+		log:    logging.NewNopLogger(),
 	}
 
 	cl := &MockS3Client{}
@@ -268,7 +265,6 @@ func TestCreate(t *testing.T) {
 
 	r := &Reconciler{
 		Client:              NewFakeClient(tr),
-		ReferenceResolver:   managed.NewAPIReferenceResolver(NewFakeClient()),
 		ConnectionPublisher: managed.PublisherChain{}, // A no-op publisher.
 		log:                 logging.NewNopLogger(),
 	}
@@ -321,8 +317,7 @@ func TestCreateFail(t *testing.T) {
 
 	testError := errors.New("test-publish-secret-error")
 	r := &Reconciler{
-		Client:            NewFakeClient(tr),
-		ReferenceResolver: managed.NewAPIReferenceResolver(NewFakeClient()),
+		Client: NewFakeClient(tr),
 		ConnectionPublisher: managed.ConnectionPublisherFns{
 			PublishConnectionFn: func(_ context.Context, _ resource.Managed, _ managed.ConnectionDetails) error {
 				return testError
@@ -391,10 +386,9 @@ func TestReconcile(t *testing.T) {
 	tr.Spec.IAMUsername = ""
 	kube := NewFakeClient(tr)
 	r := &Reconciler{
-		Client:            kube,
-		ReferenceResolver: managed.NewAPIReferenceResolver(kube),
-		log:               logging.NewNopLogger(),
-		initializer:       managed.NewNameAsExternalName(kube),
+		Client:      kube,
+		log:         logging.NewNopLogger(),
+		initializer: managed.NewNameAsExternalName(kube),
 	}
 
 	// test connect error
