@@ -196,16 +196,30 @@ spec:
                   description: CacheSecurityGroupNameRefs are references to SecurityGroups
                     used to set the CacheSecurityGroupNames.
                   items:
-                    description: SecurityGroupNameReferencerForReplicationGroup is
-                      an attribute referencer that resolves SecurityGroupName from
-                      a referenced SecurityGroup
+                    description: A Reference to a named object.
                     properties:
                       name:
-                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        description: Name of the referenced object.
                         type: string
+                    required:
+                    - name
                     type: object
                   type: array
+                cacheSecurityGroupNameSelector:
+                  description: CacheSecurityGroupNameSelector selects references to
+                    SecurityGroups.
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
+                  type: object
                 cacheSecurityGroupNames:
                   description: CacheSecurityGroupNames specifies a list of cache security
                     group names to associate with this replication group. Only for
@@ -345,16 +359,30 @@ spec:
                   description: SecurityGroupIDRefs are references to SecurityGroups
                     used to set the SecurityGroupIDs.
                   items:
-                    description: SecurityGroupIDReferencerForReplicationGroup is an
-                      attribute referencer that resolves SecurityGroupID from a referenced
-                      SecurityGroup
+                    description: A Reference to a named object.
                     properties:
                       name:
-                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        description: Name of the referenced object.
                         type: string
+                    required:
+                    - name
                     type: object
                   type: array
+                securityGroupIdSelector:
+                  description: SecurityGroupIDSelector selects references to SecurityGroups
+                    used to set the SecurityGroupIDs.
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
+                  type: object
                 securityGroupIds:
                   description: SecurityGroupIDs specifies one or more Amazon VPC security
                     groups associated with this replication group. Use this parameter

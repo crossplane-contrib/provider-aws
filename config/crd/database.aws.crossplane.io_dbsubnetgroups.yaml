@@ -135,18 +135,33 @@ spec:
                   description: The description for the DB subnet group.
                   type: string
                 subnetIdRefs:
-                  description: SubnetIDRefs is a set of referencers that each retrieve
+                  description: SubnetIDRefs is a set of references that each retrieve
                     the subnetID from the referenced Subnet
                   items:
-                    description: SubnetIDReferencerForDBSubnetGroup is an attribute
-                      referencer that resolves SubnetID from a referenced Subnet
+                    description: A Reference to a named object.
                     properties:
                       name:
-                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        description: Name of the referenced object.
                         type: string
+                    required:
+                    - name
                     type: object
                   type: array
+                subnetIdSelector:
+                  description: SubnetIDSelector selects a set of references that each
+                    retrieve the subnetID from the referenced Subnet
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
+                  type: object
                 subnetIds:
                   description: The EC2 Subnet IDs for the DB subnet group.
                   items:

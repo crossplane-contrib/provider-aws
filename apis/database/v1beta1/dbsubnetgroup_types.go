@@ -19,17 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/pkg/errors"
-
-	network "github.com/crossplane/provider-aws/apis/network/v1alpha3"
-
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-)
-
-// Error strings
-const (
-	errResourceIsNotDBSubnetGroup = "the managed resource is not a DBSubnetGroup"
 )
 
 // DBSubnetGroupStateAvailable states that a DBSubnet Group is healthy and available
@@ -44,30 +34,6 @@ type Subnet struct {
 	SubnetStatus string `json:"subnetStatus"`
 }
 
-// SubnetIDReferencerForDBSubnetGroup is an attribute referencer that resolves SubnetID from a referenced Subnet
-type SubnetIDReferencerForDBSubnetGroup struct {
-	network.SubnetIDReferencer `json:",inline"`
-}
-
-// Assign assigns the retrieved value to the managed resource
-func (v *SubnetIDReferencerForDBSubnetGroup) Assign(res resource.CanReference, value string) error {
-	sg, ok := res.(*DBSubnetGroup)
-	if !ok {
-		return errors.New(errResourceIsNotDBSubnetGroup)
-	}
-
-	for _, id := range sg.Spec.ForProvider.SubnetIDs {
-		if id == value {
-			return nil
-		}
-	}
-
-	sg.Spec.ForProvider.SubnetIDs = append(sg.Spec.ForProvider.SubnetIDs, value)
-	return nil
-}
-
-var _ resource.AttributeReferencer = (*SubnetIDReferencerForDBSubnetGroup)(nil)
-
 // DBSubnetGroupParameters define the desired state of an AWS VPC Database
 // Subnet Group.
 type DBSubnetGroupParameters struct {
@@ -77,8 +43,11 @@ type DBSubnetGroupParameters struct {
 	// The EC2 Subnet IDs for the DB subnet group.
 	SubnetIDs []string `json:"subnetIds,omitempty"`
 
-	// SubnetIDRefs is a set of referencers that each retrieve the subnetID from the referenced Subnet
-	SubnetIDRefs []*SubnetIDReferencerForDBSubnetGroup `json:"subnetIdRefs,omitempty" resource:"attributereferencer"`
+	// SubnetIDRefs is a set of references that each retrieve the subnetID from the referenced Subnet
+	SubnetIDRefs []runtimev1alpha1.Reference `json:"subnetIdRefs,omitempty"`
+
+	// SubnetIDSelector selects a set of references that each retrieve the subnetID from the referenced Subnet
+	SubnetIDSelector *runtimev1alpha1.Selector `json:"subnetIdSelector,omitempty"`
 
 	// A list of tags. For more information, see Tagging Amazon RDS Resources (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
 	// in the Amazon RDS User Guide.

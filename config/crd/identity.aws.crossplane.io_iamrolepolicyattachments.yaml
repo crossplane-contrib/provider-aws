@@ -143,13 +143,28 @@ spec:
                   description: RoleName presents the name of the IAM role.
                   type: string
                 roleNameRef:
-                  description: RoleNameRef references to an IAMRole to retrieve its
-                    Name
+                  description: RoleNameRef references an IAMRole to retrieve its Name
                   properties:
                     name:
-                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                        TODO: Add other useful fields. apiVersion, kind, uid?'
+                      description: Name of the referenced object.
                       type: string
+                  required:
+                  - name
+                  type: object
+                roleNameSelector:
+                  description: RoleNameSelector selects a reference to an IAMRole
+                    to retrieve its Name
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
                   type: object
               required:
               - policyArn
