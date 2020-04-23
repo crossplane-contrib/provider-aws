@@ -68,25 +68,25 @@ type args struct {
 	cr  resource.Managed
 }
 
-type userModifier func(*v1alpha1.User)
+type userModifier func(*v1alpha1.IAMUser)
 
 func withConditions(c ...corev1alpha1.Condition) userModifier {
-	return func(r *v1alpha1.User) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1alpha1.IAMUser) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withSpec(spec v1alpha1.UserParameters) userModifier {
-	return func(r *v1alpha1.User) {
+func withSpec(spec v1alpha1.IAMUserParameters) userModifier {
+	return func(r *v1alpha1.IAMUser) {
 		r.Spec.ForProvider = spec
 	}
 }
 
 func withExternalName(name string) userModifier {
-	return func(r *v1alpha1.User) { meta.SetExternalName(r, name) }
+	return func(r *v1alpha1.IAMUser) { meta.SetExternalName(r, name) }
 }
 
-func user(m ...userModifier) *v1alpha1.User {
-	cr := &v1alpha1.User{
-		Spec: v1alpha1.UserSpec{
+func user(m ...userModifier) *v1alpha1.IAMUser {
+	cr := &v1alpha1.IAMUser{
+		Spec: v1alpha1.IAMUserSpec{
 			ResourceSpec: corev1alpha1.ResourceSpec{
 				ProviderReference: &corev1.ObjectReference{Name: providerName},
 			},
@@ -129,7 +129,7 @@ func TestConnect(t *testing.T) {
 	type args struct {
 		kube        client.Client
 		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (iam.UserClient, error)
-		cr          *v1alpha1.User
+		cr          *v1alpha1.IAMUser
 	}
 	type want struct {
 		err error
@@ -543,13 +543,13 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: user(withExternalName(userName),
-					withSpec(v1alpha1.UserParameters{
+					withSpec(v1alpha1.IAMUserParameters{
 						GroupList: []string{groupName},
 					})),
 			},
 			want: want{
 				cr: user(withExternalName(userName),
-					withSpec(v1alpha1.UserParameters{
+					withSpec(v1alpha1.IAMUserParameters{
 						GroupList: []string{groupName},
 					})),
 				err: errors.Wrap(errBoom, errAddUserToGroup),
@@ -601,13 +601,13 @@ func TestDelete(t *testing.T) {
 					},
 				},
 				cr: user(withExternalName(userName),
-					withSpec(v1alpha1.UserParameters{
+					withSpec(v1alpha1.IAMUserParameters{
 						GroupList: []string{groupName},
 					})),
 			},
 			want: want{
 				cr: user(withExternalName(userName),
-					withSpec(v1alpha1.UserParameters{
+					withSpec(v1alpha1.IAMUserParameters{
 						GroupList: []string{groupName},
 					}),
 					withConditions(corev1alpha1.Deleting())),
@@ -637,13 +637,13 @@ func TestDelete(t *testing.T) {
 					},
 				},
 				cr: user(withExternalName(userName),
-					withSpec(v1alpha1.UserParameters{
+					withSpec(v1alpha1.IAMUserParameters{
 						GroupList: []string{groupName},
 					})),
 			},
 			want: want{
 				cr: user(withExternalName(userName),
-					withSpec(v1alpha1.UserParameters{
+					withSpec(v1alpha1.IAMUserParameters{
 						GroupList: []string{groupName},
 					}), withConditions(corev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),

@@ -42,7 +42,7 @@ import (
 )
 
 const (
-	errNotUserInstance = "managed resource is not an User instance custom resource"
+	errNotUserInstance = "managed resource is not an IAMUser custom resource"
 
 	errCreateUserClient  = "cannot create IAM User client"
 	errGetProvider       = "cannot get provider"
@@ -66,7 +66,7 @@ func SetupIAMUser(mgr ctrl.Manager, l logging.Logger) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha1.User{}).
+		For(&v1alpha1.IAMUser{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.UserGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewUserClient}),
@@ -81,7 +81,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.User)
+	cr, ok := mg.(*v1alpha1.IAMUser)
 	if !ok {
 		return nil, errors.New(errNotUserInstance)
 	}
@@ -116,7 +116,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha1.User)
+	cr, ok := mgd.(*v1alpha1.IAMUser)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -144,7 +144,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.SetConditions(runtimev1alpha1.Available())
 
-	cr.Status.AtProvider = v1alpha1.UserObservation{
+	cr.Status.AtProvider = v1alpha1.IAMUserObservation{
 		Arn:    aws.StringValue(user.Arn),
 		UserID: aws.StringValue(user.UserId),
 	}
@@ -165,7 +165,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.User)
+	cr, ok := mgd.(*v1alpha1.IAMUser)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -182,7 +182,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1alpha1.User)
+	cr, ok := mgd.(*v1alpha1.IAMUser)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -227,7 +227,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.User)
+	cr, ok := mgd.(*v1alpha1.IAMUser)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

@@ -23,72 +23,72 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// GetBindingPhase of this User.
-func (mg *User) GetBindingPhase() runtimev1alpha1.BindingPhase {
+// GetBindingPhase of this IAMUser.
+func (mg *IAMUser) GetBindingPhase() runtimev1alpha1.BindingPhase {
 	return mg.Status.GetBindingPhase()
 }
 
-// GetClaimReference of this User.
-func (mg *User) GetClaimReference() *corev1.ObjectReference {
+// GetClaimReference of this IAMUser.
+func (mg *IAMUser) GetClaimReference() *corev1.ObjectReference {
 	return mg.Spec.ClaimReference
 }
 
-// GetClassReference of this User.
-func (mg *User) GetClassReference() *corev1.ObjectReference {
+// GetClassReference of this IAMUser.
+func (mg *IAMUser) GetClassReference() *corev1.ObjectReference {
 	return mg.Spec.ClassReference
 }
 
-// GetCondition of this User.
-func (mg *User) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+// GetCondition of this IAMUser.
+func (mg *IAMUser) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this User.
-func (mg *User) GetProviderReference() *corev1.ObjectReference {
+// GetProviderReference of this IAMUser.
+func (mg *IAMUser) GetProviderReference() *corev1.ObjectReference {
 	return mg.Spec.ProviderReference
 }
 
-// GetReclaimPolicy of this User.
-func (mg *User) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
+// GetReclaimPolicy of this IAMUser.
+func (mg *IAMUser) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
 	return mg.Spec.ReclaimPolicy
 }
 
-// GetWriteConnectionSecretToReference of this User.
-func (mg *User) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+// GetWriteConnectionSecretToReference of this IAMUser.
+func (mg *IAMUser) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
-// SetBindingPhase of this User.
-func (mg *User) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
+// SetBindingPhase of this IAMUser.
+func (mg *IAMUser) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
 	mg.Status.SetBindingPhase(p)
 }
 
-// SetClaimReference of this User.
-func (mg *User) SetClaimReference(r *corev1.ObjectReference) {
+// SetClaimReference of this IAMUser.
+func (mg *IAMUser) SetClaimReference(r *corev1.ObjectReference) {
 	mg.Spec.ClaimReference = r
 }
 
-// SetClassReference of this User.
-func (mg *User) SetClassReference(r *corev1.ObjectReference) {
+// SetClassReference of this IAMUser.
+func (mg *IAMUser) SetClassReference(r *corev1.ObjectReference) {
 	mg.Spec.ClassReference = r
 }
 
-// SetConditions of this User.
-func (mg *User) SetConditions(c ...runtimev1alpha1.Condition) {
+// SetConditions of this IAMUser.
+func (mg *IAMUser) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this User.
-func (mg *User) SetProviderReference(r *corev1.ObjectReference) {
+// SetProviderReference of this IAMUser.
+func (mg *IAMUser) SetProviderReference(r *corev1.ObjectReference) {
 	mg.Spec.ProviderReference = r
 }
 
-// SetReclaimPolicy of this User.
-func (mg *User) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
+// SetReclaimPolicy of this IAMUser.
+func (mg *IAMUser) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
 	mg.Spec.ReclaimPolicy = r
 }
 
-// SetWriteConnectionSecretToReference of this User.
-func (mg *User) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+// SetWriteConnectionSecretToReference of this IAMUser.
+func (mg *IAMUser) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
