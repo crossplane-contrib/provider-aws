@@ -378,20 +378,23 @@ func isErrorCodeEqual(errorCode string, err error) bool {
 
 // IsSubnetGroupUpToDate checks if CacheSubnetGroupParameters are in sync with provider values
 func IsSubnetGroupUpToDate(p cachev1alpha1.CacheSubnetGroupParameters, sg elasticache.CacheSubnetGroup) bool {
-	subnetEqual := len(p.SubnetIds) == len(sg.Subnets) && (func() bool {
-		r := false
-		for _, id := range p.SubnetIds {
-			for _, subnet := range sg.Subnets {
-				if id == *subnet.SubnetIdentifier {
-					r = true
-					break
-				} else {
-					r = false
-				}
-			}
-		}
-		return r
-	})()
+	if p.Description != aws.StringValue(sg.CacheSubnetGroupDescription) {
+		return false
+	}
 
-	return subnetEqual && p.Description == aws.StringValue(sg.CacheSubnetGroupDescription)
+	if len(p.SubnetIDs) != len(sg.Subnets) {
+		return false
+	}
+
+	exists := make(map[string]bool)
+	for _, s := range sg.Subnets {
+		exists[*s.SubnetIdentifier] = true
+	}
+	for _, id := range p.SubnetIDs {
+		if !exists[id] {
+			return false
+		}
+	}
+
+	return true
 }
