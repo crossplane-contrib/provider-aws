@@ -100,6 +100,7 @@ func GenerateCreateTableInput(name string, p *v1alpha1.DynamoTableParameters) *d
 	c := &dynamodb.CreateTableInput{
 		KeySchema: buildTableKeyElements(p.KeySchema),
 		TableName: aws.String(name),
+		Tags:      buildDynamoTags(p.Tags),
 	}
 
 	if len(p.AttributeDefinitions) != 0 {
@@ -236,80 +237,96 @@ func IsErrorNotFound(err error) bool {
 	return strings.Contains(err.Error(), dynamodb.ErrCodeResourceNotFoundException)
 }
 
-func buildAlphaKeyElements(keys []dynamodb.KeySchemaElement) []v1alpha1.KeySchemaElement {
-	if len(keys) != 0 {
-		keyElements := make([]v1alpha1.KeySchemaElement, len(keys))
-		for i, val := range keys {
-			keyElements[i] = v1alpha1.KeySchemaElement{
-				AttributeName: aws.StringValue(val.AttributeName),
-				KeyType:       string(val.KeyType),
-			}
-		}
-		return keyElements
+func buildDynamoTags(tags []v1alpha1.Tag) []dynamodb.Tag {
+	if len(tags) == 0 {
+		return nil
 	}
-	return nil
+
+	res := make([]dynamodb.Tag, len(tags))
+	for i, t := range tags {
+		res[i] = dynamodb.Tag{
+			Key:   aws.String(t.Key),
+			Value: aws.String(t.Value),
+		}
+	}
+
+	return res
+}
+
+func buildAlphaKeyElements(keys []dynamodb.KeySchemaElement) []v1alpha1.KeySchemaElement {
+	if len(keys) == 0 {
+		return nil
+	}
+	keyElements := make([]v1alpha1.KeySchemaElement, len(keys))
+	for i, val := range keys {
+		keyElements[i] = v1alpha1.KeySchemaElement{
+			AttributeName: aws.StringValue(val.AttributeName),
+			KeyType:       string(val.KeyType),
+		}
+	}
+	return keyElements
 }
 
 func buildTableKeyElements(keys []v1alpha1.KeySchemaElement) []dynamodb.KeySchemaElement {
-	if len(keys) != 0 {
-		keyElements := make([]dynamodb.KeySchemaElement, len(keys))
-		for i, val := range keys {
-			keyElements[i] = dynamodb.KeySchemaElement{
-				AttributeName: aws.String(val.AttributeName),
-				KeyType:       dynamodb.KeyType(val.KeyType),
-			}
-		}
-		return keyElements
+	if len(keys) == 0 {
+		return nil
 	}
-	return nil
+	keyElements := make([]dynamodb.KeySchemaElement, len(keys))
+	for i, val := range keys {
+		keyElements[i] = dynamodb.KeySchemaElement{
+			AttributeName: aws.String(val.AttributeName),
+			KeyType:       dynamodb.KeyType(val.KeyType),
+		}
+	}
+	return keyElements
 }
 
 func buildAttributeDefinitions(attributes []dynamodb.AttributeDefinition) []v1alpha1.AttributeDefinition {
-	if len(attributes) != 0 {
-		attributeDefinitions := make([]v1alpha1.AttributeDefinition, len(attributes))
-		for i, val := range attributes {
-			attributeDefinitions[i] = v1alpha1.AttributeDefinition{
-				AttributeName: *val.AttributeName,
-				AttributeType: string(val.AttributeType),
-			}
-		}
-		return attributeDefinitions
+	if len(attributes) == 0 {
+		return nil
 	}
-	return nil
+	attributeDefinitions := make([]v1alpha1.AttributeDefinition, len(attributes))
+	for i, val := range attributes {
+		attributeDefinitions[i] = v1alpha1.AttributeDefinition{
+			AttributeName: *val.AttributeName,
+			AttributeType: string(val.AttributeType),
+		}
+	}
+	return attributeDefinitions
 }
 
 func buildGlobalIndexes(indexes []dynamodb.GlobalSecondaryIndexDescription) []v1alpha1.GlobalSecondaryIndex {
-	if len(indexes) != 0 {
-		globalSecondaryIndexes := make([]v1alpha1.GlobalSecondaryIndex, len(indexes))
-		for i, val := range indexes {
-			globalSecondaryIndexes[i] = v1alpha1.GlobalSecondaryIndex{
-				IndexName: val.IndexName,
-				KeySchema: buildAlphaKeyElements(val.KeySchema),
-				Projection: &v1alpha1.Projection{
-					NonKeyAttributes: val.Projection.NonKeyAttributes,
-					ProjectionType:   string(val.Projection.ProjectionType),
-				},
-			}
-		}
-		return globalSecondaryIndexes
+	if len(indexes) == 0 {
+		return nil
 	}
-	return nil
+	globalSecondaryIndexes := make([]v1alpha1.GlobalSecondaryIndex, len(indexes))
+	for i, val := range indexes {
+		globalSecondaryIndexes[i] = v1alpha1.GlobalSecondaryIndex{
+			IndexName: val.IndexName,
+			KeySchema: buildAlphaKeyElements(val.KeySchema),
+			Projection: &v1alpha1.Projection{
+				NonKeyAttributes: val.Projection.NonKeyAttributes,
+				ProjectionType:   string(val.Projection.ProjectionType),
+			},
+		}
+	}
+	return globalSecondaryIndexes
 }
 
 func buildLocalIndexes(indexes []dynamodb.LocalSecondaryIndexDescription) []v1alpha1.LocalSecondaryIndex {
-	if len(indexes) != 0 {
-		localSecondaryIndexes := make([]v1alpha1.LocalSecondaryIndex, len(indexes))
-		for i, val := range indexes {
-			localSecondaryIndexes[i] = v1alpha1.LocalSecondaryIndex{
-				IndexName: val.IndexName,
-				KeySchema: buildAlphaKeyElements(val.KeySchema),
-				Projection: &v1alpha1.Projection{
-					NonKeyAttributes: val.Projection.NonKeyAttributes,
-					ProjectionType:   string(val.Projection.ProjectionType),
-				},
-			}
-		}
-		return localSecondaryIndexes
+	if len(indexes) == 0 {
+		return nil
 	}
-	return nil
+	localSecondaryIndexes := make([]v1alpha1.LocalSecondaryIndex, len(indexes))
+	for i, val := range indexes {
+		localSecondaryIndexes[i] = v1alpha1.LocalSecondaryIndex{
+			IndexName: val.IndexName,
+			KeySchema: buildAlphaKeyElements(val.KeySchema),
+			Projection: &v1alpha1.Projection{
+				NonKeyAttributes: val.Projection.NonKeyAttributes,
+				ProjectionType:   string(val.Projection.ProjectionType),
+			},
+		}
+	}
+	return localSecondaryIndexes
 }

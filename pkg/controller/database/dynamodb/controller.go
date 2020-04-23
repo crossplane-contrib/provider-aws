@@ -200,7 +200,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 
 	_, err := e.client.DeleteTableRequest(&awsdynamo.DeleteTableInput{
-		TableName: &cr.Status.AtProvider.TableName,
+		TableName: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 	return errors.Wrap(resource.Ignore(dynamodb.IsErrorNotFound, err), errDeleteFailed)
 }

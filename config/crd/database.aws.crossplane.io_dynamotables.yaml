@@ -201,6 +201,7 @@ spec:
                               into the index:'
                             type: string
                         required:
+                        - keyType
                         - projectionType
                         type: object
                       provisionedThroughput:
@@ -283,6 +284,7 @@ spec:
                               into the index:'
                             type: string
                         required:
+                        - keyType
                         - projectionType
                         type: object
                     type: object
@@ -332,6 +334,23 @@ spec:
                         or disabled (false) on the table.
                       type: boolean
                   type: object
+                tag:
+                  description: A list of key-value pairs to label the table.
+                  items:
+                    description: Tag represetnt a key-pair metadata assigned to a
+                      DynamoDB Table
+                    properties:
+                      tag:
+                        description: The key of the tag.
+                        type: string
+                      value:
+                        description: The value of the tag.
+                        type: string
+                    required:
+                    - tag
+                    - value
+                    type: object
+                  type: array
               required:
               - attributeDefinitions
               - keySchema
@@ -483,6 +502,7 @@ spec:
                               into the index:'
                             type: string
                         required:
+                        - keyType
                         - projectionType
                         type: object
                       provisionedThroughput:
@@ -573,6 +593,7 @@ spec:
                               into the index:'
                             type: string
                         required:
+                        - keyType
                         - projectionType
                         type: object
                     type: object
