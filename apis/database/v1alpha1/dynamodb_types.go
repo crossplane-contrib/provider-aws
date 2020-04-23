@@ -22,13 +22,23 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
 
-// RDS instance states.
+// DynamoDB instance states.
 const (
 	DynamoTableStateAvailable = "ACTIVE"
 	DynamoTableStateCreating  = "CREATING"
 	DynamoTableStateDeleting  = "DELETING"
 	DynamoTableStateModifying = "UPDATING"
 )
+
+// Tag represetnt a key-pair metadata assigned to a DynamoDB Table
+type Tag struct {
+
+	// The key of the tag.
+	Key string `json:"tag"`
+
+	// The value of the tag.
+	Value string `json:"value"`
+}
 
 // AttributeDefinition  represents an attribute for describing the key schema for the table and indexes.
 type AttributeDefinition struct {
@@ -49,18 +59,22 @@ type AttributeDefinition struct {
 // GlobalSecondaryIndex represents the properties of a global secondary index.
 type GlobalSecondaryIndex struct {
 	// The name of the global secondary index. The name must be unique among all
+	// +optional
 	IndexName *string `json:"indexName,omitempty"`
 
 	// The complete key schema for a global secondary index, which consists of one
+	// +optional
 	KeySchema []KeySchemaElement `json:"keySchema,omitempty"`
 
 	// Represents attributes that are copied (projected) from the table into the
 	// global secondary index. These are in addition to the primary key attributes
 	// and index key attributes, which are automatically projected.
+	// +optional
 	Projection *Projection `json:"projection,omitempty"`
 
 	// Represents the provisioned throughput settings for the specified global secondary
 	// index.
+	// +optional
 	ProvisionedThroughput *ProvisionedThroughput `json:"provisionedThroughput,omitempty"`
 }
 
@@ -77,13 +91,16 @@ type KeySchemaElement struct {
 type LocalSecondaryIndex struct {
 	// The name of the local secondary index. The name must be unique among all
 	// other indexes on this table.
+	// +optional
 	IndexName *string `json:"indexName,omitempty"`
 
 	// The complete key schema for the local secondary index, consisting of one
+	// +optional
 	KeySchema []KeySchemaElement `json:"keySchema,omitempty"`
 
 	// Represents attributes that are copied (projected) from the table into the
 	// local secondary index.
+	// +optional
 	Projection *Projection `json:"projection,omitempty"`
 }
 
@@ -91,7 +108,6 @@ type LocalSecondaryIndex struct {
 type Projection struct {
 
 	// Represents the non-key attribute names which will be projected into the index.
-	// +optional
 	NonKeyAttributes []string `json:"keyType"`
 
 	// The set of attributes that are projected into the index:
@@ -102,10 +118,12 @@ type Projection struct {
 type ProvisionedThroughput struct {
 
 	// The maximum number of strongly consistent reads consumed per second before
+	// +optional
 	ReadCapacityUnits *int64 `json:"readCapacityUnits,omitempty"`
 
 	// The maximum number of writes consumed per second before DynamoDB returns
 	// a ThrottlingException.
+	// +optional
 	WriteCapacityUnits *int64 `json:"writeCapacityUnits,omitempty"`
 }
 
@@ -114,13 +132,16 @@ type SSESpecification struct {
 
 	// Indicates whether server-side encryption is done using an AWS managed CMK
 	// or an AWS owned CMK.
+	// +optional
 	Enabled *bool `json:"enabled,omitempty"`
 
 	// The AWS KMS customer master key (CMK) that should be used for the AWS KMS
 	// encryption.
+	// +optional
 	KMSMasterKeyID *string `json:"kmsMasterKeyId,omitempty"`
 
 	// Server-side encryption type.
+	// +optional
 	SSEType *string `json:"SSEType,omitempty"`
 	// contains filtered or unexported fields
 }
@@ -130,11 +151,13 @@ type StreamSpecification struct {
 
 	// Indicates whether DynamoDB Streams is enabled (true) or disabled (false)
 	// on the table.
+	// +optional
 	StreamEnabled *bool `json:"streamEnabled,omitempty"`
 
 	// When an item in the table is modified, StreamViewType determines what information
 	// is written to the stream for this table.
-	StreamViewType string `json:"StreamViewType,omitempty"`
+	// +optional
+	StreamViewType *string `json:"StreamViewType,omitempty"`
 }
 
 // DynamoTableParameters define the desired state of an AWS DynomoDBTable
@@ -169,9 +192,8 @@ type DynamoTableParameters struct {
 	// +optional
 	StreamSpecification *StreamSpecification `json:"streamSpecification,omitempty"`
 
-	// A list of key-value pairs to label the table. For more information.
-	// +optional
-	// Tags []*Tag `json:"tag,omitempty"`
+	// A list of key-value pairs to label the table.
+	Tags []Tag `json:"tag,omitempty"`
 }
 
 // A DynamoTableSpec defines the desired state of a DynamoDB Table.
