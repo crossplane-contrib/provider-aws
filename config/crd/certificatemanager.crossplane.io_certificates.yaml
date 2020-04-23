@@ -1,0 +1,415 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: certificates.certificatemanager.crossplane.io
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.domainName
+    name: DOMAINNAME
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Ready')].status
+    name: READY
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Synced')].status
+    name: SYNCED
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: AGE
+    type: date
+  group: certificatemanager.crossplane.io
+  names:
+    kind: Certificate
+    listKind: CertificateList
+    plural: certificates
+    singular: certificate
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: Certificate is a managed resource that represents an AWS Certificate
+        Manager.
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: CertificateSpec defines the desired state of Certificate
+          properties:
+            claimRef:
+              description: ClaimReference specifies the resource claim to which this
+                managed resource will be bound. ClaimReference is set automatically
+                during dynamic provisioning. Crossplane does not currently support
+                setting this field manually, per https://github.com/crossplane/crossplane-runtime/issues/19
+              properties:
+                apiVersion:
+                  description: API version of the referent.
+                  type: string
+                fieldPath:
+                  description: 'If referring to a piece of an object instead of an
+                    entire object, this string should contain a valid JSON/Go field
+                    access statement, such as desiredState.manifest.containers[2].
+                    For example, if the object reference is to a container within
+                    a pod, this would take on a value like: "spec.containers{name}"
+                    (where "name" refers to the name of the container that triggered
+                    the event) or if no container name is specified "spec.containers[2]"
+                    (container with index 2 in this pod). This syntax is chosen only
+                    to have some well-defined way of referencing a part of an object.
+                    TODO: this design is not final and this field is subject to change
+                    in the future.'
+                  type: string
+                kind:
+                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                  type: string
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+                namespace:
+                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                  type: string
+                resourceVersion:
+                  description: 'Specific resourceVersion to which this reference is
+                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                  type: string
+                uid:
+                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                  type: string
+              type: object
+            classRef:
+              description: ClassReference specifies the resource class that was used
+                to dynamically provision this managed resource, if any. Crossplane
+                does not currently support setting this field manually, per https://github.com/crossplane/crossplane-runtime/issues/20
+              properties:
+                apiVersion:
+                  description: API version of the referent.
+                  type: string
+                fieldPath:
+                  description: 'If referring to a piece of an object instead of an
+                    entire object, this string should contain a valid JSON/Go field
+                    access statement, such as desiredState.manifest.containers[2].
+                    For example, if the object reference is to a container within
+                    a pod, this would take on a value like: "spec.containers{name}"
+                    (where "name" refers to the name of the container that triggered
+                    the event) or if no container name is specified "spec.containers[2]"
+                    (container with index 2 in this pod). This syntax is chosen only
+                    to have some well-defined way of referencing a part of an object.
+                    TODO: this design is not final and this field is subject to change
+                    in the future.'
+                  type: string
+                kind:
+                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                  type: string
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+                namespace:
+                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                  type: string
+                resourceVersion:
+                  description: 'Specific resourceVersion to which this reference is
+                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                  type: string
+                uid:
+                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                  type: string
+              type: object
+            forProvider:
+              description: CertificateParameters defines the desired state of an AWS
+                Certificate.
+              properties:
+                CertificateAuthorityArn:
+                  description: 'The Amazon Resource Name (ARN) of the private certificate
+                    authority (CA) that will be used to issue the certificate. If
+                    you do not provide an ARN and you are trying to request a private
+                    certificate, ACM will attempt to issue a public certificate. For
+                    more information about private CAs, see the AWS Certificate Manager
+                    Private Certificate Authority (PCA) (https://docs.aws.amazon.com/acm-pca/latest/userguide/PcaWelcome.html)
+                    user guide. The ARN must have the following form:'
+                  type: string
+                DomainName:
+                  description: "Fully qualified domain name (FQDN), such as www.example.com,
+                    that you want to secure with an ACM certificate. Use an asterisk
+                    (*) to create a wildcard certificate that protects several sites
+                    in the same domain. For example, *.example.com protects www.example.com,
+                    site.example.com, and images.example.com. \n The first domain
+                    name you enter cannot exceed 64 octets, including periods. Each
+                    subsequent Subject Alternative Name (SAN), however, can be up
+                    to 253 octets in length."
+                  type: string
+                DomainValidationOptions:
+                  description: The domain name that you want ACM to use to send you
+                    emails so that you can validate domain ownership.
+                  items:
+                    description: DomainValidationOption validate domain ownership.
+                    properties:
+                      DomainName:
+                        description: "A fully qualified domain name (FQDN) in the
+                          certificate request. \n DomainName is a required field"
+                        type: string
+                      ValidationDomain:
+                        description: "The domain name that you want ACM to use to
+                          send you validation emails. This domain name is the suffix
+                          of the email addresses that you want ACM to use. This must
+                          be the same as the DomainName value or a superdomain of
+                          the DomainName value. For example, if you request a certificate
+                          for testing.example.com, you can specify example.com for
+                          this value. In that case, ACM sends domain validation emails
+                          to the following five addresses: \n    * admin@example.com
+                          \n    * administrator@example.com \n    * hostmaster@example.com
+                          \n    * postmaster@example.com \n    * webmaster@example.com
+                          \n ValidationDomain is a required field"
+                        type: string
+                    required:
+                    - DomainName
+                    - ValidationDomain
+                    type: object
+                  type: array
+                IdempotencyToken:
+                  description: Customer chosen string that can be used to distinguish
+                    between calls to RequestCertificate. Idempotency tokens time out
+                    after one hour. Therefore, if you call RequestCertificate multiple
+                    times with the same idempotency token within one hour, ACM recognizes
+                    that you are requesting only one certificate and will issue only
+                    one. If you change the idempotency token for each call, ACM recognizes
+                    that you are requesting multiple certificates.
+                  type: string
+                Options:
+                  description: Currently, you can use this parameter to specify whether
+                    to add the certificate to a certificate transparency log. Certificate
+                    transparency makes it possible to detect SSL/TLS certificates
+                    that have been mistakenly or maliciously issued. Certificates
+                    that have not been logged typically produce an error message in
+                    a browser. For more information, see Opting Out of Certificate
+                    Transparency Logging (https://docs.aws.amazon.com/acm/latest/userguide/acm-bestpractices.html#best-practices-transparency).
+                  properties:
+                    CertificateTransparencyLoggingPreference:
+                      description: You can opt out of certificate transparency logging
+                        by specifying the DISABLED option. Opt in by specifying ENABLED.
+                      type: string
+                  required:
+                  - CertificateTransparencyLoggingPreference
+                  type: object
+                SubjectAlternativeNames:
+                  description: "Additional FQDNs to be included in the Subject Alternative
+                    Name extension of the ACM certificate. For example, add the name
+                    www.example.net to a certificate for which the DomainName field
+                    is www.example.com if users can reach your site by using either
+                    name. The maximum number of domain names that you can add to an
+                    ACM certificate is 100. However, the initial quota is 10 domain
+                    names. If you need more than 10 names, you must request a quota
+                    increase. For more information, see Quotas (https://docs.aws.amazon.com/acm/latest/userguide/acm-limits.html).
+                    \n The maximum length of a SAN DNS name is 253 octets. The name
+                    is made up of multiple labels separated by periods. No label can
+                    be longer than 63 octets. Consider the following examples: \n
+                    \   * (63 octets).(63 octets).(63 octets).(61 octets) is legal
+                    because the    total length is 253 octets (63+1+63+1+63+1+61)
+                    and no label exceeds 63    octets. \n    * (64 octets).(63 octets).(63
+                    octets).(61 octets) is not legal because    the total length exceeds
+                    253 octets (64+1+63+1+63+1+61) and the first    label exceeds
+                    63 octets. \n    * (63 octets).(63 octets).(63 octets).(62 octets)
+                    is not legal because    the total length of the DNS name (63+1+63+1+63+1+62)
+                    exceeds 253 octets."
+                  items:
+                    type: string
+                  type: array
+                ValidationMethod:
+                  description: The method you want to use if you are requesting a
+                    public certificate to validate that you own or control domain.
+                    You can validate with DNS (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html)
+                    or validate with email (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-email.html).
+                    We recommend that you use DNS validation.
+                  type: string
+                tags:
+                  description: One or more resource tags to associate with the certificate.
+                  items:
+                    description: Tag represents user-provided metadata that can be
+                      associated One or more resource tags to associate with the certificate.
+                      IAM to manage permissions, see Controlling Access Using IAM
+                      Tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_iam-tags.html).
+                    properties:
+                      key:
+                        description: The key name that can be used to look up or retrieve
+                          the associated value. For example, Department or Cost Center
+                          are common choices.
+                        type: string
+                      value:
+                        description: "The value associated with this tag. For example,
+                          tags with a key name of Department could have values such
+                          as Human Resources, Accounting, and Support. Tags with a
+                          key name of Cost Center might have values that consist of
+                          the number associated with the different cost centers in
+                          your company. Typically, many resources have tags with the
+                          same key name but with different values. \n AWS always interprets
+                          the tag Value as a single string. If you need to store an
+                          array, you can store comma-separated values in the string.
+                          However, you must interpret the value in your code."
+                        type: string
+                    required:
+                    - key
+                    type: object
+                  type: array
+              required:
+              - CertificateAuthorityArn
+              - DomainName
+              type: object
+            providerRef:
+              description: ProviderReference specifies the provider that will be used
+                to create, observe, update, and delete this managed resource.
+              properties:
+                apiVersion:
+                  description: API version of the referent.
+                  type: string
+                fieldPath:
+                  description: 'If referring to a piece of an object instead of an
+                    entire object, this string should contain a valid JSON/Go field
+                    access statement, such as desiredState.manifest.containers[2].
+                    For example, if the object reference is to a container within
+                    a pod, this would take on a value like: "spec.containers{name}"
+                    (where "name" refers to the name of the container that triggered
+                    the event) or if no container name is specified "spec.containers[2]"
+                    (container with index 2 in this pod). This syntax is chosen only
+                    to have some well-defined way of referencing a part of an object.
+                    TODO: this design is not final and this field is subject to change
+                    in the future.'
+                  type: string
+                kind:
+                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                  type: string
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+                namespace:
+                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                  type: string
+                resourceVersion:
+                  description: 'Specific resourceVersion to which this reference is
+                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                  type: string
+                uid:
+                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                  type: string
+              type: object
+            reclaimPolicy:
+              description: ReclaimPolicy specifies what will happen to this managed
+                resource when its resource claim is deleted, and what will happen
+                to the underlying external resource when the managed resource is deleted.
+                The "Delete" policy causes the managed resource to be deleted when
+                its bound resource claim is deleted, and in turn causes the external
+                resource to be deleted when its managed resource is deleted. The "Retain"
+                policy causes the managed resource to be retained, in binding phase
+                "Released", when its resource claim is deleted, and in turn causes
+                the external resource to be retained when its managed resource is
+                deleted. The "Retain" policy is used when no policy is specified.
+              enum:
+              - Retain
+              - Delete
+              type: string
+            writeConnectionSecretToRef:
+              description: WriteConnectionSecretToReference specifies the namespace
+                and name of a Secret to which any connection details for this managed
+                resource should be written. Connection details frequently include
+                the endpoint, username, and password required to connect to the managed
+                resource.
+              properties:
+                name:
+                  description: Name of the secret.
+                  type: string
+                namespace:
+                  description: Namespace of the secret.
+                  type: string
+              required:
+              - name
+              - namespace
+              type: object
+          required:
+          - forProvider
+          - providerRef
+          type: object
+        status:
+          description: An CertificateStatus represents the observed state of an Certificate
+            manager.
+          properties:
+            atProvider:
+              description: CertificateExternalStatus keeps the state of external resource
+              properties:
+                CertificateArn:
+                  description: 'String that contains the ARN of the issued certificate.
+                    This must be of the form:'
+                  type: string
+              required:
+              - CertificateArn
+              type: object
+            bindingPhase:
+              description: Phase represents the binding phase of a managed resource
+                or claim. Unbindable resources cannot be bound, typically because
+                they are currently unavailable, or still being created. Unbound resource
+                are available for binding, and Bound resources have successfully bound
+                to another resource.
+              enum:
+              - Unbindable
+              - Unbound
+              - Bound
+              - Released
+              type: string
+            conditions:
+              description: Conditions of the resource.
+              items:
+                description: A Condition that may apply to a resource.
+                properties:
+                  lastTransitionTime:
+                    description: LastTransitionTime is the last time this condition
+                      transitioned from one status to another.
+                    format: date-time
+                    type: string
+                  message:
+                    description: A Message containing details about this condition's
+                      last transition from one status to another, if any.
+                    type: string
+                  reason:
+                    description: A Reason for this condition's last transition from
+                      one status to another.
+                    type: string
+                  status:
+                    description: Status of this condition; is it currently True, False,
+                      or Unknown?
+                    type: string
+                  type:
+                    description: Type of this condition. At most one of each condition
+                      type may apply to a resource at any point in time.
+                    type: string
+                required:
+                - lastTransitionTime
+                - reason
+                - status
+                - type
+                type: object
+              type: array
+          required:
+          - atProvider
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
