@@ -861,7 +861,7 @@ func TestIsSubnetGroupUpToDate(t *testing.T) {
 				},
 				p: cachev1alpha1.CacheSubnetGroupParameters{
 					Description: subnetGroupDesc,
-					SubnetIds:   []string{subnetID1, subnetID2},
+					SubnetIDs:   []string{subnetID1, subnetID2},
 				},
 			},
 			want: true,
@@ -881,7 +881,7 @@ func TestIsSubnetGroupUpToDate(t *testing.T) {
 				},
 				p: cachev1alpha1.CacheSubnetGroupParameters{
 					Description: subnetGroupDesc,
-					SubnetIds:   []string{subnetID1},
+					SubnetIDs:   []string{subnetID1},
 				},
 			},
 			want: false,
