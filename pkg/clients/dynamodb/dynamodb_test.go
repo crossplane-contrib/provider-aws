@@ -260,3 +260,54 @@ func TestGenerateCreateTableInput(t *testing.T) {
 		})
 	}
 }
+
+func TestLateInitialize(t *testing.T) {
+	type args struct {
+		spec *v1alpha1.DynamoTableParameters
+		in   dynamodb.TableDescription
+	}
+	cases := map[string]struct {
+		args args
+		want *v1alpha1.DynamoTableParameters
+	}{
+		"AllFilledNoDiff": {
+			args: args{
+				spec: tableParams(),
+				in:   *table(),
+			},
+			want: tableParams(),
+		},
+		"AllFilledExternalDiff": {
+			args: args{
+				spec: tableParams(),
+				in: *table(func(t *dynamodb.TableDescription) {
+					t.ItemCount = aws.Int64(1)
+				}),
+			},
+			want: tableParams(),
+		},
+		"PartialFilled": {
+			args: args{
+				spec: tableParams(func(p *v1alpha1.DynamoTableParameters) {
+					p.ProvisionedThroughput = nil
+				}),
+				in: *table(func(t *dynamodb.TableDescription) {
+					t.ProvisionedThroughput = &dynamodb.ProvisionedThroughputDescription{
+						ReadCapacityUnits:  aws.Int64(int64(readCapacityUnits)),
+						WriteCapacityUnits: aws.Int64(int64(writeCapacityUnits)),
+					}
+				}),
+			},
+			want: tableParams(),
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			LateInitialize(tc.args.spec, &tc.args.in)
+			if diff := cmp.Diff(tc.args.spec, tc.want); diff != "" {
+				t.Errorf("LateInitializeSpec(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
