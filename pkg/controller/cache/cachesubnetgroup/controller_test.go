@@ -281,7 +281,8 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: csg(withConditions(runtimev1alpha1.Available())),
 				result: managed.ExternalObservation{
-					ResourceExists: true,
+					ResourceExists:   true,
+					ResourceUpToDate: true,
 				},
 			},
 		},
@@ -305,13 +306,13 @@ func TestObserve(t *testing.T) {
 				},
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
 					Description: sgDescription,
-					SubnetIds:   []string{subnetID},
+					SubnetIDs:   []string{subnetID},
 				})),
 			},
 			want: want{
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
 					Description: sgDescription,
-					SubnetIds:   []string{subnetID},
+					SubnetIDs:   []string{subnetID},
 				}), withConditions(runtimev1alpha1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -376,13 +377,13 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
-					SubnetIds:   []string{subnetID},
+					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
 				})),
 			},
 			want: want{
 				cr: csg((withSpec(v1alpha1.CacheSubnetGroupParameters{
-					SubnetIds:   []string{subnetID},
+					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
 				})), withConditions(runtimev1alpha1.Creating())),
 			},
@@ -397,13 +398,13 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
-					SubnetIds:   []string{subnetID},
+					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
 				})),
 			},
 			want: want{
 				cr: csg((withSpec(v1alpha1.CacheSubnetGroupParameters{
-					SubnetIds:   []string{subnetID},
+					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
 				})), withConditions(runtimev1alpha1.Creating())),
 				err: errors.Wrap(errBoom, errCreateSubnetGroup),
@@ -450,13 +451,13 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
-					SubnetIds:   []string{subnetID},
+					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
 				})),
 			},
 			want: want{
 				cr: csg((withSpec(v1alpha1.CacheSubnetGroupParameters{
-					SubnetIds:   []string{subnetID},
+					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
 				}))),
 			},
@@ -471,13 +472,13 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
-					SubnetIds:   []string{subnetID},
+					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
 				})),
 			},
 			want: want{
 				cr: csg((withSpec(v1alpha1.CacheSubnetGroupParameters{
-					SubnetIds:   []string{subnetID},
+					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
 				}))),
 				err: errors.Wrap(errBoom, errModifySubnetGroup),
@@ -523,13 +524,13 @@ func TestDelete(t *testing.T) {
 					},
 				},
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
-					SubnetIds:   []string{subnetID},
+					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
 				}), withConditions(runtimev1alpha1.Deleting())),
 			},
 			want: want{
 				cr: csg((withSpec(v1alpha1.CacheSubnetGroupParameters{
-					SubnetIds:   []string{subnetID},
+					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
 				})), withConditions(runtimev1alpha1.Deleting())),
 			},
@@ -544,13 +545,13 @@ func TestDelete(t *testing.T) {
 					},
 				},
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
-					SubnetIds:   []string{subnetID},
+					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
 				})),
 			},
 			want: want{
 				cr: csg((withSpec(v1alpha1.CacheSubnetGroupParameters{
-					SubnetIds:   []string{subnetID},
+					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
 				})), withConditions(runtimev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDeleteSubnetGroup),

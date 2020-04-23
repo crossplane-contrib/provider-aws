@@ -7,10 +7,10 @@ metadata:
 spec:
   forProvider:
     description: desc for subnet
-    subnetIdRef:
-      - name: sample-subnet1
-      - name: sample-subnet2
-      - name: sample-subnet3
+    subnetIds:
+      - subnet-05c5f0ffc34973e8b
+      - subnet-089ef174d8b4addee
+      - subnet-0361b1970c606b733
   reclaimPolicy: Delete
   providerRef:
     name: example

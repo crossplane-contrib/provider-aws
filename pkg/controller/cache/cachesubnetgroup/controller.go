@@ -124,16 +124,14 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	sg := resp.CacheSubnetGroups[0]
 
 	cr.Status.AtProvider = v1alpha1.CacheSubnetGroupExternalStatus{
-		VpcID: aws.StringValue(sg.VpcId),
+		VPCID: aws.StringValue(sg.VpcId),
 	}
-
-	isUpToDate := elasticache.IsSubnetGroupUpToDate(cr.Spec.ForProvider, sg)
 
 	cr.SetConditions(runtimev1alpha1.Available())
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: isUpToDate,
+		ResourceUpToDate: elasticache.IsSubnetGroupUpToDate(cr.Spec.ForProvider, sg),
 	}, nil
 }
 
@@ -148,7 +146,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	_, err := e.client.CreateCacheSubnetGroupRequest(&awscache.CreateCacheSubnetGroupInput{
 		CacheSubnetGroupDescription: aws.String(cr.Spec.ForProvider.Description),
 		CacheSubnetGroupName:        aws.String(meta.GetExternalName(cr)),
-		SubnetIds:                   cr.Spec.ForProvider.SubnetIds,
+		SubnetIds:                   cr.Spec.ForProvider.SubnetIDs,
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(resource.Ignore(elasticache.IsAlreadyExists, err), errCreateSubnetGroup)
@@ -163,12 +161,10 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.New(errNotSubnetGroup)
 	}
 
-	// If the list of spec.subnetIds is different from the resource subnetIds,
-	// this call will return non-nil error
 	_, err := e.client.ModifyCacheSubnetGroupRequest(&awscache.ModifyCacheSubnetGroupInput{
 		CacheSubnetGroupDescription: aws.String(cr.Spec.ForProvider.Description),
 		CacheSubnetGroupName:        aws.String(meta.GetExternalName(cr)),
-		SubnetIds:                   cr.Spec.ForProvider.SubnetIds,
+		SubnetIds:                   cr.Spec.ForProvider.SubnetIDs,
 	}).Send(ctx)
 
 	return managed.ExternalUpdate{}, errors.Wrap(err, errModifySubnetGroup)

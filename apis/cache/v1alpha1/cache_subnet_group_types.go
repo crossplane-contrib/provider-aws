@@ -18,39 +18,8 @@ package v1alpha1
 
 import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/crossplane/provider-aws/apis/network/v1alpha3"
 )
-
-// Error strings
-const (
-	errResourceIsNotSubnetGroup = "the managed resource is not a Subnet Group"
-)
-
-// SubnetIDReferencerForSubnetGroup is an attribute referencer that resolves SubnetID from a referenced subnet
-type SubnetIDReferencerForSubnetGroup struct {
-	v1alpha3.SubnetIDReferencer `json:",inline"`
-}
-
-// Assign assigns the retrieved subnetIds to the managed resource
-func (v *SubnetIDReferencerForSubnetGroup) Assign(res resource.CanReference, value string) error {
-	subnetGroup, ok := res.(*CacheSubnetGroup)
-	if !ok {
-		return errors.New(errResourceIsNotSubnetGroup)
-	}
-
-	for _, id := range subnetGroup.Spec.ForProvider.SubnetIds {
-		if id == value {
-			return nil
-		}
-	}
-
-	subnetGroup.Spec.ForProvider.SubnetIds = append(subnetGroup.Spec.ForProvider.SubnetIds, value)
-	return nil
-}
 
 // CacheSubnetGroupParameters define the desired state of an AWS ElasticCache Subnet Group.
 type CacheSubnetGroupParameters struct {
@@ -59,11 +28,14 @@ type CacheSubnetGroupParameters struct {
 
 	// A list of  Subnet IDs for the cache subnet group.
 	// +optional
-	SubnetIds []string `json:"subnetIds,omitempty"`
+	SubnetIDs []string `json:"subnetIds,omitempty"`
 
-	// SubnetIdRef references to a Subnet to and retrieves its SubnetID
+	// SubnetIDRefs references to a Subnet to and retrieves its SubnetID
 	// +optional
-	SubnetIdsRef []*SubnetIDReferencerForSubnetGroup `json:"subnetIdRef,omitempty"`
+	SubnetIDRefs []runtimev1alpha1.Reference `json:"subnetIdRefs,omitempty"`
+
+	// SubnetIDSelector selects a set of references that each retrieve the subnetID from the referenced Subnet
+	SubnetIDSelector *runtimev1alpha1.Selector `json:"subnetIdSelector,omitempty"`
 }
 
 // A CacheSubnetGroupSpec defines the desired state of a CacheSubnetGroup.
@@ -76,7 +48,7 @@ type CacheSubnetGroupSpec struct {
 type CacheSubnetGroupExternalStatus struct {
 	// The Amazon Virtual Private Cloud identifier (VPC ID) of the cache subnet
 	// group.
-	VpcID string `json:"vpcId"`
+	VPCID string `json:"vpcId"`
 }
 
 // A CacheSubnetGroupStatus represents the observed state of a Subnet Group.
