@@ -33,7 +33,7 @@ func NewUserClient(ctx context.Context, credentials []byte, region string, auth 
 
 // LateInitializeUser fills the empty fields in *v1alpha1.User with
 // the values seen in iam.User.
-func LateInitializeUser(in *v1alpha1.UserParameters, user *iam.User) {
+func LateInitializeUser(in *v1alpha1.IAMUserParameters, user *iam.User) {
 	if user == nil {
 		return
 	}
@@ -50,7 +50,7 @@ func LateInitializeUser(in *v1alpha1.UserParameters, user *iam.User) {
 
 // CompareGroups compares list of groups specified for v1alpha1.User and
 // list of actual groups for iam.User
-func CompareGroups(p v1alpha1.UserParameters, groups []iam.Group) bool {
+func CompareGroups(p v1alpha1.IAMUserParameters, groups []iam.Group) bool {
 	if len(p.GroupList) != len(groups) {
 		return false
 	}

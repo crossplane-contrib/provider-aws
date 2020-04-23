@@ -6,7 +6,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: users.identity.aws.crossplane.io
+  name: iamusers.identity.aws.crossplane.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .status.atProvider.arn
@@ -26,16 +26,16 @@ spec:
     type: date
   group: identity.aws.crossplane.io
   names:
-    kind: User
-    listKind: UserList
-    plural: users
-    singular: user
+    kind: IAMUser
+    listKind: IAMUserList
+    plural: iamusers
+    singular: iamuser
   scope: Cluster
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: An User is a managed resource that represents an AWS IAM User.
+      description: An IAMUser is a managed resource that represents an AWS IAM IAMUser.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -50,7 +50,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: An UserSpec defines the desired state of an IAM User.
+          description: An IAMUserSpec defines the desired state of an IAM User.
           properties:
             claimRef:
               description: ClaimReference specifies the resource claim to which this
@@ -130,7 +130,8 @@ spec:
                   type: string
               type: object
             forProvider:
-              description: UserParameters define the desired state of an AWS IAM User.
+              description: IAMUserParameters define the desired state of an AWS IAM
+                User.
               properties:
                 groupList:
                   description: List of group names user should be in.
@@ -237,10 +238,10 @@ spec:
           - providerRef
           type: object
         status:
-          description: An UserStatus represents the observed state of an IAM User.
+          description: An IAMUserStatus represents the observed state of an IAM User.
           properties:
             atProvider:
-              description: UserObservation keeps the state for the external resource
+              description: IAMUserObservation keeps the state for the external resource
               properties:
                 arn:
                   description: The Amazon Resource Name (ARN) that identifies the

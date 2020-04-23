@@ -1,6 +1,6 @@
 ---
 apiVersion: identity.aws.crossplane.io/v1alpha1
-kind: User
+kind: IAMUser
 metadata:
   name: someuser
   annotations:
@@ -8,8 +8,8 @@ metadata:
 spec:
   forProvider:
     tags:
-      - key: k
-        value: v
+      - key: k1
+        value: v1
     groupList:
       - someGroup1      
   providerRef:

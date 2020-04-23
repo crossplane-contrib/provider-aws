@@ -40,14 +40,14 @@ var (
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
-// USER type metadata.
+// User type metadata.
 var (
-	UserKind             = reflect.TypeOf(User{}).Name()
+	UserKind             = reflect.TypeOf(IAMUser{}).Name()
 	UserGroupKind        = schema.GroupKind{Group: Group, Kind: UserKind}.String()
 	UserKindAPIVersion   = UserKind + "." + SchemeGroupVersion.String()
 	UserGroupVersionKind = SchemeGroupVersion.WithKind(UserKind)
 )
 
 func init() {
-	SchemeBuilder.Register(&User{}, &UserList{})
+	SchemeBuilder.Register(&IAMUser{}, &IAMUserList{})
 }
