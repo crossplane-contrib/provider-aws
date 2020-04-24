@@ -22,9 +22,9 @@ func NewClient(conf *aws.Config) (Client, error) {
 // GenerateCreateCertificateInput from CertificateSpec
 func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParameters) *acm.RequestCertificateInput {
 	m := &acm.RequestCertificateInput{
-		DomainName: aws.String(p.DomainName),
-		// CertificateAuthorityArn: p.CertificateAuthorityArn,
-		// ValidationMethod:        p.ValidationMethod,
+		DomainName:              aws.String(p.DomainName),
+		CertificateAuthorityArn: aws.String(p.CertificateAuthorityArn),
+		ValidationMethod:        "DNS",
 		// IdempotencyToken:        p.IdempotencyToken,
 		// Options:                 p.Options,
 		// DomainValidationOptions: p.DomainValidationOptions,
