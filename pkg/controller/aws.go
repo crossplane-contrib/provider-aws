@@ -66,6 +66,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		s3.SetupBucketClaimBinding,
 		s3.SetupS3Bucket,
 		iamuser.SetupIAMUser,
+		iampolicy.SetupIAMPolicy,
 		iamrole.SetupIAMRole,
 		iamuserpolicyattachment.SetupIAMUserPolicyAttachment,
 		iamrolepolicyattachment.SetupIAMRolePolicyAttachment,
