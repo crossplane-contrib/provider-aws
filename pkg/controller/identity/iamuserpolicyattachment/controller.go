@@ -68,6 +68,7 @@ func SetupIAMUserPolicyAttachment(mgr ctrl.Manager, l logging.Logger) error {
 			resource.ManagedKind(v1alpha1.UserPolicyAttachmentGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewUserPolicyAttachmentClient}),
 			managed.WithConnectionPublishers(),
+			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -119,7 +120,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	observed, err := e.client.ListAttachedUserPoliciesRequest(&awsiam.ListAttachedUserPoliciesInput{
-		UserName: &cr.Spec.ForProvider.UserName,
+		UserName: cr.Spec.ForProvider.UserName,
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
@@ -169,7 +170,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	_, err := e.client.AttachUserPolicyRequest(&awsiam.AttachUserPolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
-		UserName:  aws.String(cr.Spec.ForProvider.UserName),
+		UserName:  cr.Spec.ForProvider.UserName,
 	}).Send(ctx)
 
 	return managed.ExternalCreation{}, errors.Wrap(err, errAttach)
@@ -190,7 +191,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	_, err := e.client.DetachUserPolicyRequest(&awsiam.DetachUserPolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
-		UserName:  aws.String(cr.Spec.ForProvider.UserName),
+		UserName:  cr.Spec.ForProvider.UserName,
 	}).Send(ctx)
 
 	return errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDetach)
