@@ -6,7 +6,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: policies.identity.aws.crossplane.io
+  name: iampolicies.identity.aws.crossplane.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .status.atProvider.arn
@@ -23,16 +23,16 @@ spec:
     type: date
   group: identity.aws.crossplane.io
   names:
-    kind: Policy
-    listKind: PolicyList
-    plural: policies
-    singular: policy
+    kind: IAMPolicy
+    listKind: IAMPolicyList
+    plural: iampolicies
+    singular: iampolicy
   scope: Cluster
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: An Policy is a managed resource that represents an AWS IAM Policy.
+      description: An IAMPolicy is a managed resource that represents an AWS IAM IAMPolicy.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -47,7 +47,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: An PolicySpec defines the desired state of an Policy.
+          description: An IAMPolicySpec defines the desired state of an IAMPolicy.
           properties:
             claimRef:
               description: ClaimReference specifies the resource claim to which this
@@ -127,8 +127,8 @@ spec:
                   type: string
               type: object
             forProvider:
-              description: PolicyParameters define the desired state of an AWS IAM
-                Policy.
+              description: IAMPolicyParameters define the desired state of an AWS
+                IAM Policy.
               properties:
                 description:
                   description: A description of the policy.
@@ -217,13 +217,13 @@ spec:
           - providerRef
           type: object
         status:
-          description: An PolicyStatus represents the observed state of an Policy.
+          description: An IAMPolicyStatus represents the observed state of an IAMPolicy.
           properties:
             atProvider:
-              description: PolicyObservation keeps the state for the external resource
+              description: IAMPolicyObservation keeps the state for the external resource
               properties:
                 arn:
-                  description: The Amazon Resource Name (ARN) of the policy
+                  description: The Amazon PolicyObservation Name (ARN) of the policy
                   type: string
                 attachmentCount:
                   description: The number of entities (users, groups, and roles) that

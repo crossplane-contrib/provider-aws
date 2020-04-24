@@ -23,6 +23,76 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// GetBindingPhase of this IAMPolicy.
+func (mg *IAMPolicy) GetBindingPhase() runtimev1alpha1.BindingPhase {
+	return mg.Status.GetBindingPhase()
+}
+
+// GetClaimReference of this IAMPolicy.
+func (mg *IAMPolicy) GetClaimReference() *corev1.ObjectReference {
+	return mg.Spec.ClaimReference
+}
+
+// GetClassReference of this IAMPolicy.
+func (mg *IAMPolicy) GetClassReference() *corev1.ObjectReference {
+	return mg.Spec.ClassReference
+}
+
+// GetCondition of this IAMPolicy.
+func (mg *IAMPolicy) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetProviderReference of this IAMPolicy.
+func (mg *IAMPolicy) GetProviderReference() *corev1.ObjectReference {
+	return mg.Spec.ProviderReference
+}
+
+// GetReclaimPolicy of this IAMPolicy.
+func (mg *IAMPolicy) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
+	return mg.Spec.ReclaimPolicy
+}
+
+// GetWriteConnectionSecretToReference of this IAMPolicy.
+func (mg *IAMPolicy) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetBindingPhase of this IAMPolicy.
+func (mg *IAMPolicy) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
+	mg.Status.SetBindingPhase(p)
+}
+
+// SetClaimReference of this IAMPolicy.
+func (mg *IAMPolicy) SetClaimReference(r *corev1.ObjectReference) {
+	mg.Spec.ClaimReference = r
+}
+
+// SetClassReference of this IAMPolicy.
+func (mg *IAMPolicy) SetClassReference(r *corev1.ObjectReference) {
+	mg.Spec.ClassReference = r
+}
+
+// SetConditions of this IAMPolicy.
+func (mg *IAMPolicy) SetConditions(c ...runtimev1alpha1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this IAMPolicy.
+func (mg *IAMPolicy) SetProviderReference(r *corev1.ObjectReference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetReclaimPolicy of this IAMPolicy.
+func (mg *IAMPolicy) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
+	mg.Spec.ReclaimPolicy = r
+}
+
+// SetWriteConnectionSecretToReference of this IAMPolicy.
+func (mg *IAMPolicy) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
 // GetBindingPhase of this IAMUser.
 func (mg *IAMUser) GetBindingPhase() runtimev1alpha1.BindingPhase {
 	return mg.Status.GetBindingPhase()
@@ -160,75 +230,5 @@ func (mg *IAMUserPolicyAttachment) SetReclaimPolicy(r runtimev1alpha1.ReclaimPol
 
 // SetWriteConnectionSecretToReference of this IAMUserPolicyAttachment.
 func (mg *IAMUserPolicyAttachment) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
-	mg.Spec.WriteConnectionSecretToReference = r
-}
-
-// GetBindingPhase of this Policy.
-func (mg *Policy) GetBindingPhase() runtimev1alpha1.BindingPhase {
-	return mg.Status.GetBindingPhase()
-}
-
-// GetClaimReference of this Policy.
-func (mg *Policy) GetClaimReference() *corev1.ObjectReference {
-	return mg.Spec.ClaimReference
-}
-
-// GetClassReference of this Policy.
-func (mg *Policy) GetClassReference() *corev1.ObjectReference {
-	return mg.Spec.ClassReference
-}
-
-// GetCondition of this Policy.
-func (mg *Policy) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
-	return mg.Status.GetCondition(ct)
-}
-
-// GetProviderReference of this Policy.
-func (mg *Policy) GetProviderReference() *corev1.ObjectReference {
-	return mg.Spec.ProviderReference
-}
-
-// GetReclaimPolicy of this Policy.
-func (mg *Policy) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
-	return mg.Spec.ReclaimPolicy
-}
-
-// GetWriteConnectionSecretToReference of this Policy.
-func (mg *Policy) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
-	return mg.Spec.WriteConnectionSecretToReference
-}
-
-// SetBindingPhase of this Policy.
-func (mg *Policy) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
-	mg.Status.SetBindingPhase(p)
-}
-
-// SetClaimReference of this Policy.
-func (mg *Policy) SetClaimReference(r *corev1.ObjectReference) {
-	mg.Spec.ClaimReference = r
-}
-
-// SetClassReference of this Policy.
-func (mg *Policy) SetClassReference(r *corev1.ObjectReference) {
-	mg.Spec.ClassReference = r
-}
-
-// SetConditions of this Policy.
-func (mg *Policy) SetConditions(c ...runtimev1alpha1.Condition) {
-	mg.Status.SetConditions(c...)
-}
-
-// SetProviderReference of this Policy.
-func (mg *Policy) SetProviderReference(r *corev1.ObjectReference) {
-	mg.Spec.ProviderReference = r
-}
-
-// SetReclaimPolicy of this Policy.
-func (mg *Policy) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
-	mg.Spec.ReclaimPolicy = r
-}
-
-// SetWriteConnectionSecretToReference of this Policy.
-func (mg *Policy) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

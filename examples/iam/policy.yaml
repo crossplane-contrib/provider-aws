@@ -1,6 +1,6 @@
 ---
 apiVersion: identity.aws.crossplane.io/v1alpha1
-kind: Policy
+kind: IAMPolicy
 metadata:
   name: somepolicy
   annotations:

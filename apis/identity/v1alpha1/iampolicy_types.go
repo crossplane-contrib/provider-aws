@@ -22,27 +22,29 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
 
-// PolicyParameters define the desired state of an AWS IAM Policy.
-type PolicyParameters struct {
+// IAMPolicyParameters define the desired state of an AWS IAM Policy.
+type IAMPolicyParameters struct {
 	// A description of the policy.
+	// +optional
 	Description *string `json:"description,omitempty"`
 
 	// The path to the policy.
+	// +optional
 	Path *string `json:"path,omitempty"`
 
 	// The JSON policy document that is the content for the policy.
 	Document string `json:"document"`
 }
 
-// An PolicySpec defines the desired state of an Policy.
-type PolicySpec struct {
+// An IAMPolicySpec defines the desired state of an IAMPolicy.
+type IAMPolicySpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  PolicyParameters `json:"forProvider"`
+	ForProvider                  IAMPolicyParameters `json:"forProvider"`
 }
 
-// PolicyObservation keeps the state for the external resource
-type PolicyObservation struct {
-	// The Amazon Resource Name (ARN) of the policy
+// IAMPolicyObservation keeps the state for the external resource
+type IAMPolicyObservation struct {
+	// The Amazon PolicyObservation Name (ARN) of the policy
 	Arn string `json:"arn,omitempty"`
 
 	// The number of entities (users, groups, and roles) that the policy is attached
@@ -63,34 +65,34 @@ type PolicyObservation struct {
 	PolicyID string `json:"policyId,omitempty"`
 }
 
-// An PolicyStatus represents the observed state of an Policy.
-type PolicyStatus struct {
+// An IAMPolicyStatus represents the observed state of an IAMPolicy.
+type IAMPolicyStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     PolicyObservation `json:"atProvider"`
+	AtProvider                     IAMPolicyObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true
 
-// An Policy is a managed resource that represents an AWS IAM Policy.
+// An IAMPolicy is a managed resource that represents an AWS IAM IAMPolicy.
 // +kubebuilder:printcolumn:name="ARN",type="string",JSONPath=".status.atProvider.arn"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster
-type Policy struct {
+type IAMPolicy struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   PolicySpec   `json:"spec"`
-	Status PolicyStatus `json:"status,omitempty"`
+	Spec   IAMPolicySpec   `json:"spec"`
+	Status IAMPolicyStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// PolicyList contains a list of Policies
-type PolicyList struct {
+// IAMPolicyList contains a list of Policies
+type IAMPolicyList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Policy `json:"items"`
+	Items           []IAMPolicy `json:"items"`
 }
