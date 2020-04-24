@@ -25,14 +25,14 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 )
 
-// UserNameReferencerForUserPolicyAttachment is an attribute referencer that retrieves Name from a referenced User
-type UserNameReferencerForUserPolicyAttachment struct {
-	UserNameReferencer `json:",inline"`
+// IAMUserNameReferencerForUserPolicyAttachment is an attribute referencer that retrieves Name from a referenced IAMUser
+type IAMUserNameReferencerForUserPolicyAttachment struct {
+	IAMUserNameReferencer `json:",inline"`
 }
 
 // Assign assigns the retrieved name to the managed resource
-func (v *UserNameReferencerForUserPolicyAttachment) Assign(res resource.CanReference, value string) error {
-	p, ok := res.(*UserPolicyAttachment)
+func (v *IAMUserNameReferencerForUserPolicyAttachment) Assign(res resource.CanReference, value string) error {
+	p, ok := res.(*IAMUserPolicyAttachment)
 	if !ok {
 		return errors.New(errResourceIsNotUserPolicyAttachment)
 	}
@@ -46,48 +46,47 @@ const (
 	errResourceIsNotUserPolicyAttachment = "the managed resource is not an UserPolicyAttachment"
 )
 
-// UserPolicyAttachmentParameters define the desired state of an AWS IAM
-// User policy attachment.
-type UserPolicyAttachmentParameters struct {
+// IAMUserPolicyAttachmentParameters define the desired state of an AWS IAMUserPolicyAttachment.
+type IAMUserPolicyAttachmentParameters struct {
 
 	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to
 	// attach.
 	// +immutable
 	PolicyARN string `json:"policyArn"`
 
-	// UserName presents the name of the IAM user.
+	// UserName presents the name of the IAMUser.
 	// +optional
 	UserName string `json:"userName,omitempty"`
 
-	// UserNameRef references to an User to retrieve its Name
+	// UserNameRef references to an IAMUser to retrieve its Name
 	// +optional
-	UserNameRef *UserNameReferencerForUserPolicyAttachment `json:"userNameRef,omitempty"`
+	UserNameRef *IAMUserNameReferencerForUserPolicyAttachment `json:"userNameRef,omitempty"`
 }
 
-// An UserPolicyAttachmentSpec defines the desired state of an
-// UserPolicyAttachment.
-type UserPolicyAttachmentSpec struct {
+// An IAMUserPolicyAttachmentSpec defines the desired state of an
+// IAMUserPolicyAttachment.
+type IAMUserPolicyAttachmentSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  UserPolicyAttachmentParameters `json:"forProvider"`
+	ForProvider                  IAMUserPolicyAttachmentParameters `json:"forProvider"`
 }
 
-// UserPolicyAttachmentObservation keeps the state for the external resource
-type UserPolicyAttachmentObservation struct {
+// IAMUserPolicyAttachmentObservation keeps the state for the external resource
+type IAMUserPolicyAttachmentObservation struct {
 	// AttachedPolicyARN is the arn for the attached policy. If nil, the policy
 	// is not yet attached
 	AttachedPolicyARN string `json:"attachedPolicyArn"`
 }
 
-// An UserPolicyAttachmentStatus represents the observed state of an
-// UserPolicyAttachment.
-type UserPolicyAttachmentStatus struct {
+// An IAMUserPolicyAttachmentStatus represents the observed state of an
+// IAMUserPolicyAttachment.
+type IAMUserPolicyAttachmentStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     UserPolicyAttachmentObservation `json:"atProvider"`
+	AtProvider                     IAMUserPolicyAttachmentObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true
 
-// An UserPolicyAttachment is a managed resource that represents an AWS IAM
+// An IAMUserPolicyAttachment is a managed resource that represents an AWS IAM
 // User policy attachment.
 // +kubebuilder:printcolumn:name="USERNAME",type="string",JSONPath=".spec.forProvider.userName"
 // +kubebuilder:printcolumn:name="POLICYARN",type="string",JSONPath=".spec.forProvider.policyArn"
@@ -96,19 +95,19 @@ type UserPolicyAttachmentStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster
-type UserPolicyAttachment struct {
+type IAMUserPolicyAttachment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   UserPolicyAttachmentSpec   `json:"spec"`
-	Status UserPolicyAttachmentStatus `json:"status,omitempty"`
+	Spec   IAMUserPolicyAttachmentSpec   `json:"spec"`
+	Status IAMUserPolicyAttachmentStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// UserPolicyAttachmentList contains a list of UserPolicyAttachments
-type UserPolicyAttachmentList struct {
+// IAMUserPolicyAttachmentList contains a list of IAMUserPolicyAttachments
+type IAMUserPolicyAttachmentList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []UserPolicyAttachment `json:"items"`
+	Items           []IAMUserPolicyAttachment `json:"items"`
 }
