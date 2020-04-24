@@ -79,27 +79,27 @@ type args struct {
 	cr   resource.Managed
 }
 
-type policyModifier func(*v1alpha1.Policy)
+type policyModifier func(*v1alpha1.IAMPolicy)
 
 func withConditions(c ...corev1alpha1.Condition) policyModifier {
-	return func(r *v1alpha1.Policy) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1alpha1.IAMPolicy) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withSpec(spec v1alpha1.PolicyParameters) policyModifier {
-	return func(r *v1alpha1.Policy) {
+func withSpec(spec v1alpha1.IAMPolicyParameters) policyModifier {
+	return func(r *v1alpha1.IAMPolicy) {
 		r.Spec.ForProvider = spec
 	}
 }
 
-func withStatus(status v1alpha1.PolicyObservation) policyModifier {
-	return func(r *v1alpha1.Policy) {
+func withStatus(status v1alpha1.IAMPolicyObservation) policyModifier {
+	return func(r *v1alpha1.IAMPolicy) {
 		r.Status.AtProvider = status
 	}
 }
 
-func policy(m ...policyModifier) *v1alpha1.Policy {
-	cr := &v1alpha1.Policy{
-		Spec: v1alpha1.PolicySpec{
+func policy(m ...policyModifier) *v1alpha1.IAMPolicy {
+	cr := &v1alpha1.IAMPolicy{
+		Spec: v1alpha1.IAMPolicySpec{
 			ResourceSpec: corev1alpha1.ResourceSpec{
 				ProviderReference: &corev1.ObjectReference{Name: providerName},
 			},
@@ -142,7 +142,7 @@ func TestConnect(t *testing.T) {
 	type args struct {
 		kube        client.Client
 		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (iam.PolicyClient, error)
-		cr          *v1alpha1.Policy
+		cr          *v1alpha1.IAMPolicy
 	}
 	type want struct {
 		err error
@@ -307,14 +307,14 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withSpec(v1alpha1.PolicyParameters{
+				cr: policy(withSpec(v1alpha1.IAMPolicyParameters{
 					Document: document,
-				}), withStatus(v1alpha1.PolicyObservation{
+				}), withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				})),
 			},
 			want: want{
-				cr: policy(withSpec(v1alpha1.PolicyParameters{
+				cr: policy(withSpec(v1alpha1.IAMPolicyParameters{
 					Document: document,
 				}),
 					withConditions(corev1alpha1.Available())),
@@ -342,12 +342,12 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.PolicyObservation{
+				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				})),
 			},
 			want: want{
-				cr: policy(withStatus(v1alpha1.PolicyObservation{
+				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				})),
 				err: errors.Wrap(errBoom, errGet),
@@ -373,7 +373,7 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.PolicyObservation{
+				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				})),
 			},
@@ -432,16 +432,16 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withSpec(v1alpha1.PolicyParameters{
+				cr: policy(withSpec(v1alpha1.IAMPolicyParameters{
 					Document: document,
 				})),
 			},
 			want: want{
 				cr: policy(
-					withSpec(v1alpha1.PolicyParameters{
+					withSpec(v1alpha1.IAMPolicyParameters{
 						Document: document,
 					}),
-					withStatus(v1alpha1.PolicyObservation{
+					withStatus(v1alpha1.IAMPolicyObservation{
 						Arn: arn,
 					}),
 					withConditions(corev1alpha1.Creating())),
@@ -523,12 +523,12 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.PolicyObservation{
+				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				})),
 			},
 			want: want{
-				cr: policy(withStatus(v1alpha1.PolicyObservation{
+				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				})),
 			},
@@ -551,12 +551,12 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.PolicyObservation{
+				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				})),
 			},
 			want: want{
-				cr: policy(withStatus(v1alpha1.PolicyObservation{
+				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				})),
 				err: errors.Wrap(errBoom, errUpdate),
@@ -581,12 +581,12 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.PolicyObservation{
+				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				})),
 			},
 			want: want{
-				cr: policy(withStatus(v1alpha1.PolicyObservation{
+				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				})),
 				err: errors.Wrap(errBoom, errUpdate),
@@ -642,12 +642,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.PolicyObservation{
+				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				})),
 			},
 			want: want{
-				cr: policy(withStatus(v1alpha1.PolicyObservation{
+				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				}),
 					withConditions(corev1alpha1.Deleting())),
@@ -682,12 +682,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.PolicyObservation{
+				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				})),
 			},
 			want: want{
-				cr: policy(withStatus(v1alpha1.PolicyObservation{
+				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				})),
 				err: errors.Wrap(errBoom, errDelete),
@@ -712,12 +712,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.PolicyObservation{
+				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				})),
 			},
 			want: want{
-				cr: policy(withStatus(v1alpha1.PolicyObservation{
+				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
 					Arn: arn,
 				}), withConditions(corev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),

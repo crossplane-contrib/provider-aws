@@ -12,7 +12,7 @@ import (
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
-// PolicyClient is the external client used for Policy Custom Resource
+// PolicyClient is the external client used for IAMPolicy Custom Resource
 type PolicyClient interface {
 	CreatePolicyRequest(*iam.CreatePolicyInput) iam.CreatePolicyRequest
 	GetPolicyRequest(*iam.GetPolicyInput) iam.GetPolicyRequest
@@ -33,10 +33,10 @@ func NewPolicyClient(ctx context.Context, credentials []byte, region string, aut
 }
 
 // IsPolicyUpToDate checks whether there is a change in any of the modifiable fields in policy.
-func IsPolicyUpToDate(in v1alpha1.PolicyParameters, policy iam.PolicyVersion) (bool, error) {
+func IsPolicyUpToDate(in v1alpha1.IAMPolicyParameters, policy iam.PolicyVersion) (bool, error) {
 	// The AWS API reutrns Policy Document as an escaped string.
 	// Due to differences in the methods to escape a string, the comparison result between
-	// the spec.Documet and policy.Document can sometimes be false negative (due to spaces, line feeds).
+	// the spec.Document and policy.Document can sometimes be false negative (due to spaces, line feeds).
 	// Escaping with a common method and then comparing is a safe way.
 
 	if *policy.Document == "" || in.Document == "" {

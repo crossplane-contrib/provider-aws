@@ -41,13 +41,13 @@ import (
 )
 
 const (
-	errNotPolicyInstance = "managed resource is not an Policy instance custom resource"
+	errNotPolicyInstance = "managed resource is not an IAMPolicy custom resource"
 
 	errCreatePolicyClient = "cannot create IAM Policy client"
 	errGetProvider        = "cannot get provider"
 	errGetProviderSecret  = "cannot get provider secret"
 
-	errUnexpectedObject = "The managed resource is not a Policy resource"
+	errUnexpectedObject = "The managed resource is not a IAMPolicy resource"
 	errGet              = "failed to get IAM Policy"
 	errCreate           = "failed to create the IAM Policy"
 	errDelete           = "failed to delete the IAM Policy"
@@ -63,7 +63,7 @@ func SetupIAMPolicy(mgr ctrl.Manager, l logging.Logger) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha1.Policy{}).
+		For(&v1alpha1.IAMPolicy{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.PolicyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewPolicyClient}),
@@ -78,7 +78,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.Policy)
+	cr, ok := mg.(*v1alpha1.IAMPolicy)
 	if !ok {
 		return nil, errors.New(errNotPolicyInstance)
 	}
@@ -113,7 +113,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha1.Policy)
+	cr, ok := mgd.(*v1alpha1.IAMPolicy)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -137,7 +137,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.SetConditions(runtimev1alpha1.Available())
 
-	cr.Status.AtProvider = v1alpha1.PolicyObservation{
+	cr.Status.AtProvider = v1alpha1.IAMPolicyObservation{
 		Arn:                           aws.StringValue(policy.Arn),
 		AttachmentCount:               aws.Int64Value(policy.AttachmentCount),
 		DefaultVersionID:              aws.StringValue(policy.DefaultVersionId),
@@ -167,7 +167,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.Policy)
+	cr, ok := mgd.(*v1alpha1.IAMPolicy)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -191,7 +191,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1alpha1.Policy)
+	cr, ok := mgd.(*v1alpha1.IAMPolicy)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -215,7 +215,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.Policy)
+	cr, ok := mgd.(*v1alpha1.IAMPolicy)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
