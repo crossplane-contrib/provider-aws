@@ -117,7 +117,7 @@ func TestUserNameReferencerGetStatus(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			r := UserNameReferencer{LocalObjectReference: corev1.LocalObjectReference{Name: mockName}}
+			r := IAMUserNameReferencer{LocalObjectReference: corev1.LocalObjectReference{Name: mockName}}
 
 			reader := &mockReader{readFn: func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error {
 				if diff := cmp.Diff(key, client.ObjectKey{Name: mockName}); diff != "" {
@@ -175,7 +175,7 @@ func TestUserNameReferencerBuild(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			r := UserNameReferencer{LocalObjectReference: corev1.LocalObjectReference{Name: mockName}}
+			r := IAMUserNameReferencer{LocalObjectReference: corev1.LocalObjectReference{Name: mockName}}
 
 			reader := &mockReader{readFn: func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error {
 				if diff := cmp.Diff(key, client.ObjectKey{Name: mockName}); diff != "" {

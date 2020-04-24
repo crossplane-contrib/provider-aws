@@ -66,27 +66,27 @@ type args struct {
 	cr  resource.Managed
 }
 
-type userPolicyModifier func(*v1alpha1.UserPolicyAttachment)
+type userPolicyModifier func(*v1alpha1.IAMUserPolicyAttachment)
 
 func withConditions(c ...runtimev1alpha1.Condition) userPolicyModifier {
-	return func(r *v1alpha1.UserPolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1alpha1.IAMUserPolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
 }
 
 func withUserName(s string) userPolicyModifier {
-	return func(r *v1alpha1.UserPolicyAttachment) { r.Spec.ForProvider.UserName = s }
+	return func(r *v1alpha1.IAMUserPolicyAttachment) { r.Spec.ForProvider.UserName = s }
 }
 
 func withSpecPolicyArn(s string) userPolicyModifier {
-	return func(r *v1alpha1.UserPolicyAttachment) { r.Spec.ForProvider.PolicyARN = s }
+	return func(r *v1alpha1.IAMUserPolicyAttachment) { r.Spec.ForProvider.PolicyARN = s }
 }
 
 func withStatusPolicyArn(s string) userPolicyModifier {
-	return func(r *v1alpha1.UserPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARN = s }
+	return func(r *v1alpha1.IAMUserPolicyAttachment) { r.Status.AtProvider.AttachedPolicyARN = s }
 }
 
-func userPolicy(m ...userPolicyModifier) *v1alpha1.UserPolicyAttachment {
-	cr := &v1alpha1.UserPolicyAttachment{
-		Spec: v1alpha1.UserPolicyAttachmentSpec{
+func userPolicy(m ...userPolicyModifier) *v1alpha1.IAMUserPolicyAttachment {
+	cr := &v1alpha1.IAMUserPolicyAttachment{
+		Spec: v1alpha1.IAMUserPolicyAttachmentSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
 				ProviderReference: &corev1.ObjectReference{Name: providerName},
 			},
@@ -129,7 +129,7 @@ func TestConnect(t *testing.T) {
 	type args struct {
 		kube        client.Client
 		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (iam.UserPolicyAttachmentClient, error)
-		cr          *v1alpha1.UserPolicyAttachment
+		cr          *v1alpha1.IAMUserPolicyAttachment
 	}
 	type want struct {
 		err error

@@ -6,7 +6,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: userpolicyattachments.identity.aws.crossplane.io
+  name: iamuserpolicyattachments.identity.aws.crossplane.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .spec.forProvider.userName
@@ -26,17 +26,17 @@ spec:
     type: date
   group: identity.aws.crossplane.io
   names:
-    kind: UserPolicyAttachment
-    listKind: UserPolicyAttachmentList
-    plural: userpolicyattachments
-    singular: userpolicyattachment
+    kind: IAMUserPolicyAttachment
+    listKind: IAMUserPolicyAttachmentList
+    plural: iamuserpolicyattachments
+    singular: iamuserpolicyattachment
   scope: Cluster
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: An UserPolicyAttachment is a managed resource that represents an
-        AWS IAM User policy attachment.
+      description: An IAMUserPolicyAttachment is a managed resource that represents
+        an AWS IAM User policy attachment.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -51,8 +51,8 @@ spec:
         metadata:
           type: object
         spec:
-          description: An UserPolicyAttachmentSpec defines the desired state of an
-            UserPolicyAttachment.
+          description: An IAMUserPolicyAttachmentSpec defines the desired state of
+            an IAMUserPolicyAttachment.
           properties:
             claimRef:
               description: ClaimReference specifies the resource claim to which this
@@ -132,18 +132,19 @@ spec:
                   type: string
               type: object
             forProvider:
-              description: UserPolicyAttachmentParameters define the desired state
-                of an AWS IAM User policy attachment.
+              description: IAMUserPolicyAttachmentParameters define the desired state
+                of an AWS IAMUserPolicyAttachment.
               properties:
                 policyArn:
                   description: PolicyARN is the Amazon Resource Name (ARN) of the
                     IAM policy you want to attach.
                   type: string
                 userName:
-                  description: UserName presents the name of the IAM user.
+                  description: UserName presents the name of the IAMUser.
                   type: string
                 userNameRef:
-                  description: UserNameRef references to an User to retrieve its Name
+                  description: UserNameRef references to an IAMUser to retrieve its
+                    Name
                   properties:
                     name:
                       description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
@@ -227,12 +228,12 @@ spec:
           - providerRef
           type: object
         status:
-          description: An UserPolicyAttachmentStatus represents the observed state
-            of an UserPolicyAttachment.
+          description: An IAMUserPolicyAttachmentStatus represents the observed state
+            of an IAMUserPolicyAttachment.
           properties:
             atProvider:
-              description: UserPolicyAttachmentObservation keeps the state for the
-                external resource
+              description: IAMUserPolicyAttachmentObservation keeps the state for
+                the external resource
               properties:
                 attachedPolicyArn:
                   description: AttachedPolicyARN is the arn for the attached policy.
