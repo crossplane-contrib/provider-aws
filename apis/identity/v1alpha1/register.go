@@ -58,5 +58,6 @@ var (
 
 func init() {
 	SchemeBuilder.Register(&IAMUser{}, &IAMUserList{})
+	SchemeBuilder.Register(&Policy{}, &PolicyList{})
 	SchemeBuilder.Register(&IAMUserPolicyAttachment{}, &IAMUserPolicyAttachmentList{})
 }
