@@ -73,7 +73,7 @@ func withConditions(c ...runtimev1alpha1.Condition) userPolicyModifier {
 }
 
 func withUserName(s string) userPolicyModifier {
-	return func(r *v1alpha1.IAMUserPolicyAttachment) { r.Spec.ForProvider.UserName = s }
+	return func(r *v1alpha1.IAMUserPolicyAttachment) { r.Spec.ForProvider.UserName = aws.String(s) }
 }
 
 func withSpecPolicyArn(s string) userPolicyModifier {
