@@ -17,33 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/pkg/errors"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-)
-
-// IAMUserNameReferencerForUserPolicyAttachment is an attribute referencer that retrieves Name from a referenced IAMUser
-type IAMUserNameReferencerForUserPolicyAttachment struct {
-	IAMUserNameReferencer `json:",inline"`
-}
-
-// Assign assigns the retrieved name to the managed resource
-func (v *IAMUserNameReferencerForUserPolicyAttachment) Assign(res resource.CanReference, value string) error {
-	p, ok := res.(*IAMUserPolicyAttachment)
-	if !ok {
-		return errors.New(errResourceIsNotUserPolicyAttachment)
-	}
-
-	p.Spec.ForProvider.UserName = value
-	return nil
-}
-
-// Error strings
-const (
-	errResourceIsNotUserPolicyAttachment = "the managed resource is not an UserPolicyAttachment"
 )
 
 // IAMUserPolicyAttachmentParameters define the desired state of an AWS IAMUserPolicyAttachment.
@@ -56,11 +32,15 @@ type IAMUserPolicyAttachmentParameters struct {
 
 	// UserName presents the name of the IAMUser.
 	// +optional
-	UserName string `json:"userName,omitempty"`
+	UserName *string `json:"userName,omitempty"`
 
-	// UserNameRef references to an IAMUser to retrieve its Name
+	// UserNameRef references to an IAMUser to retrieve its userName
 	// +optional
-	UserNameRef *IAMUserNameReferencerForUserPolicyAttachment `json:"userNameRef,omitempty"`
+	UserNameRef *runtimev1alpha1.Reference `json:"userNameRef,omitempty"`
+
+	// UserNameSelector selects a reference to an IAMUser to retrieve its userName
+	// +optional
+	UserNameSelector *runtimev1alpha1.Selector `json:"userNameSelector,omitempty"`
 }
 
 // An IAMUserPolicyAttachmentSpec defines the desired state of an

@@ -144,12 +144,28 @@ spec:
                   type: string
                 userNameRef:
                   description: UserNameRef references to an IAMUser to retrieve its
-                    Name
+                    userName
                   properties:
                     name:
-                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                        TODO: Add other useful fields. apiVersion, kind, uid?'
+                      description: Name of the referenced object.
                       type: string
+                  required:
+                  - name
+                  type: object
+                userNameSelector:
+                  description: UserNameSelector selects a reference to an IAMUser
+                    to retrieve its userName
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
                   type: object
               required:
               - policyArn
