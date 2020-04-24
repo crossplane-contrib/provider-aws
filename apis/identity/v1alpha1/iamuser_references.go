@@ -31,18 +31,18 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// UserNameReferencer is used to get the Name from a referenced IAM User object
-type UserNameReferencer struct {
+// IAMUserNameReferencer is used to get the Name from a referenced IAM User object
+type IAMUserNameReferencer struct {
 	corev1.LocalObjectReference `json:",inline"`
 }
 
 // GetStatus implements GetStatus method of AttributeReferencer interface
-func (v *UserNameReferencer) GetStatus(ctx context.Context, _ resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
+func (v *IAMUserNameReferencer) GetStatus(ctx context.Context, _ resource.CanReference, reader client.Reader) ([]resource.ReferenceStatus, error) {
 	return getUserStatus(ctx, v.Name, reader)
 }
 
 // Build retrieves and builds the IAM UserName
-func (v *UserNameReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
+func (v *IAMUserNameReferencer) Build(ctx context.Context, _ resource.CanReference, reader client.Reader) (string, error) {
 	user := IAMUser{}
 	nn := types.NamespacedName{Name: v.Name}
 	if err := reader.Get(ctx, nn, &user); err != nil {

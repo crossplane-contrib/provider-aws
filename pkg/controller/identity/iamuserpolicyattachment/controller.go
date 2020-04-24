@@ -63,7 +63,7 @@ func SetupIAMUserPolicyAttachment(mgr ctrl.Manager, l logging.Logger) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha1.UserPolicyAttachment{}).
+		For(&v1alpha1.IAMUserPolicyAttachment{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.UserPolicyAttachmentGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewUserPolicyAttachmentClient}),
@@ -78,7 +78,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.UserPolicyAttachment)
+	cr, ok := mg.(*v1alpha1.IAMUserPolicyAttachment)
 	if !ok {
 		return nil, errors.New(errNotUserInstance)
 	}
@@ -113,7 +113,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha1.UserPolicyAttachment)
+	cr, ok := mgd.(*v1alpha1.IAMUserPolicyAttachment)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -149,7 +149,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.SetConditions(runtimev1alpha1.Available())
 
-	cr.Status.AtProvider = v1alpha1.UserPolicyAttachmentObservation{
+	cr.Status.AtProvider = v1alpha1.IAMUserPolicyAttachmentObservation{
 		AttachedPolicyARN: aws.StringValue(attachedPolicyObject.PolicyArn),
 	}
 
@@ -160,7 +160,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.UserPolicyAttachment)
+	cr, ok := mgd.(*v1alpha1.IAMUserPolicyAttachment)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -181,7 +181,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.UserPolicyAttachment)
+	cr, ok := mgd.(*v1alpha1.IAMUserPolicyAttachment)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

@@ -26,11 +26,11 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 )
 
-var _ resource.AttributeReferencer = (*UserNameReferencerForUserPolicyAttachment)(nil)
+var _ resource.AttributeReferencer = (*IAMUserNameReferencerForUserPolicyAttachment)(nil)
 
 func TestUserNameReferencerForUserPolicyAttachment_AssignInvalidType_ReturnsErr(t *testing.T) {
 
-	r := &UserNameReferencerForUserPolicyAttachment{}
+	r := &IAMUserNameReferencerForUserPolicyAttachment{}
 	expectedErr := errors.New(errResourceIsNotUserPolicyAttachment)
 
 	err := r.Assign(nil, "mockValue")
@@ -41,8 +41,8 @@ func TestUserNameReferencerForUserPolicyAttachment_AssignInvalidType_ReturnsErr(
 
 func TestUserNameReferencerForUserPolicyAttachment_AssignValidType_ReturnsExpected(t *testing.T) {
 
-	r := &UserNameReferencerForUserPolicyAttachment{}
-	res := &UserPolicyAttachment{}
+	r := &IAMUserNameReferencerForUserPolicyAttachment{}
+	res := &IAMUserPolicyAttachment{}
 	var expectedErr error
 
 	err := r.Assign(res, "mockValue")

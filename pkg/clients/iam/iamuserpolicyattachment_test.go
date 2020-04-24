@@ -11,36 +11,36 @@ import (
 
 func TestLateInitializeUserPolicy(t *testing.T) {
 	type args struct {
-		spec v1alpha1.UserPolicyAttachmentParameters
+		spec v1alpha1.IAMUserPolicyAttachmentParameters
 		in   iam.AttachedPolicy
 	}
 	cases := map[string]struct {
 		args args
-		want v1alpha1.UserPolicyAttachmentParameters
+		want v1alpha1.IAMUserPolicyAttachmentParameters
 	}{
 		"AllFilledNoDiff": {
 			args: args{
-				spec: v1alpha1.UserPolicyAttachmentParameters{
+				spec: v1alpha1.IAMUserPolicyAttachmentParameters{
 					PolicyARN: policyARN,
 				},
 				in: iam.AttachedPolicy{
 					PolicyArn: &policyARN,
 				},
 			},
-			want: v1alpha1.UserPolicyAttachmentParameters{
+			want: v1alpha1.IAMUserPolicyAttachmentParameters{
 				PolicyARN: policyARN,
 			},
 		},
 		"PartialFilled": {
 			args: args{
-				spec: v1alpha1.UserPolicyAttachmentParameters{
+				spec: v1alpha1.IAMUserPolicyAttachmentParameters{
 					PolicyARN: policyARN,
 				},
 				in: iam.AttachedPolicy{
 					PolicyArn: &policyARN,
 				},
 			},
-			want: v1alpha1.UserPolicyAttachmentParameters{
+			want: v1alpha1.IAMUserPolicyAttachmentParameters{
 				PolicyARN: policyARN,
 			},
 		},

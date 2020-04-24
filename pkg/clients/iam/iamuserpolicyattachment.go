@@ -27,7 +27,7 @@ func NewUserPolicyAttachmentClient(ctx context.Context, credentials []byte, regi
 
 // LateInitializeUserPolicy fills the empty fields in v1alpha1.UserPolicyAttachmentParameters with
 // the values seen in iam.AttachedPolicy.
-func LateInitializeUserPolicy(in *v1alpha1.UserPolicyAttachmentParameters, policy *iam.AttachedPolicy) {
+func LateInitializeUserPolicy(in *v1alpha1.IAMUserPolicyAttachmentParameters, policy *iam.AttachedPolicy) {
 	if policy == nil {
 		return
 	}
