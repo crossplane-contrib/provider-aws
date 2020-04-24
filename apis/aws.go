@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	cachev1beta1 "github.com/crossplane/provider-aws/apis/cache/v1beta1"
+	certificatemanagerv1alpha1 "github.com/crossplane/provider-aws/apis/certificatemanager/v1alpha1"
 	computev1alpha3 "github.com/crossplane/provider-aws/apis/compute/v1alpha3"
 	databasev1beta1 "github.com/crossplane/provider-aws/apis/database/v1beta1"
 	identityv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
@@ -38,6 +39,7 @@ func init() {
 		identityv1beta1.SchemeBuilder.AddToScheme,
 		networkv1alpha3.SchemeBuilder.AddToScheme,
 		awsv1alpha3.SchemeBuilder.AddToScheme,
+		certificatemanagerv1alpha1.SchemeBuilder.AddToScheme,
 		storagev1alpha3.SchemeBuilder.AddToScheme,
 	)
 }

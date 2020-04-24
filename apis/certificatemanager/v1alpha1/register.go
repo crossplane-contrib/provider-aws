@@ -33,7 +33,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "identity.aws.crossplane.io"
+	Group   = "certificatemanager.crossplane.io"
 	Version = "v1alpha1"
 )
 
