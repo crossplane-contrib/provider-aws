@@ -193,6 +193,7 @@ type DynamoTableParameters struct {
 	StreamSpecification *StreamSpecification `json:"streamSpecification,omitempty"`
 
 	// A list of key-value pairs to label the table.
+	// +optional
 	Tags []Tag `json:"tag,omitempty"`
 }
 
@@ -208,10 +209,6 @@ type DynamoTableObservation struct {
 	// An array of AttributeDefinition objects. Each of these objects describes
 	// one attribute in the table and index key schema.
 	AttributeDefinitions []AttributeDefinition `json:"attributeDefinitions,omitempty"`
-
-	// // The date and time when the table was created, in UNIX epoch time (http://www.epochconverter.com/)
-	// // format.
-	// CreationDateTime *time.Time `json:"creationDateTime,omitempty"`
 
 	// The global secondary indexes, if any, on the table. Each index is scoped
 	// to a given partition key value.
@@ -247,7 +244,7 @@ type DynamoTableObservation struct {
 	TableName string `json:"tableName,omitempty"`
 }
 
-// A DynamoTableStatus represents the observed state of a DBSubnetGroup.
+// A DynamoTableStatus represents the observed state of a DynamoDB Table.
 type DynamoTableStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
 	AtProvider                     DynamoTableObservation `json:"atProvider"`
@@ -256,8 +253,8 @@ type DynamoTableStatus struct {
 // +kubebuilder:object:root=true
 
 // A DynamoTable is a managed resource that represents an AWS DynamoDB Table
-// +kubebuilder:printcolumn:name="TABLE_NAME",type="string",JSONPath=".status.atProvider.tableName"
-// +kubebuilder:printcolumn:name="TABLE_STATUS",type="string",JSONPath=".status.atProvider.tableStatus"
+// +kubebuilder:printcolumn:name="TABLE-NAME",type="string",JSONPath=".status.atProvider.tableName"
+// +kubebuilder:printcolumn:name="TABLE-STATUS",type="string",JSONPath=".status.atProvider.tableStatus"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
