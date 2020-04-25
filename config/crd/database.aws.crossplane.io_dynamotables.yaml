@@ -10,10 +10,10 @@ metadata:
 spec:
   additionalPrinterColumns:
   - JSONPath: .status.atProvider.tableName
-    name: TABLE_NAME
+    name: TABLE-NAME
     type: string
   - JSONPath: .status.atProvider.tableStatus
-    name: TABLE_STATUS
+    name: TABLE-STATUS
     type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
@@ -429,7 +429,7 @@ spec:
           - providerRef
           type: object
         status:
-          description: A DynamoTableStatus represents the observed state of a DBSubnetGroup.
+          description: A DynamoTableStatus represents the observed state of a DynamoDB Table.
           properties:
             atProvider:
               description: DynamoTableObservation keeps the state for the external
