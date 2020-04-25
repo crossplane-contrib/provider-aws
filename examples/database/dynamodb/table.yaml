@@ -1,0 +1,23 @@
+apiVersion: database.aws.crossplane.io/v1alpha1
+kind: DynamoTable
+metadata:
+  name: sample-table
+  annotations:
+    crossplane.io/external-name: external-name
+spec:
+  forProvider:
+    attributeDefinitions:
+      - attributeName: attribute1
+        attributeType: S
+    keySchema:
+      - attributeName: attribute1
+        keyType: HASH
+    provisionedThroughput: 
+      readCapacityUnits: 1
+      writeCapacityUnits: 1
+    tags:
+      - key: k
+        value: v
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
