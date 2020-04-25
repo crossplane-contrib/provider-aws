@@ -35,6 +35,7 @@ type CacheSubnetGroupParameters struct {
 	SubnetIDRefs []runtimev1alpha1.Reference `json:"subnetIdRefs,omitempty"`
 
 	// SubnetIDSelector selects a set of references that each retrieve the subnetID from the referenced Subnet
+	// +optional
 	SubnetIDSelector *runtimev1alpha1.Selector `json:"subnetIdSelector,omitempty"`
 }
 
