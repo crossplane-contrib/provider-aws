@@ -429,7 +429,8 @@ spec:
           - providerRef
           type: object
         status:
-          description: A DynamoTableStatus represents the observed state of a DynamoDB Table.
+          description: A DynamoTableStatus represents the observed state of a DynamoDB
+            Table.
           properties:
             atProvider:
               description: DynamoTableObservation keeps the state for the external
