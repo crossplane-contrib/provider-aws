@@ -1,6 +1,8 @@
 package certificatemanager
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/acm"
 
@@ -22,15 +24,21 @@ func NewClient(conf *aws.Config) (Client, error) {
 // GenerateCreateCertificateInput from CertificateSpec
 func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParameters) *acm.RequestCertificateInput {
 	m := &acm.RequestCertificateInput{
-		DomainName:              aws.String(p.DomainName),
-		CertificateAuthorityArn: aws.String(p.CertificateAuthorityArn),
-		ValidationMethod:        "DNS",
+		DomainName: aws.String(p.DomainName),
+		// CertificateAuthorityArn: aws.String(p.CertificateAuthorityArn),
+		ValidationMethod: acm.ValidationMethodDns,
 		// IdempotencyToken:        p.IdempotencyToken,
 		// Options:                 p.Options,
 		// DomainValidationOptions: p.DomainValidationOptions,
 		// SubjectAlternativeNames: p.SubjectAlternativeNames,
 	}
+	m.Tags = make([]acm.Tag, 1)
+	m.Tags[0] = acm.Tag{
+		Key:   aws.String("Name"),
+		Value: aws.String(name),
+	}
 
+	fmt.Println(m)
 	// if len(p.DomainValidationOptions) != 0 {
 	// 	m.DomainValidationOptions = make([]acm.DomainValidationOption, len(p.DomainValidationOptions))
 	// 	for i, val := range p.DomainValidationOptions {

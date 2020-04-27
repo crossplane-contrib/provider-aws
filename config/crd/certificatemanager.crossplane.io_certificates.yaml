@@ -263,7 +263,6 @@ spec:
                     type: object
                   type: array
               required:
-              - CertificateAuthorityArn
               - DomainName
               type: object
             providerRef:
