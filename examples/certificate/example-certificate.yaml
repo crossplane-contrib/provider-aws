@@ -1,12 +1,11 @@
 apiVersion: certificatemanager.crossplane.io/v1alpha1
 kind: Certificate
 metadata:
-  name: sample-certificate
+  name: sample-cert
   annotations:
-    crossplane.io/external-name: external-name
+    crossplane.io/external-name: sample-cert
 spec:
   forProvider:
-    CertificateAuthorityArn: test
     DomainName: abc.def
     ValidationMethod: DNS
   reclaimPolicy: Delete

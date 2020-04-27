@@ -112,7 +112,8 @@ type CertificateParameters struct {
 	// issue a public certificate. For more information about private CAs, see the
 	// AWS Certificate Manager Private Certificate Authority (PCA) (https://docs.aws.amazon.com/acm-pca/latest/userguide/PcaWelcome.html)
 	// user guide. The ARN must have the following form:
-	CertificateAuthorityArn string `json:"CertificateAuthorityArn"`
+	// +optional
+	CertificateAuthorityArn string `json:"CertificateAuthorityArn,omitempty"`
 
 	// Fully qualified domain name (FQDN), such as www.example.com, that you want
 	// to secure with an ACM certificate. Use an asterisk (*) to create a wildcard
@@ -127,7 +128,7 @@ type CertificateParameters struct {
 	// The domain name that you want ACM to use to send you emails so that you can
 	// validate domain ownership.
 	// +optional
-	DomainValidationOptions []DomainValidationOption `json:"DomainValidationOptions"`
+	DomainValidationOptions []DomainValidationOption `json:"DomainValidationOptions,omitempty"`
 
 	// Customer chosen string that can be used to distinguish between calls to RequestCertificate.
 	// Idempotency tokens time out after one hour. Therefore, if you call RequestCertificate
@@ -136,7 +137,7 @@ type CertificateParameters struct {
 	// you change the idempotency token for each call, ACM recognizes that you are
 	// requesting multiple certificates.
 	// +optional
-	IdempotencyToken string `json:"IdempotencyToken"`
+	IdempotencyToken string `json:"IdempotencyToken,omitempty"`
 
 	// Currently, you can use this parameter to specify whether to add the certificate
 	// to a certificate transparency log. Certificate transparency makes it possible
@@ -145,7 +146,7 @@ type CertificateParameters struct {
 	// in a browser. For more information, see Opting Out of Certificate Transparency
 	// Logging (https://docs.aws.amazon.com/acm/latest/userguide/acm-bestpractices.html#best-practices-transparency).
 	// +optional
-	Options CertificateOptions `json:"Options"`
+	Options CertificateOptions `json:"Options,omitempty"`
 
 	// Additional FQDNs to be included in the Subject Alternative Name extension
 	// of the ACM certificate. For example, add the name www.example.net to a certificate
@@ -170,7 +171,7 @@ type CertificateParameters struct {
 	//    * (63 octets).(63 octets).(63 octets).(62 octets) is not legal because
 	//    the total length of the DNS name (63+1+63+1+63+1+62) exceeds 253 octets.
 	// +optional
-	SubjectAlternativeNames []string `json:"SubjectAlternativeNames"`
+	SubjectAlternativeNames []string `json:"SubjectAlternativeNames,omitempty"`
 
 	// One or more resource tags to associate with the certificate.
 	// +optional
@@ -181,7 +182,7 @@ type CertificateParameters struct {
 	// or validate with email (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-email.html).
 	// We recommend that you use DNS validation.
 	// +optional
-	ValidationMethod string `json:"ValidationMethod"`
+	ValidationMethod string `json:"ValidationMethod,omitempty"`
 }
 
 // +kubebuilder:object:root=true

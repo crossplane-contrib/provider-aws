@@ -97,7 +97,7 @@ type external struct {
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
 
 	return managed.ExternalObservation{
-		ResourceExists:   true,
+		ResourceExists:   false,
 		ResourceUpToDate: true,
 	}, nil
 }
