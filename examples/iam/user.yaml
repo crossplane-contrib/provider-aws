@@ -1,0 +1,15 @@
+---
+apiVersion: identity.aws.crossplane.io/v1alpha1
+kind: IAMUser
+metadata:
+  name: someuser
+  annotations:
+    crossplane.io/external-name: external-name
+spec:
+  forProvider:
+    tags:
+      - key: k1
+        value: v1
+  providerRef:
+    name: example
+  reclaimPolicy: Delete
