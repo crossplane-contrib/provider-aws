@@ -17,72 +17,29 @@ limitations under the License.
 package v1alpha1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Tag represents user-provided metadata that can be associated
-// One or more resource tags to associate with the certificate.
-// IAM to manage permissions, see Controlling Access Using IAM Tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_iam-tags.html).
 type Tag struct {
 
 	// The key name that can be used to look up or retrieve the associated value.
-	// For example, Department or Cost Center are common choices.
-	Key string `json:"Key"`
+	Key string `json:"key"`
 
-	// The value associated with this tag. For example, tags with a key name of
-	// Department could have values such as Human Resources, Accounting, and Support.
-	// Tags with a key name of Cost Center might have values that consist of the
-	// number associated with the different cost centers in your company. Typically,
-	// many resources have tags with the same key name but with different values.
-	//
-	// AWS always interprets the tag Value as a single string. If you need to store
-	// an array, you can store comma-separated values in the string. However, you
-	// must interpret the value in your code.
+	// The value associated with this tag.
 	// +optional
-	Value string `json:"Value,omitempty"`
-}
-
-// CertificateOptions to specify whether to add the certificate to a certificate transparency log
-type CertificateOptions struct {
-
-	// You can opt out of certificate transparency logging by specifying the DISABLED
-	// option. Opt in by specifying ENABLED.
-	CertificateTransparencyLoggingPreference string `json:"CertificateTransparencyLoggingPreference"`
-	// contains filtered or unexported fields
+	Value string `json:"value,omitempty"`
 }
 
 // DomainValidationOption validate domain ownership.
 type DomainValidationOption struct {
-	// A fully qualified domain name (FQDN) in the certificate request.
-	//
-	// DomainName is a required field
-	DomainName string `json:"DomainName"`
+	// Additinal Fully qualified domain name (FQDN),that to secure with an ACM certificate.
+	DomainName string `json:"domainName"`
 
-	// The domain name that you want ACM to use to send you validation emails. This
-	// domain name is the suffix of the email addresses that you want ACM to use.
-	// This must be the same as the DomainName value or a superdomain of the DomainName
-	// value. For example, if you request a certificate for testing.example.com,
-	// you can specify example.com for this value. In that case, ACM sends domain
-	// validation emails to the following five addresses:
-	//
-	//    * admin@example.com
-	//
-	//    * administrator@example.com
-	//
-	//    * hostmaster@example.com
-	//
-	//    * postmaster@example.com
-	//
-	//    * webmaster@example.com
-	//
-	// ValidationDomain is a required field
-	ValidationDomain string `json:"ValidationDomain"`
+	// Method to validate certificate
+	ValidationDomain string `json:"validationDomain"`
 }
-
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 // CertificateSpec defines the desired state of Certificate
 type CertificateSpec struct {
@@ -93,7 +50,6 @@ type CertificateSpec struct {
 // CertificateExternalStatus keeps the state of external resource
 type CertificateExternalStatus struct {
 	// String that contains the ARN of the issued certificate. This must be of the
-	// form:
 	CertificateArn string `json:"certificateArn"`
 }
 
@@ -106,83 +62,37 @@ type CertificateStatus struct {
 // CertificateParameters defines the desired state of an AWS Certificate.
 type CertificateParameters struct {
 
-	// The Amazon Resource Name (ARN) of the private certificate authority (CA)
-	// that will be used to issue the certificate. If you do not provide an ARN
-	// and you are trying to request a private certificate, ACM will attempt to
-	// issue a public certificate. For more information about private CAs, see the
-	// AWS Certificate Manager Private Certificate Authority (PCA) (https://docs.aws.amazon.com/acm-pca/latest/userguide/PcaWelcome.html)
-	// user guide. The ARN must have the following form:
+	// The Amazon Resource Name (ARN) of the private certificate authority (CA)that will be used to issue the certificate.
 	// +optional
 	CertificateAuthorityArn *string `json:"CertificateAuthorityArn,omitempty"`
 
-	// Fully qualified domain name (FQDN), such as www.example.com, that you want
-	// to secure with an ACM certificate. Use an asterisk (*) to create a wildcard
-	// certificate that protects several sites in the same domain. For example,
-	// *.example.com protects www.example.com, site.example.com, and images.example.com.
-	//
-	// The first domain name you enter cannot exceed 64 octets, including periods.
-	// Each subsequent Subject Alternative Name (SAN), however, can be up to 253
-	// octets in length.
-	DomainName string `json:"DomainName"`
+	// Fully qualified domain name (FQDN),that to secure with an ACM certificate.
+	DomainName string `json:"domainName"`
 
 	// The domain name that you want ACM to use to send you emails so that you can
 	// validate domain ownership.
 	// +optional
-	DomainValidationOptions []*DomainValidationOption `json:"DomainValidationOptions,omitempty"`
+	DomainValidationOptions []*DomainValidationOption `json:"domainValidationOptions,omitempty"`
 
-	// Customer chosen string that can be used to distinguish between calls to RequestCertificate.
-	// Idempotency tokens time out after one hour. Therefore, if you call RequestCertificate
-	// multiple times with the same idempotency token within one hour, ACM recognizes
-	// that you are requesting only one certificate and will issue only one. If
-	// you change the idempotency token for each call, ACM recognizes that you are
-	// requesting multiple certificates.
+	// Token to distinguish between calls to RequestCertificate.
 	// +optional
-	IdempotencyToken *string `json:"IdempotencyToken,omitempty"`
+	IdempotencyToken *string `json:"idempotencyToken,omitempty"`
 
-	// Currently, you can use this parameter to specify whether to add the certificate
-	// to a certificate transparency log. Certificate transparency makes it possible
-	// to detect SSL/TLS certificates that have been mistakenly or maliciously issued.
-	// Certificates that have not been logged typically produce an error message
-	// in a browser. For more information, see Opting Out of Certificate Transparency
-	// Logging (https://docs.aws.amazon.com/acm/latest/userguide/acm-bestpractices.html#best-practices-transparency).
+	// Parameter add the certificate to a certificate transparency log.
 	// +optional
-	Options CertificateOptions `json:"Options,omitempty"`
+	CertificateTransparencyLoggingPreference string `json:"certificateTransparencyLoggingPreference,omitempty"`
 
-	// Additional FQDNs to be included in the Subject Alternative Name extension
-	// of the ACM certificate. For example, add the name www.example.net to a certificate
-	// for which the DomainName field is www.example.com if users can reach your
-	// site by using either name. The maximum number of domain names that you can
-	// add to an ACM certificate is 100. However, the initial quota is 10 domain
-	// names. If you need more than 10 names, you must request a quota increase.
-	// For more information, see Quotas (https://docs.aws.amazon.com/acm/latest/userguide/acm-limits.html).
-	//
-	// The maximum length of a SAN DNS name is 253 octets. The name is made up of
-	// multiple labels separated by periods. No label can be longer than 63 octets.
-	// Consider the following examples:
-	//
-	//    * (63 octets).(63 octets).(63 octets).(61 octets) is legal because the
-	//    total length is 253 octets (63+1+63+1+63+1+61) and no label exceeds 63
-	//    octets.
-	//
-	//    * (64 octets).(63 octets).(63 octets).(61 octets) is not legal because
-	//    the total length exceeds 253 octets (64+1+63+1+63+1+61) and the first
-	//    label exceeds 63 octets.
-	//
-	//    * (63 octets).(63 octets).(63 octets).(62 octets) is not legal because
-	//    the total length of the DNS name (63+1+63+1+63+1+62) exceeds 253 octets.
+	// Subject Alternative Name extension of the ACM certificate.
 	// +optional
-	SubjectAlternativeNames []string `json:"SubjectAlternativeNames,omitempty"`
+	SubjectAlternativeNames []string `json:"subjectAlternativeNames,omitempty"`
 
 	// One or more resource tags to associate with the certificate.
 	// +optional
-	Tags []Tag `json:"Tags,omitempty"`
+	Tags []Tag `json:"tags,omitempty"`
 
-	// The method you want to use if you are requesting a public certificate to
-	// validate that you own or control domain. You can validate with DNS (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html)
-	// or validate with email (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-email.html).
-	// We recommend that you use DNS validation.
+	// Method to validate certificate.
 	// +optional
-	ValidationMethod string `json:"ValidationMethod,omitempty"`
+	ValidationMethod string `json:"validationMethod,omitempty"`
 }
 
 // +kubebuilder:object:root=true
