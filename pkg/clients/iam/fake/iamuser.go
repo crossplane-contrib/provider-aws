@@ -27,13 +27,10 @@ var _ clientset.UserClient = (*MockUserClient)(nil)
 
 // MockUserClient is a type that implements all the methods for RoleClient interface
 type MockUserClient struct {
-	MockGetUser             func(*iam.GetUserInput) iam.GetUserRequest
-	MockCreateUser          func(*iam.CreateUserInput) iam.CreateUserRequest
-	MockDeleteUser          func(*iam.DeleteUserInput) iam.DeleteUserRequest
-	MockUpdateUser          func(*iam.UpdateUserInput) iam.UpdateUserRequest
-	MockRemoveUserFromGroup func(*iam.RemoveUserFromGroupInput) iam.RemoveUserFromGroupRequest
-	MockAddUserToGroup      func(*iam.AddUserToGroupInput) iam.AddUserToGroupRequest
-	MockListGroupsForUser   func(*iam.ListGroupsForUserInput) iam.ListGroupsForUserRequest
+	MockGetUser    func(*iam.GetUserInput) iam.GetUserRequest
+	MockCreateUser func(*iam.CreateUserInput) iam.CreateUserRequest
+	MockDeleteUser func(*iam.DeleteUserInput) iam.DeleteUserRequest
+	MockUpdateUser func(*iam.UpdateUserInput) iam.UpdateUserRequest
 }
 
 // GetUserRequest mocks GetUserRequest method
@@ -54,19 +51,4 @@ func (m *MockUserClient) DeleteUserRequest(input *iam.DeleteUserInput) iam.Delet
 // UpdateUserRequest mocks UpdateUserRequest method
 func (m *MockUserClient) UpdateUserRequest(input *iam.UpdateUserInput) iam.UpdateUserRequest {
 	return m.MockUpdateUser(input)
-}
-
-// RemoveUserFromGroupRequest mocks RemoveUserFromGroupRequest method
-func (m *MockUserClient) RemoveUserFromGroupRequest(input *iam.RemoveUserFromGroupInput) iam.RemoveUserFromGroupRequest {
-	return m.MockRemoveUserFromGroup(input)
-}
-
-// AddUserToGroupRequest mocks AddUserToGroupRequest method
-func (m *MockUserClient) AddUserToGroupRequest(input *iam.AddUserToGroupInput) iam.AddUserToGroupRequest {
-	return m.MockAddUserToGroup(input)
-}
-
-// ListGroupsForUserRequest mocks ListGroupsForUserRequest method
-func (m *MockUserClient) ListGroupsForUserRequest(input *iam.ListGroupsForUserInput) iam.ListGroupsForUserRequest {
-	return m.MockListGroupsForUser(input)
 }

@@ -24,10 +24,6 @@ import (
 
 // IAMUserParameters define the desired state of an AWS IAM User.
 type IAMUserParameters struct {
-	// List of group names user should be in.
-	// +optional
-	GroupList []string `json:"groupList,omitempty"`
-
 	// The path for the user name.
 	// +optional
 	Path *string `json:"path,omitempty"`
@@ -51,7 +47,7 @@ type IAMUserSpec struct {
 // IAMUserObservation keeps the state for the external resource
 type IAMUserObservation struct {
 	// The Amazon Resource Name (ARN) that identifies the user.
-	Arn string `json:"arn,omitempty"`
+	ARN string `json:"arn,omitempty"`
 
 	// The stable and unique string identifying the user.
 	UserID string `json:"userId,omitempty"`

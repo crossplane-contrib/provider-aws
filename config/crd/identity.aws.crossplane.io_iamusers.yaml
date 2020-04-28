@@ -133,11 +133,6 @@ spec:
               description: IAMUserParameters define the desired state of an AWS IAM
                 User.
               properties:
-                groupList:
-                  description: List of group names user should be in.
-                  items:
-                    type: string
-                  type: array
                 path:
                   description: The path for the user name.
                   type: string
