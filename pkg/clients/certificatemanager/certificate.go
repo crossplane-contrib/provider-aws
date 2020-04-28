@@ -46,8 +46,8 @@ func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParamete
 		m.DomainValidationOptions = make([]acm.DomainValidationOption, len(p.DomainValidationOptions))
 		for i, val := range p.DomainValidationOptions {
 			m.DomainValidationOptions[i] = acm.DomainValidationOption{
-				DomainName:       &val.DomainName,
-				ValidationDomain: &val.ValidationDomain,
+				DomainName:       aws.String(val.DomainName),
+				ValidationDomain: aws.String(val.ValidationDomain),
 			}
 		}
 	}
