@@ -6,16 +6,19 @@ metadata:
     crossplane.io/external-name: sample-cert
 spec:
   forProvider:
-    domainName: abc.def
-    validationMethod: EMAIL
+    domainName: abc.com
+    validationMethod: DNS
     tags:
     - key: test
       value: test
     idempotencyToken: b1234
     certificateTransparencyLoggingPreference: disabled
     subjectAlternativeNames:
-    - abc.de
-      abc.ef
+    - abc.in
+    - abc.co.in
+    domainValidationOptions:
+    - domainName: abc.com
+      validationDomain: abc.com 
   reclaimPolicy: Delete
   providerRef:
     name: example
