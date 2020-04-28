@@ -48,7 +48,6 @@ import (
 var (
 	unexpecedItem resource.Managed
 	userName      = "some user"
-	groupName     = "some group"
 
 	errBoom = errors.New("boom")
 )
@@ -72,12 +71,6 @@ type userModifier func(*v1alpha1.IAMUser)
 
 func withConditions(c ...corev1alpha1.Condition) userModifier {
 	return func(r *v1alpha1.IAMUser) { r.Status.ConditionedStatus.Conditions = c }
-}
-
-func withSpec(spec v1alpha1.IAMUserParameters) userModifier {
-	return func(r *v1alpha1.IAMUser) {
-		r.Spec.ForProvider = spec
-	}
 }
 
 func withExternalName(name string) userModifier {
@@ -284,11 +277,6 @@ func TestObserve(t *testing.T) {
 							}},
 						}
 					},
-					MockListGroupsForUser: func(input *awsiam.ListGroupsForUserInput) awsiam.ListGroupsForUserRequest {
-						return awsiam.ListGroupsForUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.ListGroupsForUserOutput{}},
-						}
-					},
 				},
 				cr: user(withExternalName(userName)),
 			},
@@ -323,30 +311,6 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  user(withExternalName(userName)),
-				err: errors.Wrap(errBoom, errGet),
-			},
-		},
-		"ListUserGroupsError": {
-			args: args{
-				iam: &fake.MockUserClient{
-					MockGetUser: func(input *awsiam.GetUserInput) awsiam.GetUserRequest {
-						return awsiam.GetUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetUserOutput{
-								User: &awsiam.User{},
-							}},
-						}
-					},
-					MockListGroupsForUser: func(input *awsiam.ListGroupsForUserInput) awsiam.ListGroupsForUserRequest {
-						return awsiam.ListGroupsForUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
-					},
-				},
-				cr: user(withExternalName(userName)),
-			},
-			want: want{
-				cr: user(withExternalName(userName),
-					withConditions(corev1alpha1.Available())),
 				err: errors.Wrap(errBoom, errGet),
 			},
 		},
@@ -464,22 +428,6 @@ func TestUpdate(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.UpdateUserOutput{}},
 						}
 					},
-					MockListGroupsForUser: func(input *awsiam.ListGroupsForUserInput) awsiam.ListGroupsForUserRequest {
-						return awsiam.ListGroupsForUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.ListGroupsForUserOutput{
-								Groups: []awsiam.Group{
-									{
-										GroupName: aws.String(groupName),
-									},
-								},
-							}},
-						}
-					},
-					MockRemoveUserFromGroup: func(input *awsiam.RemoveUserFromGroupInput) awsiam.RemoveUserFromGroupRequest {
-						return awsiam.RemoveUserFromGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.RemoveUserFromGroupOutput{}},
-						}
-					},
 				},
 				cr: user(withExternalName(userName)),
 			},
@@ -494,65 +442,6 @@ func TestUpdate(t *testing.T) {
 			want: want{
 				cr:  unexpecedItem,
 				err: errors.New(errUnexpectedObject),
-			},
-		},
-		"RemoveUserError": {
-			args: args{
-				iam: &fake.MockUserClient{
-					MockListGroupsForUser: func(input *awsiam.ListGroupsForUserInput) awsiam.ListGroupsForUserRequest {
-						return awsiam.ListGroupsForUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.ListGroupsForUserOutput{
-								Groups: []awsiam.Group{
-									{
-										GroupName: aws.String(groupName),
-									},
-								},
-							}},
-						}
-					},
-					MockRemoveUserFromGroup: func(input *awsiam.RemoveUserFromGroupInput) awsiam.RemoveUserFromGroupRequest {
-						return awsiam.RemoveUserFromGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
-					},
-				},
-				cr: user(withExternalName(userName)),
-			},
-			want: want{
-				cr:  user(withExternalName(userName)),
-				err: errors.Wrap(errBoom, errRemoveFromGroup),
-			},
-		},
-		"AddUserError": {
-			args: args{
-				iam: &fake.MockUserClient{
-					MockListGroupsForUser: func(input *awsiam.ListGroupsForUserInput) awsiam.ListGroupsForUserRequest {
-						return awsiam.ListGroupsForUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.ListGroupsForUserOutput{}},
-						}
-					},
-					MockRemoveUserFromGroup: func(input *awsiam.RemoveUserFromGroupInput) awsiam.RemoveUserFromGroupRequest {
-						return awsiam.RemoveUserFromGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
-					},
-					MockAddUserToGroup: func(input *awsiam.AddUserToGroupInput) awsiam.AddUserToGroupRequest {
-						return awsiam.AddUserToGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
-					},
-				},
-				cr: user(withExternalName(userName),
-					withSpec(v1alpha1.IAMUserParameters{
-						GroupList: []string{groupName},
-					})),
-			},
-			want: want{
-				cr: user(withExternalName(userName),
-					withSpec(v1alpha1.IAMUserParameters{
-						GroupList: []string{groupName},
-					})),
-				err: errors.Wrap(errBoom, errAddUserToGroup),
 			},
 		},
 	}
@@ -594,22 +483,11 @@ func TestDelete(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.DeleteUserOutput{}},
 						}
 					},
-					MockRemoveUserFromGroup: func(input *awsiam.RemoveUserFromGroupInput) awsiam.RemoveUserFromGroupRequest {
-						return awsiam.RemoveUserFromGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.RemoveUserFromGroupOutput{}},
-						}
-					},
 				},
-				cr: user(withExternalName(userName),
-					withSpec(v1alpha1.IAMUserParameters{
-						GroupList: []string{groupName},
-					})),
+				cr: user(withExternalName(userName)),
 			},
 			want: want{
 				cr: user(withExternalName(userName),
-					withSpec(v1alpha1.IAMUserParameters{
-						GroupList: []string{groupName},
-					}),
 					withConditions(corev1alpha1.Deleting())),
 			},
 		},
@@ -630,22 +508,12 @@ func TestDelete(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
-					MockRemoveUserFromGroup: func(input *awsiam.RemoveUserFromGroupInput) awsiam.RemoveUserFromGroupRequest {
-						return awsiam.RemoveUserFromGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.RemoveUserFromGroupOutput{}},
-						}
-					},
 				},
-				cr: user(withExternalName(userName),
-					withSpec(v1alpha1.IAMUserParameters{
-						GroupList: []string{groupName},
-					})),
+				cr: user(withExternalName(userName)),
 			},
 			want: want{
 				cr: user(withExternalName(userName),
-					withSpec(v1alpha1.IAMUserParameters{
-						GroupList: []string{groupName},
-					}), withConditions(corev1alpha1.Deleting())),
+					withConditions(corev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},

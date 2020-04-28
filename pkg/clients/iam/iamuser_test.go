@@ -11,15 +11,13 @@ import (
 )
 
 var (
-	path      = "/"
-	userID    = "some id"
-	groupName = "some group"
+	path   = "/"
+	userID = "some id"
 )
 
 func userParams(m ...func(*v1alpha1.IAMUserParameters)) *v1alpha1.IAMUserParameters {
 	o := &v1alpha1.IAMUserParameters{
-		Path:      &path,
-		GroupList: []string{groupName},
+		Path: &path,
 	}
 
 	for _, f := range m {
@@ -84,44 +82,6 @@ func TestLateInitializeUser(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			LateInitializeUser(tc.args.spec, &tc.args.in)
 			if diff := cmp.Diff(tc.args.spec, tc.want); diff != "" {
-				t.Errorf("LateInitializeSpec(...): -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestCompareGroups(t *testing.T) {
-	type args struct {
-		spec *v1alpha1.IAMUserParameters
-		in   []iam.Group
-	}
-	cases := map[string]struct {
-		args args
-		want bool
-	}{
-		"SameGroups": {
-			args: args{
-				spec: userParams(),
-				in: []iam.Group{
-					{
-						GroupName: &groupName,
-					},
-				},
-			},
-			want: true,
-		},
-		"DifferentGroups": {
-			args: args{
-				spec: userParams(),
-			},
-			want: false,
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			result := CompareGroups(*tc.args.spec, tc.args.in)
-			if diff := cmp.Diff(result, tc.want); diff != "" {
 				t.Errorf("LateInitializeSpec(...): -want, +got:\n%s", diff)
 			}
 		})

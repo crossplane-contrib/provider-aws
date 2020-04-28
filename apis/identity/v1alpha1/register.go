@@ -42,10 +42,10 @@ var (
 
 // User type metadata.
 var (
-	UserKind             = reflect.TypeOf(IAMUser{}).Name()
-	UserGroupKind        = schema.GroupKind{Group: Group, Kind: UserKind}.String()
-	UserKindAPIVersion   = UserKind + "." + SchemeGroupVersion.String()
-	UserGroupVersionKind = SchemeGroupVersion.WithKind(UserKind)
+	IAMUserKind             = reflect.TypeOf(IAMUser{}).Name()
+	IAMUserGroupKind        = schema.GroupKind{Group: Group, Kind: IAMUserKind}.String()
+	IAMUserKindAPIVersion   = IAMUserKind + "." + SchemeGroupVersion.String()
+	IAMUserGroupVersionKind = SchemeGroupVersion.WithKind(IAMUserKind)
 )
 
 func init() {

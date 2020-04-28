@@ -54,21 +54,19 @@ const (
 	errDelete           = "failed to delete the IAM User resource"
 	errUpdate           = "failed to update the IAM User resource"
 	errSDK              = "empty IAM User received from IAM API"
-	errAddUserToGroup   = "failed to add IAM user to specified group"
-	errRemoveFromGroup  = "failed to remove IAM user from specified group"
 
 	errKubeUpdateFailed = "cannot late initialize IAM User"
 )
 
 // SetupIAMUser adds a controller that reconciles Users.
 func SetupIAMUser(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha1.UserGroupKind)
+	name := managed.ControllerName(v1alpha1.IAMUserGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&v1alpha1.IAMUser{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.UserGroupVersionKind),
+			resource.ManagedKind(v1alpha1.IAMUserGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewUserClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -145,22 +143,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	cr.SetConditions(runtimev1alpha1.Available())
 
 	cr.Status.AtProvider = v1alpha1.IAMUserObservation{
-		Arn:    aws.StringValue(user.Arn),
+		ARN:    aws.StringValue(user.Arn),
 		UserID: aws.StringValue(user.UserId),
 	}
 
-	groupsResp, err := e.client.ListGroupsForUserRequest(&awsiam.ListGroupsForUserInput{
-		UserName: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
-
-	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, errGet)
-	}
-
 	return managed.ExternalObservation{
-		ResourceExists: true,
-		ResourceUpToDate: iam.CompareGroups(cr.Spec.ForProvider, groupsResp.ListGroupsForUserOutput.Groups) &&
-			aws.StringValue(cr.Spec.ForProvider.Path) == aws.StringValue(user.Path),
+		ResourceExists:   true,
+		ResourceUpToDate: aws.StringValue(cr.Spec.ForProvider.Path) == aws.StringValue(user.Path),
 	}, nil
 }
 
@@ -187,38 +176,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	groupsResp, err := e.client.ListGroupsForUserRequest(&awsiam.ListGroupsForUserInput{
-		UserName: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
-
-	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
-	}
-
-	if !iam.CompareGroups(cr.Spec.ForProvider, groupsResp.Groups) {
-
-		// Remove user from current groups
-		for _, val := range groupsResp.Groups {
-			if _, err = e.client.RemoveUserFromGroupRequest(&awsiam.RemoveUserFromGroupInput{
-				GroupName: val.GroupName,
-				UserName:  aws.String(meta.GetExternalName(cr)),
-			}).Send(ctx); err != nil {
-				return managed.ExternalUpdate{}, errors.Wrap(err, errRemoveFromGroup)
-			}
-		}
-
-		// Add user to list of groups in spec.
-		for _, val := range cr.Spec.ForProvider.GroupList {
-			if _, err = e.client.AddUserToGroupRequest(&awsiam.AddUserToGroupInput{
-				GroupName: aws.String(val),
-				UserName:  aws.String(meta.GetExternalName(cr)),
-			}).Send(ctx); err != nil {
-				return managed.ExternalUpdate{}, errors.Wrap(err, errAddUserToGroup)
-			}
-		}
-	}
-
-	_, err = e.client.UpdateUserRequest(&awsiam.UpdateUserInput{
+	_, err := e.client.UpdateUserRequest(&awsiam.UpdateUserInput{
 		NewPath:  cr.Spec.ForProvider.Path,
 		UserName: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
@@ -233,15 +191,6 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
-
-	for _, val := range cr.Spec.ForProvider.GroupList {
-		if _, err := e.client.RemoveUserFromGroupRequest(&awsiam.RemoveUserFromGroupInput{
-			GroupName: aws.String(val),
-			UserName:  aws.String(meta.GetExternalName(cr)),
-		}).Send(ctx); resource.Ignore(iam.IsErrorNotFound, err) != nil {
-			return errors.Wrap(err, errDelete)
-		}
-	}
 
 	_, err := e.client.DeleteUserRequest(&awsiam.DeleteUserInput{
 		UserName: aws.String(meta.GetExternalName(cr)),
