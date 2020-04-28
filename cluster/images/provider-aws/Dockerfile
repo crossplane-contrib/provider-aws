@@ -9,4 +9,5 @@ ADD stack /usr/local/bin/crossplane-aws-stack
 COPY stack-package /
 
 EXPOSE 8080
+USER 1001
 ENTRYPOINT ["crossplane-aws-stack"]
