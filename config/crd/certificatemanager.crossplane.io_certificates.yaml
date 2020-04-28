@@ -226,14 +226,7 @@ spec:
                   items:
                     type: string
                   type: array
-                ValidationMethod:
-                  description: The method you want to use if you are requesting a
-                    public certificate to validate that you own or control domain.
-                    You can validate with DNS (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html)
-                    or validate with email (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-email.html).
-                    We recommend that you use DNS validation.
-                  type: string
-                tags:
+                Tags:
                   description: One or more resource tags to associate with the certificate.
                   items:
                     description: Tag represents user-provided metadata that can be
@@ -241,12 +234,12 @@ spec:
                       IAM to manage permissions, see Controlling Access Using IAM
                       Tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_iam-tags.html).
                     properties:
-                      key:
+                      Key:
                         description: The key name that can be used to look up or retrieve
                           the associated value. For example, Department or Cost Center
                           are common choices.
                         type: string
-                      value:
+                      Value:
                         description: "The value associated with this tag. For example,
                           tags with a key name of Department could have values such
                           as Human Resources, Accounting, and Support. Tags with a
@@ -259,9 +252,16 @@ spec:
                           However, you must interpret the value in your code."
                         type: string
                     required:
-                    - key
+                    - Key
                     type: object
                   type: array
+                ValidationMethod:
+                  description: The method you want to use if you are requesting a
+                    public certificate to validate that you own or control domain.
+                    You can validate with DNS (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html)
+                    or validate with email (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-email.html).
+                    We recommend that you use DNS validation.
+                  type: string
               required:
               - DomainName
               type: object
@@ -345,12 +345,12 @@ spec:
             atProvider:
               description: CertificateExternalStatus keeps the state of external resource
               properties:
-                CertificateArn:
+                certificateArn:
                   description: 'String that contains the ARN of the issued certificate.
                     This must be of the form:'
                   type: string
               required:
-              - CertificateArn
+              - certificateArn
               type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource

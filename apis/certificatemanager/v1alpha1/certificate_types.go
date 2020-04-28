@@ -29,7 +29,7 @@ type Tag struct {
 
 	// The key name that can be used to look up or retrieve the associated value.
 	// For example, Department or Cost Center are common choices.
-	Key string `json:"key"`
+	Key string `json:"Key"`
 
 	// The value associated with this tag. For example, tags with a key name of
 	// Department could have values such as Human Resources, Accounting, and Support.
@@ -41,7 +41,7 @@ type Tag struct {
 	// an array, you can store comma-separated values in the string. However, you
 	// must interpret the value in your code.
 	// +optional
-	Value string `json:"value,omitempty"`
+	Value string `json:"Value,omitempty"`
 }
 
 // CertificateOptions to specify whether to add the certificate to a certificate transparency log
@@ -94,7 +94,7 @@ type CertificateSpec struct {
 type CertificateExternalStatus struct {
 	// String that contains the ARN of the issued certificate. This must be of the
 	// form:
-	CertificateArn string `json:"CertificateArn"`
+	CertificateArn string `json:"certificateArn"`
 }
 
 // An CertificateStatus represents the observed state of an Certificate manager.
@@ -113,7 +113,7 @@ type CertificateParameters struct {
 	// AWS Certificate Manager Private Certificate Authority (PCA) (https://docs.aws.amazon.com/acm-pca/latest/userguide/PcaWelcome.html)
 	// user guide. The ARN must have the following form:
 	// +optional
-	CertificateAuthorityArn string `json:"CertificateAuthorityArn,omitempty"`
+	CertificateAuthorityArn *string `json:"CertificateAuthorityArn,omitempty"`
 
 	// Fully qualified domain name (FQDN), such as www.example.com, that you want
 	// to secure with an ACM certificate. Use an asterisk (*) to create a wildcard
@@ -128,7 +128,7 @@ type CertificateParameters struct {
 	// The domain name that you want ACM to use to send you emails so that you can
 	// validate domain ownership.
 	// +optional
-	DomainValidationOptions []DomainValidationOption `json:"DomainValidationOptions,omitempty"`
+	DomainValidationOptions []*DomainValidationOption `json:"DomainValidationOptions,omitempty"`
 
 	// Customer chosen string that can be used to distinguish between calls to RequestCertificate.
 	// Idempotency tokens time out after one hour. Therefore, if you call RequestCertificate
@@ -137,7 +137,7 @@ type CertificateParameters struct {
 	// you change the idempotency token for each call, ACM recognizes that you are
 	// requesting multiple certificates.
 	// +optional
-	IdempotencyToken string `json:"IdempotencyToken,omitempty"`
+	IdempotencyToken *string `json:"IdempotencyToken,omitempty"`
 
 	// Currently, you can use this parameter to specify whether to add the certificate
 	// to a certificate transparency log. Certificate transparency makes it possible
@@ -175,7 +175,7 @@ type CertificateParameters struct {
 
 	// One or more resource tags to associate with the certificate.
 	// +optional
-	Tags []Tag `json:"tags,omitempty"`
+	Tags []Tag `json:"Tags,omitempty"`
 
 	// The method you want to use if you are requesting a public certificate to
 	// validate that you own or control domain. You can validate with DNS (https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html)

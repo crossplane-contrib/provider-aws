@@ -2,6 +2,7 @@ package certificatemanager
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/acm"
@@ -24,46 +25,55 @@ func NewClient(conf *aws.Config) (Client, error) {
 // GenerateCreateCertificateInput from CertificateSpec
 func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParameters) *acm.RequestCertificateInput {
 	m := &acm.RequestCertificateInput{
-		DomainName: aws.String(p.DomainName),
-		// CertificateAuthorityArn: aws.String(p.CertificateAuthorityArn),
-		ValidationMethod: acm.ValidationMethodDns,
-		// IdempotencyToken:        p.IdempotencyToken,
-		// Options:                 p.Options,
-		// DomainValidationOptions: p.DomainValidationOptions,
-		// SubjectAlternativeNames: p.SubjectAlternativeNames,
+		DomainName:              aws.String(p.DomainName),
+		CertificateAuthorityArn: p.CertificateAuthorityArn,
+		IdempotencyToken:        p.IdempotencyToken,
+		Options:                 &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled},
 	}
-	m.Tags = make([]acm.Tag, 1)
-	m.Tags[0] = acm.Tag{
-		Key:   aws.String("Name"),
-		Value: aws.String(name),
+
+	if strings.EqualFold(p.ValidationMethod, "EMAIL") {
+		m.ValidationMethod = acm.ValidationMethodEmail
+	} else if strings.EqualFold(p.ValidationMethod, "DNS") {
+		m.ValidationMethod = acm.ValidationMethodDns
+	}
+
+	if len(p.DomainValidationOptions) != 0 {
+		m.DomainValidationOptions = make([]acm.DomainValidationOption, len(p.DomainValidationOptions))
+		for i, val := range p.DomainValidationOptions {
+			m.DomainValidationOptions[i] = acm.DomainValidationOption{
+				DomainName:       &val.DomainName,
+				ValidationDomain: &val.ValidationDomain,
+			}
+		}
+	}
+
+	if len(p.SubjectAlternativeNames) != 0 {
+		m.SubjectAlternativeNames = make([]string, len(p.SubjectAlternativeNames))
+		for i := range p.SubjectAlternativeNames {
+			m.SubjectAlternativeNames[i] = p.SubjectAlternativeNames[i]
+		}
+	}
+
+	if len(p.Tags) != 0 {
+		p.Tags = append(p.Tags, v1alpha1.Tag{
+			Key:   "Name",
+			Value: name,
+		})
+	} else {
+		p.Tags = append(p.Tags, v1alpha1.Tag{
+			Key:   "Name",
+			Value: name,
+		})
+	}
+
+	m.Tags = make([]acm.Tag, len(p.Tags))
+	for i, val := range p.Tags {
+		m.Tags[i] = acm.Tag{
+			Key:   aws.String(val.Key),
+			Value: aws.String(val.Value),
+		}
 	}
 
 	fmt.Println(m)
-	// if len(p.DomainValidationOptions) != 0 {
-	// 	m.DomainValidationOptions = make([]acm.DomainValidationOption, len(p.DomainValidationOptions))
-	// 	for i, val := range p.DomainValidationOptions {
-	// 		m.DomainValidationOptions[i] = acm.DomainValidationOption{
-	// 			DomainName:       &val.DomainName,
-	// 			ValidationDomain: &val.ValidationDomain,
-	// 		}
-	// 	}
-	// }
-
-	// if len(p.SubjectAlternativeNames) != 0 {
-	// 	for i, val := range p.SubjectAlternativeNames {
-	// 		m.SubjectAlternativeNames[i] = p.SubjectAlternativeNames[i]
-	// 	}
-	// }
-
-	// if len(p.Tags) != 0 {
-	// 	m.Tags = make([]acm.Tag, len(p.Tags))
-	// 	for i, val := range p.Tags {
-	// 		m.Tags[i] = acm.Tag{
-	// 			Key:   &val.Key,
-	// 			Value: &val.Value,
-	// 		}
-	// 	}
-	// }
-
 	return m
 }
