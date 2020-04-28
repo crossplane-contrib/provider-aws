@@ -39,7 +39,6 @@ import (
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
-	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 
 const (
@@ -70,7 +69,7 @@ func SetupSecurityGroup(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1beta1.SecurityGroup{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.SecurityGroupGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewSecurityGroupClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewSecurityGroupClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
@@ -171,6 +170,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
+
+	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
 	// Creating the SecurityGroup itself
 	result, err := e.sg.CreateSecurityGroupRequest(&awsec2.CreateSecurityGroupInput{

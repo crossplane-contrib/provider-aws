@@ -22,6 +22,15 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
 
+// AWS returns 'available` hence ec2.AttachmentStatusAttached doesn't work
+// InternetGateway attachment states.
+const (
+	// The attachment is complete
+	AttachmentStatusAvailable = "available"
+	// The attachment is being created.
+	AttachmentStatusAttaching = "creating"
+)
+
 // InternetGatewayParameters define the desired state of an AWS VPC Internet
 // Gateway.
 type InternetGatewayParameters struct {

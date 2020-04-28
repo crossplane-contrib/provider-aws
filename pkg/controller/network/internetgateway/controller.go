@@ -38,7 +38,6 @@ import (
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
-	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 
 const (
@@ -67,7 +66,7 @@ func SetupInternetGateway(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1beta1.InternetGateway{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.InternetGatewayGroupVersionKind),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewInternetGatewayClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewInternetGatewayClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
@@ -113,7 +112,6 @@ func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (manag
 type external struct {
 	kube   client.Client
 	client ec2.InternetGatewayClient
-	kube   client.Client
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {

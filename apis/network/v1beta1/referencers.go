@@ -21,8 +21,9 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SecurityGroupName returns the spec.groupName of a SecurityGroup.
