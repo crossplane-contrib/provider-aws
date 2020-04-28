@@ -59,13 +59,13 @@ const (
 // SetupIAMUserPolicyAttachment adds a controller that reconciles
 // IAMUserPolicyAttachments.
 func SetupIAMUserPolicyAttachment(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha1.UserPolicyAttachmentGroupKind)
+	name := managed.ControllerName(v1alpha1.IAMUserPolicyAttachmentGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&v1alpha1.IAMUserPolicyAttachment{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.UserPolicyAttachmentGroupVersionKind),
+			resource.ManagedKind(v1alpha1.IAMUserPolicyAttachmentGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewUserPolicyAttachmentClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
@@ -177,7 +177,9 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	// PolicyARN is the only distinguishing field and on update to that, new policy is attached
+	// Updating any field will create a new User-Policy attachment in AWS, which will be
+	// irrelevant/out-of-sync to the original defined attachment.
+	// It is encouraged to instead create a new IAMUserPolicyAttachment resource.
 	return managed.ExternalUpdate{}, nil
 }
 
