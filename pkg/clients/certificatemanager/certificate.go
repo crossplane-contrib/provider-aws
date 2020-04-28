@@ -28,7 +28,12 @@ func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParamete
 		DomainName:              aws.String(p.DomainName),
 		CertificateAuthorityArn: p.CertificateAuthorityArn,
 		IdempotencyToken:        p.IdempotencyToken,
-		Options:                 &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled},
+	}
+
+	if strings.EqualFold(p.CertificateTransparencyLoggingPreference, "DISABLED") {
+		m.Options = &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled}
+	} else if strings.EqualFold(p.CertificateTransparencyLoggingPreference, "ENABLED") {
+		m.Options = &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceEnabled}
 	}
 
 	if strings.EqualFold(p.ValidationMethod, "EMAIL") {
@@ -54,17 +59,10 @@ func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParamete
 		}
 	}
 
-	if len(p.Tags) != 0 {
-		p.Tags = append(p.Tags, v1alpha1.Tag{
-			Key:   "Name",
-			Value: name,
-		})
-	} else {
-		p.Tags = append(p.Tags, v1alpha1.Tag{
-			Key:   "Name",
-			Value: name,
-		})
-	}
+	p.Tags = append(p.Tags, v1alpha1.Tag{
+		Key:   "Name",
+		Value: name,
+	})
 
 	m.Tags = make([]acm.Tag, len(p.Tags))
 	for i, val := range p.Tags {
