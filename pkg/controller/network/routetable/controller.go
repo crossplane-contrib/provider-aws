@@ -38,7 +38,6 @@ import (
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
-	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 
 const (
@@ -70,7 +69,7 @@ func SetupRouteTable(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1beta1.RouteTable{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.RouteTableGroupVersionKind),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewRouteTableClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewRouteTableClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
@@ -116,7 +115,6 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 type external struct {
 	kube   client.Client
 	client ec2.RouteTableClient
-	kube   client.Client
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {

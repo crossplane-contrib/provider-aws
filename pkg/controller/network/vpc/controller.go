@@ -68,7 +68,7 @@ func SetupVPC(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1beta1.VPC{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.VPCGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewVPCClient}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewVpcClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
@@ -141,7 +141,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errMultipleItems)
 	}
 
-	observed := rsp.Vpcs[0]
+	observed := response.Vpcs[0]
 
 	if observed.State == awsec2.VpcStateAvailable {
 		cr.SetConditions(runtimev1alpha1.Available())
