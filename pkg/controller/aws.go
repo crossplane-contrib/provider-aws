@@ -29,6 +29,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/database/dynamodb"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrole"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrolepolicyattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuser"
 	"github.com/crossplane/provider-aws/pkg/controller/network/internetgateway"
 	"github.com/crossplane/provider-aws/pkg/controller/network/routetable"
 	"github.com/crossplane/provider-aws/pkg/controller/network/securitygroup"
@@ -63,6 +64,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		s3.SetupBucketClaimDefaulting,
 		s3.SetupBucketClaimBinding,
 		s3.SetupS3Bucket,
+		iamuser.SetupIAMUser,
 		iamrole.SetupIAMRole,
 		iamrolepolicyattachment.SetupIAMRolePolicyAttachment,
 		vpc.SetupVPC,
