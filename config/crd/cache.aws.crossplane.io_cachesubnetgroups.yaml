@@ -23,6 +23,10 @@ spec:
     type: date
   group: cache.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - managed
+    - aws
     kind: CacheSubnetGroup
     listKind: CacheSubnetGroupList
     plural: cachesubnetgroups

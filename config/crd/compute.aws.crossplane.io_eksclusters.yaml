@@ -35,6 +35,10 @@ spec:
     type: date
   group: compute.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - managed
+    - aws
     kind: EKSCluster
     listKind: EKSClusterList
     plural: eksclusters
