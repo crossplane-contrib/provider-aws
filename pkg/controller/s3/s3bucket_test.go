@@ -299,7 +299,7 @@ func TestCreate(t *testing.T) {
 	g.Expect(resource.Status.LastUserPolicyVersion).To(Equal(2))
 }
 
-func TestCreateFail(t *testing.T) {
+func TestCreateSecretFail(t *testing.T) {
 	g := NewGomegaWithT(t)
 	tr := testResource()
 	cl := &MockS3Client{
@@ -333,26 +333,69 @@ func TestCreateFail(t *testing.T) {
 	g.Expect(rs).To(Equal(resultRequeue))
 	g.Expect(err).NotTo(HaveOccurred())
 	assertResource(g, r, expectedStatus)
+}
 
-	// test create resource error
-	tr = testResource()
-	testError = errors.New("test-create-user--error")
+func TestCreateUserFail(t *testing.T) {
+	g := NewGomegaWithT(t)
+	tr := testResource()
+	testError := errors.New("test-create-user--error")
+	r := &Reconciler{
+		Client: NewFakeClient(tr),
+		ConnectionPublisher: managed.ConnectionPublisherFns{
+			PublishConnectionFn: func(_ context.Context, _ resource.Managed, _ managed.ConnectionDetails) error {
+				return testError
+			},
+		},
+		log: logging.NewNopLogger(),
+	}
 	called := false
-	cl.MockCreateUser = func(username string, bucket *S3Bucket) (*iam.AccessKey, string, error) {
-		called = true
-		return nil, "", testError
+	cl := &MockS3Client{
+		MockCreateUser: func(username string, bucket *S3Bucket) (*iam.AccessKey, string, error) {
+			called = true
+			return nil, "", testError
+		},
+		MockCreateOrUpdateBucket: func(bucket *S3Bucket) error {
+			return nil
+		},
 	}
 
-	expectedStatus = runtimev1alpha1.ConditionedStatus{}
+	expectedStatus := runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileError(testError))
 
-	rs, err = r._create(tr, cl)
+	rs, err := r._create(tr, cl)
 	g.Expect(rs).To(Equal(resultRequeue))
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(called).To(BeTrue())
 	assertResource(g, r, expectedStatus)
+}
 
-	// test create bucket error
+func TestCreateBucketFail(t *testing.T) {
+	g := NewGomegaWithT(t)
+	tr := testResource()
+	testError := errors.New("test-create-bucket--error")
+	r := &Reconciler{
+		Client: NewFakeClient(tr),
+		ConnectionPublisher: managed.ConnectionPublisherFns{
+			PublishConnectionFn: func(_ context.Context, _ resource.Managed, _ managed.ConnectionDetails) error {
+				return testError
+			},
+		},
+		log: logging.NewNopLogger(),
+	}
+	called := false
+	cl := &MockS3Client{
+		MockCreateUser: func(username string, bucket *S3Bucket) (*iam.AccessKey, string, error) {
+			fakeKey := &iam.AccessKey{
+				AccessKeyId:     aws.String("fake-string"),
+				SecretAccessKey: aws.String(""),
+			}
+			return fakeKey, "v2", nil
+		},
+		MockCreateOrUpdateBucket: func(bucket *S3Bucket) error {
+			called = true
+			return testError
+		},
+	}
 	cl.MockCreateUser = func(username string, bucket *S3Bucket) (*iam.AccessKey, string, error) {
 		fakeKey := &iam.AccessKey{
 			AccessKeyId:     aws.String("fake-string"),
@@ -361,18 +404,10 @@ func TestCreateFail(t *testing.T) {
 		return fakeKey, "v2", nil
 	}
 
-	tr = testResource()
-	testError = errors.New("test-create-bucket--error")
-	called = false
-	cl.MockCreateOrUpdateBucket = func(bucket *S3Bucket) error {
-		called = true
-		return testError
-	}
-
-	expectedStatus = runtimev1alpha1.ConditionedStatus{}
+	expectedStatus := runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.Creating(), runtimev1alpha1.ReconcileError(testError))
 
-	rs, err = r._create(tr, cl)
+	rs, err := r._create(tr, cl)
 	g.Expect(rs).To(Equal(resultRequeue))
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(called).To(BeTrue())
