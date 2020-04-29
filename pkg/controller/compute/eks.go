@@ -256,11 +256,9 @@ func (r *Reconciler) _awsauth(cluster *eks.Cluster, instance *awscomputev1alpha3
 	}
 
 	// Create or update aws-auth configmap on eks cluster
-	_, err = clientset.CoreV1().ConfigMaps(cm.Namespace).Create(cm)
-	if err != nil {
-		if apierrors.IsAlreadyExists(err) {
-			_, err = clientset.CoreV1().ConfigMaps(cm.Namespace).Update(cm)
-		}
+	_, err = clientset.CoreV1().ConfigMaps(cm.Namespace).Create(ctx, cm, metav1.CreateOptions{})
+	if apierrors.IsAlreadyExists(err) {
+		_, err = clientset.CoreV1().ConfigMaps(cm.Namespace).Update(ctx, cm, metav1.UpdateOptions{})
 	}
 
 	return err
