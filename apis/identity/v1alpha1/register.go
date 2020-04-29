@@ -40,7 +40,7 @@ var (
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
-// User type metadata.
+// IAMUser type metadata.
 var (
 	IAMUserKind             = reflect.TypeOf(IAMUser{}).Name()
 	IAMUserGroupKind        = schema.GroupKind{Group: Group, Kind: IAMUserKind}.String()
@@ -48,6 +48,15 @@ var (
 	IAMUserGroupVersionKind = SchemeGroupVersion.WithKind(IAMUserKind)
 )
 
+// IAMUserPolicyAttachment type metadata.
+var (
+	IAMUserPolicyAttachmentKind             = reflect.TypeOf(IAMUserPolicyAttachment{}).Name()
+	IAMUserPolicyAttachmentGroupKind        = schema.GroupKind{Group: Group, Kind: IAMUserPolicyAttachmentKind}.String()
+	IAMUserPolicyAttachmentKindAPIVersion   = IAMUserPolicyAttachmentKind + "." + SchemeGroupVersion.String()
+	IAMUserPolicyAttachmentGroupVersionKind = SchemeGroupVersion.WithKind(IAMUserPolicyAttachmentKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&IAMUser{}, &IAMUserList{})
+	SchemeBuilder.Register(&IAMUserPolicyAttachment{}, &IAMUserPolicyAttachmentList{})
 }
