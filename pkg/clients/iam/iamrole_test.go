@@ -28,6 +28,8 @@ var (
 	   }`
 	roleID   = "some Id"
 	roleName = "some name"
+	tagKey   = "key"
+	tagValue = "value"
 )
 
 func roleParams(m ...func(*v1beta1.IAMRoleParameters)) *v1beta1.IAMRoleParameters {
@@ -173,6 +175,31 @@ func TestLateInitializeRole(t *testing.T) {
 			},
 			want: roleParams(func(p *v1beta1.IAMRoleParameters) {
 				p.Description = &description
+			}),
+		},
+		"PointerFields": {
+			args: args{
+				spec: roleParams(),
+				in: *role(func(r *iam.Role) {
+					r.Tags = []iam.Tag{
+						{
+							Key:   &tagKey,
+							Value: &tagValue,
+						},
+					}
+					r.PermissionsBoundary = &iam.AttachedPermissionsBoundary{
+						PermissionsBoundaryArn: &roleARN,
+					}
+				}),
+			},
+			want: roleParams(func(p *v1beta1.IAMRoleParameters) {
+				p.Tags = []v1beta1.Tag{
+					{
+						Key:   tagKey,
+						Value: tagValue,
+					},
+				}
+				p.PermissionsBoundary = &roleARN
 			}),
 		},
 	}
