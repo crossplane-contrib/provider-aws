@@ -23,6 +23,10 @@ spec:
     type: date
   group: database.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - managed
+    - aws
     kind: DBSubnetGroup
     listKind: DBSubnetGroupList
     plural: dbsubnetgroups
