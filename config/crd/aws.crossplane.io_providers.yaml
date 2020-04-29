@@ -21,6 +21,10 @@ spec:
     type: string
   group: aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - provider
+    - aws
     kind: Provider
     listKind: ProviderList
     plural: providers
