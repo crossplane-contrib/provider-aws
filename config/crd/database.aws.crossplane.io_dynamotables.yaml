@@ -26,6 +26,10 @@ spec:
     type: date
   group: database.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - managed
+    - aws
     kind: DynamoTable
     listKind: DynamoTableList
     plural: dynamotables
