@@ -5,14 +5,18 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/acm"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
 
 	"github.com/crossplane/provider-aws/apis/certificatemanager/v1alpha1"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // Client defines the CertificateManager operations
 type Client interface {
-	GetCertificateRequest(*acm.GetCertificateInput) acm.GetCertificateRequest
+	// GetCertificateRequest(*acm.GetCertificateInput) acm.GetCertificateRequest
+	DescribeCertificateRequest(*acm.DescribeCertificateInput) acm.DescribeCertificateRequest
 	RequestCertificateRequest(*acm.RequestCertificateInput) acm.RequestCertificateRequest
 	DeleteCertificateRequest(*acm.DeleteCertificateInput) acm.DeleteCertificateRequest
 }
@@ -24,6 +28,7 @@ func NewClient(conf *aws.Config) (Client, error) {
 
 // GenerateCreateCertificateInput from CertificateSpec
 func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParameters) *acm.RequestCertificateInput {
+	fmt.Println("GenerateCreateCertificateInput | Entry")
 	m := &acm.RequestCertificateInput{
 		DomainName:              aws.String(p.DomainName),
 		CertificateAuthorityArn: p.CertificateAuthorityArn,
@@ -71,7 +76,64 @@ func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParamete
 			Value: aws.String(val.Value),
 		}
 	}
-
-	fmt.Println(m)
+	fmt.Println("GenerateCreateCertificateInput | Exit")
 	return m
+}
+
+// GenerateCertificateStatus is used to produce CertificateExternalStatus from acm.certificateStatus
+func GenerateCertificateStatus(certificate acm.CertificateDetail) v1alpha1.CertificateExternalStatus {
+	return v1alpha1.CertificateExternalStatus{
+		CertificateArn: aws.StringValue(certificate.CertificateArn),
+	}
+
+}
+
+// LateInitializeCertificate fills the empty fields in *v1beta1.CertificateParameters with
+// the values seen in iam.Certificate.
+func LateInitializeCertificate(in *v1alpha1.CertificateParameters, certificate *acm.CertificateDetail) { // nolint:gocyclo
+	if certificate == nil {
+		return
+	}
+	fmt.Println("LateInitializeCertificate | Entry")
+
+	in.DomainName = awsclients.LateInitializeString(in.DomainName, certificate.DomainName)
+
+	if aws.StringValue(in.CertificateAuthorityArn) == "" && certificate.CertificateAuthorityArn != nil {
+		in.CertificateAuthorityArn = certificate.CertificateAuthorityArn
+	}
+
+	if in.CertificateTransparencyLoggingPreference == "" && certificate.Options != nil {
+		in.CertificateTransparencyLoggingPreference = string(certificate.Options.CertificateTransparencyLoggingPreference)
+	}
+
+	if in.ValidationMethod == "" && len(certificate.DomainValidationOptions) != 0 {
+		in.ValidationMethod = string(certificate.DomainValidationOptions[0].ValidationMethod)
+	}
+
+	if len(in.SubjectAlternativeNames) == 0 && len(certificate.SubjectAlternativeNames) != 0 {
+		in.SubjectAlternativeNames = make([]string, len(certificate.SubjectAlternativeNames))
+		for i := range certificate.SubjectAlternativeNames {
+			in.SubjectAlternativeNames[i] = certificate.SubjectAlternativeNames[i]
+		}
+	}
+
+	if len(in.DomainValidationOptions) == 0 && len(certificate.DomainValidationOptions) != 0 {
+		in.DomainValidationOptions = make([]*v1alpha1.DomainValidationOption, len(certificate.DomainValidationOptions))
+		for i, val := range certificate.DomainValidationOptions {
+			in.DomainValidationOptions[i] = &v1alpha1.DomainValidationOption{
+				DomainName:       aws.StringValue(val.DomainName),
+				ValidationDomain: aws.StringValue(val.ValidationDomain),
+			}
+		}
+	}
+
+	fmt.Println("LateInitializeCertificate | Exit")
+}
+
+// IsErrorNotFound returns true if the error code indicates that the item was not found
+func IsErrorNotFound(err error) bool {
+	if iamErr, ok := err.(awserr.Error); ok && iamErr.Code() == iam.ErrCodeNoSuchEntityException {
+		return true
+	}
+	return false
 }

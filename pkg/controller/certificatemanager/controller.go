@@ -18,8 +18,11 @@ package certificatemanager
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	awsacm "github.com/aws/aws-sdk-go-v2/service/acm"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -40,13 +43,13 @@ import (
 const (
 	errUnexpectedObject = "The managed resource is not an ACM resource"
 	errClient           = "cannot create a new ACM client"
-	// errGet              = "failed to get Certificate with name"
-	errCreate = "failed to create the Certificate resource"
-	errDelete = "failed to delete the Certificate resource"
-	errUpdate = "failed to update the Certificate resource"
-	// errSDK              = "empty Certificate received from ACM API"
+	errGet              = "failed to get Certificate with name"
+	errCreate           = "failed to create the Certificate resource"
+	errDelete           = "failed to delete the Certificate resource"
+	errUpdate           = "failed to update the Certificate resource"
+	errSDK              = "empty Certificate received from ACM API"
 
-	// errKubeUpdateFailed = "cannot late initialize Certificate"
+	errKubeUpdateFailed = "cannot late initialize Certificate"
 	// errUpToDateFailed   = "cannot check whether object is up-to-date"
 )
 
@@ -96,13 +99,61 @@ type external struct {
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
 
+	fmt.Println("Observ | Entry")
+
+	cr, ok := mgd.(*v1alpha1.Certificate)
+	if !ok {
+		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
+	}
+
+	if cr.Status.AtProvider.CertificateArn == "" {
+		fmt.Println("CertificateArn is empty")
+		return managed.ExternalObservation{
+			ResourceExists: false,
+		}, nil
+	}
+
+	response, err := e.client.DescribeCertificateRequest(&awsacm.DescribeCertificateInput{
+		CertificateArn: aws.String(cr.Status.AtProvider.CertificateArn),
+	}).Send(ctx)
+
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errGet)
+	}
+
+	if response.Certificate == nil {
+		return managed.ExternalObservation{}, errors.New(errSDK)
+	}
+
+	certificate := *response.Certificate
+	current := cr.Spec.ForProvider.DeepCopy()
+	fmt.Println("Calling LateInitialize")
+	acm.LateInitializeCertificate(&cr.Spec.ForProvider, &certificate)
+	if !cmp.Equal(current, &cr.Spec.ForProvider) {
+		if err := e.kube.Update(ctx, cr); err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
+		}
+	}
+
+	cr.SetConditions(runtimev1alpha1.Available())
+
+	cr.Status.AtProvider = acm.GenerateCertificateStatus(certificate)
+
+	// upToDate, err := acm.IsCertificateUpToDate(cr.Spec.ForProvider, certificate)
+	// if err != nil {
+	// 	return managed.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
+	// }
+
 	return managed.ExternalObservation{
-		ResourceExists:   false,
-		ResourceUpToDate: true,
+		ResourceExists:   true,
+		ResourceUpToDate: false,
 	}, nil
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
+
+	fmt.Println("Create | Entry")
+
 	cr, ok := mgd.(*v1alpha1.Certificate)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
@@ -110,25 +161,34 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
-	_, err := e.client.RequestCertificateRequest(acm.GenerateCreateCertificateInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)).Send(ctx)
+	response, err := e.client.RequestCertificateRequest(acm.GenerateCreateCertificateInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)).Send(ctx)
+
+	if response != nil {
+		cr.Status.AtProvider.CertificateArn = aws.StringValue(response.RequestCertificateOutput.CertificateArn)
+	}
+
+	fmt.Println("Create | Exit")
 	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+	fmt.Println("Update")
 	return managed.ExternalUpdate{}, errors.New(errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	// 	cr, ok := mgd.(*v1alpha1.Certificate)
-	// 	if !ok {
-	// 		return errors.New(errUnexpectedObject)
-	// 	}
+	fmt.Println("Delete | Entry")
+	cr, ok := mgd.(*v1alpha1.Certificate)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
 
-	// 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
+	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
-	// 	_, err := e.client.DeleteCertificateRequest(&awsacm.DeleteCertificateInput{
-	// 		CertificateArn: cr.Spec.ForProvider.CertificateArn,
-	// 	}).Send(ctx)
-
-	return errors.New(errDelete)
+	_, err := e.client.DeleteCertificateRequest(&awsacm.DeleteCertificateInput{
+		CertificateArn: aws.String(cr.Status.AtProvider.CertificateArn),
+	}).Send(ctx)
+	fmt.Println("Delete | Exit")
+	return errors.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errDelete)
 }
