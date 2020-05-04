@@ -19,6 +19,10 @@ type Client interface {
 	DescribeCertificateRequest(*acm.DescribeCertificateInput) acm.DescribeCertificateRequest
 	RequestCertificateRequest(*acm.RequestCertificateInput) acm.RequestCertificateRequest
 	DeleteCertificateRequest(*acm.DeleteCertificateInput) acm.DeleteCertificateRequest
+	UpdateCertificateOptionsRequest(*acm.UpdateCertificateOptionsInput) acm.UpdateCertificateOptionsRequest
+	ListTagsForCertificateRequest(*acm.ListTagsForCertificateInput) acm.ListTagsForCertificateRequest
+	AddTagsToCertificateRequest(*acm.AddTagsToCertificateInput) acm.AddTagsToCertificateRequest
+	RemoveTagsFromCertificateRequest(*acm.RemoveTagsFromCertificateInput) acm.RemoveTagsFromCertificateRequest
 }
 
 // NewClient returns a new client using AWS credentials as JSON encoded data.
@@ -88,6 +92,19 @@ func GenerateCertificateStatus(certificate acm.CertificateDetail) v1alpha1.Certi
 
 }
 
+// GenerateCertificateOptionRequest return CertificateOptions from CertificateSpec
+func GenerateCertificateOptionRequest(p *v1alpha1.CertificateParameters) *acm.CertificateOptions {
+
+	var options *acm.CertificateOptions
+
+	if strings.EqualFold(p.CertificateTransparencyLoggingPreference, "DISABLED") {
+		options = &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled}
+	} else if strings.EqualFold(p.CertificateTransparencyLoggingPreference, "ENABLED") {
+		options = &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceEnabled}
+	}
+	return options
+}
+
 // LateInitializeCertificate fills the empty fields in *v1beta1.CertificateParameters with
 // the values seen in iam.Certificate.
 func LateInitializeCertificate(in *v1alpha1.CertificateParameters, certificate *acm.CertificateDetail) { // nolint:gocyclo
@@ -128,6 +145,41 @@ func LateInitializeCertificate(in *v1alpha1.CertificateParameters, certificate *
 	}
 
 	fmt.Println("LateInitializeCertificate | Exit")
+}
+
+// IsCertificateUpToDate checks whether there is a change in any of the modifiable fields.
+func IsCertificateUpToDate(name string, p v1alpha1.CertificateParameters, cd acm.CertificateDetail, tags []acm.Tag) bool { // nolint:gocyclo
+
+	fmt.Println("Desired Options: ", p.CertificateTransparencyLoggingPreference)
+	fmt.Println("Current Options: ", string(cd.Options.CertificateTransparencyLoggingPreference))
+	if !strings.EqualFold(p.CertificateTransparencyLoggingPreference, string(cd.Options.CertificateTransparencyLoggingPreference)) {
+		fmt.Println("Option result True")
+		return false
+	}
+
+	p.Tags = append(p.Tags, v1alpha1.Tag{
+		Key:   "Name",
+		Value: name,
+	})
+
+	fmt.Println("Desired Tags", p.Tags)
+	fmt.Println("Current Tags", tags)
+
+	if len(p.Tags) != len(tags) {
+		return false
+	}
+
+	pTags := make(map[string]string, len(p.Tags))
+	for _, tag := range p.Tags {
+		pTags[tag.Key] = tag.Value
+	}
+	for _, tag := range tags {
+		val, ok := pTags[aws.StringValue(tag.Key)]
+		if !ok || !strings.EqualFold(val, aws.StringValue(tag.Value)) {
+			return false
+		}
+	}
+	return true
 }
 
 // IsErrorNotFound returns true if the error code indicates that the item was not found

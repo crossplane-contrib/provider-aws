@@ -51,6 +51,9 @@ const (
 
 	errKubeUpdateFailed = "cannot late initialize Certificate"
 	// errUpToDateFailed   = "cannot check whether object is up-to-date"
+
+	errAddTagsFailed  = "cannot add tags to Certificate"
+	errListTagsFailed = "failed to list tags for Certificate"
 )
 
 // SetupCertificate adds a controller that reconciles Certificates.
@@ -139,14 +142,22 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.Status.AtProvider = acm.GenerateCertificateStatus(certificate)
 
-	// upToDate, err := acm.IsCertificateUpToDate(cr.Spec.ForProvider, certificate)
+	tags, err := e.client.ListTagsForCertificateRequest(&awsacm.ListTagsForCertificateInput{
+		CertificateArn: aws.String(cr.Status.AtProvider.CertificateArn),
+	}).Send(ctx)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, errListTagsFailed)
+	}
+
+	upToDate := acm.IsCertificateUpToDate(meta.GetExternalName(cr), cr.Spec.ForProvider, certificate, tags.Tags)
 	// if err != nil {
 	// 	return managed.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
 	// }
+	fmt.Println("UpToDate Result:", upToDate)
 
 	return managed.ExternalObservation{
+		ResourceUpToDate: upToDate,
 		ResourceExists:   true,
-		ResourceUpToDate: false,
 	}, nil
 }
 
@@ -173,8 +184,40 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	fmt.Println("Update")
-	return managed.ExternalUpdate{}, errors.New(errUpdate)
+	fmt.Println("Update | Entry")
+	cr, ok := mgd.(*v1alpha1.Certificate)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+
+	if aws.StringValue(cr.Spec.ForProvider.CertificateAuthorityArn) == "" {
+		fmt.Println("Updating CertificateOptions")
+		_, err := e.client.UpdateCertificateOptionsRequest(&awsacm.UpdateCertificateOptionsInput{
+			CertificateArn: aws.String(cr.Status.AtProvider.CertificateArn),
+			Options:        acm.GenerateCertificateOptionRequest(&cr.Spec.ForProvider),
+		}).Send(ctx)
+
+		if err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		}
+	}
+
+	fmt.Println("Updating Tags")
+	if len(cr.Spec.ForProvider.Tags) > 0 {
+		tags := make([]awsacm.Tag, len(cr.Spec.ForProvider.Tags))
+		for i, t := range cr.Spec.ForProvider.Tags {
+			tags[i] = awsacm.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
+		}
+		_, err := e.client.AddTagsToCertificateRequest(&awsacm.AddTagsToCertificateInput{
+			CertificateArn: aws.String(cr.Status.AtProvider.CertificateArn),
+			Tags:           tags,
+		}).Send(ctx)
+		if err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errAddTagsFailed)
+		}
+	}
+	fmt.Println("Update | Exit")
+	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {

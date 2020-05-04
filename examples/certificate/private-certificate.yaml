@@ -1,13 +1,13 @@
 apiVersion: certificatemanager.crossplane.io/v1alpha1
 kind: Certificate
 metadata:
-  name: sample-cert
+  name: private-cert
   annotations:
-    crossplane.io/external-name: sample-cert
+    crossplane.io/external-name: private-cert
 spec:
   forProvider:
+    certificateAuthorityArn: arn:aws:acm-pca:us-west-2:867429062264:certificate-authority/f0fe902b-cc51-478f-b04a-58cf7eaca5af     
     domainName: abc.com
-    validationMethod: DNS
     tags:
     - key: test
       value: testUpdate
@@ -15,10 +15,7 @@ spec:
     certificateTransparencyLoggingPreference: enabled
     subjectAlternativeNames:
     - abc.in
-    - abc.co.in
-    domainValidationOptions:
-    - domainName: abc.com
-      validationDomain: abc.com 
+    - abc.co.in 
   reclaimPolicy: Delete
   providerRef:
     name: example
