@@ -109,6 +109,27 @@ func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) er
 	return nil
 }
 
+// ResolveReferences of this Zone
+func (mg *ResourceRecordSet) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.zoneID
+	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.ZoneID),
+		Reference:    mg.Spec.ForProvider.ZoneIDRef,
+		Selector:     mg.Spec.ForProvider.ZoneIDSelector,
+		To:           reference.To{Managed: &Zone{}, List: &ZoneList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return err
+	}
+	mg.Spec.ForProvider.ZoneID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.ZoneIDRef = rsp.ResolvedReference
+
+	return nil
+}
+
 // ResolveReferences of this SecurityGroup
 func (mg *SecurityGroup) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)

@@ -88,6 +88,14 @@ var (
 	ZoneGroupVersionKind = SchemeGroupVersion.WithKind(ZoneKind)
 )
 
+// ResourceRecordSet type metadata.
+var (
+	ResourceRecordSetKind             = reflect.TypeOf(ResourceRecordSet{}).Name()
+	ResourceRecordSetGroupKind        = schema.GroupKind{Group: Group, Kind: ResourceRecordSetKind}.String()
+	ResourceRecordSetKindAPIVersion   = ResourceRecordSetKind + "." + SchemeGroupVersion.String()
+	ResourceRecordSetGroupVersionKind = SchemeGroupVersion.WithKind(ResourceRecordSetKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&VPC{}, &VPCList{})
 	SchemeBuilder.Register(&Subnet{}, &SubnetList{})
@@ -95,4 +103,5 @@ func init() {
 	SchemeBuilder.Register(&InternetGateway{}, &InternetGatewayList{})
 	SchemeBuilder.Register(&RouteTable{}, &RouteTableList{})
 	SchemeBuilder.Register(&Zone{}, &ZoneList{})
+	SchemeBuilder.Register(&ResourceRecordSet{}, &ResourceRecordSetList{})
 }
