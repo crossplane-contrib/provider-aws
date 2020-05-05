@@ -55,6 +55,7 @@ const (
 
 	errAddTagsFailed        = "cannot add tags to Certificate"
 	errListTagsFailed       = "failed to list tags for Certificate"
+	errRemoveTagsFailed     = "failed to remove tags for Certificate"
 	errRenewalFailed        = "failed to renew Certificate"
 	errIneligibleForRenewal = "ineligible to renew Certificate"
 )
@@ -193,25 +194,49 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	// if aws.StringValue(cr.Spec.ForProvider.CertificateAuthorityArn) == "" {
-	// 	fmt.Println("Updating CertificateOptions")
-	// 	_, err := e.client.UpdateCertificateOptionsRequest(&awsacm.UpdateCertificateOptionsInput{
-	// 		CertificateArn: aws.String(cr.Status.AtProvider.CertificateArn),
-	// 		Options:        acm.GenerateCertificateOptionRequest(&cr.Spec.ForProvider),
-	// 	}).Send(ctx)
+	if aws.StringValue(cr.Spec.ForProvider.CertificateAuthorityArn) == "" {
+		fmt.Println("Updating CertificateOptions")
+		_, err := e.client.UpdateCertificateOptionsRequest(&awsacm.UpdateCertificateOptionsInput{
+			CertificateArn: aws.String(cr.Status.AtProvider.CertificateArn),
+			Options:        acm.GenerateCertificateOptionRequest(&cr.Spec.ForProvider),
+		}).Send(ctx)
 
-	// 	if err != nil {
-	// 		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
-	// 	}
-	// }
+		if err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		}
+	}
+
+	cr.Spec.ForProvider.Tags = append(cr.Spec.ForProvider.Tags, v1alpha1.Tag{
+		Key:   "Name",
+		Value: meta.GetExternalName(cr),
+	})
 
 	if len(cr.Spec.ForProvider.Tags) > 0 {
 		fmt.Println("Updating Tags")
+
 		tags := make([]awsacm.Tag, len(cr.Spec.ForProvider.Tags))
 		for i, t := range cr.Spec.ForProvider.Tags {
 			tags[i] = awsacm.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
 		}
-		_, err := e.client.AddTagsToCertificateRequest(&awsacm.AddTagsToCertificateInput{
+
+		currentTags, err := e.client.ListTagsForCertificateRequest(&awsacm.ListTagsForCertificateInput{
+			CertificateArn: aws.String(cr.Status.AtProvider.CertificateArn),
+		}).Send(ctx)
+
+		if err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errListTagsFailed)
+		}
+
+		if len(tags) < len(currentTags.Tags) {
+			_, err := e.client.RemoveTagsFromCertificateRequest(&awsacm.RemoveTagsFromCertificateInput{
+				CertificateArn: aws.String(cr.Status.AtProvider.CertificateArn),
+				Tags:           currentTags.Tags,
+			}).Send(ctx)
+			if err != nil {
+				return managed.ExternalUpdate{}, errors.Wrap(err, errRemoveTagsFailed)
+			}
+		}
+		_, err = e.client.AddTagsToCertificateRequest(&awsacm.AddTagsToCertificateInput{
 			CertificateArn: aws.String(cr.Status.AtProvider.CertificateArn),
 			Tags:           tags,
 		}).Send(ctx)
