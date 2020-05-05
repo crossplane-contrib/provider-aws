@@ -51,6 +51,8 @@ type CertificateSpec struct {
 type CertificateExternalStatus struct {
 	// String that contains the ARN of the issued certificate. This must be of the
 	CertificateArn string `json:"certificateArn"`
+
+	RenewalEligibility string `json:"renewalEligibility"`
 }
 
 // An CertificateStatus represents the observed state of an Certificate manager.
@@ -93,6 +95,10 @@ type CertificateParameters struct {
 	// Method to validate certificate.
 	// +optional
 	ValidationMethod string `json:"validationMethod,omitempty"`
+
+	// Flag to renew the certificate
+	// +optional
+	RenewCertificate bool `json:"renewCertificate,omitempty"`
 }
 
 // +kubebuilder:object:root=true
