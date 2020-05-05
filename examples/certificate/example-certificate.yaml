@@ -1,24 +1,13 @@
 apiVersion: certificatemanager.crossplane.io/v1alpha1
 kind: Certificate
 metadata:
-  name: sample-cert
+  name: infracloudcert
   annotations:
-    crossplane.io/external-name: sample-cert
+    crossplane.io/external-name: infracloudcert
 spec:
   forProvider:
-    domainName: abc.com
+    domainName: infracloud.site
     validationMethod: DNS
-    tags:
-    - key: test
-      value: testUpdate
-    idempotencyToken: b1234
-    certificateTransparencyLoggingPreference: DISABLED
-    subjectAlternativeNames:
-    - abc.in
-    - abc.co.in
-    domainValidationOptions:
-    - domainName: abc.com
-      validationDomain: abc.com 
   reclaimPolicy: Delete
   providerRef:
     name: example
