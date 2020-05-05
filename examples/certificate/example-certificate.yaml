@@ -12,7 +12,7 @@ spec:
     - key: test
       value: testUpdate
     idempotencyToken: b1234
-    certificateTransparencyLoggingPreference: enabled
+    certificateTransparencyLoggingPreference: DISABLED
     subjectAlternativeNames:
     - abc.in
     - abc.co.in

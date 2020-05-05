@@ -22,6 +22,7 @@ type Client interface {
 	UpdateCertificateOptionsRequest(*acm.UpdateCertificateOptionsInput) acm.UpdateCertificateOptionsRequest
 	ListTagsForCertificateRequest(*acm.ListTagsForCertificateInput) acm.ListTagsForCertificateRequest
 	AddTagsToCertificateRequest(*acm.AddTagsToCertificateInput) acm.AddTagsToCertificateRequest
+	RenewCertificateRequest(*acm.RenewCertificateInput) acm.RenewCertificateRequest
 	RemoveTagsFromCertificateRequest(*acm.RemoveTagsFromCertificateInput) acm.RemoveTagsFromCertificateRequest
 }
 
@@ -87,7 +88,8 @@ func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParamete
 // GenerateCertificateStatus is used to produce CertificateExternalStatus from acm.certificateStatus
 func GenerateCertificateStatus(certificate acm.CertificateDetail) v1alpha1.CertificateExternalStatus {
 	return v1alpha1.CertificateExternalStatus{
-		CertificateArn: aws.StringValue(certificate.CertificateArn),
+		CertificateArn:     aws.StringValue(certificate.CertificateArn),
+		RenewalEligibility: string(certificate.RenewalEligibility),
 	}
 
 }
@@ -102,6 +104,7 @@ func GenerateCertificateOptionRequest(p *v1alpha1.CertificateParameters) *acm.Ce
 	} else if strings.EqualFold(p.CertificateTransparencyLoggingPreference, "ENABLED") {
 		options = &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceEnabled}
 	}
+	fmt.Println("CertificateOptions:", options)
 	return options
 }
 
@@ -150,10 +153,7 @@ func LateInitializeCertificate(in *v1alpha1.CertificateParameters, certificate *
 // IsCertificateUpToDate checks whether there is a change in any of the modifiable fields.
 func IsCertificateUpToDate(name string, p v1alpha1.CertificateParameters, cd acm.CertificateDetail, tags []acm.Tag) bool { // nolint:gocyclo
 
-	fmt.Println("Desired Options: ", p.CertificateTransparencyLoggingPreference)
-	fmt.Println("Current Options: ", string(cd.Options.CertificateTransparencyLoggingPreference))
 	if !strings.EqualFold(p.CertificateTransparencyLoggingPreference, string(cd.Options.CertificateTransparencyLoggingPreference)) {
-		fmt.Println("Option result True")
 		return false
 	}
 
@@ -161,9 +161,6 @@ func IsCertificateUpToDate(name string, p v1alpha1.CertificateParameters, cd acm
 		Key:   "Name",
 		Value: name,
 	})
-
-	fmt.Println("Desired Tags", p.Tags)
-	fmt.Println("Current Tags", tags)
 
 	if len(p.Tags) != len(tags) {
 		return false
@@ -178,6 +175,10 @@ func IsCertificateUpToDate(name string, p v1alpha1.CertificateParameters, cd acm
 		if !ok || !strings.EqualFold(val, aws.StringValue(tag.Value)) {
 			return false
 		}
+	}
+
+	if p.RenewCertificate == true {
+		return false
 	}
 	return true
 }

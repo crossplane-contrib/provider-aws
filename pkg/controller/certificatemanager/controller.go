@@ -19,6 +19,7 @@ package certificatemanager
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacm "github.com/aws/aws-sdk-go-v2/service/acm"
@@ -52,8 +53,10 @@ const (
 	errKubeUpdateFailed = "cannot late initialize Certificate"
 	// errUpToDateFailed   = "cannot check whether object is up-to-date"
 
-	errAddTagsFailed  = "cannot add tags to Certificate"
-	errListTagsFailed = "failed to list tags for Certificate"
+	errAddTagsFailed        = "cannot add tags to Certificate"
+	errListTagsFailed       = "failed to list tags for Certificate"
+	errRenewalFailed        = "failed to renew Certificate"
+	errIneligibleForRenewal = "ineligible to renew Certificate"
 )
 
 // SetupCertificate adds a controller that reconciles Certificates.
@@ -190,20 +193,20 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	if aws.StringValue(cr.Spec.ForProvider.CertificateAuthorityArn) == "" {
-		fmt.Println("Updating CertificateOptions")
-		_, err := e.client.UpdateCertificateOptionsRequest(&awsacm.UpdateCertificateOptionsInput{
-			CertificateArn: aws.String(cr.Status.AtProvider.CertificateArn),
-			Options:        acm.GenerateCertificateOptionRequest(&cr.Spec.ForProvider),
-		}).Send(ctx)
+	// if aws.StringValue(cr.Spec.ForProvider.CertificateAuthorityArn) == "" {
+	// 	fmt.Println("Updating CertificateOptions")
+	// 	_, err := e.client.UpdateCertificateOptionsRequest(&awsacm.UpdateCertificateOptionsInput{
+	// 		CertificateArn: aws.String(cr.Status.AtProvider.CertificateArn),
+	// 		Options:        acm.GenerateCertificateOptionRequest(&cr.Spec.ForProvider),
+	// 	}).Send(ctx)
 
-		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
-		}
-	}
+	// 	if err != nil {
+	// 		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	// 	}
+	// }
 
-	fmt.Println("Updating Tags")
 	if len(cr.Spec.ForProvider.Tags) > 0 {
+		fmt.Println("Updating Tags")
 		tags := make([]awsacm.Tag, len(cr.Spec.ForProvider.Tags))
 		for i, t := range cr.Spec.ForProvider.Tags {
 			tags[i] = awsacm.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
@@ -216,6 +219,23 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			return managed.ExternalUpdate{}, errors.Wrap(err, errAddTagsFailed)
 		}
 	}
+
+	if cr.Spec.ForProvider.RenewCertificate == true {
+		fmt.Println("Renewing Certificate")
+
+		if strings.EqualFold(cr.Status.AtProvider.RenewalEligibility, "ELIGIBLE") {
+			_, err := e.client.RenewCertificateRequest(&awsacm.RenewCertificateInput{
+				CertificateArn: aws.String(cr.Status.AtProvider.CertificateArn),
+			}).Send(ctx)
+
+			if err != nil {
+				return managed.ExternalUpdate{}, errors.Wrap(err, errRenewalFailed)
+			}
+		}
+		cr.Spec.ForProvider.RenewCertificate = false
+		return managed.ExternalUpdate{}, errors.New(errIneligibleForRenewal)
+	}
+
 	fmt.Println("Update | Exit")
 	return managed.ExternalUpdate{}, nil
 }
