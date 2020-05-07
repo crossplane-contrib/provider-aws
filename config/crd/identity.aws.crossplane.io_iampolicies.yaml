@@ -137,11 +137,15 @@ spec:
                   description: The JSON policy document that is the content for the
                     policy.
                   type: string
+                name:
+                  description: The name of the policy.
+                  type: string
                 path:
                   description: The path to the policy.
                   type: string
               required:
               - document
+              - name
               type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used

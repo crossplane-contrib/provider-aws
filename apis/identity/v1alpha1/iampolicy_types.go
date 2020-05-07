@@ -34,6 +34,9 @@ type IAMPolicyParameters struct {
 
 	// The JSON policy document that is the content for the policy.
 	Document string `json:"document"`
+
+	// The name of the policy.
+	Name string `json:"name"`
 }
 
 // An IAMPolicySpec defines the desired state of an IAMPolicy.
@@ -45,7 +48,7 @@ type IAMPolicySpec struct {
 // IAMPolicyObservation keeps the state for the external resource
 type IAMPolicyObservation struct {
 	// The Amazon PolicyObservation Name (ARN) of the policy
-	Arn string `json:"arn,omitempty"`
+	ARN string `json:"arn,omitempty"`
 
 	// The number of entities (users, groups, and roles) that the policy is attached
 	// to.
