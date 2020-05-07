@@ -58,10 +58,10 @@ var (
 
 // IAMPolicy type metadata.
 var (
-	IAMPolicyKind          = reflect.TypeOf(IAMPolicy{}).Name()
-	PolicyGroupKind        = schema.GroupKind{Group: Group, Kind: IAMPolicyKind}.String()
-	PolicyKindAPIVersion   = IAMPolicyKind + "." + SchemeGroupVersion.String()
-	PolicyGroupVersionKind = SchemeGroupVersion.WithKind(IAMPolicyKind)
+	IAMPolicyKind             = reflect.TypeOf(IAMPolicy{}).Name()
+	IAMPolicyGroupKind        = schema.GroupKind{Group: Group, Kind: IAMPolicyKind}.String()
+	IAMPolicyKindAPIVersion   = IAMPolicyKind + "." + SchemeGroupVersion.String()
+	IAMPolicyGroupVersionKind = SchemeGroupVersion.WithKind(IAMPolicyKind)
 )
 
 // UserPolicyAttachment type metadata.

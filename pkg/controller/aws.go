@@ -27,6 +27,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dynamodb"
+	"github.com/crossplane/provider-aws/pkg/controller/identity/iampolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrole"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrolepolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuser"

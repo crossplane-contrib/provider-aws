@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	awsarn "github.com/aws/aws-sdk-go-v2/aws/arn"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -59,13 +60,13 @@ const (
 
 // SetupIAMPolicy adds a controller that reconciles IAM Policy.
 func SetupIAMPolicy(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha1.PolicyGroupKind)
+	name := managed.ControllerName(v1alpha1.IAMPolicyGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&v1alpha1.IAMPolicy{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.PolicyGroupVersionKind),
+			resource.ManagedKind(v1alpha1.IAMPolicyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewPolicyClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -118,12 +119,12 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	if cr.Status.AtProvider.Arn == "" {
+	if !awsarn.IsARN(meta.GetExternalName(cr)) {
 		return managed.ExternalObservation{}, nil
 	}
 
 	policyResp, err := e.client.GetPolicyRequest(&awsiam.GetPolicyInput{
-		PolicyArn: aws.String(cr.Status.AtProvider.Arn),
+		PolicyArn: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
 	if err != nil {
@@ -138,7 +139,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	cr.SetConditions(runtimev1alpha1.Available())
 
 	cr.Status.AtProvider = v1alpha1.IAMPolicyObservation{
-		Arn:                           aws.StringValue(policy.Arn),
+		ARN:                           aws.StringValue(policy.Arn),
 		AttachmentCount:               aws.Int64Value(policy.AttachmentCount),
 		DefaultVersionID:              aws.StringValue(policy.DefaultVersionId),
 		IsAttachable:                  aws.BoolValue(policy.IsAttachable),
@@ -147,7 +148,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	versionRsp, err := e.client.GetPolicyVersionRequest(&awsiam.GetPolicyVersionInput{
-		PolicyArn: aws.String(cr.Status.AtProvider.Arn),
+		PolicyArn: aws.String(meta.GetExternalName(cr)),
 		VersionId: aws.String(cr.Status.AtProvider.DefaultVersionID),
 	}).Send(ctx)
 
@@ -178,16 +179,16 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		Description:    cr.Spec.ForProvider.Description,
 		Path:           cr.Spec.ForProvider.Path,
 		PolicyDocument: aws.String(cr.Spec.ForProvider.Document),
-		PolicyName:     aws.String(meta.GetExternalName(cr)),
+		PolicyName:     aws.String(cr.Spec.ForProvider.Name),
 	}).Send(ctx)
 
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 
-	cr.Status.AtProvider.Arn = aws.StringValue(createResp.CreatePolicyOutput.Policy.Arn)
+	meta.SetExternalName(cr, aws.StringValue(createResp.CreatePolicyOutput.Policy.Arn))
 
-	return managed.ExternalCreation{}, errors.Wrap(e.kube.Status().Update(ctx, cr), errCreate)
+	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -201,12 +202,12 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// for an update request when 5 versions already exist.
 	// The new version is set as default.
 
-	if err := e.deleteOldestVersion(ctx, cr.Status.AtProvider.Arn); err != nil {
+	if err := e.deleteOldestVersion(ctx, meta.GetExternalName(cr)); err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 	}
 
 	_, err := e.client.CreatePolicyVersionRequest(&awsiam.CreatePolicyVersionInput{
-		PolicyArn:      aws.String(cr.Status.AtProvider.Arn),
+		PolicyArn:      aws.String(meta.GetExternalName(cr)),
 		PolicyDocument: aws.String(cr.Spec.ForProvider.Document),
 		SetAsDefault:   aws.Bool(true),
 	}).Send(ctx)
@@ -220,14 +221,14 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	if err := e.deleteNonDefaultVersions(ctx, cr.Status.AtProvider.Arn); err != nil {
+	if err := e.deleteNonDefaultVersions(ctx, meta.GetExternalName(cr)); err != nil {
 		return errors.Wrap(err, errDelete)
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
 	_, err := e.client.DeletePolicyRequest(&awsiam.DeletePolicyInput{
-		PolicyArn: aws.String(cr.Status.AtProvider.Arn),
+		PolicyArn: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
 	return errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)

@@ -26,6 +26,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
@@ -46,7 +47,8 @@ import (
 
 var (
 	unexpecedItem resource.Managed
-	arn           = "some arn"
+	arn           = "arn:aws:iam::aws:policy/aws-service-role/AccessAnalyzerServiceRolePolicy"
+	name          = "policy name"
 	document      = `{
 		"Version": "2012-10-17",
 		"Statement": [
@@ -81,6 +83,10 @@ type args struct {
 
 type policyModifier func(*v1alpha1.IAMPolicy)
 
+func withExterName(s string) policyModifier {
+	return func(r *v1alpha1.IAMPolicy) { meta.SetExternalName(r, s) }
+}
+
 func withConditions(c ...corev1alpha1.Condition) policyModifier {
 	return func(r *v1alpha1.IAMPolicy) { r.Status.ConditionedStatus.Conditions = c }
 }
@@ -88,12 +94,6 @@ func withConditions(c ...corev1alpha1.Condition) policyModifier {
 func withSpec(spec v1alpha1.IAMPolicyParameters) policyModifier {
 	return func(r *v1alpha1.IAMPolicy) {
 		r.Spec.ForProvider = spec
-	}
-}
-
-func withStatus(status v1alpha1.IAMPolicyObservation) policyModifier {
-	return func(r *v1alpha1.IAMPolicy) {
-		r.Status.AtProvider = status
 	}
 }
 
@@ -309,14 +309,14 @@ func TestObserve(t *testing.T) {
 				},
 				cr: policy(withSpec(v1alpha1.IAMPolicyParameters{
 					Document: document,
-				}), withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				})),
+					Name:     name,
+				}), withExterName(arn)),
 			},
 			want: want{
 				cr: policy(withSpec(v1alpha1.IAMPolicyParameters{
 					Document: document,
-				}),
+					Name:     name,
+				}), withExterName(arn),
 					withConditions(corev1alpha1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -342,14 +342,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				})),
+				cr: policy(withExterName(arn)),
 			},
 			want: want{
-				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				})),
+				cr:  policy(withExterName(arn)),
 				err: errors.Wrap(errBoom, errGet),
 			},
 		},
@@ -373,12 +369,11 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				})),
+				cr: policy(withExterName(arn)),
 			},
 			want: want{
-				cr: policy(withConditions(corev1alpha1.Available())),
+				cr: policy(withExterName(arn),
+					withConditions(corev1alpha1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists: true,
 				},
@@ -434,16 +429,16 @@ func TestCreate(t *testing.T) {
 				},
 				cr: policy(withSpec(v1alpha1.IAMPolicyParameters{
 					Document: document,
+					Name:     name,
 				})),
 			},
 			want: want{
 				cr: policy(
 					withSpec(v1alpha1.IAMPolicyParameters{
 						Document: document,
+						Name:     name,
 					}),
-					withStatus(v1alpha1.IAMPolicyObservation{
-						Arn: arn,
-					}),
+					withExterName(arn),
 					withConditions(corev1alpha1.Creating())),
 			},
 		},
@@ -523,14 +518,10 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				})),
+				cr: policy(withExterName(arn)),
 			},
 			want: want{
-				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				})),
+				cr: policy(withExterName(arn)),
 			},
 		},
 		"InValidInput": {
@@ -551,14 +542,10 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				})),
+				cr: policy(withExterName(arn)),
 			},
 			want: want{
-				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				})),
+				cr:  policy(withExterName(arn)),
 				err: errors.Wrap(errBoom, errUpdate),
 			},
 		},
@@ -581,14 +568,10 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				})),
+				cr: policy(withExterName(arn)),
 			},
 			want: want{
-				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				})),
+				cr:  policy(withExterName(arn)),
 				err: errors.Wrap(errBoom, errUpdate),
 			},
 		},
@@ -642,14 +625,10 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				})),
+				cr: policy(withExterName(arn)),
 			},
 			want: want{
-				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				}),
+				cr: policy(withExterName(arn),
 					withConditions(corev1alpha1.Deleting())),
 			},
 		},
@@ -682,14 +661,10 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				})),
+				cr: policy(withExterName(arn)),
 			},
 			want: want{
-				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				})),
+				cr:  policy(withExterName(arn)),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},
@@ -712,14 +687,11 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				})),
+				cr: policy(withExterName(arn)),
 			},
 			want: want{
-				cr: policy(withStatus(v1alpha1.IAMPolicyObservation{
-					Arn: arn,
-				}), withConditions(corev1alpha1.Deleting())),
+				cr: policy(withExterName(arn),
+					withConditions(corev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},
