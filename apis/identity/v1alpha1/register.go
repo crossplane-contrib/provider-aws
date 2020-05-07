@@ -64,14 +64,6 @@ var (
 	IAMPolicyGroupVersionKind = SchemeGroupVersion.WithKind(IAMPolicyKind)
 )
 
-// UserPolicyAttachment type metadata.
-var (
-	UserPolicyAttachmentKind             = reflect.TypeOf(IAMUserPolicyAttachment{}).Name()
-	UserPolicyAttachmentGroupKind        = schema.GroupKind{Group: Group, Kind: UserPolicyAttachmentKind}.String()
-	UserPolicyAttachmentKindAPIVersion   = UserPolicyAttachmentKind + "." + SchemeGroupVersion.String()
-	UserPolicyAttachmentGroupVersionKind = SchemeGroupVersion.WithKind(UserPolicyAttachmentKind)
-)
-
 func init() {
 	SchemeBuilder.Register(&IAMUser{}, &IAMUserList{})
 	SchemeBuilder.Register(&IAMPolicy{}, &IAMPolicyList{})
