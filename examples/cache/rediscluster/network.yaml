@@ -1,0 +1,74 @@
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: VPC
+metadata:
+  name: rg-example
+spec:
+  cidrBlock: 192.168.0.0/16
+  enableDnsSupport: true
+  enableDnsHostNames: true
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: Subnet
+metadata:
+  name: rg-example
+spec:
+  cidrBlock: 192.168.64.0/18
+  vpcIdRef:
+    name: rg-example
+  availabilityZone: us-east-1a
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: InternetGateway
+metadata:
+  name: rg-example
+spec:
+  vpcIdRef:
+    name: rg-example
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: RouteTable
+metadata:
+  name: rg-example
+spec:
+  vpcIdRef:
+    name: rg-example
+  routes:
+    - destinationCidrBlock: 0.0.0.0/0
+      gatewayIdRef:
+        name: rg-example
+  associations:
+    - subnetIdRef:
+        name: rg-example
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: SecurityGroup
+metadata:
+  name: rg-example
+spec:
+  vpcIdRef:
+    name: rg-example
+  groupName: rg-example
+  description: Open access to Redis
+  ingress:
+    - fromPort: 6379
+      toPort: 6379
+      protocol: tcp
+      cidrBlocks:
+        - cidrIp: 0.0.0.0/0
+          description: Not very secure
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
