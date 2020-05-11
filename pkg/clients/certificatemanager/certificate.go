@@ -1,7 +1,6 @@
 package certificatemanager
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -33,7 +32,6 @@ func NewClient(conf *aws.Config) (Client, error) {
 
 // GenerateCreateCertificateInput from CertificateSpec
 func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParameters) *acm.RequestCertificateInput {
-	fmt.Println("GenerateCreateCertificateInput | Entry")
 	m := &acm.RequestCertificateInput{
 		DomainName:              aws.String(p.DomainName),
 		CertificateAuthorityArn: p.CertificateAuthorityArn,
@@ -69,11 +67,6 @@ func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParamete
 		}
 	}
 
-	p.Tags = append(p.Tags, v1alpha1.Tag{
-		Key:   "Name",
-		Value: name,
-	})
-
 	m.Tags = make([]acm.Tag, len(p.Tags))
 	for i, val := range p.Tags {
 		m.Tags[i] = acm.Tag{
@@ -81,7 +74,6 @@ func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParamete
 			Value: aws.String(val.Value),
 		}
 	}
-	fmt.Println("GenerateCreateCertificateInput | Exit")
 	return m
 }
 
@@ -104,7 +96,6 @@ func GenerateCertificateOptionRequest(p *v1alpha1.CertificateParameters) *acm.Ce
 	} else if strings.EqualFold(p.CertificateTransparencyLoggingPreference, "ENABLED") {
 		options = &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceEnabled}
 	}
-	fmt.Println("CertificateOptions:", options)
 	return options
 }
 
@@ -114,7 +105,6 @@ func LateInitializeCertificate(in *v1alpha1.CertificateParameters, certificate *
 	if certificate == nil {
 		return
 	}
-	fmt.Println("LateInitializeCertificate | Entry")
 
 	in.DomainName = awsclients.LateInitializeString(in.DomainName, certificate.DomainName)
 
@@ -147,20 +137,14 @@ func LateInitializeCertificate(in *v1alpha1.CertificateParameters, certificate *
 		}
 	}
 
-	fmt.Println("LateInitializeCertificate | Exit")
 }
 
 // IsCertificateUpToDate checks whether there is a change in any of the modifiable fields.
-func IsCertificateUpToDate(name string, p v1alpha1.CertificateParameters, cd acm.CertificateDetail, tags []acm.Tag) bool { // nolint:gocyclo
+func IsCertificateUpToDate(p v1alpha1.CertificateParameters, cd acm.CertificateDetail, tags []acm.Tag) bool { // nolint:gocyclo
 
 	if !strings.EqualFold(p.CertificateTransparencyLoggingPreference, string(cd.Options.CertificateTransparencyLoggingPreference)) {
 		return false
 	}
-
-	p.Tags = append(p.Tags, v1alpha1.Tag{
-		Key:   "Name",
-		Value: name,
-	})
 
 	if len(p.Tags) != len(tags) {
 		return false
@@ -177,10 +161,7 @@ func IsCertificateUpToDate(name string, p v1alpha1.CertificateParameters, cd acm
 		}
 	}
 
-	if p.RenewCertificate == true {
-		return false
-	}
-	return true
+	return !p.RenewCertificate
 }
 
 // IsErrorNotFound returns true if the error code indicates that the item was not found
