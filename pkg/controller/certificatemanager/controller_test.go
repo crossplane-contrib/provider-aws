@@ -532,7 +532,7 @@ func TestDelete(t *testing.T) {
 				cr: certificate(withCertificateArn()),
 			},
 			want: want{
-				cr: certificate(withCertificateArn(),
+				cr: certificate(withCertificateTransparencyLoggingPreference(),
 					withConditions(corev1alpha1.Deleting())),
 			},
 		},
