@@ -39,6 +39,7 @@ type SubnetParameters struct {
 
 	// Indicates whether a network interface created in this subnet (including a
 	// network interface created by RunInstances) receives an IPv6 address.
+	// +optional
 	AssignIpv6AddressOnCreation *bool `json:"assignIpv6AddressOnCreation,omitempty"`
 
 	// The IPv6 network range for the subnet, in CIDR notation. The subnet size
@@ -52,6 +53,7 @@ type SubnetParameters struct {
 	MapPublicIPOnLaunch *bool `json:"mapPublicIPOnLaunch,omitempty"`
 
 	// Tags represents to current ec2 tags.
+	// +optional
 	Tags []Tag `json:"tags,omitempty"`
 
 	// VPCID is the ID of the VPC.
@@ -59,9 +61,11 @@ type SubnetParameters struct {
 	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef reference a VPC to retrieve its vpcId
+	// +optional
 	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
 
 	// VPCIDSelector selects reference to a VPC to retrieve its vpcId
+	// +optional
 	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
 }
 

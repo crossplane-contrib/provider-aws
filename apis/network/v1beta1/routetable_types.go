@@ -30,7 +30,8 @@ type Route struct {
 
 	// The ID of an internet gateway or virtual private gateway attached to your
 	// VPC.
-	GatewayID string `json:"gatewayId,omitempty"`
+	// +optional
+	GatewayID *string `json:"gatewayId,omitempty"`
 
 	// A referencer to retrieve the ID of a gateway
 	GatewayIDRef *runtimev1alpha1.Reference `json:"gatewayIdRef,omitempty"`
@@ -44,7 +45,7 @@ type RouteState struct {
 	// The state of the route. The blackhole state indicates that the route's
 	// target isn't available (for example, the specified gateway isn't attached
 	// to the VPC, or the specified NAT instance has been terminated).
-	RouteState string `json:"routeState,omitempty"`
+	State string `json:"state,omitempty"`
 
 	Route Route `json:",inline"`
 }
@@ -53,12 +54,15 @@ type RouteState struct {
 type Association struct {
 	// The ID of the subnet. A subnet ID is not returned for an implicit
 	// association.
-	SubnetID string `json:"subnetId,omitempty"`
+	// +optional
+	SubnetID *string `json:"subnetId,omitempty"`
 
 	// A referencer to retrieve the ID of a subnet
+	// +optional
 	SubnetIDRef *runtimev1alpha1.Reference `json:"subnetIdRef,omitempty"`
 
 	// A selector to select a referencer to retrieve the ID of a subnet
+	// +optional
 	SubnetIDSelector *runtimev1alpha1.Selector `json:"subnetIdSelector,omitempty"`
 }
 
@@ -68,7 +72,10 @@ type AssociationState struct {
 	Main bool `json:"main"`
 
 	// The ID of the association between a route table and a subnet.
-	AssociationID string `json:"associationId"`
+	AssociationID string `json:"associationId,omitempty"`
+
+	// The state of the association.
+	State string `json:"state,omitempty"`
 
 	Association Association `json:",inline"`
 }
@@ -82,6 +89,7 @@ type RouteTableParameters struct {
 	Routes []Route `json:"routes"`
 
 	// Tags represents to current ec2 tags.
+	// +optional
 	Tags []Tag `json:"tags,omitempty"`
 
 	// VPCID is the ID of the VPC.
@@ -108,7 +116,7 @@ type RouteTableObservation struct {
 	OwnerID string `json:"ownerId,omitempty"`
 
 	// RouteTableID is the ID of the RouteTable.
-	RouteTableID string `json:"routeTableId"`
+	RouteTableID string `json:"routeTableId,omitempty"`
 
 	// The actual routes created for the route table.
 	Routes []RouteState `json:"routes,omitempty"`

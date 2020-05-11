@@ -34,13 +34,15 @@ type VPCParameters struct {
 	EnableDNSSupport *bool `json:"enableDnsSupport,omitempty"`
 
 	// Tags are used as identification helpers between AWS resources.
+	// +optional
 	Tags []Tag `json:"tags,omitempty"`
 
+	// Indicates whether the instances launched in the VPC get DNS hostnames.
 	// +optional
 	EnableDNSHostNames *bool `json:"enableDnsHostNames,omitempty"`
 
 	// The allowed tenancy of instances launched into the VPC.
-	// +optinal
+	// +optional
 	InstanceTenancy *string `json:"instanceTenancy,omitempty"`
 }
 

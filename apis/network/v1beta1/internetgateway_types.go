@@ -39,12 +39,15 @@ type InternetGatewayParameters struct {
 	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef references a VPC to and retrieves its vpcId
+	// +optional
 	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
 
 	// VPCIDSelector selects a reference to a VPC to and retrieves its vpcId
+	// +optional
 	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
 
 	// Tags represents to current ec2 tags.
+	// +optional
 	Tags []Tag `json:"tags,omitempty"`
 }
 

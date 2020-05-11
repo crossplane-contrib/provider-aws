@@ -497,10 +497,10 @@ func TestUpdate(t *testing.T) {
 				},
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					Routes: []v1beta1.Route{{
-						GatewayID: igID,
+						GatewayID: aws.String(igID),
 					}},
 					Associations: []v1beta1.Association{{
-						SubnetID: subnetID,
+						SubnetID: aws.String(subnetID),
 					}},
 				}),
 					withStatus(v1beta1.RouteTableObservation{
@@ -510,10 +510,10 @@ func TestUpdate(t *testing.T) {
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					Routes: []v1beta1.Route{{
-						GatewayID: igID,
+						GatewayID: aws.String(igID),
 					}},
 					Associations: []v1beta1.Association{{
-						SubnetID: subnetID,
+						SubnetID: aws.String(subnetID),
 					}},
 				}),
 					withStatus(v1beta1.RouteTableObservation{
@@ -539,7 +539,7 @@ func TestUpdate(t *testing.T) {
 				},
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					Routes: []v1beta1.Route{{
-						GatewayID: igID,
+						GatewayID: aws.String(igID),
 					}},
 				}),
 					withStatus(v1beta1.RouteTableObservation{
@@ -549,7 +549,7 @@ func TestUpdate(t *testing.T) {
 			want: want{
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					Routes: []v1beta1.Route{{
-						GatewayID: igID,
+						GatewayID: aws.String(igID),
 					}},
 				}),
 					withStatus(v1beta1.RouteTableObservation{

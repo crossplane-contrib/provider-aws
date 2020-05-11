@@ -146,6 +146,8 @@ spec:
                     CIDR notation. For example, 10.0.0.0/16.
                   type: string
                 enableDnsHostNames:
+                  description: Indicates whether the instances launched in the VPC
+                    get DNS hostnames.
                   type: boolean
                 enableDnsSupport:
                   description: A boolean flag to enable/disable DNS support in the

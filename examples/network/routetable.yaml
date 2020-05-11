@@ -6,10 +6,13 @@ spec:
   forProvider:
     routes:
       - destinationCidrBlock: 0.0.0.0/0
-        gatewayId: igw-0f1f7e5a3231a9563
+        gatewayIdRef:
+          name: sample-internetgateway
     associations:
-      - subnetId: subnet-03deae3b106f46d98
-    vpcId: vpc-0bbb38080c157a793
+      - subnetIdRef:
+          name: sample-subnet1
+    vpcIdRef:
+      name: sample-vpc
   reclaimPolicy: Delete
   providerRef:
     name: example
