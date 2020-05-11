@@ -6,7 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
@@ -168,5 +168,5 @@ func IsSGUpToDate(p v1beta1.SecurityGroupParameters, sg ec2.SecurityGroup) (bool
 	if err != nil {
 		return false, err
 	}
-	return cmp.Equal(&v1beta1.SecurityGroupParameters{}, patch, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{})), nil
+	return cmp.Equal(&v1beta1.SecurityGroupParameters{}, patch, cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{})), nil
 }

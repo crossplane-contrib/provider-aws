@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
@@ -92,10 +92,10 @@ func GenerateRTObservation(rt ec2.RouteTable) v1beta1.RouteTableObservation {
 		o.Routes = make([]v1beta1.RouteState, len(rt.Routes))
 		for i, rt := range rt.Routes {
 			o.Routes[i] = v1beta1.RouteState{
-				RouteState: string(rt.State),
+				State: string(rt.State),
 				Route: v1beta1.Route{
 					DestinationCIDRBlock: aws.StringValue(rt.DestinationCidrBlock),
-					GatewayID:            aws.StringValue(rt.GatewayId),
+					GatewayID:            rt.GatewayId,
 				},
 			}
 		}
@@ -107,8 +107,9 @@ func GenerateRTObservation(rt ec2.RouteTable) v1beta1.RouteTableObservation {
 			o.Associations[i] = v1beta1.AssociationState{
 				Main:          aws.BoolValue(asc.Main),
 				AssociationID: aws.StringValue(asc.RouteTableAssociationId),
+				State:         asc.AssociationState.String(),
 				Association: v1beta1.Association{
-					SubnetID: aws.StringValue(asc.SubnetId),
+					SubnetID: asc.SubnetId,
 				},
 			}
 		}
@@ -119,29 +120,43 @@ func GenerateRTObservation(rt ec2.RouteTable) v1beta1.RouteTableObservation {
 
 // LateInitializeRT fills the empty fields in *v1beta1.RouteTableParameters with
 // the values seen in ec2.RouteTable.
-func LateInitializeRT(in *v1beta1.RouteTableParameters, rt *ec2.RouteTable) { // nolint:gocyclo
+func LateInitializeRT(in *v1beta1.RouteTableParameters, rt *ec2.RouteTable, target v1beta1.RouteTableParameters) { // nolint:gocyclo
 	if rt == nil {
 		return
 	}
 	in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, rt.VpcId)
 
 	if len(in.Routes) == 0 && len(rt.Routes) != 0 {
-		in.Routes = make([]v1beta1.Route, len(rt.Routes))
+		routes := make([]v1beta1.Route, len(rt.Routes))
 		for i, val := range rt.Routes {
-			in.Routes[i] = v1beta1.Route{
+			routes[i] = v1beta1.Route{
 				DestinationCIDRBlock: aws.StringValue(val.DestinationCidrBlock),
-				GatewayID:            aws.StringValue(val.GatewayId),
+				GatewayID:            val.GatewayId,
+			}
+			if target.Routes[i].GatewayIDRef != nil {
+				routes[i].GatewayIDRef = target.Routes[i].GatewayIDRef
+			}
+			if target.Routes[i].GatewayIDSelector != nil {
+				routes[i].GatewayIDSelector = target.Routes[i].GatewayIDSelector
 			}
 		}
+		in.Routes = routes
 	}
 
 	if len(in.Associations) == 0 && len(rt.Associations) != 0 {
-		in.Associations = make([]v1beta1.Association, len(rt.Associations))
+		associations := make([]v1beta1.Association, len(rt.Associations))
 		for i, val := range rt.Associations {
-			in.Associations[i] = v1beta1.Association{
-				SubnetID: aws.StringValue(val.SubnetId),
+			associations[i] = v1beta1.Association{
+				SubnetID: val.SubnetId,
+			}
+			if target.Associations[i].SubnetIDRef != nil {
+				associations[i].SubnetIDRef = target.Associations[i].SubnetIDRef
+			}
+			if target.Associations[i].SubnetIDSelector != nil {
+				associations[i].SubnetIDSelector = target.Routes[i].GatewayIDSelector
 			}
 		}
+		in.Associations = associations
 	}
 
 	if len(in.Tags) == 0 && len(rt.Tags) != 0 {
@@ -156,17 +171,18 @@ func CreateRTPatch(in ec2.RouteTable, target v1beta1.RouteTableParameters) (*v1b
 	currentParams := &v1beta1.RouteTableParameters{}
 
 	v1beta1.SortTags(target.Tags, in.Tags)
-	LateInitializeRT(currentParams, &in)
 
 	// Add the default route for fair comparison.
 	for _, val := range in.Routes {
 		if *val.GatewayId == LocalGatewayID {
 			target.Routes = append([]v1beta1.Route{{
-				GatewayID:            aws.StringValue(val.GatewayId),
+				GatewayID:            val.GatewayId,
 				DestinationCIDRBlock: aws.StringValue(val.DestinationCidrBlock),
 			}}, target.Routes...)
 		}
 	}
+
+	LateInitializeRT(currentParams, &in, target)
 
 	jsonPatch, err := awsclients.CreateJSONPatch(*currentParams, target)
 	if err != nil {
@@ -185,5 +201,5 @@ func IsRtUpToDate(p v1beta1.RouteTableParameters, rt ec2.RouteTable) (bool, erro
 	if err != nil {
 		return false, err
 	}
-	return cmp.Equal(&v1beta1.RouteTableParameters{}, patch, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{})), nil
+	return cmp.Equal(&v1beta1.RouteTableParameters{}, patch, cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{})), nil
 }

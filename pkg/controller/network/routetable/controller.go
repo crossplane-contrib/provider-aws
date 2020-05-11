@@ -282,7 +282,7 @@ func (e *external) createRoutes(ctx context.Context, tableID string, desired []v
 			_, err := e.client.CreateRouteRequest(&awsec2.CreateRouteInput{
 				RouteTableId:         aws.String(tableID),
 				DestinationCidrBlock: aws.String(rt.DestinationCIDRBlock),
-				GatewayId:            aws.String(rt.GatewayID),
+				GatewayId:            rt.GatewayID,
 			}).Send(ctx)
 
 			if err != nil {
@@ -307,7 +307,7 @@ func (e *external) createAssociations(ctx context.Context, tableID string, desir
 		if !isObserved {
 			_, err := e.client.AssociateRouteTableRequest(&awsec2.AssociateRouteTableInput{
 				RouteTableId: aws.String(tableID),
-				SubnetId:     aws.String(asc.SubnetID),
+				SubnetId:     asc.SubnetID,
 			}).Send(ctx)
 
 			if err != nil {

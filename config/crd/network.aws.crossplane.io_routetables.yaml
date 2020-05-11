@@ -354,6 +354,9 @@ spec:
                       main:
                         description: Indicates whether this is the main route table.
                         type: boolean
+                      state:
+                        description: The state of the association.
+                        type: string
                       subnetId:
                         description: The ID of the subnet. A subnet ID is not returned
                           for an implicit association.
@@ -384,7 +387,6 @@ spec:
                             type: object
                         type: object
                     required:
-                    - associationId
                     - main
                     type: object
                   type: array
@@ -433,7 +435,7 @@ spec:
                               labels is selected.
                             type: object
                         type: object
-                      routeState:
+                      state:
                         description: The state of the route. The blackhole state indicates
                           that the route's target isn't available (for example, the
                           specified gateway isn't attached to the VPC, or the specified
@@ -441,8 +443,6 @@ spec:
                         type: string
                     type: object
                   type: array
-              required:
-              - routeTableId
               type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource

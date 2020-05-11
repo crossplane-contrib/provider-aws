@@ -4,7 +4,7 @@ metadata:
   name: sample-vpc
 spec:
   forProvider:
-    cidrBlock: 192.168.0.0/16
+    cidrBlock: 10.0.0.0/16
     enableDnsSupport: true
     enableDnsHostNames: true
     instanceTenancy: default

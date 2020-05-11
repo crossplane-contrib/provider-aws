@@ -21,7 +21,7 @@ var (
 func specAssociations() []v1beta1.Association {
 	return []v1beta1.Association{
 		{
-			SubnetID: rtSubnetID,
+			SubnetID: aws.String(rtSubnetID),
 		},
 	}
 }

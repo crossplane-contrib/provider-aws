@@ -79,7 +79,7 @@ func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) er
 	// Resolve spec.routes[].gatewayID
 	for i := range mg.Spec.ForProvider.Routes {
 		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-			CurrentValue: mg.Spec.ForProvider.Routes[i].GatewayID,
+			CurrentValue: aws.StringValue(mg.Spec.ForProvider.Routes[i].GatewayID),
 			Reference:    mg.Spec.ForProvider.Routes[i].GatewayIDRef,
 			Selector:     mg.Spec.ForProvider.Routes[i].GatewayIDSelector,
 			To:           reference.To{Managed: &InternetGateway{}, List: &InternetGatewayList{}},
@@ -88,14 +88,14 @@ func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) er
 		if err != nil {
 			return err
 		}
-		mg.Spec.ForProvider.Routes[i].GatewayID = rsp.ResolvedValue
+		mg.Spec.ForProvider.Routes[i].GatewayID = aws.String(rsp.ResolvedValue)
 		mg.Spec.ForProvider.Routes[i].GatewayIDRef = rsp.ResolvedReference
 	}
 
 	// Resolve spec.associations[].subnetID
 	for i := range mg.Spec.ForProvider.Associations {
 		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-			CurrentValue: mg.Spec.ForProvider.Associations[i].SubnetID,
+			CurrentValue: aws.StringValue(mg.Spec.ForProvider.Associations[i].SubnetID),
 			Reference:    mg.Spec.ForProvider.Associations[i].SubnetIDRef,
 			Selector:     mg.Spec.ForProvider.Associations[i].SubnetIDSelector,
 			To:           reference.To{Managed: &Subnet{}, List: &SubnetList{}},
@@ -104,7 +104,7 @@ func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) er
 		if err != nil {
 			return err
 		}
-		mg.Spec.ForProvider.Associations[i].SubnetID = rsp.ResolvedValue
+		mg.Spec.ForProvider.Associations[i].SubnetID = aws.String(rsp.ResolvedValue)
 		mg.Spec.ForProvider.Associations[i].SubnetIDRef = rsp.ResolvedReference
 	}
 

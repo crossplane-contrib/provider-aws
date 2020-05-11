@@ -4,8 +4,9 @@ metadata:
   name: sample-subnet1
 spec:
   forProvider:
-    cidrBlock: 192.168.0.0/28
-    vpcId: vpc-0bbb38080c157a793
+    cidrBlock: 10.0.1.0/24
+    vpcIdRef:
+      name: sample-vpc
     mapPublicIPOnLaunch: true
   reclaimPolicy: Delete
   providerRef:

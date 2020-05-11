@@ -40,6 +40,7 @@ type SecurityGroupParameters struct {
 	Egress []IPPermission `json:"egress,omitempty"`
 
 	// Tags represents to current ec2 tags.
+	// +optional
 	Tags []Tag `json:"tags,omitempty"`
 
 	// VPCID is the ID of the VPC.
