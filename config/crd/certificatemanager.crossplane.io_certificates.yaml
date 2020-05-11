@@ -131,7 +131,7 @@ spec:
               description: CertificateParameters defines the desired state of an AWS
                 Certificate.
               properties:
-                CertificateAuthorityArn:
+                certificateAuthorityArn:
                   description: The Amazon Resource Name (ARN) of the private certificate
                     authority (CA)that will be used to issue the certificate.
                   type: string
@@ -164,6 +164,9 @@ spec:
                 idempotencyToken:
                   description: Token to distinguish between calls to RequestCertificate.
                   type: string
+                renewCertificate:
+                  description: Flag to renew the certificate
+                  type: boolean
                 subjectAlternativeNames:
                   description: Subject Alternative Name extension of the ACM certificate.
                   items:
@@ -276,8 +279,11 @@ spec:
                   description: String that contains the ARN of the issued certificate.
                     This must be of the
                   type: string
+                renewalEligibility:
+                  type: string
               required:
               - certificateArn
+              - renewalEligibility
               type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource
