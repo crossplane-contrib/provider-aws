@@ -18,6 +18,7 @@ package fake
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/acm"
+
 	clientset "github.com/crossplane/provider-aws/pkg/clients/certificatemanager"
 )
 

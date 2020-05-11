@@ -6,7 +6,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: certificates.certificatemanager.crossplane.io
+  name: certificates.certificatemanager.aws.crossplane.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .spec.domainName
@@ -21,7 +21,7 @@ spec:
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
-  group: certificatemanager.crossplane.io
+  group: certificatemanager.aws.crossplane.io
   names:
     kind: Certificate
     listKind: CertificateList

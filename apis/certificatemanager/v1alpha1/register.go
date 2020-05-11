@@ -21,7 +21,7 @@ limitations under the License.
 // +k8s:deepcopy-gen=package,register
 // +k8s:conversion-gen=github.com/crossplane/provider-aws/pkg/apis/certificatemanager
 // +k8s:defaulter-gen=TypeMeta
-// +groupName=certificatemanager.crossplane.io
+// +groupName=certificatemanager.aws.crossplane.io
 package v1alpha1
 
 import (
@@ -33,7 +33,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "certificatemanager.crossplane.io"
+	Group   = "certificatemanager.aws.crossplane.io"
 	Version = "v1alpha1"
 )
 
