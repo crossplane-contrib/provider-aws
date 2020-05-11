@@ -80,10 +80,19 @@ var (
 	RouteTableGroupVersionKind = SchemeGroupVersion.WithKind(RouteTableKind)
 )
 
+// Zone type metadata.
+var (
+	ZoneKind             = reflect.TypeOf(Zone{}).Name()
+	ZoneGroupKind        = schema.GroupKind{Group: Group, Kind: ZoneKind}.String()
+	ZoneKindAPIVersion   = ZoneKind + "." + SchemeGroupVersion.String()
+	ZoneGroupVersionKind = SchemeGroupVersion.WithKind(ZoneKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&VPC{}, &VPCList{})
 	SchemeBuilder.Register(&Subnet{}, &SubnetList{})
 	SchemeBuilder.Register(&SecurityGroup{}, &SecurityGroupList{})
 	SchemeBuilder.Register(&InternetGateway{}, &InternetGatewayList{})
 	SchemeBuilder.Register(&RouteTable{}, &RouteTableList{})
+	SchemeBuilder.Register(&Zone{}, &ZoneList{})
 }

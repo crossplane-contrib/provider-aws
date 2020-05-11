@@ -1,0 +1,27 @@
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: Zone
+metadata:
+  name: crossplane.io
+spec:
+  reclaimPolicy: Delete
+  providerRef:
+    name: aws-provider
+  forProvider:
+    callerref: f63e3d60-b24e-4e1a-80cc-0a6a1b1e3782
+    name: crossplane.io
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: Zone
+metadata:
+  name: crossplane.dev
+spec:
+  reclaimPolicy: Delete
+  providerRef:
+    name: aws-provider
+  forProvider:
+    callerref: f003d6dd-eacd-4e99-a765-166d0513ac56
+    name: crossplane.dev
+    comment: "Hosted Zone for internal DNS management."
+    privatezone: true
+    VPCRegion: us-east-1
+    VPCId: vpc-00000000f000fff00

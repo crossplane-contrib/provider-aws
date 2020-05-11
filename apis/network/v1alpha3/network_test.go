@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/onsi/gomega"
 
 	aws "github.com/crossplane/provider-aws/pkg/clients"
@@ -89,4 +90,25 @@ func Test_Common_BuildFromEC2Tags(t *testing.T) {
 	res := BuildFromEC2Tags(ec2tags)
 
 	g.Expect(len(res)).To(gomega.Equal(2))
+}
+
+func Test_Zone_ZoneObservationUpdate(t *testing.T) {
+	g := gomega.NewGomegaWithT(t)
+	r := ZoneObservation{}
+	id := "/hostedzone/XXXXXXXXXXXXXXXXXXX"
+	location := "https://route53.amazonaws.com/2013-04-01/hostedzone/XXXXXXXXXXXXXXXXXXX"
+	var rrCount int64 = 2
+
+	r.Update(&route53.CreateHostedZoneOutput{
+		HostedZone: &route53.HostedZone{
+
+			Id:                     &id,
+			ResourceRecordSetCount: &rrCount,
+		},
+		Location: &location,
+	})
+
+	g.Expect(r.ID).ToNot(gomega.BeNil())
+	g.Expect(r.ResourceRecordCount).ToNot(gomega.BeNil())
+	g.Expect(r.Location).ToNot(gomega.BeNil())
 }
