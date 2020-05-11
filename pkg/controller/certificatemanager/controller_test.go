@@ -49,9 +49,7 @@ var (
 	// an arbitrary managed resource
 	unexpecedItem                                  resource.Managed
 	domainName                                     = "infracloud.site"
-	validationMethod                               = "DNS"
 	certificateTransparencyLoggingPreferenceEnbled = "enabled"
-	name                                           = "example"
 	certificateArn                                 = "somearn"
 
 	errBoom = errors.New("boom")
@@ -74,11 +72,11 @@ func withDomainName() certificateModifier {
 	}
 }
 
-func withValidationMethod() certificateModifier {
-	return func(r *v1alpha1.Certificate) {
-		r.Spec.ForProvider.ValidationMethod = validationMethod
-	}
-}
+// func withValidationMethod() certificateModifier {
+// 	return func(r *v1alpha1.Certificate) {
+// 		r.Spec.ForProvider.ValidationMethod = validationMethod
+// 	}
+// }
 
 func withCertificateTransparencyLoggingPreference() certificateModifier {
 	return func(r *v1alpha1.Certificate) {

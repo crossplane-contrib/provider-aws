@@ -11,21 +11,18 @@ import (
 )
 
 var (
-	name                                             = "example"
 	domainName                                       = "infracloud.site"
-	validationMethod                                 = "DNS"
 	certificateTransparencyLoggingPreferenceEnbled   = "enabled"
 	certificateTransparencyLoggingPreferenceDisabled = "disabled"
 	certificateArn                                   = "somearn"
 	renewalEligibilityEligible                       = "ELIGIBLE"
-	renewalEligibilityIneligible                     = "ineligible"
 	certificateAuthorityArn                          = "someauthorityarn"
 )
 
-func addCertificateOutputFields(c *acm.CertificateDetail) {
-	c.CertificateArn = aws.String(certificateArn)
-	c.RenewalEligibility = acm.RenewalEligibilityEligible
-}
+// func addCertificateOutputFields(c *acm.CertificateDetail) {
+// 	c.CertificateArn = aws.String(certificateArn)
+// 	c.RenewalEligibility = acm.RenewalEligibilityEligible
+// }
 
 func TestGenerateCreateCertificateInput(t *testing.T) {
 	cases := map[string]struct {
@@ -201,7 +198,6 @@ func TestGenerateCertificateStatus(t *testing.T) {
 
 func TestIsCertificateUpToDate(t *testing.T) {
 	type args struct {
-		name string
 		p    v1alpha1.CertificateParameters
 		cd   acm.CertificateDetail
 		tags []acm.Tag

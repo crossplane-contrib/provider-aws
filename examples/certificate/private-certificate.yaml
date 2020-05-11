@@ -1,4 +1,4 @@
-apiVersion: certificatemanager.crossplane.io/v1alpha1
+apiVersion: certificatemanager.aws.crossplane.io/v1alpha1
 kind: Certificate
 metadata:
   name: private-cert
@@ -7,15 +7,14 @@ metadata:
 spec:
   forProvider:
     certificateAuthorityArn: arn:aws:acm-pca:us-west-2:867429062264:certificate-authority/f0fe902b-cc51-478f-b04a-58cf7eaca5af     
-    domainName: abc.com
+    domainName: infracloud.site
     tags:
-    - key: test
-      value: testUpdate
-    idempotencyToken: b1234
+    - key: Name
+      value: privatecert
+    idempotencyToken: somekey123
     certificateTransparencyLoggingPreference: enabled
     subjectAlternativeNames:
-    - abc.in
-    - abc.co.in 
+    - some.infracloud.site
   reclaimPolicy: Delete
   providerRef:
     name: example
