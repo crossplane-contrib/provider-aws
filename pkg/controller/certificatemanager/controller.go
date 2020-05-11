@@ -258,5 +258,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	_, err := e.client.DeleteCertificateRequest(&awsacm.DeleteCertificateInput{
 		CertificateArn: aws.String(cr.Status.AtProvider.CertificateArn),
 	}).Send(ctx)
+
+	if err == nil {
+		cr.Status.AtProvider.CertificateArn = ""
+	}
+
 	return errors.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errDelete)
 }
