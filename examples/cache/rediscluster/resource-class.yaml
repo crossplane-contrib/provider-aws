@@ -8,7 +8,7 @@ metadata:
 specTemplate:
   writeConnectionSecretsToNamespace: crossplane-system
   providerRef:
-    name: example
+    name: aws-provider
   reclaimPolicy: Delete
   forProvider:
     replicationGroupDescription: "An example replication group"
