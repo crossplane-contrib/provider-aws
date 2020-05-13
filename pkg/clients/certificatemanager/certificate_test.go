@@ -13,7 +13,7 @@ import (
 var (
 	domainName                                       = "infracloud.site"
 	certificateTransparencyLoggingPreferenceEnbled   = "enabled"
-	certificateTransparencyLoggingPreferenceDisabled = "disabled"
+	certificateTransparencyLoggingPreferenceDisabled = "DISABLED"
 	certificateArn                                   = "somearn"
 	renewalEligibilityEligible                       = "ELIGIBLE"
 	certificateAuthorityArn                          = "someauthorityarn"
@@ -77,8 +77,6 @@ func TestLateInitializeCertificate(t *testing.T) {
 					DomainName:                               domainName,
 					CertificateAuthorityArn:                  aws.String(certificateAuthorityArn),
 					CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreferenceDisabled,
-					// DomainValidationOptions:
-					// SubjectAlternativeNames:
 				},
 				in: &acm.CertificateDetail{
 					DomainName:              aws.String(domainName),
@@ -90,30 +88,45 @@ func TestLateInitializeCertificate(t *testing.T) {
 				DomainName:                               domainName,
 				CertificateAuthorityArn:                  aws.String(certificateAuthorityArn),
 				CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreferenceDisabled,
-				// DomainValidationOptions:
-				// SubjectAlternativeNames:
 			},
 		},
-		// "AllFilledExternalDiff": {
-		// 	args: args{
-		// 		spec: roleParams(),
-		// 		in: *role(func(r *iam.Role) {
-		// 			r.CreateDate = &time.Time{}
-		// 		}),
-		// 	},
-		// 	want: roleParams(),
-		// },
-		// "PartialFilled": {
-		// 	args: args{
-		// 		spec: roleParams(func(p *v1beta1.IAMRoleParameters) {
-		// 			p.Description = nil
-		// 		}),
-		// 		in: *role(),
-		// 	},
-		// 	want: roleParams(func(p *v1beta1.IAMRoleParameters) {
-		// 		p.Description = &description
-		// 	}),
-		// },
+		"AllFilledExternalDiff": {
+			args: args{
+				spec: &v1alpha1.CertificateParameters{
+					DomainName:                               "somedomain.site",
+					CertificateAuthorityArn:                  aws.String(certificateAuthorityArn),
+					CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreferenceDisabled,
+				},
+				in: &acm.CertificateDetail{
+					DomainName:              aws.String(domainName),
+					CertificateAuthorityArn: aws.String(certificateAuthorityArn),
+					Options:                 &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled},
+				},
+			},
+			want: &v1alpha1.CertificateParameters{
+				DomainName:                               domainName,
+				CertificateAuthorityArn:                  aws.String(certificateAuthorityArn),
+				CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreferenceDisabled,
+			},
+		},
+		"PartialFilled": {
+			args: args{
+				spec: &v1alpha1.CertificateParameters{
+					DomainName:              domainName,
+					CertificateAuthorityArn: aws.String(certificateAuthorityArn),
+				},
+				in: &acm.CertificateDetail{
+					DomainName:              aws.String(domainName),
+					CertificateAuthorityArn: aws.String(certificateAuthorityArn),
+					Options:                 &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled},
+				},
+			},
+			want: &v1alpha1.CertificateParameters{
+				DomainName:                               domainName,
+				CertificateAuthorityArn:                  aws.String(certificateAuthorityArn),
+				CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreferenceDisabled,
+			},
+		},
 	}
 
 	for name, tc := range cases {
