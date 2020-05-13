@@ -22,8 +22,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
+<<<<<<< HEAD
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/certificatemanager"
+=======
+	"github.com/crossplane/provider-aws/pkg/controller/certificatemanager"
+	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
+>>>>>>> f3894e4991dcd187cc620ba32161086015c149a2
 	"github.com/crossplane/provider-aws/pkg/controller/compute"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
