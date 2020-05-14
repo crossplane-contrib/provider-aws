@@ -40,12 +40,12 @@ GO111MODULE = on
 -include build/makelib/k8s_tools.mk
 
 # ====================================================================================
-# Setup Stacks
+# Setup Package
 
-STACK_PACKAGE=stack-package
-export STACK_PACKAGE
-STACK_PACKAGE_REGISTRY=$(STACK_PACKAGE)/.registry
-STACK_PACKAGE_REGISTRY_SOURCE=config/stack/manifests
+PACKAGE=package
+export PACKAGE
+PACKAGE_REGISTRY=$(PACKAGE)/.registry
+PACKAGE_REGISTRY_SOURCE=config/package/manifests
 
 DOCKER_REGISTRY = crossplane
 IMAGES = provider-aws
@@ -108,17 +108,17 @@ run: go.build
 	$(GO_OUT_DIR)/$(PROJECT_NAME) --debug
 
 # ====================================================================================
-# Stacks related targets
+# Package related targets
 
-# Initialize the stack package folder
-$(STACK_PACKAGE_REGISTRY):
-	@mkdir -p $(STACK_PACKAGE_REGISTRY)/resources
-	@touch $(STACK_PACKAGE_REGISTRY)/app.yaml $(STACK_PACKAGE_REGISTRY)/install.yaml
+# Initialize the package folder
+$(PACKAGE_REGISTRY):
+	@mkdir -p $(PACKAGE_REGISTRY)/resources
+	@touch $(PACKAGE_REGISTRY)/app.yaml $(PACKAGE_REGISTRY)/install.yaml
 
-build.artifacts: build-stack-package
+build.artifacts: build-package
 
 CRD_DIR=config/crd
-build-stack-package: $(STACK_PACKAGE_REGISTRY)
+build-package: $(PACKAGE_REGISTRY)
 # Copy CRDs over
 #
 # The reason this looks complicated is because it is
@@ -128,19 +128,19 @@ build-stack-package: $(STACK_PACKAGE_REGISTRY)
 # An alternate and simpler-looking approach would
 # be to cat all of the files into a single crd.yaml,
 # but then we couldn't use per CRD metadata files.
-	@$(INFO) building stack package in $(STACK_PACKAGE)
+	@$(INFO) building package in $(PACKAGE)
 	@find $(CRD_DIR) -type f -name '*.yaml' | \
 		while read filename ; do cat $$filename > \
-		$(STACK_PACKAGE_REGISTRY)/resources/$$( basename $${filename/.yaml/.crd.yaml} ) \
+		$(PACKAGE_REGISTRY)/resources/$$( basename $${filename/.yaml/.crd.yaml} ) \
 		; done
-	@cp -r $(STACK_PACKAGE_REGISTRY_SOURCE)/* $(STACK_PACKAGE_REGISTRY)
+	@cp -r $(PACKAGE_REGISTRY_SOURCE)/* $(PACKAGE_REGISTRY)
 
-clean: clean-stack-package
+clean: clean-package
 
-clean-stack-package:
-	@rm -rf $(STACK_PACKAGE)
+clean-package:
+	@rm -rf $(PACKAGE)
 
-.PHONY: cobertura reviewable manifests submodules fallthrough test-integration run clean-stack-package build-stack-package
+.PHONY: cobertura reviewable manifests submodules fallthrough test-integration run clean-package build-package
 
 # ====================================================================================
 # Special Targets
@@ -151,8 +151,8 @@ Crossplane Targets:
     reviewable            Ensure a PR is ready for review.
     submodules            Update the submodules, such as the common build scripts.
     run                   Run crossplane locally, out-of-cluster. Useful for development.
-    build-stack-package   Builds the stack package contents in the stack package directory (./$(STACK_PACKAGE))
-    clean-stack-package   Cleans out the generated stack package directory (./$(STACK_PACKAGE))
+    build-package         Builds the package contents in the package directory (./$(PACKAGE))
+    clean-package         Cleans out the generated package directory (./$(PACKAGE))
 
 endef
 # The reason CROSSPLANE_MAKE_HELP is used instead of CROSSPLANE_HELP is because the crossplane
