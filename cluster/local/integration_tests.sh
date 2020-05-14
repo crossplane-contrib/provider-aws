@@ -206,7 +206,7 @@ wait_for_pods_in_namespace 120 "kube-system" "${kindpods[@]}"
 # install crossplane from master channel
 echo_step "installing crossplane from master channel"
 "${HELM}" repo add crossplane-master https://charts.crossplane.io/master/
-chart_version="$("${HELM}" search crossplane-master/crossplane | awk 'FNR == 2 {print $2}')"
+chart_version="$("${HELM}" search crossplane-master/crossplane --devel | awk 'FNR == 2 {print $2}')"
 "${HELM}" install --name crossplane --namespace crossplane-system crossplane-master/crossplane --version ${chart_version}
 
 echo_step "waiting for deployment crossplane rollout to finish"
