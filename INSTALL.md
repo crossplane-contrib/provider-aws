@@ -1,4 +1,4 @@
-# Building and Installing the Crossplane AWS Stack
+# Building and Installing the Crossplane AWS Provider
 
 `provider-aws` is composed of a golang project and can be built directly with standard `golang` tools. We currently support two different platforms for building:
 
@@ -22,7 +22,7 @@ The following tools are need on the host:
 
 ## Build
 
-You can build the Crossplane AWS Stack for the host platform by simply running the command below.
+You can build the Crossplane AWS Provider for the host platform by simply running the command below.
 Building in parallel with the `-j` option is recommended.
 
 ```console
