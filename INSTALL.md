@@ -46,4 +46,4 @@ The first run of `build/run` will build the container itself and could take a fe
 
 ## Install
 
-TBD: Steps to install the AWS stack into a Crossplane cluster
+TBD: Steps to install the AWS provider package into a Crossplane cluster
