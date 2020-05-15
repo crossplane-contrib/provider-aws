@@ -27,7 +27,7 @@ owners:
 # Human readable company name
 company: Crossplane
 
-# Primary category describing this stack
+# Primary category describing this package
 category: Infrastructure
 
 # Type of package: Provider, Stack, or Application
@@ -43,7 +43,7 @@ keywords:
 website: "https://crossplane.io"
 source: "https://github.com/crossplane/provider-aws"
 
-# RBAC ClusterRoles will be generated permitting this stack to use all verbs on all
+# RBAC ClusterRoles will be generated permitting this package to use all verbs on all
 # resources in the groups listed below.
 permissionScope: Cluster
 dependsOn:

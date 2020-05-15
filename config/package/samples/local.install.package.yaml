@@ -3,6 +3,7 @@ apiVersion: packages.crossplane.io/v1alpha1
 kind: ClusterPackageInstall
 metadata:
   name: provider-aws
-  namespace: crossplane-system
+  namespace: aws
 spec:
-  package: "crossplane/provider-aws:master"
+  source: localhost:5000
+  package: "crossplane/provider-aws"
