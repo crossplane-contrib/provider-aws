@@ -44,9 +44,9 @@ Set environment variables that will be used in subsequent commands:
 ```
 AWS_ACCOUNT_ID=$(aws2 sts get-caller-identity --query "Account" --output text)
 OIDC_PROVIDER=$(aws2 eks describe-cluster --name <cluster-name> --region <region> --query "cluster.identity.oidc.issuer" --output text | sed -e "s/^https:\/\///")
-# namespace for provider-aws should match namespace of your ClusterStackInstall
+# namespace for provider-aws should match namespace of your ClusterPackageInstall
 SERVICE_ACCOUNT_NAMESPACE=crossplane-system
-# service account name for provider-aws should match name of your ClusterStackInstall
+# service account name for provider-aws should match name of your ClusterPackageInstall
 SERVICE_ACCOUNT_NAME=provider-aws
 IAM_ROLE_NAME=provider-aws # name for IAM role, can be anything you want
 ```
@@ -104,8 +104,8 @@ helm install crossplane --namespace crossplane-system crossplane-alpha/crossplan
 Install `provider-aws`:
 
 ```yaml
-apiVersion: stacks.crossplane.io/v1alpha1
-kind: ClusterStackInstall
+apiVersion: packages.crossplane.io/v1alpha1
+kind: ClusterPackageInstall
 metadata:
   name: provider-aws # crossplane will create service account with this name
   namespace: crossplane-system # service account will be created in this namespace
@@ -121,7 +121,7 @@ First, check to make sure that the appropriate `ServiceAccount` exists:
 kubectl get serviceaccounts -n crossplane-system
 ```
 
-If you used the `ClusterStackInstall` above you should see a `ServiceAccount` in
+If you used the `ClusterPackageInstall` above you should see a `ServiceAccount` in
 the output named `provider-aws`. You should also see the `provider-aws` controller
 `Pod` running if you execute `kubectl get pods -n crossplane-system`. To inject
 the credential information into the Pod, we must annotate its `ServiceAccount`

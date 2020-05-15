@@ -166,13 +166,13 @@ HOSTARCH="${HOSTARCH:-amd64}"
 BUILD_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-${HOSTARCH}"
 
 version_tag="$(cat ${projectdir}/_output/version)"
-# tag as master so that config/stack/install.yaml can be used
-STACK_IMAGE="${DOCKER_REGISTRY}/${PROJECT_NAME}:master"
+# tag as master so that config/package/install.yaml can be used
+PACKAGE_IMAGE="${DOCKER_REGISTRY}/${PROJECT_NAME}:master"
 K8S_CLUSTER="${K8S_CLUSTER:-${BUILD_REGISTRY}-INTTESTS}"
 
 CROSSPLANE_NAMESPACE="crossplane-system"
-STACK_NAME="provider-aws"
-STACK_NAMESPACE="aws"
+PACKAGE_NAME="provider-aws"
+PACKAGE_NAMESPACE="aws"
 
 # cleanup on exit
 if [ "$skipcleanup" != true ]; then
@@ -188,9 +188,9 @@ fi
 echo_step "creating k8s cluster using kind"
 "${KIND}" create cluster --name="${K8S_CLUSTER}"
 
-# tag stack image and load it to kind cluster
-docker tag "${BUILD_IMAGE}" "${STACK_IMAGE}"
-"${KIND}" load docker-image "${STACK_IMAGE}" --name="${K8S_CLUSTER}"
+# tag package image and load it to kind cluster
+docker tag "${BUILD_IMAGE}" "${PACKAGE_IMAGE}"
+"${KIND}" load docker-image "${PACKAGE_IMAGE}" --name="${K8S_CLUSTER}"
 
 echo_step "installing tiller"
 "${KUBECTL}" apply -f "${projectdir}/cluster/local/helm-rbac.yaml"
@@ -206,7 +206,7 @@ wait_for_pods_in_namespace 120 "kube-system" "${kindpods[@]}"
 # install crossplane from master channel
 echo_step "installing crossplane from master channel"
 "${HELM}" repo add crossplane-master https://charts.crossplane.io/master/
-chart_version="$("${HELM}" search crossplane-master/crossplane | awk 'FNR == 2 {print $2}')"
+chart_version="$("${HELM}" search crossplane-master/crossplane --devel | awk 'FNR == 2 {print $2}')"
 "${HELM}" install --name crossplane --namespace crossplane-system crossplane-master/crossplane --version ${chart_version}
 
 echo_step "waiting for deployment crossplane rollout to finish"
@@ -223,56 +223,56 @@ echo
 echo -------- deployments
 "${KUBECTL}" -n "${CROSSPLANE_NAMESPACE}" get deployments
 
-check_deployments "crossplane crossplane-stack-manager" "${CROSSPLANE_NAMESPACE}"
+check_deployments "crossplane crossplane-package-manager" "${CROSSPLANE_NAMESPACE}"
 
 echo_step "check for crossplane pods statuses"
 echo
 echo "-------- pods"
 check_pods "${CROSSPLANE_NAMESPACE}"
 
-# let stack manager initialize controllers and workers
+# let package manager initialize controllers and workers
 sleep 30
 
-# install stack into stack namespace
-echo_step "installing ${PROJECT_NAME} into \"${STACK_NAMESPACE}\" namespace"
+# install package into package namespace
+echo_step "installing ${PROJECT_NAME} into \"${PACKAGE_NAMESPACE}\" namespace"
 
 INSTALL_YAML="$( cat <<EOF
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: "${STACK_NAMESPACE}"
+  name: "${PACKAGE_NAMESPACE}"
 ---
-apiVersion: stacks.crossplane.io/v1alpha1
-kind: ClusterStackInstall
+apiVersion: packages.crossplane.io/v1alpha1
+kind: ClusterPackageInstall
 metadata:
-  name: "${STACK_NAME}"
-  namespace: "${STACK_NAMESPACE}"
+  name: "${PACKAGE_NAME}"
+  namespace: "${PACKAGE_NAMESPACE}"
 spec:
-  package: "${STACK_IMAGE}"
+  package: "${PACKAGE_IMAGE}"
 EOF
 )"
 
 echo "${INSTALL_YAML}" | "${KUBECTL}" apply -f -
 
-wait_for_deployment_create 120 "${STACK_NAMESPACE}"
+wait_for_deployment_create 120 "${PACKAGE_NAMESPACE}"
 
-"${KUBECTL}" -n "${STACK_NAMESPACE}" get deployments
-"${KUBECTL}" -n "${STACK_NAMESPACE}" get pods
+"${KUBECTL}" -n "${PACKAGE_NAMESPACE}" get deployments
+"${KUBECTL}" -n "${PACKAGE_NAMESPACE}" get pods
 
-echo_step "waiting for deployment ${STACK_NAME} rollout to finish"
-"${KUBECTL}" -n "${STACK_NAMESPACE}" rollout status "deploy/${PROJECT_NAME}-controller" --timeout=2m
+echo_step "waiting for deployment ${PACKAGE_NAME} rollout to finish"
+"${KUBECTL}" -n "${PACKAGE_NAMESPACE}" rollout status "deploy/${PROJECT_NAME}-controller" --timeout=2m
 
-check_deployments "${STACK_NAME}-controller" "${STACK_NAMESPACE}"
+check_deployments "${PACKAGE_NAME}-controller" "${PACKAGE_NAMESPACE}"
 
-echo_step "check for stack pods statuses"
+echo_step "check for package pods statuses"
 echo
 echo "-------- pods"
-check_pods "${STACK_NAMESPACE}"
+check_pods "${PACKAGE_NAMESPACE}"
 
 echo_step "uninstalling ${PROJECT_NAME}"
 
 echo "${INSTALL_YAML}" | "${KUBECTL}" delete -f -
 
-wait_for_deployment_delete 120 "${STACK_NAMESPACE}"
+wait_for_deployment_delete 120 "${PACKAGE_NAMESPACE}"
 
 echo_success "Integration tests succeeded!"
