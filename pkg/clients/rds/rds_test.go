@@ -21,7 +21,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/google/go-cmp/cmp"
-	corev1 "k8s.io/api/core/v1"
+
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 
 	"github.com/crossplane/provider-aws/apis/database/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
@@ -143,13 +144,9 @@ func TestIsUpToDate(t *testing.T) {
 					DBSubnetGroup: &rds.DBSubnetGroup{DBSubnetGroupName: &dbSubnetGroupName},
 				},
 				p: v1beta1.RDSInstanceParameters{
-					DBName:            &dbName,
-					DBSubnetGroupName: &dbSubnetGroupName,
-					DBSubnetGroupNameRef: &v1beta1.DBSubnetGroupNameReferencerForRDSInstance{
-						DBSubnetGroupNameReferencer: v1beta1.DBSubnetGroupNameReferencer{
-							LocalObjectReference: corev1.LocalObjectReference{Name: "coolgroup"},
-						},
-					},
+					DBName:               &dbName,
+					DBSubnetGroupName:    &dbSubnetGroupName,
+					DBSubnetGroupNameRef: &v1alpha1.Reference{Name: "coolgroup"},
 				},
 			},
 			want: true,

@@ -1,0 +1,16 @@
+apiVersion: cache.aws.crossplane.io/v1alpha1
+kind: CacheSubnetGroup
+metadata:
+  name: sample-subnet
+  annotations:
+    crossplane.io/external-name: some-subnet-name
+spec:
+  forProvider:
+    description: desc for subnet
+    subnetIds:
+      - subnet-05c5f0ffc34973e8b
+      - subnet-089ef174d8b4addee
+      - subnet-0361b1970c606b733
+  reclaimPolicy: Delete
+  providerRef:
+    name: example

@@ -18,7 +18,6 @@ package s3
 
 import (
 	"context"
-	"time"
 
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -45,16 +44,6 @@ const (
 	finalizer      = "finalizer." + controllerName
 )
 
-// Amounts of time we wait before requeuing a reconcile.
-const (
-	aLongWait = 60 * time.Second
-)
-
-// Error strings
-const (
-	errUpdateManagedStatus = "cannot update managed resource status"
-)
-
 var (
 	ctx           = context.Background()
 	result        = reconcile.Result{}
@@ -65,7 +54,6 @@ var (
 type Reconciler struct {
 	client.Client
 	scheme *runtime.Scheme
-	managed.ReferenceResolver
 	managed.ConnectionPublisher
 	initializer managed.Initializer
 
@@ -84,7 +72,6 @@ func SetupS3Bucket(mgr ctrl.Manager, l logging.Logger) error {
 	r := &Reconciler{
 		Client:              mgr.GetClient(),
 		scheme:              mgr.GetScheme(),
-		ReferenceResolver:   managed.NewAPIReferenceResolver(mgr.GetClient()),
 		ConnectionPublisher: managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
 		log:                 l.WithValues("controller", name),
 		initializer:         managed.NewNameAsExternalName(mgr.GetClient()),
@@ -238,21 +225,6 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	s3Client, err := r.connect(bucket)
 	if err != nil {
 		return r.fail(bucket, err)
-	}
-
-	if !resource.IsConditionTrue(bucket.GetCondition(runtimev1alpha1.TypeReferencesResolved)) {
-		if err := r.ResolveReferences(ctx, bucket); err != nil {
-			condition := runtimev1alpha1.ReconcileError(err)
-			if managed.IsReferencesAccessError(err) {
-				condition = runtimev1alpha1.ReferenceResolutionBlocked(err)
-			}
-
-			bucket.Status.SetConditions(condition)
-			return reconcile.Result{RequeueAfter: aLongWait}, errors.Wrap(r.Update(ctx, bucket), errUpdateManagedStatus)
-		}
-
-		// Add ReferenceResolutionSuccess to the conditions
-		bucket.Status.SetConditions(runtimev1alpha1.ReferenceResolutionSuccess())
 	}
 
 	// Check for deletion

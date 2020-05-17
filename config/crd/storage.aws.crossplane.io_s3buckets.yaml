@@ -23,6 +23,10 @@ spec:
     type: date
   group: storage.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - managed
+    - aws
     kind: S3Bucket
     listKind: S3BucketList
     plural: s3buckets

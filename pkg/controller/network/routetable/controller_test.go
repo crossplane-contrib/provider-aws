@@ -31,7 +31,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	v1alpha3 "github.com/crossplane/provider-aws/apis/network/v1alpha3"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -43,13 +45,18 @@ var (
 	mockClient         fake.MockRouteTableClient
 
 	// an arbitrary managed resource
-	unexpecedItem resource.Managed
+	unexpectedItem resource.Managed
 )
 
 func TestMain(m *testing.M) {
 
 	mockClient = fake.MockRouteTableClient{}
-	mockExternalClient = external{&mockClient}
+	mockExternalClient = external{
+		client: &mockClient,
+		kube: &test.MockClient{
+			MockUpdate: test.NewMockUpdateFn(nil),
+		},
+	}
 
 	os.Exit(m.Run())
 }
@@ -89,7 +96,7 @@ func Test_Connect(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			nil,
 			true,
@@ -124,16 +131,11 @@ func Test_Connect(t *testing.T) {
 func Test_Observe(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha3.RouteTable{
-		Status: v1alpha3.RouteTableStatus{
-			RouteTableExternalStatus: v1alpha3.RouteTableExternalStatus{
-				RouteTableID: "some arbitrary id",
-			},
-		},
-	}
+	mockManaged := v1alpha3.RouteTable{}
+	meta.SetExternalName(&mockManaged, "some arbitrary id")
 
 	mockExternal := &awsec2.RouteTable{
-		RouteTableId: aws.String("some arbitrary Id"),
+		RouteTableId: aws.String("some arbitrary id"),
 	}
 	var mockClientErr error
 	var itemsList []awsec2.RouteTable
@@ -187,7 +189,7 @@ func Test_Observe(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			nil,
 			false,
@@ -250,7 +252,7 @@ func Test_Observe(t *testing.T) {
 			} else {
 				g.Expect(len(mgd.Status.Conditions)).To(gomega.Equal(0), tc.description)
 			}
-			g.Expect(mgd.Status.RouteTableExternalStatus.RouteTableID).To(gomega.Equal(aws.StringValue(mockExternal.RouteTableId)), tc.description)
+			g.Expect(meta.GetExternalName(mgd)).To(gomega.Equal(aws.StringValue(mockExternal.RouteTableId)), tc.description)
 		}
 	}
 }
@@ -346,7 +348,7 @@ func Test_Create(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			mockExternal,
 			nil,
 			nil,
@@ -442,7 +444,7 @@ func Test_Create(t *testing.T) {
 			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
 			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
-			g.Expect(mgd.Status.RouteTableExternalStatus.RouteTableID).To(gomega.Equal(aws.StringValue(mockExternal.RouteTableId)), tc.description)
+			g.Expect(meta.GetExternalName(mgd)).To(gomega.Equal(aws.StringValue(mockExternal.RouteTableId)), tc.description)
 		}
 
 		g.Expect(associateCalled).To(gomega.Equal(tc.expectedAssociateCall), tc.description)
@@ -466,7 +468,6 @@ func Test_Delete(t *testing.T) {
 	mockManaged := v1alpha3.RouteTable{
 		Status: v1alpha3.RouteTableStatus{
 			RouteTableExternalStatus: v1alpha3.RouteTableExternalStatus{
-				RouteTableID: "an arbitrary id",
 				Routes: []v1alpha3.RouteState{
 					{
 						Route: v1alpha3.Route{
@@ -483,9 +484,11 @@ func Test_Delete(t *testing.T) {
 			},
 		},
 	}
+	meta.SetExternalName(&mockManaged, "an arbitrary id")
+
 	var mockClientErr error
 	mockClient.MockDeleteRouteTableRequest = func(input *awsec2.DeleteRouteTableInput) awsec2.DeleteRouteTableRequest {
-		g.Expect(aws.StringValue(input.RouteTableId)).To(gomega.Equal(mockManaged.Status.RouteTableID), "the passed parameters are not valid")
+		g.Expect(aws.StringValue(input.RouteTableId)).To(gomega.Equal(meta.GetExternalName(&mockManaged)), "the passed parameters are not valid")
 		return awsec2.DeleteRouteTableRequest{
 			Request: &aws.Request{
 				HTTPRequest: &http.Request{},
@@ -499,7 +502,7 @@ func Test_Delete(t *testing.T) {
 	var deleteRouteCalled bool
 	mockClient.MockDeleteRouteRequest = func(input *awsec2.DeleteRouteInput) awsec2.DeleteRouteRequest {
 		deleteRouteCalled = true
-		g.Expect(aws.StringValue(input.RouteTableId)).To(gomega.Equal(mockManaged.Status.RouteTableID), "the passed parameters for DeleteRouteRequest are not valid")
+		g.Expect(aws.StringValue(input.RouteTableId)).To(gomega.Equal(meta.GetExternalName(&mockManaged)), "the passed parameters for DeleteRouteRequest are not valid")
 		return awsec2.DeleteRouteRequest{
 			Request: &aws.Request{
 				HTTPRequest: &http.Request{},
@@ -543,18 +546,8 @@ func Test_Delete(t *testing.T) {
 			true,
 		},
 		{
-			"if status doesn't have the resource ID, it should return an error",
-			&v1alpha3.RouteTable{},
-			nil,
-			nil,
-			nil,
-			false,
-			false,
-			false,
-		},
-		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			nil,
 			nil,
@@ -594,20 +587,23 @@ func Test_Delete(t *testing.T) {
 			false,
 		},
 		{
+			// TODO(negz): Set name somehow.
 			"if a route is local, it should not be deleted",
-			&v1alpha3.RouteTable{
-				Status: v1alpha3.RouteTableStatus{
-					RouteTableExternalStatus: v1alpha3.RouteTableExternalStatus{
-						RouteTableID: "an arbitrary id",
-						Routes: []v1alpha3.RouteState{
-							{Route: v1alpha3.Route{
+			func() *v1alpha3.RouteTable {
+				t := &v1alpha3.RouteTable{
+					Status: v1alpha3.RouteTableStatus{
+						RouteTableExternalStatus: v1alpha3.RouteTableExternalStatus{
+							Routes: []v1alpha3.RouteState{{Route: v1alpha3.Route{
 								DestinationCIDRBlock: "arbitrary dcb 0",
 								GatewayID:            ec2.LocalGatewayID,
 							}},
+							},
 						},
 					},
-				},
-			},
+				}
+				meta.SetExternalName(t, "an arbitrary id")
+				return t
+			}(),
 			nil,
 			errors.New("some error"),
 			nil,

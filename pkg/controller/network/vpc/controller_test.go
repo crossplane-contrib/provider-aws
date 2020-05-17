@@ -22,6 +22,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -35,6 +36,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	v1alpha3 "github.com/crossplane/provider-aws/apis/network/v1alpha3"
@@ -47,13 +49,18 @@ var (
 	mockClient         fake.MockVPCClient
 
 	// an arbitrary managed resource
-	unexpecedItem resource.Managed
+	unexpectedItem resource.Managed
 )
 
 func TestMain(m *testing.M) {
 
 	mockClient = fake.MockVPCClient{}
-	mockExternalClient = external{&mockClient}
+	mockExternalClient = external{
+		client: &mockClient,
+		kube: &test.MockClient{
+			MockUpdate: test.NewMockUpdateFn(nil),
+		},
+	}
 
 	os.Exit(m.Run())
 }
@@ -93,7 +100,7 @@ func Test_Connect(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			nil,
 			true,
@@ -128,13 +135,8 @@ func Test_Connect(t *testing.T) {
 func Test_Observe(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	mockManaged := v1alpha3.VPC{
-		Status: v1alpha3.VPCStatus{
-			VPCExternalStatus: v1alpha3.VPCExternalStatus{
-				VPCID: "some arbitrary id",
-			},
-		},
-	}
+	mockManaged := v1alpha3.VPC{}
+	meta.SetExternalName(&mockManaged, "some arbitrary id")
 
 	mockExternal := &awsec2.Vpc{
 		VpcId: aws.String("some arbitrary Id"),
@@ -172,7 +174,7 @@ func Test_Observe(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			nil,
 			false,
@@ -291,7 +293,7 @@ func Test_Create(t *testing.T) {
 		},
 		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			nil,
 			false,
@@ -308,19 +310,19 @@ func Test_Create(t *testing.T) {
 			0,
 		},
 		{
-			"if VPCID is not empty, it should skip creating vpc",
-			&v1alpha3.VPC{
-				Spec: v1alpha3.VPCSpec{
-					VPCParameters: v1alpha3.VPCParameters{
-						CIDRBlock: "arbitrary cidr block string",
+			"if external name is set, it should skip creating vpc",
+			func() *v1alpha3.VPC {
+				v := &v1alpha3.VPC{
+					Spec: v1alpha3.VPCSpec{
+						VPCParameters: v1alpha3.VPCParameters{
+							CIDRBlock: "arbitrary cidr block string",
+						},
 					},
-				},
-				Status: v1alpha3.VPCStatus{
-					VPCExternalStatus: v1alpha3.VPCExternalStatus{
-						VPCID: "some arbitrary id",
-					},
-				},
-			},
+				}
+				v.SetConditions(runtimev1alpha1.Creating())
+				meta.SetExternalName(v, "some arbitrary id")
+				return v
+			}(),
 			nil,
 			nil,
 			true,
@@ -367,15 +369,11 @@ func Test_Delete(t *testing.T) {
 				CIDRBlock: "arbitrary cidr block",
 			},
 		},
-		Status: v1alpha3.VPCStatus{
-			VPCExternalStatus: v1alpha3.VPCExternalStatus{
-				VPCID: "some arbitrary id",
-			},
-		},
 	}
+	meta.SetExternalName(&mockManaged, "some arbitrary id")
 	var mockClientErr error
 	mockClient.MockDeleteVpcRequest = func(input *awsec2.DeleteVpcInput) awsec2.DeleteVpcRequest {
-		g.Expect(aws.StringValue(input.VpcId)).To(gomega.Equal(mockManaged.Status.VPCID), "the passed parameters are not valid")
+		g.Expect(aws.StringValue(input.VpcId)).To(gomega.Equal(meta.GetExternalName(&mockManaged)), "the passed parameters are not valid")
 		return awsec2.DeleteVpcRequest{
 			Request: &aws.Request{
 				HTTPRequest: &http.Request{},
@@ -398,14 +396,8 @@ func Test_Delete(t *testing.T) {
 			true,
 		},
 		{
-			"if status doesn't have the resource ID, it should return an error",
-			&v1alpha3.VPC{},
-			nil,
-			false,
-		},
-		{
 			"unexpected managed resource should return error",
-			unexpecedItem,
+			unexpectedItem,
 			nil,
 			false,
 		},

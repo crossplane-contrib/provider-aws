@@ -1,0 +1,122 @@
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: VPC
+metadata:
+  name: postgresql-example
+spec:
+  cidrBlock: 192.168.0.0/16
+  enableDnsSupport: true
+  enableDnsHostNames: true
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: Subnet
+metadata:
+  name: postgresql-example-1
+spec:
+  cidrBlock: 192.168.64.0/18
+  vpcIdRef:
+    name: postgresql-example
+  availabilityZone: us-east-1a
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: Subnet
+metadata:
+  name: postgresql-example-2
+spec:
+  cidrBlock: 192.168.128.0/18
+  vpcIdRef:
+    name: postgresql-example
+  availabilityZone: us-east-1b
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: Subnet
+metadata:
+  name: postgresql-example-3
+spec:
+  cidrBlock: 192.168.192.0/18
+  vpcIdRef:
+    name: postgresql-example
+  availabilityZone: us-east-1c
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: database.aws.crossplane.io/v1beta1
+kind: DBSubnetGroup
+metadata:
+  name: postgresql-example
+spec:
+  forProvider:
+    description: MySQL subnets
+    subnetIdRefs:
+      - name: postgresql-example-1
+      - name: postgresql-example-2
+      - name: postgresql-example-3
+    tags:
+      - key: name
+        value: postgresql-example
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: InternetGateway
+metadata:
+  name: postgresql-example
+spec:
+  vpcIdRef:
+    name: postgresql-example
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: RouteTable
+metadata:
+  name: postgresql-example
+spec:
+  vpcIdRef:
+    name: postgresql-example
+  routes:
+    - destinationCidrBlock: 0.0.0.0/0
+      gatewayIdRef:
+        name: postgresql-example
+  associations:
+    - subnetIdRef:
+        name: postgresql-example-1
+    - subnetIdRef:
+        name: postgresql-example-2
+    - subnetIdRef:
+        name: postgresql-example-3
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+---
+apiVersion: network.aws.crossplane.io/v1alpha3
+kind: SecurityGroup
+metadata:
+  name: postgresql-example
+spec:
+  vpcIdRef:
+    name: postgresql-example
+  groupName: postgresql-example
+  description: Open access to RDS
+  reclaimPolicy: Delete
+  ingress:
+    - fromPort: 3306
+      toPort: 3306
+      protocol: tcp
+      cidrBlocks:
+        - cidrIp: 0.0.0.0/0
+          description: Not very secure
+  providerRef:
+    name: example

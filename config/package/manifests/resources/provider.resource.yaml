@@ -1,0 +1,13 @@
+id: provider
+title: AWS Provider
+titlePlural: AWS Providers
+category: Provider
+overviewShort: "A Provider configures an AWS 'provider', i.e. a connection to a particular AWS account using a particular AWS IAM role."
+overview: |
+ A Provider configures an AWS 'provider', i.e. a connection to a particular AWS account using a particular AWS IAM role.
+readme: |
+ ## AWS Provider
+
+ The Crossplane AWS Provider Resource configures an AWS 'provider', i.e. a connection to a particular AWS account using a particular AWS IAM Role.
+
+ Full documentation can be found in the Crossplane [API Reference docs](https://doc.crds.dev/github.com/crossplane/provider-aws/aws.crossplane.io_providers.yaml).

@@ -104,12 +104,14 @@ func LateInitializeRole(in *v1beta1.IAMRoleParameters, role *iam.Role) {
 	in.MaxSessionDuration = awsclients.LateInitializeInt64Ptr(in.MaxSessionDuration, role.MaxSessionDuration)
 	in.Path = awsclients.LateInitializeStringPtr(in.Path, role.Path)
 
-	if in.PermissionsBoundary != nil {
+	if role.PermissionsBoundary != nil {
 		in.PermissionsBoundary = awsclients.LateInitializeStringPtr(in.PermissionsBoundary, role.PermissionsBoundary.PermissionsBoundaryArn)
 	}
 
-	for _, tag := range role.Tags {
-		in.Tags = append(in.Tags, v1beta1.Tag{Key: *tag.Key, Value: *tag.Value})
+	if in.Tags == nil && role.Tags != nil {
+		for _, tag := range role.Tags {
+			in.Tags = append(in.Tags, v1beta1.Tag{Key: *tag.Key, Value: *tag.Value})
+		}
 	}
 }
 
