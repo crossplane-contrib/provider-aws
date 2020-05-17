@@ -9,8 +9,11 @@ metadata:
   name: eksclusters.compute.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .status.bindingPhase
-    name: STATUS
+  - JSONPath: .status.conditions[?(@.type=='Ready')].status
+    name: READY
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Synced')].status
+    name: SYNCED
     type: string
   - JSONPath: .status.state
     name: STATE
@@ -20,9 +23,6 @@ spec:
     type: string
   - JSONPath: .status.endpoint
     name: ENDPOINT
-    type: string
-  - JSONPath: .spec.classRef.name
-    name: CLUSTER-CLASS
     type: string
   - JSONPath: .spec.location
     name: LOCATION
