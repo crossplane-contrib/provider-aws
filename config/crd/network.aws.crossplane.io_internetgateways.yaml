@@ -9,17 +9,17 @@ metadata:
   name: internetgateways.network.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .status.internetGatewayId
-    name: ID
-    type: string
-  - JSONPath: .spec.vpcId
-    name: VPCID
-    type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
     type: string
   - JSONPath: .status.conditions[?(@.type=='Synced')].status
     name: SYNCED
+    type: string
+  - JSONPath: .status.internetGatewayId
+    name: ID
+    type: string
+  - JSONPath: .spec.vpcId
+    name: VPCID
     type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE

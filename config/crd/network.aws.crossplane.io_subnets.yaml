@@ -9,6 +9,12 @@ metadata:
   name: subnets.network.aws.crossplane.io
 spec:
   additionalPrinterColumns:
+  - JSONPath: .status.conditions[?(@.type=='Ready')].status
+    name: READY
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Synced')].status
+    name: SYNCED
+    type: string
   - JSONPath: .status.subnetId
     name: SUBNETID
     type: string
@@ -23,12 +29,6 @@ spec:
     type: string
   - JSONPath: .status.subnetState
     name: STATE
-    type: string
-  - JSONPath: .status.conditions[?(@.type=='Ready')].status
-    name: READY
-    type: string
-  - JSONPath: .status.conditions[?(@.type=='Synced')].status
-    name: SYNCED
     type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE

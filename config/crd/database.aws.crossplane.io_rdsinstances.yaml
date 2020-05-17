@@ -9,14 +9,14 @@ metadata:
   name: rdsinstances.database.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .status.bindingPhase
-    name: STATUS
+  - JSONPath: .status.conditions[?(@.type=='Ready')].status
+    name: READY
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Synced')].status
+    name: SYNCED
     type: string
   - JSONPath: .status.atProvider.dbInstanceStatus
     name: STATE
-    type: string
-  - JSONPath: .spec.classRef.name
-    name: CLASS
     type: string
   - JSONPath: .spec.forProvider.engine
     name: ENGINE

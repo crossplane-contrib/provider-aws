@@ -9,17 +9,17 @@ metadata:
   name: iamroles.identity.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .spec.roleName
-    name: ROLENAME
-    type: string
-  - JSONPath: .spec.forProvider.description
-    name: DESCRIPTION
-    type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
     type: string
   - JSONPath: .status.conditions[?(@.type=='Synced')].status
     name: SYNCED
+    type: string
+  - JSONPath: .spec.roleName
+    name: ROLENAME
+    type: string
+  - JSONPath: .spec.forProvider.description
+    name: DESCRIPTION
     type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE

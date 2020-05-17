@@ -9,6 +9,12 @@ metadata:
   name: vpcs.network.aws.crossplane.io
 spec:
   additionalPrinterColumns:
+  - JSONPath: .status.conditions[?(@.type=='Ready')].status
+    name: READY
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Synced')].status
+    name: SYNCED
+    type: string
   - JSONPath: .status.vpcId
     name: VPCID
     type: string
@@ -17,12 +23,6 @@ spec:
     type: string
   - JSONPath: .status.vpcState
     name: STATE
-    type: string
-  - JSONPath: .status.conditions[?(@.type=='Ready')].status
-    name: READY
-    type: string
-  - JSONPath: .status.conditions[?(@.type=='Synced')].status
-    name: SYNCED
     type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE
