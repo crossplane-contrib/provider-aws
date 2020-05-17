@@ -19,6 +19,7 @@ package database
 import (
 	"context"
 	"reflect"
+	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
@@ -255,7 +256,6 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if rds.IsErrorNotFound(err) {
 		return nil
 	}
-
 	input := awsrds.DeleteDBInstanceInput{
 		DBInstanceIdentifier: aws.String(meta.GetExternalName(cr)),
 		SkipFinalSnapshot:    cr.Spec.ForProvider.SkipFinalSnapshotBeforeDeletion,
@@ -286,5 +286,8 @@ func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 		cr.Spec.ForProvider.Tags[i] = v1beta1.Tag{Key: k, Value: v}
 		i++
 	}
+	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
+		return cr.Spec.ForProvider.Tags[i].Key < cr.Spec.ForProvider.Tags[j].Key
+	})
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
