@@ -18,6 +18,7 @@ package vpc
 
 import (
 	"context"
+	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -247,5 +248,8 @@ func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
 		cr.Spec.Tags[i] = v1alpha3.Tag{Key: k, Value: v}
 		i++
 	}
+	sort.Slice(cr.Spec.Tags, func(i, j int) bool {
+		return cr.Spec.Tags[i].Key < cr.Spec.Tags[j].Key
+	})
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }
