@@ -23,6 +23,7 @@ import (
 
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthority"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthoritypermission"
+	"github.com/crossplane/provider-aws/pkg/controller/applicationintegration/sqs"
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/compute"
@@ -86,6 +87,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		certificateauthority.SetupCertificateAuthority,
 		certificateauthoritypermission.SetupCertificateAuthorityPermission,
 		dynamodb.SetupDynamoTable,
+		sqs.SetupQueue,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err
