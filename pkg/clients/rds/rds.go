@@ -444,7 +444,10 @@ func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error
 	if err != nil {
 		return false, err
 	}
-	return cmp.Equal(&v1beta1.RDSInstanceParameters{}, patch, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{})), nil
+	return cmp.Equal(&v1beta1.RDSInstanceParameters{}, patch, cmpopts.EquateEmpty(),
+		cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}),
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "Tags"),
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "SkipFinalSnapshotBeforeDeletion")), nil
 }
 
 // GetConnectionDetails extracts managed.ConnectionDetails out of v1alpha3.RDSInstance.

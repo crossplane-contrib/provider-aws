@@ -196,7 +196,8 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotRDSInstance)
 	}
-	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateModifying {
+	switch cr.Status.AtProvider.DBInstanceStatus {
+	case v1beta1.RDSInstanceStateModifying, v1beta1.RDSInstanceStateCreating:
 		return managed.ExternalUpdate{}, nil
 	}
 	// AWS rejects modification requests if you send fields whose value is same
