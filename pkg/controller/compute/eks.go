@@ -112,7 +112,7 @@ func SetupEKSCluster(mgr ctrl.Manager, l logging.Logger) error {
 	r := &Reconciler{
 		Client:            mgr.GetClient(),
 		publisher:         managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme()),
-		ReferenceResolver: managed.NewAPIReferenceResolver(mgr.GetClient()),
+		ReferenceResolver: managed.NewAPISimpleReferenceResolver(mgr.GetClient()),
 		log:               l.WithValues("controller", name),
 		initializer:       managed.NewNameAsExternalName(mgr.GetClient()),
 	}
@@ -256,11 +256,9 @@ func (r *Reconciler) _awsauth(cluster *eks.Cluster, instance *awscomputev1alpha3
 	}
 
 	// Create or update aws-auth configmap on eks cluster
-	_, err = clientset.CoreV1().ConfigMaps(cm.Namespace).Create(cm)
-	if err != nil {
-		if apierrors.IsAlreadyExists(err) {
-			_, err = clientset.CoreV1().ConfigMaps(cm.Namespace).Update(cm)
-		}
+	_, err = clientset.CoreV1().ConfigMaps(cm.Namespace).Create(ctx, cm, metav1.CreateOptions{})
+	if apierrors.IsAlreadyExists(err) {
+		_, err = clientset.CoreV1().ConfigMaps(cm.Namespace).Update(ctx, cm, metav1.UpdateOptions{})
 	}
 
 	return err
@@ -396,19 +394,9 @@ func (r *Reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		return r.fail(instance, err)
 	}
 
-	if !resource.IsConditionTrue(instance.GetCondition(runtimev1alpha1.TypeReferencesResolved)) {
-		if err := r.ResolveReferences(ctx, instance); err != nil {
-			condition := runtimev1alpha1.ReconcileError(err)
-			if managed.IsReferencesAccessError(err) {
-				condition = runtimev1alpha1.ReferenceResolutionBlocked(err)
-			}
-
-			instance.Status.SetConditions(condition)
-			return reconcile.Result{RequeueAfter: aLongWait}, errors.Wrap(r.Update(ctx, instance), errUpdateCustomResource)
-		}
-
-		// Add ReferenceResolutionSuccess to the conditions
-		instance.Status.SetConditions(runtimev1alpha1.ReferenceResolutionSuccess())
+	if err := r.ResolveReferences(ctx, instance); err != nil {
+		instance.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
+		return reconcile.Result{RequeueAfter: aLongWait}, errors.Wrap(r.Update(ctx, instance), errUpdateCustomResource)
 	}
 
 	// Add finalizer

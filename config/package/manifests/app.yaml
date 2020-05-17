@@ -1,0 +1,58 @@
+# Human readable title of application.
+title: AWS Provider
+
+overviewShort: The AWS Crossplane provider enables infrastructure management for Amazon Web Services.
+overview: |-
+ The Amazon Web Services Crossplane provider adds support for managing AWS resources in Kubernetes.
+
+# Markdown description of this entry
+readme: |
+ This `provider-aws` repository is a Crossplane infrastructure provider for [Amazon Web Services (AWS)](https://aws.amazon.com).
+ The provider that is built from the source code in this repository can be installed into a Crossplane control plane and adds the following new functionality:
+
+ * Custom Resource Definitions (CRDs) that model AWS infrastructure and services (e.g. [Amazon Relational Database Service (RDS)](https://aws.amazon.com/rds/), [EKS clusters](https://aws.amazon.com/eks/), etc.)
+ * Controllers to provision these resources in AWS based on the users desired state captured in CRDs they create
+ * Implementations of Crossplane's portable resource abstractions, enabling AWS resources to fulfill a user's general need for cloud services
+
+# Maintainer names and emails.
+maintainers:
+- name: Jared Watts
+  email: jared@upbound.io
+
+# Owner names and emails.
+owners:
+- name: Jared Watts
+  email: jared@upbound.io
+
+# Human readable company name
+company: Crossplane
+
+# Primary category describing this package
+category: Infrastructure
+
+# Type of package: Provider, Stack, or Application
+packageType: Provider
+
+# Keywords that describe this application and help search indexing
+keywords:
+- "amazon"
+- "aws"
+- "infrastructure"
+
+# Links to more information about the application (about page, source code, etc.)
+website: "https://crossplane.io"
+source: "https://github.com/crossplane/provider-aws"
+
+# RBAC ClusterRoles will be generated permitting this package to use all verbs on all
+# resources in the groups listed below.
+permissionScope: Cluster
+dependsOn:
+- crd: '*.cache.crossplane.io/v1alpha1'
+- crd: '*.compute.crossplane.io/v1alpha1'
+- crd: '*.database.crossplane.io/v1alpha1'
+- crd: '*.core.crossplane.io/v1alpha1'
+- crd: '*.storage.crossplane.io/v1alpha1'
+- crd: '*.workload.crossplane.io/v1alpha1'
+
+# License SPDX name: https://spdx.org/licenses/
+license: Apache-2.0

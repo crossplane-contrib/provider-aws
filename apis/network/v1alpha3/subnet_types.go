@@ -19,34 +19,10 @@ package v1alpha3
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/pkg/errors"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 )
-
-// Error strings
-const (
-	errResourceIsNotSubnet = "the managed resource is not a Subnet"
-)
-
-// VPCIDReferencerForSubnet is an attribute referencer that resolves VPCID from a referenced VPC
-type VPCIDReferencerForSubnet struct {
-	VPCIDReferencer `json:",inline"`
-}
-
-// Assign assigns the retrieved vpcId to the managed resource
-func (v *VPCIDReferencerForSubnet) Assign(res resource.CanReference, value string) error {
-	subnet, ok := res.(*Subnet)
-	if !ok {
-		return errors.New(errResourceIsNotSubnet)
-	}
-
-	subnet.Spec.VPCID = value
-	return nil
-}
 
 // SubnetParameters define the desired state of an AWS VPC Subnet.
 type SubnetParameters struct {
@@ -61,8 +37,11 @@ type SubnetParameters struct {
 	// VPCID is the ID of the VPC.
 	VPCID string `json:"vpcId,omitempty"`
 
-	// VPCIDRef references to a VPC to and retrieves its vpcId
-	VPCIDRef *VPCIDReferencerForSubnet `json:"vpcIdRef,omitempty" resource:"attributereferencer"`
+	// VPCIDRef reference a VPC to retrieve its vpcId
+	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
+
+	// VPCIDSelector selects reference to a VPC to retrieve its vpcId
+	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
 }
 
 // A SubnetSpec defines the desired state of a Subnet.
@@ -79,9 +58,6 @@ type SubnetExternalStatus struct {
 
 	// Tags represents to current ec2 tags.
 	Tags []Tag `json:"tags,omitempty"`
-
-	// SubnetID is the ID of the Subnet.
-	SubnetID string `json:"subnetId,omitempty"`
 }
 
 // A SubnetStatus represents the observed state of a Subnet.
@@ -102,7 +78,7 @@ type SubnetStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Subnet struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -123,7 +99,6 @@ type SubnetList struct {
 // UpdateExternalStatus updates the external status object,  given the observation
 func (s *Subnet) UpdateExternalStatus(observation ec2.Subnet) {
 	s.Status.SubnetExternalStatus = SubnetExternalStatus{
-		SubnetID:    aws.StringValue(observation.SubnetId),
 		Tags:        BuildFromEC2Tags(observation.Tags),
 		SubnetState: string(observation.State),
 	}

@@ -20,31 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-
-	"github.com/pkg/errors"
 )
-
-// Error strings
-const (
-	errResourceIsNotIAMRolePolicyAttachment = "the managed resource is not an IAMRolePolicyAttachment"
-)
-
-// IAMRoleNameReferencerForIAMRolePolicyAttachment is an attribute referencer that retrieves Name from a referenced IAMRole
-type IAMRoleNameReferencerForIAMRolePolicyAttachment struct {
-	IAMRoleNameReferencer `json:",inline"`
-}
-
-// Assign assigns the retrieved name to the managed resource
-func (v *IAMRoleNameReferencerForIAMRolePolicyAttachment) Assign(res resource.CanReference, value string) error {
-	p, ok := res.(*IAMRolePolicyAttachment)
-	if !ok {
-		return errors.New(errResourceIsNotIAMRolePolicyAttachment)
-	}
-
-	p.Spec.ForProvider.RoleName = value
-	return nil
-}
 
 // IAMRolePolicyAttachmentParameters define the desired state of an AWS IAM
 // Role policy attachment.
@@ -58,9 +34,13 @@ type IAMRolePolicyAttachmentParameters struct {
 	// RoleName presents the name of the IAM role.
 	RoleName string `json:"roleName,omitempty"`
 
-	// RoleNameRef references to an IAMRole to retrieve its Name
+	// RoleNameRef references an IAMRole to retrieve its Name
 	// +optional
-	RoleNameRef *IAMRoleNameReferencerForIAMRolePolicyAttachment `json:"roleNameRef,omitempty"`
+	RoleNameRef *runtimev1alpha1.Reference `json:"roleNameRef,omitempty"`
+
+	// RoleNameSelector selects a reference to an IAMRole to retrieve its Name
+	// +optional
+	RoleNameSelector *runtimev1alpha1.Selector `json:"roleNameSelector,omitempty"`
 }
 
 // An IAMRolePolicyAttachmentSpec defines the desired state of an
@@ -94,7 +74,7 @@ type IAMRolePolicyAttachmentStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type IAMRolePolicyAttachment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

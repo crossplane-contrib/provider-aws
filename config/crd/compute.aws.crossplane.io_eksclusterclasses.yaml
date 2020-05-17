@@ -20,6 +20,10 @@ spec:
     type: date
   group: compute.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - class
+    - aws
     kind: EKSClusterClass
     listKind: EKSClusterClassList
     plural: eksclusterclasses
@@ -174,23 +178,52 @@ spec:
               description: RoleARNRef references to an IAMRole to retrieve its ARN
               properties:
                 name:
-                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                    TODO: Add other useful fields. apiVersion, kind, uid?'
+                  description: Name of the referenced object.
                   type: string
+              required:
+              - name
+              type: object
+            roleARNSelector:
+              description: RoleARNSelector selects a reference to an IAMRole
+              properties:
+                matchControllerRef:
+                  description: MatchControllerRef ensures an object with the same
+                    controller reference as the selecting object is selected.
+                  type: boolean
+                matchLabels:
+                  additionalProperties:
+                    type: string
+                  description: MatchLabels ensures an object with matching labels
+                    is selected.
+                  type: object
               type: object
             securityGroupIdRefs:
               description: SecurityGroupIDRefs is a set of referencers that each retrieve
                 the ID from the referenced SecurityGroup
               items:
-                description: SecurityGroupIDReferencerForEKSCluster is an attribute
-                  referencer that resolves ID from a referenced SecurityGroup
+                description: A Reference to a named object.
                 properties:
                   name:
-                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                      TODO: Add other useful fields. apiVersion, kind, uid?'
+                    description: Name of the referenced object.
                     type: string
+                required:
+                - name
                 type: object
               type: array
+            securityGroupIdSelector:
+              description: SecurityGroupIDSelector selects a set of references
+              properties:
+                matchControllerRef:
+                  description: MatchControllerRef ensures an object with the same
+                    controller reference as the selecting object is selected.
+                  type: boolean
+                matchLabels:
+                  additionalProperties:
+                    type: string
+                  description: MatchLabels ensures an object with matching labels
+                    is selected.
+                  type: object
+              type: object
             securityGroupIds:
               description: SecurityGroupIDs of this EKS cluster.
               items:
@@ -200,15 +233,29 @@ spec:
               description: SubnetIDRefs is a set of referencers that each retrieve
                 the subnetID from the referenced Subnet
               items:
-                description: SubnetIDReferencerForEKSCluster is an attribute referencer
-                  that resolves SubnetID from a referenced Subnet
+                description: A Reference to a named object.
                 properties:
                   name:
-                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                      TODO: Add other useful fields. apiVersion, kind, uid?'
+                    description: Name of the referenced object.
                     type: string
+                required:
+                - name
                 type: object
               type: array
+            subnetIdSelector:
+              description: SubnetIDSelector selects a set of Subnet references
+              properties:
+                matchControllerRef:
+                  description: MatchControllerRef ensures an object with the same
+                    controller reference as the selecting object is selected.
+                  type: boolean
+                matchLabels:
+                  additionalProperties:
+                    type: string
+                  description: MatchLabels ensures an object with matching labels
+                    is selected.
+                  type: object
+              type: object
             subnetIds:
               description: SubnetIDs of this EKS cluster.
               items:
@@ -218,12 +265,27 @@ spec:
               description: VPCID is the ID of the VPC.
               type: string
             vpcIdRef:
-              description: VPCIDRef references to a VPC to and retrieves its vpcId
+              description: VPCIDRef references to a VPC to retrieve its vpcId
               properties:
                 name:
-                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                    TODO: Add other useful fields. apiVersion, kind, uid?'
+                  description: Name of the referenced object.
                   type: string
+              required:
+              - name
+              type: object
+            vpcIdSelector:
+              description: VPCIDSelector selects a reference to a VPC
+              properties:
+                matchControllerRef:
+                  description: MatchControllerRef ensures an object with the same
+                    controller reference as the selecting object is selected.
+                  type: boolean
+                matchLabels:
+                  additionalProperties:
+                    type: string
+                  description: MatchLabels ensures an object with matching labels
+                    is selected.
+                  type: object
               type: object
             workerNodes:
               description: WorkerNodes configuration for cloudformation
@@ -238,13 +300,29 @@ spec:
                     to this node group.
                   type: string
                 clusterControlPlaneSecurityGroupRef:
-                  description: ClusterControlPlaneSecurityGroupRef references to a
-                    SecurityGroup to retrieve its ID
+                  description: ClusterControlPlaneSecurityGroupRef references a SecurityGroup
+                    to retrieve its ID
                   properties:
                     name:
-                      description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                        TODO: Add other useful fields. apiVersion, kind, uid?'
+                      description: Name of the referenced object.
                       type: string
+                  required:
+                  - name
+                  type: object
+                clusterControlPlaneSecurityGroupSelector:
+                  description: ClusterControlPlaneSecurityGroupSelector selects a
+                    SecurityGroup
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
                   type: object
                 keyName:
                   description: KeyName of the EC2 Key Pair to allow SSH access to

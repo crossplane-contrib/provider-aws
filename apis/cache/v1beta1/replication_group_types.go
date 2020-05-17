@@ -17,18 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-
-	network "github.com/crossplane/provider-aws/apis/network/v1alpha3"
-)
-
-// Error strings
-const (
-	errResourceIsNotReplicationGroup = "the managed resource is not a ReplicationGroup"
 )
 
 // ReplicationGroup states.
@@ -71,52 +63,6 @@ var LatestSupportedPatchVersion = map[MinorVersion]PatchVersion{
 	MinorVersion("4.0"): PatchVersion("4.0.10"),
 	MinorVersion("3.2"): PatchVersion("3.2.10"),
 	MinorVersion("2.8"): PatchVersion("2.8.24"),
-}
-
-// SecurityGroupNameReferencerForReplicationGroup is an attribute referencer that
-// resolves SecurityGroupName from a referenced SecurityGroup
-type SecurityGroupNameReferencerForReplicationGroup struct {
-	network.SecurityGroupNameReferencer `json:",inline"`
-}
-
-// Assign assigns the retrieved value to the managed resource
-func (v *SecurityGroupNameReferencerForReplicationGroup) Assign(res resource.CanReference, value string) error {
-	rg, ok := res.(*ReplicationGroup)
-	if !ok {
-		return errors.New(errResourceIsNotReplicationGroup)
-	}
-
-	for _, id := range rg.Spec.ForProvider.CacheSecurityGroupNames {
-		if id == value {
-			return nil
-		}
-	}
-
-	rg.Spec.ForProvider.CacheSecurityGroupNames = append(rg.Spec.ForProvider.CacheSecurityGroupNames, value)
-	return nil
-}
-
-// SecurityGroupIDReferencerForReplicationGroup is an attribute referencer that
-// resolves SecurityGroupID from a referenced SecurityGroup
-type SecurityGroupIDReferencerForReplicationGroup struct {
-	network.SecurityGroupIDReferencer `json:",inline"`
-}
-
-// Assign assigns the retrieved value to the managed resource
-func (v *SecurityGroupIDReferencerForReplicationGroup) Assign(res resource.CanReference, value string) error {
-	rg, ok := res.(*ReplicationGroup)
-	if !ok {
-		return errors.New(errResourceIsNotReplicationGroup)
-	}
-
-	for _, id := range rg.Spec.ForProvider.SecurityGroupIDs {
-		if id == value {
-			return nil
-		}
-	}
-
-	rg.Spec.ForProvider.SecurityGroupIDs = append(rg.Spec.ForProvider.SecurityGroupIDs, value)
-	return nil
 }
 
 // Endpoint represents the information required for client programs to connect
@@ -374,7 +320,12 @@ type ReplicationGroupParameters struct {
 	// the CacheSecurityGroupNames.
 	// +immutable
 	// +optional
-	CacheSecurityGroupNameRefs []*SecurityGroupNameReferencerForReplicationGroup `json:"cacheSecurityGroupNameRefs,omitempty"`
+	CacheSecurityGroupNameRefs []runtimev1alpha1.Reference `json:"cacheSecurityGroupNameRefs,omitempty"`
+
+	// CacheSecurityGroupNameSelector selects references to SecurityGroups.
+	// +immutable
+	// +optional
+	CacheSecurityGroupNameSelector *runtimev1alpha1.Selector `json:"cacheSecurityGroupNameSelector,omitempty"`
 
 	// TODO(muvaf): Implement SubnetGroup as managed resource so that we can
 	// refer to it here.
@@ -518,7 +469,13 @@ type ReplicationGroupParameters struct {
 	// the SecurityGroupIDs.
 	// +immutable
 	// +optional
-	SecurityGroupIDRefs []*SecurityGroupIDReferencerForReplicationGroup `json:"securityGroupIdRefs,omitempty"`
+	SecurityGroupIDRefs []v1alpha1.Reference `json:"securityGroupIdRefs,omitempty"`
+
+	// SecurityGroupIDSelector selects references to SecurityGroups used to set
+	// the SecurityGroupIDs.
+	// +immutable
+	// +optional
+	SecurityGroupIDSelector *v1alpha1.Selector `json:"securityGroupIdSelector,omitempty"`
 
 	// SnapshotARNs specifies a list of Amazon Resource Names (ARN) that
 	// uniquely identify the Redis RDB snapshot files stored in Amazon S3. The
@@ -614,7 +571,7 @@ type ReplicationGroupStatus struct {
 // +kubebuilder:printcolumn:name="VERSION",type="string",JSONPath=".spec.forProvider.engineVersion"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type ReplicationGroup struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -646,7 +603,7 @@ type ReplicationGroupClassSpecTemplate struct {
 // +kubebuilder:printcolumn:name="PROVIDER-REF",type="string",JSONPath=".specTemplate.providerRef.name"
 // +kubebuilder:printcolumn:name="RECLAIM-POLICY",type="string",JSONPath=".specTemplate.reclaimPolicy"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
-// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:resource:scope=Cluster,categories={crossplane,class,aws}
 type ReplicationGroupClass struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

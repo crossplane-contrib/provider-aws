@@ -20,6 +20,10 @@ spec:
     type: date
   group: storage.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - class
+    - aws
     kind: S3BucketClass
     listKind: S3BucketClassList
     plural: s3bucketclasses
