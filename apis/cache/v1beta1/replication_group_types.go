@@ -565,9 +565,9 @@ type ReplicationGroupStatus struct {
 
 // A ReplicationGroup is a managed resource that represents an AWS ElastiCache
 // Replication Group.
-// +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.atProvider.status"
-// +kubebuilder:printcolumn:name="STATUS",type="string",JSONPath=".status.bindingPhase"
-// +kubebuilder:printcolumn:name="CLASS",type="string",JSONPath=".spec.classRef.name"
+// +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
+// +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
+//+kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.atProvider.status"
 // +kubebuilder:printcolumn:name="VERSION",type="string",JSONPath=".spec.forProvider.engineVersion"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status

@@ -69,13 +69,13 @@ type SubnetStatus struct {
 // +kubebuilder:object:root=true
 
 // A Subnet is a managed resource that represents an AWS VPC Subnet.
+// +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
+// +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="SUBNETID",type="string",JSONPath=".status.subnetId"
 // +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".spec.vpcId"
 // +kubebuilder:printcolumn:name="CIDRBLOCK",type="string",JSONPath=".spec.cidrBlock"
 // +kubebuilder:printcolumn:name="AZ",type="string",JSONPath=".spec.availabilityZone"
 // +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.subnetState"
-// +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
-// +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}

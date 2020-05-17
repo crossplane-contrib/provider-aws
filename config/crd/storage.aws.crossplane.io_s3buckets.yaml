@@ -9,8 +9,11 @@ metadata:
   name: s3buckets.storage.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .spec.classRef.name
-    name: CLASS
+  - JSONPath: .status.conditions[?(@.type=='Ready')].status
+    name: READY
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Synced')].status
+    name: SYNCED
     type: string
   - JSONPath: .spec.cannedACL
     name: PREDEFINED-ACL
