@@ -75,10 +75,10 @@ type InternetGatewayStatus struct {
 
 // An InternetGateway is a managed resource that represents an AWS VPC Internet
 // Gateway.
-// +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".status.internetGatewayId"
-// +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".spec.vpcId"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
+// +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".status.internetGatewayId"
+// +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".spec.vpcId"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}

@@ -1,0 +1,23 @@
+---
+apiVersion: identity.aws.crossplane.io/v1alpha1
+kind: IAMPolicy
+metadata:
+  name: somepolicy  
+spec:
+  forProvider:
+    name: external-name
+    document: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+              "Sid": "VisualEditor0",
+              "Effect": "Allow",
+              "Action": "elastic-inference:Connect",
+              "Resource": "*"
+          }
+        ]
+      }
+  providerRef:
+    name: example
+  reclaimPolicy: Delete

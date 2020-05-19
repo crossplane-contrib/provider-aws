@@ -19,6 +19,7 @@ package database
 import (
 	"context"
 	"reflect"
+	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
@@ -197,7 +198,8 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotRDSInstance)
 	}
-	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateModifying {
+	switch cr.Status.AtProvider.DBInstanceStatus {
+	case v1beta1.RDSInstanceStateModifying, v1beta1.RDSInstanceStateCreating:
 		return managed.ExternalUpdate{}, nil
 	}
 	// AWS rejects modification requests if you send fields whose value is same
@@ -248,15 +250,17 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	// Update before Delete, which is not the case currently. In RDS, deletion
 	// protection is an example for that and it's pretty common to use it. So,
 	// until managed reconciler does Update before Delete, we do it here manually.
-	if _, err := e.Update(ctx, cr); err != nil {
-		return resource.Ignore(rds.IsErrorNotFound, err)
+	// Update here is a best effort and deletion should not stop if it fails since
+	// user may want to delete a resource whose fields are causing error.
+	_, err := e.Update(ctx, cr)
+	if rds.IsErrorNotFound(err) {
+		return nil
 	}
 	input := awsrds.DeleteDBInstanceInput{
 		DBInstanceIdentifier: aws.String(meta.GetExternalName(cr)),
 		SkipFinalSnapshot:    cr.Spec.ForProvider.SkipFinalSnapshotBeforeDeletion,
 	}
-	req := e.client.DeleteDBInstanceRequest(&input)
-	_, err := req.Send(ctx)
+	_, err = e.client.DeleteDBInstanceRequest(&input).Send(ctx)
 	return errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
 }
 
@@ -282,5 +286,8 @@ func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
 		cr.Spec.ForProvider.Tags[i] = v1beta1.Tag{Key: k, Value: v}
 		i++
 	}
+	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
+		return cr.Spec.ForProvider.Tags[i].Key < cr.Spec.ForProvider.Tags[j].Key
+	})
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

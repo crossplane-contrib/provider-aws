@@ -6,49 +6,33 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: subnets.network.aws.crossplane.io
+  name: iampolicies.identity.aws.crossplane.io
 spec:
   additionalPrinterColumns:
+  - JSONPath: .status.atProvider.arn
+    name: ARN
+    type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
     type: string
   - JSONPath: .status.conditions[?(@.type=='Synced')].status
     name: SYNCED
     type: string
-  - JSONPath: .status.subnetId
-    name: SUBNETID
-    type: string
-  - JSONPath: .spec.vpcId
-    name: VPCID
-    type: string
-  - JSONPath: .spec.cidrBlock
-    name: CIDRBLOCK
-    type: string
-  - JSONPath: .spec.availabilityZone
-    name: AZ
-    type: string
-  - JSONPath: .status.subnetState
-    name: STATE
-    type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
-  group: network.aws.crossplane.io
+  group: identity.aws.crossplane.io
   names:
-    categories:
-    - crossplane
-    - managed
-    - aws
-    kind: Subnet
-    listKind: SubnetList
-    plural: subnets
-    singular: subnet
+    kind: IAMPolicy
+    listKind: IAMPolicyList
+    plural: iampolicies
+    singular: iampolicy
   scope: Cluster
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: A Subnet is a managed resource that represents an AWS VPC Subnet.
+      description: An IAMPolicy is a managed resource that represents an AWS IAM IAMPolicy.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -63,17 +47,8 @@ spec:
         metadata:
           type: object
         spec:
-          description: A SubnetSpec defines the desired state of a Subnet.
+          description: An IAMPolicySpec defines the desired state of an IAMPolicy.
           properties:
-            availabilityZone:
-              description: 'The Availability Zone for the subnet. Default: AWS selects
-                one for you. If you create more than one subnet in your VPC, we may
-                not necessarily select a different zone for each subnet.'
-              type: string
-            cidrBlock:
-              description: CIDRBlock is the IPv4 network range for the Subnet, in
-                CIDR notation. For example, 10.0.0.0/18.
-              type: string
             claimRef:
               description: ClaimReference specifies the resource claim to which this
                 managed resource will be bound. ClaimReference is set automatically
@@ -151,6 +126,27 @@ spec:
                   description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                   type: string
               type: object
+            forProvider:
+              description: IAMPolicyParameters define the desired state of an AWS
+                IAM Policy.
+              properties:
+                description:
+                  description: A description of the policy.
+                  type: string
+                document:
+                  description: The JSON policy document that is the content for the
+                    policy.
+                  type: string
+                name:
+                  description: The name of the policy.
+                  type: string
+                path:
+                  description: The path to the policy.
+                  type: string
+              required:
+              - document
+              - name
+              type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
                 to create, observe, update, and delete this managed resource.
@@ -203,33 +199,6 @@ spec:
               - Retain
               - Delete
               type: string
-            vpcId:
-              description: VPCID is the ID of the VPC.
-              type: string
-            vpcIdRef:
-              description: VPCIDRef reference a VPC to retrieve its vpcId
-              properties:
-                name:
-                  description: Name of the referenced object.
-                  type: string
-              required:
-              - name
-              type: object
-            vpcIdSelector:
-              description: VPCIDSelector selects reference to a VPC to retrieve its
-                vpcId
-              properties:
-                matchControllerRef:
-                  description: MatchControllerRef ensures an object with the same
-                    controller reference as the selecting object is selected.
-                  type: boolean
-                matchLabels:
-                  additionalProperties:
-                    type: string
-                  description: MatchLabels ensures an object with matching labels
-                    is selected.
-                  type: object
-              type: object
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the namespace
                 and name of a Secret to which any connection details for this managed
@@ -248,13 +217,40 @@ spec:
               - namespace
               type: object
           required:
-          - availabilityZone
-          - cidrBlock
+          - forProvider
           - providerRef
           type: object
         status:
-          description: A SubnetStatus represents the observed state of a Subnet.
+          description: An IAMPolicyStatus represents the observed state of an IAMPolicy.
           properties:
+            atProvider:
+              description: IAMPolicyObservation keeps the state for the external resource
+              properties:
+                arn:
+                  description: The Amazon PolicyObservation Name (ARN) of the policy
+                  type: string
+                attachmentCount:
+                  description: The number of entities (users, groups, and roles) that
+                    the policy is attached to.
+                  format: int64
+                  type: integer
+                defaultVersionId:
+                  description: The identifier for the version of the policy that is
+                    set as the default version.
+                  type: string
+                isAttachable:
+                  description: Specifies whether the policy can be attached to an
+                    IAM user, group, or role.
+                  type: boolean
+                permissionsBoundaryUsageCount:
+                  description: The number of entities (users and roles) for which
+                    the policy is used to set the permissions boundary.
+                  format: int64
+                  type: integer
+                policyId:
+                  description: The stable and unique string identifying the policy.
+                  type: string
+              type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource
                 or claim. Unbindable resources cannot be bound, typically because
@@ -300,35 +296,15 @@ spec:
                 - type
                 type: object
               type: array
-            subnetState:
-              description: SubnetState is the current state of the Subnet.
-              enum:
-              - pending
-              - available
-              type: string
-            tags:
-              description: Tags represents to current ec2 tags.
-              items:
-                description: Tag defines a tag
-                properties:
-                  key:
-                    description: Key is the name of the tag.
-                    type: string
-                  value:
-                    description: Value is the value of the tag.
-                    type: string
-                required:
-                - key
-                - value
-                type: object
-              type: array
+          required:
+          - atProvider
           type: object
       required:
       - spec
       type: object
-  version: v1alpha3
+  version: v1alpha1
   versions:
-  - name: v1alpha3
+  - name: v1alpha1
     served: true
     storage: true
 status:

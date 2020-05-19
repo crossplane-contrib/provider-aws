@@ -10,7 +10,7 @@ metadata:
 spec:
   additionalPrinterColumns:
   - JSONPath: .status.atProvider.state
-    name: STATUS
+    name: STATE
     type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
