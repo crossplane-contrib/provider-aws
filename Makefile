@@ -79,7 +79,7 @@ reviewable: generate lint
 # Ensure branch is clean.
 check-diff: reviewable
 	@$(INFO) checking that branch is clean
-	@git diff --quiet || $(FAIL)
+	@test -z "$$(git status --porcelain)" || $(FAIL)
 	@$(OK) branch is clean
 
 manifests:
