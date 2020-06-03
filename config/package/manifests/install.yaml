@@ -16,6 +16,10 @@ spec:
         core.crossplane.io/name: "provider-aws"
     spec:
       securityContext:
+        # TODO(hasheddan): this can be removed when there is no desire
+        # to support pre-v1.19 Kubernetes clusters
+        # https://github.com/kubernetes/enhancements/pull/1598
+        # https://github.com/aws/amazon-eks-pod-identity-webhook/issues/8
         fsGroup: 65534
       containers:
       - name: "provider-aws-controller"
