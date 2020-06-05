@@ -161,13 +161,10 @@ func IsUpToDate(p v1alpha1.QueueParameters, attributes map[string]string, tags m
 	if len(p.Tags) != len(tags) {
 		return false
 	}
-	pTags := make(map[string]string, len(p.Tags))
+
 	for _, tag := range p.Tags {
-		pTags[tag.Key] = tag.Value
-	}
-	for key, val := range tags {
-		pVal, ok := pTags[key]
-		if !ok || !strings.EqualFold(pVal, val) {
+		pVal, ok := tags[tag.Key]
+		if !ok || !strings.EqualFold(pVal, tag.Value) {
 			return false
 		}
 	}
