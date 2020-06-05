@@ -108,7 +108,7 @@ type QueueParameters struct {
 
 	// The ID of an AWS-managed customer master key (CMK) for Amazon SQS or a custom CMK.
 	// +optional
-	KmsMasterKeyID *string `json:"kmsMasterKeyID,omitempty"`
+	KmsMasterKeyID *string `json:"kmsMasterKeyId,omitempty"`
 
 	// The length of time, in seconds, for which
 	// Amazon SQS can reuse a data key to encrypt or decrypt messages before calling AWS KMS again.
