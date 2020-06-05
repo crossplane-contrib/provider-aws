@@ -163,7 +163,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	cr.SetConditions(runtimev1alpha1.Creating())
 
-	// FIFO queues names should start with ".fifo"
+	// FIFO queues names should end with ".fifo"
 	if aws.BoolValue(cr.Spec.ForProvider.FifoQueue) && !strings.HasSuffix(cr.Spec.ForProvider.Name, fifoQueueSuffix) {
 		return managed.ExternalCreation{}, errors.New(errInvalidNameForFifoQueue)
 	}
