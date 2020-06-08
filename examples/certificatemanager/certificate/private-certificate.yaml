@@ -1,0 +1,17 @@
+apiVersion: certificatemanager.aws.crossplane.io/v1alpha1
+kind: Certificate
+metadata:
+  name: private-cert
+  annotations:
+    crossplane.io/external-name: private-cert
+spec:
+  forProvider:
+    certificateAuthorityArn: arn:aws:acm-pca:us-west-2:867429062264:certificate-authority/0aba6a58-ac3d-4a7b-b212-894bded0a9f0
+    domainName: www.example.com
+    certificateTransparencyLoggingPreference: disabled
+    tags:
+    - key: Name
+      value: example
+  reclaimPolicy: Delete
+  providerRef:
+    name: example

@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/aws/aws-sdk-go-v2/service/acm"
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -35,9 +36,11 @@ type Tag struct {
 // DomainValidationOption validate domain ownership.
 type DomainValidationOption struct {
 	// Additinal Fully qualified domain name (FQDN),that to secure with an ACM certificate.
+	// +immutable
 	DomainName string `json:"domainName"`
 
 	// Method to validate certificate
+	// +immutable
 	ValidationDomain string `json:"validationDomain"`
 }
 
@@ -68,12 +71,22 @@ type CertificateParameters struct {
 	// +optional
 	CertificateAuthorityArn *string `json:"certificateAuthorityArn,omitempty"`
 
+	// // CertificateAuthorityArnRef references an CertificateAuthority to retrieve its Arn
+	// // +optional
+	// CertificateAuthorityArnRef *runtimev1alpha1.Reference `json:"certificateAuthorityArnRef,omitempty"`
+
+	// // CertificateAuthorityArnSelector selects a reference to an CertificateAuthority to retrieve its Arn
+	// // +optional
+	// CertificateAuthorityArnSelector *runtimev1alpha1.Selector `json:"certificateAuthorityArnSelector,omitempty"`
+
 	// Fully qualified domain name (FQDN),that to secure with an ACM certificate.
+	// +immutable
 	DomainName string `json:"domainName"`
 
 	// The domain name that you want ACM to use to send you emails so that you can
 	// validate domain ownership.
 	// +optional
+	// +immutable
 	DomainValidationOptions []*DomainValidationOption `json:"domainValidationOptions,omitempty"`
 
 	// Token to distinguish between calls to RequestCertificate.
@@ -82,10 +95,12 @@ type CertificateParameters struct {
 
 	// Parameter add the certificate to a certificate transparency log.
 	// +optional
-	CertificateTransparencyLoggingPreference string `json:"certificateTransparencyLoggingPreference,omitempty"`
+	// +kubebuilder:validation:enabled;disabled
+	CertificateTransparencyLoggingPreference acm.CertificateTransparencyLoggingPreference `json:"certificateTransparencyLoggingPreference,omitempty"`
 
 	// Subject Alternative Name extension of the ACM certificate.
 	// +optional
+	// +immutable
 	SubjectAlternativeNames []string `json:"subjectAlternativeNames,omitempty"`
 
 	// One or more resource tags to associate with the certificate.
@@ -94,17 +109,24 @@ type CertificateParameters struct {
 
 	// Method to validate certificate.
 	// +optional
-	ValidationMethod string `json:"validationMethod,omitempty"`
+	// +kubebuilder:validation:dns;email
+	ValidationMethod acm.ValidationMethod `json:"validationMethod,omitempty"`
 
 	// Flag to renew the certificate
 	// +optional
-	RenewCertificate bool `json:"renewCertificate,omitempty"`
+	RenewCertificate *bool `json:"renewCertificate,omitempty"`
+
+	// Status of the certificate
+	// +optional
+	// +kubebuilder:validation:Enum=pending_validation;issued;inactive;expired;validation_timed_out;failed
+	Status acm.CertificateStatus `json:"status"`
 }
 
 // +kubebuilder:object:root=true
 
 // Certificate is a managed resource that represents an AWS Certificate Manager.
-// +kubebuilder:printcolumn:name="DOMAINNAME",type="string",JSONPath=".spec.domainName"
+// +kubebuilder:printcolumn:name="DOMAINNAME",type="string",JSONPath=".spec.forProvider.domainName"
+// +kubebuilder:printcolumn:name="STATUS",type="string",JSONPath=".spec.forProvider.status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"

@@ -9,8 +9,11 @@ metadata:
   name: certificates.certificatemanager.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .spec.domainName
+  - JSONPath: .spec.forProvider.domainName
     name: DOMAINNAME
+    type: string
+  - JSONPath: .spec.forProvider.status
+    name: STATUS
     type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
@@ -167,6 +170,16 @@ spec:
                 renewCertificate:
                   description: Flag to renew the certificate
                   type: boolean
+                status:
+                  description: Status of the certificate
+                  enum:
+                  - pending_validation
+                  - issued
+                  - inactive
+                  - expired
+                  - validation_timed_out
+                  - failed
+                  type: string
                 subjectAlternativeNames:
                   description: Subject Alternative Name extension of the ACM certificate.
                   items:

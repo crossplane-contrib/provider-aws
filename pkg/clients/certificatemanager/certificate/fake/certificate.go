@@ -19,7 +19,7 @@ package fake
 import (
 	"github.com/aws/aws-sdk-go-v2/service/acm"
 
-	clientset "github.com/crossplane/provider-aws/pkg/clients/certificatemanager"
+	clientset "github.com/crossplane/provider-aws/pkg/clients/certificatemanager/certificate"
 )
 
 // this ensures that the mock implements the client interface

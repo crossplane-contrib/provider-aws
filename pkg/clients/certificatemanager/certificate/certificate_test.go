@@ -1,4 +1,4 @@
-package certificatemanager
+package certificate
 
 import (
 	"testing"
@@ -11,12 +11,10 @@ import (
 )
 
 var (
-	domainName                                       = "infracloud.site"
-	certificateTransparencyLoggingPreferenceEnbled   = "enabled"
-	certificateTransparencyLoggingPreferenceDisabled = "DISABLED"
-	certificateArn                                   = "somearn"
-	renewalEligibilityEligible                       = "ELIGIBLE"
-	certificateAuthorityArn                          = "someauthorityarn"
+	domainName                 = "somedomain"
+	certificateArn             = "somearn"
+	renewalEligibilityEligible = "ELIGIBLE"
+	certificateAuthorityArn    = "someauthorityarn"
 )
 
 // func addCertificateOutputFields(c *acm.CertificateDetail) {
@@ -33,7 +31,7 @@ func TestGenerateCreateCertificateInput(t *testing.T) {
 			in: v1alpha1.CertificateParameters{
 				DomainName:                               domainName,
 				CertificateAuthorityArn:                  aws.String(certificateAuthorityArn),
-				CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreferenceDisabled,
+				CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled,
 				Tags: []v1alpha1.Tag{{
 					Key:   "key1",
 					Value: "value1",
@@ -76,7 +74,7 @@ func TestLateInitializeCertificate(t *testing.T) {
 				spec: &v1alpha1.CertificateParameters{
 					DomainName:                               domainName,
 					CertificateAuthorityArn:                  aws.String(certificateAuthorityArn),
-					CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreferenceDisabled,
+					CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled,
 				},
 				in: &acm.CertificateDetail{
 					DomainName:              aws.String(domainName),
@@ -87,15 +85,15 @@ func TestLateInitializeCertificate(t *testing.T) {
 			want: &v1alpha1.CertificateParameters{
 				DomainName:                               domainName,
 				CertificateAuthorityArn:                  aws.String(certificateAuthorityArn),
-				CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreferenceDisabled,
+				CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled,
 			},
 		},
 		"AllFilledExternalDiff": {
 			args: args{
 				spec: &v1alpha1.CertificateParameters{
-					DomainName:                               "somedomain.site",
+					DomainName:                               domainName,
 					CertificateAuthorityArn:                  aws.String(certificateAuthorityArn),
-					CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreferenceDisabled,
+					CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled,
 				},
 				in: &acm.CertificateDetail{
 					DomainName:              aws.String(domainName),
@@ -106,7 +104,7 @@ func TestLateInitializeCertificate(t *testing.T) {
 			want: &v1alpha1.CertificateParameters{
 				DomainName:                               domainName,
 				CertificateAuthorityArn:                  aws.String(certificateAuthorityArn),
-				CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreferenceDisabled,
+				CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled,
 			},
 		},
 		"PartialFilled": {
@@ -124,7 +122,7 @@ func TestLateInitializeCertificate(t *testing.T) {
 			want: &v1alpha1.CertificateParameters{
 				DomainName:                               domainName,
 				CertificateAuthorityArn:                  aws.String(certificateAuthorityArn),
-				CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreferenceDisabled,
+				CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled,
 			},
 		},
 	}
@@ -146,7 +144,7 @@ func TestGenerateCertificateOptionRequest(t *testing.T) {
 	}{
 		"DisabledOption": {
 			in: &v1alpha1.CertificateParameters{
-				CertificateTransparencyLoggingPreference: "disabled",
+				CertificateTransparencyLoggingPreference: "DISABLED",
 			},
 			out: &acm.CertificateOptions{
 				CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled,
@@ -154,7 +152,7 @@ func TestGenerateCertificateOptionRequest(t *testing.T) {
 		},
 		"EnabledOption": {
 			in: &v1alpha1.CertificateParameters{
-				CertificateTransparencyLoggingPreference: "enabled",
+				CertificateTransparencyLoggingPreference: "ENABLED",
 			},
 			out: &acm.CertificateOptions{
 				CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceEnabled,
@@ -226,8 +224,8 @@ func TestIsCertificateUpToDate(t *testing.T) {
 					Options: &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceEnabled},
 				},
 				p: v1alpha1.CertificateParameters{
-					CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreferenceEnbled,
-					RenewCertificate:                         false,
+					CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceEnabled,
+					RenewCertificate:                         aws.Bool(false),
 					Tags: []v1alpha1.Tag{{
 						Key:   "key1",
 						Value: "value1",
@@ -246,8 +244,8 @@ func TestIsCertificateUpToDate(t *testing.T) {
 					Options: &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceEnabled},
 				},
 				p: v1alpha1.CertificateParameters{
-					CertificateTransparencyLoggingPreference: certificateTransparencyLoggingPreferenceDisabled,
-					RenewCertificate:                         false,
+					CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled,
+					RenewCertificate:                         aws.Bool(false),
 					Tags: []v1alpha1.Tag{{
 						Key:   "key1",
 						Value: "value1",

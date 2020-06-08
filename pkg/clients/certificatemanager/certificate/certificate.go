@@ -1,4 +1,4 @@
-package certificatemanager
+package certificate
 
 import (
 	"strings"
@@ -6,7 +6,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/acm"
-	"github.com/aws/aws-sdk-go-v2/service/iam"
 
 	"github.com/crossplane/provider-aws/apis/certificatemanager/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -36,18 +35,8 @@ func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParamete
 		DomainName:              aws.String(p.DomainName),
 		CertificateAuthorityArn: p.CertificateAuthorityArn,
 		IdempotencyToken:        p.IdempotencyToken,
-	}
-
-	if strings.EqualFold(p.CertificateTransparencyLoggingPreference, "DISABLED") {
-		m.Options = &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled}
-	} else if strings.EqualFold(p.CertificateTransparencyLoggingPreference, "ENABLED") {
-		m.Options = &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceEnabled}
-	}
-
-	if strings.EqualFold(p.ValidationMethod, "EMAIL") {
-		m.ValidationMethod = acm.ValidationMethodEmail
-	} else if strings.EqualFold(p.ValidationMethod, "DNS") {
-		m.ValidationMethod = acm.ValidationMethodDns
+		ValidationMethod:        p.ValidationMethod,
+		Options:                 &acm.CertificateOptions{CertificateTransparencyLoggingPreference: p.CertificateTransparencyLoggingPreference},
 	}
 
 	if len(p.DomainValidationOptions) != 0 {
@@ -83,20 +72,13 @@ func GenerateCertificateStatus(certificate acm.CertificateDetail) v1alpha1.Certi
 		CertificateArn:     aws.StringValue(certificate.CertificateArn),
 		RenewalEligibility: string(certificate.RenewalEligibility),
 	}
-
 }
 
 // GenerateCertificateOptionRequest return CertificateOptions from CertificateSpec
 func GenerateCertificateOptionRequest(p *v1alpha1.CertificateParameters) *acm.CertificateOptions {
 
-	var options *acm.CertificateOptions
+	return &acm.CertificateOptions{CertificateTransparencyLoggingPreference: p.CertificateTransparencyLoggingPreference}
 
-	if strings.EqualFold(p.CertificateTransparencyLoggingPreference, "DISABLED") {
-		options = &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled}
-	} else if strings.EqualFold(p.CertificateTransparencyLoggingPreference, "ENABLED") {
-		options = &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceEnabled}
-	}
-	return options
 }
 
 // LateInitializeCertificate fills the empty fields in *v1beta1.CertificateParameters with
@@ -112,12 +94,12 @@ func LateInitializeCertificate(in *v1alpha1.CertificateParameters, certificate *
 		in.CertificateAuthorityArn = certificate.CertificateAuthorityArn
 	}
 
-	if in.CertificateTransparencyLoggingPreference == "" && certificate.Options != nil {
-		in.CertificateTransparencyLoggingPreference = string(certificate.Options.CertificateTransparencyLoggingPreference)
+	if string(in.CertificateTransparencyLoggingPreference) == "" && certificate.Options != nil {
+		in.CertificateTransparencyLoggingPreference = certificate.Options.CertificateTransparencyLoggingPreference
 	}
 
-	if in.ValidationMethod == "" && len(certificate.DomainValidationOptions) != 0 {
-		in.ValidationMethod = string(certificate.DomainValidationOptions[0].ValidationMethod)
+	if string(in.ValidationMethod) == "" && len(certificate.DomainValidationOptions) != 0 {
+		in.ValidationMethod = certificate.DomainValidationOptions[0].ValidationMethod
 	}
 
 	if len(in.SubjectAlternativeNames) == 0 && len(certificate.SubjectAlternativeNames) != 0 {
@@ -125,6 +107,10 @@ func LateInitializeCertificate(in *v1alpha1.CertificateParameters, certificate *
 		for i := range certificate.SubjectAlternativeNames {
 			in.SubjectAlternativeNames[i] = certificate.SubjectAlternativeNames[i]
 		}
+	}
+
+	if string(certificate.Status) != "" {
+		in.Status = certificate.Status
 	}
 
 	if len(in.DomainValidationOptions) == 0 && len(certificate.DomainValidationOptions) != 0 {
@@ -142,7 +128,7 @@ func LateInitializeCertificate(in *v1alpha1.CertificateParameters, certificate *
 // IsCertificateUpToDate checks whether there is a change in any of the modifiable fields.
 func IsCertificateUpToDate(p v1alpha1.CertificateParameters, cd acm.CertificateDetail, tags []acm.Tag) bool { // nolint:gocyclo
 
-	if !strings.EqualFold(p.CertificateTransparencyLoggingPreference, string(cd.Options.CertificateTransparencyLoggingPreference)) {
+	if !strings.EqualFold(string(p.CertificateTransparencyLoggingPreference), string(cd.Options.CertificateTransparencyLoggingPreference)) {
 		return false
 	}
 
@@ -161,12 +147,12 @@ func IsCertificateUpToDate(p v1alpha1.CertificateParameters, cd acm.CertificateD
 		}
 	}
 
-	return !p.RenewCertificate
+	return !aws.BoolValue(p.RenewCertificate)
 }
 
 // IsErrorNotFound returns true if the error code indicates that the item was not found
 func IsErrorNotFound(err error) bool {
-	if iamErr, ok := err.(awserr.Error); ok && iamErr.Code() == iam.ErrCodeNoSuchEntityException {
+	if acmErr, ok := err.(awserr.Error); ok && acmErr.Code() == acm.ErrCodeResourceNotFoundException {
 		return true
 	}
 	return false
