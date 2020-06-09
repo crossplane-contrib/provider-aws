@@ -256,6 +256,76 @@ spec:
             atProvider:
               description: VPCObservation keeps the state for the external resource
               properties:
+                cidrBlockAssociationSet:
+                  description: Information about the IPv4 CIDR blocks associated with
+                    the VPC.
+                  items:
+                    description: VpcCidrBlockAssociation represents the association
+                      of IPv4 CIDR blocks with the VPC.
+                    properties:
+                      associationId:
+                        description: The association ID for the IPv4 CIDR block.
+                        type: string
+                      cidrBlock:
+                        description: The IPv4 CIDR block.
+                        type: string
+                      cidrBlockState:
+                        description: Information about the state of the CIDR block.
+                        properties:
+                          state:
+                            description: The state of the CIDR block.
+                            type: string
+                          statusmessage:
+                            description: A message about the status of the CIDR block,
+                              if applicable.
+                            type: string
+                        required:
+                        - state
+                        - statusmessage
+                        type: object
+                    type: object
+                  type: array
+                dhcpOptionsId:
+                  description: The ID of the set of DHCP options you've associated
+                    with the VPC.
+                  type: string
+                ipv6CidrBlockAssociationSet:
+                  description: Information about the IPv6 CIDR blocks associated with
+                    the VPC.
+                  items:
+                    description: VpcIpv6CidrBlockAssociation represents the association
+                      of IPv6 CIDR blocks with the VPC.
+                    properties:
+                      associationId:
+                        description: The association ID for the IPv6 CIDR block.
+                        type: string
+                      ipv6CidrBlock:
+                        description: The IPv6 CIDR block.
+                        type: string
+                      ipv6CidrBlockState:
+                        description: Information about the state of the CIDR block.
+                        properties:
+                          state:
+                            description: The state of the CIDR block.
+                            type: string
+                          statusmessage:
+                            description: A message about the status of the CIDR block,
+                              if applicable.
+                            type: string
+                        required:
+                        - state
+                        - statusmessage
+                        type: object
+                      ipv6Pool:
+                        description: The ID of the IPv6 address pool from which the
+                          IPv6 CIDR block is allocated.
+                        type: string
+                      networkBorderGroup:
+                        description: The name of the location from which we advertise
+                          the IPV6 CIDR block.
+                        type: string
+                    type: object
+                  type: array
                 isDefault:
                   description: Indicates whether the VPC is the default VPC.
                   type: boolean
@@ -279,12 +349,10 @@ spec:
                     type: object
                   type: array
                 vpcId:
+                  description: The ID of the VPC
                   type: string
                 vpcState:
                   description: VPCState is the current state of the VPC.
-                  enum:
-                  - pending
-                  - available
                   type: string
               type: object
             bindingPhase:

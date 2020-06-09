@@ -430,6 +430,10 @@ func TestCreate(t *testing.T) {
 		},
 		"CreateFail": {
 			args: args{
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockClient().Update,
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
 				sg: &fake.MockSecurityGroupClient{
 					MockCreate: func(input *awsec2.CreateSecurityGroupInput) awsec2.CreateSecurityGroupRequest {
 						return awsec2.CreateSecurityGroupRequest{

@@ -4,8 +4,7 @@ metadata:
   name: sample-cluster-sg
 spec:
   forProvider:
-    vpcIdRef:
-      name: sample-vpc
+    vpcId: vpc-3f353f5b
     groupName: my-cool-ekscluster-sg
     description: Cluster communication with worker nodes
     ingress:
@@ -14,7 +13,7 @@ spec:
         protocol: tcp
         cidrBlocks:
           - cidrIp: 192.168.0.0/32
-    ingress:
+    egress:
       - fromPort: 80
         toPort: 80
         protocol: tcp

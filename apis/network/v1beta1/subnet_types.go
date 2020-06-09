@@ -25,27 +25,31 @@ import (
 // SubnetParameters define the desired state of an AWS VPC Subnet.
 type SubnetParameters struct {
 	// CIDRBlock is the IPv4 network range for the Subnet, in CIDR notation. For example, 10.0.0.0/18.
+	// +immutable
 	CIDRBlock string `json:"cidrBlock"`
 
 	// The Availability Zone for the subnet.
 	// Default: AWS selects one for you. If you create more than one subnet in your
 	// VPC, we may not necessarily select a different zone for each subnet.
 	// +optional
+	// +immutable
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
 	// The AZ ID or the Local Zone ID of the subnet.
 	// +optional
+	// +immutable
 	AvailabilityZoneID *string `json:"availabilityZoneId,omitempty"`
 
 	// Indicates whether a network interface created in this subnet (including a
 	// network interface created by RunInstances) receives an IPv6 address.
 	// +optional
-	AssignIpv6AddressOnCreation *bool `json:"assignIpv6AddressOnCreation,omitempty"`
+	AssignIPv6AddressOnCreation *bool `json:"assignIpv6AddressOnCreation,omitempty"`
 
 	// The IPv6 network range for the subnet, in CIDR notation. The subnet size
 	// must use a /64 prefix length.
 	// +optional
-	Ipv6CIDRBlock *string `json:"ipv6CIDRBlock,omitempty"`
+	// +immutable
+	IPv6CIDRBlock *string `json:"ipv6CIDRBlock,omitempty"`
 
 	// Indicates whether instances launched in this subnet receive a public IPv4
 	// address.
@@ -58,10 +62,12 @@ type SubnetParameters struct {
 
 	// VPCID is the ID of the VPC.
 	// +optional
+	// +immutable
 	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef reference a VPC to retrieve its vpcId
 	// +optional
+	// +immutable
 	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
 
 	// VPCIDSelector selects reference to a VPC to retrieve its vpcId
@@ -81,7 +87,7 @@ type SubnetObservation struct {
 	AvailableIPAddressCount int64 `json:"availableIpAddressCount,omitempty"`
 
 	// Indicates whether this is the default subnet for the Availability Zone.
-	DefaultForAz bool `json:"defaultForAz,omitempty"`
+	DefaultForAZ bool `json:"defaultForAz,omitempty"`
 
 	// SubnetState is the current state of the Subnet.
 	// +kubebuilder:validation:Enum=pending;available

@@ -26,7 +26,8 @@ import (
 type Route struct {
 	// The IPv4 CIDR address block used for the destination match. Routing
 	// decisions are based on the most specific match.
-	DestinationCIDRBlock string `json:"destinationCidrBlock,omitempty"`
+	// +optional
+	DestinationCIDRBlock *string `json:"destinationCidrBlock,omitempty"`
 
 	// The ID of an internet gateway or virtual private gateway attached to your
 	// VPC.
@@ -47,7 +48,13 @@ type RouteState struct {
 	// to the VPC, or the specified NAT instance has been terminated).
 	State string `json:"state,omitempty"`
 
-	Route Route `json:",inline"`
+	// The IPv4 CIDR address block used for the destination match. Routing
+	// decisions are based on the most specific match.
+	DestinationCIDRBlock string `json:"destinationCidrBlock,omitempty"`
+
+	// The ID of an internet gateway or virtual private gateway attached to your
+	// VPC.
+	GatewayID string `json:"gatewayId,omitempty"`
 }
 
 // Association describes an association between a route table and a subnet.
@@ -77,7 +84,9 @@ type AssociationState struct {
 	// The state of the association.
 	State string `json:"state,omitempty"`
 
-	Association Association `json:",inline"`
+	// The ID of the subnet. A subnet ID is not returned for an implicit
+	// association.
+	SubnetID string `json:"subnetId,omitempty"`
 }
 
 // RouteTableParameters define the desired state of an AWS VPC Route Table.
@@ -98,9 +107,12 @@ type RouteTableParameters struct {
 	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef references a VPC to retrieve its vpcId
+	// +optional
+	// +immutable
 	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
 
 	// VPCIDSelector selects a reference to a VPC to retrieve its vpcId
+	// +optional
 	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
 }
 

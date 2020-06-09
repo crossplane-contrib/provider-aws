@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -53,7 +54,8 @@ const (
 	errDetach              = "failed to detach the InternetGateway from VPC"
 	errDelete              = "failed to delete the InternetGateway resource"
 	errUpdate              = "failed to update the InternetGateway resource"
-	errSpecUpdate          = "cannot update spec"
+	errSpecUpdate          = "cannot update spec of the InternetGateway resource"
+	errStatusUpdate        = "cannot update status of the InternetGateway resource"
 	errCreateTags          = "failed to create tags for the InternetGateway resource"
 )
 
@@ -130,25 +132,31 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		InternetGatewayIds: []string{meta.GetExternalName(cr)},
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrapf(resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err), errDescribe)
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
 	if len(response.InternetGateways) != 1 {
-		return managed.ExternalObservation{}, errors.Errorf(errNotSingleItem)
+		return managed.ExternalObservation{}, errors.New(errNotSingleItem)
+	}
+
+	observed := response.InternetGateways[0]
+
+	current := cr.Spec.ForProvider.DeepCopy()
+	ec2.LateInitializeIG(&cr.Spec.ForProvider, &observed)
+	if !cmp.Equal(current, &cr.Spec.ForProvider) {
+		if err := e.kube.Update(ctx, cr); err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errSpecUpdate)
+		}
 	}
 
 	cr.SetConditions(runtimev1alpha1.Available())
 
-	observed := response.InternetGateways[0]
-
 	cr.Status.AtProvider = ec2.GenerateIGObservation(observed)
-
-	isUptoDate := ec2.IsIgUpToDate(cr.Spec.ForProvider, observed)
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: isUptoDate,
+		ResourceUpToDate: ec2.IsIgUpToDate(cr.Spec.ForProvider, observed),
 	}, nil
 }
 
@@ -159,6 +167,9 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
+	if err := e.kube.Status().Update(ctx, cr); err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
+	}
 
 	ig, err := e.client.CreateInternetGatewayRequest(&awsec2.CreateInternetGatewayInput{}).Send(ctx)
 	if err != nil {
@@ -199,7 +210,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	observed := response.InternetGateways[0]
 
-	// There can only be one attachmemt and if that is attached to
+	// There can only be one attachment and if that is attached to
 	// spec.VpcID, no action is required.
 	if len(observed.Attachments) > 1 {
 		return managed.ExternalUpdate{}, errors.New(errMultipleAttachments)

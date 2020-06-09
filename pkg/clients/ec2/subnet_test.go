@@ -39,7 +39,7 @@ func TestIsSubnetUpToDate(t *testing.T) {
 				p: v1beta1.SubnetParameters{
 					CIDRBlock:                   cidr,
 					VPCID:                       aws.String(vpc),
-					AssignIpv6AddressOnCreation: aws.Bool(true),
+					AssignIPv6AddressOnCreation: aws.Bool(true),
 					MapPublicIPOnLaunch:         aws.Bool(true),
 				},
 			},
@@ -56,7 +56,7 @@ func TestIsSubnetUpToDate(t *testing.T) {
 				p: v1beta1.SubnetParameters{
 					CIDRBlock:                   cidr,
 					VPCID:                       aws.String(vpc),
-					AssignIpv6AddressOnCreation: aws.Bool(true),
+					AssignIPv6AddressOnCreation: aws.Bool(true),
 					MapPublicIPOnLaunch:         aws.Bool(true),
 				},
 			},
@@ -66,7 +66,7 @@ func TestIsSubnetUpToDate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got, _ := IsSubnetUpToDate(tc.args.p, tc.args.subnet)
+			got := IsSubnetUpToDate(tc.args.p, tc.args.subnet)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
@@ -88,7 +88,7 @@ func TestGenerateSubnetObservation(t *testing.T) {
 			},
 			out: v1beta1.SubnetObservation{
 				AvailableIPAddressCount: int64(availableIPCount),
-				DefaultForAz:            true,
+				DefaultForAZ:            true,
 				SubnetID:                subnetID,
 				SubnetState:             state,
 			},
@@ -100,7 +100,7 @@ func TestGenerateSubnetObservation(t *testing.T) {
 				State:        ec2.SubnetStateAvailable,
 			},
 			out: v1beta1.SubnetObservation{
-				DefaultForAz: true,
+				DefaultForAZ: true,
 				SubnetID:     subnetID,
 				SubnetState:  state,
 			},
@@ -112,72 +112,6 @@ func TestGenerateSubnetObservation(t *testing.T) {
 			r := GenerateSubnetObservation(tc.in)
 			if diff := cmp.Diff(r, tc.out); diff != "" {
 				t.Errorf("GenerateNetworkObservation(...): -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestCreateSubnetPatch(t *testing.T) {
-	type args struct {
-		subnet ec2.Subnet
-		p      v1beta1.SubnetParameters
-	}
-
-	type want struct {
-		patch *v1beta1.SubnetParameters
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"SameFields": {
-			args: args{
-				subnet: ec2.Subnet{
-					CidrBlock:                   aws.String(cidr),
-					VpcId:                       aws.String(vpc),
-					AssignIpv6AddressOnCreation: aws.Bool(true),
-					MapPublicIpOnLaunch:         aws.Bool(true),
-				},
-				p: v1beta1.SubnetParameters{
-					CIDRBlock:                   cidr,
-					VPCID:                       aws.String(vpc),
-					AssignIpv6AddressOnCreation: aws.Bool(true),
-					MapPublicIPOnLaunch:         aws.Bool(true),
-				},
-			},
-			want: want{
-				patch: &v1beta1.SubnetParameters{},
-			},
-		},
-		"DifferentFields": {
-			args: args{
-				subnet: ec2.Subnet{
-					CidrBlock:                   aws.String(cidr),
-					VpcId:                       aws.String(vpc),
-					AssignIpv6AddressOnCreation: aws.Bool(true),
-					MapPublicIpOnLaunch:         aws.Bool(false),
-				},
-				p: v1beta1.SubnetParameters{
-					CIDRBlock:                   cidr,
-					VPCID:                       aws.String(vpc),
-					AssignIpv6AddressOnCreation: aws.Bool(true),
-					MapPublicIPOnLaunch:         aws.Bool(true),
-				},
-			},
-			want: want{
-				patch: &v1beta1.SubnetParameters{
-					MapPublicIPOnLaunch: aws.Bool(true),
-				},
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			result, _ := CreateSubnetPatch(tc.args.subnet, tc.args.p)
-			if diff := cmp.Diff(tc.want.patch, result); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
 	}

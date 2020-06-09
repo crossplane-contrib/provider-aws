@@ -92,11 +92,9 @@ func GenerateRTObservation(rt ec2.RouteTable) v1beta1.RouteTableObservation {
 		o.Routes = make([]v1beta1.RouteState, len(rt.Routes))
 		for i, rt := range rt.Routes {
 			o.Routes[i] = v1beta1.RouteState{
-				State: string(rt.State),
-				Route: v1beta1.Route{
-					DestinationCIDRBlock: aws.StringValue(rt.DestinationCidrBlock),
-					GatewayID:            rt.GatewayId,
-				},
+				State:                string(rt.State),
+				DestinationCIDRBlock: aws.StringValue(rt.DestinationCidrBlock),
+				GatewayID:            aws.StringValue(rt.GatewayId),
 			}
 		}
 	}
@@ -108,9 +106,7 @@ func GenerateRTObservation(rt ec2.RouteTable) v1beta1.RouteTableObservation {
 				Main:          aws.BoolValue(asc.Main),
 				AssociationID: aws.StringValue(asc.RouteTableAssociationId),
 				State:         asc.AssociationState.String(),
-				Association: v1beta1.Association{
-					SubnetID: asc.SubnetId,
-				},
+				SubnetID:      aws.StringValue(asc.SubnetId),
 			}
 		}
 	}
@@ -130,7 +126,7 @@ func LateInitializeRT(in *v1beta1.RouteTableParameters, rt *ec2.RouteTable, targ
 		routes := make([]v1beta1.Route, len(rt.Routes))
 		for i, val := range rt.Routes {
 			routes[i] = v1beta1.Route{
-				DestinationCIDRBlock: aws.StringValue(val.DestinationCidrBlock),
+				DestinationCIDRBlock: val.DestinationCidrBlock,
 				GatewayID:            val.GatewayId,
 			}
 			if target.Routes[i].GatewayIDRef != nil {
@@ -177,7 +173,7 @@ func CreateRTPatch(in ec2.RouteTable, target v1beta1.RouteTableParameters) (*v1b
 		if *val.GatewayId == LocalGatewayID {
 			target.Routes = append([]v1beta1.Route{{
 				GatewayID:            val.GatewayId,
-				DestinationCIDRBlock: aws.StringValue(val.DestinationCidrBlock),
+				DestinationCIDRBlock: val.DestinationCidrBlock,
 			}}, target.Routes...)
 		}
 	}

@@ -2,14 +2,10 @@ package ec2
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane/provider-aws/apis/network/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -54,7 +50,7 @@ func IsSubnetNotFoundErr(err error) bool {
 func GenerateSubnetObservation(subnet ec2.Subnet) v1beta1.SubnetObservation {
 	o := v1beta1.SubnetObservation{
 		AvailableIPAddressCount: aws.Int64Value(subnet.AvailableIpAddressCount),
-		DefaultForAz:            aws.BoolValue(subnet.DefaultForAz),
+		DefaultForAZ:            aws.BoolValue(subnet.DefaultForAz),
 		SubnetID:                aws.StringValue(subnet.SubnetId),
 		SubnetState:             string(subnet.State),
 	}
@@ -74,7 +70,7 @@ func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2.Subnet) { // noli
 		return
 	}
 
-	in.AssignIpv6AddressOnCreation = awsclients.LateInitializeBoolPtr(in.AssignIpv6AddressOnCreation, s.AssignIpv6AddressOnCreation)
+	in.AssignIPv6AddressOnCreation = awsclients.LateInitializeBoolPtr(in.AssignIPv6AddressOnCreation, s.AssignIpv6AddressOnCreation)
 	in.AvailabilityZone = awsclients.LateInitializeStringPtr(in.AvailabilityZone, s.AvailabilityZone)
 	in.AvailabilityZoneID = awsclients.LateInitializeStringPtr(in.AvailabilityZoneID, s.AvailabilityZoneId)
 	in.CIDRBlock = awsclients.LateInitializeString(in.CIDRBlock, s.CidrBlock)
@@ -82,7 +78,7 @@ func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2.Subnet) { // noli
 	in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, s.VpcId)
 
 	if s.Ipv6CidrBlockAssociationSet != nil {
-		in.Ipv6CIDRBlock = awsclients.LateInitializeStringPtr(in.Ipv6CIDRBlock, s.Ipv6CidrBlockAssociationSet[0].Ipv6CidrBlock)
+		in.IPv6CIDRBlock = awsclients.LateInitializeStringPtr(in.IPv6CIDRBlock, s.Ipv6CidrBlockAssociationSet[0].Ipv6CidrBlock)
 	}
 
 	if len(in.Tags) == 0 && len(s.Tags) != 0 {
@@ -90,31 +86,15 @@ func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2.Subnet) { // noli
 	}
 }
 
-// CreateSubnetPatch creates a *v1beta1.SubnetParameters that has only the changed
-// values between the target *v1beta1.SubnetParameters and the current
-// *ec2.Subnet
-func CreateSubnetPatch(in ec2.Subnet, target v1beta1.SubnetParameters) (*v1beta1.SubnetParameters, error) {
-	currentParams := &v1beta1.SubnetParameters{}
-
-	v1beta1.SortTags(target.Tags, in.Tags)
-	LateInitializeSubnet(currentParams, &in)
-
-	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
-	if err != nil {
-		return nil, err
-	}
-	patch := &v1beta1.SubnetParameters{}
-	if err := json.Unmarshal(jsonPatch, patch); err != nil {
-		return nil, err
-	}
-	return patch, nil
-}
-
 // IsSubnetUpToDate checks whether there is a change in any of the modifiable fields.
-func IsSubnetUpToDate(p v1beta1.SubnetParameters, s ec2.Subnet) (bool, error) {
-	patch, err := CreateSubnetPatch(s, p)
-	if err != nil {
-		return false, err
+func IsSubnetUpToDate(p v1beta1.SubnetParameters, s ec2.Subnet) bool {
+	if p.MapPublicIPOnLaunch != nil && (*p.MapPublicIPOnLaunch != *s.MapPublicIpOnLaunch) {
+		return false
 	}
-	return cmp.Equal(v1beta1.SubnetParameters{}, *patch, cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{})), nil
+
+	if p.AssignIPv6AddressOnCreation != nil && (*p.AssignIPv6AddressOnCreation != *s.AssignIpv6AddressOnCreation) {
+		return false
+	}
+
+	return v1beta1.CompareTags(p.Tags, s.Tags)
 }

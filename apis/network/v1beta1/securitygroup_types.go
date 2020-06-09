@@ -26,9 +26,11 @@ import (
 // Group.
 type SecurityGroupParameters struct {
 	// A description of the security group.
+	// +immutable
 	Description string `json:"description"`
 
 	// The name of the security group.
+	// +immutable
 	GroupName string `json:"groupName"`
 
 	// One or more inbound rules associated with the security group.
@@ -45,10 +47,12 @@ type SecurityGroupParameters struct {
 
 	// VPCID is the ID of the VPC.
 	// +optional
+	// +immutable
 	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef references a VPC to and retrieves its vpcId
 	// +optional
+	// +immutable
 	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
 
 	// VPCIDSelector selects a reference to a VPC to and retrieves its vpcId
@@ -151,9 +155,6 @@ type IPPermission struct {
 	// +optional
 	FromPort *int64 `json:"fromPort,omitempty"`
 
-	// TODO(muvaf): jsontag of this should be ipProtocol when we make this resource
-	// v1beta1
-
 	// The IP protocol name (tcp, udp, icmp, icmpv6) or number (see Protocol Numbers
 	// (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
 	//
@@ -163,14 +164,11 @@ type IPPermission struct {
 	// tcp, udp, and icmp, you must specify a port range. For icmpv6, the port range
 	// is optional; if you omit the port range, traffic for all types and codes
 	// is allowed.
-	IPProtocol string `json:"protocol"`
-
-	// TODO(muvaf): The jsontag should be ipRanges instead of cidrBlocks, do that
-	// when we bump the version.
+	IPProtocol string `json:"ipPprotocol"`
 
 	// The IPv4 ranges.
 	// +optional
-	IPRanges []IPRange `json:"cidrBlocks,omitempty"`
+	IPRanges []IPRange `json:"ipRanges,omitempty"`
 
 	// The IPv6 ranges.
 	//

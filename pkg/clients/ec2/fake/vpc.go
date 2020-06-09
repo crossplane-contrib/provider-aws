@@ -27,12 +27,13 @@ var _ clientset.VPCClient = (*MockVPCClient)(nil)
 
 // MockVPCClient is a type that implements all the methods for VPCClient interface
 type MockVPCClient struct {
-	MockCreate            func(*ec2.CreateVpcInput) ec2.CreateVpcRequest
-	MockDelete            func(*ec2.DeleteVpcInput) ec2.DeleteVpcRequest
-	MockDescribe          func(*ec2.DescribeVpcsInput) ec2.DescribeVpcsRequest
-	MockModifyAttribute   func(*ec2.ModifyVpcAttributeInput) ec2.ModifyVpcAttributeRequest
-	MockModifyTenancy     func(*ec2.ModifyVpcTenancyInput) ec2.ModifyVpcTenancyRequest
-	MockCreateTagsRequest func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
+	MockCreate                      func(*ec2.CreateVpcInput) ec2.CreateVpcRequest
+	MockDelete                      func(*ec2.DeleteVpcInput) ec2.DeleteVpcRequest
+	MockDescribe                    func(*ec2.DescribeVpcsInput) ec2.DescribeVpcsRequest
+	MockModifyAttribute             func(*ec2.ModifyVpcAttributeInput) ec2.ModifyVpcAttributeRequest
+	MockModifyTenancy               func(*ec2.ModifyVpcTenancyInput) ec2.ModifyVpcTenancyRequest
+	MockCreateTagsRequest           func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
+	MockDescribeVpcAttributeRequest func(*ec2.DescribeVpcAttributeInput) ec2.DescribeVpcAttributeRequest
 }
 
 // CreateVpcRequest mocks CreateVpcRequest method
@@ -63,4 +64,9 @@ func (m *MockVPCClient) ModifyVpcTenancyRequest(input *ec2.ModifyVpcTenancyInput
 // CreateTagsRequest mocks CreateTagsRequest method
 func (m *MockVPCClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
 	return m.MockCreateTagsRequest(input)
+}
+
+// DescribeVpcAttributeRequest mocks DescribeVpcAttributeRequest method
+func (m *MockVPCClient) DescribeVpcAttributeRequest(input *ec2.DescribeVpcAttributeInput) ec2.DescribeVpcAttributeRequest {
+	return m.MockDescribeVpcAttributeRequest(input)
 }

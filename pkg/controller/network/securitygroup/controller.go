@@ -55,7 +55,8 @@ const (
 	errAuthorizeIngress = "failed to authorize ingress rules"
 	errAuthorizeEgress  = "failed to authorize egress rules"
 	errDelete           = "failed to delete the SecurityGroup resource"
-	errSpecUpdate       = "cannot update spec"
+	errSpecUpdate       = "cannot update spec of the SecurityGroup custom resource"
+	errStatusUpdate     = "cannot update status of the SecurityGroup custom resource"
 	errUpdate           = "failed to update the SecurityGroup resource"
 	errCreateTags       = "failed to create tags for the Security Group resource"
 )
@@ -141,10 +142,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	observed := response.SecurityGroups[0]
 
-	// the fact that the security group is successfully fetched,
-	// indicates that it's available
-	cr.SetConditions(runtimev1alpha1.Available())
-
 	current := cr.Spec.ForProvider.DeepCopy()
 	ec2.LateInitializeSG(&cr.Spec.ForProvider, &observed)
 	if !cmp.Equal(current, &cr.Spec.ForProvider) {
@@ -152,11 +149,17 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
 		}
 	}
+
 	cr.Status.AtProvider = ec2.GenerateSGObservation(observed)
 
 	upToDate, err := ec2.IsSGUpToDate(cr.Spec.ForProvider, observed)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, errDescribe)
+	}
+
+	// this is to make sure that the security group exists with the specified traffic rules.
+	if upToDate {
+		cr.SetConditions(runtimev1alpha1.Available())
 	}
 
 	return managed.ExternalObservation{
@@ -172,6 +175,9 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
+	if err := e.kube.Status().Update(ctx, cr); err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
+	}
 
 	// Creating the SecurityGroup itself
 	result, err := e.sg.CreateSecurityGroupRequest(&awsec2.CreateSecurityGroupInput{
@@ -224,7 +230,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		if _, err := e.sg.AuthorizeSecurityGroupIngressRequest(&awsec2.AuthorizeSecurityGroupIngressInput{
 			GroupId:       aws.String(meta.GetExternalName(cr)),
 			IpPermissions: v1beta1.BuildEC2Permissions(cr.Spec.ForProvider.Ingress),
-		}).Send(ctx); err != nil {
+		}).Send(ctx); err != nil && !ec2.IsRuleAlreadyExistsErr(err) {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errAuthorizeIngress)
 		}
 	}
@@ -233,7 +239,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		if _, err = e.sg.AuthorizeSecurityGroupEgressRequest(&awsec2.AuthorizeSecurityGroupEgressInput{
 			GroupId:       aws.String(meta.GetExternalName(cr)),
 			IpPermissions: v1beta1.BuildEC2Permissions(cr.Spec.ForProvider.Egress),
-		}).Send(ctx); err != nil {
+		}).Send(ctx); err != nil && !ec2.IsRuleAlreadyExistsErr(err) {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errAuthorizeEgress)
 		}
 	}

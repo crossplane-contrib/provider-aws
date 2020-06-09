@@ -15,7 +15,7 @@ const (
 	// InternetGatewayIDNotFound is the code that is returned by ec2 when the given InternetGatewayID is not valid
 	InternetGatewayIDNotFound = "InvalidInternetGatewayID.NotFound"
 	// InternetGatewayAlreadyAttached is code for error returned by AWS API
-	// for AttachInternetGatewayRequest when an InternetGatway is already atatched to specified VPC in the request.
+	// for AttachInternetGatewayRequest when an InternetGatway is already attached to specified VPC in the request.
 	InternetGatewayAlreadyAttached = "Resource.AlreadyAssociated"
 )
 
@@ -78,23 +78,34 @@ func GenerateIGObservation(ig ec2.InternetGateway) v1beta1.InternetGatewayObserv
 	}
 }
 
-// IsIgUpToDate checks whether there is a change in any of the modifiable fields.
-func IsIgUpToDate(p v1beta1.InternetGatewayParameters, ig ec2.InternetGateway) bool {
-	attachments := ig.Attachments
-	upToDate := false
-
-	// if there are no attachments for obsreved IG and in spec.
-	if len(attachments) == 0 && p.VPCID == nil {
-		upToDate = true
+// LateInitializeIG fills the empty fields in *v1beta1.InternetGatewayParameters with
+// the values seen in ec2.InternetGateway.
+func LateInitializeIG(in *v1beta1.InternetGatewayParameters, ig *ec2.InternetGateway) { // nolint:gocyclo
+	if ig == nil {
+		return
 	}
 
-	// if the attachment in spec exists in ig.Attachments(if any).
-	for _, a := range attachments {
+	in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, ig.Attachments[0].VpcId)
+
+	if len(in.Tags) == 0 && len(ig.Tags) != 0 {
+		in.Tags = v1beta1.BuildFromEC2Tags(ig.Tags)
+	}
+}
+
+// IsIgUpToDate checks whether there is a change in any of the modifiable fields.
+func IsIgUpToDate(p v1beta1.InternetGatewayParameters, ig ec2.InternetGateway) bool {
+
+	// if there are no attachments for observed IG and in spec.
+	if len(ig.Attachments) == 0 && p.VPCID != nil {
+		return false
+	}
+
+	// if the attachment in spec exists in ig.Attachments, compare the tags and return
+	for _, a := range ig.Attachments {
 		if aws.StringValue(p.VPCID) == aws.StringValue(a.VpcId) {
-			upToDate = true
-			break
+			return v1beta1.CompareTags(p.Tags, ig.Tags)
 		}
 	}
 
-	return upToDate && v1beta1.CompareTags(p.Tags, ig.Tags)
+	return false
 }
