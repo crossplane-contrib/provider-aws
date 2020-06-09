@@ -1,0 +1,14 @@
+apiVersion: certificatemanager.aws.crossplane.io/v1alpha1
+kind: Certificate
+metadata:
+  name: publiccertificate 
+spec:
+  forProvider:
+    domainName: infracloud.site
+    validationMethod: DNS
+    tags:
+    - key: Name
+      value: example
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
