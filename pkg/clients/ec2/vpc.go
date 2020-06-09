@@ -74,13 +74,13 @@ func GenerateVpcObservation(vpc ec2.Vpc) v1beta1.VPCObservation {
 	}
 
 	if len(vpc.CidrBlockAssociationSet) > 0 {
-		o.CidrBlockAssociationSet = make([]v1beta1.VpcCidrBlockAssociation, len(vpc.CidrBlockAssociationSet))
+		o.CIDRBlockAssociationSet = make([]v1beta1.VPCCIDRBlockAssociation, len(vpc.CidrBlockAssociationSet))
 		for i, v := range vpc.CidrBlockAssociationSet {
-			o.CidrBlockAssociationSet[i] = v1beta1.VpcCidrBlockAssociation{
+			o.CIDRBlockAssociationSet[i] = v1beta1.VPCCIDRBlockAssociation{
 				AssociationID: v.AssociationId,
 				CIDRBlock:     v.CidrBlock,
 			}
-			o.CidrBlockAssociationSet[i].CIDRBlockState = &v1beta1.VpcCidrBlockState{
+			o.CIDRBlockAssociationSet[i].CIDRBlockState = &v1beta1.VPCCIDRBlockState{
 				State:         string(v.CidrBlockState.State),
 				StatusMessage: v.CidrBlockState.StatusMessage,
 			}
@@ -88,15 +88,15 @@ func GenerateVpcObservation(vpc ec2.Vpc) v1beta1.VPCObservation {
 	}
 
 	if len(vpc.Ipv6CidrBlockAssociationSet) > 0 {
-		o.IPv6CIDRBlockAssociationSet = make([]v1beta1.VpcIpv6CidrBlockAssociation, len(vpc.Ipv6CidrBlockAssociationSet))
+		o.IPv6CIDRBlockAssociationSet = make([]v1beta1.VPCIPv6CidrBlockAssociation, len(vpc.Ipv6CidrBlockAssociationSet))
 		for i, v := range vpc.Ipv6CidrBlockAssociationSet {
-			o.IPv6CIDRBlockAssociationSet[i] = v1beta1.VpcIpv6CidrBlockAssociation{
+			o.IPv6CIDRBlockAssociationSet[i] = v1beta1.VPCIPv6CidrBlockAssociation{
 				AssociationID:      v.AssociationId,
 				IPv6CIDRBlock:      v.Ipv6CidrBlock,
-				Ipv6Pool:           v.Ipv6Pool,
+				IPv6Pool:           v.Ipv6Pool,
 				NetworkBorderGroup: v.NetworkBorderGroup,
 			}
-			o.IPv6CIDRBlockAssociationSet[i].IPv6CIDRBlockState = &v1beta1.VpcCidrBlockState{
+			o.IPv6CIDRBlockAssociationSet[i].IPv6CIDRBlockState = &v1beta1.VPCCIDRBlockState{
 				State:         string(v.Ipv6CidrBlockState.State),
 				StatusMessage: v.Ipv6CidrBlockState.StatusMessage,
 			}

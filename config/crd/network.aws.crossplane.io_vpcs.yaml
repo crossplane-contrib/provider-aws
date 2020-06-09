@@ -260,7 +260,7 @@ spec:
                   description: Information about the IPv4 CIDR blocks associated with
                     the VPC.
                   items:
-                    description: VpcCidrBlockAssociation represents the association
+                    description: VPCCIDRBlockAssociation represents the association
                       of IPv4 CIDR blocks with the VPC.
                     properties:
                       associationId:
@@ -293,7 +293,7 @@ spec:
                   description: Information about the IPv6 CIDR blocks associated with
                     the VPC.
                   items:
-                    description: VpcIpv6CidrBlockAssociation represents the association
+                    description: VPCIPv6CidrBlockAssociation represents the association
                       of IPv6 CIDR blocks with the VPC.
                     properties:
                       associationId:
