@@ -22,8 +22,8 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
 
-// VpcCidrBlockState represents the state of a CIDR Block
-type VpcCidrBlockState struct {
+// VPCCIDRBlockState represents the state of a CIDR Block
+type VPCCIDRBlockState struct {
 
 	// The state of the CIDR block.
 	State string `json:"state"`
@@ -32,8 +32,8 @@ type VpcCidrBlockState struct {
 	StatusMessage *string `json:"statusmessage"`
 }
 
-// VpcCidrBlockAssociation represents the association of IPv4 CIDR blocks with the VPC.
-type VpcCidrBlockAssociation struct {
+// VPCCIDRBlockAssociation represents the association of IPv4 CIDR blocks with the VPC.
+type VPCCIDRBlockAssociation struct {
 
 	// The association ID for the IPv4 CIDR block.
 	AssociationID *string `json:"associationId,omitempty"`
@@ -42,11 +42,11 @@ type VpcCidrBlockAssociation struct {
 	CIDRBlock *string `json:"cidrBlock,omitempty"`
 
 	// Information about the state of the CIDR block.
-	CIDRBlockState *VpcCidrBlockState `json:"cidrBlockState,omitempty"`
+	CIDRBlockState *VPCCIDRBlockState `json:"cidrBlockState,omitempty"`
 }
 
-// VpcIpv6CidrBlockAssociation represents the association of IPv6 CIDR blocks with the VPC.
-type VpcIpv6CidrBlockAssociation struct {
+// VPCIPv6CidrBlockAssociation represents the association of IPv6 CIDR blocks with the VPC.
+type VPCIPv6CidrBlockAssociation struct {
 
 	// The association ID for the IPv6 CIDR block.
 	AssociationID *string `json:"associationId,omitempty"`
@@ -55,10 +55,10 @@ type VpcIpv6CidrBlockAssociation struct {
 	IPv6CIDRBlock *string `json:"ipv6CidrBlock,omitempty"`
 
 	// Information about the state of the CIDR block.
-	IPv6CIDRBlockState *VpcCidrBlockState `json:"ipv6CidrBlockState,omitempty"`
+	IPv6CIDRBlockState *VPCCIDRBlockState `json:"ipv6CidrBlockState,omitempty"`
 
 	// The ID of the IPv6 address pool from which the IPv6 CIDR block is allocated.
-	Ipv6Pool *string `json:"ipv6Pool,omitempty"`
+	IPv6Pool *string `json:"ipv6Pool,omitempty"`
 
 	// The name of the location from which we advertise the IPV6 CIDR block.
 	NetworkBorderGroup *string `json:"networkBorderGroup,omitempty"`
@@ -98,13 +98,13 @@ type VPCSpec struct {
 // VPCObservation keeps the state for the external resource
 type VPCObservation struct {
 	// Information about the IPv4 CIDR blocks associated with the VPC.
-	CidrBlockAssociationSet []VpcCidrBlockAssociation `json:"cidrBlockAssociationSet,omitempty"`
+	CIDRBlockAssociationSet []VPCCIDRBlockAssociation `json:"cidrBlockAssociationSet,omitempty"`
 
 	// The ID of the set of DHCP options you've associated with the VPC.
 	DHCPOptionsID *string `json:"dhcpOptionsId,omitempty"`
 
 	// Information about the IPv6 CIDR blocks associated with the VPC.
-	IPv6CIDRBlockAssociationSet []VpcIpv6CidrBlockAssociation `json:"ipv6CidrBlockAssociationSet,omitempty"`
+	IPv6CIDRBlockAssociationSet []VPCIPv6CidrBlockAssociation `json:"ipv6CidrBlockAssociationSet,omitempty"`
 
 	// Indicates whether the VPC is the default VPC.
 	IsDefault bool `json:"isDefault,omitempty"`
