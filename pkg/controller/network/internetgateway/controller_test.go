@@ -420,7 +420,10 @@ func TestCreate(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				kube: test.NewMockClient(),
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockClient().Update,
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
 				ig: &fake.MockInternetGatewayClient{
 					MockCreate: func(input *awsec2.CreateInternetGatewayInput) awsec2.CreateInternetGatewayRequest {
 						return awsec2.CreateInternetGatewayRequest{
@@ -447,6 +450,9 @@ func TestCreate(t *testing.T) {
 		},
 		"FailedRequest": {
 			args: args{
+				kube: &test.MockClient{
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
 				ig: &fake.MockInternetGatewayClient{
 					MockCreate: func(input *awsec2.CreateInternetGatewayInput) awsec2.CreateInternetGatewayRequest {
 						return awsec2.CreateInternetGatewayRequest{

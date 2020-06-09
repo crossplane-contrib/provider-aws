@@ -22,11 +22,54 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
 
+// VpcCidrBlockState represents the state of a CIDR Block
+type VpcCidrBlockState struct {
+
+	// The state of the CIDR block.
+	State string `json:"state"`
+
+	// A message about the status of the CIDR block, if applicable.
+	StatusMessage *string `json:"statusmessage"`
+}
+
+// VpcCidrBlockAssociation represents the association of IPv4 CIDR blocks with the VPC.
+type VpcCidrBlockAssociation struct {
+
+	// The association ID for the IPv4 CIDR block.
+	AssociationID *string `json:"associationId,omitempty"`
+
+	// The IPv4 CIDR block.
+	CIDRBlock *string `json:"cidrBlock,omitempty"`
+
+	// Information about the state of the CIDR block.
+	CIDRBlockState *VpcCidrBlockState `json:"cidrBlockState,omitempty"`
+}
+
+// VpcIpv6CidrBlockAssociation represents the association of IPv6 CIDR blocks with the VPC.
+type VpcIpv6CidrBlockAssociation struct {
+
+	// The association ID for the IPv6 CIDR block.
+	AssociationID *string `json:"associationId,omitempty"`
+
+	// The IPv6 CIDR block.
+	IPv6CIDRBlock *string `json:"ipv6CidrBlock,omitempty"`
+
+	// Information about the state of the CIDR block.
+	IPv6CIDRBlockState *VpcCidrBlockState `json:"ipv6CidrBlockState,omitempty"`
+
+	// The ID of the IPv6 address pool from which the IPv6 CIDR block is allocated.
+	Ipv6Pool *string `json:"ipv6Pool,omitempty"`
+
+	// The name of the location from which we advertise the IPV6 CIDR block.
+	NetworkBorderGroup *string `json:"networkBorderGroup,omitempty"`
+}
+
 // VPCParameters define the desired state of an AWS Virtual Private Cloud.
 type VPCParameters struct {
 	// CIDRBlock is the IPv4 network range for the VPC, in CIDR notation. For
 	// example, 10.0.0.0/16.
 	// +kubebuilder:validation:Required
+	// +immutable
 	CIDRBlock string `json:"cidrBlock"`
 
 	// A boolean flag to enable/disable DNS support in the VPC
@@ -54,6 +97,15 @@ type VPCSpec struct {
 
 // VPCObservation keeps the state for the external resource
 type VPCObservation struct {
+	// Information about the IPv4 CIDR blocks associated with the VPC.
+	CidrBlockAssociationSet []VpcCidrBlockAssociation `json:"cidrBlockAssociationSet,omitempty"`
+
+	// The ID of the set of DHCP options you've associated with the VPC.
+	DHCPOptionsID *string `json:"dhcpOptionsId,omitempty"`
+
+	// Information about the IPv6 CIDR blocks associated with the VPC.
+	IPv6CIDRBlockAssociationSet []VpcIpv6CidrBlockAssociation `json:"ipv6CidrBlockAssociationSet,omitempty"`
+
 	// Indicates whether the VPC is the default VPC.
 	IsDefault bool `json:"isDefault,omitempty"`
 
@@ -61,12 +113,12 @@ type VPCObservation struct {
 	OwnerID string `json:"ownerID,omitempty"`
 
 	// VPCState is the current state of the VPC.
-	// +kubebuilder:validation:Enum=pending;available
 	VPCState string `json:"vpcState,omitempty"`
 
 	// Tags represents to current ec2 tags.
 	Tags []Tag `json:"tags,omitempty"`
 
+	// The ID of the VPC
 	VPCID string `json:"vpcId,omitempty"`
 }
 

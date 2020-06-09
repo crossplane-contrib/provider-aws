@@ -6,7 +6,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/network/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -22,6 +21,7 @@ type VPCClient interface {
 	CreateVpcRequest(*ec2.CreateVpcInput) ec2.CreateVpcRequest
 	DeleteVpcRequest(*ec2.DeleteVpcInput) ec2.DeleteVpcRequest
 	DescribeVpcsRequest(*ec2.DescribeVpcsInput) ec2.DescribeVpcsRequest
+	DescribeVpcAttributeRequest(*ec2.DescribeVpcAttributeInput) ec2.DescribeVpcAttributeRequest
 	ModifyVpcAttributeRequest(*ec2.ModifyVpcAttributeInput) ec2.ModifyVpcAttributeRequest
 	CreateTagsRequest(*ec2.CreateTagsInput) ec2.CreateTagsRequest
 	ModifyVpcTenancyRequest(*ec2.ModifyVpcTenancyInput) ec2.ModifyVpcTenancyRequest
@@ -49,10 +49,17 @@ func IsVPCNotFoundErr(err error) bool {
 
 // IsVpcUpToDate returns true if there is no update-able difference between desired
 // and observed state of the resource.
-func IsVpcUpToDate(spec v1beta1.VPCParameters, o ec2.Vpc) bool {
-	v1beta1.SortTags(spec.Tags, o.Tags)
-	actual := v1beta1.BuildFromEC2Tags(o.Tags)
-	return cmp.Equal(spec.Tags, actual) && (aws.StringValue(spec.InstanceTenancy) == string(o.InstanceTenancy))
+func IsVpcUpToDate(spec v1beta1.VPCParameters, vpc ec2.Vpc, attributes ec2.DescribeVpcAttributeOutput) bool {
+	if aws.StringValue(spec.InstanceTenancy) != string(vpc.InstanceTenancy) {
+		return false
+	}
+
+	if aws.BoolValue(spec.EnableDNSHostNames) != aws.BoolValue(attributes.EnableDnsHostnames.Value) ||
+		aws.BoolValue(spec.EnableDNSSupport) != aws.BoolValue(attributes.EnableDnsSupport.Value) {
+		return false
+	}
+
+	return v1beta1.CompareTags(spec.Tags, vpc.Tags)
 }
 
 // GenerateVpcObservation is used to produce v1beta1.VPCObservation from
@@ -64,6 +71,36 @@ func GenerateVpcObservation(vpc ec2.Vpc) v1beta1.VPCObservation {
 		VPCID:     aws.StringValue(vpc.VpcId),
 		Tags:      v1beta1.BuildFromEC2Tags(vpc.Tags),
 		VPCState:  string(vpc.State),
+	}
+
+	if len(vpc.CidrBlockAssociationSet) > 0 {
+		o.CidrBlockAssociationSet = make([]v1beta1.VpcCidrBlockAssociation, len(vpc.CidrBlockAssociationSet))
+		for i, v := range vpc.CidrBlockAssociationSet {
+			o.CidrBlockAssociationSet[i] = v1beta1.VpcCidrBlockAssociation{
+				AssociationID: v.AssociationId,
+				CIDRBlock:     v.CidrBlock,
+			}
+			o.CidrBlockAssociationSet[i].CIDRBlockState = &v1beta1.VpcCidrBlockState{
+				State:         string(v.CidrBlockState.State),
+				StatusMessage: v.CidrBlockState.StatusMessage,
+			}
+		}
+	}
+
+	if len(vpc.Ipv6CidrBlockAssociationSet) > 0 {
+		o.IPv6CIDRBlockAssociationSet = make([]v1beta1.VpcIpv6CidrBlockAssociation, len(vpc.Ipv6CidrBlockAssociationSet))
+		for i, v := range vpc.Ipv6CidrBlockAssociationSet {
+			o.IPv6CIDRBlockAssociationSet[i] = v1beta1.VpcIpv6CidrBlockAssociation{
+				AssociationID:      v.AssociationId,
+				IPv6CIDRBlock:      v.Ipv6CidrBlock,
+				Ipv6Pool:           v.Ipv6Pool,
+				NetworkBorderGroup: v.NetworkBorderGroup,
+			}
+			o.IPv6CIDRBlockAssociationSet[i].IPv6CIDRBlockState = &v1beta1.VpcCidrBlockState{
+				State:         string(v.Ipv6CidrBlockState.State),
+				StatusMessage: v.Ipv6CidrBlockState.StatusMessage,
+			}
+		}
 	}
 
 	return o

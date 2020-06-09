@@ -305,6 +305,14 @@ func TestObserve(t *testing.T) {
 							}},
 						}
 					},
+					MockDescribeVpcAttributeRequest: func(input *awsec2.DescribeVpcAttributeInput) awsec2.DescribeVpcAttributeRequest {
+						return awsec2.DescribeVpcAttributeRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeVpcAttributeOutput{
+								EnableDnsHostnames: &awsec2.AttributeBooleanValue{},
+								EnableDnsSupport:   &awsec2.AttributeBooleanValue{},
+							}},
+						}
+					},
 				},
 				cr: vpc(withSpec(v1beta1.VPCParameters{
 					InstanceTenancy: aws.String(tenancyDefault),
@@ -502,6 +510,11 @@ func TestUpdate(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateTagsOutput{}},
 						}
 					},
+					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
+						return awsec2.ModifyVpcAttributeRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
+						}
+					},
 				},
 				cr: vpc(withSpec(v1beta1.VPCParameters{
 					InstanceTenancy: aws.String(tenancyDefault),
@@ -528,6 +541,11 @@ func TestUpdate(t *testing.T) {
 					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
 						return awsec2.CreateTagsRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateTagsOutput{}},
+						}
+					},
+					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
+						return awsec2.ModifyVpcAttributeRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
 						}
 					},
 				},

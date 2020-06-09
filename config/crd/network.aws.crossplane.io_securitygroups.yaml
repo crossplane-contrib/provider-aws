@@ -151,7 +151,25 @@ spec:
                     description: IPPermission Describes a set of permissions for a
                       security group rule.
                     properties:
-                      cidrBlocks:
+                      fromPort:
+                        description: The start of port range for the TCP and UDP protocols,
+                          or an ICMP/ICMPv6 type number. A value of -1 indicates all
+                          ICMP/ICMPv6 types. If you specify all ICMP/ICMPv6 types,
+                          you must specify all codes.
+                        format: int64
+                        type: integer
+                      ipPprotocol:
+                        description: "The IP protocol name (tcp, udp, icmp, icmpv6)
+                          or number (see Protocol Numbers (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
+                          \n [VPC only] Use -1 to specify all protocols. When authorizing
+                          security group rules, specifying -1 or a protocol number
+                          other than tcp, udp, icmp, or icmpv6 allows traffic on all
+                          ports, regardless of any port range you specify. For tcp,
+                          udp, and icmp, you must specify a port range. For icmpv6,
+                          the port range is optional; if you omit the port range,
+                          traffic for all types and codes is allowed."
+                        type: string
+                      ipRanges:
                         description: The IPv4 ranges.
                         items:
                           description: IPRange describes an IPv4 range.
@@ -172,13 +190,6 @@ spec:
                           - cidrIp
                           type: object
                         type: array
-                      fromPort:
-                        description: The start of port range for the TCP and UDP protocols,
-                          or an ICMP/ICMPv6 type number. A value of -1 indicates all
-                          ICMP/ICMPv6 types. If you specify all ICMP/ICMPv6 types,
-                          you must specify all codes.
-                        format: int64
-                        type: integer
                       ipv6Ranges:
                         description: "The IPv6 ranges. \n [VPC only]"
                         items:
@@ -221,17 +232,6 @@ spec:
                           - prefixListId
                           type: object
                         type: array
-                      protocol:
-                        description: "The IP protocol name (tcp, udp, icmp, icmpv6)
-                          or number (see Protocol Numbers (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
-                          \n [VPC only] Use -1 to specify all protocols. When authorizing
-                          security group rules, specifying -1 or a protocol number
-                          other than tcp, udp, icmp, or icmpv6 allows traffic on all
-                          ports, regardless of any port range you specify. For tcp,
-                          udp, and icmp, you must specify a port range. For icmpv6,
-                          the port range is optional; if you omit the port range,
-                          traffic for all types and codes is allowed."
-                        type: string
                       toPort:
                         description: The end of port range for the TCP and UDP protocols,
                           or an ICMP/ICMPv6 code. A value of -1 indicates all ICMP/ICMPv6
@@ -285,7 +285,7 @@ spec:
                           type: object
                         type: array
                     required:
-                    - protocol
+                    - ipPprotocol
                     type: object
                   type: array
                 groupName:
@@ -298,7 +298,25 @@ spec:
                     description: IPPermission Describes a set of permissions for a
                       security group rule.
                     properties:
-                      cidrBlocks:
+                      fromPort:
+                        description: The start of port range for the TCP and UDP protocols,
+                          or an ICMP/ICMPv6 type number. A value of -1 indicates all
+                          ICMP/ICMPv6 types. If you specify all ICMP/ICMPv6 types,
+                          you must specify all codes.
+                        format: int64
+                        type: integer
+                      ipPprotocol:
+                        description: "The IP protocol name (tcp, udp, icmp, icmpv6)
+                          or number (see Protocol Numbers (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
+                          \n [VPC only] Use -1 to specify all protocols. When authorizing
+                          security group rules, specifying -1 or a protocol number
+                          other than tcp, udp, icmp, or icmpv6 allows traffic on all
+                          ports, regardless of any port range you specify. For tcp,
+                          udp, and icmp, you must specify a port range. For icmpv6,
+                          the port range is optional; if you omit the port range,
+                          traffic for all types and codes is allowed."
+                        type: string
+                      ipRanges:
                         description: The IPv4 ranges.
                         items:
                           description: IPRange describes an IPv4 range.
@@ -319,13 +337,6 @@ spec:
                           - cidrIp
                           type: object
                         type: array
-                      fromPort:
-                        description: The start of port range for the TCP and UDP protocols,
-                          or an ICMP/ICMPv6 type number. A value of -1 indicates all
-                          ICMP/ICMPv6 types. If you specify all ICMP/ICMPv6 types,
-                          you must specify all codes.
-                        format: int64
-                        type: integer
                       ipv6Ranges:
                         description: "The IPv6 ranges. \n [VPC only]"
                         items:
@@ -368,17 +379,6 @@ spec:
                           - prefixListId
                           type: object
                         type: array
-                      protocol:
-                        description: "The IP protocol name (tcp, udp, icmp, icmpv6)
-                          or number (see Protocol Numbers (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
-                          \n [VPC only] Use -1 to specify all protocols. When authorizing
-                          security group rules, specifying -1 or a protocol number
-                          other than tcp, udp, icmp, or icmpv6 allows traffic on all
-                          ports, regardless of any port range you specify. For tcp,
-                          udp, and icmp, you must specify a port range. For icmpv6,
-                          the port range is optional; if you omit the port range,
-                          traffic for all types and codes is allowed."
-                        type: string
                       toPort:
                         description: The end of port range for the TCP and UDP protocols,
                           or an ICMP/ICMPv6 code. A value of -1 indicates all ICMP/ICMPv6
@@ -432,7 +432,7 @@ spec:
                           type: object
                         type: array
                     required:
-                    - protocol
+                    - ipPprotocol
                     type: object
                   type: array
                 tags:

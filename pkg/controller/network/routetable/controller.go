@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -45,6 +46,7 @@ const (
 
 	errGetProvider       = "cannot get provider"
 	errGetProviderSecret = "cannot get provider secret"
+	errKubeUpdateFailed  = "cannot update Subnet custom resource"
 
 	errClient             = "cannot create a new RouteTable client"
 	errDescribe           = "failed to describe RouteTable"
@@ -56,7 +58,8 @@ const (
 	errCreateRoute        = "failed to create a route in the RouteTable resource"
 	errAssociateSubnet    = "failed to associate subnet %v to the RouteTable resource"
 	errDisassociateSubnet = "failed to disassociate subnet %v from the RouteTable resource"
-	errSpecUpdate         = "cannot update spec"
+	errSpecUpdate         = "cannot update spec of the RouteTable custom resource"
+	errStatusUpdate       = "cannot update status of the RouteTable custom resource"
 	errCreateTags         = "failed to create tags for the RouteTable resource"
 )
 
@@ -117,14 +120,14 @@ type external struct {
 	client ec2.RouteTableClient
 }
 
-func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
+func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
 	cr, ok := mgd.(*v1beta1.RouteTable)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
 	// To find out whether a RouteTable exist:
-	// - the object's ExternalState should have routeTableId populated
+	// - the object's ExternalName should have routeTableId populated
 	// - a RouteTable with the given routeTableId should exist
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{
@@ -146,6 +149,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	observed := response.RouteTables[0]
+	current := cr.Spec.ForProvider.DeepCopy()
+	ec2.LateInitializeRT(&cr.Spec.ForProvider, &response.RouteTables[0], cr.Spec.ForProvider)
+	if !cmp.Equal(current, &cr.Spec.ForProvider) {
+		if err := e.kube.Update(ctx, cr); err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
+		}
+	}
 
 	stateAvailable := true
 	for _, rt := range observed.Routes {
@@ -178,6 +188,9 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
+	if err := e.kube.Status().Update(ctx, cr); err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
+	}
 
 	result, err := e.client.CreateRouteTableRequest(&awsec2.CreateRouteTableInput{
 		VpcId: cr.Spec.ForProvider.VPCID,
@@ -272,7 +285,7 @@ func (e *external) createRoutes(ctx context.Context, tableID string, desired []v
 	for _, rt := range desired {
 		isObserved := false
 		for _, ob := range observed {
-			if ob.Route.GatewayID == rt.GatewayID && ob.Route.DestinationCIDRBlock == rt.DestinationCIDRBlock {
+			if ob.GatewayID == aws.StringValue(rt.GatewayID) && ob.DestinationCIDRBlock == aws.StringValue(rt.DestinationCIDRBlock) {
 				isObserved = true
 				break
 			}
@@ -281,7 +294,7 @@ func (e *external) createRoutes(ctx context.Context, tableID string, desired []v
 		if !isObserved {
 			_, err := e.client.CreateRouteRequest(&awsec2.CreateRouteInput{
 				RouteTableId:         aws.String(tableID),
-				DestinationCidrBlock: aws.String(rt.DestinationCIDRBlock),
+				DestinationCidrBlock: rt.DestinationCIDRBlock,
 				GatewayId:            rt.GatewayID,
 			}).Send(ctx)
 
@@ -298,7 +311,7 @@ func (e *external) createAssociations(ctx context.Context, tableID string, desir
 	for _, asc := range desired {
 		isObserved := false
 		for _, ob := range observed {
-			if ob.Association.SubnetID == asc.SubnetID {
+			if ob.SubnetID == aws.StringValue(asc.SubnetID) {
 				isObserved = true
 				break
 			}

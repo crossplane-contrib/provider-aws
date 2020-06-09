@@ -57,7 +57,8 @@ const (
 	errModifyVPCAttributes = "failed to modify the VPC resource attributes"
 	errCreateTags          = "failed to create tags for the VPC resource"
 	errDelete              = "failed to delete the VPC resource"
-	errSpecUpdate          = "cannot update spec"
+	errSpecUpdate          = "cannot update spec of VPC custom resource"
+	errStatusUpdate        = "cannot update status of VPC custom resource"
 )
 
 // SetupVPC adds a controller that reconciles VPCs.
@@ -116,7 +117,7 @@ type external struct {
 	client ec2.VPCClient
 }
 
-func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
+func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
 	cr, ok := mgd.(*v1beta1.VPC)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
@@ -131,7 +132,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	response, err := e.client.DescribeVpcsRequest(&awsec2.DescribeVpcsInput{
 		VpcIds: []string{meta.GetExternalName(cr)},
 	}).Send(ctx)
-
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrapf(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDescribe)
 	}
@@ -143,12 +143,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	observed := response.Vpcs[0]
 
-	if observed.State == awsec2.VpcStateAvailable {
-		cr.SetConditions(runtimev1alpha1.Available())
-	} else if observed.State == awsec2.VpcStatePending {
-		cr.SetConditions(runtimev1alpha1.Creating())
-	}
-
 	// update the CRD spec for any new values from provider
 	current := cr.Spec.ForProvider.DeepCopy()
 	ec2.LateInitializeVPC(&cr.Spec.ForProvider, &observed)
@@ -157,11 +151,43 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			return managed.ExternalObservation{}, errors.Wrap(err, errSpecUpdate)
 		}
 	}
+
+	switch observed.State {
+	case awsec2.VpcStateAvailable:
+		cr.SetConditions(runtimev1alpha1.Available())
+	case awsec2.VpcStatePending:
+		cr.SetConditions(runtimev1alpha1.Creating())
+	}
+
 	cr.Status.AtProvider = ec2.GenerateVpcObservation(observed)
+
+	o := awsec2.DescribeVpcAttributeOutput{}
+
+	for _, input := range []awsec2.VpcAttributeName{
+		awsec2.VpcAttributeNameEnableDnsSupport,
+		awsec2.VpcAttributeNameEnableDnsHostnames,
+	} {
+		r, err := e.client.DescribeVpcAttributeRequest(&awsec2.DescribeVpcAttributeInput{
+			VpcId:     aws.String(meta.GetExternalName(cr)),
+			Attribute: input,
+		}).Send(context.Background())
+
+		if err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errDescribe)
+		}
+
+		if r.EnableDnsHostnames != nil {
+			o.EnableDnsHostnames = r.EnableDnsHostnames
+		}
+
+		if r.EnableDnsSupport != nil {
+			o.EnableDnsSupport = r.EnableDnsSupport
+		}
+	}
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: ec2.IsVpcUpToDate(cr.Spec.ForProvider, observed),
+		ResourceUpToDate: ec2.IsVpcUpToDate(cr.Spec.ForProvider, observed, o),
 	}, nil
 }
 
@@ -172,19 +198,29 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
+	if err := e.kube.Status().Update(ctx, cr); err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
+	}
 
 	result, err := e.client.CreateVpcRequest(&awsec2.CreateVpcInput{
 		CidrBlock:       aws.String(cr.Spec.ForProvider.CIDRBlock),
 		InstanceTenancy: awsec2.Tenancy(aws.StringValue(cr.Spec.ForProvider.InstanceTenancy)),
 	}).Send(ctx)
-
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 
 	meta.SetExternalName(cr, aws.StringValue(result.Vpc.VpcId))
 
-	// modify vpc attributes
+	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
+}
+
+func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mgd.(*v1beta1.VPC)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+
 	for _, input := range []*awsec2.ModifyVpcAttributeInput{
 		{
 			VpcId:            aws.String(meta.GetExternalName(cr)),
@@ -196,17 +232,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		},
 	} {
 		if _, err := e.client.ModifyVpcAttributeRequest(input).Send(ctx); err != nil {
-			return managed.ExternalCreation{}, errors.Wrap(err, errModifyVPCAttributes)
+			return managed.ExternalUpdate{}, errors.Wrap(err, errModifyVPCAttributes)
 		}
-	}
-
-	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
-}
-
-func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1beta1.VPC)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
 	// NOTE(muvaf): VPCs can only be tagged after the creation and this request

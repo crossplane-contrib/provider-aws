@@ -361,31 +361,6 @@ spec:
                         description: The ID of the subnet. A subnet ID is not returned
                           for an implicit association.
                         type: string
-                      subnetIdRef:
-                        description: A referencer to retrieve the ID of a subnet
-                        properties:
-                          name:
-                            description: Name of the referenced object.
-                            type: string
-                        required:
-                        - name
-                        type: object
-                      subnetIdSelector:
-                        description: A selector to select a referencer to retrieve
-                          the ID of a subnet
-                        properties:
-                          matchControllerRef:
-                            description: MatchControllerRef ensures an object with
-                              the same controller reference as the selecting object
-                              is selected.
-                            type: boolean
-                          matchLabels:
-                            additionalProperties:
-                              type: string
-                            description: MatchLabels ensures an object with matching
-                              labels is selected.
-                            type: object
-                        type: object
                     required:
                     - main
                     type: object
@@ -410,31 +385,6 @@ spec:
                         description: The ID of an internet gateway or virtual private
                           gateway attached to your VPC.
                         type: string
-                      gatewayIdRef:
-                        description: A referencer to retrieve the ID of a gateway
-                        properties:
-                          name:
-                            description: Name of the referenced object.
-                            type: string
-                        required:
-                        - name
-                        type: object
-                      gatewayIdSelector:
-                        description: A selector to select a referencer to retrieve
-                          the ID of a gateway
-                        properties:
-                          matchControllerRef:
-                            description: MatchControllerRef ensures an object with
-                              the same controller reference as the selecting object
-                              is selected.
-                            type: boolean
-                          matchLabels:
-                            additionalProperties:
-                              type: string
-                            description: MatchLabels ensures an object with matching
-                              labels is selected.
-                            type: object
-                        type: object
                       state:
                         description: The state of the route. The blackhole state indicates
                           that the route's target isn't available (for example, the
