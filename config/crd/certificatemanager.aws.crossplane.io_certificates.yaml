@@ -288,12 +288,13 @@ spec:
                 status:
                   description: Status of the certificate
                   enum:
-                  - pending_validation
-                  - issued
-                  - inactive
-                  - expired
-                  - validation_timed_out
-                  - failed
+                  - PENDING_VALIDATION
+                  - ISSUED
+                  - INACTIVE
+                  - EXPIRED
+                  - VALIDATION_TIMED_OUT
+                  - REVOKED
+                  - FAILED
                   type: string
               required:
               - certificateArn
