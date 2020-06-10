@@ -1,0 +1,27 @@
+apiVersion: certificatemanager.aws.crossplane.io/v1alpha1
+kind: CertificateAuthority
+metadata:
+  name: example
+spec:
+  forProvider:
+    type: root
+    certificateRenewalPermissionAllow: true
+    commonName: www.example.com
+    country: IN
+    keyAlgorithm: RSA_2048
+    locality: example
+    organization: example
+    organizationalUnit: example
+    # permanentDeletionTimeInDays: 7
+    expirationInDays: 7
+    revocationConfigurationEnabled: true
+    s3BucketName: cpexample
+    signingAlgorithm: SHA256WITHRSA
+    state: example
+    tags:
+    - key: Name
+      value: example
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
+
