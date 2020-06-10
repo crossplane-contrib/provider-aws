@@ -66,23 +66,22 @@ func IsVpcUpToDate(spec v1beta1.VPCParameters, vpc ec2.Vpc, attributes ec2.Descr
 // ec2.Vpc.
 func GenerateVpcObservation(vpc ec2.Vpc) v1beta1.VPCObservation {
 	o := v1beta1.VPCObservation{
-		IsDefault: aws.BoolValue(vpc.IsDefault),
-		OwnerID:   aws.StringValue(vpc.OwnerId),
-		VPCID:     aws.StringValue(vpc.VpcId),
-		Tags:      v1beta1.BuildFromEC2Tags(vpc.Tags),
-		VPCState:  string(vpc.State),
+		IsDefault:     aws.BoolValue(vpc.IsDefault),
+		DHCPOptionsID: aws.StringValue(vpc.DhcpOptionsId),
+		OwnerID:       aws.StringValue(vpc.OwnerId),
+		VPCState:      string(vpc.State),
 	}
 
 	if len(vpc.CidrBlockAssociationSet) > 0 {
 		o.CIDRBlockAssociationSet = make([]v1beta1.VPCCIDRBlockAssociation, len(vpc.CidrBlockAssociationSet))
 		for i, v := range vpc.CidrBlockAssociationSet {
 			o.CIDRBlockAssociationSet[i] = v1beta1.VPCCIDRBlockAssociation{
-				AssociationID: v.AssociationId,
-				CIDRBlock:     v.CidrBlock,
+				AssociationID: aws.StringValue(v.AssociationId),
+				CIDRBlock:     aws.StringValue(v.CidrBlock),
 			}
-			o.CIDRBlockAssociationSet[i].CIDRBlockState = &v1beta1.VPCCIDRBlockState{
+			o.CIDRBlockAssociationSet[i].CIDRBlockState = v1beta1.VPCCIDRBlockState{
 				State:         string(v.CidrBlockState.State),
-				StatusMessage: v.CidrBlockState.StatusMessage,
+				StatusMessage: aws.StringValue(v.CidrBlockState.StatusMessage),
 			}
 		}
 	}
@@ -91,14 +90,14 @@ func GenerateVpcObservation(vpc ec2.Vpc) v1beta1.VPCObservation {
 		o.IPv6CIDRBlockAssociationSet = make([]v1beta1.VPCIPv6CidrBlockAssociation, len(vpc.Ipv6CidrBlockAssociationSet))
 		for i, v := range vpc.Ipv6CidrBlockAssociationSet {
 			o.IPv6CIDRBlockAssociationSet[i] = v1beta1.VPCIPv6CidrBlockAssociation{
-				AssociationID:      v.AssociationId,
-				IPv6CIDRBlock:      v.Ipv6CidrBlock,
-				IPv6Pool:           v.Ipv6Pool,
-				NetworkBorderGroup: v.NetworkBorderGroup,
+				AssociationID:      aws.StringValue(v.AssociationId),
+				IPv6CIDRBlock:      aws.StringValue(v.Ipv6CidrBlock),
+				IPv6Pool:           aws.StringValue(v.Ipv6Pool),
+				NetworkBorderGroup: aws.StringValue(v.NetworkBorderGroup),
 			}
-			o.IPv6CIDRBlockAssociationSet[i].IPv6CIDRBlockState = &v1beta1.VPCCIDRBlockState{
+			o.IPv6CIDRBlockAssociationSet[i].IPv6CIDRBlockState = v1beta1.VPCCIDRBlockState{
 				State:         string(v.Ipv6CidrBlockState.State),
-				StatusMessage: v.Ipv6CidrBlockState.StatusMessage,
+				StatusMessage: aws.StringValue(v.Ipv6CidrBlockState.StatusMessage),
 			}
 		}
 	}

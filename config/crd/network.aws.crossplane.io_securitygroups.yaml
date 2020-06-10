@@ -158,7 +158,7 @@ spec:
                           you must specify all codes.
                         format: int64
                         type: integer
-                      ipPprotocol:
+                      ipProtocol:
                         description: "The IP protocol name (tcp, udp, icmp, icmpv6)
                           or number (see Protocol Numbers (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
                           \n [VPC only] Use -1 to specify all protocols. When authorizing
@@ -285,7 +285,8 @@ spec:
                           type: object
                         type: array
                     required:
-                    - ipPprotocol
+                    - ipProtocol
+                    - ipRanges
                     type: object
                   type: array
                 groupName:
@@ -305,7 +306,7 @@ spec:
                           you must specify all codes.
                         format: int64
                         type: integer
-                      ipPprotocol:
+                      ipProtocol:
                         description: "The IP protocol name (tcp, udp, icmp, icmpv6)
                           or number (see Protocol Numbers (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
                           \n [VPC only] Use -1 to specify all protocols. When authorizing
@@ -432,7 +433,8 @@ spec:
                           type: object
                         type: array
                     required:
-                    - ipPprotocol
+                    - ipProtocol
+                    - ipRanges
                     type: object
                   type: array
                 tags:

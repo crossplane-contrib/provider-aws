@@ -26,42 +26,42 @@ import (
 type VPCCIDRBlockState struct {
 
 	// The state of the CIDR block.
-	State string `json:"state"`
+	State string `json:"state,omitempty"`
 
 	// A message about the status of the CIDR block, if applicable.
-	StatusMessage *string `json:"statusmessage"`
+	StatusMessage string `json:"statusmessage,omitempty"`
 }
 
 // VPCCIDRBlockAssociation represents the association of IPv4 CIDR blocks with the VPC.
 type VPCCIDRBlockAssociation struct {
 
 	// The association ID for the IPv4 CIDR block.
-	AssociationID *string `json:"associationId,omitempty"`
+	AssociationID string `json:"associationId,omitempty"`
 
 	// The IPv4 CIDR block.
-	CIDRBlock *string `json:"cidrBlock,omitempty"`
+	CIDRBlock string `json:"cidrBlock,omitempty"`
 
 	// Information about the state of the CIDR block.
-	CIDRBlockState *VPCCIDRBlockState `json:"cidrBlockState,omitempty"`
+	CIDRBlockState VPCCIDRBlockState `json:"cidrBlockState,omitempty"`
 }
 
 // VPCIPv6CidrBlockAssociation represents the association of IPv6 CIDR blocks with the VPC.
 type VPCIPv6CidrBlockAssociation struct {
 
 	// The association ID for the IPv6 CIDR block.
-	AssociationID *string `json:"associationId,omitempty"`
+	AssociationID string `json:"associationId,omitempty"`
 
 	// The IPv6 CIDR block.
-	IPv6CIDRBlock *string `json:"ipv6CidrBlock,omitempty"`
+	IPv6CIDRBlock string `json:"ipv6CidrBlock,omitempty"`
 
 	// Information about the state of the CIDR block.
-	IPv6CIDRBlockState *VPCCIDRBlockState `json:"ipv6CidrBlockState,omitempty"`
+	IPv6CIDRBlockState VPCCIDRBlockState `json:"ipv6CidrBlockState,omitempty"`
 
 	// The ID of the IPv6 address pool from which the IPv6 CIDR block is allocated.
-	IPv6Pool *string `json:"ipv6Pool,omitempty"`
+	IPv6Pool string `json:"ipv6Pool,omitempty"`
 
 	// The name of the location from which we advertise the IPV6 CIDR block.
-	NetworkBorderGroup *string `json:"networkBorderGroup,omitempty"`
+	NetworkBorderGroup string `json:"networkBorderGroup,omitempty"`
 }
 
 // VPCParameters define the desired state of an AWS Virtual Private Cloud.
@@ -101,7 +101,7 @@ type VPCObservation struct {
 	CIDRBlockAssociationSet []VPCCIDRBlockAssociation `json:"cidrBlockAssociationSet,omitempty"`
 
 	// The ID of the set of DHCP options you've associated with the VPC.
-	DHCPOptionsID *string `json:"dhcpOptionsId,omitempty"`
+	DHCPOptionsID string `json:"dhcpOptionsId,omitempty"`
 
 	// Information about the IPv6 CIDR blocks associated with the VPC.
 	IPv6CIDRBlockAssociationSet []VPCIPv6CidrBlockAssociation `json:"ipv6CidrBlockAssociationSet,omitempty"`
@@ -114,12 +114,6 @@ type VPCObservation struct {
 
 	// VPCState is the current state of the VPC.
 	VPCState string `json:"vpcState,omitempty"`
-
-	// Tags represents to current ec2 tags.
-	Tags []Tag `json:"tags,omitempty"`
-
-	// The ID of the VPC
-	VPCID string `json:"vpcId,omitempty"`
 }
 
 // A VPCStatus represents the observed state of a VPC.
@@ -131,7 +125,6 @@ type VPCStatus struct {
 // +kubebuilder:object:root=true
 
 // A VPC is a managed resource that represents an AWS Virtual Private Cloud.
-// +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".status.atProvider.vpcId"
 // +kubebuilder:printcolumn:name="CIDRBLOCK",type="string",JSONPath=".spec.forProvider.cidrBlock"
 // +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.atProvider.vpcState"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"

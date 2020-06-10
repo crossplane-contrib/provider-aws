@@ -31,7 +31,6 @@ func TestGenerateVPCObservation(t *testing.T) {
 			out: v1beta1.VPCObservation{
 				IsDefault: boolFalse,
 				OwnerID:   vpcOwner,
-				VPCID:     vpcID,
 				VPCState:  vpcStateAvailable,
 			},
 		},
@@ -43,7 +42,6 @@ func TestGenerateVPCObservation(t *testing.T) {
 			},
 			out: v1beta1.VPCObservation{
 				IsDefault: boolFalse,
-				VPCID:     vpcID,
 				VPCState:  vpcStateAvailable,
 			},
 		},

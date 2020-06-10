@@ -85,7 +85,9 @@ func LateInitializeIG(in *v1beta1.InternetGatewayParameters, ig *ec2.InternetGat
 		return
 	}
 
-	in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, ig.Attachments[0].VpcId)
+	if ig.Attachments != nil {
+		in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, ig.Attachments[0].VpcId)
+	}
 
 	if len(in.Tags) == 0 && len(ig.Tags) != 0 {
 		in.Tags = v1beta1.BuildFromEC2Tags(ig.Tags)
