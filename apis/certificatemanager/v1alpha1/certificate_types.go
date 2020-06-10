@@ -59,7 +59,7 @@ type CertificateExternalStatus struct {
 	RenewalEligibility string `json:"renewalEligibility"`
 
 	// Status of the certificate
-	// +kubebuilder:validation:Enum=pending_validation;issued;inactive;expired;validation_timed_out;failed
+	// +kubebuilder:validation:Enum=PENDING_VALIDATION;ISSUED;INACTIVE;EXPIRED;VALIDATION_TIMED_OUT;REVOKED;FAILED
 	Status acm.CertificateStatus `json:"status"`
 }
 
@@ -100,7 +100,7 @@ type CertificateParameters struct {
 
 	// Parameter add the certificate to a certificate transparency log.
 	// +optional
-	// +kubebuilder:validation:enabled;disabled
+	// +kubebuilder:validation:ENABLED;DISABLED
 	CertificateTransparencyLoggingPreference acm.CertificateTransparencyLoggingPreference `json:"certificateTransparencyLoggingPreference,omitempty"`
 
 	// Subject Alternative Name extension of the ACM certificate.
@@ -114,7 +114,7 @@ type CertificateParameters struct {
 
 	// Method to validate certificate.
 	// +optional
-	// +kubebuilder:validation:dns;email
+	// +kubebuilder:validation:DNS;EMAIL
 	ValidationMethod acm.ValidationMethod `json:"validationMethod,omitempty"`
 
 	// Flag to renew the certificate
