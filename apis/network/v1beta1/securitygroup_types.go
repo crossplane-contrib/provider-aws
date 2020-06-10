@@ -164,11 +164,10 @@ type IPPermission struct {
 	// tcp, udp, and icmp, you must specify a port range. For icmpv6, the port range
 	// is optional; if you omit the port range, traffic for all types and codes
 	// is allowed.
-	IPProtocol string `json:"ipPprotocol"`
+	IPProtocol string `json:"ipProtocol"`
 
 	// The IPv4 ranges.
-	// +optional
-	IPRanges []IPRange `json:"ipRanges,omitempty"`
+	IPRanges []IPRange `json:"ipRanges"`
 
 	// The IPv6 ranges.
 	//

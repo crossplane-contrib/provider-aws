@@ -518,15 +518,11 @@ func TestUpdate(t *testing.T) {
 				},
 				cr: vpc(withSpec(v1beta1.VPCParameters{
 					InstanceTenancy: aws.String(tenancyDefault),
-				}), withStatus(v1beta1.VPCObservation{
-					VPCID: vpcID,
 				})),
 			},
 			want: want{
 				cr: vpc(withSpec(v1beta1.VPCParameters{
 					InstanceTenancy: aws.String(tenancyDefault),
-				}), withStatus(v1beta1.VPCObservation{
-					VPCID: vpcID,
 				})),
 			},
 		},
@@ -551,15 +547,11 @@ func TestUpdate(t *testing.T) {
 				},
 				cr: vpc(withSpec(v1beta1.VPCParameters{
 					InstanceTenancy: aws.String(tenancyDefault),
-				}), withStatus(v1beta1.VPCObservation{
-					VPCID: vpcID,
 				})),
 			},
 			want: want{
 				cr: vpc(withSpec(v1beta1.VPCParameters{
 					InstanceTenancy: aws.String(tenancyDefault),
-				}), withStatus(v1beta1.VPCObservation{
-					VPCID: vpcID,
 				})),
 				err: errors.Wrap(errBoom, errUpdate),
 			},
@@ -603,14 +595,10 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: vpc(withStatus(v1beta1.VPCObservation{
-					VPCID: vpcID,
-				})),
+				cr: vpc(),
 			},
 			want: want{
-				cr: vpc(withStatus(v1beta1.VPCObservation{
-					VPCID: vpcID,
-				}), withConditions(runtimev1alpha1.Deleting())),
+				cr: vpc(withConditions(runtimev1alpha1.Deleting())),
 			},
 		},
 		"DeleteFailed": {
@@ -622,14 +610,10 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: vpc(withStatus(v1beta1.VPCObservation{
-					VPCID: vpcID,
-				})),
+				cr: vpc(),
 			},
 			want: want{
-				cr: vpc(withStatus(v1beta1.VPCObservation{
-					VPCID: vpcID,
-				}), withConditions(runtimev1alpha1.Deleting())),
+				cr:  vpc(withConditions(runtimev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},
