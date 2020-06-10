@@ -1,0 +1,422 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: certificateauthorities.certificatemanager.aws.crossplane.io
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.forProvider.type
+    name: TYPE
+    type: string
+  - JSONPath: .spec.forProvider.status
+    name: STATUS
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Ready')].status
+    name: READY
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Synced')].status
+    name: SYNCED
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: AGE
+    type: date
+  group: certificatemanager.aws.crossplane.io
+  names:
+    kind: CertificateAuthority
+    listKind: CertificateAuthorityList
+    plural: certificateauthorities
+    singular: certificateauthority
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: CertificateAuthority is a managed resource that represents an AWS
+        CertificateAuthority Manager.
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: CertificateAuthoritySpec defines the desired state of CertificateAuthority
+          properties:
+            claimRef:
+              description: ClaimReference specifies the resource claim to which this
+                managed resource will be bound. ClaimReference is set automatically
+                during dynamic provisioning. Crossplane does not currently support
+                setting this field manually, per https://github.com/crossplane/crossplane-runtime/issues/19
+              properties:
+                apiVersion:
+                  description: API version of the referent.
+                  type: string
+                fieldPath:
+                  description: 'If referring to a piece of an object instead of an
+                    entire object, this string should contain a valid JSON/Go field
+                    access statement, such as desiredState.manifest.containers[2].
+                    For example, if the object reference is to a container within
+                    a pod, this would take on a value like: "spec.containers{name}"
+                    (where "name" refers to the name of the container that triggered
+                    the event) or if no container name is specified "spec.containers[2]"
+                    (container with index 2 in this pod). This syntax is chosen only
+                    to have some well-defined way of referencing a part of an object.
+                    TODO: this design is not final and this field is subject to change
+                    in the future.'
+                  type: string
+                kind:
+                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                  type: string
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+                namespace:
+                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                  type: string
+                resourceVersion:
+                  description: 'Specific resourceVersion to which this reference is
+                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                  type: string
+                uid:
+                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                  type: string
+              type: object
+            classRef:
+              description: ClassReference specifies the resource class that was used
+                to dynamically provision this managed resource, if any. Crossplane
+                does not currently support setting this field manually, per https://github.com/crossplane/crossplane-runtime/issues/20
+              properties:
+                apiVersion:
+                  description: API version of the referent.
+                  type: string
+                fieldPath:
+                  description: 'If referring to a piece of an object instead of an
+                    entire object, this string should contain a valid JSON/Go field
+                    access statement, such as desiredState.manifest.containers[2].
+                    For example, if the object reference is to a container within
+                    a pod, this would take on a value like: "spec.containers{name}"
+                    (where "name" refers to the name of the container that triggered
+                    the event) or if no container name is specified "spec.containers[2]"
+                    (container with index 2 in this pod). This syntax is chosen only
+                    to have some well-defined way of referencing a part of an object.
+                    TODO: this design is not final and this field is subject to change
+                    in the future.'
+                  type: string
+                kind:
+                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                  type: string
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+                namespace:
+                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                  type: string
+                resourceVersion:
+                  description: 'Specific resourceVersion to which this reference is
+                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                  type: string
+                uid:
+                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                  type: string
+              type: object
+            forProvider:
+              description: CertificateAuthorityParameters defines the desired state
+                of an AWS CertificateAuthority.
+              properties:
+                certificateRenewalPermissionAllow:
+                  description: The CertificateRenewalPermissionAllow decides Permissions
+                    for ACM renewals
+                  type: boolean
+                commonName:
+                  description: FQDN associated with the certificate subject
+                  type: string
+                country:
+                  description: Two-digit code that specifies the country
+                  type: string
+                customCname:
+                  description: Alias for the CRL distribution point
+                  type: string
+                distinguishedNameQualifier:
+                  description: Disambiguating information for the certificate subject.
+                  type: string
+                expirationInDays:
+                  description: Number of days until a certificate expires
+                  format: int64
+                  type: integer
+                generationQualifier:
+                  description: Typically a qualifier appended to the name of an individual
+                  type: string
+                givenName:
+                  description: First name
+                  type: string
+                idempotencyToken:
+                  description: Token to distinguish between calls to RequestCertificate.
+                  type: string
+                initials:
+                  description: Concatenation of first letter of the GivenName, Middle
+                    name and SurName.
+                  type: string
+                keyAlgorithm:
+                  description: Type of the public key algorithm
+                  enum:
+                  - rsa2048
+                  - rsa4096
+                  - ecprime256v1
+                  - ecsecp384r1
+                  type: string
+                locality:
+                  description: The locality such as a city or town
+                  type: string
+                organization:
+                  description: Organization legal name
+                  type: string
+                organizationalUnit:
+                  description: Organization's subdivision or unit
+                  type: string
+                permanentDeletionTimeInDays:
+                  description: The number of days to make a CA restorable after it
+                    has been deleted
+                  format: int64
+                  type: integer
+                pseudonym:
+                  description: Shortened version of a longer GivenName
+                  type: string
+                revocationConfigurationEnabled:
+                  description: Boolean value that specifies certificate revocation
+                  type: boolean
+                s3BucketName:
+                  description: Name of the S3 bucket that contains the CRL
+                  type: string
+                serialNumber:
+                  description: The certificate serial number.
+                  type: string
+                signingAlgorithm:
+                  description: Algorithm that private CA uses to sign certificate
+                    requests
+                  enum:
+                  - sha256withecdsa
+                  - sha384withecdsa
+                  - sha512withecdsa
+                  - sha256withrsa
+                  - sha384withrsa
+                  - sha512withrsa
+                  type: string
+                state:
+                  description: State in which the subject of the certificate is located
+                  type: string
+                status:
+                  description: Status of the certificate authority
+                  enum:
+                  - creating
+                  - pending_certificate
+                  - active
+                  - deleted
+                  - disabled
+                  - expired
+                  - failed
+                  type: string
+                surname:
+                  description: Surname
+                  type: string
+                tags:
+                  description: One or more resource tags to associate with the certificateAuthority.
+                  items:
+                    description: Tag represents user-provided metadata that can be
+                      associated
+                    properties:
+                      key:
+                        description: The key name that can be used to look up or retrieve
+                          the associated value.
+                        type: string
+                      value:
+                        description: The value associated with this tag.
+                        type: string
+                    required:
+                    - key
+                    type: object
+                  type: array
+                title:
+                  description: Title
+                  type: string
+                type:
+                  description: Type of the certificate authority
+                  enum:
+                  - root
+                  - subordinate
+                  type: string
+              required:
+              - certificateRenewalPermissionAllow
+              - commonName
+              - country
+              - keyAlgorithm
+              - locality
+              - organization
+              - organizationalUnit
+              - revocationConfigurationEnabled
+              - s3BucketName
+              - signingAlgorithm
+              - state
+              - type
+              type: object
+            providerRef:
+              description: ProviderReference specifies the provider that will be used
+                to create, observe, update, and delete this managed resource.
+              properties:
+                apiVersion:
+                  description: API version of the referent.
+                  type: string
+                fieldPath:
+                  description: 'If referring to a piece of an object instead of an
+                    entire object, this string should contain a valid JSON/Go field
+                    access statement, such as desiredState.manifest.containers[2].
+                    For example, if the object reference is to a container within
+                    a pod, this would take on a value like: "spec.containers{name}"
+                    (where "name" refers to the name of the container that triggered
+                    the event) or if no container name is specified "spec.containers[2]"
+                    (container with index 2 in this pod). This syntax is chosen only
+                    to have some well-defined way of referencing a part of an object.
+                    TODO: this design is not final and this field is subject to change
+                    in the future.'
+                  type: string
+                kind:
+                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                  type: string
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+                namespace:
+                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                  type: string
+                resourceVersion:
+                  description: 'Specific resourceVersion to which this reference is
+                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                  type: string
+                uid:
+                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                  type: string
+              type: object
+            reclaimPolicy:
+              description: ReclaimPolicy specifies what will happen to this managed
+                resource when its resource claim is deleted, and what will happen
+                to the underlying external resource when the managed resource is deleted.
+                The "Delete" policy causes the managed resource to be deleted when
+                its bound resource claim is deleted, and in turn causes the external
+                resource to be deleted when its managed resource is deleted. The "Retain"
+                policy causes the managed resource to be retained, in binding phase
+                "Released", when its resource claim is deleted, and in turn causes
+                the external resource to be retained when its managed resource is
+                deleted. The "Retain" policy is used when no policy is specified.
+              enum:
+              - Retain
+              - Delete
+              type: string
+            writeConnectionSecretToRef:
+              description: WriteConnectionSecretToReference specifies the namespace
+                and name of a Secret to which any connection details for this managed
+                resource should be written. Connection details frequently include
+                the endpoint, username, and password required to connect to the managed
+                resource.
+              properties:
+                name:
+                  description: Name of the secret.
+                  type: string
+                namespace:
+                  description: Namespace of the secret.
+                  type: string
+              required:
+              - name
+              - namespace
+              type: object
+          required:
+          - forProvider
+          - providerRef
+          type: object
+        status:
+          description: An CertificateAuthorityStatus represents the observed state
+            of an CertificateAuthority manager.
+          properties:
+            atProvider:
+              description: CertificateAuthorityExternalStatus keeps the state of external
+                resource
+              properties:
+                certificateAuthorityArn:
+                  description: String that contains the ARN of the issued certificate
+                    Authority
+                  type: string
+                renewalPermission:
+                  type: boolean
+              required:
+              - certificateAuthorityArn
+              - renewalPermission
+              type: object
+            bindingPhase:
+              description: Phase represents the binding phase of a managed resource
+                or claim. Unbindable resources cannot be bound, typically because
+                they are currently unavailable, or still being created. Unbound resource
+                are available for binding, and Bound resources have successfully bound
+                to another resource.
+              enum:
+              - Unbindable
+              - Unbound
+              - Bound
+              - Released
+              type: string
+            conditions:
+              description: Conditions of the resource.
+              items:
+                description: A Condition that may apply to a resource.
+                properties:
+                  lastTransitionTime:
+                    description: LastTransitionTime is the last time this condition
+                      transitioned from one status to another.
+                    format: date-time
+                    type: string
+                  message:
+                    description: A Message containing details about this condition's
+                      last transition from one status to another, if any.
+                    type: string
+                  reason:
+                    description: A Reason for this condition's last transition from
+                      one status to another.
+                    type: string
+                  status:
+                    description: Status of this condition; is it currently True, False,
+                      or Unknown?
+                    type: string
+                  type:
+                    description: Type of this condition. At most one of each condition
+                      type may apply to a resource at any point in time.
+                    type: string
+                required:
+                - lastTransitionTime
+                - reason
+                - status
+                - type
+                type: object
+              type: array
+          required:
+          - atProvider
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
