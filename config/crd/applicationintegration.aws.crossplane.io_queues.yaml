@@ -160,9 +160,6 @@ spec:
                     retains a message.
                   format: int64
                   type: integer
-                name:
-                  description: The name of the new queue.
-                  type: string
                 receiveMessageWaitTimeSeconds:
                   description: The length of time, in seconds, for which a ReceiveMessage
                     action waits for a message to arrive.
@@ -205,8 +202,6 @@ spec:
                   description: The visibility timeout for the queue, in seconds.
                   format: int64
                   type: integer
-              required:
-              - name
               type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used

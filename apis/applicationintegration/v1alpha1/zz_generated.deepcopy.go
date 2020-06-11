@@ -106,8 +106,8 @@ func (in *QueueParameters) DeepCopyInto(out *QueueParameters) {
 		*out = new(int64)
 		**out = **in
 	}
-	if in.FifoQueue != nil {
-		in, out := &in.FifoQueue, &out.FifoQueue
+	if in.FIFOQueue != nil {
+		in, out := &in.FIFOQueue, &out.FIFOQueue
 		*out = new(bool)
 		**out = **in
 	}
@@ -126,19 +126,23 @@ func (in *QueueParameters) DeepCopyInto(out *QueueParameters) {
 		*out = new(int64)
 		**out = **in
 	}
-	in.RedrivePolicy.DeepCopyInto(&out.RedrivePolicy)
+	if in.RedrivePolicy != nil {
+		in, out := &in.RedrivePolicy, &out.RedrivePolicy
+		*out = new(RedrivePolicy)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.VisibilityTimeout != nil {
 		in, out := &in.VisibilityTimeout, &out.VisibilityTimeout
 		*out = new(int64)
 		**out = **in
 	}
-	if in.KmsMasterKeyID != nil {
-		in, out := &in.KmsMasterKeyID, &out.KmsMasterKeyID
+	if in.KMSMasterKeyID != nil {
+		in, out := &in.KMSMasterKeyID, &out.KMSMasterKeyID
 		*out = new(string)
 		**out = **in
 	}
-	if in.KmsDataKeyReusePeriodSeconds != nil {
-		in, out := &in.KmsDataKeyReusePeriodSeconds, &out.KmsDataKeyReusePeriodSeconds
+	if in.KMSDataKeyReusePeriodSeconds != nil {
+		in, out := &in.KMSDataKeyReusePeriodSeconds, &out.KMSDataKeyReusePeriodSeconds
 		*out = new(int64)
 		**out = **in
 	}

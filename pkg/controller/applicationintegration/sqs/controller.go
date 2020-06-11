@@ -49,9 +49,9 @@ const (
 	errInvalidNameForFifoQueue  = "cannot create Queue, FIFO queue name must have .fifo suffix"
 	errDeleteFailed             = "cannot delete Queue"
 	errGetQueueAttributesFailed = "cannot get Queue attributes"
+	errGetQueueURLFailed        = "cannot get Queue URL"
 	errListQueueTagsFailed      = "cannot list Queue tags"
 	errUpdateFailed             = "failed to update the Queue resource"
-	errStatusUpdate             = "cannot update status"
 	fifoQueueSuffix             = ".fifo"
 )
 
@@ -116,26 +116,25 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errNotQueue)
 	}
 
-	if meta.GetExternalName(cr) == "" {
-		return managed.ExternalObservation{}, nil
+	// Check the existence of the queue.
+	getURLResponse, err := e.client.GetQueueUrlRequest(&awssqs.GetQueueUrlInput{
+		QueueName: aws.String(meta.GetExternalName(cr)),
+	}).Send(ctx)
+	if err != nil || getURLResponse.GetQueueUrlOutput.QueueUrl == nil {
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(sqs.IsNotFound, err), errGetQueueURLFailed)
 	}
 
+	// Get all the attributes.
 	resAttributes, err := e.client.GetQueueAttributesRequest(&awssqs.GetQueueAttributesInput{
-		QueueUrl:       aws.String(meta.GetExternalName(cr)),
+		QueueUrl:       getURLResponse.QueueUrl,
 		AttributeNames: []awssqs.QueueAttributeName{awssqs.QueueAttributeNameAll},
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(sqs.IsErrorNotFound, err), errGetQueueAttributesFailed)
-	}
-
-	cr.Status.SetConditions(runtimev1alpha1.Available())
-
-	cr.Status.AtProvider = v1alpha1.QueueObservation{
-		ARN: resAttributes.Attributes[v1alpha1.AttributeQueueArn],
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(sqs.IsNotFound, err), errGetQueueAttributesFailed)
 	}
 
 	resTags, err := e.client.ListQueueTagsRequest(&awssqs.ListQueueTagsInput{
-		QueueUrl: aws.String(meta.GetExternalName(cr)),
+		QueueUrl: getURLResponse.QueueUrl,
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, errListQueueTagsFailed)
@@ -147,6 +146,13 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		if err := e.kube.Update(ctx, cr); err != nil {
 			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
 		}
+	}
+
+	cr.Status.SetConditions(runtimev1alpha1.Available())
+
+	cr.Status.AtProvider = v1alpha1.QueueObservation{
+		ARN: resAttributes.Attributes[v1alpha1.AttributeQueueArn],
+		URL: *getURLResponse.QueueUrl,
 	}
 
 	return managed.ExternalObservation{
@@ -164,22 +170,20 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr.SetConditions(runtimev1alpha1.Creating())
 
 	// FIFO queues names should end with ".fifo"
-	if aws.BoolValue(cr.Spec.ForProvider.FifoQueue) && !strings.HasSuffix(cr.Spec.ForProvider.Name, fifoQueueSuffix) {
+	if aws.BoolValue(cr.Spec.ForProvider.FIFOQueue) && !strings.HasSuffix(meta.GetExternalName(cr), fifoQueueSuffix) {
 		return managed.ExternalCreation{}, errors.New(errInvalidNameForFifoQueue)
 	}
 
 	createResp, err := e.client.CreateQueueRequest(&awssqs.CreateQueueInput{
 		Attributes: sqs.GenerateCreateAttributes(&cr.Spec.ForProvider),
-		QueueName:  aws.String(cr.Spec.ForProvider.Name),
+		QueueName:  aws.String(meta.GetExternalName(cr)),
 		Tags:       sqs.GenerateQueueTags(cr.Spec.ForProvider.Tags),
 	}).Send(ctx)
-	if err != nil {
+	if err != nil || createResp.CreateQueueOutput.QueueUrl == nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
 	}
 
-	meta.SetExternalName(cr, aws.StringValue(createResp.QueueUrl))
-
-	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errStatusUpdate)
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -188,8 +192,12 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.New(errNotQueue)
 	}
 
+	if cr.Status.AtProvider.URL == "" {
+		return managed.ExternalUpdate{}, nil
+	}
+
 	_, err := e.client.SetQueueAttributesRequest(&awssqs.SetQueueAttributesInput{
-		QueueUrl:   aws.String(meta.GetExternalName(cr)),
+		QueueUrl:   aws.String(cr.Status.AtProvider.URL),
 		Attributes: sqs.GenerateUpdateAttributes(&cr.Spec.ForProvider),
 	}).Send(ctx)
 	if err != nil {
@@ -197,7 +205,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	resTags, err := e.client.ListQueueTagsRequest(&awssqs.ListQueueTagsInput{
-		QueueUrl: aws.String(meta.GetExternalName(cr)),
+		QueueUrl: aws.String(cr.Status.AtProvider.URL),
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errListQueueTagsFailed)
@@ -212,7 +220,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		}
 
 		_, err = e.client.UntagQueueRequest(&awssqs.UntagQueueInput{
-			QueueUrl: aws.String(meta.GetExternalName(cr)),
+			QueueUrl: aws.String(cr.Status.AtProvider.URL),
 			TagKeys:  removedKeys,
 		}).Send(ctx)
 		if err != nil {
@@ -222,7 +230,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	if len(addedTags) > 0 {
 		_, err = e.client.TagQueueRequest(&awssqs.TagQueueInput{
-			QueueUrl: aws.String(meta.GetExternalName(cr)),
+			QueueUrl: aws.String(cr.Status.AtProvider.URL),
 			Tags:     addedTags,
 		}).Send(ctx)
 	}
@@ -235,10 +243,14 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errNotQueue)
 	}
 
+	if cr.Status.AtProvider.URL == "" {
+		return nil
+	}
+
 	cr.SetConditions(runtimev1alpha1.Deleting())
 
 	_, err := e.client.DeleteQueueRequest(&awssqs.DeleteQueueInput{
-		QueueUrl: aws.String(meta.GetExternalName(cr)),
+		QueueUrl: aws.String(cr.Status.AtProvider.URL),
 	}).Send(ctx)
-	return errors.Wrap(resource.Ignore(sqs.IsErrorNotFound, err), errDeleteFailed)
+	return errors.Wrap(resource.Ignore(sqs.IsNotFound, err), errDeleteFailed)
 }
