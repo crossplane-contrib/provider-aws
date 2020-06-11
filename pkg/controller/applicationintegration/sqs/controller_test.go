@@ -54,6 +54,7 @@ const (
 var (
 	attributes = map[string]string{}
 	queueURL   = "someURL"
+	queueName  = "some-name"
 
 	// replaceMe = "replace-me!"
 	errBoom = errors.New("boom")
@@ -77,6 +78,10 @@ func withConditions(c ...runtimev1alpha1.Condition) sqsModifier {
 
 func withSpec(p v1alpha1.QueueParameters) sqsModifier {
 	return func(r *v1alpha1.Queue) { r.Spec.ForProvider = p }
+}
+
+func withStatus(o v1alpha1.QueueObservation) sqsModifier {
+	return func(r *v1alpha1.Queue) { r.Status.AtProvider = o }
 }
 
 func queue(m ...sqsModifier) *v1alpha1.Queue {
@@ -288,11 +293,22 @@ func TestObserve(t *testing.T) {
 							}},
 						}
 					},
+					MockGetQueueURLRequest: func(input *awssqs.GetQueueUrlInput) awssqs.GetQueueUrlRequest {
+						return awssqs.GetQueueUrlRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.GetQueueUrlOutput{
+								QueueUrl: &queueURL,
+							}},
+						}
+					},
 				},
-				cr: queue(withExternalName(queueURL)),
+				cr: queue(withExternalName(queueName)),
 			},
 			want: want{
-				cr: queue(withExternalName(queueURL), withConditions(runtimev1alpha1.Available())),
+				cr: queue(withExternalName(queueName),
+					withConditions(runtimev1alpha1.Available()),
+					withStatus(v1alpha1.QueueObservation{
+						URL: queueURL,
+					})),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -302,22 +318,36 @@ func TestObserve(t *testing.T) {
 		"GetAttributesFail": {
 			args: args{
 				sqs: &fake.MockSQSClient{
+					MockGetQueueURLRequest: func(input *awssqs.GetQueueUrlInput) awssqs.GetQueueUrlRequest {
+						return awssqs.GetQueueUrlRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.GetQueueUrlOutput{
+								QueueUrl: &queueURL,
+							}},
+						}
+					},
 					MockGetQueueAttributesRequest: func(input *awssqs.GetQueueAttributesInput) awssqs.GetQueueAttributesRequest {
 						return awssqs.GetQueueAttributesRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: queue(withExternalName(queueURL)),
+				cr: queue(withExternalName(queueName)),
 			},
 			want: want{
-				cr:  queue(withExternalName(queueURL)),
+				cr:  queue(withExternalName(queueName)),
 				err: errors.Wrap(errBoom, errGetQueueAttributesFailed),
 			},
 		},
 		"ListTagsFail": {
 			args: args{
 				sqs: &fake.MockSQSClient{
+					MockGetQueueURLRequest: func(input *awssqs.GetQueueUrlInput) awssqs.GetQueueUrlRequest {
+						return awssqs.GetQueueUrlRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.GetQueueUrlOutput{
+								QueueUrl: &queueURL,
+							}},
+						}
+					},
 					MockGetQueueAttributesRequest: func(input *awssqs.GetQueueAttributesInput) awssqs.GetQueueAttributesRequest {
 						return awssqs.GetQueueAttributesRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.GetQueueAttributesOutput{
@@ -331,10 +361,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: queue(withExternalName(queueURL)),
+				cr: queue(withExternalName(queueName)),
 			},
 			want: want{
-				cr:  queue(withExternalName(queueURL), withConditions(runtimev1alpha1.Available())),
+				cr:  queue(withExternalName(queueName)),
 				err: errors.Wrap(errBoom, errListQueueTagsFailed),
 			},
 		},
@@ -383,7 +413,7 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: queue(),
+				cr: queue(withExternalName(queueURL)),
 			},
 			want: want{
 				cr: queue(withExternalName(queueURL),
@@ -399,10 +429,12 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: queue(withSpec(v1alpha1.QueueParameters{})),
+				cr: queue(withExternalName(queueURL),
+					withSpec(v1alpha1.QueueParameters{})),
 			},
 			want: want{
-				cr:  queue(withConditions(runtimev1alpha1.Creating())),
+				cr: queue(withExternalName(queueURL),
+					withConditions(runtimev1alpha1.Creating())),
 				err: errors.Wrap(errBoom, errCreateFailed),
 			},
 		},
@@ -451,10 +483,14 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: queue(),
+				cr: queue(withStatus(v1alpha1.QueueObservation{
+					URL: queueURL,
+				})),
 			},
 			want: want{
-				cr: queue(),
+				cr: queue(withStatus(v1alpha1.QueueObservation{
+					URL: queueURL,
+				})),
 			},
 		},
 		"TagsUpdate": {
@@ -497,6 +533,8 @@ func TestUpdate(t *testing.T) {
 							Value: "k2",
 						},
 					},
+				}), withStatus(v1alpha1.QueueObservation{
+					URL: queueURL,
 				})),
 			},
 			want: want{
@@ -511,6 +549,8 @@ func TestUpdate(t *testing.T) {
 							Value: "k2",
 						},
 					},
+				}), withStatus(v1alpha1.QueueObservation{
+					URL: queueURL,
 				})),
 			},
 		},
@@ -523,10 +563,14 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: queue(),
+				cr: queue(withStatus(v1alpha1.QueueObservation{
+					URL: queueURL,
+				})),
 			},
 			want: want{
-				cr:  queue(),
+				cr: queue(withStatus(v1alpha1.QueueObservation{
+					URL: queueURL,
+				})),
 				err: errors.Wrap(errBoom, errUpdateFailed),
 			},
 		},
@@ -569,10 +613,16 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: queue(withConditions(runtimev1alpha1.Deleting())),
+				cr: queue(withConditions(runtimev1alpha1.Deleting()),
+					withStatus(v1alpha1.QueueObservation{
+						URL: queueURL,
+					})),
 			},
 			want: want{
-				cr: queue(withConditions(runtimev1alpha1.Deleting())),
+				cr: queue(withConditions(runtimev1alpha1.Deleting()),
+					withStatus(v1alpha1.QueueObservation{
+						URL: queueURL,
+					})),
 			},
 		},
 		"DeleteFailure": {
@@ -584,10 +634,16 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: queue(withConditions(runtimev1alpha1.Deleting())),
+				cr: queue(withConditions(runtimev1alpha1.Deleting()),
+					withStatus(v1alpha1.QueueObservation{
+						URL: queueURL,
+					})),
 			},
 			want: want{
-				cr:  queue(withConditions(runtimev1alpha1.Deleting())),
+				cr: queue(withConditions(runtimev1alpha1.Deleting()),
+					withStatus(v1alpha1.QueueObservation{
+						URL: queueURL,
+					})),
 				err: errors.Wrap(errBoom, errDeleteFailed),
 			},
 		},

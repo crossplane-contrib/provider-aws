@@ -43,6 +43,7 @@ type Client interface {
 	GetQueueAttributesRequest(*sqs.GetQueueAttributesInput) sqs.GetQueueAttributesRequest
 	SetQueueAttributesRequest(input *sqs.SetQueueAttributesInput) sqs.SetQueueAttributesRequest
 	UntagQueueRequest(input *sqs.UntagQueueInput) sqs.UntagQueueRequest
+	GetQueueUrlRequest(input *sqs.GetQueueUrlInput) sqs.GetQueueUrlRequest
 }
 
 // NewClient creates new Queue Client with provided AWS Configurations/Credentials
@@ -57,8 +58,8 @@ func NewClient(ctx context.Context, credentials []byte, region string, auth awsc
 // GenerateCreateAttributes returns a map of queue attributes for Create operation
 func GenerateCreateAttributes(p *v1alpha1.QueueParameters) map[string]string {
 	m := GenerateQueueAttributes(p)
-	if p.FifoQueue != nil {
-		m[v1alpha1.AttributeFifoQueue] = fmt.Sprint(*p.FifoQueue)
+	if p.FIFOQueue != nil {
+		m[v1alpha1.AttributeFifoQueue] = fmt.Sprint(*p.FIFOQueue)
 	}
 	return m
 }
@@ -86,17 +87,17 @@ func GenerateQueueAttributes(p *v1alpha1.QueueParameters) map[string]string { //
 	if p.VisibilityTimeout != nil {
 		m[v1alpha1.AttributeVisibilityTimeout] = strconv.FormatInt(aws.Int64Value(p.VisibilityTimeout), 10)
 	}
-	if p.KmsMasterKeyID != nil {
-		m[v1alpha1.AttributeKmsMasterKeyID] = aws.StringValue(p.KmsMasterKeyID)
+	if p.KMSMasterKeyID != nil {
+		m[v1alpha1.AttributeKmsMasterKeyID] = aws.StringValue(p.KMSMasterKeyID)
 	}
-	if p.KmsDataKeyReusePeriodSeconds != nil {
-		m[v1alpha1.AttributeKmsDataKeyReusePeriodSeconds] = strconv.FormatInt(aws.Int64Value(p.KmsDataKeyReusePeriodSeconds), 10)
+	if p.KMSDataKeyReusePeriodSeconds != nil {
+		m[v1alpha1.AttributeKmsDataKeyReusePeriodSeconds] = strconv.FormatInt(aws.Int64Value(p.KMSDataKeyReusePeriodSeconds), 10)
 	}
 	if p.ReceiveMessageWaitTimeSeconds != nil {
 		m[v1alpha1.AttributeReceiveMessageWaitTimeSeconds] = strconv.FormatInt(aws.Int64Value(p.ReceiveMessageWaitTimeSeconds), 10)
 	}
 
-	if aws.StringValue(p.RedrivePolicy.DeadLetterQueueARN) != "" {
+	if p.RedrivePolicy != nil && aws.StringValue(p.RedrivePolicy.DeadLetterQueueARN) != "" {
 		val, err := json.Marshal(p.RedrivePolicy)
 		if err == nil {
 			m[v1alpha1.AttributeRedrivePolicy] = string(val)
@@ -117,8 +118,8 @@ func GenerateQueueTags(tags []v1alpha1.Tag) map[string]string {
 	return nil
 }
 
-// IsErrorNotFound checks if the error returned by AWS API says that the queue being probed doesn't exist
-func IsErrorNotFound(err error) bool {
+// IsNotFound checks if the error returned by AWS API says that the queue being probed doesn't exist
+func IsNotFound(err error) bool {
 	if awsErr, ok := err.(awserr.Error); ok {
 		if awsErr.Code() == QueueNotFound {
 			return true
@@ -141,18 +142,19 @@ func LateInitialize(in *v1alpha1.QueueParameters, attributes map[string]string, 
 		return
 	}
 	in.DelaySeconds = awsclients.LateInitializeInt64Ptr(in.DelaySeconds, int64Ptr(attributes[v1alpha1.AttributeDelaySeconds]))
-	in.KmsDataKeyReusePeriodSeconds = awsclients.LateInitializeInt64Ptr(in.KmsDataKeyReusePeriodSeconds, int64Ptr(attributes[v1alpha1.AttributeKmsDataKeyReusePeriodSeconds]))
+	in.KMSDataKeyReusePeriodSeconds = awsclients.LateInitializeInt64Ptr(in.KMSDataKeyReusePeriodSeconds, int64Ptr(attributes[v1alpha1.AttributeKmsDataKeyReusePeriodSeconds]))
 	in.MaximumMessageSize = awsclients.LateInitializeInt64Ptr(in.MaximumMessageSize, int64Ptr(attributes[v1alpha1.AttributeMaximumMessageSize]))
 	in.MessageRetentionPeriod = awsclients.LateInitializeInt64Ptr(in.MessageRetentionPeriod, int64Ptr(attributes[v1alpha1.AttributeMessageRetentionPeriod]))
 	in.ReceiveMessageWaitTimeSeconds = awsclients.LateInitializeInt64Ptr(in.ReceiveMessageWaitTimeSeconds, int64Ptr(attributes[v1alpha1.AttributeReceiveMessageWaitTimeSeconds]))
 	in.VisibilityTimeout = awsclients.LateInitializeInt64Ptr(in.VisibilityTimeout, int64Ptr(attributes[v1alpha1.AttributeVisibilityTimeout]))
-	in.RedrivePolicy.MaxReceiveCount = awsclients.LateInitializeInt64Ptr(in.RedrivePolicy.MaxReceiveCount, int64Ptr(attributes[v1alpha1.AttributeMaxReceiveCount]))
-	if in.KmsMasterKeyID == nil && attributes[v1alpha1.AttributeKmsMasterKeyID] != "" {
-		in.KmsMasterKeyID = aws.String(attributes[v1alpha1.AttributeKmsMasterKeyID])
+	if in.KMSMasterKeyID == nil && attributes[v1alpha1.AttributeKmsMasterKeyID] != "" {
+		in.KMSMasterKeyID = aws.String(attributes[v1alpha1.AttributeKmsMasterKeyID])
 	}
 
-	if in.RedrivePolicy.DeadLetterQueueARN == nil && attributes[v1alpha1.AttributeDeadLetterQueueARN] != "" {
-		in.RedrivePolicy.DeadLetterQueueARN = aws.String(attributes[v1alpha1.AttributeDeadLetterQueueARN])
+	if attributes[v1alpha1.AttributeDeadLetterQueueARN] != "" || attributes[v1alpha1.AttributeMaxReceiveCount] != "" {
+		in.RedrivePolicy = &v1alpha1.RedrivePolicy{}
+		in.RedrivePolicy.MaxReceiveCount = awsclients.LateInitializeInt64Ptr(in.RedrivePolicy.MaxReceiveCount, int64Ptr(attributes[v1alpha1.AttributeMaxReceiveCount]))
+		in.RedrivePolicy.DeadLetterQueueARN = awsclients.LateInitializeStringPtr(in.RedrivePolicy.DeadLetterQueueARN, aws.String(attributes[v1alpha1.AttributeDeadLetterQueueARN]))
 	}
 }
 
@@ -172,7 +174,7 @@ func IsUpToDate(p v1alpha1.QueueParameters, attributes map[string]string, tags m
 	if aws.Int64Value(p.DelaySeconds) != int64Value(attributes[v1alpha1.AttributeDelaySeconds]) {
 		return false
 	}
-	if aws.Int64Value(p.KmsDataKeyReusePeriodSeconds) != int64Value(attributes[v1alpha1.AttributeKmsDataKeyReusePeriodSeconds]) {
+	if aws.Int64Value(p.KMSDataKeyReusePeriodSeconds) != int64Value(attributes[v1alpha1.AttributeKmsDataKeyReusePeriodSeconds]) {
 		return false
 	}
 	if aws.Int64Value(p.MaximumMessageSize) != int64Value(attributes[v1alpha1.AttributeMaximumMessageSize]) {
@@ -187,14 +189,17 @@ func IsUpToDate(p v1alpha1.QueueParameters, attributes map[string]string, tags m
 	if aws.Int64Value(p.VisibilityTimeout) != int64Value(attributes[v1alpha1.AttributeVisibilityTimeout]) {
 		return false
 	}
-	if !cmp.Equal(aws.StringValue(p.KmsMasterKeyID), attributes[v1alpha1.AttributeKmsMasterKeyID]) {
+	if !cmp.Equal(aws.StringValue(p.KMSMasterKeyID), attributes[v1alpha1.AttributeKmsMasterKeyID]) {
 		return false
 	}
-	if !cmp.Equal(aws.StringValue(p.RedrivePolicy.DeadLetterQueueARN), attributes[v1alpha1.AttributeDeadLetterQueueARN]) {
-		return false
-	}
-	if aws.Int64Value(p.RedrivePolicy.MaxReceiveCount) != int64Value(attributes[v1alpha1.AttributeMaxReceiveCount]) {
-		return false
+
+	if p.RedrivePolicy != nil {
+		if !cmp.Equal(aws.StringValue(p.RedrivePolicy.DeadLetterQueueARN), attributes[v1alpha1.AttributeDeadLetterQueueARN]) {
+			return false
+		}
+		if aws.Int64Value(p.RedrivePolicy.MaxReceiveCount) != int64Value(attributes[v1alpha1.AttributeMaxReceiveCount]) {
+			return false
+		}
 	}
 
 	return true

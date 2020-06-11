@@ -26,6 +26,7 @@ type MockSQSClient struct {
 	MockListQueueTagsRequest      func(input *sqs.ListQueueTagsInput) sqs.ListQueueTagsRequest
 	MockGetQueueAttributesRequest func(input *sqs.GetQueueAttributesInput) sqs.GetQueueAttributesRequest
 	MockSetQueueAttributesRequest func(input *sqs.SetQueueAttributesInput) sqs.SetQueueAttributesRequest
+	MockGetQueueURLRequest        func(input *sqs.GetQueueUrlInput) sqs.GetQueueUrlRequest
 }
 
 // CreateQueueRequest mocks CreateQueueRequest
@@ -61,4 +62,9 @@ func (m *MockSQSClient) GetQueueAttributesRequest(i *sqs.GetQueueAttributesInput
 // SetQueueAttributesRequest mocks SetQueueAttributesRequest
 func (m *MockSQSClient) SetQueueAttributesRequest(i *sqs.SetQueueAttributesInput) sqs.SetQueueAttributesRequest {
 	return m.MockSetQueueAttributesRequest(i)
+}
+
+// GetQueueUrlRequest mocks GetQueueUrlRequest
+func (m *MockSQSClient) GetQueueUrlRequest(i *sqs.GetQueueUrlInput) sqs.GetQueueUrlRequest { //nolint:golint
+	return m.MockGetQueueURLRequest(i)
 }

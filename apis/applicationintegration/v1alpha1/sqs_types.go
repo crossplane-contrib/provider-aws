@@ -53,6 +53,7 @@ type Tag struct {
 	Key string `json:"key"`
 
 	// The value associated with a key in a tag.
+	// +optional
 	Value string `json:"value,omitempty"`
 }
 
@@ -79,7 +80,7 @@ type QueueParameters struct {
 	// Designates a queue as FIFO.
 	// +immutable
 	// +optional
-	FifoQueue *bool `json:"fifoQueue,omitempty"`
+	FIFOQueue *bool `json:"fifoQueue,omitempty"`
 
 	// The limit of how many bytes a message can contain before Amazon SQS rejects it.
 	// +optional
@@ -89,9 +90,6 @@ type QueueParameters struct {
 	// +optional
 	MessageRetentionPeriod *int64 `json:"messageRetentionPeriod,omitempty"`
 
-	// The name of the new queue.
-	Name string `json:"name"`
-
 	// The length of time, in seconds, for which a ReceiveMessage
 	// action waits for a message to arrive.
 	// +optional
@@ -100,7 +98,7 @@ type QueueParameters struct {
 	// RedrivePolicy includes the parameters for the dead-letter queue
 	// functionality of the source queue.
 	// +optional
-	RedrivePolicy RedrivePolicy `json:"redrivePolicy,omitempty"`
+	RedrivePolicy *RedrivePolicy `json:"redrivePolicy,omitempty"`
 
 	// The visibility timeout for the queue, in seconds.
 	// +optional
@@ -108,12 +106,12 @@ type QueueParameters struct {
 
 	// The ID of an AWS-managed customer master key (CMK) for Amazon SQS or a custom CMK.
 	// +optional
-	KmsMasterKeyID *string `json:"kmsMasterKeyId,omitempty"`
+	KMSMasterKeyID *string `json:"kmsMasterKeyId,omitempty"`
 
 	// The length of time, in seconds, for which
 	// Amazon SQS can reuse a data key to encrypt or decrypt messages before calling AWS KMS again.
 	// +optional
-	KmsDataKeyReusePeriodSeconds *int64 `json:"kmsDataKeyReusePeriodSeconds,omitempty"`
+	KMSDataKeyReusePeriodSeconds *int64 `json:"kmsDataKeyReusePeriodSeconds,omitempty"`
 
 	// Tags add cost allocation tags to the specified Amazon SQS queue.
 	// +optional

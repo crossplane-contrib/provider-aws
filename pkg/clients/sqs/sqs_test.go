@@ -36,7 +36,7 @@ var (
 func sqsParams(m ...func(*v1alpha1.QueueParameters)) *v1alpha1.QueueParameters {
 	o := &v1alpha1.QueueParameters{
 		DelaySeconds:   aws.Int64(delaySeconds),
-		KmsMasterKeyID: aws.String(kmsMasterKeyID),
+		KMSMasterKeyID: aws.String(kmsMasterKeyID),
 	}
 
 	for _, f := range m {
@@ -137,7 +137,7 @@ func TestIsUpToDate(t *testing.T) {
 		"SameFields": {
 			args: args{
 				p: v1alpha1.QueueParameters{
-					KmsMasterKeyID: &kmsMasterKeyID,
+					KMSMasterKeyID: &kmsMasterKeyID,
 				},
 				attributes: map[string]string{
 					v1alpha1.AttributeKmsMasterKeyID: kmsMasterKeyID,
@@ -148,7 +148,7 @@ func TestIsUpToDate(t *testing.T) {
 		"DifferentFields": {
 			args: args{
 				p: v1alpha1.QueueParameters{
-					KmsMasterKeyID: &kmsMasterKeyID,
+					KMSMasterKeyID: &kmsMasterKeyID,
 				},
 				attributes: map[string]string{},
 			},
@@ -196,7 +196,7 @@ func TestGenerateQueueAttributes(t *testing.T) {
 		},
 		"RedrivePolicy": {
 			in: *sqsParams(func(p *v1alpha1.QueueParameters) {
-				p.RedrivePolicy = v1alpha1.RedrivePolicy{
+				p.RedrivePolicy = &v1alpha1.RedrivePolicy{
 					DeadLetterQueueARN: &arn,
 					MaxReceiveCount:    &maxReceiveCount,
 				}
