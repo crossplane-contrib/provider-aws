@@ -1,11 +1,11 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2020 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,702 +19,335 @@ package eks
 import (
 	"context"
 	"encoding/base64"
-	"errors"
-	"fmt"
-	"regexp"
-	"strconv"
+	"encoding/json"
+	"net"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/aws/aws-sdk-go-v2/service/eks/eksiface"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/aws/aws-sdk-go-v2/service/sts/stsiface"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	awscomputev1alpha3 "github.com/crossplane/provider-aws/apis/compute/v1alpha3"
-	cfc "github.com/crossplane/provider-aws/pkg/clients/cloudformation"
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+
+	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 const (
-	clusterIDHeader                = "x-k8s-aws-id"
-	v1Prefix                       = "k8s-aws-v1."
-	cloudFormationNodeInstanceRole = "NodeInstanceRole"
+	clusterIDHeader = "x-k8s-aws-id"
+	v1Prefix        = "k8s-aws-v1."
 )
 
-// Cluster crossplane representation of the AWS EKS Cluster
-type Cluster struct {
-	Name     string
-	Version  string
-	ARN      string
-	Status   string
-	Endpoint string
-	CA       string
+// Client defines EKS Client operations
+type Client eksiface.ClientAPI
+
+// STSClient defines STS Client operations
+type STSClient stsiface.ClientAPI
+
+// NewClient creates new EKS Client with provided AWS Configurations/Credentials.
+func NewClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (Client, STSClient, error) {
+	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
+	if cfg == nil {
+		return nil, nil, err
+	}
+	return eks.New(*cfg), sts.New(*cfg), err
 }
 
-// NewCluster returns crossplane representation AWS EKS cluster
-func NewCluster(c *eks.Cluster) *Cluster {
-	cluster := &Cluster{
-		Name:     aws.StringValue(c.Name),
-		Version:  aws.StringValue(c.Version),
-		ARN:      aws.StringValue(c.Arn),
-		Status:   string(c.Status),
-		Endpoint: aws.StringValue(c.Endpoint),
+// IsErrorNotFound helper function to test for ErrCodeResourceNotFoundException error.
+func IsErrorNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(err.Error(), eks.ErrCodeResourceNotFoundException)
+}
+
+// IsErrorInUse helper function to test for ErrCodeResourceInUseException error.
+func IsErrorInUse(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(err.Error(), eks.ErrCodeResourceInUseException)
+}
+
+// GenerateCreateClusterInput from ClusterParameters.
+func GenerateCreateClusterInput(name string, p *v1beta1.ClusterParameters) *eks.CreateClusterInput {
+	c := &eks.CreateClusterInput{
+		Name:    awsclients.String(name),
+		RoleArn: p.RoleArn,
+		Version: p.Version,
 	}
 
-	if c.CertificateAuthority != nil {
-		cluster.CA = aws.StringValue(c.CertificateAuthority.Data)
+	if len(p.EncryptionConfig) > 0 {
+		config := make([]eks.EncryptionConfig, len(p.EncryptionConfig))
+		for i, conf := range p.EncryptionConfig {
+			config[i] = eks.EncryptionConfig{
+				Provider: &eks.Provider{
+					KeyArn: awsclients.String(conf.Provider.KeyArn),
+				},
+				Resources: conf.Resources,
+			}
+		}
+		c.EncryptionConfig = config
 	}
 
-	return cluster
-}
-
-// ClusterWorkers crossplane representation of the AWS EKS cluster worker nodes
-type ClusterWorkers struct {
-	WorkersStatus cloudformation.StackStatus
-	WorkerReason  string
-	WorkerStackID string
-	WorkerARN     string
-}
-
-// NewClusterWorkers returns crossplane representation of the AWS EKS cluster worker nodes
-func NewClusterWorkers(workerStackID string, workerStatus cloudformation.StackStatus, workerReason string, workerARN string) *ClusterWorkers {
-	return &ClusterWorkers{
-		WorkerStackID: workerStackID,
-		WorkersStatus: workerStatus,
-		WorkerReason:  workerReason,
-		WorkerARN:     workerARN,
-	}
-}
-
-// Client interface to perform cluster operations
-type Client interface {
-	Create(string, awscomputev1alpha3.EKSClusterSpec) (*Cluster, error)
-	Get(string) (*Cluster, error)
-	Delete(string) error
-	CreateWorkerNodes(name string, version string, spec awscomputev1alpha3.EKSClusterSpec) (*ClusterWorkers, error)
-	GetWorkerNodes(stackID string) (*ClusterWorkers, error)
-	DeleteWorkerNodes(stackID string) error
-	ConnectionToken(string) (string, error)
-}
-
-// AMIClient the interface for getting AMI images information
-type AMIClient interface {
-	DescribeImagesRequest(*ec2.DescribeImagesInput) ec2.DescribeImagesRequest
-}
-
-type eksClient struct {
-	eks            eksiface.ClientAPI
-	amiClient      AMIClient
-	sts            *sts.Client
-	cloudformation cfc.Client
-}
-
-// NewClient return new instance of the crossplane client for a specific AWS configuration
-func NewClient(config *aws.Config) Client {
-	return &eksClient{eks.New(*config),
-		ec2.New(*config), sts.New(*config), cfc.NewClient(config)}
-}
-
-// Create new EKS cluster
-func (e *eksClient) Create(name string, spec awscomputev1alpha3.EKSClusterSpec) (*Cluster, error) {
-	input := &eks.CreateClusterInput{
-		Name:    aws.String(name),
-		RoleArn: aws.String(spec.RoleARN),
-		ResourcesVpcConfig: &eks.VpcConfigRequest{
-			SubnetIds:        spec.SubnetIDs,
-			SecurityGroupIds: spec.SecurityGroupIDs,
-		},
-	}
-	if spec.ClusterVersion != "" {
-		input.Version = aws.String(spec.ClusterVersion)
+	c.ResourcesVpcConfig = &eks.VpcConfigRequest{
+		EndpointPrivateAccess: p.ResourcesVpcConfig.EndpointPrivateAccess,
+		EndpointPublicAccess:  p.ResourcesVpcConfig.EndpointPublicAccess,
+		PublicAccessCidrs:     p.ResourcesVpcConfig.PublicAccessCidrs,
+		SecurityGroupIds:      p.ResourcesVpcConfig.SecurityGroupIDs,
+		SubnetIds:             p.ResourcesVpcConfig.SubnetIDs,
 	}
 
-	output, err := e.eks.CreateClusterRequest(input).Send(context.TODO())
+	if p.Logging != nil {
+		setup := make([]eks.LogSetup, len(p.Logging.ClusterLogging))
+		for i, cl := range p.Logging.ClusterLogging {
+			types := make([]eks.LogType, len(cl.Types))
+			for j, t := range cl.Types {
+				types[j] = eks.LogType(t)
+			}
+			setup[i] = eks.LogSetup{
+				Enabled: cl.Enabled,
+				Types:   types,
+			}
+		}
+		c.Logging = &eks.Logging{
+			ClusterLogging: setup,
+		}
+	}
+	if len(p.Tags) != 0 {
+		c.Tags = p.Tags
+	}
+	return c
+}
+
+// CreatePatch creates a *v1beta1.ClusterParameters that has only the changed
+// values between the target *v1beta1.ClusterParameters and the current
+// *eks.Cluster.
+func CreatePatch(in *eks.Cluster, target *v1beta1.ClusterParameters) (*v1beta1.ClusterParameters, error) {
+	currentParams := &v1beta1.ClusterParameters{}
+	LateInitialize(currentParams, in)
+
+	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
 	}
-	return NewCluster(output.Cluster), nil
+	patch := &v1beta1.ClusterParameters{}
+	if err := json.Unmarshal(jsonPatch, patch); err != nil {
+		return nil, err
+	}
+	return patch, nil
 }
 
-// CreateWorkerNodes new EKS cluster workers nodes
-func (e *eksClient) CreateWorkerNodes(name string, clusterVersion string, spec awscomputev1alpha3.EKSClusterSpec) (*ClusterWorkers, error) {
-	// Cloud formation create workers
-	ami, err := e.getAMIImage(spec.WorkerNodes.NodeImageID, clusterVersion)
-	if err != nil {
-		return nil, err
+// GenerateUpdateClusterConfigInput from ClusterParameters.
+func GenerateUpdateClusterConfigInput(name string, p *v1beta1.ClusterParameters) *eks.UpdateClusterConfigInput {
+	u := &eks.UpdateClusterConfigInput{
+		Name: awsclients.String(name),
 	}
 
-	subnetIDs := strings.Join(spec.SubnetIDs, ",")
-	parameters := map[string]string{
-		"ClusterName":                      name,
-		"VpcId":                            spec.VPCID,
-		"Subnets":                          subnetIDs,
-		"NodeImageId":                      aws.StringValue(ami.ImageId),
-		"NodeInstanceType":                 spec.WorkerNodes.NodeInstanceType,
-		"BootstrapArguments":               spec.WorkerNodes.BootstrapArguments,
-		"NodeGroupName":                    spec.WorkerNodes.NodeGroupName,
-		"ClusterControlPlaneSecurityGroup": spec.WorkerNodes.ClusterControlPlaneSecurityGroup,
+	if p.Logging != nil {
+		setup := make([]eks.LogSetup, len(p.Logging.ClusterLogging))
+		for i, cl := range p.Logging.ClusterLogging {
+			types := make([]eks.LogType, len(cl.Types))
+			for j, t := range cl.Types {
+				types[j] = eks.LogType(t)
+			}
+			setup[i] = eks.LogSetup{
+				Enabled: cl.Enabled,
+				Types:   types,
+			}
+		}
+		u.Logging = &eks.Logging{
+			ClusterLogging: setup,
+		}
 	}
 
-	if spec.WorkerNodes.NodeAutoScalingGroupMinSize != nil {
-		nodeAutoScalingGroupMinSize := strconv.Itoa(*spec.WorkerNodes.NodeAutoScalingGroupMinSize)
-		parameters["NodeAutoScalingGroupMinSize"] = nodeAutoScalingGroupMinSize
+	u.ResourcesVpcConfig = &eks.VpcConfigRequest{
+		EndpointPrivateAccess: p.ResourcesVpcConfig.EndpointPrivateAccess,
+		EndpointPublicAccess:  p.ResourcesVpcConfig.EndpointPublicAccess,
+		PublicAccessCidrs:     p.ResourcesVpcConfig.PublicAccessCidrs,
+		SecurityGroupIds:      p.ResourcesVpcConfig.SecurityGroupIDs,
+		SubnetIds:             p.ResourcesVpcConfig.SubnetIDs,
 	}
-
-	if spec.WorkerNodes.NodeAutoScalingGroupMaxSize != nil {
-		nodeAutoScalingGroupMaxSize := strconv.Itoa(*spec.WorkerNodes.NodeAutoScalingGroupMaxSize)
-		parameters["NodeAutoScalingGroupMaxSize"] = nodeAutoScalingGroupMaxSize
-	}
-
-	if spec.WorkerNodes.NodeVolumeSize != nil {
-		nodeVolumeSize := strconv.Itoa(*spec.WorkerNodes.NodeVolumeSize)
-		parameters["NodeVolumeSize"] = nodeVolumeSize
-	}
-
-	stackID, err := e.cloudformation.CreateStack(aws.String(name), aws.String(workerCloudFormationTemplate), parameters)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewClusterWorkers(*stackID, cloudformation.StackStatusCreateInProgress, "", ""), nil
+	return u
 }
 
-// Get an existing EKS cluster
-func (e *eksClient) Get(name string) (*Cluster, error) {
-	input := &eks.DescribeClusterInput{Name: aws.String(name)}
-	output, err := e.eks.DescribeClusterRequest(input).Send(context.TODO())
-	if err != nil {
-		return nil, err
+// GenerateObservation is used to produce v1beta1.ClusterObservation from
+// eks.Cluster.
+func GenerateObservation(cluster *eks.Cluster) v1beta1.ClusterObservation { // nolint:gocyclo
+	o := v1beta1.ClusterObservation{
+		Arn:             awsclients.StringValue(cluster.Arn),
+		Endpoint:        awsclients.StringValue(cluster.Endpoint),
+		PlatformVersion: awsclients.StringValue(cluster.PlatformVersion),
+		Status:          v1beta1.ClusterStatusType(cluster.Status),
 	}
 
-	return NewCluster(output.Cluster), err
+	if cluster.CreatedAt != nil {
+		o.CreatedAt = &metav1.Time{Time: *cluster.CreatedAt}
+	}
+
+	if cluster.Identity != nil && cluster.Identity.Oidc != nil {
+		o.Identity = v1beta1.Identity{
+			OIDC: v1beta1.OIDC{
+				Issuer: awsclients.StringValue(cluster.Identity.Oidc.Issuer),
+			},
+		}
+	}
+
+	if cluster.ResourcesVpcConfig != nil {
+		o.ResourcesVpcConfig = v1beta1.VpcConfigResponse{
+			ClusterSecurityGroupID: awsclients.StringValue(cluster.ResourcesVpcConfig.ClusterSecurityGroupId),
+			VpcID:                  awsclients.StringValue(cluster.ResourcesVpcConfig.VpcId),
+		}
+	}
+	return o
 }
 
-// GetWorkerNodes information about existing cloud formation stack
-func (e *eksClient) GetWorkerNodes(stackID string) (*ClusterWorkers, error) {
-	stack, err := e.cloudformation.GetStack(&stackID)
+// LateInitialize fills the empty fields in *v1beta1.ClusterParameters with the
+// values seen in eks.Cluster.
+func LateInitialize(in *v1beta1.ClusterParameters, cluster *eks.Cluster) { // nolint:gocyclo
+	if cluster == nil {
+		return
+	}
+	if len(in.EncryptionConfig) == 0 && len(cluster.EncryptionConfig) > 0 {
+		in.EncryptionConfig = make([]v1beta1.EncryptionConfig, len(cluster.EncryptionConfig))
+		for i, e := range cluster.EncryptionConfig {
+			in.EncryptionConfig[i] = v1beta1.EncryptionConfig{
+				Resources: e.Resources,
+			}
+			if e.Provider != nil {
+				in.EncryptionConfig[i].Provider = v1beta1.Provider{
+					KeyArn: *e.Provider.KeyArn,
+				}
+			}
+		}
+	}
+	if in.Logging == nil && cluster.Logging != nil && len(cluster.Logging.ClusterLogging) > 0 {
+		setup := make([]v1beta1.LogSetup, len(cluster.Logging.ClusterLogging))
+		for i, cl := range cluster.Logging.ClusterLogging {
+			types := make([]v1beta1.LogType, len(cl.Types))
+			for j, t := range cl.Types {
+				types[j] = v1beta1.LogType(t)
+			}
+			setup[i] = v1beta1.LogSetup{
+				Enabled: cl.Enabled,
+				Types:   types,
+			}
+		}
+		in.Logging = &v1beta1.Logging{
+			ClusterLogging: setup,
+		}
+	}
+	if cluster.ResourcesVpcConfig != nil {
+		in.ResourcesVpcConfig.EndpointPrivateAccess = awsclients.LateInitializeBoolPtr(in.ResourcesVpcConfig.EndpointPrivateAccess, cluster.ResourcesVpcConfig.EndpointPrivateAccess)
+		in.ResourcesVpcConfig.EndpointPublicAccess = awsclients.LateInitializeBoolPtr(in.ResourcesVpcConfig.EndpointPublicAccess, cluster.ResourcesVpcConfig.EndpointPublicAccess)
+		if len(in.ResourcesVpcConfig.PublicAccessCidrs) == 0 && len(cluster.ResourcesVpcConfig.PublicAccessCidrs) > 0 {
+			in.ResourcesVpcConfig.PublicAccessCidrs = cluster.ResourcesVpcConfig.PublicAccessCidrs
+		}
+
+		if len(in.ResourcesVpcConfig.SecurityGroupIDs) == 0 && len(cluster.ResourcesVpcConfig.SecurityGroupIds) > 0 {
+			in.ResourcesVpcConfig.SecurityGroupIDs = cluster.ResourcesVpcConfig.SecurityGroupIds
+		}
+		if len(in.ResourcesVpcConfig.SubnetIDs) == 0 && len(cluster.ResourcesVpcConfig.SubnetIds) > 0 {
+			in.ResourcesVpcConfig.SubnetIDs = cluster.ResourcesVpcConfig.SubnetIds
+		}
+	}
+	in.RoleArn = awsclients.LateInitializeStringPtr(in.RoleArn, cluster.RoleArn)
+	in.Version = awsclients.LateInitializeStringPtr(in.Version, cluster.Version)
+}
+
+// IsUpToDate checks whether there is a change in any of the modifiable fields.
+func IsUpToDate(p *v1beta1.ClusterParameters, cluster *eks.Cluster) (bool, error) {
+	patch, err := CreatePatch(cluster, p)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
-	nodeARN := ""
-	if stack.Outputs != nil {
-		for _, item := range stack.Outputs {
-			if aws.StringValue(item.OutputKey) == cloudFormationNodeInstanceRole {
-				nodeARN = aws.StringValue(item.OutputValue)
-				break
+	// NOTE(hasheddan): AWS removes insignificant bits from CIDRs, so we must
+	// compare by converting user-supplied CIDRs to network blocks. We only skip
+	// comparison if both external and local have no CIDR blocks defined.
+	if (cluster.ResourcesVpcConfig != nil && len(cluster.ResourcesVpcConfig.PublicAccessCidrs) > 0) || len(p.ResourcesVpcConfig.PublicAccessCidrs) > 0 {
+		// Convert user-supplied slice of CIDRs to map of networks.
+		netMap := map[string]bool{}
+		for _, c := range p.ResourcesVpcConfig.PublicAccessCidrs {
+			_, net, err := net.ParseCIDR(c)
+			if err != nil {
+				return false, err
+			}
+			netMap[net.String()] = true
+		}
+		// If length of networks does not match the length of CIDR blocks
+		// returned by AWS then we need update.
+		if len(netMap) != len(cluster.ResourcesVpcConfig.PublicAccessCidrs) {
+			return false, nil
+		}
+		// If AWS returns a CIDR block that is not in the map, then we need
+		// update.
+		for _, pc := range cluster.ResourcesVpcConfig.PublicAccessCidrs {
+			if !netMap[pc] {
+				return false, nil
 			}
 		}
 	}
 
-	return NewClusterWorkers(stackID, stack.StackStatus, aws.StringValue(stack.StackStatusReason), nodeARN), nil
+	return cmp.Equal(&v1beta1.ClusterParameters{}, patch, cmpopts.EquateEmpty(),
+		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{}),
+		cmpopts.IgnoreFields(v1beta1.ClusterParameters{}, "Tags"),
+		cmpopts.IgnoreFields(v1beta1.VpcConfigRequest{}, "SecurityGroupIDRefs", "SubnetIDRefs", "PublicAccessCidrs")), nil
 }
 
-// Delete a EKS cluster
-func (e *eksClient) Delete(name string) error {
-	input := &eks.DeleteClusterInput{Name: aws.String(name)}
-	_, err := e.eks.DeleteClusterRequest(input).Send(context.TODO())
-	return err
-}
-
-// DeleteWorkerNodes deletes the cloud formation for this stack.
-func (e *eksClient) DeleteWorkerNodes(stackID string) error {
-	return e.cloudformation.DeleteStack(&stackID)
-}
-
-// ConnectionToken to a cluster
-func (e *eksClient) ConnectionToken(name string) (string, error) {
-	request := e.sts.GetCallerIdentityRequest(&sts.GetCallerIdentityInput{})
-	request.HTTPRequest.Header.Add(clusterIDHeader, name)
+// GetConnectionDetails extracts managed.ConnectionDetails out of eks.Cluster.
+func GetConnectionDetails(cluster *eks.Cluster, stsClient STSClient) managed.ConnectionDetails {
+	if cluster == nil || cluster.Name == nil || cluster.Endpoint == nil || cluster.CertificateAuthority == nil || cluster.CertificateAuthority.Data == nil {
+		return managed.ConnectionDetails{}
+	}
+	request := stsClient.GetCallerIdentityRequest(&sts.GetCallerIdentityInput{})
+	request.HTTPRequest.Header.Add(clusterIDHeader, *cluster.Name)
 
 	// sign the request
 	presignedURLString, err := request.Presign(60 * time.Second)
 	if err != nil {
-		return "", err
+		return managed.ConnectionDetails{}
 	}
-
-	return v1Prefix + base64.RawURLEncoding.EncodeToString([]byte(presignedURLString)), nil
-}
-
-// getAMIImage checks to see if the requested image ID is compatible with the
-// AMI images available for the cluster. If no imageID is provided, it picks the most
-// recent available image.
-func (e *eksClient) getAMIImage(requestedImageID, clusterVersion string) (*ec2.Image, error) {
-	images, err := e.getAvailableImages(clusterVersion)
+	token := v1Prefix + base64.RawURLEncoding.EncodeToString([]byte(presignedURLString))
+	caData, err := base64.StdEncoding.DecodeString(*cluster.CertificateAuthority.Data)
 	if err != nil {
-		return nil, err
+		return managed.ConnectionDetails{}
 	}
-
-	if len(images) == 0 {
-		return nil, errors.New("No available AMI images were found for the cluster version in this region")
-	}
-
-	if requestedImageID != "" {
-		return getImageWithID(requestedImageID, images)
-	}
-
-	return getMostRecentImage(images), nil
-}
-
-// getAvailableImages retrieves AMI images available for the cluster.
-func (e *eksClient) getAvailableImages(clusterVersion string) ([]*ec2.Image, error) {
-
-	// make sure the provided cluster version is valid
-	r := regexp.MustCompile(`v?(\d+)\.(\d+)`)
-	versionParts := r.FindStringSubmatch(clusterVersion)
-	if len(versionParts) < 3 {
-		return nil, errors.New("Cluster version is empty or invalid")
-	}
-	versionMajor, versionMinor := versionParts[1], versionParts[2]
-
-	// reconstruct the cluster version off of major and minor
-	version := fmt.Sprintf("%v.%v", versionMajor, versionMinor)
-
-	// ami query
-	filters := map[string][]string{
-		"name":  {fmt.Sprintf("*amazon-eks-node-%v*", version)},
-		"state": {"available"},
-	}
-
-	ec2Filters := []ec2.Filter{}
-	for name, values := range filters {
-		ec2Filters = append(ec2Filters, ec2.Filter{Name: aws.String(name), Values: values})
-	}
-
-	request := e.amiClient.DescribeImagesRequest(&ec2.DescribeImagesInput{
-		Filters: ec2Filters,
-	})
-	out, err := request.Send(context.TODO())
-
-	if err != nil {
-		return nil, err
-	}
-
-	result := make([]*ec2.Image, len(out.Images))
-	for i := 0; i < len(out.Images); i++ {
-		result[i] = &out.Images[i]
-	}
-
-	return result, nil
-}
-
-func getMostRecentImage(images []*ec2.Image) *ec2.Image {
-	var result *ec2.Image
-	for i := 0; i < len(images); i++ {
-		if result == nil || aws.StringValue(result.CreationDate) < aws.StringValue(images[i].CreationDate) {
-			result = images[i]
-		}
-	}
-
-	return result
-}
-
-func getImageWithID(imgName string, images []*ec2.Image) (*ec2.Image, error) {
-	for _, img := range images {
-		if imgName == aws.StringValue(img.ImageId) {
-			return img, nil
-		}
-	}
-
-	return nil, errors.New("The specified AMI image name is either invalid or is not available for this cluster version and region")
-}
-
-// GenerateClientConfig is used to generate a client config that can be used by
-// any kubernetes client.
-func GenerateClientConfig(cluster *Cluster, token string) (clientcmdapi.Config, error) {
-	caData, err := base64.StdEncoding.DecodeString(cluster.CA)
-	if err != nil {
-		return clientcmdapi.Config{}, err
-	}
-	return clientcmdapi.Config{
+	kc := clientcmdapi.Config{
 		Clusters: map[string]*clientcmdapi.Cluster{
-			cluster.Name: {
-				Server:                   cluster.Endpoint,
+			*cluster.Name: {
+				Server:                   *cluster.Endpoint,
 				CertificateAuthorityData: caData,
 			},
 		},
 		Contexts: map[string]*clientcmdapi.Context{
-			cluster.Name: {
-				Cluster:  cluster.Name,
-				AuthInfo: cluster.Name,
+			*cluster.Name: {
+				Cluster:  *cluster.Name,
+				AuthInfo: *cluster.Name,
 			},
 		},
 		AuthInfos: map[string]*clientcmdapi.AuthInfo{
-			cluster.Name: {
+			*cluster.Name: {
 				Token: token,
 			},
 		},
-		CurrentContext: cluster.Name,
-	}, nil
+		CurrentContext: *cluster.Name,
+	}
+
+	rawConfig, err := clientcmd.Write(kc)
+	if err != nil {
+		return managed.ConnectionDetails{}
+	}
+	return managed.ConnectionDetails{
+		v1alpha1.ResourceCredentialsSecretEndpointKey:   []byte(*cluster.Endpoint),
+		v1alpha1.ResourceCredentialsSecretKubeconfigKey: rawConfig,
+	}
 }
-
-// IsErrorAlreadyExists helper function
-func IsErrorAlreadyExists(err error) bool {
-	return err != nil && strings.Contains(err.Error(), eks.ErrCodeResourceInUseException)
-}
-
-// IsErrorBadRequest helper function
-func IsErrorBadRequest(err error) bool {
-	return err != nil && (strings.Contains(err.Error(), eks.ErrCodeInvalidParameterException) ||
-		strings.Contains(err.Error(), eks.ErrCodeUnsupportedAvailabilityZoneException))
-}
-
-// IsErrorNotFound helper function
-func IsErrorNotFound(err error) bool {
-	return err != nil && strings.Contains(err.Error(), eks.ErrCodeResourceNotFoundException)
-}
-
-const (
-	// workerCloudFormationTemplate taken from aws README
-	// https://docs.aws.amazon.com/eks/latest/userguide/launch-workers.html
-	// Specifically: https://amazon-eks.s3-us-west-2.amazonaws.com/cloudformation/2018-11-07/amazon-eks-nodegroup.yaml
-	workerCloudFormationTemplate = `---
-AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Amazon EKS - Node Group - Released 2018-08-30'
-
-Parameters:
-
-  NodeImageId:
-    Type: AWS::EC2::Image::Id
-    Description: AMI id for the node instances.
-
-  NodeInstanceType:
-    Description: EC2 instance type for the node instances
-    Type: String
-    Default: t2.medium
-    AllowedValues:
-    - t2.small
-    - t2.medium
-    - t2.large
-    - t2.xlarge
-    - t2.2xlarge
-    - t3.nano
-    - t3.micro
-    - t3.small
-    - t3.medium
-    - t3.large
-    - t3.xlarge
-    - t3.2xlarge
-    - m3.medium
-    - m3.large
-    - m3.xlarge
-    - m3.2xlarge
-    - m4.large
-    - m4.xlarge
-    - m4.2xlarge
-    - m4.4xlarge
-    - m4.10xlarge
-    - m5.large
-    - m5.xlarge
-    - m5.2xlarge
-    - m5.4xlarge
-    - m5.12xlarge
-    - m5.24xlarge
-    - c4.large
-    - c4.xlarge
-    - c4.2xlarge
-    - c4.4xlarge
-    - c4.8xlarge
-    - c5.large
-    - c5.xlarge
-    - c5.2xlarge
-    - c5.4xlarge
-    - c5.9xlarge
-    - c5.18xlarge
-    - i3.large
-    - i3.xlarge
-    - i3.2xlarge
-    - i3.4xlarge
-    - i3.8xlarge
-    - i3.16xlarge
-    - r3.xlarge
-    - r3.2xlarge
-    - r3.4xlarge
-    - r3.8xlarge
-    - r4.large
-    - r4.xlarge
-    - r4.2xlarge
-    - r4.4xlarge
-    - r4.8xlarge
-    - r4.16xlarge
-    - x1.16xlarge
-    - x1.32xlarge
-    - p2.xlarge
-    - p2.8xlarge
-    - p2.16xlarge
-    - p3.2xlarge
-    - p3.8xlarge
-    - p3.16xlarge
-    - r5.large
-    - r5.xlarge
-    - r5.2xlarge
-    - r5.4xlarge
-    - r5.12xlarge
-    - r5.24xlarge
-    - r5d.large
-    - r5d.xlarge
-    - r5d.2xlarge
-    - r5d.4xlarge
-    - r5d.12xlarge
-    - r5d.24xlarge
-    - z1d.large
-    - z1d.xlarge
-    - z1d.2xlarge
-    - z1d.3xlarge
-    - z1d.6xlarge
-    - z1d.12xlarge
-    ConstraintDescription: Must be a valid EC2 instance type
-
-  NodeAutoScalingGroupMinSize:
-    Type: Number
-    Description: Minimum size of Node Group ASG.
-    Default: 1
-
-  NodeAutoScalingGroupMaxSize:
-    Type: Number
-    Description: Maximum size of Node Group ASG.
-    Default: 3
-
-  NodeVolumeSize:
-    Type: Number
-    Description: Node volume size
-    Default: 20
-
-  ClusterName:
-    Description: The cluster name provided when the cluster was created. If it is incorrect, nodes will not be able to join the cluster.
-    Type: String
-
-  BootstrapArguments:
-    Description: Arguments to pass to the bootstrap script. See files/bootstrap.sh in https://github.com/awslabs/amazon-eks-ami
-    Default: ""
-    Type: String
-
-  NodeGroupName:
-    Description: Unique identifier for the Node Group.
-    Type: String
-
-  ClusterControlPlaneSecurityGroup:
-    Description: The security group of the cluster control plane.
-    Type: AWS::EC2::SecurityGroup::Id
-
-  VpcId:
-    Description: The VPC of the worker instances
-    Type: AWS::EC2::VPC::Id
-
-  Subnets:
-    Description: The subnets where workers can be created.
-    Type: List<AWS::EC2::Subnet::Id>
-
-Metadata:
-  AWS::CloudFormation::Interface:
-    ParameterGroups:
-      -
-        Label:
-          default: "EKS Cluster"
-        Parameters:
-          - ClusterName
-          - ClusterControlPlaneSecurityGroup
-      -
-        Label:
-          default: "Worker Node Configuration"
-        Parameters:
-          - NodeGroupName
-          - NodeAutoScalingGroupMinSize
-          - NodeAutoScalingGroupMaxSize
-          - NodeInstanceType
-          - NodeImageId
-          - NodeVolumeSize
-          - BootstrapArguments
-      -
-        Label:
-          default: "Worker Network Configuration"
-        Parameters:
-          - VpcId
-          - Subnets
-
-Resources:
-
-  NodeInstanceProfile:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Path: "/"
-      Roles:
-      - !Ref NodeInstanceRole
-
-  NodeInstanceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - ec2.amazonaws.com
-          Action:
-          - sts:AssumeRole
-      Path: "/"
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
-        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
-        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
-
-  Route53NodeInstancePolicy:
-    Type: AWS::IAM::Policy
-    DependsOn: NodeInstanceRole
-    Properties:
-      PolicyName: !Ref AWS::StackName
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          -
-            Effect: "Allow"
-            Action:
-              - "route53:ChangeResourceRecordSets"
-            Resource:
-              - "arn:aws:route53:::hostedzone/*"
-          -
-            Effect: "Allow"
-            Action:
-              - "route53:ListHostedZones"
-              - "route53:ListResourceRecordSets"
-            Resource:
-              - "*"
-      Roles:
-        - !Ref NodeInstanceRole
-
-  NodeSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Security group for all nodes in the cluster
-      VpcId:
-        !Ref VpcId
-      Tags:
-      - Key: !Sub "kubernetes.io/cluster/${ClusterName}"
-        Value: 'owned'
-
-  NodeSecurityGroupIngress:
-    Type: AWS::EC2::SecurityGroupIngress
-    DependsOn: NodeSecurityGroup
-    Properties:
-      Description: Allow node to communicate with each other
-      GroupId: !Ref NodeSecurityGroup
-      SourceSecurityGroupId: !Ref NodeSecurityGroup
-      IpProtocol: '-1'
-      FromPort: 0
-      ToPort: 65535
-
-  NodeSecurityGroupFromControlPlaneIngress:
-    Type: AWS::EC2::SecurityGroupIngress
-    DependsOn: NodeSecurityGroup
-    Properties:
-      Description: Allow worker Kubelets and pods to receive communication from the cluster control plane
-      GroupId: !Ref NodeSecurityGroup
-      SourceSecurityGroupId: !Ref ClusterControlPlaneSecurityGroup
-      IpProtocol: tcp
-      FromPort: 1025
-      ToPort: 65535
-
-  ControlPlaneEgressToNodeSecurityGroup:
-    Type: AWS::EC2::SecurityGroupEgress
-    DependsOn: NodeSecurityGroup
-    Properties:
-      Description: Allow the cluster control plane to communicate with worker Kubelet and pods
-      GroupId: !Ref ClusterControlPlaneSecurityGroup
-      DestinationSecurityGroupId: !Ref NodeSecurityGroup
-      IpProtocol: tcp
-      FromPort: 1025
-      ToPort: 65535
-
-  NodeSecurityGroupFromControlPlaneOn443Ingress:
-    Type: AWS::EC2::SecurityGroupIngress
-    DependsOn: NodeSecurityGroup
-    Properties:
-      Description: Allow pods running extension API servers on port 443 to receive communication from cluster control plane
-      GroupId: !Ref NodeSecurityGroup
-      SourceSecurityGroupId: !Ref ClusterControlPlaneSecurityGroup
-      IpProtocol: tcp
-      FromPort: 443
-      ToPort: 443
-
-  ControlPlaneEgressToNodeSecurityGroupOn443:
-    Type: AWS::EC2::SecurityGroupEgress
-    DependsOn: NodeSecurityGroup
-    Properties:
-      Description: Allow the cluster control plane to communicate with pods running extension API servers on port 443
-      GroupId: !Ref ClusterControlPlaneSecurityGroup
-      DestinationSecurityGroupId: !Ref NodeSecurityGroup
-      IpProtocol: tcp
-      FromPort: 443
-      ToPort: 443
-
-  ClusterControlPlaneSecurityGroupIngress:
-    Type: AWS::EC2::SecurityGroupIngress
-    DependsOn: NodeSecurityGroup
-    Properties:
-      Description: Allow pods to communicate with the cluster API Server
-      GroupId: !Ref ClusterControlPlaneSecurityGroup
-      SourceSecurityGroupId: !Ref NodeSecurityGroup
-      IpProtocol: tcp
-      ToPort: 443
-      FromPort: 443
-
-  NodeGroup:
-    Type: AWS::AutoScaling::AutoScalingGroup
-    Properties:
-      DesiredCapacity: !Ref NodeAutoScalingGroupMaxSize
-      LaunchConfigurationName: !Ref NodeLaunchConfig
-      MinSize: !Ref NodeAutoScalingGroupMinSize
-      MaxSize: !Ref NodeAutoScalingGroupMaxSize
-      VPCZoneIdentifier:
-        !Ref Subnets
-      Tags:
-      - Key: Name
-        Value: !Sub "${ClusterName}-${NodeGroupName}-Node"
-        PropagateAtLaunch: 'true'
-      - Key: !Sub 'kubernetes.io/cluster/${ClusterName}'
-        Value: 'owned'
-        PropagateAtLaunch: 'true'
-    UpdatePolicy:
-      AutoScalingRollingUpdate:
-        MinInstancesInService: '1'
-        MaxBatchSize: '1'
-
-  NodeLaunchConfig:
-    Type: AWS::AutoScaling::LaunchConfiguration
-    Properties:
-      AssociatePublicIpAddress: 'true'
-      IamInstanceProfile: !Ref NodeInstanceProfile
-      ImageId: !Ref NodeImageId
-      InstanceType: !Ref NodeInstanceType
-      SecurityGroups:
-      - !Ref NodeSecurityGroup
-      BlockDeviceMappings:
-        - DeviceName: /dev/xvda
-          Ebs:
-            VolumeSize: !Ref NodeVolumeSize
-            VolumeType: gp2
-            DeleteOnTermination: true
-      UserData:
-        Fn::Base64:
-          !Sub |
-            #!/bin/bash
-            set -o xtrace
-            /etc/eks/bootstrap.sh ${ClusterName} ${BootstrapArguments}
-            /opt/aws/bin/cfn-signal --exit-code $? \
-                     --stack  ${AWS::StackName} \
-                     --resource NodeGroup  \
-                     --region ${AWS::Region}
-
-Outputs:
-  NodeInstanceRole:
-    Description: The node instance role
-    Value: !GetAtt NodeInstanceRole.Arn
-  NodeSecurityGroup:
-    Description: The security group for the node group
-    Value: !Ref NodeSecurityGroup
-`
-)

@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2020 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,52 +17,53 @@ limitations under the License.
 package fake
 
 import (
-	"github.com/crossplane/provider-aws/apis/compute/v1alpha3"
-	"github.com/crossplane/provider-aws/pkg/clients/eks"
+	"github.com/aws/aws-sdk-go-v2/service/eks"
+	"github.com/aws/aws-sdk-go-v2/service/eks/eksiface"
 )
 
-// MockEKSClient mock client for EKS
-type MockEKSClient struct {
-	MockCreate            func(string, v1alpha3.EKSClusterSpec) (*eks.Cluster, error)
-	MockGet               func(string) (*eks.Cluster, error)
-	MockDelete            func(name string) error
-	MockConnectionToken   func(string) (string, error)
-	MockCreateWorkerNodes func(string, string, v1alpha3.EKSClusterSpec) (*eks.ClusterWorkers, error)
-	MockGetWorkerNodes    func(string) (*eks.ClusterWorkers, error)
-	MockDeleteWorkerNodes func(string) error
+var _ eksiface.ClientAPI = &MockClient{}
+
+// MockClient is a fake implementation of cloudmemorystore.Client.
+type MockClient struct {
+	eksiface.ClientAPI
+
+	MockCreateClusterRequest        func(*eks.CreateClusterInput) eks.CreateClusterRequest
+	MockDescribeClusterRequest      func(*eks.DescribeClusterInput) eks.DescribeClusterRequest
+	MockUpdateClusterConfigRequest  func(*eks.UpdateClusterConfigInput) eks.UpdateClusterConfigRequest
+	MockDeleteClusterRequest        func(*eks.DeleteClusterInput) eks.DeleteClusterRequest
+	MockTagResourceRequest          func(*eks.TagResourceInput) eks.TagResourceRequest
+	MockUpdateClusterVersionRequest func(*eks.UpdateClusterVersionInput) eks.UpdateClusterVersionRequest
 }
 
-// Create EKS Cluster with provided Specification
-func (m *MockEKSClient) Create(name string, spec v1alpha3.EKSClusterSpec) (*eks.Cluster, error) {
-	return m.MockCreate(name, spec)
+// CreateClusterRequest calls the underlying MockCreateClusterRequest method.
+func (c *MockClient) CreateClusterRequest(i *eks.CreateClusterInput) eks.CreateClusterRequest {
+	return c.MockCreateClusterRequest(i)
 }
 
-// Get mock EKS Cluster by name
-func (m *MockEKSClient) Get(name string) (*eks.Cluster, error) {
-	return m.MockGet(name)
+// DescribeClusterRequest calls the underlying MockDescribeClusterRequest
+// method.
+func (c *MockClient) DescribeClusterRequest(i *eks.DescribeClusterInput) eks.DescribeClusterRequest {
+	return c.MockDescribeClusterRequest(i)
 }
 
-// Delete mock EKS Cluster
-func (m *MockEKSClient) Delete(name string) error {
-	return m.MockDelete(name)
+// UpdateClusterConfigRequest calls the underlying
+// MockUpdateClusterConfigRequest method.
+func (c *MockClient) UpdateClusterConfigRequest(i *eks.UpdateClusterConfigInput) eks.UpdateClusterConfigRequest {
+	return c.MockUpdateClusterConfigRequest(i)
 }
 
-// ConnectionToken mock
-func (m *MockEKSClient) ConnectionToken(name string) (string, error) {
-	return m.MockConnectionToken(name)
+// DeleteClusterRequest calls the underlying MockDeleteClusterRequest method.
+func (c *MockClient) DeleteClusterRequest(i *eks.DeleteClusterInput) eks.DeleteClusterRequest {
+	return c.MockDeleteClusterRequest(i)
 }
 
-// CreateWorkerNodes mock
-func (m *MockEKSClient) CreateWorkerNodes(name string, version string, spec v1alpha3.EKSClusterSpec) (*eks.ClusterWorkers, error) {
-	return m.MockCreateWorkerNodes(name, version, spec)
+// TagResourceRequest calls the underlying MockTagResourceRequest method.
+func (c *MockClient) TagResourceRequest(i *eks.TagResourceInput) eks.TagResourceRequest {
+	return c.MockTagResourceRequest(i)
 }
 
-// GetWorkerNodes mock
-func (m *MockEKSClient) GetWorkerNodes(stackID string) (*eks.ClusterWorkers, error) {
-	return m.MockGetWorkerNodes(stackID)
-}
-
-// DeleteWorkerNodes mock
-func (m *MockEKSClient) DeleteWorkerNodes(stackID string) error {
-	return m.MockDeleteWorkerNodes(stackID)
+// UpdateClusterVersionRequest calls the underlying
+// MockUpdateClusterVersionRequest method.
+func (c *MockClient) UpdateClusterVersionRequest(i *eks.UpdateClusterVersionInput) eks.UpdateClusterVersionRequest {
+	return c.MockUpdateClusterVersionRequest(i)
 }
