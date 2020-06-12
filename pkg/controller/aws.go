@@ -65,6 +65,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		database.SetupRDSInstance,
 		eks.SetupCluster,
 		eks.SetupClusterSecret,
+		eks.SetupClusterTarget,
 		s3.SetupBucketClaimScheduling,
 		s3.SetupBucketClaimDefaulting,
 		s3.SetupBucketClaimBinding,
