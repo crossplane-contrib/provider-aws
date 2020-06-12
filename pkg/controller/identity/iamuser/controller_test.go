@@ -272,7 +272,7 @@ func TestObserve(t *testing.T) {
 				iam: &fake.MockUserClient{
 					MockGetUser: func(input *awsiam.GetUserInput) awsiam.GetUserRequest {
 						return awsiam.GetUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetUserOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.GetUserOutput{
 								User: &awsiam.User{},
 							}},
 						}
@@ -351,7 +351,7 @@ func TestCreate(t *testing.T) {
 				iam: &fake.MockUserClient{
 					MockCreateUser: func(input *awsiam.CreateUserInput) awsiam.CreateUserRequest {
 						return awsiam.CreateUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.CreateUserOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.CreateUserOutput{}},
 						}
 					},
 				},
@@ -425,7 +425,7 @@ func TestUpdate(t *testing.T) {
 				iam: &fake.MockUserClient{
 					MockUpdateUser: func(input *awsiam.UpdateUserInput) awsiam.UpdateUserRequest {
 						return awsiam.UpdateUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.UpdateUserOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.UpdateUserOutput{}},
 						}
 					},
 				},
@@ -480,7 +480,7 @@ func TestDelete(t *testing.T) {
 				iam: &fake.MockUserClient{
 					MockDeleteUser: func(input *awsiam.DeleteUserInput) awsiam.DeleteUserRequest {
 						return awsiam.DeleteUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.DeleteUserOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DeleteUserOutput{}},
 						}
 					},
 				},

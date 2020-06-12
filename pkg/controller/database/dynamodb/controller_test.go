@@ -271,7 +271,7 @@ func TestObserve(t *testing.T) {
 				dynamo: &fake.MockDynamoClient{
 					MockDescribe: func(input *awsdynamo.DescribeTableInput) awsdynamo.DescribeTableRequest {
 						return awsdynamo.DescribeTableRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsdynamo.DescribeTableOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsdynamo.DescribeTableOutput{
 								Table: &awsdynamo.TableDescription{
 									TableStatus: v1alpha1.DynamoTableStateAvailable,
 								},
@@ -301,7 +301,7 @@ func TestObserve(t *testing.T) {
 				dynamo: &fake.MockDynamoClient{
 					MockDescribe: func(input *awsdynamo.DescribeTableInput) awsdynamo.DescribeTableRequest {
 						return awsdynamo.DescribeTableRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsdynamo.DescribeTableOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsdynamo.DescribeTableOutput{
 								Table: &awsdynamo.TableDescription{
 									TableStatus: v1alpha1.DynamoTableStateDeleting,
 								},
@@ -391,7 +391,7 @@ func TestCreate(t *testing.T) {
 				dynamo: &fake.MockDynamoClient{
 					MockCreate: func(input *awsdynamo.CreateTableInput) awsdynamo.CreateTableRequest {
 						return awsdynamo.CreateTableRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsdynamo.CreateTableOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsdynamo.CreateTableOutput{}},
 						}
 					},
 				},
@@ -465,7 +465,7 @@ func TestUpdate(t *testing.T) {
 				dynamo: &fake.MockDynamoClient{
 					MockUpdate: func(input *awsdynamo.UpdateTableInput) awsdynamo.UpdateTableRequest {
 						return awsdynamo.UpdateTableRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsdynamo.UpdateTableOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsdynamo.UpdateTableOutput{}},
 						}
 					},
 				},
@@ -538,7 +538,7 @@ func TestDelete(t *testing.T) {
 				dynamo: &fake.MockDynamoClient{
 					MockDelete: func(input *awsdynamo.DeleteTableInput) awsdynamo.DeleteTableRequest {
 						return awsdynamo.DeleteTableRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsdynamo.DeleteTableOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsdynamo.DeleteTableOutput{}},
 						}
 					},
 				},

@@ -180,7 +180,7 @@ func TestObserve(t *testing.T) {
 				iam: &fake.MockRolePolicyAttachmentClient{
 					MockListAttachedRolePoliciesRequest: func(input *awsiam.ListAttachedRolePoliciesInput) awsiam.ListAttachedRolePoliciesRequest {
 						return awsiam.ListAttachedRolePoliciesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.ListAttachedRolePoliciesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListAttachedRolePoliciesOutput{
 								AttachedPolicies: []awsiam.AttachedPolicy{
 									{
 										PolicyArn: &specPolicyArn,
@@ -279,7 +279,7 @@ func TestCreate(t *testing.T) {
 				iam: &fake.MockRolePolicyAttachmentClient{
 					MockAttachRolePolicyRequest: func(input *awsiam.AttachRolePolicyInput) awsiam.AttachRolePolicyRequest {
 						return awsiam.AttachRolePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.AttachRolePolicyOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.AttachRolePolicyOutput{}},
 						}
 					},
 				},
@@ -358,12 +358,12 @@ func TestUpdate(t *testing.T) {
 				iam: &fake.MockRolePolicyAttachmentClient{
 					MockAttachRolePolicyRequest: func(input *awsiam.AttachRolePolicyInput) awsiam.AttachRolePolicyRequest {
 						return awsiam.AttachRolePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.AttachRolePolicyOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.AttachRolePolicyOutput{}},
 						}
 					},
 					MockDetachRolePolicyRequest: func(input *awsiam.DetachRolePolicyInput) awsiam.DetachRolePolicyRequest {
 						return awsiam.DetachRolePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.DetachRolePolicyOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DetachRolePolicyOutput{}},
 						}
 					},
 				},
@@ -412,7 +412,7 @@ func TestDelete(t *testing.T) {
 				iam: &fake.MockRolePolicyAttachmentClient{
 					MockDetachRolePolicyRequest: func(input *awsiam.DetachRolePolicyInput) awsiam.DetachRolePolicyRequest {
 						return awsiam.DetachRolePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.DetachRolePolicyOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DetachRolePolicyOutput{}},
 						}
 					},
 				},
