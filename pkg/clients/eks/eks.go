@@ -182,6 +182,9 @@ func GenerateUpdateClusterConfigInput(name string, p *v1beta1.ClusterParameters)
 // GenerateObservation is used to produce v1beta1.ClusterObservation from
 // eks.Cluster.
 func GenerateObservation(cluster *eks.Cluster) v1beta1.ClusterObservation { // nolint:gocyclo
+	if cluster == nil {
+		return v1beta1.ClusterObservation{}
+	}
 	o := v1beta1.ClusterObservation{
 		Arn:             awsclients.StringValue(cluster.Arn),
 		Endpoint:        awsclients.StringValue(cluster.Endpoint),
