@@ -1,0 +1,22 @@
+apiVersion: eks.aws.crossplane.io/v1beta1
+kind: Cluster
+metadata:
+  name: do-cluster
+  labels:
+    example: "true"
+spec:
+  forProvider:
+    roleArn: <your-role>
+    resourcesVpcConfig:
+      publicAccessCidrs:                                                                                                                                                                                    
+      - 0.0.0.0/0
+      endpointPublicAccess: true
+      subnetIds:
+        - <your-subnet>
+    version: "1.15"
+  reclaimPolicy: Delete
+  writeConnectionSecretToRef:
+    name: cluster-conn
+    namespace: default
+  providerRef:
+    name: aws-provider
