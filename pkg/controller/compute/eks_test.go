@@ -37,8 +37,8 @@ import (
 
 	"github.com/crossplane/provider-aws/apis"
 	. "github.com/crossplane/provider-aws/apis/compute/v1alpha3"
-	eksclients "github.com/crossplane/provider-aws/pkg/clients/eks"
-	"github.com/crossplane/provider-aws/pkg/clients/eks/fake"
+	eksclients "github.com/crossplane/provider-aws/pkg/clients/legacyeks"
+	"github.com/crossplane/provider-aws/pkg/clients/legacyeks/fake"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"

@@ -203,7 +203,7 @@ func TestCreate(t *testing.T) {
 			e: &external{client: &fake.MockClient{
 				MockCreateReplicationGroupRequest: func(_ *elasticache.CreateReplicationGroupInput) elasticache.CreateReplicationGroupRequest {
 					return elasticache.CreateReplicationGroupRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &elasticache.CreateReplicationGroupOutput{}},
+						Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &elasticache.CreateReplicationGroupOutput{}},
 					}
 				},
 			}},
@@ -259,6 +259,7 @@ func TestObserve(t *testing.T) {
 					return elasticache.DescribeReplicationGroupsRequest{
 						Request: &aws.Request{
 							HTTPRequest: &http.Request{},
+							Retryer:     aws.NoOpRetryer{},
 							Data: &elasticache.DescribeReplicationGroupsOutput{
 								ReplicationGroups: []elasticache.ReplicationGroup{{Status: aws.String(v1beta1.StatusCreating)}},
 							},
@@ -280,6 +281,7 @@ func TestObserve(t *testing.T) {
 					return elasticache.DescribeReplicationGroupsRequest{
 						Request: &aws.Request{
 							HTTPRequest: &http.Request{},
+							Retryer:     aws.NoOpRetryer{},
 							Data: &elasticache.DescribeReplicationGroupsOutput{
 								ReplicationGroups: []elasticache.ReplicationGroup{{Status: aws.String(v1beta1.StatusDeleting)}},
 							},
@@ -303,6 +305,7 @@ func TestObserve(t *testing.T) {
 					return elasticache.DescribeReplicationGroupsRequest{
 						Request: &aws.Request{
 							HTTPRequest: &http.Request{},
+							Retryer:     aws.NoOpRetryer{},
 							Data: &elasticache.DescribeReplicationGroupsOutput{
 								ReplicationGroups: []elasticache.ReplicationGroup{{Status: aws.String(v1beta1.StatusModifying)}},
 							},
@@ -326,6 +329,7 @@ func TestObserve(t *testing.T) {
 					return elasticache.DescribeReplicationGroupsRequest{
 						Request: &aws.Request{
 							HTTPRequest: &http.Request{},
+							Retryer:     aws.NoOpRetryer{},
 							Data: &elasticache.DescribeReplicationGroupsOutput{
 								ReplicationGroups: []elasticache.ReplicationGroup{{
 									ClusterEnabled:        aws.Bool(true),
@@ -361,6 +365,7 @@ func TestObserve(t *testing.T) {
 						return elasticache.DescribeReplicationGroupsRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Data: &elasticache.DescribeReplicationGroupsOutput{
 									ReplicationGroups: []elasticache.ReplicationGroup{
 										{
@@ -393,6 +398,7 @@ func TestObserve(t *testing.T) {
 						return elasticache.DescribeReplicationGroupsRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Data: &elasticache.DescribeReplicationGroupsOutput{
 									ReplicationGroups: []elasticache.ReplicationGroup{
 										{
@@ -441,6 +447,7 @@ func TestObserve(t *testing.T) {
 					return elasticache.DescribeReplicationGroupsRequest{
 						Request: &aws.Request{
 							HTTPRequest: &http.Request{},
+							Retryer:     aws.NoOpRetryer{},
 							Data: &elasticache.DescribeReplicationGroupsOutput{
 								ReplicationGroups: []elasticache.ReplicationGroup{{
 									Status:                 aws.String(v1beta1.StatusAvailable),
@@ -462,7 +469,7 @@ func TestObserve(t *testing.T) {
 				},
 				MockModifyReplicationGroupRequest: func(_ *elasticache.ModifyReplicationGroupInput) elasticache.ModifyReplicationGroupRequest {
 					return elasticache.ModifyReplicationGroupRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &elasticache.ModifyReplicationGroupOutput{}},
+						Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &elasticache.ModifyReplicationGroupOutput{}},
 					}
 				},
 			}},
@@ -519,6 +526,7 @@ func TestUpdate(t *testing.T) {
 					return elasticache.DescribeReplicationGroupsRequest{
 						Request: &aws.Request{
 							HTTPRequest: &http.Request{},
+							Retryer:     aws.NoOpRetryer{},
 							Data: &elasticache.DescribeReplicationGroupsOutput{
 								ReplicationGroups: []elasticache.ReplicationGroup{{
 									Status:                 aws.String(v1beta1.StatusAvailable),
@@ -538,6 +546,7 @@ func TestUpdate(t *testing.T) {
 					return elasticache.DescribeCacheClustersRequest{
 						Request: &aws.Request{
 							HTTPRequest: &http.Request{},
+							Retryer:     aws.NoOpRetryer{},
 							Data: &elasticache.DescribeCacheClustersOutput{
 								CacheClusters: []elasticache.CacheCluster{{
 									EngineVersion:              aws.String(engineVersion),
@@ -594,7 +603,7 @@ func TestDelete(t *testing.T) {
 			e: &external{client: &fake.MockClient{
 				MockDeleteReplicationGroupRequest: func(_ *elasticache.DeleteReplicationGroupInput) elasticache.DeleteReplicationGroupRequest {
 					return elasticache.DeleteReplicationGroupRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &elasticache.DeleteReplicationGroupOutput{}},
+						Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &elasticache.DeleteReplicationGroupOutput{}},
 					}
 				},
 			}},
