@@ -92,7 +92,7 @@ func withTags() certificateModifier {
 
 func withCertificateArn() certificateModifier {
 	return func(r *v1alpha1.Certificate) {
-		r.Status.AtProvider.CertificateArn = certificateArn
+		r.Status.AtProvider.CertificateARN = certificateArn
 		r.Spec.ForProvider.CertificateTransparencyLoggingPreference = awsacm.CertificateTransparencyLoggingPreferenceEnabled
 		meta.SetExternalName(r, certificateArn)
 	}
