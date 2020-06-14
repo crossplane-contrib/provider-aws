@@ -178,10 +178,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	meta.SetExternalName(cr, aws.StringValue(response.RequestCertificateOutput.CertificateArn))
-	if err = e.kube.Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errPersistExternalName)
-	}
-	return managed.ExternalCreation{}, nil
+	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errPersistExternalName)
 
 }
 
