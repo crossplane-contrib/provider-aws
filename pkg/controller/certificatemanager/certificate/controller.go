@@ -189,11 +189,12 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
+	// Update Certificate tags
 	if len(cr.Spec.ForProvider.Tags) > 0 {
 
-		tags := make([]awsacm.Tag, len(cr.Spec.ForProvider.Tags))
+		desiredTags := make([]awsacm.Tag, len(cr.Spec.ForProvider.Tags))
 		for i, t := range cr.Spec.ForProvider.Tags {
-			tags[i] = awsacm.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
+			desiredTags[i] = awsacm.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
 		}
 
 		currentTags, err := e.client.ListTagsForCertificateRequest(&awsacm.ListTagsForCertificateInput{
@@ -204,7 +205,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errListTagsFailed)
 		}
 
-		if len(tags) < len(currentTags.Tags) {
+		if len(desiredTags) != len(currentTags.Tags) {
 			_, err := e.client.RemoveTagsFromCertificateRequest(&awsacm.RemoveTagsFromCertificateInput{
 				CertificateArn: aws.String(meta.GetExternalName(cr)),
 				Tags:           currentTags.Tags,
@@ -215,17 +216,18 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 		_, err = e.client.AddTagsToCertificateRequest(&awsacm.AddTagsToCertificateInput{
 			CertificateArn: aws.String(meta.GetExternalName(cr)),
-			Tags:           tags,
+			Tags:           desiredTags,
 		}).Send(ctx)
 		if err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errAddTagsFailed)
 		}
 	}
 
-	if aws.StringValue(cr.Spec.ForProvider.CertificateAuthorityArn) == "" {
+	// Update the Certificate Option
+	if aws.StringValue(cr.Spec.ForProvider.CertificateAuthorityARN) == "" {
 		_, err := e.client.UpdateCertificateOptionsRequest(&awsacm.UpdateCertificateOptionsInput{
 			CertificateArn: aws.String(meta.GetExternalName(cr)),
-			Options:        acm.GenerateCertificateOptionRequest(&cr.Spec.ForProvider),
+			Options:        &awsacm.CertificateOptions{CertificateTransparencyLoggingPreference: cr.Spec.ForProvider.CertificateTransparencyLoggingPreference},
 		}).Send(ctx)
 
 		if err != nil {
@@ -233,6 +235,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
+	// Update the certificate if request for RenewCertificate
 	if aws.BoolValue(cr.Spec.ForProvider.RenewCertificate) {
 
 		if strings.EqualFold(cr.Status.AtProvider.RenewalEligibility, "ELIGIBLE") {

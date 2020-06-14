@@ -33,7 +33,7 @@ func NewClient(conf *aws.Config) (Client, error) {
 func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParameters) *acm.RequestCertificateInput {
 	m := &acm.RequestCertificateInput{
 		DomainName:              aws.String(p.DomainName),
-		CertificateAuthorityArn: p.CertificateAuthorityArn,
+		CertificateAuthorityArn: p.CertificateAuthorityARN,
 		IdempotencyToken:        p.IdempotencyToken,
 		ValidationMethod:        p.ValidationMethod,
 		Options:                 &acm.CertificateOptions{CertificateTransparencyLoggingPreference: p.CertificateTransparencyLoggingPreference},
@@ -69,17 +69,10 @@ func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParamete
 // GenerateCertificateStatus is used to produce CertificateExternalStatus from acm.certificateStatus
 func GenerateCertificateStatus(certificate acm.CertificateDetail) v1alpha1.CertificateExternalStatus {
 	return v1alpha1.CertificateExternalStatus{
-		CertificateArn:     aws.StringValue(certificate.CertificateArn),
+		CertificateARN:     aws.StringValue(certificate.CertificateArn),
 		RenewalEligibility: string(certificate.RenewalEligibility),
 		Status:             certificate.Status,
 	}
-}
-
-// GenerateCertificateOptionRequest return CertificateOptions from CertificateSpec
-func GenerateCertificateOptionRequest(p *v1alpha1.CertificateParameters) *acm.CertificateOptions {
-
-	return &acm.CertificateOptions{CertificateTransparencyLoggingPreference: p.CertificateTransparencyLoggingPreference}
-
 }
 
 // LateInitializeCertificate fills the empty fields in *v1beta1.CertificateParameters with
@@ -91,8 +84,8 @@ func LateInitializeCertificate(in *v1alpha1.CertificateParameters, certificate *
 
 	in.DomainName = awsclients.LateInitializeString(in.DomainName, certificate.DomainName)
 
-	if aws.StringValue(in.CertificateAuthorityArn) == "" && certificate.CertificateAuthorityArn != nil {
-		in.CertificateAuthorityArn = certificate.CertificateAuthorityArn
+	if aws.StringValue(in.CertificateAuthorityARN) == "" && certificate.CertificateAuthorityArn != nil {
+		in.CertificateAuthorityARN = certificate.CertificateAuthorityArn
 	}
 
 	if string(in.CertificateTransparencyLoggingPreference) == "" && certificate.Options != nil {

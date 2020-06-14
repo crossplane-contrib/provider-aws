@@ -12,4 +12,4 @@ spec:
       value: example
   reclaimPolicy: Delete
   providerRef:
-    name: example
+    name: aws-provider

@@ -12,7 +12,7 @@ spec:
   - JSONPath: .spec.forProvider.domainName
     name: DOMAINNAME
     type: string
-  - JSONPath: .spec.atProvider.status
+  - JSONPath: .status.atProvider.status
     name: STATUS
     type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status

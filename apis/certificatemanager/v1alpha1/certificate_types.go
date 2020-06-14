@@ -53,7 +53,7 @@ type CertificateSpec struct {
 // CertificateExternalStatus keeps the state of external resource
 type CertificateExternalStatus struct {
 	// String that contains the ARN of the issued certificate. This must be of the
-	CertificateArn string `json:"certificateArn"`
+	CertificateARN string `json:"certificateArn"`
 
 	// Flag to check eligibility for renewal status
 	RenewalEligibility string `json:"renewalEligibility"`
@@ -74,15 +74,15 @@ type CertificateParameters struct {
 
 	// The Amazon Resource Name (ARN) of the private certificate authority (CA)that will be used to issue the certificate.
 	// +optional
-	CertificateAuthorityArn *string `json:"certificateAuthorityArn,omitempty"`
+	CertificateAuthorityARN *string `json:"certificateAuthorityArn,omitempty"`
 
 	// // CertificateAuthorityArnRef references an CertificateAuthority to retrieve its Arn
 	// // +optional
-	// CertificateAuthorityArnRef *runtimev1alpha1.Reference `json:"certificateAuthorityArnRef,omitempty"`
+	// CertificateAuthorityARNRef *runtimev1alpha1.Reference `json:"certificateAuthorityArnRef,omitempty"`
 
 	// // CertificateAuthorityArnSelector selects a reference to an CertificateAuthority to retrieve its Arn
 	// // +optional
-	// CertificateAuthorityArnSelector *runtimev1alpha1.Selector `json:"certificateAuthorityArnSelector,omitempty"`
+	// CertificateAuthorityARNSelector *runtimev1alpha1.Selector `json:"certificateAuthorityArnSelector,omitempty"`
 
 	// Fully qualified domain name (FQDN),that to secure with an ACM certificate.
 	// +immutable
@@ -126,7 +126,7 @@ type CertificateParameters struct {
 
 // Certificate is a managed resource that represents an AWS Certificate Manager.
 // +kubebuilder:printcolumn:name="DOMAINNAME",type="string",JSONPath=".spec.forProvider.domainName"
-// +kubebuilder:printcolumn:name="STATUS",type="string",JSONPath=".spec.atProvider.status"
+// +kubebuilder:printcolumn:name="STATUS",type="string",JSONPath=".status.atProvider.status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
