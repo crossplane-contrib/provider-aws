@@ -24,6 +24,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/certificatemanager/certificateauthority"
+	"github.com/crossplane/provider-aws/pkg/controller/certificatemanager/certificateauthoritypermission"
 	"github.com/crossplane/provider-aws/pkg/controller/compute"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
@@ -83,6 +84,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		routetable.SetupRouteTable,
 		dbsubnetgroup.SetupDBSubnetGroup,
 		certificateauthority.SetupCertificateAuthority,
+		certificateauthoritypermission.SetupCertificateAuthorityPermission,
 		dynamodb.SetupDynamoTable,
 	} {
 		if err := setup(mgr, l); err != nil {
