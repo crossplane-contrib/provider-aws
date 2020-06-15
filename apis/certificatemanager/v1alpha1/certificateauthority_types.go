@@ -33,39 +33,41 @@ type Tag struct {
 	Value string `json:"value,omitempty"`
 }
 
-// CertificateAuthoritySpec defines the desired state of CertificateAuthority
-type CertificateAuthoritySpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  CertificateAuthorityParameters `json:"forProvider"`
-}
+// RevocationConfiguration is configuration of the certificate revocation list
+type RevocationConfiguration struct {
 
-// CertificateAuthorityExternalStatus keeps the state of external resource
-type CertificateAuthorityExternalStatus struct {
-	// String that contains the ARN of the issued certificate Authority
-	CertificateAuthorityArn string `json:"certificateAuthorityArn"`
-	RenewalPermission       bool   `json:"renewalPermission"`
-}
+	// Boolean value that specifies certificate revocation
+	Enabled *bool `json:"enabled"`
 
-// An CertificateAuthorityStatus represents the observed state of an CertificateAuthority manager.
-type CertificateAuthorityStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     CertificateAuthorityExternalStatus `json:"atProvider"`
-}
+	// Name of the S3 bucket that contains the CRL
+	S3BucketName *string `json:"s3BucketName"`
 
-// CertificateAuthorityParameters defines the desired state of an AWS CertificateAuthority.
-type CertificateAuthorityParameters struct {
-	// Type of the certificate authority
-	// +kubebuilder:validation:Enum=root;subordinate
-	Type acmpca.CertificateAuthorityType `json:"type"`
-
-	// Status of the certificate authority
+	// Alias for the CRL distribution point
 	// +optional
-	// +kubebuilder:validation:Enum=creating;pending_certificate;active;deleted;disabled;expired;failed
-	Status acmpca.CertificateAuthorityStatus `json:"status"`
+	CustomCname *string `json:"customCname,omitempty"`
 
-	// Token to distinguish between calls to RequestCertificate.
+	// Number of days until a certificate expires
 	// +optional
-	IdempotencyToken *string `json:"idempotencyToken,omitempty"`
+	ExpirationInDays *int64 `json:"expirationInDays,omitempty"`
+}
+
+// CertificateAuthorityConfiguration is
+type CertificateAuthorityConfiguration struct {
+
+	// Type of the public key algorithm
+	// +kubebuilder:validation:Enum=RSA_2048;EC_secp384r1;EC_prime256v1;RSA_4096
+	KeyAlgorithm acmpca.KeyAlgorithm `json:"keyAlgorithm"`
+
+	// Algorithm that private CA uses to sign certificate requests
+	// +kubebuilder:validation:Enum=SHA512WITHECDSA;SHA256WITHECDSA;SHA384WITHECDSA;SHA512WITHRSA;SHA256WITHRSA;SHA384WITHRSA
+	SigningAlgorithm acmpca.SigningAlgorithm `json:"signingAlgorithm"`
+
+	// Subject is information of Certificate Authority
+	Subject Subject `json:"subject"`
+}
+
+// Subject is
+type Subject struct {
 
 	// Organization legal name
 	// +immutable
@@ -90,34 +92,6 @@ type CertificateAuthorityParameters struct {
 	// FQDN associated with the certificate subject
 	// +immutable
 	CommonName *string `json:"commonName"`
-
-	// Type of the public key algorithm
-	// +kubebuilder:validation:Enum=rsa2048;rsa4096;ecprime256v1;ecsecp384r1
-	KeyAlgorithm acmpca.KeyAlgorithm `json:"keyAlgorithm"`
-
-	// Algorithm that private CA uses to sign certificate requests
-	// +kubebuilder:validation:Enum=sha256withecdsa;sha384withecdsa;sha512withecdsa;sha256withrsa;sha384withrsa;sha512withrsa
-	SigningAlgorithm acmpca.SigningAlgorithm `json:"signingAlgorithm"`
-
-	// Boolean value that specifies certificate revocation
-	RevocationConfigurationEnabled *bool `json:"revocationConfigurationEnabled"`
-
-	// Name of the S3 bucket that contains the CRL
-	S3BucketName *string `json:"s3BucketName"`
-
-	// Alias for the CRL distribution point
-	// +optional
-	CustomCname *string `json:"customCname,omitempty"`
-
-	// Number of days until a certificate expires
-	ExpirationInDays *int64 `json:"expirationInDays,omitempty"`
-
-	// The number of days to make a CA restorable after it has been deleted
-	// +optional
-	PermanentDeletionTimeInDays *int64 `json:"permanentDeletionTimeInDays,omitempty"`
-
-	// The CertificateRenewalPermissionAllow decides Permissions for ACM renewals
-	CertificateRenewalPermissionAllow bool `json:"certificateRenewalPermissionAllow"`
 
 	// Disambiguating information for the certificate subject.
 	// +optional
@@ -158,6 +132,53 @@ type CertificateAuthorityParameters struct {
 	// +optional
 	// +immutable
 	Title *string `json:"title,omitempty"`
+}
+
+// CertificateAuthoritySpec defines the desired state of CertificateAuthority
+type CertificateAuthoritySpec struct {
+	runtimev1alpha1.ResourceSpec `json:",inline"`
+	ForProvider                  CertificateAuthorityParameters `json:"forProvider"`
+}
+
+// CertificateAuthorityExternalStatus keeps the state of external resource
+type CertificateAuthorityExternalStatus struct {
+	// String that contains the ARN of the issued certificate Authority
+	CertificateAuthorityARN string `json:"certificateAuthorityArn"`
+
+	// Serial of the Certificate Authority
+	Serial *string `json:"serial"`
+}
+
+// An CertificateAuthorityStatus represents the observed state of an CertificateAuthority manager.
+type CertificateAuthorityStatus struct {
+	runtimev1alpha1.ResourceStatus `json:",inline"`
+	AtProvider                     CertificateAuthorityExternalStatus `json:"atProvider"`
+}
+
+// CertificateAuthorityParameters defines the desired state of an AWS CertificateAuthority.
+type CertificateAuthorityParameters struct {
+	// Type of the certificate authority
+	// +kubebuilder:validation:Enum=ROOT;SUBORINATE
+	Type acmpca.CertificateAuthorityType `json:"type"`
+
+	// Status of the certificate authority
+	// +optional
+	// +kubebuilder:validation:Enum=CREATING;PENDING_CERTIFICATE;ACTIVE;DELETED;DISABLED;EXPIRED;FAILED
+	Status acmpca.CertificateAuthorityStatus `json:"status,omitempty"`
+
+	// RevocationConfiguration to associate with the certificateAuthority.
+	RevocationConfiguration RevocationConfiguration `json:"revocationConfiguration"`
+
+	// CertificateAuthorityConfiguration to associate with the certificateAuthority.
+	CertificateAuthorityConfiguration CertificateAuthorityConfiguration `json:"certificateAuthorityConfiguration"`
+
+	// Token to distinguish between calls to RequestCertificate.
+	// +optional
+	IdempotencyToken *string `json:"idempotencyToken,omitempty"`
+
+	// The number of days to make a CA restorable after it has been deleted
+	// +optional
+	PermanentDeletionTimeInDays *int64 `json:"permanentDeletionTimeInDays,omitempty"`
 
 	// One or more resource tags to associate with the certificateAuthority.
 	Tags []Tag `json:"tags,omitempty"`

@@ -46,7 +46,7 @@ const (
 	errGet              = "failed to get ACMPCA with name"
 	errCreate           = "failed to create the ACMPCA resource"
 	errDelete           = "failed to delete the ACMPCA resource"
-	errSDK              = "empty ACMPCA received from ACMPCA API"
+	errEmpty            = "empty ACMPCA received from ACMPCA API"
 
 	errKubeUpdateFailed    = "cannot late initialize ACMPCA"
 	errUpToDateFailed      = "cannot check whether object is up-to-date"
@@ -56,9 +56,6 @@ const (
 	errListTagsFailed       = "failed to list tags for ACMPCA"
 	errRemoveTagsFailed     = "failed to remove tags for ACMPCA"
 	errCertificateAuthority = "failed to update the ACMPCA resource"
-	errPermissionFailed     = "failed to update ACMPCA permission"
-
-	principal = "acm.amazonaws.com"
 )
 
 // SetupCertificateAuthority adds a controller that reconciles ACMPCA.
@@ -127,14 +124,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	if response.CertificateAuthority == nil {
-		return managed.ExternalObservation{}, errors.New(errSDK)
-	}
-
-	// Check the PCA status and return error if PCA is in Pending State.
-	if response.CertificateAuthority.Status == awsacmpca.CertificateAuthorityStatusPendingCertificate {
-		return managed.ExternalObservation{
-			ResourceExists: true,
-		}, errors.New(errPendingStatus)
+		return managed.ExternalObservation{}, errors.New(errEmpty)
 	}
 
 	certificateAuthority := *response.CertificateAuthority
@@ -146,10 +136,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
 		}
 	}
-
 	cr.SetConditions(runtimev1alpha1.Available())
 
-	cr.Status.AtProvider = acmpca.GenerateCertificateAuthorityExternalStatus(certificateAuthority, cr)
+	cr.Status.AtProvider = acmpca.GenerateCertificateAuthorityExternalStatus(certificateAuthority)
 
 	tags, err := e.client.ListTagsRequest(&awsacmpca.ListTagsInput{
 		CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
@@ -162,6 +151,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	upToDate := acmpca.IsCertificateAuthorityUpToDate(cr, certificateAuthority, tags.Tags)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
+	}
+
+	// Check the PCA status and return error if PCA is in Pending State.
+	if !upToDate && (response.CertificateAuthority.Status == awsacmpca.CertificateAuthorityStatusPendingCertificate) {
+		return managed.ExternalObservation{
+			ResourceExists: true,
+		}, errors.New(errPendingStatus)
 	}
 
 	return managed.ExternalObservation{
@@ -182,21 +178,9 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	response, err := e.client.CreateCertificateAuthorityRequest(acmpca.GenerateCreateCertificateAuthorityInput(&cr.Spec.ForProvider)).Send(ctx)
 
 	if response != nil {
-
 		meta.SetExternalName(cr, aws.StringValue(response.CreateCertificateAuthorityOutput.CertificateAuthorityArn))
 		if err = e.kube.Update(ctx, cr); err != nil {
 			return managed.ExternalCreation{}, errors.Wrap(err, errPersistExternalName)
-		}
-
-		if cr.Spec.ForProvider.CertificateRenewalPermissionAllow {
-
-			_, err = e.client.CreatePermissionRequest(&awsacmpca.CreatePermissionInput{
-
-				Actions:                 []awsacmpca.ActionType{awsacmpca.ActionTypeIssueCertificate, awsacmpca.ActionTypeGetCertificate, awsacmpca.ActionTypeListPermissions},
-				CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
-				Principal:               aws.String(principal),
-			}).Send(ctx)
-
 		}
 	}
 
@@ -211,35 +195,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	if cr.Spec.ForProvider.CertificateRenewalPermissionAllow != cr.Status.AtProvider.RenewalPermission {
-
-		cr.Status.AtProvider.RenewalPermission = cr.Spec.ForProvider.CertificateRenewalPermissionAllow
-
-		if cr.Spec.ForProvider.CertificateRenewalPermissionAllow {
-
-			_, err := e.client.CreatePermissionRequest(&awsacmpca.CreatePermissionInput{
-				Actions:                 []awsacmpca.ActionType{awsacmpca.ActionTypeIssueCertificate, awsacmpca.ActionTypeGetCertificate, awsacmpca.ActionTypeListPermissions},
-				CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
-				Principal:               aws.String(principal),
-			}).Send(ctx)
-
-			if err != nil {
-				return managed.ExternalUpdate{}, errors.Wrap(err, errPermissionFailed)
-			}
-
-		} else {
-			_, err := e.client.DeletePermissionRequest(&awsacmpca.DeletePermissionInput{
-				CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
-				Principal:               aws.String(principal),
-			}).Send(ctx)
-
-			if err != nil {
-				return managed.ExternalUpdate{}, errors.Wrap(err, errPermissionFailed)
-			}
-		}
-
-	}
-
+	// Update the Certificate Authority tags
 	if len(cr.Spec.ForProvider.Tags) > 0 {
 
 		tags := make([]awsacmpca.Tag, len(cr.Spec.ForProvider.Tags))
@@ -255,7 +211,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errListTagsFailed)
 		}
 
-		if len(tags) < len(currentTags.Tags) {
+		if len(tags) != len(currentTags.Tags) {
 			_, err := e.client.UntagCertificateAuthorityRequest(&awsacmpca.UntagCertificateAuthorityInput{
 				CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
 				Tags:                    currentTags.Tags,
@@ -273,7 +229,12 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	_, err := e.client.UpdateCertificateAuthorityRequest(acmpca.GenerateUpdateCertificateAuthorityInput(cr)).Send(ctx)
+	// Update Certificate Authority configuration
+	_, err := e.client.UpdateCertificateAuthorityRequest(&awsacmpca.UpdateCertificateAuthorityInput{
+		CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
+		RevocationConfiguration: acmpca.GenerateRevocationConfiguration(cr.Spec.ForProvider.RevocationConfiguration),
+		Status:                  cr.Spec.ForProvider.Status,
+	}).Send(ctx)
 
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errCertificateAuthority)
