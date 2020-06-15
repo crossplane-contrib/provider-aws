@@ -125,6 +125,7 @@ type VPCStatus struct {
 // +kubebuilder:object:root=true
 
 // A VPC is a managed resource that represents an AWS Virtual Private Cloud.
+// +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:printcolumn:name="CIDRBLOCK",type="string",JSONPath=".spec.forProvider.cidrBlock"
 // +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.atProvider.vpcState"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"

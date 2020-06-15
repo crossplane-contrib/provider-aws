@@ -9,6 +9,9 @@ metadata:
   name: vpcs.network.aws.crossplane.io
 spec:
   additionalPrinterColumns:
+  - JSONPath: .metadata.annotations.crossplane\.io/external-name
+    name: VPCID
+    type: string
   - JSONPath: .spec.forProvider.cidrBlock
     name: CIDRBLOCK
     type: string
