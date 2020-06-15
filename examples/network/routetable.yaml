@@ -1,0 +1,18 @@
+apiVersion: network.aws.crossplane.io/v1beta1
+kind: RouteTable
+metadata:
+  name: sample-routetable
+spec:
+  forProvider:
+    routes:
+      - destinationCidrBlock: 0.0.0.0/0
+        gatewayIdRef:
+          name: sample-internetgateway
+    associations:
+      - subnetIdRef:
+          name: sample-subnet1
+    vpcIdRef:
+      name: sample-vpc
+  reclaimPolicy: Delete
+  providerRef:
+    name: example

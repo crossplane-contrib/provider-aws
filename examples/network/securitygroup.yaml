@@ -1,0 +1,19 @@
+apiVersion: network.aws.crossplane.io/v1beta1
+kind: SecurityGroup
+metadata:
+  name: sample-cluster-sg
+spec:
+  forProvider:
+    vpcIdRef:
+      name: sample-vpc  
+    groupName: my-cool-ekscluster-sg
+    description: Cluster communication with worker nodes
+    ingress:
+      - fromPort: 80
+        toPort: 80
+        ipProtocol: tcp
+        ipRanges:
+          - cidrIp: 192.168.0.0/32
+  reclaimPolicy: Delete
+  providerRef:
+    name: example

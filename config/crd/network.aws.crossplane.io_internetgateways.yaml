@@ -9,17 +9,17 @@ metadata:
   name: internetgateways.network.aws.crossplane.io
 spec:
   additionalPrinterColumns:
+  - JSONPath: .status.atProvider.internetGatewayId
+    name: ID
+    type: string
+  - JSONPath: .spec.forProvider.vpcId
+    name: VPCID
+    type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
     type: string
   - JSONPath: .status.conditions[?(@.type=='Synced')].status
     name: SYNCED
-    type: string
-  - JSONPath: .status.internetGatewayId
-    name: ID
-    type: string
-  - JSONPath: .spec.vpcId
-    name: VPCID
     type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE
@@ -134,6 +134,54 @@ spec:
                   description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                   type: string
               type: object
+            forProvider:
+              description: InternetGatewayParameters define the desired state of an
+                AWS VPC Internet Gateway.
+              properties:
+                tags:
+                  description: Tags represents to current ec2 tags.
+                  items:
+                    description: Tag defines a tag
+                    properties:
+                      key:
+                        description: Key is the name of the tag.
+                        type: string
+                      value:
+                        description: Value is the value of the tag.
+                        type: string
+                    required:
+                    - key
+                    - value
+                    type: object
+                  type: array
+                vpcId:
+                  description: VPCID is the ID of the VPC.
+                  type: string
+                vpcIdRef:
+                  description: VPCIDRef references a VPC to and retrieves its vpcId
+                  properties:
+                    name:
+                      description: Name of the referenced object.
+                      type: string
+                  required:
+                  - name
+                  type: object
+                vpcIdSelector:
+                  description: VPCIDSelector selects a reference to a VPC to and retrieves
+                    its vpcId
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
+                  type: object
+              type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
                 to create, observe, update, and delete this managed resource.
@@ -186,33 +234,6 @@ spec:
               - Retain
               - Delete
               type: string
-            vpcId:
-              description: VPCID is the ID of the VPC.
-              type: string
-            vpcIdRef:
-              description: VPCIDRef references a VPC to and retrieves its vpcId
-              properties:
-                name:
-                  description: Name of the referenced object.
-                  type: string
-              required:
-              - name
-              type: object
-            vpcIdSelector:
-              description: VPCIDSelector selects a reference to a VPC to and retrieves
-                its vpcId
-              properties:
-                matchControllerRef:
-                  description: MatchControllerRef ensures an object with the same
-                    controller reference as the selecting object is selected.
-                  type: boolean
-                matchLabels:
-                  additionalProperties:
-                    type: string
-                  description: MatchLabels ensures an object with matching labels
-                    is selected.
-                  type: object
-              type: object
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the namespace
                 and name of a Secret to which any connection details for this managed
@@ -231,37 +252,52 @@ spec:
               - namespace
               type: object
           required:
+          - forProvider
           - providerRef
           type: object
         status:
           description: An InternetGatewayStatus represents the observed state of an
             InternetGateway.
           properties:
-            attachments:
-              description: Any VPCs attached to the internet gateway.
-              items:
-                description: InternetGatewayAttachment describes the attachment of
-                  a VPC to an internet gateway or an egress-only internet gateway.
-                properties:
-                  attachmentStatus:
-                    description: The current state of the attachment. For an internet
-                      gateway, the state is available when attached to a VPC; otherwise,
-                      this value is not returned.
-                    enum:
-                    - available
-                    - attaching
-                    - attached
-                    - detaching
-                    - detached
-                    type: string
-                  vpcId:
-                    description: VPCID is the ID of the attached VPC.
-                    type: string
-                required:
-                - attachmentStatus
-                - vpcId
-                type: object
-              type: array
+            atProvider:
+              description: InternetGatewayObservation keeps the state for the external
+                resource
+              properties:
+                attachments:
+                  description: Any VPCs attached to the internet gateway.
+                  items:
+                    description: InternetGatewayAttachment describes the attachment
+                      of a VPC to an internet gateway or an egress-only internet gateway.
+                    properties:
+                      attachmentStatus:
+                        description: The current state of the attachment. For an internet
+                          gateway, the state is available when attached to a VPC;
+                          otherwise, this value is not returned.
+                        enum:
+                        - available
+                        - attaching
+                        - attached
+                        - detaching
+                        - detached
+                        type: string
+                      vpcId:
+                        description: VPCID is the ID of the attached VPC.
+                        type: string
+                    required:
+                    - attachmentStatus
+                    - vpcId
+                    type: object
+                  type: array
+                internetGatewayId:
+                  description: The ID of the internet gateway.
+                  type: string
+                ownerID:
+                  description: The ID of the AWS account that owns the internet gateway.
+                  type: string
+              required:
+              - internetGatewayId
+              - ownerID
+              type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource
                 or claim. Unbindable resources cannot be bound, typically because
@@ -307,29 +343,15 @@ spec:
                 - type
                 type: object
               type: array
-            tags:
-              description: Tags represents to current ec2 tags.
-              items:
-                description: Tag defines a tag
-                properties:
-                  key:
-                    description: Key is the name of the tag.
-                    type: string
-                  value:
-                    description: Value is the value of the tag.
-                    type: string
-                required:
-                - key
-                - value
-                type: object
-              type: array
+          required:
+          - atProvider
           type: object
       required:
       - spec
       type: object
-  version: v1alpha3
+  version: v1beta1
   versions:
-  - name: v1alpha3
+  - name: v1beta1
     served: true
     storage: true
 status:

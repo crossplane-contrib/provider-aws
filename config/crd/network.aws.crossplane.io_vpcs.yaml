@@ -9,20 +9,20 @@ metadata:
   name: vpcs.network.aws.crossplane.io
 spec:
   additionalPrinterColumns:
+  - JSONPath: .metadata.annotations.crossplane\.io/external-name
+    name: VPCID
+    type: string
+  - JSONPath: .spec.forProvider.cidrBlock
+    name: CIDRBLOCK
+    type: string
+  - JSONPath: .status.atProvider.vpcState
+    name: STATE
+    type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
     type: string
   - JSONPath: .status.conditions[?(@.type=='Synced')].status
     name: SYNCED
-    type: string
-  - JSONPath: .status.vpcId
-    name: VPCID
-    type: string
-  - JSONPath: .spec.cidrBlock
-    name: CIDRBLOCK
-    type: string
-  - JSONPath: .status.vpcState
-    name: STATE
     type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE
@@ -60,10 +60,6 @@ spec:
         spec:
           description: A VPCSpec defines the desired state of a VPC.
           properties:
-            cidrBlock:
-              description: CIDRBlock is the IPv4 network range for the VPC, in CIDR
-                notation. For example, 10.0.0.0/16.
-              type: string
             claimRef:
               description: ClaimReference specifies the resource claim to which this
                 managed resource will be bound. ClaimReference is set automatically
@@ -141,12 +137,46 @@ spec:
                   description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                   type: string
               type: object
-            enableDnsHostNames:
-              description: A boolean flag to enable/disable DNS hostnames in the VPC
-              type: boolean
-            enableDnsSupport:
-              description: A boolean flag to enable/disable DNS support in the VPC
-              type: boolean
+            forProvider:
+              description: VPCParameters define the desired state of an AWS Virtual
+                Private Cloud.
+              properties:
+                cidrBlock:
+                  description: CIDRBlock is the IPv4 network range for the VPC, in
+                    CIDR notation. For example, 10.0.0.0/16.
+                  type: string
+                enableDnsHostNames:
+                  description: Indicates whether the instances launched in the VPC
+                    get DNS hostnames.
+                  type: boolean
+                enableDnsSupport:
+                  description: A boolean flag to enable/disable DNS support in the
+                    VPC
+                  type: boolean
+                instanceTenancy:
+                  description: The allowed tenancy of instances launched into the
+                    VPC.
+                  type: string
+                tags:
+                  description: Tags are used as identification helpers between AWS
+                    resources.
+                  items:
+                    description: Tag defines a tag
+                    properties:
+                      key:
+                        description: Key is the name of the tag.
+                        type: string
+                      value:
+                        description: Value is the value of the tag.
+                        type: string
+                    required:
+                    - key
+                    - value
+                    type: object
+                  type: array
+              required:
+              - cidrBlock
+              type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
                 to create, observe, update, and delete this managed resource.
@@ -199,22 +229,6 @@ spec:
               - Retain
               - Delete
               type: string
-            tags:
-              description: Tags are used as identification helpers between AWS resources.
-              items:
-                description: Tag defines a tag
-                properties:
-                  key:
-                    description: Key is the name of the tag.
-                    type: string
-                  value:
-                    description: Value is the value of the tag.
-                    type: string
-                required:
-                - key
-                - value
-                type: object
-              type: array
             writeConnectionSecretToRef:
               description: WriteConnectionSecretToReference specifies the namespace
                 and name of a Secret to which any connection details for this managed
@@ -233,12 +247,89 @@ spec:
               - namespace
               type: object
           required:
-          - cidrBlock
+          - forProvider
           - providerRef
           type: object
         status:
           description: A VPCStatus represents the observed state of a VPC.
           properties:
+            atProvider:
+              description: VPCObservation keeps the state for the external resource
+              properties:
+                cidrBlockAssociationSet:
+                  description: Information about the IPv4 CIDR blocks associated with
+                    the VPC.
+                  items:
+                    description: VPCCIDRBlockAssociation represents the association
+                      of IPv4 CIDR blocks with the VPC.
+                    properties:
+                      associationId:
+                        description: The association ID for the IPv4 CIDR block.
+                        type: string
+                      cidrBlock:
+                        description: The IPv4 CIDR block.
+                        type: string
+                      cidrBlockState:
+                        description: Information about the state of the CIDR block.
+                        properties:
+                          state:
+                            description: The state of the CIDR block.
+                            type: string
+                          statusmessage:
+                            description: A message about the status of the CIDR block,
+                              if applicable.
+                            type: string
+                        type: object
+                    type: object
+                  type: array
+                dhcpOptionsId:
+                  description: The ID of the set of DHCP options you've associated
+                    with the VPC.
+                  type: string
+                ipv6CidrBlockAssociationSet:
+                  description: Information about the IPv6 CIDR blocks associated with
+                    the VPC.
+                  items:
+                    description: VPCIPv6CidrBlockAssociation represents the association
+                      of IPv6 CIDR blocks with the VPC.
+                    properties:
+                      associationId:
+                        description: The association ID for the IPv6 CIDR block.
+                        type: string
+                      ipv6CidrBlock:
+                        description: The IPv6 CIDR block.
+                        type: string
+                      ipv6CidrBlockState:
+                        description: Information about the state of the CIDR block.
+                        properties:
+                          state:
+                            description: The state of the CIDR block.
+                            type: string
+                          statusmessage:
+                            description: A message about the status of the CIDR block,
+                              if applicable.
+                            type: string
+                        type: object
+                      ipv6Pool:
+                        description: The ID of the IPv6 address pool from which the
+                          IPv6 CIDR block is allocated.
+                        type: string
+                      networkBorderGroup:
+                        description: The name of the location from which we advertise
+                          the IPV6 CIDR block.
+                        type: string
+                    type: object
+                  type: array
+                isDefault:
+                  description: Indicates whether the VPC is the default VPC.
+                  type: boolean
+                ownerID:
+                  description: The ID of the AWS account that owns the VPC.
+                  type: string
+                vpcState:
+                  description: VPCState is the current state of the VPC.
+                  type: string
+              type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource
                 or claim. Unbindable resources cannot be bound, typically because
@@ -284,35 +375,15 @@ spec:
                 - type
                 type: object
               type: array
-            tags:
-              description: Tags represents to current ec2 tags.
-              items:
-                description: Tag defines a tag
-                properties:
-                  key:
-                    description: Key is the name of the tag.
-                    type: string
-                  value:
-                    description: Value is the value of the tag.
-                    type: string
-                required:
-                - key
-                - value
-                type: object
-              type: array
-            vpcState:
-              description: VPCState is the current state of the VPC.
-              enum:
-              - pending
-              - available
-              type: string
+          required:
+          - atProvider
           type: object
       required:
       - spec
       type: object
-  version: v1alpha3
+  version: v1beta1
   versions:
-  - name: v1alpha3
+  - name: v1beta1
     served: true
     storage: true
 status:

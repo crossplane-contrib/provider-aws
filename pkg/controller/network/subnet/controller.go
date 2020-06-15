@@ -21,8 +21,10 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -33,30 +35,39 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha3 "github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	v1beta1 "github.com/crossplane/provider-aws/apis/network/v1beta1"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
-	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 
 const (
-	errUnexpectedObject    = "The managed resource is not an Subnet resource"
-	errClient              = "cannot create a new SubnetClient"
-	errDescribe            = "failed to describe Subnet with id"
-	errMultipleItems       = "retrieved multiple Subnet for the given subnetId"
-	errCreate              = "failed to create the Subnet resource"
-	errPersistExternalName = "failed to persist InternetGateway ID"
-	errDelete              = "failed to delete the Subnet resource"
+	errUnexpectedObject = "The managed resource is not an Subnet resource"
+	errKubeUpdateFailed = "cannot update Subnet custom resource"
+
+	errCreateSubnetClient = "cannot create Subnet client"
+	errGetProvider        = "cannot get provider"
+	errGetProviderSecret  = "cannot get provider secret"
+
+	errDescribe      = "failed to describe Subnet"
+	errMultipleItems = "retrieved multiple Subnets"
+	errCreate        = "failed to create the Subnet resource"
+	errDelete        = "failed to delete the Subnet resource"
+	errUpdate        = "failed to update the Subnet resource"
+	errSpecUpdate    = "cannot update spec of the Subnet custom resource"
+	errStatusUpdate  = "cannot update status of the Subnet custom resource"
+	errCreateTags    = "failed to create tags for the Subnet resource"
 )
 
 // SetupSubnet adds a controller that reconciles Subnets.
 func SetupSubnet(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha3.SubnetGroupKind)
+	name := managed.ControllerName(v1beta1.SubnetGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha3.Subnet{}).
+		For(&v1beta1.Subnet{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha3.SubnetGroupVersionKind),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewSubnetClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			resource.ManagedKind(v1beta1.SubnetGroupVersionKind),
+			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewSubnetClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
@@ -66,27 +77,37 @@ func SetupSubnet(mgr ctrl.Manager, l logging.Logger) error {
 
 type connector struct {
 	client      client.Client
-	newClientFn func(*aws.Config) (ec2.SubnetClient, error)
-	awsConfigFn func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error)
+	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (ec2.SubnetClient, error)
 }
 
 func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mgd.(*v1alpha3.Subnet)
+	cr, ok := mgd.(*v1beta1.Subnet)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
 
-	awsconfig, err := conn.awsConfigFn(ctx, conn.client, cr.Spec.ProviderReference)
-	if err != nil {
-		return nil, err
+	p := &awsv1alpha3.Provider{}
+	if err := conn.client.Get(ctx, meta.NamespacedNameOf(cr.Spec.ProviderReference), p); err != nil {
+		return nil, errors.Wrap(err, errGetProvider)
 	}
 
-	c, err := conn.newClientFn(awsconfig)
-	if err != nil {
-		return nil, errors.Wrap(err, errClient)
+	if aws.BoolValue(p.Spec.UseServiceAccount) {
+		subnetClient, err := conn.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
+		return &external{client: subnetClient, kube: conn.client}, errors.Wrap(err, errCreateSubnetClient)
 	}
 
-	return &external{kube: conn.client, client: c}, nil
+	if p.GetCredentialsSecretReference() == nil {
+		return nil, errors.New(errGetProviderSecret)
+	}
+
+	s := &corev1.Secret{}
+	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
+	if err := conn.client.Get(ctx, n, s); err != nil {
+		return nil, errors.Wrap(err, errGetProviderSecret)
+	}
+
+	subnetClient, err := conn.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
+	return &external{client: subnetClient, kube: conn.client}, errors.Wrap(err, errCreateSubnetClient)
 }
 
 type external struct {
@@ -94,29 +115,24 @@ type external struct {
 	client ec2.SubnetClient
 }
 
-func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha3.Subnet)
+func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
+	cr, ok := mgd.(*v1beta1.Subnet)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	// AWS network resources are uniquely identified by an ID that is returned
-	// on create time; we can't tell whether they exist unless we have recorded
-	// their ID.
 	if meta.GetExternalName(cr) == "" {
-		return managed.ExternalObservation{ResourceExists: false}, nil
+		return managed.ExternalObservation{
+			ResourceExists: false,
+		}, nil
 	}
 
-	req := e.client.DescribeSubnetsRequest(&awsec2.DescribeSubnetsInput{
+	response, err := e.client.DescribeSubnetsRequest(&awsec2.DescribeSubnetsInput{
 		SubnetIds: []string{meta.GetExternalName(cr)},
-	})
+	}).Send(ctx)
 
-	response, err := req.Send(ctx)
-	if ec2.IsSubnetNotFoundErr(err) {
-		return managed.ExternalObservation{ResourceExists: false}, nil
-	}
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, errDescribe)
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -126,66 +142,122 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	observed := response.Subnets[0]
 
-	if observed.State == awsec2.SubnetStateAvailable {
+	// update CRD spec for any new values from provider
+	current := cr.Spec.ForProvider.DeepCopy()
+	ec2.LateInitializeSubnet(&cr.Spec.ForProvider, &observed)
+	if !cmp.Equal(current, &cr.Spec.ForProvider) {
+		if err := e.kube.Update(ctx, cr); err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
+		}
+	}
+
+	switch observed.State {
+	case awsec2.SubnetStateAvailable:
 		cr.SetConditions(runtimev1alpha1.Available())
-	} else if observed.State == awsec2.SubnetStatePending {
+	case awsec2.SubnetStatePending:
 		cr.SetConditions(runtimev1alpha1.Creating())
 	}
 
-	cr.UpdateExternalStatus(observed)
+	cr.Status.AtProvider = ec2.GenerateSubnetObservation(observed)
 
 	return managed.ExternalObservation{
-		ResourceExists:    true,
-		ConnectionDetails: managed.ConnectionDetails{},
+		ResourceExists:   true,
+		ResourceUpToDate: ec2.IsSubnetUpToDate(cr.Spec.ForProvider, observed),
 	}, nil
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha3.Subnet)
+	cr, ok := mgd.(*v1beta1.Subnet)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	req := e.client.CreateSubnetRequest(&awsec2.CreateSubnetInput{
-		VpcId:            aws.String(cr.Spec.VPCID),
-		AvailabilityZone: aws.String(cr.Spec.AvailabilityZone),
-		CidrBlock:        aws.String(cr.Spec.CIDRBlock),
-	})
+	cr.Status.SetConditions(runtimev1alpha1.Creating())
+	if err := e.kube.Status().Update(ctx, cr); err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
+	}
 
-	rsp, err := req.Send(ctx)
+	result, err := e.client.CreateSubnetRequest(&awsec2.CreateSubnetInput{
+		AvailabilityZone:   cr.Spec.ForProvider.AvailabilityZone,
+		AvailabilityZoneId: cr.Spec.ForProvider.AvailabilityZoneID,
+		CidrBlock:          aws.String(cr.Spec.ForProvider.CIDRBlock),
+		Ipv6CidrBlock:      cr.Spec.ForProvider.IPv6CIDRBlock,
+		VpcId:              cr.Spec.ForProvider.VPCID,
+	}).Send(ctx)
+
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 
-	meta.SetExternalName(cr, aws.StringValue(rsp.Subnet.SubnetId))
-	if err := e.kube.Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errPersistExternalName)
-	}
+	meta.SetExternalName(cr, aws.StringValue(result.Subnet.SubnetId))
 
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-	cr.UpdateExternalStatus(*rsp.Subnet)
-	return managed.ExternalCreation{ConnectionDetails: managed.ConnectionDetails{}}, nil
+	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	// TODO(soorena776): add more sophisticated Update logic, once we
-	// categorize immutable vs mutable fields (see #727)
+	cr, ok := mgd.(*v1beta1.Subnet)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
 
-	return managed.ExternalUpdate{}, nil
+	response, err := e.client.DescribeSubnetsRequest(&awsec2.DescribeSubnetsInput{
+		SubnetIds: []string{meta.GetExternalName(cr)},
+	}).Send(ctx)
+
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrapf(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
+	}
+
+	if response.Subnets == nil {
+		return managed.ExternalUpdate{}, errors.New(errUpdate)
+	}
+
+	subnet := response.Subnets[0]
+
+	if !v1beta1.CompareTags(cr.Spec.ForProvider.Tags, subnet.Tags) {
+		if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+			Resources: []string{meta.GetExternalName(cr)},
+			Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+		}).Send(ctx); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errCreateTags)
+		}
+	}
+
+	if subnet.MapPublicIpOnLaunch != cr.Spec.ForProvider.MapPublicIPOnLaunch {
+		_, err = e.client.ModifySubnetAttributeRequest(&awsec2.ModifySubnetAttributeInput{
+			MapPublicIpOnLaunch: &awsec2.AttributeBooleanValue{
+				Value: cr.Spec.ForProvider.MapPublicIPOnLaunch,
+			},
+			SubnetId: aws.String(meta.GetExternalName(cr)),
+		}).Send((ctx))
+		if err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		}
+	}
+
+	if subnet.AssignIpv6AddressOnCreation != cr.Spec.ForProvider.AssignIPv6AddressOnCreation {
+		_, err = e.client.ModifySubnetAttributeRequest(&awsec2.ModifySubnetAttributeInput{
+			AssignIpv6AddressOnCreation: &awsec2.AttributeBooleanValue{
+				Value: cr.Spec.ForProvider.AssignIPv6AddressOnCreation,
+			},
+			SubnetId: aws.String(meta.GetExternalName(cr)),
+		}).Send((ctx))
+	}
+
+	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha3.Subnet)
+	cr, ok := mgd.(*v1beta1.Subnet)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
-	req := e.client.DeleteSubnetRequest(&awsec2.DeleteSubnetInput{
+	_, err := e.client.DeleteSubnetRequest(&awsec2.DeleteSubnetInput{
 		SubnetId: aws.String(meta.GetExternalName(cr)),
-	})
+	}).Send(ctx)
 
-	_, err := req.Send(ctx)
 	return errors.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDelete)
 }

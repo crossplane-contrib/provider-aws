@@ -14,12 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha3
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
@@ -27,22 +25,12 @@ import (
 // SecurityGroupParameters define the desired state of an AWS VPC Security
 // Group.
 type SecurityGroupParameters struct {
-	// VPCID is the ID of the VPC.
-	// +optional
-	VPCID *string `json:"vpcId,omitempty"`
-
-	// VPCIDRef references a VPC to and retrieves its vpcId
-	// +optional
-	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
-
-	// VPCIDSelector selects a reference to a VPC to and retrieves its vpcId
-	// +optional
-	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
-
 	// A description of the security group.
+	// +immutable
 	Description string `json:"description"`
 
 	// The name of the security group.
+	// +immutable
 	GroupName string `json:"groupName"`
 
 	// One or more inbound rules associated with the security group.
@@ -52,6 +40,24 @@ type SecurityGroupParameters struct {
 	// [EC2-VPC] One or more outbound rules associated with the security group.
 	// +optional
 	Egress []IPPermission `json:"egress,omitempty"`
+
+	// Tags represents to current ec2 tags.
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
+
+	// VPCID is the ID of the VPC.
+	// +optional
+	// +immutable
+	VPCID *string `json:"vpcId,omitempty"`
+
+	// VPCIDRef references a VPC to and retrieves its vpcId
+	// +optional
+	// +immutable
+	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
+
+	// VPCIDSelector selects a reference to a VPC to and retrieves its vpcId
+	// +optional
+	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
 }
 
 // IPRange describes an IPv4 range.
@@ -149,9 +155,6 @@ type IPPermission struct {
 	// +optional
 	FromPort *int64 `json:"fromPort,omitempty"`
 
-	// TODO(muvaf): jsontag of this should be ipProtocol when we make this resource
-	// v1beta1
-
 	// The IP protocol name (tcp, udp, icmp, icmpv6) or number (see Protocol Numbers
 	// (http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml)).
 	//
@@ -161,14 +164,10 @@ type IPPermission struct {
 	// tcp, udp, and icmp, you must specify a port range. For icmpv6, the port range
 	// is optional; if you omit the port range, traffic for all types and codes
 	// is allowed.
-	IPProtocol string `json:"protocol"`
-
-	// TODO(muvaf): The jsontag should be ipRanges instead of cidrBlocks, do that
-	// when we bump the version.
+	IPProtocol string `json:"ipProtocol"`
 
 	// The IPv4 ranges.
-	// +optional
-	IPRanges []IPRange `json:"cidrBlocks,omitempty"`
+	IPRanges []IPRange `json:"ipRanges"`
 
 	// The IPv6 ranges.
 	//
@@ -200,30 +199,33 @@ type IPPermission struct {
 // A SecurityGroupSpec defines the desired state of a SecurityGroup.
 type SecurityGroupSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	SecurityGroupParameters      `json:",inline"`
+	ForProvider                  SecurityGroupParameters `json:"forProvider"`
 }
 
-// SecurityGroupExternalStatus keeps the state for the external resource
-type SecurityGroupExternalStatus struct {
-	// Tags represents to current ec2 tags.
-	Tags []Tag `json:"tags,omitempty"`
+// SecurityGroupObservation keeps the state for the external resource
+type SecurityGroupObservation struct {
+	// The AWS account ID of the owner of the security group.
+	OwnerID string `json:"ownerId"`
+
+	// SecurityGroupID is the ID of the SecurityGroup.
+	SecurityGroupID string `json:"securityGroupID"`
 }
 
 // A SecurityGroupStatus represents the observed state of a SecurityGroup.
 type SecurityGroupStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	SecurityGroupExternalStatus    `json:",inline"`
+	AtProvider                     SecurityGroupObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true
 
 // A SecurityGroup is a managed resource that represents an AWS VPC Security
 // Group.
+// +kubebuilder:printcolumn:name="GROUPNAME",type="string",JSONPath=".spec.forProvider.groupName"
+// +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".spec.forProvider.vpcId"
+// +kubebuilder:printcolumn:name="DESCRIPTION",type="string",JSONPath=".spec.forProvider.description"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
-// +kubebuilder:printcolumn:name="GROUPNAME",type="string",JSONPath=".spec.groupName"
-// +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".spec.vpcId"
-// +kubebuilder:printcolumn:name="DESCRIPTION",type="string",JSONPath=".spec.description"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
@@ -242,11 +244,4 @@ type SecurityGroupList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []SecurityGroup `json:"items"`
-}
-
-// UpdateExternalStatus updates the external status object, given the observation
-func (s *SecurityGroup) UpdateExternalStatus(observation ec2.SecurityGroup) {
-	s.Status.SecurityGroupExternalStatus = SecurityGroupExternalStatus{
-		Tags: BuildFromEC2Tags(observation.Tags),
-	}
 }

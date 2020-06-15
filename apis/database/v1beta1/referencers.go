@@ -24,7 +24,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
-	"github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	network "github.com/crossplane/provider-aws/apis/network/v1beta1"
 )
 
 // ResolveReferences of this DBSubnetGroup
@@ -36,7 +36,7 @@ func (mg *DBSubnetGroup) ResolveReferences(ctx context.Context, c client.Reader)
 		CurrentValues: mg.Spec.ForProvider.SubnetIDs,
 		References:    mg.Spec.ForProvider.SubnetIDRefs,
 		Selector:      mg.Spec.ForProvider.SubnetIDSelector,
-		To:            reference.To{Managed: &v1alpha3.Subnet{}, List: &v1alpha3.SubnetList{}},
+		To:            reference.To{Managed: &network.Subnet{}, List: &network.SubnetList{}},
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
@@ -99,7 +99,7 @@ func (mg *RDSInstance) ResolveReferences(ctx context.Context, c client.Reader) e
 		CurrentValues: mg.Spec.ForProvider.VPCSecurityGroupIDs,
 		References:    mg.Spec.ForProvider.VPCSecurityGroupIDRefs,
 		Selector:      mg.Spec.ForProvider.VPCSecurityGroupIDSelector,
-		To:            reference.To{Managed: &v1alpha3.SecurityGroup{}, List: &v1alpha3.SecurityGroupList{}},
+		To:            reference.To{Managed: &network.SecurityGroup{}, List: &network.SecurityGroupList{}},
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
