@@ -297,7 +297,7 @@ func TestObserve(t *testing.T) {
 				vpc: &fake.MockVPCClient{
 					MockDescribe: func(input *awsec2.DescribeVpcsInput) awsec2.DescribeVpcsRequest {
 						return awsec2.DescribeVpcsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeVpcsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeVpcsOutput{
 								Vpcs: []awsec2.Vpc{{
 									InstanceTenancy: awsec2.TenancyDefault,
 									State:           awsec2.VpcStateAvailable,
@@ -307,7 +307,7 @@ func TestObserve(t *testing.T) {
 					},
 					MockDescribeVpcAttributeRequest: func(input *awsec2.DescribeVpcAttributeInput) awsec2.DescribeVpcAttributeRequest {
 						return awsec2.DescribeVpcAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeVpcAttributeOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeVpcAttributeOutput{
 								EnableDnsHostnames: &awsec2.AttributeBooleanValue{},
 								EnableDnsSupport:   &awsec2.AttributeBooleanValue{},
 							}},
@@ -341,7 +341,7 @@ func TestObserve(t *testing.T) {
 				vpc: &fake.MockVPCClient{
 					MockDescribe: func(input *awsec2.DescribeVpcsInput) awsec2.DescribeVpcsRequest {
 						return awsec2.DescribeVpcsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeVpcsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeVpcsOutput{
 								Vpcs: []awsec2.Vpc{{}, {}},
 							}},
 						}
@@ -425,7 +425,7 @@ func TestCreate(t *testing.T) {
 				vpc: &fake.MockVPCClient{
 					MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
 						return awsec2.CreateVpcRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateVpcOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateVpcOutput{
 								Vpc: &awsec2.Vpc{
 									VpcId:     aws.String(vpcID),
 									CidrBlock: aws.String(cidr),
@@ -435,7 +435,7 @@ func TestCreate(t *testing.T) {
 					},
 					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
 						return awsec2.ModifyVpcAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
 						}
 					},
 				},
@@ -502,17 +502,17 @@ func TestUpdate(t *testing.T) {
 				vpc: &fake.MockVPCClient{
 					MockModifyTenancy: func(input *awsec2.ModifyVpcTenancyInput) awsec2.ModifyVpcTenancyRequest {
 						return awsec2.ModifyVpcTenancyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifyVpcTenancyOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifyVpcTenancyOutput{}},
 						}
 					},
 					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
 						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateTagsOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
 						}
 					},
 					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
 						return awsec2.ModifyVpcAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
 						}
 					},
 				},
@@ -536,12 +536,12 @@ func TestUpdate(t *testing.T) {
 					},
 					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
 						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateTagsOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
 						}
 					},
 					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
 						return awsec2.ModifyVpcAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
 						}
 					},
 				},
@@ -591,7 +591,7 @@ func TestDelete(t *testing.T) {
 				vpc: &fake.MockVPCClient{
 					MockDelete: func(input *awsec2.DeleteVpcInput) awsec2.DeleteVpcRequest {
 						return awsec2.DeleteVpcRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteVpcOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteVpcOutput{}},
 						}
 					},
 				},

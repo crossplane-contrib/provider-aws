@@ -23,8 +23,8 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
-	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
-	"github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	iamv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
 )
 
 // ResolveReferences of this Cluster
@@ -36,7 +36,7 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.RoleArn),
 		Reference:    mg.Spec.ForProvider.RoleArnRef,
 		Selector:     mg.Spec.ForProvider.RoleArnSelector,
-		To:           reference.To{Managed: &v1beta1.IAMRole{}, List: &v1beta1.IAMRoleList{}},
+		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
@@ -50,7 +50,7 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 		CurrentValues: mg.Spec.ForProvider.ResourcesVpcConfig.SubnetIDs,
 		References:    mg.Spec.ForProvider.ResourcesVpcConfig.SubnetIDRefs,
 		Selector:      mg.Spec.ForProvider.ResourcesVpcConfig.SubnetIDSelector,
-		To:            reference.To{Managed: &v1alpha3.Subnet{}, List: &v1alpha3.SubnetList{}},
+		To:            reference.To{Managed: &ec2v1beta1.Subnet{}, List: &ec2v1beta1.SubnetList{}},
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
@@ -64,7 +64,7 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 		CurrentValues: mg.Spec.ForProvider.ResourcesVpcConfig.SecurityGroupIDs,
 		References:    mg.Spec.ForProvider.ResourcesVpcConfig.SecurityGroupIDRefs,
 		Selector:      mg.Spec.ForProvider.ResourcesVpcConfig.SecurityGroupIDSelector,
-		To:            reference.To{Managed: &v1alpha3.SecurityGroup{}, List: &v1alpha3.SecurityGroupList{}},
+		To:            reference.To{Managed: &ec2v1beta1.SecurityGroup{}, List: &ec2v1beta1.SecurityGroupList{}},
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {

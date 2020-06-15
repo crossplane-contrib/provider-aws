@@ -299,7 +299,7 @@ func TestObserve(t *testing.T) {
 				ig: &fake.MockInternetGatewayClient{
 					MockDescribe: func(input *awsec2.DescribeInternetGatewaysInput) awsec2.DescribeInternetGatewaysRequest {
 						return awsec2.DescribeInternetGatewaysRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeInternetGatewaysOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeInternetGatewaysOutput{
 								InternetGateways: []awsec2.InternetGateway{
 									{
 										Attachments: igAttachments(),
@@ -338,7 +338,7 @@ func TestObserve(t *testing.T) {
 				ig: &fake.MockInternetGatewayClient{
 					MockDescribe: func(input *awsec2.DescribeInternetGatewaysInput) awsec2.DescribeInternetGatewaysRequest {
 						return awsec2.DescribeInternetGatewaysRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeInternetGatewaysOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeInternetGatewaysOutput{
 								InternetGateways: []awsec2.InternetGateway{
 									{},
 									{},
@@ -427,7 +427,7 @@ func TestCreate(t *testing.T) {
 				ig: &fake.MockInternetGatewayClient{
 					MockCreate: func(input *awsec2.CreateInternetGatewayInput) awsec2.CreateInternetGatewayRequest {
 						return awsec2.CreateInternetGatewayRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateInternetGatewayOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateInternetGatewayOutput{
 								InternetGateway: &awsec2.InternetGateway{
 									Attachments:       igAttachments(),
 									InternetGatewayId: aws.String(igID),
@@ -503,7 +503,7 @@ func TestUpdate(t *testing.T) {
 				ig: &fake.MockInternetGatewayClient{
 					MockDescribe: func(input *awsec2.DescribeInternetGatewaysInput) awsec2.DescribeInternetGatewaysRequest {
 						return awsec2.DescribeInternetGatewaysRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeInternetGatewaysOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeInternetGatewaysOutput{
 								InternetGateways: []awsec2.InternetGateway{{
 									Attachments: igAttachments(),
 								}},
@@ -512,17 +512,17 @@ func TestUpdate(t *testing.T) {
 					},
 					MockAttach: func(input *awsec2.AttachInternetGatewayInput) awsec2.AttachInternetGatewayRequest {
 						return awsec2.AttachInternetGatewayRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.AttachInternetGatewayOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.AttachInternetGatewayOutput{}},
 						}
 					},
 					MockDetach: func(input *awsec2.DetachInternetGatewayInput) awsec2.DetachInternetGatewayRequest {
 						return awsec2.DetachInternetGatewayRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DetachInternetGatewayOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DetachInternetGatewayOutput{}},
 						}
 					},
 					MockCreateTags: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
 						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateTagsOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
 						}
 					},
 				},
@@ -545,7 +545,7 @@ func TestUpdate(t *testing.T) {
 				ig: &fake.MockInternetGatewayClient{
 					MockDescribe: func(input *awsec2.DescribeInternetGatewaysInput) awsec2.DescribeInternetGatewaysRequest {
 						return awsec2.DescribeInternetGatewaysRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeInternetGatewaysOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeInternetGatewaysOutput{
 								InternetGateways: []awsec2.InternetGateway{{
 									Attachments: igAttachments(),
 								}},
@@ -554,17 +554,17 @@ func TestUpdate(t *testing.T) {
 					},
 					MockAttach: func(input *awsec2.AttachInternetGatewayInput) awsec2.AttachInternetGatewayRequest {
 						return awsec2.AttachInternetGatewayRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.AttachInternetGatewayOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.AttachInternetGatewayOutput{}},
 						}
 					},
 					MockDetach: func(input *awsec2.DetachInternetGatewayInput) awsec2.DetachInternetGatewayRequest {
 						return awsec2.DetachInternetGatewayRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DetachInternetGatewayOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DetachInternetGatewayOutput{}},
 						}
 					},
 					MockCreateTags: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
 						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateTagsOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
 						}
 					},
 				},
@@ -583,7 +583,7 @@ func TestUpdate(t *testing.T) {
 				ig: &fake.MockInternetGatewayClient{
 					MockDescribe: func(input *awsec2.DescribeInternetGatewaysInput) awsec2.DescribeInternetGatewaysRequest {
 						return awsec2.DescribeInternetGatewaysRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeInternetGatewaysOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeInternetGatewaysOutput{
 								InternetGateways: []awsec2.InternetGateway{{
 									Attachments: igAttachments(),
 								}},
@@ -597,7 +597,7 @@ func TestUpdate(t *testing.T) {
 					},
 					MockCreateTags: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
 						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateTagsOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
 						}
 					},
 				},
@@ -647,12 +647,12 @@ func TestDelete(t *testing.T) {
 				ig: &fake.MockInternetGatewayClient{
 					MockDelete: func(input *awsec2.DeleteInternetGatewayInput) awsec2.DeleteInternetGatewayRequest {
 						return awsec2.DeleteInternetGatewayRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteInternetGatewayOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteInternetGatewayOutput{}},
 						}
 					},
 					MockDetach: func(input *awsec2.DetachInternetGatewayInput) awsec2.DetachInternetGatewayRequest {
 						return awsec2.DetachInternetGatewayRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DetachInternetGatewayOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DetachInternetGatewayOutput{}},
 						}
 					},
 				},
@@ -674,12 +674,12 @@ func TestDelete(t *testing.T) {
 				ig: &fake.MockInternetGatewayClient{
 					MockDelete: func(input *awsec2.DeleteInternetGatewayInput) awsec2.DeleteInternetGatewayRequest {
 						return awsec2.DeleteInternetGatewayRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteInternetGatewayOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteInternetGatewayOutput{}},
 						}
 					},
 					MockDetach: func(input *awsec2.DetachInternetGatewayInput) awsec2.DetachInternetGatewayRequest {
 						return awsec2.DetachInternetGatewayRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DetachInternetGatewayOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DetachInternetGatewayOutput{}},
 						}
 					},
 				},
@@ -694,7 +694,7 @@ func TestDelete(t *testing.T) {
 				ig: &fake.MockInternetGatewayClient{
 					MockDelete: func(input *awsec2.DeleteInternetGatewayInput) awsec2.DeleteInternetGatewayRequest {
 						return awsec2.DeleteInternetGatewayRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteInternetGatewayOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteInternetGatewayOutput{}},
 						}
 					},
 					MockDetach: func(input *awsec2.DetachInternetGatewayInput) awsec2.DetachInternetGatewayRequest {
@@ -727,7 +727,7 @@ func TestDelete(t *testing.T) {
 					},
 					MockDetach: func(input *awsec2.DetachInternetGatewayInput) awsec2.DetachInternetGatewayRequest {
 						return awsec2.DetachInternetGatewayRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DetachInternetGatewayOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DetachInternetGatewayOutput{}},
 						}
 					},
 				},

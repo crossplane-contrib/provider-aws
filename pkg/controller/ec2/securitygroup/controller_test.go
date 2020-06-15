@@ -309,7 +309,7 @@ func TestObserve(t *testing.T) {
 				sg: &fake.MockSecurityGroupClient{
 					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
 						return awsec2.DescribeSecurityGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSecurityGroupsOutput{
 								SecurityGroups: []awsec2.SecurityGroup{{}},
 							}},
 						}
@@ -334,7 +334,7 @@ func TestObserve(t *testing.T) {
 				sg: &fake.MockSecurityGroupClient{
 					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
 						return awsec2.DescribeSecurityGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSecurityGroupsOutput{
 								SecurityGroups: []awsec2.SecurityGroup{{}, {}},
 							}},
 						}
@@ -415,7 +415,7 @@ func TestCreate(t *testing.T) {
 				sg: &fake.MockSecurityGroupClient{
 					MockCreate: func(input *awsec2.CreateSecurityGroupInput) awsec2.CreateSecurityGroupRequest {
 						return awsec2.CreateSecurityGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateSecurityGroupOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateSecurityGroupOutput{
 								GroupId: aws.String(sgID),
 							}},
 						}
@@ -484,7 +484,7 @@ func TestUpdate(t *testing.T) {
 				sg: &fake.MockSecurityGroupClient{
 					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
 						return awsec2.DescribeSecurityGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSecurityGroupsOutput{
 								SecurityGroups: []awsec2.SecurityGroup{{
 									IpPermissions:       sgPersmissions(),
 									IpPermissionsEgress: sgPersmissions(),
@@ -494,12 +494,12 @@ func TestUpdate(t *testing.T) {
 					},
 					MockAuthorizeIgress: func(input *awsec2.AuthorizeSecurityGroupIngressInput) awsec2.AuthorizeSecurityGroupIngressRequest {
 						return awsec2.AuthorizeSecurityGroupIngressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.AuthorizeSecurityGroupIngressOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.AuthorizeSecurityGroupIngressOutput{}},
 						}
 					},
 					MockAuthorizeEgress: func(input *awsec2.AuthorizeSecurityGroupEgressInput) awsec2.AuthorizeSecurityGroupEgressRequest {
 						return awsec2.AuthorizeSecurityGroupEgressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.AuthorizeSecurityGroupEgressOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.AuthorizeSecurityGroupEgressOutput{}},
 						}
 					},
 				},
@@ -526,7 +526,7 @@ func TestUpdate(t *testing.T) {
 				sg: &fake.MockSecurityGroupClient{
 					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
 						return awsec2.DescribeSecurityGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSecurityGroupsOutput{
 								SecurityGroups: []awsec2.SecurityGroup{{
 									IpPermissions:       sgPersmissions(),
 									IpPermissionsEgress: sgPersmissions(),
@@ -594,7 +594,7 @@ func TestDelete(t *testing.T) {
 				sg: &fake.MockSecurityGroupClient{
 					MockDelete: func(input *awsec2.DeleteSecurityGroupInput) awsec2.DeleteSecurityGroupRequest {
 						return awsec2.DeleteSecurityGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteSecurityGroupOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteSecurityGroupOutput{}},
 						}
 					},
 				},
@@ -613,7 +613,7 @@ func TestDelete(t *testing.T) {
 				sg: &fake.MockSecurityGroupClient{
 					MockDelete: func(input *awsec2.DeleteSecurityGroupInput) awsec2.DeleteSecurityGroupRequest {
 						return awsec2.DeleteSecurityGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteSecurityGroupOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteSecurityGroupOutput{}},
 						}
 					},
 				},
