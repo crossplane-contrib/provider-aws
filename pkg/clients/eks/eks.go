@@ -86,16 +86,15 @@ func GenerateCreateClusterInput(name string, p *v1beta1.ClusterParameters) *eks.
 	}
 
 	if len(p.EncryptionConfig) > 0 {
-		config := make([]eks.EncryptionConfig, len(p.EncryptionConfig))
+		c.EncryptionConfig = make([]eks.EncryptionConfig, len(p.EncryptionConfig))
 		for i, conf := range p.EncryptionConfig {
-			config[i] = eks.EncryptionConfig{
+			c.EncryptionConfig[i] = eks.EncryptionConfig{
 				Provider: &eks.Provider{
 					KeyArn: awsclients.String(conf.Provider.KeyArn),
 				},
 				Resources: conf.Resources,
 			}
 		}
-		c.EncryptionConfig = config
 	}
 
 	c.ResourcesVpcConfig = &eks.VpcConfigRequest{
@@ -107,19 +106,18 @@ func GenerateCreateClusterInput(name string, p *v1beta1.ClusterParameters) *eks.
 	}
 
 	if p.Logging != nil {
-		setup := make([]eks.LogSetup, len(p.Logging.ClusterLogging))
+		c.Logging = &eks.Logging{
+			ClusterLogging: make([]eks.LogSetup, len(p.Logging.ClusterLogging)),
+		}
 		for i, cl := range p.Logging.ClusterLogging {
 			types := make([]eks.LogType, len(cl.Types))
 			for j, t := range cl.Types {
 				types[j] = eks.LogType(t)
 			}
-			setup[i] = eks.LogSetup{
+			c.Logging.ClusterLogging[i] = eks.LogSetup{
 				Enabled: cl.Enabled,
 				Types:   types,
 			}
-		}
-		c.Logging = &eks.Logging{
-			ClusterLogging: setup,
 		}
 	}
 	if len(p.Tags) != 0 {
@@ -153,19 +151,18 @@ func GenerateUpdateClusterConfigInput(name string, p *v1beta1.ClusterParameters)
 	}
 
 	if p.Logging != nil {
-		setup := make([]eks.LogSetup, len(p.Logging.ClusterLogging))
+		u.Logging = &eks.Logging{
+			ClusterLogging: make([]eks.LogSetup, len(p.Logging.ClusterLogging)),
+		}
 		for i, cl := range p.Logging.ClusterLogging {
 			types := make([]eks.LogType, len(cl.Types))
 			for j, t := range cl.Types {
 				types[j] = eks.LogType(t)
 			}
-			setup[i] = eks.LogSetup{
+			u.Logging.ClusterLogging[i] = eks.LogSetup{
 				Enabled: cl.Enabled,
 				Types:   types,
 			}
-		}
-		u.Logging = &eks.Logging{
-			ClusterLogging: setup,
 		}
 	}
 
@@ -233,19 +230,18 @@ func LateInitialize(in *v1beta1.ClusterParameters, cluster *eks.Cluster) { // no
 		}
 	}
 	if in.Logging == nil && cluster.Logging != nil && len(cluster.Logging.ClusterLogging) > 0 {
-		setup := make([]v1beta1.LogSetup, len(cluster.Logging.ClusterLogging))
+		in.Logging = &v1beta1.Logging{
+			ClusterLogging: make([]v1beta1.LogSetup, len(cluster.Logging.ClusterLogging)),
+		}
 		for i, cl := range cluster.Logging.ClusterLogging {
 			types := make([]v1beta1.LogType, len(cl.Types))
 			for j, t := range cl.Types {
 				types[j] = v1beta1.LogType(t)
 			}
-			setup[i] = v1beta1.LogSetup{
+			in.Logging.ClusterLogging[i] = v1beta1.LogSetup{
 				Enabled: cl.Enabled,
 				Types:   types,
 			}
-		}
-		in.Logging = &v1beta1.Logging{
-			ClusterLogging: setup,
 		}
 	}
 	if cluster.ResourcesVpcConfig != nil {
@@ -280,11 +276,11 @@ func IsUpToDate(p *v1beta1.ClusterParameters, cluster *eks.Cluster) (bool, error
 		// Convert user-supplied slice of CIDRs to map of networks.
 		netMap := map[string]bool{}
 		for _, c := range p.ResourcesVpcConfig.PublicAccessCidrs {
-			_, net, err := net.ParseCIDR(c)
+			_, ipNet, err := net.ParseCIDR(c)
 			if err != nil {
 				return false, err
 			}
-			netMap[net.String()] = true
+			netMap[ipNet.String()] = true
 		}
 		// If length of networks does not match the length of CIDR blocks
 		// returned by AWS then we need update.
@@ -314,12 +310,22 @@ func GetConnectionDetails(cluster *eks.Cluster, stsClient STSClient) managed.Con
 	request := stsClient.GetCallerIdentityRequest(&sts.GetCallerIdentityInput{})
 	request.HTTPRequest.Header.Add(clusterIDHeader, *cluster.Name)
 
-	// sign the request
+	// NOTE(hasheddan): This is carried over from the v1alpha3 version of the
+	// EKS cluster resource. Signing the URL means that anyone in possession of
+	// this Kubeconfig will now be able to access the EKS cluster until this URL
+	// expires. This is necessary for other systems, such as core Crossplane, to
+	// be able to schedule workloads to the cluster for now, but is not the most
+	// secure way of accessing the cluster.
+	// More information: https://docs.aws.amazon.com/eks/latest/userguide/create-kubeconfig.html
 	presignedURLString, err := request.Presign(60 * time.Second)
 	if err != nil {
 		return managed.ConnectionDetails{}
 	}
 	token := v1Prefix + base64.RawURLEncoding.EncodeToString([]byte(presignedURLString))
+
+	// NOTE(hasheddan): We must decode the CA data before constructing our
+	// Kubeconfig, as the raw Kubeconfig will be base64 encoded again when
+	// written as a Secret.
 	caData, err := base64.StdEncoding.DecodeString(*cluster.CertificateAuthority.Data)
 	if err != nil {
 		return managed.ConnectionDetails{}
@@ -352,5 +358,6 @@ func GetConnectionDetails(cluster *eks.Cluster, stsClient STSClient) managed.Con
 	return managed.ConnectionDetails{
 		v1alpha1.ResourceCredentialsSecretEndpointKey:   []byte(*cluster.Endpoint),
 		v1alpha1.ResourceCredentialsSecretKubeconfigKey: rawConfig,
+		v1alpha1.ResourceCredentialsSecretCAKey:         caData,
 	}
 }

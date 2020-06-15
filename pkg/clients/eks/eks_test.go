@@ -39,8 +39,12 @@ func TestIsErrorNotFound(t *testing.T) {
 			err:  errors.New(eks.ErrCodeResourceNotFoundException),
 			want: true,
 		},
-		"NotErrorNotFOund": {
+		"NotErrorNotFound": {
 			err:  errors.New(eks.ErrCodeInvalidRequestException),
+			want: false,
+		},
+		"Nil": {
+			err:  nil,
 			want: false,
 		},
 	}
@@ -65,6 +69,10 @@ func TestIsErrorInUse(t *testing.T) {
 		},
 		"NotErrorInUse": {
 			err:  errors.New(eks.ErrCodeNotFoundException),
+			want: false,
+		},
+		"Nil": {
+			err:  nil,
 			want: false,
 		},
 	}
@@ -379,6 +387,10 @@ func TestGenerateObservation(t *testing.T) {
 				},
 				Status: v1beta1.ClusterStatusActive,
 			},
+		},
+		"NilCluster": {
+			cluster: nil,
+			want:    v1beta1.ClusterObservation{},
 		},
 	}
 
