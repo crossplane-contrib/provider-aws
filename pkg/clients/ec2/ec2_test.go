@@ -27,7 +27,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/network/v1beta1"
 )
 
 func TestMain(m *testing.M) {
@@ -276,9 +276,9 @@ func Test_IsVPCNotFoundErr(t *testing.T) {
 func Test_SecurityGroup_BuildEC2Permissions(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	res := GenerateEC2Permissions([]v1alpha3.IPPermission{
+	res := GenerateEC2Permissions([]v1beta1.IPPermission{
 		{
-			IPRanges: []v1alpha3.IPRange{
+			IPRanges: []v1beta1.IPRange{
 				{CIDRIP: "arbitranry cidrip"},
 			},
 		},

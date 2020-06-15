@@ -19,523 +19,643 @@ package securitygroup
 import (
 	"context"
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/onsi/gomega"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/network/v1beta1"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
 )
 
-var (
-	// an arbitrary managed resource
-	unexpectedItem resource.Managed
+const (
+	providerName    = "aws-creds"
+	secretNamespace = "crossplane-system"
+	testRegion      = "us-east-1"
+
+	connectionSecretName = "my-little-secret"
+	secretKey            = "credentials"
+	credData             = "confidential!"
 )
 
-func TestMain(m *testing.M) {
-	os.Exit(m.Run())
+var (
+	sgID              = "some sgID"
+	port80      int64 = 80
+	port100     int64 = 100
+	cidr              = "192.168.0.0/32"
+	tcpProtocol       = "tcp"
+
+	errBoom = errors.New("boom")
+)
+
+type args struct {
+	sg   ec2.SecurityGroupClient
+	kube client.Client
+	cr   *v1beta1.SecurityGroup
 }
 
-func Test_Connect(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-	mockClient := fake.MockSecurityGroupClient{}
-	mockManaged := &v1alpha3.SecurityGroup{}
-	var clientErr error
-	var configErr error
+type sgModifier func(*v1beta1.SecurityGroup)
 
-	conn := connector{
-		kube: nil,
-		newClientFn: func(conf *aws.Config) (ec2.SecurityGroupClient, error) {
-			return &mockClient, clientErr
-		},
-		awsConfigFn: func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error) {
-			return &aws.Config{}, configErr
-		},
-	}
-
-	for _, tc := range []struct {
-		description       string
-		managedObj        resource.Managed
-		configErr         error
-		clientErr         error
-		expectedClientNil bool
-		expectedErrNil    bool
-	}{
+func specPermissions() []v1beta1.IPPermission {
+	return []v1beta1.IPPermission{
 		{
-			"valid input should return expected",
-			mockManaged,
-			nil,
-			nil,
-			false,
-			true,
+			FromPort: aws.Int64(port80),
+			ToPort:   aws.Int64(80),
+			IPRanges: []v1beta1.IPRange{
+				{CIDRIP: cidr},
+			},
+			IPProtocol: tcpProtocol,
 		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			nil,
-			nil,
-			true,
-			false,
-		},
-		{
-			"if aws config provider fails, should return error",
-			mockManaged, // an arbitrary managed resource which is not expected
-			errors.New("some error"),
-			nil,
-			true,
-			false,
-		},
-		{
-			"if aws sg provider fails, should return error",
-			mockManaged, // an arbitrary managed resource which is not expected
-			nil,
-			errors.New("some error"),
-			true,
-			false,
-		},
-	} {
-		clientErr = tc.clientErr
-		configErr = tc.configErr
-
-		res, err := conn.Connect(context.Background(), tc.managedObj)
-		g.Expect(res == nil).To(gomega.Equal(tc.expectedClientNil), tc.description)
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
 	}
 }
 
-func Test_Observe(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-	mockClient := fake.MockSecurityGroupClient{}
-	mockExternalClient := external{sg: &mockClient}
-	mockManaged := &v1alpha3.SecurityGroup{}
-	meta.SetExternalName(mockManaged, "some arbitrary id")
-
-	mockExternal := &awsec2.SecurityGroup{
-		GroupId: aws.String("some arbitrary Id"),
-		Tags: []awsec2.Tag{
-			{Key: aws.String("key1"), Value: aws.String("value1")},
-			{Key: aws.String("key2"), Value: aws.String("value2")},
-		},
-	}
-	var mockClientErr error
-	var itemsList []awsec2.SecurityGroup
-	mockClient.MockDescribeSecurityGroupsRequest = func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
-		return awsec2.DescribeSecurityGroupsRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data: &awsec2.DescribeSecurityGroupsOutput{
-					SecurityGroups: itemsList,
-				},
-				Error: mockClientErr,
-			},
-		}
-	}
-
-	for _, tc := range []struct {
-		description           string
-		managedObj            resource.Managed
-		itemsReturned         []awsec2.SecurityGroup
-		clientErr             error
-		expectedErrNil        bool
-		expectedResourceExist bool
-	}{
+func sgPersmissions() []awsec2.IpPermission {
+	return []awsec2.IpPermission{
 		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			[]awsec2.SecurityGroup{*mockExternal},
-			nil,
-			true,
-			true,
+			FromPort:   aws.Int64(port100),
+			ToPort:     aws.Int64(port100),
+			IpProtocol: aws.String(tcpProtocol),
+			IpRanges: []awsec2.IpRange{{
+				CidrIp: aws.String(cidr),
+			}},
 		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			nil,
-			nil,
-			false,
-			false,
-		},
-		{
-			"if item's identifier is not yet set, returns expected",
-			&v1alpha3.SecurityGroup{},
-			nil,
-			nil,
-			true,
-			false,
-		},
-		{
-			"if external resource doesn't exist, it should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			awserr.New(ec2.InvalidGroupNotFound, "", nil),
-			true,
-			false,
-		},
-		{
-			"if external resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			nil,
-			errors.New("some error"),
-			false,
-			false,
-		},
-		{
-			"if external resource returns a list with other than one item, it should return error",
-			mockManaged.DeepCopy(),
-			[]awsec2.SecurityGroup{},
-			nil,
-			false,
-			false,
-		},
-	} {
-		mockClientErr = tc.clientErr
-		itemsList = tc.itemsReturned
-
-		result, err := mockExternalClient.Observe(context.Background(), tc.managedObj)
-
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		g.Expect(result.ResourceExists).To(gomega.Equal(tc.expectedResourceExist), tc.description)
-		if tc.expectedResourceExist {
-			mgd := tc.managedObj.(*v1alpha3.SecurityGroup)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionTrue), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonAvailable), tc.description)
-			g.Expect(len(mgd.Status.SecurityGroupExternalStatus.Tags)).To(gomega.Equal(len(mockExternal.Tags)), tc.description)
-		}
 	}
 }
 
-func Test_Create(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-	mockClient := fake.MockSecurityGroupClient{}
-	mockExternalClient := external{
-		sg:   &mockClient,
-		kube: test.NewMockClient()}
-	mockManaged := v1alpha3.SecurityGroup{
-		Spec: v1alpha3.SecurityGroupSpec{
-			SecurityGroupParameters: v1alpha3.SecurityGroupParameters{
-				VPCID:       aws.String("arbitrary vpcId"),
-				Description: "arbitrary description",
-				GroupName:   "arbitrary group name",
-				Ingress: []v1alpha3.IPPermission{
-					{
-						FromPort:   aws.Int64(7766),
-						ToPort:     aws.Int64(9988),
-						IPProtocol: "an arbitrary protocol",
-						IPRanges: []v1alpha3.IPRange{
-							{
-								CIDRIP:      "0.0.0.0/0",
-								Description: aws.String("an arbitrary cidr block"),
-							},
-						},
-					}, {}, {},
-				},
-				Egress: []v1alpha3.IPPermission{
-					{
-						FromPort:   aws.Int64(1122),
-						ToPort:     aws.Int64(3344),
-						IPProtocol: "an arbitrary protocol",
-						IPRanges: []v1alpha3.IPRange{
-							{
-								CIDRIP:      "0.0.0.0/0",
-								Description: aws.String("an arbitrary cidr block"),
-							},
-						},
-					}, {},
-				},
-			},
-		},
-	}
-	meta.SetExternalName(&mockManaged, "some arbitrary id")
-	mockExternal := &awsec2.SecurityGroup{
-		GroupId: aws.String("some arbitrary id"),
-	}
-	var mockClientErr error
-	mockClient.MockCreateSecurityGroupRequest = func(input *awsec2.CreateSecurityGroupInput) awsec2.CreateSecurityGroupRequest {
-		g.Expect(input.VpcId).To(gomega.Equal(mockManaged.Spec.VPCID), "the passed parameters are not valid")
-		return awsec2.CreateSecurityGroupRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data: &awsec2.CreateSecurityGroupOutput{
-					GroupId: mockExternal.GroupId,
-				},
-				Error: mockClientErr,
-			},
-		}
-	}
-
-	for _, tc := range []struct {
-		description    string
-		managedObj     resource.Managed
-		clientErr      error
-		expectedErrNil bool
-	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			nil,
-			false,
-		},
-		{
-			"if creating resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			errors.New("some error"),
-			false,
-		},
-	} {
-		mockClientErr = tc.clientErr
-
-		_, err := mockExternalClient.Create(context.Background(), tc.managedObj)
-
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.SecurityGroup)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
-			g.Expect(meta.GetExternalName(mgd)).To(gomega.Equal(aws.StringValue(mockExternal.GroupId)), tc.description)
-		}
-	}
+func withExternalName(name string) sgModifier {
+	return func(r *v1beta1.SecurityGroup) { meta.SetExternalName(r, name) }
 }
 
-func Test_Update(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-	mockClient := fake.MockSecurityGroupClient{}
-	mockExternalClient := external{sg: &mockClient}
-	mockManaged := &v1alpha3.SecurityGroup{
-		Spec: v1alpha3.SecurityGroupSpec{
-			SecurityGroupParameters: v1alpha3.SecurityGroupParameters{
-				VPCID:       aws.String("arbitrary vpcId"),
-				Description: "arbitrary description",
-				GroupName:   "arbitrary group name",
-				Ingress: []v1alpha3.IPPermission{
-					{
-						FromPort:   aws.Int64(7766),
-						ToPort:     aws.Int64(9988),
-						IPProtocol: "an arbitrary protocol",
-						IPRanges: []v1alpha3.IPRange{
-							{
-								CIDRIP:      "0.0.0.0/0",
-								Description: aws.String("an arbitrary cidr block"),
-							},
-						},
-					}, {}, {},
-				},
-				Egress: []v1alpha3.IPPermission{
-					{
-						FromPort:   aws.Int64(1122),
-						ToPort:     aws.Int64(3344),
-						IPProtocol: "an arbitrary protocol",
-						IPRanges: []v1alpha3.IPRange{
-							{
-								CIDRIP:      "0.0.0.0/0",
-								Description: aws.String("an arbitrary cidr block"),
-							},
-						},
-					}, {},
-				},
+func withSpec(p v1beta1.SecurityGroupParameters) sgModifier {
+	return func(r *v1beta1.SecurityGroup) { r.Spec.ForProvider = p }
+}
+
+func withStatus(s v1beta1.SecurityGroupObservation) sgModifier {
+	return func(r *v1beta1.SecurityGroup) { r.Status.AtProvider = s }
+}
+
+func withConditions(c ...runtimev1alpha1.Condition) sgModifier {
+	return func(r *v1beta1.SecurityGroup) { r.Status.ConditionedStatus.Conditions = c }
+}
+
+func sg(m ...sgModifier) *v1beta1.SecurityGroup {
+	cr := &v1beta1.SecurityGroup{
+		Spec: v1beta1.SecurityGroupSpec{
+			ResourceSpec: runtimev1alpha1.ResourceSpec{
+				ProviderReference: &corev1.ObjectReference{Name: providerName},
 			},
 		},
 	}
-	meta.SetExternalName(mockManaged, "some arbitrary id")
-
-	var mockClientIngressErr error
-	var ingressCalled bool
-	mockClient.MockAuthorizeSecurityGroupIngressRequest = func(input *awsec2.AuthorizeSecurityGroupIngressInput) awsec2.AuthorizeSecurityGroupIngressRequest {
-		ingressCalled = true
-		g.Expect(aws.StringValue(input.GroupId)).To(gomega.Equal(meta.GetExternalName(mockManaged)), "the passed parameters are not valid")
-		g.Expect(len(input.IpPermissions)).To(gomega.Equal(len(mockManaged.Spec.Ingress)), "the passed parameters are not valid")
-		return awsec2.AuthorizeSecurityGroupIngressRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data:        &awsec2.AuthorizeSecurityGroupIngressOutput{},
-				Error:       mockClientIngressErr,
-			},
-		}
+	for _, f := range m {
+		f(cr)
 	}
+	return cr
+}
 
-	var mockClientEgressErr error
-	var egressCalled bool
-	mockClient.MockAuthorizeSecurityGroupEgressRequest = func(input *awsec2.AuthorizeSecurityGroupEgressInput) awsec2.AuthorizeSecurityGroupEgressRequest {
-		egressCalled = true
-		g.Expect(aws.StringValue(input.GroupId)).To(gomega.Equal(meta.GetExternalName(mockManaged)), "the passed parameters are not valid")
-		g.Expect(len(input.IpPermissions)).To(gomega.Equal(len(mockManaged.Spec.Egress)), "the passed parameters are not valid")
-		return awsec2.AuthorizeSecurityGroupEgressRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data:        &awsec2.AuthorizeSecurityGroupEgressOutput{},
-				Error:       mockClientEgressErr,
-			},
-		}
-	}
+var _ managed.ExternalClient = &external{}
+var _ managed.ExternalConnecter = &connector{}
 
-	for _, tc := range []struct {
-		description         string
-		managedObj          resource.Managed
-		clientIngressErr    error
-		clientEgressErr     error
-		expectedIngressCall bool
-		expectedEgressCall  bool
-		expectedErrNil      bool
-	}{
-		{
-			"if creating ingress rules fails, it should return error",
-			mockManaged.DeepCopy(),
-			errors.New("some error"),
-			nil,
-			true,
-			false,
-			false,
+func TestConnect(t *testing.T) {
+	secret := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      connectionSecretName,
+			Namespace: secretNamespace,
 		},
-		{
-			"if there are no ingress rules fails, it should return expected",
-			func() *v1alpha3.SecurityGroup {
-				g := &v1alpha3.SecurityGroup{
-					Spec: v1alpha3.SecurityGroupSpec{
-						SecurityGroupParameters: v1alpha3.SecurityGroupParameters{
-							VPCID:       aws.String("arbitrary vpcId"),
-							Description: "arbitrary description",
-							GroupName:   "arbitrary group name",
-							Egress:      mockManaged.Spec.Egress,
+		Data: map[string][]byte{
+			secretKey: []byte(credData),
+		},
+	}
+
+	providerSA := func(saVal bool) awsv1alpha3.Provider {
+		return awsv1alpha3.Provider{
+			Spec: awsv1alpha3.ProviderSpec{
+				Region:            testRegion,
+				UseServiceAccount: &saVal,
+				ProviderSpec: runtimev1alpha1.ProviderSpec{
+					CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
+						SecretReference: runtimev1alpha1.SecretReference{
+							Namespace: secretNamespace,
+							Name:      connectionSecretName,
 						},
+						Key: secretKey,
 					},
-					Status: mockManaged.Status,
-				}
-				meta.SetExternalName(g, "some arbitrary id")
-				return g
-			}(),
-			nil,
-			nil,
-			false,
-			true,
-			true,
-		},
-		{
-			"if creating egress rules fails, it should return error",
-			mockManaged.DeepCopy(),
-			nil,
-			errors.New("some error"),
-			true,
-			true,
-			false,
-		},
-		{
-			"if there are no egress rules fails, it should return expected",
-			func() *v1alpha3.SecurityGroup {
-				g := &v1alpha3.SecurityGroup{
-					Spec: v1alpha3.SecurityGroupSpec{
-						SecurityGroupParameters: v1alpha3.SecurityGroupParameters{
-							VPCID:       aws.String("arbitrary vpcId"),
-							Description: "arbitrary description",
-							GroupName:   "arbitrary group name",
-							Ingress:     mockManaged.Spec.Ingress,
-						},
-					},
-					Status: mockManaged.Status,
-				}
-				meta.SetExternalName(g, "some arbitrary id")
-				return g
-			}(),
-			nil,
-			nil,
-			true,
-			false,
-			true,
-		},
-	} {
-		ingressCalled = false
-		egressCalled = false
-		mockClientIngressErr = tc.clientIngressErr
-		mockClientEgressErr = tc.clientEgressErr
-
-		_, err := mockExternalClient.Update(context.Background(), tc.managedObj)
-
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-
-		g.Expect(ingressCalled).To(gomega.Equal(tc.expectedIngressCall), tc.description)
-		g.Expect(egressCalled).To(gomega.Equal(tc.expectedEgressCall), tc.description)
-	}
-}
-
-func Test_Delete(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-	mockClient := fake.MockSecurityGroupClient{}
-	mockExternalClient := external{sg: &mockClient}
-	mockManaged := &v1alpha3.SecurityGroup{}
-	meta.SetExternalName(mockManaged, "some arbitrary id")
-
-	var mockClientErr error
-	mockClient.MockDeleteSecurityGroupRequest = func(input *awsec2.DeleteSecurityGroupInput) awsec2.DeleteSecurityGroupRequest {
-		g.Expect(aws.StringValue(input.GroupId)).To(gomega.Equal(meta.GetExternalName(mockManaged)), "the passed parameters are not valid")
-		return awsec2.DeleteSecurityGroupRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data:        &awsec2.DeleteSecurityGroupOutput{},
-				Error:       mockClientErr,
+				},
 			},
 		}
 	}
+	type args struct {
+		kube        client.Client
+		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (ec2.SecurityGroupClient, error)
+		cr          *v1beta1.SecurityGroup
+	}
+	type want struct {
+		err error
+	}
 
-	for _, tc := range []struct {
-		description    string
-		managedObj     resource.Managed
-		clientErr      error
-		expectedErrNil bool
+	cases := map[string]struct {
+		args
+		want
 	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			true,
+		"Successful": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						}
+						return errBoom
+					},
+				},
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.SecurityGroupClient, e error) {
+					if diff := cmp.Diff(credData, string(credentials)); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
+				},
+				cr: sg(),
+			},
 		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			nil,
-			false,
+		"SuccessfulUseServiceAccount": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						if key == (client.ObjectKey{Name: providerName}) {
+							p := providerSA(true)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						}
+						return errBoom
+					},
+				},
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.SecurityGroupClient, e error) {
+					if diff := cmp.Diff("", string(credentials)); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
+				},
+				cr: sg(),
+			},
 		},
-		{
-			"if the resource doesn't exist deleting resource should not return an error",
-			mockManaged.DeepCopy(),
-			awserr.New(ec2.InvalidGroupNotFound, "", nil),
-			true,
+		"ProviderGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						return errBoom
+					},
+				},
+				cr: sg(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProvider),
+			},
 		},
-		{
-			"if deleting resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			errors.New("some error"),
-			false,
+		"SecretGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: sg(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProviderSecret),
+			},
 		},
-	} {
-		mockClientErr = tc.clientErr
+		"SecretGetFailedNil": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.SetCredentialsSecretReference(nil)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: sg(),
+			},
+			want: want{
+				err: errors.New(errGetProviderSecret),
+			},
+		},
+	}
 
-		err := mockExternalClient.Delete(context.Background(), tc.managedObj)
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			c := &connector{kube: tc.kube, newClientFn: tc.newClientFn}
+			_, err := c.Connect(context.Background(), tc.args.cr)
+			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
 
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.SecurityGroup)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)
-		}
+func TestObserve(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.SecurityGroup
+		result managed.ExternalObservation
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"SuccessfulAvailable": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
+						return awsec2.DescribeSecurityGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
+								SecurityGroups: []awsec2.SecurityGroup{{}},
+							}},
+						}
+					},
+				},
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				}),
+					withExternalName(sgID)),
+			},
+			want: want{
+				cr: sg(withExternalName(sgID),
+					withConditions(runtimev1alpha1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"MultipleSGs": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
+						return awsec2.DescribeSecurityGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
+								SecurityGroups: []awsec2.SecurityGroup{{}, {}},
+							}},
+						}
+					},
+				},
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				}),
+					withExternalName(sgID)),
+			},
+			want: want{
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				}),
+					withExternalName(sgID)),
+				err: errors.New(errMultipleItems),
+			},
+		},
+		"DescribeFailure": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
+						return awsec2.DescribeSecurityGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				}),
+					withExternalName(sgID)),
+			},
+			want: want{
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				}),
+					withExternalName(sgID)),
+				err: errors.Wrap(errBoom, errDescribe),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, sg: tc.sg}
+			o, err := e.Observe(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestCreate(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.SecurityGroup
+		result managed.ExternalCreation
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockClient().Update,
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
+				sg: &fake.MockSecurityGroupClient{
+					MockCreate: func(input *awsec2.CreateSecurityGroupInput) awsec2.CreateSecurityGroupRequest {
+						return awsec2.CreateSecurityGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateSecurityGroupOutput{
+								GroupId: aws.String(sgID),
+							}},
+						}
+					},
+				},
+				cr: sg(),
+			},
+			want: want{
+				cr: sg(withExternalName(sgID),
+					withConditions(runtimev1alpha1.Creating())),
+			},
+		},
+		"CreateFail": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockClient().Update,
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
+				sg: &fake.MockSecurityGroupClient{
+					MockCreate: func(input *awsec2.CreateSecurityGroupInput) awsec2.CreateSecurityGroupRequest {
+						return awsec2.CreateSecurityGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: sg(),
+			},
+			want: want{
+				cr:  sg(withConditions(runtimev1alpha1.Creating())),
+				err: errors.Wrap(errBoom, errCreate),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, sg: tc.sg}
+			o, err := e.Create(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.SecurityGroup
+		result managed.ExternalUpdate
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
+						return awsec2.DescribeSecurityGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
+								SecurityGroups: []awsec2.SecurityGroup{{
+									IpPermissions:       sgPersmissions(),
+									IpPermissionsEgress: sgPersmissions(),
+								}},
+							}},
+						}
+					},
+					MockAuthorizeIgress: func(input *awsec2.AuthorizeSecurityGroupIngressInput) awsec2.AuthorizeSecurityGroupIngressRequest {
+						return awsec2.AuthorizeSecurityGroupIngressRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.AuthorizeSecurityGroupIngressOutput{}},
+						}
+					},
+					MockAuthorizeEgress: func(input *awsec2.AuthorizeSecurityGroupEgressInput) awsec2.AuthorizeSecurityGroupEgressRequest {
+						return awsec2.AuthorizeSecurityGroupEgressRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.AuthorizeSecurityGroupEgressOutput{}},
+						}
+					},
+				},
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Ingress: specPermissions(),
+					Egress:  specPermissions(),
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+			},
+			want: want{
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Ingress: specPermissions(),
+					Egress:  specPermissions(),
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+			},
+		},
+		"IngressFail": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
+						return awsec2.DescribeSecurityGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
+								SecurityGroups: []awsec2.SecurityGroup{{
+									IpPermissions:       sgPersmissions(),
+									IpPermissionsEgress: sgPersmissions(),
+								}},
+							}},
+						}
+					},
+					MockAuthorizeIgress: func(input *awsec2.AuthorizeSecurityGroupIngressInput) awsec2.AuthorizeSecurityGroupIngressRequest {
+						return awsec2.AuthorizeSecurityGroupIngressRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Ingress: specPermissions(),
+					Egress:  specPermissions(),
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+			},
+			want: want{
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Ingress: specPermissions(),
+					Egress:  specPermissions(),
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+				err: errors.Wrap(errBoom, errAuthorizeIngress),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, sg: tc.sg}
+			o, err := e.Update(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestDelete(t *testing.T) {
+	type want struct {
+		cr  *v1beta1.SecurityGroup
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDelete: func(input *awsec2.DeleteSecurityGroupInput) awsec2.DeleteSecurityGroupRequest {
+						return awsec2.DeleteSecurityGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteSecurityGroupOutput{}},
+						}
+					},
+				},
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				})),
+			},
+			want: want{
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				}), withConditions(runtimev1alpha1.Deleting())),
+			},
+		},
+		"InvalidSgId": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDelete: func(input *awsec2.DeleteSecurityGroupInput) awsec2.DeleteSecurityGroupRequest {
+						return awsec2.DeleteSecurityGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteSecurityGroupOutput{}},
+						}
+					},
+				},
+				cr: sg(),
+			},
+			want: want{
+				cr: sg(withConditions(runtimev1alpha1.Deleting())),
+			},
+		},
+		"DeleteFailure": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDelete: func(input *awsec2.DeleteSecurityGroupInput) awsec2.DeleteSecurityGroupRequest {
+						return awsec2.DeleteSecurityGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				})),
+			},
+			want: want{
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				}), withConditions(runtimev1alpha1.Deleting())),
+				err: errors.Wrap(errBoom, errDelete),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, sg: tc.sg}
+			err := e.Delete(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
 	}
 }

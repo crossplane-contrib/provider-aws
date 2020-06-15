@@ -23,7 +23,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
-	"github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/network/v1beta1"
 )
 
 // ResolveReferences of this ReplicationGroup
@@ -35,7 +35,7 @@ func (mg *ReplicationGroup) ResolveReferences(ctx context.Context, c client.Read
 		CurrentValues: mg.Spec.ForProvider.SecurityGroupIDs,
 		References:    mg.Spec.ForProvider.SecurityGroupIDRefs,
 		Selector:      mg.Spec.ForProvider.SecurityGroupIDSelector,
-		To:            reference.To{Managed: &v1alpha3.SecurityGroup{}, List: &v1alpha3.SecurityGroupList{}},
+		To:            reference.To{Managed: &v1beta1.SecurityGroup{}, List: &v1beta1.SecurityGroupList{}},
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
@@ -49,8 +49,8 @@ func (mg *ReplicationGroup) ResolveReferences(ctx context.Context, c client.Read
 		CurrentValues: mg.Spec.ForProvider.CacheSecurityGroupNames,
 		References:    mg.Spec.ForProvider.CacheSecurityGroupNameRefs,
 		Selector:      mg.Spec.ForProvider.CacheSecurityGroupNameSelector,
-		To:            reference.To{Managed: &v1alpha3.SecurityGroup{}, List: &v1alpha3.SecurityGroupList{}},
-		Extract:       v1alpha3.SecurityGroupName(),
+		To:            reference.To{Managed: &v1beta1.SecurityGroup{}, List: &v1beta1.SecurityGroupList{}},
+		Extract:       v1beta1.SecurityGroupName(),
 	})
 	if err != nil {
 		return err

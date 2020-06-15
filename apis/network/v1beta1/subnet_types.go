@@ -14,12 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha3
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
@@ -27,55 +25,94 @@ import (
 // SubnetParameters define the desired state of an AWS VPC Subnet.
 type SubnetParameters struct {
 	// CIDRBlock is the IPv4 network range for the Subnet, in CIDR notation. For example, 10.0.0.0/18.
+	// +immutable
 	CIDRBlock string `json:"cidrBlock"`
 
 	// The Availability Zone for the subnet.
 	// Default: AWS selects one for you. If you create more than one subnet in your
 	// VPC, we may not necessarily select a different zone for each subnet.
-	AvailabilityZone string `json:"availabilityZone"`
+	// +optional
+	// +immutable
+	AvailabilityZone *string `json:"availabilityZone,omitempty"`
+
+	// The AZ ID or the Local Zone ID of the subnet.
+	// +optional
+	// +immutable
+	AvailabilityZoneID *string `json:"availabilityZoneId,omitempty"`
+
+	// Indicates whether a network interface created in this subnet (including a
+	// network interface created by RunInstances) receives an IPv6 address.
+	// +optional
+	AssignIPv6AddressOnCreation *bool `json:"assignIpv6AddressOnCreation,omitempty"`
+
+	// The IPv6 network range for the subnet, in CIDR notation. The subnet size
+	// must use a /64 prefix length.
+	// +optional
+	// +immutable
+	IPv6CIDRBlock *string `json:"ipv6CIDRBlock,omitempty"`
+
+	// Indicates whether instances launched in this subnet receive a public IPv4
+	// address.
+	// +optional
+	MapPublicIPOnLaunch *bool `json:"mapPublicIPOnLaunch,omitempty"`
+
+	// Tags represents to current ec2 tags.
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
 
 	// VPCID is the ID of the VPC.
-	VPCID string `json:"vpcId,omitempty"`
+	// +optional
+	// +immutable
+	VPCID *string `json:"vpcId,omitempty"`
 
 	// VPCIDRef reference a VPC to retrieve its vpcId
+	// +optional
+	// +immutable
 	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
 
 	// VPCIDSelector selects reference to a VPC to retrieve its vpcId
+	// +optional
 	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
 }
 
 // A SubnetSpec defines the desired state of a Subnet.
 type SubnetSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	SubnetParameters             `json:",inline"`
+	ForProvider                  SubnetParameters `json:"forProvider"`
 }
 
-// SubnetExternalStatus keeps the state for the external resource
-type SubnetExternalStatus struct {
+// SubnetObservation keeps the state for the external resource
+type SubnetObservation struct {
+	// The number of unused private IPv4 addresses in the subnet.
+	AvailableIPAddressCount int64 `json:"availableIpAddressCount,omitempty"`
+
+	// Indicates whether this is the default subnet for the Availability Zone.
+	DefaultForAZ bool `json:"defaultForAz,omitempty"`
+
 	// SubnetState is the current state of the Subnet.
 	// +kubebuilder:validation:Enum=pending;available
 	SubnetState string `json:"subnetState,omitempty"`
 
-	// Tags represents to current ec2 tags.
-	Tags []Tag `json:"tags,omitempty"`
+	// SubnetID is the ID of the Subnet.
+	SubnetID string `json:"subnetId,omitempty"`
 }
 
 // A SubnetStatus represents the observed state of a Subnet.
 type SubnetStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	SubnetExternalStatus           `json:",inline"`
+	AtProvider                     SubnetObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true
 
 // A Subnet is a managed resource that represents an AWS VPC Subnet.
+// +kubebuilder:printcolumn:name="SUBNETID",type="string",JSONPath=".status.atProvider.subnetId"
+// +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".spec.forProvider.vpcId"
+// +kubebuilder:printcolumn:name="CIDRBLOCK",type="string",JSONPath=".spec.forProvider.cidrBlock"
+// +kubebuilder:printcolumn:name="AZ",type="string",JSONPath=".spec.forProvider.availabilityZone"
+// +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.atProvider.subnetState"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
-// +kubebuilder:printcolumn:name="SUBNETID",type="string",JSONPath=".status.subnetId"
-// +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".spec.vpcId"
-// +kubebuilder:printcolumn:name="CIDRBLOCK",type="string",JSONPath=".spec.cidrBlock"
-// +kubebuilder:printcolumn:name="AZ",type="string",JSONPath=".spec.availabilityZone"
-// +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.subnetState"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
@@ -94,12 +131,4 @@ type SubnetList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Subnet `json:"items"`
-}
-
-// UpdateExternalStatus updates the external status object,  given the observation
-func (s *Subnet) UpdateExternalStatus(observation ec2.Subnet) {
-	s.Status.SubnetExternalStatus = SubnetExternalStatus{
-		Tags:        BuildFromEC2Tags(observation.Tags),
-		SubnetState: string(observation.State),
-	}
 }

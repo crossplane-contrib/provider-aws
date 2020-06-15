@@ -19,439 +19,88 @@ package vpc
 import (
 	"context"
 	"net/http"
-	"os"
 	"testing"
 
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/onsi/gomega"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
-	v1alpha3 "github.com/crossplane/provider-aws/apis/network/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/network/v1beta1"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
 )
 
-var (
-	mockExternalClient external
-	mockClient         fake.MockVPCClient
-
-	// an arbitrary managed resource
-	unexpectedItem resource.Managed
-)
-
-func TestMain(m *testing.M) {
-
-	mockClient = fake.MockVPCClient{}
-	mockExternalClient = external{
-		client: &mockClient,
-		kube: &test.MockClient{
-			MockUpdate: test.NewMockUpdateFn(nil),
-		},
-	}
-
-	os.Exit(m.Run())
-}
-
-func Test_Connect(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := &v1alpha3.VPC{}
-	var clientErr error
-	var configErr error
-
-	conn := connector{
-		client: nil,
-		newClientFn: func(conf *aws.Config) (ec2.VPCClient, error) {
-			return &mockClient, clientErr
-		},
-		awsConfigFn: func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error) {
-			return &aws.Config{}, configErr
-		},
-	}
-
-	for _, tc := range []struct {
-		description       string
-		managedObj        resource.Managed
-		configErr         error
-		clientErr         error
-		expectedClientNil bool
-		expectedErrNil    bool
-	}{
-		{
-			"valid input should return expected",
-			mockManaged,
-			nil,
-			nil,
-			false,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			nil,
-			nil,
-			true,
-			false,
-		},
-		{
-			"if aws config provider fails, should return error",
-			mockManaged, // an arbitrary managed resource which is not expected
-			errors.New("some error"),
-			nil,
-			true,
-			false,
-		},
-		{
-			"if aws client provider fails, should return error",
-			mockManaged, // an arbitrary managed resource which is not expected
-			nil,
-			errors.New("some error"),
-			true,
-			false,
-		},
-	} {
-		clientErr = tc.clientErr
-		configErr = tc.configErr
-
-		res, err := conn.Connect(context.Background(), tc.managedObj)
-		g.Expect(res == nil).To(gomega.Equal(tc.expectedClientNil), tc.description)
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-	}
-}
-
-func Test_Observe(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := v1alpha3.VPC{}
-	meta.SetExternalName(&mockManaged, "some arbitrary id")
-
-	mockExternal := &awsec2.Vpc{
-		VpcId: aws.String("some arbitrary Id"),
-		State: awsec2.VpcStateAvailable,
-	}
-	var mockClientErr error
-	var itemsList []awsec2.Vpc
-	mockClient.MockDescribeVpcsRequest = func(input *awsec2.DescribeVpcsInput) awsec2.DescribeVpcsRequest {
-		return awsec2.DescribeVpcsRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data: &awsec2.DescribeVpcsOutput{
-					Vpcs: itemsList,
-				},
-				Error: mockClientErr,
-			},
-		}
-	}
-
-	for _, tc := range []struct {
-		description           string
-		managedObj            resource.Managed
-		itemsReturned         []awsec2.Vpc
-		clientErr             error
-		expectedErrNil        bool
-		expectedResourceExist bool
-	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			[]awsec2.Vpc{*mockExternal},
-			nil,
-			true,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			nil,
-			nil,
-			false,
-			false,
-		},
-		{
-			"if item's identifier is not yet set, returns expected",
-			&v1alpha3.VPC{},
-			nil,
-			nil,
-			true,
-			false,
-		},
-		{
-			"if external resource doesn't exist, it should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			awserr.New(ec2.VPCIDNotFound, "", nil),
-			true,
-			false,
-		},
-		{
-			"if external resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			nil,
-			errors.New("some error"),
-			false,
-			false,
-		},
-		{
-			"if external resource returns a list with other than one item, it should return error",
-			mockManaged.DeepCopy(),
-			[]awsec2.Vpc{},
-			nil,
-			false,
-			false,
-		},
-	} {
-		mockClientErr = tc.clientErr
-		itemsList = tc.itemsReturned
-
-		result, err := mockExternalClient.Observe(context.Background(), tc.managedObj)
-
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		g.Expect(result.ResourceExists).To(gomega.Equal(tc.expectedResourceExist), tc.description)
-		if tc.expectedResourceExist {
-			mgd := tc.managedObj.(*v1alpha3.VPC)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionTrue), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonAvailable), tc.description)
-			g.Expect(mgd.Status.VPCExternalStatus.VPCState).To(gomega.Equal(string(mockExternal.State)), tc.description)
-		}
-	}
-}
-
-func Test_Create(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := v1alpha3.VPC{
-		Spec: v1alpha3.VPCSpec{
-			VPCParameters: v1alpha3.VPCParameters{
-				CIDRBlock: "arbitrary cidr block string",
-			},
-		},
-	}
-	mockExternal := &awsec2.Vpc{
-		VpcId: aws.String("some arbitrary id"),
-	}
-	var mockClientErr error
-	var numCreateCalled int
-	mockClient.MockCreateVpcRequest = func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
-		numCreateCalled++
-		g.Expect(aws.StringValue(input.CidrBlock)).To(gomega.Equal(mockManaged.Spec.CIDRBlock), "the passed parameters are not valid")
-		return awsec2.CreateVpcRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data: &awsec2.CreateVpcOutput{
-					Vpc: mockExternal,
-				},
-				Error: mockClientErr,
-			},
-		}
-	}
-
-	var mockModifyVpcErr error
-	var numModifyCalled int
-	mockClient.MockModifyVpcAttributeRequest = func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
-		numModifyCalled++
-		g.Expect(input.VpcId).To(gomega.Equal(mockExternal.VpcId), "the passed parameters are not valid")
-		return awsec2.ModifyVpcAttributeRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data:        &awsec2.ModifyVpcAttributeOutput{},
-				Error:       mockModifyVpcErr,
-			},
-		}
-	}
-
-	for _, tc := range []struct {
-		description         string
-		managedObj          resource.Managed
-		clientErr           error
-		modifyVpcErr        error
-		expectedErrNil      bool
-		expectedCreateCalls int
-		expectedModifyCalls int
-	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			nil,
-			true,
-			1,
-			2,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			nil,
-			nil,
-			false,
-			0,
-			0,
-		},
-		{
-			"if creating resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			errors.New("some error"),
-			nil,
-			false,
-			1,
-			0,
-		},
-		{
-			"if external name is set, it should skip creating vpc",
-			func() *v1alpha3.VPC {
-				v := &v1alpha3.VPC{
-					Spec: v1alpha3.VPCSpec{
-						VPCParameters: v1alpha3.VPCParameters{
-							CIDRBlock: "arbitrary cidr block string",
-						},
-					},
-				}
-				v.SetConditions(runtimev1alpha1.Creating())
-				meta.SetExternalName(v, "some arbitrary id")
-				return v
-			}(),
-			nil,
-			nil,
-			true,
-			0,
-			2,
-		},
-		{
-			"if modifying attributes fails, it should return error",
-			mockManaged.DeepCopy(),
-			nil,
-			errors.New("some error"),
-			false,
-			1,
-			1,
-		},
-	} {
-		numCreateCalled = 0
-		numModifyCalled = 0
-		mockClientErr = tc.clientErr
-		mockModifyVpcErr = tc.modifyVpcErr
-
-		_, err := mockExternalClient.Create(context.Background(), tc.managedObj)
-
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.VPC)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonCreating), tc.description)
-			g.Expect(mgd.Status.VPCExternalStatus.VPCState).To(gomega.Equal(string(mockExternal.State)), tc.description)
-		}
-
-		g.Expect(numCreateCalled).To(gomega.Equal(tc.expectedCreateCalls), tc.description)
-		g.Expect(numModifyCalled).To(gomega.Equal(tc.expectedModifyCalls), tc.description)
-	}
-}
-
-func Test_Delete(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	mockManaged := v1alpha3.VPC{
-		Spec: v1alpha3.VPCSpec{
-			VPCParameters: v1alpha3.VPCParameters{
-				CIDRBlock: "arbitrary cidr block",
-			},
-		},
-	}
-	meta.SetExternalName(&mockManaged, "some arbitrary id")
-	var mockClientErr error
-	mockClient.MockDeleteVpcRequest = func(input *awsec2.DeleteVpcInput) awsec2.DeleteVpcRequest {
-		g.Expect(aws.StringValue(input.VpcId)).To(gomega.Equal(meta.GetExternalName(&mockManaged)), "the passed parameters are not valid")
-		return awsec2.DeleteVpcRequest{
-			Request: &aws.Request{
-				HTTPRequest: &http.Request{},
-				Data:        &awsec2.DeleteVpcOutput{},
-				Error:       mockClientErr,
-			},
-		}
-	}
-
-	for _, tc := range []struct {
-		description    string
-		managedObj     resource.Managed
-		clientErr      error
-		expectedErrNil bool
-	}{
-		{
-			"valid input should return expected",
-			mockManaged.DeepCopy(),
-			nil,
-			true,
-		},
-		{
-			"unexpected managed resource should return error",
-			unexpectedItem,
-			nil,
-			false,
-		},
-		{
-			"if the resource doesn't exist deleting resource should not return an error",
-			mockManaged.DeepCopy(),
-			awserr.New(ec2.VPCIDNotFound, "", nil),
-			true,
-		},
-		{
-			"if deleting resource fails, it should return error",
-			mockManaged.DeepCopy(),
-			errors.New("some error"),
-			false,
-		},
-	} {
-		mockClientErr = tc.clientErr
-
-		err := mockExternalClient.Delete(context.Background(), tc.managedObj)
-
-		g.Expect(err == nil).To(gomega.Equal(tc.expectedErrNil), tc.description)
-		if tc.expectedErrNil {
-			mgd := tc.managedObj.(*v1alpha3.VPC)
-			g.Expect(mgd.Status.Conditions[0].Type).To(gomega.Equal(corev1alpha1.TypeReady), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Status).To(gomega.Equal(corev1.ConditionFalse), tc.description)
-			g.Expect(mgd.Status.Conditions[0].Reason).To(gomega.Equal(corev1alpha1.ReasonDeleting), tc.description)
-		}
-	}
-}
-
 const (
-	providerName = "aws-creds"
+	providerName    = "aws-creds"
+	secretNamespace = "crossplane-system"
+	testRegion      = "us-east-1"
+
+	connectionSecretName = "my-little-secret"
+	secretKey            = "credentials"
+	credData             = "confidential!"
 )
 
 var (
+	vpcID          = "some Id"
+	cidr           = "192.168.0.0/32"
+	tenancyDefault = "default"
+
 	errBoom = errors.New("boom")
 )
 
-type vpcModifier func(vpc *v1alpha3.VPC)
-
-func withTags(tagMaps ...map[string]string) vpcModifier {
-	var tagList []v1alpha3.Tag
-	for _, tagMap := range tagMaps {
-		for k, v := range tagMap {
-			tagList = append(tagList, v1alpha3.Tag{Key: k, Value: v})
-		}
-	}
-	return func(r *v1alpha3.VPC) { r.Spec.Tags = tagList }
+type args struct {
+	vpc  ec2.VPCClient
+	kube client.Client
+	cr   *v1beta1.VPC
 }
 
-func instance(m ...vpcModifier) *v1alpha3.VPC {
-	cr := &v1alpha3.VPC{
-		Spec: v1alpha3.VPCSpec{
-			ResourceSpec: corev1alpha1.ResourceSpec{
+type vpcModifier func(*v1beta1.VPC)
+
+func withTags(tagMaps ...map[string]string) vpcModifier {
+	var tagList []v1beta1.Tag
+	for _, tagMap := range tagMaps {
+		for k, v := range tagMap {
+			tagList = append(tagList, v1beta1.Tag{Key: k, Value: v})
+		}
+	}
+	return func(r *v1beta1.VPC) { r.Spec.ForProvider.Tags = tagList }
+}
+
+func withExternalName(name string) vpcModifier {
+	return func(r *v1beta1.VPC) { meta.SetExternalName(r, name) }
+}
+
+func withConditions(c ...runtimev1alpha1.Condition) vpcModifier {
+	return func(r *v1beta1.VPC) { r.Status.ConditionedStatus.Conditions = c }
+}
+
+func withSpec(p v1beta1.VPCParameters) vpcModifier {
+	return func(r *v1beta1.VPC) { r.Spec.ForProvider = p }
+}
+
+func withStatus(s v1beta1.VPCObservation) vpcModifier {
+	return func(r *v1beta1.VPC) { r.Status.AtProvider = s }
+}
+
+func vpc(m ...vpcModifier) *v1beta1.VPC {
+	cr := &v1beta1.VPC{
+		Spec: v1beta1.VPCSpec{
+			ResourceSpec: runtimev1alpha1.ResourceSpec{
 				ProviderReference: &corev1.ObjectReference{Name: providerName},
 			},
 		},
@@ -462,13 +111,43 @@ func instance(m ...vpcModifier) *v1alpha3.VPC {
 	return cr
 }
 
-func TestInitialize(t *testing.T) {
+var _ managed.ExternalClient = &external{}
+var _ managed.ExternalConnecter = &connector{}
+
+func TestConnect(t *testing.T) {
+	secret := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      connectionSecretName,
+			Namespace: secretNamespace,
+		},
+		Data: map[string][]byte{
+			secretKey: []byte(credData),
+		},
+	}
+
+	providerSA := func(saVal bool) awsv1alpha3.Provider {
+		return awsv1alpha3.Provider{
+			Spec: awsv1alpha3.ProviderSpec{
+				Region:            testRegion,
+				UseServiceAccount: &saVal,
+				ProviderSpec: runtimev1alpha1.ProviderSpec{
+					CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
+						SecretReference: runtimev1alpha1.SecretReference{
+							Namespace: secretNamespace,
+							Name:      connectionSecretName,
+						},
+						Key: secretKey,
+					},
+				},
+			},
+		}
+	}
 	type args struct {
-		cr   *v1alpha3.VPC
-		kube client.Client
+		kube        client.Client
+		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (ec2.VPCClient, error)
+		cr          *v1beta1.VPC
 	}
 	type want struct {
-		cr  *v1alpha3.VPC
 		err error
 	}
 
@@ -478,16 +157,509 @@ func TestInitialize(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				cr:   instance(withTags(map[string]string{"foo": "bar"})),
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						}
+						return errBoom
+					},
+				},
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.VPCClient, e error) {
+					if diff := cmp.Diff(credData, string(credentials)); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
+				},
+				cr: vpc(),
+			},
+		},
+		"SuccessfulUseServiceAccount": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						if key == (client.ObjectKey{Name: providerName}) {
+							p := providerSA(true)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						}
+						return errBoom
+					},
+				},
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.VPCClient, e error) {
+					if diff := cmp.Diff("", string(credentials)); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
+				},
+				cr: vpc(),
+			},
+		},
+		"ProviderGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						return errBoom
+					},
+				},
+				cr: vpc(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProvider),
+			},
+		},
+		"SecretGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: vpc(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProviderSecret),
+			},
+		},
+		"SecretGetFailedNil": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.SetCredentialsSecretReference(nil)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: vpc(),
+			},
+			want: want{
+				err: errors.New(errGetProviderSecret),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			c := &connector{kube: tc.kube, newClientFn: tc.newClientFn}
+			_, err := c.Connect(context.Background(), tc.args.cr)
+			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestObserve(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.VPC
+		result managed.ExternalObservation
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"SuccessfulAvailable": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockClient().Update,
+				},
+				vpc: &fake.MockVPCClient{
+					MockDescribe: func(input *awsec2.DescribeVpcsInput) awsec2.DescribeVpcsRequest {
+						return awsec2.DescribeVpcsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeVpcsOutput{
+								Vpcs: []awsec2.Vpc{{
+									InstanceTenancy: awsec2.TenancyDefault,
+									State:           awsec2.VpcStateAvailable,
+								}},
+							}},
+						}
+					},
+					MockDescribeVpcAttributeRequest: func(input *awsec2.DescribeVpcAttributeInput) awsec2.DescribeVpcAttributeRequest {
+						return awsec2.DescribeVpcAttributeRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeVpcAttributeOutput{
+								EnableDnsHostnames: &awsec2.AttributeBooleanValue{},
+								EnableDnsSupport:   &awsec2.AttributeBooleanValue{},
+							}},
+						}
+					},
+				},
+				cr: vpc(withSpec(v1beta1.VPCParameters{
+					InstanceTenancy: aws.String(tenancyDefault),
+					CIDRBlock:       cidr,
+				}), withExternalName(vpcID)),
+			},
+			want: want{
+				cr: vpc(withSpec(v1beta1.VPCParameters{
+					InstanceTenancy: aws.String(tenancyDefault),
+					CIDRBlock:       cidr,
+				}), withStatus(v1beta1.VPCObservation{
+					VPCState: "available",
+				}), withExternalName(vpcID),
+					withConditions(runtimev1alpha1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"MultipleVpcs": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockClient().Update,
+				},
+				vpc: &fake.MockVPCClient{
+					MockDescribe: func(input *awsec2.DescribeVpcsInput) awsec2.DescribeVpcsRequest {
+						return awsec2.DescribeVpcsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeVpcsOutput{
+								Vpcs: []awsec2.Vpc{{}, {}},
+							}},
+						}
+					},
+				},
+				cr: vpc(withSpec(v1beta1.VPCParameters{
+					InstanceTenancy: aws.String(tenancyDefault),
+					CIDRBlock:       cidr,
+				}), withExternalName(vpcID)),
+			},
+			want: want{
+				cr: vpc(withSpec(v1beta1.VPCParameters{
+					InstanceTenancy: aws.String(tenancyDefault),
+					CIDRBlock:       cidr,
+				}), withExternalName(vpcID)),
+				err: errors.New(errMultipleItems),
+			},
+		},
+		"DescribeFail": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockClient().Update,
+				},
+				vpc: &fake.MockVPCClient{
+					MockDescribe: func(input *awsec2.DescribeVpcsInput) awsec2.DescribeVpcsRequest {
+						return awsec2.DescribeVpcsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: vpc(withSpec(v1beta1.VPCParameters{
+					InstanceTenancy: aws.String(tenancyDefault),
+					CIDRBlock:       cidr,
+				}), withExternalName(vpcID)),
+			},
+			want: want{
+				cr: vpc(withSpec(v1beta1.VPCParameters{
+					InstanceTenancy: aws.String(tenancyDefault),
+					CIDRBlock:       cidr,
+				}), withExternalName(vpcID)),
+				err: errors.Wrap(errBoom, errDescribe),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.vpc}
+			o, err := e.Observe(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestCreate(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.VPC
+		result managed.ExternalCreation
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockClient().Update,
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
+				vpc: &fake.MockVPCClient{
+					MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
+						return awsec2.CreateVpcRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateVpcOutput{
+								Vpc: &awsec2.Vpc{
+									VpcId:     aws.String(vpcID),
+									CidrBlock: aws.String(cidr),
+								},
+							}},
+						}
+					},
+					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
+						return awsec2.ModifyVpcAttributeRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
+						}
+					},
+				},
+				cr: vpc(),
+			},
+			want: want{
+				cr: vpc(withExternalName(vpcID),
+					withConditions(runtimev1alpha1.Creating())),
+			},
+		},
+		"CreateFail": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockClient().Update,
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
+				vpc: &fake.MockVPCClient{
+					MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
+						return awsec2.CreateVpcRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: vpc(),
+			},
+			want: want{
+				cr:  vpc(withConditions(runtimev1alpha1.Creating())),
+				err: errors.Wrap(errBoom, errCreate),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.vpc}
+			o, err := e.Create(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.VPC
+		result managed.ExternalUpdate
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				vpc: &fake.MockVPCClient{
+					MockModifyTenancy: func(input *awsec2.ModifyVpcTenancyInput) awsec2.ModifyVpcTenancyRequest {
+						return awsec2.ModifyVpcTenancyRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifyVpcTenancyOutput{}},
+						}
+					},
+					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
+						return awsec2.CreateTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateTagsOutput{}},
+						}
+					},
+					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
+						return awsec2.ModifyVpcAttributeRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
+						}
+					},
+				},
+				cr: vpc(withSpec(v1beta1.VPCParameters{
+					InstanceTenancy: aws.String(tenancyDefault),
+				})),
+			},
+			want: want{
+				cr: vpc(withSpec(v1beta1.VPCParameters{
+					InstanceTenancy: aws.String(tenancyDefault),
+				})),
+			},
+		},
+		"ModifyFailed": {
+			args: args{
+				vpc: &fake.MockVPCClient{
+					MockModifyTenancy: func(input *awsec2.ModifyVpcTenancyInput) awsec2.ModifyVpcTenancyRequest {
+						return awsec2.ModifyVpcTenancyRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
+						return awsec2.CreateTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateTagsOutput{}},
+						}
+					},
+					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
+						return awsec2.ModifyVpcAttributeRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
+						}
+					},
+				},
+				cr: vpc(withSpec(v1beta1.VPCParameters{
+					InstanceTenancy: aws.String(tenancyDefault),
+				})),
+			},
+			want: want{
+				cr: vpc(withSpec(v1beta1.VPCParameters{
+					InstanceTenancy: aws.String(tenancyDefault),
+				})),
+				err: errors.Wrap(errBoom, errUpdate),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.vpc}
+			u, err := e.Update(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, u); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestDelete(t *testing.T) {
+	type want struct {
+		cr  *v1beta1.VPC
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				vpc: &fake.MockVPCClient{
+					MockDelete: func(input *awsec2.DeleteVpcInput) awsec2.DeleteVpcRequest {
+						return awsec2.DeleteVpcRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteVpcOutput{}},
+						}
+					},
+				},
+				cr: vpc(),
+			},
+			want: want{
+				cr: vpc(withConditions(runtimev1alpha1.Deleting())),
+			},
+		},
+		"DeleteFailed": {
+			args: args{
+				vpc: &fake.MockVPCClient{
+					MockDelete: func(input *awsec2.DeleteVpcInput) awsec2.DeleteVpcRequest {
+						return awsec2.DeleteVpcRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: vpc(),
+			},
+			want: want{
+				cr:  vpc(withConditions(runtimev1alpha1.Deleting())),
+				err: errors.Wrap(errBoom, errDelete),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.vpc}
+			err := e.Delete(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestInitialize(t *testing.T) {
+	type args struct {
+		cr   *v1beta1.VPC
+		kube client.Client
+	}
+	type want struct {
+		cr  *v1beta1.VPC
+		err error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				cr:   vpc(withTags(map[string]string{"foo": "bar"})),
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
 			},
 			want: want{
-				cr: instance(withTags(resource.GetExternalTags(instance()), map[string]string{"foo": "bar"})),
+				cr: vpc(withTags(resource.GetExternalTags(vpc()), map[string]string{"foo": "bar"})),
 			},
 		},
 		"UpdateFailed": {
 			args: args{
-				cr:   instance(),
+				cr:   vpc(),
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
 			},
 			want: want{
@@ -504,7 +676,7 @@ func TestInitialize(t *testing.T) {
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1alpha3.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1beta1.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

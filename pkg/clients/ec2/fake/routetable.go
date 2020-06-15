@@ -27,46 +27,52 @@ var _ clientset.RouteTableClient = (*MockRouteTableClient)(nil)
 
 // MockRouteTableClient is a type that implements all the methods for RouteTableClient interface
 type MockRouteTableClient struct {
-	MockCreateRouteTableRequest       func(*ec2.CreateRouteTableInput) ec2.CreateRouteTableRequest
-	MockDeleteRouteTableRequest       func(*ec2.DeleteRouteTableInput) ec2.DeleteRouteTableRequest
-	MockDescribeRouteTablesRequest    func(*ec2.DescribeRouteTablesInput) ec2.DescribeRouteTablesRequest
-	MockCreateRouteRequest            func(*ec2.CreateRouteInput) ec2.CreateRouteRequest
-	MockDeleteRouteRequest            func(*ec2.DeleteRouteInput) ec2.DeleteRouteRequest
-	MockAssociateRouteTableRequest    func(*ec2.AssociateRouteTableInput) ec2.AssociateRouteTableRequest
-	MockDisassociateRouteTableRequest func(*ec2.DisassociateRouteTableInput) ec2.DisassociateRouteTableRequest
+	MockCreate       func(*ec2.CreateRouteTableInput) ec2.CreateRouteTableRequest
+	MockDelete       func(*ec2.DeleteRouteTableInput) ec2.DeleteRouteTableRequest
+	MockDescribe     func(*ec2.DescribeRouteTablesInput) ec2.DescribeRouteTablesRequest
+	MockCreateRoute  func(*ec2.CreateRouteInput) ec2.CreateRouteRequest
+	MockDeleteRoute  func(*ec2.DeleteRouteInput) ec2.DeleteRouteRequest
+	MockAssociate    func(*ec2.AssociateRouteTableInput) ec2.AssociateRouteTableRequest
+	MockDisassociate func(*ec2.DisassociateRouteTableInput) ec2.DisassociateRouteTableRequest
+	MockCreateTags   func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
 }
 
 // CreateRouteTableRequest mocks CreateRouteTableRequest method
 func (m *MockRouteTableClient) CreateRouteTableRequest(input *ec2.CreateRouteTableInput) ec2.CreateRouteTableRequest {
-	return m.MockCreateRouteTableRequest(input)
+	return m.MockCreate(input)
 }
 
 // DeleteRouteTableRequest mocks DeleteRouteTableRequest method
 func (m *MockRouteTableClient) DeleteRouteTableRequest(input *ec2.DeleteRouteTableInput) ec2.DeleteRouteTableRequest {
-	return m.MockDeleteRouteTableRequest(input)
+	return m.MockDelete(input)
 }
 
 // DescribeRouteTablesRequest mocks DescribeRouteTablesRequest method
 func (m *MockRouteTableClient) DescribeRouteTablesRequest(input *ec2.DescribeRouteTablesInput) ec2.DescribeRouteTablesRequest {
-	return m.MockDescribeRouteTablesRequest(input)
+	return m.MockDescribe(input)
 }
 
 // AssociateRouteTableRequest mocks AssociateRouteTableRequest method
 func (m *MockRouteTableClient) AssociateRouteTableRequest(input *ec2.AssociateRouteTableInput) ec2.AssociateRouteTableRequest {
-	return m.MockAssociateRouteTableRequest(input)
+	return m.MockAssociate(input)
 }
 
 // DisassociateRouteTableRequest mocks DisassociateRouteTableRequest method
 func (m *MockRouteTableClient) DisassociateRouteTableRequest(input *ec2.DisassociateRouteTableInput) ec2.DisassociateRouteTableRequest {
-	return m.MockDisassociateRouteTableRequest(input)
+	return m.MockDisassociate(input)
 }
 
 // CreateRouteRequest mocks CreateRouteRequest method
 func (m *MockRouteTableClient) CreateRouteRequest(input *ec2.CreateRouteInput) ec2.CreateRouteRequest {
-	return m.MockCreateRouteRequest(input)
+	return m.MockCreateRoute(input)
 }
 
 // DeleteRouteRequest mocks DeleteRouteRequest method
 func (m *MockRouteTableClient) DeleteRouteRequest(input *ec2.DeleteRouteInput) ec2.DeleteRouteRequest {
-	return m.MockDeleteRouteRequest(input)
+	return m.MockDeleteRoute(input)
+}
+
+// CreateTagsRequest mocks CreateTagsInput method
+func (m *MockRouteTableClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
+	return m.MockCreateTags(input)
 }

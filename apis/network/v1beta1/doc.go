@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha3 contains managed resources for AWS network services such as
+// Package v1beta1 contains managed resources for AWS network services such as
 // VPC and Subnet.
 // +kubebuilder:object:generate=true
 // +groupName=network.aws.crossplane.io
-// +versionName=v1alpha3
-package v1alpha3
+// +versionName=v1beta1
+package v1beta1
