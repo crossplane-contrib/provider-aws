@@ -92,3 +92,73 @@ func (mg *CertificateAuthority) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy
 func (mg *CertificateAuthority) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
+
+// GetBindingPhase of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) GetBindingPhase() runtimev1alpha1.BindingPhase {
+	return mg.Status.GetBindingPhase()
+}
+
+// GetClaimReference of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) GetClaimReference() *corev1.ObjectReference {
+	return mg.Spec.ClaimReference
+}
+
+// GetClassReference of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) GetClassReference() *corev1.ObjectReference {
+	return mg.Spec.ClassReference
+}
+
+// GetCondition of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetProviderReference of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) GetProviderReference() *corev1.ObjectReference {
+	return mg.Spec.ProviderReference
+}
+
+// GetReclaimPolicy of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
+	return mg.Spec.ReclaimPolicy
+}
+
+// GetWriteConnectionSecretToReference of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetBindingPhase of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
+	mg.Status.SetBindingPhase(p)
+}
+
+// SetClaimReference of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) SetClaimReference(r *corev1.ObjectReference) {
+	mg.Spec.ClaimReference = r
+}
+
+// SetClassReference of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) SetClassReference(r *corev1.ObjectReference) {
+	mg.Spec.ClassReference = r
+}
+
+// SetConditions of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) SetConditions(c ...runtimev1alpha1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) SetProviderReference(r *corev1.ObjectReference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetReclaimPolicy of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
+	mg.Spec.ReclaimPolicy = r
+}
+
+// SetWriteConnectionSecretToReference of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
