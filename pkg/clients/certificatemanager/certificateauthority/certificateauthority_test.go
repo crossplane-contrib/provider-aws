@@ -241,6 +241,12 @@ func TestLateInitializeCertificateAuthority(t *testing.T) {
 					RevocationConfiguration: &acmpca.RevocationConfiguration{
 						CrlConfiguration: &acmpca.CrlConfiguration{
 							ExpirationInDays: nil,
+							CustomCname:      aws.String(customCname),
+						},
+					},
+					CertificateAuthorityConfiguration: &acmpca.CertificateAuthorityConfiguration{
+						Subject: &acmpca.ASN1Subject{
+							SerialNumber: aws.String(serialNumber),
 						},
 					},
 				},
@@ -250,6 +256,12 @@ func TestLateInitializeCertificateAuthority(t *testing.T) {
 				Status: acmpca.CertificateAuthorityStatusActive,
 				RevocationConfiguration: v1alpha1.RevocationConfiguration{
 					ExpirationInDays: nil,
+					CustomCname:      aws.String(customCname),
+				},
+				CertificateAuthorityConfiguration: v1alpha1.CertificateAuthorityConfiguration{
+					Subject: v1alpha1.Subject{
+						SerialNumber: aws.String(serialNumber),
+					},
 				},
 			},
 		},
@@ -301,7 +313,7 @@ func TestIsCertificateAuthorityUpToDate(t *testing.T) {
 					},
 					Status: v1alpha1.CertificateAuthorityStatus{
 						AtProvider: v1alpha1.CertificateAuthorityExternalStatus{
-							CertificateAuthorityARN: aws.String(certificateAuthorityArn),
+							CertificateAuthorityARN: certificateAuthorityArn,
 						},
 					},
 				},
@@ -333,7 +345,7 @@ func TestIsCertificateAuthorityUpToDate(t *testing.T) {
 					},
 					Status: v1alpha1.CertificateAuthorityStatus{
 						AtProvider: v1alpha1.CertificateAuthorityExternalStatus{
-							CertificateAuthorityARN: aws.String(certificateAuthorityArn),
+							CertificateAuthorityARN: certificateAuthorityArn,
 						},
 					},
 				},
