@@ -6,7 +6,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: certificateauthorities.certificatemanager.aws.crossplane.io
+  name: certificateauthorities.acmpca.aws.crossplane.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .spec.forProvider.type
@@ -24,7 +24,7 @@ spec:
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
-  group: certificatemanager.aws.crossplane.io
+  group: acmpca.aws.crossplane.io
   names:
     kind: CertificateAuthority
     listKind: CertificateAuthorityList
@@ -134,100 +134,129 @@ spec:
               description: CertificateAuthorityParameters defines the desired state
                 of an AWS CertificateAuthority.
               properties:
-                certificateRenewalPermissionAllow:
-                  description: The CertificateRenewalPermissionAllow decides Permissions
-                    for ACM renewals
-                  type: boolean
-                commonName:
-                  description: FQDN associated with the certificate subject
-                  type: string
-                country:
-                  description: Two-digit code that specifies the country
-                  type: string
-                customCname:
-                  description: Alias for the CRL distribution point
-                  type: string
-                distinguishedNameQualifier:
-                  description: Disambiguating information for the certificate subject.
-                  type: string
-                expirationInDays:
-                  description: Number of days until a certificate expires
-                  format: int64
-                  type: integer
-                generationQualifier:
-                  description: Typically a qualifier appended to the name of an individual
-                  type: string
-                givenName:
-                  description: First name
-                  type: string
+                certificateAuthorityConfiguration:
+                  description: CertificateAuthorityConfiguration to associate with
+                    the certificateAuthority.
+                  properties:
+                    keyAlgorithm:
+                      description: Type of the public key algorithm
+                      enum:
+                      - RSA_2048
+                      - EC_secp384r1
+                      - EC_prime256v1
+                      - RSA_4096
+                      type: string
+                    signingAlgorithm:
+                      description: Algorithm that private CA uses to sign certificate
+                        requests
+                      enum:
+                      - SHA512WITHECDSA
+                      - SHA256WITHECDSA
+                      - SHA384WITHECDSA
+                      - SHA512WITHRSA
+                      - SHA256WITHRSA
+                      - SHA384WITHRSA
+                      type: string
+                    subject:
+                      description: Subject is information of Certificate Authority
+                      properties:
+                        commonName:
+                          description: FQDN associated with the certificate subject
+                          type: string
+                        country:
+                          description: Two-digit code that specifies the country
+                          type: string
+                        distinguishedNameQualifier:
+                          description: Disambiguating information for the certificate
+                            subject.
+                          type: string
+                        generationQualifier:
+                          description: Typically a qualifier appended to the name
+                            of an individual
+                          type: string
+                        givenName:
+                          description: First name
+                          type: string
+                        initials:
+                          description: Concatenation of first letter of the GivenName,
+                            Middle name and SurName.
+                          type: string
+                        locality:
+                          description: The locality such as a city or town
+                          type: string
+                        organization:
+                          description: Organization legal name
+                          type: string
+                        organizationalUnit:
+                          description: Organization's subdivision or unit
+                          type: string
+                        pseudonym:
+                          description: Shortened version of a longer GivenName
+                          type: string
+                        serialNumber:
+                          description: The certificate serial number.
+                          type: string
+                        state:
+                          description: State in which the subject of the certificate
+                            is located
+                          type: string
+                        surname:
+                          description: Surname
+                          type: string
+                        title:
+                          description: Title
+                          type: string
+                      required:
+                      - commonName
+                      - country
+                      - locality
+                      - organization
+                      - organizationalUnit
+                      - state
+                      type: object
+                  required:
+                  - keyAlgorithm
+                  - signingAlgorithm
+                  - subject
+                  type: object
                 idempotencyToken:
                   description: Token to distinguish between calls to RequestCertificate.
-                  type: string
-                initials:
-                  description: Concatenation of first letter of the GivenName, Middle
-                    name and SurName.
-                  type: string
-                keyAlgorithm:
-                  description: Type of the public key algorithm
-                  enum:
-                  - rsa2048
-                  - rsa4096
-                  - ecprime256v1
-                  - ecsecp384r1
-                  type: string
-                locality:
-                  description: The locality such as a city or town
-                  type: string
-                organization:
-                  description: Organization legal name
-                  type: string
-                organizationalUnit:
-                  description: Organization's subdivision or unit
                   type: string
                 permanentDeletionTimeInDays:
                   description: The number of days to make a CA restorable after it
                     has been deleted
                   format: int64
                   type: integer
-                pseudonym:
-                  description: Shortened version of a longer GivenName
-                  type: string
-                revocationConfigurationEnabled:
-                  description: Boolean value that specifies certificate revocation
-                  type: boolean
-                s3BucketName:
-                  description: Name of the S3 bucket that contains the CRL
-                  type: string
-                serialNumber:
-                  description: The certificate serial number.
-                  type: string
-                signingAlgorithm:
-                  description: Algorithm that private CA uses to sign certificate
-                    requests
-                  enum:
-                  - sha256withecdsa
-                  - sha384withecdsa
-                  - sha512withecdsa
-                  - sha256withrsa
-                  - sha384withrsa
-                  - sha512withrsa
-                  type: string
-                state:
-                  description: State in which the subject of the certificate is located
-                  type: string
+                revocationConfiguration:
+                  description: RevocationConfiguration to associate with the certificateAuthority.
+                  properties:
+                    customCname:
+                      description: Alias for the CRL distribution point
+                      type: string
+                    enabled:
+                      description: Boolean value that specifies certificate revocation
+                      type: boolean
+                    expirationInDays:
+                      description: Number of days until a certificate expires
+                      format: int64
+                      type: integer
+                    s3BucketName:
+                      description: Name of the S3 bucket that contains the CRL
+                      type: string
+                  required:
+                  - enabled
+                  - s3BucketName
+                  type: object
                 status:
                   description: Status of the certificate authority
                   enum:
-                  - creating
-                  - pending_certificate
-                  - active
-                  - deleted
-                  - disabled
-                  - expired
-                  - failed
-                  type: string
-                surname:
-                  description: Surname
+                  - CREATING
+                  - PENDING_CERTIFICATE
+                  - ACTIVE
+                  - DELETED
+                  - DISABLED
+                  - EXPIRED
+                  - FAILED
                   type: string
                 tags:
                   description: One or more resource tags to associate with the certificateAuthority.
@@ -246,27 +275,15 @@ spec:
                     - key
                     type: object
                   type: array
-                title:
-                  description: Title
-                  type: string
                 type:
                   description: Type of the certificate authority
                   enum:
-                  - root
-                  - subordinate
+                  - ROOT
+                  - SUBORINATE
                   type: string
               required:
-              - certificateRenewalPermissionAllow
-              - commonName
-              - country
-              - keyAlgorithm
-              - locality
-              - organization
-              - organizationalUnit
-              - revocationConfigurationEnabled
-              - s3BucketName
-              - signingAlgorithm
-              - state
+              - certificateAuthorityConfiguration
+              - revocationConfiguration
               - type
               type: object
             providerRef:
@@ -354,11 +371,12 @@ spec:
                   description: String that contains the ARN of the issued certificate
                     Authority
                   type: string
-                renewalPermission:
-                  type: boolean
+                serial:
+                  description: Serial of the Certificate Authority
+                  type: string
               required:
               - certificateAuthorityArn
-              - renewalPermission
+              - serial
               type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource
