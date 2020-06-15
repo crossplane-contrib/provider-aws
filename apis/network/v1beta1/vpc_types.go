@@ -29,7 +29,7 @@ type VPCCIDRBlockState struct {
 	State string `json:"state,omitempty"`
 
 	// A message about the status of the CIDR block, if applicable.
-	StatusMessage string `json:"statusmessage,omitempty"`
+	StatusMessage string `json:"statusMessage,omitempty"`
 }
 
 // VPCCIDRBlockAssociation represents the association of IPv4 CIDR blocks with the VPC.
@@ -110,7 +110,7 @@ type VPCObservation struct {
 	IsDefault bool `json:"isDefault,omitempty"`
 
 	// The ID of the AWS account that owns the VPC.
-	OwnerID string `json:"ownerID,omitempty"`
+	OwnerID string `json:"ownerId,omitempty"`
 
 	// VPCState is the current state of the VPC.
 	VPCState string `json:"vpcState,omitempty"`
@@ -125,11 +125,10 @@ type VPCStatus struct {
 // +kubebuilder:object:root=true
 
 // A VPC is a managed resource that represents an AWS Virtual Private Cloud.
-// +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
-// +kubebuilder:printcolumn:name="CIDRBLOCK",type="string",JSONPath=".spec.forProvider.cidrBlock"
-// +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.atProvider.vpcState"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
+// +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
+// +kubebuilder:printcolumn:name="CIDR",type="string",JSONPath=".spec.forProvider.cidrBlock"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}

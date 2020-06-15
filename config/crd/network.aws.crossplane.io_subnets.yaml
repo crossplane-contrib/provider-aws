@@ -9,26 +9,20 @@ metadata:
   name: subnets.network.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .status.atProvider.subnetId
-    name: SUBNETID
-    type: string
-  - JSONPath: .spec.forProvider.vpcId
-    name: VPCID
-    type: string
-  - JSONPath: .spec.forProvider.cidrBlock
-    name: CIDRBLOCK
-    type: string
-  - JSONPath: .spec.forProvider.availabilityZone
-    name: AZ
-    type: string
-  - JSONPath: .status.atProvider.subnetState
-    name: STATE
-    type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
     type: string
   - JSONPath: .status.conditions[?(@.type=='Synced')].status
     name: SYNCED
+    type: string
+  - JSONPath: .metadata.annotations.crossplane\.io/external-name
+    name: ID
+    type: string
+  - JSONPath: .spec.forProvider.vpcId
+    name: VPC
+    type: string
+  - JSONPath: .spec.forProvider.cidrBlock
+    name: CIDR
     type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE
