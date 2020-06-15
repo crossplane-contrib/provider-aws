@@ -28,7 +28,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "network.aws.crossplane.io"
+	Group   = "ec2.aws.crossplane.io"
 	Version = "v1beta1"
 )
 

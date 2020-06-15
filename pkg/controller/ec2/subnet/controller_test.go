@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package securitygroup
+package subnet
 
 import (
 	"context"
@@ -35,7 +35,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/network/v1beta1"
+	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -53,68 +53,38 @@ const (
 )
 
 var (
-	sgID              = "some sgID"
-	port80      int64 = 80
-	port100     int64 = 100
-	cidr              = "192.168.0.0/32"
-	tcpProtocol       = "tcp"
+	subnetID = "some Id"
 
 	errBoom = errors.New("boom")
 )
 
 type args struct {
-	sg   ec2.SecurityGroupClient
-	kube client.Client
-	cr   *v1beta1.SecurityGroup
+	subnet ec2.SubnetClient
+	kube   client.Client
+	cr     *v1beta1.Subnet
 }
 
-type sgModifier func(*v1beta1.SecurityGroup)
+type subnetModifier func(*v1beta1.Subnet)
 
-func specPermissions() []v1beta1.IPPermission {
-	return []v1beta1.IPPermission{
-		{
-			FromPort: aws.Int64(port80),
-			ToPort:   aws.Int64(80),
-			IPRanges: []v1beta1.IPRange{
-				{CIDRIP: cidr},
-			},
-			IPProtocol: tcpProtocol,
-		},
-	}
+func withExternalName(name string) subnetModifier {
+	return func(r *v1beta1.Subnet) { meta.SetExternalName(r, name) }
 }
 
-func sgPersmissions() []awsec2.IpPermission {
-	return []awsec2.IpPermission{
-		{
-			FromPort:   aws.Int64(port100),
-			ToPort:     aws.Int64(port100),
-			IpProtocol: aws.String(tcpProtocol),
-			IpRanges: []awsec2.IpRange{{
-				CidrIp: aws.String(cidr),
-			}},
-		},
-	}
+func withConditions(c ...runtimev1alpha1.Condition) subnetModifier {
+	return func(r *v1beta1.Subnet) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withExternalName(name string) sgModifier {
-	return func(r *v1beta1.SecurityGroup) { meta.SetExternalName(r, name) }
+func withSpec(p v1beta1.SubnetParameters) subnetModifier {
+	return func(r *v1beta1.Subnet) { r.Spec.ForProvider = p }
 }
 
-func withSpec(p v1beta1.SecurityGroupParameters) sgModifier {
-	return func(r *v1beta1.SecurityGroup) { r.Spec.ForProvider = p }
+func withStatus(s v1beta1.SubnetObservation) subnetModifier {
+	return func(r *v1beta1.Subnet) { r.Status.AtProvider = s }
 }
 
-func withStatus(s v1beta1.SecurityGroupObservation) sgModifier {
-	return func(r *v1beta1.SecurityGroup) { r.Status.AtProvider = s }
-}
-
-func withConditions(c ...runtimev1alpha1.Condition) sgModifier {
-	return func(r *v1beta1.SecurityGroup) { r.Status.ConditionedStatus.Conditions = c }
-}
-
-func sg(m ...sgModifier) *v1beta1.SecurityGroup {
-	cr := &v1beta1.SecurityGroup{
-		Spec: v1beta1.SecurityGroupSpec{
+func subnet(m ...subnetModifier) *v1beta1.Subnet {
+	cr := &v1beta1.Subnet{
+		Spec: v1beta1.SubnetSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
 				ProviderReference: &corev1.ObjectReference{Name: providerName},
 			},
@@ -159,8 +129,8 @@ func TestConnect(t *testing.T) {
 	}
 	type args struct {
 		kube        client.Client
-		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (ec2.SecurityGroupClient, error)
-		cr          *v1beta1.SecurityGroup
+		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (ec2.SubnetClient, error)
+		cr          *v1beta1.Subnet
 	}
 	type want struct {
 		err error
@@ -186,7 +156,7 @@ func TestConnect(t *testing.T) {
 						return errBoom
 					},
 				},
-				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.SecurityGroupClient, e error) {
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.SubnetClient, e error) {
 					if diff := cmp.Diff(credData, string(credentials)); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
@@ -195,7 +165,7 @@ func TestConnect(t *testing.T) {
 					}
 					return nil, nil
 				},
-				cr: sg(),
+				cr: subnet(),
 			},
 		},
 		"SuccessfulUseServiceAccount": {
@@ -210,7 +180,7 @@ func TestConnect(t *testing.T) {
 						return errBoom
 					},
 				},
-				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.SecurityGroupClient, e error) {
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.SubnetClient, e error) {
 					if diff := cmp.Diff("", string(credentials)); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
@@ -219,7 +189,7 @@ func TestConnect(t *testing.T) {
 					}
 					return nil, nil
 				},
-				cr: sg(),
+				cr: subnet(),
 			},
 		},
 		"ProviderGetFailed": {
@@ -229,7 +199,7 @@ func TestConnect(t *testing.T) {
 						return errBoom
 					},
 				},
-				cr: sg(),
+				cr: subnet(),
 			},
 			want: want{
 				err: errors.Wrap(errBoom, errGetProvider),
@@ -251,7 +221,7 @@ func TestConnect(t *testing.T) {
 						}
 					},
 				},
-				cr: sg(),
+				cr: subnet(),
 			},
 			want: want{
 				err: errors.Wrap(errBoom, errGetProviderSecret),
@@ -274,7 +244,7 @@ func TestConnect(t *testing.T) {
 						}
 					},
 				},
-				cr: sg(),
+				cr: subnet(),
 			},
 			want: want{
 				err: errors.New(errGetProviderSecret),
@@ -284,7 +254,7 @@ func TestConnect(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			c := &connector{kube: tc.kube, newClientFn: tc.newClientFn}
+			c := &connector{client: tc.kube, newClientFn: tc.newClientFn}
 			_, err := c.Connect(context.Background(), tc.args.cr)
 			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
@@ -295,7 +265,7 @@ func TestConnect(t *testing.T) {
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.SecurityGroup
+		cr     *v1beta1.Subnet
 		result managed.ExternalObservation
 		err    error
 	}
@@ -306,22 +276,25 @@ func TestObserve(t *testing.T) {
 	}{
 		"SuccessfulAvailable": {
 			args: args{
-				sg: &fake.MockSecurityGroupClient{
-					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
-						return awsec2.DescribeSecurityGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
-								SecurityGroups: []awsec2.SecurityGroup{{}},
+				subnet: &fake.MockSubnetClient{
+					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
+						return awsec2.DescribeSubnetsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSubnetsOutput{
+								Subnets: []awsec2.Subnet{
+									{
+										State: awsec2.SubnetStateAvailable,
+									},
+								},
 							}},
 						}
 					},
 				},
-				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
-					SecurityGroupID: sgID,
-				}),
-					withExternalName(sgID)),
+				cr: subnet(withExternalName(subnetID)),
 			},
 			want: want{
-				cr: sg(withExternalName(sgID),
+				cr: subnet(withStatus(v1beta1.SubnetObservation{
+					SubnetState: "available",
+				}), withExternalName(subnetID),
 					withConditions(runtimev1alpha1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -329,49 +302,71 @@ func TestObserve(t *testing.T) {
 				},
 			},
 		},
-		"MultipleSGs": {
+		"MultipleSubnets": {
 			args: args{
-				sg: &fake.MockSecurityGroupClient{
-					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
-						return awsec2.DescribeSecurityGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
-								SecurityGroups: []awsec2.SecurityGroup{{}, {}},
+				subnet: &fake.MockSubnetClient{
+					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
+						return awsec2.DescribeSubnetsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSubnetsOutput{
+								Subnets: []awsec2.Subnet{{}, {}},
 							}},
 						}
 					},
 				},
-				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
-					SecurityGroupID: sgID,
-				}),
-					withExternalName(sgID)),
+				cr: subnet(withExternalName(subnetID)),
 			},
 			want: want{
-				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
-					SecurityGroupID: sgID,
-				}),
-					withExternalName(sgID)),
+				cr:  subnet(withExternalName(subnetID)),
 				err: errors.New(errMultipleItems),
 			},
 		},
-		"DescribeFailure": {
+		"NotUpToDate": {
 			args: args{
-				sg: &fake.MockSecurityGroupClient{
-					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
-						return awsec2.DescribeSecurityGroupsRequest{
+				subnet: &fake.MockSubnetClient{
+					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
+						return awsec2.DescribeSubnetsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSubnetsOutput{
+								Subnets: []awsec2.Subnet{
+									{
+										State:               awsec2.SubnetStateAvailable,
+										MapPublicIpOnLaunch: aws.Bool(false),
+									},
+								},
+							}},
+						}
+					},
+				},
+				cr: subnet(withSpec(v1beta1.SubnetParameters{
+					MapPublicIPOnLaunch: aws.Bool(true),
+				}),
+					withExternalName(subnetID)),
+			},
+			want: want{
+				cr: subnet(withSpec(v1beta1.SubnetParameters{
+					MapPublicIPOnLaunch: aws.Bool(true),
+				}), withStatus(v1beta1.SubnetObservation{
+					SubnetState: string(awsec2.SubnetStateAvailable),
+				}), withExternalName(subnetID),
+					withConditions(runtimev1alpha1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
+			},
+		},
+		"DescribeFailed": {
+			args: args{
+				subnet: &fake.MockSubnetClient{
+					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
+						return awsec2.DescribeSubnetsRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
-					SecurityGroupID: sgID,
-				}),
-					withExternalName(sgID)),
+				cr: subnet(withExternalName(subnetID)),
 			},
 			want: want{
-				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
-					SecurityGroupID: sgID,
-				}),
-					withExternalName(sgID)),
+				cr:  subnet(withExternalName(subnetID)),
 				err: errors.Wrap(errBoom, errDescribe),
 			},
 		},
@@ -379,7 +374,7 @@ func TestObserve(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, sg: tc.sg}
+			e := &external{kube: tc.kube, client: tc.subnet}
 			o, err := e.Observe(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -397,7 +392,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.SecurityGroup
+		cr     *v1beta1.Subnet
 		result managed.ExternalCreation
 		err    error
 	}
@@ -412,39 +407,41 @@ func TestCreate(t *testing.T) {
 					MockUpdate:       test.NewMockClient().Update,
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
-				sg: &fake.MockSecurityGroupClient{
-					MockCreate: func(input *awsec2.CreateSecurityGroupInput) awsec2.CreateSecurityGroupRequest {
-						return awsec2.CreateSecurityGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateSecurityGroupOutput{
-								GroupId: aws.String(sgID),
+				subnet: &fake.MockSubnetClient{
+					MockCreate: func(input *awsec2.CreateSubnetInput) awsec2.CreateSubnetRequest {
+						return awsec2.CreateSubnetRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateSubnetOutput{
+								Subnet: &awsec2.Subnet{
+									SubnetId: aws.String(subnetID),
+								},
 							}},
 						}
 					},
 				},
-				cr: sg(),
+				cr: subnet(),
 			},
 			want: want{
-				cr: sg(withExternalName(sgID),
+				cr: subnet(withExternalName(subnetID),
 					withConditions(runtimev1alpha1.Creating())),
 			},
 		},
-		"CreateFail": {
+		"CreateFailed": {
 			args: args{
 				kube: &test.MockClient{
 					MockUpdate:       test.NewMockClient().Update,
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
-				sg: &fake.MockSecurityGroupClient{
-					MockCreate: func(input *awsec2.CreateSecurityGroupInput) awsec2.CreateSecurityGroupRequest {
-						return awsec2.CreateSecurityGroupRequest{
+				subnet: &fake.MockSubnetClient{
+					MockCreate: func(input *awsec2.CreateSubnetInput) awsec2.CreateSubnetRequest {
+						return awsec2.CreateSubnetRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: sg(),
+				cr: subnet(),
 			},
 			want: want{
-				cr:  sg(withConditions(runtimev1alpha1.Creating())),
+				cr:  subnet(withConditions(runtimev1alpha1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
@@ -452,7 +449,7 @@ func TestCreate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, sg: tc.sg}
+			e := &external{kube: tc.kube, client: tc.subnet}
 			o, err := e.Create(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -470,7 +467,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.SecurityGroup
+		cr     *v1beta1.Subnet
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -481,90 +478,76 @@ func TestUpdate(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				sg: &fake.MockSecurityGroupClient{
-					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
-						return awsec2.DescribeSecurityGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
-								SecurityGroups: []awsec2.SecurityGroup{{
-									IpPermissions:       sgPersmissions(),
-									IpPermissionsEgress: sgPersmissions(),
+				subnet: &fake.MockSubnetClient{
+					MockModify: func(input *awsec2.ModifySubnetAttributeInput) awsec2.ModifySubnetAttributeRequest {
+						return awsec2.ModifySubnetAttributeRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifySubnetAttributeOutput{}},
+						}
+					},
+					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
+						return awsec2.DescribeSubnetsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSubnetsOutput{
+								Subnets: []awsec2.Subnet{{
+									SubnetId:            aws.String(subnetID),
+									MapPublicIpOnLaunch: aws.Bool(false),
 								}},
 							}},
 						}
 					},
-					MockAuthorizeIgress: func(input *awsec2.AuthorizeSecurityGroupIngressInput) awsec2.AuthorizeSecurityGroupIngressRequest {
-						return awsec2.AuthorizeSecurityGroupIngressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.AuthorizeSecurityGroupIngressOutput{}},
-						}
-					},
-					MockAuthorizeEgress: func(input *awsec2.AuthorizeSecurityGroupEgressInput) awsec2.AuthorizeSecurityGroupEgressRequest {
-						return awsec2.AuthorizeSecurityGroupEgressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.AuthorizeSecurityGroupEgressOutput{}},
-						}
-					},
 				},
-				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
-					Ingress: specPermissions(),
-					Egress:  specPermissions(),
-				}),
-					withStatus(v1beta1.SecurityGroupObservation{
-						SecurityGroupID: sgID,
-					})),
+				cr: subnet(withSpec(v1beta1.SubnetParameters{
+					MapPublicIPOnLaunch: aws.Bool(true),
+				}), withStatus(v1beta1.SubnetObservation{
+					SubnetID: subnetID,
+				})),
 			},
 			want: want{
-				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
-					Ingress: specPermissions(),
-					Egress:  specPermissions(),
-				}),
-					withStatus(v1beta1.SecurityGroupObservation{
-						SecurityGroupID: sgID,
-					})),
+				cr: subnet(withSpec(v1beta1.SubnetParameters{
+					MapPublicIPOnLaunch: aws.Bool(true),
+				}), withStatus(v1beta1.SubnetObservation{
+					SubnetID: subnetID,
+				})),
 			},
 		},
-		"IngressFail": {
+		"ModifyFailed": {
 			args: args{
-				sg: &fake.MockSecurityGroupClient{
-					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
-						return awsec2.DescribeSecurityGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
-								SecurityGroups: []awsec2.SecurityGroup{{
-									IpPermissions:       sgPersmissions(),
-									IpPermissionsEgress: sgPersmissions(),
+				subnet: &fake.MockSubnetClient{
+					MockModify: func(input *awsec2.ModifySubnetAttributeInput) awsec2.ModifySubnetAttributeRequest {
+						return awsec2.ModifySubnetAttributeRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifySubnetAttributeOutput{}},
+						}
+					},
+					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
+						return awsec2.DescribeSubnetsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSubnetsOutput{
+								Subnets: []awsec2.Subnet{{
+									SubnetId:            aws.String(subnetID),
+									MapPublicIpOnLaunch: aws.Bool(false),
 								}},
 							}},
 						}
 					},
-					MockAuthorizeIgress: func(input *awsec2.AuthorizeSecurityGroupIngressInput) awsec2.AuthorizeSecurityGroupIngressRequest {
-						return awsec2.AuthorizeSecurityGroupIngressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
-					},
 				},
-				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
-					Ingress: specPermissions(),
-					Egress:  specPermissions(),
-				}),
-					withStatus(v1beta1.SecurityGroupObservation{
-						SecurityGroupID: sgID,
-					})),
+				cr: subnet(withSpec(v1beta1.SubnetParameters{
+					MapPublicIPOnLaunch: aws.Bool(true),
+				}), withStatus(v1beta1.SubnetObservation{
+					SubnetID: subnetID,
+				})),
 			},
 			want: want{
-				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
-					Ingress: specPermissions(),
-					Egress:  specPermissions(),
-				}),
-					withStatus(v1beta1.SecurityGroupObservation{
-						SecurityGroupID: sgID,
-					})),
-				err: errors.Wrap(errBoom, errAuthorizeIngress),
+				cr: subnet(withSpec(v1beta1.SubnetParameters{
+					MapPublicIPOnLaunch: aws.Bool(true),
+				}), withStatus(v1beta1.SubnetObservation{
+					SubnetID: subnetID,
+				})),
 			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, sg: tc.sg}
-			o, err := e.Update(context.Background(), tc.args.cr)
+			e := &external{kube: tc.kube, client: tc.subnet}
+			u, err := e.Update(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
@@ -572,7 +555,7 @@ func TestUpdate(t *testing.T) {
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+			if diff := cmp.Diff(tc.want.result, u); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
@@ -581,7 +564,7 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *v1beta1.SecurityGroup
+		cr  *v1beta1.Subnet
 		err error
 	}
 
@@ -591,54 +574,39 @@ func TestDelete(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				sg: &fake.MockSecurityGroupClient{
-					MockDelete: func(input *awsec2.DeleteSecurityGroupInput) awsec2.DeleteSecurityGroupRequest {
-						return awsec2.DeleteSecurityGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteSecurityGroupOutput{}},
+				subnet: &fake.MockSubnetClient{
+					MockDelete: func(input *awsec2.DeleteSubnetInput) awsec2.DeleteSubnetRequest {
+						return awsec2.DeleteSubnetRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteSubnetOutput{}},
 						}
 					},
 				},
-				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
-					SecurityGroupID: sgID,
+				cr: subnet(withStatus(v1beta1.SubnetObservation{
+					SubnetID: subnetID,
 				})),
 			},
 			want: want{
-				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
-					SecurityGroupID: sgID,
+				cr: subnet(withStatus(v1beta1.SubnetObservation{
+					SubnetID: subnetID,
 				}), withConditions(runtimev1alpha1.Deleting())),
 			},
 		},
-		"InvalidSgId": {
+		"DeleteFailed": {
 			args: args{
-				sg: &fake.MockSecurityGroupClient{
-					MockDelete: func(input *awsec2.DeleteSecurityGroupInput) awsec2.DeleteSecurityGroupRequest {
-						return awsec2.DeleteSecurityGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteSecurityGroupOutput{}},
-						}
-					},
-				},
-				cr: sg(),
-			},
-			want: want{
-				cr: sg(withConditions(runtimev1alpha1.Deleting())),
-			},
-		},
-		"DeleteFailure": {
-			args: args{
-				sg: &fake.MockSecurityGroupClient{
-					MockDelete: func(input *awsec2.DeleteSecurityGroupInput) awsec2.DeleteSecurityGroupRequest {
-						return awsec2.DeleteSecurityGroupRequest{
+				subnet: &fake.MockSubnetClient{
+					MockDelete: func(input *awsec2.DeleteSubnetInput) awsec2.DeleteSubnetRequest {
+						return awsec2.DeleteSubnetRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
-					SecurityGroupID: sgID,
+				cr: subnet(withStatus(v1beta1.SubnetObservation{
+					SubnetID: subnetID,
 				})),
 			},
 			want: want{
-				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
-					SecurityGroupID: sgID,
+				cr: subnet(withStatus(v1beta1.SubnetObservation{
+					SubnetID: subnetID,
 				}), withConditions(runtimev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
@@ -647,7 +615,7 @@ func TestDelete(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, sg: tc.sg}
+			e := &external{kube: tc.kube, client: tc.subnet}
 			err := e.Delete(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
