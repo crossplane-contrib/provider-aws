@@ -9,7 +9,7 @@ metadata:
   name: queues.applicationintegration.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .spec.forProvider.name
+  - JSONPath: .metadata.annotations.crossplane\.io/external-name
     name: QUEUENAME
     type: string
   - JSONPath: .status.atProvider.arn

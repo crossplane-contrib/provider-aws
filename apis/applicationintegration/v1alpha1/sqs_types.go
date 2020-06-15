@@ -142,7 +142,7 @@ type QueueStatus struct {
 // +kubebuilder:object:root=true
 
 // A Queue is a managed resource that represents a AWS Simple Queue
-// +kubebuilder:printcolumn:name="QUEUENAME",type="string",JSONPath=".spec.forProvider.name"
+// +kubebuilder:printcolumn:name="QUEUENAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:printcolumn:name="ARN",type="string",JSONPath=".status.atProvider.arn"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
