@@ -51,6 +51,15 @@ var (
 	CertificateAuthorityGroupVersionKind = SchemeGroupVersion.WithKind(CertificateAuthorityKind)
 )
 
+// CertificateAuthorityPermission type metadata.
+var (
+	CertificateAuthorityPermissionKind             = reflect.TypeOf(CertificateAuthorityPermission{}).Name()
+	CertificateAuthorityPermissionGroupKind        = schema.GroupKind{Group: Group, Kind: CertificateAuthorityPermissionKind}.String()
+	CertificateAuthorityPermissionKindAPIVersion   = CertificateAuthorityPermissionKind + "." + SchemeGroupVersion.String()
+	CertificateAuthorityPermissionGroupVersionKind = SchemeGroupVersion.WithKind(CertificateAuthorityPermissionKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&CertificateAuthority{}, &CertificateAuthorityList{})
+	SchemeBuilder.Register(&CertificateAuthorityPermission{}, &CertificateAuthorityPermissionList{})
 }
