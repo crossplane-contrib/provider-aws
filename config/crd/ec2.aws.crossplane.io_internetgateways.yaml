@@ -6,7 +6,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: vpcs.network.aws.crossplane.io
+  name: internetgateways.ec2.aws.crossplane.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
@@ -18,29 +18,29 @@ spec:
   - JSONPath: .metadata.annotations.crossplane\.io/external-name
     name: ID
     type: string
-  - JSONPath: .spec.forProvider.cidrBlock
-    name: CIDR
+  - JSONPath: .spec.forProvider.vpcId
+    name: VPC
     type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
-  group: network.aws.crossplane.io
+  group: ec2.aws.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - aws
-    kind: VPC
-    listKind: VPCList
-    plural: vpcs
-    singular: vpc
+    kind: InternetGateway
+    listKind: InternetGatewayList
+    plural: internetgateways
+    singular: internetgateway
   scope: Cluster
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: A VPC is a managed resource that represents an AWS Virtual Private
-        Cloud.
+      description: An InternetGateway is a managed resource that represents an AWS
+        VPC Internet Gateway.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -55,7 +55,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: A VPCSpec defines the desired state of a VPC.
+          description: An InternetGatewaySpec defines the desired state of an InternetGateway.
           properties:
             claimRef:
               description: ClaimReference specifies the resource claim to which this
@@ -135,28 +135,11 @@ spec:
                   type: string
               type: object
             forProvider:
-              description: VPCParameters define the desired state of an AWS Virtual
-                Private Cloud.
+              description: InternetGatewayParameters define the desired state of an
+                AWS VPC Internet Gateway.
               properties:
-                cidrBlock:
-                  description: CIDRBlock is the IPv4 network range for the VPC, in
-                    CIDR notation. For example, 10.0.0.0/16.
-                  type: string
-                enableDnsHostNames:
-                  description: Indicates whether the instances launched in the VPC
-                    get DNS hostnames.
-                  type: boolean
-                enableDnsSupport:
-                  description: A boolean flag to enable/disable DNS support in the
-                    VPC
-                  type: boolean
-                instanceTenancy:
-                  description: The allowed tenancy of instances launched into the
-                    VPC.
-                  type: string
                 tags:
-                  description: Tags are used as identification helpers between AWS
-                    resources.
+                  description: Tags represents to current ec2 tags.
                   items:
                     description: Tag defines a tag
                     properties:
@@ -171,8 +154,33 @@ spec:
                     - value
                     type: object
                   type: array
-              required:
-              - cidrBlock
+                vpcId:
+                  description: VPCID is the ID of the VPC.
+                  type: string
+                vpcIdRef:
+                  description: VPCIDRef references a VPC to and retrieves its vpcId
+                  properties:
+                    name:
+                      description: Name of the referenced object.
+                      type: string
+                  required:
+                  - name
+                  type: object
+                vpcIdSelector:
+                  description: VPCIDSelector selects a reference to a VPC to and retrieves
+                    its vpcId
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
+                  type: object
               type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
@@ -248,84 +256,47 @@ spec:
           - providerRef
           type: object
         status:
-          description: A VPCStatus represents the observed state of a VPC.
+          description: An InternetGatewayStatus represents the observed state of an
+            InternetGateway.
           properties:
             atProvider:
-              description: VPCObservation keeps the state for the external resource
+              description: InternetGatewayObservation keeps the state for the external
+                resource
               properties:
-                cidrBlockAssociationSet:
-                  description: Information about the IPv4 CIDR blocks associated with
-                    the VPC.
+                attachments:
+                  description: Any VPCs attached to the internet gateway.
                   items:
-                    description: VPCCIDRBlockAssociation represents the association
-                      of IPv4 CIDR blocks with the VPC.
+                    description: InternetGatewayAttachment describes the attachment
+                      of a VPC to an internet gateway or an egress-only internet gateway.
                     properties:
-                      associationId:
-                        description: The association ID for the IPv4 CIDR block.
+                      attachmentStatus:
+                        description: The current state of the attachment. For an internet
+                          gateway, the state is available when attached to a VPC;
+                          otherwise, this value is not returned.
+                        enum:
+                        - available
+                        - attaching
+                        - attached
+                        - detaching
+                        - detached
                         type: string
-                      cidrBlock:
-                        description: The IPv4 CIDR block.
+                      vpcId:
+                        description: VPCID is the ID of the attached VPC.
                         type: string
-                      cidrBlockState:
-                        description: Information about the state of the CIDR block.
-                        properties:
-                          state:
-                            description: The state of the CIDR block.
-                            type: string
-                          statusMessage:
-                            description: A message about the status of the CIDR block,
-                              if applicable.
-                            type: string
-                        type: object
+                    required:
+                    - attachmentStatus
+                    - vpcId
                     type: object
                   type: array
-                dhcpOptionsId:
-                  description: The ID of the set of DHCP options you've associated
-                    with the VPC.
+                internetGatewayId:
+                  description: The ID of the internet gateway.
                   type: string
-                ipv6CidrBlockAssociationSet:
-                  description: Information about the IPv6 CIDR blocks associated with
-                    the VPC.
-                  items:
-                    description: VPCIPv6CidrBlockAssociation represents the association
-                      of IPv6 CIDR blocks with the VPC.
-                    properties:
-                      associationId:
-                        description: The association ID for the IPv6 CIDR block.
-                        type: string
-                      ipv6CidrBlock:
-                        description: The IPv6 CIDR block.
-                        type: string
-                      ipv6CidrBlockState:
-                        description: Information about the state of the CIDR block.
-                        properties:
-                          state:
-                            description: The state of the CIDR block.
-                            type: string
-                          statusMessage:
-                            description: A message about the status of the CIDR block,
-                              if applicable.
-                            type: string
-                        type: object
-                      ipv6Pool:
-                        description: The ID of the IPv6 address pool from which the
-                          IPv6 CIDR block is allocated.
-                        type: string
-                      networkBorderGroup:
-                        description: The name of the location from which we advertise
-                          the IPV6 CIDR block.
-                        type: string
-                    type: object
-                  type: array
-                isDefault:
-                  description: Indicates whether the VPC is the default VPC.
-                  type: boolean
-                ownerId:
-                  description: The ID of the AWS account that owns the VPC.
+                ownerID:
+                  description: The ID of the AWS account that owns the internet gateway.
                   type: string
-                vpcState:
-                  description: VPCState is the current state of the VPC.
-                  type: string
+              required:
+              - internetGatewayId
+              - ownerID
               type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource
