@@ -50,7 +50,6 @@ var (
 	unexpecedItem              resource.Managed
 	certificateAuthorityArn    = "someauthorityarn"
 	nextToken                  = "someNextToken"
-	serialNumber               = "someserialNumber"
 	customCname                = "soemcustomname"
 	s3BucketName               = "somes3bucketname"
 	commonName                 = "someCommonName"
@@ -83,7 +82,7 @@ func withConditions(c ...corev1alpha1.Condition) certificateAuthorityModifier {
 
 func withCertificateAuthorityArn() certificateAuthorityModifier {
 	return func(r *v1alpha1.CertificateAuthority) {
-		r.Status.AtProvider.CertificateAuthorityARN = aws.String(certificateAuthorityArn)
+		r.Status.AtProvider.CertificateAuthorityARN = certificateAuthorityArn
 		meta.SetExternalName(r, certificateAuthorityArn)
 	}
 }
@@ -91,7 +90,8 @@ func withCertificateAuthorityArn() certificateAuthorityModifier {
 func withCertificateAuthorityType() certificateAuthorityModifier {
 	return func(r *v1alpha1.CertificateAuthority) {
 		r.Spec.ForProvider.Type = awsacmpca.CertificateAuthorityTypeRoot
-		r.Status.AtProvider.CertificateAuthorityARN = aws.String(certificateAuthorityArn)
+		r.Spec.ForProvider.RevocationConfiguration.CustomCname = aws.String(customCname)
+		r.Status.AtProvider.CertificateAuthorityARN = certificateAuthorityArn
 		meta.SetExternalName(r, certificateAuthorityArn)
 	}
 }
@@ -225,7 +225,6 @@ func TestObserve(t *testing.T) {
 											Organization:               aws.String(organization),
 											OrganizationalUnit:         aws.String(organizationalUnit),
 											Pseudonym:                  aws.String(pseudonym),
-											SerialNumber:               aws.String(serialNumber),
 											State:                      aws.String(state),
 											Surname:                    aws.String(surname),
 											Title:                      aws.String(title),
