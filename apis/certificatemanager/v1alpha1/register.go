@@ -17,11 +17,9 @@ limitations under the License.
 // NOTE: Boilerplate only. Ignore this file.
 
 // Package v1alpha1 contains API Schema definitions for the certificatemanager v1alpha1 API group
-// +k8s:openapi-gen=true
-// +k8s:deepcopy-gen=package,register
-// +k8s:conversion-gen=github.com/crossplane/provider-aws/pkg/apis/certificatemanager
-// +k8s:defaulter-gen=TypeMeta
-// +groupName=certificatemanager.aws.crossplane.io
+// +kubebuilder:object:generate=true
+// +groupName=acmpca.aws.crossplane.io
+// +versionName=v1alpha1
 package v1alpha1
 
 import (
@@ -33,7 +31,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "certificatemanager.aws.crossplane.io"
+	Group   = "acmpca.aws.crossplane.io"
 	Version = "v1alpha1"
 )
 
