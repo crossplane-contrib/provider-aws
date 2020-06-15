@@ -83,7 +83,7 @@ func withConditions(c ...corev1alpha1.Condition) certificateAuthorityModifier {
 
 func withCertificateAuthorityArn() certificateAuthorityModifier {
 	return func(r *v1alpha1.CertificateAuthority) {
-		r.Status.AtProvider.CertificateAuthorityArn = certificateAuthorityArn
+		r.Status.AtProvider.CertificateAuthorityARN = aws.String(certificateAuthorityArn)
 		meta.SetExternalName(r, certificateAuthorityArn)
 	}
 }
@@ -91,7 +91,7 @@ func withCertificateAuthorityArn() certificateAuthorityModifier {
 func withCertificateAuthorityType() certificateAuthorityModifier {
 	return func(r *v1alpha1.CertificateAuthority) {
 		r.Spec.ForProvider.Type = awsacmpca.CertificateAuthorityTypeRoot
-		r.Status.AtProvider.CertificateAuthorityArn = certificateAuthorityArn
+		r.Status.AtProvider.CertificateAuthorityARN = aws.String(certificateAuthorityArn)
 		meta.SetExternalName(r, certificateAuthorityArn)
 	}
 }
