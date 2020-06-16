@@ -14,20 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package vpc
+package securitygroup
 
 import (
 	"context"
 	"net/http"
 	"testing"
 
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/crossplane/crossplane-runtime/pkg/test"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,8 +33,9 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/network/v1beta1"
+	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -56,50 +53,68 @@ const (
 )
 
 var (
-	vpcID          = "some Id"
-	cidr           = "192.168.0.0/32"
-	tenancyDefault = "default"
+	sgID              = "some sgID"
+	port80      int64 = 80
+	port100     int64 = 100
+	cidr              = "192.168.0.0/32"
+	tcpProtocol       = "tcp"
 
 	errBoom = errors.New("boom")
 )
 
 type args struct {
-	vpc  ec2.VPCClient
+	sg   ec2.SecurityGroupClient
 	kube client.Client
-	cr   *v1beta1.VPC
+	cr   *v1beta1.SecurityGroup
 }
 
-type vpcModifier func(*v1beta1.VPC)
+type sgModifier func(*v1beta1.SecurityGroup)
 
-func withTags(tagMaps ...map[string]string) vpcModifier {
-	var tagList []v1beta1.Tag
-	for _, tagMap := range tagMaps {
-		for k, v := range tagMap {
-			tagList = append(tagList, v1beta1.Tag{Key: k, Value: v})
-		}
+func specPermissions() []v1beta1.IPPermission {
+	return []v1beta1.IPPermission{
+		{
+			FromPort: aws.Int64(port80),
+			ToPort:   aws.Int64(80),
+			IPRanges: []v1beta1.IPRange{
+				{CIDRIP: cidr},
+			},
+			IPProtocol: tcpProtocol,
+		},
 	}
-	return func(r *v1beta1.VPC) { r.Spec.ForProvider.Tags = tagList }
 }
 
-func withExternalName(name string) vpcModifier {
-	return func(r *v1beta1.VPC) { meta.SetExternalName(r, name) }
+func sgPersmissions() []awsec2.IpPermission {
+	return []awsec2.IpPermission{
+		{
+			FromPort:   aws.Int64(port100),
+			ToPort:     aws.Int64(port100),
+			IpProtocol: aws.String(tcpProtocol),
+			IpRanges: []awsec2.IpRange{{
+				CidrIp: aws.String(cidr),
+			}},
+		},
+	}
 }
 
-func withConditions(c ...runtimev1alpha1.Condition) vpcModifier {
-	return func(r *v1beta1.VPC) { r.Status.ConditionedStatus.Conditions = c }
+func withExternalName(name string) sgModifier {
+	return func(r *v1beta1.SecurityGroup) { meta.SetExternalName(r, name) }
 }
 
-func withSpec(p v1beta1.VPCParameters) vpcModifier {
-	return func(r *v1beta1.VPC) { r.Spec.ForProvider = p }
+func withSpec(p v1beta1.SecurityGroupParameters) sgModifier {
+	return func(r *v1beta1.SecurityGroup) { r.Spec.ForProvider = p }
 }
 
-func withStatus(s v1beta1.VPCObservation) vpcModifier {
-	return func(r *v1beta1.VPC) { r.Status.AtProvider = s }
+func withStatus(s v1beta1.SecurityGroupObservation) sgModifier {
+	return func(r *v1beta1.SecurityGroup) { r.Status.AtProvider = s }
 }
 
-func vpc(m ...vpcModifier) *v1beta1.VPC {
-	cr := &v1beta1.VPC{
-		Spec: v1beta1.VPCSpec{
+func withConditions(c ...runtimev1alpha1.Condition) sgModifier {
+	return func(r *v1beta1.SecurityGroup) { r.Status.ConditionedStatus.Conditions = c }
+}
+
+func sg(m ...sgModifier) *v1beta1.SecurityGroup {
+	cr := &v1beta1.SecurityGroup{
+		Spec: v1beta1.SecurityGroupSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
 				ProviderReference: &corev1.ObjectReference{Name: providerName},
 			},
@@ -144,8 +159,8 @@ func TestConnect(t *testing.T) {
 	}
 	type args struct {
 		kube        client.Client
-		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (ec2.VPCClient, error)
-		cr          *v1beta1.VPC
+		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (ec2.SecurityGroupClient, error)
+		cr          *v1beta1.SecurityGroup
 	}
 	type want struct {
 		err error
@@ -171,7 +186,7 @@ func TestConnect(t *testing.T) {
 						return errBoom
 					},
 				},
-				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.VPCClient, e error) {
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.SecurityGroupClient, e error) {
 					if diff := cmp.Diff(credData, string(credentials)); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
@@ -180,7 +195,7 @@ func TestConnect(t *testing.T) {
 					}
 					return nil, nil
 				},
-				cr: vpc(),
+				cr: sg(),
 			},
 		},
 		"SuccessfulUseServiceAccount": {
@@ -195,7 +210,7 @@ func TestConnect(t *testing.T) {
 						return errBoom
 					},
 				},
-				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.VPCClient, e error) {
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i ec2.SecurityGroupClient, e error) {
 					if diff := cmp.Diff("", string(credentials)); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
@@ -204,7 +219,7 @@ func TestConnect(t *testing.T) {
 					}
 					return nil, nil
 				},
-				cr: vpc(),
+				cr: sg(),
 			},
 		},
 		"ProviderGetFailed": {
@@ -214,7 +229,7 @@ func TestConnect(t *testing.T) {
 						return errBoom
 					},
 				},
-				cr: vpc(),
+				cr: sg(),
 			},
 			want: want{
 				err: errors.Wrap(errBoom, errGetProvider),
@@ -236,7 +251,7 @@ func TestConnect(t *testing.T) {
 						}
 					},
 				},
-				cr: vpc(),
+				cr: sg(),
 			},
 			want: want{
 				err: errors.Wrap(errBoom, errGetProviderSecret),
@@ -259,7 +274,7 @@ func TestConnect(t *testing.T) {
 						}
 					},
 				},
-				cr: vpc(),
+				cr: sg(),
 			},
 			want: want{
 				err: errors.New(errGetProviderSecret),
@@ -280,7 +295,7 @@ func TestConnect(t *testing.T) {
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.VPC
+		cr     *v1beta1.SecurityGroup
 		result managed.ExternalObservation
 		err    error
 	}
@@ -291,41 +306,22 @@ func TestObserve(t *testing.T) {
 	}{
 		"SuccessfulAvailable": {
 			args: args{
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockClient().Update,
-				},
-				vpc: &fake.MockVPCClient{
-					MockDescribe: func(input *awsec2.DescribeVpcsInput) awsec2.DescribeVpcsRequest {
-						return awsec2.DescribeVpcsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeVpcsOutput{
-								Vpcs: []awsec2.Vpc{{
-									InstanceTenancy: awsec2.TenancyDefault,
-									State:           awsec2.VpcStateAvailable,
-								}},
-							}},
-						}
-					},
-					MockDescribeVpcAttributeRequest: func(input *awsec2.DescribeVpcAttributeInput) awsec2.DescribeVpcAttributeRequest {
-						return awsec2.DescribeVpcAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeVpcAttributeOutput{
-								EnableDnsHostnames: &awsec2.AttributeBooleanValue{},
-								EnableDnsSupport:   &awsec2.AttributeBooleanValue{},
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
+						return awsec2.DescribeSecurityGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
+								SecurityGroups: []awsec2.SecurityGroup{{}},
 							}},
 						}
 					},
 				},
-				cr: vpc(withSpec(v1beta1.VPCParameters{
-					InstanceTenancy: aws.String(tenancyDefault),
-					CIDRBlock:       cidr,
-				}), withExternalName(vpcID)),
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				}),
+					withExternalName(sgID)),
 			},
 			want: want{
-				cr: vpc(withSpec(v1beta1.VPCParameters{
-					InstanceTenancy: aws.String(tenancyDefault),
-					CIDRBlock:       cidr,
-				}), withStatus(v1beta1.VPCObservation{
-					VPCState: "available",
-				}), withExternalName(vpcID),
+				cr: sg(withExternalName(sgID),
 					withConditions(runtimev1alpha1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -333,55 +329,49 @@ func TestObserve(t *testing.T) {
 				},
 			},
 		},
-		"MultipleVpcs": {
+		"MultipleSGs": {
 			args: args{
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockClient().Update,
-				},
-				vpc: &fake.MockVPCClient{
-					MockDescribe: func(input *awsec2.DescribeVpcsInput) awsec2.DescribeVpcsRequest {
-						return awsec2.DescribeVpcsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeVpcsOutput{
-								Vpcs: []awsec2.Vpc{{}, {}},
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
+						return awsec2.DescribeSecurityGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
+								SecurityGroups: []awsec2.SecurityGroup{{}, {}},
 							}},
 						}
 					},
 				},
-				cr: vpc(withSpec(v1beta1.VPCParameters{
-					InstanceTenancy: aws.String(tenancyDefault),
-					CIDRBlock:       cidr,
-				}), withExternalName(vpcID)),
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				}),
+					withExternalName(sgID)),
 			},
 			want: want{
-				cr: vpc(withSpec(v1beta1.VPCParameters{
-					InstanceTenancy: aws.String(tenancyDefault),
-					CIDRBlock:       cidr,
-				}), withExternalName(vpcID)),
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				}),
+					withExternalName(sgID)),
 				err: errors.New(errMultipleItems),
 			},
 		},
-		"DescribeFail": {
+		"DescribeFailure": {
 			args: args{
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockClient().Update,
-				},
-				vpc: &fake.MockVPCClient{
-					MockDescribe: func(input *awsec2.DescribeVpcsInput) awsec2.DescribeVpcsRequest {
-						return awsec2.DescribeVpcsRequest{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
+						return awsec2.DescribeSecurityGroupsRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: vpc(withSpec(v1beta1.VPCParameters{
-					InstanceTenancy: aws.String(tenancyDefault),
-					CIDRBlock:       cidr,
-				}), withExternalName(vpcID)),
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				}),
+					withExternalName(sgID)),
 			},
 			want: want{
-				cr: vpc(withSpec(v1beta1.VPCParameters{
-					InstanceTenancy: aws.String(tenancyDefault),
-					CIDRBlock:       cidr,
-				}), withExternalName(vpcID)),
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				}),
+					withExternalName(sgID)),
 				err: errors.Wrap(errBoom, errDescribe),
 			},
 		},
@@ -389,7 +379,7 @@ func TestObserve(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.vpc}
+			e := &external{kube: tc.kube, sg: tc.sg}
 			o, err := e.Observe(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -407,7 +397,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.VPC
+		cr     *v1beta1.SecurityGroup
 		result managed.ExternalCreation
 		err    error
 	}
@@ -422,27 +412,19 @@ func TestCreate(t *testing.T) {
 					MockUpdate:       test.NewMockClient().Update,
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
-				vpc: &fake.MockVPCClient{
-					MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
-						return awsec2.CreateVpcRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateVpcOutput{
-								Vpc: &awsec2.Vpc{
-									VpcId:     aws.String(vpcID),
-									CidrBlock: aws.String(cidr),
-								},
+				sg: &fake.MockSecurityGroupClient{
+					MockCreate: func(input *awsec2.CreateSecurityGroupInput) awsec2.CreateSecurityGroupRequest {
+						return awsec2.CreateSecurityGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateSecurityGroupOutput{
+								GroupId: aws.String(sgID),
 							}},
 						}
 					},
-					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
-						return awsec2.ModifyVpcAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
-						}
-					},
 				},
-				cr: vpc(),
+				cr: sg(),
 			},
 			want: want{
-				cr: vpc(withExternalName(vpcID),
+				cr: sg(withExternalName(sgID),
 					withConditions(runtimev1alpha1.Creating())),
 			},
 		},
@@ -452,17 +434,17 @@ func TestCreate(t *testing.T) {
 					MockUpdate:       test.NewMockClient().Update,
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
-				vpc: &fake.MockVPCClient{
-					MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
-						return awsec2.CreateVpcRequest{
+				sg: &fake.MockSecurityGroupClient{
+					MockCreate: func(input *awsec2.CreateSecurityGroupInput) awsec2.CreateSecurityGroupRequest {
+						return awsec2.CreateSecurityGroupRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: vpc(),
+				cr: sg(),
 			},
 			want: want{
-				cr:  vpc(withConditions(runtimev1alpha1.Creating())),
+				cr:  sg(withConditions(runtimev1alpha1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
@@ -470,7 +452,7 @@ func TestCreate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.vpc}
+			e := &external{kube: tc.kube, sg: tc.sg}
 			o, err := e.Create(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -488,7 +470,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.VPC
+		cr     *v1beta1.SecurityGroup
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -499,69 +481,90 @@ func TestUpdate(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				vpc: &fake.MockVPCClient{
-					MockModifyTenancy: func(input *awsec2.ModifyVpcTenancyInput) awsec2.ModifyVpcTenancyRequest {
-						return awsec2.ModifyVpcTenancyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifyVpcTenancyOutput{}},
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
+						return awsec2.DescribeSecurityGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
+								SecurityGroups: []awsec2.SecurityGroup{{
+									IpPermissions:       sgPersmissions(),
+									IpPermissionsEgress: sgPersmissions(),
+								}},
+							}},
 						}
 					},
-					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
-						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateTagsOutput{}},
+					MockAuthorizeIgress: func(input *awsec2.AuthorizeSecurityGroupIngressInput) awsec2.AuthorizeSecurityGroupIngressRequest {
+						return awsec2.AuthorizeSecurityGroupIngressRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.AuthorizeSecurityGroupIngressOutput{}},
 						}
 					},
-					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
-						return awsec2.ModifyVpcAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
+					MockAuthorizeEgress: func(input *awsec2.AuthorizeSecurityGroupEgressInput) awsec2.AuthorizeSecurityGroupEgressRequest {
+						return awsec2.AuthorizeSecurityGroupEgressRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.AuthorizeSecurityGroupEgressOutput{}},
 						}
 					},
 				},
-				cr: vpc(withSpec(v1beta1.VPCParameters{
-					InstanceTenancy: aws.String(tenancyDefault),
-				})),
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Ingress: specPermissions(),
+					Egress:  specPermissions(),
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
 			},
 			want: want{
-				cr: vpc(withSpec(v1beta1.VPCParameters{
-					InstanceTenancy: aws.String(tenancyDefault),
-				})),
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Ingress: specPermissions(),
+					Egress:  specPermissions(),
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
 			},
 		},
-		"ModifyFailed": {
+		"IngressFail": {
 			args: args{
-				vpc: &fake.MockVPCClient{
-					MockModifyTenancy: func(input *awsec2.ModifyVpcTenancyInput) awsec2.ModifyVpcTenancyRequest {
-						return awsec2.ModifyVpcTenancyRequest{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
+						return awsec2.DescribeSecurityGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSecurityGroupsOutput{
+								SecurityGroups: []awsec2.SecurityGroup{{
+									IpPermissions:       sgPersmissions(),
+									IpPermissionsEgress: sgPersmissions(),
+								}},
+							}},
+						}
+					},
+					MockAuthorizeIgress: func(input *awsec2.AuthorizeSecurityGroupIngressInput) awsec2.AuthorizeSecurityGroupIngressRequest {
+						return awsec2.AuthorizeSecurityGroupIngressRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
-					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
-						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateTagsOutput{}},
-						}
-					},
-					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
-						return awsec2.ModifyVpcAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
-						}
-					},
 				},
-				cr: vpc(withSpec(v1beta1.VPCParameters{
-					InstanceTenancy: aws.String(tenancyDefault),
-				})),
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Ingress: specPermissions(),
+					Egress:  specPermissions(),
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
 			},
 			want: want{
-				cr: vpc(withSpec(v1beta1.VPCParameters{
-					InstanceTenancy: aws.String(tenancyDefault),
-				})),
-				err: errors.Wrap(errBoom, errUpdate),
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Ingress: specPermissions(),
+					Egress:  specPermissions(),
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+				err: errors.Wrap(errBoom, errAuthorizeIngress),
 			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.vpc}
-			u, err := e.Update(context.Background(), tc.args.cr)
+			e := &external{kube: tc.kube, sg: tc.sg}
+			o, err := e.Update(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
@@ -569,7 +572,7 @@ func TestUpdate(t *testing.T) {
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.result, u); diff != "" {
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
@@ -578,7 +581,7 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *v1beta1.VPC
+		cr  *v1beta1.SecurityGroup
 		err error
 	}
 
@@ -588,32 +591,55 @@ func TestDelete(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				vpc: &fake.MockVPCClient{
-					MockDelete: func(input *awsec2.DeleteVpcInput) awsec2.DeleteVpcRequest {
-						return awsec2.DeleteVpcRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteVpcOutput{}},
+				sg: &fake.MockSecurityGroupClient{
+					MockDelete: func(input *awsec2.DeleteSecurityGroupInput) awsec2.DeleteSecurityGroupRequest {
+						return awsec2.DeleteSecurityGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteSecurityGroupOutput{}},
 						}
 					},
 				},
-				cr: vpc(),
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				})),
 			},
 			want: want{
-				cr: vpc(withConditions(runtimev1alpha1.Deleting())),
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				}), withConditions(runtimev1alpha1.Deleting())),
 			},
 		},
-		"DeleteFailed": {
+		"InvalidSgId": {
 			args: args{
-				vpc: &fake.MockVPCClient{
-					MockDelete: func(input *awsec2.DeleteVpcInput) awsec2.DeleteVpcRequest {
-						return awsec2.DeleteVpcRequest{
+				sg: &fake.MockSecurityGroupClient{
+					MockDelete: func(input *awsec2.DeleteSecurityGroupInput) awsec2.DeleteSecurityGroupRequest {
+						return awsec2.DeleteSecurityGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteSecurityGroupOutput{}},
+						}
+					},
+				},
+				cr: sg(),
+			},
+			want: want{
+				cr: sg(withConditions(runtimev1alpha1.Deleting())),
+			},
+		},
+		"DeleteFailure": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDelete: func(input *awsec2.DeleteSecurityGroupInput) awsec2.DeleteSecurityGroupRequest {
+						return awsec2.DeleteSecurityGroupRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: vpc(),
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				})),
 			},
 			want: want{
-				cr:  vpc(withConditions(runtimev1alpha1.Deleting())),
+				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
+					SecurityGroupID: sgID,
+				}), withConditions(runtimev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},
@@ -621,62 +647,13 @@ func TestDelete(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.vpc}
+			e := &external{kube: tc.kube, sg: tc.sg}
 			err := e.Delete(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestInitialize(t *testing.T) {
-	type args struct {
-		cr   *v1beta1.VPC
-		kube client.Client
-	}
-	type want struct {
-		cr  *v1beta1.VPC
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"Successful": {
-			args: args{
-				cr:   vpc(withTags(map[string]string{"foo": "bar"})),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
-			},
-			want: want{
-				cr: vpc(withTags(resource.GetExternalTags(vpc()), map[string]string{"foo": "bar"})),
-			},
-		},
-		"UpdateFailed": {
-			args: args{
-				cr:   vpc(),
-				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
-			},
-			want: want{
-				err: errors.Wrap(errBoom, errKubeUpdateFailed),
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			e := &tagger{kube: tc.kube}
-			err := e.Initialize(context.Background(), tc.args.cr)
-
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1beta1.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

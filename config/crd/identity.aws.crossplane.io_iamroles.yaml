@@ -15,12 +15,6 @@ spec:
   - JSONPath: .status.conditions[?(@.type=='Synced')].status
     name: SYNCED
     type: string
-  - JSONPath: .spec.roleName
-    name: ROLENAME
-    type: string
-  - JSONPath: .spec.forProvider.description
-    name: DESCRIPTION
-    type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
