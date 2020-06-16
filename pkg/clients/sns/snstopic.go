@@ -34,9 +34,9 @@ const (
 	SNSTopicNotFound = "InvalidSNSTopic.NotFound"
 )
 
-// IsErrorTopicNotFound returns true if the error code indicates that the
+// IsTopicNotFound returns true if the error code indicates that the
 // item was not found
-func IsErrorTopicNotFound(err error) bool {
+func IsTopicNotFound(err error) bool {
 	if _, ok := err.(*TopicNotFound); ok {
 		return true
 	}
@@ -86,7 +86,7 @@ func GenerateCreateTopicInput(p *v1alpha1.SNSTopicParameters) *sns.CreateTopicIn
 		for i, val := range p.Tags {
 			input.Tags[i] = sns.Tag{
 				Key:   aws.String(val.Key),
-				Value: aws.String(val.Value),
+				Value: val.Value,
 			}
 		}
 	}
@@ -100,7 +100,7 @@ func LateInitializeTopic(in *v1alpha1.SNSTopicParameters, topic sns.Topic, attrs
 	in.Name = *awsclients.LateInitializeStringPtr(&in.Name, topic.TopicArn)
 	in.DisplayName = awsclients.LateInitializeStringPtr(in.DisplayName, aws.String(attrs["DisplayName"]))
 	in.DeliveryPolicy = awsclients.LateInitializeStringPtr(in.DeliveryPolicy, aws.String(attrs["DeliveryPolicy"]))
-	in.KmsMasterKeyID = awsclients.LateInitializeStringPtr(in.KmsMasterKeyID, aws.String(attrs["KmsMasterKeyId"]))
+	in.KMSMasterKeyID = awsclients.LateInitializeStringPtr(in.KMSMasterKeyID, aws.String(attrs["KmsMasterKeyId"]))
 	in.Policy = awsclients.LateInitializeStringPtr(in.Policy, aws.String(attrs["Policy"]))
 
 }
@@ -148,7 +148,7 @@ func GenerateTopicObservation(attr map[string]string) v1alpha1.SNSTopicObservati
 func IsSNSTopicUpToDate(p v1alpha1.SNSTopicParameters, attr map[string]string) bool {
 	return aws.StringValue(p.DeliveryPolicy) == attr["DeliveryPolicy"] &&
 		aws.StringValue(p.DisplayName) == attr["DisplayName"] &&
-		aws.StringValue(p.KmsMasterKeyID) == attr["KmsMasterKeyId"] &&
+		aws.StringValue(p.KMSMasterKeyID) == attr["KmsMasterKeyId"] &&
 		aws.StringValue(p.Policy) == attr["Policy"]
 }
 
@@ -158,7 +158,7 @@ func getTopicAttributes(p v1alpha1.SNSTopicParameters) map[string]string {
 
 	topicAttr["DeliveryPolicy"] = aws.StringValue(p.DeliveryPolicy)
 	topicAttr["DisplayName"] = aws.StringValue(p.DisplayName)
-	topicAttr["KmsMasterKeyId"] = aws.StringValue(p.KmsMasterKeyID)
+	topicAttr["KmsMasterKeyId"] = aws.StringValue(p.KMSMasterKeyID)
 	topicAttr["Policy"] = aws.StringValue(p.Policy)
 
 	return topicAttr

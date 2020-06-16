@@ -121,18 +121,18 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	// Get the list of Subscriptions with TopicARN
 	subscriptionList, err := e.client.ListSubscriptionsByTopicRequest(&awssns.ListSubscriptionsByTopicInput{
-		TopicArn: aws.String(cr.Spec.ForProvider.TopicArn),
+		TopicArn: cr.Spec.ForProvider.TopicARN,
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{},
-			errors.Wrap(resource.Ignore(sns.IsErrorSubscriptionNotFound, err), errList)
+			errors.Wrap(resource.Ignore(sns.IsSubscriptionNotFound, err), errList)
 	}
 
 	// Filters the list of subscription with matching values in CR
 	sub, err := snsclient.GetSNSSubscription(subscriptionList, cr)
 	if err != nil {
 		return managed.ExternalObservation{},
-			errors.Wrap(resource.Ignore(sns.IsErrorSubscriptionNotFound, err), errGetSubscription)
+			errors.Wrap(resource.Ignore(sns.IsSubscriptionNotFound, err), errGetSubscription)
 	}
 
 	// Fetch Subscription Attributes with matching SubscriptionARN

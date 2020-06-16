@@ -74,7 +74,7 @@ func withDisplayName(s *string) topicModifier {
 }
 
 func withKmsMasterKeyID(s *string) topicModifier {
-	return func(t *v1alpha1.SNSTopic) { t.Spec.ForProvider.KmsMasterKeyID = s }
+	return func(t *v1alpha1.SNSTopic) { t.Spec.ForProvider.KMSMasterKeyID = s }
 }
 
 func withPolicy(s *string) topicModifier {

@@ -27,24 +27,24 @@ type SNSSubscriptionParameters struct {
 
 	// TopicArn is the Arn of the SNS Topic
 	// +optional
-	TopicArn string `json:"topicArn,omitempty"`
+	TopicARN *string `json:"topicArn,omitempty"`
 
 	// TopicArnRef references a SNS Topic and retrieves its TopicArn
 	// +optional
-	TopicArnRef *runtimev1alpha1.Reference `json:"topicArnRef,omitempty"`
+	TopicARNRef *runtimev1alpha1.Reference `json:"topicArnRef,omitempty"`
 
 	// TopicArnSelector selects a reference to a SNS Topic and retrieves
 	// its TopicArn
 	// +optional
-	TopicArnSelector *runtimev1alpha1.Selector `json:"topicArnSelector,omitempty"`
+	TopicARNSelector *runtimev1alpha1.Selector `json:"topicArnSelector,omitempty"`
 
 	// The subscription's protocol.
 	// +immutable
-	Protocol *string `json:"protocol"`
+	Protocol string `json:"protocol"`
 
 	// The subscription's endpoint
 	// +immutable
-	Endpoint *string `json:"endpoint"`
+	Endpoint string `json:"endpoint"`
 
 	//  DeliveryPolicy defines how Amazon SNS retries failed
 	//  deliveries to HTTP/S endpoints.

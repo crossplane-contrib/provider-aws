@@ -37,8 +37,8 @@ const (
 	SNSSubscriptionInPendingConfirmation = "InvalidSNSSubscription.PendingConfirmation"
 )
 
-// IsErrorSubscriptionNotFound returns true if the error code indicates that the item was not found
-func IsErrorSubscriptionNotFound(err error) bool {
+// IsSubscriptionNotFound returns true if the error code indicates that the item was not found
+func IsSubscriptionNotFound(err error) bool {
 	if _, ok := err.(*SubscriptionNotFound); ok {
 		return true
 	}
@@ -52,8 +52,8 @@ func (err *SubscriptionNotFound) Error() string {
 	return fmt.Sprint(SNSSubscriptionNotFound)
 }
 
-// IsErrorSubscriptionConfirmationPending returns true if the error code indicates that the item was not found
-func IsErrorSubscriptionConfirmationPending(err error) bool {
+// IsSubscriptionConfirmationPending returns true if the error code indicates that the item was not found
+func IsSubscriptionConfirmationPending(err error) bool {
 	if _, ok := err.(*SubscriptionInPendingConfirmation); ok {
 		return true
 	}
@@ -86,9 +86,9 @@ func NewSubscriptionClient(conf *aws.Config) (SubscriptionClient, error) {
 // GenerateSubscribeInput prepares input for SubscribeRequest
 func GenerateSubscribeInput(p *v1alpha1.SNSSubscriptionParameters) *sns.SubscribeInput {
 	input := &sns.SubscribeInput{
-		Endpoint:              p.Endpoint,
-		Protocol:              p.Protocol,
-		TopicArn:              aws.String(p.TopicArn),
+		Endpoint:              aws.String(p.Endpoint),
+		Protocol:              aws.String(p.Protocol),
+		TopicArn:              p.TopicARN,
 		ReturnSubscriptionArn: aws.Bool(true),
 	}
 
@@ -133,7 +133,7 @@ func GetSNSSubscription(res *sns.ListSubscriptionsByTopicResponse, cr *v1alpha1.
 
 	p := cr.Spec.ForProvider
 	for _, sub := range res.Subscriptions {
-		if cmp.Equal(*sub.TopicArn, cr.Spec.ForProvider.TopicArn) && cmp.Equal(sub.Endpoint, p.Endpoint) && cmp.Equal(sub.Protocol, p.Protocol) {
+		if cmp.Equal(*sub.TopicArn, cr.Spec.ForProvider.TopicARN) && cmp.Equal(sub.Endpoint, p.Endpoint) && cmp.Equal(sub.Protocol, p.Protocol) {
 			return sub, nil
 		}
 	}
@@ -171,7 +171,7 @@ func GetChangedSubAttributes(p v1alpha1.SNSSubscriptionParameters, attrs map[str
 
 // IsSNSSubscriptionUpToDate checks if object is up to date
 func IsSNSSubscriptionUpToDate(p v1alpha1.SNSSubscriptionParameters, sub *sns.Subscription, subAttributes map[string]string) bool {
-	return p.Endpoint == sub.Endpoint && p.Protocol == sub.Protocol && isSNSSubscriptionAttributesUpToDate(p, subAttributes)
+	return p.Endpoint == aws.StringValue(sub.Endpoint) && p.Protocol == aws.StringValue(sub.Protocol) && isSNSSubscriptionAttributesUpToDate(p, subAttributes)
 }
 
 // isSNSSubscriptionAttributesUpToDate checks if attributes are up to date
@@ -180,5 +180,5 @@ func isSNSSubscriptionAttributesUpToDate(p v1alpha1.SNSSubscriptionParameters, s
 		*p.FilterPolicy == subAttributes["FilterPolicy"] &&
 		*p.RawMessageDelivery == subAttributes["RawMessageDelivery"] &&
 		*p.RedrivePolicy == subAttributes["RedrivePolicy"] &&
-		p.TopicArn == subAttributes["TopicArn"]
+		*p.TopicARN == subAttributes["TopicArn"]
 }

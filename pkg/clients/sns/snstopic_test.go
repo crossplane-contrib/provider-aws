@@ -134,10 +134,10 @@ func topicParams(m ...func(*v1alpha1.SNSTopicParameters)) *v1alpha1.SNSTopicPara
 		Name:        *aws.String(topicName),
 		DisplayName: aws.String(topicDisplayName),
 		Tags: []v1alpha1.Tag{
-			{Key: tagKey1, Value: tagValue1},
-			{Key: tagKey2, Value: tagValue2},
+			{Key: tagKey1, Value: &tagValue1},
+			{Key: tagKey2, Value: &tagValue2},
 		},
-		KmsMasterKeyID: &empty,
+		KMSMasterKeyID: &empty,
 		Policy:         &empty,
 		DeliveryPolicy: &empty,
 	}

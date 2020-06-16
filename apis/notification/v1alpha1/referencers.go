@@ -29,9 +29,9 @@ func (mg *SNSSubscription) ResolveReferences(ctx context.Context, c client.Reade
 
 	// Resolve spec.TopicID
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: mg.Spec.ForProvider.TopicArn,
-		Reference:    mg.Spec.ForProvider.TopicArnRef,
-		Selector:     mg.Spec.ForProvider.TopicArnSelector,
+		CurrentValue: *mg.Spec.ForProvider.TopicARN,
+		Reference:    mg.Spec.ForProvider.TopicARNRef,
+		Selector:     mg.Spec.ForProvider.TopicARNSelector,
 		To:           reference.To{Managed: &SNSTopic{}, List: &SNSTopicList{}},
 		Extract:      reference.ExternalName(),
 	})
@@ -39,8 +39,8 @@ func (mg *SNSSubscription) ResolveReferences(ctx context.Context, c client.Reade
 	if err != nil {
 		return err
 	}
-	mg.Spec.ForProvider.TopicArn = rsp.ResolvedValue
-	mg.Spec.ForProvider.TopicArnRef = rsp.ResolvedReference
+	mg.Spec.ForProvider.TopicARN = &rsp.ResolvedValue
+	mg.Spec.ForProvider.TopicARNRef = rsp.ResolvedReference
 
 	return nil
 }

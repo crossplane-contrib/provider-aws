@@ -126,9 +126,9 @@ func sub(m ...func(*sns.Subscription)) *sns.Subscription {
 // subscription Parameters
 func subParams(m ...func(*v1alpha1.SNSSubscriptionParameters)) *v1alpha1.SNSSubscriptionParameters {
 	o := &v1alpha1.SNSSubscriptionParameters{
-		TopicArn:           topicArn,
-		Endpoint:           &subEmailEndpoint,
-		Protocol:           &subEmailProtocol,
+		TopicARN:           &topicArn,
+		Endpoint:           subEmailEndpoint,
+		Protocol:           subEmailProtocol,
 		RedrivePolicy:      &subRedrivePolicy,
 		FilterPolicy:       &subFilterPolicy,
 		RawMessageDelivery: &subRawMessageDelivery,
@@ -206,9 +206,9 @@ func TestGetSNSSubscription(t *testing.T) {
 				cr: &v1alpha1.SNSSubscription{
 					Spec: v1alpha1.SNSSubscriptionSpec{
 						ForProvider: v1alpha1.SNSSubscriptionParameters{
-							TopicArn: topicArn,
-							Endpoint: &subEmailEndpoint,
-							Protocol: &subEmailProtocol,
+							TopicARN: &topicArn,
+							Endpoint: subEmailEndpoint,
+							Protocol: subEmailProtocol,
 						},
 					},
 				},
@@ -234,9 +234,9 @@ func TestGetSNSSubscription(t *testing.T) {
 				cr: &v1alpha1.SNSSubscription{
 					Spec: v1alpha1.SNSSubscriptionSpec{
 						ForProvider: v1alpha1.SNSSubscriptionParameters{
-							TopicArn: topicArn,
-							Endpoint: &subEmailEndpoint,
-							Protocol: &subEmailProtocol,
+							TopicARN: &topicArn,
+							Endpoint: subEmailEndpoint,
+							Protocol: subEmailProtocol,
 						},
 					},
 				},
@@ -267,9 +267,9 @@ func TestGenerateSubscribeInput(t *testing.T) {
 	}{
 		"FilledInput": {
 			in: v1alpha1.SNSSubscriptionParameters{
-				TopicArn: topicArn,
-				Endpoint: &subEmailEndpoint,
-				Protocol: &subEmailProtocol,
+				TopicARN: &topicArn,
+				Endpoint: subEmailEndpoint,
+				Protocol: subEmailProtocol,
 			},
 			out: sns.SubscribeInput{
 				TopicArn:              aws.String(topicArn),
@@ -314,16 +314,16 @@ func TestLateInitializeSubscription(t *testing.T) {
 		"PartialFilled": {
 			args: args{
 				spec: subParams(func(sub *v1alpha1.SNSSubscriptionParameters) {
-					sub.TopicArn = topicArn
-					sub.Protocol = &subEmailProtocol
-					sub.Endpoint = &subEmailEndpoint
+					sub.TopicARN = &topicArn
+					sub.Protocol = subEmailProtocol
+					sub.Endpoint = subEmailEndpoint
 				}),
 				attr: map[string]string{},
 			},
 			want: subParams(func(sub *v1alpha1.SNSSubscriptionParameters) {
-				sub.TopicArn = topicArn
-				sub.Endpoint = &subEmailEndpoint
-				sub.Protocol = &subEmailProtocol
+				sub.TopicARN = &topicArn
+				sub.Endpoint = subEmailEndpoint
+				sub.Protocol = subEmailProtocol
 			}),
 		},
 	}
@@ -352,8 +352,8 @@ func TestGetChangedSubAttributes(t *testing.T) {
 		"NoChange": {
 			args: args{
 				p: v1alpha1.SNSSubscriptionParameters{
-					Protocol: &subEmailProtocol,
-					Endpoint: &subEmailEndpoint,
+					Protocol: subEmailProtocol,
+					Endpoint: subEmailEndpoint,
 				},
 				attr: subAttributes(),
 			},
@@ -362,8 +362,8 @@ func TestGetChangedSubAttributes(t *testing.T) {
 		"Change": {
 			args: args{
 				p: v1alpha1.SNSSubscriptionParameters{
-					Protocol: &subEmailProtocol,
-					Endpoint: &subEmailEndpoint,
+					Protocol: subEmailProtocol,
+					Endpoint: subEmailEndpoint,
 				},
 				attr: subAttributes(),
 			},
@@ -445,12 +445,12 @@ func TestIsSNSSubscriptionUpToDate(t *testing.T) {
 					Endpoint: &subEmailEndpoint,
 				},
 				p: v1alpha1.SNSSubscriptionParameters{
-					Protocol:           &subEmailProtocol,
-					Endpoint:           &subEmailEndpoint,
+					Protocol:           subEmailProtocol,
+					Endpoint:           subEmailEndpoint,
 					RawMessageDelivery: &subRawMessageDelivery,
 					FilterPolicy:       &subFilterPolicy,
 					DeliveryPolicy:     &subDeliveryPolicy,
-					TopicArn:           topicArn,
+					TopicARN:           &topicArn,
 					RedrivePolicy:      &subRedrivePolicy,
 				},
 			},
@@ -470,12 +470,12 @@ func TestIsSNSSubscriptionUpToDate(t *testing.T) {
 					Endpoint: &subEmailEndpoint,
 				},
 				p: v1alpha1.SNSSubscriptionParameters{
-					Protocol:           &subWrongProtocol,
-					Endpoint:           &subEmailEndpoint,
+					Protocol:           subWrongProtocol,
+					Endpoint:           subEmailEndpoint,
 					RawMessageDelivery: &subRawMessageDelivery,
 					FilterPolicy:       &subFilterPolicy,
 					DeliveryPolicy:     &subDeliveryPolicy,
-					TopicArn:           topicArn,
+					TopicARN:           &topicArn,
 					RedrivePolicy:      &subRedrivePolicy,
 				},
 			},

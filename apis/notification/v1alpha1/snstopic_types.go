@@ -42,7 +42,7 @@ type Tag struct {
 	// an array, you can store comma-separated values in the string. However, you
 	// must interpret the value in your code.
 	// +optional
-	Value string `json:"value,omitempty"`
+	Value *string `json:"value,omitempty"`
 }
 
 // SNSTopicParameters define the desired state of a AWS SNS Topic
@@ -61,7 +61,7 @@ type SNSTopicParameters struct {
 	// For more examples, see KeyId (https://docs.aws.amazon.com/kms/latest/APIReference/API_DescribeKey.html#API_DescribeKey_RequestParameters)
 	// in the AWS Key Management Service API Reference.
 	// +optional
-	KmsMasterKeyID *string `json:"kmsMasterKeyId,omitempty"`
+	KMSMasterKeyID *string `json:"kmsMasterKeyId,omitempty"`
 
 	// The policy that defines who can access your topic. By default,
 	// only the topic owner can publish or subscribe to the topic.

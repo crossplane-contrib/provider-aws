@@ -120,13 +120,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	// Fetch the list of Topics
 	topicList, err := e.client.ListTopicsRequest(&awssns.ListTopicsInput{}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(sns.IsErrorTopicNotFound, err), errList)
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errList)
 	}
 
 	// Filters the list of topic with matching values in CR
 	topic, err := snsclient.GetSNSTopic(topicList, cr)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(sns.IsErrorTopicNotFound, err), errGetTopic)
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errGetTopic)
 	}
 
 	// Fetch SNS Topic Attributes with matching TopicARN
