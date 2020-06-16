@@ -6,28 +6,25 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: securitygroups.network.aws.crossplane.io
+  name: securitygroups.ec2.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .spec.forProvider.groupName
-    name: GROUPNAME
-    type: string
-  - JSONPath: .spec.forProvider.vpcId
-    name: VPCID
-    type: string
-  - JSONPath: .spec.forProvider.description
-    name: DESCRIPTION
-    type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
     type: string
   - JSONPath: .status.conditions[?(@.type=='Synced')].status
     name: SYNCED
     type: string
+  - JSONPath: .metadata.annotations.crossplane\.io/external-name
+    name: ID
+    type: string
+  - JSONPath: .spec.forProvider.vpcId
+    name: VPC
+    type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
-  group: network.aws.crossplane.io
+  group: ec2.aws.crossplane.io
   names:
     categories:
     - crossplane

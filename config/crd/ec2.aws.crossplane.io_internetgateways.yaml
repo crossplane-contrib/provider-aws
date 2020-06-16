@@ -6,38 +6,41 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: routetables.network.aws.crossplane.io
+  name: internetgateways.ec2.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .status.atProvider.routeTableId
-    name: TABLEID
-    type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
     type: string
   - JSONPath: .status.conditions[?(@.type=='Synced')].status
     name: SYNCED
     type: string
+  - JSONPath: .metadata.annotations.crossplane\.io/external-name
+    name: ID
+    type: string
+  - JSONPath: .spec.forProvider.vpcId
+    name: VPC
+    type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
-  group: network.aws.crossplane.io
+  group: ec2.aws.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - aws
-    kind: RouteTable
-    listKind: RouteTableList
-    plural: routetables
-    singular: routetable
+    kind: InternetGateway
+    listKind: InternetGatewayList
+    plural: internetgateways
+    singular: internetgateway
   scope: Cluster
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: A RouteTable is a managed resource that represents an AWS VPC Route
-        Table.
+      description: An InternetGateway is a managed resource that represents an AWS
+        VPC Internet Gateway.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -52,7 +55,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: A RouteTableSpec defines the desired state of a RouteTable.
+          description: An InternetGatewaySpec defines the desired state of an InternetGateway.
           properties:
             claimRef:
               description: ClaimReference specifies the resource claim to which this
@@ -132,88 +135,9 @@ spec:
                   type: string
               type: object
             forProvider:
-              description: RouteTableParameters define the desired state of an AWS
-                VPC Route Table.
+              description: InternetGatewayParameters define the desired state of an
+                AWS VPC Internet Gateway.
               properties:
-                associations:
-                  description: The associations between the route table and one or
-                    more subnets.
-                  items:
-                    description: Association describes an association between a route
-                      table and a subnet.
-                    properties:
-                      subnetId:
-                        description: The ID of the subnet. A subnet ID is not returned
-                          for an implicit association.
-                        type: string
-                      subnetIdRef:
-                        description: A referencer to retrieve the ID of a subnet
-                        properties:
-                          name:
-                            description: Name of the referenced object.
-                            type: string
-                        required:
-                        - name
-                        type: object
-                      subnetIdSelector:
-                        description: A selector to select a referencer to retrieve
-                          the ID of a subnet
-                        properties:
-                          matchControllerRef:
-                            description: MatchControllerRef ensures an object with
-                              the same controller reference as the selecting object
-                              is selected.
-                            type: boolean
-                          matchLabels:
-                            additionalProperties:
-                              type: string
-                            description: MatchLabels ensures an object with matching
-                              labels is selected.
-                            type: object
-                        type: object
-                    type: object
-                  type: array
-                routes:
-                  description: the routes in the route table
-                  items:
-                    description: Route describes a route in a route table.
-                    properties:
-                      destinationCidrBlock:
-                        description: The IPv4 CIDR address block used for the destination
-                          match. Routing decisions are based on the most specific
-                          match.
-                        type: string
-                      gatewayId:
-                        description: The ID of an internet gateway or virtual private
-                          gateway attached to your VPC.
-                        type: string
-                      gatewayIdRef:
-                        description: A referencer to retrieve the ID of a gateway
-                        properties:
-                          name:
-                            description: Name of the referenced object.
-                            type: string
-                        required:
-                        - name
-                        type: object
-                      gatewayIdSelector:
-                        description: A selector to select a referencer to retrieve
-                          the ID of a gateway
-                        properties:
-                          matchControllerRef:
-                            description: MatchControllerRef ensures an object with
-                              the same controller reference as the selecting object
-                              is selected.
-                            type: boolean
-                          matchLabels:
-                            additionalProperties:
-                              type: string
-                            description: MatchLabels ensures an object with matching
-                              labels is selected.
-                            type: object
-                        type: object
-                    type: object
-                  type: array
                 tags:
                   description: Tags represents to current ec2 tags.
                   items:
@@ -234,7 +158,7 @@ spec:
                   description: VPCID is the ID of the VPC.
                   type: string
                 vpcIdRef:
-                  description: VPCIDRef references a VPC to retrieve its vpcId
+                  description: VPCIDRef references a VPC to and retrieves its vpcId
                   properties:
                     name:
                       description: Name of the referenced object.
@@ -243,7 +167,7 @@ spec:
                   - name
                   type: object
                 vpcIdSelector:
-                  description: VPCIDSelector selects a reference to a VPC to retrieve
+                  description: VPCIDSelector selects a reference to a VPC to and retrieves
                     its vpcId
                   properties:
                     matchControllerRef:
@@ -257,9 +181,6 @@ spec:
                         is selected.
                       type: object
                   type: object
-              required:
-              - associations
-              - routes
               type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
@@ -335,64 +256,47 @@ spec:
           - providerRef
           type: object
         status:
-          description: A RouteTableStatus represents the observed state of a RouteTable.
+          description: An InternetGatewayStatus represents the observed state of an
+            InternetGateway.
           properties:
             atProvider:
-              description: RouteTableObservation keeps the state for the external
+              description: InternetGatewayObservation keeps the state for the external
                 resource
               properties:
-                associations:
-                  description: The actual associations created for the route table.
+                attachments:
+                  description: Any VPCs attached to the internet gateway.
                   items:
-                    description: AssociationState describes an association state in
-                      the route table.
+                    description: InternetGatewayAttachment describes the attachment
+                      of a VPC to an internet gateway or an egress-only internet gateway.
                     properties:
-                      associationId:
-                        description: The ID of the association between a route table
-                          and a subnet.
+                      attachmentStatus:
+                        description: The current state of the attachment. For an internet
+                          gateway, the state is available when attached to a VPC;
+                          otherwise, this value is not returned.
+                        enum:
+                        - available
+                        - attaching
+                        - attached
+                        - detaching
+                        - detached
                         type: string
-                      main:
-                        description: Indicates whether this is the main route table.
-                        type: boolean
-                      state:
-                        description: The state of the association.
-                        type: string
-                      subnetId:
-                        description: The ID of the subnet. A subnet ID is not returned
-                          for an implicit association.
+                      vpcId:
+                        description: VPCID is the ID of the attached VPC.
                         type: string
                     required:
-                    - main
+                    - attachmentStatus
+                    - vpcId
                     type: object
                   type: array
-                ownerId:
-                  description: The ID of the AWS account that owns the route table.
+                internetGatewayId:
+                  description: The ID of the internet gateway.
                   type: string
-                routeTableId:
-                  description: RouteTableID is the ID of the RouteTable.
+                ownerID:
+                  description: The ID of the AWS account that owns the internet gateway.
                   type: string
-                routes:
-                  description: The actual routes created for the route table.
-                  items:
-                    description: RouteState describes a route state in the route table.
-                    properties:
-                      destinationCidrBlock:
-                        description: The IPv4 CIDR address block used for the destination
-                          match. Routing decisions are based on the most specific
-                          match.
-                        type: string
-                      gatewayId:
-                        description: The ID of an internet gateway or virtual private
-                          gateway attached to your VPC.
-                        type: string
-                      state:
-                        description: The state of the route. The blackhole state indicates
-                          that the route's target isn't available (for example, the
-                          specified gateway isn't attached to the VPC, or the specified
-                          NAT instance has been terminated).
-                        type: string
-                    type: object
-                  type: array
+              required:
+              - internetGatewayId
+              - ownerID
               type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource

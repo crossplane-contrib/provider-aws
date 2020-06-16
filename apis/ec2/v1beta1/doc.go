@@ -14,4 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package network
+// Package v1beta1 contains managed resources for AWS network services such as
+// VPC and Subnet.
+// +kubebuilder:object:generate=true
+// +groupName=ec2.aws.crossplane.io
+// +versionName=v1beta1
+package v1beta1
