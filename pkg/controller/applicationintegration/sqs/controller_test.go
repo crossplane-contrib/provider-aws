@@ -526,11 +526,11 @@ func TestUpdate(t *testing.T) {
 					Tags: []v1alpha1.Tag{
 						{
 							Key:   "k1",
-							Value: "v1",
+							Value: aws.String("v1"),
 						},
 						{
 							Key:   "k2",
-							Value: "k2",
+							Value: aws.String("k2"),
 						},
 					},
 				}), withStatus(v1alpha1.QueueObservation{
@@ -542,11 +542,11 @@ func TestUpdate(t *testing.T) {
 					Tags: []v1alpha1.Tag{
 						{
 							Key:   "k1",
-							Value: "v1",
+							Value: aws.String("v1"),
 						},
 						{
 							Key:   "k2",
-							Value: "k2",
+							Value: aws.String("k2"),
 						},
 					},
 				}), withStatus(v1alpha1.QueueObservation{
