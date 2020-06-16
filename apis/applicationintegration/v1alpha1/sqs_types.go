@@ -54,7 +54,7 @@ type Tag struct {
 
 	// The value associated with a key in a tag.
 	// +optional
-	Value string `json:"value,omitempty"`
+	Value *string `json:"value,omitempty"`
 }
 
 // RedrivePolicy includes the parameters for the dead-letter queue functionality of the source queue.

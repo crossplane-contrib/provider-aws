@@ -111,7 +111,7 @@ func GenerateQueueTags(tags []v1alpha1.Tag) map[string]string {
 	if len(tags) != 0 {
 		m := map[string]string{}
 		for _, val := range tags {
-			m[val.Key] = val.Value
+			m[val.Key] = aws.StringValue(val.Value)
 		}
 		return m
 	}
@@ -134,7 +134,7 @@ func IsNotFound(err error) bool {
 func LateInitialize(in *v1alpha1.QueueParameters, attributes map[string]string, tags map[string]string) {
 	if in.Tags == nil && tags != nil {
 		for k, v := range tags {
-			in.Tags = append(in.Tags, v1alpha1.Tag{Key: k, Value: v})
+			in.Tags = append(in.Tags, v1alpha1.Tag{Key: k, Value: aws.String(v)})
 		}
 	}
 
@@ -166,7 +166,7 @@ func IsUpToDate(p v1alpha1.QueueParameters, attributes map[string]string, tags m
 
 	for _, tag := range p.Tags {
 		pVal, ok := tags[tag.Key]
-		if !ok || !strings.EqualFold(pVal, tag.Value) {
+		if !ok || !strings.EqualFold(pVal, aws.StringValue(tag.Value)) {
 			return false
 		}
 	}

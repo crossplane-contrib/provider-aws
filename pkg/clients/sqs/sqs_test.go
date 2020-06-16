@@ -106,7 +106,7 @@ func TestLateInitialize(t *testing.T) {
 				p.Tags = []v1alpha1.Tag{
 					{
 						Key:   tagKey,
-						Value: tagValue,
+						Value: aws.String(tagValue),
 					},
 				}
 			}),
@@ -160,7 +160,7 @@ func TestIsUpToDate(t *testing.T) {
 					Tags: []v1alpha1.Tag{
 						{
 							Key:   tagKey,
-							Value: tagValue,
+							Value: aws.String(tagValue),
 						},
 					},
 				},
@@ -229,7 +229,7 @@ func TestGenerateQueueTags(t *testing.T) {
 				p.Tags = []v1alpha1.Tag{
 					{
 						Key:   tagKey,
-						Value: tagValue,
+						Value: aws.String(tagValue),
 					},
 				}
 			}),
@@ -268,11 +268,11 @@ func TestTagsDiff(t *testing.T) {
 				specTags: []v1alpha1.Tag{
 					{
 						Key:   "k1",
-						Value: "v1",
+						Value: aws.String("v1"),
 					},
 					{
 						Key:   "k2",
-						Value: "v2",
+						Value: aws.String("v2"),
 					},
 				},
 				sqsTags: map[string]string{
@@ -290,7 +290,7 @@ func TestTagsDiff(t *testing.T) {
 				specTags: []v1alpha1.Tag{
 					{
 						Key:   "k2",
-						Value: "v2",
+						Value: aws.String("v2"),
 					},
 				},
 				sqsTags: map[string]string{
@@ -310,15 +310,15 @@ func TestTagsDiff(t *testing.T) {
 				specTags: []v1alpha1.Tag{
 					{
 						Key:   "k1",
-						Value: "v1",
+						Value: aws.String("v1"),
 					},
 					{
 						Key:   "k2",
-						Value: "v2",
+						Value: aws.String("v2"),
 					},
 					{
 						Key:   "k3",
-						Value: "v3",
+						Value: aws.String("v3"),
 					},
 				},
 				sqsTags: map[string]string{
