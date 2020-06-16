@@ -1,0 +1,13 @@
+apiVersion: notification.aws.crossplane.io/v1alpha1
+kind: SNSSubscription
+metadata:
+  name: sample-subscription
+spec:
+  reclaimPolicy: Delete
+  providerRef:
+    name: aws-provider
+  forProvider:
+    protocol: email
+    endpoint: example@abc.com
+    topicArnRef:
+      name: sample-topic

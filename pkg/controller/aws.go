@@ -37,6 +37,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/network/securitygroup"
 	"github.com/crossplane/provider-aws/pkg/controller/network/subnet"
 	"github.com/crossplane/provider-aws/pkg/controller/network/vpc"
+	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
+	"github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
 )
 
@@ -78,6 +80,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		routetable.SetupRouteTable,
 		dbsubnetgroup.SetupDBSubnetGroup,
 		dynamodb.SetupDynamoTable,
+		snstopic.SetupSNSTopic,
+		snssubscription.SetupSubscription,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err
