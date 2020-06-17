@@ -70,9 +70,8 @@ func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParamete
 func GenerateCertificateStatus(certificate acm.CertificateDetail) v1alpha1.CertificateExternalStatus {
 	return v1alpha1.CertificateExternalStatus{
 		CertificateARN:     aws.StringValue(certificate.CertificateArn),
-		RenewalEligibility: certificate.RenewalEligibility,
+		RenewalEligibility: string(certificate.RenewalEligibility),
 		Status:             certificate.Status,
-		Type:               certificate.Type,
 	}
 }
 

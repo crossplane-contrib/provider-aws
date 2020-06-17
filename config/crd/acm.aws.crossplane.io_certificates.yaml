@@ -284,9 +284,6 @@ spec:
                   type: string
                 renewalEligibility:
                   description: Flag to check eligibility for renewal status
-                  enum:
-                  - ELIGIBLE
-                  - INELIGIBLE
                   type: string
                 status:
                   description: Status of the certificate
@@ -299,18 +296,10 @@ spec:
                   - REVOKED
                   - FAILED
                   type: string
-                type:
-                  description: Type of the certificate
-                  enum:
-                  - IMPORTED
-                  - AMAZON_ISSUED
-                  - PRIVATE
-                  type: string
               required:
               - certificateArn
               - renewalEligibility
               - status
-              - type
               type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource

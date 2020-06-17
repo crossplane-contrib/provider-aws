@@ -18,6 +18,7 @@ package acm
 
 import (
 	"context"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacm "github.com/aws/aws-sdk-go-v2/service/acm"
@@ -49,6 +50,7 @@ const (
 	errSDK              = "empty Certificate received from ACM API"
 
 	errKubeUpdateFailed    = "cannot late initialize Certificate"
+	errUpToDateFailed      = "cannot check whether object is up-to-date"
 	errPersistExternalName = "failed to persist Certificate ARN"
 
 	errAddTagsFailed        = "cannot add tags to Certificate"
@@ -149,8 +151,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errListTagsFailed)
 	}
 
+	upToDate := acm.IsCertificateUpToDate(cr.Spec.ForProvider, certificate, tags.Tags)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
+	}
+
 	return managed.ExternalObservation{
-		ResourceUpToDate: acm.IsCertificateUpToDate(cr.Spec.ForProvider, certificate, tags.Tags),
+		ResourceUpToDate: upToDate,
 		ResourceExists:   true,
 	}, nil
 }
@@ -228,10 +235,10 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	// Renew the certificate if request for RenewCertificate and Certificate is eligible
+	// Update the certificate if request for RenewCertificate
 	if aws.BoolValue(cr.Spec.ForProvider.RenewCertificate) {
 
-		if cr.Status.AtProvider.RenewalEligibility == awsacm.RenewalEligibilityEligible {
+		if strings.EqualFold(cr.Status.AtProvider.RenewalEligibility, "ELIGIBLE") {
 			_, err := e.client.RenewCertificateRequest(&awsacm.RenewCertificateInput{
 				CertificateArn: aws.String(meta.GetExternalName(cr)),
 			}).Send(ctx)
