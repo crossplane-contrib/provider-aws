@@ -260,6 +260,12 @@ func LateInitialize(in *v1beta1.ClusterParameters, cluster *eks.Cluster) { // no
 	}
 	in.RoleArn = awsclients.LateInitializeStringPtr(in.RoleArn, cluster.RoleArn)
 	in.Version = awsclients.LateInitializeStringPtr(in.Version, cluster.Version)
+	// NOTE(hasheddan): we always will set the default Crossplane tags in
+	// practice during initialization in the controller, but we check if no tags
+	// exist for consistency with expected late initialization behavior.
+	if in.Tags == nil {
+		in.Tags = cluster.Tags
+	}
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
@@ -298,7 +304,6 @@ func IsUpToDate(p *v1beta1.ClusterParameters, cluster *eks.Cluster) (bool, error
 
 	return cmp.Equal(&v1beta1.ClusterParameters{}, patch, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{}),
-		cmpopts.IgnoreFields(v1beta1.ClusterParameters{}, "Tags"),
 		cmpopts.IgnoreFields(v1beta1.VpcConfigRequest{}, "SecurityGroupIDRefs", "SubnetIDRefs", "PublicAccessCidrs")), nil
 }
 
