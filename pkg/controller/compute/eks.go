@@ -44,7 +44,7 @@ import (
 
 	awscomputev1alpha3 "github.com/crossplane/provider-aws/apis/compute/v1alpha3"
 	cloudformationclient "github.com/crossplane/provider-aws/pkg/clients/cloudformation"
-	"github.com/crossplane/provider-aws/pkg/clients/eks"
+	eks "github.com/crossplane/provider-aws/pkg/clients/legacyeks"
 	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 

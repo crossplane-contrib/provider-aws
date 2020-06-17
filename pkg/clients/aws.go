@@ -67,12 +67,12 @@ func CredentialsIDSecret(data []byte, profile string) (string, string, error) {
 		return "", "", err
 	}
 
-	id, err := iniProfile.GetKey(external.AWSAccessKeyIDEnvVar)
+	id, err := iniProfile.GetKey("AWS_ACCESS_KEY_ID")
 	if err != nil {
 		return "", "", err
 	}
 
-	secret, err := iniProfile.GetKey(external.AWSSecreteAccessKeyEnvVar)
+	secret, err := iniProfile.GetKey("AWS_SECRET_ACCESS_KEY")
 	if err != nil {
 		return "", "", err
 	}

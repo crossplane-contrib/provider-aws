@@ -282,7 +282,7 @@ func TestObserve(t *testing.T) {
 				rt: &fake.MockRouteTableClient{
 					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
 						return awsec2.DescribeRouteTablesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeRouteTablesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
 								RouteTables: []awsec2.RouteTable{{
 									VpcId: aws.String(vpcID),
 								}},
@@ -309,7 +309,7 @@ func TestObserve(t *testing.T) {
 				rt: &fake.MockRouteTableClient{
 					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
 						return awsec2.DescribeRouteTablesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeRouteTablesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
 								RouteTables: []awsec2.RouteTable{{}, {}},
 							}},
 						}
@@ -378,7 +378,7 @@ func TestCreate(t *testing.T) {
 				rt: &fake.MockRouteTableClient{
 					MockCreate: func(input *awsec2.CreateRouteTableInput) awsec2.CreateRouteTableRequest {
 						return awsec2.CreateRouteTableRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateRouteTableOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateRouteTableOutput{
 								RouteTable: &awsec2.RouteTable{RouteTableId: aws.String(rtID)},
 							}},
 						}
@@ -404,7 +404,7 @@ func TestCreate(t *testing.T) {
 				rt: &fake.MockRouteTableClient{
 					MockCreate: func(input *awsec2.CreateRouteTableInput) awsec2.CreateRouteTableRequest {
 						return awsec2.CreateRouteTableRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateRouteTableOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateRouteTableOutput{}},
 						}
 					},
 				},
@@ -479,19 +479,19 @@ func TestUpdate(t *testing.T) {
 				rt: &fake.MockRouteTableClient{
 					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
 						return awsec2.DescribeRouteTablesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeRouteTablesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
 								RouteTables: []awsec2.RouteTable{{}},
 							}},
 						}
 					},
 					MockAssociate: func(input *awsec2.AssociateRouteTableInput) awsec2.AssociateRouteTableRequest {
 						return awsec2.AssociateRouteTableRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.AssociateRouteTableOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.AssociateRouteTableOutput{}},
 						}
 					},
 					MockCreateRoute: func(input *awsec2.CreateRouteInput) awsec2.CreateRouteRequest {
 						return awsec2.CreateRouteRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateRouteOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateRouteOutput{}},
 						}
 					},
 				},
@@ -526,7 +526,7 @@ func TestUpdate(t *testing.T) {
 				rt: &fake.MockRouteTableClient{
 					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
 						return awsec2.DescribeRouteTablesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeRouteTablesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
 								RouteTables: []awsec2.RouteTable{{}},
 							}},
 						}
@@ -593,7 +593,7 @@ func TestDelete(t *testing.T) {
 				rt: &fake.MockRouteTableClient{
 					MockDelete: func(input *awsec2.DeleteRouteTableInput) awsec2.DeleteRouteTableRequest {
 						return awsec2.DeleteRouteTableRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteRouteTableOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteRouteTableOutput{}},
 						}
 					},
 				},
