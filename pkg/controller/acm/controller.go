@@ -49,7 +49,6 @@ const (
 	errSDK              = "empty Certificate received from ACM API"
 
 	errKubeUpdateFailed    = "cannot late initialize Certificate"
-	errUpToDateFailed      = "cannot check whether object is up-to-date"
 	errPersistExternalName = "failed to persist Certificate ARN"
 
 	errAddTagsFailed        = "cannot add tags to Certificate"
@@ -232,7 +231,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// Renew the certificate if request for RenewCertificate and Certificate is eligible
 	if aws.BoolValue(cr.Spec.ForProvider.RenewCertificate) {
 
-		if cr.Status.AtProvider.RenewalEligibility == &awsacm.RenewalEligibilityEligible {
+		if cr.Status.AtProvider.RenewalEligibility == awsacm.RenewalEligibilityEligible {
 			_, err := e.client.RenewCertificateRequest(&awsacm.RenewCertificateInput{
 				CertificateArn: aws.String(meta.GetExternalName(cr)),
 			}).Send(ctx)

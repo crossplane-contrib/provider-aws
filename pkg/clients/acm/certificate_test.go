@@ -11,10 +11,9 @@ import (
 )
 
 var (
-	domainName                 = "somedomain"
-	certificateArn             = "somearn"
-	renewalEligibilityEligible = "ELIGIBLE"
-	certificateAuthorityArn    = "someauthorityarn"
+	domainName              = "somedomain"
+	certificateArn          = "somearn"
+	certificateAuthorityArn = "someauthorityarn"
 )
 
 func TestGenerateCreateCertificateInput(t *testing.T) {
@@ -144,7 +143,7 @@ func TestGenerateCertificateStatus(t *testing.T) {
 			},
 			out: v1alpha1.CertificateExternalStatus{
 				CertificateARN:     certificateArn,
-				RenewalEligibility: renewalEligibilityEligible,
+				RenewalEligibility: acm.RenewalEligibilityEligible,
 			},
 		},
 		"NoRoleId": {
@@ -154,7 +153,7 @@ func TestGenerateCertificateStatus(t *testing.T) {
 			},
 			out: v1alpha1.CertificateExternalStatus{
 				CertificateARN:     "",
-				RenewalEligibility: renewalEligibilityEligible,
+				RenewalEligibility: acm.RenewalEligibilityEligible,
 			},
 		},
 	}
