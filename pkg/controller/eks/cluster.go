@@ -185,27 +185,23 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	// NOTE(hasheddan): we have to describe the cluster again because different
 	// fields require different update methods.
 	rsp, err := e.client.DescribeClusterRequest(&awseks.DescribeClusterInput{Name: aws.String(meta.GetExternalName(cr))}).Send(ctx)
-	if err != nil {
+	if err != nil || rsp.Cluster == nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errDescribeFailed)
 	}
 	patch, err := eks.CreatePatch(rsp.Cluster, &cr.Spec.ForProvider)
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errPatchCreationFailed)
 	}
-	if _, err = e.client.UpdateClusterConfigRequest(eks.GenerateUpdateClusterConfigInput(meta.GetExternalName(cr), patch)).Send(ctx); err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateConfigFailed)
+	if len(patch.Tags) > 0 {
+		_, err := e.client.TagResourceRequest(&awseks.TagResourceInput{ResourceArn: rsp.Cluster.Arn, Tags: cr.Spec.ForProvider.Tags}).Send(ctx)
+		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 	}
 	if patch.Version != nil {
-		if _, err := e.client.UpdateClusterVersionRequest(&awseks.UpdateClusterVersionInput{Name: awsclients.String(meta.GetExternalName(cr)), Version: patch.Version}).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
-		}
+		_, err := e.client.UpdateClusterVersionRequest(&awseks.UpdateClusterVersionInput{Name: awsclients.String(meta.GetExternalName(cr)), Version: patch.Version}).Send(ctx)
+		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
-	if len(patch.Tags) > 0 {
-		if _, err := e.client.TagResourceRequest(&awseks.TagResourceInput{ResourceArn: rsp.Cluster.Arn, Tags: patch.Tags}).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
-		}
-	}
-	return managed.ExternalUpdate{}, nil
+	_, err = e.client.UpdateClusterConfigRequest(eks.GenerateUpdateClusterConfigInput(meta.GetExternalName(cr), patch)).Send(ctx)
+	return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateConfigFailed)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {

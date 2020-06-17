@@ -753,6 +753,58 @@ func TestIsUpToDate(t *testing.T) {
 			},
 			want: false,
 		},
+		"DifferentTags": {
+			args: args{
+				p: &v1beta1.ClusterParameters{
+					ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+						SecurityGroupIDs:      []string{"cool-sg-1"},
+						SecurityGroupIDRefs: []v1alpha1.Reference{
+							{
+								Name: "cool-ref",
+							},
+						},
+						SecurityGroupIDSelector: &v1alpha1.Selector{
+							MatchLabels: map[string]string{"key": "val"},
+						},
+						SubnetIDs: []string{"cool-subnet"},
+						SubnetIDRefs: []v1alpha1.Reference{
+							{
+								Name: "cool-ref",
+							},
+						},
+						SubnetIDSelector: &v1alpha1.Selector{
+							MatchLabels: map[string]string{"key": "val"},
+						},
+					},
+					RoleArn: &roleArn,
+					RoleArnRef: &v1alpha1.Reference{
+						Name: "fun-ref",
+					},
+					RoleArnSelector: &v1alpha1.Selector{
+						MatchLabels: map[string]string{"key": "val"},
+					},
+					Tags:    map[string]string{"key": "val", "another": "tag"},
+					Version: &version,
+				},
+				cluster: &eks.Cluster{
+					Name: &clusterName,
+					ResourcesVpcConfig: &eks.VpcConfigResponse{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+						SecurityGroupIds:      []string{"cool-sg-1"},
+						SubnetIds:             []string{"cool-subnet"},
+					},
+					RoleArn: &roleArn,
+					Tags:    map[string]string{"key": "val"},
+					Version: &version,
+				},
+			},
+			want: false,
+		},
 	}
 
 	for name, tc := range cases {
