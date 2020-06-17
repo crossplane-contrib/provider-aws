@@ -56,11 +56,16 @@ type CertificateExternalStatus struct {
 	CertificateARN string `json:"certificateArn"`
 
 	// Flag to check eligibility for renewal status
-	RenewalEligibility string `json:"renewalEligibility"`
+	// +kubebuilder:validation:Enum=ELIGIBLE;INELIGIBLE
+	RenewalEligibility acm.RenewalEligibility `json:"renewalEligibility"`
 
 	// Status of the certificate
 	// +kubebuilder:validation:Enum=PENDING_VALIDATION;ISSUED;INACTIVE;EXPIRED;VALIDATION_TIMED_OUT;REVOKED;FAILED
 	Status acm.CertificateStatus `json:"status"`
+
+	// Type of the certificate
+	// +kubebuilder:validation:Enum=IMPORTED;AMAZON_ISSUED;PRIVATE
+	Type acm.CertificateType `json:"type"`
 }
 
 // An CertificateStatus represents the observed state of an Certificate manager.
