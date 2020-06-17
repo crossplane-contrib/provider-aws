@@ -360,9 +360,9 @@ spec:
                     an optional value, both of which you define.
                   type: object
                 version:
-                  description: The desired Kubernetes version for your cluster. If
-                    you don't specify a value here, the latest version available in
-                    Amazon EKS is used.
+                  description: 'The desired Kubernetes version for your cluster. If
+                    you don''t specify a value here, the latest version available
+                    in Amazon EKS is used. Example: 1.15'
                   type: string
               required:
               - resourcesVpcConfig

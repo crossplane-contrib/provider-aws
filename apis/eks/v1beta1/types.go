@@ -95,7 +95,6 @@ type ClusterParameters struct {
 
 	// RoleArnSelector selects references to IAMRole used
 	// to set the RoleArn.
-	// +immutable
 	// +optional
 	RoleArnSelector *runtimev1alpha1.Selector `json:"roleArnSelector,omitempty"`
 
@@ -106,6 +105,7 @@ type ClusterParameters struct {
 
 	// The desired Kubernetes version for your cluster. If you don't specify a value
 	// here, the latest version available in Amazon EKS is used.
+	// Example: 1.15
 	// +optional
 	Version *string `json:"version,omitempty"`
 }
