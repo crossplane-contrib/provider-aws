@@ -33,12 +33,8 @@ func GenerateCreateCertificateAuthorityInput(p *v1alpha1.CertificateAuthorityPar
 		CertificateAuthorityType:          p.Type,
 		IdempotencyToken:                  p.IdempotencyToken,
 		CertificateAuthorityConfiguration: GenerateCertificateAuthorityConfiguration(p.CertificateAuthorityConfiguration),
-		RevocationConfiguration:           GenerateRevocationConfiguration(p),
+		RevocationConfiguration:           GenerateRevocationConfiguration(p.RevocationConfiguration),
 	}
-
-	// if p.RevocationConfiguration != nil {
-	// 	m.RevocationConfiguration = GenerateRevocationConfiguration(p.RevocationConfiguration)
-	// }
 
 	m.Tags = make([]acmpca.Tag, len(p.Tags))
 	for i, val := range p.Tags {
@@ -56,18 +52,18 @@ func GenerateCertificateAuthorityConfiguration(p v1alpha1.CertificateAuthorityCo
 
 	m := &acmpca.CertificateAuthorityConfiguration{
 		Subject: &acmpca.ASN1Subject{
-			CommonName:                 aws.String(p.Subject.CommonName),
-			Country:                    aws.String(p.Subject.Country),
+			CommonName:                 p.Subject.CommonName,
+			Country:                    p.Subject.Country,
 			DistinguishedNameQualifier: p.Subject.DistinguishedNameQualifier,
 			GenerationQualifier:        p.Subject.GenerationQualifier,
 			GivenName:                  p.Subject.GivenName,
 			Initials:                   p.Subject.Initials,
-			Locality:                   aws.String(p.Subject.Locality),
-			Organization:               aws.String(p.Subject.Organization),
-			OrganizationalUnit:         aws.String(p.Subject.OrganizationalUnit),
+			Locality:                   p.Subject.Locality,
+			Organization:               p.Subject.Organization,
+			OrganizationalUnit:         p.Subject.OrganizationalUnit,
 			Pseudonym:                  p.Subject.Pseudonym,
 			SerialNumber:               p.Subject.SerialNumber,
-			State:                      aws.String(p.Subject.State),
+			State:                      p.Subject.State,
 			Surname:                    p.Subject.Surname,
 			Title:                      p.Subject.Title,
 		},
@@ -79,17 +75,14 @@ func GenerateCertificateAuthorityConfiguration(p v1alpha1.CertificateAuthorityCo
 }
 
 // GenerateRevocationConfiguration from RevocationConfiguration
-func GenerateRevocationConfiguration(p *v1alpha1.CertificateAuthorityParameters) *acmpca.RevocationConfiguration {
-	if p.RevocationConfiguration == nil {
-		return nil
-	}
+func GenerateRevocationConfiguration(p v1alpha1.RevocationConfiguration) *acmpca.RevocationConfiguration {
 
 	m := &acmpca.RevocationConfiguration{
 		CrlConfiguration: &acmpca.CrlConfiguration{
-			CustomCname:      p.RevocationConfiguration.CustomCname,
-			Enabled:          aws.Bool(p.RevocationConfiguration.Enabled),
-			ExpirationInDays: p.RevocationConfiguration.ExpirationInDays,
-			S3BucketName:     p.RevocationConfiguration.S3BucketName,
+			CustomCname:      p.CustomCname,
+			Enabled:          p.Enabled,
+			ExpirationInDays: p.ExpirationInDays,
+			S3BucketName:     p.S3BucketName,
 		},
 	}
 
@@ -107,18 +100,16 @@ func LateInitializeCertificateAuthority(in *v1alpha1.CertificateAuthorityParamet
 		in.Type = certificateAuthority.Type
 	}
 
-	if (in.Status == nil || *in.Status == acmpca.CertificateAuthorityStatusPendingCertificate) && string(certificateAuthority.Status) != "" {
-		in.Status = &certificateAuthority.Status
+	if (string(in.Status) == "" || in.Status == acmpca.CertificateAuthorityStatusPendingCertificate) && string(certificateAuthority.Status) != "" {
+		in.Status = certificateAuthority.Status
 	}
 
-	if aws.BoolValue(certificateAuthority.RevocationConfiguration.CrlConfiguration.Enabled) {
-		if in.RevocationConfiguration.ExpirationInDays == nil && certificateAuthority.RevocationConfiguration.CrlConfiguration.ExpirationInDays != nil {
-			in.RevocationConfiguration.ExpirationInDays = certificateAuthority.RevocationConfiguration.CrlConfiguration.ExpirationInDays
-		}
+	if in.RevocationConfiguration.ExpirationInDays == nil && certificateAuthority.RevocationConfiguration.CrlConfiguration.ExpirationInDays != nil {
+		in.RevocationConfiguration.ExpirationInDays = certificateAuthority.RevocationConfiguration.CrlConfiguration.ExpirationInDays
+	}
 
-		if in.RevocationConfiguration.CustomCname == nil && certificateAuthority.RevocationConfiguration.CrlConfiguration.CustomCname != nil {
-			in.RevocationConfiguration.CustomCname = certificateAuthority.RevocationConfiguration.CrlConfiguration.CustomCname
-		}
+	if in.RevocationConfiguration.CustomCname == nil && certificateAuthority.RevocationConfiguration.CrlConfiguration.CustomCname != nil {
+		in.RevocationConfiguration.CustomCname = certificateAuthority.RevocationConfiguration.CrlConfiguration.CustomCname
 	}
 
 	if in.CertificateAuthorityConfiguration.Subject.SerialNumber == nil && certificateAuthority.CertificateAuthorityConfiguration.Subject.SerialNumber != nil {
@@ -129,23 +120,19 @@ func LateInitializeCertificateAuthority(in *v1alpha1.CertificateAuthorityParamet
 // IsCertificateAuthorityUpToDate checks whether there is a change in any of the modifiable fields.
 func IsCertificateAuthorityUpToDate(p *v1alpha1.CertificateAuthority, cd acmpca.CertificateAuthority, tags []acmpca.Tag) bool { // nolint:gocyclo
 
-	if aws.BoolValue(cd.RevocationConfiguration.CrlConfiguration.Enabled) {
-		if !strings.EqualFold(aws.StringValue(p.Spec.ForProvider.RevocationConfiguration.CustomCname), aws.StringValue(cd.RevocationConfiguration.CrlConfiguration.CustomCname)) {
-			return false
-		}
+	if !strings.EqualFold(aws.StringValue(p.Spec.ForProvider.RevocationConfiguration.CustomCname), aws.StringValue(cd.RevocationConfiguration.CrlConfiguration.CustomCname)) {
+		return false
+	}
 
-		if !strings.EqualFold(aws.StringValue(p.Spec.ForProvider.RevocationConfiguration.S3BucketName), aws.StringValue(cd.RevocationConfiguration.CrlConfiguration.S3BucketName)) {
-			return false
-		}
+	if !strings.EqualFold(aws.StringValue(p.Spec.ForProvider.RevocationConfiguration.S3BucketName), aws.StringValue(cd.RevocationConfiguration.CrlConfiguration.S3BucketName)) {
+		return false
+	}
 
-		if p.Spec.ForProvider.RevocationConfiguration.Enabled != aws.BoolValue(cd.RevocationConfiguration.CrlConfiguration.Enabled) {
-			return false
-		}
+	if aws.BoolValue(p.Spec.ForProvider.RevocationConfiguration.Enabled) != aws.BoolValue(cd.RevocationConfiguration.CrlConfiguration.Enabled) {
+		return false
+	}
 
-		if aws.Int64Value(p.Spec.ForProvider.RevocationConfiguration.ExpirationInDays) != aws.Int64Value(cd.RevocationConfiguration.CrlConfiguration.ExpirationInDays) {
-			return false
-		}
-	} else if p.Spec.ForProvider.RevocationConfiguration != nil {
+	if aws.Int64Value(p.Spec.ForProvider.RevocationConfiguration.ExpirationInDays) != aws.Int64Value(cd.RevocationConfiguration.CrlConfiguration.ExpirationInDays) {
 		return false
 	}
 
@@ -153,7 +140,7 @@ func IsCertificateAuthorityUpToDate(p *v1alpha1.CertificateAuthority, cd acmpca.
 		return false
 	}
 
-	if *p.Spec.ForProvider.Status != cd.Status {
+	if p.Spec.ForProvider.Status != cd.Status {
 		return false
 	}
 
