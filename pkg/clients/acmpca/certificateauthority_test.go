@@ -11,24 +11,26 @@ import (
 )
 
 var (
-	customCname                    = "soemcustomname"
-	revocationConfigurationEnabled = true
-	s3BucketName                   = "somes3bucketname"
-	commonName                     = "someCommonName"
-	country                        = "someCountry"
-	distinguishedNameQualifier     = "someDistinguishedNameQualifier"
-	generationQualifier            = "somegenerationQualifier"
-	givenName                      = "somegivenName"
-	initials                       = "someinitials"
-	locality                       = "somelocality"
-	organization                   = "someorganization"
-	organizationalUnit             = "someOrganizationalUnit"
-	pseudonym                      = "somePseudonym"
-	serialNumber                   = "someSerialNumber"
-	state                          = "someState"
-	surname                        = "someSurname"
-	title                          = "someTitle"
-	idempotencyToken               = "someidempotencyToken"
+	certificateAuthorityArn             = "someauthorityarn"
+	customCname                         = "soemcustomname"
+	revocationConfigurationEnabled      = true
+	revocationConfigurationEnabledfalse = false
+	s3BucketName                        = "somes3bucketname"
+	commonName                          = "someCommonName"
+	country                             = "someCountry"
+	distinguishedNameQualifier          = "someDistinguishedNameQualifier"
+	generationQualifier                 = "somegenerationQualifier"
+	givenName                           = "somegivenName"
+	initials                            = "someinitials"
+	locality                            = "somelocality"
+	organization                        = "someorganization"
+	organizationalUnit                  = "someOrganizationalUnit"
+	pseudonym                           = "somePseudonym"
+	serialNumber                        = "someSerialNumber"
+	state                               = "someState"
+	surname                             = "someSurname"
+	title                               = "someTitle"
+	idempotencyToken                    = "someidempotencyToken"
 )
 
 func TestGenerateCreateCertificateAuthorityInput(t *testing.T) {
@@ -38,25 +40,30 @@ func TestGenerateCreateCertificateAuthorityInput(t *testing.T) {
 	}{
 		"Filled_Input": {
 			in: &v1alpha1.CertificateAuthorityParameters{
-				Type: acmpca.CertificateAuthorityTypeRoot,
-				// Status:           acmpca.CertificateAuthorityStatusActive,
+				Type:             acmpca.CertificateAuthorityTypeRoot,
+				Status:           acmpca.CertificateAuthorityStatusActive,
 				IdempotencyToken: aws.String(idempotencyToken),
+				RevocationConfiguration: v1alpha1.RevocationConfiguration{
+					CustomCname:  aws.String(customCname),
+					Enabled:      aws.Bool(revocationConfigurationEnabled),
+					S3BucketName: aws.String(s3BucketName),
+				},
 				CertificateAuthorityConfiguration: v1alpha1.CertificateAuthorityConfiguration{
 					SigningAlgorithm: acmpca.SigningAlgorithmSha256withecdsa,
 					KeyAlgorithm:     acmpca.KeyAlgorithmRsa2048,
 					Subject: v1alpha1.Subject{
-						CommonName:                 commonName,
-						Country:                    country,
+						CommonName:                 aws.String(commonName),
+						Country:                    aws.String(country),
 						DistinguishedNameQualifier: aws.String(distinguishedNameQualifier),
 						GenerationQualifier:        aws.String(generationQualifier),
 						GivenName:                  aws.String(givenName),
 						Initials:                   aws.String(initials),
-						Locality:                   locality,
-						Organization:               organization,
-						OrganizationalUnit:         organizationalUnit,
+						Locality:                   aws.String(locality),
+						Organization:               aws.String(organization),
+						OrganizationalUnit:         aws.String(organizationalUnit),
 						Pseudonym:                  aws.String(pseudonym),
 						SerialNumber:               aws.String(serialNumber),
-						State:                      state,
+						State:                      aws.String(state),
 						Surname:                    aws.String(surname),
 						Title:                      aws.String(title),
 					},
@@ -88,6 +95,13 @@ func TestGenerateCreateCertificateAuthorityInput(t *testing.T) {
 						Title:                      aws.String(title),
 					},
 				},
+				RevocationConfiguration: &acmpca.RevocationConfiguration{
+					CrlConfiguration: &acmpca.CrlConfiguration{
+						CustomCname:  aws.String(customCname),
+						Enabled:      aws.Bool(revocationConfigurationEnabled),
+						S3BucketName: aws.String(s3BucketName),
+					},
+				},
 				CertificateAuthorityType: acmpca.CertificateAuthorityTypeRoot,
 				Tags: []acmpca.Tag{{
 					Key:   aws.String("key1"),
@@ -117,18 +131,18 @@ func TestGenerateCertificateAuthorityConfiguration(t *testing.T) {
 				SigningAlgorithm: acmpca.SigningAlgorithmSha256withecdsa,
 				KeyAlgorithm:     acmpca.KeyAlgorithmRsa2048,
 				Subject: v1alpha1.Subject{
-					CommonName:                 commonName,
-					Country:                    country,
+					CommonName:                 aws.String(commonName),
+					Country:                    aws.String(country),
 					DistinguishedNameQualifier: aws.String(distinguishedNameQualifier),
 					GenerationQualifier:        aws.String(generationQualifier),
 					GivenName:                  aws.String(givenName),
 					Initials:                   aws.String(initials),
-					Locality:                   locality,
-					Organization:               organization,
-					OrganizationalUnit:         organizationalUnit,
+					Locality:                   aws.String(locality),
+					Organization:               aws.String(organization),
+					OrganizationalUnit:         aws.String(organizationalUnit),
 					Pseudonym:                  aws.String(pseudonym),
 					SerialNumber:               aws.String(serialNumber),
-					State:                      state,
+					State:                      aws.String(state),
 					Surname:                    aws.String(surname),
 					Title:                      aws.String(title),
 				},
@@ -168,22 +182,30 @@ func TestGenerateCertificateAuthorityConfiguration(t *testing.T) {
 
 func TestGenerateRevocationConfiguration(t *testing.T) {
 	cases := map[string]struct {
-		in  *v1alpha1.CertificateAuthorityParameters
+		in  v1alpha1.RevocationConfiguration
 		out *acmpca.RevocationConfiguration
 	}{
 		"Filled_Input": {
-			in: &v1alpha1.CertificateAuthorityParameters{
-				RevocationConfiguration: &v1alpha1.RevocationConfiguration{
-					CustomCname:  aws.String(customCname),
-					Enabled:      revocationConfigurationEnabled,
-					S3BucketName: aws.String(s3BucketName),
-				},
+			in: v1alpha1.RevocationConfiguration{
+				CustomCname:  aws.String(customCname),
+				Enabled:      aws.Bool(revocationConfigurationEnabled),
+				S3BucketName: aws.String(s3BucketName),
 			},
 			out: &acmpca.RevocationConfiguration{
 				CrlConfiguration: &acmpca.CrlConfiguration{
 					CustomCname:  aws.String(customCname),
 					Enabled:      aws.Bool(revocationConfigurationEnabled),
 					S3BucketName: aws.String(s3BucketName),
+				},
+			},
+		},
+		"PartialFilled": {
+			in: v1alpha1.RevocationConfiguration{
+				Enabled: aws.Bool(revocationConfigurationEnabledfalse),
+			},
+			out: &acmpca.RevocationConfiguration{
+				CrlConfiguration: &acmpca.CrlConfiguration{
+					Enabled: aws.Bool(revocationConfigurationEnabledfalse),
 				},
 			},
 		},
@@ -200,9 +222,6 @@ func TestGenerateRevocationConfiguration(t *testing.T) {
 }
 
 func TestLateInitializeCertificateAuthority(t *testing.T) {
-
-	status := acmpca.CertificateAuthorityStatusActive
-
 	type args struct {
 		spec *v1alpha1.CertificateAuthorityParameters
 		in   *acmpca.CertificateAuthority
@@ -218,22 +237,27 @@ func TestLateInitializeCertificateAuthority(t *testing.T) {
 				},
 				in: &acmpca.CertificateAuthority{
 					Type:   acmpca.CertificateAuthorityTypeRoot,
-					Status: status,
+					Status: acmpca.CertificateAuthorityStatusActive,
+					RevocationConfiguration: &acmpca.RevocationConfiguration{
+						CrlConfiguration: &acmpca.CrlConfiguration{
+							ExpirationInDays: nil,
+							CustomCname:      aws.String(customCname),
+						},
+					},
 					CertificateAuthorityConfiguration: &acmpca.CertificateAuthorityConfiguration{
 						Subject: &acmpca.ASN1Subject{
 							SerialNumber: aws.String(serialNumber),
-						},
-					},
-					RevocationConfiguration: &acmpca.RevocationConfiguration{
-						CrlConfiguration: &acmpca.CrlConfiguration{
-							Enabled: aws.Bool(false),
 						},
 					},
 				},
 			},
 			want: &v1alpha1.CertificateAuthorityParameters{
 				Type:   acmpca.CertificateAuthorityTypeRoot,
-				Status: &status,
+				Status: acmpca.CertificateAuthorityStatusActive,
+				RevocationConfiguration: v1alpha1.RevocationConfiguration{
+					ExpirationInDays: nil,
+					CustomCname:      aws.String(customCname),
+				},
 				CertificateAuthorityConfiguration: v1alpha1.CertificateAuthorityConfiguration{
 					Subject: v1alpha1.Subject{
 						SerialNumber: aws.String(serialNumber),
@@ -254,9 +278,6 @@ func TestLateInitializeCertificateAuthority(t *testing.T) {
 }
 
 func TestIsCertificateAuthorityUpToDate(t *testing.T) {
-
-	status := acmpca.CertificateAuthorityStatusActive
-
 	type args struct {
 		p    *v1alpha1.CertificateAuthority
 		cd   acmpca.CertificateAuthority
@@ -274,24 +295,25 @@ func TestIsCertificateAuthorityUpToDate(t *testing.T) {
 						CrlConfiguration: &acmpca.CrlConfiguration{
 							CustomCname:  aws.String(customCname),
 							S3BucketName: aws.String(s3BucketName),
-							Enabled:      aws.Bool(true),
 						},
 					},
-					Status: status,
 				},
 				p: &v1alpha1.CertificateAuthority{
 					Spec: v1alpha1.CertificateAuthoritySpec{
 						ForProvider: v1alpha1.CertificateAuthorityParameters{
-							RevocationConfiguration: &v1alpha1.RevocationConfiguration{
+							RevocationConfiguration: v1alpha1.RevocationConfiguration{
 								CustomCname:  aws.String(customCname),
 								S3BucketName: aws.String(s3BucketName),
-								Enabled:      true,
 							},
 							Tags: []v1alpha1.Tag{{
 								Key:   "key1",
 								Value: "value1",
 							}},
-							Status: &status,
+						},
+					},
+					Status: v1alpha1.CertificateAuthorityStatus{
+						AtProvider: v1alpha1.CertificateAuthorityExternalStatus{
+							CertificateAuthorityARN: certificateAuthorityArn,
 						},
 					},
 				},
@@ -315,10 +337,15 @@ func TestIsCertificateAuthorityUpToDate(t *testing.T) {
 				p: &v1alpha1.CertificateAuthority{
 					Spec: v1alpha1.CertificateAuthoritySpec{
 						ForProvider: v1alpha1.CertificateAuthorityParameters{
-							RevocationConfiguration: &v1alpha1.RevocationConfiguration{
+							RevocationConfiguration: v1alpha1.RevocationConfiguration{
 								CustomCname:  aws.String(customCname),
 								S3BucketName: aws.String(s3BucketName),
 							},
+						},
+					},
+					Status: v1alpha1.CertificateAuthorityStatus{
+						AtProvider: v1alpha1.CertificateAuthorityExternalStatus{
+							CertificateAuthorityARN: certificateAuthorityArn,
 						},
 					},
 				},

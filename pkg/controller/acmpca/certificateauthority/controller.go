@@ -49,6 +49,7 @@ const (
 	errEmpty            = "empty ACMPCA received from ACMPCA API"
 
 	errKubeUpdateFailed    = "cannot late initialize ACMPCA"
+	errUpToDateFailed      = "cannot check whether object is up-to-date"
 	errPersistExternalName = "failed to persist Certificate ARN"
 
 	errAddTagsFailed        = "cannot add tags to ACMPCA"
@@ -68,9 +69,6 @@ func SetupCertificateAuthority(mgr ctrl.Manager, l logging.Logger) error {
 			resource.ManagedKind(v1alpha1.CertificateAuthorityGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acmpca.NewClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
 			managed.WithConnectionPublishers(),
-
-			// TODO: implement tag initializer
-
 			managed.WithInitializers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -150,9 +148,14 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errListTagsFailed)
 	}
 
+	upToDate := acmpca.IsCertificateAuthorityUpToDate(cr, certificateAuthority, tags.Tags)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
+	}
+
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: acmpca.IsCertificateAuthorityUpToDate(cr, certificateAuthority, tags.Tags),
+		ResourceUpToDate: upToDate,
 	}, nil
 }
 
@@ -220,18 +223,21 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	// Check the PCA status and return error if PCA is in Pending State.
-	if *cr.Spec.ForProvider.Status == awsacmpca.CertificateAuthorityStatusPendingCertificate {
+	if cr.Spec.ForProvider.Status == awsacmpca.CertificateAuthorityStatusPendingCertificate {
 		return managed.ExternalUpdate{}, errors.New(errPendingStatus)
 	}
 
 	// Update Certificate Authority configuration
 	_, err := e.client.UpdateCertificateAuthorityRequest(&awsacmpca.UpdateCertificateAuthorityInput{
 		CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
-		RevocationConfiguration: acmpca.GenerateRevocationConfiguration(&cr.Spec.ForProvider),
-		Status:                  *cr.Spec.ForProvider.Status,
+		RevocationConfiguration: acmpca.GenerateRevocationConfiguration(cr.Spec.ForProvider.RevocationConfiguration),
+		Status:                  cr.Spec.ForProvider.Status,
 	}).Send(ctx)
 
-	return managed.ExternalUpdate{}, errors.Wrap(err, errCertificateAuthority)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errCertificateAuthority)
+	}
+	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {

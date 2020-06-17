@@ -50,6 +50,8 @@ var (
 	unexpecedItem              resource.Managed
 	certificateAuthorityArn    = "someauthorityarn"
 	nextToken                  = "someNextToken"
+	customCname                = "soemcustomname"
+	s3BucketName               = "somes3bucketname"
 	commonName                 = "someCommonName"
 	country                    = "someCountry"
 	distinguishedNameQualifier = "someDistinguishedNameQualifier"
@@ -88,16 +90,7 @@ func withCertificateAuthorityArn() certificateAuthorityModifier {
 func withCertificateAuthorityType() certificateAuthorityModifier {
 	return func(r *v1alpha1.CertificateAuthority) {
 		r.Spec.ForProvider.Type = awsacmpca.CertificateAuthorityTypeRoot
-		r.Status.AtProvider.CertificateAuthorityARN = certificateAuthorityArn
-		meta.SetExternalName(r, certificateAuthorityArn)
-	}
-}
-
-func withCertificateAuthorityStatus() certificateAuthorityModifier {
-	status := awsacmpca.CertificateAuthorityStatusActive
-
-	return func(r *v1alpha1.CertificateAuthority) {
-		r.Spec.ForProvider.Status = &status
+		r.Spec.ForProvider.RevocationConfiguration.CustomCname = aws.String(customCname)
 		r.Status.AtProvider.CertificateAuthorityARN = certificateAuthorityArn
 		meta.SetExternalName(r, certificateAuthorityArn)
 	}
@@ -214,7 +207,8 @@ func TestObserve(t *testing.T) {
 									Type: awsacmpca.CertificateAuthorityTypeRoot,
 									RevocationConfiguration: &awsacmpca.RevocationConfiguration{
 										CrlConfiguration: &awsacmpca.CrlConfiguration{
-											Enabled: aws.Bool(false),
+											CustomCname:  aws.String(customCname),
+											S3BucketName: aws.String(s3BucketName),
 										},
 									},
 									CertificateAuthorityConfiguration: &awsacmpca.CertificateAuthorityConfiguration{
@@ -424,11 +418,6 @@ func TestUpdate(t *testing.T) {
 								CertificateAuthority: &awsacmpca.CertificateAuthority{
 									Type:   awsacmpca.CertificateAuthorityTypeRoot,
 									Status: awsacmpca.CertificateAuthorityStatusActive,
-									RevocationConfiguration: &awsacmpca.RevocationConfiguration{
-										CrlConfiguration: &awsacmpca.CrlConfiguration{
-											Enabled: aws.Bool(false),
-										},
-									},
 								},
 							}},
 						}
@@ -462,10 +451,10 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: certificateAuthority(withCertificateAuthorityStatus()),
+				cr: certificateAuthority(),
 			},
 			want: want{
-				cr: certificateAuthority(withCertificateAuthorityStatus()),
+				cr: certificateAuthority(),
 			},
 		},
 		"InValidInput": {
@@ -516,10 +505,10 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: certificateAuthority(withCertificateAuthorityStatus()),
+				cr: certificateAuthority(withCertificateAuthorityArn()),
 			},
 			want: want{
-				cr:  certificateAuthority(withCertificateAuthorityStatus()),
+				cr:  certificateAuthority(withCertificateAuthorityArn()),
 				err: errors.Wrap(errBoom, errCertificateAuthority),
 			},
 		},
