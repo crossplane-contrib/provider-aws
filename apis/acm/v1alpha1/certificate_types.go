@@ -74,15 +74,15 @@ type CertificateParameters struct {
 
 	// The Amazon Resource Name (ARN) of the private certificate authority (CA)that will be used to issue the certificate.
 	// +optional
-	CertificateAuthorityARN *string `json:"certificateAuthorityArn,omitempty"`
+	CertificateAuthorityARN *string `json:"certificateAuthorityARN,omitempty"`
 
-	// // CertificateAuthorityArnRef references an CertificateAuthority to retrieve its Arn
+	// // CertificateAuthorityARNRef references an AWS ACMPCA CertificateAuthority to retrieve its Arn
 	// // +optional
-	// CertificateAuthorityARNRef *runtimev1alpha1.Reference `json:"certificateAuthorityArnRef,omitempty"`
+	// CertificateAuthorityARNRef *runtimev1alpha1.Reference `json:"certificateAuthorityARNRef,omitempty"`
 
-	// // CertificateAuthorityArnSelector selects a reference to an CertificateAuthority to retrieve its Arn
+	// // CertificateAuthorityARNSelector selects a reference to an AWS ACMPCA CertificateAuthority to retrieve its Arn
 	// // +optional
-	// CertificateAuthorityARNSelector *runtimev1alpha1.Selector `json:"certificateAuthorityArnSelector,omitempty"`
+	// CertificateAuthorityARNSelector *runtimev1alpha1.Selector `json:"certificateAuthorityARNSelector,omitempty"`
 
 	// Fully qualified domain name (FQDN),that to secure with an ACM certificate.
 	// +immutable

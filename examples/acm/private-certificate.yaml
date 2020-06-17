@@ -1,4 +1,4 @@
-apiVersion: certificatemanager.aws.crossplane.io/v1alpha1
+apiVersion: acm.aws.crossplane.io/v1alpha1
 kind: Certificate
 metadata:
   name: private-cert
@@ -14,4 +14,4 @@ spec:
       value: example
   reclaimPolicy: Delete
   providerRef:
-    name: example
+    name: aws-provider

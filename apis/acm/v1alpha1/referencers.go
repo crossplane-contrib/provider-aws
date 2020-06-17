@@ -20,6 +20,7 @@ package v1alpha1
 // 	"context"
 
 // 	"github.com/crossplane/crossplane-runtime/pkg/reference"
+// 	acmpcav1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
 // 	"sigs.k8s.io/controller-runtime/pkg/client"
 // )
 
@@ -27,19 +28,19 @@ package v1alpha1
 // func (mg *Certificate) ResolveReferences(ctx context.Context, c client.Reader) error {
 // 	r := reference.NewAPIResolver(c, mg)
 
-// 	// Resolve spec.forProvider.CertificateAuthorityArn
+// 	// Resolve spec.forProvider.CertificateAuthorityARN
 // 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-// 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CertificateAuthorityArn),
-// 		Reference:    mg.Spec.ForProvider.CertificateAuthorityArnRef,
-// 		Selector:     mg.Spec.ForProvider.CertificateAuthorityArnSelector,
-// 		To:           reference.To{Managed: &CertificateAuthority{}, List: &CertificateAuthorityList{}},
+// 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CertificateAuthorityARN),
+// 		Reference:    mg.Spec.ForProvider.CertificateAuthorityARNRef,
+// 		Selector:     mg.Spec.ForProvider.CertificateAuthorityARNSelector,
+// 		To:           reference.To{Managed: &acmpcav1alpha1.CertificateAuthority{}, List: &acmpcav1alpha1.CertificateAuthorityList{}},
 // 		Extract:      reference.ExternalName(),
 // 	})
 // 	if err != nil {
 // 		return err
 // 	}
-// 	mg.Spec.ForProvider.CertificateAuthorityArn = reference.ToPtrValue(rsp.ResolvedValue)
-// 	mg.Spec.ForProvider.CertificateAuthorityArnRef = rsp.ResolvedReference
+// 	mg.Spec.ForProvider.CertificateAuthorityARN = reference.ToPtrValue(rsp.ResolvedValue)
+// 	mg.Spec.ForProvider.CertificateAuthorityARNRef = rsp.ResolvedReference
 
 // 	return nil
 // }

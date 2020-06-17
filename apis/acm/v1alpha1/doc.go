@@ -14,10 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha1 contains API Schema definitions for the certificatemanager v1alpha1 API group
-// +k8s:openapi-gen=true
-// +k8s:deepcopy-gen=package,register
-// +k8s:conversion-gen=github.com/crossplane/provider-aws/pkg/apis/certificatemanager
-// +k8s:defaulter-gen=TypeMeta
-// +groupName=certificatemanager.aws.crossplane.io
+// Package v1alpha1 contains API Schema definitions for the acm v1alpha1 API group
+// +kubebuilder:object:generate=true
+// +groupName=acm.aws.crossplane.io
+// +versionName=v1alpha1
 package v1alpha1

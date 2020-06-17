@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package certificate
+package acm
 
 import (
 	"context"
@@ -36,9 +36,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	v1alpha1 "github.com/crossplane/provider-aws/apis/certificatemanager/v1alpha1"
-	acm "github.com/crossplane/provider-aws/pkg/clients/certificatemanager/certificate"
-	"github.com/crossplane/provider-aws/pkg/clients/certificatemanager/certificate/fake"
+	v1alpha1 "github.com/crossplane/provider-aws/apis/acm/v1alpha1"
+	acm "github.com/crossplane/provider-aws/pkg/clients/acm"
+	"github.com/crossplane/provider-aws/pkg/clients/acm/fake"
 )
 
 const (

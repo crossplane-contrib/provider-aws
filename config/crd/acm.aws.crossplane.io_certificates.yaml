@@ -6,7 +6,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: certificates.certificatemanager.aws.crossplane.io
+  name: certificates.acm.aws.crossplane.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .spec.forProvider.domainName
@@ -24,7 +24,7 @@ spec:
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
-  group: certificatemanager.aws.crossplane.io
+  group: acm.aws.crossplane.io
   names:
     kind: Certificate
     listKind: CertificateList
@@ -134,7 +134,7 @@ spec:
               description: CertificateParameters defines the desired state of an AWS
                 Certificate.
               properties:
-                certificateAuthorityArn:
+                certificateAuthorityARN:
                   description: The Amazon Resource Name (ARN) of the private certificate
                     authority (CA)that will be used to issue the certificate.
                   type: string

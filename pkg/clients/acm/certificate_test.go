@@ -1,4 +1,4 @@
-package certificate
+package acm
 
 import (
 	"testing"
@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/acm"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/certificatemanager/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/acm/v1alpha1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
