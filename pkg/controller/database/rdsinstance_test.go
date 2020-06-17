@@ -297,7 +297,7 @@ func TestObserve(t *testing.T) {
 				rds: &fake.MockRDSClient{
 					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
 						return awsrds.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBInstancesOutput{
 								DBInstances: []awsrds.DBInstance{
 									{
 										DBInstanceStatus: aws.String(string(v1beta1.RDSInstanceStateAvailable)),
@@ -326,7 +326,7 @@ func TestObserve(t *testing.T) {
 				rds: &fake.MockRDSClient{
 					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
 						return awsrds.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBInstancesOutput{
 								DBInstances: []awsrds.DBInstance{
 									{
 										DBInstanceStatus: aws.String(string(v1beta1.RDSInstanceStateDeleting)),
@@ -354,7 +354,7 @@ func TestObserve(t *testing.T) {
 				rds: &fake.MockRDSClient{
 					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
 						return awsrds.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBInstancesOutput{
 								DBInstances: []awsrds.DBInstance{
 									{
 										DBInstanceStatus: aws.String(string(v1beta1.RDSInstanceStateFailed)),
@@ -416,7 +416,7 @@ func TestObserve(t *testing.T) {
 				rds: &fake.MockRDSClient{
 					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
 						return awsrds.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBInstancesOutput{
 								DBInstances: []awsrds.DBInstance{
 									{
 										EngineVersion:    aws.String(engineVersion),
@@ -450,7 +450,7 @@ func TestObserve(t *testing.T) {
 				rds: &fake.MockRDSClient{
 					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
 						return awsrds.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBInstancesOutput{
 								DBInstances: []awsrds.DBInstance{
 									{
 										EngineVersion:    aws.String(engineVersion),
@@ -506,7 +506,7 @@ func TestCreate(t *testing.T) {
 				rds: &fake.MockRDSClient{
 					MockCreate: func(input *awsrds.CreateDBInstanceInput) awsrds.CreateDBInstanceRequest {
 						return awsrds.CreateDBInstanceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.CreateDBInstanceOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.CreateDBInstanceOutput{}},
 						}
 					},
 				},
@@ -539,7 +539,7 @@ func TestCreate(t *testing.T) {
 				rds: &fake.MockRDSClient{
 					MockCreate: func(input *awsrds.CreateDBInstanceInput) awsrds.CreateDBInstanceRequest {
 						return awsrds.CreateDBInstanceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.CreateDBInstanceOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.CreateDBInstanceOutput{}},
 						}
 					},
 				},
@@ -612,19 +612,19 @@ func TestUpdate(t *testing.T) {
 				rds: &fake.MockRDSClient{
 					MockModify: func(input *awsrds.ModifyDBInstanceInput) awsrds.ModifyDBInstanceRequest {
 						return awsrds.ModifyDBInstanceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ModifyDBInstanceOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.ModifyDBInstanceOutput{}},
 						}
 					},
 					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
 						return awsrds.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBInstancesOutput{
 								DBInstances: []awsrds.DBInstance{{}},
 							}},
 						}
 					},
 					MockAddTags: func(input *awsrds.AddTagsToResourceInput) awsrds.AddTagsToResourceRequest {
 						return awsrds.AddTagsToResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.AddTagsToResourceOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.AddTagsToResourceOutput{}},
 						}
 					},
 				},
@@ -668,7 +668,7 @@ func TestUpdate(t *testing.T) {
 					},
 					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
 						return awsrds.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBInstancesOutput{
 								DBInstances: []awsrds.DBInstance{{}},
 							}},
 						}
@@ -686,12 +686,12 @@ func TestUpdate(t *testing.T) {
 				rds: &fake.MockRDSClient{
 					MockModify: func(input *awsrds.ModifyDBInstanceInput) awsrds.ModifyDBInstanceRequest {
 						return awsrds.ModifyDBInstanceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ModifyDBInstanceOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.ModifyDBInstanceOutput{}},
 						}
 					},
 					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
 						return awsrds.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBInstancesOutput{
 								DBInstances: []awsrds.DBInstance{{}},
 							}},
 						}
@@ -744,17 +744,17 @@ func TestDelete(t *testing.T) {
 				rds: &fake.MockRDSClient{
 					MockDelete: func(input *awsrds.DeleteDBInstanceInput) awsrds.DeleteDBInstanceRequest {
 						return awsrds.DeleteDBInstanceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DeleteDBInstanceOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DeleteDBInstanceOutput{}},
 						}
 					},
 					MockModify: func(input *awsrds.ModifyDBInstanceInput) awsrds.ModifyDBInstanceRequest {
 						return awsrds.ModifyDBInstanceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ModifyDBInstanceOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.ModifyDBInstanceOutput{}},
 						}
 					},
 					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
 						return awsrds.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBInstancesOutput{
 								DBInstances: []awsrds.DBInstance{{}},
 							}},
 						}
@@ -800,12 +800,12 @@ func TestDelete(t *testing.T) {
 					},
 					MockModify: func(input *awsrds.ModifyDBInstanceInput) awsrds.ModifyDBInstanceRequest {
 						return awsrds.ModifyDBInstanceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.ModifyDBInstanceOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.ModifyDBInstanceOutput{}},
 						}
 					},
 					MockDescribe: func(input *awsrds.DescribeDBInstancesInput) awsrds.DescribeDBInstancesRequest {
 						return awsrds.DescribeDBInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsrds.DescribeDBInstancesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.DescribeDBInstancesOutput{
 								DBInstances: []awsrds.DBInstance{{}},
 							}},
 						}

@@ -279,7 +279,7 @@ func TestObserve(t *testing.T) {
 				subnet: &fake.MockSubnetClient{
 					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
 						return awsec2.DescribeSubnetsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSubnetsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSubnetsOutput{
 								Subnets: []awsec2.Subnet{
 									{
 										State: awsec2.SubnetStateAvailable,
@@ -307,7 +307,7 @@ func TestObserve(t *testing.T) {
 				subnet: &fake.MockSubnetClient{
 					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
 						return awsec2.DescribeSubnetsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSubnetsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSubnetsOutput{
 								Subnets: []awsec2.Subnet{{}, {}},
 							}},
 						}
@@ -325,7 +325,7 @@ func TestObserve(t *testing.T) {
 				subnet: &fake.MockSubnetClient{
 					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
 						return awsec2.DescribeSubnetsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSubnetsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSubnetsOutput{
 								Subnets: []awsec2.Subnet{
 									{
 										State:               awsec2.SubnetStateAvailable,
@@ -410,7 +410,7 @@ func TestCreate(t *testing.T) {
 				subnet: &fake.MockSubnetClient{
 					MockCreate: func(input *awsec2.CreateSubnetInput) awsec2.CreateSubnetRequest {
 						return awsec2.CreateSubnetRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.CreateSubnetOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateSubnetOutput{
 								Subnet: &awsec2.Subnet{
 									SubnetId: aws.String(subnetID),
 								},
@@ -481,12 +481,12 @@ func TestUpdate(t *testing.T) {
 				subnet: &fake.MockSubnetClient{
 					MockModify: func(input *awsec2.ModifySubnetAttributeInput) awsec2.ModifySubnetAttributeRequest {
 						return awsec2.ModifySubnetAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifySubnetAttributeOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifySubnetAttributeOutput{}},
 						}
 					},
 					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
 						return awsec2.DescribeSubnetsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSubnetsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSubnetsOutput{
 								Subnets: []awsec2.Subnet{{
 									SubnetId:            aws.String(subnetID),
 									MapPublicIpOnLaunch: aws.Bool(false),
@@ -514,12 +514,12 @@ func TestUpdate(t *testing.T) {
 				subnet: &fake.MockSubnetClient{
 					MockModify: func(input *awsec2.ModifySubnetAttributeInput) awsec2.ModifySubnetAttributeRequest {
 						return awsec2.ModifySubnetAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.ModifySubnetAttributeOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifySubnetAttributeOutput{}},
 						}
 					},
 					MockDescribe: func(input *awsec2.DescribeSubnetsInput) awsec2.DescribeSubnetsRequest {
 						return awsec2.DescribeSubnetsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DescribeSubnetsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSubnetsOutput{
 								Subnets: []awsec2.Subnet{{
 									SubnetId:            aws.String(subnetID),
 									MapPublicIpOnLaunch: aws.Bool(false),
@@ -577,7 +577,7 @@ func TestDelete(t *testing.T) {
 				subnet: &fake.MockSubnetClient{
 					MockDelete: func(input *awsec2.DeleteSubnetInput) awsec2.DeleteSubnetRequest {
 						return awsec2.DeleteSubnetRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsec2.DeleteSubnetOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteSubnetOutput{}},
 						}
 					},
 				},

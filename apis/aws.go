@@ -26,6 +26,7 @@ import (
 	databasev1alpha1 "github.com/crossplane/provider-aws/apis/database/v1alpha1"
 	databasev1beta1 "github.com/crossplane/provider-aws/apis/database/v1beta1"
 	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	eksv1beta1 "github.com/crossplane/provider-aws/apis/eks/v1beta1"
 	identityv1alpha1 "github.com/crossplane/provider-aws/apis/identity/v1alpha1"
 	identityv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	storagev1alpha3 "github.com/crossplane/provider-aws/apis/storage/v1alpha3"
@@ -45,6 +46,7 @@ func init() {
 		awsv1alpha3.SchemeBuilder.AddToScheme,
 		storagev1alpha3.SchemeBuilder.AddToScheme,
 		databasev1alpha1.SchemeBuilder.AddToScheme,
+		eksv1beta1.SchemeBuilder.AddToScheme,
 	)
 }
 
