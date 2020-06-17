@@ -32,8 +32,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha1 "github.com/crossplane/provider-aws/apis/certificatemanager/v1alpha1"
-	acmpca "github.com/crossplane/provider-aws/pkg/clients/certificatemanager/certificateauthoritypermission"
+	v1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	acmpca "github.com/crossplane/provider-aws/pkg/clients/acmpca"
 	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 
@@ -56,7 +56,7 @@ func SetupCertificateAuthorityPermission(mgr ctrl.Manager, l logging.Logger) err
 		For(&v1alpha1.CertificateAuthorityPermission{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.CertificateAuthorityPermissionGroupVersionKind),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acmpca.NewClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acmpca.NewCAPermissionClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
@@ -66,7 +66,7 @@ func SetupCertificateAuthorityPermission(mgr ctrl.Manager, l logging.Logger) err
 
 type connector struct {
 	client      client.Client
-	newClientFn func(*aws.Config) (acmpca.Client, error)
+	newClientFn func(*aws.Config) (acmpca.CAPermissionClient, error)
 	awsConfigFn func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error)
 }
 
@@ -89,7 +89,7 @@ func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (manag
 }
 
 type external struct {
-	client acmpca.Client
+	client acmpca.CAPermissionClient
 	kube   client.Client
 }
 

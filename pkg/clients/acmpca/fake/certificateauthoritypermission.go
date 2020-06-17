@@ -19,11 +19,11 @@ package fake
 import (
 	"github.com/aws/aws-sdk-go-v2/service/acmpca"
 
-	clientset "github.com/crossplane/provider-aws/pkg/clients/certificatemanager/certificateauthoritypermission"
+	clientset "github.com/crossplane/provider-aws/pkg/clients/acmpca"
 )
 
 // this ensures that the mock implements the client interface
-var _ clientset.Client = (*MockCertificateAuthorityPermissionClient)(nil)
+var _ clientset.CAPermissionClient = (*MockCertificateAuthorityPermissionClient)(nil)
 
 // MockCertificateAuthorityPermissionClient is a type that implements all the methods for Certificate Authority Permission Client interface
 type MockCertificateAuthorityPermissionClient struct {
