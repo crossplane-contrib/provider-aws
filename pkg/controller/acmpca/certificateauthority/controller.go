@@ -34,8 +34,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha1 "github.com/crossplane/provider-aws/apis/certificatemanager/v1alpha1"
-	acmpca "github.com/crossplane/provider-aws/pkg/clients/certificatemanager/certificateauthority"
+	v1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	acmpca "github.com/crossplane/provider-aws/pkg/clients/acmpca"
 	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 
@@ -153,13 +153,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
 	}
 
-	// Check the PCA status and return error if PCA is in Pending State.
-	if !upToDate && (response.CertificateAuthority.Status == awsacmpca.CertificateAuthorityStatusPendingCertificate) {
-		return managed.ExternalObservation{
-			ResourceExists: true,
-		}, errors.New(errPendingStatus)
-	}
-
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: upToDate,
@@ -227,6 +220,11 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		if err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errAddTagsFailed)
 		}
+	}
+
+	// Check the PCA status and return error if PCA is in Pending State.
+	if cr.Spec.ForProvider.Status == awsacmpca.CertificateAuthorityStatusPendingCertificate {
+		return managed.ExternalUpdate{}, errors.New(errPendingStatus)
 	}
 
 	// Update Certificate Authority configuration

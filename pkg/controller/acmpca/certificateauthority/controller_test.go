@@ -35,9 +35,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	v1alpha1 "github.com/crossplane/provider-aws/apis/certificatemanager/v1alpha1"
-	acmpca "github.com/crossplane/provider-aws/pkg/clients/certificatemanager/certificateauthority"
-	"github.com/crossplane/provider-aws/pkg/clients/certificatemanager/certificateauthority/fake"
+	v1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	acmpca "github.com/crossplane/provider-aws/pkg/clients/acmpca"
+	"github.com/crossplane/provider-aws/pkg/clients/acmpca/fake"
 )
 
 const (

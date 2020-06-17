@@ -1,4 +1,4 @@
-package certificateauthority
+package acmpca
 
 import (
 	"strings"
@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/acmpca"
 
-	"github.com/crossplane/provider-aws/apis/certificatemanager/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
 )
 
 // Client defines the CertificateManager operations

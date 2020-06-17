@@ -35,9 +35,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	v1alpha1 "github.com/crossplane/provider-aws/apis/certificatemanager/v1alpha1"
-	acmpca "github.com/crossplane/provider-aws/pkg/clients/certificatemanager/certificateauthoritypermission"
-	"github.com/crossplane/provider-aws/pkg/clients/certificatemanager/certificateauthoritypermission/fake"
+	v1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	acmpca "github.com/crossplane/provider-aws/pkg/clients/acmpca"
+	"github.com/crossplane/provider-aws/pkg/clients/acmpca/fake"
 )
 
 const (
@@ -55,7 +55,7 @@ var (
 )
 
 type args struct {
-	acmpca acmpca.Client
+	acmpca acmpca.CAPermissionClient
 	cr     resource.Managed
 }
 
@@ -83,7 +83,7 @@ func certificateAuthorityPermission(m ...certificateAuthorityPermissionModifier)
 func TestConnect(t *testing.T) {
 
 	type args struct {
-		newClientFn func(*aws.Config) (acmpca.Client, error)
+		newClientFn func(*aws.Config) (acmpca.CAPermissionClient, error)
 		awsConfigFn func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error)
 		cr          resource.Managed
 	}
@@ -97,7 +97,7 @@ func TestConnect(t *testing.T) {
 	}{
 		"ValidInput": {
 			args: args{
-				newClientFn: func(config *aws.Config) (acmpca.Client, error) {
+				newClientFn: func(config *aws.Config) (acmpca.CAPermissionClient, error) {
 					if diff := cmp.Diff(testRegion, config.Region); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
@@ -122,7 +122,7 @@ func TestConnect(t *testing.T) {
 		},
 		"ProviderFailure": {
 			args: args{
-				newClientFn: func(config *aws.Config) (acmpca.Client, error) {
+				newClientFn: func(config *aws.Config) (acmpca.CAPermissionClient, error) {
 					if diff := cmp.Diff(testRegion, config.Region); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
