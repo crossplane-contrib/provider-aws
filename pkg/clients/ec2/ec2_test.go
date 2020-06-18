@@ -27,7 +27,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/network/v1beta1"
+	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
 
 func TestMain(m *testing.M) {

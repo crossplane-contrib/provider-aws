@@ -202,7 +202,7 @@ func TestObserve(t *testing.T) {
 				iam: &fake.MockRoleClient{
 					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
 						return awsiam.GetRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetRoleOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.GetRoleOutput{
 								Role: &awsiam.Role{},
 							}},
 						}
@@ -297,7 +297,7 @@ func TestCreate(t *testing.T) {
 				iam: &fake.MockRoleClient{
 					MockCreateRoleRequest: func(input *awsiam.CreateRoleInput) awsiam.CreateRoleRequest {
 						return awsiam.CreateRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.CreateRoleOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.CreateRoleOutput{}},
 						}
 					},
 				},
@@ -371,14 +371,14 @@ func TestUpdate(t *testing.T) {
 				iam: &fake.MockRoleClient{
 					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
 						return awsiam.GetRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetRoleOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.GetRoleOutput{
 								Role: &awsiam.Role{},
 							}},
 						}
 					},
 					MockUpdateRoleRequest: func(input *awsiam.UpdateRoleInput) awsiam.UpdateRoleRequest {
 						return awsiam.UpdateRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.UpdateRoleOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.UpdateRoleOutput{}},
 						}
 					},
 				},
@@ -402,7 +402,7 @@ func TestUpdate(t *testing.T) {
 				iam: &fake.MockRoleClient{
 					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
 						return awsiam.GetRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetRoleOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.GetRoleOutput{
 								Role: &awsiam.Role{},
 							}},
 						}
@@ -425,14 +425,14 @@ func TestUpdate(t *testing.T) {
 				iam: &fake.MockRoleClient{
 					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
 						return awsiam.GetRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetRoleOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.GetRoleOutput{
 								Role: &awsiam.Role{},
 							}},
 						}
 					},
 					MockUpdateRoleRequest: func(input *awsiam.UpdateRoleInput) awsiam.UpdateRoleRequest {
 						return awsiam.UpdateRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.UpdateRoleOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.UpdateRoleOutput{}},
 						}
 					},
 					MockUpdateAssumeRolePolicyRequest: func(input *awsiam.UpdateAssumeRolePolicyInput) awsiam.UpdateAssumeRolePolicyRequest {
@@ -484,7 +484,7 @@ func TestDelete(t *testing.T) {
 				iam: &fake.MockRoleClient{
 					MockDeleteRoleRequest: func(input *awsiam.DeleteRoleInput) awsiam.DeleteRoleRequest {
 						return awsiam.DeleteRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.DeleteRoleOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DeleteRoleOutput{}},
 						}
 					},
 				},

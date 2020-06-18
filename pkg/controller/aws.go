@@ -27,16 +27,17 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dynamodb"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/internetgateway"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/routetable"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/securitygroup"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpc"
+	"github.com/crossplane/provider-aws/pkg/controller/eks"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iampolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrole"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrolepolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuser"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuserpolicyattachment"
-	"github.com/crossplane/provider-aws/pkg/controller/network/internetgateway"
-	"github.com/crossplane/provider-aws/pkg/controller/network/routetable"
-	"github.com/crossplane/provider-aws/pkg/controller/network/securitygroup"
-	"github.com/crossplane/provider-aws/pkg/controller/network/subnet"
-	"github.com/crossplane/provider-aws/pkg/controller/network/vpc"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
@@ -64,6 +65,9 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		database.SetupMySQLInstanceClaimDefaulting,
 		database.SetupMySQLInstanceClaimBinding,
 		database.SetupRDSInstance,
+		eks.SetupCluster,
+		eks.SetupClusterSecret,
+		eks.SetupClusterTarget,
 		s3.SetupBucketClaimScheduling,
 		s3.SetupBucketClaimDefaulting,
 		s3.SetupBucketClaimBinding,

@@ -279,7 +279,7 @@ func TestObserve(t *testing.T) {
 				iam: &fake.MockUserPolicyAttachmentClient{
 					MockListAttachedUserPolicies: func(input *awsiam.ListAttachedUserPoliciesInput) awsiam.ListAttachedUserPoliciesRequest {
 						return awsiam.ListAttachedUserPoliciesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.ListAttachedUserPoliciesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListAttachedUserPoliciesOutput{
 								AttachedPolicies: []awsiam.AttachedPolicy{
 									{
 										PolicyArn: &policyArn,
@@ -317,7 +317,7 @@ func TestObserve(t *testing.T) {
 				iam: &fake.MockUserPolicyAttachmentClient{
 					MockListAttachedUserPolicies: func(input *awsiam.ListAttachedUserPoliciesInput) awsiam.ListAttachedUserPoliciesRequest {
 						return awsiam.ListAttachedUserPoliciesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.ListAttachedUserPoliciesOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListAttachedUserPoliciesOutput{}},
 						}
 					},
 				},
@@ -380,7 +380,7 @@ func TestCreate(t *testing.T) {
 				iam: &fake.MockUserPolicyAttachmentClient{
 					MockAttachUserPolicy: func(input *awsiam.AttachUserPolicyInput) awsiam.AttachUserPolicyRequest {
 						return awsiam.AttachUserPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.AttachUserPolicyOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.AttachUserPolicyOutput{}},
 						}
 					},
 				},
@@ -458,7 +458,7 @@ func TestDelete(t *testing.T) {
 				iam: &fake.MockUserPolicyAttachmentClient{
 					MockDetachUserPolicy: func(input *awsiam.DetachUserPolicyInput) awsiam.DetachUserPolicyRequest {
 						return awsiam.DetachUserPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.DetachUserPolicyOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DetachUserPolicyOutput{}},
 						}
 					},
 				},

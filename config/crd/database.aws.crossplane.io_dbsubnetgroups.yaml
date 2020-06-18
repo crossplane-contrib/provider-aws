@@ -9,9 +9,6 @@ metadata:
   name: dbsubnetgroups.database.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .status.atProvider.state
-    name: STATE
-    type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
     type: string

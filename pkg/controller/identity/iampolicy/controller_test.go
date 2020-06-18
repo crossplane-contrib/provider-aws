@@ -292,14 +292,14 @@ func TestObserve(t *testing.T) {
 				iam: &fake.MockPolicyClient{
 					MockGetPolicyRequest: func(input *awsiam.GetPolicyInput) awsiam.GetPolicyRequest {
 						return awsiam.GetPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetPolicyOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.GetPolicyOutput{
 								Policy: &awsiam.Policy{},
 							}},
 						}
 					},
 					MockGetPolicyVersionRequest: func(input *awsiam.GetPolicyVersionInput) awsiam.GetPolicyVersionRequest {
 						return awsiam.GetPolicyVersionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetPolicyVersionOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.GetPolicyVersionOutput{
 								PolicyVersion: &awsiam.PolicyVersion{
 									Document: &document,
 								},
@@ -354,14 +354,14 @@ func TestObserve(t *testing.T) {
 				iam: &fake.MockPolicyClient{
 					MockGetPolicyRequest: func(input *awsiam.GetPolicyInput) awsiam.GetPolicyRequest {
 						return awsiam.GetPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetPolicyOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.GetPolicyOutput{
 								Policy: &awsiam.Policy{},
 							}},
 						}
 					},
 					MockGetPolicyVersionRequest: func(input *awsiam.GetPolicyVersionInput) awsiam.GetPolicyVersionRequest {
 						return awsiam.GetPolicyVersionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.GetPolicyVersionOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.GetPolicyVersionOutput{
 								PolicyVersion: &awsiam.PolicyVersion{
 									Document: &document,
 								},
@@ -419,7 +419,7 @@ func TestCreate(t *testing.T) {
 				iam: &fake.MockPolicyClient{
 					MockCreatePolicyRequest: func(input *awsiam.CreatePolicyInput) awsiam.CreatePolicyRequest {
 						return awsiam.CreatePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.CreatePolicyOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.CreatePolicyOutput{
 								Policy: &awsiam.Policy{
 									Arn: &arn,
 								},
@@ -504,17 +504,17 @@ func TestUpdate(t *testing.T) {
 				iam: &fake.MockPolicyClient{
 					MockListPolicyVersionsRequest: func(input *awsiam.ListPolicyVersionsInput) awsiam.ListPolicyVersionsRequest {
 						return awsiam.ListPolicyVersionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.ListPolicyVersionsOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListPolicyVersionsOutput{}},
 						}
 					},
 					MockDeletePolicyVersionRequest: func(input *awsiam.DeletePolicyVersionInput) awsiam.DeletePolicyVersionRequest {
 						return awsiam.DeletePolicyVersionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.DeletePolicyVersionOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DeletePolicyVersionOutput{}},
 						}
 					},
 					MockCreatePolicyVersionRequest: func(input *awsiam.CreatePolicyVersionInput) awsiam.CreatePolicyVersionRequest {
 						return awsiam.CreatePolicyVersionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.CreatePolicyVersionOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.CreatePolicyVersionOutput{}},
 						}
 					},
 				},
@@ -554,12 +554,12 @@ func TestUpdate(t *testing.T) {
 				iam: &fake.MockPolicyClient{
 					MockListPolicyVersionsRequest: func(input *awsiam.ListPolicyVersionsInput) awsiam.ListPolicyVersionsRequest {
 						return awsiam.ListPolicyVersionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.ListPolicyVersionsOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListPolicyVersionsOutput{}},
 						}
 					},
 					MockDeletePolicyVersionRequest: func(input *awsiam.DeletePolicyVersionInput) awsiam.DeletePolicyVersionRequest {
 						return awsiam.DeletePolicyVersionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.DeletePolicyVersionOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DeletePolicyVersionOutput{}},
 						}
 					},
 					MockCreatePolicyVersionRequest: func(input *awsiam.CreatePolicyVersionInput) awsiam.CreatePolicyVersionRequest {
@@ -611,17 +611,17 @@ func TestDelete(t *testing.T) {
 				iam: &fake.MockPolicyClient{
 					MockListPolicyVersionsRequest: func(input *awsiam.ListPolicyVersionsInput) awsiam.ListPolicyVersionsRequest {
 						return awsiam.ListPolicyVersionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.ListPolicyVersionsOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListPolicyVersionsOutput{}},
 						}
 					},
 					MockDeletePolicyVersionRequest: func(input *awsiam.DeletePolicyVersionInput) awsiam.DeletePolicyVersionRequest {
 						return awsiam.DeletePolicyVersionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.DeletePolicyVersionOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DeletePolicyVersionOutput{}},
 						}
 					},
 					MockDeletePolicyRequest: func(input *awsiam.DeletePolicyInput) awsiam.DeletePolicyRequest {
 						return awsiam.DeletePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.DeletePolicyOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DeletePolicyOutput{}},
 						}
 					},
 				},
@@ -646,7 +646,7 @@ func TestDelete(t *testing.T) {
 				iam: &fake.MockPolicyClient{
 					MockListPolicyVersionsRequest: func(input *awsiam.ListPolicyVersionsInput) awsiam.ListPolicyVersionsRequest {
 						return awsiam.ListPolicyVersionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.ListPolicyVersionsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListPolicyVersionsOutput{
 								Versions: []awsiam.PolicyVersion{
 									{
 										IsDefaultVersion: &boolFalse,
@@ -673,12 +673,12 @@ func TestDelete(t *testing.T) {
 				iam: &fake.MockPolicyClient{
 					MockListPolicyVersionsRequest: func(input *awsiam.ListPolicyVersionsInput) awsiam.ListPolicyVersionsRequest {
 						return awsiam.ListPolicyVersionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.ListPolicyVersionsOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListPolicyVersionsOutput{}},
 						}
 					},
 					MockDeletePolicyVersionRequest: func(input *awsiam.DeletePolicyVersionInput) awsiam.DeletePolicyVersionRequest {
 						return awsiam.DeletePolicyVersionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.DeletePolicyVersionOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DeletePolicyVersionOutput{}},
 						}
 					},
 					MockDeletePolicyRequest: func(input *awsiam.DeletePolicyInput) awsiam.DeletePolicyRequest {

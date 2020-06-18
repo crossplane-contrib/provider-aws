@@ -1,11 +1,11 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2020 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,246 +17,801 @@ limitations under the License.
 package eks
 
 import (
-	"encoding/base64"
-	"net/http"
-	"os"
+	"errors"
 	"testing"
+	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/google/go-cmp/cmp"
-	"github.com/onsi/gomega"
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/crossplane-runtime/pkg/test"
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+
+	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
 )
 
-// MockAMIClient mocks AMI client which is used to get information about AMI images
-type MockAMIClient struct {
-	MockImages  []ec2.Image
-	VerifyInput func(input *ec2.DescribeImagesInput)
-}
-
-// DescribeImagesRequest creates a DescribesImagesRequest
-func (m *MockAMIClient) DescribeImagesRequest(input *ec2.DescribeImagesInput) ec2.DescribeImagesRequest {
-	if m.VerifyInput != nil {
-		m.VerifyInput(input)
-	}
-
-	return ec2.DescribeImagesRequest{
-		Request: &aws.Request{
-			HTTPRequest: &http.Request{},
-			Data: &ec2.DescribeImagesOutput{
-				Images: m.MockImages,
-			},
-		},
-	}
-}
-
-var mockImages = []*ec2.Image{
-	{
-		CreationDate: aws.String("2019-08-13T11:38:33.006Z"),
-		ImageId:      aws.String("img0"),
-	},
-	{
-		CreationDate: aws.String("2019-08-14T11:38:33.001Z"),
-		ImageId:      aws.String("img1"),
-	},
-	{
-		CreationDate: aws.String("2019-08-14T11:38:33.000Z"),
-		ImageId:      aws.String("img2"),
-	},
-}
-
-func TestMain(m *testing.M) {
-	os.Exit(m.Run())
-}
-
-func TestGetMostRecent(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	cases := []struct {
-		expected string
-	}{
-		// img1 is the most recent image
-		{"img1"},
-	}
-
-	for _, tt := range cases {
-		actual := getMostRecentImage(mockImages)
-		g.Expect(*actual.ImageId).To(gomega.Equal(tt.expected))
-	}
-}
-
-func TestGetImageWithID(t *testing.T) {
-	g := gomega.NewGomegaWithT(t)
-
-	cases := []struct {
-		imageID     string
-		expectedImg *ec2.Image
-		errorNil    bool
-	}{
-		{"img1", mockImages[1], true},
-		{"img3", nil, false},
-	}
-
-	for _, tt := range cases {
-		img, err := getImageWithID(tt.imageID, mockImages)
-		g.Expect(img).To(gomega.Equal(tt.expectedImg))
-		g.Expect(err == nil).To(gomega.Equal(tt.errorNil))
-	}
-}
-
-func Test_GetAvailableImages_ValidVersion_ReturnsExpected(t *testing.T) {
-
-	mockClusterVersion := "v1.13.7"
-	expected := []*ec2.Image{{ImageId: aws.String("someami")}}
-	g := gomega.NewGomegaWithT(t)
-	mockEKSClient := eksClient{amiClient: &MockAMIClient{
-
-		VerifyInput: func(input *ec2.DescribeImagesInput) {
-			g.Expect(len(input.Filters)).To(gomega.Equal(2))
-			for _, f := range input.Filters {
-				switch *f.Name {
-				case "name":
-					g.Expect(f.Values[0]).To(gomega.Equal("*amazon-eks-node-1.13*"))
-				case "state":
-					g.Expect(f.Values[0]).To(gomega.Equal("available"))
-				}
-			}
-		},
-		MockImages: []ec2.Image{*expected[0]},
-	}}
-	res, err := mockEKSClient.getAvailableImages(mockClusterVersion)
-	g.Expect(res).To(gomega.Equal(expected))
-	g.Expect(err).Should(gomega.BeNil())
-}
-
-func Test_GetAvailableImages_InvalidVersion_ReturnsError(t *testing.T) {
-	mockInvalidVersion := "1.a"
-	g := gomega.NewGomegaWithT(t)
-	mockEKSClient := eksClient{}
-
-	res, err := mockEKSClient.getAvailableImages(mockInvalidVersion)
-
-	g.Expect(res).Should(gomega.BeNil())
-	g.Expect(err).ShouldNot(gomega.BeNil())
-}
-
-func Test_GetAMIImage_SpecificAMI_ReturnsExpected(t *testing.T) {
-	mockClusterVersion := "v1.13.7"
-	g := gomega.NewGomegaWithT(t)
-	mockEKSClient := eksClient{amiClient: &MockAMIClient{
-		MockImages: []ec2.Image{*mockImages[0], *mockImages[1], *mockImages[2]},
-	}}
-
-	// request specific ami
-	res, err := mockEKSClient.getAMIImage("img0", mockClusterVersion)
-
-	g.Expect(res).To(gomega.Equal(mockImages[0]))
-	g.Expect(err).Should(gomega.BeNil())
-}
-
-func Test_GetAMIImage_NoAMIGiven_ReturnsMostRecent(t *testing.T) {
-	mockClusterVersion := "v1.13.7"
-	g := gomega.NewGomegaWithT(t)
-	mockEKSClient := eksClient{amiClient: &MockAMIClient{
-		MockImages: []ec2.Image{*mockImages[0], *mockImages[1], *mockImages[2]},
-	}}
-
-	// no specific ami is given (returns the most recent one)
-	res, err := mockEKSClient.getAMIImage("", mockClusterVersion)
-
-	g.Expect(res).To(gomega.Equal(mockImages[1])) //mockImages[1] is the most recent
-	g.Expect(err).Should(gomega.BeNil())
-}
-
-func Test_GetAMIImage_NoAvailableAMI_ReturnsError(t *testing.T) {
-	mockClusterVersion := "v1.13.7"
-	g := gomega.NewGomegaWithT(t)
-	mockEKSClient := eksClient{amiClient: &MockAMIClient{
-		MockImages: []ec2.Image{},
-	}}
-
-	// no images for the given cluster, returns an error
-	res, err := mockEKSClient.getAMIImage("", mockClusterVersion)
-
-	g.Expect(res).Should(gomega.BeNil())
-	g.Expect(err).ShouldNot(gomega.BeNil())
-}
-
-func Test_GetAMIImage_InvalidVersion_ReturnsError(t *testing.T) {
-	mockInvalidVersion := "1.a"
-	g := gomega.NewGomegaWithT(t)
-	mockEKSClient := eksClient{}
-
-	res, err := mockEKSClient.getAMIImage("whateverImagename", mockInvalidVersion)
-
-	g.Expect(res).Should(gomega.BeNil())
-	g.Expect(err).ShouldNot(gomega.BeNil())
-}
-
-func TestGenerateClientConfig(t *testing.T) {
-	type args struct {
-		cluster *Cluster
-		token   string
-	}
-	type want struct {
-		cfg clientcmdapi.Config
-		err error
-	}
-	clusterCA := []byte("test-ca")
-	token := "test-token"
-	endpoint := "test-ep"
-	name := "my-eks-cluster"
+func TestIsErrorNotFound(t *testing.T) {
 	cases := map[string]struct {
-		args
-		want
+		err  error
+		want bool
 	}{
-		"Full": {
+		"IsErrorNotFound": {
+			err:  errors.New(eks.ErrCodeResourceNotFoundException),
+			want: true,
+		},
+		"NotErrorNotFound": {
+			err:  errors.New(eks.ErrCodeInvalidRequestException),
+			want: false,
+		},
+		"Nil": {
+			err:  nil,
+			want: false,
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := IsErrorNotFound(tc.err)
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestIsErrorInUse(t *testing.T) {
+	cases := map[string]struct {
+		err  error
+		want bool
+	}{
+		"IsErrorInUse": {
+			err:  errors.New(eks.ErrCodeResourceInUseException),
+			want: true,
+		},
+		"NotErrorInUse": {
+			err:  errors.New(eks.ErrCodeNotFoundException),
+			want: false,
+		},
+		"Nil": {
+			err:  nil,
+			want: false,
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := IsErrorInUse(tc.err)
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGenerateCreateClusterInput(t *testing.T) {
+	clusterName := "my-cool-cluster"
+	keyArn := "mykey:arn"
+	roleArn := "myrole:arn"
+	falseVal := false
+	trueVal := true
+	version := "1.16"
+
+	type args struct {
+		name string
+		p    *v1beta1.ClusterParameters
+	}
+
+	cases := map[string]struct {
+		args args
+		want *eks.CreateClusterInput
+	}{
+		"AllFields": {
 			args: args{
-				cluster: &Cluster{
-					Name:     name,
-					Endpoint: endpoint,
-					CA:       base64.StdEncoding.EncodeToString(clusterCA),
+				name: clusterName,
+				p: &v1beta1.ClusterParameters{
+					EncryptionConfig: []v1beta1.EncryptionConfig{
+						{
+							Provider: v1beta1.Provider{
+								KeyArn: keyArn,
+							},
+							Resources: []string{"secrets"},
+						},
+					},
+					Logging: &v1beta1.Logging{
+						ClusterLogging: []v1beta1.LogSetup{
+							{
+								Enabled: &falseVal,
+								Types: []v1beta1.LogType{
+									v1beta1.LogTypeAPI,
+								},
+							},
+						},
+					},
+					ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+						SecurityGroupIDs:      []string{"cool-sg-1"},
+						SubnetIDs:             []string{"cool-subnet"},
+					},
+					RoleArn: &roleArn,
+					Tags:    map[string]string{"key": "val"},
+					Version: &version,
 				},
-				token: token,
 			},
-			want: want{
-				cfg: clientcmdapi.Config{
-					Clusters: map[string]*clientcmdapi.Cluster{
-						name: {
-							Server:                   endpoint,
-							CertificateAuthorityData: clusterCA,
+			want: &eks.CreateClusterInput{
+				EncryptionConfig: []eks.EncryptionConfig{
+					{
+						Provider: &eks.Provider{
+							KeyArn: &keyArn,
 						},
+						Resources: []string{"secrets"},
 					},
-					Contexts: map[string]*clientcmdapi.Context{
-						name: {
-							Cluster:  name,
-							AuthInfo: name,
-						},
-					},
-					AuthInfos: map[string]*clientcmdapi.AuthInfo{
-						name: {
-							Token: token,
-						},
-					},
-					CurrentContext: name,
 				},
-				err: nil,
+				Logging: &eks.Logging{
+					ClusterLogging: []eks.LogSetup{
+						{
+							Enabled: &falseVal,
+							Types: []eks.LogType{
+								eks.LogTypeApi,
+							},
+						},
+					},
+				},
+				Name: &clusterName,
+				ResourcesVpcConfig: &eks.VpcConfigRequest{
+					EndpointPrivateAccess: &trueVal,
+					EndpointPublicAccess:  &trueVal,
+					PublicAccessCidrs:     []string{"0.0.0.0/0"},
+					SecurityGroupIds:      []string{"cool-sg-1"},
+					SubnetIds:             []string{"cool-subnet"},
+				},
+				RoleArn: &roleArn,
+				Tags:    map[string]string{"key": "val"},
+				Version: &version,
+			},
+		},
+		"SomeFields": {
+			args: args{
+				name: clusterName,
+				p: &v1beta1.ClusterParameters{
+					ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+						SecurityGroupIDs:      []string{"cool-sg-1"},
+						SubnetIDs:             []string{"cool-subnet"},
+					},
+					RoleArn: &roleArn,
+					Version: &version,
+				},
+			},
+			want: &eks.CreateClusterInput{
+				Name: &clusterName,
+				ResourcesVpcConfig: &eks.VpcConfigRequest{
+					EndpointPrivateAccess: &trueVal,
+					EndpointPublicAccess:  &trueVal,
+					PublicAccessCidrs:     []string{"0.0.0.0/0"},
+					SecurityGroupIds:      []string{"cool-sg-1"},
+					SubnetIds:             []string{"cool-subnet"},
+				},
+				RoleArn: &roleArn,
+				Version: &version,
 			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got, err := GenerateClientConfig(tc.cluster, tc.token)
-			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("GenerateClientConfig(...): -want error, +got error:\n%s", diff)
-				return
+			got := GenerateCreateClusterInput(tc.args.name, tc.args.p)
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.cfg, got); diff != "" {
-				t.Errorf("GenerateClientConfig(...): -want error, +got error:\n%s", diff)
+		})
+	}
+}
+
+func TestGenerateUpdateClusterInput(t *testing.T) {
+	clusterName := "my-cool-cluster"
+	keyArn := "mykey:arn"
+	roleArn := "myrole:arn"
+	falseVal := false
+	trueVal := true
+	version := "1.16"
+
+	type args struct {
+		name string
+		p    *v1beta1.ClusterParameters
+	}
+
+	cases := map[string]struct {
+		args args
+		want *eks.UpdateClusterConfigInput
+	}{
+		"AllFields": {
+			args: args{
+				name: clusterName,
+				p: &v1beta1.ClusterParameters{
+					EncryptionConfig: []v1beta1.EncryptionConfig{
+						{
+							Provider: v1beta1.Provider{
+								KeyArn: keyArn,
+							},
+							Resources: []string{"secrets"},
+						},
+					},
+					Logging: &v1beta1.Logging{
+						ClusterLogging: []v1beta1.LogSetup{
+							{
+								Enabled: &falseVal,
+								Types: []v1beta1.LogType{
+									v1beta1.LogTypeAPI,
+								},
+							},
+						},
+					},
+					ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+						SecurityGroupIDs:      []string{"cool-sg-1"},
+						SubnetIDs:             []string{"cool-subnet"},
+					},
+					RoleArn: &roleArn,
+					Tags:    map[string]string{"key": "val"},
+					Version: &version,
+				},
+			},
+			want: &eks.UpdateClusterConfigInput{
+				Logging: &eks.Logging{
+					ClusterLogging: []eks.LogSetup{
+						{
+							Enabled: &falseVal,
+							Types: []eks.LogType{
+								eks.LogTypeApi,
+							},
+						},
+					},
+				},
+				Name: &clusterName,
+				ResourcesVpcConfig: &eks.VpcConfigRequest{
+					EndpointPrivateAccess: &trueVal,
+					EndpointPublicAccess:  &trueVal,
+					PublicAccessCidrs:     []string{"0.0.0.0/0"},
+					SecurityGroupIds:      []string{"cool-sg-1"},
+					SubnetIds:             []string{"cool-subnet"},
+				},
+			},
+		},
+		"SomeFields": {
+			args: args{
+				name: clusterName,
+				p: &v1beta1.ClusterParameters{
+					ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+						SecurityGroupIDs:      []string{"cool-sg-1"},
+						SubnetIDs:             []string{"cool-subnet"},
+					},
+					RoleArn: &roleArn,
+					Version: &version,
+				},
+			},
+			want: &eks.UpdateClusterConfigInput{
+				Name: &clusterName,
+				ResourcesVpcConfig: &eks.VpcConfigRequest{
+					EndpointPrivateAccess: &trueVal,
+					EndpointPublicAccess:  &trueVal,
+					PublicAccessCidrs:     []string{"0.0.0.0/0"},
+					SecurityGroupIds:      []string{"cool-sg-1"},
+					SubnetIds:             []string{"cool-subnet"},
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := GenerateUpdateClusterConfigInput(tc.args.name, tc.args.p)
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGenerateObservation(t *testing.T) {
+	createTime := time.Now()
+	clusterArn := "my:arn"
+	endpoint := "https://my-endpoint.com"
+	oidcIssuer := "secret-issuer"
+	platformVersion := "eks1.0"
+	securityGrp := "sg-1234"
+	vpc := "vpc-1234"
+
+	cases := map[string]struct {
+		cluster *eks.Cluster
+		want    v1beta1.ClusterObservation
+	}{
+		"AllFields": {
+			cluster: &eks.Cluster{
+				Arn:       &clusterArn,
+				CreatedAt: &createTime,
+				Endpoint:  &endpoint,
+				Identity: &eks.Identity{
+					Oidc: &eks.OIDC{
+						Issuer: &oidcIssuer,
+					},
+				},
+				PlatformVersion: &platformVersion,
+				ResourcesVpcConfig: &eks.VpcConfigResponse{
+					ClusterSecurityGroupId: &securityGrp,
+					VpcId:                  &vpc,
+				},
+				Status: eks.ClusterStatusActive,
+			},
+			want: v1beta1.ClusterObservation{
+				Arn:       clusterArn,
+				CreatedAt: &metav1.Time{Time: createTime},
+				Endpoint:  endpoint,
+				Identity: v1beta1.Identity{
+					OIDC: v1beta1.OIDC{
+						Issuer: oidcIssuer,
+					},
+				},
+				PlatformVersion: platformVersion,
+				ResourcesVpcConfig: v1beta1.VpcConfigResponse{
+					ClusterSecurityGroupID: securityGrp,
+					VpcID:                  vpc,
+				},
+				Status: v1beta1.ClusterStatusActive,
+			},
+		},
+		"SomeFields": {
+			cluster: &eks.Cluster{
+				Arn:             &clusterArn,
+				CreatedAt:       &createTime,
+				PlatformVersion: &platformVersion,
+				ResourcesVpcConfig: &eks.VpcConfigResponse{
+					ClusterSecurityGroupId: &securityGrp,
+					VpcId:                  &vpc,
+				},
+				Status: eks.ClusterStatusActive,
+			},
+			want: v1beta1.ClusterObservation{
+				Arn:             clusterArn,
+				CreatedAt:       &metav1.Time{Time: createTime},
+				PlatformVersion: platformVersion,
+				ResourcesVpcConfig: v1beta1.VpcConfigResponse{
+					ClusterSecurityGroupID: securityGrp,
+					VpcID:                  vpc,
+				},
+				Status: v1beta1.ClusterStatusActive,
+			},
+		},
+		"NilCluster": {
+			cluster: nil,
+			want:    v1beta1.ClusterObservation{},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := GenerateObservation(tc.cluster)
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestLateInitialize(t *testing.T) {
+	clusterName := "my-cool-cluster"
+	keyArn := "mykey:arn"
+	roleArn := "myrole:arn"
+	falseVal := false
+	trueVal := true
+	version := "1.16"
+
+	cases := map[string]struct {
+		parameters *v1beta1.ClusterParameters
+		cluster    *eks.Cluster
+		want       *v1beta1.ClusterParameters
+	}{
+		"AllOptionalFields": {
+			parameters: &v1beta1.ClusterParameters{
+				ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+					SecurityGroupIDs: []string{"cool-sg-1"},
+					SubnetIDs:        []string{"cool-subnet"},
+				},
+				RoleArn: &roleArn,
+				Tags:    map[string]string{"key": "val"},
+				Version: &version,
+			},
+			cluster: &eks.Cluster{
+				EncryptionConfig: []eks.EncryptionConfig{
+					{
+						Provider: &eks.Provider{
+							KeyArn: &keyArn,
+						},
+						Resources: []string{"secrets"},
+					},
+				},
+				Logging: &eks.Logging{
+					ClusterLogging: []eks.LogSetup{
+						{
+							Enabled: &falseVal,
+							Types: []eks.LogType{
+								eks.LogTypeApi,
+							},
+						},
+					},
+				},
+				Name: &clusterName,
+				ResourcesVpcConfig: &eks.VpcConfigResponse{
+					EndpointPrivateAccess: &trueVal,
+					EndpointPublicAccess:  &trueVal,
+					PublicAccessCidrs:     []string{"0.0.0.0/0"},
+					SecurityGroupIds:      []string{"cool-sg-1"},
+					SubnetIds:             []string{"cool-subnet"},
+				},
+				RoleArn: &roleArn,
+				Tags:    map[string]string{"key": "val"},
+				Version: &version,
+			},
+			want: &v1beta1.ClusterParameters{
+				EncryptionConfig: []v1beta1.EncryptionConfig{
+					{
+						Provider: v1beta1.Provider{
+							KeyArn: keyArn,
+						},
+						Resources: []string{"secrets"},
+					},
+				},
+				Logging: &v1beta1.Logging{
+					ClusterLogging: []v1beta1.LogSetup{
+						{
+							Enabled: &falseVal,
+							Types: []v1beta1.LogType{
+								v1beta1.LogTypeAPI,
+							},
+						},
+					},
+				},
+				ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+					EndpointPrivateAccess: &trueVal,
+					EndpointPublicAccess:  &trueVal,
+					PublicAccessCidrs:     []string{"0.0.0.0/0"},
+					SecurityGroupIDs:      []string{"cool-sg-1"},
+					SubnetIDs:             []string{"cool-subnet"},
+				},
+				RoleArn: &roleArn,
+				Tags:    map[string]string{"key": "val"},
+				Version: &version,
+			},
+		},
+		"SomeFieldsDontOverwrite": {
+			parameters: &v1beta1.ClusterParameters{
+				ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+					SecurityGroupIDs: []string{"cool-sg-1"},
+					SubnetIDs:        []string{"cool-subnet"},
+				},
+				RoleArn: &roleArn,
+				Tags:    map[string]string{"key": "val"},
+				Version: &version,
+			},
+			cluster: &eks.Cluster{
+				EncryptionConfig: []eks.EncryptionConfig{
+					{
+						Provider: &eks.Provider{
+							KeyArn: &keyArn,
+						},
+						Resources: []string{"secrets"},
+					},
+				},
+				RoleArn: &roleArn,
+				Tags:    map[string]string{"dont": "overwrite"},
+				Version: &version,
+			},
+			want: &v1beta1.ClusterParameters{
+				EncryptionConfig: []v1beta1.EncryptionConfig{
+					{
+						Provider: v1beta1.Provider{
+							KeyArn: keyArn,
+						},
+						Resources: []string{"secrets"},
+					},
+				},
+				ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+					SecurityGroupIDs: []string{"cool-sg-1"},
+					SubnetIDs:        []string{"cool-subnet"},
+				},
+				RoleArn: &roleArn,
+				Tags:    map[string]string{"key": "val"},
+				Version: &version,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			LateInitialize(tc.parameters, tc.cluster)
+			if diff := cmp.Diff(tc.want, tc.parameters); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestIsUpToDate(t *testing.T) {
+	clusterName := "my-cool-cluster"
+	keyArn := "mykey:arn"
+	roleArn := "myrole:arn"
+	falseVal := false
+	trueVal := true
+	version := "1.16"
+	otherVersion := "1.15"
+
+	type args struct {
+		cluster *eks.Cluster
+		p       *v1beta1.ClusterParameters
+	}
+
+	cases := map[string]struct {
+		args args
+		want bool
+	}{
+		"SameFields": {
+			args: args{
+				p: &v1beta1.ClusterParameters{
+					EncryptionConfig: []v1beta1.EncryptionConfig{
+						{
+							Provider: v1beta1.Provider{
+								KeyArn: keyArn,
+							},
+							Resources: []string{"secrets"},
+						},
+					},
+					Logging: &v1beta1.Logging{
+						ClusterLogging: []v1beta1.LogSetup{
+							{
+								Enabled: &falseVal,
+								Types: []v1beta1.LogType{
+									v1beta1.LogTypeAPI,
+								},
+							},
+						},
+					},
+					ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+						SecurityGroupIDs:      []string{"cool-sg-1"},
+						SubnetIDs:             []string{"cool-subnet"},
+					},
+					RoleArn: &roleArn,
+					Tags:    map[string]string{"key": "val"},
+					Version: &version,
+				},
+				cluster: &eks.Cluster{
+					EncryptionConfig: []eks.EncryptionConfig{
+						{
+							Provider: &eks.Provider{
+								KeyArn: &keyArn,
+							},
+							Resources: []string{"secrets"},
+						},
+					},
+					Logging: &eks.Logging{
+						ClusterLogging: []eks.LogSetup{
+							{
+								Enabled: &falseVal,
+								Types: []eks.LogType{
+									eks.LogTypeApi,
+								},
+							},
+						},
+					},
+					Name: &clusterName,
+					ResourcesVpcConfig: &eks.VpcConfigResponse{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+						SecurityGroupIds:      []string{"cool-sg-1"},
+						SubnetIds:             []string{"cool-subnet"},
+					},
+					RoleArn: &roleArn,
+					Tags:    map[string]string{"key": "val"},
+					Version: &version,
+				},
+			},
+			want: true,
+		},
+		"DifferentFields": {
+			args: args{
+				p: &v1beta1.ClusterParameters{
+					ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+						SecurityGroupIDs:      []string{"cool-sg-1"},
+						SubnetIDs:             []string{"cool-subnet"},
+					},
+					RoleArn: &roleArn,
+					Tags:    map[string]string{"key": "val"},
+					Version: &version,
+				},
+				cluster: &eks.Cluster{
+					Name: &clusterName,
+					ResourcesVpcConfig: &eks.VpcConfigResponse{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+						SecurityGroupIds:      []string{"cool-sg-1"},
+						SubnetIds:             []string{"cool-subnet"},
+					},
+					RoleArn: &roleArn,
+					Tags:    map[string]string{"key": "val"},
+					Version: &otherVersion,
+				},
+			},
+			want: false,
+		},
+		"IgnoreRefs": {
+			args: args{
+				p: &v1beta1.ClusterParameters{
+					ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+						SecurityGroupIDs:      []string{"cool-sg-1"},
+						SecurityGroupIDRefs: []v1alpha1.Reference{
+							{
+								Name: "cool-ref",
+							},
+						},
+						SecurityGroupIDSelector: &v1alpha1.Selector{
+							MatchLabels: map[string]string{"key": "val"},
+						},
+						SubnetIDs: []string{"cool-subnet"},
+						SubnetIDRefs: []v1alpha1.Reference{
+							{
+								Name: "cool-ref",
+							},
+						},
+						SubnetIDSelector: &v1alpha1.Selector{
+							MatchLabels: map[string]string{"key": "val"},
+						},
+					},
+					RoleArn: &roleArn,
+					RoleArnRef: &v1alpha1.Reference{
+						Name: "fun-ref",
+					},
+					RoleArnSelector: &v1alpha1.Selector{
+						MatchLabels: map[string]string{"key": "val"},
+					},
+					Tags:    map[string]string{"key": "val"},
+					Version: &version,
+				},
+				cluster: &eks.Cluster{
+					Name: &clusterName,
+					ResourcesVpcConfig: &eks.VpcConfigResponse{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+						SecurityGroupIds:      []string{"cool-sg-1"},
+						SubnetIds:             []string{"cool-subnet"},
+					},
+					RoleArn: &roleArn,
+					Tags:    map[string]string{"key": "val"},
+					Version: &version,
+				},
+			},
+			want: true,
+		},
+		"EquivalentCIDRs": {
+			args: args{
+				p: &v1beta1.ClusterParameters{
+					ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+						PublicAccessCidrs: []string{"0.0.0.10/24"},
+					},
+				},
+				cluster: &eks.Cluster{
+					ResourcesVpcConfig: &eks.VpcConfigResponse{
+						PublicAccessCidrs: []string{"0.0.0.0/24"},
+					},
+				},
+			},
+			want: true,
+		},
+		"MultipleEquivalentCIDRs": {
+			args: args{
+				p: &v1beta1.ClusterParameters{
+					ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+						PublicAccessCidrs: []string{"0.0.0.10/24", "0.0.0.255/24", "1.1.1.1/8"},
+					},
+				},
+				cluster: &eks.Cluster{
+					ResourcesVpcConfig: &eks.VpcConfigResponse{
+						PublicAccessCidrs: []string{"0.0.0.0/24", "1.0.0.0/8"},
+					},
+				},
+			},
+			want: true,
+		},
+		"NotEquivalentCIDRs": {
+			args: args{
+				p: &v1beta1.ClusterParameters{
+					ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+						PublicAccessCidrs: []string{"0.0.0.10/24", "0.0.0.255/24", "1.1.1.1/16"},
+					},
+				},
+				cluster: &eks.Cluster{
+					ResourcesVpcConfig: &eks.VpcConfigResponse{
+						PublicAccessCidrs: []string{"0.0.0.0/24", "1.0.0.0/8"},
+					},
+				},
+			},
+			want: false,
+		},
+		"DifferentTags": {
+			args: args{
+				p: &v1beta1.ClusterParameters{
+					ResourcesVpcConfig: v1beta1.VpcConfigRequest{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+						SecurityGroupIDs:      []string{"cool-sg-1"},
+						SecurityGroupIDRefs: []v1alpha1.Reference{
+							{
+								Name: "cool-ref",
+							},
+						},
+						SecurityGroupIDSelector: &v1alpha1.Selector{
+							MatchLabels: map[string]string{"key": "val"},
+						},
+						SubnetIDs: []string{"cool-subnet"},
+						SubnetIDRefs: []v1alpha1.Reference{
+							{
+								Name: "cool-ref",
+							},
+						},
+						SubnetIDSelector: &v1alpha1.Selector{
+							MatchLabels: map[string]string{"key": "val"},
+						},
+					},
+					RoleArn: &roleArn,
+					RoleArnRef: &v1alpha1.Reference{
+						Name: "fun-ref",
+					},
+					RoleArnSelector: &v1alpha1.Selector{
+						MatchLabels: map[string]string{"key": "val"},
+					},
+					Tags:    map[string]string{"key": "val", "another": "tag"},
+					Version: &version,
+				},
+				cluster: &eks.Cluster{
+					Name: &clusterName,
+					ResourcesVpcConfig: &eks.VpcConfigResponse{
+						EndpointPrivateAccess: &trueVal,
+						EndpointPublicAccess:  &trueVal,
+						PublicAccessCidrs:     []string{"0.0.0.0/0"},
+						SecurityGroupIds:      []string{"cool-sg-1"},
+						SubnetIds:             []string{"cool-subnet"},
+					},
+					RoleArn: &roleArn,
+					Tags:    map[string]string{"key": "val"},
+					Version: &version,
+				},
+			},
+			want: false,
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got, _ := IsUpToDate(tc.args.p, tc.args.cluster)
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
 	}
