@@ -37,7 +37,7 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 		Reference:    mg.Spec.ForProvider.RoleArnRef,
 		Selector:     mg.Spec.ForProvider.RoleArnSelector,
 		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
-		Extract:      reference.ExternalName(),
+		Extract:      iamv1beta1.IAMRoleARN(),
 	})
 	if err != nil {
 		return err
