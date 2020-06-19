@@ -35,7 +35,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	"github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -64,30 +64,30 @@ var (
 type args struct {
 	rt   ec2.RouteTableClient
 	kube client.Client
-	cr   *v1beta1.RouteTable
+	cr   *v1alpha4.RouteTable
 }
 
-type rtModifier func(*v1beta1.RouteTable)
+type rtModifier func(*v1alpha4.RouteTable)
 
 func withExternalName(name string) rtModifier {
-	return func(r *v1beta1.RouteTable) { meta.SetExternalName(r, name) }
+	return func(r *v1alpha4.RouteTable) { meta.SetExternalName(r, name) }
 }
 
-func withSpec(p v1beta1.RouteTableParameters) rtModifier {
-	return func(r *v1beta1.RouteTable) { r.Spec.ForProvider = p }
+func withSpec(p v1alpha4.RouteTableParameters) rtModifier {
+	return func(r *v1alpha4.RouteTable) { r.Spec.ForProvider = p }
 }
 
-func withStatus(s v1beta1.RouteTableObservation) rtModifier {
-	return func(r *v1beta1.RouteTable) { r.Status.AtProvider = s }
+func withStatus(s v1alpha4.RouteTableObservation) rtModifier {
+	return func(r *v1alpha4.RouteTable) { r.Status.AtProvider = s }
 }
 
 func withConditions(c ...runtimev1alpha1.Condition) rtModifier {
-	return func(r *v1beta1.RouteTable) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1alpha4.RouteTable) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func rt(m ...rtModifier) *v1beta1.RouteTable {
-	cr := &v1beta1.RouteTable{
-		Spec: v1beta1.RouteTableSpec{
+func rt(m ...rtModifier) *v1alpha4.RouteTable {
+	cr := &v1alpha4.RouteTable{
+		Spec: v1alpha4.RouteTableSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
 				ProviderReference: &corev1.ObjectReference{Name: providerName},
 			},
@@ -133,7 +133,7 @@ func TestConnect(t *testing.T) {
 	type args struct {
 		kube        client.Client
 		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (ec2.RouteTableClient, error)
-		cr          *v1beta1.RouteTable
+		cr          *v1alpha4.RouteTable
 	}
 	type want struct {
 		err error
@@ -268,7 +268,7 @@ func TestConnect(t *testing.T) {
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.RouteTable
+		cr     *v1alpha4.RouteTable
 		result managed.ExternalObservation
 		err    error
 	}
@@ -290,12 +290,12 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1beta1.RouteTableParameters{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				}), withExternalName(rtID)),
 			},
 			want: want{
-				cr: rt(withSpec(v1beta1.RouteTableParameters{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				}), withExternalName(rtID), withConditions(runtimev1alpha1.Available())),
 				result: managed.ExternalObservation{
@@ -360,7 +360,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.RouteTable
+		cr     *v1alpha4.RouteTable
 		result managed.ExternalCreation
 		err    error
 	}
@@ -384,12 +384,12 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1beta1.RouteTableParameters{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				})),
 			},
 			want: want{
-				cr: rt(withSpec(v1beta1.RouteTableParameters{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				}), withExternalName(rtID),
 					withConditions(runtimev1alpha1.Creating())),
@@ -408,12 +408,12 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1beta1.RouteTableParameters{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				}), withExternalName(rtID)),
 			},
 			want: want{
-				cr: rt(withSpec(v1beta1.RouteTableParameters{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				}), withExternalName(rtID), withConditions(runtimev1alpha1.Creating())),
 				err: errors.New(errCreate),
@@ -432,12 +432,12 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1beta1.RouteTableParameters{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				})),
 			},
 			want: want{
-				cr: rt(withSpec(v1beta1.RouteTableParameters{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				}), withConditions(runtimev1alpha1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
@@ -465,7 +465,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.RouteTable
+		cr     *v1alpha4.RouteTable
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -495,28 +495,28 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					Routes: []v1beta1.Route{{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Routes: []v1alpha4.Route{{
 						GatewayID: aws.String(igID),
 					}},
-					Associations: []v1beta1.Association{{
+					Associations: []v1alpha4.Association{{
 						SubnetID: aws.String(subnetID),
 					}},
 				}),
-					withStatus(v1beta1.RouteTableObservation{
+					withStatus(v1alpha4.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
 			want: want{
-				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					Routes: []v1beta1.Route{{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Routes: []v1alpha4.Route{{
 						GatewayID: aws.String(igID),
 					}},
-					Associations: []v1beta1.Association{{
+					Associations: []v1alpha4.Association{{
 						SubnetID: aws.String(subnetID),
 					}},
 				}),
-					withStatus(v1beta1.RouteTableObservation{
+					withStatus(v1alpha4.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
@@ -537,22 +537,22 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					Routes: []v1beta1.Route{{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Routes: []v1alpha4.Route{{
 						GatewayID: aws.String(igID),
 					}},
 				}),
-					withStatus(v1beta1.RouteTableObservation{
+					withStatus(v1alpha4.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
 			want: want{
-				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					Routes: []v1beta1.Route{{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Routes: []v1alpha4.Route{{
 						GatewayID: aws.String(igID),
 					}},
 				}),
-					withStatus(v1beta1.RouteTableObservation{
+					withStatus(v1alpha4.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 				err: errors.Wrap(errBoom, errCreateRoute),
@@ -580,7 +580,7 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *v1beta1.RouteTable
+		cr  *v1alpha4.RouteTable
 		err error
 	}
 
@@ -597,12 +597,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withStatus(v1beta1.RouteTableObservation{
+				cr: rt(withStatus(v1alpha4.RouteTableObservation{
 					RouteTableID: rtID,
 				})),
 			},
 			want: want{
-				cr: rt(withStatus(v1beta1.RouteTableObservation{
+				cr: rt(withStatus(v1alpha4.RouteTableObservation{
 					RouteTableID: rtID,
 				}), withConditions(runtimev1alpha1.Deleting())),
 			},
@@ -616,12 +616,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withStatus(v1beta1.RouteTableObservation{
+				cr: rt(withStatus(v1alpha4.RouteTableObservation{
 					RouteTableID: rtID,
 				})),
 			},
 			want: want{
-				cr: rt(withStatus(v1beta1.RouteTableObservation{
+				cr: rt(withStatus(v1alpha4.RouteTableObservation{
 					RouteTableID: rtID,
 				}), withConditions(runtimev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
