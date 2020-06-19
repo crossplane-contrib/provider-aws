@@ -68,6 +68,9 @@ func SetupCertificateAuthority(mgr ctrl.Manager, l logging.Logger) error {
 			resource.ManagedKind(v1alpha1.CertificateAuthorityGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acmpca.NewClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
 			managed.WithConnectionPublishers(),
+
+			// TODO: implement tag initializer
+
 			managed.WithInitializers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
