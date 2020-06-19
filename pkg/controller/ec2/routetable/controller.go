@@ -150,7 +150,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	observed := response.RouteTables[0]
 	current := cr.Spec.ForProvider.DeepCopy()
-	ec2.LateInitializeRT(&cr.Spec.ForProvider, &response.RouteTables[0], cr.Spec.ForProvider)
+	ec2.LateInitializeRT(&cr.Spec.ForProvider, &response.RouteTables[0])
 	if !cmp.Equal(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
 			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
