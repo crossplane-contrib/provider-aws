@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2020 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,12 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1beta1
+package v1alpha4
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+
+	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
 
 // Route describes a route in a route table.
@@ -99,7 +101,7 @@ type RouteTableParameters struct {
 
 	// Tags represents to current ec2 tags.
 	// +optional
-	Tags []Tag `json:"tags,omitempty"`
+	Tags []ec2v1beta1.Tag `json:"tags,omitempty"`
 
 	// VPCID is the ID of the VPC.
 	// +optional
