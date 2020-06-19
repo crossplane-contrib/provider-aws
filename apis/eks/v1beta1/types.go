@@ -84,8 +84,7 @@ type ClusterParameters struct {
 	//
 	// RoleArn is a required field
 	// +immutable
-	// +optional
-	RoleArn *string `json:"roleArn"`
+	RoleArn *string `json:"roleArn,omitempty"`
 
 	// RoleArnRef is a reference to an IAMRole used to set
 	// the RoleArn.
@@ -195,12 +194,12 @@ type VpcConfigRequest struct {
 	// SecurityGroupIDRefs are references to SecurityGroups used to set
 	// the SecurityGroupIDs.
 	// +optional
-	SecurityGroupIDRefs []runtimev1alpha1.Reference `json:"securityGroupIDRefs,omitempty"`
+	SecurityGroupIDRefs []runtimev1alpha1.Reference `json:"securityGroupIdRefs,omitempty"`
 
 	// SecurityGroupIDSelector selects references to SecurityGroups used
 	// to set the SecurityGroupIDs.
 	// +optional
-	SecurityGroupIDSelector *runtimev1alpha1.Selector `json:"securityGroupIDSelector,omitempty"`
+	SecurityGroupIDSelector *runtimev1alpha1.Selector `json:"securityGroupIdSelector,omitempty"`
 
 	// Specify subnets for your Amazon EKS worker nodes. Amazon EKS creates cross-account
 	// elastic network interfaces in these subnets to allow communication between
@@ -211,12 +210,12 @@ type VpcConfigRequest struct {
 	// SubnetIDRefs are references to Subnets used to set
 	// the SubnetIDs.
 	// +optional
-	SubnetIDRefs []runtimev1alpha1.Reference `json:"subnetIDRefs,omitempty"`
+	SubnetIDRefs []runtimev1alpha1.Reference `json:"subnetIdRefs,omitempty"`
 
 	// SubnetIDSelector selects references to Subnets used
 	// to set the SubnetIDs.
 	// +optional
-	SubnetIDSelector *runtimev1alpha1.Selector `json:"subnetIDSelector,omitempty"`
+	SubnetIDSelector *runtimev1alpha1.Selector `json:"subnetIdSelector,omitempty"`
 }
 
 // ClusterObservation is the observed state of a cluster.

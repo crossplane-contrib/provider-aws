@@ -246,7 +246,7 @@ spec:
                       items:
                         type: string
                       type: array
-                    securityGroupIDRefs:
+                    securityGroupIdRefs:
                       description: SecurityGroupIDRefs are references to SecurityGroups
                         used to set the SecurityGroupIDs.
                       items:
@@ -259,7 +259,7 @@ spec:
                         - name
                         type: object
                       type: array
-                    securityGroupIDSelector:
+                    securityGroupIdSelector:
                       description: SecurityGroupIDSelector selects references to SecurityGroups
                         used to set the SecurityGroupIDs.
                       properties:
@@ -283,7 +283,7 @@ spec:
                       items:
                         type: string
                       type: array
-                    subnetIDRefs:
+                    subnetIdRefs:
                       description: SubnetIDRefs are references to Subnets used to
                         set the SubnetIDs.
                       items:
@@ -296,7 +296,7 @@ spec:
                         - name
                         type: object
                       type: array
-                    subnetIDSelector:
+                    subnetIdSelector:
                       description: SubnetIDSelector selects references to Subnets
                         used to set the SubnetIDs.
                       properties:
