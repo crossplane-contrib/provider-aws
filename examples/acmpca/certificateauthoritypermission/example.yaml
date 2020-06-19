@@ -4,7 +4,7 @@ metadata:
   name: example
 spec:
   forProvider:
-    certificateAuthorityArnRef:
+    certificateAuthorityARNRef:
       name: example
   reclaimPolicy: Delete
   providerRef:

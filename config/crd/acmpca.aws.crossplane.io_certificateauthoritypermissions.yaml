@@ -135,12 +135,12 @@ spec:
                   items:
                     type: string
                   type: array
-                certificateAuthorityArn:
+                certificateAuthorityARN:
                   description: The Amazon Resource Name (ARN) of the private certificate
                     authority (CA)that will be used to issue the certificate.
                   type: string
-                certificateAuthorityArnRef:
-                  description: CertificateAuthorityArnRef references an CertificateAuthority
+                certificateAuthorityARNRef:
+                  description: CertificateAuthorityARNRef references an CertificateAuthority
                     to retrieve its Arn
                   properties:
                     name:
@@ -149,8 +149,8 @@ spec:
                   required:
                   - name
                   type: object
-                certificateAuthorityArnSelector:
-                  description: CertificateAuthorityArnSelector selects a reference
+                certificateAuthorityARNSelector:
+                  description: CertificateAuthorityARNSelector selects a reference
                     to an CertificateAuthority to retrieve its Arn
                   properties:
                     matchControllerRef:

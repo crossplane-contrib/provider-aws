@@ -245,7 +245,6 @@ spec:
                       type: string
                   required:
                   - enabled
-                  - s3BucketName
                   type: object
                 status:
                   description: Status of the certificate authority
@@ -283,7 +282,6 @@ spec:
                   type: string
               required:
               - certificateAuthorityConfiguration
-              - revocationConfiguration
               - type
               type: object
             providerRef:
@@ -367,7 +365,7 @@ spec:
               description: CertificateAuthorityExternalStatus keeps the state of external
                 resource
               properties:
-                certificateAuthorityArn:
+                certificateAuthorityARN:
                   description: String that contains the ARN of the issued certificate
                     Authority
                   type: string
@@ -375,7 +373,7 @@ spec:
                   description: Serial of the Certificate Authority
                   type: string
               required:
-              - certificateAuthorityArn
+              - certificateAuthorityARN
               - serial
               type: object
             bindingPhase:
