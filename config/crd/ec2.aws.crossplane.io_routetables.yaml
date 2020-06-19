@@ -448,9 +448,9 @@ spec:
       required:
       - spec
       type: object
-  version: v1beta1
+  version: v1alpha4
   versions:
-  - name: v1beta1
+  - name: v1alpha4
     served: true
     storage: true
 status:
