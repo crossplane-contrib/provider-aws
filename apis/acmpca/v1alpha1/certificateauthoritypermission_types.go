@@ -37,17 +37,17 @@ type CertificateAuthorityPermissionParameters struct {
 
 	// The Amazon Resource Name (ARN) of the private certificate authority (CA)that will be used to issue the certificate.
 	// +immutable
-	CertificateAuthorityARN *string `json:"certificateAuthorityArn,omitempty"`
+	CertificateAuthorityARN *string `json:"certificateAuthorityARN,omitempty"`
 
-	// CertificateAuthorityArnRef references an CertificateAuthority to retrieve its Arn
+	// CertificateAuthorityARNRef references an CertificateAuthority to retrieve its Arn
 	// +optional
 	// +immutable
-	CertificateAuthorityARNRef *runtimev1alpha1.Reference `json:"certificateAuthorityArnRef,omitempty"`
+	CertificateAuthorityARNRef *runtimev1alpha1.Reference `json:"certificateAuthorityARNRef,omitempty"`
 
-	// CertificateAuthorityArnSelector selects a reference to an CertificateAuthority to retrieve its Arn
+	// CertificateAuthorityARNSelector selects a reference to an CertificateAuthority to retrieve its Arn
 	// +optional
 	// +immutable
-	CertificateAuthorityARNSelector *runtimev1alpha1.Selector `json:"certificateAuthorityArnSelector,omitempty"`
+	CertificateAuthorityARNSelector *runtimev1alpha1.Selector `json:"certificateAuthorityARNSelector,omitempty"`
 
 	// The actions that the specified AWS service principal can use.
 	// +optional

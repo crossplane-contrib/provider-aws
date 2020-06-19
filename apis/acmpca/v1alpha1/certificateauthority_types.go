@@ -29,7 +29,6 @@ type Tag struct {
 	Key string `json:"key"`
 
 	// The value associated with this tag.
-	// +optional
 	Value string `json:"value,omitempty"`
 }
 
@@ -37,9 +36,10 @@ type Tag struct {
 type RevocationConfiguration struct {
 
 	// Boolean value that specifies certificate revocation
-	Enabled *bool `json:"enabled"`
+	Enabled bool `json:"enabled"`
 
 	// Name of the S3 bucket that contains the CRL
+	// +optional
 	S3BucketName *string `json:"s3BucketName"`
 
 	// Alias for the CRL distribution point
@@ -71,27 +71,27 @@ type Subject struct {
 
 	// Organization legal name
 	// +immutable
-	Organization *string `json:"organization"`
+	Organization string `json:"organization"`
 
 	// Organization's subdivision or unit
 	// +immutable
-	OrganizationalUnit *string `json:"organizationalUnit"`
+	OrganizationalUnit string `json:"organizationalUnit"`
 
 	// Two-digit code that specifies the country
 	// +immutable
-	Country *string `json:"country"`
+	Country string `json:"country"`
 
 	// State in which the subject of the certificate is located
 	// +immutable
-	State *string `json:"state"`
+	State string `json:"state"`
 
 	// The locality such as a city or town
 	// +immutable
-	Locality *string `json:"locality"`
+	Locality string `json:"locality"`
 
 	// FQDN associated with the certificate subject
 	// +immutable
-	CommonName *string `json:"commonName"`
+	CommonName string `json:"commonName"`
 
 	// Disambiguating information for the certificate subject.
 	// +optional
@@ -143,7 +143,7 @@ type CertificateAuthoritySpec struct {
 // CertificateAuthorityExternalStatus keeps the state of external resource
 type CertificateAuthorityExternalStatus struct {
 	// String that contains the ARN of the issued certificate Authority
-	CertificateAuthorityARN string `json:"certificateAuthorityArn"`
+	CertificateAuthorityARN string `json:"certificateAuthorityARN"`
 
 	// Serial of the Certificate Authority
 	Serial *string `json:"serial"`
@@ -164,10 +164,11 @@ type CertificateAuthorityParameters struct {
 	// Status of the certificate authority
 	// +optional
 	// +kubebuilder:validation:Enum=CREATING;PENDING_CERTIFICATE;ACTIVE;DELETED;DISABLED;EXPIRED;FAILED
-	Status acmpca.CertificateAuthorityStatus `json:"status,omitempty"`
+	Status *acmpca.CertificateAuthorityStatus `json:"status,omitempty"`
 
 	// RevocationConfiguration to associate with the certificateAuthority.
-	RevocationConfiguration RevocationConfiguration `json:"revocationConfiguration"`
+	// +optional
+	RevocationConfiguration *RevocationConfiguration `json:"revocationConfiguration,omitempty"`
 
 	// CertificateAuthorityConfiguration to associate with the certificateAuthority.
 	CertificateAuthorityConfiguration CertificateAuthorityConfiguration `json:"certificateAuthorityConfiguration"`
