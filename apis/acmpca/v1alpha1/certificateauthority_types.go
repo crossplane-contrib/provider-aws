@@ -29,7 +29,7 @@ type Tag struct {
 	Key string `json:"key"`
 
 	// The value associated with this tag.
-	Value string `json:"value,omitempty"`
+	Value string `json:"value"`
 }
 
 // RevocationConfiguration is configuration of the certificate revocation list
@@ -40,7 +40,7 @@ type RevocationConfiguration struct {
 
 	// Name of the S3 bucket that contains the CRL
 	// +optional
-	S3BucketName *string `json:"s3BucketName"`
+	S3BucketName *string `json:"s3BucketName,omitempty"`
 
 	// Alias for the CRL distribution point
 	// +optional
@@ -182,7 +182,7 @@ type CertificateAuthorityParameters struct {
 	PermanentDeletionTimeInDays *int64 `json:"permanentDeletionTimeInDays,omitempty"`
 
 	// One or more resource tags to associate with the certificateAuthority.
-	Tags []Tag `json:"tags,omitempty"`
+	Tags []Tag `json:"tags"`
 }
 
 // +kubebuilder:object:root=true
