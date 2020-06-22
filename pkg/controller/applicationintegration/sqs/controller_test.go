@@ -281,21 +281,21 @@ func TestObserve(t *testing.T) {
 				sqs: &fake.MockSQSClient{
 					MockGetQueueAttributesRequest: func(input *awssqs.GetQueueAttributesInput) awssqs.GetQueueAttributesRequest {
 						return awssqs.GetQueueAttributesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.GetQueueAttributesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.GetQueueAttributesOutput{
 								Attributes: attributes,
 							}},
 						}
 					},
 					MockListQueueTagsRequest: func(input *awssqs.ListQueueTagsInput) awssqs.ListQueueTagsRequest {
 						return awssqs.ListQueueTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.ListQueueTagsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.ListQueueTagsOutput{
 								Tags: attributes,
 							}},
 						}
 					},
 					MockGetQueueURLRequest: func(input *awssqs.GetQueueUrlInput) awssqs.GetQueueUrlRequest {
 						return awssqs.GetQueueUrlRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.GetQueueUrlOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.GetQueueUrlOutput{
 								QueueUrl: &queueURL,
 							}},
 						}
@@ -320,14 +320,14 @@ func TestObserve(t *testing.T) {
 				sqs: &fake.MockSQSClient{
 					MockGetQueueURLRequest: func(input *awssqs.GetQueueUrlInput) awssqs.GetQueueUrlRequest {
 						return awssqs.GetQueueUrlRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.GetQueueUrlOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.GetQueueUrlOutput{
 								QueueUrl: &queueURL,
 							}},
 						}
 					},
 					MockGetQueueAttributesRequest: func(input *awssqs.GetQueueAttributesInput) awssqs.GetQueueAttributesRequest {
 						return awssqs.GetQueueAttributesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
 						}
 					},
 				},
@@ -343,21 +343,21 @@ func TestObserve(t *testing.T) {
 				sqs: &fake.MockSQSClient{
 					MockGetQueueURLRequest: func(input *awssqs.GetQueueUrlInput) awssqs.GetQueueUrlRequest {
 						return awssqs.GetQueueUrlRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.GetQueueUrlOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.GetQueueUrlOutput{
 								QueueUrl: &queueURL,
 							}},
 						}
 					},
 					MockGetQueueAttributesRequest: func(input *awssqs.GetQueueAttributesInput) awssqs.GetQueueAttributesRequest {
 						return awssqs.GetQueueAttributesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.GetQueueAttributesOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.GetQueueAttributesOutput{
 								Attributes: attributes,
 							}},
 						}
 					},
 					MockListQueueTagsRequest: func(input *awssqs.ListQueueTagsInput) awssqs.ListQueueTagsRequest {
 						return awssqs.ListQueueTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
 						}
 					},
 				},
@@ -407,7 +407,7 @@ func TestCreate(t *testing.T) {
 				sqs: &fake.MockSQSClient{
 					MockCreateQueueRequest: func(input *awssqs.CreateQueueInput) awssqs.CreateQueueRequest {
 						return awssqs.CreateQueueRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.CreateQueueOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.CreateQueueOutput{
 								QueueUrl: &queueURL,
 							}},
 						}
@@ -425,7 +425,7 @@ func TestCreate(t *testing.T) {
 				sqs: &fake.MockSQSClient{
 					MockCreateQueueRequest: func(input *awssqs.CreateQueueInput) awssqs.CreateQueueRequest {
 						return awssqs.CreateQueueRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
 						}
 					},
 				},
@@ -474,12 +474,12 @@ func TestUpdate(t *testing.T) {
 				sqs: &fake.MockSQSClient{
 					MockSetQueueAttributesRequest: func(input *awssqs.SetQueueAttributesInput) awssqs.SetQueueAttributesRequest {
 						return awssqs.SetQueueAttributesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.SetQueueAttributesOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.SetQueueAttributesOutput{}},
 						}
 					},
 					MockListQueueTagsRequest: func(input *awssqs.ListQueueTagsInput) awssqs.ListQueueTagsRequest {
 						return awssqs.ListQueueTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.ListQueueTagsOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.ListQueueTagsOutput{}},
 						}
 					},
 				},
@@ -498,12 +498,12 @@ func TestUpdate(t *testing.T) {
 				sqs: &fake.MockSQSClient{
 					MockSetQueueAttributesRequest: func(input *awssqs.SetQueueAttributesInput) awssqs.SetQueueAttributesRequest {
 						return awssqs.SetQueueAttributesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.SetQueueAttributesOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.SetQueueAttributesOutput{}},
 						}
 					},
 					MockListQueueTagsRequest: func(input *awssqs.ListQueueTagsInput) awssqs.ListQueueTagsRequest {
 						return awssqs.ListQueueTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.ListQueueTagsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.ListQueueTagsOutput{
 								Tags: map[string]string{
 									"k":  "v",
 									"k1": "v1",
@@ -513,12 +513,12 @@ func TestUpdate(t *testing.T) {
 					},
 					MockUntagQueueRequest: func(input *awssqs.UntagQueueInput) awssqs.UntagQueueRequest {
 						return awssqs.UntagQueueRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.UntagQueueOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.UntagQueueOutput{}},
 						}
 					},
 					MockTagQueueRequest: func(input *awssqs.TagQueueInput) awssqs.TagQueueRequest {
 						return awssqs.TagQueueRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.TagQueueOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.TagQueueOutput{}},
 						}
 					},
 				},
@@ -559,7 +559,7 @@ func TestUpdate(t *testing.T) {
 				sqs: &fake.MockSQSClient{
 					MockSetQueueAttributesRequest: func(input *awssqs.SetQueueAttributesInput) awssqs.SetQueueAttributesRequest {
 						return awssqs.SetQueueAttributesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
 						}
 					},
 				},
@@ -609,7 +609,7 @@ func TestDelete(t *testing.T) {
 				sqs: &fake.MockSQSClient{
 					MockDeleteQueueRequest: func(input *awssqs.DeleteQueueInput) awssqs.DeleteQueueRequest {
 						return awssqs.DeleteQueueRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awssqs.DeleteQueueOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awssqs.DeleteQueueOutput{}},
 						}
 					},
 				},
@@ -630,7 +630,7 @@ func TestDelete(t *testing.T) {
 				sqs: &fake.MockSQSClient{
 					MockDeleteQueueRequest: func(input *awssqs.DeleteQueueInput) awssqs.DeleteQueueRequest {
 						return awssqs.DeleteQueueRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
 						}
 					},
 				},
