@@ -29,11 +29,7 @@ import (
 	eksv1beta1 "github.com/crossplane/provider-aws/apis/eks/v1beta1"
 	identityv1alpha1 "github.com/crossplane/provider-aws/apis/identity/v1alpha1"
 	identityv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
-<<<<<<< HEAD
-	networkv1beta1 "github.com/crossplane/provider-aws/apis/network/v1beta1"
 	notificationv1alpha3 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
-=======
->>>>>>> 1d7f738aa6ead6aebe2fb6cb13155c23b5231399
 	storagev1alpha3 "github.com/crossplane/provider-aws/apis/storage/v1alpha3"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 )
