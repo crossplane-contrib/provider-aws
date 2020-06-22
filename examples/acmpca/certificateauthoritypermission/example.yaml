@@ -1,0 +1,11 @@
+apiVersion: acmpca.aws.crossplane.io/v1alpha1
+kind: CertificateAuthorityPermission
+metadata:
+  name: example
+spec:
+  forProvider:
+    certificateAuthorityARNRef:
+      name: example
+  reclaimPolicy: Delete
+  providerRef:
+    name: aws-provider
