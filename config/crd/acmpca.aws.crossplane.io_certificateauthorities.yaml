@@ -272,6 +272,7 @@ spec:
                         type: string
                     required:
                     - key
+                    - value
                     type: object
                   type: array
                 type:
@@ -282,6 +283,7 @@ spec:
                   type: string
               required:
               - certificateAuthorityConfiguration
+              - tags
               - type
               type: object
             providerRef:
