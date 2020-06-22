@@ -170,9 +170,12 @@ func TestObserve(t *testing.T) {
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
 					MockListPermissionsRequest: func(input *awsacmpca.ListPermissionsInput) awsacmpca.ListPermissionsRequest {
 						return awsacmpca.ListPermissionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacmpca.ListPermissionsOutput{
-								NextToken:   aws.String(nextToken),
-								Permissions: []awsacmpca.Permission{{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.ListPermissionsOutput{
+								NextToken: aws.String(nextToken),
+								Permissions: []awsacmpca.Permission{{
+									Actions:                 []awsacmpca.ActionType{awsacmpca.ActionTypeIssueCertificate, awsacmpca.ActionTypeGetCertificate, awsacmpca.ActionTypeListPermissions},
+									CertificateAuthorityArn: aws.String(certificateAuthorityArn),
+								}},
 							}},
 						}
 					},
@@ -200,7 +203,7 @@ func TestObserve(t *testing.T) {
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
 					MockListPermissionsRequest: func(input *awsacmpca.ListPermissionsInput) awsacmpca.ListPermissionsRequest {
 						return awsacmpca.ListPermissionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
 						}
 					},
 				},
@@ -254,7 +257,7 @@ func TestCreate(t *testing.T) {
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
 					MockCreatePermissionRequest: func(input *awsacmpca.CreatePermissionInput) awsacmpca.CreatePermissionRequest {
 						return awsacmpca.CreatePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacmpca.CreatePermissionOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.CreatePermissionOutput{}},
 						}
 					},
 				},
@@ -278,7 +281,7 @@ func TestCreate(t *testing.T) {
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
 					MockCreatePermissionRequest: func(input *awsacmpca.CreatePermissionInput) awsacmpca.CreatePermissionRequest {
 						return awsacmpca.CreatePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
 						}
 					},
 				},
@@ -330,12 +333,12 @@ func TestDelete(t *testing.T) {
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
 					MockDeletePermissionRequest: func(*awsacmpca.DeletePermissionInput) awsacmpca.DeletePermissionRequest {
 						return awsacmpca.DeletePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacmpca.DeletePermissionOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.DeletePermissionOutput{}},
 						}
 					},
 					MockListPermissionsRequest: func(input *awsacmpca.ListPermissionsInput) awsacmpca.ListPermissionsRequest {
 						return awsacmpca.ListPermissionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacmpca.ListPermissionsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.ListPermissionsOutput{
 								NextToken:   aws.String(nextToken),
 								Permissions: []awsacmpca.Permission{{}},
 							}},
@@ -362,12 +365,12 @@ func TestDelete(t *testing.T) {
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
 					MockDeletePermissionRequest: func(*awsacmpca.DeletePermissionInput) awsacmpca.DeletePermissionRequest {
 						return awsacmpca.DeletePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
 						}
 					},
 					MockListPermissionsRequest: func(input *awsacmpca.ListPermissionsInput) awsacmpca.ListPermissionsRequest {
 						return awsacmpca.ListPermissionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacmpca.ListPermissionsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.ListPermissionsOutput{
 								NextToken:   aws.String(nextToken),
 								Permissions: []awsacmpca.Permission{{}},
 							}},
@@ -386,12 +389,12 @@ func TestDelete(t *testing.T) {
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
 					MockDeletePermissionRequest: func(*awsacmpca.DeletePermissionInput) awsacmpca.DeletePermissionRequest {
 						return awsacmpca.DeletePermissionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: awserr.New(awsacmpca.ErrCodeResourceNotFoundException, "", nil)},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: awserr.New(awsacmpca.ErrCodeResourceNotFoundException, "", nil)},
 						}
 					},
 					MockListPermissionsRequest: func(input *awsacmpca.ListPermissionsInput) awsacmpca.ListPermissionsRequest {
 						return awsacmpca.ListPermissionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacmpca.ListPermissionsOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.ListPermissionsOutput{
 								NextToken:   aws.String(nextToken),
 								Permissions: []awsacmpca.Permission{{}},
 							}},
