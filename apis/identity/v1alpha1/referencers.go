@@ -37,7 +37,7 @@ func (mg *IAMUserPolicyAttachment) ResolveReferences(ctx context.Context, c clie
 	r := reference.NewAPIResolver(c, mg)
 
 	// Resolve spec.forProvider.userName
-	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+	user, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.UserName),
 		Reference:    mg.Spec.ForProvider.UserNameRef,
 		Selector:     mg.Spec.ForProvider.UserNameSelector,
@@ -47,8 +47,22 @@ func (mg *IAMUserPolicyAttachment) ResolveReferences(ctx context.Context, c clie
 	if err != nil {
 		return err
 	}
-	mg.Spec.ForProvider.UserName = reference.ToPtrValue(rsp.ResolvedValue)
-	mg.Spec.ForProvider.UserNameRef = rsp.ResolvedReference
+	mg.Spec.ForProvider.UserName = reference.ToPtrValue(user.ResolvedValue)
+	mg.Spec.ForProvider.UserNameRef = user.ResolvedReference
+
+	// Resolve spec.forProvider.policyArn
+	policy, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: mg.Spec.ForProvider.PolicyARN,
+		Reference:    mg.Spec.ForProvider.PolicyARNRef,
+		Selector:     mg.Spec.ForProvider.PolicyARNSelector,
+		To:           reference.To{Managed: &IAMPolicy{}, List: &IAMPolicyList{}},
+		Extract:      IAMPolicyARN(),
+	})
+	if err != nil {
+		return err
+	}
+	mg.Spec.ForProvider.PolicyARN = policy.ResolvedValue
+	mg.Spec.ForProvider.PolicyARNRef = policy.ResolvedReference
 
 	return nil
 }

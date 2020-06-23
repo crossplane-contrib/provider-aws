@@ -29,7 +29,7 @@ type IAMRolePolicyAttachmentParameters struct {
 	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to
 	// attach.
 	// +immutable
-	PolicyARN string `json:"policyArn"`
+	PolicyARN string `json:"policyArn,omitempty"`
 
 	// PolicyARNRef references an IAMPolicy to retrieve its Policy ARN.
 	// +optional
@@ -41,6 +41,7 @@ type IAMRolePolicyAttachmentParameters struct {
 	PolicyARNSelector *runtimev1alpha1.Selector `json:"policyArnSelector,omitempty"`
 
 	// RoleName presents the name of the IAM role.
+	// +immutable
 	RoleName string `json:"roleName,omitempty"`
 
 	// RoleNameRef references an IAMRole to retrieve its Name
