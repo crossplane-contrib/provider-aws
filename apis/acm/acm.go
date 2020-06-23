@@ -14,5 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package certificatemanager contains certificatemanager API versions
-package certificatemanager
+// Package acm contains certificate manager API versions
+package acm

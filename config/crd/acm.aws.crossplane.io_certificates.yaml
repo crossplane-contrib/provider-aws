@@ -138,6 +138,31 @@ spec:
                   description: The Amazon Resource Name (ARN) of the private certificate
                     authority (CA)that will be used to issue the certificate.
                   type: string
+                certificateAuthorityARNRef:
+                  description: CertificateAuthorityARNRef references an AWS ACMPCA
+                    CertificateAuthority to retrieve its Arn
+                  properties:
+                    name:
+                      description: Name of the referenced object.
+                      type: string
+                  required:
+                  - name
+                  type: object
+                certificateAuthorityARNSelector:
+                  description: CertificateAuthorityARNSelector selects a reference
+                    to an AWS ACMPCA CertificateAuthority to retrieve its Arn
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
+                  type: object
                 certificateTransparencyLoggingPreference:
                   description: Parameter add the certificate to a certificate transparency
                     log.
@@ -164,9 +189,6 @@ spec:
                     - validationDomain
                     type: object
                   type: array
-                idempotencyToken:
-                  description: Token to distinguish between calls to RequestCertificate.
-                  type: string
                 renewCertificate:
                   description: Flag to renew the certificate
                   type: boolean
@@ -190,6 +212,7 @@ spec:
                         type: string
                     required:
                     - key
+                    - value
                     type: object
                   type: array
                 validationMethod:
@@ -197,6 +220,7 @@ spec:
                   type: string
               required:
               - domainName
+              - tags
               type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
@@ -278,7 +302,7 @@ spec:
             atProvider:
               description: CertificateExternalStatus keeps the state of external resource
               properties:
-                certificateArn:
+                certificateARN:
                   description: String that contains the ARN of the issued certificate.
                     This must be of the
                   type: string
@@ -306,11 +330,6 @@ spec:
                   - AMAZON_ISSUED
                   - PRIVATE
                   type: string
-              required:
-              - certificateArn
-              - renewalEligibility
-              - status
-              - type
               type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource

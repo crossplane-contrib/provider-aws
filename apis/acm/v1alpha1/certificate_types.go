@@ -29,8 +29,7 @@ type Tag struct {
 	Key string `json:"key"`
 
 	// The value associated with this tag.
-	// +optional
-	Value string `json:"value,omitempty"`
+	Value string `json:"value"`
 }
 
 // DomainValidationOption validate domain ownership.
@@ -53,19 +52,19 @@ type CertificateSpec struct {
 // CertificateExternalStatus keeps the state of external resource
 type CertificateExternalStatus struct {
 	// String that contains the ARN of the issued certificate. This must be of the
-	CertificateARN string `json:"certificateArn"`
+	CertificateARN string `json:"certificateARN,omitempty"`
 
 	// Flag to check eligibility for renewal status
 	// +kubebuilder:validation:Enum=ELIGIBLE;INELIGIBLE
-	RenewalEligibility acm.RenewalEligibility `json:"renewalEligibility"`
+	RenewalEligibility acm.RenewalEligibility `json:"renewalEligibility,omitempty"`
 
 	// Status of the certificate
 	// +kubebuilder:validation:Enum=PENDING_VALIDATION;ISSUED;INACTIVE;EXPIRED;VALIDATION_TIMED_OUT;REVOKED;FAILED
-	Status acm.CertificateStatus `json:"status"`
+	Status acm.CertificateStatus `json:"status,omitempty"`
 
 	// Type of the certificate
 	// +kubebuilder:validation:Enum=IMPORTED;AMAZON_ISSUED;PRIVATE
-	Type acm.CertificateType `json:"type"`
+	Type acm.CertificateType `json:"type,omitempty"`
 }
 
 // An CertificateStatus represents the observed state of an Certificate manager.
@@ -81,13 +80,13 @@ type CertificateParameters struct {
 	// +optional
 	CertificateAuthorityARN *string `json:"certificateAuthorityARN,omitempty"`
 
-	// // CertificateAuthorityARNRef references an AWS ACMPCA CertificateAuthority to retrieve its Arn
-	// // +optional
-	// CertificateAuthorityARNRef *runtimev1alpha1.Reference `json:"certificateAuthorityARNRef,omitempty"`
+	// CertificateAuthorityARNRef references an AWS ACMPCA CertificateAuthority to retrieve its Arn
+	// +optional
+	CertificateAuthorityARNRef *runtimev1alpha1.Reference `json:"certificateAuthorityARNRef,omitempty"`
 
-	// // CertificateAuthorityARNSelector selects a reference to an AWS ACMPCA CertificateAuthority to retrieve its Arn
-	// // +optional
-	// CertificateAuthorityARNSelector *runtimev1alpha1.Selector `json:"certificateAuthorityARNSelector,omitempty"`
+	// CertificateAuthorityARNSelector selects a reference to an AWS ACMPCA CertificateAuthority to retrieve its Arn
+	// +optional
+	CertificateAuthorityARNSelector *runtimev1alpha1.Selector `json:"certificateAuthorityARNSelector,omitempty"`
 
 	// Fully qualified domain name (FQDN),that to secure with an ACM certificate.
 	// +immutable
@@ -99,28 +98,23 @@ type CertificateParameters struct {
 	// +immutable
 	DomainValidationOptions []*DomainValidationOption `json:"domainValidationOptions,omitempty"`
 
-	// Token to distinguish between calls to RequestCertificate.
-	// +optional
-	IdempotencyToken *string `json:"idempotencyToken,omitempty"`
-
 	// Parameter add the certificate to a certificate transparency log.
 	// +optional
 	// +kubebuilder:validation:ENABLED;DISABLED
-	CertificateTransparencyLoggingPreference acm.CertificateTransparencyLoggingPreference `json:"certificateTransparencyLoggingPreference,omitempty"`
+	CertificateTransparencyLoggingPreference *acm.CertificateTransparencyLoggingPreference `json:"certificateTransparencyLoggingPreference,omitempty"`
 
 	// Subject Alternative Name extension of the ACM certificate.
 	// +optional
 	// +immutable
-	SubjectAlternativeNames []string `json:"subjectAlternativeNames,omitempty"`
+	SubjectAlternativeNames []*string `json:"subjectAlternativeNames,omitempty"`
 
 	// One or more resource tags to associate with the certificate.
-	// +optional
-	Tags []Tag `json:"tags,omitempty"`
+	Tags []Tag `json:"tags"`
 
 	// Method to validate certificate.
 	// +optional
 	// +kubebuilder:validation:DNS;EMAIL
-	ValidationMethod acm.ValidationMethod `json:"validationMethod,omitempty"`
+	ValidationMethod *acm.ValidationMethod `json:"validationMethod,omitempty"`
 
 	// Flag to renew the certificate
 	// +optional

@@ -31,12 +31,18 @@ func NewClient(conf *aws.Config) (Client, error) {
 
 // GenerateCreateCertificateInput from CertificateSpec
 func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParameters) *acm.RequestCertificateInput {
+
 	m := &acm.RequestCertificateInput{
 		DomainName:              aws.String(p.DomainName),
 		CertificateAuthorityArn: p.CertificateAuthorityARN,
-		IdempotencyToken:        p.IdempotencyToken,
-		ValidationMethod:        p.ValidationMethod,
-		Options:                 &acm.CertificateOptions{CertificateTransparencyLoggingPreference: p.CertificateTransparencyLoggingPreference},
+	}
+
+	if p.CertificateTransparencyLoggingPreference != nil {
+		m.Options = &acm.CertificateOptions{CertificateTransparencyLoggingPreference: *p.CertificateTransparencyLoggingPreference}
+	}
+
+	if p.ValidationMethod != nil {
+		m.ValidationMethod = *p.ValidationMethod
 	}
 
 	if len(p.DomainValidationOptions) != 0 {
@@ -49,10 +55,10 @@ func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParamete
 		}
 	}
 
-	if len(p.SubjectAlternativeNames) != 0 {
+	if p.SubjectAlternativeNames != nil {
 		m.SubjectAlternativeNames = make([]string, len(p.SubjectAlternativeNames))
 		for i := range p.SubjectAlternativeNames {
-			m.SubjectAlternativeNames[i] = p.SubjectAlternativeNames[i]
+			m.SubjectAlternativeNames[i] = *p.SubjectAlternativeNames[i]
 		}
 	}
 
@@ -89,18 +95,18 @@ func LateInitializeCertificate(in *v1alpha1.CertificateParameters, certificate *
 		in.CertificateAuthorityARN = certificate.CertificateAuthorityArn
 	}
 
-	if string(in.CertificateTransparencyLoggingPreference) == "" && certificate.Options != nil {
-		in.CertificateTransparencyLoggingPreference = certificate.Options.CertificateTransparencyLoggingPreference
+	if in.CertificateTransparencyLoggingPreference == nil && certificate.Options != nil {
+		in.CertificateTransparencyLoggingPreference = &certificate.Options.CertificateTransparencyLoggingPreference
 	}
 
-	if string(in.ValidationMethod) == "" && len(certificate.DomainValidationOptions) != 0 {
-		in.ValidationMethod = certificate.DomainValidationOptions[0].ValidationMethod
+	if in.ValidationMethod == nil && len(certificate.DomainValidationOptions) != 0 {
+		in.ValidationMethod = &certificate.DomainValidationOptions[0].ValidationMethod
 	}
 
 	if len(in.SubjectAlternativeNames) == 0 && len(certificate.SubjectAlternativeNames) != 0 {
-		in.SubjectAlternativeNames = make([]string, len(certificate.SubjectAlternativeNames))
+		in.SubjectAlternativeNames = make([]*string, len(certificate.SubjectAlternativeNames))
 		for i := range certificate.SubjectAlternativeNames {
-			in.SubjectAlternativeNames[i] = certificate.SubjectAlternativeNames[i]
+			in.SubjectAlternativeNames[i] = &certificate.SubjectAlternativeNames[i]
 		}
 	}
 
@@ -119,7 +125,7 @@ func LateInitializeCertificate(in *v1alpha1.CertificateParameters, certificate *
 // IsCertificateUpToDate checks whether there is a change in any of the modifiable fields.
 func IsCertificateUpToDate(p v1alpha1.CertificateParameters, cd acm.CertificateDetail, tags []acm.Tag) bool { // nolint:gocyclo
 
-	if !strings.EqualFold(string(p.CertificateTransparencyLoggingPreference), string(cd.Options.CertificateTransparencyLoggingPreference)) {
+	if *p.CertificateTransparencyLoggingPreference != cd.Options.CertificateTransparencyLoggingPreference {
 		return false
 	}
 

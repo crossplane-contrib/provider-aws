@@ -5,8 +5,6 @@ metadata:
 spec:
   forProvider:
     domainName: infracloud.site
-    validationMethod: DNS
-    certificateTransparencyLoggingPreference: ENABLED
     tags:
     - key: Name
       value: example

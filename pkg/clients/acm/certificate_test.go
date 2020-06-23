@@ -17,6 +17,8 @@ var (
 )
 
 func TestGenerateCreateCertificateInput(t *testing.T) {
+	certificateTransparencyLoggingPreference := acm.CertificateTransparencyLoggingPreferenceDisabled
+	validationMethod := acm.ValidationMethodDns
 	cases := map[string]struct {
 		in  v1alpha1.CertificateParameters
 		out acm.RequestCertificateInput
@@ -25,7 +27,8 @@ func TestGenerateCreateCertificateInput(t *testing.T) {
 			in: v1alpha1.CertificateParameters{
 				DomainName:                               domainName,
 				CertificateAuthorityARN:                  aws.String(certificateAuthorityArn),
-				CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled,
+				CertificateTransparencyLoggingPreference: &certificateTransparencyLoggingPreference,
+				ValidationMethod:                         &validationMethod,
 				Tags: []v1alpha1.Tag{{
 					Key:   "key1",
 					Value: "value1",
@@ -35,6 +38,7 @@ func TestGenerateCreateCertificateInput(t *testing.T) {
 				DomainName:              aws.String(domainName),
 				CertificateAuthorityArn: aws.String(certificateAuthorityArn),
 				Options:                 &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled},
+				ValidationMethod:        acm.ValidationMethodDns,
 				Tags: []acm.Tag{{
 					Key:   aws.String("key1"),
 					Value: aws.String("value1"),
@@ -55,6 +59,7 @@ func TestGenerateCreateCertificateInput(t *testing.T) {
 }
 
 func TestLateInitializeCertificate(t *testing.T) {
+	certificateTransparencyLoggingPreference := acm.CertificateTransparencyLoggingPreferenceDisabled
 	type args struct {
 		spec *v1alpha1.CertificateParameters
 		in   *acm.CertificateDetail
@@ -68,7 +73,7 @@ func TestLateInitializeCertificate(t *testing.T) {
 				spec: &v1alpha1.CertificateParameters{
 					DomainName:                               domainName,
 					CertificateAuthorityARN:                  aws.String(certificateAuthorityArn),
-					CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled,
+					CertificateTransparencyLoggingPreference: &certificateTransparencyLoggingPreference,
 				},
 				in: &acm.CertificateDetail{
 					DomainName:              aws.String(domainName),
@@ -79,7 +84,7 @@ func TestLateInitializeCertificate(t *testing.T) {
 			want: &v1alpha1.CertificateParameters{
 				DomainName:                               domainName,
 				CertificateAuthorityARN:                  aws.String(certificateAuthorityArn),
-				CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled,
+				CertificateTransparencyLoggingPreference: &certificateTransparencyLoggingPreference,
 			},
 		},
 		"AllFilledExternalDiff": {
@@ -87,7 +92,7 @@ func TestLateInitializeCertificate(t *testing.T) {
 				spec: &v1alpha1.CertificateParameters{
 					DomainName:                               domainName,
 					CertificateAuthorityARN:                  aws.String(certificateAuthorityArn),
-					CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled,
+					CertificateTransparencyLoggingPreference: &certificateTransparencyLoggingPreference,
 				},
 				in: &acm.CertificateDetail{
 					DomainName:              aws.String(domainName),
@@ -98,7 +103,7 @@ func TestLateInitializeCertificate(t *testing.T) {
 			want: &v1alpha1.CertificateParameters{
 				DomainName:                               domainName,
 				CertificateAuthorityARN:                  aws.String(certificateAuthorityArn),
-				CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled,
+				CertificateTransparencyLoggingPreference: &certificateTransparencyLoggingPreference,
 			},
 		},
 		"PartialFilled": {
@@ -116,7 +121,7 @@ func TestLateInitializeCertificate(t *testing.T) {
 			want: &v1alpha1.CertificateParameters{
 				DomainName:                               domainName,
 				CertificateAuthorityARN:                  aws.String(certificateAuthorityArn),
-				CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled,
+				CertificateTransparencyLoggingPreference: &certificateTransparencyLoggingPreference,
 			},
 		},
 	}
@@ -169,6 +174,7 @@ func TestGenerateCertificateStatus(t *testing.T) {
 }
 
 func TestIsCertificateUpToDate(t *testing.T) {
+	certificateTransparencyLoggingPreference := acm.CertificateTransparencyLoggingPreferenceDisabled
 	type args struct {
 		p    v1alpha1.CertificateParameters
 		cd   acm.CertificateDetail
@@ -182,10 +188,10 @@ func TestIsCertificateUpToDate(t *testing.T) {
 		"SameFields": {
 			args: args{
 				cd: acm.CertificateDetail{
-					Options: &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceEnabled},
+					Options: &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled},
 				},
 				p: v1alpha1.CertificateParameters{
-					CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceEnabled,
+					CertificateTransparencyLoggingPreference: &certificateTransparencyLoggingPreference,
 					RenewCertificate:                         aws.Bool(false),
 					Tags: []v1alpha1.Tag{{
 						Key:   "key1",
@@ -205,7 +211,7 @@ func TestIsCertificateUpToDate(t *testing.T) {
 					Options: &acm.CertificateOptions{CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceEnabled},
 				},
 				p: v1alpha1.CertificateParameters{
-					CertificateTransparencyLoggingPreference: acm.CertificateTransparencyLoggingPreferenceDisabled,
+					CertificateTransparencyLoggingPreference: &certificateTransparencyLoggingPreference,
 					RenewCertificate:                         aws.Bool(false),
 					Tags: []v1alpha1.Tag{{
 						Key:   "key1",

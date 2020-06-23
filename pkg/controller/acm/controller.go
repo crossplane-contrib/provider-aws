@@ -71,6 +71,9 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger) error {
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
+
+			// TODO: implement tag initializer
+
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -217,10 +220,10 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	// Update the Certificate Option
-	if aws.StringValue(cr.Spec.ForProvider.CertificateAuthorityARN) == "" {
+	if aws.StringValue(cr.Spec.ForProvider.CertificateAuthorityARN) == "" && cr.Spec.ForProvider.CertificateTransparencyLoggingPreference != nil {
 		_, err := e.client.UpdateCertificateOptionsRequest(&awsacm.UpdateCertificateOptionsInput{
 			CertificateArn: aws.String(meta.GetExternalName(cr)),
-			Options:        &awsacm.CertificateOptions{CertificateTransparencyLoggingPreference: cr.Spec.ForProvider.CertificateTransparencyLoggingPreference},
+			Options:        &awsacm.CertificateOptions{CertificateTransparencyLoggingPreference: *cr.Spec.ForProvider.CertificateTransparencyLoggingPreference},
 		}).Send(ctx)
 
 		if err != nil {

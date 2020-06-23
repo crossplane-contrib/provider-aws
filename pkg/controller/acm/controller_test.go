@@ -74,8 +74,10 @@ func withDomainName() certificateModifier {
 }
 
 func withCertificateTransparencyLoggingPreference() certificateModifier {
+	certificateTransparencyLoggingPreference := awsacm.CertificateTransparencyLoggingPreferenceDisabled
+
 	return func(r *v1alpha1.Certificate) {
-		r.Spec.ForProvider.CertificateTransparencyLoggingPreference = awsacm.CertificateTransparencyLoggingPreferenceEnabled
+		r.Spec.ForProvider.CertificateTransparencyLoggingPreference = &certificateTransparencyLoggingPreference
 		meta.SetExternalName(r, certificateArn)
 	}
 }
@@ -92,8 +94,10 @@ func withTags() certificateModifier {
 
 func withCertificateArn() certificateModifier {
 	return func(r *v1alpha1.Certificate) {
+		certificateTransparencyLoggingPreference := awsacm.CertificateTransparencyLoggingPreferenceDisabled
+
 		r.Status.AtProvider.CertificateARN = certificateArn
-		r.Spec.ForProvider.CertificateTransparencyLoggingPreference = awsacm.CertificateTransparencyLoggingPreferenceEnabled
+		r.Spec.ForProvider.CertificateTransparencyLoggingPreference = &certificateTransparencyLoggingPreference
 		meta.SetExternalName(r, certificateArn)
 	}
 }
@@ -206,7 +210,7 @@ func TestObserve(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.DescribeCertificateOutput{
 								Certificate: &awsacm.CertificateDetail{
 									CertificateArn: aws.String(certificateArn),
-									Options:        &awsacm.CertificateOptions{CertificateTransparencyLoggingPreference: awsacm.CertificateTransparencyLoggingPreferenceEnabled},
+									Options:        &awsacm.CertificateOptions{CertificateTransparencyLoggingPreference: awsacm.CertificateTransparencyLoggingPreferenceDisabled},
 								},
 							}},
 						}

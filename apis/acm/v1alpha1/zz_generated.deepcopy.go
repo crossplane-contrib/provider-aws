@@ -21,6 +21,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/aws/aws-sdk-go-v2/service/acm"
+	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -106,6 +108,16 @@ func (in *CertificateParameters) DeepCopyInto(out *CertificateParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.CertificateAuthorityARNRef != nil {
+		in, out := &in.CertificateAuthorityARNRef, &out.CertificateAuthorityARNRef
+		*out = new(corev1alpha1.Reference)
+		**out = **in
+	}
+	if in.CertificateAuthorityARNSelector != nil {
+		in, out := &in.CertificateAuthorityARNSelector, &out.CertificateAuthorityARNSelector
+		*out = new(corev1alpha1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.DomainValidationOptions != nil {
 		in, out := &in.DomainValidationOptions, &out.DomainValidationOptions
 		*out = make([]*DomainValidationOption, len(*in))
@@ -117,20 +129,31 @@ func (in *CertificateParameters) DeepCopyInto(out *CertificateParameters) {
 			}
 		}
 	}
-	if in.IdempotencyToken != nil {
-		in, out := &in.IdempotencyToken, &out.IdempotencyToken
-		*out = new(string)
+	if in.CertificateTransparencyLoggingPreference != nil {
+		in, out := &in.CertificateTransparencyLoggingPreference, &out.CertificateTransparencyLoggingPreference
+		*out = new(acm.CertificateTransparencyLoggingPreference)
 		**out = **in
 	}
 	if in.SubjectAlternativeNames != nil {
 		in, out := &in.SubjectAlternativeNames, &out.SubjectAlternativeNames
-		*out = make([]string, len(*in))
-		copy(*out, *in)
+		*out = make([]*string, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(string)
+				**out = **in
+			}
+		}
 	}
 	if in.Tags != nil {
 		in, out := &in.Tags, &out.Tags
 		*out = make([]Tag, len(*in))
 		copy(*out, *in)
+	}
+	if in.ValidationMethod != nil {
+		in, out := &in.ValidationMethod, &out.ValidationMethod
+		*out = new(acm.ValidationMethod)
+		**out = **in
 	}
 	if in.RenewCertificate != nil {
 		in, out := &in.RenewCertificate, &out.RenewCertificate
