@@ -131,9 +131,8 @@ func LateInitializeSubscription(in *v1alpha1.SNSSubscriptionParameters, subAttri
 // GetSNSSubscription returns SNSSubscription from List of SNSSubscription
 func GetSNSSubscription(res *sns.ListSubscriptionsByTopicResponse, cr *v1alpha1.SNSSubscription) (sns.Subscription, error) {
 
-	p := cr.Spec.ForProvider
 	for _, sub := range res.Subscriptions {
-		if cmp.Equal(*sub.TopicArn, cr.Spec.ForProvider.TopicARN) && cmp.Equal(sub.Endpoint, p.Endpoint) && cmp.Equal(sub.Protocol, p.Protocol) {
+		if cmp.Equal(sub.TopicArn, cr.Spec.ForProvider.TopicARN) && cmp.Equal(sub.Endpoint, &cr.Spec.ForProvider.Endpoint) && cmp.Equal(sub.Protocol, &cr.Spec.ForProvider.Protocol) {
 			return sub, nil
 		}
 	}

@@ -214,6 +214,7 @@ func TestCreate(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Data:        &awssns.SubscribeOutput{},
+								Retryer:     aws.NoOpRetryer{},
 							},
 						}
 					},
@@ -255,6 +256,7 @@ func TestCreate(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Error:       errBoom,
+								Retryer:     aws.NoOpRetryer{},
 							},
 						}
 					},
@@ -279,6 +281,7 @@ func TestCreate(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Error:       errBoom,
+								Retryer:     aws.NoOpRetryer{},
 							},
 						}
 					},
@@ -342,6 +345,7 @@ func TestUpdate(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Data:        &awssns.GetSubscriptionAttributesOutput{},
+								Retryer:     aws.NoOpRetryer{},
 							},
 						}
 					},
@@ -364,6 +368,7 @@ func TestUpdate(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Data:        &awssns.GetSubscriptionAttributesOutput{},
+								Retryer:     aws.NoOpRetryer{},
 							},
 						}
 					},
@@ -372,6 +377,7 @@ func TestUpdate(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Data:        &awssns.SetSubscriptionAttributesOutput{},
+								Retryer:     aws.NoOpRetryer{},
 							},
 						}
 					},
@@ -403,6 +409,7 @@ func TestUpdate(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Error:       errBoom,
+								Retryer:     aws.NoOpRetryer{},
 							},
 						}
 					},
@@ -425,6 +432,7 @@ func TestUpdate(t *testing.T) {
 						return awssns.GetSubscriptionAttributesRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Data: &awssns.GetSubscriptionAttributesOutput{
 									// To trigger Changed Attributes
 									Attributes: map[string]string{
@@ -439,6 +447,7 @@ func TestUpdate(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Error:       errBoom,
+								Retryer:     aws.NoOpRetryer{},
 							},
 						}
 					},
@@ -491,6 +500,7 @@ func TestDelete(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Data:        &awssns.UnsubscribeOutput{},
+								Retryer:     aws.NoOpRetryer{},
 							},
 						}
 					},
@@ -522,6 +532,7 @@ func TestDelete(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Error:       errBoom,
+								Retryer:     aws.NoOpRetryer{},
 							},
 						}
 					},
@@ -546,6 +557,7 @@ func TestDelete(t *testing.T) {
 								HTTPRequest: &http.Request{},
 								Data:        &awssns.UnsubscribeOutput{},
 								Error:       nil,
+								Retryer:     aws.NoOpRetryer{},
 							},
 						}
 					},

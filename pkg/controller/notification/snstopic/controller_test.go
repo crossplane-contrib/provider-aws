@@ -247,6 +247,7 @@ func TestObserve(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Data:        &awssns.ListTopicsOutput{},
+								Retryer:     aws.NoOpRetryer{},
 							},
 						}
 					},
@@ -269,6 +270,7 @@ func TestObserve(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Error:       errBoom,
+								Retryer:     aws.NoOpRetryer{},
 							},
 						}
 					},
@@ -291,6 +293,7 @@ func TestObserve(t *testing.T) {
 						return awssns.ListTopicsRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Data: &awssns.ListTopicsOutput{
 									Topics: []awssns.Topic{
 										{TopicArn: aws.String(makeARN(topicName))},
@@ -303,6 +306,7 @@ func TestObserve(t *testing.T) {
 						return awssns.GetTopicAttributesRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Error:       errBoom,
 							},
 						}
@@ -326,6 +330,7 @@ func TestObserve(t *testing.T) {
 						return awssns.ListTopicsRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Data: &awssns.ListTopicsOutput{
 									Topics: []awssns.Topic{
 										{TopicArn: aws.String(makeARN(topicName))},
@@ -338,6 +343,7 @@ func TestObserve(t *testing.T) {
 						return awssns.GetTopicAttributesRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Data: &awssns.GetTopicAttributesOutput{
 									Attributes: map[string]string{
 										"TopicArn": makeARN(topicName),
@@ -410,6 +416,7 @@ func TestCreate(t *testing.T) {
 						return awssns.CreateTopicRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Data:        &awssns.CreateTopicOutput{},
 							},
 						}
@@ -453,6 +460,7 @@ func TestCreate(t *testing.T) {
 						return awssns.CreateTopicRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Error:       errBoom,
 							},
 						}
@@ -479,6 +487,7 @@ func TestCreate(t *testing.T) {
 						return awssns.CreateTopicRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Data:        &awssns.CreateTopicOutput{},
 							},
 						}
@@ -545,6 +554,7 @@ func TestUpdate(t *testing.T) {
 						return awssns.GetTopicAttributesRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Data:        &awssns.GetTopicAttributesOutput{},
 							},
 						}
@@ -563,6 +573,7 @@ func TestUpdate(t *testing.T) {
 						return awssns.GetTopicAttributesRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Data:        &awssns.GetTopicAttributesOutput{},
 							},
 						}
@@ -571,6 +582,7 @@ func TestUpdate(t *testing.T) {
 						return awssns.SetTopicAttributesRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Data:        &awssns.SetTopicAttributesOutput{},
 							},
 						}
@@ -604,6 +616,7 @@ func TestUpdate(t *testing.T) {
 						return awssns.GetTopicAttributesRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Error:       errBoom,
 							},
 						}
@@ -623,6 +636,7 @@ func TestUpdate(t *testing.T) {
 						return awssns.GetTopicAttributesRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Data:        &awssns.GetTopicAttributesOutput{},
 							},
 						}
@@ -631,6 +645,7 @@ func TestUpdate(t *testing.T) {
 						return awssns.SetTopicAttributesRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Error:       errBoom,
 							},
 						}
@@ -685,6 +700,7 @@ func TestDelete(t *testing.T) {
 						return awssns.DeleteTopicRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Data:        &awssns.DeleteTopicOutput{},
 							},
 						}
@@ -715,6 +731,7 @@ func TestDelete(t *testing.T) {
 						return awssns.DeleteTopicRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Error:       errBoom,
 							},
 						}
@@ -734,6 +751,7 @@ func TestDelete(t *testing.T) {
 						return awssns.DeleteTopicRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
 								Data:        &awssns.DeleteTopicOutput{},
 								Error:       nil,
 							},
