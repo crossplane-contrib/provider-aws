@@ -26,6 +26,10 @@ spec:
     type: date
   group: identity.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - managed
+    - aws
     kind: IAMUserPolicyAttachment
     listKind: IAMUserPolicyAttachmentList
     plural: iamuserpolicyattachments
@@ -192,8 +196,6 @@ spec:
                         is selected.
                       type: object
                   type: object
-              required:
-              - policyArn
               type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
