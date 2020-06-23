@@ -40,8 +40,7 @@ type IAMUserPolicyAttachmentParameters struct {
 	PolicyARNSelector *runtimev1alpha1.Selector `json:"policyArnSelector,omitempty"`
 
 	// UserName presents the name of the IAMUser.
-	// +optional
-	UserName *string `json:"userName,omitempty"`
+	UserName string `json:"userName,omitempty"`
 
 	// UserNameRef references to an IAMUser to retrieve its userName
 	// +optional

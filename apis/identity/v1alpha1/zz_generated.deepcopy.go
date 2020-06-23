@@ -349,11 +349,6 @@ func (in *IAMUserPolicyAttachmentParameters) DeepCopyInto(out *IAMUserPolicyAtta
 		*out = new(corev1alpha1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.UserName != nil {
-		in, out := &in.UserName, &out.UserName
-		*out = new(string)
-		**out = **in
-	}
 	if in.UserNameRef != nil {
 		in, out := &in.UserNameRef, &out.UserNameRef
 		*out = new(corev1alpha1.Reference)
