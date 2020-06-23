@@ -203,7 +203,7 @@ func TestObserve(t *testing.T) {
 				acm: &fake.MockCertificateClient{
 					MockDescribeCertificateRequest: func(input *awsacm.DescribeCertificateInput) awsacm.DescribeCertificateRequest {
 						return awsacm.DescribeCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.DescribeCertificateOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.DescribeCertificateOutput{
 								Certificate: &awsacm.CertificateDetail{
 									CertificateArn: aws.String(certificateArn),
 									Options:        &awsacm.CertificateOptions{CertificateTransparencyLoggingPreference: awsacm.CertificateTransparencyLoggingPreferenceEnabled},
@@ -213,7 +213,7 @@ func TestObserve(t *testing.T) {
 					},
 					MockListTagsForCertificateRequest: func(input *awsacm.ListTagsForCertificateInput) awsacm.ListTagsForCertificateRequest {
 						return awsacm.ListTagsForCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.ListTagsForCertificateOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.ListTagsForCertificateOutput{
 								Tags: []awsacm.Tag{{}},
 							}},
 						}
@@ -243,7 +243,7 @@ func TestObserve(t *testing.T) {
 				acm: &fake.MockCertificateClient{
 					MockDescribeCertificateRequest: func(input *awsacm.DescribeCertificateInput) awsacm.DescribeCertificateRequest {
 						return awsacm.DescribeCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
 						}
 					},
 				},
@@ -259,7 +259,7 @@ func TestObserve(t *testing.T) {
 				acm: &fake.MockCertificateClient{
 					MockDescribeCertificateRequest: func(input *awsacm.DescribeCertificateInput) awsacm.DescribeCertificateRequest {
 						return awsacm.DescribeCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: awserr.New(awsacm.ErrCodeResourceNotFoundException, "", nil)},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: awserr.New(awsacm.ErrCodeResourceNotFoundException, "", nil)},
 						}
 					},
 				},
@@ -312,7 +312,7 @@ func TestCreate(t *testing.T) {
 				acm: &fake.MockCertificateClient{
 					MockRequestCertificateRequest: func(input *awsacm.RequestCertificateInput) awsacm.RequestCertificateRequest {
 						return awsacm.RequestCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.RequestCertificateOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.RequestCertificateOutput{
 								CertificateArn: aws.String(certificateArn),
 							}},
 						}
@@ -340,7 +340,7 @@ func TestCreate(t *testing.T) {
 				acm: &fake.MockCertificateClient{
 					MockRequestCertificateRequest: func(input *awsacm.RequestCertificateInput) awsacm.RequestCertificateRequest {
 						return awsacm.RequestCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
 						}
 					},
 				},
@@ -394,26 +394,26 @@ func TestUpdate(t *testing.T) {
 
 					MockUpdateCertificateOptionsRequest: func(input *awsacm.UpdateCertificateOptionsInput) awsacm.UpdateCertificateOptionsRequest {
 						return awsacm.UpdateCertificateOptionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.UpdateCertificateOptionsOutput{}}}
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.UpdateCertificateOptionsOutput{}}}
 					},
 					MockListTagsForCertificateRequest: func(input *awsacm.ListTagsForCertificateInput) awsacm.ListTagsForCertificateRequest {
 						return awsacm.ListTagsForCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.ListTagsForCertificateOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.ListTagsForCertificateOutput{
 								Tags: []awsacm.Tag{{}},
 							}},
 						}
 					},
 					MockRemoveTagsFromCertificateRequest: func(input *awsacm.RemoveTagsFromCertificateInput) awsacm.RemoveTagsFromCertificateRequest {
 						return awsacm.RemoveTagsFromCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.RemoveTagsFromCertificateOutput{}}}
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.RemoveTagsFromCertificateOutput{}}}
 					},
 					MockAddTagsToCertificateRequest: func(input *awsacm.AddTagsToCertificateInput) awsacm.AddTagsToCertificateRequest {
 						return awsacm.AddTagsToCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.AddTagsToCertificateOutput{}}}
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.AddTagsToCertificateOutput{}}}
 					},
 					MockRenewCertificateRequest: func(input *awsacm.RenewCertificateInput) awsacm.RenewCertificateRequest {
 						return awsacm.RenewCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.RenewCertificateOutput{}}}
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.RenewCertificateOutput{}}}
 					},
 				},
 				cr: certificate(),
@@ -437,26 +437,26 @@ func TestUpdate(t *testing.T) {
 
 					MockUpdateCertificateOptionsRequest: func(input *awsacm.UpdateCertificateOptionsInput) awsacm.UpdateCertificateOptionsRequest {
 						return awsacm.UpdateCertificateOptionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom}}
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom}}
 					},
 					MockListTagsForCertificateRequest: func(input *awsacm.ListTagsForCertificateInput) awsacm.ListTagsForCertificateRequest {
 						return awsacm.ListTagsForCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.ListTagsForCertificateOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.ListTagsForCertificateOutput{
 								Tags: []awsacm.Tag{{}},
 							}},
 						}
 					},
 					MockRemoveTagsFromCertificateRequest: func(input *awsacm.RemoveTagsFromCertificateInput) awsacm.RemoveTagsFromCertificateRequest {
 						return awsacm.RemoveTagsFromCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.RemoveTagsFromCertificateOutput{}}}
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.RemoveTagsFromCertificateOutput{}}}
 					},
 					MockAddTagsToCertificateRequest: func(input *awsacm.AddTagsToCertificateInput) awsacm.AddTagsToCertificateRequest {
 						return awsacm.AddTagsToCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.AddTagsToCertificateOutput{}}}
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.AddTagsToCertificateOutput{}}}
 					},
 					MockRenewCertificateRequest: func(input *awsacm.RenewCertificateInput) awsacm.RenewCertificateRequest {
 						return awsacm.RenewCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.RenewCertificateOutput{}}}
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.RenewCertificateOutput{}}}
 					},
 				},
 				cr: certificate(withCertificateTransparencyLoggingPreference()),
@@ -472,26 +472,26 @@ func TestUpdate(t *testing.T) {
 
 					MockUpdateCertificateOptionsRequest: func(input *awsacm.UpdateCertificateOptionsInput) awsacm.UpdateCertificateOptionsRequest {
 						return awsacm.UpdateCertificateOptionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.UpdateCertificateOptionsOutput{}}}
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.UpdateCertificateOptionsOutput{}}}
 					},
 					MockListTagsForCertificateRequest: func(input *awsacm.ListTagsForCertificateInput) awsacm.ListTagsForCertificateRequest {
 						return awsacm.ListTagsForCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.ListTagsForCertificateOutput{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.ListTagsForCertificateOutput{
 								Tags: []awsacm.Tag{{}},
 							}},
 						}
 					},
 					MockRemoveTagsFromCertificateRequest: func(input *awsacm.RemoveTagsFromCertificateInput) awsacm.RemoveTagsFromCertificateRequest {
 						return awsacm.RemoveTagsFromCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.RemoveTagsFromCertificateOutput{}}}
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.RemoveTagsFromCertificateOutput{}}}
 					},
 					MockAddTagsToCertificateRequest: func(input *awsacm.AddTagsToCertificateInput) awsacm.AddTagsToCertificateRequest {
 						return awsacm.AddTagsToCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom}}
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom}}
 					},
 					MockRenewCertificateRequest: func(input *awsacm.RenewCertificateInput) awsacm.RenewCertificateRequest {
 						return awsacm.RenewCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.RenewCertificateOutput{}}}
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.RenewCertificateOutput{}}}
 					},
 				},
 				cr: certificate(withTags()),
@@ -537,7 +537,7 @@ func TestDelete(t *testing.T) {
 				acm: &fake.MockCertificateClient{
 					MockDeleteCertificateRequest: func(input *awsacm.DeleteCertificateInput) awsacm.DeleteCertificateRequest {
 						return awsacm.DeleteCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsacm.DeleteCertificateOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.DeleteCertificateOutput{}},
 						}
 					},
 				},
@@ -562,7 +562,7 @@ func TestDelete(t *testing.T) {
 				acm: &fake.MockCertificateClient{
 					MockDeleteCertificateRequest: func(input *awsacm.DeleteCertificateInput) awsacm.DeleteCertificateRequest {
 						return awsacm.DeleteCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
 						}
 					},
 				},
@@ -578,7 +578,7 @@ func TestDelete(t *testing.T) {
 				acm: &fake.MockCertificateClient{
 					MockDeleteCertificateRequest: func(input *awsacm.DeleteCertificateInput) awsacm.DeleteCertificateRequest {
 						return awsacm.DeleteCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: awserr.New(awsacm.ErrCodeResourceNotFoundException, "", nil)},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: awserr.New(awsacm.ErrCodeResourceNotFoundException, "", nil)},
 						}
 					},
 				},
