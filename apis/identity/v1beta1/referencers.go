@@ -19,6 +19,8 @@ package v1beta1
 import (
 	"context"
 
+	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
+
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -41,7 +43,7 @@ func (mg *IAMRolePolicyAttachment) ResolveReferences(ctx context.Context, c clie
 	r := reference.NewAPIResolver(c, mg)
 
 	// Resolve spec.forProvider.roleName
-	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+	iamRole, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: mg.Spec.ForProvider.RoleName,
 		Reference:    mg.Spec.ForProvider.RoleNameRef,
 		Selector:     mg.Spec.ForProvider.RoleNameSelector,
@@ -51,8 +53,22 @@ func (mg *IAMRolePolicyAttachment) ResolveReferences(ctx context.Context, c clie
 	if err != nil {
 		return err
 	}
-	mg.Spec.ForProvider.RoleName = rsp.ResolvedValue
-	mg.Spec.ForProvider.RoleNameRef = rsp.ResolvedReference
+	mg.Spec.ForProvider.RoleName = iamRole.ResolvedValue
+	mg.Spec.ForProvider.RoleNameRef = iamRole.ResolvedReference
+
+	// Resolve spec.forProvider.roleName
+	iamPolicy, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: mg.Spec.ForProvider.PolicyARN,
+		Reference:    mg.Spec.ForProvider.PolicyARNRef,
+		Selector:     mg.Spec.ForProvider.PolicyARNSelector,
+		To:           reference.To{Managed: &v1alpha1.IAMPolicy{}, List: &v1alpha1.IAMPolicyList{}},
+		Extract:      v1alpha1.IAMPolicyARN(),
+	})
+	if err != nil {
+		return err
+	}
+	mg.Spec.ForProvider.PolicyARN = iamPolicy.ResolvedValue
+	mg.Spec.ForProvider.PolicyARNRef = iamPolicy.ResolvedReference
 
 	return nil
 }

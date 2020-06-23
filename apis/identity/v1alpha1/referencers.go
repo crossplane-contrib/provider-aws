@@ -17,8 +17,20 @@ import (
 	"context"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	resource "github.com/crossplane/crossplane-runtime/pkg/resource"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+// IAMPolicyARN returns a function that returns the ARN of the given policy.
+func IAMPolicyARN() reference.ExtractValueFn {
+	return func(mg resource.Managed) string {
+		r, ok := mg.(*IAMPolicy)
+		if !ok {
+			return ""
+		}
+		return r.Status.AtProvider.ARN
+	}
+}
 
 // ResolveReferences of this IAMUserPolicyAttachment
 func (mg *IAMUserPolicyAttachment) ResolveReferences(ctx context.Context, c client.Reader) error {
