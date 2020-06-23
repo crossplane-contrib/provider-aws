@@ -31,6 +31,15 @@ type IAMRolePolicyAttachmentParameters struct {
 	// +immutable
 	PolicyARN string `json:"policyArn"`
 
+	// PolicyARNRef references an IAMPolicy to retrieve its Policy ARN.
+	// +optional
+	PolicyARNRef *runtimev1alpha1.Reference `json:"policyArnRef,omitempty"`
+
+	// PolicyARNSelector selects a reference to an IAMPolicy to retrieve its
+	// Policy ARN
+	// +optional
+	PolicyARNSelector *runtimev1alpha1.Selector `json:"policyArnSelector,omitempty"`
+
 	// RoleName presents the name of the IAM role.
 	RoleName string `json:"roleName,omitempty"`
 
