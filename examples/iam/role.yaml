@@ -1,0 +1,33 @@
+---
+apiVersion: identity.aws.crossplane.io/v1beta1
+kind: IAMRole
+metadata:
+  name: somerole
+spec:
+  forProvider:
+    # policyArn: arn:aws:iam::aws:policy/AmazonEC2FullAccess
+    policyArnRef:
+      name: somepolicy
+    assumeRolePolicyDocument: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": [
+                        "ec2.amazonaws.com"
+                    ]
+                },
+                "Action": [
+                    "sts:AssumeRole"
+                ]
+            }
+        ]
+      }
+    tags:
+      - key: k1
+        value: v1
+  providerRef:
+    name: example
+  reclaimPolicy: Delete
