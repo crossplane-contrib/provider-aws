@@ -38,7 +38,7 @@ func (mg *IAMUserPolicyAttachment) ResolveReferences(ctx context.Context, c clie
 
 	// Resolve spec.forProvider.userName
 	user, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.UserName),
+		CurrentValue: mg.Spec.ForProvider.UserName,
 		Reference:    mg.Spec.ForProvider.UserNameRef,
 		Selector:     mg.Spec.ForProvider.UserNameSelector,
 		To:           reference.To{Managed: &IAMUser{}, List: &IAMUserList{}},
@@ -47,7 +47,7 @@ func (mg *IAMUserPolicyAttachment) ResolveReferences(ctx context.Context, c clie
 	if err != nil {
 		return err
 	}
-	mg.Spec.ForProvider.UserName = reference.ToPtrValue(user.ResolvedValue)
+	mg.Spec.ForProvider.UserName = user.ResolvedValue
 	mg.Spec.ForProvider.UserNameRef = user.ResolvedReference
 
 	// Resolve spec.forProvider.policyArn
