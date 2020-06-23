@@ -28,7 +28,7 @@ type IAMUserPolicyAttachmentParameters struct {
 	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to
 	// attach.
 	// +immutable
-	PolicyARN string `json:"policyArn"`
+	PolicyARN string `json:"policyArn,omitempty"`
 
 	// PolicyARNRef references an IAMPolicy to retrieve its Policy ARN.
 	// +optional
@@ -40,6 +40,7 @@ type IAMUserPolicyAttachmentParameters struct {
 	PolicyARNSelector *runtimev1alpha1.Selector `json:"policyArnSelector,omitempty"`
 
 	// UserName presents the name of the IAMUser.
+	// +immutable
 	UserName string `json:"userName,omitempty"`
 
 	// UserNameRef references to an IAMUser to retrieve its userName
@@ -83,6 +84,7 @@ type IAMUserPolicyAttachmentStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster
+// +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type IAMUserPolicyAttachment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
