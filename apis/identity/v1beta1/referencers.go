@@ -56,7 +56,7 @@ func (mg *IAMRolePolicyAttachment) ResolveReferences(ctx context.Context, c clie
 	mg.Spec.ForProvider.RoleName = iamRole.ResolvedValue
 	mg.Spec.ForProvider.RoleNameRef = iamRole.ResolvedReference
 
-	// Resolve spec.forProvider.roleName
+	// Resolve spec.forProvider.policyArn
 	iamPolicy, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: mg.Spec.ForProvider.PolicyARN,
 		Reference:    mg.Spec.ForProvider.PolicyARNRef,

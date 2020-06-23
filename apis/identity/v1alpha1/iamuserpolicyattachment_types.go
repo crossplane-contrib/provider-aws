@@ -30,6 +30,15 @@ type IAMUserPolicyAttachmentParameters struct {
 	// +immutable
 	PolicyARN string `json:"policyArn"`
 
+	// PolicyARNRef references an IAMPolicy to retrieve its Policy ARN.
+	// +optional
+	PolicyARNRef *runtimev1alpha1.Reference `json:"policyArnRef,omitempty"`
+
+	// PolicyARNSelector selects a reference to an IAMPolicy to retrieve its
+	// Policy ARN
+	// +optional
+	PolicyARNSelector *runtimev1alpha1.Selector `json:"policyArnSelector,omitempty"`
+
 	// UserName presents the name of the IAMUser.
 	// +optional
 	UserName *string `json:"userName,omitempty"`

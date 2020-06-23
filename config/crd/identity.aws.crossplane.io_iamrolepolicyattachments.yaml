@@ -195,8 +195,6 @@ spec:
                         is selected.
                       type: object
                   type: object
-              required:
-              - policyArn
               type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used
