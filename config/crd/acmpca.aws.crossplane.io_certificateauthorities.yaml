@@ -219,9 +219,6 @@ spec:
                   - signingAlgorithm
                   - subject
                   type: object
-                idempotencyToken:
-                  description: Token to distinguish between calls to RequestCertificate.
-                  type: string
                 permanentDeletionTimeInDays:
                   description: The number of days to make a CA restorable after it
                     has been deleted
@@ -247,7 +244,9 @@ spec:
                   - enabled
                   type: object
                 status:
-                  description: Status of the certificate authority
+                  description: Status of the certificate authority. This value cannot
+                    be configured at creation, but can be updated to set a CA to ACTIVE
+                    or DISABLED.
                   enum:
                   - CREATING
                   - PENDING_CERTIFICATE
@@ -374,9 +373,6 @@ spec:
                 serial:
                   description: Serial of the Certificate Authority
                   type: string
-              required:
-              - certificateAuthorityARN
-              - serial
               type: object
             bindingPhase:
               description: Phase represents the binding phase of a managed resource
@@ -423,8 +419,6 @@ spec:
                 - type
                 type: object
               type: array
-          required:
-          - atProvider
           type: object
       type: object
   version: v1alpha1

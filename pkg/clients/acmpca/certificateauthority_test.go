@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package acmpca
 
 import (
@@ -28,7 +44,6 @@ var (
 	state                          = "someState"
 	surname                        = "someSurname"
 	title                          = "someTitle"
-	idempotencyToken               = "someidempotencyToken"
 )
 
 func TestGenerateCreateCertificateAuthorityInput(t *testing.T) {
@@ -39,8 +54,6 @@ func TestGenerateCreateCertificateAuthorityInput(t *testing.T) {
 		"Filled_Input": {
 			in: &v1alpha1.CertificateAuthorityParameters{
 				Type: acmpca.CertificateAuthorityTypeRoot,
-				// Status:           acmpca.CertificateAuthorityStatusActive,
-				IdempotencyToken: aws.String(idempotencyToken),
 				CertificateAuthorityConfiguration: v1alpha1.CertificateAuthorityConfiguration{
 					SigningAlgorithm: acmpca.SigningAlgorithmSha256withecdsa,
 					KeyAlgorithm:     acmpca.KeyAlgorithmRsa2048,
@@ -67,7 +80,6 @@ func TestGenerateCreateCertificateAuthorityInput(t *testing.T) {
 				}},
 			},
 			out: &acmpca.CreateCertificateAuthorityInput{
-				IdempotencyToken: aws.String(idempotencyToken),
 				CertificateAuthorityConfiguration: &acmpca.CertificateAuthorityConfiguration{
 					SigningAlgorithm: acmpca.SigningAlgorithmSha256withecdsa,
 					KeyAlgorithm:     acmpca.KeyAlgorithmRsa2048,
@@ -168,16 +180,14 @@ func TestGenerateCertificateAuthorityConfiguration(t *testing.T) {
 
 func TestGenerateRevocationConfiguration(t *testing.T) {
 	cases := map[string]struct {
-		in  *v1alpha1.CertificateAuthorityParameters
+		in  *v1alpha1.RevocationConfiguration
 		out *acmpca.RevocationConfiguration
 	}{
 		"Filled_Input": {
-			in: &v1alpha1.CertificateAuthorityParameters{
-				RevocationConfiguration: &v1alpha1.RevocationConfiguration{
-					CustomCname:  aws.String(customCname),
-					Enabled:      revocationConfigurationEnabled,
-					S3BucketName: aws.String(s3BucketName),
-				},
+			in: &v1alpha1.RevocationConfiguration{
+				CustomCname:  aws.String(customCname),
+				Enabled:      revocationConfigurationEnabled,
+				S3BucketName: aws.String(s3BucketName),
 			},
 			out: &acmpca.RevocationConfiguration{
 				CrlConfiguration: &acmpca.CrlConfiguration{
@@ -302,7 +312,7 @@ func TestIsCertificateAuthorityUpToDate(t *testing.T) {
 			},
 			want: true,
 		},
-		"DifferntFields": {
+		"DifferentFields": {
 			args: args{
 				cd: acmpca.CertificateAuthority{
 					RevocationConfiguration: &acmpca.RevocationConfiguration{

@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package acmpca
 
 import (
@@ -31,14 +47,13 @@ func GenerateCreateCertificateAuthorityInput(p *v1alpha1.CertificateAuthorityPar
 	m := &acmpca.CreateCertificateAuthorityInput{
 
 		CertificateAuthorityType:          p.Type,
-		IdempotencyToken:                  p.IdempotencyToken,
 		CertificateAuthorityConfiguration: GenerateCertificateAuthorityConfiguration(p.CertificateAuthorityConfiguration),
-		RevocationConfiguration:           GenerateRevocationConfiguration(p),
+		RevocationConfiguration:           GenerateRevocationConfiguration(p.RevocationConfiguration),
 	}
 
-	// if p.RevocationConfiguration != nil {
-	// 	m.RevocationConfiguration = GenerateRevocationConfiguration(p.RevocationConfiguration)
-	// }
+	if p.RevocationConfiguration != nil {
+		m.RevocationConfiguration = GenerateRevocationConfiguration(p.RevocationConfiguration)
+	}
 
 	m.Tags = make([]acmpca.Tag, len(p.Tags))
 	for i, val := range p.Tags {
@@ -79,17 +94,17 @@ func GenerateCertificateAuthorityConfiguration(p v1alpha1.CertificateAuthorityCo
 }
 
 // GenerateRevocationConfiguration from RevocationConfiguration
-func GenerateRevocationConfiguration(p *v1alpha1.CertificateAuthorityParameters) *acmpca.RevocationConfiguration {
-	if p.RevocationConfiguration == nil {
+func GenerateRevocationConfiguration(p *v1alpha1.RevocationConfiguration) *acmpca.RevocationConfiguration {
+	if p == nil {
 		return nil
 	}
 
 	m := &acmpca.RevocationConfiguration{
 		CrlConfiguration: &acmpca.CrlConfiguration{
-			CustomCname:      p.RevocationConfiguration.CustomCname,
-			Enabled:          aws.Bool(p.RevocationConfiguration.Enabled),
-			ExpirationInDays: p.RevocationConfiguration.ExpirationInDays,
-			S3BucketName:     p.RevocationConfiguration.S3BucketName,
+			CustomCname:      p.CustomCname,
+			Enabled:          aws.Bool(p.Enabled),
+			ExpirationInDays: p.ExpirationInDays,
+			S3BucketName:     p.S3BucketName,
 		},
 	}
 
@@ -175,7 +190,7 @@ func IsCertificateAuthorityUpToDate(p *v1alpha1.CertificateAuthority, cd acmpca.
 func GenerateCertificateAuthorityExternalStatus(certificateAuthority acmpca.CertificateAuthority) v1alpha1.CertificateAuthorityExternalStatus {
 	return v1alpha1.CertificateAuthorityExternalStatus{
 		CertificateAuthorityARN: aws.StringValue(certificateAuthority.Arn),
-		Serial:                  certificateAuthority.Serial,
+		Serial:                  aws.StringValue(certificateAuthority.Serial),
 	}
 }
 
