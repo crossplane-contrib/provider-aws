@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	acmpcav1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	integrationv1alpha1 "github.com/crossplane/provider-aws/apis/applicationintegration/v1alpha1"
 	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	cachev1beta1 "github.com/crossplane/provider-aws/apis/cache/v1beta1"
 	computev1alpha3 "github.com/crossplane/provider-aws/apis/compute/v1alpha3"
@@ -51,6 +52,7 @@ func init() {
 		acmpcav1alpha1.SchemeBuilder.AddToScheme,
 		databasev1alpha1.SchemeBuilder.AddToScheme,
 		eksv1beta1.SchemeBuilder.AddToScheme,
+		integrationv1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 
