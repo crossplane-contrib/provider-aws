@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2020 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -227,7 +227,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// Update Certificate Authority configuration
 	_, err := e.client.UpdateCertificateAuthorityRequest(&awsacmpca.UpdateCertificateAuthorityInput{
 		CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
-		RevocationConfiguration: acmpca.GenerateRevocationConfiguration(&cr.Spec.ForProvider),
+		RevocationConfiguration: acmpca.GenerateRevocationConfiguration(cr.Spec.ForProvider.RevocationConfiguration),
 		Status:                  *cr.Spec.ForProvider.Status,
 	}).Send(ctx)
 
