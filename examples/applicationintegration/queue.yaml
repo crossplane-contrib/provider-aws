@@ -1,0 +1,17 @@
+apiVersion: applicationintegration.aws.crossplane.io/v1alpha1
+kind: Queue
+metadata:
+  name: sample-queue
+  annotations:
+    crossplane.io/external-name: aws-queue-name
+spec:
+  forProvider:
+    delaySeconds: 4
+    tags:
+      - key: k
+        value: v
+      - key: k1
+        value: v1
+  reclaimPolicy: Delete
+  providerRef:
+    name: example
