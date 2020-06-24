@@ -150,11 +150,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	// GenerateObservation for SNS Topic
 	cr.Status.AtProvider = snsclient.GenerateTopicObservation(res.Attributes)
 
-	upToDate := snsclient.IsSNSTopicUpToDate(cr.Spec.ForProvider, res.Attributes)
-
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: upToDate,
+		ResourceUpToDate: snsclient.IsSNSTopicUpToDate(cr.Spec.ForProvider, res.Attributes),
 	}, nil
 }
 
@@ -197,17 +195,14 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// Update Topic Attributes
 	attrs := snsclient.GetChangedAttributes(cr.Spec.ForProvider, resp.Attributes)
 	for k, v := range attrs {
-		_, err := e.client.SetTopicAttributesRequest(&awssns.SetTopicAttributesInput{
+		_, err = e.client.SetTopicAttributesRequest(&awssns.SetTopicAttributesInput{
 			AttributeName:  aws.String(k),
 			AttributeValue: aws.String(v),
 			TopicArn:       aws.String(meta.GetExternalName(cr)),
 		}).Send(ctx)
-		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
-		}
-	}
 
-	return managed.ExternalUpdate{}, nil
+	}
+	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
