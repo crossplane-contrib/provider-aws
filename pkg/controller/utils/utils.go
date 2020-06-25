@@ -28,8 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
-
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
@@ -37,7 +35,7 @@ import (
 // RetrieveAwsConfigFromProvider retrieves the aws config from the given aws provider reference
 func RetrieveAwsConfigFromProvider(ctx context.Context, client client.Reader, providerRef *corev1.ObjectReference) (*aws.Config, error) {
 	p := &awsv1alpha3.Provider{}
-	n := meta.NamespacedNameOf(providerRef)
+	n := types.NamespacedName{Name: providerRef.Name}
 	if err := client.Get(ctx, n, p); err != nil {
 		return nil, errors.Wrapf(err, "cannot get provider %s", n)
 	}
