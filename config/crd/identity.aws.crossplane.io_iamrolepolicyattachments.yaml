@@ -143,6 +143,31 @@ spec:
                   description: PolicyARN is the Amazon Resource Name (ARN) of the
                     IAM policy you want to attach.
                   type: string
+                policyArnRef:
+                  description: PolicyARNRef references an IAMPolicy to retrieve its
+                    Policy ARN.
+                  properties:
+                    name:
+                      description: Name of the referenced object.
+                      type: string
+                  required:
+                  - name
+                  type: object
+                policyArnSelector:
+                  description: PolicyARNSelector selects a reference to an IAMPolicy
+                    to retrieve its Policy ARN
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
+                  type: object
                 roleName:
                   description: RoleName presents the name of the IAM role.
                   type: string
@@ -170,8 +195,6 @@ spec:
                         is selected.
                       type: object
                   type: object
-              required:
-              - policyArn
               type: object
             providerRef:
               description: ProviderReference specifies the provider that will be used

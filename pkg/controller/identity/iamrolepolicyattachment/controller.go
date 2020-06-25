@@ -156,7 +156,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	return managed.ExternalCreation{}, errors.Wrap(err, errAttach)
 }
 
-func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {
 	// PolicyARN is the only distinguishing field and on update to that, new policy is attached
 	return managed.ExternalUpdate{}, nil
 }
