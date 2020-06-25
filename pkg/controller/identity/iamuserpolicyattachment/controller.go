@@ -120,7 +120,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	observed, err := e.client.ListAttachedUserPoliciesRequest(&awsiam.ListAttachedUserPoliciesInput{
-		UserName: cr.Spec.ForProvider.UserName,
+		UserName: aws.String(cr.Spec.ForProvider.UserName),
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
@@ -170,13 +170,13 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	_, err := e.client.AttachUserPolicyRequest(&awsiam.AttachUserPolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
-		UserName:  cr.Spec.ForProvider.UserName,
+		UserName:  aws.String(cr.Spec.ForProvider.UserName),
 	}).Send(ctx)
 
 	return managed.ExternalCreation{}, errors.Wrap(err, errAttach)
 }
 
-func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {
 	// Updating any field will create a new User-Policy attachment in AWS, which will be
 	// irrelevant/out-of-sync to the original defined attachment.
 	// It is encouraged to instead create a new IAMUserPolicyAttachment resource.
@@ -193,7 +193,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	_, err := e.client.DetachUserPolicyRequest(&awsiam.DetachUserPolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
-		UserName:  cr.Spec.ForProvider.UserName,
+		UserName:  aws.String(cr.Spec.ForProvider.UserName),
 	}).Send(ctx)
 
 	return errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDetach)
