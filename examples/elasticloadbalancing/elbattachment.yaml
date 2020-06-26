@@ -1,0 +1,11 @@
+apiVersion: elasticloadbalancing.aws.crossplane.io/v1alpha1
+kind: ELBAttachment
+metadata:
+  name: sample-elbattachment  
+spec:
+  forProvider:
+    elbName: one
+    instanceId: i-0d5da348272ec3fd3
+  providerRef:
+    name: example
+  reclaimPolicy: Delete

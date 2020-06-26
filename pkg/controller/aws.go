@@ -36,6 +36,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpc"
 	"github.com/crossplane/provider-aws/pkg/controller/eks"
+	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elb"
+	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elbattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iampolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrole"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrolepolicyattachment"
@@ -69,6 +71,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		eks.SetupCluster,
 		eks.SetupClusterSecret,
 		eks.SetupClusterTarget,
+		elb.SetupELB,
+		elbattachment.SetupELBAttachment,
 		s3.SetupBucketClaimScheduling,
 		s3.SetupBucketClaimDefaulting,
 		s3.SetupBucketClaimBinding,

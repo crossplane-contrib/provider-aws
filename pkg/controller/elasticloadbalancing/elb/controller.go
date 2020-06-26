@@ -1,0 +1,345 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package elb
+
+import (
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awselb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
+	v1alpha1 "github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/clients/elasticloadbalancing/elb"
+)
+
+const (
+	errUnexpectedObject = "The managed resource is not an ELB resource"
+
+	errCreateELBClient   = "cannot create ELB client"
+	errGetProvider       = "cannot get provider"
+	errGetProviderSecret = "cannot get provider secret"
+
+	errDescribe      = "failed to describe ELB with given name"
+	errMultipleItems = "retrieved multiple ELBs for the given name"
+	errCreate        = "failed to create the ELB resource"
+	errUpdate        = "failed to update ELB resource"
+	errDelete        = "failed to delete the ELB resource"
+	errSpecUpdate    = "cannot update spec of ELB custom resource"
+)
+
+// SetupELB adds a controller that reconciles ELBs.
+func SetupELB(mgr ctrl.Manager, l logging.Logger) error {
+	name := managed.ControllerName(v1alpha1.ELBGroupKind)
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		For(&v1alpha1.ELB{}).
+		Complete(managed.NewReconciler(mgr,
+			resource.ManagedKind(v1alpha1.ELBGroupVersionKind),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elb.NewClient}),
+			managed.WithConnectionPublishers(),
+			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+}
+
+type connector struct {
+	kube        client.Client
+	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (elb.Client, error)
+}
+
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	cr, ok := mg.(*v1alpha1.ELB)
+	if !ok {
+		return nil, errors.New(errUnexpectedObject)
+	}
+
+	p := &awsv1alpha3.Provider{}
+	if err := c.kube.Get(ctx, meta.NamespacedNameOf(cr.Spec.ProviderReference), p); err != nil {
+		return nil, errors.Wrap(err, errGetProvider)
+	}
+
+	if aws.BoolValue(p.Spec.UseServiceAccount) {
+		elbClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
+		return &external{client: elbClient, kube: c.kube}, errors.Wrap(err, errCreateELBClient)
+	}
+
+	if p.GetCredentialsSecretReference() == nil {
+		return nil, errors.New(errGetProviderSecret)
+	}
+
+	s := &corev1.Secret{}
+	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
+	if err := c.kube.Get(ctx, n, s); err != nil {
+		return nil, errors.Wrap(err, errGetProviderSecret)
+	}
+
+	elbClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
+	return &external{client: elbClient, kube: c.kube}, errors.Wrap(err, errCreateELBClient)
+}
+
+type external struct {
+	kube   client.Client
+	client elb.Client
+}
+
+func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
+	cr, ok := mgd.(*v1alpha1.ELB)
+	if !ok {
+		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
+	}
+
+	response, err := e.client.DescribeLoadBalancersRequest(&awselb.DescribeLoadBalancersInput{
+		LoadBalancerNames: []string{meta.GetExternalName(cr)},
+	}).Send(ctx)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDescribe)
+	}
+
+	// in a successful response, there should be one and only one object
+	if len(response.LoadBalancerDescriptions) != 1 {
+		return managed.ExternalObservation{}, errors.New(errMultipleItems)
+	}
+
+	observed := response.LoadBalancerDescriptions[0]
+
+	// update the CRD spec for any new values from provider
+	current := cr.Spec.ForProvider.DeepCopy()
+	elb.LateInitializeELB(&cr.Spec.ForProvider, &observed)
+	if !cmp.Equal(current, &cr.Spec.ForProvider) {
+		if err := e.kube.Update(ctx, cr); err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errSpecUpdate)
+		}
+	}
+
+	cr.Status.SetConditions(runtimev1alpha1.Available())
+
+	cr.Status.AtProvider = elb.GenerateELBObservation(observed)
+
+	upToDate, err := elb.IsUpToDate(cr.Spec.ForProvider, observed)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, errUpdate)
+	}
+
+	return managed.ExternalObservation{
+		ResourceExists:   true,
+		ResourceUpToDate: upToDate,
+	}, nil
+}
+
+func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
+	cr, ok := mgd.(*v1alpha1.ELB)
+	if !ok {
+		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
+	}
+
+	cr.Status.SetConditions(runtimev1alpha1.Creating())
+
+	_, err := e.client.CreateLoadBalancerRequest(elb.GenerateCreateELBInput(meta.GetExternalName(cr),
+		cr.Spec.ForProvider)).Send(ctx)
+
+	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+}
+
+func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // // nolint:gocyclo
+	cr, ok := mgd.(*v1alpha1.ELB)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+
+	response, err := e.client.DescribeLoadBalancersRequest(&awselb.DescribeLoadBalancersInput{
+		LoadBalancerNames: []string{meta.GetExternalName(cr)},
+	}).Send(ctx)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(elb.IsELBNotFound, err), errUpdate)
+	}
+
+	if len(response.LoadBalancerDescriptions) != 1 {
+		return managed.ExternalUpdate{}, errors.New(errMultipleItems)
+	}
+
+	observed := response.LoadBalancerDescriptions[0]
+
+	patch, err := elb.CreatePatch(observed, cr.Spec.ForProvider)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(elb.IsELBNotFound, err), errUpdate)
+	}
+
+	if len(patch.AvailabilityZones) != 0 {
+		if err := e.updateAvailabilityZones(ctx, cr.Spec.ForProvider.AvailabilityZones, observed.AvailabilityZones, meta.GetExternalName(cr)); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		}
+	}
+
+	if len(patch.SecurityGroups) != 0 {
+		if _, err := e.client.ApplySecurityGroupsToLoadBalancerRequest(&awselb.ApplySecurityGroupsToLoadBalancerInput{
+			SecurityGroups:   cr.Spec.ForProvider.SecurityGroups,
+			LoadBalancerName: aws.String(meta.GetExternalName(cr)),
+		}).Send(ctx); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		}
+	}
+
+	if len(patch.Subnets) != 0 {
+		if err := e.updateSubnets(ctx, cr.Spec.ForProvider.Subnets, observed.Subnets, meta.GetExternalName(cr)); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		}
+	}
+
+	if patch.HealthCheck != nil {
+		if _, err := e.client.ConfigureHealthCheckRequest(&awselb.ConfigureHealthCheckInput{
+			LoadBalancerName: aws.String(meta.GetExternalName(cr)),
+			HealthCheck: &awselb.HealthCheck{
+				HealthyThreshold:   aws.Int64(cr.Spec.ForProvider.HealthCheck.HealthyThreshold),
+				Interval:           aws.Int64(cr.Spec.ForProvider.HealthCheck.Interval),
+				Target:             aws.String(cr.Spec.ForProvider.HealthCheck.Target),
+				Timeout:            aws.Int64(cr.Spec.ForProvider.HealthCheck.Timeout),
+				UnhealthyThreshold: aws.Int64(cr.Spec.ForProvider.HealthCheck.HealthyThreshold),
+			},
+		}).Send(ctx); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		}
+	}
+
+	if patch.Listeners != nil {
+		if err := e.updateListeners(ctx, cr.Spec.ForProvider.Listeners, observed.ListenerDescriptions, meta.GetExternalName(cr)); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		}
+	}
+
+	return managed.ExternalUpdate{}, nil
+}
+
+func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
+	cr, ok := mgd.(*v1alpha1.ELB)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
+
+	cr.Status.SetConditions(runtimev1alpha1.Deleting())
+
+	_, err := e.client.DeleteLoadBalancerRequest(&awselb.DeleteLoadBalancerInput{
+		LoadBalancerName: aws.String(meta.GetExternalName(cr)),
+	}).Send(ctx)
+
+	return errors.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDelete)
+}
+
+func (e *external) updateAvailabilityZones(ctx context.Context, zones, elbZones []string, name string) error {
+
+	addZones := difference(zones, elbZones)
+	if len(addZones) != 0 {
+		if _, err := e.client.EnableAvailabilityZonesForLoadBalancerRequest(&awselb.EnableAvailabilityZonesForLoadBalancerInput{
+			AvailabilityZones: addZones,
+			LoadBalancerName:  aws.String(name),
+		}).Send(ctx); err != nil {
+			return err
+		}
+	}
+
+	removeZones := difference(elbZones, zones)
+	if len(removeZones) != 0 {
+		if _, err := e.client.DisableAvailabilityZonesForLoadBalancerRequest(&awselb.DisableAvailabilityZonesForLoadBalancerInput{
+			AvailabilityZones: removeZones,
+			LoadBalancerName:  aws.String(name),
+		}).Send(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (e *external) updateSubnets(ctx context.Context, subnets, elbSubnets []string, name string) error {
+
+	addSubnets := difference(subnets, elbSubnets)
+	if len(addSubnets) != 0 {
+		if _, err := e.client.AttachLoadBalancerToSubnetsRequest(&awselb.AttachLoadBalancerToSubnetsInput{
+			LoadBalancerName: aws.String(name),
+			Subnets:          addSubnets,
+		}).Send(ctx); err != nil {
+			return err
+		}
+	}
+
+	removeSubnets := difference(elbSubnets, subnets)
+	if len(elbSubnets) != 0 {
+		if _, err := e.client.DetachLoadBalancerFromSubnetsRequest(&awselb.DetachLoadBalancerFromSubnetsInput{
+			LoadBalancerName: aws.String(name),
+			Subnets:          removeSubnets,
+		}).Send(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (e *external) updateListeners(ctx context.Context, listeners []v1alpha1.Listener, elbListeners []awselb.ListenerDescription, name string) error {
+
+	if len(elbListeners) != 0 {
+		ports := []int64{}
+		for _, v := range elbListeners {
+			ports = append(ports, aws.Int64Value(v.Listener.LoadBalancerPort))
+		}
+
+		if _, err := e.client.DeleteLoadBalancerListenersRequest(&awselb.DeleteLoadBalancerListenersInput{
+			LoadBalancerName:  aws.String(name),
+			LoadBalancerPorts: ports,
+		}).Send(ctx); err != nil {
+			return err
+		}
+	}
+
+	if len(listeners) != 0 {
+		if _, err := e.client.CreateLoadBalancerListenersRequest(&awselb.CreateLoadBalancerListenersInput{
+			Listeners:        elb.BuildELBListeners(listeners),
+			LoadBalancerName: aws.String(name),
+		}).Send(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func difference(a, b []string) []string {
+	mb := make(map[string]struct{}, len(b))
+	for _, x := range b {
+		mb[x] = struct{}{}
+	}
+	var diff []string
+	for _, x := range a {
+		if _, found := mb[x]; !found {
+			diff = append(diff, x)
+		}
+	}
+	return diff
+}
