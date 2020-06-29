@@ -358,7 +358,7 @@ func GenerateObservation(db rds.DBInstance) v1beta1.RDSInstanceObservation { // 
 	return o
 }
 
-// LateInitialize fills the empty fields in *v1alpha3.RDSInstanceParameters with
+// LateInitialize fills the empty fields in *v1beta1.RDSInstanceParameters with
 // the values seen in rds.DBInstance.
 func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rds.DBInstance) { // nolint:gocyclo
 	if db == nil {
@@ -449,7 +449,7 @@ func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "SkipFinalSnapshotBeforeDeletion")), nil
 }
 
-// GetConnectionDetails extracts managed.ConnectionDetails out of v1alpha3.RDSInstance.
+// GetConnectionDetails extracts managed.ConnectionDetails out of v1beta1.RDSInstance.
 func GetConnectionDetails(in v1beta1.RDSInstance) managed.ConnectionDetails {
 	if in.Status.AtProvider.Endpoint.Address == "" {
 		return nil
