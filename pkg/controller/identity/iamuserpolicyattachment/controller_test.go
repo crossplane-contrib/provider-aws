@@ -88,7 +88,7 @@ func userPolicy(m ...userPolicyModifier) *v1alpha1.IAMUserPolicyAttachment {
 	cr := &v1alpha1.IAMUserPolicyAttachment{
 		Spec: v1alpha1.IAMUserPolicyAttachmentSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}

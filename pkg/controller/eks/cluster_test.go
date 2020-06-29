@@ -97,7 +97,7 @@ func cluster(m ...clusterModifier) *v1beta1.Cluster {
 	cr := &v1beta1.Cluster{
 		Spec: v1beta1.ClusterSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}

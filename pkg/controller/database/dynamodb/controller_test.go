@@ -77,7 +77,7 @@ func table(m ...tableModifier) *v1alpha1.DynamoTable {
 	cr := &v1alpha1.DynamoTable{
 		Spec: v1alpha1.DynamoTableSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}

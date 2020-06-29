@@ -44,7 +44,7 @@ func (mg *S3Bucket) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alph
 }
 
 // GetProviderReference of this S3Bucket.
-func (mg *S3Bucket) GetProviderReference() *corev1.ObjectReference {
+func (mg *S3Bucket) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -79,7 +79,7 @@ func (mg *S3Bucket) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this S3Bucket.
-func (mg *S3Bucket) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *S3Bucket) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

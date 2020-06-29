@@ -166,7 +166,7 @@ func replicationGroup(rm ...replicationGroupModifier) *v1beta1.ReplicationGroup 
 		ObjectMeta: objectMeta,
 		Spec: v1beta1.ReplicationGroupSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 				WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
 					Namespace: namespace,
 					Name:      connectionSecretName,

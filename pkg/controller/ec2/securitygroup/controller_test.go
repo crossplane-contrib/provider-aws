@@ -116,7 +116,7 @@ func sg(m ...sgModifier) *v1beta1.SecurityGroup {
 	cr := &v1beta1.SecurityGroup{
 		Spec: v1beta1.SecurityGroupSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}

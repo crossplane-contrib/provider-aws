@@ -88,7 +88,7 @@ func queue(m ...sqsModifier) *v1alpha1.Queue {
 	cr := &v1alpha1.Queue{
 		Spec: v1alpha1.QueueSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}

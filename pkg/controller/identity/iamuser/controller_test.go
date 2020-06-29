@@ -81,7 +81,7 @@ func user(m ...userModifier) *v1alpha1.IAMUser {
 	cr := &v1alpha1.IAMUser{
 		Spec: v1alpha1.IAMUserSpec{
 			ResourceSpec: corev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}

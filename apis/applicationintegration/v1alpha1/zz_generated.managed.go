@@ -44,7 +44,7 @@ func (mg *Queue) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.
 }
 
 // GetProviderReference of this Queue.
-func (mg *Queue) GetProviderReference() *corev1.ObjectReference {
+func (mg *Queue) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -79,7 +79,7 @@ func (mg *Queue) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this Queue.
-func (mg *Queue) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *Queue) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

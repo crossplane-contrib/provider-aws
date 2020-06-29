@@ -101,7 +101,7 @@ func vpc(m ...vpcModifier) *v1beta1.VPC {
 	cr := &v1beta1.VPC{
 		Spec: v1beta1.VPCSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}
