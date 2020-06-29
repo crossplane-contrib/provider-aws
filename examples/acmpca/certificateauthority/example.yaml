@@ -8,7 +8,7 @@ spec:
     revocationConfiguration:
       expirationInDays: 7
       enabled: true
-      s3BucketName: cpexample
+      s3BucketName: cpexample # bucket must already exist
     certificateAuthorityConfiguration:
       keyAlgorithm: RSA_2048
       signingAlgorithm: SHA256WITHRSA

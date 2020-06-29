@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2020 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,6 +21,34 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+// CertificateAuthorityParameters defines the desired state of an AWS CertificateAuthority.
+type CertificateAuthorityParameters struct {
+	// Type of the certificate authority
+	// +kubebuilder:validation:Enum=ROOT;SUBORINATE
+	Type acmpca.CertificateAuthorityType `json:"type"`
+
+	// RevocationConfiguration to associate with the certificateAuthority.
+	// +optional
+	RevocationConfiguration *RevocationConfiguration `json:"revocationConfiguration,omitempty"`
+
+	// CertificateAuthorityConfiguration to associate with the certificateAuthority.
+	CertificateAuthorityConfiguration CertificateAuthorityConfiguration `json:"certificateAuthorityConfiguration"`
+
+	// The number of days to make a CA restorable after it has been deleted
+	// +optional
+	PermanentDeletionTimeInDays *int64 `json:"permanentDeletionTimeInDays,omitempty"`
+
+	// Status of the certificate authority.
+	// This value cannot be configured at creation, but can be updated to set a
+	// CA to ACTIVE or DISABLED.
+	// +optional
+	// +kubebuilder:validation:Enum=CREATING;PENDING_CERTIFICATE;ACTIVE;DELETED;DISABLED;EXPIRED;FAILED
+	Status *acmpca.CertificateAuthorityStatus `json:"status,omitempty"`
+
+	// One or more resource tags to associate with the certificateAuthority.
+	Tags []Tag `json:"tags"`
+}
 
 // Tag represents user-provided metadata that can be associated
 type Tag struct {
@@ -134,55 +162,25 @@ type Subject struct {
 	Title *string `json:"title,omitempty"`
 }
 
+// CertificateAuthorityExternalStatus keeps the state of external resource
+type CertificateAuthorityExternalStatus struct {
+	// String that contains the ARN of the issued certificate Authority
+	CertificateAuthorityARN string `json:"certificateAuthorityARN,omitempty"`
+
+	// Serial of the Certificate Authority
+	Serial string `json:"serial,omitempty"`
+}
+
 // CertificateAuthoritySpec defines the desired state of CertificateAuthority
 type CertificateAuthoritySpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
 	ForProvider                  CertificateAuthorityParameters `json:"forProvider"`
 }
 
-// CertificateAuthorityExternalStatus keeps the state of external resource
-type CertificateAuthorityExternalStatus struct {
-	// String that contains the ARN of the issued certificate Authority
-	CertificateAuthorityARN string `json:"certificateAuthorityARN"`
-
-	// Serial of the Certificate Authority
-	Serial *string `json:"serial"`
-}
-
 // An CertificateAuthorityStatus represents the observed state of an CertificateAuthority manager.
 type CertificateAuthorityStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     CertificateAuthorityExternalStatus `json:"atProvider"`
-}
-
-// CertificateAuthorityParameters defines the desired state of an AWS CertificateAuthority.
-type CertificateAuthorityParameters struct {
-	// Type of the certificate authority
-	// +kubebuilder:validation:Enum=ROOT;SUBORINATE
-	Type acmpca.CertificateAuthorityType `json:"type"`
-
-	// Status of the certificate authority
-	// +optional
-	// +kubebuilder:validation:Enum=CREATING;PENDING_CERTIFICATE;ACTIVE;DELETED;DISABLED;EXPIRED;FAILED
-	Status *acmpca.CertificateAuthorityStatus `json:"status,omitempty"`
-
-	// RevocationConfiguration to associate with the certificateAuthority.
-	// +optional
-	RevocationConfiguration *RevocationConfiguration `json:"revocationConfiguration,omitempty"`
-
-	// CertificateAuthorityConfiguration to associate with the certificateAuthority.
-	CertificateAuthorityConfiguration CertificateAuthorityConfiguration `json:"certificateAuthorityConfiguration"`
-
-	// Token to distinguish between calls to RequestCertificate.
-	// +optional
-	IdempotencyToken *string `json:"idempotencyToken,omitempty"`
-
-	// The number of days to make a CA restorable after it has been deleted
-	// +optional
-	PermanentDeletionTimeInDays *int64 `json:"permanentDeletionTimeInDays,omitempty"`
-
-	// One or more resource tags to associate with the certificateAuthority.
-	Tags []Tag `json:"tags"`
+	AtProvider                     CertificateAuthorityExternalStatus `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
