@@ -33,8 +33,40 @@ import (
 )
 
 var (
-	dbName           = "example-name"
-	characterSetName = "utf8"
+	address           = "address"
+	arn               = "my:arn"
+	az                = "az"
+	characterSetName  = "utf8"
+	cloudwatchExports = []string{"test"}
+	clusterName       = "testCluster"
+	dbName            = "example-name"
+	description       = "testDescription"
+	domain            = "domain"
+	engine            = "5.6.41"
+	instanceClass     = "class"
+	kmsID             = "kms"
+	monitoring        = 3
+	monitoring64      = int64(monitoring)
+	multiAZ           = false
+	name              = "testName"
+	port              = 123
+	port64            = int64(port)
+	resourceID        = "resource"
+	retention         = 2
+	retention64       = int64(retention)
+	status            = "testStatus"
+	storage           = 1
+	storage64         = int64(storage)
+	storageType       = "storageType"
+	tier              = 4
+	tier64            = int64(tier)
+	trueFlag          = true
+	truncEngine       = "5.6"
+	username          = "username"
+	value             = "testValue"
+	vpc               = "vpc"
+	window            = "window"
+	zone              = "zone"
 )
 
 func TestCreatePatch(t *testing.T) {
@@ -169,26 +201,9 @@ func TestIsUpToDate(t *testing.T) {
 
 func TestGenerateObservation(t *testing.T) {
 	lastRestoreTime, createTime := time.Now(), time.Now()
-	instanceStatus := "status"
-	name := "testName"
-	value := "testValue"
-	description := "testDescription"
-	status := "testStatus"
-	domain := "testDomain"
-	arn := "my:arn"
-	address := "testAddress"
-	zone := "zone"
-	az := rds.AvailabilityZone{Name: &name}
-	vpc := "vpc"
-	port := int64(123)
-	resourceID := "resource"
-	insightsEnabled := true
+	rdsAz := rds.AvailabilityZone{Name: &name}
 	replicaSourceIdentifier := "replicaSource"
 	secondaryAZ := "secondary"
-	storage := int64(1)
-	retention := int64(2)
-	instanceClass := "class"
-	multiAZ := false
 	normal := true
 	replicaClusters := []string{"replicaCluster"}
 	subnetGroup := rds.DBSubnetGroup{
@@ -201,28 +216,28 @@ func TestGenerateObservation(t *testing.T) {
 	subnetGroup.Subnets = []rds.Subnet{{
 		SubnetIdentifier:       &name,
 		SubnetStatus:           &status,
-		SubnetAvailabilityZone: &az,
+		SubnetAvailabilityZone: &rdsAz,
 	}}
 	endpoint := rds.Endpoint{
 		Address:      &address,
 		HostedZoneId: &zone,
-		Port:         &port,
+		Port:         &port64,
 	}
 	pendingModifiedValues := rds.PendingModifiedValues{
-		AllocatedStorage:        &storage,
-		BackupRetentionPeriod:   &retention,
+		AllocatedStorage:        &storage64,
+		BackupRetentionPeriod:   &retention64,
 		CACertificateIdentifier: &name,
 		DBInstanceClass:         &instanceClass,
 		DBSubnetGroupName:       &name,
-		Iops:                    &storage,
+		Iops:                    &storage64,
 		LicenseModel:            &name,
 		MultiAZ:                 &multiAZ,
-		Port:                    &port,
-		StorageType:             &name,
+		Port:                    &port64,
+		StorageType:             &storageType,
 	}
 	pendingCloudwatch := rds.PendingCloudwatchLogsExports{
-		LogTypesToDisable: []string{"test"},
-		LogTypesToEnable:  []string{"test"},
+		LogTypesToDisable: cloudwatchExports,
+		LogTypesToEnable:  cloudwatchExports,
 	}
 	pendingModifiedValues.PendingCloudwatchLogsExports = &pendingCloudwatch
 	pendingModifiedValues.ProcessorFeatures = []rds.ProcessorFeature{{
@@ -236,13 +251,13 @@ func TestGenerateObservation(t *testing.T) {
 	}{
 		"AllFields": {
 			rds: rds.DBInstance{
-				DBInstanceStatus:                      &instanceStatus,
+				DBInstanceStatus:                      &status,
 				DBInstanceArn:                         &arn,
 				InstanceCreateTime:                    &createTime,
-				DbInstancePort:                        &port,
+				DbInstancePort:                        &port64,
 				DbiResourceId:                         &resourceID,
 				EnhancedMonitoringResourceArn:         &arn,
-				PerformanceInsightsEnabled:            &insightsEnabled,
+				PerformanceInsightsEnabled:            &trueFlag,
 				ReadReplicaDBClusterIdentifiers:       replicaClusters,
 				ReadReplicaDBInstanceIdentifiers:      replicaClusters,
 				ReadReplicaSourceDBInstanceIdentifier: &replicaSourceIdentifier,
@@ -275,7 +290,7 @@ func TestGenerateObservation(t *testing.T) {
 				}},
 			},
 			want: v1beta1.RDSInstanceObservation{
-				DBInstanceStatus:  instanceStatus,
+				DBInstanceStatus:  status,
 				DBInstanceArn:     arn,
 				DBParameterGroups: []v1beta1.DBParameterGroupStatus{{DBParameterGroupName: name}},
 				DBSecurityGroups:  []v1beta1.DBSecurityGroupMembership{{DBSecurityGroupName: name, Status: status}},
@@ -288,35 +303,35 @@ func TestGenerateObservation(t *testing.T) {
 					Subnets: []v1beta1.SubnetInRDS{{
 						SubnetIdentifier:       name,
 						SubnetStatus:           status,
-						SubnetAvailabilityZone: v1beta1.AvailabilityZone{Name: *az.Name},
+						SubnetAvailabilityZone: v1beta1.AvailabilityZone{Name: *rdsAz.Name},
 					}},
 				},
-				DBInstancePort:                int(port),
+				DBInstancePort:                port,
 				DBResourceID:                  resourceID,
 				DomainMemberships:             []v1beta1.DomainMembership{{Domain: domain, FQDN: name, IAMRoleName: name, Status: status}},
 				InstanceCreateTime:            &metav1.Time{Time: createTime},
-				Endpoint:                      v1beta1.Endpoint{Port: int(port), HostedZoneID: zone, Address: address},
+				Endpoint:                      v1beta1.Endpoint{Port: port, HostedZoneID: zone, Address: address},
 				EnhancedMonitoringResourceArn: arn,
 				LatestRestorableTime:          &metav1.Time{Time: lastRestoreTime},
 				OptionGroupMemberships:        []v1beta1.OptionGroupMembership{{OptionGroupName: name, Status: status}},
 				PendingModifiedValues: v1beta1.PendingModifiedValues{
-					AllocatedStorage:        int(storage),
-					BackupRetentionPeriod:   int(retention),
+					AllocatedStorage:        storage,
+					BackupRetentionPeriod:   retention,
 					CACertificateIdentifier: name,
 					DBInstanceClass:         instanceClass,
 					DBSubnetGroupName:       name,
-					IOPS:                    int(storage),
+					IOPS:                    storage,
 					LicenseModel:            name,
 					MultiAZ:                 multiAZ,
-					Port:                    int(port),
-					StorageType:             name,
+					Port:                    port,
+					StorageType:             storageType,
 					PendingCloudwatchLogsExports: v1beta1.PendingCloudwatchLogsExports{
-						LogTypesToDisable: []string{"test"},
-						LogTypesToEnable:  []string{"test"},
+						LogTypesToDisable: cloudwatchExports,
+						LogTypesToEnable:  cloudwatchExports,
 					},
 					ProcessorFeatures: []v1beta1.ProcessorFeature{{Name: name, Value: value}},
 				},
-				PerformanceInsightsEnabled:            insightsEnabled,
+				PerformanceInsightsEnabled:            trueFlag,
 				ReadReplicaDBClusterIdentifiers:       replicaClusters,
 				ReadReplicaDBInstanceIdentifiers:      replicaClusters,
 				ReadReplicaSourceDBInstanceIdentifier: replicaSourceIdentifier,
@@ -335,13 +350,13 @@ func TestGenerateObservation(t *testing.T) {
 		},
 		"SomeFields": {
 			rds: rds.DBInstance{
-				DBInstanceStatus:                      &instanceStatus,
+				DBInstanceStatus:                      &status,
 				DBInstanceArn:                         &arn,
 				InstanceCreateTime:                    &createTime,
-				DbInstancePort:                        &port,
+				DbInstancePort:                        &port64,
 				DbiResourceId:                         &resourceID,
 				EnhancedMonitoringResourceArn:         &arn,
-				PerformanceInsightsEnabled:            &insightsEnabled,
+				PerformanceInsightsEnabled:            &trueFlag,
 				ReadReplicaDBClusterIdentifiers:       replicaClusters,
 				ReadReplicaDBInstanceIdentifiers:      replicaClusters,
 				ReadReplicaSourceDBInstanceIdentifier: &replicaSourceIdentifier,
@@ -370,17 +385,17 @@ func TestGenerateObservation(t *testing.T) {
 				}},
 			},
 			want: v1beta1.RDSInstanceObservation{
-				DBInstanceStatus:                      instanceStatus,
+				DBInstanceStatus:                      status,
 				DBInstanceArn:                         arn,
-				DBInstancePort:                        int(port),
+				DBInstancePort:                        port,
 				DBResourceID:                          resourceID,
 				DomainMemberships:                     []v1beta1.DomainMembership{{Domain: domain, FQDN: name, IAMRoleName: name, Status: status}},
 				InstanceCreateTime:                    &metav1.Time{Time: createTime},
-				Endpoint:                              v1beta1.Endpoint{Port: int(port), HostedZoneID: zone, Address: address},
+				Endpoint:                              v1beta1.Endpoint{Port: port, HostedZoneID: zone, Address: address},
 				EnhancedMonitoringResourceArn:         arn,
 				LatestRestorableTime:                  &metav1.Time{Time: lastRestoreTime},
 				OptionGroupMemberships:                []v1beta1.OptionGroupMembership{{OptionGroupName: name, Status: status}},
-				PerformanceInsightsEnabled:            insightsEnabled,
+				PerformanceInsightsEnabled:            trueFlag,
 				ReadReplicaDBClusterIdentifiers:       replicaClusters,
 				ReadReplicaDBInstanceIdentifiers:      replicaClusters,
 				ReadReplicaSourceDBInstanceIdentifier: replicaSourceIdentifier,
@@ -414,8 +429,6 @@ func TestGenerateObservation(t *testing.T) {
 }
 
 func TestGetConnectionDetails(t *testing.T) {
-	address := "testAddress"
-	port := 123
 	cases := map[string]struct {
 		rds  v1beta1.RDSInstance
 		want managed.ConnectionDetails
@@ -452,34 +465,6 @@ func TestGetConnectionDetails(t *testing.T) {
 }
 
 func TestLateInitialize(t *testing.T) {
-	name := "testName"
-	clusterName := "testCluster"
-	value := "testValue"
-	description := "testDescription"
-	status := "testStatus"
-	arn := "my:arn"
-	zone := "zone"
-	az := "az"
-	vpc := "vpc"
-	port := 123
-	port64 := int64(port)
-	storage := 1
-	storage64 := int64(storage)
-	retention := 2
-	retention64 := int64(retention)
-	monitoring := 3
-	monitoring64 := int64(monitoring)
-	tier := 4
-	tier64 := int64(tier)
-	storageType := "storageType"
-	instanceClass := "class"
-	engine := "5.6.41"
-	truncEngine := "5.6"
-	multiAZ := false
-	trueFlag := true
-	kmsID := "kms"
-	username := "username"
-	window := "window"
 	existingName := "existing"
 	subnetGroup := rds.DBSubnetGroup{
 		DBSubnetGroupArn:         &arn,
@@ -488,7 +473,6 @@ func TestLateInitialize(t *testing.T) {
 		SubnetGroupStatus:        &status,
 		VpcId:                    &vpc,
 	}
-	cloudwatchExports := []string{"test"}
 
 	cases := map[string]struct {
 		rds    rds.DBInstance
@@ -696,44 +680,18 @@ func TestLateInitialize(t *testing.T) {
 }
 
 func TestGenerateModifyDBInstanceInput(t *testing.T) {
-	name := "testName"
-	clusterName := "testCluster"
-	value := "testValue"
-	arn := "my:arn"
-	zone := "zone"
-	az := "az"
-	port := 123
-	port64 := int64(port)
-	storage := 1
-	storage64 := int64(storage)
-	retention := 2
-	retention64 := int64(retention)
-	monitoring := 3
-	monitoring64 := int64(monitoring)
-	tier := 4
-	tier64 := int64(tier)
-	instanceClass := "class"
-	engine := "5.6.41"
-	multiAZ := false
-	trueFlag := true
-	kmsID := "kms"
-	username := "username"
-	window := "window"
-	domain := "domain"
-	storageType := "storageType"
 	dbSecurityGroups := []string{name}
-	cloudwatchExports := []string{"test"}
 	allFieldsName := "allfieldsName"
 	emptyName := "emptyProcessor"
 	iamRole := "iamRole"
 	vpcIds := []string{name}
 	rdsCloudwatchLogsExportConfig := rds.CloudwatchLogsExportConfiguration{
-		DisableLogTypes: []string{"test"},
-		EnableLogTypes:  []string{"test"},
+		DisableLogTypes: cloudwatchExports,
+		EnableLogTypes:  cloudwatchExports,
 	}
 	cloudwatchLogsExportConfig := v1beta1.CloudwatchLogsExportConfiguration{
-		DisableLogTypes: []string{"test"},
-		EnableLogTypes:  []string{"test"},
+		DisableLogTypes: cloudwatchExports,
+		EnableLogTypes:  cloudwatchExports,
 	}
 	cases := map[string]struct {
 		name   string
