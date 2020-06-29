@@ -16,37 +16,47 @@ limitations under the License.
 
 package v1beta1
 
-// // ResolveReferences of this ReplicationGroup
-// func (mg *ReplicationGroup) ResolveReferences(ctx context.Context, c client.Reader) error {
-// 	r := reference.NewAPIResolver(c, mg)
+import (
+	"context"
 
-// 	// Resolve spec.forProvider.securityGroupIDs
-// 	mrsp, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
-// 		CurrentValues: mg.Spec.ForProvider.SecurityGroupIDs,
-// 		References:    mg.Spec.ForProvider.SecurityGroupIDRefs,
-// 		Selector:      mg.Spec.ForProvider.SecurityGroupIDSelector,
-// 		To:            reference.To{Managed: &v1beta1.SecurityGroup{}, List: &v1beta1.SecurityGroupList{}},
-// 		Extract:       reference.ExternalName(),
-// 	})
-// 	if err != nil {
-// 		return err
-// 	}
-// 	mg.Spec.ForProvider.SecurityGroupIDs = mrsp.ResolvedValues
-// 	mg.Spec.ForProvider.SecurityGroupIDRefs = mrsp.ResolvedReferences
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
-// 	// Resolve spec.forProvider.cacheSecurityGroupNames
-// 	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
-// 		CurrentValues: mg.Spec.ForProvider.CacheSecurityGroupNames,
-// 		References:    mg.Spec.ForProvider.CacheSecurityGroupNameRefs,
-// 		Selector:      mg.Spec.ForProvider.CacheSecurityGroupNameSelector,
-// 		To:            reference.To{Managed: &v1beta1.SecurityGroup{}, List: &v1beta1.SecurityGroupList{}},
-// 		Extract:       v1beta1.SecurityGroupName(),
-// 	})
-// 	if err != nil {
-// 		return err
-// 	}
-// 	mg.Spec.ForProvider.CacheSecurityGroupNames = mrsp.ResolvedValues
-// 	mg.Spec.ForProvider.CacheSecurityGroupNameRefs = mrsp.ResolvedReferences
+	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
-// 	return nil
-// }
+	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+)
+
+// ResolveReferences of this ReplicationGroup
+func (mg *ReplicationGroup) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.forProvider.securityGroupIDs
+	mrsp, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+		CurrentValues: mg.Spec.ForProvider.SecurityGroupIDs,
+		References:    mg.Spec.ForProvider.SecurityGroupIDRefs,
+		Selector:      mg.Spec.ForProvider.SecurityGroupIDSelector,
+		To:            reference.To{Managed: &v1beta1.SecurityGroup{}, List: &v1beta1.SecurityGroupList{}},
+		Extract:       reference.ExternalName(),
+	})
+	if err != nil {
+		return err
+	}
+	mg.Spec.ForProvider.SecurityGroupIDs = mrsp.ResolvedValues
+	mg.Spec.ForProvider.SecurityGroupIDRefs = mrsp.ResolvedReferences
+
+	// Resolve spec.forProvider.cacheSecurityGroupNames
+	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+		CurrentValues: mg.Spec.ForProvider.CacheSecurityGroupNames,
+		References:    mg.Spec.ForProvider.CacheSecurityGroupNameRefs,
+		Selector:      mg.Spec.ForProvider.CacheSecurityGroupNameSelector,
+		To:            reference.To{Managed: &v1beta1.SecurityGroup{}, List: &v1beta1.SecurityGroupList{}},
+		Extract:       v1beta1.SecurityGroupName(),
+	})
+	if err != nil {
+		return err
+	}
+	mg.Spec.ForProvider.CacheSecurityGroupNames = mrsp.ResolvedValues
+	mg.Spec.ForProvider.CacheSecurityGroupNameRefs = mrsp.ResolvedReferences
+
+	return nil
+}
