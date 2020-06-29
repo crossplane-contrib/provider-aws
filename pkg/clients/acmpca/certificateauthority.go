@@ -51,10 +51,6 @@ func GenerateCreateCertificateAuthorityInput(p *v1alpha1.CertificateAuthorityPar
 		RevocationConfiguration:           GenerateRevocationConfiguration(p.RevocationConfiguration),
 	}
 
-	if p.RevocationConfiguration != nil {
-		m.RevocationConfiguration = GenerateRevocationConfiguration(p.RevocationConfiguration)
-	}
-
 	m.Tags = make([]acmpca.Tag, len(p.Tags))
 	for i, val := range p.Tags {
 		m.Tags[i] = acmpca.Tag{
