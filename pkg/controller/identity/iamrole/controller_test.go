@@ -26,7 +26,6 @@ import (
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
@@ -102,7 +101,7 @@ func role(m ...roleModifier) *v1beta1.IAMRole {
 	cr := &v1beta1.IAMRole{
 		Spec: v1beta1.IAMRoleSpec{
 			ResourceSpec: corev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: corev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}
@@ -116,7 +115,7 @@ func TestConnect(t *testing.T) {
 
 	type args struct {
 		newClientFn func(*aws.Config) (iam.RoleClient, error)
-		awsConfigFn func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error)
+		awsConfigFn func(context.Context, client.Reader, corev1alpha1.Reference) (*aws.Config, error)
 		cr          resource.Managed
 	}
 	type want struct {
@@ -135,7 +134,7 @@ func TestConnect(t *testing.T) {
 					}
 					return nil, nil
 				},
-				awsConfigFn: func(_ context.Context, _ client.Reader, p *corev1.ObjectReference) (*aws.Config, error) {
+				awsConfigFn: func(_ context.Context, _ client.Reader, p corev1alpha1.Reference) (*aws.Config, error) {
 					if diff := cmp.Diff(providerName, p.Name); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
@@ -160,7 +159,7 @@ func TestConnect(t *testing.T) {
 					}
 					return nil, errBoom
 				},
-				awsConfigFn: func(_ context.Context, _ client.Reader, p *corev1.ObjectReference) (*aws.Config, error) {
+				awsConfigFn: func(_ context.Context, _ client.Reader, p corev1alpha1.Reference) (*aws.Config, error) {
 					if diff := cmp.Diff(providerName, p.Name); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}

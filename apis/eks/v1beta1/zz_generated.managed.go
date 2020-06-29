@@ -44,7 +44,7 @@ func (mg *Cluster) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha
 }
 
 // GetProviderReference of this Cluster.
-func (mg *Cluster) GetProviderReference() *corev1.ObjectReference {
+func (mg *Cluster) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -79,7 +79,7 @@ func (mg *Cluster) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this Cluster.
-func (mg *Cluster) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *Cluster) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

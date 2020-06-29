@@ -104,7 +104,7 @@ func instance(m ...rdsModifier) *v1beta1.RDSInstance {
 	cr := &v1beta1.RDSInstance{
 		Spec: v1beta1.RDSInstanceSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}

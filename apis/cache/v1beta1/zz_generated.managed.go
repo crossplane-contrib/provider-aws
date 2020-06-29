@@ -44,7 +44,7 @@ func (mg *ReplicationGroup) GetCondition(ct runtimev1alpha1.ConditionType) runti
 }
 
 // GetProviderReference of this ReplicationGroup.
-func (mg *ReplicationGroup) GetProviderReference() *corev1.ObjectReference {
+func (mg *ReplicationGroup) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -79,7 +79,7 @@ func (mg *ReplicationGroup) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this ReplicationGroup.
-func (mg *ReplicationGroup) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *ReplicationGroup) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

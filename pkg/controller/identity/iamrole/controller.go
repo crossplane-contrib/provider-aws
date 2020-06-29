@@ -23,7 +23,6 @@ import (
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -71,7 +70,7 @@ func SetupIAMRole(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	client      client.Client
 	newClientFn func(*aws.Config) (iam.RoleClient, error)
-	awsConfigFn func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error)
+	awsConfigFn func(context.Context, client.Reader, runtimev1alpha1.Reference) (*aws.Config, error)
 }
 
 func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {

@@ -44,7 +44,7 @@ func (mg *EKSCluster) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1al
 }
 
 // GetProviderReference of this EKSCluster.
-func (mg *EKSCluster) GetProviderReference() *corev1.ObjectReference {
+func (mg *EKSCluster) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -79,7 +79,7 @@ func (mg *EKSCluster) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this EKSCluster.
-func (mg *EKSCluster) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *EKSCluster) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

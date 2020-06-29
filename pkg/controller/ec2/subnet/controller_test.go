@@ -86,7 +86,7 @@ func subnet(m ...subnetModifier) *v1beta1.Subnet {
 	cr := &v1beta1.Subnet{
 		Spec: v1beta1.SubnetSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}

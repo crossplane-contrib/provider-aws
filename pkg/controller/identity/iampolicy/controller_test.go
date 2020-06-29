@@ -101,7 +101,7 @@ func policy(m ...policyModifier) *v1alpha1.IAMPolicy {
 	cr := &v1alpha1.IAMPolicy{
 		Spec: v1alpha1.IAMPolicySpec{
 			ResourceSpec: corev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}
