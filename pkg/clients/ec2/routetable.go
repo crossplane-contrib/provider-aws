@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
+	"github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
@@ -80,18 +81,18 @@ func IsAssociationIDNotFoundErr(err error) bool {
 	return false
 }
 
-// GenerateRTObservation is used to produce v1beta1.RouteTableExternalStatus from
+// GenerateRTObservation is used to produce v1alpha4.RouteTableExternalStatus from
 // ec2.RouteTable.
-func GenerateRTObservation(rt ec2.RouteTable) v1beta1.RouteTableObservation {
-	o := v1beta1.RouteTableObservation{
+func GenerateRTObservation(rt ec2.RouteTable) v1alpha4.RouteTableObservation {
+	o := v1alpha4.RouteTableObservation{
 		OwnerID:      aws.StringValue(rt.OwnerId),
 		RouteTableID: aws.StringValue(rt.RouteTableId),
 	}
 
 	if len(rt.Routes) > 0 {
-		o.Routes = make([]v1beta1.RouteState, len(rt.Routes))
+		o.Routes = make([]v1alpha4.RouteState, len(rt.Routes))
 		for i, rt := range rt.Routes {
-			o.Routes[i] = v1beta1.RouteState{
+			o.Routes[i] = v1alpha4.RouteState{
 				State:                string(rt.State),
 				DestinationCIDRBlock: aws.StringValue(rt.DestinationCidrBlock),
 				GatewayID:            aws.StringValue(rt.GatewayId),
@@ -100,9 +101,9 @@ func GenerateRTObservation(rt ec2.RouteTable) v1beta1.RouteTableObservation {
 	}
 
 	if len(rt.Routes) > 0 {
-		o.Associations = make([]v1beta1.AssociationState, len(rt.Associations))
+		o.Associations = make([]v1alpha4.AssociationState, len(rt.Associations))
 		for i, asc := range rt.Associations {
-			o.Associations[i] = v1beta1.AssociationState{
+			o.Associations[i] = v1alpha4.AssociationState{
 				Main:          aws.BoolValue(asc.Main),
 				AssociationID: aws.StringValue(asc.RouteTableAssociationId),
 				State:         asc.AssociationState.String(),
@@ -114,45 +115,31 @@ func GenerateRTObservation(rt ec2.RouteTable) v1beta1.RouteTableObservation {
 	return o
 }
 
-// LateInitializeRT fills the empty fields in *v1beta1.RouteTableParameters with
+// LateInitializeRT fills the empty fields in *v1alpha4.RouteTableParameters with
 // the values seen in ec2.RouteTable.
-func LateInitializeRT(in *v1beta1.RouteTableParameters, rt *ec2.RouteTable, target v1beta1.RouteTableParameters) { // nolint:gocyclo
+func LateInitializeRT(in *v1alpha4.RouteTableParameters, rt *ec2.RouteTable) { // nolint:gocyclo
 	if rt == nil {
 		return
 	}
 	in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, rt.VpcId)
 
 	if len(in.Routes) == 0 && len(rt.Routes) != 0 {
-		routes := make([]v1beta1.Route, len(rt.Routes))
+		in.Routes = make([]v1alpha4.Route, len(rt.Routes))
 		for i, val := range rt.Routes {
-			routes[i] = v1beta1.Route{
+			in.Routes[i] = v1alpha4.Route{
 				DestinationCIDRBlock: val.DestinationCidrBlock,
 				GatewayID:            val.GatewayId,
 			}
-			if target.Routes[i].GatewayIDRef != nil {
-				routes[i].GatewayIDRef = target.Routes[i].GatewayIDRef
-			}
-			if target.Routes[i].GatewayIDSelector != nil {
-				routes[i].GatewayIDSelector = target.Routes[i].GatewayIDSelector
-			}
 		}
-		in.Routes = routes
 	}
 
 	if len(in.Associations) == 0 && len(rt.Associations) != 0 {
-		associations := make([]v1beta1.Association, len(rt.Associations))
+		in.Associations = make([]v1alpha4.Association, len(rt.Associations))
 		for i, val := range rt.Associations {
-			associations[i] = v1beta1.Association{
+			in.Associations[i] = v1alpha4.Association{
 				SubnetID: val.SubnetId,
 			}
-			if target.Associations[i].SubnetIDRef != nil {
-				associations[i].SubnetIDRef = target.Associations[i].SubnetIDRef
-			}
-			if target.Associations[i].SubnetIDSelector != nil {
-				associations[i].SubnetIDSelector = target.Routes[i].GatewayIDSelector
-			}
 		}
-		in.Associations = associations
 	}
 
 	if len(in.Tags) == 0 && len(rt.Tags) != 0 {
@@ -160,31 +147,31 @@ func LateInitializeRT(in *v1beta1.RouteTableParameters, rt *ec2.RouteTable, targ
 	}
 }
 
-// CreateRTPatch creates a *v1beta1.RouteTableParameters that has only the changed
-// values between the target *v1beta1.RouteTableParameters and the current
+// CreateRTPatch creates a *v1alpha4.RouteTableParameters that has only the changed
+// values between the target *v1alpha4.RouteTableParameters and the current
 // *ec2.RouteTable
-func CreateRTPatch(in ec2.RouteTable, target v1beta1.RouteTableParameters) (*v1beta1.RouteTableParameters, error) {
-	currentParams := &v1beta1.RouteTableParameters{}
+func CreateRTPatch(in ec2.RouteTable, target v1alpha4.RouteTableParameters) (*v1alpha4.RouteTableParameters, error) {
+	currentParams := &v1alpha4.RouteTableParameters{}
 
 	v1beta1.SortTags(target.Tags, in.Tags)
 
 	// Add the default route for fair comparison.
 	for _, val := range in.Routes {
 		if *val.GatewayId == LocalGatewayID {
-			target.Routes = append([]v1beta1.Route{{
+			target.Routes = append([]v1alpha4.Route{{
 				GatewayID:            val.GatewayId,
 				DestinationCIDRBlock: val.DestinationCidrBlock,
 			}}, target.Routes...)
 		}
 	}
 
-	LateInitializeRT(currentParams, &in, target)
+	LateInitializeRT(currentParams, &in)
 
 	jsonPatch, err := awsclients.CreateJSONPatch(*currentParams, target)
 	if err != nil {
 		return nil, err
 	}
-	patch := &v1beta1.RouteTableParameters{}
+	patch := &v1alpha4.RouteTableParameters{}
 	if err := json.Unmarshal(jsonPatch, patch); err != nil {
 		return nil, err
 	}
@@ -192,10 +179,10 @@ func CreateRTPatch(in ec2.RouteTable, target v1beta1.RouteTableParameters) (*v1b
 }
 
 // IsRtUpToDate checks whether there is a change in any of the modifiable fields.
-func IsRtUpToDate(p v1beta1.RouteTableParameters, rt ec2.RouteTable) (bool, error) {
+func IsRtUpToDate(p v1alpha4.RouteTableParameters, rt ec2.RouteTable) (bool, error) {
 	patch, err := CreateRTPatch(rt, p)
 	if err != nil {
 		return false, err
 	}
-	return cmp.Equal(&v1beta1.RouteTableParameters{}, patch, cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{})), nil
+	return cmp.Equal(&v1alpha4.RouteTableParameters{}, patch, cmpopts.EquateEmpty(), cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{})), nil
 }

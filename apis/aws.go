@@ -20,11 +20,14 @@ package apis
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
+	acmpcav1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	integrationv1alpha1 "github.com/crossplane/provider-aws/apis/applicationintegration/v1alpha1"
 	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	cachev1beta1 "github.com/crossplane/provider-aws/apis/cache/v1beta1"
 	computev1alpha3 "github.com/crossplane/provider-aws/apis/compute/v1alpha3"
 	databasev1alpha1 "github.com/crossplane/provider-aws/apis/database/v1alpha1"
 	databasev1beta1 "github.com/crossplane/provider-aws/apis/database/v1beta1"
+	ec2v1alpha4 "github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
 	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	eksv1beta1 "github.com/crossplane/provider-aws/apis/eks/v1beta1"
 	identityv1alpha1 "github.com/crossplane/provider-aws/apis/identity/v1alpha1"
@@ -45,10 +48,13 @@ func init() {
 		identityv1beta1.SchemeBuilder.AddToScheme,
 		notificationv1alpha3.SchemeBuilder.AddToScheme,
 		ec2v1beta1.SchemeBuilder.AddToScheme,
+		ec2v1alpha4.SchemeBuilder.AddToScheme,
 		awsv1alpha3.SchemeBuilder.AddToScheme,
 		storagev1alpha3.SchemeBuilder.AddToScheme,
+		acmpcav1alpha1.SchemeBuilder.AddToScheme,
 		databasev1alpha1.SchemeBuilder.AddToScheme,
 		eksv1beta1.SchemeBuilder.AddToScheme,
+		integrationv1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 

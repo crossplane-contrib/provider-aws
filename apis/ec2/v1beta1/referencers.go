@@ -19,11 +19,11 @@ package v1beta1
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/pkg/reference"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 )
 
 // SecurityGroupName returns the spec.groupName of a SecurityGroup.
@@ -54,59 +54,6 @@ func (mg *InternetGateway) ResolveReferences(ctx context.Context, c client.Reade
 	}
 	mg.Spec.ForProvider.VPCID = aws.String(rsp.ResolvedValue)
 	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference
-
-	return nil
-}
-
-// ResolveReferences of this RouteTable
-func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) error {
-	r := reference.NewAPIResolver(c, mg)
-
-	// Resolve spec.vpcID
-	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: aws.StringValue(mg.Spec.ForProvider.VPCID),
-		Reference:    mg.Spec.ForProvider.VPCIDRef,
-		Selector:     mg.Spec.ForProvider.VPCIDSelector,
-		To:           reference.To{Managed: &VPC{}, List: &VPCList{}},
-		Extract:      reference.ExternalName(),
-	})
-	if err != nil {
-		return err
-	}
-	mg.Spec.ForProvider.VPCID = aws.String(rsp.ResolvedValue)
-	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference
-
-	// Resolve spec.routes[].gatewayID
-	for i := range mg.Spec.ForProvider.Routes {
-		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-			CurrentValue: aws.StringValue(mg.Spec.ForProvider.Routes[i].GatewayID),
-			Reference:    mg.Spec.ForProvider.Routes[i].GatewayIDRef,
-			Selector:     mg.Spec.ForProvider.Routes[i].GatewayIDSelector,
-			To:           reference.To{Managed: &InternetGateway{}, List: &InternetGatewayList{}},
-			Extract:      reference.ExternalName(),
-		})
-		if err != nil {
-			return err
-		}
-		mg.Spec.ForProvider.Routes[i].GatewayID = aws.String(rsp.ResolvedValue)
-		mg.Spec.ForProvider.Routes[i].GatewayIDRef = rsp.ResolvedReference
-	}
-
-	// Resolve spec.associations[].subnetID
-	for i := range mg.Spec.ForProvider.Associations {
-		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-			CurrentValue: aws.StringValue(mg.Spec.ForProvider.Associations[i].SubnetID),
-			Reference:    mg.Spec.ForProvider.Associations[i].SubnetIDRef,
-			Selector:     mg.Spec.ForProvider.Associations[i].SubnetIDSelector,
-			To:           reference.To{Managed: &Subnet{}, List: &SubnetList{}},
-			Extract:      reference.ExternalName(),
-		})
-		if err != nil {
-			return err
-		}
-		mg.Spec.ForProvider.Associations[i].SubnetID = aws.String(rsp.ResolvedValue)
-		mg.Spec.ForProvider.Associations[i].SubnetIDRef = rsp.ResolvedReference
-	}
 
 	return nil
 }

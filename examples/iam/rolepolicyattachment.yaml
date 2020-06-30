@@ -1,0 +1,15 @@
+---
+apiVersion: identity.aws.crossplane.io/v1beta1
+kind: IAMRolePolicyAttachment
+metadata:
+  name: sample-rolepolicyattachment
+spec:
+  forProvider:
+    # policyArn: arn:aws:iam::aws:policy/AmazonEC2FullAccess
+    policyArnRef:
+      name: somepolicy
+    roleNameRef:
+      name: somerole
+  providerRef:
+    name: example
+  reclaimPolicy: Delete

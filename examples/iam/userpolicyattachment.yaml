@@ -5,7 +5,9 @@ metadata:
   name: sample-userpolicyattachment
 spec:
   forProvider:
-    policyArn: arn:aws:iam::aws:policy/AmazonEC2FullAccess
+    # policyArn: arn:aws:iam::aws:policy/AmazonEC2FullAccess
+    policyArnRef:
+      name: somepolicy
     userNameRef:
       name: someuser
   providerRef:

@@ -21,6 +21,9 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
+	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthority"
+	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthoritypermission"
+	"github.com/crossplane/provider-aws/pkg/controller/applicationintegration/sqs"
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/compute"
@@ -83,9 +86,12 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		internetgateway.SetupInternetGateway,
 		routetable.SetupRouteTable,
 		dbsubnetgroup.SetupDBSubnetGroup,
+		certificateauthority.SetupCertificateAuthority,
+		certificateauthoritypermission.SetupCertificateAuthorityPermission,
 		dynamodb.SetupDynamoTable,
 		snstopic.SetupSNSTopic,
 		snssubscription.SetupSubscription,
+		sqs.SetupQueue,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err

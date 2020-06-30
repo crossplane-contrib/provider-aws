@@ -1,4 +1,4 @@
-apiVersion: network.aws.crossplane.io/v1beta1
+apiVersion: ec2.aws.crossplane.io/v1beta1
 kind: InternetGateway
 metadata:
   name: sample-internetgateway
