@@ -49,6 +49,7 @@ const (
 	errGetProviderSecret = "cannot get provider secret"
 
 	errDescribe      = "failed to describe ELB with given name"
+	errDescribeTags  = "failed to describe tags for ELB with given name"
 	errMultipleItems = "retrieved multiple ELBs for the given name"
 	errCreate        = "failed to create the ELB resource"
 	errUpdate        = "failed to update ELB resource"
@@ -82,7 +83,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	}
 
 	p := &awsv1alpha3.Provider{}
-	if err := c.kube.Get(ctx, meta.NamespacedNameOf(cr.Spec.ProviderReference), p); err != nil {
+	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name}, p); err != nil {
 		return nil, errors.Wrap(err, errGetProvider)
 	}
 
@@ -130,9 +131,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	observed := response.LoadBalancerDescriptions[0]
 
+	tagsResponse, err := e.client.DescribeTagsRequest(&awselb.DescribeTagsInput{
+		LoadBalancerNames: []string{meta.GetExternalName(cr)},
+	}).Send(ctx)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDescribeTags)
+	}
+
 	// update the CRD spec for any new values from provider
 	current := cr.Spec.ForProvider.DeepCopy()
-	elb.LateInitializeELB(&cr.Spec.ForProvider, &observed)
+	elb.LateInitializeELB(&cr.Spec.ForProvider, &observed, tagsResponse.TagDescriptions[0].Tags)
 	if !cmp.Equal(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
 			return managed.ExternalObservation{}, errors.Wrap(err, errSpecUpdate)
@@ -143,7 +151,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.Status.AtProvider = elb.GenerateELBObservation(observed)
 
-	upToDate, err := elb.IsUpToDate(cr.Spec.ForProvider, observed)
+	upToDate, err := elb.IsUpToDate(cr.Spec.ForProvider, observed, tagsResponse.TagDescriptions[0].Tags)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, errUpdate)
 	}
@@ -187,7 +195,14 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	observed := response.LoadBalancerDescriptions[0]
 
-	patch, err := elb.CreatePatch(observed, cr.Spec.ForProvider)
+	tagsResponse, err := e.client.DescribeTagsRequest(&awselb.DescribeTagsInput{
+		LoadBalancerNames: []string{meta.GetExternalName(cr)},
+	}).Send(ctx)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDescribeTags)
+	}
+
+	patch, err := elb.CreatePatch(observed, cr.Spec.ForProvider, tagsResponse.TagDescriptions[0].Tags)
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(elb.IsELBNotFound, err), errUpdate)
 	}
@@ -228,8 +243,14 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	if patch.Listeners != nil {
+	if len(patch.Listeners) != 0 {
 		if err := e.updateListeners(ctx, cr.Spec.ForProvider.Listeners, observed.ListenerDescriptions, meta.GetExternalName(cr)); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		}
+	}
+
+	if len(patch.Tags) != 0 {
+		if err := e.updateTags(ctx, cr.Spec.ForProvider.Tags, tagsResponse.TagDescriptions[0].Tags, meta.GetExternalName(cr)); err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 		}
 	}
@@ -254,7 +275,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 func (e *external) updateAvailabilityZones(ctx context.Context, zones, elbZones []string, name string) error {
 
-	addZones := difference(zones, elbZones)
+	addZones := stringSliceDiff(zones, elbZones)
 	if len(addZones) != 0 {
 		if _, err := e.client.EnableAvailabilityZonesForLoadBalancerRequest(&awselb.EnableAvailabilityZonesForLoadBalancerInput{
 			AvailabilityZones: addZones,
@@ -264,7 +285,7 @@ func (e *external) updateAvailabilityZones(ctx context.Context, zones, elbZones 
 		}
 	}
 
-	removeZones := difference(elbZones, zones)
+	removeZones := stringSliceDiff(elbZones, zones)
 	if len(removeZones) != 0 {
 		if _, err := e.client.DisableAvailabilityZonesForLoadBalancerRequest(&awselb.DisableAvailabilityZonesForLoadBalancerInput{
 			AvailabilityZones: removeZones,
@@ -279,7 +300,7 @@ func (e *external) updateAvailabilityZones(ctx context.Context, zones, elbZones 
 
 func (e *external) updateSubnets(ctx context.Context, subnets, elbSubnets []string, name string) error {
 
-	addSubnets := difference(subnets, elbSubnets)
+	addSubnets := stringSliceDiff(subnets, elbSubnets)
 	if len(addSubnets) != 0 {
 		if _, err := e.client.AttachLoadBalancerToSubnetsRequest(&awselb.AttachLoadBalancerToSubnetsInput{
 			LoadBalancerName: aws.String(name),
@@ -289,7 +310,7 @@ func (e *external) updateSubnets(ctx context.Context, subnets, elbSubnets []stri
 		}
 	}
 
-	removeSubnets := difference(elbSubnets, subnets)
+	removeSubnets := stringSliceDiff(elbSubnets, subnets)
 	if len(elbSubnets) != 0 {
 		if _, err := e.client.DetachLoadBalancerFromSubnetsRequest(&awselb.DetachLoadBalancerFromSubnetsInput{
 			LoadBalancerName: aws.String(name),
@@ -330,7 +351,35 @@ func (e *external) updateListeners(ctx context.Context, listeners []v1alpha1.Lis
 	return nil
 }
 
-func difference(a, b []string) []string {
+func (e *external) updateTags(ctx context.Context, tags []v1alpha1.Tag, elbTags []awselb.Tag, name string) error {
+
+	if len(elbTags) > 0 {
+		keysOnly := make([]awselb.TagKeyOnly, len(elbTags))
+		for i, v := range elbTags {
+			keysOnly[i] = awselb.TagKeyOnly{Key: v.Key}
+		}
+		if _, err := e.client.RemoveTagsRequest(&awselb.RemoveTagsInput{
+			LoadBalancerNames: []string{name},
+			Tags:              keysOnly,
+		}).Send(ctx); err != nil {
+			return err
+		}
+	}
+
+	if len(tags) > 0 {
+		if _, err := e.client.AddTagsRequest(&awselb.AddTagsInput{
+			LoadBalancerNames: []string{name},
+			Tags:              elb.BuildELBTags(tags),
+		}).Send(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// stringSliceDiff generate a difference between given string slices a and b.
+func stringSliceDiff(a, b []string) []string {
 	mb := make(map[string]struct{}, len(b))
 	for _, x := range b {
 		mb[x] = struct{}{}

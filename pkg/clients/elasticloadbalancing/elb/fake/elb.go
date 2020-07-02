@@ -40,6 +40,7 @@ type MockClient struct {
 	MockDeleteLoadBalancerListenersRequest             func(*elb.DeleteLoadBalancerListenersInput) elb.DeleteLoadBalancerListenersRequest
 	MockRegisterInstancesWithLoadBalancerRequest       func(*elb.RegisterInstancesWithLoadBalancerInput) elb.RegisterInstancesWithLoadBalancerRequest
 	MockDeregisterInstancesFromLoadBalancerRequest     func(*elb.DeregisterInstancesFromLoadBalancerInput) elb.DeregisterInstancesFromLoadBalancerRequest
+	MockDescribeTagsRequest                            func(*elb.DescribeTagsInput) elb.DescribeTagsRequest
 }
 
 // DescribeLoadBalancersRequest calls the underlying
@@ -112,4 +113,10 @@ func (c *MockClient) RegisterInstancesWithLoadBalancerRequest(i *elasticloadbala
 // MockDeregisterInstancesWithLoadBalancerRequest method.
 func (c *MockClient) DeregisterInstancesFromLoadBalancerRequest(i *elasticloadbalancing.DeregisterInstancesFromLoadBalancerInput) elasticloadbalancing.DeregisterInstancesFromLoadBalancerRequest {
 	return c.MockDeregisterInstancesFromLoadBalancerRequest(i)
+}
+
+// DescribeTagsRequest calls the underlying
+// MockDescribeTagsRequest method.
+func (c *MockClient) DescribeTagsRequest(i *elasticloadbalancing.DescribeTagsInput) elasticloadbalancing.DescribeTagsRequest {
+	return c.MockDescribeTagsRequest(i)
 }

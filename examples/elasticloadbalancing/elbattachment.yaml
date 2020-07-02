@@ -4,7 +4,7 @@ metadata:
   name: sample-elbattachment  
 spec:
   forProvider:
-    elbName: one
+    elbName: some-name
     instanceId: i-0d5da348272ec3fd3
   providerRef:
     name: example

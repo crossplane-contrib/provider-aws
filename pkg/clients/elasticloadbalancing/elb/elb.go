@@ -19,11 +19,13 @@ package elb
 import (
 	"context"
 	"encoding/json"
+	"sort"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/elasticloadbalancingiface"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
@@ -64,7 +66,7 @@ func GenerateCreateELBInput(name string, p v1alpha1.ELBParameters) *elb.CreateLo
 
 // LateInitializeELB fills the empty fields in *v1alpha1.ELBParameters with
 // the values seen in elasticLoadBalancing.ELB.
-func LateInitializeELB(in *v1alpha1.ELBParameters, v *elb.LoadBalancerDescription) { // nolint:gocyclo
+func LateInitializeELB(in *v1alpha1.ELBParameters, v *elb.LoadBalancerDescription, elbTags []elb.Tag) { // nolint:gocyclo
 	if v == nil {
 		return
 	}
@@ -91,16 +93,23 @@ func LateInitializeELB(in *v1alpha1.ELBParameters, v *elb.LoadBalancerDescriptio
 			}
 		}
 	}
+
+	if len(in.Tags) == 0 && len(elbTags) != 0 {
+		in.Tags = make([]v1alpha1.Tag, len(elbTags))
+		for k, t := range elbTags {
+			in.Tags[k] = v1alpha1.Tag{
+				Key:   aws.StringValue(t.Key),
+				Value: t.Value,
+			}
+		}
+	}
 }
 
 // IsELBNotFound returns true if the error is because the item doesn't exist.
 func IsELBNotFound(err error) bool {
-	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == ELBNotFound {
-			return true
-		}
+	if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() == ELBNotFound {
+		return true
 	}
-
 	return false
 }
 
@@ -131,11 +140,25 @@ func GenerateELBObservation(e elb.LoadBalancerDescription) v1alpha1.ELBObservati
 // CreatePatch creates a v1alpha1.ELBParameters that has only the changed
 // values between the target v1alpha1.ELBParameters and the current
 // elb.LoadBalancerDescription.
-func CreatePatch(in elb.LoadBalancerDescription, target v1alpha1.ELBParameters) (*v1alpha1.ELBParameters, error) {
-	currentParams := &v1alpha1.ELBParameters{}
-	LateInitializeELB(currentParams, &in)
+func CreatePatch(in elb.LoadBalancerDescription, target v1alpha1.ELBParameters, elbTags []elb.Tag) (*v1alpha1.ELBParameters, error) {
+	// v1alpha1.ELBParameters contains multiple list types. Sorting these list types is required before
+	// creating a patch as jsonpatch.CreateMergePatch considers the order of items in a list.
 
-	jsonPatch, err := clients.CreateJSONPatch(currentParams, target)
+	currentParams := &v1alpha1.ELBParameters{}
+	LateInitializeELB(currentParams, &in, elbTags)
+	sortParametersArrays(currentParams)
+
+	targetCopy := target.DeepCopy()
+	sortParametersArrays(targetCopy)
+
+	// For listener.Protocol and listener.InstanceProtocol, values in lower and upper case
+	// are allowed. But the AWS API always returns the upper case strings.
+	for i, v := range targetCopy.Listeners {
+		targetCopy.Listeners[i].Protocol = strings.ToUpper(v.Protocol)
+		targetCopy.Listeners[i].InstanceProtocol = aws.String(strings.ToUpper(aws.StringValue(v.InstanceProtocol)))
+	}
+
+	jsonPatch, err := clients.CreateJSONPatch(currentParams, targetCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -147,8 +170,8 @@ func CreatePatch(in elb.LoadBalancerDescription, target v1alpha1.ELBParameters) 
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
-func IsUpToDate(p v1alpha1.ELBParameters, elb elb.LoadBalancerDescription) (bool, error) {
-	patch, err := CreatePatch(elb, p)
+func IsUpToDate(p v1alpha1.ELBParameters, elb elb.LoadBalancerDescription, elbTags []elb.Tag) (bool, error) {
+	patch, err := CreatePatch(elb, p, elbTags)
 	if err != nil {
 		return false, err
 	}
@@ -171,4 +194,30 @@ func BuildELBListeners(listeners []v1alpha1.Listener) []elb.Listener {
 		return elbListeners
 	}
 	return nil
+}
+
+// BuildELBTags generates a list of elb.Tag from given list of v1alpha1.Tag
+func BuildELBTags(tags []v1alpha1.Tag) []elb.Tag {
+	if len(tags) == 0 {
+		return nil
+	}
+
+	elbTags := make([]elb.Tag, len(tags))
+	for k, t := range tags {
+		elbTags[k] = elb.Tag{
+			Key:   aws.String(t.Key),
+			Value: t.Value,
+		}
+	}
+	return elbTags
+}
+
+func sortParametersArrays(p *v1alpha1.ELBParameters) {
+	sort.Strings(p.AvailabilityZones)
+	sort.Strings(p.SecurityGroups)
+	sort.Strings(p.Subnets)
+
+	sort.Slice(p.Tags, func(i, j int) bool {
+		return p.Tags[i].Key < p.Tags[j].Key
+	})
 }

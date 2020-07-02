@@ -9,12 +9,16 @@ spec:
     securityGroups:
       - sg-09753165e7f3814e8
     availabilityZones:
+      - us-east-2a
       - us-east-2b
     listeners:
       - instancePort: 8180
         instanceProtocol: http
         loadBalancerPort: 8180
         protocol: http
+    tags:
+      - key: k1
+        value: v1
   providerRef:
     name: example
   reclaimPolicy: Delete

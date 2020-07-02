@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2020 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ func (mg *ELB) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Co
 }
 
 // GetProviderReference of this ELB.
-func (mg *ELB) GetProviderReference() *corev1.ObjectReference {
+func (mg *ELB) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -79,7 +79,7 @@ func (mg *ELB) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this ELB.
-func (mg *ELB) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *ELB) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
@@ -114,7 +114,7 @@ func (mg *ELBAttachment) GetCondition(ct runtimev1alpha1.ConditionType) runtimev
 }
 
 // GetProviderReference of this ELBAttachment.
-func (mg *ELBAttachment) GetProviderReference() *corev1.ObjectReference {
+func (mg *ELBAttachment) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -149,7 +149,7 @@ func (mg *ELBAttachment) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this ELBAttachment.
-func (mg *ELBAttachment) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *ELBAttachment) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

@@ -93,7 +93,7 @@ func elbAttachmentResource(m ...elbAttachmentModifier) *v1alpha1.ELBAttachment {
 	cr := &v1alpha1.ELBAttachment{
 		Spec: v1alpha1.ELBAttachmentSpec{
 			ResourceSpec: corev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}

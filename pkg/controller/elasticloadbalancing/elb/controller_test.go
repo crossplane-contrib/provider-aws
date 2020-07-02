@@ -100,7 +100,7 @@ func elbResource(m ...elbModifier) *v1alpha1.ELB {
 	cr := &v1alpha1.ELB{
 		Spec: v1alpha1.ELBSpec{
 			ResourceSpec: corev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}
@@ -299,6 +299,15 @@ func TestObserve(t *testing.T) {
 							}},
 						}
 					},
+					MockDescribeTagsRequest: func(input *awselb.DescribeTagsInput) awselb.DescribeTagsRequest {
+						return awselb.DescribeTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeTagsOutput{
+								TagDescriptions: []awselb.TagDescription{
+									{LoadBalancerName: &elbName},
+								},
+							}},
+						}
+					},
 				},
 				cr: elbResource(withExternalName(elbName)),
 			},
@@ -365,6 +374,15 @@ func TestObserve(t *testing.T) {
 							}},
 						}
 					},
+					MockDescribeTagsRequest: func(input *awselb.DescribeTagsInput) awselb.DescribeTagsRequest {
+						return awselb.DescribeTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeTagsOutput{
+								TagDescriptions: []awselb.TagDescription{
+									{LoadBalancerName: &elbName},
+								},
+							}},
+						}
+					},
 				},
 				cr: elbResource(withExternalName(elbName)),
 			},
@@ -386,6 +404,15 @@ func TestObserve(t *testing.T) {
 						return awselb.DescribeLoadBalancersRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeLoadBalancersOutput{
 								LoadBalancerDescriptions: []awselb.LoadBalancerDescription{loadBalancer},
+							}},
+						}
+					},
+					MockDescribeTagsRequest: func(input *awselb.DescribeTagsInput) awselb.DescribeTagsRequest {
+						return awselb.DescribeTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeTagsOutput{
+								TagDescriptions: []awselb.TagDescription{
+									{LoadBalancerName: &elbName},
+								},
 							}},
 						}
 					},
@@ -537,6 +564,15 @@ func TestUpdate(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DisableAvailabilityZonesForLoadBalancerOutput{}},
 						}
 					},
+					MockDescribeTagsRequest: func(input *awselb.DescribeTagsInput) awselb.DescribeTagsRequest {
+						return awselb.DescribeTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeTagsOutput{
+								TagDescriptions: []awselb.TagDescription{
+									{LoadBalancerName: &elbName},
+								},
+							}},
+						}
+					},
 				},
 				cr: elbResource(withExternalName(elbName),
 					withSpec(v1alpha1.ELBParameters{
@@ -574,6 +610,15 @@ func TestUpdate(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DetachLoadBalancerFromSubnetsOutput{}},
 						}
 					},
+					MockDescribeTagsRequest: func(input *awselb.DescribeTagsInput) awselb.DescribeTagsRequest {
+						return awselb.DescribeTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeTagsOutput{
+								TagDescriptions: []awselb.TagDescription{
+									{LoadBalancerName: &elbName},
+								},
+							}},
+						}
+					},
 				},
 				cr: elbResource(withExternalName(elbName),
 					withSpec(v1alpha1.ELBParameters{
@@ -604,6 +649,15 @@ func TestUpdate(t *testing.T) {
 					MockApplySecurityGroupsToLoadBalancerRequest: func(input *awselb.ApplySecurityGroupsToLoadBalancerInput) awselb.ApplySecurityGroupsToLoadBalancerRequest {
 						return awselb.ApplySecurityGroupsToLoadBalancerRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.ApplySecurityGroupsToLoadBalancerOutput{}},
+						}
+					},
+					MockDescribeTagsRequest: func(input *awselb.DescribeTagsInput) awselb.DescribeTagsRequest {
+						return awselb.DescribeTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeTagsOutput{
+								TagDescriptions: []awselb.TagDescription{
+									{LoadBalancerName: &elbName},
+								},
+							}},
 						}
 					},
 				},
@@ -645,6 +699,15 @@ func TestUpdate(t *testing.T) {
 					MockDeleteLoadBalancerListenersRequest: func(input *awselb.DeleteLoadBalancerListenersInput) awselb.DeleteLoadBalancerListenersRequest {
 						return awselb.DeleteLoadBalancerListenersRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DeleteLoadBalancerListenersOutput{}},
+						}
+					},
+					MockDescribeTagsRequest: func(input *awselb.DescribeTagsInput) awselb.DescribeTagsRequest {
+						return awselb.DescribeTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeTagsOutput{
+								TagDescriptions: []awselb.TagDescription{
+									{LoadBalancerName: &elbName},
+								},
+							}},
 						}
 					},
 				},
