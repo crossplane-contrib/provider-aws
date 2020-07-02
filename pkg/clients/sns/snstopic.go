@@ -20,6 +20,7 @@ import (
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
@@ -148,4 +149,12 @@ func getTopicAttributes(p v1alpha1.SNSTopicParameters) map[string]string {
 	topicAttr[string(TopicPolicy)] = aws.StringValue(p.Policy)
 
 	return topicAttr
+}
+
+// IsTopicNotFound returns true if the error code indicates that the item was not found
+func IsTopicNotFound(err error) bool {
+	if topicErr, ok := err.(awserr.Error); ok && topicErr.Code() == sns.ErrCodeNotFoundException {
+		return true
+	}
+	return false
 }

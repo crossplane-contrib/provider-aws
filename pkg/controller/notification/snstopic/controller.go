@@ -119,7 +119,8 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		TopicArn: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, errGetTopicAttr)
+		return managed.ExternalObservation{},
+			errors.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errGetTopicAttr)
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -202,5 +203,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		TopicArn: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
-	return errors.Wrap(err, errDelete)
+	return errors.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errDelete)
 }

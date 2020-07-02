@@ -46,7 +46,7 @@ const (
 	errKubeSubscriptionUpdateFailed = "cannot update SNSSubscription custom resource"
 	errClient                       = "cannot create a new SNSSubscription client"
 	errUnexpectedObject             = "the managed resource is not a SNS Subscription resource"
-	errGetSubscriptionAttr          = "failed to get SNS Subscription Attribute"
+	errGetSubscriptionAttr          = "failed to get SNS Subscription Attributes"
 	errCreate                       = "failed to create the SNS Subscription"
 	errDelete                       = "failed to delete the SNS Subscription"
 	errUpdate                       = "failed to update the SNS Subscription"
@@ -124,7 +124,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{},
-			errors.Wrap(err, errGetSubscriptionAttr)
+			errors.Wrap(resource.Ignore(sns.IsSubscriptionNotFound, err), errGetSubscriptionAttr)
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -219,7 +219,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		SubscriptionArn: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 	if err != nil {
-		return errors.Wrap(err, errDelete)
+		return errors.Wrap(resource.Ignore(sns.IsSubscriptionNotFound, err), errDelete)
 	}
 
 	return nil

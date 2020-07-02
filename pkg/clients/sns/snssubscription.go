@@ -20,6 +20,7 @@ import (
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
@@ -139,4 +140,12 @@ func IsSNSSubscriptionAttributesUpToDate(p v1alpha1.SNSSubscriptionParameters, s
 		aws.StringValue(p.FilterPolicy) == subAttributes[string(SubscriptionFilterPolicy)] &&
 		aws.StringValue(p.RawMessageDelivery) == subAttributes[string(SubscriptionRawMessageDelivery)] &&
 		aws.StringValue(p.RedrivePolicy) == subAttributes[string(SubscriptionRedrivePolicy)]
+}
+
+// IsSubscriptionNotFound returns true if the error code indicates that the item was not found
+func IsSubscriptionNotFound(err error) bool {
+	if subErr, ok := err.(awserr.Error); ok && subErr.Code() == sns.ErrCodeNotFoundException {
+		return true
+	}
+	return false
 }
