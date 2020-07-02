@@ -44,7 +44,7 @@ import (
 const (
 	errKubeTopicUpdateFailed = "cannot update SNSTopic custom resource"
 	errClient                = "cannot create a new SNSTopic client"
-	errUnexpectedObject      = "The managed resource is not a SNSTopic resource"
+	errUnexpectedObject      = "the managed resource is not a SNSTopic resource"
 	errGetTopicAttr          = "failed to get SNS Topic Attribute"
 	errCreate                = "failed to create the SNS Topic"
 	errDelete                = "failed to delete the SNS Topic"

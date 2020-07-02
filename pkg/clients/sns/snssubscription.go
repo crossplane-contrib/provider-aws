@@ -31,19 +31,24 @@ import (
 type SubscriptionAttributes string
 
 const (
-	// DeliveryPolicy of SNS Subscription
-	DeliveryPolicy SubscriptionAttributes = "DeliveryPolicy"
-	// FilterPolicy of SNS Subscription
-	FilterPolicy SubscriptionAttributes = "FilterPolicy"
-	// RawMessageDelivery of SNS Subscription
-	RawMessageDelivery SubscriptionAttributes = "RawMessageDelivery"
-	// RedrivePolicy of SNS Subscription
-	RedrivePolicy SubscriptionAttributes = "RedrivePolicy"
+	// SubscriptionDeliveryPolicy is DeliveryPolicy of SNS Subscription
+	SubscriptionDeliveryPolicy SubscriptionAttributes = "DeliveryPolicy"
+	// SubscriptionFilterPolicy is FilterPolicy of SNS Subscription
+	SubscriptionFilterPolicy SubscriptionAttributes = "FilterPolicy"
+	// SubscriptionRawMessageDelivery is RawMessageDelivery of SNS Subscription
+	SubscriptionRawMessageDelivery SubscriptionAttributes = "RawMessageDelivery"
+	// SubscriptionRedrivePolicy is RedrivePolicy of SNS Subscription
+	SubscriptionRedrivePolicy SubscriptionAttributes = "RedrivePolicy"
+	// SubscriptionOwner is Owner of SNS Subscription
+	SubscriptionOwner SubscriptionAttributes = "Owner"
+	// SubscriptionPendingConfirmation is Confirmation Status of SNS Subscription
+	SubscriptionPendingConfirmation SubscriptionAttributes = "PendingConfirmation"
+	// SubscriptionConfirmationWasAuthenticated is Confirmation Authenication Status od SNS Subscription
+	SubscriptionConfirmationWasAuthenticated SubscriptionAttributes = "ConfirmationWasAuthenticated"
 )
 
 // SubscriptionClient is the external client used for AWS SNSSubscription
 type SubscriptionClient interface {
-	//ListSubscriptionsByTopicRequest(*sns.ListSubscriptionsByTopicInput) sns.ListSubscriptionsByTopicRequest
 	SubscribeRequest(*sns.SubscribeInput) sns.SubscribeRequest
 	UnsubscribeRequest(*sns.UnsubscribeInput) sns.UnsubscribeRequest
 	GetSubscriptionAttributesRequest(*sns.GetSubscriptionAttributesInput) sns.GetSubscriptionAttributesRequest
@@ -73,9 +78,9 @@ func GenerateSubscribeInput(p *v1alpha1.SNSSubscriptionParameters) *sns.Subscrib
 func GenerateSubscriptionObservation(attr map[string]string) v1alpha1.SNSSubscriptionObservation {
 
 	o := v1alpha1.SNSSubscriptionObservation{}
-	o.Owner = aws.String(attr["Owner"])
+	o.Owner = aws.String(attr[string(SubscriptionOwner)])
 	var status v1alpha1.ConfirmationStatus
-	if s, err := strconv.ParseBool(attr["PendingConfirmation"]); err == nil {
+	if s, err := strconv.ParseBool(attr[string(SubscriptionPendingConfirmation)]); err == nil {
 		if s {
 			status = v1alpha1.ConfirmationPending
 		} else {
@@ -84,7 +89,7 @@ func GenerateSubscriptionObservation(attr map[string]string) v1alpha1.SNSSubscri
 	}
 	o.Status = &status
 
-	if s, err := strconv.ParseBool(attr["ConfirmationWasAuthenticated"]); err == nil {
+	if s, err := strconv.ParseBool(attr[string(SubscriptionConfirmationWasAuthenticated)]); err == nil {
 		o.ConfirmationWasAuthenticated = aws.Bool(s)
 	}
 
@@ -95,10 +100,10 @@ func GenerateSubscriptionObservation(attr map[string]string) v1alpha1.SNSSubscri
 // *v1alpha1.SNSSubscriptionParameters with the values seen in
 // sns.Subscription
 func LateInitializeSubscription(in *v1alpha1.SNSSubscriptionParameters, subAttributes map[string]string) {
-	in.DeliveryPolicy = awsclients.LateInitializeStringPtr(in.DeliveryPolicy, aws.String(subAttributes["DeliveryPolicy"]))
-	in.FilterPolicy = awsclients.LateInitializeStringPtr(in.FilterPolicy, aws.String(subAttributes["FilterPolicy"]))
-	in.RawMessageDelivery = awsclients.LateInitializeStringPtr(in.RawMessageDelivery, aws.String(subAttributes["RawMessageDelivery"]))
-	in.RedrivePolicy = awsclients.LateInitializeStringPtr(in.RedrivePolicy, aws.String(subAttributes["RedrivePolicy"]))
+	in.DeliveryPolicy = awsclients.LateInitializeStringPtr(in.DeliveryPolicy, aws.String(subAttributes[string(SubscriptionDeliveryPolicy)]))
+	in.FilterPolicy = awsclients.LateInitializeStringPtr(in.FilterPolicy, aws.String(subAttributes[string(SubscriptionFilterPolicy)]))
+	in.RawMessageDelivery = awsclients.LateInitializeStringPtr(in.RawMessageDelivery, aws.String(subAttributes[string(SubscriptionRawMessageDelivery)]))
+	in.RedrivePolicy = awsclients.LateInitializeStringPtr(in.RedrivePolicy, aws.String(subAttributes[string(SubscriptionRedrivePolicy)]))
 }
 
 // getSubAttributes returns map of SNS Sunscription Attributes
@@ -106,10 +111,10 @@ func getSubAttributes(p v1alpha1.SNSSubscriptionParameters) map[string]string {
 
 	attr := make(map[string]string)
 
-	attr[string(DeliveryPolicy)] = aws.StringValue(p.DeliveryPolicy)
-	attr[string(FilterPolicy)] = aws.StringValue(p.FilterPolicy)
-	attr[string(RawMessageDelivery)] = aws.StringValue(p.RawMessageDelivery)
-	attr[string(RedrivePolicy)] = aws.StringValue(p.RedrivePolicy)
+	attr[string(SubscriptionDeliveryPolicy)] = aws.StringValue(p.DeliveryPolicy)
+	attr[string(SubscriptionFilterPolicy)] = aws.StringValue(p.FilterPolicy)
+	attr[string(SubscriptionRawMessageDelivery)] = aws.StringValue(p.RawMessageDelivery)
+	attr[string(SubscriptionRedrivePolicy)] = aws.StringValue(p.RedrivePolicy)
 
 	return attr
 }
@@ -130,8 +135,8 @@ func GetChangedSubAttributes(p v1alpha1.SNSSubscriptionParameters, attrs map[str
 
 // IsSNSSubscriptionAttributesUpToDate checks if attributes are up to date
 func IsSNSSubscriptionAttributesUpToDate(p v1alpha1.SNSSubscriptionParameters, subAttributes map[string]string) bool {
-	return aws.StringValue(p.DeliveryPolicy) == subAttributes["DeliveryPolicy"] &&
-		aws.StringValue(p.FilterPolicy) == subAttributes["FilterPolicy"] &&
-		aws.StringValue(p.RawMessageDelivery) == subAttributes["RawMessageDelivery"] &&
-		aws.StringValue(p.RedrivePolicy) == subAttributes["RedrivePolicy"]
+	return aws.StringValue(p.DeliveryPolicy) == subAttributes[string(SubscriptionDeliveryPolicy)] &&
+		aws.StringValue(p.FilterPolicy) == subAttributes[string(SubscriptionFilterPolicy)] &&
+		aws.StringValue(p.RawMessageDelivery) == subAttributes[string(SubscriptionRawMessageDelivery)] &&
+		aws.StringValue(p.RedrivePolicy) == subAttributes[string(SubscriptionRedrivePolicy)]
 }

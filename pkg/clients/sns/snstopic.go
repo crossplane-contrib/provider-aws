@@ -26,35 +26,28 @@ import (
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
-// const (
-// 	//SNSTopicNotFound is the error code that is returned if SNS Topic is not present
-// 	SNSTopicNotFound = "Unable to find SNS Topic"
-// )
+// TopicAttributes refers to AWS SNS Topic Attributes List
+// ref: https://docs.aws.amazon.com/cli/latest/reference/sns/get-topic-attributes.html#output
+type TopicAttributes string
 
-// // TopicNotFound implemented by error wrapped struct
-// // to validate SNSTopicNotFound
-// func (err *TopicNotFound) TopicNotFound() bool {
-// 	return true
-// }
-
-// // IsTopicNotFound returns true if the error code indicates that the
-// // item was not found
-// func IsTopicNotFound(err error) bool {
-// 	if _, ok := err.(interface {
-// 		TTopicNotFound() bool
-// 	}); ok {
-// 		return true
-// 	}
-
-// 	return false
-// }
-
-// // TopicNotFound will be raised when there is no SNSTopic
-// type TopicNotFound struct{}
-
-// func (err *TopicNotFound) Error() string {
-// 	return fmt.Sprint(SNSTopicNotFound)
-// }
+const (
+	// TopicDisplayName is Display Name of SNS Topic
+	TopicDisplayName TopicAttributes = "DisplayName"
+	// TopicDeliveryPolicy is Delivery Policy of SNS Topic
+	TopicDeliveryPolicy TopicAttributes = "DeliveryPolicy"
+	// TopicKmsMasterKeyID is KmsMasterKeyId of SNS Topic
+	TopicKmsMasterKeyID TopicAttributes = "KmsMasterKeyId"
+	// TopicPolicy is Policy of SNS Topic
+	TopicPolicy TopicAttributes = "Policy"
+	// TopicOwner is Owner of SNS Topic
+	TopicOwner TopicAttributes = "Owner"
+	// TopicSubscriptionsConfirmed is status of SNS Topic Subscription Confirmation
+	TopicSubscriptionsConfirmed TopicAttributes = "SubscriptionsConfirmed"
+	// TopicSubscriptionsPending is status of SNS Topic Subscription Confirmation
+	TopicSubscriptionsPending TopicAttributes = "SubscriptionsPending"
+	// TopicSubscriptionsDeleted is status of SNS Topic Subscription Confirmation
+	TopicSubscriptionsDeleted TopicAttributes = "SubscriptionsDeleted"
+)
 
 // TopicClient is the external client used for AWS SNSTopic
 type TopicClient interface {
@@ -91,10 +84,10 @@ func GenerateCreateTopicInput(p *v1alpha1.SNSTopicParameters) *sns.CreateTopicIn
 // LateInitializeTopicAttr fills the empty fields in *v1alpha1.SNSTopicParameters with the
 // values seen in sns.Topic.
 func LateInitializeTopicAttr(in *v1alpha1.SNSTopicParameters, attrs map[string]string) {
-	in.DisplayName = awsclients.LateInitializeStringPtr(in.DisplayName, aws.String(attrs["DisplayName"]))
-	in.DeliveryPolicy = awsclients.LateInitializeStringPtr(in.DeliveryPolicy, aws.String(attrs["DeliveryPolicy"]))
-	in.KMSMasterKeyID = awsclients.LateInitializeStringPtr(in.KMSMasterKeyID, aws.String(attrs["KmsMasterKeyId"]))
-	in.Policy = awsclients.LateInitializeStringPtr(in.Policy, aws.String(attrs["Policy"]))
+	in.DisplayName = awsclients.LateInitializeStringPtr(in.DisplayName, aws.String(attrs[string(TopicDisplayName)]))
+	in.DeliveryPolicy = awsclients.LateInitializeStringPtr(in.DeliveryPolicy, aws.String(attrs[string(TopicDeliveryPolicy)]))
+	in.KMSMasterKeyID = awsclients.LateInitializeStringPtr(in.KMSMasterKeyID, aws.String(attrs[string(TopicKmsMasterKeyID)]))
+	in.Policy = awsclients.LateInitializeStringPtr(in.Policy, aws.String(attrs[string(TopicPolicy)]))
 
 }
 
@@ -120,17 +113,17 @@ func GetChangedAttributes(p v1alpha1.SNSTopicParameters, attrs map[string]string
 func GenerateTopicObservation(attr map[string]string) v1alpha1.SNSTopicObservation {
 	o := v1alpha1.SNSTopicObservation{}
 
-	o.Owner = aws.String(attr["Owner"])
+	o.Owner = aws.String(string(TopicOwner))
 
-	if s, err := strconv.ParseInt(attr["SubscriptionsConfirmed"], 10, 64); err == nil {
+	if s, err := strconv.ParseInt(attr[string(TopicSubscriptionsConfirmed)], 10, 64); err == nil {
 		o.ConfirmedSubscriptions = aws.Int64(s)
 	}
 
-	if s, err := strconv.ParseInt(attr["SubscriptionsPending"], 10, 64); err == nil {
+	if s, err := strconv.ParseInt(attr[string(TopicSubscriptionsPending)], 10, 64); err == nil {
 		o.PendingSubscriptions = aws.Int64(s)
 	}
 
-	if s, err := strconv.ParseInt(attr["SubscriptionsDeleted"], 10, 64); err == nil {
+	if s, err := strconv.ParseInt(attr[string(TopicSubscriptionsDeleted)], 10, 64); err == nil {
 		o.DeletedSubscriptions = aws.Int64(s)
 	}
 
@@ -139,20 +132,20 @@ func GenerateTopicObservation(attr map[string]string) v1alpha1.SNSTopicObservati
 
 // IsSNSTopicUpToDate checks if object is up to date
 func IsSNSTopicUpToDate(p v1alpha1.SNSTopicParameters, attr map[string]string) bool {
-	return aws.StringValue(p.DeliveryPolicy) == attr["DeliveryPolicy"] &&
-		aws.StringValue(p.DisplayName) == attr["DisplayName"] &&
-		aws.StringValue(p.KMSMasterKeyID) == attr["KmsMasterKeyId"] &&
-		aws.StringValue(p.Policy) == attr["Policy"]
+	return aws.StringValue(p.DeliveryPolicy) == attr[string(TopicDeliveryPolicy)] &&
+		aws.StringValue(p.DisplayName) == attr[string(TopicDisplayName)] &&
+		aws.StringValue(p.KMSMasterKeyID) == attr[string(TopicKmsMasterKeyID)] &&
+		aws.StringValue(p.Policy) == attr[string(TopicPolicy)]
 }
 
 func getTopicAttributes(p v1alpha1.SNSTopicParameters) map[string]string {
 
 	topicAttr := make(map[string]string)
 
-	topicAttr["DeliveryPolicy"] = aws.StringValue(p.DeliveryPolicy)
-	topicAttr["DisplayName"] = aws.StringValue(p.DisplayName)
-	topicAttr["KmsMasterKeyId"] = aws.StringValue(p.KMSMasterKeyID)
-	topicAttr["Policy"] = aws.StringValue(p.Policy)
+	topicAttr[string(TopicDeliveryPolicy)] = aws.StringValue(p.DeliveryPolicy)
+	topicAttr[string(TopicDisplayName)] = aws.StringValue(p.DisplayName)
+	topicAttr[string(TopicKmsMasterKeyID)] = aws.StringValue(p.KMSMasterKeyID)
+	topicAttr[string(TopicPolicy)] = aws.StringValue(p.Policy)
 
 	return topicAttr
 }

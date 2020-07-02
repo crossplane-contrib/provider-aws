@@ -42,6 +42,7 @@ import (
 )
 
 const (
+	errSubscriptionPending          = "cannot delete a subscription in PendingConfirmation state"
 	errKubeSubscriptionUpdateFailed = "cannot update SNSSubscription custom resource"
 	errClient                       = "cannot create a new SNSSubscription client"
 	errUnexpectedObject             = "the managed resource is not a SNS Subscription resource"
@@ -146,11 +147,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		cr.Status.SetConditions(runtimev1alpha1.Creating())
 	}
 
-<<<<<<< HEAD
 	upToDate := snsclient.IsSNSSubscriptionAttributesUpToDate(cr.Spec.ForProvider, res.Attributes)
-=======
-	upToDate := snsclient.IsSNSSubscriptionUpToDate(cr.Spec.ForProvider, &sub, res.Attributes)
->>>>>>> 1e686a5aa6555394f777ffa7a0527b96942c3935
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: upToDate,
@@ -174,7 +171,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	meta.SetExternalName(cr, aws.StringValue(res.SubscribeOutput.SubscriptionArn))
 	if err := e.kube.Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, "Failure during kube update")
+		return managed.ExternalCreation{}, errors.Wrap(err, errKubeSubscriptionUpdateFailed)
 	}
 
 	return managed.ExternalCreation{}, nil
@@ -216,7 +213,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	}
 
 	if !awsarn.IsARN(meta.GetExternalName(cr)) && *cr.Status.AtProvider.Status == v1alpha1.ConfirmationPending {
-		return errors.New("Can't delete a subscription in PendingConfirmation state")
+		return errors.New(errSubscriptionPending)
 	}
 	_, err := e.client.UnsubscribeRequest(&awssns.UnsubscribeInput{
 		SubscriptionArn: aws.String(meta.GetExternalName(cr)),

@@ -6,7 +6,6 @@ import "github.com/aws/aws-sdk-go-v2/service/sns"
 type MockSubscriptionClient struct {
 	MockSubscribeRequest                 func(*sns.SubscribeInput) sns.SubscribeRequest
 	MockUnsubscribeRequest               func(*sns.UnsubscribeInput) sns.UnsubscribeRequest
-	MockListSubscriptionsByTopicRequest  func(*sns.ListSubscriptionsByTopicInput) sns.ListSubscriptionsByTopicRequest
 	MockGetSubscriptionAttributesRequest func(*sns.GetSubscriptionAttributesInput) sns.GetSubscriptionAttributesRequest
 	MockSetSubscriptionAttributesRequest func(*sns.SetSubscriptionAttributesInput) sns.SetSubscriptionAttributesRequest
 }
@@ -19,11 +18,6 @@ func (m *MockSubscriptionClient) SubscribeRequest(input *sns.SubscribeInput) sns
 // UnsubscribeRequest mocks UnsubscribeRequest method
 func (m *MockSubscriptionClient) UnsubscribeRequest(input *sns.UnsubscribeInput) sns.UnsubscribeRequest {
 	return m.MockUnsubscribeRequest(input)
-}
-
-// ListSubscriptionsByTopicRequest mocks ListSubscriptionsByTopicRequest method
-func (m *MockSubscriptionClient) ListSubscriptionsByTopicRequest(input *sns.ListSubscriptionsByTopicInput) sns.ListSubscriptionsByTopicRequest {
-	return m.MockListSubscriptionsByTopicRequest(input)
 }
 
 // GetSubscriptionAttributesRequest mocks GetSubscriptionAttributesRequest method
