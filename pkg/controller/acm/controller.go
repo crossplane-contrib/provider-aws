@@ -18,6 +18,7 @@ package acm
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacm "github.com/aws/aws-sdk-go-v2/service/acm"
@@ -132,6 +133,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errSDK)
 	}
 
+	fmt.Println("CertificateDetails: ", response.Certificate)
 	certificate := *response.Certificate
 	current := cr.Spec.ForProvider.DeepCopy()
 	acm.LateInitializeCertificate(&cr.Spec.ForProvider, &certificate)
@@ -220,7 +222,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	// Update the Certificate Option
-	if aws.StringValue(cr.Spec.ForProvider.CertificateAuthorityARN) == "" && cr.Spec.ForProvider.CertificateTransparencyLoggingPreference != nil {
+	if cr.Spec.ForProvider.CertificateTransparencyLoggingPreference != nil {
 		_, err := e.client.UpdateCertificateOptionsRequest(&awsacm.UpdateCertificateOptionsInput{
 			CertificateArn: aws.String(meta.GetExternalName(cr)),
 			Options:        &awsacm.CertificateOptions{CertificateTransparencyLoggingPreference: *cr.Spec.ForProvider.CertificateTransparencyLoggingPreference},
