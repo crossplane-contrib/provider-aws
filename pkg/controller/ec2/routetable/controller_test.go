@@ -89,7 +89,7 @@ func rt(m ...rtModifier) *v1alpha4.RouteTable {
 	cr := &v1alpha4.RouteTable{
 		Spec: v1alpha4.RouteTableSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}

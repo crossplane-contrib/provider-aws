@@ -44,7 +44,7 @@ func (mg *IAMRole) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha
 }
 
 // GetProviderReference of this IAMRole.
-func (mg *IAMRole) GetProviderReference() *corev1.ObjectReference {
+func (mg *IAMRole) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -79,7 +79,7 @@ func (mg *IAMRole) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this IAMRole.
-func (mg *IAMRole) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *IAMRole) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
@@ -114,7 +114,7 @@ func (mg *IAMRolePolicyAttachment) GetCondition(ct runtimev1alpha1.ConditionType
 }
 
 // GetProviderReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) GetProviderReference() *corev1.ObjectReference {
+func (mg *IAMRolePolicyAttachment) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -149,7 +149,7 @@ func (mg *IAMRolePolicyAttachment) SetConditions(c ...runtimev1alpha1.Condition)
 }
 
 // SetProviderReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *IAMRolePolicyAttachment) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

@@ -44,7 +44,7 @@ func (mg *DBSubnetGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev
 }
 
 // GetProviderReference of this DBSubnetGroup.
-func (mg *DBSubnetGroup) GetProviderReference() *corev1.ObjectReference {
+func (mg *DBSubnetGroup) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -79,7 +79,7 @@ func (mg *DBSubnetGroup) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this DBSubnetGroup.
-func (mg *DBSubnetGroup) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *DBSubnetGroup) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
@@ -114,7 +114,7 @@ func (mg *RDSInstance) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1a
 }
 
 // GetProviderReference of this RDSInstance.
-func (mg *RDSInstance) GetProviderReference() *corev1.ObjectReference {
+func (mg *RDSInstance) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -149,7 +149,7 @@ func (mg *RDSInstance) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this RDSInstance.
-func (mg *RDSInstance) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *RDSInstance) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

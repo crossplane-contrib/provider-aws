@@ -88,7 +88,7 @@ func ig(m ...igModifier) *v1beta1.InternetGateway {
 	cr := &v1beta1.InternetGateway{
 		Spec: v1beta1.InternetGatewaySpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}

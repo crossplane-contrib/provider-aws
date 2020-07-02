@@ -22,6 +22,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 
 	"github.com/onsi/gomega"
@@ -130,7 +131,7 @@ aws_secret_access_key = mock_aws_secret_access_key`),
 		mockProvider.Spec.CredentialsSecretRef.SecretReference.Namespace = tc.secretNamespace
 		mockProvider.Spec.CredentialsSecretRef.SecretReference.Name = tc.secretName
 
-		config, err := RetrieveAwsConfigFromProvider(context.Background(), &m, &corev1.ObjectReference{Name: mockProvider.Name, Namespace: mockProvider.Namespace})
+		config, err := RetrieveAwsConfigFromProvider(context.Background(), &m, v1alpha1.Reference{Name: mockProvider.Name})
 		g.Expect(config == nil).To(gomega.Equal(tc.expectConfigNil), tc.description)
 		g.Expect(err == nil).To(gomega.Equal(tc.expectErrNil), tc.description)
 	}

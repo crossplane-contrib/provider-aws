@@ -24,7 +24,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -74,7 +73,7 @@ func testResource() *S3Bucket {
 			Name: bucketName,
 		},
 		Spec: S3BucketSpec{
-			ResourceSpec:       runtimev1alpha1.ResourceSpec{ProviderReference: &corev1.ObjectReference{}},
+			ResourceSpec:       runtimev1alpha1.ResourceSpec{ProviderReference: runtimev1alpha1.Reference{}},
 			S3BucketParameters: v1alpha3.S3BucketParameters{LocalPermission: &perm, IAMUsername: testIAMUsername},
 		},
 	}
