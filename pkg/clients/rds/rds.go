@@ -77,7 +77,7 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstance
 		AllocatedStorage:                   awsclients.Int64Address(p.AllocatedStorage),
 		AutoMinorVersionUpgrade:            p.AutoMinorVersionUpgrade,
 		AvailabilityZone:                   p.AvailabilityZone,
-		BackupRetentionPeriod:              aws.Int64(0),
+		BackupRetentionPeriod:              awsclients.Int64Address(p.BackupRetentionPeriod),
 		CharacterSetName:                   p.CharacterSetName,
 		CopyTagsToSnapshot:                 p.CopyTagsToSnapshot,
 		DBClusterIdentifier:                p.DBClusterIdentifier,
