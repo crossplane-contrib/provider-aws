@@ -23,13 +23,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// ResolveReferences for SNS Topic managed type
+// ResolveReferences for SNS Subscription managed type
 func (mg *SNSSubscription) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.TopicID
+	// Resolve spec.TopicARN
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: *mg.Spec.ForProvider.TopicARN,
+		CurrentValue: mg.Spec.ForProvider.TopicARN,
 		Reference:    mg.Spec.ForProvider.TopicARNRef,
 		Selector:     mg.Spec.ForProvider.TopicARNSelector,
 		To:           reference.To{Managed: &SNSTopic{}, List: &SNSTopicList{}},
@@ -39,7 +39,7 @@ func (mg *SNSSubscription) ResolveReferences(ctx context.Context, c client.Reade
 	if err != nil {
 		return err
 	}
-	mg.Spec.ForProvider.TopicARN = &rsp.ResolvedValue
+	mg.Spec.ForProvider.TopicARN = rsp.ResolvedValue
 	mg.Spec.ForProvider.TopicARNRef = rsp.ResolvedReference
 
 	return nil

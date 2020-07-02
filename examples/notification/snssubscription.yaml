@@ -10,4 +10,4 @@ spec:
     protocol: email
     endpoint: example@abc.com
     topicArnRef:
-      name: sample-topic
+      name: some-topic

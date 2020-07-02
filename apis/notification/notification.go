@@ -14,7 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// +groupName=notification.aws.crossplane.io
-
 // Package notification contains AWS SNS API versions
 package notification

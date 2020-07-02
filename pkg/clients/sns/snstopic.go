@@ -17,43 +17,48 @@ limitations under the License.
 package sns
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
-
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
-const (
-	//SNSTopicNotFound is the error code that is returned if SNS Topic is not present
-	SNSTopicNotFound = "InvalidSNSTopic.NotFound"
-)
+// const (
+// 	//SNSTopicNotFound is the error code that is returned if SNS Topic is not present
+// 	SNSTopicNotFound = "Unable to find SNS Topic"
+// )
 
-// IsTopicNotFound returns true if the error code indicates that the
-// item was not found
-func IsTopicNotFound(err error) bool {
-	if _, ok := err.(*TopicNotFound); ok {
-		return true
-	}
-	return false
-}
+// // TopicNotFound implemented by error wrapped struct
+// // to validate SNSTopicNotFound
+// func (err *TopicNotFound) TopicNotFound() bool {
+// 	return true
+// }
 
-// TopicNotFound will be raised when there is no SNSTopic
-type TopicNotFound struct{}
+// // IsTopicNotFound returns true if the error code indicates that the
+// // item was not found
+// func IsTopicNotFound(err error) bool {
+// 	if _, ok := err.(interface {
+// 		TTopicNotFound() bool
+// 	}); ok {
+// 		return true
+// 	}
 
-func (err *TopicNotFound) Error() string {
-	return fmt.Sprint(SNSTopicNotFound)
-}
+// 	return false
+// }
 
-// TopicClient is the external client used for SNSTopic custom resource
+// // TopicNotFound will be raised when there is no SNSTopic
+// type TopicNotFound struct{}
+
+// func (err *TopicNotFound) Error() string {
+// 	return fmt.Sprint(SNSTopicNotFound)
+// }
+
+// TopicClient is the external client used for AWS SNSTopic
 type TopicClient interface {
 	CreateTopicRequest(*sns.CreateTopicInput) sns.CreateTopicRequest
-	ListTopicsRequest(*sns.ListTopicsInput) sns.ListTopicsRequest
 	DeleteTopicRequest(*sns.DeleteTopicInput) sns.DeleteTopicRequest
 	GetTopicAttributesRequest(*sns.GetTopicAttributesInput) sns.GetTopicAttributesRequest
 	SetTopicAttributesRequest(*sns.SetTopicAttributesInput) sns.SetTopicAttributesRequest
@@ -62,17 +67,6 @@ type TopicClient interface {
 // NewTopicClient returns a new client using AWS credentials as JSON encoded data.
 func NewTopicClient(conf *aws.Config) (TopicClient, error) {
 	return sns.New(*conf), nil
-}
-
-// GetSNSTopic returns SNSTopic if present in list of topics
-func GetSNSTopic(res *sns.ListTopicsResponse, cr *v1alpha1.SNSTopic) (sns.Topic, error) {
-
-	for _, topic := range res.Topics {
-		if aws.StringValue(topic.TopicArn) == meta.GetExternalName(cr) {
-			return topic, nil
-		}
-	}
-	return sns.Topic{}, &TopicNotFound{}
 }
 
 // GenerateCreateTopicInput prepares input for CreateTopicRequest
@@ -94,10 +88,9 @@ func GenerateCreateTopicInput(p *v1alpha1.SNSTopicParameters) *sns.CreateTopicIn
 	return input
 }
 
-// LateInitializeTopic fills the empty fields in *v1alpha1.SNSTopicParameters with the
+// LateInitializeTopicAttr fills the empty fields in *v1alpha1.SNSTopicParameters with the
 // values seen in sns.Topic.
-func LateInitializeTopic(in *v1alpha1.SNSTopicParameters, topic sns.Topic, attrs map[string]string) {
-	in.Name = *awsclients.LateInitializeStringPtr(&in.Name, topic.TopicArn)
+func LateInitializeTopicAttr(in *v1alpha1.SNSTopicParameters, attrs map[string]string) {
 	in.DisplayName = awsclients.LateInitializeStringPtr(in.DisplayName, aws.String(attrs["DisplayName"]))
 	in.DeliveryPolicy = awsclients.LateInitializeStringPtr(in.DeliveryPolicy, aws.String(attrs["DeliveryPolicy"]))
 	in.KMSMasterKeyID = awsclients.LateInitializeStringPtr(in.KMSMasterKeyID, aws.String(attrs["KmsMasterKeyId"]))

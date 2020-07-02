@@ -21,12 +21,8 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/sns"
 	awssns "github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/google/go-cmp/cmp"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
 )
@@ -45,19 +41,6 @@ var (
 	tagKey2           = "name-2"
 	tagValue2         = "value-2"
 )
-
-// Topic
-func topic(m ...func(*awssns.Topic)) *awssns.Topic {
-	o := &awssns.Topic{
-		TopicArn: &topicArn,
-	}
-
-	for _, f := range m {
-		f(o)
-	}
-
-	return o
-}
 
 // Topic Attribute Modifier
 type topicAttrModifier func(*map[string]string)
@@ -151,90 +134,6 @@ func topicParams(m ...func(*v1alpha1.SNSTopicParameters)) *v1alpha1.SNSTopicPara
 
 // Test Cases
 
-func TestGetSNSTopic(t *testing.T) {
-
-	type args struct {
-		list *sns.ListTopicsResponse
-		cr   *v1alpha1.SNSTopic
-	}
-
-	type want struct {
-		topic sns.Topic
-		err   error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"TopicFound": {
-			args: args{
-				list: &sns.ListTopicsResponse{
-					ListTopicsOutput: &sns.ListTopicsOutput{
-						Topics: []sns.Topic{
-							{
-								TopicArn: &topicArn,
-							},
-						},
-					},
-				},
-				cr: &v1alpha1.SNSTopic{
-					ObjectMeta: v1.ObjectMeta{
-						Annotations: map[string]string{
-							"crossplane.io/external-name": topicArn,
-						},
-					},
-					Spec: v1alpha1.SNSTopicSpec{
-						ForProvider: v1alpha1.SNSTopicParameters{},
-					},
-				},
-			},
-			want: want{
-				topic: *topic(),
-			},
-		},
-		"TopicNotFound": {
-			args: args{
-				list: &sns.ListTopicsResponse{
-					ListTopicsOutput: &sns.ListTopicsOutput{
-						Topics: []sns.Topic{
-							{
-								TopicArn: &topicArn,
-							},
-						},
-					},
-				},
-				cr: &v1alpha1.SNSTopic{
-					ObjectMeta: v1.ObjectMeta{
-						Annotations: map[string]string{
-							"crossplane.io/external-name": "fake",
-						},
-					},
-					Spec: v1alpha1.SNSTopicSpec{
-						ForProvider: v1alpha1.SNSTopicParameters{},
-					},
-				},
-			},
-			want: want{
-				err: &TopicNotFound{},
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			topic, err := GetSNSTopic(tc.list, tc.cr)
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.topic, topic); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-
-		})
-	}
-}
-
 func TestGenerateCreateTopicInput(t *testing.T) {
 	cases := map[string]struct {
 		in  v1alpha1.SNSTopicParameters
@@ -257,36 +156,6 @@ func TestGenerateCreateTopicInput(t *testing.T) {
 			input := GenerateCreateTopicInput(&tc.in)
 			if diff := cmp.Diff(input, &tc.out); diff != "" {
 				t.Errorf("GenerateCreateTopicInput(...): -want, +got\n:%s", diff)
-			}
-		})
-	}
-}
-
-func TestLateInitializeTopic(t *testing.T) {
-	type args struct {
-		spec *v1alpha1.SNSTopicParameters
-		in   sns.Topic
-		attr map[string]string
-	}
-
-	cases := map[string]struct {
-		args args
-		want *v1alpha1.SNSTopicParameters
-	}{
-		"AllFilledNoDiff": {
-			args: args{
-				spec: topicParams(),
-				in:   *topic(),
-			},
-			want: topicParams(),
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			LateInitializeTopic(tc.args.spec, tc.args.in, tc.args.attr)
-			if diff := cmp.Diff(tc.args.spec, tc.want); diff != "" {
-				t.Errorf("LateInitializeTopic(...): -want, +got:\n%s", diff)
 			}
 		})
 	}

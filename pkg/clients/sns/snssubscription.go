@@ -17,60 +17,33 @@ limitations under the License.
 package sns
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
-	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
-const (
-	//SNSSubscriptionNotFound is the error code that is returned if SNS Subscription is not present
-	SNSSubscriptionNotFound = "InvalidSNSSubscription.NotFound"
+// SubscriptionAttributes refers to AWS SNS Subscription Attributes List
+// ref: https://docs.aws.amazon.com/cli/latest/reference/sns/get-subscription-attributes.html#output
+type SubscriptionAttributes string
 
-	// SNSSubscriptionInPendingConfirmation will be raise when SNS Subscription is found
-	// but in "pending confirmation" state.
-	SNSSubscriptionInPendingConfirmation = "InvalidSNSSubscription.PendingConfirmation"
+const (
+	// DeliveryPolicy of SNS Subscription
+	DeliveryPolicy SubscriptionAttributes = "DeliveryPolicy"
+	// FilterPolicy of SNS Subscription
+	FilterPolicy SubscriptionAttributes = "FilterPolicy"
+	// RawMessageDelivery of SNS Subscription
+	RawMessageDelivery SubscriptionAttributes = "RawMessageDelivery"
+	// RedrivePolicy of SNS Subscription
+	RedrivePolicy SubscriptionAttributes = "RedrivePolicy"
 )
 
-// IsSubscriptionNotFound returns true if the error code indicates that the item was not found
-func IsSubscriptionNotFound(err error) bool {
-	if _, ok := err.(*SubscriptionNotFound); ok {
-		return true
-	}
-	return false
-}
-
-// SubscriptionNotFound will be raised when there is no SNSTopic
-type SubscriptionNotFound struct{}
-
-func (err *SubscriptionNotFound) Error() string {
-	return fmt.Sprint(SNSSubscriptionNotFound)
-}
-
-// IsSubscriptionConfirmationPending returns true if the error code indicates that the item was not found
-func IsSubscriptionConfirmationPending(err error) bool {
-	if _, ok := err.(*SubscriptionInPendingConfirmation); ok {
-		return true
-	}
-	return false
-}
-
-// SubscriptionInPendingConfirmation will be raised when subscription is in
-// "pending confirmation" state.
-type SubscriptionInPendingConfirmation struct{}
-
-func (err *SubscriptionInPendingConfirmation) Error() string {
-	return fmt.Sprint(SNSSubscriptionInPendingConfirmation)
-}
-
-// SubscriptionClient is the external
+// SubscriptionClient is the external client used for AWS SNSSubscription
 type SubscriptionClient interface {
-	ListSubscriptionsByTopicRequest(*sns.ListSubscriptionsByTopicInput) sns.ListSubscriptionsByTopicRequest
+	//ListSubscriptionsByTopicRequest(*sns.ListSubscriptionsByTopicInput) sns.ListSubscriptionsByTopicRequest
 	SubscribeRequest(*sns.SubscribeInput) sns.SubscribeRequest
 	UnsubscribeRequest(*sns.UnsubscribeInput) sns.UnsubscribeRequest
 	GetSubscriptionAttributesRequest(*sns.GetSubscriptionAttributesInput) sns.GetSubscriptionAttributesRequest
@@ -88,7 +61,7 @@ func GenerateSubscribeInput(p *v1alpha1.SNSSubscriptionParameters) *sns.Subscrib
 	input := &sns.SubscribeInput{
 		Endpoint:              aws.String(p.Endpoint),
 		Protocol:              aws.String(p.Protocol),
-		TopicArn:              p.TopicARN,
+		TopicArn:              aws.String(p.TopicARN),
 		ReturnSubscriptionArn: aws.Bool(true),
 	}
 
@@ -128,28 +101,15 @@ func LateInitializeSubscription(in *v1alpha1.SNSSubscriptionParameters, subAttri
 	in.RedrivePolicy = awsclients.LateInitializeStringPtr(in.RedrivePolicy, aws.String(subAttributes["RedrivePolicy"]))
 }
 
-// GetSNSSubscription returns SNSSubscription from List of SNSSubscription
-func GetSNSSubscription(res *sns.ListSubscriptionsByTopicResponse, cr *v1alpha1.SNSSubscription) (sns.Subscription, error) {
-
-	for _, sub := range res.Subscriptions {
-		if cmp.Equal(sub.TopicArn, cr.Spec.ForProvider.TopicARN) && cmp.Equal(sub.Endpoint, &cr.Spec.ForProvider.Endpoint) && cmp.Equal(sub.Protocol, &cr.Spec.ForProvider.Protocol) {
-			return sub, nil
-		}
-	}
-
-	return sns.Subscription{}, &SubscriptionNotFound{}
-
-}
-
 // getSubAttributes returns map of SNS Sunscription Attributes
 func getSubAttributes(p v1alpha1.SNSSubscriptionParameters) map[string]string {
 
 	attr := make(map[string]string)
 
-	attr["DeliveryPolicy"] = aws.StringValue(p.DeliveryPolicy)
-	attr["FilterPolicy"] = aws.StringValue(p.FilterPolicy)
-	attr["RawMessageDelivery"] = aws.StringValue(p.RawMessageDelivery)
-	attr["RedrivePolicy"] = aws.StringValue(p.RedrivePolicy)
+	attr[string(DeliveryPolicy)] = aws.StringValue(p.DeliveryPolicy)
+	attr[string(FilterPolicy)] = aws.StringValue(p.FilterPolicy)
+	attr[string(RawMessageDelivery)] = aws.StringValue(p.RawMessageDelivery)
+	attr[string(RedrivePolicy)] = aws.StringValue(p.RedrivePolicy)
 
 	return attr
 }
@@ -168,16 +128,10 @@ func GetChangedSubAttributes(p v1alpha1.SNSSubscriptionParameters, attrs map[str
 	return changedAttrs
 }
 
-// IsSNSSubscriptionUpToDate checks if object is up to date
-func IsSNSSubscriptionUpToDate(p v1alpha1.SNSSubscriptionParameters, sub *sns.Subscription, subAttributes map[string]string) bool {
-	return p.Endpoint == aws.StringValue(sub.Endpoint) && p.Protocol == aws.StringValue(sub.Protocol) && isSNSSubscriptionAttributesUpToDate(p, subAttributes)
-}
-
-// isSNSSubscriptionAttributesUpToDate checks if attributes are up to date
-func isSNSSubscriptionAttributesUpToDate(p v1alpha1.SNSSubscriptionParameters, subAttributes map[string]string) bool {
-	return *p.DeliveryPolicy == subAttributes["DeliveryPolicy"] &&
-		*p.FilterPolicy == subAttributes["FilterPolicy"] &&
-		*p.RawMessageDelivery == subAttributes["RawMessageDelivery"] &&
-		*p.RedrivePolicy == subAttributes["RedrivePolicy"] &&
-		*p.TopicARN == subAttributes["TopicArn"]
+// IsSNSSubscriptionAttributesUpToDate checks if attributes are up to date
+func IsSNSSubscriptionAttributesUpToDate(p v1alpha1.SNSSubscriptionParameters, subAttributes map[string]string) bool {
+	return aws.StringValue(p.DeliveryPolicy) == subAttributes["DeliveryPolicy"] &&
+		aws.StringValue(p.FilterPolicy) == subAttributes["FilterPolicy"] &&
+		aws.StringValue(p.RawMessageDelivery) == subAttributes["RawMessageDelivery"] &&
+		aws.StringValue(p.RedrivePolicy) == subAttributes["RedrivePolicy"]
 }

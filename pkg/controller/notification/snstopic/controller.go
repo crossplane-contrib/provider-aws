@@ -45,9 +45,6 @@ const (
 	errKubeTopicUpdateFailed = "cannot update SNSTopic custom resource"
 	errClient                = "cannot create a new SNSTopic client"
 	errUnexpectedObject      = "The managed resource is not a SNSTopic resource"
-	errList                  = "failed to list SNS Topics"
-	errGetTopic              = "failed to get SNS Topic"
-	errListTopic             = "failed to list SNS Topics"
 	errGetTopicAttr          = "failed to get SNS Topic Attribute"
 	errCreate                = "failed to create the SNS Topic"
 	errDelete                = "failed to delete the SNS Topic"
@@ -117,18 +114,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 
-	// Fetch the list of Topics
-	topicList, err := e.client.ListTopicsRequest(&awssns.ListTopicsInput{}).Send(ctx)
-	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errList)
-	}
-
-	// Filters the list of topic with matching values in CR
-	topic, err := snsclient.GetSNSTopic(topicList, cr)
-	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errGetTopic)
-	}
-
 	// Fetch SNS Topic Attributes with matching TopicARN
 	res, err := e.client.GetTopicAttributesRequest(&awssns.GetTopicAttributesInput{
 		TopicArn: aws.String(meta.GetExternalName(cr)),
@@ -138,7 +123,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
-	snsclient.LateInitializeTopic(&cr.Spec.ForProvider, topic, res.Attributes)
+	snsclient.LateInitializeTopicAttr(&cr.Spec.ForProvider, res.Attributes)
 	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
 			return managed.ExternalObservation{}, errors.Wrap(err, errKubeTopicUpdateFailed)
@@ -189,7 +174,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		TopicArn: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, errors.Wrap(err, errGetTopicAttr)
 	}
 
 	// Update Topic Attributes

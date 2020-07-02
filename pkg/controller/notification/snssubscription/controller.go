@@ -44,9 +44,7 @@ import (
 const (
 	errKubeSubscriptionUpdateFailed = "cannot update SNSSubscription custom resource"
 	errClient                       = "cannot create a new SNSSubscription client"
-	errUnexpectedObject             = "The managed resource is not a SNSSubscription resource"
-	errList                         = "failed to list SNS Subscription"
-	errGetSubscription              = "failed to get SNS Subscription"
+	errUnexpectedObject             = "the managed resource is not a SNS Subscription resource"
 	errGetSubscriptionAttr          = "failed to get SNS Subscription Attribute"
 	errCreate                       = "failed to create the SNS Subscription"
 	errDelete                       = "failed to delete the SNS Subscription"
@@ -119,22 +117,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
-	// Get the list of Subscriptions with TopicARN
-	subscriptionList, err := e.client.ListSubscriptionsByTopicRequest(&awssns.ListSubscriptionsByTopicInput{
-		TopicArn: cr.Spec.ForProvider.TopicARN,
-	}).Send(ctx)
-	if err != nil {
-		return managed.ExternalObservation{},
-			errors.Wrap(resource.Ignore(sns.IsSubscriptionNotFound, err), errList)
-	}
-
-	// Filters the list of subscription with matching values in CR
-	sub, err := snsclient.GetSNSSubscription(subscriptionList, cr)
-	if err != nil {
-		return managed.ExternalObservation{},
-			errors.Wrap(resource.Ignore(sns.IsSubscriptionNotFound, err), errGetSubscription)
-	}
-
 	// Fetch Subscription Attributes with matching SubscriptionARN
 	res, err := e.client.GetSubscriptionAttributesRequest(&awssns.GetSubscriptionAttributesInput{
 		SubscriptionArn: aws.String(meta.GetExternalName(cr)),
@@ -164,7 +146,11 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		cr.Status.SetConditions(runtimev1alpha1.Creating())
 	}
 
+<<<<<<< HEAD
+	upToDate := snsclient.IsSNSSubscriptionAttributesUpToDate(cr.Spec.ForProvider, res.Attributes)
+=======
 	upToDate := snsclient.IsSNSSubscriptionUpToDate(cr.Spec.ForProvider, &sub, res.Attributes)
+>>>>>>> 1e686a5aa6555394f777ffa7a0527b96942c3935
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: upToDate,

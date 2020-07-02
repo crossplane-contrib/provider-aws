@@ -22,8 +22,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/crossplane-runtime/pkg/test"
-
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
@@ -32,12 +30,10 @@ var (
 	subOwner               = "owner"
 	subEmailProtocol       = "email"
 	subEmailEndpoint       = "xyz@abc.com"
-	subArn                 = "some-arn"
 	subRawMessageDelivery  = "raw-message"
 	subFilterPolicy        = "filter-policy"
 	subRedrivePolicy       = "redrive-policy"
 	subDeliveryPolicy      = "delivery-policy"
-	subWrongProtocol       = "wrong-protocol"
 	subConfirmationPending = v1alpha1.ConfirmationPending
 	withSubConfirmed       = v1alpha1.ConfirmationSuccessful
 	subStringFalse         = "false"
@@ -101,32 +97,10 @@ func withSubOwner(s *string) subAttrModifier {
 	}
 }
 
-func withSubTopicARN(s *string) subAttrModifier {
-	return func(attr *map[string]string) {
-		(*attr)["TopicArn"] = *s
-	}
-}
-
-func sub(m ...func(*sns.Subscription)) *sns.Subscription {
-	o := &sns.Subscription{
-		TopicArn:        aws.String(topicArn),
-		Endpoint:        aws.String(subEmailEndpoint),
-		Protocol:        aws.String(subEmailProtocol),
-		Owner:           aws.String(subOwner),
-		SubscriptionArn: aws.String(subArn),
-	}
-
-	for _, f := range m {
-		f(o)
-	}
-
-	return o
-}
-
 // subscription Parameters
 func subParams(m ...func(*v1alpha1.SNSSubscriptionParameters)) *v1alpha1.SNSSubscriptionParameters {
 	o := &v1alpha1.SNSSubscriptionParameters{
-		TopicARN:           &topicArn,
+		TopicARN:           topicArn,
 		Endpoint:           subEmailEndpoint,
 		Protocol:           subEmailProtocol,
 		RedrivePolicy:      &subRedrivePolicy,
@@ -173,93 +147,6 @@ func withSubObservationConfirmationWasAuthenticated(s bool) subObservationModifi
 	}
 }
 
-func TestGetSNSSubscription(t *testing.T) {
-	type args struct {
-		list *sns.ListSubscriptionsByTopicResponse
-		cr   *v1alpha1.SNSSubscription
-	}
-
-	type want struct {
-		sub sns.Subscription
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"SubcriptionFound": {
-			args: args{
-				list: &sns.ListSubscriptionsByTopicResponse{
-					ListSubscriptionsByTopicOutput: &sns.ListSubscriptionsByTopicOutput{
-						Subscriptions: []sns.Subscription{
-							{
-								TopicArn:        &topicArn,
-								Endpoint:        &subEmailEndpoint,
-								Owner:           &subOwner,
-								SubscriptionArn: &subArn,
-								Protocol:        &subEmailProtocol,
-							},
-						},
-					},
-				},
-				cr: &v1alpha1.SNSSubscription{
-					Spec: v1alpha1.SNSSubscriptionSpec{
-						ForProvider: v1alpha1.SNSSubscriptionParameters{
-							TopicARN: &topicArn,
-							Endpoint: subEmailEndpoint,
-							Protocol: subEmailProtocol,
-						},
-					},
-				},
-			},
-			want: want{
-				sub: *sub(),
-			},
-		},
-		"SubcriptionNotFound": {
-			args: args{
-				list: &sns.ListSubscriptionsByTopicResponse{
-					ListSubscriptionsByTopicOutput: &sns.ListSubscriptionsByTopicOutput{
-						Subscriptions: []sns.Subscription{
-							{
-								TopicArn:        &topicArn,
-								Endpoint:        &subEmailEndpoint,
-								Owner:           &subOwner,
-								SubscriptionArn: &subArn,
-							},
-						},
-					},
-				},
-				cr: &v1alpha1.SNSSubscription{
-					Spec: v1alpha1.SNSSubscriptionSpec{
-						ForProvider: v1alpha1.SNSSubscriptionParameters{
-							TopicARN: &topicArn,
-							Endpoint: subEmailEndpoint,
-							Protocol: subEmailProtocol,
-						},
-					},
-				},
-			},
-			want: want{
-				err: &SubscriptionNotFound{},
-			},
-		},
-	}
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			sub, err := GetSNSSubscription(tc.list, tc.cr)
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.sub, sub); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-
-		})
-	}
-}
-
 func TestGenerateSubscribeInput(t *testing.T) {
 	cases := map[string]struct {
 		in  v1alpha1.SNSSubscriptionParameters
@@ -267,7 +154,7 @@ func TestGenerateSubscribeInput(t *testing.T) {
 	}{
 		"FilledInput": {
 			in: v1alpha1.SNSSubscriptionParameters{
-				TopicARN: &topicArn,
+				TopicARN: topicArn,
 				Endpoint: subEmailEndpoint,
 				Protocol: subEmailProtocol,
 			},
@@ -314,14 +201,14 @@ func TestLateInitializeSubscription(t *testing.T) {
 		"PartialFilled": {
 			args: args{
 				spec: subParams(func(sub *v1alpha1.SNSSubscriptionParameters) {
-					sub.TopicARN = &topicArn
+					sub.TopicARN = topicArn
 					sub.Protocol = subEmailProtocol
 					sub.Endpoint = subEmailEndpoint
 				}),
 				attr: map[string]string{},
 			},
 			want: subParams(func(sub *v1alpha1.SNSSubscriptionParameters) {
-				sub.TopicARN = &topicArn
+				sub.TopicARN = topicArn
 				sub.Endpoint = subEmailEndpoint
 				sub.Protocol = subEmailProtocol
 			}),
@@ -415,96 +302,6 @@ func TestGenerateSubscriptionObservation(t *testing.T) {
 			observation := GenerateSubscriptionObservation(*tc.in)
 			if diff := cmp.Diff(*tc.out, observation); diff != "" {
 				t.Errorf("GenerateSubscriptionObservation(...): -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestIsSNSSubscriptionUpToDate(t *testing.T) {
-	type args struct {
-		p    v1alpha1.SNSSubscriptionParameters
-		sub  *sns.Subscription
-		attr *map[string]string
-	}
-
-	cases := map[string]struct {
-		args args
-		want bool
-	}{
-		"SameFieldsAndAllFilled": {
-			args: args{
-				attr: subAttributes(
-					withSubRawMessageDelivery(&subRawMessageDelivery),
-					withSubRedrivePolicy(&subRedrivePolicy),
-					withSubFilterPolicy(&subFilterPolicy),
-					withSubDeliveryPolicy(&subDeliveryPolicy),
-					withSubTopicARN(&topicArn),
-				),
-				sub: &sns.Subscription{
-					Protocol: &subEmailProtocol,
-					Endpoint: &subEmailEndpoint,
-				},
-				p: v1alpha1.SNSSubscriptionParameters{
-					Protocol:           subEmailProtocol,
-					Endpoint:           subEmailEndpoint,
-					RawMessageDelivery: &subRawMessageDelivery,
-					FilterPolicy:       &subFilterPolicy,
-					DeliveryPolicy:     &subDeliveryPolicy,
-					TopicARN:           &topicArn,
-					RedrivePolicy:      &subRedrivePolicy,
-				},
-			},
-			want: true,
-		},
-		"DifferentFields": {
-			args: args{
-				attr: subAttributes(
-					withSubRawMessageDelivery(&subRawMessageDelivery),
-					withSubRedrivePolicy(&subRedrivePolicy),
-					withSubFilterPolicy(&subFilterPolicy),
-					withSubDeliveryPolicy(&subDeliveryPolicy),
-					withSubTopicARN(&topicArn),
-				),
-				sub: &sns.Subscription{
-					Protocol: &subEmailProtocol,
-					Endpoint: &subEmailEndpoint,
-				},
-				p: v1alpha1.SNSSubscriptionParameters{
-					Protocol:           subWrongProtocol,
-					Endpoint:           subEmailEndpoint,
-					RawMessageDelivery: &subRawMessageDelivery,
-					FilterPolicy:       &subFilterPolicy,
-					DeliveryPolicy:     &subDeliveryPolicy,
-					TopicARN:           &topicArn,
-					RedrivePolicy:      &subRedrivePolicy,
-				},
-			},
-			want: false,
-		},
-		"MissingFields": {
-			args: args{
-				attr: subAttributes(
-					withSubRawMessageDelivery(&subRawMessageDelivery),
-					withSubRedrivePolicy(&subRedrivePolicy),
-					withSubFilterPolicy(&subFilterPolicy),
-					withSubDeliveryPolicy(&subDeliveryPolicy),
-					withSubTopicARN(&topicArn),
-				),
-				sub: &sns.Subscription{
-					Protocol: &subEmailProtocol,
-					Endpoint: &subEmailEndpoint,
-				},
-				p: v1alpha1.SNSSubscriptionParameters{},
-			},
-			want: false,
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			got := IsSNSSubscriptionUpToDate(tc.args.p, tc.args.sub, *tc.args.attr)
-			if diff := cmp.Diff(tc.want, got); diff != "" {
-				t.Errorf("Topic : -want, +got:\n%s", diff)
 			}
 		})
 	}

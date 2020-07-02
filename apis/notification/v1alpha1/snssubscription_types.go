@@ -26,8 +26,8 @@ import (
 type SNSSubscriptionParameters struct {
 
 	// TopicArn is the Arn of the SNS Topic
-	// +optional
-	TopicARN *string `json:"topicArn,omitempty"`
+	// +immutable
+	TopicARN string `json:"topicArn,omitempty"`
 
 	// TopicArnRef references a SNS Topic and retrieves its TopicArn
 	// +optional

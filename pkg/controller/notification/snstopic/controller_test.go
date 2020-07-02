@@ -221,6 +221,9 @@ func TestObserve(t *testing.T) {
 		"InValidInput": {
 			args: args{
 				cr: unexpecedItem,
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
 			},
 			want: want{
 				cr:  unexpecedItem,
@@ -230,6 +233,9 @@ func TestObserve(t *testing.T) {
 		"ExternalNameNotARN": {
 			args: args{
 				cr: topic(withTopicName(&topicName)),
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
 			},
 			want: want{
 				cr: topic(withTopicName(&topicName)),
@@ -242,40 +248,21 @@ func TestObserve(t *testing.T) {
 		"TopicNotFound": {
 			args: args{
 				topic: &fake.MockTopicClient{
-					MockListTopicsRequest: func(input *awssns.ListTopicsInput) awssns.ListTopicsRequest {
-						return awssns.ListTopicsRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Data:        &awssns.ListTopicsOutput{},
-								Retryer:     aws.NoOpRetryer{},
-							},
-						}
-					},
-				},
-				cr: topic(withTopicARN(&topicName)),
-			},
-			want: want{
-				cr: topic(withTopicARN(&topicName)),
-				result: managed.ExternalObservation{
-					ResourceExists:   false,
-					ResourceUpToDate: false,
-				},
-			},
-		},
-		"ClientListTopicsError": {
-			args: args{
-				topic: &fake.MockTopicClient{
-					MockListTopicsRequest: func(input *awssns.ListTopicsInput) awssns.ListTopicsRequest {
-						return awssns.ListTopicsRequest{
+					MockGetTopicAttributesRequest: func(input *awssns.GetTopicAttributesInput) awssns.GetTopicAttributesRequest {
+						return awssns.GetTopicAttributesRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Error:       errBoom,
+								Data:        &awssns.GetTopicAttributesOutput{},
 								Retryer:     aws.NoOpRetryer{},
 							},
 						}
 					},
 				},
 				cr: topic(withTopicARN(&topicName)),
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
 			},
 			want: want{
 				cr: topic(withTopicARN(&topicName)),
@@ -283,25 +270,12 @@ func TestObserve(t *testing.T) {
 					ResourceExists:   false,
 					ResourceUpToDate: false,
 				},
-				err: errors.Wrap(errBoom, errListTopic),
+				err: errors.Wrap(errBoom, errGetTopicAttr),
 			},
 		},
 		"ClientGetTopicAttributesError": {
 			args: args{
 				topic: &fake.MockTopicClient{
-					MockListTopicsRequest: func(input *awssns.ListTopicsInput) awssns.ListTopicsRequest {
-						return awssns.ListTopicsRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data: &awssns.ListTopicsOutput{
-									Topics: []awssns.Topic{
-										{TopicArn: aws.String(makeARN(topicName))},
-									},
-								},
-							},
-						}
-					},
 					MockGetTopicAttributesRequest: func(input *awssns.GetTopicAttributesInput) awssns.GetTopicAttributesRequest {
 						return awssns.GetTopicAttributesRequest{
 							Request: &aws.Request{
@@ -313,6 +287,9 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: topic(withTopicARN(&topicName)),
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
 			},
 			want: want{
 				cr: topic(withTopicARN(&topicName)),
@@ -326,19 +303,6 @@ func TestObserve(t *testing.T) {
 		"ValidInputResourceNotUpToDate": {
 			args: args{
 				topic: &fake.MockTopicClient{
-					MockListTopicsRequest: func(input *awssns.ListTopicsInput) awssns.ListTopicsRequest {
-						return awssns.ListTopicsRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data: &awssns.ListTopicsOutput{
-									Topics: []awssns.Topic{
-										{TopicArn: aws.String(makeARN(topicName))},
-									},
-								},
-							},
-						}
-					},
 					MockGetTopicAttributesRequest: func(input *awssns.GetTopicAttributesInput) awssns.GetTopicAttributesRequest {
 						return awssns.GetTopicAttributesRequest{
 							Request: &aws.Request{
@@ -626,7 +590,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  topic(withTopicName(&topicName)),
-				err: errors.Wrap(errBoom, errUpdate),
+				err: errors.Wrap(errBoom, errGetTopicAttr),
 			},
 		},
 		"ClientSetTopicAttributeError": {
