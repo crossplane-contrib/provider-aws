@@ -59,41 +59,41 @@ func subAttributes(m ...subAttrModifier) *map[string]string {
 
 func withSubDeliveryPolicy(s *string) subAttrModifier {
 	return func(attr *map[string]string) {
-		(*attr)["DeliveryPolicy"] = *s
+		(*attr)[string(SubscriptionDeliveryPolicy)] = *s
 	}
 }
 
 func withSubFilterPolicy(s *string) subAttrModifier {
 	return func(attr *map[string]string) {
-		(*attr)["FilterPolicy"] = *s
+		(*attr)[string(SubscriptionFilterPolicy)] = *s
 	}
 }
 func withSubRawMessageDelivery(s *string) subAttrModifier {
 	return func(attr *map[string]string) {
-		(*attr)["RawMessageDelivery"] = *s
+		(*attr)[string(SubscriptionRawMessageDelivery)] = *s
 	}
 }
 func withSubRedrivePolicy(s *string) subAttrModifier {
 	return func(attr *map[string]string) {
-		(*attr)["RedrivePolicy"] = *s
+		(*attr)[string(SubscriptionRedrivePolicy)] = *s
 	}
 }
 
 func withSubConfirmation(s *v1alpha1.ConfirmationStatus) subAttrModifier {
 	return func(attr *map[string]string) {
-		(*attr)["PendingConfirmation"] = subStringTrue
+		(*attr)[string(SubscriptionPendingConfirmation)] = subStringTrue
 	}
 }
 
 func withSubConfirmationWasAuthenticated(s *string) subAttrModifier {
 	return func(attr *map[string]string) {
-		(*attr)["ConfirmationWasAuthenticated"] = *s
+		(*attr)[string(SubscriptionConfirmationWasAuthenticated)] = *s
 	}
 }
 
 func withSubOwner(s *string) subAttrModifier {
 	return func(attr *map[string]string) {
-		(*attr)["Owner"] = *s
+		(*attr)[string(SubscriptionOwner)] = *s
 	}
 }
 

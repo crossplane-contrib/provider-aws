@@ -113,7 +113,7 @@ func GetChangedAttributes(p v1alpha1.SNSTopicParameters, attrs map[string]string
 func GenerateTopicObservation(attr map[string]string) v1alpha1.SNSTopicObservation {
 	o := v1alpha1.SNSTopicObservation{}
 
-	o.Owner = aws.String(string(TopicOwner))
+	o.Owner = aws.String(attr[string(TopicOwner)])
 
 	if s, err := strconv.ParseInt(attr[string(TopicSubscriptionsConfirmed)], 10, 64); err == nil {
 		o.ConfirmedSubscriptions = aws.Int64(s)

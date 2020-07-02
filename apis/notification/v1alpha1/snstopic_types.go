@@ -82,12 +82,6 @@ type SNSTopicParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 }
 
-// DeliveryRetryPolicy - the JSON serialization of the effective
-// delivery policy, taking system defaults into accoun
-type DeliveryRetryPolicy struct {
-	NumberOfRetries int `json:"numberOfRetries,omitempty"`
-}
-
 // SNSTopicSpec defined the desired state of a AWS SNS Topic
 type SNSTopicSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`

@@ -57,22 +57,22 @@ func topicAttributes(m ...topicAttrModifier) *map[string]string {
 
 func withOwner(s *string) topicAttrModifier {
 	return func(attr *map[string]string) {
-		(*attr)["Owner"] = *s
+		(*attr)[string(TopicOwner)] = *s
 	}
 }
 
 func withTopicSubs(confirmed, pending, deleted string) topicAttrModifier {
 	return func(attr *map[string]string) {
 		a := *attr
-		a["SubscriptionsConfirmed"] = confirmed
-		a["SubscriptionsPending"] = pending
-		a["SubscriptionsDeleted"] = deleted
+		a[string(TopicSubscriptionsConfirmed)] = confirmed
+		a[string(TopicSubscriptionsPending)] = pending
+		a[string(TopicSubscriptionsDeleted)] = deleted
 	}
 }
 
 func withAttrDisplayName(s *string) topicAttrModifier {
 	return func(attr *map[string]string) {
-		(*attr)["DisplayName"] = *s
+		(*attr)[string(TopicDisplayName)] = *s
 	}
 }
 
