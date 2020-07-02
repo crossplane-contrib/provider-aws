@@ -44,7 +44,7 @@ func (mg *CertificateAuthority) GetCondition(ct runtimev1alpha1.ConditionType) r
 }
 
 // GetProviderReference of this CertificateAuthority.
-func (mg *CertificateAuthority) GetProviderReference() *corev1.ObjectReference {
+func (mg *CertificateAuthority) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -79,7 +79,7 @@ func (mg *CertificateAuthority) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this CertificateAuthority.
-func (mg *CertificateAuthority) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *CertificateAuthority) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
@@ -114,7 +114,7 @@ func (mg *CertificateAuthorityPermission) GetCondition(ct runtimev1alpha1.Condit
 }
 
 // GetProviderReference of this CertificateAuthorityPermission.
-func (mg *CertificateAuthorityPermission) GetProviderReference() *corev1.ObjectReference {
+func (mg *CertificateAuthorityPermission) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -149,7 +149,7 @@ func (mg *CertificateAuthorityPermission) SetConditions(c ...runtimev1alpha1.Con
 }
 
 // SetProviderReference of this CertificateAuthorityPermission.
-func (mg *CertificateAuthorityPermission) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *CertificateAuthorityPermission) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

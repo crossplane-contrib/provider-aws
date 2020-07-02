@@ -44,7 +44,7 @@ func (mg *InternetGateway) GetCondition(ct runtimev1alpha1.ConditionType) runtim
 }
 
 // GetProviderReference of this InternetGateway.
-func (mg *InternetGateway) GetProviderReference() *corev1.ObjectReference {
+func (mg *InternetGateway) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -79,7 +79,7 @@ func (mg *InternetGateway) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this InternetGateway.
-func (mg *InternetGateway) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *InternetGateway) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
@@ -114,7 +114,7 @@ func (mg *SecurityGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev
 }
 
 // GetProviderReference of this SecurityGroup.
-func (mg *SecurityGroup) GetProviderReference() *corev1.ObjectReference {
+func (mg *SecurityGroup) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -149,7 +149,7 @@ func (mg *SecurityGroup) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this SecurityGroup.
-func (mg *SecurityGroup) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *SecurityGroup) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
@@ -184,7 +184,7 @@ func (mg *Subnet) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1
 }
 
 // GetProviderReference of this Subnet.
-func (mg *Subnet) GetProviderReference() *corev1.ObjectReference {
+func (mg *Subnet) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -219,7 +219,7 @@ func (mg *Subnet) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this Subnet.
-func (mg *Subnet) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *Subnet) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
@@ -254,7 +254,7 @@ func (mg *VPC) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Co
 }
 
 // GetProviderReference of this VPC.
-func (mg *VPC) GetProviderReference() *corev1.ObjectReference {
+func (mg *VPC) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -289,7 +289,7 @@ func (mg *VPC) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this VPC.
-func (mg *VPC) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *VPC) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

@@ -44,7 +44,7 @@ func (mg *RouteTable) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1al
 }
 
 // GetProviderReference of this RouteTable.
-func (mg *RouteTable) GetProviderReference() *corev1.ObjectReference {
+func (mg *RouteTable) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -79,7 +79,7 @@ func (mg *RouteTable) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this RouteTable.
-func (mg *RouteTable) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *RouteTable) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

@@ -44,7 +44,7 @@ func (mg *DynamoTable) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1a
 }
 
 // GetProviderReference of this DynamoTable.
-func (mg *DynamoTable) GetProviderReference() *corev1.ObjectReference {
+func (mg *DynamoTable) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -79,7 +79,7 @@ func (mg *DynamoTable) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this DynamoTable.
-func (mg *DynamoTable) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *DynamoTable) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

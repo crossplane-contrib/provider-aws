@@ -87,7 +87,7 @@ func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (manag
 	}
 
 	p := &awsv1alpha3.Provider{}
-	if err := conn.client.Get(ctx, meta.NamespacedNameOf(cr.Spec.ProviderReference), p); err != nil {
+	if err := conn.client.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name}, p); err != nil {
 		return nil, errors.Wrap(err, errGetProvider)
 	}
 

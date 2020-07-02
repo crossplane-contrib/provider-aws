@@ -77,7 +77,7 @@ func csg(m ...csgModifier) *v1alpha1.CacheSubnetGroup {
 	cr := &v1alpha1.CacheSubnetGroup{
 		Spec: v1alpha1.CacheSubnetGroupSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: providerName},
+				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}

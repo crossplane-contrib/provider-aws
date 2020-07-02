@@ -44,7 +44,7 @@ func (mg *CacheSubnetGroup) GetCondition(ct runtimev1alpha1.ConditionType) runti
 }
 
 // GetProviderReference of this CacheSubnetGroup.
-func (mg *CacheSubnetGroup) GetProviderReference() *corev1.ObjectReference {
+func (mg *CacheSubnetGroup) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -79,7 +79,7 @@ func (mg *CacheSubnetGroup) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this CacheSubnetGroup.
-func (mg *CacheSubnetGroup) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *CacheSubnetGroup) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
