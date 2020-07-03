@@ -1,0 +1,16 @@
+apiVersion: notification.aws.crossplane.io/v1alpha1
+kind: SNSTopic
+metadata:
+  name: some-topic
+  annotations:
+    crossplane.io/external-name: some-topic-ext-name
+spec:
+  forProvider:
+    name: sample-topic
+    tags:
+    - key: key
+      value: value
+    displayName: display-topic-name
+  providerRef:
+    name: aws-provider
+  reclaimPolicy: Delete

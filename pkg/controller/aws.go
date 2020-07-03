@@ -41,6 +41,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrolepolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuser"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuserpolicyattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
+	"github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
 )
 
@@ -87,6 +89,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		certificateauthority.SetupCertificateAuthority,
 		certificateauthoritypermission.SetupCertificateAuthorityPermission,
 		dynamodb.SetupDynamoTable,
+		snstopic.SetupSNSTopic,
+		snssubscription.SetupSubscription,
 		sqs.SetupQueue,
 	} {
 		if err := setup(mgr, l); err != nil {
