@@ -26,7 +26,6 @@ import (
 	awssns "github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -117,7 +116,7 @@ func topic(m ...topicModifier) *v1alpha1.SNSTopic {
 	cr := &v1alpha1.SNSTopic{
 		Spec: v1alpha1.SNSTopicSpec{
 			ResourceSpec: corev1alpha1.ResourceSpec{
-				ProviderReference: &corev1.ObjectReference{Name: topicName},
+				ProviderReference: corev1alpha1.Reference{Name: topicName},
 			},
 		},
 	}
@@ -133,7 +132,7 @@ func topic(m ...topicModifier) *v1alpha1.SNSTopic {
 func TestConnect(t *testing.T) {
 	type args struct {
 		newClientFn func(*aws.Config) (sns.TopicClient, error)
-		awsConfigFn func(context.Context, client.Reader, *corev1.ObjectReference) (*aws.Config, error)
+		awsConfigFn func(context.Context, client.Reader, corev1alpha1.Reference) (*aws.Config, error)
 		cr          resource.Managed
 	}
 
@@ -153,7 +152,7 @@ func TestConnect(t *testing.T) {
 					}
 					return nil, nil
 				},
-				awsConfigFn: func(_ context.Context, _ client.Reader, p *corev1.ObjectReference) (*aws.Config, error) {
+				awsConfigFn: func(_ context.Context, _ client.Reader, p corev1alpha1.Reference) (*aws.Config, error) {
 					if diff := cmp.Diff(providerName, p.Name); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
@@ -178,7 +177,7 @@ func TestConnect(t *testing.T) {
 					}
 					return nil, errBoom
 				},
-				awsConfigFn: func(_ context.Context, _ client.Reader, p *corev1.ObjectReference) (*aws.Config, error) {
+				awsConfigFn: func(_ context.Context, _ client.Reader, p corev1alpha1.Reference) (*aws.Config, error) {
 					if diff := cmp.Diff(providerName, p.Name); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
