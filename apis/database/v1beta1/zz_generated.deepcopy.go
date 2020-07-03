@@ -697,6 +697,11 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.MasterPasswordSecretRef != nil {
+		in, out := &in.MasterPasswordSecretRef, &out.MasterPasswordSecretRef
+		*out = new(v1alpha1.SecretKeySelector)
+		**out = **in
+	}
 	if in.MonitoringInterval != nil {
 		in, out := &in.MonitoringInterval, &out.MonitoringInterval
 		*out = new(int)

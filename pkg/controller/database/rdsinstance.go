@@ -51,13 +51,14 @@ const (
 	errGetProvider       = "cannot get provider"
 	errGetProviderSecret = "cannot get provider secret"
 
-	errCreateFailed        = "cannot create RDS instance"
-	errModifyFailed        = "cannot modify RDS instance"
-	errAddTagsFailed       = "cannot add tags to RDS instance"
-	errDeleteFailed        = "cannot delete RDS instance"
-	errDescribeFailed      = "cannot describe RDS instance"
-	errPatchCreationFailed = "cannot create a patch object"
-	errUpToDateFailed      = "cannot check whether object is up-to-date"
+	errCreateFailed            = "cannot create RDS instance"
+	errModifyFailed            = "cannot modify RDS instance"
+	errAddTagsFailed           = "cannot add tags to RDS instance"
+	errDeleteFailed            = "cannot delete RDS instance"
+	errDescribeFailed          = "cannot describe RDS instance"
+	errPatchCreationFailed     = "cannot create a patch object"
+	errUpToDateFailed          = "cannot check whether object is up-to-date"
+	errGetPasswordSecretFailed = "cannot get password secret"
 )
 
 // SetupRDSInstance adds a controller that reconciles RDSInstances.
@@ -179,6 +180,15 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
+	if cr.Spec.ForProvider.MasterPasswordSecretRef != nil {
+		s := &corev1.Secret{}
+		nn := types.NamespacedName{Name: cr.Spec.ForProvider.MasterPasswordSecretRef.Name, Namespace: cr.Spec.ForProvider.MasterPasswordSecretRef.Namespace}
+		if err := e.kube.Get(ctx, nn, s); err != nil {
+			return managed.ExternalCreation{}, errors.Wrap(err, errGetPasswordSecretFailed)
+		}
+		pw = string(s.Data[cr.Spec.ForProvider.MasterPasswordSecretRef.Key])
+	}
+
 	req := e.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 	_, err = req.Send(ctx)
 	if err != nil {

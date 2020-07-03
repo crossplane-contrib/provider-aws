@@ -97,7 +97,7 @@ func GenerateCreateDBInstanceInput(name, password string, p *v1beta1.RDSInstance
 		Iops:                               awsclients.Int64Address(p.IOPS),
 		KmsKeyId:                           p.KMSKeyID,
 		LicenseModel:                       p.LicenseModel,
-		MasterUserPassword:                 aws.String(password),
+		MasterUserPassword:                 awsclients.String(password),
 		MasterUsername:                     p.MasterUsername,
 		MonitoringInterval:                 awsclients.Int64Address(p.MonitoringInterval),
 		MonitoringRoleArn:                  p.MonitoringRoleARN,

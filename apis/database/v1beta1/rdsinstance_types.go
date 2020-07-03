@@ -430,6 +430,13 @@ type RDSInstanceParameters struct {
 	// +optional
 	MasterUsername *string `json:"masterUsername,omitempty"`
 
+	// MasterPasswordSecretRef references the secret that contains the password used
+	// in the creation of this RDS instance. If no reference is given, a password
+	// will be auto-generated.
+	// +optional
+	// +immutable
+	MasterPasswordSecretRef *runtimev1alpha1.SecretKeySelector `json:"masterPasswordSecretRef,omitempty"`
+
 	// MonitoringInterval is the interval, in seconds, between points when Enhanced Monitoring metrics
 	// are collected for the DB instance. To disable collecting Enhanced Monitoring
 	// metrics, specify 0. The default is 0.
