@@ -44,7 +44,7 @@ func (mg *SNSSubscription) GetCondition(ct runtimev1alpha1.ConditionType) runtim
 }
 
 // GetProviderReference of this SNSSubscription.
-func (mg *SNSSubscription) GetProviderReference() *corev1.ObjectReference {
+func (mg *SNSSubscription) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -79,7 +79,7 @@ func (mg *SNSSubscription) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this SNSSubscription.
-func (mg *SNSSubscription) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *SNSSubscription) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
@@ -114,7 +114,7 @@ func (mg *SNSTopic) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alph
 }
 
 // GetProviderReference of this SNSTopic.
-func (mg *SNSTopic) GetProviderReference() *corev1.ObjectReference {
+func (mg *SNSTopic) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -149,7 +149,7 @@ func (mg *SNSTopic) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this SNSTopic.
-func (mg *SNSTopic) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *SNSTopic) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
