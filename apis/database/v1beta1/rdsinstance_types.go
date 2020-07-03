@@ -207,11 +207,6 @@ type RDSInstanceParameters struct {
 	// +optional
 	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
 
-	// DBClusterParameterGroupName is the name of the DB cluster parameter group to use for the DB cluster.
-	// +immutable
-	// +optional
-	DBClusterParameterGroupName *string `json:"dbClusterParameterGroupName,omitempty"`
-
 	// DBInstanceClass is the compute and memory capacity of the DB instance, for example, db.m4.large.
 	// Not all DB instance classes are available in all AWS Regions, or for all
 	// database engines. For the full list of DB instance classes, and availability

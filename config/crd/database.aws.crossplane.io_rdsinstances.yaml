@@ -261,10 +261,6 @@ spec:
                     that the instance will belong to. For information on creating
                     a DB cluster, see CreateDBCluster. Type: String'
                   type: string
-                dbClusterParameterGroupName:
-                  description: DBClusterParameterGroupName is the name of the DB cluster
-                    parameter group to use for the DB cluster.
-                  type: string
                 dbInstanceClass:
                   description: DBInstanceClass is the compute and memory capacity
                     of the DB instance, for example, db.m4.large. Not all DB instance

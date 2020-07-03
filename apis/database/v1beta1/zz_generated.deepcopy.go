@@ -627,11 +627,6 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.DBClusterParameterGroupName != nil {
-		in, out := &in.DBClusterParameterGroupName, &out.DBClusterParameterGroupName
-		*out = new(string)
-		**out = **in
-	}
 	if in.DBName != nil {
 		in, out := &in.DBName, &out.DBName
 		*out = new(string)
