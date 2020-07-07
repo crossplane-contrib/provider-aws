@@ -19,6 +19,8 @@ package resourcerecordset
 import (
 	"context"
 
+	"github.com/google/go-cmp/cmp"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -45,6 +47,7 @@ const (
 	errGetProviderSecret = "cannot get provider secret"
 
 	errUnexpectedObject = "The managed resource is not an ResourceRecordSet resource"
+	errKubeUpdate       = "failed to update the ResourceRecordSet custom resource"
 	errList             = "failed to list the ResourceRecordSet resource"
 	errCreate           = "failed to create the ResourceRecordSet resource"
 	errUpdate           = "failed to update the ResourceRecordSet resource"
@@ -122,8 +125,15 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}, errors.Wrap(resource.Ignore(resourcerecordset.IsNotFound, err), errList)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Available())
+	current := cr.Spec.ForProvider.DeepCopy()
+	resourcerecordset.LateInitialize(&cr.Spec.ForProvider, rrs)
+	if !cmp.Equal(current, &cr.Spec.ForProvider) {
+		if err := e.kube.Update(ctx, cr); err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdate)
+		}
+	}
 
+	cr.Status.SetConditions(runtimev1alpha1.Available())
 	upToDate, err := resourcerecordset.IsUpToDate(cr.Spec.ForProvider, *rrs)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, errState)
