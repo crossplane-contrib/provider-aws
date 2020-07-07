@@ -9,23 +9,27 @@ metadata:
   name: hostedzones.route53.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .status.atProvider.hostedZone.id
-    name: ID
-    type: string
-  - JSONPath: .status.atProvider.hostedZone.resourceRecordSetCount
-    name: RRs
-    type: integer
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
     type: string
   - JSONPath: .status.conditions[?(@.type=='Synced')].status
     name: SYNCED
     type: string
+  - JSONPath: .metadata.annotations.crossplane\.io/external-name
+    name: ID
+    type: string
+  - JSONPath: .status.atProvider.hostedZone.resourceRecordSetCount
+    name: RRs
+    type: integer
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
   group: route53.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - managed
+    - aws
     kind: HostedZone
     listKind: HostedZoneList
     plural: hostedzones

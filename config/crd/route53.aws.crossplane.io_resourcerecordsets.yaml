@@ -9,20 +9,27 @@ metadata:
   name: resourcerecordsets.route53.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .spec.forProvider.type
-    name: TYPE
-    type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
     type: string
   - JSONPath: .status.conditions[?(@.type=='Synced')].status
     name: SYNCED
     type: string
+  - JSONPath: .metadata.annotations.crossplane\.io/external-name
+    name: NAME
+    type: string
+  - JSONPath: .spec.forProvider.type
+    name: TYPE
+    type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
   group: route53.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - managed
+    - aws
     kind: ResourceRecordSet
     listKind: ResourceRecordSetList
     plural: resourcerecordsets
