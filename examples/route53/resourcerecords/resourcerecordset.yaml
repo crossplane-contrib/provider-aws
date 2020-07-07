@@ -2,13 +2,12 @@
 apiVersion: route53.aws.crossplane.io/v1alpha1
 kind: ResourceRecordSet
 metadata:
-  name: dev-crossplane
+  name: dev.crossplane.io.try
 spec:
   reclaimPolicy: Delete
   providerRef:
     name: aws-provider
   forProvider:
-    name: dev.crossplane.io.try
     type: A
     records:
     - 11.11.12.12
@@ -18,13 +17,12 @@ spec:
 apiVersion: route53.aws.crossplane.io/v1alpha1
 kind: ResourceRecordSet
 metadata:
-  name: dev-crossplane
+  name: dev.crossplane.io.try
 spec:
   reclaimPolicy: Delete
   providerRef:
     name: aws-provider
   forProvider:
-    name: dev.crossplane.io.try
     type: A
     records:
     - 11.11.12.12

@@ -51,8 +51,7 @@ func TestCreatePatch(t *testing.T) {
 					TTL:  &ttl,
 				},
 				p: v1alpha1.ResourceRecordSetParameters{
-					Name: &resourceRecordSetName,
-					TTL:  &ttl,
+					TTL: &ttl,
 				},
 			},
 			want: want{
@@ -66,8 +65,7 @@ func TestCreatePatch(t *testing.T) {
 					TTL:  &ttl,
 				},
 				p: v1alpha1.ResourceRecordSetParameters{
-					Name: &resourceRecordSetName,
-					TTL:  &ttl2,
+					TTL: &ttl2,
 				},
 			},
 			want: want{
@@ -110,8 +108,7 @@ func TestIsUpToDate(t *testing.T) {
 					TTL:  &ttl,
 				},
 				p: v1alpha1.ResourceRecordSetParameters{
-					Name: &resourceRecordSetName,
-					TTL:  &ttl,
+					TTL: &ttl,
 				},
 			},
 			want: true,
@@ -123,8 +120,7 @@ func TestIsUpToDate(t *testing.T) {
 					TTL:  &ttl,
 				},
 				p: v1alpha1.ResourceRecordSetParameters{
-					Name: &resourceRecordSetName,
-					TTL:  &ttl2,
+					TTL: &ttl2,
 				},
 			},
 			want: false,
@@ -136,8 +132,7 @@ func TestIsUpToDate(t *testing.T) {
 					TTL:  &ttl,
 				},
 				p: v1alpha1.ResourceRecordSetParameters{
-					Name: &resourceRecordSetName,
-					TTL:  &ttl,
+					TTL: &ttl,
 				},
 			},
 			want: true,

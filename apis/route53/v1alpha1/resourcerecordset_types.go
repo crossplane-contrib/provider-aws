@@ -114,9 +114,6 @@ type ResourceRecordSetParameters struct {
 	// +optional
 	AliasTarget *AliasTarget `json:"aliasTarget,omitempty"`
 
-	// Name of the record that you want to create, update, or delete.
-	Name *string `json:"name"`
-
 	// Failover let you add the Failover element to two resource record sets.
 	// For one resource record set, you specify PRIMARY as the value for Failover;
 	// for the other resource record set, you specify SECONDARY.
