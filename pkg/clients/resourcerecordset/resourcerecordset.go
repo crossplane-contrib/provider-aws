@@ -94,8 +94,8 @@ func GetResourceRecordSet(ctx context.Context, name string, params v1alpha1.Reso
 	return nil, &NotFoundError{}
 }
 
-// UpsertResourceRecordSet prepares input for a ChangeResourceRecordSetsInput
-func UpsertResourceRecordSet(name string, p v1alpha1.ResourceRecordSetParameters) *route53.ChangeResourceRecordSetsInput {
+// GenerateChangeResourceRecordSetsInput prepares input for a ChangeResourceRecordSetsInput
+func GenerateChangeResourceRecordSetsInput(name string, p v1alpha1.ResourceRecordSetParameters, action route53.ChangeAction) *route53.ChangeResourceRecordSetsInput {
 	r := &route53.ResourceRecordSet{
 		Name:                    aws.String(name),
 		Type:                    route53.RRType(p.Type),
@@ -134,29 +134,11 @@ func UpsertResourceRecordSet(name string, p v1alpha1.ResourceRecordSetParameters
 		ChangeBatch: &route53.ChangeBatch{
 			Changes: []route53.Change{
 				{
-					Action:            route53.ChangeActionUpsert,
+					Action:            action,
 					ResourceRecordSet: r,
 				},
 			},
 		},
-	}
-}
-
-// DeleteResourceRecordSet returns a ChangeResourceRecordSetsInput that has Delete
-// action for given resource record set.
-func DeleteResourceRecordSet(name string, p v1alpha1.ResourceRecordSetParameters) *route53.ChangeResourceRecordSetsInput {
-	return &route53.ChangeResourceRecordSetsInput{
-		HostedZoneId: p.ZoneID,
-		ChangeBatch: &route53.ChangeBatch{Changes: []route53.Change{
-			{
-				Action: route53.ChangeActionDelete,
-				ResourceRecordSet: &route53.ResourceRecordSet{
-					Name:          aws.String(name),
-					SetIdentifier: p.SetIdentifier,
-					Weight:        p.Weight,
-				},
-			},
-		}},
 	}
 }
 
