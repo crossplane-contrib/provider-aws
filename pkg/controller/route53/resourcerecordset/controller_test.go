@@ -60,7 +60,7 @@ var (
 	unexpectedItem resource.Managed
 	errBoom        = errors.New("Some random error")
 	rrName         = "crossplane.io"
-	rrtype         = aws.String("A")
+	rrtype         = "A"
 	TTL            = aws.Int64(300)
 	rRecords       = make([]v1alpha1.ResourceRecord, 1)
 	zoneID         = aws.String("/hostedzone/XXXXXXXXXXXXXXXXXXX")
@@ -96,7 +96,7 @@ func withConditions(c ...runtimev1alpha1.Condition) rrModifier {
 
 func instance(m ...rrModifier) *v1alpha1.ResourceRecordSet {
 	for i := range rRecords {
-		rRecords[i].Value = aws.String("0.0.0.0")
+		rRecords[i].Value = "0.0.0.0"
 	}
 	cr := &v1alpha1.ResourceRecordSet{
 		ObjectMeta: metav1.ObjectMeta{

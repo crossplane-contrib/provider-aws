@@ -73,7 +73,7 @@ func GetResourceRecordSet(ctx context.Context, name string, params v1alpha1.Reso
 	res, err := c.ListResourceRecordSetsRequest(&route53.ListResourceRecordSetsInput{
 		HostedZoneId:    params.ZoneID,
 		StartRecordName: &name,
-		StartRecordType: route53.RRType(awsclients.StringValue(params.Type)),
+		StartRecordType: route53.RRType(params.Type),
 	}).Send(ctx)
 	if err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ func GetResourceRecordSet(ctx context.Context, name string, params v1alpha1.Reso
 	}
 	for _, rr := range res.ResourceRecordSets {
 		if appendDot(aws.StringValue(rr.Name)) == appendDot(name) &&
-			string(rr.Type) == aws.StringValue(params.Type) &&
+			string(rr.Type) == params.Type &&
 			aws.StringValue(rr.SetIdentifier) == aws.StringValue(params.SetIdentifier) {
 			return &rr, nil
 		}
@@ -98,7 +98,7 @@ func GetResourceRecordSet(ctx context.Context, name string, params v1alpha1.Reso
 func UpsertResourceRecordSet(name string, p v1alpha1.ResourceRecordSetParameters) *route53.ChangeResourceRecordSetsInput {
 	r := &route53.ResourceRecordSet{
 		Name:                    aws.String(name),
-		Type:                    route53.RRType(aws.StringValue(p.Type)),
+		Type:                    route53.RRType(p.Type),
 		TTL:                     p.TTL,
 		SetIdentifier:           p.SetIdentifier,
 		Weight:                  p.Weight,
@@ -111,14 +111,14 @@ func UpsertResourceRecordSet(name string, p v1alpha1.ResourceRecordSetParameters
 	r.ResourceRecords = make([]route53.ResourceRecord, len(p.ResourceRecords))
 	for i, v := range p.ResourceRecords {
 		r.ResourceRecords[i] = route53.ResourceRecord{
-			Value: v.Value,
+			Value: aws.String(v.Value),
 		}
 	}
 	if p.AliasTarget != nil {
 		r.AliasTarget = &route53.AliasTarget{
-			DNSName:              p.AliasTarget.DNSName,
-			EvaluateTargetHealth: p.AliasTarget.EvaluateTargetHealth,
-			HostedZoneId:         p.AliasTarget.HostedZoneID,
+			DNSName:              aws.String(p.AliasTarget.DNSName),
+			EvaluateTargetHealth: aws.Bool(p.AliasTarget.EvaluateTargetHealth),
+			HostedZoneId:         aws.String(p.AliasTarget.HostedZoneID),
 		}
 	}
 	if p.GeoLocation != nil {
@@ -176,13 +176,13 @@ func LateInitialize(in *v1alpha1.ResourceRecordSetParameters, rrSet *route53.Res
 		return
 	}
 	rrType := string(rrSet.Type)
-	in.Type = awsclients.LateInitializeStringPtr(in.Type, &rrType)
+	in.Type = awsclients.LateInitializeString(in.Type, &rrType)
 	in.TTL = awsclients.LateInitializeInt64Ptr(in.TTL, rrSet.TTL)
 	if len(in.ResourceRecords) == 0 && len(rrSet.ResourceRecords) != 0 {
 		in.ResourceRecords = make([]v1alpha1.ResourceRecord, len(rrSet.ResourceRecords))
 		for i, val := range rrSet.ResourceRecords {
 			in.ResourceRecords[i] = v1alpha1.ResourceRecord{
-				Value: val.Value,
+				Value: awsclients.StringValue(val.Value),
 			}
 		}
 	}
