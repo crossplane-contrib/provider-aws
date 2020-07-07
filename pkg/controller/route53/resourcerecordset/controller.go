@@ -19,26 +19,31 @@ package resourcerecordset
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/resourcerecordset"
-	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 
 const (
+	errCreateR53Client   = "cannot create Route53 client"
+	errGetProvider       = "cannot get provider"
+	errGetProviderSecret = "cannot get provider secret"
+
 	errUnexpectedObject = "The managed resource is not an ResourceRecordSet resource"
 	errList             = "failed to list the ResourceRecordSet resource"
 	errCreate           = "failed to create the ResourceRecordSet resource"
@@ -55,7 +60,7 @@ func SetupResourceRecordSet(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.ResourceRecordSet{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.ResourceRecordSetGroupVersionKind),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: resourcerecordset.NewClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: resourcerecordset.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
@@ -64,25 +69,38 @@ func SetupResourceRecordSet(mgr ctrl.Manager, l logging.Logger) error {
 }
 
 type connector struct {
-	client      client.Client
-	newClientFn func(*aws.Config) resourcerecordset.Client
-	awsConfigFn func(context.Context, client.Reader, runtimev1alpha1.Reference) (*aws.Config, error)
+	kube        client.Client
+	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (resourcerecordset.Client, error)
 }
 
-func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
+func (c *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
 	cr, ok := mgd.(*v1alpha1.ResourceRecordSet)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
 
-	awsconfig, err := conn.awsConfigFn(ctx, conn.client, cr.Spec.ProviderReference)
-	if err != nil {
-		return nil, err
+	p := &awsv1alpha3.Provider{}
+	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name}, p); err != nil {
+		return nil, errors.Wrap(err, errGetProvider)
 	}
 
-	c := conn.newClientFn(awsconfig)
+	if aws.BoolValue(p.Spec.UseServiceAccount) {
+		r53Client, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
+		return &external{client: r53Client, kube: c.kube}, errors.Wrap(err, errCreateR53Client)
+	}
 
-	return &external{kube: conn.client, client: c}, nil
+	if p.GetCredentialsSecretReference() == nil {
+		return nil, errors.New(errGetProviderSecret)
+	}
+
+	s := &corev1.Secret{}
+	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
+	if err := c.kube.Get(ctx, n, s); err != nil {
+		return nil, errors.Wrap(err, errGetProviderSecret)
+	}
+
+	rdsClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
+	return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, errCreateR53Client)
 }
 
 type external struct {
@@ -96,7 +114,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	rrset, err := resourcerecordset.GetResourceRecordSet(ctx, meta.GetExternalName(cr), cr.Spec.ForProvider, e.client)
+	rrs, err := resourcerecordset.GetResourceRecordSet(ctx, meta.GetExternalName(cr), cr.Spec.ForProvider, e.client)
 	if err != nil {
 		// Either there is err and retry. Or Resource does not exist.
 		return managed.ExternalObservation{
@@ -106,7 +124,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	cr.Status.SetConditions(runtimev1alpha1.Available())
 
-	upToDate, err := resourcerecordset.IsUpToDate(cr.Spec.ForProvider, *rrset)
+	upToDate, err := resourcerecordset.IsUpToDate(cr.Spec.ForProvider, *rrs)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, errState)
 	}

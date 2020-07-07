@@ -21,30 +21,36 @@ import (
 	"os"
 	"testing"
 
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
-
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	awsroute53 "github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
+	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/resourcerecordset"
 	"github.com/crossplane/provider-aws/pkg/clients/resourcerecordset/fake"
 )
 
 const (
-	providerName = "aws-creds"
-	testRegion   = "us-east-1"
+	providerName         = "aws-creds"
+	testRegion           = "us-east-1"
+	secretNamespace      = "crossplane-system"
+	connectionSecretName = "my-little-secret"
+	secretKey            = "credentials"
+	credData             = "confidential!"
 )
 
 var (
@@ -88,12 +94,12 @@ func withConditions(c ...runtimev1alpha1.Condition) rrModifier {
 	return func(r *v1alpha1.ResourceRecordSet) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func rrTester(m ...rrModifier) *v1alpha1.ResourceRecordSet {
+func instance(m ...rrModifier) *v1alpha1.ResourceRecordSet {
 	for i := range rRecords {
 		rRecords[i].Value = aws.String("0.0.0.0")
 	}
 	cr := &v1alpha1.ResourceRecordSet{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: rrName,
 		},
 		Spec: v1alpha1.ResourceRecordSetSpec{
@@ -128,11 +134,37 @@ func TestMain(m *testing.M) {
 }
 
 func TestConnect(t *testing.T) {
+	secret := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      connectionSecretName,
+			Namespace: secretNamespace,
+		},
+		Data: map[string][]byte{
+			secretKey: []byte(credData),
+		},
+	}
 
+	providerSA := func(saVal bool) awsv1alpha3.Provider {
+		return awsv1alpha3.Provider{
+			Spec: awsv1alpha3.ProviderSpec{
+				Region:            testRegion,
+				UseServiceAccount: &saVal,
+				ProviderSpec: runtimev1alpha1.ProviderSpec{
+					CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
+						SecretReference: runtimev1alpha1.SecretReference{
+							Namespace: secretNamespace,
+							Name:      connectionSecretName,
+						},
+						Key: secretKey,
+					},
+				},
+			},
+		}
+	}
 	type args struct {
-		cr          resource.Managed
-		newClientFn func(*aws.Config) resourcerecordset.Client
-		awsConfigFn func(context.Context, client.Reader, runtimev1alpha1.Reference) (*aws.Config, error)
+		kube        client.Client
+		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (resourcerecordset.Client, error)
+		cr          *v1alpha1.ResourceRecordSet
 	}
 	type want struct {
 		err error
@@ -142,31 +174,121 @@ func TestConnect(t *testing.T) {
 		args
 		want
 	}{
-		"ValidInput": {
+		"Successful": {
 			args: args{
-				newClientFn: func(config *aws.Config) resourcerecordset.Client {
-					if diff := cmp.Diff(testRegion, config.Region); diff != "" {
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						}
+						return errBoom
+					},
+				},
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i resourcerecordset.Client, e error) {
+					if diff := cmp.Diff(credData, string(credentials)); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
-					return nil
-				},
-				awsConfigFn: func(_ context.Context, _ client.Reader, p runtimev1alpha1.Reference) (*aws.Config, error) {
-					if diff := cmp.Diff(providerName, p.Name); diff != "" {
+					if diff := cmp.Diff(testRegion, region); diff != "" {
 						t.Errorf("r: -want, +got:\n%s", diff)
 					}
-					return &aws.Config{Region: testRegion}, nil
+					return nil, nil
 				},
-				cr: rrTester(),
+				cr: instance(),
+			},
+		},
+		"SuccessfulUseServiceAccount": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						if key == (client.ObjectKey{Name: providerName}) {
+							p := providerSA(true)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						}
+						return errBoom
+					},
+				},
+				newClientFn: func(_ context.Context, credentials []byte, region string, _ awsclients.AuthMethod) (i resourcerecordset.Client, e error) {
+					if diff := cmp.Diff("", string(credentials)); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					if diff := cmp.Diff(testRegion, region); diff != "" {
+						t.Errorf("r: -want, +got:\n%s", diff)
+					}
+					return nil, nil
+				},
+				cr: instance(),
+			},
+		},
+		"ProviderGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						return errBoom
+					},
+				},
+				cr: instance(),
 			},
 			want: want{
-				err: nil,
+				err: errors.Wrap(errBoom, errGetProvider),
+			},
+		},
+		"SecretGetFailed": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProviderSecret),
+			},
+		},
+		"SecretGetFailedNil": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key {
+						case client.ObjectKey{Name: providerName}:
+							p := providerSA(false)
+							p.SetCredentialsSecretReference(nil)
+							p.DeepCopyInto(obj.(*awsv1alpha3.Provider))
+							return nil
+						case client.ObjectKey{Namespace: secretNamespace, Name: connectionSecretName}:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				err: errors.New(errGetProviderSecret),
 			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			c := &connector{newClientFn: tc.newClientFn, awsConfigFn: tc.awsConfigFn}
+			c := &connector{kube: tc.kube, newClientFn: tc.newClientFn}
 			_, err := c.Connect(context.Background(), tc.args.cr)
 			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
@@ -218,10 +340,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: rrTester(),
+				cr: instance(),
 			},
 			want: want{
-				cr: rrTester(withConditions(runtimev1alpha1.Available())),
+				cr: instance(withConditions(runtimev1alpha1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -262,10 +384,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: rrTester(),
+				cr: instance(),
 			},
 			want: want{
-				cr: rrTester(),
+				cr: instance(),
 				result: managed.ExternalObservation{
 					ResourceExists: false,
 				},
@@ -308,10 +430,10 @@ func TestCreate(t *testing.T) {
 				route53: &fake.MockResourceRecordSetClient{
 					MockChangeResourceRecordSetsRequest: changeFn,
 				},
-				cr: rrTester(),
+				cr: instance(),
 			},
 			want: want{
-				cr: rrTester(withConditions(runtimev1alpha1.Creating())),
+				cr: instance(withConditions(runtimev1alpha1.Creating())),
 			},
 		},
 		"InValidInput": {
@@ -328,10 +450,10 @@ func TestCreate(t *testing.T) {
 				route53: &fake.MockResourceRecordSetClient{
 					MockChangeResourceRecordSetsRequest: changeErrFn,
 				},
-				cr: rrTester(),
+				cr: instance(),
 			},
 			want: want{
-				cr:  rrTester(withConditions(runtimev1alpha1.Creating())),
+				cr:  instance(withConditions(runtimev1alpha1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
@@ -371,10 +493,10 @@ func TestUpdate(t *testing.T) {
 				route53: &fake.MockResourceRecordSetClient{
 					MockChangeResourceRecordSetsRequest: changeFn,
 				},
-				cr: rrTester(),
+				cr: instance(),
 			},
 			want: want{
-				cr: rrTester(),
+				cr: instance(),
 			},
 		},
 		"InValidInput": {
@@ -391,10 +513,10 @@ func TestUpdate(t *testing.T) {
 				route53: &fake.MockResourceRecordSetClient{
 					MockChangeResourceRecordSetsRequest: changeErrFn,
 				},
-				cr: rrTester(),
+				cr: instance(),
 			},
 			want: want{
-				cr:  rrTester(),
+				cr:  instance(),
 				err: errors.Wrap(errBoom, errUpdate),
 			},
 		},
@@ -433,10 +555,10 @@ func TestDelete(t *testing.T) {
 				route53: &fake.MockResourceRecordSetClient{
 					MockChangeResourceRecordSetsRequest: changeFn,
 				},
-				cr: rrTester(),
+				cr: instance(),
 			},
 			want: want{
-				cr: rrTester(withConditions(runtimev1alpha1.Deleting())),
+				cr: instance(withConditions(runtimev1alpha1.Deleting())),
 			},
 		},
 		"InValidInput": {
@@ -453,10 +575,10 @@ func TestDelete(t *testing.T) {
 				route53: &fake.MockResourceRecordSetClient{
 					MockChangeResourceRecordSetsRequest: changeErrFn,
 				},
-				cr: rrTester(),
+				cr: instance(),
 			},
 			want: want{
-				cr:  rrTester(withConditions(runtimev1alpha1.Deleting())),
+				cr:  instance(withConditions(runtimev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},
