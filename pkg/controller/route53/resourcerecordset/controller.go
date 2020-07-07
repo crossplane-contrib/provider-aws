@@ -165,5 +165,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	// For any 404 when deleting, error code returned is nil.
 	//So we can safely ignore this and catch any other error.
 
-	return errors.Wrap(resource.Ignore(hostedzone.IsErrorNoSuchHostedZone, err), errDelete)
+	return errors.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errDelete)
 }
