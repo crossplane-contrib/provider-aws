@@ -60,8 +60,12 @@ func IsNotFound(err error) bool {
 }
 
 // NewClient creates new AWS client with provided AWS Configuration/Credentials
-func NewClient(config *aws.Config) Client {
-	return route53.New(*config)
+func NewClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (Client, error) {
+	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
+	if cfg == nil {
+		return nil, err
+	}
+	return route53.New(*cfg), err
 }
 
 // GetResourceRecordSet returns recordSet if present or err
