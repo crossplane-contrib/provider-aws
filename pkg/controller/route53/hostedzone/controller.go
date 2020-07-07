@@ -125,7 +125,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	res, err := e.client.GetHostedZoneRequest(&route53.GetHostedZoneInput{
-		Id: aws.String(fmt.Sprintf("/hostedzone/%s", meta.GetExternalName(cr))),
+		Id: aws.String(fmt.Sprintf("%s%s", hostedzone.IDPrefix, meta.GetExternalName(cr))),
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errGet)
@@ -159,7 +159,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
-	id := strings.SplitAfter(aws.StringValue(res.CreateHostedZoneOutput.HostedZone.Id), "/hostedzone/")
+	id := strings.SplitAfter(aws.StringValue(res.CreateHostedZoneOutput.HostedZone.Id), hostedzone.IDPrefix)
 	if len(id) < 2 {
 		return managed.ExternalCreation{}, errors.Wrap(errors.New("returned id does not contain /hostedzone/ prefix"), errCreate)
 	}
@@ -174,7 +174,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	_, err := e.client.UpdateHostedZoneCommentRequest(
-		hostedzone.GenerateUpdateHostedZoneCommentInput(cr.Spec.ForProvider, fmt.Sprintf("/hostedzone/%s", meta.GetExternalName(cr))),
+		hostedzone.GenerateUpdateHostedZoneCommentInput(cr.Spec.ForProvider, fmt.Sprintf("%s%s", hostedzone.IDPrefix, meta.GetExternalName(cr))),
 	).Send(ctx)
 
 	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
@@ -189,7 +189,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
 	_, err := e.client.DeleteHostedZoneRequest(&route53.DeleteHostedZoneInput{
-		Id: aws.String(fmt.Sprintf("/hostedzone/%s", meta.GetExternalName(cr))),
+		Id: aws.String(fmt.Sprintf("%s%s", hostedzone.IDPrefix, meta.GetExternalName(cr))),
 	}).Send(ctx)
 
 	return errors.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errDelete)
