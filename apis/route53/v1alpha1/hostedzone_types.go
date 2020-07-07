@@ -25,13 +25,14 @@ import (
 // +kubebuilder:object:root=true
 
 // HostedZone is a managed resource that represents an AWS Route53 Hosted HostedZone.
-// +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".status.atProvider.hostedZone.id"
-// +kubebuilder:printcolumn:name="RRs",type="integer",JSONPath=".status.atProvider.hostedZone.resourceRecordSetCount"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
+// +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
+// +kubebuilder:printcolumn:name="RRs",type="integer",JSONPath=".status.atProvider.hostedZone.resourceRecordSetCount"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster
+// +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type HostedZone struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

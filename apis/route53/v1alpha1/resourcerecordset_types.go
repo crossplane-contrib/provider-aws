@@ -780,12 +780,14 @@ type ResourceRecord struct {
 // +kubebuilder:object:root=true
 
 // ResourceRecordSet is a managed resource that represents an AWS Route53 Resource Record.
-// +kubebuilder:printcolumn:name="TYPE",type="string",JSONPath=".spec.forProvider.type"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
+// +kubebuilder:printcolumn:name="NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
+// +kubebuilder:printcolumn:name="TYPE",type="string",JSONPath=".spec.forProvider.type"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster
+// +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type ResourceRecordSet struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
