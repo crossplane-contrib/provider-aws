@@ -9,6 +9,12 @@ metadata:
   name: elbattachments.elasticloadbalancing.aws.crossplane.io
 spec:
   additionalPrinterColumns:
+  - JSONPath: .spec.forProvider.elbName
+    name: ELBNAME
+    type: string
+  - JSONPath: .spec.forProvider.instanceId
+    name: INSTANCEID
+    type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
     type: string
@@ -136,6 +142,30 @@ spec:
                   description: Name of the Elastic Load Balancer to which the instances
                     will attach.
                   type: string
+                elbNameRef:
+                  description: ELBNameRef references an ELB to and retrieves its external-name.
+                  properties:
+                    name:
+                      description: Name of the referenced object.
+                      type: string
+                  required:
+                  - name
+                  type: object
+                elbNameSelector:
+                  description: ELBNameSelector selects a reference to a ELB to and
+                    retrieves its external-name.
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
+                  type: object
                 instanceId:
                   description: List of identities of the instances to be attached.
                   type: string

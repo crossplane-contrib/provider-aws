@@ -24,10 +24,22 @@ import (
 // ELBAttachmentParameters define the desired state of an AWS ELBAttachment.
 type ELBAttachmentParameters struct {
 	// Name of the Elastic Load Balancer to which the instances will attach.
+	// +immutable
 	// +optional
 	ELBName string `json:"elbName,omitempty"`
 
+	// ELBNameRef references an ELB to and retrieves its external-name.
+	// +immutable
+	// +optional
+	ELBNameRef *runtimev1alpha1.Reference `json:"elbNameRef,omitempty"`
+
+	// ELBNameSelector selects a reference to a ELB to and retrieves its external-name.
+	// +immutable
+	// +optional
+	ELBNameSelector *runtimev1alpha1.Selector `json:"elbNameSelector,omitempty"`
+
 	// List of identities of the instances to be attached.
+	// +immutable
 	InstanceID string `json:"instanceId"`
 }
 
@@ -51,6 +63,8 @@ type ELBAttachmentStatus struct {
 
 // An ELBAttachment is a managed resource that represents attachment of an
 // AWS Classic Load Balancer and an AWS EC2 instance.
+// +kubebuilder:printcolumn:name="ELBNAME",type="string",JSONPath=".spec.forProvider.elbName"
+// +kubebuilder:printcolumn:name="INSTANCEID",type="string",JSONPath=".spec.forProvider.instanceId"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"

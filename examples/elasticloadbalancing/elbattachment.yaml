@@ -4,8 +4,9 @@ metadata:
   name: sample-elbattachment  
 spec:
   forProvider:
-    elbName: some-name
-    instanceId: i-0d5da348272ec3fd3
+    elbNameRef: 
+      name: sample-elb
+    instanceId: i-0c6df00f98699e3ca
   providerRef:
     name: example
   reclaimPolicy: Delete

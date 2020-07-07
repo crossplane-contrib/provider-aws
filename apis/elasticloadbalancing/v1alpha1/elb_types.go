@@ -40,7 +40,7 @@ type Listener struct {
 	InstancePort int64 `json:"instancePort"`
 
 	// The protocol to use for routing traffic to instances: HTTP, HTTPS, TCP, or
-	// SSL.
+	// SSL. If not specified, the value is same as for Protocol.
 	// +optional
 	InstanceProtocol *string `json:"instanceProtocol,omitempty"`
 
@@ -152,6 +152,9 @@ type ELBStatus struct {
 // +kubebuilder:object:root=true
 
 // An ELB is a managed resource that represents an AWS Classic Load Balancer.
+// +kubebuilder:printcolumn:name="ELBNAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
+// +kubebuilder:printcolumn:name="DNSNAME",type="string",JSONPath=".status.atProvider.dnsName"
+// +kubebuilder:printcolumn:name="VPCID",type="string",JSONPath=".status.atProvider.vpcId"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"

@@ -9,6 +9,15 @@ metadata:
   name: elbs.elasticloadbalancing.aws.crossplane.io
 spec:
   additionalPrinterColumns:
+  - JSONPath: .metadata.annotations.crossplane\.io/external-name
+    name: ELBNAME
+    type: string
+  - JSONPath: .status.atProvider.dnsName
+    name: DNSNAME
+    type: string
+  - JSONPath: .status.atProvider.vpcId
+    name: VPCID
+    type: string
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
     type: string
@@ -183,7 +192,8 @@ spec:
                         type: integer
                       instanceProtocol:
                         description: 'The protocol to use for routing traffic to instances:
-                          HTTP, HTTPS, TCP, or SSL.'
+                          HTTP, HTTPS, TCP, or SSL. If not specified, the value is
+                          same as for Protocol.'
                         type: string
                       loadBalancerPort:
                         description: The port on which the load balancer is listening.
