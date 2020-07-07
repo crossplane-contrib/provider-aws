@@ -1,0 +1,32 @@
+---
+apiVersion: route53.aws.crossplane.io/v1alpha1
+kind: ResourceRecordSet
+metadata:
+  name: dev-crossplane
+spec:
+  reclaimPolicy: Delete
+  providerRef:
+    name: aws-provider
+  forProvider:
+    name: dev.crossplane.io.try
+    type: A
+    records:
+    - 11.11.12.12
+    zoneId: /hostedzone/Z04653933CDQZHGV5ARV4
+---
+
+apiVersion: route53.aws.crossplane.io/v1alpha1
+kind: ResourceRecordSet
+metadata:
+  name: dev-crossplane
+spec:
+  reclaimPolicy: Delete
+  providerRef:
+    name: aws-provider
+  forProvider:
+    name: dev.crossplane.io.try
+    type: A
+    records:
+    - 11.11.12.12
+    zoneIdRef:
+      name: crossplane.dev
