@@ -17,9 +17,12 @@ limitations under the License.
 package hostedzone
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
+	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -33,13 +36,20 @@ type Client interface {
 	UpdateHostedZoneCommentRequest(input *route53.UpdateHostedZoneCommentInput) route53.UpdateHostedZoneCommentRequest
 }
 
-// NewClient creates new AWS Client with provided AWS Configurations/Credentials
-func NewClient(config *aws.Config) Client {
-	return route53.New(*config)
+// NewClient creates new RDS RDSClient with provided AWS Configurations/Credentials
+func NewClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (Client, error) {
+	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
+	if err != nil {
+		return nil, err
+	}
+	if cfg == nil {
+		return nil, errors.New("config cannot be nil")
+	}
+	return route53.New(*cfg), nil
 }
 
-// IsErrorNoSuchHostedZone returns true if the error code indicates that the requested Zone was not found
-func IsErrorNoSuchHostedZone(err error) bool {
+// IsNotFound returns true if the error code indicates that the requested Zone was not found
+func IsNotFound(err error) bool {
 	if zoneErr, ok := err.(awserr.Error); ok && zoneErr.Code() == route53.ErrCodeNoSuchHostedZone {
 		return true
 	}
@@ -47,25 +57,31 @@ func IsErrorNoSuchHostedZone(err error) bool {
 }
 
 // IsUpToDate check whether the comment in Spec and Response are same or not
-func IsUpToDate(cfg *v1alpha1.HostedZoneConfig, res *route53.HostedZoneConfig) bool {
-	if cfg == nil && aws.StringValue(res.Comment) != "" {
-		return false
+func IsUpToDate(spec v1alpha1.HostedZoneParameters, obs route53.HostedZone) bool {
+	s := ""
+	if spec.Config != nil {
+		s = awsclients.StringValue(spec.Config.Comment)
 	}
-	if cfg != nil && !(aws.StringValue(cfg.Comment) == aws.StringValue(res.Comment)) {
-		return false
+	o := ""
+	if obs.Config != nil {
+		o = awsclients.StringValue(obs.Config.Comment)
 	}
-	return true
+	return s == o
 }
 
 // LateInitialize fills the empty fields in *v1alpha1.HostedZoneParameters with
 // the values seen in route53.HostedZone.
-func LateInitialize(in *v1alpha1.HostedZoneParameters, hz *route53.GetHostedZoneResponse) {
-	in.DelegationSetID = awsclients.LateInitializeStringPtr(in.DelegationSetID, hz.DelegationSet.Id)
-	if in.HostedZoneConfig != nil {
-		in.HostedZoneConfig = &v1alpha1.HostedZoneConfig{
-			Comment:     in.HostedZoneConfig.Comment,
-			PrivateZone: awsclients.LateInitializeBoolPtr(in.HostedZoneConfig.PrivateZone, hz.HostedZone.Config.PrivateZone),
-		}
+func LateInitialize(spec *v1alpha1.HostedZoneParameters, obs *route53.GetHostedZoneResponse) {
+	if obs == nil || obs.HostedZone == nil {
+		return
+	}
+	spec.DelegationSetID = awsclients.LateInitializeStringPtr(spec.DelegationSetID, obs.DelegationSet.Id)
+	if spec.Config == nil && obs.HostedZone != nil {
+		spec.Config = &v1alpha1.Config{}
+	}
+	if spec.Config != nil && obs.HostedZone.Config != nil {
+		spec.Config.Comment = awsclients.LateInitializeStringPtr(spec.Config.Comment, obs.HostedZone.Config.Comment)
+		spec.Config.PrivateZone = awsclients.LateInitializeBoolPtr(spec.Config.PrivateZone, obs.HostedZone.Config.PrivateZone)
 	}
 }
 
@@ -73,37 +89,24 @@ func LateInitialize(in *v1alpha1.HostedZoneParameters, hz *route53.GetHostedZone
 // Hosted Zone can be created.
 func GenerateCreateHostedZoneInput(cr *v1alpha1.HostedZone) *route53.CreateHostedZoneInput {
 	reqInput := &route53.CreateHostedZoneInput{
-		CallerReference: aws.String(string(cr.ObjectMeta.UID)),
-		Name:            cr.Spec.ForProvider.Name,
+		CallerReference: aws.String(cr.ObjectMeta.ResourceVersion),
+		Name:            aws.String(cr.Spec.ForProvider.Name),
 		DelegationSetId: cr.Spec.ForProvider.DelegationSetID,
 	}
-
-	if cr.Spec.ForProvider.HostedZoneConfig != nil {
+	if cr.Spec.ForProvider.Config != nil {
 		reqInput.HostedZoneConfig = &route53.HostedZoneConfig{
-			PrivateZone: cr.Spec.ForProvider.HostedZoneConfig.PrivateZone,
-			Comment:     cr.Spec.ForProvider.HostedZoneConfig.Comment,
-		}
-
-		if *cr.Spec.ForProvider.HostedZoneConfig.PrivateZone {
-
-			if cr.Spec.ForProvider.VPCId != nil {
-				reqInput.VPC = &route53.VPC{
-					VPCId: cr.Spec.ForProvider.VPCId,
-				}
-			}
-
-			if cr.Spec.ForProvider.VPCRegion != nil {
-				reqInput.VPC.VPCRegion = route53.VPCRegion(aws.StringValue(cr.Spec.ForProvider.VPCRegion))
-			}
+			PrivateZone: cr.Spec.ForProvider.Config.PrivateZone,
+			Comment:     cr.Spec.ForProvider.Config.Comment,
 		}
 	}
-
+	if cr.Spec.ForProvider.VPC != nil {
+		reqInput.VPC = &route53.VPC{VPCId: cr.Spec.ForProvider.VPC.VPCID, VPCRegion: route53.VPCRegion(awsclients.StringValue(cr.Spec.ForProvider.VPC.VPCRegion))}
+	}
 	return reqInput
 }
 
 // GenerateObservation generates and returns v1alpha1.HostedZoneObservation which can be used as the status of the runtime object
 func GenerateObservation(op *route53.GetHostedZoneResponse) v1alpha1.HostedZoneObservation {
-
 	o := v1alpha1.HostedZoneObservation{}
 	if op.DelegationSet != nil {
 		n := make([]string, len(op.DelegationSet.NameServers))
@@ -128,19 +131,21 @@ func GenerateObservation(op *route53.GetHostedZoneResponse) v1alpha1.HostedZoneO
 			}
 		}
 	}
+	for _, vpc := range op.VPCs {
+		o.VPCs = append(o.VPCs, v1alpha1.VPCObservation{VPCID: awsclients.StringValue(vpc.VPCId), VPCRegion: string(vpc.VPCRegion)})
+	}
 	return o
 }
 
 // GenerateUpdateHostedZoneCommentInput returns a route53 UpdateHostedZoneCommentInput using which a route53
 // Hosted Zone comment can be updated.
-func GenerateUpdateHostedZoneCommentInput(cfg *v1alpha1.HostedZoneConfig, id *string) *route53.UpdateHostedZoneCommentInput {
-	var c *string
-	c = aws.String("")
-	if cfg != nil && cfg.Comment != nil {
-		c = cfg.Comment
+func GenerateUpdateHostedZoneCommentInput(spec v1alpha1.HostedZoneParameters, id string) *route53.UpdateHostedZoneCommentInput {
+	comment := ""
+	if spec.Config != nil && spec.Config.Comment != nil {
+		comment = *spec.Config.Comment
 	}
 	return &route53.UpdateHostedZoneCommentInput{
-		Comment: c,
-		Id:      id,
+		Comment: &comment,
+		Id:      &id,
 	}
 }

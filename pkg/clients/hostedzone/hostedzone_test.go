@@ -44,8 +44,8 @@ func TestIsErrorNoSuchHostedZone(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.err.Error(), func(t *testing.T) {
-			if got := IsErrorNoSuchHostedZone(tt.err); got != tt.want {
-				t.Errorf("IsErrorNoSuchHostedZone() = %v, want %v", got, tt.want)
+			if got := IsNotFound(tt.err); got != tt.want {
+				t.Errorf("IsNotFound() = %v, want %v", got, tt.want)
 			}
 		})
 	}
