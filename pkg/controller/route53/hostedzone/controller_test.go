@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -27,6 +28,8 @@ import (
 	awsroute53 "github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
@@ -36,13 +39,14 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/v1alpha3"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/hostedzone"
 	"github.com/crossplane/provider-aws/pkg/clients/hostedzone/fake"
 )
 
 const (
 	providerName = "aws-creds"
-	testRegion   = "us-east-1"
 )
 
 var (
@@ -63,8 +67,8 @@ type args struct {
 	cr      resource.Managed
 }
 
-func withZoneName(s *string) zoneModifier {
-	return func(r *v1alpha1.HostedZone) { meta.SetExternalName(r, *s) }
+func withExternalName(s string) zoneModifier {
+	return func(r *v1alpha1.HostedZone) { meta.SetExternalName(r, s) }
 }
 
 func withConditions(c ...runtimev1alpha1.Condition) zoneModifier {
@@ -92,7 +96,7 @@ func withStatus(id string, rr int64) zoneModifier {
 }
 
 func withComment(c string) zoneModifier {
-	return func(r *v1alpha1.HostedZone) { r.Spec.ForProvider.HostedZoneConfig.Comment = &c }
+	return func(r *v1alpha1.HostedZone) { r.Spec.ForProvider.Config.Comment = &c }
 }
 
 func zoneTester(m ...zoneModifier) *v1alpha1.HostedZone {
@@ -102,11 +106,11 @@ func zoneTester(m ...zoneModifier) *v1alpha1.HostedZone {
 				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 			ForProvider: v1alpha1.HostedZoneParameters{
-				HostedZoneConfig: &v1alpha1.HostedZoneConfig{
+				Config: &v1alpha1.Config{
 					Comment:     c,
 					PrivateZone: b,
 				},
-				Name: &id,
+				Name: id,
 			},
 		},
 	}
@@ -119,9 +123,9 @@ func zoneTester(m ...zoneModifier) *v1alpha1.HostedZone {
 func TestConnect(t *testing.T) {
 
 	type args struct {
-		cr          resource.Managed
-		newClientFn func(*aws.Config) hostedzone.Client
-		awsConfigFn func(context.Context, client.Reader, runtimev1alpha1.Reference) (*aws.Config, error)
+		cr          *v1alpha1.HostedZone
+		kube        client.Client
+		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (hostedzone.Client, error)
 	}
 	type want struct {
 		err error
@@ -131,31 +135,53 @@ func TestConnect(t *testing.T) {
 		args
 		want
 	}{
-		"ValidInput": {
+		"CannotGetProvider": {
 			args: args{
-				newClientFn: func(config *aws.Config) hostedzone.Client {
-					if diff := cmp.Diff(testRegion, config.Region); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
+				kube: &test.MockClient{MockGet: test.NewMockGetFn(errBoom)},
+				cr:   zoneTester(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errGetProvider),
+			},
+		},
+		"CannotGetProviderSecret": {
+			args: args{
+				kube: &test.MockClient{MockGet: func(_ context.Context, _ client.ObjectKey, obj runtime.Object) error {
+					switch o := obj.(type) {
+					case *v1.Secret:
+						return errBoom
+					case *v1alpha3.Provider:
+						p := &v1alpha3.Provider{Spec: v1alpha3.ProviderSpec{ProviderSpec: runtimev1alpha1.ProviderSpec{CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{}}}}
+						p.DeepCopyInto(o)
 					}
 					return nil
-				},
-				awsConfigFn: func(_ context.Context, _ client.Reader, p runtimev1alpha1.Reference) (*aws.Config, error) {
-					if diff := cmp.Diff(providerName, p.Name); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return &aws.Config{Region: testRegion}, nil
-				},
+				}},
 				cr: zoneTester(),
 			},
 			want: want{
-				err: nil,
+				err: errors.Wrap(errBoom, errGetProviderSecret),
+			},
+		},
+		"Successful": {
+			args: args{
+				kube: &test.MockClient{MockGet: func(_ context.Context, _ client.ObjectKey, obj runtime.Object) error {
+					if o, ok := obj.(*v1alpha3.Provider); ok {
+						p := &v1alpha3.Provider{Spec: v1alpha3.ProviderSpec{ProviderSpec: runtimev1alpha1.ProviderSpec{CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{}}}}
+						p.DeepCopyInto(o)
+					}
+					return nil
+				}},
+				newClientFn: func(_ context.Context, _ []byte, _ string, _ awsclients.AuthMethod) (hostedzone.Client, error) {
+					return nil, nil
+				},
+				cr: zoneTester(),
 			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			c := &connector{newClientFn: tc.newClientFn, awsConfigFn: tc.awsConfigFn}
+			c := &connector{kube: tc.kube, newClientFn: tc.newClientFn}
 			_, err := c.Connect(context.Background(), tc.args.cr)
 			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
@@ -212,12 +238,12 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: zoneTester(
-					withZoneName(&id),
+					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
 					withStatus(id, rrCount)),
 			},
 			want: want{
 				cr: zoneTester(
-					withZoneName(&id),
+					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
 					withStatus(id, rrCount),
 					withConditions(runtimev1alpha1.Available())),
 				result: managed.ExternalObservation{
@@ -283,7 +309,7 @@ func TestCreate(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				kube: &test.MockClient{
 					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
@@ -317,11 +343,11 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: zoneTester(withZoneName(&id)),
+				cr: zoneTester(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1])),
 			},
 			want: want{
 				cr: zoneTester(
-					withZoneName(&id),
+					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
 					withConditions(runtimev1alpha1.Creating())),
 			},
 		},
@@ -404,11 +430,11 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: zoneTester(withZoneName(&id),
+				cr: zoneTester(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
 					withComment("New Comment")),
 			},
 			want: want{
-				cr: zoneTester(withZoneName(&id),
+				cr: zoneTester(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
 					withComment("New Comment")),
 			},
 		},
@@ -461,10 +487,10 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: zoneTester(withZoneName(&id)),
+				cr: zoneTester(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1])),
 			},
 			want: want{
-				cr: zoneTester(withZoneName(&id),
+				cr: zoneTester(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
 					withConditions(runtimev1alpha1.Deleting())),
 			},
 		},

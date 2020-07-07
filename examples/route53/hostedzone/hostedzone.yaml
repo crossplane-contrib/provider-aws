@@ -20,11 +20,12 @@ spec:
     name: aws-provider
   forProvider:
     name: crossplane.dev
-    hostedZoneConfig:
+    config:
       comment: "Hosted Zone for internal DNS management."
       privateZone: true
-    vpcRegion: us-east-1
-    vpcId: vpc-00000000f000fff00
+    vpc:
+      vpcRegion: us-east-1
+      vpcId: vpc-00000000f000fff00
 ---
 apiVersion: route53.aws.crossplane.io/v1alpha1
 kind: HostedZone
@@ -36,9 +37,10 @@ spec:
     name: aws-provider
   forProvider:
     name: crossplane.dev
-    hostedZoneConfig:
+    config:
       comment: "Hosted Zone for internal DNS management."
       privateZone: true
-    vpcRegion: us-east-1
-    vpcIdRef:
-      name: name-of-vpc-created-by-crossplane
+    vpc:
+      vpcRegion: us-east-1
+      vpcIdRef:
+        name: name-of-vpc-created-by-crossplane
