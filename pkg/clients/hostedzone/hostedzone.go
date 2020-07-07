@@ -28,6 +28,9 @@ import (
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
+// IDPrefix is the prefix of the actual ID that's returned from GET call.
+const IDPrefix = "/hostedzone/"
+
 // Client defines Route53 Client operations
 type Client interface {
 	CreateHostedZoneRequest(input *route53.CreateHostedZoneInput) route53.CreateHostedZoneRequest

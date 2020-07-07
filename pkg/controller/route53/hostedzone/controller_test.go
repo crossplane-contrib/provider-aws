@@ -238,12 +238,12 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: zoneTester(
-					withExternalName(strings.SplitAfter(id, "/hostedzone/")[1]),
+					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
 					withStatus(id, rrCount)),
 			},
 			want: want{
 				cr: zoneTester(
-					withExternalName(strings.SplitAfter(id, "/hostedzone/")[1]),
+					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
 					withStatus(id, rrCount),
 					withConditions(runtimev1alpha1.Available())),
 				result: managed.ExternalObservation{
@@ -343,11 +343,11 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: zoneTester(withExternalName(strings.SplitAfter(id, "/hostedzone/")[1])),
+				cr: zoneTester(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1])),
 			},
 			want: want{
 				cr: zoneTester(
-					withExternalName(strings.SplitAfter(id, "/hostedzone/")[1]),
+					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
 					withConditions(runtimev1alpha1.Creating())),
 			},
 		},
@@ -430,11 +430,11 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: zoneTester(withExternalName(strings.SplitAfter(id, "/hostedzone/")[1]),
+				cr: zoneTester(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
 					withComment("New Comment")),
 			},
 			want: want{
-				cr: zoneTester(withExternalName(strings.SplitAfter(id, "/hostedzone/")[1]),
+				cr: zoneTester(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
 					withComment("New Comment")),
 			},
 		},
@@ -487,10 +487,10 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: zoneTester(withExternalName(strings.SplitAfter(id, "/hostedzone/")[1])),
+				cr: zoneTester(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1])),
 			},
 			want: want{
-				cr: zoneTester(withExternalName(strings.SplitAfter(id, "/hostedzone/")[1]),
+				cr: zoneTester(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
 					withConditions(runtimev1alpha1.Deleting())),
 			},
 		},
