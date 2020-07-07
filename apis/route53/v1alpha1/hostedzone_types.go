@@ -64,13 +64,13 @@ type HostedZoneParameters struct {
 	// other than Route 53, change the name servers for your domain to the set of
 	// NameServers that CreateHostedHostedZone returns in DelegationSet.
 	// +immutable
-	Name *string `json:"name"`
+	Name string `json:"name"`
 
-	// HostedZoneConfig includes the Comment and PrivateZone elements. If you
-	// omitted the HostedZoneConfig and Comment elements from the request, the Config
+	// Config includes the Comment and PrivateZone elements. If you
+	// omitted the Config and Comment elements from the request, the Config
 	// and Comment elements don't appear in the response.
 	// +optional
-	HostedZoneConfig *HostedZoneConfig `json:"hostedZoneConfig,omitempty"`
+	Config *Config `json:"config,omitempty"`
 
 	// DelegationSetId let you associate a reusable delegation set with this hosted zone.
 	// It has to be the ID that Amazon Route 53 assigned to the reusable delegation set when
@@ -79,31 +79,20 @@ type HostedZoneParameters struct {
 	// +optional
 	DelegationSetID *string `json:"delegationSetId,omitempty"`
 
-	// (Private hosted Hostedzones only) The ID of an Amazon VPC that you're
-	// associating with this hosted Hostedzone. You can specify only one Amazon VPC
-	// when you create a private hosted Hostedzone.
+	// (Private hosted zones only) A complex type that contains information about
+	// the Amazon VPC that you're associating with this hosted zone.
+	//
+	// You can specify only one Amazon VPC when you create a private hosted zone.
+	// To associate additional Amazon VPCs with the hosted zone, use AssociateVPCWithHostedZone
+	// (https://docs.aws.amazon.com/Route53/latest/APIReference/API_AssociateVPCWithHostedZone.html)
+	// after you create a hosted zone.
 	// +immutable
 	// +optional
-	VPCId *string `json:"vpcId,omitempty"`
-
-	// (Private hosted Hostedzones only) The region that an Amazon VPC was created in.
-	// +immutable
-	// +optional
-	VPCRegion *string `json:"vpcRegion,omitempty"`
-
-	// (Private hosted Hostedzones only) VPCIdRef references a VPC to retrieves its VPC Id
-	// +immutable
-	// +optional
-	VPCIdRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
-
-	// VPCIdSelector selects a reference to a VPC to retrieves its VPC Id
-	// +immutable
-	// +optional
-	VPCIdSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
+	VPC *VPC `json:"vpc,omitempty"`
 }
 
-//HostedZoneConfig represents the configurations of a Hosted Zone
-type HostedZoneConfig struct {
+// Config represents the configuration of a Hosted Zone.
+type Config struct {
 	// Comment that you want to include about the hosted zone.
 	Comment *string `json:"comment,omitempty"`
 
@@ -112,13 +101,39 @@ type HostedZoneConfig struct {
 	PrivateZone *bool `json:"privateZone,omitempty"`
 }
 
+// VPC is used to refer to specific VPC.
+type VPC struct {
+	// (Private hosted zones only) The ID of an Amazon VPC.
+	// +immutable
+	// +optional
+	VPCID *string `json:"vpcId,omitempty"`
+
+	// (Private hosted zones only) The region that an Amazon VPC was created in.
+	// +immutable
+	// +optional
+	VPCRegion *string `json:"vpcRegion,omitempty"`
+
+	// (Private hosted Hostedzones only) VPCIDRef references a VPC to retrieves its VPC Id.
+	// +immutable
+	// +optional
+	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
+
+	// VPCIDSelector selects a reference to a VPC.
+	// +optional
+	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
+}
+
 // HostedZoneObservation keeps the state for the external resource.
 type HostedZoneObservation struct {
 	// DelegationSet describes the name servers for this hosted zone.
 	DelegationSet DelegationSet `json:"delegationSet,omitempty"`
 
 	// HostedZone contains general information about the hosted zone.
-	HostedZone HostedZoneResponse `json:"hostedZone"`
+	HostedZone HostedZoneResponse `json:"hostedZone,omitempty"`
+
+	// A complex type that contains information about the VPCs that are associated
+	// with the specified hosted zone.
+	VPCs []VPCObservation `json:"vpcs,omitempty"`
 }
 
 // HostedZoneResponse stores the Hosted Zone received in the response output
@@ -126,17 +141,17 @@ type HostedZoneResponse struct {
 	// CallerReference is an unique string that identifies the request and that
 	// allows failed HostedZone create requests to be retried without the risk of
 	// executing the operation twice.
-	CallerReference string `json:"callerReference"`
+	CallerReference string `json:"callerReference,omitempty"`
 
 	// ID that Amazon Route 53 assigned to the hosted zone when you created
 	// it.
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 
 	// LinkedService is the service that created the hosted zone.
 	LinkedService LinkedService `json:"linkedService,omitempty"`
 
 	// The number of resource record sets in the hosted zone.
-	ResourceRecordSetCount int64 `json:"resourceRecordSetCount"`
+	ResourceRecordSetCount int64 `json:"resourceRecordSetCount,omitempty"`
 }
 
 // DelegationSet describes the name servers for this hosted Hostedzone.
@@ -150,6 +165,17 @@ type DelegationSet struct {
 
 	// NameServers contains a list of the authoritative name servers for a hosted Hostedzone.
 	NameServers []string `json:"nameServers,omitempty"`
+}
+
+// VPCObservation is used to represent the VPC object in the HostedZone response
+// object.
+type VPCObservation struct {
+
+	// VPCID is the ID of the VPC.
+	VPCID string `json:"vpcId,omitempty"`
+
+	// VPCRegion is the region where the VPC resides.
+	VPCRegion string `json:"vpcRegion,omitempty"`
 }
 
 // LinkedService is the service that created the hosted zone.

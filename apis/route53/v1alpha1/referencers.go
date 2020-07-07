@@ -48,13 +48,15 @@ func (mg *ResourceRecordSet) ResolveReferences(ctx context.Context, c client.Rea
 
 // ResolveReferences of a VPC provided for a HostedZone
 func (mg *HostedZone) ResolveReferences(ctx context.Context, c client.Reader) error {
+	if mg.Spec.ForProvider.VPC == nil {
+		return nil
+	}
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.VPCID
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.VPCId),
-		Reference:    mg.Spec.ForProvider.VPCIdRef,
-		Selector:     mg.Spec.ForProvider.VPCIdSelector,
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.VPC.VPCID),
+		Reference:    mg.Spec.ForProvider.VPC.VPCIDRef,
+		Selector:     mg.Spec.ForProvider.VPC.VPCIDSelector,
 		To:           reference.To{Managed: &v1beta1.VPC{}, List: &v1beta1.VPCList{}},
 		Extract:      reference.ExternalName(),
 	})
@@ -62,8 +64,8 @@ func (mg *HostedZone) ResolveReferences(ctx context.Context, c client.Reader) er
 		return err
 	}
 
-	mg.Spec.ForProvider.VPCId = reference.ToPtrValue(rsp.ResolvedValue)
-	mg.Spec.ForProvider.VPCIdRef = rsp.ResolvedReference
+	mg.Spec.ForProvider.VPC.VPCID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.VPC.VPCIDRef = rsp.ResolvedReference
 
 	return nil
 }
