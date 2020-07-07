@@ -19,9 +19,9 @@ package resourcerecordset
 import (
 	"context"
 
-	"github.com/google/go-cmp/cmp"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/route53"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -102,8 +102,8 @@ func (c *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.
 		return nil, errors.Wrap(err, errGetProviderSecret)
 	}
 
-	rdsClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: rdsClient, kube: c.kube}, errors.Wrap(err, errCreateR53Client)
+	r53Client, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
+	return &external{client: r53Client, kube: c.kube}, errors.Wrap(err, errCreateR53Client)
 }
 
 type external struct {
@@ -153,7 +153,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
-	input := resourcerecordset.UpsertResourceRecordSet(meta.GetExternalName(cr), cr.Spec.ForProvider)
+	input := resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53.ChangeActionUpsert)
 	_, err := e.client.ChangeResourceRecordSetsRequest(input).Send(ctx)
 
 	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
@@ -164,7 +164,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
-	input := resourcerecordset.UpsertResourceRecordSet(meta.GetExternalName(cr), cr.Spec.ForProvider)
+	input := resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53.ChangeActionUpsert)
 	_, err := e.client.ChangeResourceRecordSetsRequest(input).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 }
@@ -176,7 +176,9 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
-	_, err := e.client.ChangeResourceRecordSetsRequest(resourcerecordset.DeleteResourceRecordSet(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx)
+	_, err := e.client.ChangeResourceRecordSetsRequest(
+		resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53.ChangeActionDelete),
+	).Send(ctx)
 
 	// There is no way to confirm 404 (from response) when deleting a recordset
 	// which isn't present using ChangeResourceRecordSetRequest.

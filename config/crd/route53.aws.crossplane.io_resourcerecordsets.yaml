@@ -16,7 +16,7 @@ spec:
     name: SYNCED
     type: string
   - JSONPath: .metadata.annotations.crossplane\.io/external-name
-    name: NAME
+    name: EXTERNAL-NAME
     type: string
   - JSONPath: .spec.forProvider.type
     name: TYPE
