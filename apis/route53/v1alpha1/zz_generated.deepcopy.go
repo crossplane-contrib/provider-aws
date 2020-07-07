@@ -393,11 +393,6 @@ func (in *ResourceRecordSetParameters) DeepCopyInto(out *ResourceRecordSetParame
 		*out = new(AliasTarget)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.Name != nil {
-		in, out := &in.Name, &out.Name
-		*out = new(string)
-		**out = **in
-	}
 	if in.GeoLocation != nil {
 		in, out := &in.GeoLocation, &out.GeoLocation
 		*out = new(GeoLocation)

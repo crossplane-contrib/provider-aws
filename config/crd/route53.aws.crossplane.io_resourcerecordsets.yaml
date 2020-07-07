@@ -193,10 +193,6 @@ spec:
                     web servers, create one multivalue answer record for each resource
                     and specify true for MultiValueAnswer. Note'
                   type: boolean
-                name:
-                  description: Name of the record that you want to create, update,
-                    or delete.
-                  type: string
                 region:
                   description: Region is the Amazon EC2 Region where you created the
                     resource that this resource record set refers to. The resource
@@ -273,7 +269,6 @@ spec:
                       type: object
                   type: object
               required:
-              - name
               - resourceRecords
               - type
               type: object

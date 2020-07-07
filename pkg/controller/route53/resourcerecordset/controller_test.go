@@ -21,6 +21,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	awsroute53 "github.com/aws/aws-sdk-go-v2/service/route53"
@@ -49,17 +53,12 @@ var (
 
 	unexpectedItem resource.Managed
 	errBoom        = errors.New("Some random error")
-	rrName         = aws.String("crossplane.io")
+	rrName         = "crossplane.io"
 	rrtype         = aws.String("A")
 	TTL            = aws.Int64(300)
 	rRecords       = make([]v1alpha1.ResourceRecord, 1)
 	zoneID         = aws.String("/hostedzone/XXXXXXXXXXXXXXXXXXX")
 
-	generateFn = func(p *v1alpha1.ResourceRecordSetParameters, action awsroute53.ChangeAction) *awsroute53.ChangeResourceRecordSetsInput {
-		return &awsroute53.ChangeResourceRecordSetsInput{
-			HostedZoneId: zoneID,
-		}
-	}
 	changeFn = func(*awsroute53.ChangeResourceRecordSetsInput) awsroute53.ChangeResourceRecordSetsRequest {
 		return awsroute53.ChangeResourceRecordSetsRequest{
 			Request: &aws.Request{
@@ -94,12 +93,14 @@ func rrTester(m ...rrModifier) *v1alpha1.ResourceRecordSet {
 		rRecords[i].Value = aws.String("0.0.0.0")
 	}
 	cr := &v1alpha1.ResourceRecordSet{
+		ObjectMeta: v1.ObjectMeta{
+			Name: rrName,
+		},
 		Spec: v1alpha1.ResourceRecordSetSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
 				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
 			ForProvider: v1alpha1.ResourceRecordSetParameters{
-				Name:            rrName,
 				Type:            rrtype,
 				TTL:             TTL,
 				ResourceRecords: rRecords,
@@ -107,6 +108,7 @@ func rrTester(m ...rrModifier) *v1alpha1.ResourceRecordSet {
 			},
 		},
 	}
+	meta.SetExternalName(cr, cr.GetName())
 	for _, f := range m {
 		f(cr)
 	}
@@ -175,7 +177,7 @@ func TestConnect(t *testing.T) {
 
 func TestObserve(t *testing.T) {
 
-	name := *rrName + "."
+	name := rrName + "."
 	rrSet := awsroute53.ResourceRecordSet{
 		Name: &name,
 		Type: route53.RRType("A"),
@@ -197,15 +199,12 @@ func TestObserve(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				kube: &test.MockClient{
 					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
 				},
 				route53: &fake.MockResourceRecordSetClient{
-					MockGetResourceRecordSet: func(ctx context.Context, c resourcerecordset.Client, id, rrName, si *string) (awsroute53.ResourceRecordSet, error) {
-						return rrSet, nil
-					},
 					MockListResourceRecordSetsRequest: func(*route53.ListResourceRecordSetsInput) awsroute53.ListResourceRecordSetsRequest {
 						return route53.ListResourceRecordSetsRequest{
 							Request: &aws.Request{
@@ -241,18 +240,6 @@ func TestObserve(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				route53: &fake.MockResourceRecordSetClient{
-					MockGetResourceRecordSet: func(ctx context.Context, c resourcerecordset.Client, id, rrName, si *string) (awsroute53.ResourceRecordSet, error) {
-						return awsroute53.ResourceRecordSet{
-							Name: aws.String(""),
-							Type: route53.RRType(""),
-							TTL:  aws.Int64(0),
-							ResourceRecords: []route53.ResourceRecord{
-								{
-									Value: aws.String(""),
-								},
-							},
-						}, nil
-					},
 					MockListResourceRecordSetsRequest: func(*awsroute53.ListResourceRecordSetsInput) awsroute53.ListResourceRecordSetsRequest {
 						return awsroute53.ListResourceRecordSetsRequest{
 							Request: &aws.Request{
@@ -316,11 +303,10 @@ func TestCreate(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				route53: &fake.MockResourceRecordSetClient{
-					MockGenerateChangeResourceRecordSetsInput: generateFn,
-					MockChangeResourceRecordSetsRequest:       changeFn,
+					MockChangeResourceRecordSetsRequest: changeFn,
 				},
 				cr: rrTester(),
 			},
@@ -340,8 +326,7 @@ func TestCreate(t *testing.T) {
 		"ClientError": {
 			args: args{
 				route53: &fake.MockResourceRecordSetClient{
-					MockGenerateChangeResourceRecordSetsInput: generateFn,
-					MockChangeResourceRecordSetsRequest:       changeErrFn,
+					MockChangeResourceRecordSetsRequest: changeErrFn,
 				},
 				cr: rrTester(),
 			},
@@ -381,11 +366,10 @@ func TestUpdate(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				route53: &fake.MockResourceRecordSetClient{
-					MockGenerateChangeResourceRecordSetsInput: generateFn,
-					MockChangeResourceRecordSetsRequest:       changeFn,
+					MockChangeResourceRecordSetsRequest: changeFn,
 				},
 				cr: rrTester(),
 			},
@@ -405,8 +389,7 @@ func TestUpdate(t *testing.T) {
 		"ClientError": {
 			args: args{
 				route53: &fake.MockResourceRecordSetClient{
-					MockGenerateChangeResourceRecordSetsInput: generateFn,
-					MockChangeResourceRecordSetsRequest:       changeErrFn,
+					MockChangeResourceRecordSetsRequest: changeErrFn,
 				},
 				cr: rrTester(),
 			},
@@ -445,11 +428,10 @@ func TestDelete(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				route53: &fake.MockResourceRecordSetClient{
-					MockGenerateChangeResourceRecordSetsInput: generateFn,
-					MockChangeResourceRecordSetsRequest:       changeFn,
+					MockChangeResourceRecordSetsRequest: changeFn,
 				},
 				cr: rrTester(),
 			},
@@ -469,8 +451,7 @@ func TestDelete(t *testing.T) {
 		"ClientError": {
 			args: args{
 				route53: &fake.MockResourceRecordSetClient{
-					MockGenerateChangeResourceRecordSetsInput: generateFn,
-					MockChangeResourceRecordSetsRequest:       changeErrFn,
+					MockChangeResourceRecordSetsRequest: changeErrFn,
 				},
 				cr: rrTester(),
 			},

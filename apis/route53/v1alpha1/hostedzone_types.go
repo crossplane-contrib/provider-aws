@@ -59,7 +59,7 @@ type HostedZoneParameters struct {
 	// the domain name is fully qualified. This means that Route 53 treats www.example.com
 	// (without a trailing dot) and www.example.com. (with a trailing dot) as identical.
 	//
-	// If you're creating a public hosted Hostedzone, this is the name you have registered
+	// If you're creating a public hosted zone, this is the name you have registered
 	// with your DNS registrar. If your domain name is registered with a registrar
 	// other than Route 53, change the name servers for your domain to the set of
 	// NameServers that CreateHostedHostedZone returns in DelegationSet.

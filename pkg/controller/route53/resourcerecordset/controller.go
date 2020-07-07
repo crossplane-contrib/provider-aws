@@ -19,8 +19,9 @@ package resourcerecordset
 import (
 	"context"
 
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -33,7 +34,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
-	"github.com/crossplane/provider-aws/pkg/clients/hostedzone"
 	"github.com/crossplane/provider-aws/pkg/clients/resourcerecordset"
 	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
@@ -58,7 +58,7 @@ func SetupResourceRecordSet(mgr ctrl.Manager, l logging.Logger) error {
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: resourcerecordset.NewClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
-			managed.WithInitializers(),
+			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -90,24 +90,23 @@ type external struct {
 	client resourcerecordset.Client
 }
 
-func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha1.ResourceRecordSet)
-
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+	cr, ok := mg.(*v1alpha1.ResourceRecordSet)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	rrset, err := resourcerecordset.GetResourceRecordSet(ctx, e.client, cr.Spec.ForProvider.Name, cr.Spec.ForProvider.ZoneID, cr.Spec.ForProvider.Type, cr.Spec.ForProvider.SetIdentifier)
+	rrset, err := resourcerecordset.GetResourceRecordSet(ctx, meta.GetExternalName(cr), cr.Spec.ForProvider, e.client)
 	if err != nil {
 		// Either there is err and retry. Or Resource does not exist.
 		return managed.ExternalObservation{
 			ResourceExists: false,
-		}, errors.Wrap(resource.Ignore(resourcerecordset.IsErrorRRsetNotFound, err), errList)
+		}, errors.Wrap(resource.Ignore(resourcerecordset.IsNotFound, err), errList)
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Available())
 
-	upToDate, err := resourcerecordset.IsUpToDate(cr.Spec.ForProvider, rrset)
+	upToDate, err := resourcerecordset.IsUpToDate(cr.Spec.ForProvider, *rrset)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, errState)
 	}
@@ -118,52 +117,40 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}, nil
 }
 
-func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.ResourceRecordSet)
+func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+	cr, ok := mg.(*v1alpha1.ResourceRecordSet)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
-	input := resourcerecordset.GenerateChangeResourceRecordSetsInput(&cr.Spec.ForProvider, route53.ChangeActionCreate)
+	input := resourcerecordset.UpsertResourceRecordSet(meta.GetExternalName(cr), cr.Spec.ForProvider)
 	_, err := e.client.ChangeResourceRecordSetsRequest(input).Send(ctx)
 
 	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 }
 
-func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1alpha1.ResourceRecordSet)
+func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mg.(*v1alpha1.ResourceRecordSet)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
-	input := resourcerecordset.GenerateChangeResourceRecordSetsInput(&cr.Spec.ForProvider, route53.ChangeActionUpsert)
+	input := resourcerecordset.UpsertResourceRecordSet(meta.GetExternalName(cr), cr.Spec.ForProvider)
 	_, err := e.client.ChangeResourceRecordSetsRequest(input).Send(ctx)
-
-	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
-	}
-
-	return managed.ExternalUpdate{}, errors.Wrap(nil, errUpdate)
+	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 }
 
-func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.ResourceRecordSet)
+func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+	cr, ok := mg.(*v1alpha1.ResourceRecordSet)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
-
-	input := resourcerecordset.GenerateChangeResourceRecordSetsInput(&cr.Spec.ForProvider, route53.ChangeActionDelete)
-
-	_, err := e.client.ChangeResourceRecordSetsRequest(input).Send(ctx)
+	_, err := e.client.ChangeResourceRecordSetsRequest(resourcerecordset.DeleteResourceRecordSet(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx)
 
 	// There is no way to confirm 404 (from response) when deleting a recordset
-	// which isn't present using ChangeResourceRecordSetRequest
-	//
-	// For any 404 when deleting, error code returned is nil.
-	//So we can safely ignore this and catch any other error.
-
-	return errors.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errDelete)
+	// which isn't present using ChangeResourceRecordSetRequest.
+	return errors.Wrap(err, errDelete)
 }
