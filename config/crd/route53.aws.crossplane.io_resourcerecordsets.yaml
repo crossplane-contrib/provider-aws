@@ -1,0 +1,389 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: resourcerecordsets.route53.aws.crossplane.io
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.forProvider.type
+    name: TYPE
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Ready')].status
+    name: READY
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Synced')].status
+    name: SYNCED
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: AGE
+    type: date
+  group: route53.aws.crossplane.io
+  names:
+    kind: ResourceRecordSet
+    listKind: ResourceRecordSetList
+    plural: resourcerecordsets
+    singular: resourcerecordset
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: ResourceRecordSet is a managed resource that represents an AWS
+        Route53 Resource Record.
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: ResourceRecordSetSpec defines the desired state of an AWS Route53
+            Resource Record.
+          properties:
+            claimRef:
+              description: ClaimReference specifies the resource claim to which this
+                managed resource will be bound. ClaimReference is set automatically
+                during dynamic provisioning. Crossplane does not currently support
+                setting this field manually, per https://github.com/crossplane/crossplane-runtime/issues/19
+              properties:
+                apiVersion:
+                  description: API version of the referent.
+                  type: string
+                fieldPath:
+                  description: 'If referring to a piece of an object instead of an
+                    entire object, this string should contain a valid JSON/Go field
+                    access statement, such as desiredState.manifest.containers[2].
+                    For example, if the object reference is to a container within
+                    a pod, this would take on a value like: "spec.containers{name}"
+                    (where "name" refers to the name of the container that triggered
+                    the event) or if no container name is specified "spec.containers[2]"
+                    (container with index 2 in this pod). This syntax is chosen only
+                    to have some well-defined way of referencing a part of an object.
+                    TODO: this design is not final and this field is subject to change
+                    in the future.'
+                  type: string
+                kind:
+                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                  type: string
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+                namespace:
+                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                  type: string
+                resourceVersion:
+                  description: 'Specific resourceVersion to which this reference is
+                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                  type: string
+                uid:
+                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                  type: string
+              type: object
+            classRef:
+              description: ClassReference specifies the resource class that was used
+                to dynamically provision this managed resource, if any. Crossplane
+                does not currently support setting this field manually, per https://github.com/crossplane/crossplane-runtime/issues/20
+              properties:
+                apiVersion:
+                  description: API version of the referent.
+                  type: string
+                fieldPath:
+                  description: 'If referring to a piece of an object instead of an
+                    entire object, this string should contain a valid JSON/Go field
+                    access statement, such as desiredState.manifest.containers[2].
+                    For example, if the object reference is to a container within
+                    a pod, this would take on a value like: "spec.containers{name}"
+                    (where "name" refers to the name of the container that triggered
+                    the event) or if no container name is specified "spec.containers[2]"
+                    (container with index 2 in this pod). This syntax is chosen only
+                    to have some well-defined way of referencing a part of an object.
+                    TODO: this design is not final and this field is subject to change
+                    in the future.'
+                  type: string
+                kind:
+                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                  type: string
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+                namespace:
+                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                  type: string
+                resourceVersion:
+                  description: 'Specific resourceVersion to which this reference is
+                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                  type: string
+                uid:
+                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                  type: string
+              type: object
+            forProvider:
+              description: ResourceRecordSetParameters define the desired state of
+                an AWS Route53 Resource Record.
+              properties:
+                aliasTarget:
+                  description: AliasTarget holds information about the AWS resource,
+                    such as a CloudFront distribution or an Amazon S3 bucket, that
+                    you want to route traffic to.
+                  properties:
+                    dnsName:
+                      description: DNSName is the value that you specify depends on
+                        where you want to route queries No omitempty
+                      type: string
+                    evaluateTargetHealth:
+                      description: EvaluateTargetHealth let you inherit the health
+                        of the referenced AWS resource, such as an ELB load balancer
+                        or another resource record set in the hosted zone.
+                      type: boolean
+                    hostedZoneId:
+                      description: 'HostedZoneId of the AWS service where you want
+                        to route your traffic. Note: These are pre determined Hosted
+                        Zone Ids that is provided by AWS and is different for each
+                        service and each region.'
+                      type: string
+                  type: object
+                failover:
+                  description: Failover let you add the Failover element to two resource
+                    record sets. For one resource record set, you specify PRIMARY
+                    as the value for Failover; for the other resource record set,
+                    you specify SECONDARY. In addition, you include the HealthCheckId
+                    element and specify the health check that you want Amazon Route
+                    53 to perform for each resource record set.
+                  type: string
+                geoLocation:
+                  description: GeoLocation lets you control how Amazon Route 53 responds
+                    to DNS queries based on the geographic origin of the query.
+                  properties:
+                    continentCode:
+                      description: 'ContinentCode is the two-letter code for the continent.
+                        Amazon Route 53 supports the following continent codes:    *
+                        AF: Africa    * AN: Antarctica    * AS: Asia    * EU: Europe    *
+                        OC: Oceania    * NA: North America    * SA: South America'
+                      type: string
+                    countryCode:
+                      description: CountryCode is the two-letter code for a country.
+                        Amazon Route 53 uses the two-letter country codes that are
+                        specified in ISO standard 3166-1 alpha-2 (https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).
+                      type: string
+                    subdivisionCode:
+                      description: SubdivisionCode is the two-letter code for a state
+                        of the United States.
+                      type: string
+                  type: object
+                healthCheckId:
+                  description: HealthCheckID let you return this resource record set
+                    in response to a DNS query only when the status of a health check
+                    is healthy, include the HealthCheckId element and specify the
+                    ID of the applicable health check.
+                  type: string
+                multiValueAnswer:
+                  description: 'Multivalue answer resource record sets only: To route
+                    traffic approximately randomly to multiple resources, such as
+                    web servers, create one multivalue answer record for each resource
+                    and specify true for MultiValueAnswer. Note'
+                  type: boolean
+                name:
+                  description: Name of the record that you want to create, update,
+                    or delete.
+                  type: string
+                region:
+                  description: Region is the Amazon EC2 Region where you created the
+                    resource that this resource record set refers to. The resource
+                    typically is an AWS resource, such as an EC2 instance or an ELB
+                    load balancer, and is referred to by an IP address or a DNS domain
+                    name, depending on the record type.
+                  type: string
+                resourceRecords:
+                  description: ResourceRecord holds the information about the resource
+                    records to act upon.
+                  items:
+                    description: ResourceRecord holds the DNS value to be used for
+                      the record.
+                    properties:
+                      value:
+                        description: Value represents the current or new DNS record
+                          value(max 4,000 characters). In the case of a DELETE action,
+                          if the current value does not match the actual value, an
+                          error is returned.
+                        type: string
+                    required:
+                    - value
+                    type: object
+                  type: array
+                setIdentifier:
+                  description: SetIdentifier helps you differentiates among multiple
+                    resource record sets that have the same combination of name and
+                    type, such as multiple weighted resource record sets named acme.example.com
+                    that have a type of A.
+                  type: string
+                trafficPolicyInstanceId:
+                  description: TrafficPolicyInstanceId is the ID of the traffic policy
+                    instance that Route 53 created this resource record set for.
+                  type: string
+                ttl:
+                  description: The resource record cache time to live (TTL), in seconds.
+                  format: int64
+                  type: integer
+                type:
+                  description: Type represents the DNS record type
+                  type: string
+                weight:
+                  description: Weight determines the proportion of DNS queries that
+                    Amazon Route 53 responds to using the current resource record
+                    set.
+                  format: int64
+                  type: integer
+                zoneId:
+                  description: ZoneID of the HostedZone in which you want to CREATE,
+                    CHANGE, or DELETE the Resource Record.
+                  type: string
+                zoneIdRef:
+                  description: ZoneIDRef references a Zone to retrieves its ZoneId
+                  properties:
+                    name:
+                      description: Name of the referenced object.
+                      type: string
+                  required:
+                  - name
+                  type: object
+                zoneIdSelector:
+                  description: ZoneIDSelector selects a reference to a Zone to retrieves
+                    its ZoneID
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
+                  type: object
+              required:
+              - name
+              - resourceRecords
+              - type
+              type: object
+            providerRef:
+              description: ProviderReference specifies the provider that will be used
+                to create, observe, update, and delete this managed resource.
+              properties:
+                name:
+                  description: Name of the referenced object.
+                  type: string
+              required:
+              - name
+              type: object
+            reclaimPolicy:
+              description: ReclaimPolicy specifies what will happen to this managed
+                resource when its resource claim is deleted, and what will happen
+                to the underlying external resource when the managed resource is deleted.
+                The "Delete" policy causes the managed resource to be deleted when
+                its bound resource claim is deleted, and in turn causes the external
+                resource to be deleted when its managed resource is deleted. The "Retain"
+                policy causes the managed resource to be retained, in binding phase
+                "Released", when its resource claim is deleted, and in turn causes
+                the external resource to be retained when its managed resource is
+                deleted. The "Retain" policy is used when no policy is specified.
+              enum:
+              - Retain
+              - Delete
+              type: string
+            writeConnectionSecretToRef:
+              description: WriteConnectionSecretToReference specifies the namespace
+                and name of a Secret to which any connection details for this managed
+                resource should be written. Connection details frequently include
+                the endpoint, username, and password required to connect to the managed
+                resource.
+              properties:
+                name:
+                  description: Name of the secret.
+                  type: string
+                namespace:
+                  description: Namespace of the secret.
+                  type: string
+              required:
+              - name
+              - namespace
+              type: object
+          required:
+          - forProvider
+          - providerRef
+          type: object
+        status:
+          description: ResourceRecordSetStatus represents the observed state of a
+            ResourceRecordSet.
+          properties:
+            bindingPhase:
+              description: Phase represents the binding phase of a managed resource
+                or claim. Unbindable resources cannot be bound, typically because
+                they are currently unavailable, or still being created. Unbound resource
+                are available for binding, and Bound resources have successfully bound
+                to another resource.
+              enum:
+              - Unbindable
+              - Unbound
+              - Bound
+              - Released
+              type: string
+            conditions:
+              description: Conditions of the resource.
+              items:
+                description: A Condition that may apply to a resource.
+                properties:
+                  lastTransitionTime:
+                    description: LastTransitionTime is the last time this condition
+                      transitioned from one status to another.
+                    format: date-time
+                    type: string
+                  message:
+                    description: A Message containing details about this condition's
+                      last transition from one status to another, if any.
+                    type: string
+                  reason:
+                    description: A Reason for this condition's last transition from
+                      one status to another.
+                    type: string
+                  status:
+                    description: Status of this condition; is it currently True, False,
+                      or Unknown?
+                    type: string
+                  type:
+                    description: Type of this condition. At most one of each condition
+                      type may apply to a resource at any point in time.
+                    type: string
+                required:
+                - lastTransitionTime
+                - reason
+                - status
+                - type
+                type: object
+              type: array
+          type: object
+      required:
+      - spec
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
