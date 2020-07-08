@@ -6,11 +6,10 @@ metadata:
     crossplane.io/external-name: external-elb-name
 spec:
   forProvider:
-    securityGroups:
-      - sg-09753165e7f3814e8
-    availabilityZones:
-      - us-east-2a
-      - us-east-2b
+    securityGroupIdRefs:
+      - name: sample-cluster-sg
+    subnetIdRefs:
+      - subnet-d297e9a8
     listeners:
       - instancePort: 8180
         instanceProtocol: http

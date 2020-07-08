@@ -248,6 +248,32 @@ func TestCreatePatch(t *testing.T) {
 				patch: &v1alpha1.ELBParameters{},
 			},
 		},
+		"DifferentOrder": {
+			args: args{
+				lb: elb.LoadBalancerDescription{
+					AvailabilityZones: availabilityZones,
+					Subnets:           []string{"sub1", "sub2"},
+					SecurityGroups:    []string{"sg1", "sg2"},
+				},
+				p: v1alpha1.ELBParameters{
+					AvailabilityZones: []string{"us-east-1b", "us-east-1a"},
+					SubnetIDs:         []string{"sub2", "sub1"},
+					SecurityGroupIDs:  []string{"sg2", "sg1"},
+					Tags:              tags,
+				},
+				tags: []elb.Tag{{
+					Key:   aws.String("k2"),
+					Value: aws.String("v2"),
+				},
+					{
+						Key:   aws.String("k1"),
+						Value: aws.String("v1"),
+					}},
+			},
+			want: want{
+				patch: &v1alpha1.ELBParameters{},
+			},
+		},
 		"DifferentFields": {
 			args: args{
 				lb: elb.LoadBalancerDescription{
@@ -260,12 +286,12 @@ func TestCreatePatch(t *testing.T) {
 				p: v1alpha1.ELBParameters{
 					AvailabilityZones: availabilityZones,
 					Listeners:         []v1alpha1.Listener{listener},
-					Subnets:           []string{"subnet1", "subnet3"},
+					SubnetIDs:         []string{"subnet1", "subnet3"},
 				},
 			},
 			want: want{
 				patch: &v1alpha1.ELBParameters{
-					Subnets: []string{"subnet1", "subnet3"},
+					SubnetIDs: []string{"subnet1", "subnet3"},
 				},
 			},
 		},
@@ -336,7 +362,7 @@ func TestIsUpToDate(t *testing.T) {
 				p: v1alpha1.ELBParameters{
 					AvailabilityZones: availabilityZones,
 					Listeners:         []v1alpha1.Listener{listener},
-					SecurityGroups:    []string{"sg1", "sg3"},
+					SecurityGroupIDs:  []string{"sg1", "sg3"},
 				},
 			},
 			want: false,

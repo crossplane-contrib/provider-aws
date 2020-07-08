@@ -48,13 +48,14 @@ const (
 	errGetProvider       = "cannot get provider"
 	errGetProviderSecret = "cannot get provider secret"
 
-	errDescribe      = "failed to describe ELB with given name"
-	errDescribeTags  = "failed to describe tags for ELB with given name"
+	errDescribe      = "cannot describe ELB with given name"
+	errDescribeTags  = "cannot describe tags for ELB with given name"
 	errMultipleItems = "retrieved multiple ELBs for the given name"
-	errCreate        = "failed to create the ELB resource"
-	errUpdate        = "failed to update ELB resource"
-	errDelete        = "failed to delete the ELB resource"
+	errCreate        = "cannot create the ELB resource"
+	errUpdate        = "cannot update ELB resource"
+	errDelete        = "cannot delete the ELB resource"
 	errSpecUpdate    = "cannot update spec of ELB custom resource"
+	errUpToDate      = "cannot check if the resource is up to date"
 )
 
 // SetupELB adds a controller that reconciles ELBs.
@@ -66,6 +67,7 @@ func SetupELB(mgr ctrl.Manager, l logging.Logger) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.ELBGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elb.NewClient}),
+			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -153,7 +155,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	upToDate, err := elb.IsUpToDate(cr.Spec.ForProvider, observed, tagsResponse.TagDescriptions[0].Tags)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, errUpdate)
+		return managed.ExternalObservation{}, errors.Wrap(err, errUpToDate)
 	}
 
 	return managed.ExternalObservation{
@@ -202,6 +204,8 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDescribeTags)
 	}
 
+	// AWS ELB API doesn't have a single PUT/PATCH API.
+	// Hence, create a patch to figure which fields are to be updated.
 	patch, err := elb.CreatePatch(observed, cr.Spec.ForProvider, tagsResponse.TagDescriptions[0].Tags)
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(elb.IsELBNotFound, err), errUpdate)
@@ -213,17 +217,17 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	if len(patch.SecurityGroups) != 0 {
+	if len(patch.SecurityGroupIDs) != 0 {
 		if _, err := e.client.ApplySecurityGroupsToLoadBalancerRequest(&awselb.ApplySecurityGroupsToLoadBalancerInput{
-			SecurityGroups:   cr.Spec.ForProvider.SecurityGroups,
+			SecurityGroups:   cr.Spec.ForProvider.SecurityGroupIDs,
 			LoadBalancerName: aws.String(meta.GetExternalName(cr)),
 		}).Send(ctx); err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 		}
 	}
 
-	if len(patch.Subnets) != 0 {
-		if err := e.updateSubnets(ctx, cr.Spec.ForProvider.Subnets, observed.Subnets, meta.GetExternalName(cr)); err != nil {
+	if len(patch.SubnetIDs) != 0 {
+		if err := e.updateSubnets(ctx, cr.Spec.ForProvider.SubnetIDs, observed.Subnets, meta.GetExternalName(cr)); err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
 		}
 	}

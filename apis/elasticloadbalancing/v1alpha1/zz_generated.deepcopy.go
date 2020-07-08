@@ -284,15 +284,35 @@ func (in *ELBParameters) DeepCopyInto(out *ELBParameters) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.SecurityGroups != nil {
-		in, out := &in.SecurityGroups, &out.SecurityGroups
+	if in.SecurityGroupIDs != nil {
+		in, out := &in.SecurityGroupIDs, &out.SecurityGroupIDs
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
-	if in.Subnets != nil {
-		in, out := &in.Subnets, &out.Subnets
+	if in.SecurityGroupIDRefs != nil {
+		in, out := &in.SecurityGroupIDRefs, &out.SecurityGroupIDRefs
+		*out = make([]corev1alpha1.Reference, len(*in))
+		copy(*out, *in)
+	}
+	if in.SecurityGroupIDSelector != nil {
+		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector
+		*out = new(corev1alpha1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.SubnetIDs != nil {
+		in, out := &in.SubnetIDs, &out.SubnetIDs
 		*out = make([]string, len(*in))
 		copy(*out, *in)
+	}
+	if in.SubnetIDRefs != nil {
+		in, out := &in.SubnetIDRefs, &out.SubnetIDRefs
+		*out = make([]corev1alpha1.Reference, len(*in))
+		copy(*out, *in)
+	}
+	if in.SubnetIDSelector != nil {
+		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector
+		*out = new(corev1alpha1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.Tags != nil {
 		in, out := &in.Tags, &out.Tags

@@ -26,15 +26,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/elasticloadbalancingiface"
+	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
 	clients "github.com/crossplane/provider-aws/pkg/clients"
-)
-
-const (
-	// ELBNotFound is the code returned by AWS when there is not ELB with a specified name.
-	ELBNotFound = "LoadBalancerNotFound"
 )
 
 // A Client handles CRUD operations for Elastic Load Balancing resources.
@@ -56,8 +53,8 @@ func GenerateCreateELBInput(name string, p v1alpha1.ELBParameters) *elb.CreateLo
 		AvailabilityZones: p.AvailabilityZones,
 		LoadBalancerName:  aws.String(name),
 		Scheme:            p.Scheme,
-		SecurityGroups:    p.SecurityGroups,
-		Subnets:           p.Subnets,
+		Subnets:           p.SubnetIDs,
+		SecurityGroups:    p.SecurityGroupIDs,
 	}
 	input.Listeners = BuildELBListeners(p.Listeners)
 
@@ -77,8 +74,12 @@ func LateInitializeELB(in *v1alpha1.ELBParameters, v *elb.LoadBalancerDescriptio
 		in.AvailabilityZones = v.AvailabilityZones
 	}
 
-	if len(in.SecurityGroups) == 0 && len(v.SecurityGroups) != 0 {
-		in.SecurityGroups = v.SecurityGroups
+	if len(in.SecurityGroupIDs) == 0 && len(v.SecurityGroups) != 0 {
+		in.SecurityGroupIDs = v.SecurityGroups
+	}
+
+	if len(in.SubnetIDs) == 0 && len(v.Subnets) != 0 {
+		in.SubnetIDs = v.Subnets
 	}
 
 	if len(in.Listeners) == 0 && len(v.ListenerDescriptions) != 0 {
@@ -107,7 +108,7 @@ func LateInitializeELB(in *v1alpha1.ELBParameters, v *elb.LoadBalancerDescriptio
 
 // IsELBNotFound returns true if the error is because the item doesn't exist.
 func IsELBNotFound(err error) bool {
-	if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() == ELBNotFound {
+	if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() == elb.ErrCodeAccessPointNotFoundException {
 		return true
 	}
 	return false
@@ -175,7 +176,7 @@ func IsUpToDate(p v1alpha1.ELBParameters, elb elb.LoadBalancerDescription, elbTa
 	if err != nil {
 		return false, err
 	}
-	return cmp.Equal(&v1alpha1.ELBParameters{}, patch), nil
+	return cmp.Equal(&v1alpha1.ELBParameters{}, patch, cmpopts.IgnoreTypes([]corev1alpha1.Reference{}, []corev1alpha1.Selector{})), nil
 }
 
 // BuildELBListeners builds a list of elb.Listener from given list of v1alpha1.Listener.
@@ -214,8 +215,8 @@ func BuildELBTags(tags []v1alpha1.Tag) []elb.Tag {
 
 func sortParametersArrays(p *v1alpha1.ELBParameters) {
 	sort.Strings(p.AvailabilityZones)
-	sort.Strings(p.SecurityGroups)
-	sort.Strings(p.Subnets)
+	sort.Strings(p.SecurityGroupIDs)
+	sort.Strings(p.SubnetIDs)
 
 	sort.Slice(p.Tags, func(i, j int) bool {
 		return p.Tags[i].Key < p.Tags[j].Key

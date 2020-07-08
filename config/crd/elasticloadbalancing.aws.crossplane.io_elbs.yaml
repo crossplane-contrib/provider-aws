@@ -150,7 +150,7 @@ spec:
                   description: Information about the health checks conducted on the
                     load balancer.
                   properties:
-                    healthCheck:
+                    healthyThreshold:
                       description: The number of consecutive health checks successes
                         required before moving the instance to the Healthy state.
                       format: int64
@@ -174,7 +174,7 @@ spec:
                       format: int64
                       type: integer
                   required:
-                  - healthCheck
+                  - healthyThreshold
                   - interval
                   - target
                   - timeout
@@ -217,13 +217,69 @@ spec:
                   description: The type of a load balancer. Valid only for load balancers
                     in a VPC.
                   type: string
-                securityGroups:
+                securityGroupIdRefs:
+                  description: SecurityGroupIDRefs references to a SecurityGroup and
+                    retrieves its SecurityGroupID
+                  items:
+                    description: A Reference to a named object.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  type: array
+                securityGroupIdSelector:
+                  description: SecurityGroupIDSelector selects a set of references
+                    that each retrieve the SecurityGroupID from the referenced SecurityGroup
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
+                  type: object
+                securityGroupIds:
                   description: The IDs of the security groups to assign to the load
                     balancer.
                   items:
                     type: string
                   type: array
-                subnets:
+                subnetIdRefs:
+                  description: SubnetRefs references to a Subnet to and retrieves
+                    its SubnetID
+                  items:
+                    description: A Reference to a named object.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  type: array
+                subnetIdSelector:
+                  description: SubnetSelector selects a set of references that each
+                    retrieve the subnetID from the referenced Subnet
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
+                  type: object
+                subnetIds:
                   description: The IDs of the subnets in your VPC to attach to the
                     load balancer. Specify one subnet per Availability Zone specified
                     in AvailabilityZones.
@@ -247,7 +303,6 @@ spec:
                     type: object
                   type: array
               required:
-              - availabilityZones
               - listeners
               type: object
             providerRef:
@@ -320,12 +375,12 @@ spec:
                         type: array
                     type: object
                   type: array
-                canonicalHostedZoneId:
-                  description: The ID of the Amazon Route 53 hosted zone for the load
-                    balancer.
-                  type: string
                 canonicalHostedZoneName:
                   description: The DNS name of the load balancer.
+                  type: string
+                canonicalHostedZoneNameId:
+                  description: The ID of the Amazon Route 53 hosted zone for the load
+                    balancer.
                   type: string
                 dnsName:
                   description: The DNS name of the load balancer.

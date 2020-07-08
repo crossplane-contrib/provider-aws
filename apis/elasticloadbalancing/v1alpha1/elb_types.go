@@ -71,7 +71,7 @@ type HealthCheck struct {
 
 	// The number of consecutive health checks successes required before moving
 	// the instance to the Healthy state.
-	HealthyThreshold int64 `json:"healthCheck"`
+	HealthyThreshold int64 `json:"healthyThreshold"`
 
 	// The approximate interval, in seconds, between health checks of an individual
 	// instance.
@@ -92,7 +92,8 @@ type HealthCheck struct {
 // ELBParameters define the desired state of an AWS ELB.
 type ELBParameters struct {
 	// One or more Availability Zones from the same region as the load balancer.
-	AvailabilityZones []string `json:"availabilityZones"`
+	// +optional
+	AvailabilityZones []string `json:"availabilityZones,omitempty"`
 
 	// Information about the health checks conducted on the load balancer.
 	HealthCheck *HealthCheck `json:"healthCheck,omitempty"`
@@ -107,12 +108,28 @@ type ELBParameters struct {
 
 	// The IDs of the security groups to assign to the load balancer.
 	// +optional
-	SecurityGroups []string `json:"securityGroups,omitempty"`
+	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
+
+	// SecurityGroupIDRefs references to a SecurityGroup and retrieves its SecurityGroupID
+	// +optional
+	SecurityGroupIDRefs []runtimev1alpha1.Reference `json:"securityGroupIdRefs,omitempty"`
+
+	// SecurityGroupIDSelector selects a set of references that each retrieve the SecurityGroupID from the referenced SecurityGroup
+	// +optional
+	SecurityGroupIDSelector *runtimev1alpha1.Selector `json:"securityGroupIdSelector,omitempty"`
 
 	// The IDs of the subnets in your VPC to attach to the load balancer. Specify
 	// one subnet per Availability Zone specified in AvailabilityZones.
 	// +optional
-	Subnets []string `json:"subnets,omitempty"`
+	SubnetIDs []string `json:"subnetIds,omitempty"`
+
+	// SubnetRefs references to a Subnet to and retrieves its SubnetID
+	// +optional
+	SubnetIDRefs []runtimev1alpha1.Reference `json:"subnetIdRefs,omitempty"`
+
+	// SubnetSelector selects a set of references that each retrieve the subnetID from the referenced Subnet
+	// +optional
+	SubnetIDSelector *runtimev1alpha1.Selector `json:"subnetIdSelector,omitempty"`
 
 	// A list of tags to assign to the load balancer.
 	// +optional
@@ -134,7 +151,7 @@ type ELBObservation struct {
 	CanonicalHostedZoneName string `json:"canonicalHostedZoneName,omitempty"`
 
 	// The ID of the Amazon Route 53 hosted zone for the load balancer.
-	CanonicalHostedZoneNameID string `json:"canonicalHostedZoneId,omitempty"`
+	CanonicalHostedZoneNameID string `json:"canonicalHostedZoneNameId,omitempty"`
 
 	// The DNS name of the load balancer.
 	DNSName string `json:"dnsName,omitempty"`

@@ -21,13 +21,50 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	ec2 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
 
-// ResolveReferences of this RouteTable
+// ResolveReferences of this ELB
+func (mg *ELB) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.forProvider.subnetIds
+	mrsp, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+		CurrentValues: mg.Spec.ForProvider.SubnetIDs,
+		References:    mg.Spec.ForProvider.SubnetIDRefs,
+		Selector:      mg.Spec.ForProvider.SubnetIDSelector,
+		To:            reference.To{Managed: &ec2.Subnet{}, List: &ec2.SubnetList{}},
+		Extract:       reference.ExternalName(),
+	})
+	if err != nil {
+		return err
+	}
+	mg.Spec.ForProvider.SubnetIDs = mrsp.ResolvedValues
+	mg.Spec.ForProvider.SubnetIDRefs = mrsp.ResolvedReferences
+
+	// Resolve spec.forProvider.securityGroupIds
+	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+		CurrentValues: mg.Spec.ForProvider.SecurityGroupIDs,
+		References:    mg.Spec.ForProvider.SecurityGroupIDRefs,
+		Selector:      mg.Spec.ForProvider.SecurityGroupIDSelector,
+		To:            reference.To{Managed: &ec2.SecurityGroup{}, List: &ec2.SecurityGroupList{}},
+		Extract:       reference.ExternalName(),
+	})
+	if err != nil {
+		return err
+	}
+	mg.Spec.ForProvider.SecurityGroupIDs = mrsp.ResolvedValues
+	mg.Spec.ForProvider.SecurityGroupIDRefs = mrsp.ResolvedReferences
+
+	return nil
+}
+
+// ResolveReferences of this ELBAttachment
 func (mg *ELBAttachment) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.vpcID
+	// Resolve spec.forProvider.elbName
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: mg.Spec.ForProvider.ELBName,
 		Reference:    mg.Spec.ForProvider.ELBNameRef,

@@ -419,14 +419,14 @@ func TestObserve(t *testing.T) {
 				},
 				cr: elbResource(withExternalName(elbName),
 					withSpec(v1alpha1.ELBParameters{
-						SecurityGroups: securityGroups,
+						SecurityGroupIDs: securityGroups,
 					})),
 			},
 			want: want{
 				cr: elbResource(withExternalName(elbName),
 					withSpec(v1alpha1.ELBParameters{
 						AvailabilityZones: availabilityZones,
-						SecurityGroups:    securityGroups,
+						SecurityGroupIDs:  securityGroups,
 					}),
 					withConditions(corev1alpha1.Available())),
 				result: managed.ExternalObservation{
@@ -622,13 +622,13 @@ func TestUpdate(t *testing.T) {
 				},
 				cr: elbResource(withExternalName(elbName),
 					withSpec(v1alpha1.ELBParameters{
-						Subnets: []string{"subnet2"},
+						SubnetIDs: []string{"subnet2"},
 					})),
 			},
 			want: want{
 				cr: elbResource(withExternalName(elbName),
 					withSpec(v1alpha1.ELBParameters{
-						Subnets: []string{"subnet2"},
+						SubnetIDs: []string{"subnet2"},
 					})),
 			},
 		},
@@ -663,13 +663,13 @@ func TestUpdate(t *testing.T) {
 				},
 				cr: elbResource(withExternalName(elbName),
 					withSpec(v1alpha1.ELBParameters{
-						SecurityGroups: []string{"sg-other"},
+						SecurityGroupIDs: []string{"sg-other"},
 					})),
 			},
 			want: want{
 				cr: elbResource(withExternalName(elbName),
 					withSpec(v1alpha1.ELBParameters{
-						SecurityGroups: []string{"sg-other"},
+						SecurityGroupIDs: []string{"sg-other"},
 					})),
 			},
 		},
