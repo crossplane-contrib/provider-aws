@@ -389,6 +389,25 @@ spec:
                   description: 'LicenseModel information for this DB instance. Valid
                     values: license-included | bring-your-own-license | general-public-license'
                   type: string
+                masterPasswordSecretRef:
+                  description: MasterPasswordSecretRef references the secret that
+                    contains the password used in the creation of this RDS instance.
+                    If no reference is given, a password will be auto-generated.
+                  properties:
+                    key:
+                      description: The key to select.
+                      type: string
+                    name:
+                      description: Name of the secret.
+                      type: string
+                    namespace:
+                      description: Namespace of the secret.
+                      type: string
+                  required:
+                  - key
+                  - name
+                  - namespace
+                  type: object
                 masterUsername:
                   description: 'MasterUsername is the name for the master user. Amazon
                     Aurora Not applicable. The name for the master user is managed

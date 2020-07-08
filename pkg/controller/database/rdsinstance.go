@@ -51,13 +51,14 @@ const (
 	errGetProvider       = "cannot get provider"
 	errGetProviderSecret = "cannot get provider secret"
 
-	errCreateFailed        = "cannot create RDS instance"
-	errModifyFailed        = "cannot modify RDS instance"
-	errAddTagsFailed       = "cannot add tags to RDS instance"
-	errDeleteFailed        = "cannot delete RDS instance"
-	errDescribeFailed      = "cannot describe RDS instance"
-	errPatchCreationFailed = "cannot create a patch object"
-	errUpToDateFailed      = "cannot check whether object is up-to-date"
+	errCreateFailed            = "cannot create RDS instance"
+	errModifyFailed            = "cannot modify RDS instance"
+	errAddTagsFailed           = "cannot add tags to RDS instance"
+	errDeleteFailed            = "cannot delete RDS instance"
+	errDescribeFailed          = "cannot describe RDS instance"
+	errPatchCreationFailed     = "cannot create a patch object"
+	errUpToDateFailed          = "cannot check whether object is up-to-date"
+	errGetPasswordSecretFailed = "cannot get password secret"
 )
 
 // SetupRDSInstance adds a controller that reconciles RDSInstances.
@@ -179,6 +180,18 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
+	if cr.Spec.ForProvider.MasterPasswordSecretRef != nil {
+		s := &corev1.Secret{}
+		nn := types.NamespacedName{
+			Name:      cr.Spec.ForProvider.MasterPasswordSecretRef.Name,
+			Namespace: cr.Spec.ForProvider.MasterPasswordSecretRef.Namespace,
+		}
+		if err := e.kube.Get(ctx, nn, s); err != nil {
+			return managed.ExternalCreation{}, errors.Wrap(err, errGetPasswordSecretFailed)
+		}
+		pw = string(s.Data[cr.Spec.ForProvider.MasterPasswordSecretRef.Key])
+	}
+
 	req := e.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 	_, err = req.Send(ctx)
 	if err != nil {
@@ -193,7 +206,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	return managed.ExternalCreation{ConnectionDetails: conn}, nil
 }
 
-func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
 	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotRDSInstance)
@@ -216,8 +229,23 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errPatchCreationFailed)
 	}
-	_, err = e.client.ModifyDBInstanceRequest(rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch)).Send(ctx)
-	if err != nil {
+	modify := rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch)
+	var conn managed.ConnectionDetails
+	if cr.Spec.ForProvider.MasterPasswordSecretRef != nil {
+		s := &corev1.Secret{}
+		nn := types.NamespacedName{
+			Name:      cr.Spec.ForProvider.MasterPasswordSecretRef.Name,
+			Namespace: cr.Spec.ForProvider.MasterPasswordSecretRef.Namespace,
+		}
+		if err := e.kube.Get(ctx, nn, s); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errGetPasswordSecretFailed)
+		}
+		conn = managed.ConnectionDetails{
+			runtimev1alpha1.ResourceCredentialsSecretPasswordKey: s.Data[cr.Spec.ForProvider.MasterPasswordSecretRef.Key],
+		}
+		modify.MasterUserPassword = aws.String(string(s.Data[cr.Spec.ForProvider.MasterPasswordSecretRef.Key]))
+	}
+	if _, err = e.client.ModifyDBInstanceRequest(modify).Send(ctx); err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
 	}
 	if len(patch.Tags) > 0 {
@@ -233,7 +261,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 			return managed.ExternalUpdate{}, errors.Wrap(err, errAddTagsFailed)
 		}
 	}
-	return managed.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
+	return managed.ExternalUpdate{ConnectionDetails: conn}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
