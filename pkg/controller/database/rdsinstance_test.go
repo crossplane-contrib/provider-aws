@@ -100,6 +100,10 @@ func withDBInstanceStatus(s string) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Status.AtProvider.DBInstanceStatus = s }
 }
 
+func withPasswordSecretRef(s runtimev1alpha1.SecretKeySelector) rdsModifier {
+	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.MasterPasswordSecretRef = &s }
+}
+
 func instance(m ...rdsModifier) *v1beta1.RDSInstance {
 	cr := &v1beta1.RDSInstance{
 		Spec: v1beta1.RDSInstanceSpec{
@@ -554,6 +558,48 @@ func TestCreate(t *testing.T) {
 						runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
 					},
 				},
+			},
+		},
+		"SuccessfulWithSecret": {
+			args: args{
+				rds: &fake.MockRDSClient{
+					MockCreate: func(input *awsrds.CreateDBInstanceInput) awsrds.CreateDBInstanceRequest {
+						return awsrds.CreateDBInstanceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsrds.CreateDBInstanceOutput{}},
+						}
+					},
+				},
+				kube: &test.MockClient{
+					MockGet: test.NewMockGetFn(nil),
+				},
+				cr: instance(withMasterUsername(&masterUsername), withPasswordSecretRef(runtimev1alpha1.SecretKeySelector{})),
+			},
+			want: want{
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withPasswordSecretRef(runtimev1alpha1.SecretKeySelector{}),
+					withConditions(runtimev1alpha1.Creating())),
+				result: managed.ExternalCreation{
+					ConnectionDetails: managed.ConnectionDetails{
+						runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(""),
+						runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
+					},
+				},
+			},
+		},
+		"FailedWhileGettingSecret": {
+			args: args{
+				kube: &test.MockClient{
+					MockGet: test.NewMockGetFn(errBoom),
+				},
+				cr: instance(withMasterUsername(&masterUsername), withPasswordSecretRef(runtimev1alpha1.SecretKeySelector{})),
+			},
+			want: want{
+				cr: instance(
+					withMasterUsername(&masterUsername),
+					withPasswordSecretRef(runtimev1alpha1.SecretKeySelector{}),
+					withConditions(runtimev1alpha1.Creating())),
+				err: errors.Wrap(errBoom, errGetPasswordSecretFailed),
 			},
 		},
 		"FailedRequest": {
