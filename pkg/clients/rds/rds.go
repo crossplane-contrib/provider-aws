@@ -439,6 +439,9 @@ func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error
 	//  <Modify/Create/Delete>DBInstanceInput objects but not in DBInstance
 	//  object are not late-inited. So, this func always returns true when
 	//  those configurations are changed by the user.
+
+	// TODO(muvaf): If a secret is provided for password, this logic should check
+	// whether it's changed by comparing it to the password in the published secret.
 	patch, err := CreatePatch(&db, &p)
 	if err != nil {
 		return false, err
