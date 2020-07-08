@@ -439,7 +439,7 @@ func NewCreateCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id strin
 		for i, tag := range p.Tags {
 			c.Tags[i] = elasticache.Tag{
 				Key:   clients.String(tag.Key),
-				Value: clients.String(tag.Value),
+				Value: tag.Value,
 			}
 		}
 	}
@@ -455,7 +455,7 @@ func NewModifyCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id strin
 		AZMode:                     elasticache.AZMode(aws.StringValue(p.AZMode)),
 		ApplyImmediately:           p.ApplyImmediately,
 		AuthToken:                  p.AuthToken,
-		AuthTokenUpdateStrategy:    elasticache.AuthTokenUpdateStrategyType(p.AuthTokenUpdateStrategy),
+		AuthTokenUpdateStrategy:    elasticache.AuthTokenUpdateStrategyType(clients.StringValue(p.AuthTokenUpdateStrategy)),
 		CacheNodeIdsToRemove:       p.CacheNodeIdsToRemove,
 		CacheNodeType:              aws.String(p.CacheNodeType),
 		CacheParameterGroupName:    p.CacheParameterGroupName,

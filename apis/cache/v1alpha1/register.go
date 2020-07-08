@@ -45,7 +45,6 @@ var (
 	CacheSubnetGroupGroupVersionKind = SchemeGroupVersion.WithKind(CacheSubnetGroupKind)
 )
 
-	
 // CacheCluster type metadata.
 var (
 	CacheClusterKind             = reflect.TypeOf(CacheCluster{}).Name()

@@ -22,11 +22,6 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
 
-// Error strings
-// const (
-// 	errResourceIsNotReplicationGroup = "the managed resource is not a ReplicationGroup"
-// )
-
 // CacheCluster states.
 const (
 	StatusCreating            = "creating"
@@ -40,20 +35,6 @@ const (
 	StatusRebooting           = "rebooting cluster nodes"
 	StatusRestoreFail         = "restore-failed"
 )
-
-// Supported cache engines.
-// const (
-// 	CacheEngineRedis     = "redis"
-// 	CacheEngineMemcached = "memcached"
-// )
-
-// TODO(negz): Lookup supported patch versions in the ElastiCache API?
-// AWS requires we specify desired Redis versions down to the patch version,
-// but the RedisCluster resource claim supports only minor versions (which are
-// the lowest common denominator between supported clouds). We perform this
-// lookup in the claim provisioning code, which does not have an AWS client
-// plumbed in to perform such a lookup.
-// https://docs.aws.amazon.com/AmazonElastiCache/latest/APIReference/API_DescribeCacheEngineVersions.html
 
 // MinorVersion represents a supported minor version of Redis.
 type MinorVersion string
@@ -79,7 +60,7 @@ type Tag struct {
 	Key string `json:"key"`
 
 	// Value of the tag.
-	Value string `json:"value"`
+	Value *string `json:"value,omitempty"`
 }
 
 // CacheNode represents a node in the cluster
@@ -215,27 +196,33 @@ type CacheClusterParameters struct {
 	// regardless of the PreferredMaintenanceWindow setting for the cluster.
 	// If false, changes to the cluster are applied on the next maintenance reboot,
 	// or the next failure reboot, whichever occurs first.
+	// +optional
 	ApplyImmediately *bool `json:"applyImmediately,omitempty"`
 
 	// Specifies whether the nodes in this Memcached cluster are created in a single
 	// Availability Zone or created across multiple Availability Zones in the cluster's
 	// region.
 	// This parameter is only supported for Memcached clusters.
+	// +optional
 	AZMode *string `json:"azMode,omitempty"`
 
 	// The password used to access a password protected server.
+	// +optional
 	AuthToken *string `json:"authToken,omitempty"`
 
 	// Specifies the strategy to use to update the AUTH token. This parameter must
 	// be specified with the auth-token parameter. Possible values:
-	AuthTokenUpdateStrategy string `json:"authTokenUpdateStrategy,omitempty"`
+	// +optional
+	AuthTokenUpdateStrategy *string `json:"authTokenUpdateStrategy,omitempty"`
 
 	// The node group (shard) identifier. This parameter is stored as a lowercase
 	// string.
 	// CacheClusterID is a required field
-	CacheClusterID string `json:"cacheClusterId,omitempty"`
+	// +optional
+	CacheClusterID string `json:"cacheClusterId"`
 
 	// A list of cache node IDs to be removed.
+	// +optional
 	CacheNodeIdsToRemove []string `json:"cacheNodeIdsToRemove,omitempty"`
 
 	// The compute and memory capacity of the nodes in the node group (shard).
@@ -243,64 +230,80 @@ type CacheClusterParameters struct {
 
 	// The name of the parameter group to associate with this cluster. If this argument
 	// is omitted, the default parameter group for the specified engine is used.
+	// +optional
 	CacheParameterGroupName *string `json:"cacheParameterGroupName,omitempty"`
 
 	// A list of security group names to associate with this cluster.
+	// +optional
 	CacheSecurityGroupNames []string `json:"cacheSecurityGroupNames,omitempty"`
 
 	// The name of the subnet group to be used for the cluster.
+	// +optional
 	CacheSubnetGroupName *string `json:"cacheSubnetGroupName,omitempty"`
 
 	// The name of the cache engine to be used for this cluster.
 	Engine string `json:"engine"`
 
 	// The version number of the cache engine to be used for this cluster.
+	// +optional
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	// The Amazon Resource Name (ARN) of the Amazon Simple Notification Service
 	// (SNS) topic to which notifications are sent.
+	// +optional
 	NotificationTopicArn *string `json:"notificationTopicArn,omitempty"`
 
 	// The initial number of cache nodes that the cluster has.
 	NumCacheNodes int64 `json:"numCacheNodes"`
 
 	// The port number on which each of the cache nodes accepts connections.
+	// +optional
 	Port *int64 `json:"port,omitempty"`
 
 	// The EC2 Availability Zone in which the cluster is created.
 	// Default: System chosen Availability Zone.
+	// +optional
 	PreferredAvailabilityZone *string `json:"peferredAvailabilityZone,omitempty"`
 
 	// A list of the Availability Zones in which cache nodes are created.
+	// +optional
 	PreferredAvailabilityZones []string `json:"preferredAvailabilityZones,omitempty"`
 
 	// Specifies the weekly time range during which maintenance on the cluster is
 	// performed.
+	// +optional
 	PreferredMaintenanceWindow *string `json:"preferredMaintenanceWindow,omitempty"`
 
 	// The ID of the replication group to which this cluster should belong.
+	// +optional
 	ReplicationGroupID *string `json:"replicationGroupId,omitempty"`
 
 	// One or more VPC security groups associated with the cluster.
+	// +optional
 	SecurityGroupIds []string `json:"securityGroupIds,omitempty"`
 
 	// A single-element string list containing an Amazon Resource Name (ARN) that
 	// uniquely identifies a Redis RDB snapshot file stored in Amazon S3.
+	// +optional
 	SnapshotArns []string `json:"snapshotArns,omitempty"`
 
 	// The name of a Redis snapshot from which to restore data into the new node
 	// group (shard).
+	// +optional
 	SnapshotName *string `json:"snapshotName,omitempty"`
 
 	// The number of days for which ElastiCache retains automatic snapshots before
 	// deleting them.
+	// +optional
 	SnapshotRetentionLimit *int64 `json:"snapshotRetentionLimit,omitempty"`
 
 	// The daily time range (in UTC) during which ElastiCache begins taking a daily
 	// snapshot of your node group (shard).
+	// +optional
 	SnapshotWindow *string `json:"snapshotWindow,omitempty"`
 
 	// A list of cost allocation tags to be added to this resource.
+	// +optional
 	Tags []Tag `json:"tags,omitempty"`
 }
 

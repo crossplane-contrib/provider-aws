@@ -261,7 +261,6 @@ spec:
                         type: string
                     required:
                     - key
-                    - value
                     type: object
                   type: array
               required:

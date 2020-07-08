@@ -84,7 +84,7 @@ func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	}
 
 	p := &awsv1alpha3.Provider{}
-	if err := c.client.Get(ctx, meta.NamespacedNameOf(g.Spec.ProviderReference), p); err != nil {
+	if err := c.client.Get(ctx, types.NamespacedName{Name: g.Spec.ProviderReference.Name}, p); err != nil {
 		return nil, errors.Wrap(err, errGetProvider)
 	}
 
@@ -164,9 +164,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
-	name := meta.GetExternalName(cr)
-
-	_, err := e.client.CreateCacheClusterRequest(elasticache.NewCreateCacheClusterInput(cr.Spec.ForProvider, name)).Send(ctx)
+	_, err := e.client.CreateCacheClusterRequest(elasticache.NewCreateCacheClusterInput(cr.Spec.ForProvider, meta.GetExternalName(cr))).Send(ctx)
 
 	return managed.ExternalCreation{}, errors.Wrap(err, errCreateCacheCluster)
 }
@@ -177,7 +175,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.New(errNotCacheCluster)
 	}
 
-	// AWS API rejects modification requests if the state is not`available`
+	// AWS API rejects modification requests if the state is not `available`
 	if cr.Status.AtProvider.CacheClusterStatus != v1beta1.StatusAvailable {
 		return managed.ExternalUpdate{}, nil
 	}
