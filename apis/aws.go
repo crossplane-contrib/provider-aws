@@ -30,6 +30,7 @@ import (
 	ec2v1alpha4 "github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
 	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	eksv1beta1 "github.com/crossplane/provider-aws/apis/eks/v1beta1"
+	elasticloadbalancingv1alpha1 "github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
 	identityv1alpha1 "github.com/crossplane/provider-aws/apis/identity/v1alpha1"
 	identityv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	notificationv1alpha3 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
@@ -45,6 +46,7 @@ func init() {
 		cachev1beta1.SchemeBuilder.AddToScheme,
 		computev1alpha3.SchemeBuilder.AddToScheme,
 		databasev1beta1.SchemeBuilder.AddToScheme,
+		elasticloadbalancingv1alpha1.SchemeBuilder.AddToScheme,
 		identityv1alpha1.SchemeBuilder.AddToScheme,
 		identityv1beta1.SchemeBuilder.AddToScheme,
 		route53v1alpha1.SchemeBuilder.AddToScheme,
