@@ -1,13 +1,13 @@
 ---
 apiVersion: identity.aws.crossplane.io/v1alpha1
-kind: IAMUser
+kind: IAMGroupUserMembership
 metadata:
-  name: someuser
+  name: fake-group-user-membership
 spec:
   forProvider:
-    tags:
-      - key: k1
-        value: v1
+    groupName: external-name
+    userNameRef:
+      name: someuser
   providerRef:
     name: aws-provider
   reclaimPolicy: Delete
