@@ -154,10 +154,6 @@ spec:
                     Availability Zones in the cluster's region. This parameter is
                     only supported for Memcached clusters.
                   type: string
-                cacheClusterId:
-                  description: The node group (shard) identifier. This parameter is
-                    stored as a lowercase string. CacheClusterID is a required field
-                  type: string
                 cacheNodeIdsToRemove:
                   description: A list of cache node IDs to be removed.
                   items:
@@ -181,6 +177,30 @@ spec:
                 cacheSubnetGroupName:
                   description: The name of the subnet group to be used for the cluster.
                   type: string
+                cacheSubnetGroupNameRef:
+                  description: A referencer to retrieve the name of a CacheSubnetGroup
+                  properties:
+                    name:
+                      description: Name of the referenced object.
+                      type: string
+                  required:
+                  - name
+                  type: object
+                cacheSubnetGroupNameSelector:
+                  description: A selector to select a referencer to retrieve the name
+                    of a CacheSubnetGroup
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
+                  type: object
                 engine:
                   description: The name of the cache engine to be used for this cluster.
                   type: string
@@ -197,15 +217,15 @@ spec:
                     has.
                   format: int64
                   type: integer
-                peferredAvailabilityZone:
-                  description: 'The EC2 Availability Zone in which the cluster is
-                    created. Default: System chosen Availability Zone.'
-                  type: string
                 port:
                   description: The port number on which each of the cache nodes accepts
                     connections.
                   format: int64
                   type: integer
+                preferredAvailabilityZone:
+                  description: 'The EC2 Availability Zone in which the cluster is
+                    created. Default: System chosen Availability Zone.'
+                  type: string
                 preferredAvailabilityZones:
                   description: A list of the Availability Zones in which cache nodes
                     are created.
@@ -220,6 +240,33 @@ spec:
                   description: The ID of the replication group to which this cluster
                     should belong.
                   type: string
+                securityGroupIDRefs:
+                  description: A referencer to retrieve the ID of a Security group
+                  items:
+                    description: A Reference to a named object.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  type: array
+                securityGroupIDSelector:
+                  description: A selector to select a referencer to retrieve the ID
+                    of a Security Group
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same
+                        controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels
+                        is selected.
+                      type: object
+                  type: object
                 securityGroupIds:
                   description: One or more VPC security groups associated with the
                     cluster.
@@ -265,7 +312,6 @@ spec:
                   type: array
               required:
               - cacheNodeType
-              - engine
               - numCacheNodes
               type: object
             providerRef:
@@ -341,8 +387,10 @@ spec:
                         description: The cache node identifier.
                         type: string
                       cacheNodeStatus:
-                        description: The current state of this cache node, one of
-                          the following values.
+                        description: 'The current state of this cache node, one of
+                          the following values:  available, creating, deleted, deleting,
+                          incompatible-network, modifying, rebooting cluster nodes,
+                          restore-failed, or snapshotting.'
                         type: string
                       customerAvailabilityZone:
                         description: The Availability Zone where this node was created
@@ -409,7 +457,7 @@ spec:
                     topics are used for publishing ElastiCache events to subscribers
                     using Amazon Simple Notification Service (SNS).
                   properties:
-                    address:
+                    topicArn:
                       description: The Amazon Resource Name (ARN) that identifies
                         the topic.
                       type: string

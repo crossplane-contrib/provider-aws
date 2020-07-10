@@ -31,12 +31,16 @@ type MockClient struct {
 	MockCreateReplicationGroupRequest    func(*elasticache.CreateReplicationGroupInput) elasticache.CreateReplicationGroupRequest
 	MockModifyReplicationGroupRequest    func(*elasticache.ModifyReplicationGroupInput) elasticache.ModifyReplicationGroupRequest
 	MockDeleteReplicationGroupRequest    func(*elasticache.DeleteReplicationGroupInput) elasticache.DeleteReplicationGroupRequest
-	MockDescribeCacheClustersRequest     func(*elasticache.DescribeCacheClustersInput) elasticache.DescribeCacheClustersRequest
 
 	MockDescribeCacheSubnetGroupsRequest func(*elasticache.DescribeCacheSubnetGroupsInput) elasticache.DescribeCacheSubnetGroupsRequest
 	MockCreateCacheSubnetGroupRequest    func(*elasticache.CreateCacheSubnetGroupInput) elasticache.CreateCacheSubnetGroupRequest
 	MockModifyCacheSubnetGroupRequest    func(*elasticache.ModifyCacheSubnetGroupInput) elasticache.ModifyCacheSubnetGroupRequest
 	MockDeleteCacheSubnetGroupRequest    func(*elasticache.DeleteCacheSubnetGroupInput) elasticache.DeleteCacheSubnetGroupRequest
+
+	MockDescribeCacheClustersRequest func(*elasticache.DescribeCacheClustersInput) elasticache.DescribeCacheClustersRequest
+	MockCreateCacheClusterRequest    func(*elasticache.CreateCacheClusterInput) elasticache.CreateCacheClusterRequest
+	MockDeleteCacheClusterRequest    func(*elasticache.DeleteCacheClusterInput) elasticache.DeleteCacheClusterRequest
+	MockModifyCacheClusterRequest    func(*elasticache.ModifyCacheClusterInput) elasticache.ModifyCacheClusterRequest
 }
 
 // DescribeReplicationGroupsRequest calls the underlying
@@ -91,4 +95,22 @@ func (c *MockClient) ModifyCacheSubnetGroupRequest(i *elasticache.ModifyCacheSub
 // MockDeleteCacheSubnetGroupRequest method.
 func (c *MockClient) DeleteCacheSubnetGroupRequest(i *elasticache.DeleteCacheSubnetGroupInput) elasticache.DeleteCacheSubnetGroupRequest {
 	return c.MockDeleteCacheSubnetGroupRequest(i)
+}
+
+// CreateCacheClusterRequest calls the underlying
+// MockCreateCacheClusterRequest method.
+func (c *MockClient) CreateCacheClusterRequest(i *elasticache.CreateCacheClusterInput) elasticache.CreateCacheClusterRequest {
+	return c.MockCreateCacheClusterRequest(i)
+}
+
+// DeleteCacheClusterRequest calls the underlying
+// MockDeleteCacheClusterRequest method.
+func (c *MockClient) DeleteCacheClusterRequest(i *elasticache.DeleteCacheClusterInput) elasticache.DeleteCacheClusterRequest {
+	return c.MockDeleteCacheClusterRequest(i)
+}
+
+// ModifyCacheClusterRequest calls the underlying
+// MockModifyCacheClusterRequest method.
+func (c *MockClient) ModifyCacheClusterRequest(i *elasticache.ModifyCacheClusterInput) elasticache.ModifyCacheClusterRequest {
+	return c.MockModifyCacheClusterRequest(i)
 }

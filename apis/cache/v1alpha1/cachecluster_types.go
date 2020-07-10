@@ -36,42 +36,23 @@ const (
 	StatusRestoreFail         = "restore-failed"
 )
 
-// MinorVersion represents a supported minor version of Redis.
-type MinorVersion string
-
-// PatchVersion represents a supported patch version of Redis.
-type PatchVersion string
-
-// UnsupportedVersion indicates the requested MinorVersion is unsupported.
-const UnsupportedVersion PatchVersion = ""
-
-// LatestSupportedPatchVersion returns the latest supported patch version
-// for a given minor version.
-var LatestSupportedPatchVersion = map[MinorVersion]PatchVersion{
-	MinorVersion("5.0"): PatchVersion("5.0.0"),
-	MinorVersion("4.0"): PatchVersion("4.0.10"),
-	MinorVersion("3.2"): PatchVersion("3.2.10"),
-	MinorVersion("2.8"): PatchVersion("2.8.24"),
-}
-
 // A Tag is used to tag the ElastiCache resources in AWS.
 type Tag struct {
 	// Key for the tag.
 	Key string `json:"key"`
 
 	// Value of the tag.
+	// +optional
 	Value *string `json:"value,omitempty"`
 }
 
 // CacheNode represents a node in the cluster
 type CacheNode struct {
-	// The date and time when the cache node was created.
-	// CacheNodeCreateTime time.Time `json:"cacheNodeCreateTime,omitempty"`
-
 	// The cache node identifier.
 	CacheNodeID string `json:"cacheNodeId,omitempty"`
 
-	// The current state of this cache node, one of the following values.
+	// The current state of this cache node, one of the following values:  available, creating,
+	// deleted, deleting, incompatible-network, modifying, rebooting cluster nodes, restore-failed, or snapshotting.
 	CacheNodeStatus string `json:"cacheNodeStatus,omitempty"`
 
 	// The Availability Zone where this node was created and now resides.
@@ -92,7 +73,7 @@ type CacheParameterGroupStatus struct {
 
 	// A list of the cache node IDs which need to be rebooted for parameter changes
 	// to be applied.
-	CacheNodeIdsToReboot []string `json:"cacheNodeIdsToReboot,omitempty"`
+	CacheNodeIDsToReboot []string `json:"cacheNodeIdsToReboot,omitempty"`
 
 	// The name of the cache parameter group.
 	CacheParameterGroupName string `json:"cacheParameterGroupName,omitempty"`
@@ -116,7 +97,7 @@ type Endpoint struct {
 // used to publish Cluster events
 type NotificationConfiguration struct {
 	// The Amazon Resource Name (ARN) that identifies the topic.
-	TopicArn string `json:"address,omitempty"`
+	TopicARN string `json:"topicArn,omitempty"`
 
 	// The current state of the topic.
 	TopicStatus *string `json:"topicStatus,omitempty"`
@@ -129,7 +110,7 @@ type PendingModifiedValues struct {
 
 	// A list of cache node IDs that are being removed (or will be removed) from
 	// the cluster.
-	CacheNodeIdsToRemove []string `json:"cacheNodeIdsToRemove,omitempty"`
+	CacheNodeIDsToRemove []string `json:"cacheNodeIdsToRemove,omitempty"`
 
 	// The cache node type that this cluster or replication group is scaled to.
 	CacheNodeType string `json:"cacheNodeType,omitempty"`
@@ -151,9 +132,6 @@ type CacheClusterObservation struct {
 	// A flag that enables using an AuthToken (password) when issuing Redis commands.
 	// Default: false
 	AuthTokenEnabled bool `json:"authTokenEnabled,omitempty"`
-
-	// The date the auth token was last modified
-	// AuthTokenLastModifiedDate *time.Time `json:"authTokenLastModifiedDate,omitempty"`
 
 	// The current state of this cluster.
 	CacheClusterStatus string `json:"cacheClusterStatus,omitempty"`
@@ -215,15 +193,9 @@ type CacheClusterParameters struct {
 	// +optional
 	AuthTokenUpdateStrategy *string `json:"authTokenUpdateStrategy,omitempty"`
 
-	// The node group (shard) identifier. This parameter is stored as a lowercase
-	// string.
-	// CacheClusterID is a required field
-	// +optional
-	CacheClusterID string `json:"cacheClusterId"`
-
 	// A list of cache node IDs to be removed.
 	// +optional
-	CacheNodeIdsToRemove []string `json:"cacheNodeIdsToRemove,omitempty"`
+	CacheNodeIDsToRemove []string `json:"cacheNodeIdsToRemove,omitempty"`
 
 	// The compute and memory capacity of the nodes in the node group (shard).
 	CacheNodeType string `json:"cacheNodeType"`
@@ -241,8 +213,19 @@ type CacheClusterParameters struct {
 	// +optional
 	CacheSubnetGroupName *string `json:"cacheSubnetGroupName,omitempty"`
 
+	// A referencer to retrieve the name of a CacheSubnetGroup
+	// +optional
+	CacheSubnetGroupNameRef *runtimev1alpha1.Reference `json:"cacheSubnetGroupNameRef,omitempty"`
+
+	// A selector to select a referencer to retrieve the name of a CacheSubnetGroup
+	// +optional
+	// +immutable
+	CacheSubnetGroupNameSelector *runtimev1alpha1.Selector `json:"cacheSubnetGroupNameSelector,omitempty"`
+
 	// The name of the cache engine to be used for this cluster.
-	Engine string `json:"engine"`
+	// +optional
+	// +immutable
+	Engine *string `json:"engine,omitempty"`
 
 	// The version number of the cache engine to be used for this cluster.
 	// +optional
@@ -251,19 +234,20 @@ type CacheClusterParameters struct {
 	// The Amazon Resource Name (ARN) of the Amazon Simple Notification Service
 	// (SNS) topic to which notifications are sent.
 	// +optional
-	NotificationTopicArn *string `json:"notificationTopicArn,omitempty"`
+	NotificationTopicARN *string `json:"notificationTopicArn,omitempty"`
 
 	// The initial number of cache nodes that the cluster has.
 	NumCacheNodes int64 `json:"numCacheNodes"`
 
 	// The port number on which each of the cache nodes accepts connections.
 	// +optional
+	// +immutable
 	Port *int64 `json:"port,omitempty"`
 
 	// The EC2 Availability Zone in which the cluster is created.
 	// Default: System chosen Availability Zone.
 	// +optional
-	PreferredAvailabilityZone *string `json:"peferredAvailabilityZone,omitempty"`
+	PreferredAvailabilityZone *string `json:"preferredAvailabilityZone,omitempty"`
 
 	// A list of the Availability Zones in which cache nodes are created.
 	// +optional
@@ -276,20 +260,32 @@ type CacheClusterParameters struct {
 
 	// The ID of the replication group to which this cluster should belong.
 	// +optional
+	// +immutable
 	ReplicationGroupID *string `json:"replicationGroupId,omitempty"`
 
 	// One or more VPC security groups associated with the cluster.
 	// +optional
-	SecurityGroupIds []string `json:"securityGroupIds,omitempty"`
+	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
+
+	// A referencer to retrieve the ID of a Security group
+	// +optional
+	SecurityGroupIDRefs []runtimev1alpha1.Reference `json:"securityGroupIDRefs,omitempty"`
+
+	// A selector to select a referencer to retrieve the ID of a Security Group
+	// +optional
+	// +immutable
+	SecurityGroupIDSelector *runtimev1alpha1.Selector `json:"securityGroupIDSelector,omitempty"`
 
 	// A single-element string list containing an Amazon Resource Name (ARN) that
 	// uniquely identifies a Redis RDB snapshot file stored in Amazon S3.
 	// +optional
-	SnapshotArns []string `json:"snapshotArns,omitempty"`
+	// +immutable
+	SnapshotARNs []string `json:"snapshotArns,omitempty"`
 
 	// The name of a Redis snapshot from which to restore data into the new node
 	// group (shard).
 	// +optional
+	// +immutable
 	SnapshotName *string `json:"snapshotName,omitempty"`
 
 	// The number of days for which ElastiCache retains automatic snapshots before
@@ -304,6 +300,7 @@ type CacheClusterParameters struct {
 
 	// A list of cost allocation tags to be added to this resource.
 	// +optional
+	// +immutable
 	Tags []Tag `json:"tags,omitempty"`
 }
 

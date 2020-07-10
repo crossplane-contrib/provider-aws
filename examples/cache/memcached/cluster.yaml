@@ -1,7 +1,7 @@
 apiVersion: cache.aws.crossplane.io/v1alpha1
 kind: CacheCluster
 metadata:
-  name: aws-redis-standard
+  name: aws-memcached-standard
   annotations:
     crossplane.io/external-name: some-cluster-id
 spec:
@@ -9,7 +9,10 @@ spec:
     engine: memcached
     cacheNodeType: cache.t2.micro
     numCacheNodes: 1
-    cacheSubnetGroupName: some
+    cacheSubnetGroupNameRef:
+      name: sample-subnet
+    securityGroupIdRefs:
+    - name: sample-cluster-sg
   reclaimPolicy: Delete
   providerRef:
     name: example

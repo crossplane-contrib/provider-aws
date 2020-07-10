@@ -66,18 +66,19 @@ func SetupCacheCluster(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.CacheCluster{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.CacheClusterGroupVersionKind),
-			managed.WithExternalConnecter(&connecter{client: mgr.GetClient(), newClientFn: elasticache.NewClient}),
+			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: elasticache.NewClient}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		))
 }
 
-type connecter struct {
+type connector struct {
 	client      client.Client
 	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (elasticache.Client, error)
 }
 
-func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
 	g, ok := mg.(*v1alpha1.CacheCluster)
 	if !ok {
 		return nil, errors.New(errNotCacheCluster)
@@ -136,7 +137,6 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	switch cr.Status.AtProvider.CacheClusterStatus {
 	case v1alpha1.StatusAvailable:
 		cr.Status.SetConditions(runtimev1alpha1.Available())
-		resource.SetBindable(cr)
 	case v1alpha1.StatusCreating:
 		cr.Status.SetConditions(runtimev1alpha1.Creating())
 	case v1alpha1.StatusDeleting:
@@ -164,7 +164,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
-	_, err := e.client.CreateCacheClusterRequest(elasticache.NewCreateCacheClusterInput(cr.Spec.ForProvider, meta.GetExternalName(cr))).Send(ctx)
+	_, err := e.client.CreateCacheClusterRequest(elasticache.GenerateCreateCacheClusterInput(cr.Spec.ForProvider, meta.GetExternalName(cr))).Send(ctx)
 
 	return managed.ExternalCreation{}, errors.Wrap(err, errCreateCacheCluster)
 }
@@ -180,7 +180,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, nil
 	}
 
-	_, err := e.client.ModifyCacheClusterRequest(elasticache.NewModifyCacheClusterInput(cr.Spec.ForProvider, meta.GetExternalName(cr))).Send(ctx)
+	_, err := e.client.ModifyCacheClusterRequest(elasticache.GenerateModifyCacheClusterInput(cr.Spec.ForProvider, meta.GetExternalName(cr))).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, errModifyCacheCluster)
 }
 

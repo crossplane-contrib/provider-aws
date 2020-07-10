@@ -21,9 +21,8 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/mitchellh/copystructure"
@@ -33,6 +32,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache/elasticacheiface"
 
+	"github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
 	clients "github.com/crossplane/provider-aws/pkg/clients"
@@ -115,10 +115,10 @@ func NewCreateReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id str
 // modification input suitable for use with the AWS API.
 func NewModifyReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id string) *elasticache.ModifyReplicationGroupInput {
 	return &elasticache.ModifyReplicationGroupInput{
-		ReplicationGroupId:          &id,
-		ApplyImmediately:            &g.ApplyModificationsImmediately,
+		ReplicationGroupId:          aws.String(id),
+		ApplyImmediately:            aws.Bool(g.ApplyModificationsImmediately),
 		AutomaticFailoverEnabled:    g.AutomaticFailoverEnabled,
-		CacheNodeType:               &g.CacheNodeType,
+		CacheNodeType:               aws.String(g.CacheNodeType),
 		CacheParameterGroupName:     g.CacheParameterGroupName,
 		CacheSecurityGroupNames:     g.CacheSecurityGroupNames,
 		EngineVersion:               g.EngineVersion,
@@ -126,7 +126,7 @@ func NewModifyReplicationGroupInput(g v1beta1.ReplicationGroupParameters, id str
 		NotificationTopicStatus:     g.NotificationTopicStatus,
 		PreferredMaintenanceWindow:  g.PreferredMaintenanceWindow,
 		PrimaryClusterId:            g.PrimaryClusterID,
-		ReplicationGroupDescription: &g.ReplicationGroupDescription,
+		ReplicationGroupDescription: aws.String(g.ReplicationGroupDescription),
 		SecurityGroupIds:            g.SecurityGroupIDs,
 		SnapshotRetentionLimit:      clients.Int64Address(g.SnapshotRetentionLimit),
 		SnapshotWindow:              g.SnapshotWindow,
@@ -332,8 +332,8 @@ func ConnectionEndpoint(rg elasticache.ReplicationGroup) managed.ConnectionDetai
 		rg.ConfigurationEndpoint != nil &&
 		rg.ConfigurationEndpoint.Address != nil {
 		return managed.ConnectionDetails{
-			v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(rg.ConfigurationEndpoint.Address)),
-			v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(aws.Int64Value(rg.ConfigurationEndpoint.Port)))),
+			runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(rg.ConfigurationEndpoint.Address)),
+			runtimev1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(aws.Int64Value(rg.ConfigurationEndpoint.Port)))),
 		}
 	}
 
@@ -345,8 +345,8 @@ func ConnectionEndpoint(rg elasticache.ReplicationGroup) managed.ConnectionDetai
 		rg.NodeGroups[0].PrimaryEndpoint != nil &&
 		rg.NodeGroups[0].PrimaryEndpoint.Address != nil {
 		return managed.ConnectionDetails{
-			v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(rg.NodeGroups[0].PrimaryEndpoint.Address)),
-			v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(aws.Int64Value(rg.NodeGroups[0].PrimaryEndpoint.Port)))),
+			runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(rg.NodeGroups[0].PrimaryEndpoint.Address)),
+			runtimev1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(aws.Int64Value(rg.NodeGroups[0].PrimaryEndpoint.Port)))),
 		}
 	}
 
@@ -408,27 +408,27 @@ func IsSubnetGroupUpToDate(p cachev1alpha1.CacheSubnetGroupParameters, sg elasti
 
 // CacheCluster methods
 
-// NewCreateCacheClusterInput returns Cache Cluster creation input
-func NewCreateCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id string) *elasticache.CreateCacheClusterInput {
+// GenerateCreateCacheClusterInput returns Cache Cluster creation input
+func GenerateCreateCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id string) *elasticache.CreateCacheClusterInput {
 	c := &elasticache.CreateCacheClusterInput{
-		// AZMode: elasticache.AZMode(p.AZMode),
+		AZMode:                     elasticache.AZMode(aws.StringValue(p.AZMode)),
 		AuthToken:                  p.AZMode,
 		CacheClusterId:             aws.String(id),
 		CacheNodeType:              aws.String(p.CacheNodeType),
 		CacheParameterGroupName:    p.CacheParameterGroupName,
 		CacheSubnetGroupName:       p.CacheSubnetGroupName,
 		CacheSecurityGroupNames:    p.CacheSecurityGroupNames,
-		Engine:                     aws.String(p.Engine),
+		Engine:                     p.Engine,
 		EngineVersion:              p.EngineVersion,
-		NotificationTopicArn:       p.NotificationTopicArn,
+		NotificationTopicArn:       p.NotificationTopicARN,
 		NumCacheNodes:              aws.Int64(p.NumCacheNodes),
 		Port:                       p.Port,
 		PreferredAvailabilityZone:  p.PreferredAvailabilityZone,
 		PreferredAvailabilityZones: p.PreferredAvailabilityZones,
 		PreferredMaintenanceWindow: p.PreferredMaintenanceWindow,
 		ReplicationGroupId:         p.ReplicationGroupID,
-		SecurityGroupIds:           p.SecurityGroupIds,
-		SnapshotArns:               p.SnapshotArns,
+		SecurityGroupIds:           p.SecurityGroupIDs,
+		SnapshotArns:               p.SnapshotARNs,
 		SnapshotName:               p.SnapshotName,
 		SnapshotRetentionLimit:     p.SnapshotRetentionLimit,
 		SnapshotWindow:             p.SnapshotWindow,
@@ -447,25 +447,25 @@ func NewCreateCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id strin
 	return c
 }
 
-// NewModifyCacheClusterInput returns ElastiCache Cache Cluster
+// GenerateModifyCacheClusterInput returns ElastiCache Cache Cluster
 // modification input suitable for use with the AWS API.
-func NewModifyCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id string) *elasticache.ModifyCacheClusterInput {
+func GenerateModifyCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id string) *elasticache.ModifyCacheClusterInput {
 	return &elasticache.ModifyCacheClusterInput{
 		CacheClusterId:             aws.String(id),
 		AZMode:                     elasticache.AZMode(aws.StringValue(p.AZMode)),
 		ApplyImmediately:           p.ApplyImmediately,
 		AuthToken:                  p.AuthToken,
 		AuthTokenUpdateStrategy:    elasticache.AuthTokenUpdateStrategyType(clients.StringValue(p.AuthTokenUpdateStrategy)),
-		CacheNodeIdsToRemove:       p.CacheNodeIdsToRemove,
+		CacheNodeIdsToRemove:       p.CacheNodeIDsToRemove,
 		CacheNodeType:              aws.String(p.CacheNodeType),
 		CacheParameterGroupName:    p.CacheParameterGroupName,
 		CacheSecurityGroupNames:    p.CacheSecurityGroupNames,
 		EngineVersion:              p.EngineVersion,
 		NewAvailabilityZones:       p.PreferredAvailabilityZones,
-		NotificationTopicArn:       p.NotificationTopicArn,
+		NotificationTopicArn:       p.NotificationTopicARN,
 		NumCacheNodes:              aws.Int64(p.NumCacheNodes),
 		PreferredMaintenanceWindow: p.PreferredMaintenanceWindow,
-		SecurityGroupIds:           p.SecurityGroupIds,
+		SecurityGroupIds:           p.SecurityGroupIDs,
 		SnapshotRetentionLimit:     p.SnapshotRetentionLimit,
 		SnapshotWindow:             p.SnapshotWindow,
 	}
@@ -479,6 +479,26 @@ func GenerateClusterObservation(c elasticache.CacheCluster) cachev1alpha1.CacheC
 		AuthTokenEnabled:          aws.BoolValue(c.AtRestEncryptionEnabled),
 		CacheClusterStatus:        aws.StringValue(c.CacheClusterStatus),
 		ClientDownloadLandingPage: aws.StringValue(c.ClientDownloadLandingPage),
+	}
+
+	if len(c.CacheNodes) > 0 {
+		cacheNodes := make([]v1alpha1.CacheNode, len(c.CacheNodes))
+		for i, v := range c.CacheNodes {
+			cacheNodes[i] = v1alpha1.CacheNode{
+				CacheNodeID:              aws.StringValue(v.CacheNodeId),
+				CacheNodeStatus:          aws.StringValue(v.CacheNodeStatus),
+				CustomerAvailabilityZone: aws.StringValue(v.CustomerAvailabilityZone),
+				ParameterGroupStatus:     aws.StringValue(v.ParameterGroupStatus),
+				SourceCacheNodeID:        v.SourceCacheNodeId,
+			}
+			if v.Endpoint != nil {
+				cacheNodes[i].Endpoint = &v1alpha1.Endpoint{
+					Address: aws.StringValue(v.Endpoint.Address),
+					Port:    int(aws.Int64Value(v.Endpoint.Port)),
+				}
+			}
+		}
+		o.CacheNodes = cacheNodes
 	}
 	return o
 }
@@ -500,32 +520,42 @@ func LateInitializeCluster(p *cachev1alpha1.CacheClusterParameters, c elasticach
 	p.PreferredAvailabilityZone = clients.LateInitializeStringPtr(p.PreferredAvailabilityZone, c.PreferredAvailabilityZone)
 	p.PreferredMaintenanceWindow = clients.LateInitializeStringPtr(p.PreferredMaintenanceWindow, c.PreferredMaintenanceWindow)
 	p.ReplicationGroupID = clients.LateInitializeStringPtr(p.ReplicationGroupID, c.ReplicationGroupId)
-	p.SnapshotRetentionLimit = clients.LateInitializeInt64Ptr(p.SnapshotRetentionLimit, c.SnapshotRetentionLimit)
-	p.SnapshotWindow = clients.LateInitializeStringPtr(p.SnapshotWindow, c.SnapshotWindow)
 
 	if c.NotificationConfiguration != nil {
-		p.NotificationTopicArn = clients.LateInitializeStringPtr(p.NotificationTopicArn, c.NotificationConfiguration.TopicArn)
+		p.NotificationTopicARN = clients.LateInitializeStringPtr(p.NotificationTopicARN, c.NotificationConfiguration.TopicArn)
 	}
 	if c.CacheParameterGroup != nil {
 		p.CacheParameterGroupName = clients.LateInitializeStringPtr(p.CacheParameterGroupName, c.CacheParameterGroup.CacheParameterGroupName)
 	}
 }
 
-// GenerateCluster takes a *CacheClusterParameters and returns *elasticache.CacheCluster.
-func GenerateCluster(name string, in cachev1alpha1.CacheClusterParameters, c *elasticache.CacheCluster) {
+// GenerateCluster modifies elasticache.CacheCluster with values from cachev1alpha1.CacheClusterParameters
+func GenerateCluster(name string, p cachev1alpha1.CacheClusterParameters, c *elasticache.CacheCluster) {
 	c.CacheClusterId = aws.String(name)
-	c.CacheNodeType = aws.String(in.CacheNodeType)
-	c.NumCacheNodes = aws.Int64(in.NumCacheNodes)
-	c.PreferredMaintenanceWindow = in.PreferredMaintenanceWindow
-	c.SnapshotRetentionLimit = in.SnapshotRetentionLimit
-	c.SnapshotWindow = in.SnapshotWindow
+	c.CacheNodeType = aws.String(p.CacheNodeType)
+	c.EngineVersion = p.EngineVersion
+	c.NumCacheNodes = aws.Int64(p.NumCacheNodes)
+	c.PreferredMaintenanceWindow = p.PreferredMaintenanceWindow
+	c.SnapshotRetentionLimit = p.SnapshotRetentionLimit
+	c.SnapshotWindow = p.SnapshotWindow
+
+	if len(p.SecurityGroupIDs) > 0 {
+		sg := make([]elasticache.SecurityGroupMembership, len(p.SecurityGroupIDs))
+		for i, v := range p.SecurityGroupIDs {
+			sg[i] = elasticache.SecurityGroupMembership{
+				SecurityGroupId: aws.String(v),
+				Status:          aws.String("active"),
+			}
+		}
+		c.SecurityGroups = sg
+	}
 
 	if c.CacheParameterGroup != nil {
-		c.CacheParameterGroup.CacheParameterGroupName = in.CacheParameterGroupName
+		c.CacheParameterGroup.CacheParameterGroupName = p.CacheParameterGroupName
 	}
-	c.EngineVersion = in.EngineVersion
+
 	if c.NotificationConfiguration != nil {
-		c.NotificationConfiguration.TopicArn = in.NotificationTopicArn
+		c.NotificationConfiguration.TopicArn = p.NotificationTopicARN
 	}
 }
 
@@ -542,5 +572,5 @@ func IsClusterUpToDate(name string, in *cachev1alpha1.CacheClusterParameters, ob
 	}
 	GenerateCluster(name, *in, desired)
 
-	return cmp.Equal(desired, observed, cmpopts.EquateEmpty(), cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{})), nil
+	return cmp.Equal(desired, observed, cmpopts.EquateEmpty()), nil
 }

@@ -4,8 +4,7 @@ metadata:
   name: sample-cluster-sg
 spec:
   forProvider:
-    vpcIdRef:
-      name: sample-vpc  
+    vpcId: vpc-a81901c0
     groupName: my-cool-ekscluster-sg
     description: Cluster communication with worker nodes
     ingress:
