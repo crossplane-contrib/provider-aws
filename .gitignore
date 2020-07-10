@@ -5,6 +5,9 @@ cover.out
 /vendor
 /.vendor-new
 
+# ignore GoLand files (debug config etc...)
+/.idea
+
 /package
 # Legacy package directory is still ignored in case it is still sticking around locally
 /stack-package

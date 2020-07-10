@@ -16,6 +16,7 @@ package v1alpha1
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	resource "github.com/crossplane/crossplane-runtime/pkg/resource"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -62,6 +63,76 @@ func (mg *IAMUserPolicyAttachment) ResolveReferences(ctx context.Context, c clie
 		return err
 	}
 	mg.Spec.ForProvider.PolicyARN = policy.ResolvedValue
+	mg.Spec.ForProvider.PolicyARNRef = policy.ResolvedReference
+
+	return nil
+}
+
+// ResolveReferences of this IAMGroupUserMembership
+func (mg *IAMGroupUserMembership) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.forProvider.userName
+	user, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: aws.StringValue(mg.Spec.ForProvider.UserName),
+		Reference:    mg.Spec.ForProvider.UserNameRef,
+		Selector:     mg.Spec.ForProvider.UserNameSelector,
+		To:           reference.To{Managed: &IAMUser{}, List: &IAMUserList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return err
+	}
+	mg.Spec.ForProvider.UserName = &user.ResolvedValue
+	mg.Spec.ForProvider.UserNameRef = user.ResolvedReference
+
+	// Resolve spec.forProvider.groupName
+	group, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: *mg.Spec.ForProvider.GroupName,
+		Reference:    mg.Spec.ForProvider.GroupNameRef,
+		Selector:     mg.Spec.ForProvider.GroupNameSelector,
+		To:           reference.To{Managed: &IAMGroup{}, List: &IAMGroupList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return err
+	}
+	mg.Spec.ForProvider.GroupName = &group.ResolvedValue
+	mg.Spec.ForProvider.GroupNameRef = group.ResolvedReference
+
+	return nil
+}
+
+// ResolveReferences of this IAMGroupPolicyAttachment
+func (mg *IAMGroupPolicyAttachment) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.forProvider.groupName
+	group, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: *mg.Spec.ForProvider.GroupName,
+		Reference:    mg.Spec.ForProvider.GroupNameRef,
+		Selector:     mg.Spec.ForProvider.GroupNameSelector,
+		To:           reference.To{Managed: &IAMGroup{}, List: &IAMGroupList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return err
+	}
+	mg.Spec.ForProvider.GroupName = &group.ResolvedValue
+	mg.Spec.ForProvider.GroupNameRef = group.ResolvedReference
+
+	// Resolve spec.forProvider.policyArn
+	policy, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: *mg.Spec.ForProvider.PolicyARN,
+		Reference:    mg.Spec.ForProvider.PolicyARNRef,
+		Selector:     mg.Spec.ForProvider.PolicyARNSelector,
+		To:           reference.To{Managed: &IAMPolicy{}, List: &IAMPolicyList{}},
+		Extract:      IAMPolicyARN(),
+	})
+	if err != nil {
+		return err
+	}
+	mg.Spec.ForProvider.PolicyARN = &policy.ResolvedValue
 	mg.Spec.ForProvider.PolicyARNRef = policy.ResolvedReference
 
 	return nil

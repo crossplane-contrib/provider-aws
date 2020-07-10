@@ -38,6 +38,9 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/eks"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elb"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elbattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgroup"
+	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgrouppolicyattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgroupusermembership"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iampolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrole"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrolepolicyattachment"
@@ -82,9 +85,12 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		s3.SetupBucketClaimBinding,
 		s3.SetupS3Bucket,
 		iamuser.SetupIAMUser,
+		iamgroup.SetupIAMGroup,
 		iampolicy.SetupIAMPolicy,
 		iamrole.SetupIAMRole,
+		iamgroupusermembership.SetupIAMGroupUserMembership,
 		iamuserpolicyattachment.SetupIAMUserPolicyAttachment,
+		iamgrouppolicyattachment.SetupIAMGroupPolicyAttachment,
 		iamrolepolicyattachment.SetupIAMRolePolicyAttachment,
 		vpc.SetupVPC,
 		subnet.SetupSubnet,
