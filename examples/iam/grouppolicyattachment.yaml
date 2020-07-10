@@ -1,0 +1,13 @@
+---
+apiVersion: identity.aws.crossplane.io/v1alpha1
+kind: IAMGroupPolicyAttachment
+metadata:
+  name: sample-grouppolicyattachment
+spec:
+  forProvider:
+    policyArn: arn:aws:iam::aws:policy/AmazonEC2FullAccess
+    groupNameRef:
+      name: somegroup
+  providerRef:
+    name: example
+  reclaimPolicy: Delete

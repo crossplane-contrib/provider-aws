@@ -20,6 +20,33 @@ package v1alpha1
 
 import resource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
+// GetItems of this IAMGroupList.
+func (l *IAMGroupList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// GetItems of this IAMGroupPolicyAttachmentList.
+func (l *IAMGroupPolicyAttachmentList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// GetItems of this IAMGroupUserMembershipList.
+func (l *IAMGroupUserMembershipList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
 // GetItems of this IAMPolicyList.
 func (l *IAMPolicyList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))

@@ -23,6 +23,216 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// GetBindingPhase of this IAMGroup.
+func (mg *IAMGroup) GetBindingPhase() runtimev1alpha1.BindingPhase {
+	return mg.Status.GetBindingPhase()
+}
+
+// GetClaimReference of this IAMGroup.
+func (mg *IAMGroup) GetClaimReference() *corev1.ObjectReference {
+	return mg.Spec.ClaimReference
+}
+
+// GetClassReference of this IAMGroup.
+func (mg *IAMGroup) GetClassReference() *corev1.ObjectReference {
+	return mg.Spec.ClassReference
+}
+
+// GetCondition of this IAMGroup.
+func (mg *IAMGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetProviderReference of this IAMGroup.
+func (mg *IAMGroup) GetProviderReference() runtimev1alpha1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetReclaimPolicy of this IAMGroup.
+func (mg *IAMGroup) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
+	return mg.Spec.ReclaimPolicy
+}
+
+// GetWriteConnectionSecretToReference of this IAMGroup.
+func (mg *IAMGroup) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetBindingPhase of this IAMGroup.
+func (mg *IAMGroup) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
+	mg.Status.SetBindingPhase(p)
+}
+
+// SetClaimReference of this IAMGroup.
+func (mg *IAMGroup) SetClaimReference(r *corev1.ObjectReference) {
+	mg.Spec.ClaimReference = r
+}
+
+// SetClassReference of this IAMGroup.
+func (mg *IAMGroup) SetClassReference(r *corev1.ObjectReference) {
+	mg.Spec.ClassReference = r
+}
+
+// SetConditions of this IAMGroup.
+func (mg *IAMGroup) SetConditions(c ...runtimev1alpha1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this IAMGroup.
+func (mg *IAMGroup) SetProviderReference(r runtimev1alpha1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetReclaimPolicy of this IAMGroup.
+func (mg *IAMGroup) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
+	mg.Spec.ReclaimPolicy = r
+}
+
+// SetWriteConnectionSecretToReference of this IAMGroup.
+func (mg *IAMGroup) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
+// GetBindingPhase of this IAMGroupPolicyAttachment.
+func (mg *IAMGroupPolicyAttachment) GetBindingPhase() runtimev1alpha1.BindingPhase {
+	return mg.Status.GetBindingPhase()
+}
+
+// GetClaimReference of this IAMGroupPolicyAttachment.
+func (mg *IAMGroupPolicyAttachment) GetClaimReference() *corev1.ObjectReference {
+	return mg.Spec.ClaimReference
+}
+
+// GetClassReference of this IAMGroupPolicyAttachment.
+func (mg *IAMGroupPolicyAttachment) GetClassReference() *corev1.ObjectReference {
+	return mg.Spec.ClassReference
+}
+
+// GetCondition of this IAMGroupPolicyAttachment.
+func (mg *IAMGroupPolicyAttachment) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetProviderReference of this IAMGroupPolicyAttachment.
+func (mg *IAMGroupPolicyAttachment) GetProviderReference() runtimev1alpha1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetReclaimPolicy of this IAMGroupPolicyAttachment.
+func (mg *IAMGroupPolicyAttachment) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
+	return mg.Spec.ReclaimPolicy
+}
+
+// GetWriteConnectionSecretToReference of this IAMGroupPolicyAttachment.
+func (mg *IAMGroupPolicyAttachment) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetBindingPhase of this IAMGroupPolicyAttachment.
+func (mg *IAMGroupPolicyAttachment) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
+	mg.Status.SetBindingPhase(p)
+}
+
+// SetClaimReference of this IAMGroupPolicyAttachment.
+func (mg *IAMGroupPolicyAttachment) SetClaimReference(r *corev1.ObjectReference) {
+	mg.Spec.ClaimReference = r
+}
+
+// SetClassReference of this IAMGroupPolicyAttachment.
+func (mg *IAMGroupPolicyAttachment) SetClassReference(r *corev1.ObjectReference) {
+	mg.Spec.ClassReference = r
+}
+
+// SetConditions of this IAMGroupPolicyAttachment.
+func (mg *IAMGroupPolicyAttachment) SetConditions(c ...runtimev1alpha1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this IAMGroupPolicyAttachment.
+func (mg *IAMGroupPolicyAttachment) SetProviderReference(r runtimev1alpha1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetReclaimPolicy of this IAMGroupPolicyAttachment.
+func (mg *IAMGroupPolicyAttachment) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
+	mg.Spec.ReclaimPolicy = r
+}
+
+// SetWriteConnectionSecretToReference of this IAMGroupPolicyAttachment.
+func (mg *IAMGroupPolicyAttachment) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
+// GetBindingPhase of this IAMGroupUserMembership.
+func (mg *IAMGroupUserMembership) GetBindingPhase() runtimev1alpha1.BindingPhase {
+	return mg.Status.GetBindingPhase()
+}
+
+// GetClaimReference of this IAMGroupUserMembership.
+func (mg *IAMGroupUserMembership) GetClaimReference() *corev1.ObjectReference {
+	return mg.Spec.ClaimReference
+}
+
+// GetClassReference of this IAMGroupUserMembership.
+func (mg *IAMGroupUserMembership) GetClassReference() *corev1.ObjectReference {
+	return mg.Spec.ClassReference
+}
+
+// GetCondition of this IAMGroupUserMembership.
+func (mg *IAMGroupUserMembership) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetProviderReference of this IAMGroupUserMembership.
+func (mg *IAMGroupUserMembership) GetProviderReference() runtimev1alpha1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetReclaimPolicy of this IAMGroupUserMembership.
+func (mg *IAMGroupUserMembership) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
+	return mg.Spec.ReclaimPolicy
+}
+
+// GetWriteConnectionSecretToReference of this IAMGroupUserMembership.
+func (mg *IAMGroupUserMembership) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetBindingPhase of this IAMGroupUserMembership.
+func (mg *IAMGroupUserMembership) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
+	mg.Status.SetBindingPhase(p)
+}
+
+// SetClaimReference of this IAMGroupUserMembership.
+func (mg *IAMGroupUserMembership) SetClaimReference(r *corev1.ObjectReference) {
+	mg.Spec.ClaimReference = r
+}
+
+// SetClassReference of this IAMGroupUserMembership.
+func (mg *IAMGroupUserMembership) SetClassReference(r *corev1.ObjectReference) {
+	mg.Spec.ClassReference = r
+}
+
+// SetConditions of this IAMGroupUserMembership.
+func (mg *IAMGroupUserMembership) SetConditions(c ...runtimev1alpha1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetProviderReference of this IAMGroupUserMembership.
+func (mg *IAMGroupUserMembership) SetProviderReference(r runtimev1alpha1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetReclaimPolicy of this IAMGroupUserMembership.
+func (mg *IAMGroupUserMembership) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
+	mg.Spec.ReclaimPolicy = r
+}
+
+// SetWriteConnectionSecretToReference of this IAMGroupUserMembership.
+func (mg *IAMGroupUserMembership) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
+
 // GetBindingPhase of this IAMPolicy.
 func (mg *IAMPolicy) GetBindingPhase() runtimev1alpha1.BindingPhase {
 	return mg.Status.GetBindingPhase()
