@@ -9,23 +9,27 @@ metadata:
   name: hostedzones.route53.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .status.atProvider.hostedZone.id
-    name: ID
-    type: string
-  - JSONPath: .status.atProvider.hostedZone.resourceRecordSetCount
-    name: RRs
-    type: integer
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
     name: READY
     type: string
   - JSONPath: .status.conditions[?(@.type=='Synced')].status
     name: SYNCED
     type: string
+  - JSONPath: .metadata.annotations.crossplane\.io/external-name
+    name: ID
+    type: string
+  - JSONPath: .status.atProvider.hostedZone.resourceRecordSetCount
+    name: RRs
+    type: integer
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
   group: route53.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - managed
+    - aws
     kind: HostedZone
     listKind: HostedZoneList
     plural: hostedzones
@@ -162,8 +166,8 @@ spec:
                     optional; Amazon Route 53 assumes that the domain name is fully
                     qualified. This means that Route 53 treats www.example.com (without
                     a trailing dot) and www.example.com. (with a trailing dot) as
-                    identical. \n If you're creating a public hosted Hostedzone, this
-                    is the name you have registered with your DNS registrar. If your
+                    identical. \n If you're creating a public hosted zone, this is
+                    the name you have registered with your DNS registrar. If your
                     domain name is registered with a registrar other than Route 53,
                     change the name servers for your domain to the set of NameServers
                     that CreateHostedHostedZone returns in DelegationSet."
