@@ -44,7 +44,7 @@ func (mg *Certificate) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1a
 }
 
 // GetProviderReference of this Certificate.
-func (mg *Certificate) GetProviderReference() *corev1.ObjectReference {
+func (mg *Certificate) GetProviderReference() runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -79,7 +79,7 @@ func (mg *Certificate) SetConditions(c ...runtimev1alpha1.Condition) {
 }
 
 // SetProviderReference of this Certificate.
-func (mg *Certificate) SetProviderReference(r *corev1.ObjectReference) {
+func (mg *Certificate) SetProviderReference(r runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
