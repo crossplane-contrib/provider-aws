@@ -368,18 +368,26 @@ func TestLateInitialize(t *testing.T) {
 		name   string
 		params *v1beta1.ReplicationGroupParameters
 		rg     elasticache.ReplicationGroup
+		cc     elasticache.CacheCluster
 		want   *v1beta1.ReplicationGroupParameters
 	}{
 		{
 			name: "NoChange",
 			params: &v1beta1.ReplicationGroupParameters{
-				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
-				AuthEnabled:              &authEnabled,
-				AutomaticFailoverEnabled: &autoFailoverEnabled,
-				SnapshotRetentionLimit:   &snapshotRetentionLimit,
-				SnapshotWindow:           &snapshotWindow,
-				SnapshottingClusterID:    &snapshottingClusterID,
-				TransitEncryptionEnabled: &transitEncryptionEnabled,
+				AtRestEncryptionEnabled:    &atRestEncryptionEnabled,
+				AuthEnabled:                &authEnabled,
+				AutomaticFailoverEnabled:   &autoFailoverEnabled,
+				SnapshotRetentionLimit:     &snapshotRetentionLimit,
+				SnapshotWindow:             &snapshotWindow,
+				SnapshottingClusterID:      &snapshottingClusterID,
+				TransitEncryptionEnabled:   &transitEncryptionEnabled,
+				EngineVersion:              &engineVersion,
+				CacheParameterGroupName:    &cacheParameterGroupName,
+				NotificationTopicARN:       &notificationTopicARN,
+				NotificationTopicStatus:    &notificationTopicStatus,
+				PreferredMaintenanceWindow: &maintenanceWindow,
+				SecurityGroupIDs:           []string{securityGroupIDs[0]},
+				CacheSecurityGroupNames:    []string{cacheSecurityGroupNames[0]},
 			},
 			rg: elasticache.ReplicationGroup{
 				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
@@ -390,14 +398,40 @@ func TestLateInitialize(t *testing.T) {
 				SnapshottingClusterId:    aws.String(snapshottingClusterID),
 				TransitEncryptionEnabled: &transitEncryptionEnabled,
 			},
+			cc: elasticache.CacheCluster{
+				EngineVersion:       aws.String(engineVersion),
+				CacheParameterGroup: &elasticache.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
+				NotificationConfiguration: &elasticache.NotificationConfiguration{
+					TopicArn:    aws.String(notificationTopicARN),
+					TopicStatus: aws.String(notificationTopicStatus),
+				},
+				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+				SecurityGroups: []elasticache.SecurityGroupMembership{
+					{
+						SecurityGroupId: aws.String(securityGroupIDs[0]),
+					},
+				},
+				CacheSecurityGroups: []elasticache.CacheSecurityGroupMembership{
+					{
+						CacheSecurityGroupName: aws.String(cacheSecurityGroupNames[0]),
+					},
+				},
+			},
 			want: &v1beta1.ReplicationGroupParameters{
-				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
-				AuthEnabled:              &authEnabled,
-				AutomaticFailoverEnabled: &autoFailoverEnabled,
-				SnapshotRetentionLimit:   &snapshotRetentionLimit,
-				SnapshotWindow:           &snapshotWindow,
-				SnapshottingClusterID:    &snapshottingClusterID,
-				TransitEncryptionEnabled: &transitEncryptionEnabled,
+				AtRestEncryptionEnabled:    &atRestEncryptionEnabled,
+				AuthEnabled:                &authEnabled,
+				AutomaticFailoverEnabled:   &autoFailoverEnabled,
+				SnapshotRetentionLimit:     &snapshotRetentionLimit,
+				SnapshotWindow:             &snapshotWindow,
+				SnapshottingClusterID:      &snapshottingClusterID,
+				TransitEncryptionEnabled:   &transitEncryptionEnabled,
+				EngineVersion:              &engineVersion,
+				CacheParameterGroupName:    &cacheParameterGroupName,
+				NotificationTopicARN:       &notificationTopicARN,
+				NotificationTopicStatus:    &notificationTopicStatus,
+				PreferredMaintenanceWindow: &maintenanceWindow,
+				SecurityGroupIDs:           []string{securityGroupIDs[0]},
+				CacheSecurityGroupNames:    []string{cacheSecurityGroupNames[0]},
 			},
 		},
 		{
@@ -412,21 +446,47 @@ func TestLateInitialize(t *testing.T) {
 				SnapshottingClusterId:    aws.String(snapshottingClusterID),
 				TransitEncryptionEnabled: &transitEncryptionEnabled,
 			},
+			cc: elasticache.CacheCluster{
+				EngineVersion:       aws.String(engineVersion),
+				CacheParameterGroup: &elasticache.CacheParameterGroupStatus{CacheParameterGroupName: aws.String(cacheParameterGroupName)},
+				NotificationConfiguration: &elasticache.NotificationConfiguration{
+					TopicArn:    aws.String(notificationTopicARN),
+					TopicStatus: aws.String(notificationTopicStatus),
+				},
+				PreferredMaintenanceWindow: aws.String(maintenanceWindow),
+				SecurityGroups: []elasticache.SecurityGroupMembership{
+					{
+						SecurityGroupId: aws.String(securityGroupIDs[0]),
+					},
+				},
+				CacheSecurityGroups: []elasticache.CacheSecurityGroupMembership{
+					{
+						CacheSecurityGroupName: aws.String(cacheSecurityGroupNames[0]),
+					},
+				},
+			},
 			want: &v1beta1.ReplicationGroupParameters{
-				AtRestEncryptionEnabled:  &atRestEncryptionEnabled,
-				AuthEnabled:              &authEnabled,
-				AutomaticFailoverEnabled: &autoFailoverEnabled,
-				SnapshotRetentionLimit:   &snapshotRetentionLimit,
-				SnapshotWindow:           &snapshotWindow,
-				SnapshottingClusterID:    &snapshottingClusterID,
-				TransitEncryptionEnabled: &transitEncryptionEnabled,
+				AtRestEncryptionEnabled:    &atRestEncryptionEnabled,
+				AuthEnabled:                &authEnabled,
+				AutomaticFailoverEnabled:   &autoFailoverEnabled,
+				SnapshotRetentionLimit:     &snapshotRetentionLimit,
+				SnapshotWindow:             &snapshotWindow,
+				SnapshottingClusterID:      &snapshottingClusterID,
+				TransitEncryptionEnabled:   &transitEncryptionEnabled,
+				EngineVersion:              &engineVersion,
+				CacheParameterGroupName:    &cacheParameterGroupName,
+				NotificationTopicARN:       &notificationTopicARN,
+				NotificationTopicStatus:    &notificationTopicStatus,
+				PreferredMaintenanceWindow: &maintenanceWindow,
+				SecurityGroupIDs:           []string{securityGroupIDs[0]},
+				CacheSecurityGroupNames:    []string{cacheSecurityGroupNames[0]},
 			},
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			LateInitialize(tc.params, tc.rg)
+			LateInitialize(tc.params, tc.rg, tc.cc)
 			if diff := cmp.Diff(tc.want, tc.params); diff != "" {
 				t.Errorf("LateInitialize(...): -want, +got:\n%s", diff)
 			}

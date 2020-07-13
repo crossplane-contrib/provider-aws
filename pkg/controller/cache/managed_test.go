@@ -147,10 +147,6 @@ func withClusterEnabled(e bool) replicationGroupModifier {
 	return func(r *v1beta1.ReplicationGroup) { r.Status.AtProvider.ClusterEnabled = e }
 }
 
-func withAutomaticFailoverStatus(s string) replicationGroupModifier {
-	return func(r *v1beta1.ReplicationGroup) { r.Status.AtProvider.AutomaticFailover = s }
-}
-
 func withTags(tagMaps ...map[string]string) replicationGroupModifier {
 	var tagList []v1beta1.Tag
 	for _, tagMap := range tagMaps {
@@ -467,11 +463,6 @@ func TestObserve(t *testing.T) {
 						Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errorBoom},
 					}
 				},
-				MockModifyReplicationGroupRequest: func(_ *elasticache.ModifyReplicationGroupInput) elasticache.ModifyReplicationGroupRequest {
-					return elasticache.ModifyReplicationGroupRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &elasticache.ModifyReplicationGroupOutput{}},
-					}
-				},
 			}},
 			r: replicationGroup(
 				withReplicationGroupID(name),
@@ -484,9 +475,6 @@ func TestObserve(t *testing.T) {
 				withClusterEnabled(true),
 				withMemberClusters([]string{cacheClusterID}),
 				withProviderStatus(v1beta1.StatusAvailable),
-				withConditions(runtimev1alpha1.Available()),
-				withBindingPhase(runtimev1alpha1.BindingPhaseUnbound),
-				withAutomaticFailoverStatus(string(elasticache.AutomaticFailoverStatusEnabled)),
 			),
 			returnsErr: true,
 		},
