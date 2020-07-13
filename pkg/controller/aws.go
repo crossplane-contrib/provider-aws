@@ -54,6 +54,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/route53/hostedzone"
 	"github.com/crossplane/provider-aws/pkg/controller/route53/resourcerecordset"
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
+	"github.com/crossplane/provider-aws/pkg/controller/s3/s3bucketpolicy"
 )
 
 // Setup creates all AWS controllers with the supplied logger and adds them to
@@ -88,6 +89,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		s3.SetupBucketClaimDefaulting,
 		s3.SetupBucketClaimBinding,
 		s3.SetupS3Bucket,
+		s3bucketpolicy.SetupS3BucketPolicy,
 		iamuser.SetupIAMUser,
 		iamgroup.SetupIAMGroup,
 		iampolicy.SetupIAMPolicy,
