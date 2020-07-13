@@ -1,0 +1,25 @@
+---
+apiVersion: cache.aws.crossplane.io/v1beta1
+kind: ReplicationGroup
+metadata:
+  name: test-cache
+  labels:
+    example: "true"
+spec:
+  forProvider:
+    replicationGroupDescription: "An example replication group"
+    applyModificationsImmediately: true
+    engine: "redis"
+    engineVersion: "5.0.6"
+    port: 6379
+    cacheSubnetGroupName: sample-subnet-group-1
+    numCacheClusters: 3
+    cacheParameterGroupName: default.redis5.0
+    cacheNodeType: cache.t3.medium
+    automaticFailoverEnabled: true
+  writeConnectionSecretsToRef:
+    name: replic
+    namespace: crossplane-system
+  providerRef:
+    name: example
+  reclaimPolicy: Delete
