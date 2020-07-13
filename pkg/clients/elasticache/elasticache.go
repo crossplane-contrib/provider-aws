@@ -148,9 +148,10 @@ func NewDescribeCacheClustersInput(clusterID string) *elasticache.DescribeCacheC
 // LateInitialize assigns the observed configurations and assigns them to the
 // corresponding fields in ReplicationGroupParameters in order to let user
 // know the defaults and make the changes as wished on that value.
-func LateInitialize(s *v1beta1.ReplicationGroupParameters, rg elasticache.ReplicationGroup) {
-	// NOTE(muvaf): there are many other parameters that elasticache.ReplicationGroup
-	// does not include for some reason.
+func LateInitialize(s *v1beta1.ReplicationGroupParameters, rg elasticache.ReplicationGroup, cc elasticache.CacheCluster) {
+	if s == nil {
+		return
+	}
 	s.AtRestEncryptionEnabled = clients.LateInitializeBoolPtr(s.AtRestEncryptionEnabled, rg.AtRestEncryptionEnabled)
 	s.AuthEnabled = clients.LateInitializeBoolPtr(s.AuthEnabled, rg.AuthTokenEnabled)
 	s.AutomaticFailoverEnabled = clients.LateInitializeBoolPtr(s.AutomaticFailoverEnabled, automaticFailoverEnabled(rg.AutomaticFailover))
@@ -158,6 +159,33 @@ func LateInitialize(s *v1beta1.ReplicationGroupParameters, rg elasticache.Replic
 	s.SnapshotWindow = clients.LateInitializeStringPtr(s.SnapshotWindow, rg.SnapshotWindow)
 	s.SnapshottingClusterID = clients.LateInitializeStringPtr(s.SnapshottingClusterID, rg.SnapshottingClusterId)
 	s.TransitEncryptionEnabled = clients.LateInitializeBoolPtr(s.TransitEncryptionEnabled, rg.TransitEncryptionEnabled)
+
+	// NOTE(muvaf): ReplicationGroup managed N identical CacheCluster objects.
+	// While configuration of those CacheClusters flow through ReplicationGroup API,
+	// their statuses are fetched independently. Since we check for drifts against
+	// the current state, late-init and up-to-date checks have to be made against
+	// CacheClusters as well.
+	s.EngineVersion = clients.LateInitializeStringPtr(s.EngineVersion, cc.EngineVersion)
+	if cc.CacheParameterGroup != nil {
+		s.CacheParameterGroupName = clients.LateInitializeStringPtr(s.CacheParameterGroupName, cc.CacheParameterGroup.CacheParameterGroupName)
+	}
+	if cc.NotificationConfiguration != nil {
+		s.NotificationTopicARN = clients.LateInitializeStringPtr(s.NotificationTopicARN, cc.NotificationConfiguration.TopicArn)
+		s.NotificationTopicStatus = clients.LateInitializeStringPtr(s.NotificationTopicStatus, cc.NotificationConfiguration.TopicStatus)
+	}
+	s.PreferredMaintenanceWindow = clients.LateInitializeStringPtr(s.PreferredMaintenanceWindow, cc.PreferredMaintenanceWindow)
+	if len(s.SecurityGroupIDs) == 0 && len(cc.SecurityGroups) != 0 {
+		s.SecurityGroupIDs = make([]string, len(cc.SecurityGroups))
+		for i, val := range cc.SecurityGroups {
+			s.SecurityGroupIDs[i] = aws.StringValue(val.SecurityGroupId)
+		}
+	}
+	if len(s.CacheSecurityGroupNames) == 0 && len(cc.CacheSecurityGroups) != 0 {
+		s.CacheSecurityGroupNames = make([]string, len(cc.CacheSecurityGroups))
+		for i, val := range cc.CacheSecurityGroups {
+			s.CacheSecurityGroupNames[i] = aws.StringValue(val.CacheSecurityGroupName)
+		}
+	}
 }
 
 // ReplicationGroupNeedsUpdate returns true if the supplied ReplicationGroup and
