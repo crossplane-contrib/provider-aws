@@ -21,6 +21,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
+	"github.com/crossplane/provider-aws/pkg/controller/acm"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthority"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthoritypermission"
 	"github.com/crossplane/provider-aws/pkg/controller/applicationintegration/sqs"
@@ -100,6 +101,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		dbsubnetgroup.SetupDBSubnetGroup,
 		certificateauthority.SetupCertificateAuthority,
 		certificateauthoritypermission.SetupCertificateAuthorityPermission,
+		acm.SetupCertificate,
 		dynamodb.SetupDynamoTable,
 		resourcerecordset.SetupResourceRecordSet,
 		hostedzone.SetupHostedZone,

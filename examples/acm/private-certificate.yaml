@@ -1,0 +1,17 @@
+apiVersion: acm.aws.crossplane.io/v1alpha1
+kind: Certificate
+metadata:
+  name: private-cert
+  annotations:
+    crossplane.io/external-name: private-cert
+spec:
+  forProvider:
+    certificateAuthorityArn: somearn
+    domainName: www.example.com
+    certificateTransparencyLoggingPreference: disabled
+    tags:
+    - key: Name
+      value: example
+  reclaimPolicy: Delete
+  providerRef:
+    name: aws-provider
