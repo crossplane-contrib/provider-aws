@@ -31,22 +31,31 @@ const (
 func TestCredentialsIdSecret(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	testProfile := "default"
-	testID := "testID"
-	testSecret := "testSecret"
-	credentials := []byte(fmt.Sprintf(awsCredentialsFileFormat, testProfile, testID, testSecret))
+	profile := "default"
+	id := "testID"
+	secret := "testSecret"
+	token := "testtoken"
+	credentials := []byte(fmt.Sprintf(awsCredentialsFileFormat, profile, id, secret))
 
 	// valid profile
-	id, secret, err := CredentialsIDSecret(credentials, testProfile)
+	creds, err := CredentialsIDSecret(credentials, profile)
 	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(id).To(Equal(testID))
-	g.Expect(secret).To(Equal(testSecret))
+	g.Expect(creds.AccessKeyID).To(Equal(id))
+	g.Expect(creds.SecretAccessKey).To(Equal(secret))
+
+	// valid profile with session token
+	credentialsWithToken := []byte(fmt.Sprintf(awsCredentialsFileFormat+"\naws_session_token = %s", profile, id, secret, token))
+	creds, err = CredentialsIDSecret(credentialsWithToken, profile)
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(creds.AccessKeyID).To(Equal(id))
+	g.Expect(creds.SecretAccessKey).To(Equal(secret))
+	g.Expect(creds.SessionToken).To(Equal(token))
 
 	// invalid profile - foo does not exist
-	id, secret, err = CredentialsIDSecret(credentials, "foo")
+	creds, err = CredentialsIDSecret(credentials, "foo")
 	g.Expect(err).To(HaveOccurred())
-	g.Expect(id).To(Equal(""))
-	g.Expect(secret).To(Equal(""))
+	g.Expect(creds.AccessKeyID).To(Equal(""))
+	g.Expect(creds.SecretAccessKey).To(Equal(""))
 }
 
 func TestUseProviderSecret(t *testing.T) {
