@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -56,28 +57,33 @@ const (
 // [default]
 // aws_access_key_id = <YOUR_ACCESS_KEY_ID>
 // aws_secret_access_key = <YOUR_SECRET_ACCESS_KEY>
-func CredentialsIDSecret(data []byte, profile string) (string, string, error) {
+func CredentialsIDSecret(data []byte, profile string) (aws.Credentials, error) {
 	config, err := ini.InsensitiveLoad(data)
 	if err != nil {
-		return "", "", err
+		return aws.Credentials{}, errors.Wrap(err, "cannot parse credentials secret")
 	}
 
 	iniProfile, err := config.GetSection(profile)
 	if err != nil {
-		return "", "", err
+		return aws.Credentials{}, errors.Wrap(err, fmt.Sprintf("cannot get %s profile in credentials secret", profile))
 	}
 
-	id, err := iniProfile.GetKey("AWS_ACCESS_KEY_ID")
-	if err != nil {
-		return "", "", err
+	accessKeyID := iniProfile.Key("aws_access_key_id")
+	secretAccessKey := iniProfile.Key("aws_secret_access_key")
+	sessionToken := iniProfile.Key("aws_session_token")
+
+	// NOTE(muvaf): Key function implementation never returns nil but still its
+	// type is pointer so we check to make sure its next versions doesn't break
+	// that implicit contract.
+	if accessKeyID == nil || secretAccessKey == nil || sessionToken == nil {
+		return aws.Credentials{}, errors.New("returned key can be empty but cannot be nil")
 	}
 
-	secret, err := iniProfile.GetKey("AWS_SECRET_ACCESS_KEY")
-	if err != nil {
-		return "", "", err
-	}
-
-	return id.Value(), secret.Value(), err
+	return aws.Credentials{
+		AccessKeyID:     accessKeyID.Value(),
+		SecretAccessKey: secretAccessKey.Value(),
+		SessionToken:    sessionToken.Value(),
+	}, nil
 }
 
 // AuthMethod is a method of authenticating to the AWS API
@@ -85,14 +91,9 @@ type AuthMethod func(context.Context, []byte, string, string) (*aws.Config, erro
 
 // UseProviderSecret - AWS configuration which can be used to issue requests against AWS API
 func UseProviderSecret(_ context.Context, data []byte, profile, region string) (*aws.Config, error) {
-	id, secret, err := CredentialsIDSecret(data, profile)
+	creds, err := CredentialsIDSecret(data, profile)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to parse credentials")
-	}
-
-	creds := aws.Credentials{
-		AccessKeyID:     id,
-		SecretAccessKey: secret,
+		return nil, errors.Wrap(err, "cannot parse credentials secret")
 	}
 
 	shared := external.SharedConfig{
