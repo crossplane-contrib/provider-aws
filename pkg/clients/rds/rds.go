@@ -392,7 +392,6 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rds.DBInstance) { // 
 	in.MultiAZ = awsclients.LateInitializeBoolPtr(in.MultiAZ, db.MultiAZ)
 	in.PerformanceInsightsKMSKeyID = awsclients.LateInitializeStringPtr(in.PerformanceInsightsKMSKeyID, db.PerformanceInsightsKMSKeyId)
 	in.PerformanceInsightsRetentionPeriod = awsclients.LateInitializeIntPtr(in.PerformanceInsightsRetentionPeriod, db.PerformanceInsightsRetentionPeriod)
-	in.Port = awsclients.LateInitializeIntPtr(in.Port, db.DbInstancePort)
 	in.PreferredBackupWindow = awsclients.LateInitializeStringPtr(in.PreferredBackupWindow, db.PreferredBackupWindow)
 	in.PreferredMaintenanceWindow = awsclients.LateInitializeStringPtr(in.PreferredMaintenanceWindow, db.PreferredMaintenanceWindow)
 	in.PromotionTier = awsclients.LateInitializeIntPtr(in.PromotionTier, db.PromotionTier)
@@ -400,6 +399,13 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rds.DBInstance) { // 
 	in.StorageEncrypted = awsclients.LateInitializeBoolPtr(in.StorageEncrypted, db.StorageEncrypted)
 	in.StorageType = awsclients.LateInitializeStringPtr(in.StorageType, db.StorageType)
 	in.Timezone = awsclients.LateInitializeStringPtr(in.Timezone, db.Timezone)
+
+	// NOTE(muvaf): Do not use db.DbInstancePort as that always returns 0 for
+	// some reason. See the bug here:
+	// https://github.com/aws/aws-sdk-java/issues/924#issuecomment-658089792
+	if db.Endpoint != nil {
+		in.Port = awsclients.LateInitializeIntPtr(in.Port, db.Endpoint.Port)
+	}
 
 	if len(in.DBSecurityGroups) == 0 && len(db.DBSecurityGroups) != 0 {
 		in.DBSecurityGroups = make([]string, len(db.DBSecurityGroups))
@@ -451,9 +457,11 @@ func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error
 		return false, err
 	}
 	return cmp.Equal(&v1beta1.RDSInstanceParameters{}, patch, cmpopts.EquateEmpty(),
-		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{}),
+		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{}, []v1alpha1.Reference{}),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "Tags"),
-		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "SkipFinalSnapshotBeforeDeletion")), nil
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "SkipFinalSnapshotBeforeDeletion"),
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "FinalDBSnapshotIdentifier"),
+	), nil
 }
 
 // GetConnectionDetails extracts managed.ConnectionDetails out of v1beta1.RDSInstance.

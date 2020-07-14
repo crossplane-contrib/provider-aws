@@ -504,7 +504,7 @@ func TestLateInitialize(t *testing.T) {
 				MultiAZ:                            &multiAZ,
 				PerformanceInsightsKMSKeyId:        &kmsID,
 				PerformanceInsightsRetentionPeriod: &retention64,
-				DbInstancePort:                     &port64,
+				Endpoint:                           &rds.Endpoint{Port: &port64},
 				PreferredBackupWindow:              &window,
 				PreferredMaintenanceWindow:         &window,
 				PromotionTier:                      &tier64,
