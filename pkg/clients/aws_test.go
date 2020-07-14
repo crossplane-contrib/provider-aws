@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	. "github.com/onsi/gomega"
 )
 
@@ -70,4 +72,70 @@ func TestUseProviderSecret(t *testing.T) {
 	config, err := UseProviderSecret(context.TODO(), credentials, testProfile, testRegion)
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(config).NotTo(BeNil())
+}
+
+func TestDiffTags(t *testing.T) {
+	type args struct {
+		local  map[string]string
+		remote map[string]string
+	}
+
+	type want struct {
+		add    map[string]string
+		remove []string
+	}
+
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"Add": {
+			args: args{
+				local:  map[string]string{"key": "val", "another": "tag"},
+				remote: map[string]string{},
+			},
+			want: want{
+				add: map[string]string{
+					"key":     "val",
+					"another": "tag",
+				},
+				remove: []string{},
+			},
+		},
+		"Remove": {
+			args: args{
+				local: map[string]string{},
+
+				remote: map[string]string{"key": "val", "test": "one"},
+			},
+			want: want{
+				add:    map[string]string{},
+				remove: []string{"key", "test"},
+			},
+		},
+		"AddAndRemove": {
+			args: args{
+				local:  map[string]string{"key": "val", "another": "tag"},
+				remote: map[string]string{"key": "val", "test": "one"},
+			},
+			want: want{
+				add: map[string]string{
+					"another": "tag",
+				},
+				remove: []string{"test"},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			add, remove := DiffTags(tc.args.local, tc.args.remote)
+			if diff := cmp.Diff(tc.want.add, add); diff != "" {
+				t.Errorf("add: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.remove, remove, cmpopts.SortSlices(func(a, b string) bool { return a > b })); diff != "" {
+				t.Errorf("remove: -want, +got:\n%s", diff)
+			}
+		})
+	}
 }
