@@ -32,6 +32,7 @@ type MockClient struct {
 	MockUpdateClusterConfigRequest  func(*eks.UpdateClusterConfigInput) eks.UpdateClusterConfigRequest
 	MockDeleteClusterRequest        func(*eks.DeleteClusterInput) eks.DeleteClusterRequest
 	MockTagResourceRequest          func(*eks.TagResourceInput) eks.TagResourceRequest
+	MockUntagResourceRequest        func(*eks.UntagResourceInput) eks.UntagResourceRequest
 	MockUpdateClusterVersionRequest func(*eks.UpdateClusterVersionInput) eks.UpdateClusterVersionRequest
 }
 
@@ -60,6 +61,11 @@ func (c *MockClient) DeleteClusterRequest(i *eks.DeleteClusterInput) eks.DeleteC
 // TagResourceRequest calls the underlying MockTagResourceRequest method.
 func (c *MockClient) TagResourceRequest(i *eks.TagResourceInput) eks.TagResourceRequest {
 	return c.MockTagResourceRequest(i)
+}
+
+// UntagResourceRequest calls the underlying MockUntagResourceRequest method.
+func (c *MockClient) UntagResourceRequest(i *eks.UntagResourceInput) eks.UntagResourceRequest {
+	return c.MockUntagResourceRequest(i)
 }
 
 // UpdateClusterVersionRequest calls the underlying

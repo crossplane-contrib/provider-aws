@@ -296,3 +296,24 @@ func CompactAndEscapeJSON(s string) (string, error) {
 	}
 	return url.QueryEscape(buffer.String()), nil
 }
+
+// DiffTags returns tags that should be added or removed.
+func DiffTags(local, remote map[string]string) (add map[string]string, remove []string) {
+	add = make(map[string]string, len(local))
+	remove = []string{}
+	for k, v := range local {
+		add[k] = v
+	}
+	for k, v := range remote {
+		switch val, ok := local[k]; {
+		case ok && val != v:
+			remove = append(remove, k)
+		case !ok:
+			remove = append(remove, k)
+			delete(add, k)
+		default:
+			delete(add, k)
+		}
+	}
+	return
+}
