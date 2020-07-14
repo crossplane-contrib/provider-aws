@@ -285,8 +285,9 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return nil
 	}
 	input := awsrds.DeleteDBInstanceInput{
-		DBInstanceIdentifier: aws.String(meta.GetExternalName(cr)),
-		SkipFinalSnapshot:    cr.Spec.ForProvider.SkipFinalSnapshotBeforeDeletion,
+		DBInstanceIdentifier:      aws.String(meta.GetExternalName(cr)),
+		SkipFinalSnapshot:         cr.Spec.ForProvider.SkipFinalSnapshotBeforeDeletion,
+		FinalDBSnapshotIdentifier: cr.Spec.ForProvider.FinalDBSnapshotIdentifier,
 	}
 	_, err = e.client.DeleteDBInstanceRequest(&input).Send(ctx)
 	return errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
