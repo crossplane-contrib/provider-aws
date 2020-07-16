@@ -122,8 +122,11 @@ func (c *iamClient) UpdatePolicy(policyName string, policyDocument string) (stri
 // DeletePolicyAndDetach delete the policy of PolicyName and detach it from the username provided
 func (c *iamClient) DeletePolicyAndDetach(username string, policyName string) error {
 	policyARN, err := c.getPolicyARN(username)
-	if err != nil {
+	if resource.Ignore(IsErrorNotFound, err) != nil {
 		return err
+	}
+	if IsErrorNotFound(err) {
+		return nil
 	}
 
 	_, err = c.iam.DetachUserPolicyRequest(&iam.DetachUserPolicyInput{PolicyArn: aws.String(policyARN), UserName: aws.String(username)}).Send(context.TODO())
@@ -132,31 +135,26 @@ func (c *iamClient) DeletePolicyAndDetach(username string, policyName string) er
 	}
 
 	_, err = c.iam.DeletePolicyRequest(&iam.DeletePolicyInput{PolicyArn: aws.String(policyARN)}).Send(context.TODO())
-	if resource.Ignore(IsErrorNotFound, err) != nil {
-		return err
-	}
-	return nil
+	return resource.Ignore(IsErrorNotFound, err)
 }
 
 // DeleteUser Policy and IAM User
 func (c *iamClient) DeleteUser(username string) error {
 	keys, err := c.iam.ListAccessKeysRequest(&iam.ListAccessKeysInput{UserName: aws.String(username)}).Send(context.TODO())
-	if err != nil {
+	if resource.Ignore(IsErrorNotFound, err) != nil {
 		return err
 	}
-
-	for _, key := range keys.AccessKeyMetadata {
-		_, err = c.iam.DeleteAccessKeyRequest(&iam.DeleteAccessKeyInput{AccessKeyId: key.AccessKeyId, UserName: aws.String(username)}).Send(context.TODO())
-		if err != nil {
-			return err
+	if keys != nil {
+		for _, key := range keys.AccessKeyMetadata {
+			_, err = c.iam.DeleteAccessKeyRequest(&iam.DeleteAccessKeyInput{AccessKeyId: key.AccessKeyId, UserName: aws.String(username)}).Send(context.TODO())
+			if resource.Ignore(IsErrorNotFound, err) != nil {
+				return err
+			}
 		}
 	}
 
 	_, err = c.iam.DeleteUserRequest(&iam.DeleteUserInput{UserName: aws.String(username)}).Send(context.TODO())
-	if resource.Ignore(IsErrorNotFound, err) != nil {
-		return err
-	}
-	return nil
+	return resource.Ignore(IsErrorNotFound, err)
 }
 
 // getAccountID - Gets the accountID of the authenticated session.
