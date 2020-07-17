@@ -93,6 +93,10 @@ func withStatus(s v1beta1.ClusterStatusType) clusterModifier {
 	return func(r *v1beta1.Cluster) { r.Status.AtProvider.Status = s }
 }
 
+func withConfig(c v1beta1.VpcConfigRequest) clusterModifier {
+	return func(r *v1beta1.Cluster) { r.Spec.ForProvider.ResourcesVpcConfig = c }
+}
+
 func cluster(m ...clusterModifier) *v1beta1.Cluster {
 	cr := &v1beta1.Cluster{
 		Spec: v1beta1.ClusterSpec{
@@ -571,14 +575,67 @@ func TestUpdate(t *testing.T) {
 		args
 		want
 	}{
-		"Successful": {
+		"SuccessfulAddTags": {
 			args: args{
 				eks: &fake.MockClient{
+					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
+						return awseks.DescribeClusterRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
+								Cluster: &awseks.Cluster{},
+							}},
+						}
+					},
 					MockUpdateClusterConfigRequest: func(input *awseks.UpdateClusterConfigInput) awseks.UpdateClusterConfigRequest {
 						return awseks.UpdateClusterConfigRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterConfigOutput{}},
 						}
 					},
+					MockTagResourceRequest: func(input *awseks.TagResourceInput) awseks.TagResourceRequest {
+						return awseks.TagResourceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.TagResourceOutput{}},
+						}
+					},
+				},
+				cr: cluster(
+					withTags(map[string]string{"foo": "bar"})),
+			},
+			want: want{
+				cr: cluster(
+					withTags(map[string]string{"foo": "bar"})),
+			},
+		},
+		"SuccessfulRemoveTags": {
+			args: args{
+				eks: &fake.MockClient{
+					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
+						return awseks.DescribeClusterRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
+								Cluster: &awseks.Cluster{
+									Tags: map[string]string{"foo": "bar"},
+								},
+							}},
+						}
+					},
+					MockUpdateClusterConfigRequest: func(input *awseks.UpdateClusterConfigInput) awseks.UpdateClusterConfigRequest {
+						return awseks.UpdateClusterConfigRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterConfigOutput{}},
+						}
+					},
+					MockUntagResourceRequest: func(input *awseks.UntagResourceInput) awseks.UntagResourceRequest {
+						return awseks.UntagResourceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UntagResourceOutput{}},
+						}
+					},
+				},
+				cr: cluster(),
+			},
+			want: want{
+				cr: cluster(),
+			},
+		},
+		"SuccessfulUpdateVersion": {
+			args: args{
+				eks: &fake.MockClient{
 					MockUpdateClusterVersionRequest: func(input *awseks.UpdateClusterVersionInput) awseks.UpdateClusterVersionRequest {
 						return awseks.UpdateClusterVersionRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterVersionOutput{}},
@@ -591,20 +648,33 @@ func TestUpdate(t *testing.T) {
 							}},
 						}
 					},
-					MockTagResourceRequest: func(input *awseks.TagResourceInput) awseks.TagResourceRequest {
-						return awseks.TagResourceRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.TagResourceOutput{}},
+				},
+				cr: cluster(withVersion(&version)),
+			},
+			want: want{
+				cr: cluster(withVersion(&version)),
+			},
+		},
+		"SuccessfulUpdateCluster": {
+			args: args{
+				eks: &fake.MockClient{
+					MockUpdateClusterConfigRequest: func(input *awseks.UpdateClusterConfigInput) awseks.UpdateClusterConfigRequest {
+						return awseks.UpdateClusterConfigRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterConfigOutput{}},
+						}
+					},
+					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
+						return awseks.DescribeClusterRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
+								Cluster: &awseks.Cluster{},
+							}},
 						}
 					},
 				},
-				cr: cluster(
-					withVersion(&version),
-					withTags(map[string]string{"foo": "bar"})),
+				cr: cluster(withConfig(v1beta1.VpcConfigRequest{SubnetIDs: []string{"subnet"}})),
 			},
 			want: want{
-				cr: cluster(
-					withVersion(&version),
-					withTags(map[string]string{"foo": "bar"})),
+				cr: cluster(withConfig(v1beta1.VpcConfigRequest{SubnetIDs: []string{"subnet"}})),
 			},
 		},
 		"AlreadyModifying": {
@@ -657,11 +727,6 @@ func TestUpdate(t *testing.T) {
 		"FailedUpdateVersion": {
 			args: args{
 				eks: &fake.MockClient{
-					MockUpdateClusterConfigRequest: func(input *awseks.UpdateClusterConfigInput) awseks.UpdateClusterConfigRequest {
-						return awseks.UpdateClusterConfigRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterConfigOutput{}},
-						}
-					},
 					MockUpdateClusterVersionRequest: func(input *awseks.UpdateClusterVersionInput) awseks.UpdateClusterVersionRequest {
 						return awseks.UpdateClusterVersionRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
@@ -682,6 +747,31 @@ func TestUpdate(t *testing.T) {
 				err: errors.Wrap(errBoom, errUpdateVersionFailed),
 			},
 		},
+		"FailedRemoveTags": {
+			args: args{
+				eks: &fake.MockClient{
+					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
+						return awseks.DescribeClusterRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
+								Cluster: &awseks.Cluster{
+									Tags: map[string]string{"foo": "bar"},
+								},
+							}},
+						}
+					},
+					MockUntagResourceRequest: func(input *awseks.UntagResourceInput) awseks.UntagResourceRequest {
+						return awseks.UntagResourceRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: cluster(),
+			},
+			want: want{
+				cr:  cluster(),
+				err: errors.Wrap(errBoom, errAddTagsFailed),
+			},
+		},
 		"FailedAddTags": {
 			args: args{
 				eks: &fake.MockClient{
@@ -690,11 +780,6 @@ func TestUpdate(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
 								Cluster: &awseks.Cluster{},
 							}},
-						}
-					},
-					MockUpdateClusterConfigRequest: func(input *awseks.UpdateClusterConfigInput) awseks.UpdateClusterConfigRequest {
-						return awseks.UpdateClusterConfigRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterConfigOutput{}},
 						}
 					},
 					MockTagResourceRequest: func(input *awseks.TagResourceInput) awseks.TagResourceRequest {
