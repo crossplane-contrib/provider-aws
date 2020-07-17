@@ -641,11 +641,6 @@ func TestUpdate(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterVersionOutput{}},
 						}
 					},
-					MockUpdateClusterConfigRequest: func(input *awseks.UpdateClusterConfigInput) awseks.UpdateClusterConfigRequest {
-						return awseks.UpdateClusterConfigRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterConfigOutput{}},
-						}
-					},
 					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
 						return awseks.DescribeClusterRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{

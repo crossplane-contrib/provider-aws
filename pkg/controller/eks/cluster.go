@@ -204,9 +204,8 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.Wrap(err, errPatchCreationFailed)
 	}
 	if patch.Version != nil {
-		if _, err := e.client.UpdateClusterVersionRequest(&awseks.UpdateClusterVersionInput{Name: awsclients.String(meta.GetExternalName(cr)), Version: patch.Version}).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
-		}
+		_, err := e.client.UpdateClusterVersionRequest(&awseks.UpdateClusterVersionInput{Name: awsclients.String(meta.GetExternalName(cr)), Version: patch.Version}).Send(ctx)
+		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
 	_, err = e.client.UpdateClusterConfigRequest(eks.GenerateUpdateClusterConfigInput(meta.GetExternalName(cr), patch)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateConfigFailed)
