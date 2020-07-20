@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // Package v1alpha1 contains managed resources for AWS Redshift services such as
-// DynamoDB.
+// Cluster.
 // +kubebuilder:object:generate=true
 // +groupName=redshift.aws.crossplane.io
 // +versionName=v1alpha1
