@@ -49,6 +49,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuserpolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
+	"github.com/crossplane/provider-aws/pkg/controller/redshift"
 	"github.com/crossplane/provider-aws/pkg/controller/route53/hostedzone"
 	"github.com/crossplane/provider-aws/pkg/controller/route53/resourcerecordset"
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
@@ -108,6 +109,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		snstopic.SetupSNSTopic,
 		snssubscription.SetupSubscription,
 		sqs.SetupQueue,
+		redshift.SetupCluster,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err
