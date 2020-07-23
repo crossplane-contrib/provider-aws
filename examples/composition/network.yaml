@@ -1,0 +1,9 @@
+apiVersion: aws.example.org/v1alpha1
+kind: Network
+metadata:
+  name: my-network
+spec:
+  reclaimPolicy: Delete
+  sgName: my-super-cool-sg
+  providerRef:
+    name: aws-provider

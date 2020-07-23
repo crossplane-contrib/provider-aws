@@ -30,6 +30,15 @@ import (
 	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
 )
 
+var (
+	clusterName = "my-cool-cluster"
+	keyArn      = "mykey:arn"
+	roleArn     = "myrole:arn"
+	falseVal    = false
+	trueVal     = true
+	version     = "1.16"
+)
+
 func TestIsErrorNotFound(t *testing.T) {
 	cases := map[string]struct {
 		err  error
@@ -86,14 +95,35 @@ func TestIsErrorInUse(t *testing.T) {
 	}
 }
 
-func TestGenerateCreateClusterInput(t *testing.T) {
-	clusterName := "my-cool-cluster"
-	keyArn := "mykey:arn"
-	roleArn := "myrole:arn"
-	falseVal := false
-	trueVal := true
-	version := "1.16"
+func TestIsErrorInvalidRequest(t *testing.T) {
+	cases := map[string]struct {
+		err  error
+		want bool
+	}{
+		"IsErrorInvalidRequest": {
+			err:  errors.New(eks.ErrCodeInvalidRequestException),
+			want: true,
+		},
+		"NotErrorInvalidRequest": {
+			err:  errors.New(eks.ErrCodeNotFoundException),
+			want: false,
+		},
+		"Nil": {
+			err:  nil,
+			want: false,
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := IsErrorInvalidRequest(tc.err)
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
 
+func TestGenerateCreateClusterInput(t *testing.T) {
 	type args struct {
 		name string
 		p    *v1beta1.ClusterParameters
@@ -210,13 +240,6 @@ func TestGenerateCreateClusterInput(t *testing.T) {
 }
 
 func TestGenerateUpdateClusterInput(t *testing.T) {
-	clusterName := "my-cool-cluster"
-	keyArn := "mykey:arn"
-	roleArn := "myrole:arn"
-	falseVal := false
-	trueVal := true
-	version := "1.16"
-
 	type args struct {
 		name string
 		p    *v1beta1.ClusterParameters
@@ -405,13 +428,6 @@ func TestGenerateObservation(t *testing.T) {
 }
 
 func TestLateInitialize(t *testing.T) {
-	clusterName := "my-cool-cluster"
-	keyArn := "mykey:arn"
-	roleArn := "myrole:arn"
-	falseVal := false
-	trueVal := true
-	version := "1.16"
-
 	cases := map[string]struct {
 		parameters *v1beta1.ClusterParameters
 		cluster    *eks.Cluster
@@ -543,12 +559,6 @@ func TestLateInitialize(t *testing.T) {
 }
 
 func TestIsUpToDate(t *testing.T) {
-	clusterName := "my-cool-cluster"
-	keyArn := "mykey:arn"
-	roleArn := "myrole:arn"
-	falseVal := false
-	trueVal := true
-	version := "1.16"
 	otherVersion := "1.15"
 
 	type args struct {

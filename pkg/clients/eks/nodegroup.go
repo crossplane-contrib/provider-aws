@@ -1,0 +1,192 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package eks
+
+import (
+	"github.com/aws/aws-sdk-go-v2/service/eks"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+)
+
+// GenerateCreateNodeGroupInput from NodeGroupParameters.
+func GenerateCreateNodeGroupInput(name string, p *v1alpha1.NodeGroupParameters) *eks.CreateNodegroupInput {
+	c := &eks.CreateNodegroupInput{
+		NodegroupName:  &name,
+		AmiType:        eks.AMITypes(aws.StringValue(p.AMIType)),
+		ClusterName:    p.ClusterName,
+		DiskSize:       p.DiskSize,
+		InstanceTypes:  p.InstanceTypes,
+		Labels:         p.Labels,
+		NodeRole:       p.NodeRole,
+		ReleaseVersion: p.ReleaseVersion,
+		Subnets:        p.Subnets,
+		Tags:           p.Tags,
+		Version:        p.Version,
+	}
+	if p.RemoteAccess != nil {
+		c.RemoteAccess = &eks.RemoteAccessConfig{
+			Ec2SshKey:            p.RemoteAccess.EC2SSHKey,
+			SourceSecurityGroups: p.RemoteAccess.SourceSecurityGroups,
+		}
+	}
+	if p.ScalingConfig != nil {
+		c.ScalingConfig = &eks.NodegroupScalingConfig{
+			DesiredSize: p.ScalingConfig.DesiredSize,
+			MinSize:     p.ScalingConfig.MinSize,
+			MaxSize:     p.ScalingConfig.MaxSize,
+		}
+	}
+	return c
+}
+
+// GenerateUpdateNodeGroupConfigInput from NodeGroupParameters.
+func GenerateUpdateNodeGroupConfigInput(name string, p *v1alpha1.NodeGroupParameters, ng *eks.Nodegroup) *eks.UpdateNodegroupConfigInput {
+	u := &eks.UpdateNodegroupConfigInput{
+		NodegroupName: &name,
+		ClusterName:   p.ClusterName,
+	}
+
+	if len(p.Labels) > 0 {
+		addOrModify, remove := aws.DiffLabels(p.Labels, ng.Labels)
+		u.Labels = &eks.UpdateLabelsPayload{
+			AddOrUpdateLabels: addOrModify,
+			RemoveLabels:      remove,
+		}
+	}
+	if p.ScalingConfig != nil {
+		u.ScalingConfig = &eks.NodegroupScalingConfig{
+			DesiredSize: p.ScalingConfig.DesiredSize,
+			MinSize:     p.ScalingConfig.MinSize,
+			MaxSize:     p.ScalingConfig.MaxSize,
+		}
+	}
+	return u
+}
+
+// GenerateNodeGroupObservation is used to produce v1alpha1.NodeGroupObservation
+// from eks.Nodegroup.
+func GenerateNodeGroupObservation(ng *eks.Nodegroup) v1alpha1.NodeGroupObservation { // nolint:gocyclo
+	if ng == nil {
+		return v1alpha1.NodeGroupObservation{}
+	}
+	o := v1alpha1.NodeGroupObservation{
+		NodeGroupArn: awsclients.StringValue(ng.NodegroupArn),
+		Status:       v1alpha1.NodeGroupStatusType(ng.Status),
+	}
+	if ng.CreatedAt != nil {
+		o.CreatedAt = &metav1.Time{Time: *ng.CreatedAt}
+	}
+	if ng.Health != nil && len(ng.Health.Issues) > 0 {
+		o.Health = v1alpha1.NodeGroupHealth{
+			Issues: make([]v1alpha1.Issue, len(ng.Health.Issues)),
+		}
+		for c, i := range ng.Health.Issues {
+			o.Health.Issues[c] = v1alpha1.Issue{
+				Code:        string(i.Code),
+				Message:     aws.StringValue(i.Message),
+				ResourceIDs: i.ResourceIds,
+			}
+		}
+	}
+	if ng.ModifiedAt != nil {
+		o.ModifiedAt = &metav1.Time{Time: *ng.ModifiedAt}
+	}
+	if ng.Resources != nil {
+		o.Resources = v1alpha1.NodeGroupResources{
+			RemoteAccessSecurityGroup: aws.StringValue(ng.Resources.RemoteAccessSecurityGroup),
+		}
+		if len(ng.Resources.AutoScalingGroups) > 0 {
+			asg := make([]v1alpha1.AutoScalingGroup, len(ng.Resources.AutoScalingGroups))
+			for c, a := range ng.Resources.AutoScalingGroups {
+				asg[c] = v1alpha1.AutoScalingGroup{Name: aws.StringValue(a.Name)}
+			}
+			o.Resources.AutoScalingGroups = asg
+		}
+	}
+	return o
+}
+
+// LateInitializeNodeGroup fills the empty fields in *v1alpha1.NodeGroupParameters with the
+// values seen in eks.Nodegroup.
+func LateInitializeNodeGroup(in *v1alpha1.NodeGroupParameters, ng *eks.Nodegroup) { // nolint:gocyclo
+	if ng == nil {
+		return
+	}
+	in.AMIType = awsclients.LateInitializeStringPtr(in.AMIType, awsclients.String(string(ng.AmiType)))
+	in.DiskSize = awsclients.LateInitializeInt64Ptr(in.DiskSize, ng.DiskSize)
+	if len(in.InstanceTypes) == 0 && len(ng.InstanceTypes) > 0 {
+		in.InstanceTypes = ng.InstanceTypes
+	}
+	if len(in.Labels) == 0 && len(ng.Labels) > 0 {
+		in.Labels = ng.Labels
+	}
+	if in.RemoteAccess == nil && ng.RemoteAccess != nil {
+		in.RemoteAccess = &v1alpha1.RemoteAccessConfig{
+			EC2SSHKey:            ng.RemoteAccess.Ec2SshKey,
+			SourceSecurityGroups: ng.RemoteAccess.SourceSecurityGroups,
+		}
+	}
+	if in.ScalingConfig == nil && ng.ScalingConfig != nil {
+		in.ScalingConfig = &v1alpha1.NodeGroupScalingConfig{
+			DesiredSize: ng.ScalingConfig.DesiredSize,
+			MinSize:     ng.ScalingConfig.MinSize,
+			MaxSize:     ng.ScalingConfig.MaxSize,
+		}
+	}
+	in.ReleaseVersion = awsclients.LateInitializeStringPtr(in.ReleaseVersion, ng.ReleaseVersion)
+	in.Version = awsclients.LateInitializeStringPtr(in.Version, ng.Version)
+	// NOTE(hasheddan): we always will set the default Crossplane tags in
+	// practice during initialization in the controller, but we check if no tags
+	// exist for consistency with expected late initialization behavior.
+	if len(in.Tags) == 0 {
+		in.Tags = ng.Tags
+	}
+}
+
+// IsNodeGroupUpToDate checks whether there is a change in any of the modifiable fields.
+func IsNodeGroupUpToDate(p *v1alpha1.NodeGroupParameters, ng *eks.Nodegroup) bool { // nolint:gocyclo
+	if !cmp.Equal(p.Tags, ng.Tags, cmpopts.EquateEmpty()) {
+		return false
+	}
+	if !cmp.Equal(p.Version, ng.Version) {
+		return false
+	}
+	if !cmp.Equal(p.Labels, ng.Labels, cmpopts.EquateEmpty()) {
+		return false
+	}
+	if p.ScalingConfig == nil && ng.ScalingConfig == nil {
+		return true
+	}
+	if p.ScalingConfig != nil && ng.ScalingConfig != nil {
+		if !cmp.Equal(p.ScalingConfig.DesiredSize, ng.ScalingConfig.DesiredSize) {
+			return false
+		}
+		if !cmp.Equal(p.ScalingConfig.MaxSize, ng.ScalingConfig.MaxSize) {
+			return false
+		}
+		if !cmp.Equal(p.ScalingConfig.MinSize, ng.ScalingConfig.MinSize) {
+			return false
+		}
+		return true
+	}
+	return false
+}
