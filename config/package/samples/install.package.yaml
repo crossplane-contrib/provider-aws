@@ -5,4 +5,4 @@ metadata:
   name: provider-aws
   namespace: aws
 spec:
-  package: "crossplane/provider-aws"
+  package: "crossplane/provider-aws:v0.11.0"
