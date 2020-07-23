@@ -317,3 +317,26 @@ func DiffTags(local, remote map[string]string) (add map[string]string, remove []
 	}
 	return
 }
+
+// DiffLabels returns labels that should be added, modified, or removed.
+func DiffLabels(local, remote map[string]string) (addOrModify map[string]string, remove []string) {
+	addOrModify = make(map[string]string, len(local))
+	remove = []string{}
+	for k, v := range local {
+		addOrModify[k] = v
+	}
+	for k, v := range remote {
+		switch val, ok := local[k]; {
+		case ok && val != v:
+			// if value does not match key it will be updated by the correct
+			// key-value pair being present in the returned addOrModify map
+			continue
+		case !ok:
+			remove = append(remove, k)
+			delete(addOrModify, k)
+		default:
+			delete(addOrModify, k)
+		}
+	}
+	return
+}

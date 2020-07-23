@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package eks
+package nodegroup
 
 import (
 	"context"
@@ -23,7 +23,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awseks "github.com/aws/aws-sdk-go-v2/service/eks"
-	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
@@ -36,7 +35,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
+	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/eks"
@@ -54,7 +53,8 @@ const (
 )
 
 var (
-	version = "1.16"
+	version           = "1.16"
+	desiredSize int64 = 3
 
 	errBoom = errors.New("boom")
 )
@@ -62,44 +62,44 @@ var (
 type args struct {
 	eks  eks.Client
 	kube client.Client
-	cr   *v1beta1.Cluster
+	cr   *v1alpha1.NodeGroup
 }
 
-type clusterModifier func(*v1beta1.Cluster)
+type nodeGroupModifier func(*v1alpha1.NodeGroup)
 
-func withConditions(c ...runtimev1alpha1.Condition) clusterModifier {
-	return func(r *v1beta1.Cluster) { r.Status.ConditionedStatus.Conditions = c }
+func withConditions(c ...runtimev1alpha1.Condition) nodeGroupModifier {
+	return func(r *v1alpha1.NodeGroup) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withBindingPhase(p runtimev1alpha1.BindingPhase) clusterModifier {
-	return func(r *v1beta1.Cluster) { r.Status.SetBindingPhase(p) }
+func withBindingPhase(p runtimev1alpha1.BindingPhase) nodeGroupModifier {
+	return func(r *v1alpha1.NodeGroup) { r.Status.SetBindingPhase(p) }
 }
 
-func withTags(tagMaps ...map[string]string) clusterModifier {
+func withTags(tagMaps ...map[string]string) nodeGroupModifier {
 	tags := map[string]string{}
 	for _, tagMap := range tagMaps {
 		for k, v := range tagMap {
 			tags[k] = v
 		}
 	}
-	return func(r *v1beta1.Cluster) { r.Spec.ForProvider.Tags = tags }
+	return func(r *v1alpha1.NodeGroup) { r.Spec.ForProvider.Tags = tags }
 }
 
-func withVersion(v *string) clusterModifier {
-	return func(r *v1beta1.Cluster) { r.Spec.ForProvider.Version = v }
+func withVersion(v *string) nodeGroupModifier {
+	return func(r *v1alpha1.NodeGroup) { r.Spec.ForProvider.Version = v }
 }
 
-func withStatus(s v1beta1.ClusterStatusType) clusterModifier {
-	return func(r *v1beta1.Cluster) { r.Status.AtProvider.Status = s }
+func withStatus(s v1alpha1.NodeGroupStatusType) nodeGroupModifier {
+	return func(r *v1alpha1.NodeGroup) { r.Status.AtProvider.Status = s }
 }
 
-func withConfig(c v1beta1.VpcConfigRequest) clusterModifier {
-	return func(r *v1beta1.Cluster) { r.Spec.ForProvider.ResourcesVpcConfig = c }
+func withScalingConfig(c *v1alpha1.NodeGroupScalingConfig) nodeGroupModifier {
+	return func(r *v1alpha1.NodeGroup) { r.Spec.ForProvider.ScalingConfig = c }
 }
 
-func cluster(m ...clusterModifier) *v1beta1.Cluster {
-	cr := &v1beta1.Cluster{
-		Spec: v1beta1.ClusterSpec{
+func nodeGroup(m ...nodeGroupModifier) *v1alpha1.NodeGroup {
+	cr := &v1alpha1.NodeGroup{
+		Spec: v1alpha1.NodeGroupSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
 				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
@@ -145,7 +145,7 @@ func TestConnect(t *testing.T) {
 	type args struct {
 		kube        client.Client
 		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (eks.Client, eks.STSClient, error)
-		cr          *v1beta1.Cluster
+		cr          *v1alpha1.NodeGroup
 	}
 	type want struct {
 		err error
@@ -180,7 +180,7 @@ func TestConnect(t *testing.T) {
 					}
 					return nil, nil, nil
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 		},
 		"SuccessfulUseServiceAccount": {
@@ -204,7 +204,7 @@ func TestConnect(t *testing.T) {
 					}
 					return nil, nil, nil
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 		},
 		"ProviderGetFailed": {
@@ -214,7 +214,7 @@ func TestConnect(t *testing.T) {
 						return errBoom
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
 				err: errors.Wrap(errBoom, errGetProvider),
@@ -236,7 +236,7 @@ func TestConnect(t *testing.T) {
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
 				err: errors.Wrap(errBoom, errGetProviderSecret),
@@ -259,7 +259,7 @@ func TestConnect(t *testing.T) {
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
 				err: errors.New(errGetProviderSecret),
@@ -280,7 +280,7 @@ func TestConnect(t *testing.T) {
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.Cluster
+		cr     *v1alpha1.NodeGroup
 		result managed.ExternalObservation
 		err    error
 	}
@@ -292,111 +292,108 @@ func TestObserve(t *testing.T) {
 		"SuccessfulAvailable": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(_ *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{
-									Status: awseks.ClusterStatusActive,
+					MockDescribeNodegroupRequest: func(_ *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
+								Nodegroup: &awseks.Nodegroup{
+									Status: awseks.NodegroupStatusActive,
 								},
 							}},
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr: cluster(
+				cr: nodeGroup(
 					withConditions(runtimev1alpha1.Available()),
 					withBindingPhase(runtimev1alpha1.BindingPhaseUnbound),
-					withStatus(v1beta1.ClusterStatusActive)),
+					withStatus(v1alpha1.NodeGroupStatusActive)),
 				result: managed.ExternalObservation{
-					ResourceExists:    true,
-					ResourceUpToDate:  true,
-					ConnectionDetails: eks.GetConnectionDetails(&awseks.Cluster{}, &sts.Client{}),
+					ResourceExists:   true,
+					ResourceUpToDate: true,
 				},
 			},
 		},
 		"DeletingState": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{
-									Status: awseks.ClusterStatusDeleting,
+					MockDescribeNodegroupRequest: func(_ *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
+								Nodegroup: &awseks.Nodegroup{
+									Status: awseks.NodegroupStatusDeleting,
 								},
 							}},
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr: cluster(
+				cr: nodeGroup(
 					withConditions(runtimev1alpha1.Deleting()),
-					withStatus(v1beta1.ClusterStatusDeleting)),
+					withStatus(v1alpha1.NodeGroupStatusDeleting)),
 				result: managed.ExternalObservation{
-					ResourceExists:    true,
-					ResourceUpToDate:  true,
-					ConnectionDetails: eks.GetConnectionDetails(&awseks.Cluster{}, &sts.Client{}),
+					ResourceExists:   true,
+					ResourceUpToDate: true,
 				},
 			},
 		},
 		"FailedState": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{
-									Status: awseks.ClusterStatusFailed,
+					MockDescribeNodegroupRequest: func(_ *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
+								Nodegroup: &awseks.Nodegroup{
+									Status: awseks.NodegroupStatusDegraded,
 								},
 							}},
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr: cluster(
+				cr: nodeGroup(
 					withConditions(runtimev1alpha1.Unavailable()),
-					withStatus(v1beta1.ClusterStatusFailed)),
+					withStatus(v1alpha1.NodeGroupStatusDegraded)),
 				result: managed.ExternalObservation{
-					ResourceExists:    true,
-					ResourceUpToDate:  true,
-					ConnectionDetails: eks.GetConnectionDetails(&awseks.Cluster{}, &sts.Client{}),
+					ResourceExists:   true,
+					ResourceUpToDate: true,
 				},
 			},
 		},
 		"FailedDescribeRequest": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
+					MockDescribeNodegroupRequest: func(_ *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr:  cluster(),
+				cr:  nodeGroup(),
 				err: errors.Wrap(errBoom, errDescribeFailed),
 			},
 		},
 		"NotFound": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
+					MockDescribeNodegroupRequest: func(_ *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awseks.ErrCodeResourceNotFoundException)},
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 		},
 		"LateInitSuccess": {
@@ -405,29 +402,28 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockUpdateFn(nil),
 				},
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{
-									Status:  awseks.ClusterStatusCreating,
+					MockDescribeNodegroupRequest: func(_ *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
+								Nodegroup: &awseks.Nodegroup{
+									Status:  awseks.NodegroupStatusCreating,
 									Version: &version,
 								},
 							}},
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr: cluster(
-					withStatus(v1beta1.ClusterStatusCreating),
+				cr: nodeGroup(
+					withStatus(v1alpha1.NodeGroupStatusCreating),
 					withConditions(runtimev1alpha1.Creating()),
 					withVersion(&version),
 				),
 				result: managed.ExternalObservation{
-					ResourceExists:    true,
-					ResourceUpToDate:  true,
-					ConnectionDetails: eks.GetConnectionDetails(&awseks.Cluster{}, &sts.Client{}),
+					ResourceExists:   true,
+					ResourceUpToDate: true,
 				},
 			},
 		},
@@ -437,21 +433,21 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockUpdateFn(errBoom),
 				},
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{
-									Status:  awseks.ClusterStatusCreating,
+					MockDescribeNodegroupRequest: func(_ *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
+								Nodegroup: &awseks.Nodegroup{
+									Status:  awseks.NodegroupStatusCreating,
 									Version: &version,
 								},
 							}},
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr:  cluster(withVersion(&version)),
+				cr:  nodeGroup(withVersion(&version)),
 				err: errors.Wrap(errBoom, errKubeUpdateFailed),
 			},
 		},
@@ -477,7 +473,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.Cluster
+		cr     *v1alpha1.NodeGroup
 		result managed.ExternalCreation
 		err    error
 	}
@@ -489,42 +485,42 @@ func TestCreate(t *testing.T) {
 		"Successful": {
 			args: args{
 				eks: &fake.MockClient{
-					MockCreateClusterRequest: func(input *awseks.CreateClusterInput) awseks.CreateClusterRequest {
-						return awseks.CreateClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.CreateClusterOutput{}},
+					MockCreateNodegroupRequest: func(input *awseks.CreateNodegroupInput) awseks.CreateNodegroupRequest {
+						return awseks.CreateNodegroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.CreateNodegroupOutput{}},
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr:     cluster(withConditions(runtimev1alpha1.Creating())),
+				cr:     nodeGroup(withConditions(runtimev1alpha1.Creating())),
 				result: managed.ExternalCreation{},
 			},
 		},
 		"SuccessfulNoNeedForCreate": {
 			args: args{
-				cr: cluster(withStatus(v1beta1.ClusterStatusCreating)),
+				cr: nodeGroup(withStatus(v1alpha1.NodeGroupStatusCreating)),
 			},
 			want: want{
-				cr: cluster(
-					withStatus(v1beta1.ClusterStatusCreating),
+				cr: nodeGroup(
+					withStatus(v1alpha1.NodeGroupStatusCreating),
 					withConditions(runtimev1alpha1.Creating())),
 			},
 		},
 		"FailedRequest": {
 			args: args{
 				eks: &fake.MockClient{
-					MockCreateClusterRequest: func(input *awseks.CreateClusterInput) awseks.CreateClusterRequest {
-						return awseks.CreateClusterRequest{
+					MockCreateNodegroupRequest: func(input *awseks.CreateNodegroupInput) awseks.CreateNodegroupRequest {
+						return awseks.CreateNodegroupRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr:  cluster(withConditions(runtimev1alpha1.Creating())),
+				cr:  nodeGroup(withConditions(runtimev1alpha1.Creating())),
 				err: errors.Wrap(errBoom, errCreateFailed),
 			},
 		},
@@ -550,7 +546,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.Cluster
+		cr     *v1alpha1.NodeGroup
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -562,16 +558,16 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulAddTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{},
+					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
+								Nodegroup: &awseks.Nodegroup{},
 							}},
 						}
 					},
-					MockUpdateClusterConfigRequest: func(input *awseks.UpdateClusterConfigInput) awseks.UpdateClusterConfigRequest {
-						return awseks.UpdateClusterConfigRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterConfigOutput{}},
+					MockUpdateNodegroupConfigRequest: func(input *awseks.UpdateNodegroupConfigInput) awseks.UpdateNodegroupConfigRequest {
+						return awseks.UpdateNodegroupConfigRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateNodegroupConfigOutput{}},
 						}
 					},
 					MockTagResourceRequest: func(input *awseks.TagResourceInput) awseks.TagResourceRequest {
@@ -580,29 +576,27 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: cluster(
+				cr: nodeGroup(
 					withTags(map[string]string{"foo": "bar"})),
 			},
 			want: want{
-				cr: cluster(
+				cr: nodeGroup(
 					withTags(map[string]string{"foo": "bar"})),
 			},
 		},
 		"SuccessfulRemoveTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{
-									Tags: map[string]string{"foo": "bar"},
-								},
+					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
+								Nodegroup: &awseks.Nodegroup{},
 							}},
 						}
 					},
-					MockUpdateClusterConfigRequest: func(input *awseks.UpdateClusterConfigInput) awseks.UpdateClusterConfigRequest {
-						return awseks.UpdateClusterConfigRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterConfigOutput{}},
+					MockUpdateNodegroupConfigRequest: func(input *awseks.UpdateNodegroupConfigInput) awseks.UpdateNodegroupConfigRequest {
+						return awseks.UpdateNodegroupConfigRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateNodegroupConfigOutput{}},
 						}
 					},
 					MockUntagResourceRequest: func(input *awseks.UntagResourceInput) awseks.UntagResourceRequest {
@@ -611,133 +605,133 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 		},
 		"SuccessfulUpdateVersion": {
 			args: args{
 				eks: &fake.MockClient{
-					MockUpdateClusterVersionRequest: func(input *awseks.UpdateClusterVersionInput) awseks.UpdateClusterVersionRequest {
-						return awseks.UpdateClusterVersionRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterVersionOutput{}},
+					MockUpdateNodegroupVersionRequest: func(input *awseks.UpdateNodegroupVersionInput) awseks.UpdateNodegroupVersionRequest {
+						return awseks.UpdateNodegroupVersionRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateNodegroupVersionOutput{}},
 						}
 					},
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{},
+					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
+								Nodegroup: &awseks.Nodegroup{},
 							}},
 						}
 					},
 				},
-				cr: cluster(withVersion(&version)),
+				cr: nodeGroup(withVersion(&version)),
 			},
 			want: want{
-				cr: cluster(withVersion(&version)),
+				cr: nodeGroup(withVersion(&version)),
 			},
 		},
-		"SuccessfulUpdateCluster": {
+		"SuccessfulUpdateNodeGroup": {
 			args: args{
 				eks: &fake.MockClient{
-					MockUpdateClusterConfigRequest: func(input *awseks.UpdateClusterConfigInput) awseks.UpdateClusterConfigRequest {
-						return awseks.UpdateClusterConfigRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateClusterConfigOutput{}},
+					MockUpdateNodegroupConfigRequest: func(input *awseks.UpdateNodegroupConfigInput) awseks.UpdateNodegroupConfigRequest {
+						return awseks.UpdateNodegroupConfigRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.UpdateNodegroupConfigOutput{}},
 						}
 					},
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{},
+					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
+								Nodegroup: &awseks.Nodegroup{},
 							}},
 						}
 					},
 				},
-				cr: cluster(withConfig(v1beta1.VpcConfigRequest{SubnetIDs: []string{"subnet"}})),
+				cr: nodeGroup(withScalingConfig(&v1alpha1.NodeGroupScalingConfig{DesiredSize: &desiredSize})),
 			},
 			want: want{
-				cr: cluster(withConfig(v1beta1.VpcConfigRequest{SubnetIDs: []string{"subnet"}})),
+				cr: nodeGroup(withScalingConfig(&v1alpha1.NodeGroupScalingConfig{DesiredSize: &desiredSize})),
 			},
 		},
 		"AlreadyModifying": {
 			args: args{
-				cr: cluster(withStatus(v1beta1.ClusterStatusUpdating)),
+				cr: nodeGroup(withStatus(v1alpha1.NodeGroupStatusUpdating)),
 			},
 			want: want{
-				cr: cluster(withStatus(v1beta1.ClusterStatusUpdating)),
+				cr: nodeGroup(withStatus(v1alpha1.NodeGroupStatusUpdating)),
 			},
 		},
 		"FailedDescribe": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
+					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr:  cluster(),
+				cr:  nodeGroup(),
 				err: errors.Wrap(errBoom, errDescribeFailed),
 			},
 		},
 		"FailedUpdateConfig": {
 			args: args{
 				eks: &fake.MockClient{
-					MockUpdateClusterConfigRequest: func(input *awseks.UpdateClusterConfigInput) awseks.UpdateClusterConfigRequest {
-						return awseks.UpdateClusterConfigRequest{
+					MockUpdateNodegroupConfigRequest: func(input *awseks.UpdateNodegroupConfigInput) awseks.UpdateNodegroupConfigRequest {
+						return awseks.UpdateNodegroupConfigRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{},
+					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
+								Nodegroup: &awseks.Nodegroup{},
 							}},
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr:  cluster(),
+				cr:  nodeGroup(),
 				err: errors.Wrap(errBoom, errUpdateConfigFailed),
 			},
 		},
 		"FailedUpdateVersion": {
 			args: args{
 				eks: &fake.MockClient{
-					MockUpdateClusterVersionRequest: func(input *awseks.UpdateClusterVersionInput) awseks.UpdateClusterVersionRequest {
-						return awseks.UpdateClusterVersionRequest{
+					MockUpdateNodegroupVersionRequest: func(input *awseks.UpdateNodegroupVersionInput) awseks.UpdateNodegroupVersionRequest {
+						return awseks.UpdateNodegroupVersionRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{},
+					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
+								Nodegroup: &awseks.Nodegroup{},
 							}},
 						}
 					},
 				},
-				cr: cluster(withVersion(&version)),
+				cr: nodeGroup(withVersion(&version)),
 			},
 			want: want{
-				cr:  cluster(withVersion(&version)),
+				cr:  nodeGroup(withVersion(&version)),
 				err: errors.Wrap(errBoom, errUpdateVersionFailed),
 			},
 		},
 		"FailedRemoveTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{
+					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
+								Nodegroup: &awseks.Nodegroup{
 									Tags: map[string]string{"foo": "bar"},
 								},
 							}},
@@ -749,20 +743,20 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr:  cluster(),
+				cr:  nodeGroup(),
 				err: errors.Wrap(errBoom, errAddTagsFailed),
 			},
 		},
 		"FailedAddTags": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDescribeClusterRequest: func(input *awseks.DescribeClusterInput) awseks.DescribeClusterRequest {
-						return awseks.DescribeClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeClusterOutput{
-								Cluster: &awseks.Cluster{},
+					MockDescribeNodegroupRequest: func(input *awseks.DescribeNodegroupInput) awseks.DescribeNodegroupRequest {
+						return awseks.DescribeNodegroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeNodegroupOutput{
+								Nodegroup: &awseks.Nodegroup{},
 							}},
 						}
 					},
@@ -772,10 +766,10 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: cluster(withTags(map[string]string{"foo": "bar"})),
+				cr: nodeGroup(withTags(map[string]string{"foo": "bar"})),
 			},
 			want: want{
-				cr:  cluster(withTags(map[string]string{"foo": "bar"})),
+				cr:  nodeGroup(withTags(map[string]string{"foo": "bar"})),
 				err: errors.Wrap(errBoom, errAddTagsFailed),
 			},
 		},
@@ -801,7 +795,7 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *v1beta1.Cluster
+		cr  *v1alpha1.NodeGroup
 		err error
 	}
 
@@ -812,55 +806,55 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDeleteClusterRequest: func(input *awseks.DeleteClusterInput) awseks.DeleteClusterRequest {
-						return awseks.DeleteClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DeleteClusterOutput{}},
+					MockDeleteNodegroupRequest: func(input *awseks.DeleteNodegroupInput) awseks.DeleteNodegroupRequest {
+						return awseks.DeleteNodegroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DeleteNodegroupOutput{}},
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr: cluster(withConditions(runtimev1alpha1.Deleting())),
+				cr: nodeGroup(withConditions(runtimev1alpha1.Deleting())),
 			},
 		},
 		"AlreadyDeleting": {
 			args: args{
-				cr: cluster(withStatus(v1beta1.ClusterStatusDeleting)),
+				cr: nodeGroup(withStatus(v1alpha1.NodeGroupStatusDeleting)),
 			},
 			want: want{
-				cr: cluster(withStatus(v1beta1.ClusterStatusDeleting),
+				cr: nodeGroup(withStatus(v1alpha1.NodeGroupStatusDeleting),
 					withConditions(runtimev1alpha1.Deleting())),
 			},
 		},
 		"AlreadyDeleted": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDeleteClusterRequest: func(input *awseks.DeleteClusterInput) awseks.DeleteClusterRequest {
-						return awseks.DeleteClusterRequest{
+					MockDeleteNodegroupRequest: func(input *awseks.DeleteNodegroupInput) awseks.DeleteNodegroupRequest {
+						return awseks.DeleteNodegroupRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errors.New(awseks.ErrCodeResourceNotFoundException)},
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr: cluster(withConditions(runtimev1alpha1.Deleting())),
+				cr: nodeGroup(withConditions(runtimev1alpha1.Deleting())),
 			},
 		},
 		"Failed": {
 			args: args{
 				eks: &fake.MockClient{
-					MockDeleteClusterRequest: func(input *awseks.DeleteClusterInput) awseks.DeleteClusterRequest {
-						return awseks.DeleteClusterRequest{
+					MockDeleteNodegroupRequest: func(input *awseks.DeleteNodegroupInput) awseks.DeleteNodegroupRequest {
+						return awseks.DeleteNodegroupRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: cluster(),
+				cr: nodeGroup(),
 			},
 			want: want{
-				cr:  cluster(withConditions(runtimev1alpha1.Deleting())),
+				cr:  nodeGroup(withConditions(runtimev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDeleteFailed),
 			},
 		},
@@ -883,7 +877,7 @@ func TestDelete(t *testing.T) {
 
 func TestInitialize(t *testing.T) {
 	type want struct {
-		cr  *v1beta1.Cluster
+		cr  *v1alpha1.NodeGroup
 		err error
 	}
 
@@ -893,16 +887,16 @@ func TestInitialize(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				cr:   cluster(withTags(map[string]string{"foo": "bar"})),
+				cr:   nodeGroup(withTags(map[string]string{"foo": "bar"})),
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
 			},
 			want: want{
-				cr: cluster(withTags(resource.GetExternalTags(cluster()), (map[string]string{"foo": "bar"}))),
+				cr: nodeGroup(withTags(resource.GetExternalTags(nodeGroup()), (map[string]string{"foo": "bar"}))),
 			},
 		},
 		"UpdateFailed": {
 			args: args{
-				cr:   cluster(),
+				cr:   nodeGroup(),
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
 			},
 			want: want{
