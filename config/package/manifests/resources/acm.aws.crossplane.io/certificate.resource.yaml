@@ -1,0 +1,15 @@
+id: certificate
+title: Certificate
+titlePlural: Certificate
+category: 
+overviewShort: "A Certificate is a managed resource that represents an AWS ACM Certificate."
+overview: |
+ A Certificate is a managed resource that represents an AWS ACM Certificate.
+readme: |
+ ## AWS Certificate Manager
+
+ AWS Certificate Manager is a service that lets you easily provision, manage, and deploy public and private Secure Sockets Layer/Transport Layer Security (SSL/TLS) certificates for use with AWS services and your internal connected resources. 
+
+ ---
+
+ You can learn more at <https://aws.amazon.com/certificate-manager/>.
