@@ -1,0 +1,15 @@
+id: dynamotable
+title: Dynamo Table
+titlePlural: Dynamo Tables
+category: Database
+overviewShort: "A DynamoTable is a managed resource that represents an AWS DynamoDB Table."
+overview: |
+ A DynamoTable is a managed resource that represents an AWS DynamoDB Table.
+readme: |
+ ## AWS DynamoDB
+
+ Amazon DynamoDB is a fully managed NoSQL database service that provides fast and predictable performance with seamless scalability.
+
+ ---
+
+ You can learn more at <https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html>.
