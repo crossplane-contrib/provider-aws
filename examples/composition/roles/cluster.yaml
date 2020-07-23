@@ -1,0 +1,22 @@
+# This allows Crossplane to manage our new composite resource.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: clusters.aws.example.org
+  labels:
+    rbac.crossplane.io/aggregate-to-crossplane: "true"
+rules:
+- apiGroups:
+  - aws.example.org
+  resources:
+  - clusters
+  - clusters/status
+  verbs:
+  - "*"
+- apiGroups:
+  - eks.aws.crossplane.io
+  - identity.aws.crossplane.io
+  resources:
+  - "*"
+  verbs:
+  - "*"
