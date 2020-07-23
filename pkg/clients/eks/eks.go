@@ -77,6 +77,14 @@ func IsErrorInUse(err error) bool {
 	return strings.Contains(err.Error(), eks.ErrCodeResourceInUseException)
 }
 
+// IsErrorInvalidRequest helper function to test for ErrCodeInvalidRequestException error.
+func IsErrorInvalidRequest(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(err.Error(), eks.ErrCodeInvalidRequestException)
+}
+
 // GenerateCreateClusterInput from ClusterParameters.
 func GenerateCreateClusterInput(name string, p *v1beta1.ClusterParameters) *eks.CreateClusterInput {
 	c := &eks.CreateClusterInput{
