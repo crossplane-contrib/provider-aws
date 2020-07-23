@@ -34,6 +34,12 @@ type MockClient struct {
 	MockTagResourceRequest          func(*eks.TagResourceInput) eks.TagResourceRequest
 	MockUntagResourceRequest        func(*eks.UntagResourceInput) eks.UntagResourceRequest
 	MockUpdateClusterVersionRequest func(*eks.UpdateClusterVersionInput) eks.UpdateClusterVersionRequest
+
+	MockDescribeNodegroupRequest      func(*eks.DescribeNodegroupInput) eks.DescribeNodegroupRequest
+	MockCreateNodegroupRequest        func(*eks.CreateNodegroupInput) eks.CreateNodegroupRequest
+	MockUpdateNodegroupVersionRequest func(*eks.UpdateNodegroupVersionInput) eks.UpdateNodegroupVersionRequest
+	MockUpdateNodegroupConfigRequest  func(*eks.UpdateNodegroupConfigInput) eks.UpdateNodegroupConfigRequest
+	MockDeleteNodegroupRequest        func(*eks.DeleteNodegroupInput) eks.DeleteNodegroupRequest
 }
 
 // CreateClusterRequest calls the underlying MockCreateClusterRequest method.
@@ -72,4 +78,34 @@ func (c *MockClient) UntagResourceRequest(i *eks.UntagResourceInput) eks.UntagRe
 // MockUpdateClusterVersionRequest method.
 func (c *MockClient) UpdateClusterVersionRequest(i *eks.UpdateClusterVersionInput) eks.UpdateClusterVersionRequest {
 	return c.MockUpdateClusterVersionRequest(i)
+}
+
+// DescribeNodegroupRequest calls the underlying MockDescribeNodegroupRequest
+// method.
+func (c *MockClient) DescribeNodegroupRequest(i *eks.DescribeNodegroupInput) eks.DescribeNodegroupRequest {
+	return c.MockDescribeNodegroupRequest(i)
+}
+
+// CreateNodegroupRequest calls the underlying MockCreateNodegroupRequest
+// method.
+func (c *MockClient) CreateNodegroupRequest(i *eks.CreateNodegroupInput) eks.CreateNodegroupRequest {
+	return c.MockCreateNodegroupRequest(i)
+}
+
+// UpdateNodegroupVersionRequest calls the underlying
+// MockUpdateNodegroupVersionRequest method.
+func (c *MockClient) UpdateNodegroupVersionRequest(i *eks.UpdateNodegroupVersionInput) eks.UpdateNodegroupVersionRequest {
+	return c.MockUpdateNodegroupVersionRequest(i)
+}
+
+// UpdateNodegroupConfigRequest calls the underlying
+// MockUpdateNodegroupConfigRequest method.
+func (c *MockClient) UpdateNodegroupConfigRequest(i *eks.UpdateNodegroupConfigInput) eks.UpdateNodegroupConfigRequest {
+	return c.MockUpdateNodegroupConfigRequest(i)
+}
+
+// DeleteNodegroupRequest calls the underlying MockDeleteNodegroupRequest
+// method.
+func (c *MockClient) DeleteNodegroupRequest(i *eks.DeleteNodegroupInput) eks.DeleteNodegroupRequest {
+	return c.MockDeleteNodegroupRequest(i)
 }
