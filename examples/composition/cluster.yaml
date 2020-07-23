@@ -1,0 +1,9 @@
+apiVersion: aws.example.org/v1alpha1
+kind: Cluster
+metadata:
+  name: my-cluster
+spec:
+  reclaimPolicy: Delete
+  networkName: my-network
+  providerRef:
+    name: aws-provider
