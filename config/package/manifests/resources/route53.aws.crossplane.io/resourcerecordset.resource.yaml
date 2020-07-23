@@ -1,0 +1,15 @@
+id: resourcerecordset
+title: Route53 Resource Record Set
+titlePlural: Route53 Resource Record Sets
+category: 
+overviewShort: "A ResourceRecordSet is a managed resource that represents an AWS Route53 Resource Record Set."
+overview: |
+ A ResourceRecordSet is a managed resource that represents an AWS Route53 Resource Record Set.
+readme: |
+ ## AWS Route 53
+
+ Amazon Route 53 is a highly available and scalable cloud Domain Name System (DNS) web service.  
+
+ ---
+
+ You can learn more at <https://aws.amazon.com/route53>.
