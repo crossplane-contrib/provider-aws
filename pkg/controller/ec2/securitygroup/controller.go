@@ -56,6 +56,7 @@ const (
 	errAuthorizeEgress  = "failed to authorize egress rules"
 	errDelete           = "failed to delete the SecurityGroup resource"
 	errSpecUpdate       = "cannot update spec of the SecurityGroup custom resource"
+	errRevokeEgress     = "cannot remove the default egress rule"
 	errStatusUpdate     = "cannot update status of the SecurityGroup custom resource"
 	errUpdate           = "failed to update the SecurityGroup resource"
 	errCreateTags       = "failed to create tags for the Security Group resource"
@@ -185,18 +186,29 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		VpcId:       cr.Spec.ForProvider.VPCID,
 		Description: aws.String(cr.Spec.ForProvider.Description),
 	}).Send(ctx)
-
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
-
 	if result.CreateSecurityGroupOutput.GroupId == nil {
 		return managed.ExternalCreation{}, errors.New(errCreate)
 	}
-
 	meta.SetExternalName(cr, aws.StringValue(result.GroupId))
 
-	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
+	if err := e.kube.Update(ctx, cr); err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errSpecUpdate)
+	}
+	// NOTE(muvaf): AWS creates an initial egress rule and there is no way to
+	// disable it with the create call. So, we revoke it right after the creation.
+	_, err = e.sg.RevokeSecurityGroupEgressRequest(&awsec2.RevokeSecurityGroupEgressInput{
+		GroupId: aws.String(meta.GetExternalName(cr)),
+		IpPermissions: []awsec2.IpPermission{
+			{
+				IpProtocol: aws.String("-1"),
+				IpRanges:   []awsec2.IpRange{{CidrIp: aws.String("0.0.0.0/0")}},
+			},
+		},
+	}).Send(ctx)
+	return managed.ExternalCreation{}, errors.Wrap(err, errRevokeEgress)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
