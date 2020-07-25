@@ -409,8 +409,8 @@ func TestCreate(t *testing.T) {
 		"Successful": {
 			args: args{
 				kube: &test.MockClient{
-					MockUpdate:       test.NewMockClient().Update,
-					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+					MockUpdate:       test.NewMockUpdateFn(nil),
+					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
 				},
 				sg: &fake.MockSecurityGroupClient{
 					MockCreate: func(input *awsec2.CreateSecurityGroupInput) awsec2.CreateSecurityGroupRequest {
@@ -418,6 +418,11 @@ func TestCreate(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateSecurityGroupOutput{
 								GroupId: aws.String(sgID),
 							}},
+						}
+					},
+					MockRevokeEgress: func(input *awsec2.RevokeSecurityGroupEgressInput) awsec2.RevokeSecurityGroupEgressRequest {
+						return awsec2.RevokeSecurityGroupEgressRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.RevokeSecurityGroupEgressOutput{}},
 						}
 					},
 				},
@@ -431,8 +436,8 @@ func TestCreate(t *testing.T) {
 		"CreateFail": {
 			args: args{
 				kube: &test.MockClient{
-					MockUpdate:       test.NewMockClient().Update,
-					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+					MockUpdate:       test.NewMockUpdateFn(nil),
+					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
 				},
 				sg: &fake.MockSecurityGroupClient{
 					MockCreate: func(input *awsec2.CreateSecurityGroupInput) awsec2.CreateSecurityGroupRequest {
@@ -446,6 +451,34 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr:  sg(withConditions(runtimev1alpha1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
+			},
+		},
+		"RevokeFail": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockUpdateFn(nil),
+					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
+				},
+				sg: &fake.MockSecurityGroupClient{
+					MockCreate: func(input *awsec2.CreateSecurityGroupInput) awsec2.CreateSecurityGroupRequest {
+						return awsec2.CreateSecurityGroupRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateSecurityGroupOutput{
+								GroupId: aws.String(sgID),
+							}},
+						}
+					},
+					MockRevokeEgress: func(input *awsec2.RevokeSecurityGroupEgressInput) awsec2.RevokeSecurityGroupEgressRequest {
+						return awsec2.RevokeSecurityGroupEgressRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: sg(),
+			},
+			want: want{
+				err: errors.Wrap(errBoom, errRevokeEgress),
+				cr: sg(withExternalName(sgID),
+					withConditions(runtimev1alpha1.Creating())),
 			},
 		},
 	}
