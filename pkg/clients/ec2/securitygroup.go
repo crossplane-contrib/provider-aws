@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	awsgo "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
@@ -30,6 +31,7 @@ type SecurityGroupClient interface {
 	DescribeSecurityGroupsRequest(input *ec2.DescribeSecurityGroupsInput) ec2.DescribeSecurityGroupsRequest
 	AuthorizeSecurityGroupIngressRequest(input *ec2.AuthorizeSecurityGroupIngressInput) ec2.AuthorizeSecurityGroupIngressRequest
 	AuthorizeSecurityGroupEgressRequest(input *ec2.AuthorizeSecurityGroupEgressInput) ec2.AuthorizeSecurityGroupEgressRequest
+	RevokeSecurityGroupEgressRequest(input *ec2.RevokeSecurityGroupEgressInput) ec2.RevokeSecurityGroupEgressRequest
 	CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest
 }
 
@@ -149,6 +151,24 @@ func CreateSGPatch(in ec2.SecurityGroup, target v1beta1.SecurityGroupParameters)
 	v1beta1.SortTags(target.Tags, in.Tags)
 	LateInitializeSG(currentParams, &in)
 
+	// NOTE(muvaf): Sending -1 as FromPort or ToPort is valid but the returned
+	// object does not have that value. So, in case we have sent -1, we assume
+	// that the returned value is also -1 in case if it's nil.
+	// See the following about usage of -1
+	// https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-security-group-egress.html
+	mOne := int64(-1)
+	for i, spec := range target.Egress {
+		if len(currentParams.Egress) <= i {
+			break
+		}
+		if awsgo.Int64Value(spec.FromPort) == mOne {
+			currentParams.Egress[i].FromPort = awsclients.LateInitializeInt64Ptr(currentParams.Egress[i].FromPort, &mOne)
+		}
+		if awsgo.Int64Value(spec.ToPort) == mOne {
+			currentParams.Egress[i].ToPort = awsclients.LateInitializeInt64Ptr(currentParams.Egress[i].ToPort, &mOne)
+		}
+	}
+
 	jsonPatch, err := awsclients.CreateJSONPatch(*currentParams, target)
 	if err != nil {
 		return nil, err
@@ -157,6 +177,7 @@ func CreateSGPatch(in ec2.SecurityGroup, target v1beta1.SecurityGroupParameters)
 	if err := json.Unmarshal(jsonPatch, patch); err != nil {
 		return nil, err
 	}
+
 	return patch, nil
 }
 
