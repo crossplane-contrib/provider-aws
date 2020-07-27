@@ -27,8 +27,8 @@ type IAMGroupPolicyAttachmentParameters struct {
 
 	// PolicyARN is the Amazon Resource Name (ARN) of the IAM policy you want to
 	// attach.
-	// +optional
-	PolicyARN *string `json:"policyArn,omitempty"`
+	// +immutable
+	PolicyARN string `json:"policyArn,omitempty"`
 
 	// PolicyARNRef references an IAMPolicy to retrieve its Policy ARN.
 	// +optional
@@ -40,8 +40,8 @@ type IAMGroupPolicyAttachmentParameters struct {
 	PolicyARNSelector *runtimev1alpha1.Selector `json:"policyArnSelector,omitempty"`
 
 	// GroupName presents the name of the IAMGroup.
-	// +optional
-	GroupName *string `json:"groupName,omitempty"`
+	// +immutable
+	GroupName string `json:"groupName,omitempty"`
 
 	// GroupNameRef references to an IAMGroup to retrieve its groupName
 	// +optional
