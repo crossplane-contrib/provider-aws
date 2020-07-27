@@ -51,7 +51,7 @@ type NodeGroupParameters struct {
 	//
 	// ClusterName is a required field
 	// +immutable
-	ClusterName *string `json:"clusterName,omitempty"`
+	ClusterName string `json:"clusterName,omitempty"`
 
 	// ClusterNameRef is a reference to a Cluster used to set
 	// the ClusterName.
@@ -94,8 +94,7 @@ type NodeGroupParameters struct {
 	//
 	// NodeRole is a required field
 	// +immutable
-	// +optional
-	NodeRole *string `json:"nodeRole,omitempty"`
+	NodeRole string `json:"nodeRole,omitempty"`
 
 	// NodeRoleRef is a reference to a Cluster used to set
 	// the NodeRole.

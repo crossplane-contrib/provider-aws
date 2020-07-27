@@ -33,7 +33,7 @@ func (mg *NodeGroup) ResolveReferences(ctx context.Context, c client.Reader) err
 
 	// Resolve spec.forProvider.clusterName
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.ClusterName),
+		CurrentValue: mg.Spec.ForProvider.ClusterName,
 		Reference:    mg.Spec.ForProvider.ClusterNameRef,
 		Selector:     mg.Spec.ForProvider.ClusterNameSelector,
 		To:           reference.To{Managed: &eksv1beta1.Cluster{}, List: &eksv1beta1.ClusterList{}},
@@ -42,12 +42,12 @@ func (mg *NodeGroup) ResolveReferences(ctx context.Context, c client.Reader) err
 	if err != nil {
 		return err
 	}
-	mg.Spec.ForProvider.ClusterName = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.ClusterName = rsp.ResolvedValue
 	mg.Spec.ForProvider.ClusterNameRef = rsp.ResolvedReference
 
 	// Resolve spec.forProvider.nodeRole
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.NodeRole),
+		CurrentValue: mg.Spec.ForProvider.NodeRole,
 		Reference:    mg.Spec.ForProvider.NodeRoleRef,
 		Selector:     mg.Spec.ForProvider.NodeRoleSelector,
 		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
@@ -56,7 +56,7 @@ func (mg *NodeGroup) ResolveReferences(ctx context.Context, c client.Reader) err
 	if err != nil {
 		return err
 	}
-	mg.Spec.ForProvider.NodeRole = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.NodeRole = rsp.ResolvedValue
 	mg.Spec.ForProvider.NodeRoleRef = rsp.ResolvedReference
 
 	// Resolve spec.forProvider.subnets
