@@ -31,5 +31,5 @@ func LateInitializeGroupPolicy(in *v1alpha1.IAMGroupPolicyAttachmentParameters, 
 	if policy == nil {
 		return
 	}
-	*in.PolicyARN = awsclients.LateInitializeString(*in.PolicyARN, policy.PolicyArn)
+	in.PolicyARN = awsclients.LateInitializeString(in.PolicyARN, policy.PolicyArn)
 }

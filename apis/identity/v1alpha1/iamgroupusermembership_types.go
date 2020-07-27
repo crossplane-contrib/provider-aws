@@ -27,11 +27,12 @@ type IAMGroupUserMembershipParameters struct {
 
 	// GroupName is the Amazon IAM Group Name (IAMGroup) of the IAM group you want to
 	// add User to.
-	// +optional
-	GroupName *string `json:"groupName,omitempty"`
+	// +immutable
+	GroupName string `json:"groupName,omitempty"`
 
 	// GroupNameRef references to an IAMGroup to retrieve its groupName
 	// +optional
+	// +immutable
 	GroupNameRef *runtimev1alpha1.Reference `json:"groupNameRef,omitempty"`
 
 	// GroupNameSelector selects a reference to an IAMGroup to retrieve its groupName
@@ -39,11 +40,12 @@ type IAMGroupUserMembershipParameters struct {
 	GroupNameSelector *runtimev1alpha1.Selector `json:"groupNameSelector,omitempty"`
 
 	// UserName presents the name of the IAMUser.
-	// +optional
-	UserName *string `json:"userName,omitempty"`
+	// +immutable
+	UserName string `json:"userName,omitempty"`
 
 	// UserNameRef references to an IAMUser to retrieve its userName
 	// +optional
+	// +immutable
 	UserNameRef *runtimev1alpha1.Reference `json:"userNameRef,omitempty"`
 
 	// UserNameSelector selects a reference to an IAMUser to retrieve its userName

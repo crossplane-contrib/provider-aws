@@ -50,11 +50,11 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 				name: ngName,
 				p: &v1alpha1.NodeGroupParameters{
 					AMIType:        &amiType,
-					ClusterName:    &clusterName,
+					ClusterName:    clusterName,
 					DiskSize:       &diskSize,
 					InstanceTypes:  []string{"cool-type"},
 					Labels:         map[string]string{"cool": "label"},
-					NodeRole:       &nodeRole,
+					NodeRole:       nodeRole,
 					ReleaseVersion: &version,
 					RemoteAccess: &v1alpha1.RemoteAccessConfig{
 						EC2SSHKey:            &keyArn,
@@ -98,9 +98,10 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 				name: ngName,
 				p: &v1alpha1.NodeGroupParameters{
 					AMIType:       &amiType,
-					ClusterName:   &clusterName,
+					ClusterName:   clusterName,
 					DiskSize:      &diskSize,
 					InstanceTypes: []string{"cool-type"},
+					NodeRole:      nodeRole,
 					ScalingConfig: &v1alpha1.NodeGroupScalingConfig{
 						DesiredSize: &size,
 						MaxSize:     &size,
@@ -114,6 +115,7 @@ func TestGenerateCreateNodeGroupInput(t *testing.T) {
 				ClusterName:   &clusterName,
 				DiskSize:      &diskSize,
 				InstanceTypes: []string{"cool-type"},
+				NodeRole:      &nodeRole,
 				NodegroupName: &ngName,
 				ScalingConfig: &eks.NodegroupScalingConfig{
 					DesiredSize: &size,
@@ -151,11 +153,11 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 				name: ngName,
 				p: &v1alpha1.NodeGroupParameters{
 					AMIType:        &amiType,
-					ClusterName:    &clusterName,
+					ClusterName:    clusterName,
 					DiskSize:       &diskSize,
 					InstanceTypes:  []string{"cool-type"},
 					Labels:         map[string]string{"cool": "label"},
-					NodeRole:       &nodeRole,
+					NodeRole:       nodeRole,
 					ReleaseVersion: &version,
 					RemoteAccess: &v1alpha1.RemoteAccessConfig{
 						EC2SSHKey:            &keyArn,
@@ -191,11 +193,11 @@ func TestGenerateUpdateNodeGroupInput(t *testing.T) {
 				name: ngName,
 				p: &v1alpha1.NodeGroupParameters{
 					AMIType:        &amiType,
-					ClusterName:    &clusterName,
+					ClusterName:    clusterName,
 					DiskSize:       &diskSize,
 					InstanceTypes:  []string{"cool-type"},
 					Labels:         map[string]string{"cool": "label", "key": "val"},
-					NodeRole:       &nodeRole,
+					NodeRole:       nodeRole,
 					ReleaseVersion: &version,
 					RemoteAccess: &v1alpha1.RemoteAccessConfig{
 						EC2SSHKey:            &keyArn,

@@ -21,27 +21,27 @@ func TestLateInitializeGroupPolicy(t *testing.T) {
 		"AllFilledNoDiff": {
 			args: args{
 				spec: v1alpha1.IAMGroupPolicyAttachmentParameters{
-					PolicyARN: &policyARN,
+					PolicyARN: policyARN,
 				},
 				in: iam.AttachedPolicy{
 					PolicyArn: &policyARN,
 				},
 			},
 			want: v1alpha1.IAMGroupPolicyAttachmentParameters{
-				PolicyARN: &policyARN,
+				PolicyARN: policyARN,
 			},
 		},
 		"PartialFilled": {
 			args: args{
 				spec: v1alpha1.IAMGroupPolicyAttachmentParameters{
-					PolicyARN: &policyARN,
+					PolicyARN: policyARN,
 				},
 				in: iam.AttachedPolicy{
 					PolicyArn: &policyARN,
 				},
 			},
 			want: v1alpha1.IAMGroupPolicyAttachmentParameters{
-				PolicyARN: &policyARN,
+				PolicyARN: policyARN,
 			},
 		},
 	}
