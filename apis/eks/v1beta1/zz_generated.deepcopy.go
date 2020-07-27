@@ -121,11 +121,6 @@ func (in *ClusterParameters) DeepCopyInto(out *ClusterParameters) {
 		(*in).DeepCopyInto(*out)
 	}
 	in.ResourcesVpcConfig.DeepCopyInto(&out.ResourcesVpcConfig)
-	if in.RoleArn != nil {
-		in, out := &in.RoleArn, &out.RoleArn
-		*out = new(string)
-		**out = **in
-	}
 	if in.RoleArnRef != nil {
 		in, out := &in.RoleArnRef, &out.RoleArnRef
 		*out = new(v1alpha1.Reference)
