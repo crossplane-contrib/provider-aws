@@ -174,11 +174,6 @@ func (in *NodeGroupParameters) DeepCopyInto(out *NodeGroupParameters) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.ClusterName != nil {
-		in, out := &in.ClusterName, &out.ClusterName
-		*out = new(string)
-		**out = **in
-	}
 	if in.ClusterNameRef != nil {
 		in, out := &in.ClusterNameRef, &out.ClusterNameRef
 		*out = new(corev1alpha1.Reference)
@@ -205,11 +200,6 @@ func (in *NodeGroupParameters) DeepCopyInto(out *NodeGroupParameters) {
 		for key, val := range *in {
 			(*out)[key] = val
 		}
-	}
-	if in.NodeRole != nil {
-		in, out := &in.NodeRole, &out.NodeRole
-		*out = new(string)
-		**out = **in
 	}
 	if in.NodeRoleRef != nil {
 		in, out := &in.NodeRoleRef, &out.NodeRoleRef

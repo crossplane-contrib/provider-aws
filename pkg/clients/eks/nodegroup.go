@@ -32,11 +32,11 @@ func GenerateCreateNodeGroupInput(name string, p *v1alpha1.NodeGroupParameters) 
 	c := &eks.CreateNodegroupInput{
 		NodegroupName:  &name,
 		AmiType:        eks.AMITypes(aws.StringValue(p.AMIType)),
-		ClusterName:    p.ClusterName,
+		ClusterName:    &p.ClusterName,
 		DiskSize:       p.DiskSize,
 		InstanceTypes:  p.InstanceTypes,
 		Labels:         p.Labels,
-		NodeRole:       p.NodeRole,
+		NodeRole:       &p.NodeRole,
 		ReleaseVersion: p.ReleaseVersion,
 		Subnets:        p.Subnets,
 		Tags:           p.Tags,
@@ -62,7 +62,7 @@ func GenerateCreateNodeGroupInput(name string, p *v1alpha1.NodeGroupParameters) 
 func GenerateUpdateNodeGroupConfigInput(name string, p *v1alpha1.NodeGroupParameters, ng *eks.Nodegroup) *eks.UpdateNodegroupConfigInput {
 	u := &eks.UpdateNodegroupConfigInput{
 		NodegroupName: &name,
-		ClusterName:   p.ClusterName,
+		ClusterName:   &p.ClusterName,
 	}
 
 	if len(p.Labels) > 0 {
