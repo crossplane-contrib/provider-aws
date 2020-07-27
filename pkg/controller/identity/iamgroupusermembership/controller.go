@@ -117,7 +117,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	observed, err := e.client.ListGroupsForUserRequest(&awsiam.ListGroupsForUserInput{
-		UserName: cr.Spec.ForProvider.UserName,
+		UserName: &cr.Spec.ForProvider.UserName,
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, errGet)
@@ -125,7 +125,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	var attachedGroupObject *awsiam.Group
 	for i, group := range observed.Groups {
-		if aws.StringValue(cr.Spec.ForProvider.GroupName) == aws.StringValue(group.GroupName) {
+		if cr.Spec.ForProvider.GroupName == aws.StringValue(group.GroupName) {
 			attachedGroupObject = &observed.Groups[i]
 			break
 		}
@@ -158,8 +158,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	cr.SetConditions(runtimev1alpha1.Creating())
 
 	_, err := e.client.AddUserToGroupRequest(&awsiam.AddUserToGroupInput{
-		GroupName: cr.Spec.ForProvider.GroupName,
-		UserName:  cr.Spec.ForProvider.UserName,
+		GroupName: &cr.Spec.ForProvider.GroupName,
+		UserName:  &cr.Spec.ForProvider.UserName,
 	}).Send(ctx)
 
 	return managed.ExternalCreation{}, errors.Wrap(err, errAdd)
@@ -181,8 +181,8 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
 	_, err := e.client.RemoveUserFromGroupRequest(&awsiam.RemoveUserFromGroupInput{
-		GroupName: cr.Spec.ForProvider.GroupName,
-		UserName:  cr.Spec.ForProvider.UserName,
+		GroupName: &cr.Spec.ForProvider.GroupName,
+		UserName:  &cr.Spec.ForProvider.UserName,
 	}).Send(ctx)
 
 	return errors.Wrap(err, errRemove)
