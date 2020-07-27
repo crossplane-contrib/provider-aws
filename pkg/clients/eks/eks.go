@@ -89,7 +89,7 @@ func IsErrorInvalidRequest(err error) bool {
 func GenerateCreateClusterInput(name string, p *v1beta1.ClusterParameters) *eks.CreateClusterInput {
 	c := &eks.CreateClusterInput{
 		Name:    awsclients.String(name),
-		RoleArn: p.RoleArn,
+		RoleArn: &p.RoleArn,
 		Version: p.Version,
 	}
 
@@ -266,7 +266,7 @@ func LateInitialize(in *v1beta1.ClusterParameters, cluster *eks.Cluster) { // no
 			in.ResourcesVpcConfig.SubnetIDs = cluster.ResourcesVpcConfig.SubnetIds
 		}
 	}
-	in.RoleArn = awsclients.LateInitializeStringPtr(in.RoleArn, cluster.RoleArn)
+	in.RoleArn = awsclients.LateInitializeString(in.RoleArn, cluster.RoleArn)
 	in.Version = awsclients.LateInitializeStringPtr(in.Version, cluster.Version)
 	// NOTE(hasheddan): we always will set the default Crossplane tags in
 	// practice during initialization in the controller, but we check if no tags
