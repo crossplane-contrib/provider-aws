@@ -55,56 +55,6 @@ func GenerateEC2Tags(tags []Tag) []ec2.Tag {
 	return res
 }
 
-// BuildEC2Permissions converts object Permissions to ec2 format
-func BuildEC2Permissions(objectPerms []IPPermission) []ec2.IpPermission {
-	permissions := make([]ec2.IpPermission, len(objectPerms))
-	for i, p := range objectPerms {
-
-		ipPerm := ec2.IpPermission{
-			FromPort:   p.FromPort,
-			ToPort:     p.ToPort,
-			IpProtocol: aws.String(p.IPProtocol),
-		}
-
-		ipPerm.IpRanges = make([]ec2.IpRange, len(p.IPRanges))
-		for j, c := range p.IPRanges {
-			ipPerm.IpRanges[j] = ec2.IpRange{
-				CidrIp:      aws.String(c.CIDRIP),
-				Description: c.Description,
-			}
-		}
-
-		permissions[i] = ipPerm
-	}
-
-	return permissions
-}
-
-// BuildIPPermissions converts object ec2.IPPermissions to v1beta1.IPPermissions
-func BuildIPPermissions(objectPerms []ec2.IpPermission) []IPPermission {
-	permissions := make([]IPPermission, len(objectPerms))
-	for i, p := range objectPerms {
-
-		ipPerm := IPPermission{
-			FromPort:   p.FromPort,
-			ToPort:     p.ToPort,
-			IPProtocol: aws.StringValue(p.IpProtocol),
-		}
-
-		ipPerm.IPRanges = make([]IPRange, len(p.IpRanges))
-		for j, c := range p.IpRanges {
-			ipPerm.IPRanges[j] = IPRange{
-				CIDRIP:      aws.StringValue(c.CidrIp),
-				Description: c.Description,
-			}
-		}
-
-		permissions[i] = ipPerm
-	}
-
-	return permissions
-}
-
 // CompareTags compares arrays of v1beta1.Tag and ec2.Tag
 func CompareTags(tags []Tag, ec2Tags []ec2.Tag) bool {
 	if len(tags) != len(ec2Tags) {
