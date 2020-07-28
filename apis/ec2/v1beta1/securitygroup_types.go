@@ -167,7 +167,8 @@ type IPPermission struct {
 	IPProtocol string `json:"ipProtocol"`
 
 	// The IPv4 ranges.
-	IPRanges []IPRange `json:"ipRanges"`
+	// +optional
+	IPRanges []IPRange `json:"ipRanges,omitempty"`
 
 	// The IPv6 ranges.
 	//
