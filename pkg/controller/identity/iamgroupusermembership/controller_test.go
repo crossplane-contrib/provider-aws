@@ -71,11 +71,11 @@ func withConditions(c ...runtimev1alpha1.Condition) userGroupModifier {
 	return func(r *v1alpha1.IAMGroupUserMembership) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withGroupName(s *string) userGroupModifier {
+func withGroupName(s string) userGroupModifier {
 	return func(r *v1alpha1.IAMGroupUserMembership) { r.Spec.ForProvider.GroupName = s }
 }
 
-func withSpecUserName(s *string) userGroupModifier {
+func withSpecUserName(s string) userGroupModifier {
 	return func(r *v1alpha1.IAMGroupUserMembership) { r.Spec.ForProvider.UserName = s }
 }
 
@@ -289,12 +289,12 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: userGroup(withGroupName(&groupName),
-					withSpecUserName(&userName)),
+				cr: userGroup(withGroupName(groupName),
+					withSpecUserName(userName)),
 			},
 			want: want{
-				cr: userGroup(withGroupName(&groupName),
-					withSpecUserName(&userName),
+				cr: userGroup(withGroupName(groupName),
+					withSpecUserName(userName),
 					withConditions(runtimev1alpha1.Available()),
 					withStatusGroupArn(groupArn)),
 				result: managed.ExternalObservation{
@@ -321,10 +321,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: userGroup(withSpecUserName(&userName)),
+				cr: userGroup(withSpecUserName(userName)),
 			},
 			want: want{
-				cr: userGroup(withSpecUserName(&userName)),
+				cr: userGroup(withSpecUserName(userName)),
 			},
 		},
 		"ClientError": {
@@ -336,10 +336,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: userGroup(withGroupName(&groupName)),
+				cr: userGroup(withGroupName(groupName)),
 			},
 			want: want{
-				cr:  userGroup(withGroupName(&groupName)),
+				cr:  userGroup(withGroupName(groupName)),
 				err: errors.Wrap(errBoom, errGet),
 			},
 		},
@@ -384,13 +384,13 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: userGroup(withGroupName(&groupName),
-					withSpecUserName(&userName)),
+				cr: userGroup(withGroupName(groupName),
+					withSpecUserName(userName)),
 			},
 			want: want{
 				cr: userGroup(
-					withGroupName(&groupName),
-					withSpecUserName(&userName),
+					withGroupName(groupName),
+					withSpecUserName(userName),
 					withConditions(runtimev1alpha1.Creating())),
 			},
 		},
@@ -412,12 +412,12 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: userGroup(withGroupName(&groupName),
-					withSpecUserName(&userName)),
+				cr: userGroup(withGroupName(groupName),
+					withSpecUserName(userName)),
 			},
 			want: want{
-				cr: userGroup(withGroupName(&groupName),
-					withSpecUserName(&userName),
+				cr: userGroup(withGroupName(groupName),
+					withSpecUserName(userName),
 					withConditions(runtimev1alpha1.Creating())),
 				err: errors.Wrap(errBoom, errAdd),
 			},
@@ -462,13 +462,13 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: userGroup(withGroupName(&groupName),
-					withSpecUserName(&userName)),
+				cr: userGroup(withGroupName(groupName),
+					withSpecUserName(userName)),
 			},
 			want: want{
 				cr: userGroup(
-					withGroupName(&groupName),
-					withSpecUserName(&userName),
+					withGroupName(groupName),
+					withSpecUserName(userName),
 					withConditions(runtimev1alpha1.Deleting())),
 			},
 		},
@@ -490,12 +490,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: userGroup(withGroupName(&userName),
-					withSpecUserName(&userName)),
+				cr: userGroup(withGroupName(userName),
+					withSpecUserName(userName)),
 			},
 			want: want{
-				cr: userGroup(withGroupName(&userName),
-					withSpecUserName(&userName),
+				cr: userGroup(withGroupName(userName),
+					withSpecUserName(userName),
 					withConditions(runtimev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errRemove),
 			},

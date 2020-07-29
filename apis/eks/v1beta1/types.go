@@ -84,7 +84,7 @@ type ClusterParameters struct {
 	//
 	// RoleArn is a required field
 	// +immutable
-	RoleArn *string `json:"roleArn,omitempty"`
+	RoleArn string `json:"roleArn,omitempty"`
 
 	// RoleArnRef is a reference to an IAMRole used to set
 	// the RoleArn.

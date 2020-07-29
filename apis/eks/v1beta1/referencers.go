@@ -33,7 +33,7 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 
 	// Resolve spec.forProvider.arnRole
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.RoleArn),
+		CurrentValue: mg.Spec.ForProvider.RoleArn,
 		Reference:    mg.Spec.ForProvider.RoleArnRef,
 		Selector:     mg.Spec.ForProvider.RoleArnSelector,
 		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
@@ -42,7 +42,7 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 	if err != nil {
 		return err
 	}
-	mg.Spec.ForProvider.RoleArn = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.RoleArn = rsp.ResolvedValue
 	mg.Spec.ForProvider.RoleArnRef = rsp.ResolvedReference
 
 	// Resolve spec.forProvider.resourcesVpcConfig.subnetIds

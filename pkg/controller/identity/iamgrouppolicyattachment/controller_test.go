@@ -71,12 +71,12 @@ func withConditions(c ...runtimev1alpha1.Condition) groupPolicyModifier {
 	return func(r *v1alpha1.IAMGroupPolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withGroupName(s *string) groupPolicyModifier {
+func withGroupName(s string) groupPolicyModifier {
 	return func(r *v1alpha1.IAMGroupPolicyAttachment) { r.Spec.ForProvider.GroupName = s }
 }
 
 func withSpecPolicyArn(s string) groupPolicyModifier {
-	return func(r *v1alpha1.IAMGroupPolicyAttachment) { r.Spec.ForProvider.PolicyARN = &s }
+	return func(r *v1alpha1.IAMGroupPolicyAttachment) { r.Spec.ForProvider.PolicyARN = s }
 }
 
 func withStatusPolicyArn(s string) groupPolicyModifier {
@@ -288,11 +288,11 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: groupPolicy(withGroupName(&groupName),
+				cr: groupPolicy(withGroupName(groupName),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
-				cr: groupPolicy(withGroupName(&groupName),
+				cr: groupPolicy(withGroupName(groupName),
 					withSpecPolicyArn(policyArn),
 					withConditions(runtimev1alpha1.Available()),
 					withStatusPolicyArn(policyArn)),
@@ -335,10 +335,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: groupPolicy(withGroupName(&groupName)),
+				cr: groupPolicy(withGroupName(groupName)),
 			},
 			want: want{
-				cr:  groupPolicy(withGroupName(&groupName)),
+				cr:  groupPolicy(withGroupName(groupName)),
 				err: errors.Wrap(errBoom, errGet),
 			},
 		},
@@ -383,12 +383,12 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: groupPolicy(withGroupName(&groupName),
+				cr: groupPolicy(withGroupName(groupName),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
 				cr: groupPolicy(
-					withGroupName(&groupName),
+					withGroupName(groupName),
 					withSpecPolicyArn(policyArn),
 					withConditions(runtimev1alpha1.Creating())),
 			},
@@ -411,11 +411,11 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: groupPolicy(withGroupName(&groupName),
+				cr: groupPolicy(withGroupName(groupName),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
-				cr: groupPolicy(withGroupName(&groupName),
+				cr: groupPolicy(withGroupName(groupName),
 					withSpecPolicyArn(policyArn),
 					withConditions(runtimev1alpha1.Creating())),
 				err: errors.Wrap(errBoom, errAttach),
@@ -461,12 +461,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: groupPolicy(withGroupName(&groupName),
+				cr: groupPolicy(withGroupName(groupName),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
 				cr: groupPolicy(
-					withGroupName(&groupName),
+					withGroupName(groupName),
 					withSpecPolicyArn(policyArn),
 					withConditions(runtimev1alpha1.Deleting())),
 			},
@@ -489,11 +489,11 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: groupPolicy(withGroupName(&groupName),
+				cr: groupPolicy(withGroupName(groupName),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
-				cr: groupPolicy(withGroupName(&groupName),
+				cr: groupPolicy(withGroupName(groupName),
 					withSpecPolicyArn(policyArn),
 					withConditions(runtimev1alpha1.Deleting())),
 				err: errors.Wrap(errBoom, errDetach),
