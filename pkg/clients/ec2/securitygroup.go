@@ -267,15 +267,15 @@ func LateInitializeIPPermissions(spec []v1beta1.IPPermission, o []ec2.IpPermissi
 // values between the target *v1beta1.SecurityGroupParameters and the current
 // *ec2.SecurityGroup
 func CreateSGPatch(in ec2.SecurityGroup, target v1beta1.SecurityGroupParameters) (*v1beta1.SecurityGroupParameters, error) { // nolint:gocyclo
-	// We initialize these arrays with the correct length so that late-init
-	// iteration works; workaround for using empty SecurityGroupParameters with
-	// late-init.
-	currentParams := &v1beta1.SecurityGroupParameters{
-		Ingress: make([]v1beta1.IPPermission, len(in.IpPermissions)),
-		Egress:  make([]v1beta1.IPPermission, len(in.IpPermissionsEgress)),
-	}
 	v1beta1.SortTags(target.Tags, in.Tags)
-	LateInitializeSG(currentParams, &in)
+	currentParams := &v1beta1.SecurityGroupParameters{
+		Description: awsclients.StringValue(in.Description),
+		GroupName:   awsclients.StringValue(in.GroupName),
+		VPCID:       in.VpcId,
+	}
+	currentParams.Tags = v1beta1.BuildFromEC2Tags(in.Tags)
+	currentParams.Ingress = GenerateIPPermissions(in.IpPermissions)
+	currentParams.Egress = GenerateIPPermissions(in.IpPermissionsEgress)
 	// NOTE(muvaf): Sending -1 as FromPort or ToPort is valid but the returned
 	// object does not have that value. So, in case we have sent -1, we assume
 	// that the returned value is also -1 in case if it's nil.
@@ -332,23 +332,14 @@ func IsSGUpToDate(p v1beta1.SecurityGroupParameters, sg ec2.SecurityGroup) (bool
 
 // InsensitiveCases ignores the case sensitivity for string and *string types.
 func InsensitiveCases() cmp.Option {
-	return cmp.FilterValues(func(x, y interface{}) bool {
-		return true
-	}, cmp.Comparer(func(x, y interface{}) bool {
-		a := ""
-		b := ""
-		switch v := x.(type) {
-		case string:
-			a = v
-		case *string:
-			a = awsclients.StringValue(v)
-		}
-		switch v := y.(type) {
-		case string:
-			b = v
-		case *string:
-			b = awsclients.StringValue(v)
-		}
-		return strings.EqualFold(a, b)
-	}))
+	return cmp.Options{
+		cmp.FilterValues(func(_, _ interface{}) bool {
+			return true
+		}, cmp.Comparer(strings.EqualFold)),
+		cmp.FilterValues(func(_, _ interface{}) bool {
+			return true
+		}, cmp.Comparer(func(x, y *string) bool {
+			return strings.EqualFold(awsclients.StringValue(x), awsclients.StringValue(y))
+		})),
+	}
 }
