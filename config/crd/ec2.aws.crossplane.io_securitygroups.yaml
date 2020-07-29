@@ -283,7 +283,6 @@ spec:
                         type: array
                     required:
                     - ipProtocol
-                    - ipRanges
                     type: object
                   type: array
                 groupName:
@@ -431,7 +430,6 @@ spec:
                         type: array
                     required:
                     - ipProtocol
-                    - ipRanges
                     type: object
                   type: array
                 tags:
