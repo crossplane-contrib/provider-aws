@@ -241,7 +241,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if patch.Ingress != nil {
 		if _, err := e.sg.AuthorizeSecurityGroupIngressRequest(&awsec2.AuthorizeSecurityGroupIngressInput{
 			GroupId:       aws.String(meta.GetExternalName(cr)),
-			IpPermissions: v1beta1.BuildEC2Permissions(cr.Spec.ForProvider.Ingress),
+			IpPermissions: ec2.GenerateEC2Permissions(cr.Spec.ForProvider.Ingress),
 		}).Send(ctx); err != nil && !ec2.IsRuleAlreadyExistsErr(err) {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errAuthorizeIngress)
 		}
@@ -250,7 +250,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if patch.Egress != nil {
 		if _, err = e.sg.AuthorizeSecurityGroupEgressRequest(&awsec2.AuthorizeSecurityGroupEgressInput{
 			GroupId:       aws.String(meta.GetExternalName(cr)),
-			IpPermissions: v1beta1.BuildEC2Permissions(cr.Spec.ForProvider.Egress),
+			IpPermissions: ec2.GenerateEC2Permissions(cr.Spec.ForProvider.Egress),
 		}).Send(ctx); err != nil && !ec2.IsRuleAlreadyExistsErr(err) {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errAuthorizeEgress)
 		}
