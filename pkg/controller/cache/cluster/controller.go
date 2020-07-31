@@ -33,7 +33,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/cache/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -173,7 +172,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	// AWS API rejects modification requests if the state is not `available`
-	if cr.Status.AtProvider.CacheClusterStatus != v1beta1.StatusAvailable {
+	if cr.Status.AtProvider.CacheClusterStatus != v1alpha1.StatusAvailable {
 		return managed.ExternalUpdate{}, nil
 	}
 

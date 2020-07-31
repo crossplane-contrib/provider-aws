@@ -270,7 +270,6 @@ type CacheClusterParameters struct {
 
 	// A selector to select a referencer to retrieve the ID of a Security Group
 	// +optional
-	// +immutable
 	SecurityGroupIDSelector *runtimev1alpha1.Selector `json:"securityGroupIDSelector,omitempty"`
 
 	// A single-element string list containing an Amazon Resource Name (ARN) that
