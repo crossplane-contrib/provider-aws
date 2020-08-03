@@ -48,6 +48,15 @@ var (
 	RouteTableGroupVersionKind = SchemeGroupVersion.WithKind(RouteTableKind)
 )
 
+// ElasticIP type metadata.
+var (
+	ElasticIPKind             = reflect.TypeOf(ElasticIP{}).Name()
+	ElasticIPGroupKind        = schema.GroupKind{Group: Group, Kind: ElasticIPKind}.String()
+	ElasticIPKindAPIVersion   = ElasticIPKind + "." + SchemeGroupVersion.String()
+	ElasticIPGroupVersionKind = SchemeGroupVersion.WithKind(ElasticIPKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&RouteTable{}, &RouteTableList{})
+	SchemeBuilder.Register(&ElasticIP{}, &ElasticIPList{})
 }
