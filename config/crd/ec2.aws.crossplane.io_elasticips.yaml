@@ -1,0 +1,354 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: elasticips.ec2.aws.crossplane.io
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.conditions[?(@.type=='Ready')].status
+    name: READY
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Synced')].status
+    name: SYNCED
+    type: string
+  - JSONPath: .metadata.annotations.crossplane\.io/external-name
+    name: ID
+    type: string
+  - JSONPath: .status.atProvider.publicIp
+    name: IP
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: AGE
+    type: date
+  group: ec2.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: ElasticIP
+    listKind: ElasticIPList
+    plural: elasticips
+    singular: elasticip
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: A ElasticIP is a managed resource that represents an AWS VPC Security
+        Group.
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: A ElasticIPSpec defines the desired state of a ElasticIP.
+          properties:
+            claimRef:
+              description: ClaimReference specifies the resource claim to which this
+                managed resource will be bound. ClaimReference is set automatically
+                during dynamic provisioning. Crossplane does not currently support
+                setting this field manually, per https://github.com/crossplane/crossplane-runtime/issues/19
+              properties:
+                apiVersion:
+                  description: API version of the referent.
+                  type: string
+                fieldPath:
+                  description: 'If referring to a piece of an object instead of an
+                    entire object, this string should contain a valid JSON/Go field
+                    access statement, such as desiredState.manifest.containers[2].
+                    For example, if the object reference is to a container within
+                    a pod, this would take on a value like: "spec.containers{name}"
+                    (where "name" refers to the name of the container that triggered
+                    the event) or if no container name is specified "spec.containers[2]"
+                    (container with index 2 in this pod). This syntax is chosen only
+                    to have some well-defined way of referencing a part of an object.
+                    TODO: this design is not final and this field is subject to change
+                    in the future.'
+                  type: string
+                kind:
+                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                  type: string
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+                namespace:
+                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                  type: string
+                resourceVersion:
+                  description: 'Specific resourceVersion to which this reference is
+                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                  type: string
+                uid:
+                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                  type: string
+              type: object
+            classRef:
+              description: ClassReference specifies the resource class that was used
+                to dynamically provision this managed resource, if any. Crossplane
+                does not currently support setting this field manually, per https://github.com/crossplane/crossplane-runtime/issues/20
+              properties:
+                apiVersion:
+                  description: API version of the referent.
+                  type: string
+                fieldPath:
+                  description: 'If referring to a piece of an object instead of an
+                    entire object, this string should contain a valid JSON/Go field
+                    access statement, such as desiredState.manifest.containers[2].
+                    For example, if the object reference is to a container within
+                    a pod, this would take on a value like: "spec.containers{name}"
+                    (where "name" refers to the name of the container that triggered
+                    the event) or if no container name is specified "spec.containers[2]"
+                    (container with index 2 in this pod). This syntax is chosen only
+                    to have some well-defined way of referencing a part of an object.
+                    TODO: this design is not final and this field is subject to change
+                    in the future.'
+                  type: string
+                kind:
+                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                  type: string
+                name:
+                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+                namespace:
+                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                  type: string
+                resourceVersion:
+                  description: 'Specific resourceVersion to which this reference is
+                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                  type: string
+                uid:
+                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                  type: string
+              type: object
+            forProvider:
+              description: ElasticIPParameters define the desired state of an AWS
+                Elastic IP
+              properties:
+                address:
+                  description: '[EC2-VPC] The Elastic IP address to recover or an
+                    IPv4 address from an address pool.'
+                  type: string
+                customerOwnedIPv4Pool:
+                  description: The ID of a customer-owned address pool. Use this parameter
+                    to let Amazon EC2 select an address from the address pool. Alternatively,
+                    specify a specific address from the address pool
+                  type: string
+                domain:
+                  description: 'Set to vpc to allocate the address for use with instances
+                    in a VPC. Default: The address is for use with instances in EC2-Classic.'
+                  enum:
+                  - vpc
+                  - standard
+                  type: string
+                networkBorderGroup:
+                  description: "The location from which the IP address is advertised.
+                    Use this parameter to limit the address to this location. \n A
+                    network border group is a unique set of Availability Zones or
+                    Local Zones from where AWS advertises IP addresses and limits
+                    the addresses to the group. IP addresses cannot move between network
+                    border groups. \n Use DescribeAvailabilityZones (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeAvailabilityZones.html)
+                    to view the network border groups. \n You cannot use a network
+                    border group with EC2 Classic. If you attempt this operation on
+                    EC2 classic, you will receive an InvalidParameterCombination error.
+                    For more information, see Error Codes (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html)."
+                  type: string
+                publicIpv4Pool:
+                  description: The ID of an address pool that you own. Use this parameter
+                    to let Amazon EC2 select an address from the address pool. To
+                    specify a specific address from the address pool, use the Address
+                    parameter instead.
+                  type: string
+                tags:
+                  description: Tags represents to current ec2 tags.
+                  items:
+                    description: Tag defines a tag
+                    properties:
+                      key:
+                        description: Key is the name of the tag.
+                        type: string
+                      value:
+                        description: Value is the value of the tag.
+                        type: string
+                    required:
+                    - key
+                    - value
+                    type: object
+                  type: array
+              type: object
+            providerRef:
+              description: ProviderReference specifies the provider that will be used
+                to create, observe, update, and delete this managed resource.
+              properties:
+                name:
+                  description: Name of the referenced object.
+                  type: string
+              required:
+              - name
+              type: object
+            reclaimPolicy:
+              description: ReclaimPolicy specifies what will happen to this managed
+                resource when its resource claim is deleted, and what will happen
+                to the underlying external resource when the managed resource is deleted.
+                The "Delete" policy causes the managed resource to be deleted when
+                its bound resource claim is deleted, and in turn causes the external
+                resource to be deleted when its managed resource is deleted. The "Retain"
+                policy causes the managed resource to be retained, in binding phase
+                "Released", when its resource claim is deleted, and in turn causes
+                the external resource to be retained when its managed resource is
+                deleted. The "Retain" policy is used when no policy is specified.
+              enum:
+              - Retain
+              - Delete
+              type: string
+            writeConnectionSecretToRef:
+              description: WriteConnectionSecretToReference specifies the namespace
+                and name of a Secret to which any connection details for this managed
+                resource should be written. Connection details frequently include
+                the endpoint, username, and password required to connect to the managed
+                resource.
+              properties:
+                name:
+                  description: Name of the secret.
+                  type: string
+                namespace:
+                  description: Namespace of the secret.
+                  type: string
+              required:
+              - name
+              - namespace
+              type: object
+          required:
+          - forProvider
+          - providerRef
+          type: object
+        status:
+          description: A ElasticIPStatus represents the observed state of a ElasticIP.
+          properties:
+            atProvider:
+              description: ElasticIPObservation keeps the state for the external resource
+              properties:
+                allocationID:
+                  description: The ID representing the allocation of the address for
+                    use with EC2-VPC.
+                  type: string
+                associationId:
+                  description: The ID representing the association of the address
+                    with an instance in a VPC.
+                  type: string
+                customerOwnedIp:
+                  description: The customer-owned IP address.
+                  type: string
+                customerOwnedIpv4Pool:
+                  description: The ID of the customer-owned address pool.
+                  type: string
+                domain:
+                  description: Indicates whether this Elastic IP address is for use
+                    with instances in EC2-Classic (standard) or instances in a VPC
+                    (vpc).
+                  type: string
+                instanceId:
+                  description: The ID of the instance that the address is associated
+                    with (if any).
+                  type: string
+                networkBorderGroup:
+                  description: The name of the location from which the IP address
+                    is advertised.
+                  type: string
+                networkInterfaceId:
+                  description: The ID of the network interface.
+                  type: string
+                networkInterfaceOwnerId:
+                  description: The ID of the AWS account that owns the network interface.
+                  type: string
+                privateIpAddress:
+                  description: The private IP address associated with the Elastic
+                    IP address.
+                  type: string
+                publicIp:
+                  description: The Elastic IP address.
+                  type: string
+                publicIpv4Pool:
+                  description: The ID of an address pool.
+                  type: string
+              required:
+              - domain
+              - networkInterfaceId
+              - privateIpAddress
+              - publicIp
+              type: object
+            bindingPhase:
+              description: Phase represents the binding phase of a managed resource
+                or claim. Unbindable resources cannot be bound, typically because
+                they are currently unavailable, or still being created. Unbound resource
+                are available for binding, and Bound resources have successfully bound
+                to another resource.
+              enum:
+              - Unbindable
+              - Unbound
+              - Bound
+              - Released
+              type: string
+            conditions:
+              description: Conditions of the resource.
+              items:
+                description: A Condition that may apply to a resource.
+                properties:
+                  lastTransitionTime:
+                    description: LastTransitionTime is the last time this condition
+                      transitioned from one status to another.
+                    format: date-time
+                    type: string
+                  message:
+                    description: A Message containing details about this condition's
+                      last transition from one status to another, if any.
+                    type: string
+                  reason:
+                    description: A Reason for this condition's last transition from
+                      one status to another.
+                    type: string
+                  status:
+                    description: Status of this condition; is it currently True, False,
+                      or Unknown?
+                    type: string
+                  type:
+                    description: Type of this condition. At most one of each condition
+                      type may apply to a resource at any point in time.
+                    type: string
+                required:
+                - lastTransitionTime
+                - reason
+                - status
+                - type
+                type: object
+              type: array
+          required:
+          - atProvider
+          type: object
+      required:
+      - spec
+      type: object
+  version: v1alpha4
+  versions:
+  - name: v1alpha4
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
