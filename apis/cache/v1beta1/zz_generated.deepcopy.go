@@ -318,6 +318,16 @@ func (in *ReplicationGroupParameters) DeepCopyInto(out *ReplicationGroupParamete
 		*out = new(string)
 		**out = **in
 	}
+	if in.CacheSubnetGroupNameRef != nil {
+		in, out := &in.CacheSubnetGroupNameRef, &out.CacheSubnetGroupNameRef
+		*out = new(v1alpha1.Reference)
+		**out = **in
+	}
+	if in.CacheSubnetGroupNameSelector != nil {
+		in, out := &in.CacheSubnetGroupNameSelector, &out.CacheSubnetGroupNameSelector
+		*out = new(v1alpha1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.EngineVersion != nil {
 		in, out := &in.EngineVersion, &out.EngineVersion
 		*out = new(string)
