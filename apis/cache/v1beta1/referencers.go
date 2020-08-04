@@ -23,12 +23,27 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
+	"github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
 
 // ResolveReferences of this ReplicationGroup
 func (mg *ReplicationGroup) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.forProvider.cacheSubnetGroupName
+	resp, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CacheSubnetGroupName),
+		Reference:    mg.Spec.ForProvider.CacheSubnetGroupNameRef,
+		Selector:     mg.Spec.ForProvider.CacheSubnetGroupNameSelector,
+		To:           reference.To{Managed: &v1alpha1.CacheSubnetGroup{}, List: &v1alpha1.CacheSubnetGroupList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return err
+	}
+	mg.Spec.ForProvider.CacheSubnetGroupName = reference.ToPtrValue(resp.ResolvedValue)
+	mg.Spec.ForProvider.CacheSubnetGroupNameRef = resp.ResolvedReference
 
 	// Resolve spec.forProvider.securityGroupIDs
 	mrsp, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
