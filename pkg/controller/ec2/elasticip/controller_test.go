@@ -38,7 +38,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
+	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -67,10 +67,10 @@ var (
 type args struct {
 	elasticIP ec2.ElasticIPClient
 	kube      client.Client
-	cr        *v1alpha4.ElasticIP
+	cr        *v1alpha1.ElasticIP
 }
 
-type elasticIPModifier func(*v1alpha4.ElasticIP)
+type elasticIPModifier func(*v1alpha1.ElasticIP)
 
 func withTags(tagMaps ...map[string]string) elasticIPModifier {
 	var tagList []v1beta1.Tag
@@ -79,28 +79,28 @@ func withTags(tagMaps ...map[string]string) elasticIPModifier {
 			tagList = append(tagList, v1beta1.Tag{Key: k, Value: v})
 		}
 	}
-	return func(r *v1alpha4.ElasticIP) { r.Spec.ForProvider.Tags = tagList }
+	return func(r *v1alpha1.ElasticIP) { r.Spec.ForProvider.Tags = tagList }
 }
 
 func withExternalName(name string) elasticIPModifier {
-	return func(r *v1alpha4.ElasticIP) { meta.SetExternalName(r, name) }
+	return func(r *v1alpha1.ElasticIP) { meta.SetExternalName(r, name) }
 }
 
 func withConditions(c ...runtimev1alpha1.Condition) elasticIPModifier {
-	return func(r *v1alpha4.ElasticIP) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1alpha1.ElasticIP) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withSpec(p v1alpha4.ElasticIPParameters) elasticIPModifier {
-	return func(r *v1alpha4.ElasticIP) { r.Spec.ForProvider = p }
+func withSpec(p v1alpha1.ElasticIPParameters) elasticIPModifier {
+	return func(r *v1alpha1.ElasticIP) { r.Spec.ForProvider = p }
 }
 
-func withStatus(s v1alpha4.ElasticIPObservation) elasticIPModifier {
-	return func(r *v1alpha4.ElasticIP) { r.Status.AtProvider = s }
+func withStatus(s v1alpha1.ElasticIPObservation) elasticIPModifier {
+	return func(r *v1alpha1.ElasticIP) { r.Status.AtProvider = s }
 }
 
-func elasticIP(m ...elasticIPModifier) *v1alpha4.ElasticIP {
-	cr := &v1alpha4.ElasticIP{
-		Spec: v1alpha4.ElasticIPSpec{
+func elasticIP(m ...elasticIPModifier) *v1alpha1.ElasticIP {
+	cr := &v1alpha1.ElasticIP{
+		Spec: v1alpha1.ElasticIPSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
 				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
 			},
@@ -146,7 +146,7 @@ func TestConnect(t *testing.T) {
 	type args struct {
 		kube        client.Client
 		newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (ec2.ElasticIPClient, error)
-		cr          *v1alpha4.ElasticIP
+		cr          *v1alpha1.ElasticIP
 	}
 	type want struct {
 		err error
@@ -281,7 +281,7 @@ func TestConnect(t *testing.T) {
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1alpha4.ElasticIP
+		cr     *v1alpha1.ElasticIP
 		result managed.ExternalObservation
 		err    error
 	}
@@ -306,14 +306,14 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: elasticIP(withSpec(v1alpha4.ElasticIPParameters{
+				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
 					Domain: domainVpc,
 				}), withExternalName(allocationID)),
 			},
 			want: want{
-				cr: elasticIP(withSpec(v1alpha4.ElasticIPParameters{
+				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
 					Domain: domainVpc,
-				}), withStatus(v1alpha4.ElasticIPObservation{
+				}), withStatus(v1alpha1.ElasticIPObservation{
 					AllocationID: allocationID,
 				}), withExternalName(allocationID),
 					withConditions(runtimev1alpha1.Available())),
@@ -337,12 +337,12 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: elasticIP(withSpec(v1alpha4.ElasticIPParameters{
+				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
 					Domain: domainVpc,
 				}), withExternalName(allocationID)),
 			},
 			want: want{
-				cr: elasticIP(withSpec(v1alpha4.ElasticIPParameters{
+				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
 					Domain: domainVpc,
 				}), withExternalName(allocationID)),
 				err: errors.New(errMultipleItems),
@@ -360,12 +360,12 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: elasticIP(withSpec(v1alpha4.ElasticIPParameters{
+				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
 					Domain: domainVpc,
 				}), withExternalName(allocationID)),
 			},
 			want: want{
-				cr: elasticIP(withSpec(v1alpha4.ElasticIPParameters{
+				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
 					Domain: domainVpc,
 				}), withExternalName(allocationID)),
 				err: errors.Wrap(errBoom, errDescribe),
@@ -393,7 +393,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha4.ElasticIP
+		cr     *v1alpha1.ElasticIP
 		result managed.ExternalCreation
 		err    error
 	}
@@ -439,14 +439,14 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: elasticIP(withSpec(v1alpha4.ElasticIPParameters{
+				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
 					Domain: domainStandard,
 				})),
 			},
 			want: want{
 				cr: elasticIP(withExternalName(publicIP),
 					withConditions(runtimev1alpha1.Creating()),
-					withSpec(v1alpha4.ElasticIPParameters{
+					withSpec(v1alpha1.ElasticIPParameters{
 						Domain: domainStandard,
 					})),
 			},
@@ -493,7 +493,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha4.ElasticIP
+		cr     *v1alpha1.ElasticIP
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -512,12 +512,12 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: elasticIP(withSpec(v1alpha4.ElasticIPParameters{
+				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
 					Domain: domainVpc,
 				})),
 			},
 			want: want{
-				cr: elasticIP(withSpec(v1alpha4.ElasticIPParameters{
+				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
 					Domain: domainVpc,
 				})),
 			},
@@ -531,12 +531,12 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: elasticIP(withSpec(v1alpha4.ElasticIPParameters{
+				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
 					Domain: domainVpc,
 				})),
 			},
 			want: want{
-				cr: elasticIP(withSpec(v1alpha4.ElasticIPParameters{
+				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
 					Domain: domainVpc,
 				})),
 				err: errors.Wrap(errBoom, errCreateTags),
@@ -564,7 +564,7 @@ func TestUpdate(t *testing.T) {
 
 func TestRelease(t *testing.T) {
 	type want struct {
-		cr  *v1alpha4.ElasticIP
+		cr  *v1alpha1.ElasticIP
 		err error
 	}
 
@@ -596,13 +596,13 @@ func TestRelease(t *testing.T) {
 						}
 					},
 				},
-				cr: elasticIP(withSpec(v1alpha4.ElasticIPParameters{
+				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
 					Domain: domainStandard,
 				})),
 			},
 			want: want{
 				cr: elasticIP(withConditions(runtimev1alpha1.Deleting()),
-					withSpec(v1alpha4.ElasticIPParameters{
+					withSpec(v1alpha1.ElasticIPParameters{
 						Domain: domainStandard,
 					}),
 				),
@@ -643,11 +643,11 @@ func TestRelease(t *testing.T) {
 
 func TestInitialize(t *testing.T) {
 	type args struct {
-		cr   *v1alpha4.ElasticIP
+		cr   *v1alpha1.ElasticIP
 		kube client.Client
 	}
 	type want struct {
-		cr  *v1alpha4.ElasticIP
+		cr  *v1alpha1.ElasticIP
 		err error
 	}
 

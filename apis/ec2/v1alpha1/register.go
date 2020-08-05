@@ -15,9 +15,9 @@ limitations under the License.
 */
 // +kubebuilder:object:generate=true
 // +groupName=network.aws.crossplane.io
-// +versionName=v1alpha4
+// +versionName=v1alpha1
 
-package v1alpha4
+package v1alpha1
 
 import (
 	"reflect"
@@ -29,7 +29,7 @@ import (
 // Package type metadata.
 const (
 	Group   = "ec2.aws.crossplane.io"
-	Version = "v1alpha4"
+	Version = "v1alpha1"
 )
 
 var (
@@ -40,14 +40,14 @@ var (
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
-// RouteTable type metadata.
+// ElasticIP type metadata.
 var (
-	RouteTableKind             = reflect.TypeOf(RouteTable{}).Name()
-	RouteTableGroupKind        = schema.GroupKind{Group: Group, Kind: RouteTableKind}.String()
-	RouteTableKindAPIVersion   = RouteTableKind + "." + SchemeGroupVersion.String()
-	RouteTableGroupVersionKind = SchemeGroupVersion.WithKind(RouteTableKind)
+	ElasticIPKind             = reflect.TypeOf(ElasticIP{}).Name()
+	ElasticIPGroupKind        = schema.GroupKind{Group: Group, Kind: ElasticIPKind}.String()
+	ElasticIPKindAPIVersion   = ElasticIPKind + "." + SchemeGroupVersion.String()
+	ElasticIPGroupVersionKind = SchemeGroupVersion.WithKind(ElasticIPKind)
 )
 
 func init() {
-	SchemeBuilder.Register(&RouteTable{}, &RouteTableList{})
+	SchemeBuilder.Register(&ElasticIP{}, &ElasticIPList{})
 }

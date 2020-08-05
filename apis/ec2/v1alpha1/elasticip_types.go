@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha4
+package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -84,7 +84,7 @@ type ElasticIPSpec struct {
 // ElasticIPObservation keeps the state for the external resource
 type ElasticIPObservation struct {
 	// The ID representing the allocation of the address for use with EC2-VPC.
-	AllocationID string `json:"allocationID,omitempty"`
+	AllocationID string `json:"allocationId,omitempty"`
 
 	// The ID representing the association of the address with an instance in a
 	// VPC.
