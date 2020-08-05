@@ -339,6 +339,17 @@ type ReplicationGroupParameters struct {
 	// +optional
 	CacheSubnetGroupName *string `json:"cacheSubnetGroupName,omitempty"`
 
+	// CacheSubnetGroupNameRef is a reference to a Subnet Group
+	// the CacheSubnetGroupName.
+	// +immutable
+	// +optional
+	CacheSubnetGroupNameRef *runtimev1alpha1.Reference `json:"cacheSubnetGroupNameRefs,omitempty"`
+
+	// CacheSubnetGroupNameSelector selects a reference to a CacheSubnetGroup.
+	// +immutable
+	// +optional
+	CacheSubnetGroupNameSelector *runtimev1alpha1.Selector `json:"cacheSubnetGroupNameSelector,omitempty"`
+
 	// Engine is the name of the cache engine (memcached or redis) to be used
 	// for the clusters in this replication group.
 	// +immutable
