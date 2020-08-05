@@ -36,7 +36,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
+	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -62,12 +62,12 @@ const (
 
 // SetupElasticIP adds a controller that reconciles ElasticIP.
 func SetupElasticIP(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha4.ElasticIPGroupKind)
+	name := managed.ControllerName(v1alpha1.ElasticIPGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha4.ElasticIP{}).
+		For(&v1alpha1.ElasticIP{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha4.ElasticIPGroupVersionKind),
+			resource.ManagedKind(v1alpha1.ElasticIPGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewElasticIPClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
@@ -82,7 +82,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha4.ElasticIP)
+	cr, ok := mg.(*v1alpha1.ElasticIP)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -117,7 +117,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
-	cr, ok := mgd.(*v1alpha4.ElasticIP)
+	cr, ok := mgd.(*v1alpha1.ElasticIP)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -175,7 +175,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha4.ElasticIP)
+	cr, ok := mgd.(*v1alpha1.ElasticIP)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -204,7 +204,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1alpha4.ElasticIP)
+	cr, ok := mgd.(*v1alpha1.ElasticIP)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -222,7 +222,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha4.ElasticIP)
+	cr, ok := mgd.(*v1alpha1.ElasticIP)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
@@ -248,7 +248,7 @@ type tagger struct {
 }
 
 func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha4.ElasticIP)
+	cr, ok := mgd.(*v1alpha1.ElasticIP)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

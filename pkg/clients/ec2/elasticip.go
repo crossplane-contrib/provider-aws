@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
+	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
@@ -46,10 +46,10 @@ func IsAddressNotFoundErr(err error) bool {
 	return false
 }
 
-// GenerateElasticIPObservation is used to produce v1alpha4.ElasticIPObservation from
+// GenerateElasticIPObservation is used to produce v1alpha1.ElasticIPObservation from
 // ec2.Subnet
-func GenerateElasticIPObservation(address ec2.Address) v1alpha4.ElasticIPObservation {
-	o := v1alpha4.ElasticIPObservation{
+func GenerateElasticIPObservation(address ec2.Address) v1alpha1.ElasticIPObservation {
+	o := v1alpha1.ElasticIPObservation{
 		AllocationID:            aws.StringValue(address.AllocationId),
 		AssociationID:           aws.StringValue(address.AssociationId),
 		CustomerOwnedIP:         aws.StringValue(address.CustomerOwnedIp),
@@ -65,9 +65,9 @@ func GenerateElasticIPObservation(address ec2.Address) v1alpha4.ElasticIPObserva
 	return o
 }
 
-// LateInitializeElasticIP fills the empty fields in *v1alpha4.ElasticIPParameters with
+// LateInitializeElasticIP fills the empty fields in *v1alpha1.ElasticIPParameters with
 // the values seen in ec2.Address.
-func LateInitializeElasticIP(in *v1alpha4.ElasticIPParameters, a *ec2.Address) { // nolint:gocyclo
+func LateInitializeElasticIP(in *v1alpha1.ElasticIPParameters, a *ec2.Address) { // nolint:gocyclo
 	if a == nil {
 		return
 	}
@@ -82,6 +82,6 @@ func LateInitializeElasticIP(in *v1alpha4.ElasticIPParameters, a *ec2.Address) {
 }
 
 // IsElasticIPUpToDate checks whether there is a change in any of the modifiable fields.
-func IsElasticIPUpToDate(e v1alpha4.ElasticIPParameters, a ec2.Address) bool {
+func IsElasticIPUpToDate(e v1alpha1.ElasticIPParameters, a ec2.Address) bool {
 	return v1beta1.CompareTags(e.Tags, a.Tags)
 }
