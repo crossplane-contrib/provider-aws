@@ -406,8 +406,6 @@ func IsSubnetGroupUpToDate(p cachev1alpha1.CacheSubnetGroupParameters, sg elasti
 	return true
 }
 
-// CacheCluster methods
-
 // GenerateCreateCacheClusterInput returns Cache Cluster creation input
 func GenerateCreateCacheClusterInput(p cachev1alpha1.CacheClusterParameters, id string) *elasticache.CreateCacheClusterInput {
 	c := &elasticache.CreateCacheClusterInput{

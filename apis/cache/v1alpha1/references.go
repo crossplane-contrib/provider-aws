@@ -48,7 +48,7 @@ func (mg *CacheSubnetGroup) ResolveReferences(ctx context.Context, c client.Read
 	return nil
 }
 
-// ResolveReferences of this CacheSubnetGroup
+// ResolveReferences of this CacheCluster
 func (mg *CacheCluster) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
