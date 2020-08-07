@@ -830,7 +830,6 @@ func TestCacheClusterNeedsUpdate(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestConnectionEndpoint(t *testing.T) {

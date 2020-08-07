@@ -45,6 +45,15 @@ var (
 	CacheSubnetGroupGroupVersionKind = SchemeGroupVersion.WithKind(CacheSubnetGroupKind)
 )
 
+// CacheCluster type metadata.
+var (
+	CacheClusterKind             = reflect.TypeOf(CacheCluster{}).Name()
+	CacheClusterGroupKind        = schema.GroupKind{Group: Group, Kind: CacheClusterKind}.String()
+	CacheClusterKindAPIVersion   = CacheClusterKind + "." + SchemeGroupVersion.String()
+	CacheClusterGroupVersionKind = SchemeGroupVersion.WithKind(CacheClusterKind)
+)
+
 func init() {
+	SchemeBuilder.Register(&CacheCluster{}, &CacheClusterList{})
 	SchemeBuilder.Register(&CacheSubnetGroup{}, &CacheSubnetGroupList{})
 }
