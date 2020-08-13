@@ -44,7 +44,7 @@ type ElasticIPParameters struct {
 	// +optional
 	// +immutable
 	// +kubebuilder:validation:Enum=vpc;standard
-	Domain string `json:"domain,omitempty"`
+	Domain *string `json:"domain,omitempty"`
 
 	// The location from which the IP address is advertised. Use this parameter
 	// to limit the address to this location.

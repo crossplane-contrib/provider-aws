@@ -307,12 +307,12 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
-					Domain: domainVpc,
+					Domain: &domainVpc,
 				}), withExternalName(allocationID)),
 			},
 			want: want{
 				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
-					Domain: domainVpc,
+					Domain: &domainVpc,
 				}), withStatus(v1alpha1.ElasticIPObservation{
 					AllocationID: allocationID,
 				}), withExternalName(allocationID),
@@ -338,12 +338,12 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
-					Domain: domainVpc,
+					Domain: &domainVpc,
 				}), withExternalName(allocationID)),
 			},
 			want: want{
 				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
-					Domain: domainVpc,
+					Domain: &domainVpc,
 				}), withExternalName(allocationID)),
 				err: errors.New(errMultipleItems),
 			},
@@ -361,12 +361,12 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
-					Domain: domainVpc,
+					Domain: &domainVpc,
 				}), withExternalName(allocationID)),
 			},
 			want: want{
 				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
-					Domain: domainVpc,
+					Domain: &domainVpc,
 				}), withExternalName(allocationID)),
 				err: errors.Wrap(errBoom, errDescribe),
 			},
@@ -440,14 +440,14 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
-					Domain: domainStandard,
+					Domain: &domainStandard,
 				})),
 			},
 			want: want{
 				cr: elasticIP(withExternalName(publicIP),
 					withConditions(runtimev1alpha1.Creating()),
 					withSpec(v1alpha1.ElasticIPParameters{
-						Domain: domainStandard,
+						Domain: &domainStandard,
 					})),
 			},
 		},
@@ -513,12 +513,12 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
-					Domain: domainVpc,
+					Domain: &domainVpc,
 				})),
 			},
 			want: want{
 				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
-					Domain: domainVpc,
+					Domain: &domainVpc,
 				})),
 			},
 		},
@@ -532,12 +532,12 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
-					Domain: domainVpc,
+					Domain: &domainVpc,
 				})),
 			},
 			want: want{
 				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
-					Domain: domainVpc,
+					Domain: &domainVpc,
 				})),
 				err: errors.Wrap(errBoom, errCreateTags),
 			},
@@ -597,13 +597,13 @@ func TestRelease(t *testing.T) {
 					},
 				},
 				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
-					Domain: domainStandard,
+					Domain: &domainStandard,
 				})),
 			},
 			want: want{
 				cr: elasticIP(withConditions(runtimev1alpha1.Deleting()),
 					withSpec(v1alpha1.ElasticIPParameters{
-						Domain: domainStandard,
+						Domain: &domainStandard,
 					}),
 				),
 			},
