@@ -130,7 +130,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	var response *awsec2.DescribeAddressesResponse
 	var err error
 
-	if cr.Spec.ForProvider.Domain == string(awsec2.DomainTypeStandard) {
+	if ec2.IsStandardDomain(cr.Spec.ForProvider) {
 		response, err = e.client.DescribeAddressesRequest(&awsec2.DescribeAddressesInput{
 			PublicIps: []string{meta.GetExternalName(cr)},
 		}).Send(ctx)
@@ -188,14 +188,15 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	result, err := e.client.AllocateAddressRequest(&awsec2.AllocateAddressInput{
 		Address:               cr.Spec.ForProvider.Address,
 		CustomerOwnedIpv4Pool: cr.Spec.ForProvider.CustomerOwnedIPv4Pool,
-		Domain:                awsec2.DomainType(aws.StringValue(aws.String(cr.Spec.ForProvider.Domain))),
+		Domain:                awsec2.DomainType(aws.StringValue(cr.Spec.ForProvider.Domain)),
 		NetworkBorderGroup:    cr.Spec.ForProvider.NetworkBorderGroup,
 		PublicIpv4Pool:        cr.Spec.ForProvider.PublicIPv4Pool,
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
-	if cr.Spec.ForProvider.Domain == string(awsec2.DomainTypeStandard) {
+
+	if ec2.IsStandardDomain(cr.Spec.ForProvider) {
 		meta.SetExternalName(cr, aws.StringValue(result.AllocateAddressOutput.PublicIp))
 	} else {
 		meta.SetExternalName(cr, aws.StringValue(result.AllocateAddressOutput.AllocationId))
@@ -229,7 +230,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 	var err error
-	if cr.Spec.ForProvider.Domain == string(awsec2.DomainTypeStandard) {
+	if ec2.IsStandardDomain(cr.Spec.ForProvider) {
 		_, err = e.client.ReleaseAddressRequest(&awsec2.ReleaseAddressInput{
 			PublicIp: aws.String(meta.GetExternalName(cr)),
 		}).Send(ctx)

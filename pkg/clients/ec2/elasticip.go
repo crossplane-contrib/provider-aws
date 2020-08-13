@@ -72,7 +72,7 @@ func LateInitializeElasticIP(in *v1alpha1.ElasticIPParameters, a *ec2.Address) {
 		return
 	}
 	in.Address = awsclients.LateInitializeStringPtr(in.Address, a.PublicIp)
-	in.Domain = awsclients.LateInitializeString(in.Domain, aws.String(string(a.Domain)))
+	in.Domain = awsclients.LateInitializeStringPtr(in.Domain, aws.String(string(a.Domain)))
 	in.CustomerOwnedIPv4Pool = awsclients.LateInitializeStringPtr(in.CustomerOwnedIPv4Pool, a.CustomerOwnedIpv4Pool)
 	in.NetworkBorderGroup = awsclients.LateInitializeStringPtr(in.NetworkBorderGroup, a.NetworkBorderGroup)
 	in.PublicIPv4Pool = awsclients.LateInitializeStringPtr(in.PublicIPv4Pool, a.PublicIpv4Pool)
@@ -84,4 +84,9 @@ func LateInitializeElasticIP(in *v1alpha1.ElasticIPParameters, a *ec2.Address) {
 // IsElasticIPUpToDate checks whether there is a change in any of the modifiable fields.
 func IsElasticIPUpToDate(e v1alpha1.ElasticIPParameters, a ec2.Address) bool {
 	return v1beta1.CompareTags(e.Tags, a.Tags)
+}
+
+// IsStandardDomain checks whether it is set for standard domain
+func IsStandardDomain(e v1alpha1.ElasticIPParameters) bool {
+	return e.Domain != nil && *e.Domain == *aws.String(string(ec2.DomainTypeStandard))
 }

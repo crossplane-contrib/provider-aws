@@ -112,6 +112,11 @@ func (in *ElasticIPParameters) DeepCopyInto(out *ElasticIPParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.Domain != nil {
+		in, out := &in.Domain, &out.Domain
+		*out = new(string)
+		**out = **in
+	}
 	if in.NetworkBorderGroup != nil {
 		in, out := &in.NetworkBorderGroup, &out.NetworkBorderGroup
 		*out = new(string)
