@@ -163,7 +163,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}
 	}
 
-	// TODO(cvodak) ? this was copied
 	cr.SetConditions(runtimev1alpha1.Available())
 
 	cr.Status.AtProvider = ec2.GenerateElasticIPObservation(observed)
