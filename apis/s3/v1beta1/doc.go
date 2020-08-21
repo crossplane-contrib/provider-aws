@@ -14,5 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package storage contains AWS storage API versions
-package storage
+// Package v1beta1 contains managed resources for AWS storage services such as
+// S3.
+// +kubebuilder:object:generate=true
+// +groupName=s3.aws.crossplane.io
+// +versionName=v1beta1
+package v1beta1

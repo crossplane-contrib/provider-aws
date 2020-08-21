@@ -45,7 +45,7 @@ type S3BucketPolicyParameters struct {
 	// +optional
 	BucketNameSelector *runtimev1alpha1.Selector `json:"bucketNameSelector,omitempty"`
 
-	// UserName presents the name of the bucket.
+	// UserName presents the name of the IAM user this BucketPolicy is concerned with.
 	// +optional
 	UserName *string `json:"userName,omitempty"`
 
