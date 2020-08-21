@@ -32,7 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/storage/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/s3/v1alpha1"
 	iamfake "github.com/crossplane/provider-aws/pkg/clients/iam/fake"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"

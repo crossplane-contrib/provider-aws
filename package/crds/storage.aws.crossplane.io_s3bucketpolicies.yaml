@@ -149,7 +149,8 @@ spec:
                     type: object
                   type: array
                 userName:
-                  description: UserName presents the name of the bucket.
+                  description: UserName presents the name of the IAM user this BucketPolicy
+                    is concerned with.
                   type: string
                 userNameRef:
                   description: UserNameRef references to an S3Bucket to retrieve its userName

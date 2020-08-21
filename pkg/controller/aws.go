@@ -75,7 +75,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		elb.SetupELB,
 		elbattachment.SetupELBAttachment,
 		nodegroup.SetupNodeGroup,
-		s3.SetupS3Bucket,
+		s3.SetupBucket,
 		s3bucketpolicy.SetupS3BucketPolicy,
 		iamuser.SetupIAMUser,
 		iamgroup.SetupIAMGroup,

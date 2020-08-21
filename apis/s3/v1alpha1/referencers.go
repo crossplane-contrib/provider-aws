@@ -16,23 +16,12 @@ package v1alpha1
 import (
 	"context"
 
-	"github.com/crossplane/provider-aws/apis/storage/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
-
-// S3BucketIAMUser returns the Spec.UserName of a S3Bucket.
-func S3BucketIAMUser() reference.ExtractValueFn {
-	return func(mg resource.Managed) string {
-		r, ok := mg.(*v1alpha3.S3Bucket)
-		if !ok {
-			return ""
-		}
-		return r.Spec.IAMUsername
-	}
-}
 
 // ResolveReferences of this S3BucketPolicy
 func (mg *S3BucketPolicy) ResolveReferences(ctx context.Context, c client.Reader) error {
@@ -42,7 +31,7 @@ func (mg *S3BucketPolicy) ResolveReferences(ctx context.Context, c client.Reader
 		CurrentValue: reference.FromPtrValue(mg.Spec.PolicyBody.BucketName),
 		Reference:    mg.Spec.PolicyBody.BucketNameRef,
 		Selector:     mg.Spec.PolicyBody.BucketNameSelector,
-		To:           reference.To{Managed: &v1alpha3.S3Bucket{}, List: &v1alpha3.S3BucketList{}},
+		To:           reference.To{Managed: &v1beta1.Bucket{}, List: &v1beta1.BucketList{}},
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
@@ -56,8 +45,8 @@ func (mg *S3BucketPolicy) ResolveReferences(ctx context.Context, c client.Reader
 		CurrentValue: reference.FromPtrValue(mg.Spec.PolicyBody.UserName),
 		Reference:    mg.Spec.PolicyBody.UserNameRef,
 		Selector:     mg.Spec.PolicyBody.UserNameSelector,
-		To:           reference.To{Managed: &v1alpha3.S3Bucket{}, List: &v1alpha3.S3BucketList{}},
-		Extract:      S3BucketIAMUser(),
+		To:           reference.To{Managed: &v1alpha1.IAMUser{}, List: &v1alpha1.IAMUserList{}},
+		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return err
