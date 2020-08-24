@@ -1,8 +1,6 @@
 package ec2
 
 import (
-	"context"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -27,13 +25,9 @@ type VPCClient interface {
 	ModifyVpcTenancyRequest(*ec2.ModifyVpcTenancyInput) ec2.ModifyVpcTenancyRequest
 }
 
-// NewVpcClient returns a new client using AWS credentials as JSON encoded data.
-func NewVpcClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (VPCClient, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return ec2.New(*cfg), nil
+// NewVPCClient returns a new client using AWS credentials as JSON encoded data.
+func NewVPCClient(cfg aws.Config) VPCClient {
+	return ec2.New(cfg)
 }
 
 // IsVPCNotFoundErr returns true if the error is because the item doesn't exist
