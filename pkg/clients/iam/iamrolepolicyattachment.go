@@ -16,8 +16,8 @@ type RolePolicyAttachmentClient interface {
 }
 
 // NewRolePolicyAttachmentClient returns a new client given an aws config
-func NewRolePolicyAttachmentClient(conf *aws.Config) (RolePolicyAttachmentClient, error) {
-	return iam.New(*conf), nil
+func NewRolePolicyAttachmentClient(conf aws.Config) RolePolicyAttachmentClient {
+	return iam.New(conf)
 }
 
 // GenerateRolePolicyObservation is used to produce IAMRolePolicyAttachmentExternalStatus from iam.AttachedPolicy

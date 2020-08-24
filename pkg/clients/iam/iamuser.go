@@ -1,7 +1,7 @@
 package iam
 
 import (
-	"context"
+	"github.com/aws/aws-sdk-go-v2/aws"
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
@@ -18,12 +18,8 @@ type UserClient interface {
 }
 
 // NewUserClient returns a new client using AWS credentials as JSON encoded data.
-func NewUserClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (UserClient, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return iam.New(*cfg), nil
+func NewUserClient(cfg aws.Config) UserClient {
+	return iam.New(cfg)
 }
 
 // LateInitializeUser fills the empty fields in *v1alpha1.User with
