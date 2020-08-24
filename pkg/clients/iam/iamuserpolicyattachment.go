@@ -1,7 +1,7 @@
 package iam
 
 import (
-	"context"
+	"github.com/aws/aws-sdk-go-v2/aws"
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
@@ -17,12 +17,8 @@ type UserPolicyAttachmentClient interface {
 }
 
 // NewUserPolicyAttachmentClient creates new RDS RDSClient with provided AWS Configurations/Credentials
-func NewUserPolicyAttachmentClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (UserPolicyAttachmentClient, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return iam.New(*cfg), err
+func NewUserPolicyAttachmentClient(cfg aws.Config) UserPolicyAttachmentClient {
+	return iam.New(cfg)
 }
 
 // LateInitializeUserPolicy fills the empty fields in v1alpha1.UserPolicyAttachmentParameters with
