@@ -25,8 +25,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -38,8 +36,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
-	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awscommon "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/hostedzone"
 )
 
@@ -63,7 +60,7 @@ func SetupHostedZone(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.HostedZone{}).
 		Complete(managed.NewReconciler(
 			mgr, resource.ManagedKind(v1alpha1.HostedZoneGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: hostedzone.NewClient}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: hostedzone.NewClient, awsConfigFn: awscommon.GetConfig}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(),
@@ -74,37 +71,16 @@ func SetupHostedZone(mgr ctrl.Manager, l logging.Logger) error {
 
 type connector struct {
 	kube        client.Client
-	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (hostedzone.Client, error)
+	newClientFn func(config aws.Config) hostedzone.Client
+	awsConfigFn func(client.Client, context.Context, resource.Managed, string) (*aws.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.HostedZone)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
+	cfg, err := c.awsConfigFn(c.kube, ctx, mg, "")
+	if err != nil {
+		return nil, err
 	}
-
-	p := &awsv1alpha3.Provider{}
-	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name}, p); err != nil {
-		return nil, errors.Wrap(err, errGetProvider)
-	}
-
-	if aws.BoolValue(p.Spec.UseServiceAccount) {
-		r53client, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{client: r53client, kube: c.kube}, errors.Wrap(err, errCreateHostedZoneClient)
-	}
-
-	if p.GetCredentialsSecretReference() == nil {
-		return nil, errors.New(errGetProviderSecret)
-	}
-
-	s := &corev1.Secret{}
-	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
-	if err := c.kube.Get(ctx, n, s); err != nil {
-		return nil, errors.Wrap(err, errGetProviderSecret)
-	}
-
-	r53client, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{kube: c.kube, client: r53client}, err
+	return &external{client: c.newClientFn(*cfg), kube: c.kube}, nil
 }
 
 type external struct {
