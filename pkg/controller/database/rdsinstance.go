@@ -43,13 +43,8 @@ import (
 )
 
 const (
-	errNotRDSInstance   = "managed resource is not an RDS instance custom resource"
-	errKubeUpdateFailed = "cannot update RDS instance custom resource"
-
-	errCreateRDSClient   = "cannot create RDS client"
-	errGetProvider       = "cannot get provider"
-	errGetProviderSecret = "cannot get provider secret"
-
+	errNotRDSInstance          = "managed resource is not an RDS instance custom resource"
+	errKubeUpdateFailed        = "cannot update RDS instance custom resource"
 	errCreateFailed            = "cannot create RDS instance"
 	errModifyFailed            = "cannot modify RDS instance"
 	errAddTagsFailed           = "cannot add tags to RDS instance"

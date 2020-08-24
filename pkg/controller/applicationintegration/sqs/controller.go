@@ -39,9 +39,6 @@ import (
 const (
 	errNotQueue                 = "managed resource is not a Queue custom resource"
 	errKubeUpdateFailed         = "cannot update Queue custom resource"
-	errQueueClient              = "cannot create Queue client"
-	errGetProvider              = "cannot get provider"
-	errGetProviderSecret        = "cannot get provider secret"
 	errCreateFailed             = "cannot create Queue"
 	errInvalidNameForFifoQueue  = "cannot create Queue, FIFO queue name must have .fifo suffix"
 	errDeleteFailed             = "cannot delete Queue"

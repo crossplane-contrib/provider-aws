@@ -1,7 +1,6 @@
 package ec2
 
 import (
-	"context"
 	"encoding/json"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -43,12 +42,8 @@ type RouteTableClient interface {
 }
 
 // NewRouteTableClient returns a new client using AWS credentials as JSON encoded data.
-func NewRouteTableClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (RouteTableClient, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return ec2.New(*cfg), nil
+func NewRouteTableClient(cfg aws.Config) RouteTableClient {
+	return ec2.New(cfg)
 }
 
 // IsRouteTableNotFoundErr returns true if the error is because the route table doesn't exist

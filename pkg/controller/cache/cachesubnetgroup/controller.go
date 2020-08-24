@@ -44,10 +44,6 @@ const (
 	errCreateSubnetGroup   = "cannot create Subnet Group"
 	errModifySubnetGroup   = "cannot modify Subnet Group"
 	errDeleteSubnetGroup   = "cannot delete Subnet Group"
-
-	errNewClient         = "cannot create new ElastiCache client"
-	errGetProvider       = "cannot get provider"
-	errGetProviderSecret = "cannot get provider secret"
 )
 
 // SetupCacheSubnetGroup adds a controller that reconciles SubnetGroups.

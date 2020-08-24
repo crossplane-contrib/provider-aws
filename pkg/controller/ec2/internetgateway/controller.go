@@ -39,10 +39,6 @@ import (
 )
 
 const (
-	errClient            = "cannot create a new InternetGatewayClient"
-	errGetProvider       = "cannot get provider"
-	errGetProviderSecret = "cannot get provider secret"
-
 	errUnexpectedObject    = "The managed resource is not an InternetGateway resource"
 	errDescribe            = "failed to describe InternetGateway"
 	errNotSingleItem       = "either no or multiple InternetGateways retrieved for the given internetGatewayId"
