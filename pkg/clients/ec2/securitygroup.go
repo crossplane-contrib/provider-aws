@@ -36,8 +36,8 @@ type SecurityGroupClient interface {
 	CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest
 }
 
-// NewClient generates client for AWS Security Group API
-func NewClient(cfg awsgo.Config) SecurityGroupClient {
+// NewSecurityGroupClient generates client for AWS Security Group API
+func NewSecurityGroupClient(cfg awsgo.Config) SecurityGroupClient {
 	return ec2.New(cfg)
 }
 
