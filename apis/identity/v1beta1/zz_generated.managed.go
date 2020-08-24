@@ -43,8 +43,21 @@ func (mg *IAMRole) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this IAMRole.
-func (mg *IAMRole) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this IAMRole.
+func (mg *IAMRole) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this IAMRole.
+func (mg *IAMRole) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this IAMRole.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *IAMRole) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *IAMRole) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this IAMRole.
-func (mg *IAMRole) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this IAMRole.
+func (mg *IAMRole) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this IAMRole.
+func (mg *IAMRole) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this IAMRole.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *IAMRole) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
@@ -113,8 +139,21 @@ func (mg *IAMRolePolicyAttachment) GetCondition(ct runtimev1alpha1.ConditionType
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this IAMRolePolicyAttachment.
+func (mg *IAMRolePolicyAttachment) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this IAMRolePolicyAttachment.
+func (mg *IAMRolePolicyAttachment) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this IAMRolePolicyAttachment.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *IAMRolePolicyAttachment) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -148,8 +187,21 @@ func (mg *IAMRolePolicyAttachment) SetConditions(c ...runtimev1alpha1.Condition)
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this IAMRolePolicyAttachment.
+func (mg *IAMRolePolicyAttachment) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this IAMRolePolicyAttachment.
+func (mg *IAMRolePolicyAttachment) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this IAMRolePolicyAttachment.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *IAMRolePolicyAttachment) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

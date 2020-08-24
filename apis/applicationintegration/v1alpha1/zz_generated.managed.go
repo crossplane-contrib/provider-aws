@@ -43,8 +43,21 @@ func (mg *Queue) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this Queue.
-func (mg *Queue) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this Queue.
+func (mg *Queue) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this Queue.
+func (mg *Queue) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this Queue.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *Queue) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *Queue) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this Queue.
-func (mg *Queue) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this Queue.
+func (mg *Queue) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this Queue.
+func (mg *Queue) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this Queue.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *Queue) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

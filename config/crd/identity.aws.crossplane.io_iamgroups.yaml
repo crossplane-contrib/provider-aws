@@ -60,8 +60,7 @@ spec:
             claimRef:
               description: ClaimReference specifies the resource claim to which this
                 managed resource will be bound. ClaimReference is set automatically
-                during dynamic provisioning. Crossplane does not currently support
-                setting this field manually, per https://github.com/crossplane/crossplane-runtime/issues/19
+                during dynamic provisioning. Deprecated. See https://github.com/crossplane/crossplane/issues/1670
               properties:
                 apiVersion:
                   description: API version of the referent.
@@ -98,8 +97,8 @@ spec:
               type: object
             classRef:
               description: ClassReference specifies the resource class that was used
-                to dynamically provision this managed resource, if any. Crossplane
-                does not currently support setting this field manually, per https://github.com/crossplane/crossplane-runtime/issues/20
+                to dynamically provision this managed resource, if any. Deprecated.
+                See https://github.com/crossplane/crossplane/issues/1670
               properties:
                 apiVersion:
                   description: API version of the referent.
@@ -134,6 +133,15 @@ spec:
                   description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                   type: string
               type: object
+            deletionPolicy:
+              description: DeletionPolicy specifies what will happen to the underlying
+                external when this managed resource is deleted - either "Delete" or
+                "Orphan" the external resource. The "Delete" policy is the default
+                when no policy is specified.
+              enum:
+              - Orphan
+              - Delete
+              type: string
             forProvider:
               description: IAMGroupParameters define the desired state of an AWS IAM
                 Group.
@@ -142,9 +150,20 @@ spec:
                   description: The path for the group name.
                   type: string
               type: object
+            providerConfigRef:
+              description: ProviderConfigReference specifies the provider that will
+                be used to create, observe, update, and delete this managed resource.
+              properties:
+                name:
+                  description: Name of the referenced object.
+                  type: string
+              required:
+              - name
+              type: object
             providerRef:
-              description: ProviderReference specifies the provider that will be used
-                to create, observe, update, and delete this managed resource.
+              description: 'ProviderReference specifies the provider that will be
+                used to create, observe, update, and delete this managed resource.
+                Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
               properties:
                 name:
                   description: Name of the referenced object.
@@ -153,16 +172,18 @@ spec:
               - name
               type: object
             reclaimPolicy:
-              description: ReclaimPolicy specifies what will happen to this managed
+              description: "ReclaimPolicy specifies what will happen to this managed
                 resource when its resource claim is deleted, and what will happen
                 to the underlying external resource when the managed resource is deleted.
-                The "Delete" policy causes the managed resource to be deleted when
+                The \"Delete\" policy causes the managed resource to be deleted when
                 its bound resource claim is deleted, and in turn causes the external
-                resource to be deleted when its managed resource is deleted. The "Retain"
+                resource to be deleted when its managed resource is deleted. The \"Retain\"
                 policy causes the managed resource to be retained, in binding phase
-                "Released", when its resource claim is deleted, and in turn causes
+                \"Released\", when its resource claim is deleted, and in turn causes
                 the external resource to be retained when its managed resource is
-                deleted. The "Retain" policy is used when no policy is specified.
+                deleted. The \"Delete\" policy is used when no policy is specified.
+                \n Deprecated. DeletionPolicy takes precedence when both are set.
+                See https://github.com/crossplane/crossplane-runtime/issues/179."
               enum:
               - Retain
               - Delete
@@ -184,8 +205,6 @@ spec:
               - name
               - namespace
               type: object
-          required:
-          - providerRef
           type: object
         status:
           description: An IAMGroupStatus represents the observed state of an IAM Group.
@@ -206,7 +225,7 @@ spec:
                 or claim. Unbindable resources cannot be bound, typically because
                 they are currently unavailable, or still being created. Unbound resource
                 are available for binding, and Bound resources have successfully bound
-                to another resource.
+                to another resource. Deprecated. See https://github.com/crossplane/crossplane/issues/1670
               enum:
               - Unbindable
               - Unbound
