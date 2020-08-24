@@ -39,11 +39,6 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/acm/fake"
 )
 
-const (
-	providerName = "aws-creds"
-	testRegion   = "us-west-2"
-)
-
 var (
 	// an arbitrary managed resource
 	unexpecedItem  resource.Managed
@@ -101,13 +96,7 @@ func withCertificateArn() certificateModifier {
 }
 
 func certificate(m ...certificateModifier) *v1alpha1.Certificate {
-	cr := &v1alpha1.Certificate{
-		Spec: v1alpha1.CertificateSpec{
-			ResourceSpec: corev1alpha1.ResourceSpec{
-				ProviderReference: &runtimev1alpha1.Reference{Name: providerName},
-			},
-		},
-	}
+	cr := &v1alpha1.Certificate{}
 	meta.SetExternalName(cr, certificateArn)
 	for _, f := range m {
 		f(cr)

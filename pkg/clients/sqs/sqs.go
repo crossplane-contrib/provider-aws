@@ -45,6 +45,7 @@ type Client interface {
 	GetQueueUrlRequest(input *sqs.GetQueueUrlInput) sqs.GetQueueUrlRequest
 }
 
+// NewClient returns a new SQS Client.
 func NewClient(cfg aws.Config) Client {
 	return sqs.New(cfg)
 }

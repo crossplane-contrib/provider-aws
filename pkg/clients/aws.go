@@ -27,19 +27,19 @@ import (
 	"strconv"
 	"time"
 
-	corev1 "k8s.io/api/core/v1"
-
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/crossplane/provider-aws/apis/v1alpha3"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-ini/ini"
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
+	"github.com/crossplane/provider-aws/apis/v1alpha3"
 )
 
 // DefaultSection for INI files.
@@ -60,7 +60,7 @@ const (
 
 // GetConfig constructs an *aws.Config that can be used to authenticate to AWS
 // API by the AWS clients.
-func GetConfig(kube client.Client, ctx context.Context, cr resource.Managed, region string) (*aws.Config, error) {
+func GetConfig(ctx context.Context, kube client.Client, cr resource.Managed, region string) (*aws.Config, error) { // nolint:gocyclo
 	pc := &v1alpha3.ProviderConfig{}
 	switch {
 	case cr.GetProviderConfigReference() != nil && cr.GetProviderConfigReference().Name != "":

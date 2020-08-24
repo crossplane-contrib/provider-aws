@@ -418,11 +418,13 @@ func TestDelete(t *testing.T) {
 				},
 				cr: subscription(
 					withSubARN(&subName),
+					withConditions(corev1alpha1.Deleting()),
 				),
 			},
 			want: want{
 				cr: subscription(
 					withSubARN(&subName),
+					withConditions(corev1alpha1.Deleting()),
 				),
 			},
 		},
@@ -455,6 +457,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: subscription(
 					withSubARN(&subName),
+					withConditions(corev1alpha1.Deleting()),
 				),
 				err: errors.Wrap(errBoom, errDelete),
 			},
@@ -480,6 +483,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: subscription(
 					withSubARN(&subName),
+					withConditions(corev1alpha1.Deleting()),
 				),
 			},
 		},

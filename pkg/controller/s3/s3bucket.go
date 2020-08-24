@@ -32,6 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
 	bucketv1alpha3 "github.com/crossplane/provider-aws/apis/storage/v1alpha3"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
@@ -93,7 +94,7 @@ func (r *Reconciler) fail(bucket *bucketv1alpha3.S3Bucket, err error) (reconcile
 }
 
 func (r *Reconciler) _connect(instance *bucketv1alpha3.S3Bucket) (s3.Service, error) {
-	config, err := aws.GetConfig(r, ctx, instance, instance.Spec.Region)
+	config, err := aws.GetConfig(ctx, r, instance, instance.Spec.Region)
 	if err != nil {
 		return nil, err
 	}

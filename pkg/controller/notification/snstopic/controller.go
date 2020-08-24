@@ -68,11 +68,11 @@ func SetupSNSTopic(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	kube        client.Client
 	newClientFn func(config aws.Config) sns.TopicClient
-	awsConfigFn func(client.Client, context.Context, resource.Managed, string) (*aws.Config, error)
+	awsConfigFn func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(c.kube, ctx, mg, "")
+	cfg, err := c.awsConfigFn(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}

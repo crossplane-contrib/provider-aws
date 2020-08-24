@@ -64,6 +64,7 @@ type ProviderList struct {
 	Items           []Provider `json:"items"`
 }
 
+// DeepCopyIntoPC copies this Provider into an existing *ProviderConfig.
 func (p *Provider) DeepCopyIntoPC(pc *ProviderConfig) {
 	pc.TypeMeta = p.TypeMeta
 	p.ObjectMeta.DeepCopyInto(&pc.ObjectMeta)

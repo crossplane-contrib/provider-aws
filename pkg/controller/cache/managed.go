@@ -72,11 +72,11 @@ func SetupReplicationGroup(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	kube        client.Client
 	newClientFn func(config awscommon.Config) elasticache.Client
-	awsConfigFn func(client.Client, context.Context, resource.Managed, string) (*awscommon.Config, error)
+	awsConfigFn func(context.Context, client.Client, resource.Managed, string) (*awscommon.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(c.kube, ctx, mg, "")
+	cfg, err := c.awsConfigFn(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}
