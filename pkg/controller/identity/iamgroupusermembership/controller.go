@@ -22,8 +22,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -34,22 +32,16 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
-	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awscommon "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 )
 
 const (
-	errNotGroupUserMembershipInstance = "managed resource is not an GroupUserMembership instance custom resource"
-
-	errCreateGroupClient = "cannot create IAM Group client"
-	errGetProvider       = "cannot get provider"
-	errGetProviderSecret = "cannot get provider secret"
-
 	errUnexpectedObject = "The managed resource is not an GroupUserMembership resource"
-	errGet              = "failed to get groups for user"
-	errAdd              = "failed to add the user to group"
-	errRemove           = "failed to remove the user to group"
+
+	errGet    = "failed to get groups for user"
+	errAdd    = "failed to add the user to group"
+	errRemove = "failed to remove the user to group"
 )
 
 // SetupIAMGroupUserMembership adds a controller that reconciles
@@ -62,7 +54,7 @@ func SetupIAMGroupUserMembership(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.IAMGroupUserMembership{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.IAMGroupUserMembershipGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewGroupUserMembershipClient}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewGroupUserMembershipClient, awsConfigFn: awscommon.GetConfig}),
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
@@ -72,37 +64,16 @@ func SetupIAMGroupUserMembership(mgr ctrl.Manager, l logging.Logger) error {
 
 type connector struct {
 	kube        client.Client
-	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (iam.GroupUserMembershipClient, error)
+	newClientFn func(config aws.Config) iam.GroupUserMembershipClient
+	awsConfigFn func(client.Client, context.Context, resource.Managed, string) (*aws.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.IAMGroupUserMembership)
-	if !ok {
-		return nil, errors.New(errNotGroupUserMembershipInstance)
+	cfg, err := c.awsConfigFn(c.kube, ctx, mg, "")
+	if err != nil {
+		return nil, err
 	}
-
-	p := &awsv1alpha3.Provider{}
-	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name}, p); err != nil {
-		return nil, errors.Wrap(err, errGetProvider)
-	}
-
-	if aws.BoolValue(p.Spec.UseServiceAccount) {
-		userGroupClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{client: userGroupClient, kube: c.kube}, errors.Wrap(err, errCreateGroupClient)
-	}
-
-	if p.GetCredentialsSecretReference() == nil {
-		return nil, errors.New(errGetProviderSecret)
-	}
-
-	s := &corev1.Secret{}
-	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
-	if err := c.kube.Get(ctx, n, s); err != nil {
-		return nil, errors.Wrap(err, errGetProviderSecret)
-	}
-
-	userClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: userClient, kube: c.kube}, errors.Wrap(err, errCreateGroupClient)
+	return &external{client: c.newClientFn(*cfg), kube: c.kube}, nil
 }
 
 type external struct {
