@@ -4,8 +4,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-
-	"github.com/crossplane/provider-aws/pkg/clients/iam"
 )
 
 // BucketPolicyClient is the external client used for S3BucketPolicy Custom Resource
@@ -16,10 +14,8 @@ type BucketPolicyClient interface {
 }
 
 // NewBucketPolicyClient returns a new client given an aws config
-func NewBucketPolicyClient(conf *aws.Config) (BucketPolicyClient, iam.Client, error) {
-	s3client := s3.New(*conf)
-	iamclient := iam.NewClient(conf)
-	return s3client, iamclient, nil
+func NewBucketPolicyClient(cfg aws.Config) BucketPolicyClient {
+	return s3.New(cfg)
 }
 
 // IsErrorPolicyNotFound returns true if the error code indicates that the item was not found

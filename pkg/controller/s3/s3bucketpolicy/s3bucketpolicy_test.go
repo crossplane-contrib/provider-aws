@@ -26,7 +26,6 @@ import (
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -34,7 +33,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/storage/v1alpha1"
-	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	iamfake "github.com/crossplane/provider-aws/pkg/clients/iam/fake"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
@@ -94,82 +92,12 @@ func bucketPolicy(m ...bucketPolicyModifier) *v1alpha1.S3BucketPolicy {
 				PolicyID:        "",
 				PolicyStatement: make([]v1alpha1.S3BucketPolicyStatement, 0),
 			},
-			ResourceSpec: corev1alpha1.ResourceSpec{
-				ProviderReference: corev1alpha1.Reference{Name: providerName},
-			},
 		},
 	}
 	for _, f := range m {
 		f(cr)
 	}
 	return cr
-}
-
-func TestConnect(t *testing.T) {
-	type args struct {
-		newClientFn func(*aws.Config) (s3.BucketPolicyClient, iam.Client, error)
-		awsConfigFn func(context.Context, client.Reader, corev1alpha1.Reference) (*aws.Config, error)
-		cr          resource.Managed
-	}
-	type want struct {
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"ValidInput": {
-			args: args{
-				newClientFn: fake.NewMockBucketPolicyClient,
-				awsConfigFn: func(_ context.Context, _ client.Reader, p corev1alpha1.Reference) (*aws.Config, error) {
-					if diff := cmp.Diff(providerName, p.Name); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return &aws.Config{Region: testRegion}, nil
-				},
-				cr: bucketPolicy(),
-			},
-		},
-		"InValidInput": {
-			args: args{
-				cr: unexpectedItem,
-			},
-			want: want{
-				err: errors.New(errUnexpectedObject),
-			},
-		},
-		"ProviderFailure": {
-			args: args{
-				newClientFn: func(config *aws.Config) (s3.BucketPolicyClient, iam.Client, error) {
-					if diff := cmp.Diff(testRegion, config.Region); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return nil, nil, errBoom
-				},
-				awsConfigFn: func(_ context.Context, _ client.Reader, p corev1alpha1.Reference) (*aws.Config, error) {
-					if diff := cmp.Diff(providerName, p.Name); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return &aws.Config{Region: testRegion}, nil
-				},
-				cr: bucketPolicy(),
-			},
-			want: want{
-				err: errors.Wrap(errBoom, errClient),
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			c := &connector{newClientFn: tc.newClientFn, awsConfigFn: tc.awsConfigFn}
-			_, err := c.Connect(context.Background(), tc.args.cr)
-			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
 }
 
 func TestObserve(t *testing.T) {
