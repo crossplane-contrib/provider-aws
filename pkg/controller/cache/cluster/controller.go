@@ -39,10 +39,6 @@ import (
 // Error strings.
 const (
 	errUpdateCacheClusterCR = "cannot update Cache Cluster Custom Resource"
-	errGetProvider          = "cannot get provider"
-	errGetProviderSecret    = "cannot get provider secret"
-
-	errNewClient            = "cannot create new ElastiCache client"
 	errNotCacheCluster      = "managed resource is not a Cache Cluster"
 	errDescribeCacheCluster = "cannot describe Cache Cluster"
 	errCreateCacheCluster   = "cannot create Cache Cluster"

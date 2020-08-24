@@ -44,10 +44,6 @@ import (
 const (
 	errUpdateReplicationGroupCR = "cannot update ReplicationGroup Custom Resource"
 	errGetCacheClusterList      = "cannot get cache cluster list"
-	errGetProvider              = "cannot get provider"
-	errGetProviderSecret        = "cannot get provider secret"
-
-	errNewClient                = "cannot create new ElastiCache client"
 	errNotReplicationGroup      = "managed resource is not an ElastiCache replication group"
 	errDescribeReplicationGroup = "cannot describe ElastiCache replication group"
 	errGenerateAuthToken        = "cannot generate ElastiCache auth token"

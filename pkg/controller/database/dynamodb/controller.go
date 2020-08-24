@@ -41,16 +41,11 @@ import (
 const (
 	errNotDynamoTable   = "managed resource is not an DynamoTable custom resource"
 	errKubeUpdateFailed = "cannot update DynamoDB table custom resource"
-
-	errCreateDynamoClient = "cannot create DynamoDB client"
-	errGetProvider        = "cannot get provider"
-	errGetProviderSecret  = "cannot get provider secret"
-
-	errCreateFailed   = "cannot create DynamoDB table"
-	errDeleteFailed   = "cannot delete DynamoDB table"
-	errDescribeFailed = "cannot describe DynamoDB table"
-	errUpdateFailed   = "cannot update DynamoDB table"
-	errUpToDateFailed = "cannot check whether object is up-to-date"
+	errCreateFailed     = "cannot create DynamoDB table"
+	errDeleteFailed     = "cannot delete DynamoDB table"
+	errDescribeFailed   = "cannot describe DynamoDB table"
+	errUpdateFailed     = "cannot update DynamoDB table"
+	errUpToDateFailed   = "cannot check whether object is up-to-date"
 )
 
 // SetupDynamoTable adds a controller that reconciles DynamoTable.

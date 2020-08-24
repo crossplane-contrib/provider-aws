@@ -41,11 +41,7 @@ import (
 )
 
 const (
-	errKubeUpdateFailed          = "cannot update DBSubnetGroup custom resource"
-	errGetProvider               = "cannot get provider"
-	errCreateDBSubnetGroupClient = "cannot create DBSubnetGroup client"
-	errGetProviderSecret         = "cannot get provider secret"
-
+	errKubeUpdateFailed   = "cannot update DBSubnetGroup custom resource"
 	errUnexpectedObject   = "The managed resource is not an DBSubnetGroup resource"
 	errDescribe           = "failed to describe DBSubnetGroup with groupName: %v"
 	errZeroOrMoreResource = "received zero or more than one DBSubnetGroups for the given groupName: %v"
