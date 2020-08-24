@@ -25,11 +25,6 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/sns/fake"
 )
 
-const (
-	providerName = "some-topic"
-	testRegion   = "ap-south-1"
-)
-
 var (
 	// an arbitrary managed resource
 	unexpecedItem resource.Managed
@@ -55,13 +50,7 @@ func withConditions(c ...corev1alpha1.Condition) subModifier {
 }
 
 func subscription(m ...subModifier) *v1alpha1.SNSSubscription {
-	cr := &v1alpha1.SNSSubscription{
-		Spec: v1alpha1.SNSSubscriptionSpec{
-			ResourceSpec: corev1alpha1.ResourceSpec{
-				ProviderReference: corev1alpha1.Reference{Name: subName},
-			},
-		},
-	}
+	cr := &v1alpha1.SNSSubscription{}
 
 	for _, f := range m {
 		f(cr)
@@ -73,83 +62,6 @@ func subscription(m ...subModifier) *v1alpha1.SNSSubscription {
 func withSubARN(s *string) subModifier {
 	return func(t *v1alpha1.SNSSubscription) {
 		meta.SetExternalName(t, makeARN(*s))
-	}
-}
-
-// Test Cases
-func TestConnect(t *testing.T) {
-
-	type args struct {
-		newClientFn func(*aws.Config) (sns.SubscriptionClient, error)
-		awsConfigFn func(context.Context, client.Reader, corev1alpha1.Reference) (*aws.Config, error)
-		cr          resource.Managed
-	}
-
-	type want struct {
-		err error
-	}
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"ValidInput": {
-			args: args{
-				newClientFn: func(config *aws.Config) (sns.SubscriptionClient, error) {
-					if diff := cmp.Diff(testRegion, config.Region); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return nil, nil
-				},
-				awsConfigFn: func(_ context.Context, _ client.Reader, p corev1alpha1.Reference) (*aws.Config, error) {
-					if diff := cmp.Diff(providerName, p.Name); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return &aws.Config{Region: testRegion}, nil
-				},
-				cr: subscription(),
-			},
-		},
-		"InValidInput": {
-			args: args{
-				cr: unexpecedItem,
-			},
-			want: want{
-				err: errors.New(errUnexpectedObject),
-			},
-		},
-		"ProviderFailure": {
-			args: args{
-				newClientFn: func(config *aws.Config) (sns.SubscriptionClient, error) {
-					if diff := cmp.Diff(testRegion, config.Region); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return nil, errBoom
-				},
-				awsConfigFn: func(_ context.Context, _ client.Reader, p corev1alpha1.Reference) (*aws.Config, error) {
-					if diff := cmp.Diff(providerName, p.Name); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return &aws.Config{Region: testRegion}, nil
-				},
-				cr: subscription(),
-			},
-			want: want{
-				err: errors.Wrap(errBoom, errClient),
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			c := &connector{
-				newClientFn: tc.newClientFn,
-				awsConfigFn: tc.awsConfigFn,
-			}
-			_, err := c.Connect(context.Background(), tc.args.cr)
-			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got\n%s", diff)
-			}
-		})
 	}
 }
 

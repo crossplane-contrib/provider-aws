@@ -34,15 +34,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
+	awscommon "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/sns"
 	snsclient "github.com/crossplane/provider-aws/pkg/clients/sns"
-	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 
 const (
-	errSubscriptionPending          = "cannot delete a subscription in PendingConfirmation state"
 	errKubeSubscriptionUpdateFailed = "cannot update SNSSubscription custom resource"
-	errClient                       = "cannot create a new SNSSubscription client"
 	errUnexpectedObject             = "the managed resource is not a SNS Subscription resource"
 	errGetSubscriptionAttr          = "failed to get SNS Subscription Attributes"
 	errCreate                       = "failed to create the SNS Subscription"
@@ -59,11 +57,7 @@ func SetupSubscription(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.SNSSubscription{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.SNSSubscriptionGroupVersionKind),
-			managed.WithExternalConnecter(&connector{
-				kube:        mgr.GetClient(),
-				newClientFn: sns.NewSubscriptionClient,
-				awsConfigFn: utils.RetrieveAwsConfigFromProvider,
-			}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: sns.NewSubscriptionClient, awsConfigFn: awscommon.GetConfig}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
@@ -73,27 +67,16 @@ func SetupSubscription(mgr ctrl.Manager, l logging.Logger) error {
 
 type connector struct {
 	kube        client.Client
-	newClientFn func(*aws.Config) (sns.SubscriptionClient, error)
-	awsConfigFn func(context.Context, client.Reader, runtimev1alpha1.Reference) (*aws.Config, error)
+	newClientFn func(config aws.Config) sns.SubscriptionClient
+	awsConfigFn func(client.Client, context.Context, resource.Managed, string) (*aws.Config, error)
 }
 
-func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-
-	cr, ok := mgd.(*v1alpha1.SNSSubscription)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
-	}
-
-	awsconfig, err := conn.awsConfigFn(ctx, conn.kube, cr.Spec.ProviderReference)
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	cfg, err := c.awsConfigFn(c.kube, ctx, mg, "")
 	if err != nil {
 		return nil, err
 	}
-
-	c, err := conn.newClientFn(awsconfig)
-	if err != nil {
-		return nil, errors.Wrap(err, errClient)
-	}
-	return &external{c, conn.kube}, nil
+	return &external{client: c.newClientFn(*cfg), kube: c.kube}, nil
 }
 
 type external struct {
