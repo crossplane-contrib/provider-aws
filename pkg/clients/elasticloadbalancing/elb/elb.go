@@ -17,7 +17,6 @@ limitations under the License.
 package elb
 
 import (
-	"context"
 	"encoding/json"
 	"sort"
 	"strings"
@@ -39,12 +38,8 @@ type Client elasticloadbalancingiface.ClientAPI
 
 // NewClient returns a new Elastic Load Balancer client. Credentials must be passed as
 // JSON encoded data.
-func NewClient(ctx context.Context, credentials []byte, region string, auth clients.AuthMethod) (Client, error) {
-	cfg, err := auth(ctx, credentials, clients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return elb.New(*cfg), err
+func NewClient(cfg aws.Config) Client {
+	return elb.New(cfg)
 }
 
 // GenerateCreateELBInput generate instance of elasticLoadBlancing.CreateLoadBalancerInput
