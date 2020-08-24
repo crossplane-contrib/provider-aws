@@ -17,9 +17,7 @@ limitations under the License.
 package redshift
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
 	"strconv"
 	"strings"
 
@@ -46,15 +44,8 @@ type Client interface {
 }
 
 // NewClient creates new Redshift Client with provided AWS Configurations/Credentials
-func NewClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (Client, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if err != nil {
-		return nil, err
-	}
-	if cfg == nil {
-		return nil, errors.New("config cannot be nil")
-	}
-	return redshift.New(*cfg), nil
+func NewClient(cfg aws.Config) Client {
+	return redshift.New(cfg)
 }
 
 // LateInitialize fills the empty fields in *v1alpha1.ClusterParameters with
