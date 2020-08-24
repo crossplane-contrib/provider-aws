@@ -59,8 +59,8 @@ type TopicClient interface {
 }
 
 // NewTopicClient returns a new client using AWS credentials as JSON encoded data.
-func NewTopicClient(conf *aws.Config) (TopicClient, error) {
-	return sns.New(*conf), nil
+func NewTopicClient(cfg aws.Config) TopicClient {
+	return sns.New(cfg)
 }
 
 // GenerateCreateTopicInput prepares input for CreateTopicRequest
