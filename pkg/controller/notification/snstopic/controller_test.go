@@ -41,11 +41,6 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/sns/fake"
 )
 
-const (
-	providerName = "some-topic"
-	testRegion   = "ap-south-1"
-)
-
 var (
 	// an arbitrary managed resource
 	unexpecedItem    resource.Managed
@@ -88,12 +83,6 @@ func withObservationOwner(s *string) topicModifier {
 	return func(t *v1alpha1.SNSTopic) { t.Status.AtProvider.Owner = s }
 }
 
-// func withStatusARN(s *string) topicModifier {
-// 	return func(t *v1alpha1.SNSTopic) {
-// 		t.Status.AtProvider.Arn = aws.String(makeARN(*s))
-// 	}
-// }
-
 func withTopicARN(s *string) topicModifier {
 	return func(t *v1alpha1.SNSTopic) {
 		t.Spec.ForProvider.Name = *s
@@ -113,97 +102,13 @@ func withConditions(c ...corev1alpha1.Condition) topicModifier {
 }
 
 func topic(m ...topicModifier) *v1alpha1.SNSTopic {
-	cr := &v1alpha1.SNSTopic{
-		Spec: v1alpha1.SNSTopicSpec{
-			ResourceSpec: corev1alpha1.ResourceSpec{
-				ProviderReference: corev1alpha1.Reference{Name: topicName},
-			},
-		},
-	}
+	cr := &v1alpha1.SNSTopic{}
 
 	for _, f := range m {
 		f(cr)
 	}
 
 	return cr
-}
-
-//Test Cases
-func TestConnect(t *testing.T) {
-	type args struct {
-		newClientFn func(*aws.Config) (sns.TopicClient, error)
-		awsConfigFn func(context.Context, client.Reader, corev1alpha1.Reference) (*aws.Config, error)
-		cr          resource.Managed
-	}
-
-	type want struct {
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"ValidInput": {
-			args: args{
-				newClientFn: func(config *aws.Config) (sns.TopicClient, error) {
-					if diff := cmp.Diff(testRegion, config.Region); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return nil, nil
-				},
-				awsConfigFn: func(_ context.Context, _ client.Reader, p corev1alpha1.Reference) (*aws.Config, error) {
-					if diff := cmp.Diff(providerName, p.Name); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return &aws.Config{Region: testRegion}, nil
-				},
-				cr: topic(),
-			},
-		},
-		"InValidInput": {
-			args: args{
-				cr: unexpecedItem,
-			},
-			want: want{
-				err: errors.New(errUnexpectedObject),
-			},
-		},
-		"ProviderFailure": {
-			args: args{
-				newClientFn: func(config *aws.Config) (sns.TopicClient, error) {
-					if diff := cmp.Diff(testRegion, config.Region); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return nil, errBoom
-				},
-				awsConfigFn: func(_ context.Context, _ client.Reader, p corev1alpha1.Reference) (*aws.Config, error) {
-					if diff := cmp.Diff(providerName, p.Name); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return &aws.Config{Region: testRegion}, nil
-				},
-				cr: topic(),
-			},
-			want: want{
-				err: errors.Wrap(errBoom, errClient),
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			c := &connector{
-				newClientFn: tc.newClientFn,
-				awsConfigFn: tc.awsConfigFn,
-			}
-			_, err := c.Connect(context.Background(), tc.args.cr)
-			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got\n%s", diff)
-			}
-		})
-	}
-
 }
 
 func TestObserve(t *testing.T) {
@@ -229,15 +134,15 @@ func TestObserve(t *testing.T) {
 				err: errors.New(errUnexpectedObject),
 			},
 		},
-		"ExternalNameNotARN": {
+		"ExternalNameNotFilled": {
 			args: args{
-				cr: topic(withTopicName(&topicName)),
+				cr: topic(),
 				kube: &test.MockClient{
 					MockUpdate: test.NewMockUpdateFn(nil),
 				},
 			},
 			want: want{
-				cr: topic(withTopicName(&topicName)),
+				cr: topic(),
 				result: managed.ExternalObservation{
 					ResourceExists:   false,
 					ResourceUpToDate: false,
