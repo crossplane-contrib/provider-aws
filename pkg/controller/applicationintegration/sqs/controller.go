@@ -20,8 +20,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -34,8 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/applicationintegration/v1alpha1"
-	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awscommon "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/sqs"
 )
 
@@ -55,16 +52,6 @@ const (
 	fifoQueueSuffix             = ".fifo"
 )
 
-type connector struct {
-	kube        client.Client
-	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (sqs.Client, error)
-}
-
-type external struct {
-	client sqs.Client
-	kube   client.Client
-}
-
 // SetupQueue adds a controller that reconciles Queue.
 func SetupQueue(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(v1alpha1.QueueGroupKind)
@@ -74,40 +61,29 @@ func SetupQueue(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.Queue{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.QueueGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: sqs.NewClient}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: sqs.NewClient, awsConfigFn: awscommon.GetConfig}),
 			managed.WithInitializers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
+type connector struct {
+	kube        client.Client
+	newClientFn func(aws.Config) sqs.Client
+	awsConfigFn func(client.Client, context.Context, resource.Managed, string) (*aws.Config, error)
+}
+
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.Queue)
-	if !ok {
-		return nil, errors.New(errNotQueue)
+	cfg, err := c.awsConfigFn(c.kube, ctx, mg, "")
+	if err != nil {
+		return nil, err
 	}
+	return &external{c.newClientFn(*cfg), c.kube}, nil
+}
 
-	p := &awsv1alpha3.Provider{}
-	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name}, p); err != nil {
-		return nil, errors.Wrap(err, errGetProvider)
-	}
-
-	if aws.BoolValue(p.Spec.UseServiceAccount) {
-		queueClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{client: queueClient, kube: c.kube}, errors.Wrap(err, errQueueClient)
-	}
-
-	if p.GetCredentialsSecretReference() == nil {
-		return nil, errors.New(errGetProviderSecret)
-	}
-
-	s := &corev1.Secret{}
-	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
-	if err := c.kube.Get(ctx, n, s); err != nil {
-		return nil, errors.Wrap(err, errGetProviderSecret)
-	}
-
-	queueClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: queueClient, kube: c.kube}, errors.Wrap(err, errQueueClient)
+type external struct {
+	client sqs.Client
+	kube   client.Client
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo

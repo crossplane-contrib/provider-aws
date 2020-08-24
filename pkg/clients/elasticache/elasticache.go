@@ -17,7 +17,6 @@ limitations under the License.
 package elasticache
 
 import (
-	"context"
 	"reflect"
 	"strconv"
 
@@ -46,12 +45,8 @@ type Client elasticacheiface.ClientAPI
 
 // NewClient returns a new ElastiCache client. Credentials must be passed as
 // JSON encoded data.
-func NewClient(ctx context.Context, credentials []byte, region string, auth clients.AuthMethod) (Client, error) {
-	cfg, err := auth(ctx, credentials, clients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return elasticache.New(*cfg), err
+func NewClient(cfg aws.Config) Client {
+	return elasticache.New(cfg)
 }
 
 // TODO(negz): Determine whether we have to handle converting zero values to

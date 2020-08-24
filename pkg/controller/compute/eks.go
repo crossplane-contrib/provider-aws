@@ -23,6 +23,8 @@ import (
 	"strings"
 	"time"
 
+	aws "github.com/crossplane/provider-aws/pkg/clients"
+
 	cf "github.com/aws/aws-sdk-go-v2/service/cloudformation"
 	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
@@ -45,7 +47,6 @@ import (
 	awscomputev1alpha3 "github.com/crossplane/provider-aws/apis/compute/v1alpha3"
 	cloudformationclient "github.com/crossplane/provider-aws/pkg/clients/cloudformation"
 	eks "github.com/crossplane/provider-aws/pkg/clients/legacyeks"
-	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 
 const (
@@ -140,7 +141,7 @@ func (r *Reconciler) fail(instance *awscomputev1alpha3.EKSCluster, err error) (r
 }
 
 func (r *Reconciler) _connect(instance *awscomputev1alpha3.EKSCluster) (eks.Client, error) {
-	config, err := utils.RetrieveAwsConfigFromProvider(ctx, r, instance.Spec.ProviderReference)
+	config, err := aws.GetConfig(r, ctx, instance, "")
 	if err != nil {
 		return nil, err
 	}

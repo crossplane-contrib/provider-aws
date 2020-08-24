@@ -28,11 +28,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
@@ -42,22 +38,12 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
-	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
-	elasticacheclient "github.com/crossplane/provider-aws/pkg/clients/elasticache"
 	"github.com/crossplane/provider-aws/pkg/clients/elasticache/fake"
 )
 
 const (
 	namespace = "coolNamespace"
 	name      = "coolGroup"
-
-	providerName       = "cool-aws"
-	providerSecretName = "cool-aws-secret"
-	providerSecretKey  = "credentials"
-	providerSecretData = "definitelyini"
-
-	connectionSecretName = "cool-connection-secret"
 )
 
 var (
@@ -78,26 +64,6 @@ var (
 	errorBoom = errors.New("boom")
 
 	objectMeta = metav1.ObjectMeta{Name: name}
-
-	provider = awsv1alpha3.Provider{
-		ObjectMeta: metav1.ObjectMeta{Name: providerName},
-		Spec: awsv1alpha3.ProviderSpec{
-			ProviderSpec: runtimev1alpha1.ProviderSpec{
-				CredentialsSecretRef: &runtimev1alpha1.SecretKeySelector{
-					SecretReference: runtimev1alpha1.SecretReference{
-						Namespace: namespace,
-						Name:      providerSecretName,
-					},
-					Key: providerSecretKey,
-				},
-			},
-		},
-	}
-
-	providerSecret = corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{Namespace: namespace, Name: providerSecretName},
-		Data:       map[string][]byte{providerSecretKey: []byte(providerSecretData)},
-	}
 )
 
 type testCase struct {
@@ -161,13 +127,6 @@ func replicationGroup(rm ...replicationGroupModifier) *v1beta1.ReplicationGroup 
 	r := &v1beta1.ReplicationGroup{
 		ObjectMeta: objectMeta,
 		Spec: v1beta1.ReplicationGroupSpec{
-			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
-				WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
-					Namespace: namespace,
-					Name:      connectionSecretName,
-				},
-			},
 			ForProvider: v1beta1.ReplicationGroupParameters{
 				AutomaticFailoverEnabled:   &autoFailoverEnabled,
 				CacheNodeType:              cacheNodeType,
@@ -190,7 +149,7 @@ func replicationGroup(rm ...replicationGroupModifier) *v1beta1.ReplicationGroup 
 
 // Test that our Reconciler implementation satisfies the Reconciler interface.
 var _ managed.ExternalClient = &external{}
-var _ managed.ExternalConnecter = &connecter{}
+var _ managed.ExternalConnecter = &connector{}
 
 func TestCreate(t *testing.T) {
 	cases := []testCase{
@@ -655,144 +614,6 @@ func TestDelete(t *testing.T) {
 
 			if diff := cmp.Diff(tc.want, tc.r, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestConnect(t *testing.T) {
-	providerSA := func(saVal bool) awsv1alpha3.Provider {
-		return awsv1alpha3.Provider{
-			Spec: awsv1alpha3.ProviderSpec{
-				UseServiceAccount: &saVal,
-				ProviderSpec:      runtimev1alpha1.ProviderSpec{},
-			},
-		}
-	}
-
-	cases := []struct {
-		name    string
-		conn    *connecter
-		i       *v1beta1.ReplicationGroup
-		wantErr error
-	}{
-		{
-			name: "SuccessfulConnect",
-			conn: &connecter{
-				client: &test.MockClient{
-					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
-						switch key {
-						case client.ObjectKey{Name: providerName}:
-							*obj.(*awsv1alpha3.Provider) = provider
-						case client.ObjectKey{Namespace: namespace, Name: providerSecretName}:
-							*obj.(*corev1.Secret) = providerSecret
-						}
-						return nil
-					},
-				},
-				newClientFn: func(_ context.Context, _ []byte, _ string, _ awsclients.AuthMethod) (elasticacheclient.Client, error) {
-					return &fake.MockClient{}, nil
-				},
-			},
-			i: replicationGroup(),
-		},
-		{
-			name: "SuccessfulConnectWithServiceAccount",
-			conn: &connecter{
-				client: &test.MockClient{
-					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
-						switch key {
-						case client.ObjectKey{Name: providerName}:
-							*obj.(*awsv1alpha3.Provider) = providerSA(true)
-						case client.ObjectKey{Namespace: namespace, Name: providerSecretName}:
-							*obj.(*corev1.Secret) = providerSecret
-						}
-						return nil
-					},
-				},
-				newClientFn: func(_ context.Context, _ []byte, _ string, _ awsclients.AuthMethod) (elasticacheclient.Client, error) {
-					return &fake.MockClient{}, nil
-				},
-			},
-			i: replicationGroup(),
-		},
-		{
-			name: "FailedToGetProvider",
-			conn: &connecter{
-				client: &test.MockClient{MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
-					return kerrors.NewNotFound(schema.GroupResource{}, providerName)
-				}},
-				newClientFn: func(_ context.Context, _ []byte, _ string, _ awsclients.AuthMethod) (elasticacheclient.Client, error) {
-					return &fake.MockClient{}, nil
-				},
-			},
-			i:       replicationGroup(),
-			wantErr: errors.WithStack(errors.Errorf("cannot get provider:  \"%s\" not found", providerName)),
-		},
-		{
-			name: "FailedToGetProviderSecret",
-			conn: &connecter{
-				client: &test.MockClient{MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
-					switch key {
-					case client.ObjectKey{Name: providerName}:
-						*obj.(*awsv1alpha3.Provider) = provider
-					case client.ObjectKey{Namespace: namespace, Name: providerSecretName}:
-						return kerrors.NewNotFound(schema.GroupResource{}, providerSecretName)
-					}
-					return nil
-				}},
-				newClientFn: func(_ context.Context, _ []byte, _ string, _ awsclients.AuthMethod) (elasticacheclient.Client, error) {
-					return &fake.MockClient{}, nil
-				},
-			},
-			i:       replicationGroup(),
-			wantErr: errors.WithStack(errors.Errorf("cannot get provider secret:  \"%s\" not found", providerSecretName)),
-		},
-		{
-			name: "FailedToGetProviderSecretNil",
-			conn: &connecter{
-				client: &test.MockClient{MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
-					switch key {
-					case client.ObjectKey{Name: providerName}:
-						*obj.(*awsv1alpha3.Provider) = providerSA(false)
-					case client.ObjectKey{Namespace: namespace, Name: providerSecretName}:
-						return kerrors.NewNotFound(schema.GroupResource{}, providerSecretName)
-					}
-					return nil
-				}},
-				newClientFn: func(_ context.Context, _ []byte, _ string, _ awsclients.AuthMethod) (elasticacheclient.Client, error) {
-					return &fake.MockClient{}, nil
-				},
-			},
-			i:       replicationGroup(),
-			wantErr: errors.New("cannot get provider secret"),
-		},
-		{
-			name: "FailedToCreateElastiCacheClient",
-			conn: &connecter{
-				client: &test.MockClient{MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
-					switch key {
-					case client.ObjectKey{Name: providerName}:
-						*obj.(*awsv1alpha3.Provider) = provider
-					case client.ObjectKey{Namespace: namespace, Name: providerSecretName}:
-						*obj.(*corev1.Secret) = providerSecret
-					}
-					return nil
-				}},
-				newClientFn: func(_ context.Context, _ []byte, _ string, _ awsclients.AuthMethod) (elasticacheclient.Client, error) {
-					return nil, errorBoom
-				},
-			},
-			i:       replicationGroup(),
-			wantErr: errors.Wrap(errorBoom, errNewClient),
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			_, gotErr := tc.conn.Connect(ctx, tc.i)
-			if diff := cmp.Diff(tc.wantErr, gotErr, test.EquateErrors()); diff != "" {
-				t.Errorf("tc.conn.Connect(...): want error != got error:\n%s", diff)
 			}
 		})
 	}

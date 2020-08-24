@@ -24,7 +24,7 @@ import (
 
 // A ProviderConfigSpec defines the desired state of a ProviderConfig.
 type ProviderConfigSpec struct {
-	runtimev1alpha1.ProviderSpec `json:",inline"`
+	runtimev1alpha1.ProviderConfigSpec `json:",inline"`
 
 	// UseServiceAccount indicates to use an IAM Role associated Kubernetes
 	// ServiceAccount for authentication instead of a credentials Secret.
