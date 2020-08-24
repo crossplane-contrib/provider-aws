@@ -17,13 +17,14 @@ limitations under the License.
 package eks
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/json"
+
 	"net"
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/aws/aws-sdk-go-v2/service/eks/eksiface"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
@@ -53,12 +54,8 @@ type Client eksiface.ClientAPI
 type STSClient stsiface.ClientAPI
 
 // NewClient creates new EKS Client with provided AWS Configurations/Credentials.
-func NewClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (Client, STSClient, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if cfg == nil {
-		return nil, nil, err
-	}
-	return eks.New(*cfg), sts.New(*cfg), err
+func NewClient(cfg aws.Config) (Client, STSClient) {
+	return eks.New(cfg), sts.New(cfg)
 }
 
 // IsErrorNotFound helper function to test for ErrCodeResourceNotFoundException error.
