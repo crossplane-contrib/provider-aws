@@ -43,8 +43,21 @@ func (mg *SNSSubscription) GetCondition(ct runtimev1alpha1.ConditionType) runtim
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this SNSSubscription.
-func (mg *SNSSubscription) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this SNSSubscription.
+func (mg *SNSSubscription) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this SNSSubscription.
+func (mg *SNSSubscription) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this SNSSubscription.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *SNSSubscription) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *SNSSubscription) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this SNSSubscription.
-func (mg *SNSSubscription) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this SNSSubscription.
+func (mg *SNSSubscription) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this SNSSubscription.
+func (mg *SNSSubscription) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this SNSSubscription.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *SNSSubscription) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
@@ -113,8 +139,21 @@ func (mg *SNSTopic) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alph
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this SNSTopic.
-func (mg *SNSTopic) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this SNSTopic.
+func (mg *SNSTopic) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this SNSTopic.
+func (mg *SNSTopic) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this SNSTopic.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *SNSTopic) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -148,8 +187,21 @@ func (mg *SNSTopic) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this SNSTopic.
-func (mg *SNSTopic) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this SNSTopic.
+func (mg *SNSTopic) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this SNSTopic.
+func (mg *SNSTopic) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this SNSTopic.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *SNSTopic) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

@@ -43,8 +43,21 @@ func (mg *EKSCluster) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1al
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this EKSCluster.
-func (mg *EKSCluster) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this EKSCluster.
+func (mg *EKSCluster) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this EKSCluster.
+func (mg *EKSCluster) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this EKSCluster.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *EKSCluster) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *EKSCluster) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this EKSCluster.
-func (mg *EKSCluster) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this EKSCluster.
+func (mg *EKSCluster) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this EKSCluster.
+func (mg *EKSCluster) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this EKSCluster.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *EKSCluster) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

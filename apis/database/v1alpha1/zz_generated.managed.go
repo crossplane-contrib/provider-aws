@@ -43,8 +43,21 @@ func (mg *DynamoTable) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1a
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this DynamoTable.
-func (mg *DynamoTable) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this DynamoTable.
+func (mg *DynamoTable) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this DynamoTable.
+func (mg *DynamoTable) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this DynamoTable.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *DynamoTable) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *DynamoTable) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this DynamoTable.
-func (mg *DynamoTable) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this DynamoTable.
+func (mg *DynamoTable) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this DynamoTable.
+func (mg *DynamoTable) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this DynamoTable.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *DynamoTable) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

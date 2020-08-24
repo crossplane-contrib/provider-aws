@@ -43,8 +43,21 @@ func (mg *Cluster) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this Cluster.
-func (mg *Cluster) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this Cluster.
+func (mg *Cluster) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this Cluster.
+func (mg *Cluster) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this Cluster.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *Cluster) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *Cluster) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this Cluster.
-func (mg *Cluster) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this Cluster.
+func (mg *Cluster) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this Cluster.
+func (mg *Cluster) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this Cluster.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *Cluster) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

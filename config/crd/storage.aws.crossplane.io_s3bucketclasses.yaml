@@ -97,9 +97,8 @@ spec:
                 is deleted. The "Retain" policy causes the managed resource to be
                 retained, in binding phase "Released", when its resource claim is
                 deleted, and in turn causes the external resource to be retained when
-                its managed resource is deleted. The "Retain" policy is used when
-                no policy is specified, however the "Delete" policy is set at dynamic
-                provisioning time if no policy is set.
+                its managed resource is deleted. The "Delete" policy is used when
+                no policy is specified.
               enum:
               - Retain
               - Delete
