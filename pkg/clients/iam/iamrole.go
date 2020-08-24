@@ -30,8 +30,8 @@ type RoleClient interface {
 }
 
 // NewRoleClient returns a new client using AWS credentials as JSON encoded data.
-func NewRoleClient(conf *aws.Config) (RoleClient, error) {
-	return iam.New(*conf), nil
+func NewRoleClient(conf aws.Config) RoleClient {
+	return iam.New(conf)
 }
 
 // GenerateCreateRoleInput from IAMRoleSpec
