@@ -141,7 +141,7 @@ func (r *Reconciler) fail(instance *awscomputev1alpha3.EKSCluster, err error) (r
 }
 
 func (r *Reconciler) _connect(instance *awscomputev1alpha3.EKSCluster) (eks.Client, error) {
-	config, err := aws.GetConfig(r, ctx, instance, "")
+	config, err := aws.GetConfig(ctx, r, instance, "")
 	if err != nil {
 		return nil, err
 	}

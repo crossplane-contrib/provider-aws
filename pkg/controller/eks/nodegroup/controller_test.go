@@ -37,16 +37,6 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/eks/fake"
 )
 
-const (
-	providerName    = "aws-creds"
-	secretNamespace = "crossplane-system"
-	testRegion      = "us-east-1"
-
-	connectionSecretName = "my-little-secret"
-	secretKey            = "credentials"
-	credData             = "confidential!"
-)
-
 var (
 	version           = "1.16"
 	desiredSize int64 = 3

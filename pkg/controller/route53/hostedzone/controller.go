@@ -41,15 +41,13 @@ import (
 )
 
 const (
-	errCreateHostedZoneClient = "cannot create Hosted Zone AWS client"
-	errGetProvider            = "cannot get Provider resource"
-	errGetProviderSecret      = "cannot get the Secret referenced in Provider resource"
-	errUnexpectedObject       = "The managed resource is not an Hosted Zone resource"
-	errCreate                 = "failed to create the Hosted Zone resource"
-	errDelete                 = "failed to delete the Hosted Zone resource"
-	errUpdate                 = "failed to update the Hosted Zone resource"
-	errGet                    = "failed to get the Hosted Zone resource"
-	errKubeUpdate             = "failed to update the Hosted Zone custom resource"
+	errUnexpectedObject = "The managed resource is not an Hosted Zone resource"
+
+	errCreate     = "failed to create the Hosted Zone resource"
+	errDelete     = "failed to delete the Hosted Zone resource"
+	errUpdate     = "failed to update the Hosted Zone resource"
+	errGet        = "failed to get the Hosted Zone resource"
+	errKubeUpdate = "failed to update the Hosted Zone custom resource"
 )
 
 // SetupHostedZone adds a controller that reconciles Hosted Zones.
@@ -72,11 +70,11 @@ func SetupHostedZone(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	kube        client.Client
 	newClientFn func(config aws.Config) hostedzone.Client
-	awsConfigFn func(client.Client, context.Context, resource.Managed, string) (*aws.Config, error)
+	awsConfigFn func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(c.kube, ctx, mg, "")
+	cfg, err := c.awsConfigFn(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}

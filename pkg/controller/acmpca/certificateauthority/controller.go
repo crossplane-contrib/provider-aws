@@ -77,11 +77,11 @@ func SetupCertificateAuthority(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	client      client.Client
 	newClientFn func(*aws.Config) acmpca.Client
-	awsConfigFn func(client.Client, context.Context, resource.Managed, string) (*aws.Config, error)
+	awsConfigFn func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
 func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := conn.awsConfigFn(conn.client, ctx, mgd, "")
+	cfg, err := conn.awsConfigFn(ctx, conn.client, mgd, "")
 	if err != nil {
 		return nil, err
 	}

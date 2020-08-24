@@ -36,16 +36,6 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
 )
 
-const (
-	providerName    = "aws-creds"
-	secretNamespace = "crossplane-system"
-	testRegion      = "us-east-1"
-
-	connectionSecretName = "my-little-secret"
-	secretKey            = "credentials"
-	credData             = "confidential!"
-)
-
 var (
 	unexpectedItem resource.Managed
 	groupArn       = "some group"

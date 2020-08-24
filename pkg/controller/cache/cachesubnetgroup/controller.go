@@ -19,6 +19,7 @@ package cachesubnetgroup
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	awscache "github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -31,7 +32,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/elasticache"
@@ -66,11 +66,11 @@ func SetupCacheSubnetGroup(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	kube        client.Client
 	newClientFn func(config aws.Config) elasticache.Client
-	awsConfigFn func(client.Client, context.Context, resource.Managed, string) (*aws.Config, error)
+	awsConfigFn func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(c.kube, ctx, mg, "")
+	cfg, err := c.awsConfigFn(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}

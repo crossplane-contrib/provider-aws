@@ -45,14 +45,6 @@ var (
 )
 
 const (
-	providerName    = "aws-creds"
-	secretNamespace = "crossplane-system"
-	testRegion      = "us-east-1"
-
-	connectionSecretName = "my-little-secret"
-	secretKey            = "credentials"
-	credData             = "confidential!"
-
 	groupPath = "group-path"
 )
 

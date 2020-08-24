@@ -42,7 +42,6 @@ import (
 
 const (
 	errUnexpectedObject = "The managed resource is not an IAMRolePolicyAttachment resource"
-	errClient           = "cannot create a new RolePolicyAttachmentClient"
 	errAttach           = "failed to attach the policy to role"
 	errDelete           = "failed to delete the policy for bucket"
 	errGet              = "failed to get S3BucketPolicy for bucket with name"
@@ -73,11 +72,11 @@ type connector struct {
 	kube           client.Client
 	newClientFn    func(config aws.Config) s3.BucketPolicyClient
 	newIAMClientFn func(config aws.Config) iam.Client
-	awsConfigFn    func(client.Client, context.Context, resource.Managed, string) (*aws.Config, error)
+	awsConfigFn    func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(c.kube, ctx, mg, "")
+	cfg, err := c.awsConfigFn(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}

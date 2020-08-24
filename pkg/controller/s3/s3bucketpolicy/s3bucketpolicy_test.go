@@ -38,11 +38,6 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 )
 
-const (
-	providerName = "aws-creds"
-	testRegion   = "us-east-1"
-)
-
 var (
 	// an arbitrary managed resource
 	unexpectedItem resource.Managed

@@ -77,11 +77,11 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	client      client.Client
 	newClientFn func(aws.Config) acm.Client
-	awsConfigFn func(client.Client, context.Context, resource.Managed, string) (*aws.Config, error)
+	awsConfigFn func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(c.client, ctx, mgd, "")
+	cfg, err := c.awsConfigFn(ctx, c.client, mgd, "")
 	if err != nil {
 		return nil, err
 	}
