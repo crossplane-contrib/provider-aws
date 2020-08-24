@@ -53,9 +53,14 @@ type Client eksiface.ClientAPI
 // STSClient defines STS Client operations
 type STSClient stsiface.ClientAPI
 
-// NewClient creates new EKS Client with provided AWS Configurations/Credentials.
-func NewClient(cfg aws.Config) (Client, STSClient) {
-	return eks.New(cfg), sts.New(cfg)
+// NewEKSClient creates new EKS Client with provided AWS Configurations/Credentials.
+func NewEKSClient(cfg aws.Config) Client {
+	return eks.New(cfg)
+}
+
+// NewSTSClient creates a new STS Client.
+func NewSTSClient(cfg aws.Config) STSClient {
+	return sts.New(cfg)
 }
 
 // IsErrorNotFound helper function to test for ErrCodeResourceNotFoundException error.
