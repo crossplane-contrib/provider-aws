@@ -46,6 +46,7 @@ type ProviderSpec struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:printcolumn:name="SECRET-NAME",type="string",JSONPath=".spec.credentialsSecretRef.name",priority=1
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,provider,aws}
+// Deprecated: Please migrate to ProviderConfig.
 type Provider struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -56,6 +57,7 @@ type Provider struct {
 // +kubebuilder:object:root=true
 
 // ProviderList contains a list of Provider
+// Deprecated: Please migrate to ProviderConfigList.
 type ProviderList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
