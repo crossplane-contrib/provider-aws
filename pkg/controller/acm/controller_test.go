@@ -26,7 +26,6 @@ import (
 	awsacm "github.com/aws/aws-sdk-go-v2/service/acm"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
@@ -105,7 +104,7 @@ func certificate(m ...certificateModifier) *v1alpha1.Certificate {
 	cr := &v1alpha1.Certificate{
 		Spec: v1alpha1.CertificateSpec{
 			ResourceSpec: corev1alpha1.ResourceSpec{
-				ProviderReference: runtimev1alpha1.Reference{Name: providerName},
+				ProviderReference: &runtimev1alpha1.Reference{Name: providerName},
 			},
 		},
 	}
@@ -114,79 +113,6 @@ func certificate(m ...certificateModifier) *v1alpha1.Certificate {
 		f(cr)
 	}
 	return cr
-}
-
-func TestConnect(t *testing.T) {
-
-	type args struct {
-		newClientFn func(*aws.Config) (acm.Client, error)
-		awsConfigFn func(context.Context, client.Reader, runtimev1alpha1.Reference) (*aws.Config, error)
-		cr          resource.Managed
-	}
-	type want struct {
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"ValidInput": {
-			args: args{
-				newClientFn: func(config *aws.Config) (acm.Client, error) {
-					if diff := cmp.Diff(testRegion, config.Region); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return nil, nil
-				},
-				awsConfigFn: func(_ context.Context, _ client.Reader, p runtimev1alpha1.Reference) (*aws.Config, error) {
-					if diff := cmp.Diff(providerName, p.Name); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return &aws.Config{Region: testRegion}, nil
-				},
-				cr: certificate(),
-			},
-		},
-		"InValidInput": {
-			args: args{
-				cr: unexpecedItem,
-			},
-			want: want{
-				err: errors.New(errUnexpectedObject),
-			},
-		},
-		"ProviderFailure": {
-			args: args{
-				newClientFn: func(config *aws.Config) (acm.Client, error) {
-					if diff := cmp.Diff(testRegion, config.Region); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return nil, errBoom
-				},
-				awsConfigFn: func(_ context.Context, _ client.Reader, p runtimev1alpha1.Reference) (*aws.Config, error) {
-					if diff := cmp.Diff(providerName, p.Name); diff != "" {
-						t.Errorf("r: -want, +got:\n%s", diff)
-					}
-					return &aws.Config{Region: testRegion}, nil
-				},
-				cr: certificate(),
-			},
-			want: want{
-				err: errors.Wrap(errBoom, errClient),
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			c := &connector{newClientFn: tc.newClientFn, awsConfigFn: tc.awsConfigFn}
-			_, err := c.Connect(context.Background(), tc.args.cr)
-			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
 }
 
 func TestObserve(t *testing.T) {

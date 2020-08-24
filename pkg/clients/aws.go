@@ -27,6 +27,13 @@ import (
 	"strconv"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
+
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/provider-aws/apis/v1alpha3"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
@@ -50,6 +57,48 @@ const (
 	// a nil pointer for a zero values, unless FieldRequired is set.
 	FieldRequired FieldOption = iota
 )
+
+// GetConfig constructs an *aws.Config that can be used to authenticate to AWS
+// API by the AWS clients.
+func GetConfig(kube client.Client, ctx context.Context, cr resource.Managed, region string) (*aws.Config, error) {
+	pc := &v1alpha3.ProviderConfig{}
+	switch {
+	case cr.GetProviderConfigReference() != nil && cr.GetProviderConfigReference().Name != "":
+		nn := types.NamespacedName{Name: cr.GetProviderConfigReference().Name}
+		if err := kube.Get(ctx, nn, pc); resource.IgnoreNotFound(err) != nil {
+			return nil, errors.Wrap(err, "cannot get referenced ProviderConfig")
+		}
+	case cr.GetProviderReference() != nil && cr.GetProviderReference().Name != "":
+		nn := types.NamespacedName{Name: cr.GetProviderReference().Name}
+		p := &v1alpha3.Provider{}
+		if err := kube.Get(ctx, nn, p); err != nil {
+			return nil, errors.Wrap(err, "cannot get referenced Provider")
+		}
+		p.DeepCopyIntoPC(pc)
+		if region == "" {
+			region = p.Spec.Region
+		}
+	default:
+		return nil, errors.New("neither providerConfigRef nor providerRef is given")
+	}
+
+	if aws.BoolValue(pc.Spec.UseServiceAccount) {
+		return UsePodServiceAccount(ctx, []byte{}, DefaultSection, region)
+	}
+
+	if pc.Spec.CredentialsSecretRef == nil {
+		return nil, errors.New("provider does not have a secret reference")
+	}
+
+	secret := &corev1.Secret{}
+	nn := types.NamespacedName{Namespace: pc.Spec.CredentialsSecretRef.Namespace, Name: pc.Spec.CredentialsSecretRef.Name}
+	err := kube.Get(ctx, nn, secret)
+	if err != nil {
+		return nil, errors.Wrapf(err, "cannot get credentials secret %s", nn)
+	}
+
+	return UseProviderSecret(ctx, secret.Data[pc.Spec.CredentialsSecretRef.Key], DefaultSection, region)
+}
 
 // CredentialsIDSecret retrieves AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY from the data which contains
 // aws credentials under given profile

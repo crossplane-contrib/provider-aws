@@ -148,7 +148,6 @@ func ConfigureReplicationGroup(_ context.Context, cm resource.Claim, cs resource
 		Namespace: rgc.SpecTemplate.WriteConnectionSecretsToNamespace,
 		Name:      string(cm.GetUID()),
 	}
-	spec.ProviderReference = rgc.SpecTemplate.ProviderReference
 	spec.ReclaimPolicy = rgc.SpecTemplate.ReclaimPolicy
 	rg.Spec = *spec
 

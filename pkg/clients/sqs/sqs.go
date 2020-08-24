@@ -14,7 +14,6 @@ limitations under the License.
 package sqs
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -46,13 +45,8 @@ type Client interface {
 	GetQueueUrlRequest(input *sqs.GetQueueUrlInput) sqs.GetQueueUrlRequest
 }
 
-// NewClient creates new Queue Client with provided AWS Configurations/Credentials
-func NewClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (Client, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return sqs.New(*cfg), err
+func NewClient(cfg aws.Config) Client {
+	return sqs.New(cfg)
 }
 
 // GenerateCreateAttributes returns a map of queue attributes for Create operation

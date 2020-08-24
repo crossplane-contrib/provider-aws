@@ -72,7 +72,7 @@ func testCluster() *EKSCluster {
 		},
 		Spec: EKSClusterSpec{
 			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: runtimev1alpha1.Reference{
+				ProviderReference: &runtimev1alpha1.Reference{
 					Name: providerName,
 				},
 			},

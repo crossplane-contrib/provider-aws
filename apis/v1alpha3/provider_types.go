@@ -63,3 +63,14 @@ type ProviderList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Provider `json:"items"`
 }
+
+func (p *Provider) DeepCopyIntoPC(pc *ProviderConfig) {
+	pc.TypeMeta = p.TypeMeta
+	p.ObjectMeta.DeepCopyInto(&pc.ObjectMeta)
+	p.Spec.ProviderSpec.CredentialsSecretRef.DeepCopyInto(pc.Spec.ProviderConfigSpec.CredentialsSecretRef)
+	if p.Spec.UseServiceAccount != nil {
+		in, out := &p.Spec.UseServiceAccount, &pc.Spec.UseServiceAccount
+		*out = new(bool)
+		**out = **in
+	}
+}

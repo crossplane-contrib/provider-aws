@@ -25,8 +25,8 @@ type Client interface {
 }
 
 // NewClient returns a new client using AWS credentials as JSON encoded data.
-func NewClient(conf *aws.Config) (Client, error) {
-	return acm.New(*conf), nil
+func NewClient(conf aws.Config) Client {
+	return acm.New(conf)
 }
 
 // GenerateCreateCertificateInput from CertificateSpec

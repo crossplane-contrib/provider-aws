@@ -21,11 +21,9 @@ import (
 	"reflect"
 	"sort"
 
-	commonaws "github.com/aws/aws-sdk-go-v2/aws"
+	awscommon "github.com/aws/aws-sdk-go-v2/aws"
 	elasticacheservice "github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -38,7 +36,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
-	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/elasticache"
 )
@@ -68,7 +65,7 @@ func SetupReplicationGroup(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1beta1.ReplicationGroup{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind),
-			managed.WithExternalConnecter(&connecter{client: mgr.GetClient(), newClientFn: elasticache.NewClient}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elasticache.NewClient, awsConfigFn: awsclients.GetConfig}),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -76,38 +73,18 @@ func SetupReplicationGroup(mgr ctrl.Manager, l logging.Logger) error {
 		))
 }
 
-type connecter struct {
-	client      client.Client
-	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (elasticache.Client, error)
+type connector struct {
+	kube        client.Client
+	newClientFn func(config awscommon.Config) elasticache.Client
+	awsConfigFn func(client.Client, context.Context, resource.Managed, string) (*awscommon.Config, error)
 }
 
-func (c *connecter) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	g, ok := mg.(*v1beta1.ReplicationGroup)
-	if !ok {
-		return nil, errors.New(errNotReplicationGroup)
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	cfg, err := c.awsConfigFn(c.kube, ctx, mg, "")
+	if err != nil {
+		return nil, err
 	}
-
-	p := &awsv1alpha3.Provider{}
-	if err := c.client.Get(ctx, types.NamespacedName{Name: g.Spec.ProviderReference.Name}, p); err != nil {
-		return nil, errors.Wrap(err, errGetProvider)
-	}
-
-	if commonaws.BoolValue(p.Spec.UseServiceAccount) {
-		awsClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{client: awsClient, kube: c.client}, errors.Wrap(err, errNewClient)
-	}
-
-	if p.GetCredentialsSecretReference() == nil {
-		return nil, errors.New(errGetProviderSecret)
-	}
-
-	s := &corev1.Secret{}
-	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
-	if err := c.client.Get(ctx, n, s); err != nil {
-		return nil, errors.Wrap(err, errGetProviderSecret)
-	}
-	awsClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: awsClient, kube: c.client}, errors.Wrap(err, errNewClient)
+	return &external{c.newClientFn(*cfg), c.kube}, nil
 }
 
 type external struct {
@@ -181,7 +158,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	// with an explanatory message from AWS explaining that transit encryption
 	// is required.
 	var token *string
-	if commonaws.BoolValue(cr.Spec.ForProvider.AuthEnabled) {
+	if awscommon.BoolValue(cr.Spec.ForProvider.AuthEnabled) {
 		t, err := password.Generate()
 		if err != nil {
 			return managed.ExternalCreation{}, errors.Wrap(err, errGenerateAuthToken)
