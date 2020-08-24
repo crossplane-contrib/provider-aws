@@ -29,3 +29,13 @@ func (p *Provider) GetCredentialsSecretReference() *runtimev1alpha1.SecretKeySel
 func (p *Provider) SetCredentialsSecretReference(r *runtimev1alpha1.SecretKeySelector) {
 	p.Spec.CredentialsSecretRef = r
 }
+
+// GetCredentialsSecretReference of this ProviderConfig.
+func (p *ProviderConfig) GetCredentialsSecretReference() *runtimev1alpha1.SecretKeySelector {
+	return p.Spec.CredentialsSecretRef
+}
+
+// SetCredentialsSecretReference of this ProviderConfig.
+func (p *ProviderConfig) SetCredentialsSecretReference(r *runtimev1alpha1.SecretKeySelector) {
+	p.Spec.CredentialsSecretRef = r
+}

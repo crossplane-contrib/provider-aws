@@ -6,7 +6,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: providers.aws.crossplane.io
+  name: providerconfigs.aws.crossplane.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .spec.region
@@ -25,17 +25,16 @@ spec:
     - crossplane
     - provider
     - aws
-    kind: Provider
-    listKind: ProviderList
-    plural: providers
-    singular: provider
+    kind: ProviderConfig
+    listKind: ProviderConfigList
+    plural: providerconfigs
+    singular: providerconfig
   scope: Cluster
   subresources: {}
   validation:
     openAPIV3Schema:
-      description: 'A Provider configures an AWS ''provider'', i.e. a connection to
-        a particular AWS account using a particular AWS IAM role. Deprecated: Please
-        migrate to ProviderConfig.'
+      description: A ProviderConfig configures an AWS 'provider', i.e. a connection
+        to a particular AWS account using a particular AWS IAM role.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -50,7 +49,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: A ProviderSpec defines the desired state of a Provider.
+          description: A ProviderConfigSpec defines the desired state of a ProviderConfig.
           properties:
             credentialsSecretRef:
               description: CredentialsSecretRef references a specific secret's key
@@ -70,17 +69,12 @@ spec:
               - name
               - namespace
               type: object
-            region:
-              description: Region for managed resources created using this AWS provider.
-              type: string
             useServiceAccount:
               description: "UseServiceAccount indicates to use an IAM Role associated
                 Kubernetes ServiceAccount for authentication instead of a credentials
                 Secret. https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
                 \n If set to true, credentialsSecretRef will be ignored."
               type: boolean
-          required:
-          - region
           type: object
       required:
       - spec
