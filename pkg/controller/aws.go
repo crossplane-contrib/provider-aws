@@ -32,6 +32,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dynamodb"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/elasticip"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/internetgateway"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/routetable"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/securitygroup"
@@ -116,6 +117,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		snssubscription.SetupSubscription,
 		sqs.SetupQueue,
 		redshift.SetupCluster,
+		elasticip.SetupElasticIP,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err
