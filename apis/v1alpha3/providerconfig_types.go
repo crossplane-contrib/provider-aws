@@ -56,5 +56,5 @@ type ProviderConfig struct {
 type ProviderConfigList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Provider `json:"items"`
+	Items           []ProviderConfig `json:"items"`
 }
