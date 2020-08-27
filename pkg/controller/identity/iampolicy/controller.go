@@ -58,7 +58,7 @@ func SetupIAMPolicy(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.IAMPolicy{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.IAMPolicyGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewPolicyClient, awsConfigFn: awscommon.GetConfig}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewPolicyClient}),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -68,11 +68,10 @@ func SetupIAMPolicy(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	kube        client.Client
 	newClientFn func(config aws.Config) iam.PolicyClient
-	awsConfigFn func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(ctx, c.kube, mg, "")
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}

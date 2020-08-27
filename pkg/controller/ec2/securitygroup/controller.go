@@ -64,7 +64,7 @@ func SetupSecurityGroup(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1beta1.SecurityGroup{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.SecurityGroupGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewSecurityGroupClient, awsConfigFn: awscommon.GetConfig}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewSecurityGroupClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
@@ -75,11 +75,10 @@ func SetupSecurityGroup(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	kube        client.Client
 	newClientFn func(config aws.Config) ec2.SecurityGroupClient
-	awsConfigFn func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(ctx, c.kube, mg, "")
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}

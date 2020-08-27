@@ -64,7 +64,7 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1beta1.RDSInstance{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.RDSInstanceGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: rds.NewClient, awsConfigFn: awsclients.GetConfig}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: rds.NewClient}),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -74,11 +74,10 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	kube        client.Client
 	newClientFn func(config *aws.Config) rds.Client
-	awsConfigFn func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(ctx, c.kube, mg, "")
+	cfg, err := awsclients.GetConfig(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}

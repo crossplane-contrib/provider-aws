@@ -66,7 +66,7 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.Certificate{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.CertificateGroupVersionKind),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acm.NewClient, awsConfigFn: awscommon.GetConfig}),
+			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acm.NewClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
@@ -77,11 +77,10 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	client      client.Client
 	newClientFn func(aws.Config) acm.Client
-	awsConfigFn func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
-func (c *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(ctx, c.client, mgd, "")
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	cfg, err := awscommon.GetConfig(ctx, c.client, mg, "")
 	if err != nil {
 		return nil, err
 	}

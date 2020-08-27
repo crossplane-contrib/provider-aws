@@ -54,7 +54,7 @@ func SetupCertificateAuthorityPermission(mgr ctrl.Manager, l logging.Logger) err
 		For(&v1alpha1.CertificateAuthorityPermission{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.CertificateAuthorityPermissionGroupVersionKind),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acmpca.NewCAPermissionClient, awsConfigFn: awscommon.GetConfig}),
+			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acmpca.NewCAPermissionClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
@@ -65,11 +65,10 @@ func SetupCertificateAuthorityPermission(mgr ctrl.Manager, l logging.Logger) err
 type connector struct {
 	client      client.Client
 	newClientFn func(*aws.Config) acmpca.CAPermissionClient
-	awsConfigFn func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
-func (c *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(ctx, c.client, mgd, "")
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	cfg, err := awscommon.GetConfig(ctx, c.client, mg, "")
 	if err != nil {
 		return nil, err
 	}

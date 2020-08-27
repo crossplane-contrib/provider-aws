@@ -54,7 +54,7 @@ func SetupELBAttachment(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.ELBAttachment{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.ELBAttachmentGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elb.NewClient, awsConfigFn: awscommon.GetConfig}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elb.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -64,11 +64,10 @@ func SetupELBAttachment(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	kube        client.Client
 	newClientFn func(config aws.Config) elb.Client
-	awsConfigFn func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(ctx, c.kube, mg, "")
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}

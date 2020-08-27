@@ -57,7 +57,7 @@ func SetupIAMGroup(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.IAMGroup{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.IAMGroupGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewGroupClient, awsConfigFn: awsclients.GetConfig}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewGroupClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -66,11 +66,10 @@ func SetupIAMGroup(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	kube        client.Client
 	newClientFn func(config aws.Config) iam.GroupClient
-	awsConfigFn func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(ctx, c.kube, mg, "")
+	cfg, err := awsclients.GetConfig(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}
