@@ -140,6 +140,12 @@ func (e *external) formatBucketPolicy(original *v1alpha1.S3BucketPolicy) (*strin
 	newStatements := make([]v1alpha1.S3BucketPolicyStatement, 0)
 	for _, statement := range statements {
 		if statement.ApplyToIAMUser {
+			if statement.Principal == nil {
+				statement.Principal = &v1alpha1.S3BucketPrincipal{}
+			}
+			if statement.Principal.AWSPrincipal == nil {
+				statement.Principal.AWSPrincipal = make([]string, 0)
+			}
 			statement.Principal.AWSPrincipal = append(statement.Principal.AWSPrincipal, fmt.Sprintf("arn:aws:iam::%s:user/%s", accountID, iamUsername))
 		}
 		updatedPaths := make([]string, 0)
