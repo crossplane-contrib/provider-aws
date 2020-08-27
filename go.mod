@@ -2,15 +2,11 @@ module github.com/crossplane/provider-aws
 
 go 1.13
 
-replace github.com/crossplane/crossplane-runtime => github.com/muvaf/crossplane-runtime v0.0.0-20200824124624-77a285580b99
-
-replace github.com/crossplane/crossplane-tools => github.com/muvaf/crossplane-tools v0.0.0-20200824132403-2c5cc52b3355
-
 require (
 	github.com/aws/aws-sdk-go-v2 v0.23.0
 	github.com/crossplane/crossplane v0.11.0
-	github.com/crossplane/crossplane-runtime v0.9.1-0.20200629170915-9a9a434f7321
-	github.com/crossplane/crossplane-tools v0.0.0-20200629224205-12a1a1fb07cc
+	github.com/crossplane/crossplane-runtime v0.9.1-0.20200827134951-29150890d4c1
+	github.com/crossplane/crossplane-tools v0.0.0-20200827141855-f51a6598f2bc
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-ini/ini v1.46.0
