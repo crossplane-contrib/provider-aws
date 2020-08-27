@@ -205,8 +205,9 @@ spec:
                   type: object
               type: object
             providerConfigRef:
-              description: ProviderConfigReference specifies the provider that will
-                be used to create, observe, update, and delete this managed resource.
+              description: ProviderConfigReference specifies how the provider that
+                will be used to create, observe, update, and delete this managed resource
+                should be configured.
               properties:
                 name:
                   description: Name of the referenced object.
