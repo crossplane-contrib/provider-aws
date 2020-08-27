@@ -66,7 +66,6 @@ type ProviderList struct {
 
 // DeepCopyIntoPC copies this Provider into an existing *ProviderConfig.
 func (p *Provider) DeepCopyIntoPC(pc *ProviderConfig) {
-	pc.TypeMeta = p.TypeMeta
 	p.ObjectMeta.DeepCopyInto(&pc.ObjectMeta)
 	p.Spec.ProviderSpec.CredentialsSecretRef.DeepCopyInto(pc.Spec.ProviderConfigSpec.CredentialsSecretRef)
 	if p.Spec.UseServiceAccount != nil {
