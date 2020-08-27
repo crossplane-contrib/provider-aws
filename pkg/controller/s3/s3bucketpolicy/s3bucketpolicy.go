@@ -60,8 +60,7 @@ func SetupS3BucketPolicy(mgr ctrl.Manager, l logging.Logger) error {
 			resource.ManagedKind(v1alpha1.S3BucketPolicyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(),
 				newClientFn:    s3.NewBucketPolicyClient,
-				newIAMClientFn: iam.NewClient,
-				awsConfigFn:    awscommon.GetConfig}),
+				newIAMClientFn: iam.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -72,11 +71,10 @@ type connector struct {
 	kube           client.Client
 	newClientFn    func(config aws.Config) s3.BucketPolicyClient
 	newIAMClientFn func(config aws.Config) iam.Client
-	awsConfigFn    func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(ctx, c.kube, mg, "")
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}

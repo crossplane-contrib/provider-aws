@@ -59,7 +59,7 @@ func SetupNodeGroup(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.NodeGroup{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.NodeGroupGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newEKSClientFn: eks.NewEKSClient, awsConfigFn: awsclients.GetConfig}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newEKSClientFn: eks.NewEKSClient}),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -69,11 +69,10 @@ func SetupNodeGroup(mgr ctrl.Manager, l logging.Logger) error {
 type connector struct {
 	kube           client.Client
 	newEKSClientFn func(config aws.Config) eks.Client
-	awsConfigFn    func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(ctx, c.kube, mg, "")
+	cfg, err := awsclients.GetConfig(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}

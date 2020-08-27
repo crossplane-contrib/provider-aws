@@ -61,7 +61,7 @@ func SetupCluster(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1beta1.Cluster{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.ClusterGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: eks.NewEKSClient, newSTSClientFn: eks.NewSTSClient, awsConfigFn: awsclients.GetConfig}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: eks.NewEKSClient, newSTSClientFn: eks.NewSTSClient}),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -72,11 +72,10 @@ type connector struct {
 	kube           client.Client
 	newClientFn    func(config aws.Config) eks.Client
 	newSTSClientFn func(config aws.Config) eks.STSClient
-	awsConfigFn    func(context.Context, client.Client, resource.Managed, string) (*aws.Config, error)
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(ctx, c.kube, mg, "")
+	cfg, err := awsclients.GetConfig(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}

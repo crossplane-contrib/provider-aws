@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"sort"
 
-	awscommon "github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	elasticacheservice "github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -61,7 +61,7 @@ func SetupReplicationGroup(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1beta1.ReplicationGroup{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.ReplicationGroupGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elasticache.NewClient, awsConfigFn: awsclients.GetConfig}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elasticache.NewClient}),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -71,12 +71,11 @@ func SetupReplicationGroup(mgr ctrl.Manager, l logging.Logger) error {
 
 type connector struct {
 	kube        client.Client
-	newClientFn func(config awscommon.Config) elasticache.Client
-	awsConfigFn func(context.Context, client.Client, resource.Managed, string) (*awscommon.Config, error)
+	newClientFn func(config aws.Config) elasticache.Client
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := c.awsConfigFn(ctx, c.kube, mg, "")
+	cfg, err := awsclients.GetConfig(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +153,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	// with an explanatory message from AWS explaining that transit encryption
 	// is required.
 	var token *string
-	if awscommon.BoolValue(cr.Spec.ForProvider.AuthEnabled) {
+	if aws.BoolValue(cr.Spec.ForProvider.AuthEnabled) {
 		t, err := password.Generate()
 		if err != nil {
 			return managed.ExternalCreation{}, errors.Wrap(err, errGenerateAuthToken)
