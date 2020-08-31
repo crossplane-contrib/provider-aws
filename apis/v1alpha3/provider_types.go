@@ -20,6 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+
+	"github.com/crossplane/provider-aws/apis/v1beta1"
 )
 
 // A ProviderSpec defines the desired state of a Provider.
@@ -65,7 +67,7 @@ type ProviderList struct {
 }
 
 // DeepCopyIntoPC copies this Provider into an existing *ProviderConfig.
-func (p *Provider) DeepCopyIntoPC(pc *ProviderConfig) {
+func (p *Provider) DeepCopyIntoPC(pc *v1beta1.ProviderConfig) {
 	p.ObjectMeta.DeepCopyInto(&pc.ObjectMeta)
 	p.Spec.ProviderSpec.CredentialsSecretRef.DeepCopyInto(pc.Spec.ProviderConfigSpec.CredentialsSecretRef)
 	if p.Spec.UseServiceAccount != nil {

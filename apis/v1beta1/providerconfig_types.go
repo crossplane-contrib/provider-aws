@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha3
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,9 +37,7 @@ type ProviderConfigSpec struct {
 
 // +kubebuilder:object:root=true
 
-// A ProviderConfig configures an AWS 'provider', i.e. a connection to a particular
-// AWS account using a particular AWS IAM role.
-// +kubebuilder:printcolumn:name="REGION",type="string",JSONPath=".spec.region"
+// A ProviderConfig configures how AWS controllers will connect to AWS API.
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:printcolumn:name="SECRET-NAME",type="string",JSONPath=".spec.credentialsSecretRef.name",priority=1
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,provider,aws}

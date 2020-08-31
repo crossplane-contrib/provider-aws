@@ -9,9 +9,6 @@ metadata:
   name: providerconfigs.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .spec.region
-    name: REGION
-    type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
@@ -33,8 +30,8 @@ spec:
   subresources: {}
   validation:
     openAPIV3Schema:
-      description: A ProviderConfig configures an AWS 'provider', i.e. a connection
-        to a particular AWS account using a particular AWS IAM role.
+      description: A ProviderConfig configures how AWS controllers will connect to
+        AWS API.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -79,9 +76,9 @@ spec:
       required:
       - spec
       type: object
-  version: v1alpha3
+  version: v1beta1
   versions:
-  - name: v1alpha3
+  - name: v1beta1
     served: true
     storage: true
 status:
