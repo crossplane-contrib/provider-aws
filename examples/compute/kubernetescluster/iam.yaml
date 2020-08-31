@@ -20,7 +20,7 @@ spec:
         ]
       }
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example
 ---
 apiVersion: identity.aws.crossplane.io/v1beta1
@@ -34,7 +34,7 @@ spec:
     # A well known policy ARN
     policyArn: arn:aws:iam::aws:policy/AmazonEKSServicePolicy
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example
 ---
 apiVersion: identity.aws.crossplane.io/v1beta1
@@ -48,5 +48,5 @@ spec:
     # A well known policy ARN
     policyArn: arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example

@@ -11,7 +11,7 @@ data:
 ---
 # AWS provider that references the secrete credentials
 apiVersion: aws.crossplane.io/v1alpha3
-kind: Provider
+kind: ProviderConfig
 metadata:
   name: example
 spec:
@@ -19,4 +19,3 @@ spec:
     namespace: crossplane-system
     name: example-provider-aws
     key: credentials
-  region: us-east-1

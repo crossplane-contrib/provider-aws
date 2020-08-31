@@ -9,5 +9,5 @@ spec:
     - key: Name
       value: example
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: aws-provider

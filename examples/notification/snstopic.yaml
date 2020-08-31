@@ -11,6 +11,6 @@ spec:
     - key: key
       value: value
     displayName: display-topic-name
-  providerRef:
+  providerConfigRef:
     name: aws-provider
   reclaimPolicy: Delete
