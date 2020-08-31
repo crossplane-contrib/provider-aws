@@ -20,11 +20,8 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	awsarn "github.com/aws/aws-sdk-go-v2/aws/arn"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -36,26 +33,20 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
-	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awscommon "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 )
 
 const (
-	errNotPolicyInstance = "managed resource is not an IAMPolicy custom resource"
-
-	errCreatePolicyClient = "cannot create IAM Policy client"
-	errGetProvider        = "cannot get provider"
-	errGetProviderSecret  = "cannot get provider secret"
-
 	errUnexpectedObject = "The managed resource is not a IAMPolicy resource"
-	errGet              = "failed to get IAM Policy"
-	errCreate           = "failed to create the IAM Policy"
-	errDelete           = "failed to delete the IAM Policy"
-	errUpdate           = "failed to update the IAM Policy"
-	errEmptyPolicy      = "empty IAM Policy received from IAM API"
-	errPolicyVersion    = "No version for policy received from IAM API"
-	errUpToDate         = "cannt check if policy is up to date"
+
+	errGet           = "failed to get IAM Policy"
+	errCreate        = "failed to create the IAM Policy"
+	errDelete        = "failed to delete the IAM Policy"
+	errUpdate        = "failed to update the IAM Policy"
+	errEmptyPolicy   = "empty IAM Policy received from IAM API"
+	errPolicyVersion = "No version for policy received from IAM API"
+	errUpToDate      = "cannt check if policy is up to date"
 )
 
 // SetupIAMPolicy adds a controller that reconciles IAM Policy.
@@ -76,37 +67,15 @@ func SetupIAMPolicy(mgr ctrl.Manager, l logging.Logger) error {
 
 type connector struct {
 	kube        client.Client
-	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (iam.PolicyClient, error)
+	newClientFn func(config aws.Config) iam.PolicyClient
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.IAMPolicy)
-	if !ok {
-		return nil, errors.New(errNotPolicyInstance)
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "")
+	if err != nil {
+		return nil, err
 	}
-
-	p := &awsv1alpha3.Provider{}
-	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name}, p); err != nil {
-		return nil, errors.Wrap(err, errGetProvider)
-	}
-
-	if aws.BoolValue(p.Spec.UseServiceAccount) {
-		policyClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{client: policyClient, kube: c.kube}, errors.Wrap(err, errCreatePolicyClient)
-	}
-
-	if p.GetCredentialsSecretReference() == nil {
-		return nil, errors.New(errGetProviderSecret)
-	}
-
-	s := &corev1.Secret{}
-	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
-	if err := c.kube.Get(ctx, n, s); err != nil {
-		return nil, errors.Wrap(err, errGetProviderSecret)
-	}
-
-	policyClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: policyClient, kube: c.kube}, errors.Wrap(err, errCreatePolicyClient)
+	return &external{client: c.newClientFn(*cfg), kube: c.kube}, nil
 }
 
 type external struct {
@@ -120,7 +89,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	if !awsarn.IsARN(meta.GetExternalName(cr)) {
+	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{}, nil
 	}
 

@@ -33,8 +33,9 @@ spec:
   subresources: {}
   validation:
     openAPIV3Schema:
-      description: A Provider configures an AWS 'provider', i.e. a connection to a
-        particular AWS account using a particular AWS IAM role.
+      description: 'A Provider configures an AWS ''provider'', i.e. a connection to
+        a particular AWS account using a particular AWS IAM role. Deprecated: Please
+        migrate to ProviderConfig.'
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation

@@ -58,8 +58,8 @@ type SubscriptionClient interface {
 
 // NewSubscriptionClient returns a new client using AWS credentials as JSON encoded
 // data
-func NewSubscriptionClient(conf *aws.Config) (SubscriptionClient, error) {
-	return sns.New(*conf), nil
+func NewSubscriptionClient(cfg aws.Config) SubscriptionClient {
+	return sns.New(cfg)
 }
 
 // GenerateSubscribeInput prepares input for SubscribeRequest

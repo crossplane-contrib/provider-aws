@@ -33,15 +33,14 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
-	acmpca "github.com/crossplane/provider-aws/pkg/clients/acmpca"
-	"github.com/crossplane/provider-aws/pkg/controller/utils"
+	"github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/clients/acmpca"
 )
 
 const (
 	errPendingStatus    = "The managed resource in pending status, please open the ACM Private CA console https://console.aws.amazon.com/acm-pca/home install CA certificate "
 	errUnexpectedObject = "The managed resource is not an ACMPCA resource"
-	errClient           = "cannot create a new ACMPCA client"
 	errGet              = "failed to get ACMPCA with name"
 	errCreate           = "failed to create the ACMPCA resource"
 	errDelete           = "failed to delete the ACMPCA resource"
@@ -65,7 +64,7 @@ func SetupCertificateAuthority(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.CertificateAuthority{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.CertificateAuthorityGroupVersionKind),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acmpca.NewClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acmpca.NewClient}),
 			managed.WithConnectionPublishers(),
 
 			// TODO: implement tag initializer
@@ -77,26 +76,15 @@ func SetupCertificateAuthority(mgr ctrl.Manager, l logging.Logger) error {
 
 type connector struct {
 	client      client.Client
-	newClientFn func(*aws.Config) (acmpca.Client, error)
-	awsConfigFn func(context.Context, client.Reader, runtimev1alpha1.Reference) (*aws.Config, error)
+	newClientFn func(*aws.Config) acmpca.Client
 }
 
-func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mgd.(*v1alpha1.CertificateAuthority)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
-	}
-
-	awsconfig, err := conn.awsConfigFn(ctx, conn.client, cr.Spec.ProviderReference)
+func (conn *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	cfg, err := awscommon.GetConfig(ctx, conn.client, mg, "")
 	if err != nil {
 		return nil, err
 	}
-
-	c, err := conn.newClientFn(awsconfig)
-	if err != nil {
-		return nil, errors.Wrap(err, errClient)
-	}
-	return &external{c, conn.client}, nil
+	return &external{conn.newClientFn(cfg), conn.client}, nil
 }
 
 type external struct {

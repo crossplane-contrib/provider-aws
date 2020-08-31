@@ -17,12 +17,9 @@ limitations under the License.
 package hostedzone
 
 import (
-	"context"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
-	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -40,15 +37,8 @@ type Client interface {
 }
 
 // NewClient creates new RDS RDSClient with provided AWS Configurations/Credentials
-func NewClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (Client, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if err != nil {
-		return nil, err
-	}
-	if cfg == nil {
-		return nil, errors.New("config cannot be nil")
-	}
-	return route53.New(*cfg), nil
+func NewClient(cfg aws.Config) Client {
+	return route53.New(cfg)
 }
 
 // IsNotFound returns true if the error code indicates that the requested Zone was not found

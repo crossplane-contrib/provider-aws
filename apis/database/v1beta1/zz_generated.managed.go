@@ -43,8 +43,21 @@ func (mg *DBSubnetGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this DBSubnetGroup.
-func (mg *DBSubnetGroup) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this DBSubnetGroup.
+func (mg *DBSubnetGroup) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this DBSubnetGroup.
+func (mg *DBSubnetGroup) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this DBSubnetGroup.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *DBSubnetGroup) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *DBSubnetGroup) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this DBSubnetGroup.
-func (mg *DBSubnetGroup) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this DBSubnetGroup.
+func (mg *DBSubnetGroup) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this DBSubnetGroup.
+func (mg *DBSubnetGroup) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this DBSubnetGroup.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *DBSubnetGroup) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
@@ -113,8 +139,21 @@ func (mg *RDSInstance) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1a
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this RDSInstance.
-func (mg *RDSInstance) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this RDSInstance.
+func (mg *RDSInstance) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this RDSInstance.
+func (mg *RDSInstance) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this RDSInstance.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *RDSInstance) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -148,8 +187,21 @@ func (mg *RDSInstance) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this RDSInstance.
-func (mg *RDSInstance) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this RDSInstance.
+func (mg *RDSInstance) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this RDSInstance.
+func (mg *RDSInstance) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this RDSInstance.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *RDSInstance) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

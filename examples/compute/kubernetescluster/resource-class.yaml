@@ -25,6 +25,6 @@ specTemplate:
     nodeGroupName: demo-nodes
     clusterControlPlaneSecurityGroupRef:
       name: eks-example
-  providerRef:
+  providerConfigRef:
     name: example
   reclaimPolicy: Delete

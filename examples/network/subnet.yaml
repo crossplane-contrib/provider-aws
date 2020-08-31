@@ -9,5 +9,5 @@ spec:
       name: sample-vpc
     mapPublicIPOnLaunch: true
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example

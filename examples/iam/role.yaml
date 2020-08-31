@@ -28,6 +28,6 @@ spec:
     tags:
       - key: k1
         value: v1
-  providerRef:
+  providerConfigRef:
     name: example
   reclaimPolicy: Delete

@@ -43,8 +43,21 @@ func (mg *CertificateAuthority) GetCondition(ct runtimev1alpha1.ConditionType) r
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this CertificateAuthority.
-func (mg *CertificateAuthority) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this CertificateAuthority.
+func (mg *CertificateAuthority) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this CertificateAuthority.
+func (mg *CertificateAuthority) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this CertificateAuthority.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *CertificateAuthority) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *CertificateAuthority) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this CertificateAuthority.
-func (mg *CertificateAuthority) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this CertificateAuthority.
+func (mg *CertificateAuthority) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this CertificateAuthority.
+func (mg *CertificateAuthority) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this CertificateAuthority.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *CertificateAuthority) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
@@ -113,8 +139,21 @@ func (mg *CertificateAuthorityPermission) GetCondition(ct runtimev1alpha1.Condit
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this CertificateAuthorityPermission.
-func (mg *CertificateAuthorityPermission) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this CertificateAuthorityPermission.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *CertificateAuthorityPermission) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -148,8 +187,21 @@ func (mg *CertificateAuthorityPermission) SetConditions(c ...runtimev1alpha1.Con
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this CertificateAuthorityPermission.
-func (mg *CertificateAuthorityPermission) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this CertificateAuthorityPermission.
+func (mg *CertificateAuthorityPermission) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this CertificateAuthorityPermission.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *CertificateAuthorityPermission) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

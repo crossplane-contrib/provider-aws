@@ -19,11 +19,9 @@ package cachesubnetgroup
 import (
 	"context"
 
-	commonaws "github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	awscache "github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -35,8 +33,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/cache/v1alpha1"
-	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/elasticache"
 )
@@ -48,10 +44,6 @@ const (
 	errCreateSubnetGroup   = "cannot create Subnet Group"
 	errModifySubnetGroup   = "cannot modify Subnet Group"
 	errDeleteSubnetGroup   = "cannot delete Subnet Group"
-
-	errNewClient         = "cannot create new ElastiCache client"
-	errGetProvider       = "cannot get provider"
-	errGetProviderSecret = "cannot get provider secret"
 )
 
 // SetupCacheSubnetGroup adds a controller that reconciles SubnetGroups.
@@ -63,7 +55,7 @@ func SetupCacheSubnetGroup(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.CacheSubnetGroup{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.CacheSubnetGroupGroupVersionKind),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: elasticache.NewClient}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elasticache.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -72,37 +64,16 @@ func SetupCacheSubnetGroup(mgr ctrl.Manager, l logging.Logger) error {
 }
 
 type connector struct {
-	client      client.Client
-	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (elasticache.Client, error)
+	kube        client.Client
+	newClientFn func(config aws.Config) elasticache.Client
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	g, ok := mg.(*v1alpha1.CacheSubnetGroup)
-	if !ok {
-		return nil, errors.New(errNotSubnetGroup)
+	cfg, err := awsclients.GetConfig(ctx, c.kube, mg, "")
+	if err != nil {
+		return nil, err
 	}
-
-	p := &awsv1alpha3.Provider{}
-	if err := c.client.Get(ctx, types.NamespacedName{Name: g.Spec.ProviderReference.Name}, p); err != nil {
-		return nil, errors.Wrap(err, errGetProvider)
-	}
-
-	if commonaws.BoolValue(p.Spec.UseServiceAccount) {
-		awsClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{client: awsClient}, errors.Wrap(err, errNewClient)
-	}
-
-	if p.GetCredentialsSecretReference() == nil {
-		return nil, errors.New(errGetProviderSecret)
-	}
-
-	s := &corev1.Secret{}
-	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
-	if err := c.client.Get(ctx, n, s); err != nil {
-		return nil, errors.Wrap(err, errGetProviderSecret)
-	}
-	awsClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: awsClient}, errors.Wrap(err, errNewClient)
+	return &external{client: c.newClientFn(*cfg)}, nil
 }
 
 type external struct {
@@ -116,7 +87,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	resp, err := e.client.DescribeCacheSubnetGroupsRequest(&awscache.DescribeCacheSubnetGroupsInput{
-		CacheSubnetGroupName: aws.String(meta.GetExternalName(cr)),
+		CacheSubnetGroupName: awsclients.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 	if err != nil || resp.CacheSubnetGroups == nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(elasticache.IsSubnetGroupNotFound, err), errDescribeSubnetGroup)
@@ -125,7 +96,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	sg := resp.CacheSubnetGroups[0]
 
 	cr.Status.AtProvider = v1alpha1.CacheSubnetGroupExternalStatus{
-		VPCID: aws.StringValue(sg.VpcId),
+		VPCID: awsclients.StringValue(sg.VpcId),
 	}
 
 	cr.SetConditions(runtimev1alpha1.Available())
@@ -145,8 +116,8 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
 	_, err := e.client.CreateCacheSubnetGroupRequest(&awscache.CreateCacheSubnetGroupInput{
-		CacheSubnetGroupDescription: aws.String(cr.Spec.ForProvider.Description),
-		CacheSubnetGroupName:        aws.String(meta.GetExternalName(cr)),
+		CacheSubnetGroupDescription: awsclients.String(cr.Spec.ForProvider.Description),
+		CacheSubnetGroupName:        awsclients.String(meta.GetExternalName(cr)),
 		SubnetIds:                   cr.Spec.ForProvider.SubnetIDs,
 	}).Send(ctx)
 	if err != nil {
@@ -163,8 +134,8 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	_, err := e.client.ModifyCacheSubnetGroupRequest(&awscache.ModifyCacheSubnetGroupInput{
-		CacheSubnetGroupDescription: aws.String(cr.Spec.ForProvider.Description),
-		CacheSubnetGroupName:        aws.String(meta.GetExternalName(cr)),
+		CacheSubnetGroupDescription: awsclients.String(cr.Spec.ForProvider.Description),
+		CacheSubnetGroupName:        awsclients.String(meta.GetExternalName(cr)),
 		SubnetIds:                   cr.Spec.ForProvider.SubnetIDs,
 	}).Send(ctx)
 
@@ -180,7 +151,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	cr.SetConditions(runtimev1alpha1.Deleting())
 
 	_, err := e.client.DeleteCacheSubnetGroupRequest(&awscache.DeleteCacheSubnetGroupInput{
-		CacheSubnetGroupName: aws.String(meta.GetExternalName(cr)),
+		CacheSubnetGroupName: awsclients.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
 	return errors.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDeleteSubnetGroup)

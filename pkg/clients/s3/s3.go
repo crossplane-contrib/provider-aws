@@ -64,7 +64,7 @@ type Client struct {
 // NewClient creates new S3 Client with provided AWS Configurations/Credentials
 func NewClient(config *aws.Config) Service {
 	ops := operations.NewS3Operations(s3.New(*config))
-	return &Client{s3: ops, iamClient: iamc.NewClient(config)}
+	return &Client{s3: ops, iamClient: iamc.NewClient(*config)}
 }
 
 // CreateOrUpdateBucket creates or updates the supplied S3 bucket with provided

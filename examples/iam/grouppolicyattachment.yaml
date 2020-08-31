@@ -8,6 +8,6 @@ spec:
     policyArn: arn:aws:iam::aws:policy/AmazonEC2FullAccess
     groupNameRef:
       name: somegroup
-  providerRef:
+  providerConfigRef:
     name: example
   reclaimPolicy: Delete

@@ -35,14 +35,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/storage/v1alpha1"
+	awscommon "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
-	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 
 const (
 	errUnexpectedObject = "The managed resource is not an IAMRolePolicyAttachment resource"
-	errClient           = "cannot create a new RolePolicyAttachmentClient"
 	errAttach           = "failed to attach the policy to role"
 	errDelete           = "failed to delete the policy for bucket"
 	errGet              = "failed to get S3BucketPolicy for bucket with name"
@@ -59,7 +58,9 @@ func SetupS3BucketPolicy(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.S3BucketPolicy{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.S3BucketPolicyGroupVersionKind),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: s3.NewBucketPolicyClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(),
+				newClientFn:    s3.NewBucketPolicyClient,
+				newIAMClientFn: iam.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -67,28 +68,17 @@ func SetupS3BucketPolicy(mgr ctrl.Manager, l logging.Logger) error {
 }
 
 type connector struct {
-	client      client.Client
-	newClientFn func(*aws.Config) (s3.BucketPolicyClient, iam.Client, error)
-	awsConfigFn func(context.Context, client.Reader, runtimev1alpha1.Reference) (*aws.Config, error)
+	kube           client.Client
+	newClientFn    func(config aws.Config) s3.BucketPolicyClient
+	newIAMClientFn func(config aws.Config) iam.Client
 }
 
-func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mgd.(*v1alpha1.S3BucketPolicy)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
-	}
-
-	awsconfig, err := conn.awsConfigFn(ctx, conn.client, cr.Spec.ProviderReference)
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}
-
-	s3c, iamc, err := conn.newClientFn(awsconfig)
-	if err != nil {
-		return nil, errors.Wrap(err, errClient)
-	}
-
-	return &external{client: s3c, iamclient: iamc, kube: conn.client}, nil
+	return &external{client: c.newClientFn(*cfg), kube: c.kube}, nil
 }
 
 type external struct {

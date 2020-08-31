@@ -22,7 +22,7 @@ spec:
               networkName:
                 type: string
                 description: Name of network for cluster.
-              providerRef:
+              providerConfigRef:
                 type: object
                 description: Crossplane AWS provider credentials to use.
                 properties:

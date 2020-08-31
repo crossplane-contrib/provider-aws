@@ -23,8 +23,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awseks "github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -36,7 +34,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
-	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/eks"
 )
@@ -44,10 +41,6 @@ import (
 const (
 	errNotEKSNodeGroup  = "managed resource is not an EKS node group custom resource"
 	errKubeUpdateFailed = "cannot update EKS node group custom resource"
-
-	errCreateEKSClient   = "cannot create EKS client"
-	errGetProvider       = "cannot get provider"
-	errGetProviderSecret = "cannot get provider secret"
 
 	errCreateFailed        = "cannot create EKS node group"
 	errUpdateConfigFailed  = "cannot update EKS node group configuration"
@@ -66,7 +59,7 @@ func SetupNodeGroup(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.NodeGroup{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.NodeGroupGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: eks.NewClient}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newEKSClientFn: eks.NewEKSClient}),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -74,43 +67,20 @@ func SetupNodeGroup(mgr ctrl.Manager, l logging.Logger) error {
 }
 
 type connector struct {
-	kube        client.Client
-	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (eks.Client, eks.STSClient, error)
+	kube           client.Client
+	newEKSClientFn func(config aws.Config) eks.Client
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.NodeGroup)
-	if !ok {
-		return nil, errors.New(errNotEKSNodeGroup)
+	cfg, err := awsclients.GetConfig(ctx, c.kube, mg, "")
+	if err != nil {
+		return nil, err
 	}
-
-	p := &awsv1alpha3.Provider{}
-	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name}, p); err != nil {
-		return nil, errors.Wrap(err, errGetProvider)
-	}
-
-	if aws.BoolValue(p.Spec.UseServiceAccount) {
-		eksClient, stsClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{client: eksClient, sts: stsClient, kube: c.kube}, errors.Wrap(err, errCreateEKSClient)
-	}
-
-	if p.GetCredentialsSecretReference() == nil {
-		return nil, errors.New(errGetProviderSecret)
-	}
-
-	s := &corev1.Secret{}
-	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
-	if err := c.kube.Get(ctx, n, s); err != nil {
-		return nil, errors.Wrap(err, errGetProviderSecret)
-	}
-
-	eksClient, stsClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: eksClient, sts: stsClient, kube: c.kube}, errors.Wrap(err, errCreateEKSClient)
+	return &external{client: c.newEKSClientFn(*cfg), kube: c.kube}, nil
 }
 
 type external struct {
 	client eks.Client
-	sts    eks.STSClient
 	kube   client.Client
 }
 

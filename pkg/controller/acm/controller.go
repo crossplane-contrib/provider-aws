@@ -34,14 +34,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1alpha1 "github.com/crossplane/provider-aws/apis/acm/v1alpha1"
-	acm "github.com/crossplane/provider-aws/pkg/clients/acm"
-	"github.com/crossplane/provider-aws/pkg/controller/utils"
+	"github.com/crossplane/provider-aws/apis/acm/v1alpha1"
+	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/clients/acm"
 )
 
 const (
 	errUnexpectedObject = "The managed resource is not an ACM resource"
-	errClient           = "cannot create a new ACM client"
 	errGet              = "failed to get Certificate with name"
 	errCreate           = "failed to create the Certificate resource"
 	errDelete           = "failed to delete the Certificate resource"
@@ -67,39 +66,25 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.Certificate{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.CertificateGroupVersionKind),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acm.NewClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acm.NewClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
-
-			// TODO: implement tag initializer
-
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
 type connector struct {
 	client      client.Client
-	newClientFn func(*aws.Config) (acm.Client, error)
-	awsConfigFn func(context.Context, client.Reader, runtimev1alpha1.Reference) (*aws.Config, error)
+	newClientFn func(aws.Config) acm.Client
 }
 
-func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mgd.(*v1alpha1.Certificate)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
-	}
-
-	awsconfig, err := conn.awsConfigFn(ctx, conn.client, cr.Spec.ProviderReference)
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	cfg, err := awscommon.GetConfig(ctx, c.client, mg, "")
 	if err != nil {
 		return nil, err
 	}
-
-	c, err := conn.newClientFn(awsconfig)
-	if err != nil {
-		return nil, errors.Wrap(err, errClient)
-	}
-	return &external{c, conn.client}, nil
+	return &external{c.newClientFn(*cfg), c.client}, nil
 }
 
 type external struct {
@@ -108,7 +93,6 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-
 	cr, ok := mgd.(*v1alpha1.Certificate)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)

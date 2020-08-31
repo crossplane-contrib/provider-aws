@@ -8,8 +8,8 @@ metadata:
   namespace: crossplane-system
 type: Opaque
 ---
-apiVersion: aws.crossplane.io/v1alpha3
-kind: Provider
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
 metadata:
   name: example
 spec:
@@ -17,4 +17,3 @@ spec:
     namespace: crossplane-system
     name: aws-account-creds
     key: credentials
-  region: ((AWS_REGION))

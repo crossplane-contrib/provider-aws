@@ -7,5 +7,5 @@ spec:
     certificateAuthorityARNRef:
       name: example
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: aws-provider

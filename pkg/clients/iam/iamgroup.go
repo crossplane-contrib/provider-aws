@@ -17,11 +17,9 @@ limitations under the License.
 package iam
 
 import (
-	"context"
+	"github.com/aws/aws-sdk-go-v2/aws"
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
-
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // GroupClient is the external client used for IAMGroup Custom Resource
@@ -33,10 +31,6 @@ type GroupClient interface {
 }
 
 // NewGroupClient returns a new client using AWS credentials as JSON encoded data.
-func NewGroupClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (GroupClient, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return iam.New(*cfg), nil
+func NewGroupClient(cfg aws.Config) GroupClient {
+	return iam.New(cfg)
 }

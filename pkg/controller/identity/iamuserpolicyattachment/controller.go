@@ -23,8 +23,6 @@ import (
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -35,22 +33,16 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
-	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awscommon "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 )
 
 const (
-	errNotUserInstance = "managed resource is not an User instance custom resource"
-
-	errCreateUserClient  = "cannot create IAM User client"
-	errGetProvider       = "cannot get provider"
-	errGetProviderSecret = "cannot get provider secret"
-
 	errUnexpectedObject = "The managed resource is not an UserPolicyAttachment resource"
-	errGet              = "failed to get UserPolicyAttachments for user"
-	errAttach           = "failed to attach the policy to user"
-	errDetach           = "failed to detach the policy to user"
+
+	errGet    = "failed to get UserPolicyAttachments for user"
+	errAttach = "failed to attach the policy to user"
+	errDetach = "failed to detach the policy to user"
 
 	errKubeUpdateFailed = "cannot late initialize UserPolicyAttachment"
 )
@@ -74,37 +66,15 @@ func SetupIAMUserPolicyAttachment(mgr ctrl.Manager, l logging.Logger) error {
 
 type connector struct {
 	kube        client.Client
-	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (iam.UserPolicyAttachmentClient, error)
+	newClientFn func(config aws.Config) iam.UserPolicyAttachmentClient
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.IAMUserPolicyAttachment)
-	if !ok {
-		return nil, errors.New(errNotUserInstance)
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "")
+	if err != nil {
+		return nil, err
 	}
-
-	p := &awsv1alpha3.Provider{}
-	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name}, p); err != nil {
-		return nil, errors.Wrap(err, errGetProvider)
-	}
-
-	if aws.BoolValue(p.Spec.UseServiceAccount) {
-		userPolicyClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{client: userPolicyClient, kube: c.kube}, errors.Wrap(err, errCreateUserClient)
-	}
-
-	if p.GetCredentialsSecretReference() == nil {
-		return nil, errors.New(errGetProviderSecret)
-	}
-
-	s := &corev1.Secret{}
-	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
-	if err := c.kube.Get(ctx, n, s); err != nil {
-		return nil, errors.Wrap(err, errGetProviderSecret)
-	}
-
-	userClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: userClient, kube: c.kube}, errors.Wrap(err, errCreateUserClient)
+	return &external{client: c.newClientFn(*cfg), kube: c.kube}, nil
 }
 
 type external struct {

@@ -43,8 +43,21 @@ func (mg *CacheCluster) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this CacheCluster.
-func (mg *CacheCluster) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this CacheCluster.
+func (mg *CacheCluster) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this CacheCluster.
+func (mg *CacheCluster) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this CacheCluster.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *CacheCluster) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *CacheCluster) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this CacheCluster.
-func (mg *CacheCluster) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this CacheCluster.
+func (mg *CacheCluster) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this CacheCluster.
+func (mg *CacheCluster) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this CacheCluster.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *CacheCluster) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
@@ -113,8 +139,21 @@ func (mg *CacheSubnetGroup) GetCondition(ct runtimev1alpha1.ConditionType) runti
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this CacheSubnetGroup.
-func (mg *CacheSubnetGroup) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this CacheSubnetGroup.
+func (mg *CacheSubnetGroup) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this CacheSubnetGroup.
+func (mg *CacheSubnetGroup) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this CacheSubnetGroup.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *CacheSubnetGroup) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -148,8 +187,21 @@ func (mg *CacheSubnetGroup) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this CacheSubnetGroup.
-func (mg *CacheSubnetGroup) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this CacheSubnetGroup.
+func (mg *CacheSubnetGroup) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this CacheSubnetGroup.
+func (mg *CacheSubnetGroup) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this CacheSubnetGroup.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *CacheSubnetGroup) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

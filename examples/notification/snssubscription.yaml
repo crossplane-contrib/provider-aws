@@ -4,7 +4,7 @@ metadata:
   name: sample-subscription
 spec:
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: aws-provider
   forProvider:
     protocol: email

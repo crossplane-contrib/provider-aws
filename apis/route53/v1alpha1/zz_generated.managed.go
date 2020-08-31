@@ -43,8 +43,21 @@ func (mg *HostedZone) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1al
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this HostedZone.
-func (mg *HostedZone) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this HostedZone.
+func (mg *HostedZone) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this HostedZone.
+func (mg *HostedZone) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this HostedZone.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *HostedZone) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *HostedZone) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this HostedZone.
-func (mg *HostedZone) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this HostedZone.
+func (mg *HostedZone) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this HostedZone.
+func (mg *HostedZone) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this HostedZone.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *HostedZone) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
@@ -113,8 +139,21 @@ func (mg *ResourceRecordSet) GetCondition(ct runtimev1alpha1.ConditionType) runt
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this ResourceRecordSet.
-func (mg *ResourceRecordSet) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this ResourceRecordSet.
+func (mg *ResourceRecordSet) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this ResourceRecordSet.
+func (mg *ResourceRecordSet) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this ResourceRecordSet.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *ResourceRecordSet) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -148,8 +187,21 @@ func (mg *ResourceRecordSet) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this ResourceRecordSet.
-func (mg *ResourceRecordSet) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this ResourceRecordSet.
+func (mg *ResourceRecordSet) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this ResourceRecordSet.
+func (mg *ResourceRecordSet) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this ResourceRecordSet.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *ResourceRecordSet) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

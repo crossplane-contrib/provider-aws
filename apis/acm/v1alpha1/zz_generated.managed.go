@@ -43,8 +43,21 @@ func (mg *Certificate) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1a
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this Certificate.
-func (mg *Certificate) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this Certificate.
+func (mg *Certificate) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this Certificate.
+func (mg *Certificate) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this Certificate.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *Certificate) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *Certificate) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this Certificate.
-func (mg *Certificate) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this Certificate.
+func (mg *Certificate) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this Certificate.
+func (mg *Certificate) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this Certificate.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *Certificate) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

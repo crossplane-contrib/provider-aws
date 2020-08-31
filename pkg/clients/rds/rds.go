@@ -17,7 +17,6 @@ limitations under the License.
 package rds
 
 import (
-	"context"
 	"encoding/json"
 	"strconv"
 	"strings"
@@ -26,7 +25,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
@@ -46,15 +44,8 @@ type Client interface {
 }
 
 // NewClient creates new RDS RDSClient with provided AWS Configurations/Credentials
-func NewClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (Client, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if err != nil {
-		return nil, err
-	}
-	if cfg == nil {
-		return nil, errors.New("config cannot be nil")
-	}
-	return rds.New(*cfg), err
+func NewClient(cfg *aws.Config) Client {
+	return rds.New(*cfg)
 }
 
 // IsErrorAlreadyExists returns true if the supplied error indicates an instance
