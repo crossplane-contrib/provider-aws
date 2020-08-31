@@ -23,7 +23,7 @@ spec:
               sgName:
                 type: string
                 description: Name of security group in network.
-              providerRef:
+              providerConfigRef:
                 type: object
                 description: Crossplane AWS provider credentials to use.
                 properties:

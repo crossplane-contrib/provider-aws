@@ -14,5 +14,5 @@ spec:
     securityGroupIdRefs:
     - name: sample-cluster-sg
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example

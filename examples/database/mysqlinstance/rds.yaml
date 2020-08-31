@@ -1,0 +1,33 @@
+apiVersion: database.aws.crossplane.io/v1beta1
+kind: RDSInstance
+metadata:
+  name: example-rds
+spec:
+  forProvider:
+    allocatedStorage: 20
+    autoMinorVersionUpgrade: true
+    backupRetentionPeriod: 0
+    caCertificateIdentifier: rds-ca-2019
+    copyTagsToSnapshot: false
+    dbInstanceClass: db.t3.medium
+    deletionProtection: false
+    enableIAMDatabaseAuthentication: false
+    enablePerformanceInsights: false
+    engine: mysql
+    engineVersion: 5.6.35
+    finalDBSnapshotIdentifier: muvaf-test
+    licenseModel: general-public-license
+    masterUsername: admin
+    multiAZ: true
+    port: 3306
+    preferredBackupWindow: 06:15-06:45
+    preferredMaintenanceWindow: sat:09:21-sat:09:51
+    publiclyAccessible: false
+    storageEncrypted: false
+    storageType: gp2
+  providerConfigRef:
+    name: aws-provider
+  reclaimPolicy: Delete
+  writeConnectionSecretToRef:
+    name: 66258c8a-24ad-45e6-a79e-1d54c19d908c-mysqlserver
+    namespace: crossplane-system

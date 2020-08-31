@@ -5,5 +5,5 @@ metadata:
 spec:
   reclaimPolicy: Delete
   networkName: my-network
-  providerRef:
+  providerConfigRef:
     name: aws-provider

@@ -19,5 +19,5 @@ spec:
       - key: k
         value: v
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example

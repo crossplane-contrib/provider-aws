@@ -10,5 +10,5 @@ spec:
       - subnet-089ef174d8b4addee
       - subnet-0361b1970c606b733
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example

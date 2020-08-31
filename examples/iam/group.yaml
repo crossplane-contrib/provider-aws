@@ -6,6 +6,6 @@ metadata:
   annotations:
     crossplane.io/external-name: external-name
 spec:
-  providerRef:
+  providerConfigRef:
     name: aws-provider
   reclaimPolicy: Delete

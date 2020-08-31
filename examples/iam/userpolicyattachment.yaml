@@ -10,6 +10,6 @@ spec:
       name: somepolicy
     userNameRef:
       name: someuser
-  providerRef:
+  providerConfigRef:
     name: example
   reclaimPolicy: Delete
