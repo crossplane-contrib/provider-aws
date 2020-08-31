@@ -8,7 +8,7 @@ metadata:
   namespace: crossplane-system
 type: Opaque
 ---
-apiVersion: aws.crossplane.io/v1alpha3
+apiVersion: aws.crossplane.io/v1beta1
 kind: ProviderConfig
 metadata:
   name: example

@@ -27,6 +27,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/crossplane/provider-aws/apis/v1beta1"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
@@ -61,7 +63,7 @@ const (
 // GetConfig constructs an *aws.Config that can be used to authenticate to AWS
 // API by the AWS clients.
 func GetConfig(ctx context.Context, kube client.Client, cr resource.Managed, region string) (*aws.Config, error) { // nolint:gocyclo
-	pc := &v1alpha3.ProviderConfig{}
+	pc := &v1beta1.ProviderConfig{}
 	switch {
 	case cr.GetProviderConfigReference() != nil && cr.GetProviderConfigReference().Name != "":
 		nn := types.NamespacedName{Name: cr.GetProviderConfigReference().Name}
