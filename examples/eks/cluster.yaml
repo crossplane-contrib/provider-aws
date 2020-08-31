@@ -18,5 +18,5 @@ spec:
   writeConnectionSecretToRef:
     name: cluster-conn
     namespace: default
-  providerRef:
+  providerConfigRef:
     name: aws-provider

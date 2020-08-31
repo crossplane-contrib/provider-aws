@@ -23,8 +23,6 @@ import (
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -37,19 +35,14 @@ import (
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awscommon "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 )
 
 const (
 	errUnexpectedObject = "The managed resource is not an RouteTable resource"
 
-	errGetProvider       = "cannot get provider"
-	errGetProviderSecret = "cannot get provider secret"
-	errKubeUpdateFailed  = "cannot update Subnet custom resource"
-
-	errClient             = "cannot create a new RouteTable client"
+	errKubeUpdateFailed   = "cannot update Subnet custom resource"
 	errDescribe           = "failed to describe RouteTable"
 	errMultipleItems      = "retrieved multiple RouteTables for the given routeTableId"
 	errCreate             = "failed to create the RouteTable resource"
@@ -73,7 +66,7 @@ func SetupRouteTable(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha4.RouteTable{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha4.RouteTableGroupVersionKind),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: ec2.NewRouteTableClient}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewRouteTableClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
@@ -82,38 +75,16 @@ func SetupRouteTable(mgr ctrl.Manager, l logging.Logger) error {
 }
 
 type connector struct {
-	client      client.Client
-	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (ec2.RouteTableClient, error)
+	kube        client.Client
+	newClientFn func(config aws.Config) ec2.RouteTableClient
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha4.RouteTable)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "")
+	if err != nil {
+		return nil, err
 	}
-
-	p := &awsv1alpha3.Provider{}
-	if err := c.client.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name}, p); err != nil {
-		return nil, errors.Wrap(err, errGetProvider)
-	}
-
-	if aws.BoolValue(p.Spec.UseServiceAccount) {
-		rtClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{client: rtClient, kube: c.client}, errors.Wrap(err, errUnexpectedObject)
-	}
-
-	if p.GetCredentialsSecretReference() == nil {
-		return nil, errors.New(errGetProviderSecret)
-	}
-
-	s := &corev1.Secret{}
-	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
-	if err := c.client.Get(ctx, n, s); err != nil {
-		return nil, errors.Wrap(err, errGetProviderSecret)
-	}
-
-	rtClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: rtClient, kube: c.client}, errors.Wrap(err, errClient)
+	return &external{client: c.newClientFn(*cfg), kube: c.kube}, nil
 }
 
 type external struct {

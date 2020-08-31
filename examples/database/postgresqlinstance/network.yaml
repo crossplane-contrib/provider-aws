@@ -8,7 +8,7 @@ spec:
   enableDnsSupport: true
   enableDnsHostNames: true
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example
 ---
 apiVersion: network.aws.crossplane.io/v1alpha3
@@ -21,7 +21,7 @@ spec:
     name: postgresql-example
   availabilityZone: us-east-1a
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example
 ---
 apiVersion: network.aws.crossplane.io/v1alpha3
@@ -34,7 +34,7 @@ spec:
     name: postgresql-example
   availabilityZone: us-east-1b
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example
 ---
 apiVersion: network.aws.crossplane.io/v1alpha3
@@ -47,7 +47,7 @@ spec:
     name: postgresql-example
   availabilityZone: us-east-1c
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example
 ---
 apiVersion: database.aws.crossplane.io/v1beta1
@@ -65,7 +65,7 @@ spec:
       - key: name
         value: postgresql-example
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example
 ---
 apiVersion: network.aws.crossplane.io/v1alpha3
@@ -76,7 +76,7 @@ spec:
   vpcIdRef:
     name: postgresql-example
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example
 ---
 apiVersion: network.aws.crossplane.io/v1alpha3
@@ -98,7 +98,7 @@ spec:
     - subnetIdRef:
         name: postgresql-example-3
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example
 ---
 apiVersion: network.aws.crossplane.io/v1alpha3
@@ -118,5 +118,5 @@ spec:
       cidrBlocks:
         - cidrIp: 0.0.0.0/0
           description: Not very secure
-  providerRef:
+  providerConfigRef:
     name: example

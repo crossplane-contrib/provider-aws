@@ -7,6 +7,6 @@ spec:
     elbNameRef: 
       name: sample-elb
     instanceId: i-0c6df00f98699e3ca
-  providerRef:
+  providerConfigRef:
     name: example
   reclaimPolicy: Delete

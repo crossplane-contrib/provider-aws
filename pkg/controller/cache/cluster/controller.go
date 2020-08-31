@@ -15,13 +15,12 @@ package cluster
 
 import (
 	"context"
+
 	"reflect"
 
-	commonaws "github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	elasticacheservice "github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -33,19 +32,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/cache/v1alpha1"
-	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awscommon "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/elasticache"
 )
 
 // Error strings.
 const (
 	errUpdateCacheClusterCR = "cannot update Cache Cluster Custom Resource"
-	errGetProvider          = "cannot get provider"
-	errGetProviderSecret    = "cannot get provider secret"
-
-	errNewClient            = "cannot create new ElastiCache client"
 	errNotCacheCluster      = "managed resource is not a Cache Cluster"
 	errDescribeCacheCluster = "cannot describe Cache Cluster"
 	errCreateCacheCluster   = "cannot create Cache Cluster"
@@ -63,44 +56,23 @@ func SetupCacheCluster(mgr ctrl.Manager, l logging.Logger) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.CacheClusterGroupVersionKind),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: elasticache.NewClient}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elasticache.NewClient}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		))
 }
 
 type connector struct {
-	client      client.Client
-	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (elasticache.Client, error)
+	kube        client.Client
+	newClientFn func(config aws.Config) elasticache.Client
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	g, ok := mg.(*v1alpha1.CacheCluster)
-	if !ok {
-		return nil, errors.New(errNotCacheCluster)
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "")
+	if err != nil {
+		return nil, err
 	}
-
-	p := &awsv1alpha3.Provider{}
-	if err := c.client.Get(ctx, types.NamespacedName{Name: g.Spec.ProviderReference.Name}, p); err != nil {
-		return nil, errors.Wrap(err, errGetProvider)
-	}
-
-	if commonaws.BoolValue(p.Spec.UseServiceAccount) {
-		awsClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{client: awsClient, kube: c.client}, errors.Wrap(err, errNewClient)
-	}
-
-	if p.GetCredentialsSecretReference() == nil {
-		return nil, errors.New(errGetProviderSecret)
-	}
-
-	s := &corev1.Secret{}
-	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
-	if err := c.client.Get(ctx, n, s); err != nil {
-		return nil, errors.Wrap(err, errGetProviderSecret)
-	}
-	awsClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: awsClient, kube: c.client}, errors.Wrap(err, errNewClient)
+	return &external{c.newClientFn(*cfg), c.kube}, nil
 }
 
 type external struct {

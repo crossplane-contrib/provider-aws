@@ -32,14 +32,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	v1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	awscommon "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
-	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 
 const (
 	errUnexpectedObject = "The managed resource is not an IAMRolePolicyAttachment resource"
-	errClient           = "cannot create a new RolePolicyAttachmentClient"
 	errGet              = "failed to get IAMRolePolicyAttachments for role with name"
 	errAttach           = "failed to attach the policy to role"
 	errDetach           = "failed to detach the policy to role"
@@ -57,7 +56,7 @@ func SetupIAMRolePolicyAttachment(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1beta1.IAMRolePolicyAttachment{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.IAMRolePolicyAttachmentGroupVersionKind),
-			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: iam.NewRolePolicyAttachmentClient, awsConfigFn: utils.RetrieveAwsConfigFromProvider}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewRolePolicyAttachmentClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -65,28 +64,16 @@ func SetupIAMRolePolicyAttachment(mgr ctrl.Manager, l logging.Logger) error {
 }
 
 type connector struct {
-	client      client.Client
-	newClientFn func(*aws.Config) (iam.RolePolicyAttachmentClient, error)
-	awsConfigFn func(context.Context, client.Reader, runtimev1alpha1.Reference) (*aws.Config, error)
+	kube        client.Client
+	newClientFn func(config aws.Config) iam.RolePolicyAttachmentClient
 }
 
-func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mgd.(*v1beta1.IAMRolePolicyAttachment)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
-	}
-
-	awsconfig, err := conn.awsConfigFn(ctx, conn.client, cr.Spec.ProviderReference)
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}
-
-	c, err := conn.newClientFn(awsconfig)
-	if err != nil {
-		return nil, errors.Wrap(err, errClient)
-	}
-
-	return &external{c, conn.client}, nil
+	return &external{client: c.newClientFn(*cfg), kube: c.kube}, nil
 }
 
 type external struct {

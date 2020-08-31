@@ -8,6 +8,6 @@ spec:
     groupName: external-name
     userNameRef:
       name: someuser
-  providerRef:
+  providerConfigRef:
     name: aws-provider
   reclaimPolicy: Delete

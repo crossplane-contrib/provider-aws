@@ -90,7 +90,7 @@ func TestConfigureBucket(t *testing.T) {
 								Namespace: namespace,
 								Name:      string(claimUID),
 							},
-							ProviderReference: runtimev1alpha1.Reference{Name: providerName},
+							ProviderReference: &runtimev1alpha1.Reference{Name: providerName},
 						},
 						S3BucketParameters: v1alpha3.S3BucketParameters{
 							CannedACL:       &s3BucketPrivate,
@@ -130,7 +130,7 @@ func TestConfigureBucket(t *testing.T) {
 							WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
 								Namespace: namespace,
 								Name:      string(claimUID)},
-							ProviderReference: runtimev1alpha1.Reference{Name: providerName},
+							ProviderReference: &runtimev1alpha1.Reference{Name: providerName},
 						},
 						S3BucketParameters: v1alpha3.S3BucketParameters{
 							CannedACL:       &s3BucketPrivate,
@@ -174,7 +174,7 @@ func TestConfigureBucket(t *testing.T) {
 								Namespace: namespace,
 								Name:      string(claimUID),
 							},
-							ProviderReference: runtimev1alpha1.Reference{Name: providerName},
+							ProviderReference: &runtimev1alpha1.Reference{Name: providerName},
 						},
 						S3BucketParameters: v1alpha3.S3BucketParameters{
 							CannedACL:       &s3BucketPrivate,

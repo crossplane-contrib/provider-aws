@@ -91,9 +91,7 @@ func TestConfigureReplicationGroup(t *testing.T) {
 							WriteConnectionSecretToReference: &runtimev1alpha1.SecretReference{
 								Namespace: namespace,
 								Name:      string(claimUID),
-							},
-							ProviderReference: runtimev1alpha1.Reference{Name: providerName},
-						},
+							}},
 						ForProvider: v1beta1.ReplicationGroupParameters{
 							EngineVersion: &testEngineVersion,
 						},

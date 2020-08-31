@@ -37,8 +37,8 @@ type iamClient struct {
 }
 
 // NewClient creates new AWS Client with provided AWS Configurations/Credentials
-func NewClient(config *aws.Config) Client {
-	return &iamClient{iam: iam.New(*config)}
+func NewClient(config aws.Config) Client {
+	return &iamClient{iam: iam.New(config)}
 }
 
 // CreateUser - Creates an IAM User, a policy, binds user to policy and returns an access key and policy version for the user.

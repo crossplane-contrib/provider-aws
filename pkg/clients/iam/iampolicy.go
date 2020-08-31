@@ -1,14 +1,13 @@
 package iam
 
 import (
-	"context"
 	"net/url"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -24,12 +23,8 @@ type PolicyClient interface {
 }
 
 // NewPolicyClient returns a new client using AWS credentials as JSON encoded data.
-func NewPolicyClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (PolicyClient, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return iam.New(*cfg), nil
+func NewPolicyClient(cfg aws.Config) PolicyClient {
+	return iam.New(cfg)
 }
 
 // IsPolicyUpToDate checks whether there is a change in any of the modifiable fields in policy.
@@ -52,7 +47,7 @@ func IsPolicyUpToDate(in v1alpha1.IAMPolicyParameters, policy iam.PolicyVersion)
 	if err != nil {
 		return false, err
 	}
-	compactSpecPolicy, err := aws.CompactAndEscapeJSON(in.Document)
+	compactSpecPolicy, err := awsclients.CompactAndEscapeJSON(in.Document)
 	if err != nil {
 		return false, err
 	}

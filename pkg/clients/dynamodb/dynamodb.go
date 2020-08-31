@@ -17,7 +17,6 @@ limitations under the License.
 package dynamodb
 
 import (
-	"context"
 	"encoding/json"
 	"strings"
 
@@ -38,12 +37,8 @@ type Client interface {
 }
 
 // NewClient creates new DynamoDB Client with provided AWS Configurations/Credentials
-func NewClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (Client, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return dynamodb.New(*cfg), err
+func NewClient(cfg aws.Config) Client {
+	return dynamodb.New(cfg)
 }
 
 // LateInitialize fills the empty fields in *v1alpha1.DynamoTableParameters with

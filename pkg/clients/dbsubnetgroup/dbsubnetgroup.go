@@ -17,7 +17,6 @@ limitations under the License.
 package dbsubnetgroup
 
 import (
-	"context"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -38,12 +37,8 @@ type Client interface {
 }
 
 // NewClient returns a new client using AWS credentials as JSON encoded data.
-func NewClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (Client, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return rds.New(*cfg), nil
+func NewClient(cfg aws.Config) Client {
+	return rds.New(cfg)
 }
 
 // IsDBSubnetGroupNotFoundErr returns true if the error is because the item doesn't exist

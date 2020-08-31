@@ -1,7 +1,6 @@
 package ec2
 
 import (
-	"context"
 	"encoding/json"
 	"sort"
 	"strings"
@@ -38,12 +37,8 @@ type SecurityGroupClient interface {
 }
 
 // NewSecurityGroupClient generates client for AWS Security Group API
-func NewSecurityGroupClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (SecurityGroupClient, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return ec2.New(*cfg), err
+func NewSecurityGroupClient(cfg awsgo.Config) SecurityGroupClient {
+	return ec2.New(cfg)
 }
 
 // IsSecurityGroupNotFoundErr returns true if the error is because the item doesn't exist

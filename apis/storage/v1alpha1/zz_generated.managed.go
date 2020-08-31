@@ -43,8 +43,21 @@ func (mg *S3BucketPolicy) GetCondition(ct runtimev1alpha1.ConditionType) runtime
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this S3BucketPolicy.
-func (mg *S3BucketPolicy) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this S3BucketPolicy.
+func (mg *S3BucketPolicy) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this S3BucketPolicy.
+func (mg *S3BucketPolicy) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this S3BucketPolicy.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *S3BucketPolicy) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *S3BucketPolicy) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this S3BucketPolicy.
-func (mg *S3BucketPolicy) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this S3BucketPolicy.
+func (mg *S3BucketPolicy) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this S3BucketPolicy.
+func (mg *S3BucketPolicy) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this S3BucketPolicy.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *S3BucketPolicy) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

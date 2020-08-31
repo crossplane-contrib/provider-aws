@@ -43,8 +43,21 @@ func (mg *RouteTable) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1al
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this RouteTable.
-func (mg *RouteTable) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this RouteTable.
+func (mg *RouteTable) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this RouteTable.
+func (mg *RouteTable) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this RouteTable.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *RouteTable) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *RouteTable) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this RouteTable.
-func (mg *RouteTable) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this RouteTable.
+func (mg *RouteTable) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this RouteTable.
+func (mg *RouteTable) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this RouteTable.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *RouteTable) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

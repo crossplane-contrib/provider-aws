@@ -1,8 +1,6 @@
 package ec2
 
 import (
-	"context"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -26,12 +24,8 @@ type SubnetClient interface {
 }
 
 // NewSubnetClient returns a new client using AWS credentials as JSON encoded data.
-func NewSubnetClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (SubnetClient, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return ec2.New(*cfg), nil
+func NewSubnetClient(cfg aws.Config) SubnetClient {
+	return ec2.New(cfg)
 }
 
 // IsSubnetNotFoundErr returns true if the error is because the item doesn't exist

@@ -14,5 +14,5 @@ spec:
     vpcIdRef:
       name: sample-vpc
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example

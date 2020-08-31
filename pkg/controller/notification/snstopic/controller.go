@@ -21,7 +21,6 @@ import (
 	"reflect"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	awsarn "github.com/aws/aws-sdk-go-v2/aws/arn"
 	awssns "github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -35,14 +34,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
+	awscommon "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/sns"
 	snsclient "github.com/crossplane/provider-aws/pkg/clients/sns"
-	"github.com/crossplane/provider-aws/pkg/controller/utils"
 )
 
 const (
 	errKubeTopicUpdateFailed = "cannot update SNSTopic custom resource"
-	errClient                = "cannot create a new SNSTopic client"
 	errUnexpectedObject      = "the managed resource is not a SNSTopic resource"
 	errGetTopicAttr          = "failed to get SNS Topic Attribute"
 	errCreate                = "failed to create the SNS Topic"
@@ -59,11 +57,7 @@ func SetupSNSTopic(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.SNSTopic{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.SNSTopicGroupVersionKind),
-			managed.WithExternalConnecter(&connector{
-				kube:        mgr.GetClient(),
-				newClientFn: sns.NewTopicClient,
-				awsConfigFn: utils.RetrieveAwsConfigFromProvider,
-			}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: sns.NewTopicClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
@@ -73,27 +67,15 @@ func SetupSNSTopic(mgr ctrl.Manager, l logging.Logger) error {
 
 type connector struct {
 	kube        client.Client
-	newClientFn func(*aws.Config) (sns.TopicClient, error)
-	awsConfigFn func(context.Context, client.Reader, runtimev1alpha1.Reference) (*aws.Config, error)
+	newClientFn func(config aws.Config) sns.TopicClient
 }
 
-func (conn *connector) Connect(ctx context.Context, mgd resource.Managed) (managed.ExternalClient, error) {
-
-	cr, ok := mgd.(*v1alpha1.SNSTopic)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
-	}
-
-	awsconfig, err := conn.awsConfigFn(ctx, conn.kube, cr.Spec.ProviderReference)
+func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "")
 	if err != nil {
 		return nil, err
 	}
-
-	c, err := conn.newClientFn(awsconfig)
-	if err != nil {
-		return nil, errors.Wrap(err, errClient)
-	}
-	return &external{c, conn.kube}, nil
+	return &external{client: c.newClientFn(*cfg), kube: c.kube}, nil
 }
 
 type external struct {
@@ -106,10 +88,8 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
-	// AWS SNS resources are uniquely identified by an ARN that is returned
-	// on create time; we can't tell whether they exist unless we have recorded
-	// their ARN.
-	if !awsarn.IsARN(meta.GetExternalName(cr)) {
+
+	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 

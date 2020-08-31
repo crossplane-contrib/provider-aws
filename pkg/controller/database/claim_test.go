@@ -91,7 +91,7 @@ func TestConfigurePostgreRDSInstance(t *testing.T) {
 								Namespace: claimNamespace,
 								Name:      string(claimUID),
 							},
-							ProviderReference: runtimev1alpha1.Reference{Name: providerName},
+							ProviderReference: &runtimev1alpha1.Reference{Name: providerName},
 						},
 						ForProvider: v1beta1.RDSInstanceParameters{
 							Engine:        v1beta1.PostgresqlEngine,
@@ -164,7 +164,7 @@ func TestConfigureMyRDSInstance(t *testing.T) {
 								Namespace: claimNamespace,
 								Name:      string(claimUID),
 							},
-							ProviderReference: runtimev1alpha1.Reference{Name: providerName},
+							ProviderReference: &runtimev1alpha1.Reference{Name: providerName},
 						},
 						ForProvider: v1beta1.RDSInstanceParameters{
 							Engine:                        v1beta1.MysqlEngine,

@@ -8,7 +8,7 @@ spec:
   enableDnsSupport: true
   enableDnsHostNames: true
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example
 ---
 apiVersion: network.aws.crossplane.io/v1alpha3
@@ -21,7 +21,7 @@ spec:
     name: eks-example
   availabilityZone: us-east-1a
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example
 ---
 apiVersion: network.aws.crossplane.io/v1alpha3
@@ -34,7 +34,7 @@ spec:
     name: eks-example
   availabilityZone: us-east-1b
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example
 ---
 apiVersion: network.aws.crossplane.io/v1alpha3
@@ -47,7 +47,7 @@ spec:
     name: eks-example
   availabilityZone: us-east-1c
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example
 ---
 apiVersion: network.aws.crossplane.io/v1alpha3
@@ -58,7 +58,7 @@ spec:
   vpcIdRef:
     name: eks-example
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example
 ---
 apiVersion: network.aws.crossplane.io/v1alpha3
@@ -80,7 +80,7 @@ spec:
     - subnetIdRef:
         name: eks-example-3
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example
 ---
 apiVersion: network.aws.crossplane.io/v1alpha3
@@ -93,5 +93,5 @@ spec:
   groupName: my-cool-ekscluster-sg
   description: Cluster communication with worker nodes
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example

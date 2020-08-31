@@ -1,8 +1,6 @@
 package ec2
 
 import (
-	"context"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -30,12 +28,8 @@ type InternetGatewayClient interface {
 }
 
 // NewInternetGatewayClient returns a new client using AWS credentials as JSON encoded data.
-func NewInternetGatewayClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (InternetGatewayClient, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return ec2.New(*cfg), err
+func NewInternetGatewayClient(cfg aws.Config) InternetGatewayClient {
+	return ec2.New(cfg)
 }
 
 // IsInternetGatewayNotFoundErr returns true if the error is because the item doesn't exist

@@ -73,7 +73,7 @@ func testResource() *S3Bucket {
 			Name: bucketName,
 		},
 		Spec: S3BucketSpec{
-			ResourceSpec:       runtimev1alpha1.ResourceSpec{ProviderReference: runtimev1alpha1.Reference{}},
+			ResourceSpec:       runtimev1alpha1.ResourceSpec{ProviderReference: &runtimev1alpha1.Reference{}},
 			S3BucketParameters: v1alpha3.S3BucketParameters{LocalPermission: &perm, IAMUsername: testIAMUsername},
 		},
 	}

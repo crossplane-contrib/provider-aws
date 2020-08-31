@@ -43,8 +43,21 @@ func (mg *ELB) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Co
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this ELB.
-func (mg *ELB) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this ELB.
+func (mg *ELB) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this ELB.
+func (mg *ELB) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this ELB.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *ELB) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *ELB) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this ELB.
-func (mg *ELB) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this ELB.
+func (mg *ELB) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this ELB.
+func (mg *ELB) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this ELB.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *ELB) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
@@ -113,8 +139,21 @@ func (mg *ELBAttachment) GetCondition(ct runtimev1alpha1.ConditionType) runtimev
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this ELBAttachment.
-func (mg *ELBAttachment) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this ELBAttachment.
+func (mg *ELBAttachment) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this ELBAttachment.
+func (mg *ELBAttachment) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this ELBAttachment.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *ELBAttachment) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -148,8 +187,21 @@ func (mg *ELBAttachment) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this ELBAttachment.
-func (mg *ELBAttachment) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this ELBAttachment.
+func (mg *ELBAttachment) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this ELBAttachment.
+func (mg *ELBAttachment) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this ELBAttachment.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *ELBAttachment) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

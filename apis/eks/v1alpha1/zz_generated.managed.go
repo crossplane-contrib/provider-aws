@@ -43,8 +43,21 @@ func (mg *NodeGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alp
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this NodeGroup.
-func (mg *NodeGroup) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this NodeGroup.
+func (mg *NodeGroup) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this NodeGroup.
+func (mg *NodeGroup) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this NodeGroup.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *NodeGroup) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *NodeGroup) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this NodeGroup.
-func (mg *NodeGroup) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this NodeGroup.
+func (mg *NodeGroup) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this NodeGroup.
+func (mg *NodeGroup) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this NodeGroup.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *NodeGroup) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
