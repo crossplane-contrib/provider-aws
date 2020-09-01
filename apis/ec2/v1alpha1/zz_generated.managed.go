@@ -43,8 +43,21 @@ func (mg *ElasticIP) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alp
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this ElasticIP.
-func (mg *ElasticIP) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this ElasticIP.
+func (mg *ElasticIP) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this ElasticIP.
+func (mg *ElasticIP) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this ElasticIP.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *ElasticIP) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *ElasticIP) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this ElasticIP.
-func (mg *ElasticIP) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this ElasticIP.
+func (mg *ElasticIP) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this ElasticIP.
+func (mg *ElasticIP) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this ElasticIP.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *ElasticIP) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
