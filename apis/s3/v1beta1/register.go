@@ -37,7 +37,7 @@ var (
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
-// S3Bucket type metadata.
+// Bucket type metadata.
 var (
 	BucketKind             = reflect.TypeOf(Bucket{}).Name()
 	BucketGroupKind        = schema.GroupKind{Group: Group, Kind: BucketKind}.String()
