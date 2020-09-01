@@ -43,8 +43,21 @@ func (mg *Bucket) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1
 	return mg.Status.GetCondition(ct)
 }
 
-// GetProviderReference of this Bucket.
-func (mg *Bucket) GetProviderReference() runtimev1alpha1.Reference {
+// GetDeletionPolicy of this Bucket.
+func (mg *Bucket) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this Bucket.
+func (mg *Bucket) GetProviderConfigReference() *runtimev1alpha1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this Bucket.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *Bucket) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
@@ -78,8 +91,21 @@ func (mg *Bucket) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetProviderReference of this Bucket.
-func (mg *Bucket) SetProviderReference(r runtimev1alpha1.Reference) {
+// SetDeletionPolicy of this Bucket.
+func (mg *Bucket) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this Bucket.
+func (mg *Bucket) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this Bucket.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *Bucket) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 

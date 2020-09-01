@@ -25,7 +25,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "storage.aws.crossplane.io"
+	Group   = "s3.aws.crossplane.io"
 	Version = "v1alpha1"
 )
 

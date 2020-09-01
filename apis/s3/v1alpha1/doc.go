@@ -17,6 +17,6 @@ limitations under the License.
 // Package v1alpha1 contains configuration resources for AWS storage services such as
 // S3.
 // +kubebuilder:object:generate=true
-// +groupName=storage.aws.crossplane.io
+// +groupName=s3.aws.crossplane.io
 // +versionName=v1alpha1
 package v1alpha1

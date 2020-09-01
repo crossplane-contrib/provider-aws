@@ -1,17 +1,5 @@
 package v1beta1
 
-import (
-	"context"
-
-	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-
-	aws "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/s3"
-)
-
 // CORSConfiguration describes the cross-origin access configuration for objects
 // in an Amazon S3 bucket. For more information, see Enabling Cross-Origin Resource Sharing
 // (https://docs.aws.amazon.com/AmazonS3/latest/dev/cors.html) in the Amazon
@@ -48,55 +36,4 @@ type CORSRule struct {
 	// for the specified resource.
 	// +optional
 	MaxAgeSeconds *int64 `json:"maxAgeSeconds,omitempty"`
-}
-
-// ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *CORSConfiguration) ExistsAndUpdated(ctx context.Context, client s3.BucketClient, bucketName *string) (managed.ExternalObservation, error) {
-	conf, err := client.GetBucketCorsRequest(&awss3.GetBucketCorsInput{Bucket: bucketName}).Send(ctx)
-	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, "cannot get bucket encryption")
-	}
-
-	if len(conf.CORSRules) != len(in.CORSRules) {
-		return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
-	}
-
-	for i, Rule := range in.CORSRules {
-		outputRule := conf.CORSRules[i]
-		if !cmp.Equal(Rule.AllowedHeaders, outputRule.AllowedHeaders) {
-			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
-		}
-		if !cmp.Equal(Rule.AllowedMethods, outputRule.AllowedMethods) {
-			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
-		}
-		if !cmp.Equal(Rule.AllowedOrigins, outputRule.AllowedOrigins) {
-			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
-		}
-		if !cmp.Equal(Rule.ExposeHeaders, outputRule.ExposeHeaders) {
-			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
-		}
-		if !cmp.Equal(Rule.MaxAgeSeconds, outputRule.MaxAgeSeconds) {
-			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
-		}
-	}
-
-	return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: true}, nil
-}
-
-// GeneratePutBucketCorsInput creates the input for the PutBucketCors request for the S3 Client
-func (in *CORSConfiguration) GeneratePutBucketCorsInput(name string) *awss3.PutBucketCorsInput {
-	bci := &awss3.PutBucketCorsInput{
-		Bucket:            aws.String(name),
-		CORSConfiguration: &awss3.CORSConfiguration{},
-	}
-	for _, cors := range in.CORSRules {
-		bci.CORSConfiguration.CORSRules = append(bci.CORSConfiguration.CORSRules, awss3.CORSRule{
-			AllowedHeaders: cors.AllowedHeaders,
-			AllowedMethods: cors.AllowedMethods,
-			AllowedOrigins: cors.AllowedOrigins,
-			ExposeHeaders:  cors.ExposeHeaders,
-			MaxAgeSeconds:  cors.MaxAgeSeconds,
-		})
-	}
-	return bci
 }

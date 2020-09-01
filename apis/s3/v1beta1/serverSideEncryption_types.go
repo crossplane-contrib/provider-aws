@@ -1,16 +1,5 @@
 package v1beta1
 
-import (
-	"context"
-
-	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/pkg/errors"
-
-	aws "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/s3"
-)
-
 // ServerSideEncryptionConfiguration specifies the default server-side-encryption configuration.
 type ServerSideEncryptionConfiguration struct {
 	// Container for information about a particular server-side encryption configuration
@@ -56,45 +45,4 @@ type ServerSideEncryptionByDefault struct {
 	// Server-side encryption algorithm to use for the default encryption.
 	// Options are AES256 or aws:kms
 	SSEAlgorithm string `json:"sseAlgorithm"`
-}
-
-// ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (sse *ServerSideEncryptionConfiguration) ExistsAndUpdated(ctx context.Context, client s3.BucketClient, bucketName *string) (managed.ExternalObservation, error) {
-	enc, err := client.GetBucketEncryptionRequest(&awss3.GetBucketEncryptionInput{Bucket: bucketName}).Send(ctx)
-	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, "cannot get bucket encryption")
-	}
-
-	if len(enc.ServerSideEncryptionConfiguration.Rules) != len(sse.Rules) {
-		return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
-	}
-
-	for i, Rule := range sse.Rules {
-		outputRule := enc.ServerSideEncryptionConfiguration.Rules[i].ApplyServerSideEncryptionByDefault
-		if outputRule.KMSMasterKeyID != Rule.ApplyServerSideEncryptionByDefault.KMSMasterKeyID {
-			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
-		}
-		if string(outputRule.SSEAlgorithm) != Rule.ApplyServerSideEncryptionByDefault.SSEAlgorithm {
-			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
-		}
-	}
-
-	return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: true}, nil
-}
-
-// GeneratePutBucketEncryptionInput creates the input for PutBucketEncryption for the S3 Client
-func (sse *ServerSideEncryptionConfiguration) GeneratePutBucketEncryptionInput(name string) *awss3.PutBucketEncryptionInput {
-	bei := &awss3.PutBucketEncryptionInput{
-		Bucket:                            aws.String(name),
-		ServerSideEncryptionConfiguration: &awss3.ServerSideEncryptionConfiguration{},
-	}
-	for _, rule := range sse.Rules {
-		bei.ServerSideEncryptionConfiguration.Rules = append(bei.ServerSideEncryptionConfiguration.Rules, awss3.ServerSideEncryptionRule{
-			ApplyServerSideEncryptionByDefault: &awss3.ServerSideEncryptionByDefault{
-				KMSMasterKeyID: rule.ApplyServerSideEncryptionByDefault.KMSMasterKeyID,
-				SSEAlgorithm:   awss3.ServerSideEncryption(rule.ApplyServerSideEncryptionByDefault.SSEAlgorithm),
-			},
-		})
-	}
-	return bei
 }

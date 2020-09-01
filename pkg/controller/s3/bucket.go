@@ -41,6 +41,7 @@ import (
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/clients/s3/bucketclients"
 )
 
 const (
@@ -71,7 +72,6 @@ func SetupBucket(mgr ctrl.Manager, l logging.Logger) error {
 			resource.ManagedKind(v1beta1.BucketGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: s3.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithConnectionPublishers(),
 			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -117,11 +117,7 @@ type external struct {
 	client s3.BucketClient
 }
 
-type bucketResource interface {
-	ExistsAndUpdated(ctx context.Context, client s3.BucketClient, bucketName *string) (managed.ExternalObservation, error)
-}
-
-func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mg.(*v1beta1.Bucket)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
@@ -129,14 +125,24 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	if _, err := e.client.HeadBucketRequest(&awss3.HeadBucketInput{Bucket: aws.String(meta.GetExternalName(cr))}).Send(ctx); err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(s3.IsNotFound, err), errHead)
 	}
-	//enc, err := e.client.GetBucketEncryptionRequest(&awss3.GetBucketEncryptionInput{Bucket: aws.String(meta.GetExternalName(cr))}).Send(ctx)
-	//if err != nil {
-	//	return managed.ExternalObservation{}, errors.Wrap(err, "cannot get bucket encryption")
-	//}
-	//vc, err := e.client.GetBucketVersioningRequest(&awss3.GetBucketVersioningInput{Bucket: aws.String(meta.GetExternalName(cr))}).Send(ctx)
-	//if err != nil {
-	//	return managed.ExternalObservation{}, errors.Wrap(err, "cannot get bucket versioning")
-	//}
+	clients := bucketclients.MakeClients(cr.Spec.ForProvider)
+	for _, client := range clients {
+		updated, err := client.ExistsAndUpdated(ctx, e.client, aws.String(meta.GetExternalName(cr)))
+		if err != nil {
+			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
+		}
+		if updated == bucketclients.NeedsUpdate {
+			println("Sub-resource needs update")
+			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
+		}
+		if updated == bucketclients.NeedsDeletion {
+			println("Sub-resource needs deletion")
+			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
+		}
+	}
+
+	cr.Status.SetConditions(runtimev1alpha1.Available())
+
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: true,
@@ -148,7 +154,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	if _, err := e.client.CreateBucketRequest(v1beta1.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx); err != nil {
+	if _, err := e.client.CreateBucketRequest(s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx); err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 	return managed.ExternalCreation{}, nil
@@ -159,31 +165,30 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
-	if cr.Spec.ForProvider.ServerSideEncryptionConfiguration != nil {
-		if _, err := e.client.PutBucketEncryptionRequest(cr.Spec.ForProvider.ServerSideEncryptionConfiguration.GeneratePutBucketEncryptionInput(meta.GetExternalName(cr))).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket encryption")
+
+	clients := bucketclients.MakeClients(cr.Spec.ForProvider)
+	for _, client := range clients {
+		status, err := client.ExistsAndUpdated(ctx, e.client, aws.String(meta.GetExternalName(cr)))
+		if err != nil {
+			cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
+			return managed.ExternalUpdate{}, err
+		}
+		switch status {
+		case bucketclients.NeedsDeletion:
+			err = client.DeleteResource(ctx, e.client, cr)
+			if err != nil {
+				cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
+				return managed.ExternalUpdate{}, err
+			}
+		case bucketclients.NeedsUpdate:
+			update, err := client.CreateResource(ctx, e.client, cr)
+			if err != nil {
+				cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
+				return update, err
+			}
 		}
 	}
-	if cr.Spec.ForProvider.VersioningConfiguration != nil {
-		if _, err := e.client.PutBucketVersioningRequest(cr.Spec.ForProvider.VersioningConfiguration.GeneratePutBucketVersioningInput(meta.GetExternalName(cr))).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket versioning")
-		}
-	}
-	if cr.Spec.ForProvider.AccelerateConfiguration != nil {
-		if _, err := e.client.PutBucketAccelerateConfigurationRequest(cr.Spec.ForProvider.AccelerateConfiguration.GenerateAccelerateConfigurationInput(meta.GetExternalName(cr))).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put accelerate configuration")
-		}
-	}
-	if cr.Spec.ForProvider.CORSConfiguration != nil {
-		if _, err := e.client.PutBucketCorsRequest(cr.Spec.ForProvider.CORSConfiguration.GeneratePutBucketCorsInput(meta.GetExternalName(cr))).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket cors")
-		}
-	}
-	if cr.Spec.ForProvider.WebsiteConfiguration != nil {
-		if _, err := e.client.PutBucketWebsiteRequest(cr.Spec.ForProvider.WebsiteConfiguration.GeneratePutBucketWebsiteInput(meta.GetExternalName(cr))).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket website")
-		}
-	}
+	cr.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
 	return managed.ExternalUpdate{}, nil
 }
 

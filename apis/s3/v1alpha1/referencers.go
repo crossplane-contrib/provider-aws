@@ -16,11 +16,11 @@ package v1alpha1
 import (
 	"context"
 
-	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 )
 
 // ResolveReferences of this S3BucketPolicy

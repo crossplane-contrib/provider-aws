@@ -17,17 +17,12 @@ limitations under the License.
 package v1beta1
 
 import (
-	"github.com/aws/aws-sdk-go-v2/aws"
-	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // BucketParameters are parameters for configuring the calls made to AWS Bucket API.
 type BucketParameters struct {
-
 	// The canned ACL to apply to the bucket.
 	// +kubebuilder:validation:Enum=private;public-read;public-read-write;authenticated-read
 	// +optional
@@ -111,11 +106,18 @@ type BucketParameters struct {
 	// Creates a replication configuration or replaces an existing one.
 	// For more information, see Replication (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication.html)
 	// in the Amazon S3 Developer Guide.
-	// ReplicationConfiguration *ReplicationConfiguration `json:"replicationConfiguration,omitempty"`
-}
+	ReplicationConfiguration *ReplicationConfiguration `json:"replicationConfiguration,omitempty"`
 
-// BucketObservation is observation of Bucket properties.
-type BucketObservation struct {
+	// Creates a new lifecycle configuration for the bucket or replaces an existing
+	// lifecycle configuration. For information about lifecycle configuration, see
+	// Managing Access Permissions to Your Amazon S3 Resources
+	// (https://docs.aws.amazon.com/AmazonS3/latest/dev/s3-access-control.html).
+	LifecycleConfiguration *BucketLifecycleConfiguration `json:"lifecycleConfiguration,omitempty"`
+
+	// Enables notifications of specified events for a bucket.
+	// For more information about event notifications, see Configuring Event Notifications
+	// (https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html).
+	NotificationConfiguration *NotificationConfiguration `json:"notificationConfiguration,omitempty"`
 }
 
 // BucketSpec represents the desired state of the Bucket.
@@ -127,7 +129,6 @@ type BucketSpec struct {
 // BucketStatus represents the observed state of the Bucket.
 type BucketStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     BucketObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true
@@ -136,6 +137,7 @@ type BucketStatus struct {
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Bucket struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -152,22 +154,4 @@ type BucketList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Bucket `json:"items"`
-}
-
-// GenerateCreateBucketInput creates the input for CreateBucket S3 Client request
-func GenerateCreateBucketInput(name string, s BucketParameters) *awss3.CreateBucketInput {
-	cbi := &awss3.CreateBucketInput{
-		ACL:                        awss3.BucketCannedACL(aws.StringValue(s.ACL)),
-		Bucket:                     aws.String(name),
-		GrantFullControl:           s.GrantFullControl,
-		GrantRead:                  s.GrantRead,
-		GrantReadACP:               s.GrantReadACP,
-		GrantWrite:                 s.GrantWrite,
-		GrantWriteACP:              s.GrantWriteACP,
-		ObjectLockEnabledForBucket: s.ObjectLockEnabledForBucket,
-	}
-	if awsclients.StringValue(s.LocationConstraint) != "" {
-		cbi.CreateBucketConfiguration = &awss3.CreateBucketConfiguration{LocationConstraint: awss3.BucketLocationConstraint(awsclients.StringValue(s.LocationConstraint))}
-	}
-	return cbi
 }

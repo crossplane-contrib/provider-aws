@@ -1,11 +1,5 @@
 package v1beta1
 
-import (
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-
-	aws "github.com/crossplane/provider-aws/pkg/clients"
-)
-
 // WebsiteConfiguration specifies website configuration parameters for an Amazon S3 bucket.
 type WebsiteConfiguration struct {
 	// The name of the error document for the website.
@@ -118,42 +112,4 @@ type Redirect struct {
 	// request to error.html. Not required if one of the siblings is present. Can
 	// be present only if ReplaceKeyPrefixWith is not provided.
 	ReplaceKeyWith *string `json:"replaceKeyWith,omitempty"`
-}
-
-// GeneratePutBucketWebsiteInput creates the input for the PutBucketWebsite request for the S3 Client
-func (in *WebsiteConfiguration) GeneratePutBucketWebsiteInput(name string) *s3.PutBucketWebsiteInput {
-	wi := &s3.PutBucketWebsiteInput{
-		Bucket:               aws.String(name),
-		WebsiteConfiguration: &s3.WebsiteConfiguration{},
-	}
-	if in.ErrorDocument != nil {
-		wi.WebsiteConfiguration.ErrorDocument = &s3.ErrorDocument{Key: aws.String(in.ErrorDocument.Key)}
-	}
-	if in.IndexDocument != nil {
-		wi.WebsiteConfiguration.IndexDocument = &s3.IndexDocument{Suffix: aws.String(in.IndexDocument.Suffix)}
-	}
-	if in.RedirectAllRequestsTo != nil {
-		wi.WebsiteConfiguration.RedirectAllRequestsTo = &s3.RedirectAllRequestsTo{
-			HostName: aws.String(in.RedirectAllRequestsTo.HostName),
-			Protocol: s3.Protocol(in.RedirectAllRequestsTo.Protocol),
-		}
-	}
-	for _, rule := range in.RoutingRules {
-		rr := &s3.RoutingRule{
-			Redirect: &s3.Redirect{
-				HostName:             rule.Redirect.HostName,
-				HttpRedirectCode:     rule.Redirect.HTTPRedirectCode,
-				Protocol:             s3.Protocol(rule.Redirect.Protocol),
-				ReplaceKeyPrefixWith: rule.Redirect.ReplaceKeyPrefixWith,
-				ReplaceKeyWith:       rule.Redirect.ReplaceKeyWith,
-			},
-		}
-		if rule.Condition != nil {
-			rr.Condition = &s3.Condition{
-				HttpErrorCodeReturnedEquals: rule.Condition.HTTPErrorCodeReturnedEquals,
-				KeyPrefixEquals:             rule.Condition.KeyPrefixEquals,
-			}
-		}
-	}
-	return wi
 }
