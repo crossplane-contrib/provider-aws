@@ -1,8 +1,6 @@
 package ec2
 
 import (
-	"context"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -25,15 +23,6 @@ type ElasticIPClient interface {
 	DescribeAddressesRequest(input *ec2.DescribeAddressesInput) ec2.DescribeAddressesRequest
 	ReleaseAddressRequest(input *ec2.ReleaseAddressInput) ec2.ReleaseAddressRequest
 	CreateTagsRequest(*ec2.CreateTagsInput) ec2.CreateTagsRequest
-}
-
-// NewElasticIPClient returns a new client using AWS credentials as JSON encoded data.
-func NewElasticIPClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (ElasticIPClient, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return ec2.New(*cfg), nil
 }
 
 // IsAddressNotFoundErr returns true if the error is because the address doesn't exist
