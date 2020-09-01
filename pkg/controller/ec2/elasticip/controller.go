@@ -24,8 +24,6 @@ import (
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -38,7 +36,6 @@ import (
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 )
@@ -46,10 +43,6 @@ import (
 const (
 	errUnexpectedObject = "The managed resource is not an ElasticIP resource"
 	errKubeUpdateFailed = "cannot update ElasticIP custom resource"
-
-	errCreateElasticIPClient = "cannot create ElasticIP client"
-	errGetProvider           = "cannot get provider"
-	errGetProviderSecret     = "cannot get provider secret"
 
 	errDescribe      = "failed to describe ElasticIP with id"
 	errMultipleItems = "retrieved multiple ElasticIPs for the given ElasticIPId"
@@ -68,7 +61,7 @@ func SetupElasticIP(mgr ctrl.Manager, l logging.Logger) error {
 		For(&v1alpha1.ElasticIP{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.ElasticIPGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewElasticIPClient}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(&tagger{kube: mgr.GetClient()}),
@@ -77,38 +70,15 @@ func SetupElasticIP(mgr ctrl.Manager, l logging.Logger) error {
 }
 
 type connector struct {
-	kube        client.Client
-	newClientFn func(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (ec2.ElasticIPClient, error)
+	kube client.Client
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.ElasticIP)
-	if !ok {
-		return nil, errors.New(errUnexpectedObject)
+	cfg, err := awsclients.GetConfig(ctx, c.kube, mg, "")
+	if err != nil {
+		return nil, err
 	}
-
-	p := &awsv1alpha3.Provider{}
-	if err := c.kube.Get(ctx, types.NamespacedName{Name: cr.Spec.ProviderReference.Name}, p); err != nil {
-		return nil, errors.Wrap(err, errGetProvider)
-	}
-
-	if aws.BoolValue(p.Spec.UseServiceAccount) {
-		elasticIPClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{client: elasticIPClient, kube: c.kube}, errors.Wrap(err, errCreateElasticIPClient)
-	}
-
-	if p.GetCredentialsSecretReference() == nil {
-		return nil, errors.New(errGetProviderSecret)
-	}
-
-	s := &corev1.Secret{}
-	n := types.NamespacedName{Namespace: p.Spec.CredentialsSecretRef.Namespace, Name: p.Spec.CredentialsSecretRef.Name}
-	if err := c.kube.Get(ctx, n, s); err != nil {
-		return nil, errors.Wrap(err, errGetProviderSecret)
-	}
-
-	vpcClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: vpcClient, kube: c.kube}, errors.Wrap(err, errCreateElasticIPClient)
+	return &external{client: awsec2.New(*cfg), kube: c.kube}, nil
 }
 
 type external struct {
