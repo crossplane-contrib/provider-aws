@@ -98,6 +98,34 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotRDSInstance)
 	}
+
+	pwdChanged := false
+	if cr.Spec.ForProvider.MasterPasswordSecretRef != nil && cr.Spec.WriteConnectionSecretToReference != nil {
+		inSecret := &corev1.Secret{}
+		inNamespacedName := types.NamespacedName{
+			Name:      cr.Spec.ForProvider.MasterPasswordSecretRef.Name,
+			Namespace: cr.Spec.ForProvider.MasterPasswordSecretRef.Namespace,
+		}
+		if err := e.kube.Get(ctx, inNamespacedName, inSecret); err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errGetPasswordSecretFailed)
+		}
+		savedSecret := &corev1.Secret{}
+		savedNamespacedName := types.NamespacedName{
+			Name:      cr.Spec.WriteConnectionSecretToReference.Name,
+			Namespace: cr.Spec.WriteConnectionSecretToReference.Namespace,
+		}
+		err := e.kube.Get(ctx, savedNamespacedName, savedSecret)
+		if err != nil {
+			pwdChanged = true
+		} else {
+			newPwd := string(inSecret.Data[cr.Spec.ForProvider.MasterPasswordSecretRef.Key])
+			curPwd := string(savedSecret.Data[runtimev1alpha1.ResourceCredentialsSecretPasswordKey])
+			if newPwd != curPwd {
+				pwdChanged = true
+			}
+		}
+	}
+
 	// TODO(muvaf): There are some parameters that require a specific call
 	// for retrieval. For example, DescribeDBInstancesOutput does not expose
 	// the tags map of the RDS instance, you have to make ListTagsForResourceRequest
@@ -113,7 +141,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	instance := rsp.DBInstances[0]
 	current := cr.Spec.ForProvider.DeepCopy()
 	rds.LateInitialize(&cr.Spec.ForProvider, &instance)
-	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
+	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) || pwdChanged {
 		if err := e.kube.Update(ctx, cr); err != nil {
 			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
 		}
@@ -138,7 +166,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	return managed.ExternalObservation{
 		ResourceExists:    true,
-		ResourceUpToDate:  upToDate,
+		ResourceUpToDate:  upToDate && !pwdChanged,
 		ConnectionDetails: rds.GetConnectionDetails(*cr),
 	}, nil
 }
