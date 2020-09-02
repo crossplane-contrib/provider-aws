@@ -207,6 +207,23 @@ spec:
             region:
               description: Region of the bucket.
               type: string
+            tags:
+              description: A list of key-value pairs to label the S3 Bucket
+              items:
+                description: Tag is a metadata assigned to an Amazon S3 Bucket consisting
+                  of a key-value pair. Please also see https://docs.aws.amazon.com/AmazonS3/latest/API/API_Tag.html
+                properties:
+                  key:
+                    description: Name of the object key
+                    type: string
+                  value:
+                    description: Value of the tag
+                    type: string
+                required:
+                - key
+                - value
+                type: object
+              type: array
             versioning:
               description: Versioning enables versioning of objects stored in this
                 bucket.
