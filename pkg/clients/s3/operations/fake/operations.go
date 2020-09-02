@@ -92,3 +92,19 @@ func (_m *Operations) PutBucketVersioningRequest(_a0 *s3.PutBucketVersioningInpu
 
 	return r0
 }
+
+// PutBucketTaggingRequest provides a mock function with given fields: _a0
+func (_m *Operations) PutBucketTaggingRequest(_a0 *s3.PutBucketTaggingInput) operations.PutBucketTaggingRequest {
+	ret := _m.Called(_a0)
+
+	var r0 operations.PutBucketTaggingRequest
+	if rf, ok := ret.Get(0).(func(*s3.PutBucketTaggingInput) operations.PutBucketTaggingRequest); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(operations.PutBucketTaggingRequest)
+		}
+	}
+
+	return r0
+}
