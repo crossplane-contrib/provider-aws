@@ -31,6 +31,7 @@ type MockS3Client struct {
 	MockUpdateBucketACL      func(bucket *v1alpha3.S3Bucket) error
 	MockUpdateVersioning     func(bucket *v1alpha3.S3Bucket) error
 	MockUpdatePolicyDocument func(username string, bucket *v1alpha3.S3Bucket) (string, error)
+	MockUpdateTagging        func(bucket *v1alpha3.S3Bucket) error
 	MockDelete               func(bucket *v1alpha3.S3Bucket) error
 }
 
@@ -62,6 +63,11 @@ func (m *MockS3Client) UpdateVersioning(bucket *v1alpha3.S3Bucket) error {
 // UpdatePolicyDocument calls the underlying MockUpdatePolicyDocument method.
 func (m *MockS3Client) UpdatePolicyDocument(username string, bucket *v1alpha3.S3Bucket) (string, error) {
 	return m.MockUpdatePolicyDocument(username, bucket)
+}
+
+// UpdateTagging calls the underlying MockUpdateTagging method.
+func (m *MockS3Client) UpdateTagging(bucket *v1alpha3.S3Bucket) error {
+	return m.MockUpdateTagging(bucket)
 }
 
 // DeleteBucket calls the underlying MockDeleteBucket method.
