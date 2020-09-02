@@ -327,28 +327,27 @@ func TestClient_UpdateVersioning(t *testing.T) {
 }
 
 func TestClient_UpdateTagging(t *testing.T) {
-	boom := errors.New("boom")
 	// Define test cases
 	tests := map[string]struct {
 		bucket  *awsstorage.S3Bucket
 		sendRet []interface{}
 		ret     []types.GomegaMatcher
 	}{
-		"HappyPath": {
+		"WithTags": {
 			bucket: &awsstorage.S3Bucket{
 				Spec: awsstorage.S3BucketSpec{
 					S3BucketParameters: awsstorage.S3BucketParameters{
-						Versioning: true,
+						Tags: []awsstorage.Tag{{Key: "k1", Value: "val1"}, {Key: "k2", Value: "val2"}},
 					},
 				},
 			},
 			sendRet: []interface{}{&s3.PutBucketTaggingResponse{}, nil},
 			ret:     []types.GomegaMatcher{gomega.BeNil()},
 		},
-		"SendError": {
+		"WithoutTags": {
 			bucket:  &awsstorage.S3Bucket{},
-			sendRet: []interface{}{&s3.PutBucketTaggingResponse{}, boom},
-			ret:     []types.GomegaMatcher{gomega.Equal(boom)},
+			sendRet: []interface{}{&s3.PutBucketTaggingResponse{}, nil},
+			ret:     []types.GomegaMatcher{gomega.BeNil()},
 		},
 	}
 
@@ -357,17 +356,17 @@ func TestClient_UpdateTagging(t *testing.T) {
 			g := gomega.NewGomegaWithT(t)
 
 			// Set up mocks
-			putBucketVer := new(fakeops.PutBucketTaggingRequest)
-			putBucketVer.On("Send", context.TODO()).Return(vals.sendRet...)
+			putBucketTag := new(fakeops.PutBucketTaggingRequest)
+			putBucketTag.On("Send", context.TODO()).Return(vals.sendRet...)
 
 			ops := new(fakeops.Operations)
-			ops.On("PutBucketVersioningRequest", mock.Anything).Return(putBucketVer)
+			ops.On("PutBucketTaggingRequest", mock.Anything).Return(putBucketTag)
 
 			// Create thing we are testing
 			c := Client{s3: ops}
 
 			// Call the method under test
-			err := c.UpdateVersioning(vals.bucket)
+			err := c.UpdateTagging(vals.bucket)
 
 			// Make assertions
 			g.Expect(err).To(vals.ret[0])
