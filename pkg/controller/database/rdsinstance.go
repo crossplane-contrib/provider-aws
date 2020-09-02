@@ -216,10 +216,28 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		if err := e.kube.Get(ctx, nn, s); err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errGetPasswordSecretFailed)
 		}
-		conn = managed.ConnectionDetails{
-			runtimev1alpha1.ResourceCredentialsSecretPasswordKey: s.Data[cr.Spec.ForProvider.MasterPasswordSecretRef.Key],
+		changePwd := true
+		if cr.Spec.WriteConnectionSecretToReference != nil {
+			savedSecret := &corev1.Secret{}
+			savedNamespacedName := types.NamespacedName{
+				Name:      cr.Spec.WriteConnectionSecretToReference.Name,
+				Namespace: cr.Spec.WriteConnectionSecretToReference.Namespace,
+			}
+			err := e.kube.Get(ctx, savedNamespacedName, savedSecret)
+			if err == nil {
+				newPwd := string(s.Data[cr.Spec.ForProvider.MasterPasswordSecretRef.Key])
+				curPwd := string(savedSecret.Data[runtimev1alpha1.ResourceCredentialsSecretPasswordKey])
+				if newPwd == curPwd {
+					changePwd = false
+				}
+			}
 		}
-		modify.MasterUserPassword = aws.String(string(s.Data[cr.Spec.ForProvider.MasterPasswordSecretRef.Key]))
+		if changePwd {
+			conn = managed.ConnectionDetails{
+				runtimev1alpha1.ResourceCredentialsSecretPasswordKey: s.Data[cr.Spec.ForProvider.MasterPasswordSecretRef.Key],
+			}
+			modify.MasterUserPassword = aws.String(string(s.Data[cr.Spec.ForProvider.MasterPasswordSecretRef.Key]))
+		}
 	}
 	if _, err = e.client.ModifyDBInstanceRequest(modify).Send(ctx); err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
