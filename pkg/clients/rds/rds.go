@@ -440,9 +440,9 @@ func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error
 	//  <Modify/Create/Delete>DBInstanceInput objects but not in DBInstance
 	//  object are not late-inited. So, this func always returns true when
 	//  those configurations are changed by the user.
-
-	// TODO(muvaf): If a secret is provided for password, this logic should check
-	// whether it's changed by comparing it to the password in the published secret.
+	
+	// TODO(pocketmobsters): AllowMajorVersionUpgrade is another field we've
+	// identified that will cause this func to always return true.
 	patch, err := CreatePatch(&db, &p)
 	if err != nil {
 		return false, err
@@ -452,6 +452,7 @@ func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "Tags"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "SkipFinalSnapshotBeforeDeletion"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "FinalDBSnapshotIdentifier"),
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "MasterPasswordSecretRef")
 	), nil
 }
 
