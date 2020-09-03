@@ -101,31 +101,21 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	pwdChanged := false
 	if cr.Spec.ForProvider.MasterPasswordSecretRef != nil && cr.Spec.WriteConnectionSecretToReference != nil {
-		inSecret := &corev1.Secret{}
-		inNamespacedName := types.NamespacedName{
+		refNamespacedName := types.NamespacedName{
 			Name:      cr.Spec.ForProvider.MasterPasswordSecretRef.Name,
 			Namespace: cr.Spec.ForProvider.MasterPasswordSecretRef.Namespace,
 		}
-		if err := e.kube.Get(ctx, inNamespacedName, inSecret); err != nil {
+		newPwd, err := e.getPassword(ctx, refNamespacedName, cr.Spec.ForProvider.MasterPasswordSecretRef.Key)
+		if err != nil {
 			return managed.ExternalObservation{}, errors.Wrap(err, errGetPasswordSecretFailed)
 		}
-		savedSecret := &corev1.Secret{}
 		savedNamespacedName := types.NamespacedName{
 			Name:      cr.Spec.WriteConnectionSecretToReference.Name,
 			Namespace: cr.Spec.WriteConnectionSecretToReference.Namespace,
 		}
-		err := e.kube.Get(ctx, savedNamespacedName, savedSecret)
-		if err != nil {
-			pwdChanged = true
-		} else {
-			newPwd := string(inSecret.Data[cr.Spec.ForProvider.MasterPasswordSecretRef.Key])
-			curPwd := string(savedSecret.Data[runtimev1alpha1.ResourceCredentialsSecretPasswordKey])
-			if newPwd != curPwd {
-				pwdChanged = true
-			}
-		}
+		curPwd, _ := e.getPassword(ctx, savedNamespacedName, runtimev1alpha1.ResourceCredentialsSecretPasswordKey)
+		pwdChanged = newPwd != curPwd
 	}
-
 	// TODO(muvaf): There are some parameters that require a specific call
 	// for retrieval. For example, DescribeDBInstancesOutput does not expose
 	// the tags map of the RDS instance, you have to make ListTagsForResourceRequest
@@ -141,7 +131,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	instance := rsp.DBInstances[0]
 	current := cr.Spec.ForProvider.DeepCopy()
 	rds.LateInitialize(&cr.Spec.ForProvider, &instance)
-	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) || pwdChanged {
+	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
 			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
 		}
@@ -236,35 +226,30 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	modify := rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch)
 	var conn managed.ConnectionDetails
 	if cr.Spec.ForProvider.MasterPasswordSecretRef != nil {
-		s := &corev1.Secret{}
 		nn := types.NamespacedName{
 			Name:      cr.Spec.ForProvider.MasterPasswordSecretRef.Name,
 			Namespace: cr.Spec.ForProvider.MasterPasswordSecretRef.Namespace,
 		}
-		if err := e.kube.Get(ctx, nn, s); err != nil {
+		newPwd, err := e.getPassword(ctx, nn, cr.Spec.ForProvider.MasterPasswordSecretRef.Key)
+		if err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errGetPasswordSecretFailed)
 		}
 		changePwd := true
 		if cr.Spec.WriteConnectionSecretToReference != nil {
-			savedSecret := &corev1.Secret{}
 			savedNamespacedName := types.NamespacedName{
 				Name:      cr.Spec.WriteConnectionSecretToReference.Name,
 				Namespace: cr.Spec.WriteConnectionSecretToReference.Namespace,
 			}
-			err := e.kube.Get(ctx, savedNamespacedName, savedSecret)
-			if err == nil {
-				newPwd := string(s.Data[cr.Spec.ForProvider.MasterPasswordSecretRef.Key])
-				curPwd := string(savedSecret.Data[runtimev1alpha1.ResourceCredentialsSecretPasswordKey])
-				if newPwd == curPwd {
-					changePwd = false
-				}
+			curPwd, _ := e.getPassword(ctx, savedNamespacedName, runtimev1alpha1.ResourceCredentialsSecretPasswordKey)
+			if newPwd == curPwd {
+				changePwd = false
 			}
 		}
 		if changePwd {
 			conn = managed.ConnectionDetails{
-				runtimev1alpha1.ResourceCredentialsSecretPasswordKey: s.Data[cr.Spec.ForProvider.MasterPasswordSecretRef.Key],
+				runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(newPwd),
 			}
-			modify.MasterUserPassword = aws.String(string(s.Data[cr.Spec.ForProvider.MasterPasswordSecretRef.Key]))
+			modify.MasterUserPassword = aws.String(newPwd)
 		}
 	}
 	if _, err = e.client.ModifyDBInstanceRequest(modify).Send(ctx); err != nil {
@@ -313,6 +298,14 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 	_, err = e.client.DeleteDBInstanceRequest(&input).Send(ctx)
 	return errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
+}
+
+func (e *external) getPassword(ctx context.Context, namespacedName types.NamespacedName, key string) (string, error) {
+	s := &corev1.Secret{}
+	if err := e.kube.Get(ctx, namespacedName, s); err != nil {
+		return "", err
+	}
+	return string(s.Data[key]), nil
 }
 
 type tagger struct {
