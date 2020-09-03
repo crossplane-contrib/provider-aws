@@ -93,7 +93,7 @@ type external struct {
 	kube   client.Client
 }
 
-func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
 	cr, ok := mg.(*v1beta1.RDSInstance)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotRDSInstance)
