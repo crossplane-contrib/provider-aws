@@ -436,13 +436,6 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rds.DBInstance) { // 
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
 func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error) {
-	// TODO(muvaf): ApplyImmediately and other configurations that exist in
-	//  <Modify/Create/Delete>DBInstanceInput objects but not in DBInstance
-	//  object are not late-inited. So, this func always returns true when
-	//  those configurations are changed by the user.
-	
-	// TODO(pocketmobsters): AllowMajorVersionUpgrade is another field we've
-	// identified that will cause this func to always return true.
 	patch, err := CreatePatch(&db, &p)
 	if err != nil {
 		return false, err
@@ -452,7 +445,9 @@ func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "Tags"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "SkipFinalSnapshotBeforeDeletion"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "FinalDBSnapshotIdentifier"),
-		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "MasterPasswordSecretRef")
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "MasterPasswordSecretRef"),
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "ApplyModificationsImmediately"),
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "AllowMajorVersionUpgrade"),
 	), nil
 }
 
