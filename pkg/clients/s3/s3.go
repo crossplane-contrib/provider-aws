@@ -52,6 +52,7 @@ type Service interface {
 	UpdateBucketACL(bucket *v1alpha3.S3Bucket) error
 	UpdateVersioning(bucket *v1alpha3.S3Bucket) error
 	UpdatePolicyDocument(username string, bucket *v1alpha3.S3Bucket) (string, error)
+	UpdateTagging(bucket *v1alpha3.S3Bucket) error
 	DeleteBucket(bucket *v1alpha3.S3Bucket) error
 }
 
@@ -83,6 +84,7 @@ func (c *Client) CreateOrUpdateBucket(bucket *v1alpha3.S3Bucket) error {
 // Bucket represents crossplane metadata about the bucket
 type Bucket struct {
 	Versioning        bool
+	Tags              []v1alpha3.Tag
 	UserPolicyVersion string
 }
 
@@ -160,6 +162,18 @@ func (c *Client) UpdatePolicyDocument(username string, bucket *v1alpha3.S3Bucket
 		return "", fmt.Errorf("could not update policy, %s", err.Error())
 	}
 	return currentVersion, nil
+}
+
+// UpdateTagging for s3 bucket
+func (c *Client) UpdateTagging(bucket *v1alpha3.S3Bucket) error {
+	if bucket.Spec.Tags != nil {
+		input := PutBucketTaggingInput(bucket)
+		_, err := c.s3.PutBucketTaggingRequest(input).Send(context.TODO())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // DeleteBucket deletes s3 bucket, and related IAM
@@ -275,4 +289,27 @@ func newPolicyDocument(bucket *v1alpha3.S3Bucket) (string, error) {
 	}
 
 	return string(b), nil
+}
+
+// PutBucketTaggingInput returns a PutBucketTaggingInput from the supplied S3Bucket.
+func PutBucketTaggingInput(bucket *v1alpha3.S3Bucket) *s3.PutBucketTaggingInput {
+
+	input := &s3.PutBucketTaggingInput{
+		Bucket: aws.String(meta.GetExternalName(bucket)),
+	}
+	bucketTags := bucket.Spec.Tags
+	if len(bucketTags) != 0 {
+		s3Tags := make([]s3.Tag, len(bucketTags))
+		for i, t := range bucketTags {
+			s3Tags[i] = s3.Tag{
+				Key:   aws.String(t.Key),
+				Value: aws.String(t.Value),
+			}
+		}
+		input.Tagging = &s3.Tagging{
+			TagSet: s3Tags,
+		}
+	}
+
+	return input
 }

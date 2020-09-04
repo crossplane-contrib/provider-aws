@@ -27,6 +27,16 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
 
+//Tag is a metadata assigned to an Amazon S3 Bucket consisting of a key-value pair.
+// Please also see https://docs.aws.amazon.com/AmazonS3/latest/API/API_Tag.html
+type Tag struct {
+	// Name of the object key
+	Key string `json:"key"`
+
+	// Value of the tag
+	Value string `json:"value"`
+}
+
 // S3BucketParameters define the desired state of an AWS S3 Bucket.
 type S3BucketParameters struct {
 	// Region of the bucket.
@@ -51,6 +61,10 @@ type S3BucketParameters struct {
 	// provisioning.
 	// +kubebuilder:validation:Enum=Read;Write;ReadWrite
 	LocalPermission *storagev1alpha1.LocalPermissionType `json:"localPermission"`
+
+	// A list of key-value pairs to label the S3 Bucket
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
 }
 
 // S3BucketSpec defines the desired state of S3Bucket

@@ -46,6 +46,11 @@ func (api *S3Operations) PutBucketVersioningRequest(i *s3.PutBucketVersioningInp
 	return api.s3.PutBucketVersioningRequest(i)
 }
 
+// PutBucketTaggingRequest creates a put bucket tagging request
+func (api *S3Operations) PutBucketTaggingRequest(i *s3.PutBucketTaggingInput) PutBucketTaggingRequest {
+	return api.s3.PutBucketTaggingRequest(i)
+}
+
 // DeleteBucketRequest creates a delete bucket request
 func (api *S3Operations) DeleteBucketRequest(i *s3.DeleteBucketInput) DeleteBucketRequest {
 	return api.s3.DeleteBucketRequest(i)

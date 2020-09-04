@@ -44,6 +44,11 @@ type PutBucketVersioningRequest interface {
 	Send(context.Context) (*s3.PutBucketVersioningResponse, error)
 }
 
+// PutBucketTaggingRequest is a API request type for the PutBucketTagging API operation.
+type PutBucketTaggingRequest interface {
+	Send(context.Context) (*s3.PutBucketTaggingResponse, error)
+}
+
 // DeleteBucketRequest is a API request type for the DeleteBucket API operation.
 type DeleteBucketRequest interface {
 	Send(context.Context) (*s3.DeleteBucketResponse, error)
