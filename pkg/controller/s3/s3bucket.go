@@ -150,11 +150,14 @@ func (r *Reconciler) _sync(bucket *bucketv1alpha3.S3Bucket, client s3.Service) (
 		return r.fail(bucket, err)
 	}
 
-	if bucketInfo.Versioning != bucket.Spec.Versioning {
-		err := client.UpdateVersioning(bucket)
-		if err != nil {
-			return r.fail(bucket, err)
-		}
+	err = updateVersioning(bucket, bucketInfo, client)
+	if err != nil {
+		return r.fail(bucket, err)
+	}
+
+	err = updateTagging(bucket, client)
+	if err != nil {
+		return r.fail(bucket, err)
 	}
 
 	// TODO: Detect if the bucket CannedACL has changed, possibly by managing grants list directly.
@@ -181,6 +184,28 @@ func (r *Reconciler) _sync(bucket *bucketv1alpha3.S3Bucket, client s3.Service) (
 
 	bucket.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
 	return result, r.Update(ctx, bucket)
+}
+
+// helper function to perform S3 Bucket Versions update
+func updateVersioning(bucket *bucketv1alpha3.S3Bucket, bucketInfo *s3.Bucket, client s3.Service) error {
+	if bucketInfo.Versioning != bucket.Spec.Versioning {
+		err := client.UpdateVersioning(bucket)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// helper function to perform S3 Bucket Tags update
+func updateTagging(bucket *bucketv1alpha3.S3Bucket, client s3.Service) error {
+	if bucket.Spec.Tags != nil {
+		err := client.UpdateTagging(bucket)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (r *Reconciler) _delete(bucket *bucketv1alpha3.S3Bucket, client s3.Service) (reconcile.Result, error) {

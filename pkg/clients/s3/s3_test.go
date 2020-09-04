@@ -326,6 +326,54 @@ func TestClient_UpdateVersioning(t *testing.T) {
 	}
 }
 
+func TestClient_UpdateTagging(t *testing.T) {
+	// Define test cases
+	tests := map[string]struct {
+		bucket  *awsstorage.S3Bucket
+		sendRet []interface{}
+		ret     []types.GomegaMatcher
+	}{
+		"WithTags": {
+			bucket: &awsstorage.S3Bucket{
+				Spec: awsstorage.S3BucketSpec{
+					S3BucketParameters: awsstorage.S3BucketParameters{
+						Tags: []awsstorage.Tag{{Key: "k1", Value: "val1"}, {Key: "k2", Value: "val2"}},
+					},
+				},
+			},
+			sendRet: []interface{}{&s3.PutBucketTaggingResponse{}, nil},
+			ret:     []types.GomegaMatcher{gomega.BeNil()},
+		},
+		"WithoutTags": {
+			bucket:  &awsstorage.S3Bucket{},
+			sendRet: []interface{}{&s3.PutBucketTaggingResponse{}, nil},
+			ret:     []types.GomegaMatcher{gomega.BeNil()},
+		},
+	}
+
+	for testName, vals := range tests {
+		t.Run(testName, func(t *testing.T) {
+			g := gomega.NewGomegaWithT(t)
+
+			// Set up mocks
+			putBucketTag := new(fakeops.PutBucketTaggingRequest)
+			putBucketTag.On("Send", context.TODO()).Return(vals.sendRet...)
+
+			ops := new(fakeops.Operations)
+			ops.On("PutBucketTaggingRequest", mock.Anything).Return(putBucketTag)
+
+			// Create thing we are testing
+			c := Client{s3: ops}
+
+			// Call the method under test
+			err := c.UpdateTagging(vals.bucket)
+
+			// Make assertions
+			g.Expect(err).To(vals.ret[0])
+		})
+	}
+}
+
 func TestClient_UpdatePolicyDocument(t *testing.T) {
 	boom := errors.New("boom")
 	user := "han"

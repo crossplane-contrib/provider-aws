@@ -14,3 +14,25 @@ specTemplate:
   providerConfigRef:
     name: example
   reclaimPolicy: Delete
+---
+apiVersion: storage.aws.crossplane.io/v1alpha3
+kind: S3BucketClass
+metadata:
+  name: s3bucket-tags
+  labels:
+    example: "true"
+specTemplate:
+  writeConnectionSecretsToNamespace: crossplane-system
+  versioning: false
+  cannedACL: private
+  region: us-east-1
+  tags:
+    - key: k1
+      value: val1
+    - key: k2
+      value: val2
+  localPermission: ReadWrite
+  providerConfigRef:
+    name: example
+  reclaimPolicy: Delete
+---

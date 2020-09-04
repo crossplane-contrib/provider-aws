@@ -136,6 +136,15 @@ func TestSyncBucketError(t *testing.T) {
 	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(testError))
 	assert(testResource(), cl, resultRequeue, expectedStatus)
 
+	//update tagging error
+	testError = errors.New("bucket-tagging-update-error")
+	cl.MockUpdateTagging = func(bucket *S3Bucket) error {
+		return testError
+	}
+	expectedStatus = runtimev1alpha1.ConditionedStatus{}
+	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(testError))
+	assert(testResource(), cl, resultRequeue, expectedStatus)
+
 	// update bucket acl error
 	cl.MockGetBucketInfo = func(username string, bucket *S3Bucket) (*client.Bucket, error) {
 		return &client.Bucket{Versioning: false, UserPolicyVersion: "v1"}, nil
