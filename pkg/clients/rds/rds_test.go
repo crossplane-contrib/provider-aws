@@ -17,6 +17,7 @@ limitations under the License.
 package rds
 
 import (
+	"context"
 	"strconv"
 	"testing"
 	"time"
@@ -191,7 +192,8 @@ func TestIsUpToDate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got, _ := IsUpToDate(tc.args.p, tc.args.db)
+			ctx := context.Background()
+			got, _ := IsUpToDate(ctx, nil, tc.args.p, tc.args.db, nil)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
