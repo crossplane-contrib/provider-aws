@@ -99,23 +99,6 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errNotRDSInstance)
 	}
 
-	pwdChanged := false
-	if cr.Spec.ForProvider.MasterPasswordSecretRef != nil && cr.Spec.WriteConnectionSecretToReference != nil {
-		refNamespacedName := types.NamespacedName{
-			Name:      cr.Spec.ForProvider.MasterPasswordSecretRef.Name,
-			Namespace: cr.Spec.ForProvider.MasterPasswordSecretRef.Namespace,
-		}
-		newPwd, err := e.getPassword(ctx, refNamespacedName, cr.Spec.ForProvider.MasterPasswordSecretRef.Key)
-		if err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errGetPasswordSecretFailed)
-		}
-		savedNamespacedName := types.NamespacedName{
-			Name:      cr.Spec.WriteConnectionSecretToReference.Name,
-			Namespace: cr.Spec.WriteConnectionSecretToReference.Namespace,
-		}
-		curPwd, _ := e.getPassword(ctx, savedNamespacedName, runtimev1alpha1.ResourceCredentialsSecretPasswordKey)
-		pwdChanged = newPwd != curPwd
-	}
 	// TODO(muvaf): There are some parameters that require a specific call
 	// for retrieval. For example, DescribeDBInstancesOutput does not expose
 	// the tags map of the RDS instance, you have to make ListTagsForResourceRequest
@@ -149,14 +132,14 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	default:
 		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
 	}
-	upToDate, err := rds.IsUpToDate(cr.Spec.ForProvider, instance)
+	upToDate, err := rds.IsUpToDate(ctx, &e.kube, cr.Spec.ForProvider, instance, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
 	}
 
 	return managed.ExternalObservation{
 		ResourceExists:    true,
-		ResourceUpToDate:  upToDate && !pwdChanged,
+		ResourceUpToDate:  upToDate,
 		ConnectionDetails: rds.GetConnectionDetails(*cr),
 	}, nil
 }
@@ -226,30 +209,15 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	modify := rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch)
 	var conn managed.ConnectionDetails
 	if cr.Spec.ForProvider.MasterPasswordSecretRef != nil {
-		nn := types.NamespacedName{
-			Name:      cr.Spec.ForProvider.MasterPasswordSecretRef.Name,
-			Namespace: cr.Spec.ForProvider.MasterPasswordSecretRef.Namespace,
-		}
-		newPwd, err := e.getPassword(ctx, nn, cr.Spec.ForProvider.MasterPasswordSecretRef.Key)
+		pwd, changed, err := rds.GetPassword(ctx, &e.kube, cr.Spec.ForProvider.MasterPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errGetPasswordSecretFailed)
+			return managed.ExternalUpdate{}, err
 		}
-		changePwd := true
-		if cr.Spec.WriteConnectionSecretToReference != nil {
-			savedNamespacedName := types.NamespacedName{
-				Name:      cr.Spec.WriteConnectionSecretToReference.Name,
-				Namespace: cr.Spec.WriteConnectionSecretToReference.Namespace,
-			}
-			curPwd, _ := e.getPassword(ctx, savedNamespacedName, runtimev1alpha1.ResourceCredentialsSecretPasswordKey)
-			if newPwd == curPwd {
-				changePwd = false
-			}
-		}
-		if changePwd {
+		if changed {
 			conn = managed.ConnectionDetails{
-				runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(newPwd),
+				runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(pwd),
 			}
-			modify.MasterUserPassword = aws.String(newPwd)
+			modify.MasterUserPassword = aws.String(pwd)
 		}
 	}
 	if _, err = e.client.ModifyDBInstanceRequest(modify).Send(ctx); err != nil {
@@ -298,14 +266,6 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 	_, err = e.client.DeleteDBInstanceRequest(&input).Send(ctx)
 	return errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
-}
-
-func (e *external) getPassword(ctx context.Context, namespacedName types.NamespacedName, key string) (string, error) {
-	s := &corev1.Secret{}
-	if err := e.kube.Get(ctx, namespacedName, s); err != nil {
-		return "", err
-	}
-	return string(s.Data[key]), nil
 }
 
 type tagger struct {

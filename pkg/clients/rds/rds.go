@@ -17,6 +17,7 @@ limitations under the License.
 package rds
 
 import (
+	"context"
 	"encoding/json"
 	"strconv"
 	"strings"
@@ -25,13 +26,21 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
 	"github.com/crossplane/provider-aws/apis/database/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+)
+
+const (
+	errGetPasswordSecretFailed = "cannot get password secret"
 )
 
 // Client defines RDS RDSClient operations
@@ -435,7 +444,11 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rds.DBInstance) { // 
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
-func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error) {
+func IsUpToDate(ctx context.Context, kube *client.Client, p v1beta1.RDSInstanceParameters, db rds.DBInstance, outCreds *v1alpha1.SecretReference) (bool, error) {
+	_, pwdChanged, err := GetPassword(ctx, kube, p.MasterPasswordSecretRef, outCreds)
+	if err != nil {
+		return false, err
+	}
 	patch, err := CreatePatch(&db, &p)
 	if err != nil {
 		return false, err
@@ -445,10 +458,59 @@ func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "Tags"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "SkipFinalSnapshotBeforeDeletion"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "FinalDBSnapshotIdentifier"),
-		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "MasterPasswordSecretRef"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "ApplyModificationsImmediately"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "AllowMajorVersionUpgrade"),
-	), nil
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "MasterPasswordSecretRef"),
+	) && !pwdChanged, nil
+}
+
+// GetPassword fetches the referenced input password for an RDSInstance CRD and determines whether it has changed or not
+func GetPassword(ctx context.Context, kube *client.Client, inputCreds *v1alpha1.SecretKeySelector, outCreds *v1alpha1.SecretReference) (string, bool, error) {
+	if kube == nil {
+		return "", false, nil
+	}
+	if inputCreds == nil && outCreds == nil {
+		return "", false, nil
+	}
+
+	var err error
+	var newPwd string
+	var pwdChanged bool
+	if inputCreds != nil {
+		nn := types.NamespacedName{
+			Name:      inputCreds.Name,
+			Namespace: inputCreds.Namespace,
+		}
+		newPwd, err = getPasswordFromSecret(ctx, kube, nn, inputCreds.Key)
+		if err != nil {
+			return "", false, errors.Wrap(err, errGetPasswordSecretFailed)
+		}
+	}
+
+	if outCreds != nil {
+		nn := types.NamespacedName{
+			Name:      outCreds.Name,
+			Namespace: outCreds.Namespace,
+		}
+		outPwd, _ := getPasswordFromSecret(ctx, kube, nn, v1alpha1.ResourceCredentialsSecretPasswordKey)
+		if outPwd == newPwd {
+			return newPwd, false, nil
+		}
+	}
+
+	return newPwd, pwdChanged, nil
+}
+
+func getPasswordFromSecret(ctx context.Context, kube *client.Client, namespacedName types.NamespacedName, key string) (string, error) {
+	if kube == nil {
+		return "", nil
+	}
+	k := *kube
+	s := &corev1.Secret{}
+	if err := k.Get(ctx, namespacedName, s); err != nil {
+		return "", err
+	}
+	return string(s.Data[key]), nil
 }
 
 // GetConnectionDetails extracts managed.ConnectionDetails out of v1beta1.RDSInstance.
