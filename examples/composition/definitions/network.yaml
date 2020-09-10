@@ -51,6 +51,7 @@ spec:
       kind: VPC
       spec:
         forProvider:
+          region: us-west-2
           cidrBlock: 192.168.0.0/16
           enableDnsSupport: true
           enableDnsHostNames: true
@@ -61,8 +62,8 @@ spec:
       toFieldPath: "metadata.labels"
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
   - base:
       apiVersion: ec2.aws.crossplane.io/v1beta1
       kind: Subnet
@@ -79,8 +80,8 @@ spec:
     patches:
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
   - base:
       apiVersion: ec2.aws.crossplane.io/v1beta1
       kind: Subnet
@@ -98,8 +99,8 @@ spec:
     patches:
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
   - base:
       apiVersion: ec2.aws.crossplane.io/v1beta1
       kind: Subnet
@@ -117,8 +118,8 @@ spec:
     patches:
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
   - base:
       apiVersion: ec2.aws.crossplane.io/v1beta1
       kind: InternetGateway
@@ -132,8 +133,8 @@ spec:
       toFieldPath: "metadata.labels"
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
   - base:
       apiVersion: ec2.aws.crossplane.io/v1beta1
       kind: RouteTable
@@ -164,8 +165,8 @@ spec:
       toFieldPath: "metadata.labels"
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
   - base:
       apiVersion: ec2.aws.crossplane.io/v1beta1
       kind: SecurityGroup
@@ -186,7 +187,7 @@ spec:
       toFieldPath: "metadata.labels"
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
     - fromFieldPath: "spec.sgName"
       toFieldPath: "spec.forProvider.groupName"
