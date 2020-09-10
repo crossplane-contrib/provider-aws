@@ -173,6 +173,10 @@ spec:
                   description: Indicates whether instances launched in this subnet
                     receive a public IPv4 address.
                   type: boolean
+                region:
+                  description: Region is the region you'd like your VPC to be created
+                    in.
+                  type: string
                 tags:
                   description: Tags represents to current ec2 tags.
                   items:

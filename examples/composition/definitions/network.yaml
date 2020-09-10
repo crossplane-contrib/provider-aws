@@ -72,6 +72,7 @@ spec:
           subnet-1: "true"
       spec:
         forProvider:
+          region: us-west-2
           cidrBlock: 192.168.64.0/18
           vpcIdSelector:
             matchControllerRef: true
@@ -90,6 +91,7 @@ spec:
           subnet-2: "true"
       spec:
         forProvider:
+          region: us-west-2
           cidrBlock: 192.168.128.0/18
           availabilityZone: us-west-2b
           vpcIdSelector:
@@ -109,6 +111,7 @@ spec:
           subnet-3: "true"
       spec:
         forProvider:
+          region: us-west-2
           cidrBlock: 192.168.192.0/18
           availabilityZone: us-west-2a
           vpcIdSelector:
