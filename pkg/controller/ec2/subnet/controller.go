@@ -103,6 +103,14 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}).Send(ctx)
 
 	if err != nil {
+		// when the subnet is deleted externally and we sent a create request with the cr data in k8s
+		// either of AvailabilityZone or AvailabilityZoneID needs to be set
+		if cr.Spec.ForProvider.AvailabilityZone != nil && cr.Spec.ForProvider.AvailabilityZoneID != nil {
+			cr.Spec.ForProvider.AvailabilityZoneID = nil
+		}
+		if err := e.kube.Update(ctx, cr); err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
+		}
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
 	}
 
@@ -141,6 +149,10 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	cr, ok := mgd.(*v1beta1.Subnet)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
+	}
+
+	if cr.Spec.ForProvider.AvailabilityZone != nil && cr.Spec.ForProvider.AvailabilityZoneID != nil {
+		return managed.ExternalCreation{}, errors.New("Both AvailabilityZone and AvailabilityZoneID cannot be passed")
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
