@@ -26,6 +26,9 @@ import (
 type ProviderConfigSpec struct {
 	runtimev1alpha1.ProviderConfigSpec `json:",inline"`
 
+	// Region for managed resources created using this AWS provider.
+	Region string `json:"region"`
+
 	// UseServiceAccount indicates to use an IAM Role associated Kubernetes
 	// ServiceAccount for authentication instead of a credentials Secret.
 	// https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html

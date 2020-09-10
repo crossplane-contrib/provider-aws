@@ -13,6 +13,7 @@ kind: ProviderConfig
 metadata:
   name: example
 spec:
+  region: ((AWS_REGION))
   credentialsSecretRef:
     namespace: crossplane-system
     name: aws-account-creds

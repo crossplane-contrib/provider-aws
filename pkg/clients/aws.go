@@ -70,6 +70,9 @@ func GetConfig(ctx context.Context, kube client.Client, cr resource.Managed, reg
 		if err := kube.Get(ctx, nn, pc); resource.IgnoreNotFound(err) != nil {
 			return nil, errors.Wrap(err, "cannot get referenced ProviderConfig")
 		}
+		if region == "" {
+			region = pc.Spec.Region
+		}
 	case cr.GetProviderReference() != nil && cr.GetProviderReference().Name != "":
 		nn := types.NamespacedName{Name: cr.GetProviderReference().Name}
 		p := &v1alpha3.Provider{}
