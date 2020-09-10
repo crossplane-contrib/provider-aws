@@ -107,9 +107,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		// either of AvailabilityZone or AvailabilityZoneID needs to be set
 		if cr.Spec.ForProvider.AvailabilityZone != nil && cr.Spec.ForProvider.AvailabilityZoneID != nil {
 			cr.Spec.ForProvider.AvailabilityZoneID = nil
-		}
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
+			if err := e.kube.Update(ctx, cr); err != nil {
+				return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
+			}
 		}
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
 	}
