@@ -31,7 +31,7 @@ spec:
                 required:
                 - name
             required:
-            - providerRef
+            - providerConfigRef
 ---
 apiVersion: apiextensions.crossplane.io/v1alpha1
 kind: Composition
@@ -70,8 +70,8 @@ spec:
     patches:
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
   - base:
       apiVersion: identity.aws.crossplane.io/v1beta1
       kind: IAMRolePolicyAttachment
@@ -88,8 +88,8 @@ spec:
       toFieldPath: "metadata.labels"
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
   - base:
       apiVersion: identity.aws.crossplane.io/v1beta1
       kind: IAMRolePolicyAttachment
@@ -106,8 +106,8 @@ spec:
       toFieldPath: "metadata.labels"
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
   - base:
       apiVersion: eks.aws.crossplane.io/v1beta1
       kind: Cluster
@@ -132,8 +132,8 @@ spec:
       toFieldPath: "metadata.labels"
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
     - fromFieldPath: "spec.networkName"
       toFieldPath: "spec.forProvider.resourcesVpcConfig.subnetIdSelector.matchLabels[crossplane.io/composite]"
   - base:
@@ -162,8 +162,8 @@ spec:
     patches:
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
   - base:
       apiVersion: identity.aws.crossplane.io/v1beta1
       kind: IAMRolePolicyAttachment
@@ -180,8 +180,8 @@ spec:
       toFieldPath: "metadata.labels"
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
   - base:
       apiVersion: identity.aws.crossplane.io/v1beta1
       kind: IAMRolePolicyAttachment
@@ -198,8 +198,8 @@ spec:
       toFieldPath: "metadata.labels"
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
   - base:
       apiVersion: identity.aws.crossplane.io/v1beta1
       kind: IAMRolePolicyAttachment
@@ -216,8 +216,8 @@ spec:
       toFieldPath: "metadata.labels"
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
   - base:
       apiVersion: eks.aws.crossplane.io/v1alpha1
       kind: NodeGroup
@@ -241,7 +241,7 @@ spec:
       toFieldPath: "metadata.labels"
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerRef.name"
-      toFieldPath: "spec.providerRef.name"
+    - fromFieldPath: "spec.providerConfigRef.name"
+      toFieldPath: "spec.providerConfigRef.name"
     - fromFieldPath: "spec.networkName"
       toFieldPath: "spec.forProvider.subnetSelector.matchLabels[crossplane.io/composite]"

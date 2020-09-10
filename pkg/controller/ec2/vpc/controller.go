@@ -80,6 +80,13 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if err != nil {
 		return nil, err
 	}
+	cr, ok := mg.(*v1beta1.VPC)
+	if !ok {
+		return nil, errors.New(errUnexpectedObject)
+	}
+	if cr.Spec.ForProvider.Region != "" {
+		cfg.Region = cr.Spec.ForProvider.Region
+	}
 	return &external{client: c.newClientFn(*cfg), kube: c.kube}, nil
 }
 

@@ -4,6 +4,7 @@ kind: VPC
 metadata:
   name: postgresql-example
 spec:
+  region: us-east-1
   cidrBlock: 192.168.0.0/16
   enableDnsSupport: true
   enableDnsHostNames: true
