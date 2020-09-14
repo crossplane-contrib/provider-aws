@@ -74,16 +74,13 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "")
-	if err != nil {
-		return nil, err
-	}
 	cr, ok := mg.(*v1beta1.Subnet)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	if cr.Spec.ForProvider.Region != "" {
-		cfg.Region = cr.Spec.ForProvider.Region
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	if err != nil {
+		return nil, err
 	}
 	return &external{client: c.newClientFn(*cfg), kube: c.kube}, nil
 }

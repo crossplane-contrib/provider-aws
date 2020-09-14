@@ -184,6 +184,10 @@ spec:
                         type: object
                     type: object
                   type: array
+                region:
+                  description: Region is the region you'd like your VPC to be created
+                    in.
+                  type: string
                 routes:
                   description: the routes in the route table
                   items:
@@ -270,6 +274,7 @@ spec:
                   type: object
               required:
               - associations
+              - region
               - routes
               type: object
             providerConfigRef:

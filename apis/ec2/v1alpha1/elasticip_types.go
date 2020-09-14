@@ -26,6 +26,9 @@ import (
 
 // ElasticIPParameters define the desired state of an AWS Elastic IP
 type ElasticIPParameters struct {
+	// Region is the region you'd like your VPC to be created in.
+	Region string `json:"region"`
+
 	// [EC2-VPC] The Elastic IP address to recover or an IPv4 address from an address
 	// pool.
 	// +optional
