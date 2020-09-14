@@ -179,5 +179,9 @@ func IsRtUpToDate(p v1alpha4.RouteTableParameters, rt ec2.RouteTable) (bool, err
 	if err != nil {
 		return false, err
 	}
-	return cmp.Equal(&v1alpha4.RouteTableParameters{}, patch, cmpopts.EquateEmpty(), cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{})), nil
+	return cmp.Equal(&v1alpha4.RouteTableParameters{}, patch,
+		cmpopts.EquateEmpty(),
+		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{}),
+		cmpopts.IgnoreFields(v1alpha4.RouteTableParameters{}, "Region"),
+	), nil
 }

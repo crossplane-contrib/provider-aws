@@ -4,6 +4,7 @@ metadata:
   name: sample-internetgateway
 spec:
   forProvider:
+    region: us-east-1
     vpcIdRef:
       name: sample-vpc
   reclaimPolicy: Delete

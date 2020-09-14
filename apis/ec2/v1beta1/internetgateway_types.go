@@ -34,6 +34,14 @@ const (
 // InternetGatewayParameters define the desired state of an AWS VPC Internet
 // Gateway.
 type InternetGatewayParameters struct {
+
+	// TODO(muvaf): Region is a required field but in order to keep backward compatibility
+	// with old Provider type and not bear the cost of bumping to v1beta2, we're
+	// keeping it optional for now. Reconsider before v1beta2 or v1.
+
+	// Region is the region you'd like your VPC to be created in.
+	Region string `json:"region,omitempty"`
+
 	// VPCID is the ID of the VPC.
 	// +optional
 	VPCID *string `json:"vpcId,omitempty"`

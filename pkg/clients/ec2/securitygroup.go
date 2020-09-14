@@ -329,6 +329,7 @@ func IsSGUpToDate(p v1beta1.SecurityGroupParameters, sg ec2.SecurityGroup) (bool
 	}
 	return cmp.Equal(&v1beta1.SecurityGroupParameters{}, patch,
 		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{}),
+		cmpopts.IgnoreFields(v1beta1.SecurityGroupParameters{}, "Region"),
 		InsensitiveCases()), nil
 }
 

@@ -4,7 +4,8 @@ metadata:
   name: "eip"
 spec:
   forProvider:
+    region: us-east-1
     domain: "vpc"
   reclaimPolicy: Delete
-  providerRef:
+  providerConfigRef:
     name: example

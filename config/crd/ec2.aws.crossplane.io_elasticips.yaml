@@ -180,6 +180,10 @@ spec:
                     specify a specific address from the address pool, use the Address
                     parameter instead.
                   type: string
+                region:
+                  description: Region is the region you'd like your VPC to be created
+                    in.
+                  type: string
                 tags:
                   description: Tags represents to current ec2 tags.
                   items:
@@ -196,6 +200,8 @@ spec:
                     - value
                     type: object
                   type: array
+              required:
+              - region
               type: object
             providerConfigRef:
               description: ProviderConfigReference specifies how the provider that
