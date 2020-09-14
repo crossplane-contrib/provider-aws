@@ -1,0 +1,14 @@
+apiVersion: ecr.aws.crossplane.io/v1alpha1
+kind: Repository
+metadata:
+  name: example
+  labels:
+    region: us-east-1
+spec:
+  forProvider:
+    imageScanningConfiguration:
+      scanOnPush: true
+    imageTagMutability: IMMUTABLE
+  reclaimPolicy: Delete
+  providerConfigRef:
+    name: example
