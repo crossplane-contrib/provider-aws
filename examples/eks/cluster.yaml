@@ -6,6 +6,7 @@ metadata:
     example: "true"
 spec:
   forProvider:
+    region: us-east-1
     roleArn: <your-role>
     resourcesVpcConfig:
       publicAccessCidrs:                                                                                                                                                                                    
@@ -20,3 +21,14 @@ spec:
     namespace: default
   providerConfigRef:
     name: aws-provider
+---
+apiVersion: eks.aws.crossplane.io/v1alpha1
+kind: NodeGroup
+metadata:
+  name: my-group
+  labels:
+    example: "true"
+spec:
+  forProvider:
+    clusterNameRef:
+      name: do-cluster

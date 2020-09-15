@@ -7,9 +7,9 @@ metadata:
 spec:
   forProvider:
     securityGroupIdRefs:
-      - name: sample-cluster-sg
+      - name: eks-example
     subnetIdRefs:
-      - subnet-d297e9a8
+      - name: eks-example-1
     listeners:
       - instancePort: 8180
         instanceProtocol: http

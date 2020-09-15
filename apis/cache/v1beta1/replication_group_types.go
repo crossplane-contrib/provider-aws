@@ -238,6 +238,13 @@ type NodeGroupConfigurationSpec struct {
 // Replication Group. Most fields map directly to an AWS ReplicationGroup:
 // https://docs.aws.amazon.com/AmazonElastiCache/latest/APIReference/API_CreateReplicationGroup.html#API_CreateReplicationGroup_RequestParameters
 type ReplicationGroupParameters struct {
+	// TODO(muvaf): Region is a required field but in order to keep backward compatibility
+	// with old Provider type and not bear the cost of bumping to v1beta2, we're
+	// keeping it optional for now. Reconsider before v1beta2 or v1.
+
+	// Region is the region you'd like your ReplicationGroup to be created in.
+	Region string `json:"region,omitempty"`
+
 	// If true, this parameter causes the modifications in this request and any
 	// pending modifications to be applied, asynchronously and as soon as possible,
 	// regardless of the PreferredMaintenanceWindow setting for the replication

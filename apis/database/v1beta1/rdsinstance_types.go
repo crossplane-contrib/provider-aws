@@ -109,6 +109,13 @@ type ScalingConfiguration struct {
 // RDSInstanceParameters define the desired state of an AWS Relational Database
 // Service instance.
 type RDSInstanceParameters struct {
+	// TODO(muvaf): Region is a required field but in order to keep backward compatibility
+	// with old Provider type and not bear the cost of bumping to v1beta2, we're
+	// keeping it optional for now. Reconsider before v1beta2 or v1.
+
+	// Region is the region you'd like your RDSInstance to be created in.
+	Region string `json:"region,omitempty"`
+
 	// AllocatedStorage is the amount of storage (in gibibytes) to allocate for the DB instance.
 	// Type: Integer
 	// Amazon Aurora

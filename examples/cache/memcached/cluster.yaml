@@ -6,6 +6,7 @@ metadata:
     crossplane.io/external-name: some-cluster-id
 spec:
   forProvider:
+    region: us-east-1
     engine: memcached
     cacheNodeType: cache.t2.micro
     numCacheNodes: 1
