@@ -1,5 +1,7 @@
 package v1beta1
 
+import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+
 // ReplicationConfiguration contains replication rules. You can add up to 1,000 rules. The maximum
 // size of a replication configuration is 2 MB.
 type ReplicationConfiguration struct {
@@ -10,6 +12,14 @@ type ReplicationConfiguration struct {
 	//
 	// Role is a required field
 	Role *string `json:"role,omitempty"`
+
+	// RoleRef references an IAMRole to retrieve its Name
+	// +optional
+	RoleRef *runtimev1alpha1.Reference `json:"roleRef,omitempty"`
+
+	// RoleSelector selects a reference to an IAMRole to retrieve its Name
+	// +optional
+	RoleSelector *runtimev1alpha1.Selector `json:"roleSelector,omitempty"`
 
 	// A container for one or more replication rules. A replication configuration
 	// must have at least one rule and can contain a maximum of 1,000 rules.
@@ -77,6 +87,7 @@ type ReplicationRule struct {
 	//
 	// Status is a required field
 	// Valid values are "Enabled" or "Disabled"
+	// +kubebuilder:validation:Enum=Enabled;Disabled
 	Status string `json:"status"`
 }
 
@@ -95,6 +106,7 @@ type DeleteMarkerReplication struct {
 	// Indicates whether to replicate delete markers.
 	// In the current implementation, Amazon S3 doesn't replicate the delete markers.
 	// The status must be "Disabled".
+	// +kubebuilder:validation:Enum=Disabled
 	Status string `json:"Status"`
 }
 
@@ -120,10 +132,22 @@ type Destination struct {
 	// in the Amazon Simple Storage Service Developer Guide.
 	Account *string `json:"account"`
 
+	// Reference the AWS account assigned in the provider as the destination bucket owner
+	// account ID.
+	ReferenceCurrentAccount *bool `json:"referenceCurrentAccount,omitempty"`
+
 	// The Amazon Resource Name (ARN) of the bucket where you want Amazon S3 to
 	// store the results.
 	// Bucket is a required field
 	Bucket *string `json:"bucket"`
+
+	// BucketRef references a Bucket to retrieve its Name
+	// +optional
+	BucketRef *runtimev1alpha1.Reference `json:"bucketRef,omitempty"`
+
+	// BucketSelector selects a reference to a Bucket to retrieve its Name
+	// +optional
+	BucketSelector *runtimev1alpha1.Selector `json:"bucketSelector,omitempty"`
 
 	// A container that provides information about encryption. If SourceSelectionCriteria
 	// is specified, you must specify this element.
@@ -147,20 +171,6 @@ type Destination struct {
 	// action in the Amazon Simple Storage Service API Reference.
 	StorageClass string `json:"storageClass"`
 }
-
-//func (in Destination) Compare(target awss3.Destination) bool {
-//	if aws.StringValue(in.Bucket) != aws.StringValue(target.Bucket) {
-//		return false
-//	}
-//	if !CompareStrings(in.Bucket, target.Bucket, in.Account, target.Account) {
-//		return false
-//	}
-//	if string(target.StorageClass) != in.StorageClass {
-//		return false
-//	}
-//
-//	return true
-//}
 
 // AccessControlTranslation contains information about access control for replicas.
 type AccessControlTranslation struct {
@@ -195,6 +205,7 @@ type Metrics struct {
 	// Specifies whether the replication metrics are enabled.
 	//
 	// Status is a required field, valid values are "Enabled" and "Disabled"
+	// +kubebuilder:validation:Enum=Enabled;Disabled
 	Status string `json:"status"`
 }
 
@@ -215,6 +226,7 @@ type ReplicationTime struct {
 	// Specifies whether the replication time is enabled
 	// Status is a required field
 	// Valid values are "Enabled" and "Disabled"
+	// +kubebuilder:validation:Enum=Enabled;Disabled
 	Status string `json:"status"`
 
 	// A container specifying the time by which replication should be complete for
@@ -230,6 +242,7 @@ type ReplicationTime struct {
 type ExistingObjectReplication struct {
 	// Status is a required field
 	// Valid values are "Enabled" and "Disabled"
+	// +kubebuilder:validation:Enum=Enabled;Disabled
 	Status string `json:"status"`
 }
 
@@ -297,5 +310,6 @@ type SseKmsEncryptedObjects struct {
 	//
 	// Status is a required field
 	// Valid values are "Enabled" or "Disabled"
+	// +kubebuilder:validation:Enum=Enabled;Disabled
 	Status string `json:"status"`
 }

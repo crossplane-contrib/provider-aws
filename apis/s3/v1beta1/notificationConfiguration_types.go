@@ -122,6 +122,7 @@ type FilterRule struct {
 	// Event Notifications (https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html)
 	// in the Amazon Simple Storage Service Developer Guide.
 	// Valid values are "prefix" or "suffix"
+	// +kubebuilder:validation:Enum=prefix;suffix
 	Name string `json:"name"`
 
 	// The value that the filter searches for in object key names.

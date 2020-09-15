@@ -21,6 +21,7 @@ type TargetGrant struct {
 
 	// Logging permissions assigned to the Grantee for the bucket.
 	// Valid values are "FULL_CONTROL", "READ", "WRITE"
+	// +kubebuilder:validation:Enum=FULL_CONTROL;READ;WRITE
 	Permission string `json:"bucketLogsPermission"`
 }
 
@@ -40,6 +41,7 @@ type TargetGrantee struct {
 
 	// Type of grantee
 	// Type is a required field
+	// +kubebuilder:validation:Enum=CanonicalUser;AmazonCustomerByEmail;Group
 	Type string `json:"type"`
 
 	// URI of the grantee group.
