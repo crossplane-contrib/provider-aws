@@ -444,12 +444,12 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rds.DBInstance) { // 
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
-func IsUpToDate(ctx context.Context, kube *client.Client, p v1beta1.RDSInstanceParameters, db rds.DBInstance, outCreds *v1alpha1.SecretReference) (bool, error) {
-	_, pwdChanged, err := GetPassword(ctx, kube, p.MasterPasswordSecretRef, outCreds)
+func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance, db rds.DBInstance) (bool, error) {
+	_, pwdChanged, err := GetPassword(ctx, kube, r)
 	if err != nil {
 		return false, err
 	}
-	patch, err := CreatePatch(&db, &p)
+	patch, err := CreatePatch(&db, &r.Spec.ForProvider)
 	if err != nil {
 		return false, err
 	}
@@ -465,52 +465,41 @@ func IsUpToDate(ctx context.Context, kube *client.Client, p v1beta1.RDSInstanceP
 }
 
 // GetPassword fetches the referenced input password for an RDSInstance CRD and determines whether it has changed or not
-func GetPassword(ctx context.Context, kube *client.Client, inputCreds *v1alpha1.SecretKeySelector, outCreds *v1alpha1.SecretReference) (string, bool, error) {
+func GetPassword(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance) (string, bool, error) {
 	if kube == nil {
 		return "", false, nil
 	}
-	if inputCreds == nil && outCreds == nil {
+	if r.Spec.ForProvider.MasterPasswordSecretRef == nil && r.Spec.WriteConnectionSecretToReference == nil {
 		return "", false, nil
 	}
 
-	var err error
 	var newPwd string
 	var pwdChanged bool
-	if inputCreds != nil {
+	if r.Spec.ForProvider.MasterPasswordSecretRef != nil {
 		nn := types.NamespacedName{
-			Name:      inputCreds.Name,
-			Namespace: inputCreds.Namespace,
+			Name:      r.Spec.ForProvider.MasterPasswordSecretRef.Name,
+			Namespace: r.Spec.ForProvider.MasterPasswordSecretRef.Namespace,
 		}
-		newPwd, err = getPasswordFromSecret(ctx, kube, nn, inputCreds.Key)
-		if err != nil {
+		s := &corev1.Secret{}
+		if err := kube.Get(ctx, nn, s); err != nil {
 			return "", false, errors.Wrap(err, errGetPasswordSecretFailed)
 		}
+		newPwd = string(s.Data[r.Spec.ForProvider.MasterPasswordSecretRef.Key])
 	}
 
-	if outCreds != nil {
+	if r.Spec.WriteConnectionSecretToReference != nil {
 		nn := types.NamespacedName{
-			Name:      outCreds.Name,
-			Namespace: outCreds.Namespace,
+			Name:      r.Spec.WriteConnectionSecretToReference.Name,
+			Namespace: r.Spec.WriteConnectionSecretToReference.Namespace,
 		}
-		outPwd, _ := getPasswordFromSecret(ctx, kube, nn, v1alpha1.ResourceCredentialsSecretPasswordKey)
-		if outPwd == newPwd {
-			return newPwd, false, nil
+		s := &corev1.Secret{}
+		if err := kube.Get(ctx, nn, s); err == nil {
+			outPwd := string(s.Data[v1alpha1.ResourceCredentialsSecretPasswordKey])
+			pwdChanged = outPwd != newPwd
 		}
 	}
 
 	return newPwd, pwdChanged, nil
-}
-
-func getPasswordFromSecret(ctx context.Context, kube *client.Client, namespacedName types.NamespacedName, key string) (string, error) {
-	if kube == nil {
-		return "", nil
-	}
-	k := *kube
-	s := &corev1.Secret{}
-	if err := k.Get(ctx, namespacedName, s); err != nil {
-		return "", err
-	}
-	return string(s.Data[key]), nil
 }
 
 // GetConnectionDetails extracts managed.ConnectionDetails out of v1beta1.RDSInstance.

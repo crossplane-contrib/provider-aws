@@ -24,8 +24,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -132,7 +130,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	default:
 		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
 	}
-	upToDate, err := rds.IsUpToDate(ctx, &e.kube, cr.Spec.ForProvider, instance, cr.Spec.WriteConnectionSecretToReference)
+	upToDate, err := rds.IsUpToDate(ctx, e.kube, cr, instance)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
 	}
@@ -153,20 +151,15 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateCreating {
 		return managed.ExternalCreation{}, nil
 	}
-	pw, err := password.Generate()
+	pw, _, err := rds.GetPassword(ctx, e.kube, cr)
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	if cr.Spec.ForProvider.MasterPasswordSecretRef != nil {
-		s := &corev1.Secret{}
-		nn := types.NamespacedName{
-			Name:      cr.Spec.ForProvider.MasterPasswordSecretRef.Name,
-			Namespace: cr.Spec.ForProvider.MasterPasswordSecretRef.Namespace,
+	if pw == "" {
+		pw, err = password.Generate()
+		if err != nil {
+			return managed.ExternalCreation{}, err
 		}
-		if err := e.kube.Get(ctx, nn, s); err != nil {
-			return managed.ExternalCreation{}, errors.Wrap(err, errGetPasswordSecretFailed)
-		}
-		pw = string(s.Data[cr.Spec.ForProvider.MasterPasswordSecretRef.Key])
 	}
 
 	req := e.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
@@ -208,18 +201,18 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 	modify := rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch)
 	var conn managed.ConnectionDetails
-	if cr.Spec.ForProvider.MasterPasswordSecretRef != nil {
-		pwd, changed, err := rds.GetPassword(ctx, &e.kube, cr.Spec.ForProvider.MasterPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
-		if err != nil {
-			return managed.ExternalUpdate{}, err
-		}
-		if changed {
-			conn = managed.ConnectionDetails{
-				runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(pwd),
-			}
-			modify.MasterUserPassword = aws.String(pwd)
-		}
+
+	pwd, changed, err := rds.GetPassword(ctx, e.kube, cr)
+	if err != nil {
+		return managed.ExternalUpdate{}, err
 	}
+	if changed {
+		conn = managed.ConnectionDetails{
+			runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(pwd),
+		}
+		modify.MasterUserPassword = aws.String(pwd)
+	}
+
 	if _, err = e.client.ModifyDBInstanceRequest(modify).Send(ctx); err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
 	}
