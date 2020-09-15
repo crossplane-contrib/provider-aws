@@ -493,9 +493,11 @@ func GetPassword(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance
 			Namespace: r.Spec.WriteConnectionSecretToReference.Namespace,
 		}
 		s := &corev1.Secret{}
-		if err := kube.Get(ctx, nn, s); err == nil {
+		if err := kube.Get(ctx, nn, s); err != nil {
+			pwdChanged = newPwd != ""
+		} else {
 			outPwd := string(s.Data[v1alpha1.ResourceCredentialsSecretPasswordKey])
-			pwdChanged = outPwd != newPwd
+			pwdChanged = newPwd != "" && outPwd != newPwd
 		}
 	}
 

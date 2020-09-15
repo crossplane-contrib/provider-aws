@@ -472,6 +472,79 @@ func TestGetPassword(t *testing.T) {
 				Err:     errors.Wrap(errBoom, errGetPasswordSecretFailed),
 			},
 		},
+		"OutputDoesNotExistYet": {
+			args: args{
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							DBName: &dbName,
+							MasterPasswordSecretRef: &v1alpha1.SecretKeySelector{
+								SecretReference: v1alpha1.SecretReference{
+									Name:      connectionSecretName,
+									Namespace: secretNamespace,
+								},
+								Key: connectionSecretKey,
+							},
+						},
+						ResourceSpec: v1alpha1.ResourceSpec{
+							WriteConnectionSecretToReference: &v1alpha1.SecretReference{
+								Name:      outputSecretName,
+								Namespace: secretNamespace,
+							},
+						},
+					},
+				},
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key.Name {
+						case connectionSecretName:
+							secret := corev1.Secret{
+								Data: map[string][]byte{},
+							}
+							secret.Data[connectionSecretKey] = []byte(connectionCredData)
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						case outputSecretName:
+							return errBoom
+						default:
+							return nil
+						}
+					},
+				},
+			},
+			want: want{
+				Pwd:     connectionCredData,
+				Changed: true,
+				Err:     nil,
+			},
+		},
+		"NoInputPassword": {
+			args: args{
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							DBName: &dbName,
+						},
+						ResourceSpec: v1alpha1.ResourceSpec{
+							WriteConnectionSecretToReference: &v1alpha1.SecretReference{
+								Name:      outputSecretName,
+								Namespace: secretNamespace,
+							},
+						},
+					},
+				},
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						return errBoom
+					},
+				},
+			},
+			want: want{
+				Pwd:     "",
+				Changed: false,
+				Err:     nil,
+			},
+		},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
