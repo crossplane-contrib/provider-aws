@@ -6,6 +6,7 @@ metadata:
     crossplane.io/external-name: external-name
 spec:
   forProvider:
+    region: us-east-1
     attributeDefinitions:
       - attributeName: attribute1
         attributeType: S

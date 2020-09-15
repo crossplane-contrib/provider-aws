@@ -579,6 +579,10 @@ spec:
                     the subnets are part of a VPC that has an Internet gateway attached    to
                     it, the DB instance is public.'
                   type: boolean
+                region:
+                  description: Region is the region you'd like your RDSInstance to
+                    be created in.
+                  type: string
                 scalingConfiguration:
                   description: ScalingConfiguration is the scaling properties of the
                     DB cluster. You can only modify scaling properties for DB clusters

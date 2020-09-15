@@ -51,7 +51,6 @@ spec:
       kind: VPC
       spec:
         forProvider:
-          region: us-west-2
           cidrBlock: 192.168.0.0/16
           enableDnsSupport: true
           enableDnsHostNames: true
@@ -62,8 +61,8 @@ spec:
       toFieldPath: "metadata.labels"
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerConfigRef.name"
-      toFieldPath: "spec.providerConfigRef.name"
+    - fromFieldPath: "spec.providerRef.name"
+      toFieldPath: "spec.providerRef.name"
   - base:
       apiVersion: ec2.aws.crossplane.io/v1beta1
       kind: Subnet
@@ -72,7 +71,6 @@ spec:
           subnet-1: "true"
       spec:
         forProvider:
-          region: us-west-2
           cidrBlock: 192.168.64.0/18
           vpcIdSelector:
             matchControllerRef: true
@@ -81,8 +79,8 @@ spec:
     patches:
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerConfigRef.name"
-      toFieldPath: "spec.providerConfigRef.name"
+    - fromFieldPath: "spec.providerRef.name"
+      toFieldPath: "spec.providerRef.name"
   - base:
       apiVersion: ec2.aws.crossplane.io/v1beta1
       kind: Subnet
@@ -91,7 +89,6 @@ spec:
           subnet-2: "true"
       spec:
         forProvider:
-          region: us-west-2
           cidrBlock: 192.168.128.0/18
           availabilityZone: us-west-2b
           vpcIdSelector:
@@ -101,8 +98,8 @@ spec:
     patches:
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerConfigRef.name"
-      toFieldPath: "spec.providerConfigRef.name"
+    - fromFieldPath: "spec.providerRef.name"
+      toFieldPath: "spec.providerRef.name"
   - base:
       apiVersion: ec2.aws.crossplane.io/v1beta1
       kind: Subnet
@@ -111,7 +108,6 @@ spec:
           subnet-3: "true"
       spec:
         forProvider:
-          region: us-west-2
           cidrBlock: 192.168.192.0/18
           availabilityZone: us-west-2a
           vpcIdSelector:
@@ -121,8 +117,8 @@ spec:
     patches:
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerConfigRef.name"
-      toFieldPath: "spec.providerConfigRef.name"
+    - fromFieldPath: "spec.providerRef.name"
+      toFieldPath: "spec.providerRef.name"
   - base:
       apiVersion: ec2.aws.crossplane.io/v1beta1
       kind: InternetGateway
@@ -136,8 +132,8 @@ spec:
       toFieldPath: "metadata.labels"
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerConfigRef.name"
-      toFieldPath: "spec.providerConfigRef.name"
+    - fromFieldPath: "spec.providerRef.name"
+      toFieldPath: "spec.providerRef.name"
   - base:
       apiVersion: ec2.aws.crossplane.io/v1beta1
       kind: RouteTable
@@ -168,8 +164,8 @@ spec:
       toFieldPath: "metadata.labels"
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerConfigRef.name"
-      toFieldPath: "spec.providerConfigRef.name"
+    - fromFieldPath: "spec.providerRef.name"
+      toFieldPath: "spec.providerRef.name"
   - base:
       apiVersion: ec2.aws.crossplane.io/v1beta1
       kind: SecurityGroup
@@ -190,7 +186,7 @@ spec:
       toFieldPath: "metadata.labels"
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
-    - fromFieldPath: "spec.providerConfigRef.name"
-      toFieldPath: "spec.providerConfigRef.name"
+    - fromFieldPath: "spec.providerRef.name"
+      toFieldPath: "spec.providerRef.name"
     - fromFieldPath: "spec.sgName"
       toFieldPath: "spec.forProvider.groupName"

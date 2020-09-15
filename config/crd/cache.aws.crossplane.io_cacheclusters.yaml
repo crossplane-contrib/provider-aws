@@ -23,6 +23,10 @@ spec:
     type: date
   group: cache.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - managed
+    - aws
     kind: CacheCluster
     listKind: CacheClusterList
     plural: cacheclusters
@@ -244,6 +248,10 @@ spec:
                   description: Specifies the weekly time range during which maintenance
                     on the cluster is performed.
                   type: string
+                region:
+                  description: Region is the region you'd like your CacheSubnetGroup
+                    to be created in.
+                  type: string
                 replicationGroupId:
                   description: The ID of the replication group to which this cluster
                     should belong.
@@ -321,6 +329,7 @@ spec:
               required:
               - cacheNodeType
               - numCacheNodes
+              - region
               type: object
             providerConfigRef:
               description: ProviderConfigReference specifies how the provider that

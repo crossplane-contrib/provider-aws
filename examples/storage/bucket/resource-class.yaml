@@ -11,7 +11,7 @@ specTemplate:
   cannedACL: private
   region: us-east-1
   localPermission: ReadWrite
-  providerConfigRef:
+  providerRef:
     name: example
   reclaimPolicy: Delete
 ---
@@ -32,7 +32,7 @@ specTemplate:
     - key: k2
       value: val2
   localPermission: ReadWrite
-  providerConfigRef:
+  providerRef:
     name: example
   reclaimPolicy: Delete
 ---

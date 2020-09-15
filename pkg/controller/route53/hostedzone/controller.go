@@ -73,7 +73,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "")
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "aws-global")
 	if err != nil {
 		return nil, err
 	}

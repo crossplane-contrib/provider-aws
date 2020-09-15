@@ -293,6 +293,10 @@ spec:
                     is not required if NumCacheClusters, NumNodeGroups or ReplicasPerNodeGroup
                     is specified."
                   type: string
+                region:
+                  description: Region is the region you'd like your ReplicationGroup
+                    to be created in.
+                  type: string
                 replicasPerNodeGroup:
                   description: ReplicasPerNodeGroup specifies the number of replica
                     nodes in each node group (shard). Valid values are 0 to 5.

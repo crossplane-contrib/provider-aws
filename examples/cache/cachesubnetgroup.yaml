@@ -4,6 +4,7 @@ metadata:
   name: sample-subnet
 spec:
   forProvider:
+    region: us-east-1
     description: desc for subnet
     subnetIds:
       - subnet-05c5f0ffc34973e8b
