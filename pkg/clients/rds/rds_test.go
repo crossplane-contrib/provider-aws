@@ -24,10 +24,15 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/provider-aws/apis/database/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
@@ -68,6 +73,14 @@ var (
 	vpc               = "vpc"
 	window            = "window"
 	zone              = "zone"
+
+	secretNamespace      = "crossplane-system"
+	connectionSecretName = "my-little-secret"
+	connectionSecretKey  = "credentials"
+	connectionCredData   = "confidential!"
+	outputSecretName     = "my-saved-secret"
+
+	errBoom = errors.New("boom")
 )
 
 func TestCreatePatch(t *testing.T) {
@@ -136,8 +149,9 @@ func TestIsUpToDate(t *testing.T) {
 	dbSubnetGroupName := "example-subnet"
 
 	type args struct {
-		db rds.DBInstance
-		p  v1beta1.RDSInstanceParameters
+		db   rds.DBInstance
+		r    v1beta1.RDSInstance
+		kube client.Client
 	}
 
 	cases := map[string]struct {
@@ -151,10 +165,14 @@ func TestIsUpToDate(t *testing.T) {
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
 				},
-				p: v1beta1.RDSInstanceParameters{
-					AllocatedStorage: aws.IntAddress(aws.Int64(20)),
-					CharacterSetName: &characterSetName,
-					DBName:           &dbName,
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							AllocatedStorage: aws.IntAddress(aws.Int64(20)),
+							CharacterSetName: &characterSetName,
+							DBName:           &dbName,
+						},
+					},
 				},
 			},
 			want: true,
@@ -166,10 +184,14 @@ func TestIsUpToDate(t *testing.T) {
 					CharacterSetName: &characterSetName,
 					DBName:           &dbName,
 				},
-				p: v1beta1.RDSInstanceParameters{
-					AllocatedStorage: aws.IntAddress(aws.Int64(30)),
-					CharacterSetName: &characterSetName,
-					DBName:           &dbName,
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							AllocatedStorage: aws.IntAddress(aws.Int64(30)),
+							CharacterSetName: &characterSetName,
+							DBName:           &dbName,
+						},
+					},
 				},
 			},
 			want: false,
@@ -180,21 +202,286 @@ func TestIsUpToDate(t *testing.T) {
 					DBName:        &dbName,
 					DBSubnetGroup: &rds.DBSubnetGroup{DBSubnetGroupName: &dbSubnetGroupName},
 				},
-				p: v1beta1.RDSInstanceParameters{
-					DBName:               &dbName,
-					DBSubnetGroupName:    &dbSubnetGroupName,
-					DBSubnetGroupNameRef: &v1alpha1.Reference{Name: "coolgroup"},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							DBName:               &dbName,
+							DBSubnetGroupName:    &dbSubnetGroupName,
+							DBSubnetGroupNameRef: &v1alpha1.Reference{Name: "coolgroup"},
+						},
+					},
 				},
 			},
 			want: true,
+		},
+		"SamePassword": {
+			args: args{
+				db: rds.DBInstance{
+					DBName: &dbName,
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							DBName: &dbName,
+							MasterPasswordSecretRef: &v1alpha1.SecretKeySelector{
+								SecretReference: v1alpha1.SecretReference{
+									Name:      connectionSecretName,
+									Namespace: secretNamespace,
+								},
+								Key: connectionSecretKey,
+							},
+						},
+						ResourceSpec: v1alpha1.ResourceSpec{
+							WriteConnectionSecretToReference: &v1alpha1.SecretReference{
+								Name:      outputSecretName,
+								Namespace: secretNamespace,
+							},
+						},
+					},
+				},
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key.Name {
+						case connectionSecretName:
+							secret := corev1.Secret{
+								Data: map[string][]byte{},
+							}
+							secret.Data[connectionSecretKey] = []byte(connectionCredData)
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						case outputSecretName:
+							secret := corev1.Secret{
+								Data: map[string][]byte{},
+							}
+							secret.Data[v1alpha1.ResourceCredentialsSecretPasswordKey] = []byte(connectionCredData)
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						default:
+							return nil
+						}
+					},
+				},
+			},
+			want: true,
+		},
+		"DifferentPassword": {
+			args: args{
+				db: rds.DBInstance{
+					DBName: &dbName,
+				},
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							DBName: &dbName,
+							MasterPasswordSecretRef: &v1alpha1.SecretKeySelector{
+								SecretReference: v1alpha1.SecretReference{
+									Name:      connectionSecretName,
+									Namespace: secretNamespace,
+								},
+								Key: connectionSecretKey,
+							},
+						},
+						ResourceSpec: v1alpha1.ResourceSpec{
+							WriteConnectionSecretToReference: &v1alpha1.SecretReference{
+								Name:      outputSecretName,
+								Namespace: secretNamespace,
+							},
+						},
+					},
+				},
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key.Name {
+						case connectionSecretName:
+							secret := corev1.Secret{
+								Data: map[string][]byte{},
+							}
+							secret.Data[connectionSecretKey] = []byte(connectionCredData)
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						case outputSecretName:
+							secret := corev1.Secret{
+								Data: map[string][]byte{},
+							}
+							secret.Data[v1alpha1.ResourceCredentialsSecretPasswordKey] = []byte("not" + connectionCredData)
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						default:
+							return nil
+						}
+					},
+				},
+			},
+			want: false,
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.Background()
-			got, _ := IsUpToDate(ctx, nil, tc.args.p, tc.args.db, nil)
+			got, _ := IsUpToDate(ctx, tc.args.kube, &tc.args.r, tc.args.db)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGetPassword(t *testing.T) {
+	type args struct {
+		r    v1beta1.RDSInstance
+		kube client.Client
+	}
+	type want struct {
+		Pwd     string
+		Changed bool
+		Err     error
+	}
+
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"SamePassword": {
+			args: args{
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							DBName: &dbName,
+							MasterPasswordSecretRef: &v1alpha1.SecretKeySelector{
+								SecretReference: v1alpha1.SecretReference{
+									Name:      connectionSecretName,
+									Namespace: secretNamespace,
+								},
+								Key: connectionSecretKey,
+							},
+						},
+						ResourceSpec: v1alpha1.ResourceSpec{
+							WriteConnectionSecretToReference: &v1alpha1.SecretReference{
+								Name:      outputSecretName,
+								Namespace: secretNamespace,
+							},
+						},
+					},
+				},
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key.Name {
+						case connectionSecretName:
+							secret := corev1.Secret{
+								Data: map[string][]byte{},
+							}
+							secret.Data[connectionSecretKey] = []byte(connectionCredData)
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						case outputSecretName:
+							secret := corev1.Secret{
+								Data: map[string][]byte{},
+							}
+							secret.Data[v1alpha1.ResourceCredentialsSecretPasswordKey] = []byte(connectionCredData)
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						default:
+							return nil
+						}
+					},
+				},
+			},
+			want: want{
+				Pwd:     connectionCredData,
+				Changed: false,
+				Err:     nil,
+			},
+		},
+		"DifferentPassword": {
+			args: args{
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							DBName: &dbName,
+							MasterPasswordSecretRef: &v1alpha1.SecretKeySelector{
+								SecretReference: v1alpha1.SecretReference{
+									Name:      connectionSecretName,
+									Namespace: secretNamespace,
+								},
+								Key: connectionSecretKey,
+							},
+						},
+						ResourceSpec: v1alpha1.ResourceSpec{
+							WriteConnectionSecretToReference: &v1alpha1.SecretReference{
+								Name:      outputSecretName,
+								Namespace: secretNamespace,
+							},
+						},
+					},
+				},
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						switch key.Name {
+						case connectionSecretName:
+							secret := corev1.Secret{
+								Data: map[string][]byte{},
+							}
+							secret.Data[connectionSecretKey] = []byte(connectionCredData)
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						case outputSecretName:
+							secret := corev1.Secret{
+								Data: map[string][]byte{},
+							}
+							secret.Data[v1alpha1.ResourceCredentialsSecretPasswordKey] = []byte("not" + connectionCredData)
+							secret.DeepCopyInto(obj.(*corev1.Secret))
+							return nil
+						default:
+							return nil
+						}
+					},
+				},
+			},
+			want: want{
+				Pwd:     connectionCredData,
+				Changed: true,
+				Err:     nil,
+			},
+		},
+		"ErrorOnInput": {
+			args: args{
+				r: v1beta1.RDSInstance{
+					Spec: v1beta1.RDSInstanceSpec{
+						ForProvider: v1beta1.RDSInstanceParameters{
+							DBName: &dbName,
+							MasterPasswordSecretRef: &v1alpha1.SecretKeySelector{
+								SecretReference: v1alpha1.SecretReference{
+									Name:      connectionSecretName,
+									Namespace: secretNamespace,
+								},
+								Key: connectionSecretKey,
+							},
+						},
+					},
+				},
+				kube: &test.MockClient{
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						return errBoom
+					},
+				},
+			},
+			want: want{
+				Pwd:     "",
+				Changed: false,
+				Err:     errors.Wrap(errBoom, errGetPasswordSecretFailed),
+			},
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			ctx := context.Background()
+			pwd, changed, err := GetPassword(ctx, tc.args.kube, &tc.args.r)
+			if diff := cmp.Diff(tc.want, want{
+				Pwd:     pwd,
+				Changed: changed,
+				Err:     err,
+			}, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
