@@ -48,6 +48,7 @@ type LifecycleRule struct {
 	// is not currently being applied.
 	//
 	// Status is a required field, valid values are Enabled or Disabled
+	// +kubebuilder:validation:Enum=Enabled;Disabled
 	Status string `json:"status"`
 
 	// Specifies when an Amazon S3 object transitions to a specified storage class.
@@ -140,6 +141,7 @@ type NoncurrentVersionTransition struct {
 
 	// The class of storage used to store the object.
 	// Valid values are: GLACIER, STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, DEEP_ARCHIVE
+	// +kubebuilder:validation:Enum=GLACIER;STANDARD_IA;ONEZONE_IA;INTELLIGENT_TIERING;DEEP_ARCHIVE
 	StorageClass string `json:"storageClass"`
 }
 
@@ -158,5 +160,6 @@ type Transition struct {
 
 	// The storage class to which you want the object to transition.
 	// Valid values are: GLACIER, STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, DEEP_ARCHIVE
+	// +kubebuilder:validation:Enum=GLACIER;STANDARD_IA;ONEZONE_IA;INTELLIGENT_TIERING;DEEP_ARCHIVE
 	StorageClass string `json:"storageClass"`
 }

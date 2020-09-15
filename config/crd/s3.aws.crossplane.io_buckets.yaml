@@ -399,6 +399,12 @@ spec:
                                   description: 'The class of storage used to store
                                     the object. Valid values are: GLACIER, STANDARD_IA,
                                     ONEZONE_IA, INTELLIGENT_TIERING, DEEP_ARCHIVE'
+                                  enum:
+                                  - GLACIER
+                                  - STANDARD_IA
+                                  - ONEZONE_IA
+                                  - INTELLIGENT_TIERING
+                                  - DEEP_ARCHIVE
                                   type: string
                               required:
                               - storageClass
@@ -409,6 +415,9 @@ spec:
                               applied. If 'Disabled', the rule is not currently being
                               applied. \n Status is a required field, valid values
                               are Enabled or Disabled"
+                            enum:
+                            - Enabled
+                            - Disabled
                             type: string
                           transitions:
                             description: Specifies when an Amazon S3 object transitions
@@ -438,6 +447,12 @@ spec:
                                     the object to transition. Valid values are: GLACIER,
                                     STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING,
                                     DEEP_ARCHIVE'
+                                  enum:
+                                  - GLACIER
+                                  - STANDARD_IA
+                                  - ONEZONE_IA
+                                  - INTELLIGENT_TIERING
+                                  - DEEP_ARCHIVE
                                   type: string
                               required:
                               - storageClass
@@ -473,6 +488,10 @@ spec:
                             description: Logging permissions assigned to the Grantee
                               for the bucket. Valid values are "FULL_CONTROL", "READ",
                               "WRITE"
+                            enum:
+                            - FULL_CONTROL
+                            - READ
+                            - WRITE
                             type: string
                           targetGrantee:
                             description: Container for the person being granted permissions.
@@ -494,6 +513,10 @@ spec:
                                 type: string
                               type:
                                 description: Type of grantee Type is a required field
+                                enum:
+                                - CanonicalUser
+                                - AmazonCustomerByEmail
+                                - Group
                                 type: string
                             required:
                             - type
@@ -568,6 +591,9 @@ spec:
                                             Event Notifications (https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html)
                                             in the Amazon Simple Storage Service Developer
                                             Guide. Valid values are "prefix" or "suffix"
+                                          enum:
+                                          - prefix
+                                          - suffix
                                           type: string
                                         value:
                                           description: The value that the filter searches
@@ -642,6 +668,9 @@ spec:
                                             Event Notifications (https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html)
                                             in the Amazon Simple Storage Service Developer
                                             Guide. Valid values are "prefix" or "suffix"
+                                          enum:
+                                          - prefix
+                                          - suffix
                                           type: string
                                         value:
                                           description: The value that the filter searches
@@ -719,6 +748,9 @@ spec:
                                             Event Notifications (https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html)
                                             in the Amazon Simple Storage Service Developer
                                             Guide. Valid values are "prefix" or "suffix"
+                                          enum:
+                                          - prefix
+                                          - suffix
                                           type: string
                                         value:
                                           description: The value that the filter searches
@@ -759,6 +791,9 @@ spec:
                     payer:
                       description: Payer is a required field, detailing who pays Valid
                         values are "Requester" and "BucketOwner"
+                      enum:
+                      - Requester
+                      - BucketOwner
                       type: string
                   required:
                   - payer
@@ -776,6 +811,30 @@ spec:
                         in the Amazon Simple Storage Service Developer Guide. \n Role
                         is a required field"
                       type: string
+                    roleRef:
+                      description: RoleRef references an IAMRole to retrieve its Name
+                      properties:
+                        name:
+                          description: Name of the referenced object.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    roleSelector:
+                      description: RoleSelector selects a reference to an IAMRole
+                        to retrieve its Name
+                      properties:
+                        matchControllerRef:
+                          description: MatchControllerRef ensures an object with the
+                            same controller reference as the selecting object is selected.
+                          type: boolean
+                        matchLabels:
+                          additionalProperties:
+                            type: string
+                          description: MatchLabels ensures an object with matching
+                            labels is selected.
+                          type: object
+                      type: object
                     rules:
                       description: "A container for one or more replication rules.
                         A replication configuration must have at least one rule and
@@ -826,6 +885,32 @@ spec:
                                   bucket where you want Amazon S3 to store the results.
                                   Bucket is a required field
                                 type: string
+                              bucketRef:
+                                description: BucketRef references a Bucket to retrieve
+                                  its Name
+                                properties:
+                                  name:
+                                    description: Name of the referenced object.
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                              bucketSelector:
+                                description: BucketSelector selects a reference to
+                                  a Bucket to retrieve its Name
+                                properties:
+                                  matchControllerRef:
+                                    description: MatchControllerRef ensures an object
+                                      with the same controller reference as the selecting
+                                      object is selected.
+                                    type: boolean
+                                  matchLabels:
+                                    additionalProperties:
+                                      type: string
+                                    description: MatchLabels ensures an object with
+                                      matching labels is selected.
+                                    type: object
+                                type: object
                               encryptionConfiguration:
                                 description: A container that provides information
                                   about encryption. If SourceSelectionCriteria is
@@ -869,11 +954,19 @@ spec:
                                     description: "Specifies whether the replication
                                       metrics are enabled. \n Status is a required
                                       field, valid values are \"Enabled\" and \"Disabled\""
+                                    enum:
+                                    - Enabled
+                                    - Disabled
                                     type: string
                                 required:
                                 - eventThreshold
                                 - status
                                 type: object
+                              referenceCurrentAccount:
+                                description: Reference the AWS account assigned in
+                                  the provider as the destination bucket owner account
+                                  ID.
+                                type: boolean
                               replicationTime:
                                 description: A container specifying S3 Replication
                                   Time Control (S3 RTC), including whether S3 RTC
@@ -885,6 +978,9 @@ spec:
                                     description: Specifies whether the replication
                                       time is enabled Status is a required field Valid
                                       values are "Enabled" and "Disabled"
+                                    enum:
+                                    - Enabled
+                                    - Disabled
                                     type: string
                                   time:
                                     description: A container specifying the time by
@@ -932,6 +1028,9 @@ spec:
                               status:
                                 description: Status is a required field Valid values
                                   are "Enabled" and "Disabled"
+                                enum:
+                                - Enabled
+                                - Disabled
                                 type: string
                             required:
                             - status
@@ -956,6 +1055,8 @@ spec:
                                   markers. In the current implementation, Amazon S3
                                   doesn't replicate the delete markers. The status
                                   must be "Disabled".
+                                enum:
+                                - Disabled
                                 type: string
                             required:
                             - Status
@@ -1064,6 +1165,9 @@ spec:
                                       using a customer master key (CMK) stored in
                                       AWS Key Management Service. \n Status is a required
                                       field Valid values are \"Enabled\" or \"Disabled\""
+                                    enum:
+                                    - Enabled
+                                    - Disabled
                                     type: string
                                 required:
                                 - status
@@ -1075,6 +1179,9 @@ spec:
                             description: "Specifies whether the rule is enabled. \n
                               Status is a required field Valid values are \"Enabled\"
                               or \"Disabled\""
+                            enum:
+                            - Enabled
+                            - Disabled
                             type: string
                         required:
                         - Destination
