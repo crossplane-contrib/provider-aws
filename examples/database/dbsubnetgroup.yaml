@@ -1,0 +1,13 @@
+apiVersion: database.aws.crossplane.io/v1alpha1
+kind: DBSubnetGroup
+metadata:
+  name: sample-subnet-group
+spec:
+  forProvider:
+    region: us-east-1
+    description: "sample group"
+    subnetIdRefs:
+      - name: sample-subnet1
+  reclaimPolicy: Delete
+  providerConfigRef:
+    name: example
