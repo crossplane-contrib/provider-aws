@@ -91,6 +91,9 @@ type HealthCheck struct {
 
 // ELBParameters define the desired state of an AWS ELB.
 type ELBParameters struct {
+	// Region is the region you'd like your ELB to be created in.
+	Region string `json:"region"`
+
 	// One or more Availability Zones from the same region as the load balancer.
 	// +optional
 	AvailabilityZones []string `json:"availabilityZones,omitempty"`

@@ -23,6 +23,9 @@ import (
 
 // ELBAttachmentParameters define the desired state of an AWS ELBAttachment.
 type ELBAttachmentParameters struct {
+	// Region is the region you'd like your ELBAttachment to be in.
+	Region string `json:"region"`
+
 	// Name of the Elastic Load Balancer to which the instances will attach.
 	// +immutable
 	// +optional
