@@ -177,8 +177,13 @@ spec:
                 instanceId:
                   description: List of identities of the instances to be attached.
                   type: string
+                region:
+                  description: Region is the region you'd like your ELBAttachment
+                    to be in.
+                  type: string
               required:
               - instanceId
+              - region
               type: object
             providerConfigRef:
               description: ProviderConfigReference specifies how the provider that

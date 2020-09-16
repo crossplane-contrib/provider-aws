@@ -221,6 +221,10 @@ spec:
                     - protocol
                     type: object
                   type: array
+                region:
+                  description: Region is the region you'd like your ELB to be created
+                    in.
+                  type: string
                 scheme:
                   description: The type of a load balancer. Valid only for load balancers
                     in a VPC.
@@ -312,6 +316,7 @@ spec:
                   type: array
               required:
               - listeners
+              - region
               type: object
             providerConfigRef:
               description: ProviderConfigReference specifies how the provider that
