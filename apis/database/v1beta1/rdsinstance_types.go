@@ -114,7 +114,8 @@ type RDSInstanceParameters struct {
 	// keeping it optional for now. Reconsider before v1beta2 or v1.
 
 	// Region is the region you'd like your RDSInstance to be created in.
-	Region string `json:"region,omitempty"`
+	// +optional
+	Region *string `json:"region,omitempty"`
 
 	// AllocatedStorage is the amount of storage (in gibibytes) to allocate for the DB instance.
 	// Type: Integer

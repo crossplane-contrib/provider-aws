@@ -120,8 +120,8 @@ func LateInitializeCertificateAuthority(in *v1alpha1.CertificateAuthorityParamet
 	// NOTE(muvaf): Only ACTIVE and DISABLED statuses can be assigned by the user
 	// so these are the only variants we support in spec. The current status
 	// in the status.atProvider.
-	if in.Status == "" && (certificateAuthority.Status == acmpca.CertificateAuthorityStatusActive || certificateAuthority.Status == acmpca.CertificateAuthorityStatusDisabled) {
-		in.Status = string(certificateAuthority.Status)
+	if aws.StringValue(in.Status) == "" && (certificateAuthority.Status == acmpca.CertificateAuthorityStatusActive || certificateAuthority.Status == acmpca.CertificateAuthorityStatusDisabled) {
+		in.Status = aws.String(string(certificateAuthority.Status))
 	}
 
 	if aws.BoolValue(certificateAuthority.RevocationConfiguration.CrlConfiguration.Enabled) {
@@ -166,7 +166,8 @@ func IsCertificateAuthorityUpToDate(p *v1alpha1.CertificateAuthority, cd acmpca.
 		return false
 	}
 
-	if p.Spec.ForProvider.Status != string(cd.Status) {
+	desired := aws.StringValue(p.Spec.ForProvider.Status)
+	if (desired == string(acmpca.CertificateAuthorityStatusActive) || desired == string(acmpca.CertificateAuthorityStatusDisabled)) && desired != string(cd.Status) {
 		return false
 	}
 

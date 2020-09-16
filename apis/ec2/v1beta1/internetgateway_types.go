@@ -40,7 +40,8 @@ type InternetGatewayParameters struct {
 	// keeping it optional for now. Reconsider before v1beta2 or v1.
 
 	// Region is the region you'd like your VPC to be created in.
-	Region string `json:"region,omitempty"`
+	// +optional
+	Region *string `json:"region,omitempty"`
 
 	// VPCID is the ID of the VPC.
 	// +optional

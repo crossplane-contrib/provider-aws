@@ -243,7 +243,8 @@ type ReplicationGroupParameters struct {
 	// keeping it optional for now. Reconsider before v1beta2 or v1.
 
 	// Region is the region you'd like your ReplicationGroup to be created in.
-	Region string `json:"region,omitempty"`
+	// +optional
+	Region *string `json:"region,omitempty"`
 
 	// If true, this parameter causes the modifications in this request and any
 	// pending modifications to be applied, asynchronously and as soon as possible,

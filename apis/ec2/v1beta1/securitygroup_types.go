@@ -29,8 +29,9 @@ type SecurityGroupParameters struct {
 	// with old Provider type and not bear the cost of bumping to v1beta2, we're
 	// keeping it optional for now. Reconsider before v1beta2 or v1.
 
-	// Region is the region you'd like your VPC to be created in.
-	Region string `json:"region,omitempty"`
+	// Region is the region you'd like your SecurityGroup to be created in.
+	// +optional
+	Region *string `json:"region,omitempty"`
 
 	// A description of the security group.
 	// +immutable

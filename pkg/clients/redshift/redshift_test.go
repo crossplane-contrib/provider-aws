@@ -18,7 +18,6 @@ package redshift
 
 import (
 	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -291,8 +290,6 @@ func TestLateInitialize(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			names := name
-			fmt.Print(names)
 			LateInitialize(tc.args.in, &tc.args.cl)
 			if diff := cmp.Diff(tc.args.in, tc.want); diff != "" {
 				t.Errorf("LateInitializeSpec(...): -want, +got:\n%s", diff)

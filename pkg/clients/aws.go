@@ -47,6 +47,10 @@ import (
 // DefaultSection for INI files.
 const DefaultSection = ini.DefaultSection
 
+// GlobalRegion is the region name used for AWS services that do not have a notion
+// of region.
+const GlobalRegion = "aws-global"
+
 // A FieldOption determines how common Go types are translated to the types
 // required by the AWS Go SDK.
 type FieldOption int
