@@ -370,19 +370,10 @@ spec:
                     @, or space.'
                   type: string
                 nodeType:
-                  description: NodeType is the node type defining it's size and compute
+                  description: NodeType is the node type defining its size and compute
                     capacity to be provisioned for the cluster. For information about
                     node types, go to Working with Clusters (https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-clusters.html#how-many-nodes)
                     in the Amazon Redshift Cluster Management Guide.
-                  enum:
-                  - ds2.xlarge
-                  - ds2.8xlarge
-                  - dc1.large
-                  - dc1.8xlarge
-                  - dc2.large
-                  - dc2.8xlarge
-                  - ra3.4xlarge
-                  - ra3.16xlarge
                   type: string
                 numberOfNodes:
                   description: NumberOfNodes defines the number of compute nodes in
@@ -421,6 +412,10 @@ spec:
                   description: PubliclyAccessible is to specify if the cluster can
                     be accessed from a public network.
                   type: boolean
+                region:
+                  description: Region is the region you'd like the Cluster to be created
+                    in.
+                  type: string
                 skipFinalClusterSnapshot:
                   description: 'SkipFinalClusterSnapshot determines whether a final
                     snapshot of the cluster is created before Amazon Redshift deletes
@@ -487,6 +482,7 @@ spec:
               required:
               - masterUsername
               - nodeType
+              - region
               type: object
             providerConfigRef:
               description: ProviderConfigReference specifies how the provider that

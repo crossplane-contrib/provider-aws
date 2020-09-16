@@ -318,18 +318,8 @@ func (in *ClusterParameters) DeepCopyInto(out *ClusterParameters) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.MasterUsername != nil {
-		in, out := &in.MasterUsername, &out.MasterUsername
-		*out = new(string)
-		**out = **in
-	}
 	if in.NewClusterIdentifier != nil {
 		in, out := &in.NewClusterIdentifier, &out.NewClusterIdentifier
-		*out = new(string)
-		**out = **in
-	}
-	if in.NodeType != nil {
-		in, out := &in.NodeType, &out.NodeType
 		*out = new(string)
 		**out = **in
 	}
