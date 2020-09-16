@@ -76,6 +76,9 @@ type CertificateStatus struct {
 // CertificateParameters defines the desired state of an AWS Certificate.
 type CertificateParameters struct {
 
+	// Region is the region you'd like your Certificate to be created in.
+	Region string `json:"region"`
+
 	// The Amazon Resource Name (ARN) of the private certificate authority (CA)that will be used to issue the certificate.
 	// +optional
 	CertificateAuthorityARN *string `json:"certificateAuthorityARN,omitempty"`

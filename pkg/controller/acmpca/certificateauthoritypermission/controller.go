@@ -68,7 +68,11 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awscommon.GetConfig(ctx, c.client, mg, "")
+	cr, ok := mg.(*v1alpha1.CertificateAuthorityPermission)
+	if !ok {
+		return nil, errors.New(errUnexpectedObject)
+	}
+	cfg, err := awscommon.GetConfig(ctx, c.client, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -85,44 +89,34 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
-
 	response, err := e.client.ListPermissionsRequest(&awsacmpca.ListPermissionsInput{
 		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
 	}).Send(ctx)
-
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errGet)
 	}
-
 	if len(response.Permissions) == 0 {
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
 	}
-
 	cr.SetConditions(runtimev1alpha1.Available())
-
 	return managed.ExternalObservation{
 		ResourceExists: true,
 	}, nil
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-
 	cr, ok := mgd.(*v1alpha1.CertificateAuthorityPermission)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
-
 	_, err := e.client.CreatePermissionRequest(&awsacmpca.CreatePermissionInput{
-
 		Actions:                 []awsacmpca.ActionType{awsacmpca.ActionTypeIssueCertificate, awsacmpca.ActionTypeGetCertificate, awsacmpca.ActionTypeListPermissions},
 		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
 		Principal:               aws.String(principal),
 	}).Send(ctx)
-
 	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 
 }

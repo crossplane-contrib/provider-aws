@@ -35,6 +35,9 @@ type CertificateAuthorityPermissionStatus struct {
 // CertificateAuthorityPermissionParameters defines the desired state of an AWS CertificateAuthority.
 type CertificateAuthorityPermissionParameters struct {
 
+	// Region is the region of CertificateAuthorityPermission.
+	Region string `json:"region"`
+
 	// The Amazon Resource Name (ARN) of the private certificate authority (CA)that will be used to issue the certificate.
 	// +immutable
 	CertificateAuthorityARN *string `json:"certificateAuthorityARN,omitempty"`

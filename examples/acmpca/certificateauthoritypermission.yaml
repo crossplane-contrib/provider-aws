@@ -4,8 +4,9 @@ metadata:
   name: example
 spec:
   forProvider:
+    region: us-east-1
     certificateAuthorityARNRef:
       name: example
   reclaimPolicy: Delete
   providerConfigRef:
-    name: aws-provider
+    name: example
