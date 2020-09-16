@@ -39,6 +39,9 @@ const (
 // NodeGroupParameters define the desired state of an AWS Elastic Kubernetes
 // Service NodeGroup.
 type NodeGroupParameters struct {
+	// Region is the region you'd like  the NodeGroup to be created in.
+	Region string `json:"region"`
+
 	// The AMI type for your node group. GPU instance types should use the AL2_x86_64_GPU
 	// AMI type, which uses the Amazon EKS-optimized Linux AMI with GPU support.
 	// Non-GPU instances should use the AL2_x86_64 AMI type, which uses the Amazon
@@ -96,8 +99,7 @@ type NodeGroupParameters struct {
 	// +immutable
 	NodeRole string `json:"nodeRole,omitempty"`
 
-	// NodeRoleRef is a reference to a Cluster used to set
-	// the NodeRole.
+	// NodeRoleRef is a reference to a Cluster used to set the NodeRole.
 	// +immutable
 	// +optional
 	NodeRoleRef *runtimev1alpha1.Reference `json:"nodeRoleRef,omitempty"`
