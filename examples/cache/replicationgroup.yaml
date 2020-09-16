@@ -13,7 +13,7 @@ spec:
     engine: "redis"
     engineVersion: "5.0.6"
     port: 6379
-    cacheSubnetGroupName: sample-subnet-group-1
+    cacheSubnetGroupNameRef: sample-cache-subnet-group
     numCacheClusters: 3
     cacheParameterGroupName: default.redis5.0
     cacheNodeType: cache.t3.medium
