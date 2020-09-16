@@ -48,8 +48,7 @@ func fullClusterParam() *v1alpha1.ClusterParameters {
 		KMSKeyID:                         aws.String(""),
 		MaintenanceTrackName:             aws.String(""),
 		ManualSnapshotRetentionPeriod:    aws.Int64(0),
-		MasterUsername:                   aws.String(""),
-		NodeType:                         aws.String("dc1.large"),
+		NodeType:                         "dc1.large",
 		NumberOfNodes:                    aws.Int64(1),
 		PreferredMaintenanceWindow:       aws.String(""),
 		Port:                             aws.Int64(5439),
@@ -66,8 +65,8 @@ func fullClusterParam() *v1alpha1.ClusterParameters {
 
 func clusterParam(m ...func(*v1alpha1.ClusterParameters)) *v1alpha1.ClusterParameters {
 	o := &v1alpha1.ClusterParameters{
-		MasterUsername:           aws.String("admin"),
-		NodeType:                 aws.String("dc1.large"),
+		MasterUsername:           "admin",
+		NodeType:                 "dc1.large",
 		ClusterType:              aws.String("single-node"),
 		SkipFinalClusterSnapshot: aws.Bool(true),
 	}
@@ -136,7 +135,7 @@ func TestCreatePatch(t *testing.T) {
 					NumberOfNodes:     aws.Int64(1),
 				},
 				p: &v1alpha1.ClusterParameters{
-					NodeType:    &nodeType,
+					NodeType:    nodeType,
 					ClusterType: &singleNode,
 				},
 			},
@@ -152,7 +151,7 @@ func TestCreatePatch(t *testing.T) {
 					NumberOfNodes:     aws.Int64(2),
 				},
 				p: &v1alpha1.ClusterParameters{
-					NodeType:      &nodeType,
+					NodeType:      nodeType,
 					NumberOfNodes: aws.Int64(1),
 				},
 			},
@@ -194,7 +193,7 @@ func TestIsUpToDate(t *testing.T) {
 					NumberOfNodes:     aws.Int64(1),
 				},
 				p: v1alpha1.ClusterParameters{
-					NodeType:    &nodeType,
+					NodeType:    nodeType,
 					ClusterType: &singleNode,
 				},
 			},
@@ -208,7 +207,7 @@ func TestIsUpToDate(t *testing.T) {
 					NumberOfNodes:     aws.Int64(2),
 				},
 				p: v1alpha1.ClusterParameters{
-					NodeType:    &nodeType,
+					NodeType:    nodeType,
 					ClusterType: &singleNode,
 				},
 			},
@@ -265,8 +264,8 @@ func TestLateInitialize(t *testing.T) {
 				EnhancedVPCRouting:               aws.Bool(false),
 				MaintenanceTrackName:             aws.String("current"),
 				ManualSnapshotRetentionPeriod:    aws.Int64(-1),
-				MasterUsername:                   aws.String("admin"),
-				NodeType:                         aws.String("dc1.large"),
+				MasterUsername:                   "admin",
+				NodeType:                         "dc1.large",
 				NumberOfNodes:                    aws.Int64(1),
 				Port:                             aws.Int64(5439),
 				PubliclyAccessible:               aws.Bool(true),
@@ -394,7 +393,7 @@ func TestGenerateModifyClusterInput(t *testing.T) {
 			args: args{
 				in: &v1alpha1.ClusterParameters{
 					ClusterType:   aws.String("multi-node"),
-					NodeType:      aws.String("dc1.large"),
+					NodeType:      "dc1.large",
 					NumberOfNodes: aws.Int64(2),
 				},
 				cl: *cluster(),

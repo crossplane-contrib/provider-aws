@@ -36,31 +36,28 @@ const (
 	StateFailed = "failed"
 )
 
-// +kubebuilder:object:root=true
-
-// A Cluster is a managed resource that represents an AWS Redshift cluster.
-// +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
-// +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
-// +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.atProvider.clusterStatus"
-// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
-// +kubebuilder:subresource:status
-// +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-type Cluster struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   ClusterSpec   `json:"spec"`
-	Status ClusterStatus `json:"status,omitempty"`
-}
-
-// ClusterSpec defines the desired state of an AWS Redshift Cluster.
-type ClusterSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  ClusterParameters `json:"forProvider"`
-}
-
 // ClusterParameters define the parameters available for an AWS Redshift cluster
 type ClusterParameters struct {
+	// Region is the region you'd like the Cluster to be created in.
+	Region string `json:"region"`
+
+	// NodeType is the node type defining its size and compute capacity to be
+	// provisioned for the cluster. For information about node types,
+	// go to Working with Clusters (https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-clusters.html#how-many-nodes)
+	// in the Amazon Redshift Cluster Management Guide.
+	NodeType string `json:"nodeType"`
+
+	// MasterUsername is the user name associated with the master user account for the cluster that
+	// is being created.
+	// Constraints:
+	//    * Must be 1 - 128 alphanumeric characters. The user name can't be PUBLIC.
+	//    * First character must be a letter.
+	//    * Cannot be a reserved word. A list of reserved words can be found in
+	//    Reserved Words (https://docs.aws.amazon.com/redshift/latest/dg/r_pg_keywords.html)
+	//    in the Amazon Redshift Database Developer Guide.
+	// +immutable
+	MasterUsername string `json:"masterUsername"`
+
 	// AllowVersionUpgrade indicates that major engine upgrades are applied automatically to the
 	// cluster during the maintenance window.
 	// default=true
@@ -253,27 +250,9 @@ type ClusterParameters struct {
 	// +optional
 	NewMasterUserPassword *string `json:"newMasterUserPassword,omitempty"`
 
-	// MasterUsername is the user name associated with the master user account for the cluster that
-	// is being created.
-	// Constraints:
-	//    * Must be 1 - 128 alphanumeric characters. The user name can't be PUBLIC.
-	//    * First character must be a letter.
-	//    * Cannot be a reserved word. A list of reserved words can be found in
-	//    Reserved Words (https://docs.aws.amazon.com/redshift/latest/dg/r_pg_keywords.html)
-	//    in the Amazon Redshift Database Developer Guide.
-	// +immutable
-	MasterUsername *string `json:"masterUsername"`
-
 	// NewClusterIdentifier is the new identifier you want to use for the cluster.
 	// +optional
 	NewClusterIdentifier *string `json:"newClusterIdentifier,omitempty"`
-
-	// NodeType is the node type defining it's size and compute capacity to be
-	// provisioned for the cluster. For information about node types,
-	// go to Working with Clusters (https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-clusters.html#how-many-nodes)
-	// in the Amazon Redshift Cluster Management Guide.
-	// +kubebuilder:validation:Enum=ds2.xlarge;ds2.8xlarge;dc1.large;dc1.8xlarge;dc2.large;dc2.8xlarge;ra3.4xlarge;ra3.16xlarge
-	NodeType *string `json:"nodeType"`
 
 	// NumberOfNodes defines the number of compute nodes in the cluster.
 	// This parameter is required when the ClusterType parameter is specified as multi-node.
@@ -347,12 +326,6 @@ type ClusterParameters struct {
 	// +immutable
 	// +optional
 	VPCSecurityGroupIDSelector *runtimev1alpha1.Selector `json:"vpcSecurityGroupIDSelector,omitempty"`
-}
-
-// ClusterStatus represents the observed state of an AWS Redshift Cluster.
-type ClusterStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     ClusterObservation `json:"atProvider,omitempty"`
 }
 
 // ClusterObservation is the representation of the current state that is observed.
@@ -662,6 +635,35 @@ type Tag struct {
 
 	// The value of the tag.
 	Value string `json:"value"`
+}
+
+// ClusterSpec defines the desired state of an AWS Redshift Cluster.
+type ClusterSpec struct {
+	runtimev1alpha1.ResourceSpec `json:",inline"`
+	ForProvider                  ClusterParameters `json:"forProvider"`
+}
+
+// ClusterStatus represents the observed state of an AWS Redshift Cluster.
+type ClusterStatus struct {
+	runtimev1alpha1.ResourceStatus `json:",inline"`
+	AtProvider                     ClusterObservation `json:"atProvider,omitempty"`
+}
+
+// +kubebuilder:object:root=true
+
+// A Cluster is a managed resource that represents an AWS Redshift cluster.
+// +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
+// +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
+// +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.atProvider.clusterStatus"
+// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:subresource:status
+// +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
+type Cluster struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   ClusterSpec   `json:"spec"`
+	Status ClusterStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
