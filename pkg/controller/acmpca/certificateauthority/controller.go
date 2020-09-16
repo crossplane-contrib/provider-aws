@@ -39,7 +39,6 @@ import (
 )
 
 const (
-	errPendingStatus    = "The managed resource in pending status, please open the ACM Private CA console https://console.aws.amazon.com/acm-pca/home install CA certificate "
 	errUnexpectedObject = "The managed resource is not an ACMPCA resource"
 	errGet              = "failed to get ACMPCA with name"
 	errCreate           = "failed to create the ACMPCA resource"
@@ -80,7 +79,11 @@ type connector struct {
 }
 
 func (conn *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awscommon.GetConfig(ctx, conn.client, mg, "")
+	cr, ok := mg.(*v1alpha1.CertificateAuthority)
+	if !ok {
+		return nil, errors.New(errUnexpectedObject)
+	}
+	cfg, err := awscommon.GetConfig(ctx, conn.client, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -174,20 +177,16 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	// Update the Certificate Authority tags
 	if len(cr.Spec.ForProvider.Tags) > 0 {
-
 		tags := make([]awsacmpca.Tag, len(cr.Spec.ForProvider.Tags))
 		for i, t := range cr.Spec.ForProvider.Tags {
 			tags[i] = awsacmpca.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
 		}
-
 		currentTags, err := e.client.ListTagsRequest(&awsacmpca.ListTagsInput{
 			CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
 		}).Send(ctx)
-
 		if err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errListTagsFailed)
 		}
-
 		if len(tags) != len(currentTags.Tags) {
 			_, err := e.client.UntagCertificateAuthorityRequest(&awsacmpca.UntagCertificateAuthorityInput{
 				CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
@@ -206,16 +205,11 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	// Check the PCA status and return error if PCA is in Pending State.
-	if *cr.Spec.ForProvider.Status == awsacmpca.CertificateAuthorityStatusPendingCertificate {
-		return managed.ExternalUpdate{}, errors.New(errPendingStatus)
-	}
-
 	// Update Certificate Authority configuration
 	_, err := e.client.UpdateCertificateAuthorityRequest(&awsacmpca.UpdateCertificateAuthorityInput{
 		CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
 		RevocationConfiguration: acmpca.GenerateRevocationConfiguration(cr.Spec.ForProvider.RevocationConfiguration),
-		Status:                  *cr.Spec.ForProvider.Status,
+		Status:                  awsacmpca.CertificateAuthorityStatus(cr.Spec.ForProvider.Status),
 	}).Send(ctx)
 
 	return managed.ExternalUpdate{}, errors.Wrap(err, errCertificateAuthority)

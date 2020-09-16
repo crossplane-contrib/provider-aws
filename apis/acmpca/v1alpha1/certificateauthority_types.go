@@ -24,6 +24,10 @@ import (
 
 // CertificateAuthorityParameters defines the desired state of an AWS CertificateAuthority.
 type CertificateAuthorityParameters struct {
+
+	// Region is the region you'd like your CertificateAuthority to be created in.
+	Region string `json:"region"`
+
 	// Type of the certificate authority
 	// +kubebuilder:validation:Enum=ROOT;SUBORINATE
 	Type acmpca.CertificateAuthorityType `json:"type"`
@@ -43,8 +47,8 @@ type CertificateAuthorityParameters struct {
 	// This value cannot be configured at creation, but can be updated to set a
 	// CA to ACTIVE or DISABLED.
 	// +optional
-	// +kubebuilder:validation:Enum=CREATING;PENDING_CERTIFICATE;ACTIVE;DELETED;DISABLED;EXPIRED;FAILED
-	Status *acmpca.CertificateAuthorityStatus `json:"status,omitempty"`
+	// +kubebuilder:validation:Enum=ACTIVE;DISABLED
+	Status string `json:"status,omitempty"`
 
 	// One or more resource tags to associate with the certificateAuthority.
 	Tags []Tag `json:"tags"`
@@ -169,6 +173,9 @@ type CertificateAuthorityExternalStatus struct {
 
 	// Serial of the Certificate Authority
 	Serial string `json:"serial,omitempty"`
+
+	// Status is the current status of the CertificateAuthority.
+	Status string `json:"status,omitempty"`
 }
 
 // CertificateAuthoritySpec defines the desired state of CertificateAuthority

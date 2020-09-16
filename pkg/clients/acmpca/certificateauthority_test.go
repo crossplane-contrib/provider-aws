@@ -211,7 +211,7 @@ func TestGenerateRevocationConfiguration(t *testing.T) {
 
 func TestLateInitializeCertificateAuthority(t *testing.T) {
 
-	status := acmpca.CertificateAuthorityStatusActive
+	status := "ACTIVE"
 
 	type args struct {
 		spec *v1alpha1.CertificateAuthorityParameters
@@ -228,7 +228,7 @@ func TestLateInitializeCertificateAuthority(t *testing.T) {
 				},
 				in: &acmpca.CertificateAuthority{
 					Type:   acmpca.CertificateAuthorityTypeRoot,
-					Status: status,
+					Status: acmpca.CertificateAuthorityStatus(status),
 					CertificateAuthorityConfiguration: &acmpca.CertificateAuthorityConfiguration{
 						Subject: &acmpca.ASN1Subject{
 							SerialNumber: aws.String(serialNumber),
@@ -243,7 +243,7 @@ func TestLateInitializeCertificateAuthority(t *testing.T) {
 			},
 			want: &v1alpha1.CertificateAuthorityParameters{
 				Type:   acmpca.CertificateAuthorityTypeRoot,
-				Status: &status,
+				Status: status,
 				CertificateAuthorityConfiguration: v1alpha1.CertificateAuthorityConfiguration{
 					Subject: v1alpha1.Subject{
 						SerialNumber: aws.String(serialNumber),
@@ -265,7 +265,7 @@ func TestLateInitializeCertificateAuthority(t *testing.T) {
 
 func TestIsCertificateAuthorityUpToDate(t *testing.T) {
 
-	status := acmpca.CertificateAuthorityStatusActive
+	status := "ACTIVE"
 
 	type args struct {
 		p    *v1alpha1.CertificateAuthority
@@ -287,7 +287,7 @@ func TestIsCertificateAuthorityUpToDate(t *testing.T) {
 							Enabled:      aws.Bool(true),
 						},
 					},
-					Status: status,
+					Status: acmpca.CertificateAuthorityStatus(status),
 				},
 				p: &v1alpha1.CertificateAuthority{
 					Spec: v1alpha1.CertificateAuthoritySpec{
@@ -301,7 +301,7 @@ func TestIsCertificateAuthorityUpToDate(t *testing.T) {
 								Key:   "key1",
 								Value: "value1",
 							}},
-							Status: &status,
+							Status: status,
 						},
 					},
 				},

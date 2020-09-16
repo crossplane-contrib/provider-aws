@@ -87,10 +87,10 @@ func withCertificateAuthorityType() certificateAuthorityModifier {
 }
 
 func withCertificateAuthorityStatus() certificateAuthorityModifier {
-	status := awsacmpca.CertificateAuthorityStatusActive
+	status := "ACTIVE"
 
 	return func(r *v1alpha1.CertificateAuthority) {
-		r.Spec.ForProvider.Status = &status
+		r.Spec.ForProvider.Status = status
 		r.Status.AtProvider.CertificateAuthorityARN = certificateAuthorityArn
 		meta.SetExternalName(r, certificateAuthorityArn)
 	}

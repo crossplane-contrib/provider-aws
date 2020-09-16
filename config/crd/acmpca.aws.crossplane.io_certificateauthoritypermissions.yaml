@@ -179,9 +179,14 @@ spec:
                 principal:
                   description: The AWS Service or identity
                   type: string
+                region:
+                  description: Region is the region of CertificateAuthorityPermission.
+                  type: string
                 sourceAccount:
                   description: Calling Account ID
                   type: string
+              required:
+              - region
               type: object
             providerConfigRef:
               description: ProviderConfigReference specifies how the provider that
