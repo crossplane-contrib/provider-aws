@@ -2,8 +2,6 @@ apiVersion: notification.aws.crossplane.io/v1alpha1
 kind: SNSTopic
 metadata:
   name: some-topic
-  annotations:
-    crossplane.io/external-name: some-topic-ext-name
 spec:
   forProvider:
     region: us-east-1
@@ -13,5 +11,5 @@ spec:
       value: value
     displayName: display-topic-name
   providerConfigRef:
-    name: aws-provider
+    name: example
   reclaimPolicy: Delete
