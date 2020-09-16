@@ -6,6 +6,7 @@ metadata:
     crossplane.io/external-name: aws-queue-name
 spec:
   forProvider:
+    region: us-east-1
     delaySeconds: 4
     tags:
       - key: k

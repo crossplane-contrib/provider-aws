@@ -72,6 +72,9 @@ type RedrivePolicy struct {
 
 // QueueParameters define the desired state of an AWS Queue
 type QueueParameters struct {
+	// Region is the region you'd like your Queue to be created in.
+	Region string `json:"region"`
+
 	// The length of time, in seconds, for which the delivery
 	// of all messages in the queue is delayed.
 	// +optional
