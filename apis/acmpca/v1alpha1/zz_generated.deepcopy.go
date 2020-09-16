@@ -129,6 +129,11 @@ func (in *CertificateAuthorityParameters) DeepCopyInto(out *CertificateAuthority
 		*out = new(int64)
 		**out = **in
 	}
+	if in.Status != nil {
+		in, out := &in.Status, &out.Status
+		*out = new(string)
+		**out = **in
+	}
 	if in.Tags != nil {
 		in, out := &in.Tags, &out.Tags
 		*out = make([]Tag, len(*in))

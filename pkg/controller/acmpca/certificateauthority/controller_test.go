@@ -90,7 +90,7 @@ func withCertificateAuthorityStatus() certificateAuthorityModifier {
 	status := "ACTIVE"
 
 	return func(r *v1alpha1.CertificateAuthority) {
-		r.Spec.ForProvider.Status = status
+		r.Spec.ForProvider.Status = &status
 		r.Status.AtProvider.CertificateAuthorityARN = certificateAuthorityArn
 		meta.SetExternalName(r, certificateAuthorityArn)
 	}

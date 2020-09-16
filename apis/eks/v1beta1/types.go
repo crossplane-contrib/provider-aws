@@ -54,7 +54,8 @@ type ClusterParameters struct {
 	// keeping it optional for now. Reconsider before v1beta2 or v1.
 
 	// Region is the region you'd like your Cluster to be created in.
-	Region string `json:"region,omitempty"`
+	// +optional
+	Region *string `json:"region,omitempty"`
 
 	// The encryption configuration for the cluster.
 	// +immutable

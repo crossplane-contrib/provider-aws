@@ -47,7 +47,7 @@ type CertificateAuthorityParameters struct {
 	// CA to ACTIVE or DISABLED.
 	// +optional
 	// +kubebuilder:validation:Enum=ACTIVE;DISABLED
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 
 	// One or more resource tags to associate with the certificateAuthority.
 	Tags []Tag `json:"tags"`

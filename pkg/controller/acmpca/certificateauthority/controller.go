@@ -209,7 +209,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	_, err := e.client.UpdateCertificateAuthorityRequest(&awsacmpca.UpdateCertificateAuthorityInput{
 		CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
 		RevocationConfiguration: acmpca.GenerateRevocationConfiguration(cr.Spec.ForProvider.RevocationConfiguration),
-		Status:                  awsacmpca.CertificateAuthorityStatus(cr.Spec.ForProvider.Status),
+		Status:                  awsacmpca.CertificateAuthorityStatus(aws.StringValue(cr.Spec.ForProvider.Status)),
 	}).Send(ctx)
 
 	return managed.ExternalUpdate{}, errors.Wrap(err, errCertificateAuthority)

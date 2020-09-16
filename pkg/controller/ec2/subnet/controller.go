@@ -78,7 +78,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}

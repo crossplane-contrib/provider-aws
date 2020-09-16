@@ -441,8 +441,8 @@ spec:
                     type: object
                   type: array
                 region:
-                  description: Region is the region you'd like your VPC to be created
-                    in.
+                  description: Region is the region you'd like your SecurityGroup
+                    to be created in.
                   type: string
                 tags:
                   description: Tags represents to current ec2 tags.

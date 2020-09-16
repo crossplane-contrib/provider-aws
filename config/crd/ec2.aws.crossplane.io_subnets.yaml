@@ -174,7 +174,7 @@ spec:
                     receive a public IPv4 address.
                   type: boolean
                 region:
-                  description: Region is the region you'd like your VPC to be created
+                  description: Region is the region you'd like your Subnet to be created
                     in.
                   type: string
                 tags:
