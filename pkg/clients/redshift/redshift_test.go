@@ -18,6 +18,7 @@ package redshift
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -96,7 +97,6 @@ func cluster(m ...func(*redshift.Cluster)) *redshift.Cluster {
 		EnhancedVpcRouting:            aws.Bool(false),
 		MaintenanceTrackName:          aws.String("current"),
 		ManualSnapshotRetentionPeriod: aws.Int64(-1),
-		MasterUsername:                aws.String("admin"),
 		NodeType:                      aws.String("dc1.large"),
 		NumberOfNodes:                 aws.Int64(1),
 		PubliclyAccessible:            aws.Bool(true),
@@ -291,6 +291,8 @@ func TestLateInitialize(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
+			names := name
+			fmt.Print(names)
 			LateInitialize(tc.args.in, &tc.args.cl)
 			if diff := cmp.Diff(tc.args.in, tc.want); diff != "" {
 				t.Errorf("LateInitializeSpec(...): -want, +got:\n%s", diff)
