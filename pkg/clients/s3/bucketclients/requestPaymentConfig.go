@@ -16,16 +16,18 @@ import (
 // RequestPaymentConfigurationClient is the client for API methods and reconciling the PaymentConfiguration
 type RequestPaymentConfigurationClient struct {
 	config *v1beta1.PaymentConfiguration
+	bucket *v1beta1.Bucket
+	client s3.BucketClient
 }
 
 // CreateRequestPaymentConfigurationClient creates the client for Payment Configuration
-func CreateRequestPaymentConfigurationClient(parameters v1beta1.BucketParameters) BucketResource {
-	return &RequestPaymentConfigurationClient{config: parameters.PayerConfiguration}
+func CreateRequestPaymentConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *RequestPaymentConfigurationClient {
+	return &RequestPaymentConfigurationClient{config: bucket.Spec.Parameters.PayerConfiguration, bucket: bucket, client: client}
 }
 
 // ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *RequestPaymentConfigurationClient) ExistsAndUpdated(ctx context.Context, client s3.BucketClient, bucketName *string) (ResourceStatus, error) {
-	conf, err := client.GetBucketRequestPaymentRequest(&awss3.GetBucketRequestPaymentInput{Bucket: bucketName}).Send(ctx)
+func (in *RequestPaymentConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
+	conf, err := in.client.GetBucketRequestPaymentRequest(&awss3.GetBucketRequestPaymentInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
 	if err != nil {
 		return NeedsUpdate, errors.Wrap(err, "cannot get request payment configuration")
 	}
@@ -54,23 +56,20 @@ func (in *RequestPaymentConfigurationClient) GeneratePutBucketPaymentInput(name 
 }
 
 // CreateResource sends a request to have resource created on AWS.
-func (in *RequestPaymentConfigurationClient) CreateResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config != nil {
-		if _, err := client.PutBucketRequestPaymentRequest(in.GeneratePutBucketPaymentInput(meta.GetExternalName(cr))).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket logging")
-		}
+func (in *RequestPaymentConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+	if in.config == nil {
+		return managed.ExternalUpdate{}, nil
 	}
-	return managed.ExternalUpdate{}, nil
+	_, err := in.client.PutBucketRequestPaymentRequest(in.GeneratePutBucketPaymentInput(meta.GetExternalName(in.bucket))).Send(ctx)
+	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket payment")
 }
 
 // DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *RequestPaymentConfigurationClient) DeleteResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) error {
+func (in *RequestPaymentConfigurationClient) DeleteResource(ctx context.Context) error {
 	input := &awss3.PutBucketRequestPaymentInput{
-		Bucket:                      aws.String(meta.GetExternalName(cr)),
+		Bucket:                      aws.String(meta.GetExternalName(in.bucket)),
 		RequestPaymentConfiguration: &awss3.RequestPaymentConfiguration{Payer: awss3.PayerBucketOwner},
 	}
-	if _, err := client.PutBucketRequestPaymentRequest(input).Send(ctx); err != nil {
-		return errors.Wrap(err, "cannot delete bucket payment configuration")
-	}
-	return nil
+	_, err := in.client.PutBucketRequestPaymentRequest(input).Send(ctx)
+	return errors.Wrap(err, "cannot delete bucket payment configuration")
 }

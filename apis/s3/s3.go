@@ -14,5 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package s3 contains AWS storage API versions
+// Package s3 contains AWS S3 API versions
 package s3

@@ -16,11 +16,13 @@ import (
 // LoggingConfigurationClient is the client for API methods and reconciling the LoggingConfiguration
 type LoggingConfigurationClient struct {
 	config *v1beta1.LoggingConfiguration
+	bucket *v1beta1.Bucket
+	client s3.BucketClient
 }
 
 // CreateLoggingConfigurationClient creates the client for Logging Configuration
-func CreateLoggingConfigurationClient(parameters v1beta1.BucketParameters) BucketResource {
-	return &LoggingConfigurationClient{config: parameters.LoggingConfiguration}
+func CreateLoggingConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *LoggingConfigurationClient {
+	return &LoggingConfigurationClient{config: bucket.Spec.Parameters.LoggingConfiguration, bucket: bucket, client: client}
 }
 
 // CompareStrings compares pairs of strings passed in
@@ -69,8 +71,8 @@ func compareLogging(local *v1beta1.LoggingConfiguration, external *awss3.Logging
 }
 
 // ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *LoggingConfigurationClient) ExistsAndUpdated(ctx context.Context, client s3.BucketClient, bucketName *string) (ResourceStatus, error) {
-	conf, err := client.GetBucketLoggingRequest(&awss3.GetBucketLoggingInput{Bucket: bucketName}).Send(ctx)
+func (in *LoggingConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
+	conf, err := in.client.GetBucketLoggingRequest(&awss3.GetBucketLoggingInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
 	if err != nil {
 		return NeedsUpdate, errors.Wrap(err, "cannot get bucket encryption")
 	}
@@ -110,23 +112,20 @@ func (in *LoggingConfigurationClient) GeneratePutBucketLoggingInput(name string)
 }
 
 // CreateResource sends a request to have resource created on AWS
-func (in *LoggingConfigurationClient) CreateResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config != nil {
-		if _, err := client.PutBucketLoggingRequest(in.GeneratePutBucketLoggingInput(meta.GetExternalName(cr))).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket logging")
-		}
+func (in *LoggingConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+	if in.config == nil {
+		return managed.ExternalUpdate{}, nil
 	}
-	return managed.ExternalUpdate{}, nil
+	_, err := in.client.PutBucketLoggingRequest(in.GeneratePutBucketLoggingInput(meta.GetExternalName(in.bucket))).Send(ctx)
+	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket logging")
 }
 
 // DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *LoggingConfigurationClient) DeleteResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) error {
+func (in *LoggingConfigurationClient) DeleteResource(ctx context.Context) error {
 	input := &awss3.PutBucketLoggingInput{
-		Bucket:              aws.String(meta.GetExternalName(cr)),
+		Bucket:              aws.String(meta.GetExternalName(in.bucket)),
 		BucketLoggingStatus: &awss3.BucketLoggingStatus{}, //  Empty BucketLoggingStatus disables logging
 	}
-	if _, err := client.PutBucketLoggingRequest(input).Send(ctx); err != nil {
-		return errors.Wrap(err, "cannot delete bucket logging")
-	}
-	return nil
+	_, err := in.client.PutBucketLoggingRequest(input).Send(ctx)
+	return errors.Wrap(err, "cannot delete bucket logging")
 }

@@ -18,16 +18,18 @@ import (
 // ReplicationConfigurationClient is the client for API methods and reconciling the ReplicationConfiguration
 type ReplicationConfigurationClient struct {
 	config *v1beta1.ReplicationConfiguration
+	bucket *v1beta1.Bucket
+	client s3.BucketClient
 }
 
 // CreateReplicationConfigurationClient creates the client for Replication Configuration
-func CreateReplicationConfigurationClient(parameters v1beta1.BucketParameters) BucketResource {
-	return &ReplicationConfigurationClient{config: parameters.ReplicationConfiguration}
+func CreateReplicationConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *ReplicationConfigurationClient {
+	return &ReplicationConfigurationClient{config: bucket.Spec.Parameters.ReplicationConfiguration, bucket: bucket, client: client}
 }
 
 // ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *ReplicationConfigurationClient) ExistsAndUpdated(ctx context.Context, client s3.BucketClient, bucketName *string) (ResourceStatus, error) {
-	conf, err := client.GetBucketReplicationRequest(&awss3.GetBucketReplicationInput{Bucket: bucketName}).Send(ctx)
+func (in *ReplicationConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
+	conf, err := in.client.GetBucketReplicationRequest(&awss3.GetBucketReplicationInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
 	if err != nil {
 		if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "ReplicationConfigurationNotFoundError" && in.config == nil {
 			return Updated, nil
@@ -179,24 +181,20 @@ func (in *ReplicationConfigurationClient) GeneratePutBucketReplicationInput(name
 }
 
 // CreateResource sends a request to have resource created on AWS.
-func (in *ReplicationConfigurationClient) CreateResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config != nil {
-		if _, err := client.PutBucketReplicationRequest(in.GeneratePutBucketReplicationInput(meta.GetExternalName(cr))).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket replication")
-		}
+func (in *ReplicationConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+	if in.config == nil {
+		return managed.ExternalUpdate{}, nil
 	}
-	return managed.ExternalUpdate{}, nil
+	_, err := in.client.PutBucketReplicationRequest(in.GeneratePutBucketReplicationInput(meta.GetExternalName(in.bucket))).Send(ctx)
+	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket replication")
 }
 
 // DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *ReplicationConfigurationClient) DeleteResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) error {
-	_, err := client.DeleteBucketReplicationRequest(
+func (in *ReplicationConfigurationClient) DeleteResource(ctx context.Context) error {
+	_, err := in.client.DeleteBucketReplicationRequest(
 		&awss3.DeleteBucketReplicationInput{
-			Bucket: aws.String(meta.GetExternalName(cr)),
+			Bucket: aws.String(meta.GetExternalName(in.bucket)),
 		},
 	).Send(ctx)
-	if err != nil {
-		return errors.Wrap(err, "cannot delete bucket replication")
-	}
-	return nil
+	return errors.Wrap(err, "cannot delete bucket replication")
 }

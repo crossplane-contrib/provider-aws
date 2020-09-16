@@ -17,16 +17,18 @@ import (
 // VersioningConfigurationClient is the client for API methods and reconciling the VersioningConfiguration
 type VersioningConfigurationClient struct {
 	config *v1beta1.VersioningConfiguration
+	bucket *v1beta1.Bucket
+	client s3.BucketClient
 }
 
 // CreateVersioningConfigurationClient creates the client for Versioning Configuration
-func CreateVersioningConfigurationClient(parameters v1beta1.BucketParameters) BucketResource {
-	return &VersioningConfigurationClient{config: parameters.VersioningConfiguration}
+func CreateVersioningConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *VersioningConfigurationClient {
+	return &VersioningConfigurationClient{config: bucket.Spec.Parameters.VersioningConfiguration, bucket: bucket, client: client}
 }
 
 // ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *VersioningConfigurationClient) ExistsAndUpdated(ctx context.Context, client s3.BucketClient, bucketName *string) (ResourceStatus, error) {
-	vers, err := client.GetBucketVersioningRequest(&awss3.GetBucketVersioningInput{Bucket: bucketName}).Send(ctx)
+func (in *VersioningConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
+	vers, err := in.client.GetBucketVersioningRequest(&awss3.GetBucketVersioningInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
 	if err != nil {
 		return NeedsUpdate, errors.Wrap(err, "cannot get bucket encryption")
 	}
@@ -58,23 +60,20 @@ func (in *VersioningConfigurationClient) GeneratePutBucketVersioningInput(name s
 }
 
 // CreateResource sends a request to have resource created on AWS.
-func (in *VersioningConfigurationClient) CreateResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config != nil {
-		if _, err := client.PutBucketVersioningRequest(in.GeneratePutBucketVersioningInput(meta.GetExternalName(cr))).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket versioning")
-		}
+func (in *VersioningConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+	if in.config == nil {
+		return managed.ExternalUpdate{}, nil
 	}
-	return managed.ExternalUpdate{}, nil
+	_, err := in.client.PutBucketVersioningRequest(in.GeneratePutBucketVersioningInput(meta.GetExternalName(in.bucket))).Send(ctx)
+	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket versioning")
 }
 
 // DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *VersioningConfigurationClient) DeleteResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) error {
+func (in *VersioningConfigurationClient) DeleteResource(ctx context.Context) error {
 	input := &awss3.PutBucketVersioningInput{
-		Bucket:                  aws.String(meta.GetExternalName(cr)),
+		Bucket:                  aws.String(meta.GetExternalName(in.bucket)),
 		VersioningConfiguration: &awss3.VersioningConfiguration{Status: awss3.BucketVersioningStatusSuspended},
 	}
-	if _, err := client.PutBucketVersioningRequest(input).Send(ctx); err != nil {
-		return errors.Wrap(err, "cannot delete bucket versioning configuration")
-	}
-	return nil
+	_, err := in.client.PutBucketVersioningRequest(input).Send(ctx)
+	return errors.Wrap(err, "cannot delete bucket versioning configuration")
 }

@@ -18,60 +18,103 @@ limitations under the License.
 
 package v1alpha1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import (
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
+)
 
-// GetCondition of this S3BucketPolicy.
-func (mg *S3BucketPolicy) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+// GetBindingPhase of this BucketPolicy.
+func (mg *BucketPolicy) GetBindingPhase() runtimev1alpha1.BindingPhase {
+	return mg.Status.GetBindingPhase()
+}
+
+// GetClaimReference of this BucketPolicy.
+func (mg *BucketPolicy) GetClaimReference() *corev1.ObjectReference {
+	return mg.Spec.ClaimReference
+}
+
+// GetClassReference of this BucketPolicy.
+func (mg *BucketPolicy) GetClassReference() *corev1.ObjectReference {
+	return mg.Spec.ClassReference
+}
+
+// GetCondition of this BucketPolicy.
+func (mg *BucketPolicy) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
-// GetDeletionPolicy of this S3BucketPolicy.
-func (mg *S3BucketPolicy) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+// GetDeletionPolicy of this BucketPolicy.
+func (mg *BucketPolicy) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
-// GetProviderConfigReference of this S3BucketPolicy.
-func (mg *S3BucketPolicy) GetProviderConfigReference() *runtimev1alpha1.Reference {
+// GetProviderConfigReference of this BucketPolicy.
+func (mg *BucketPolicy) GetProviderConfigReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 /*
-GetProviderReference of this S3BucketPolicy.
+GetProviderReference of this BucketPolicy.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *S3BucketPolicy) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *BucketPolicy) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
-// GetWriteConnectionSecretToReference of this S3BucketPolicy.
-func (mg *S3BucketPolicy) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+// GetReclaimPolicy of this BucketPolicy.
+func (mg *BucketPolicy) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
+	return mg.Spec.ReclaimPolicy
+}
+
+// GetWriteConnectionSecretToReference of this BucketPolicy.
+func (mg *BucketPolicy) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
-// SetConditions of this S3BucketPolicy.
-func (mg *S3BucketPolicy) SetConditions(c ...runtimev1alpha1.Condition) {
+// SetBindingPhase of this BucketPolicy.
+func (mg *BucketPolicy) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
+	mg.Status.SetBindingPhase(p)
+}
+
+// SetClaimReference of this BucketPolicy.
+func (mg *BucketPolicy) SetClaimReference(r *corev1.ObjectReference) {
+	mg.Spec.ClaimReference = r
+}
+
+// SetClassReference of this BucketPolicy.
+func (mg *BucketPolicy) SetClassReference(r *corev1.ObjectReference) {
+	mg.Spec.ClassReference = r
+}
+
+// SetConditions of this BucketPolicy.
+func (mg *BucketPolicy) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetDeletionPolicy of this S3BucketPolicy.
-func (mg *S3BucketPolicy) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+// SetDeletionPolicy of this BucketPolicy.
+func (mg *BucketPolicy) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
-// SetProviderConfigReference of this S3BucketPolicy.
-func (mg *S3BucketPolicy) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+// SetProviderConfigReference of this BucketPolicy.
+func (mg *BucketPolicy) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 /*
-SetProviderReference of this S3BucketPolicy.
+SetProviderReference of this BucketPolicy.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *S3BucketPolicy) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *BucketPolicy) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
-// SetWriteConnectionSecretToReference of this S3BucketPolicy.
-func (mg *S3BucketPolicy) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+// SetReclaimPolicy of this BucketPolicy.
+func (mg *BucketPolicy) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
+	mg.Spec.ReclaimPolicy = r
+}
+
+// SetWriteConnectionSecretToReference of this BucketPolicy.
+func (mg *BucketPolicy) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

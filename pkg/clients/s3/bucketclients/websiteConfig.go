@@ -19,16 +19,18 @@ import (
 // WebsiteConfigurationClient is the client for API methods and reconciling the WebsiteConfiguration
 type WebsiteConfigurationClient struct {
 	config *v1beta1.WebsiteConfiguration
+	bucket *v1beta1.Bucket
+	client s3.BucketClient
 }
 
 // CreateWebsiteConfigurationClient creates the client for Website Configuration
-func CreateWebsiteConfigurationClient(parameters v1beta1.BucketParameters) BucketResource {
-	return &WebsiteConfigurationClient{config: parameters.WebsiteConfiguration}
+func CreateWebsiteConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *WebsiteConfigurationClient {
+	return &WebsiteConfigurationClient{config: bucket.Spec.Parameters.WebsiteConfiguration, bucket: bucket, client: client}
 }
 
 // ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *WebsiteConfigurationClient) ExistsAndUpdated(ctx context.Context, client s3.BucketClient, bucketName *string) (ResourceStatus, error) {
-	conf, err := client.GetBucketWebsiteRequest(&awss3.GetBucketWebsiteInput{Bucket: bucketName}).Send(ctx)
+func (in *WebsiteConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
+	conf, err := in.client.GetBucketWebsiteRequest(&awss3.GetBucketWebsiteInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
 	if err != nil {
 		if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchWebsiteConfiguration" && in.config == nil {
 			return Updated, nil
@@ -102,24 +104,20 @@ func (in *WebsiteConfigurationClient) GeneratePutBucketWebsiteInput(name string)
 }
 
 // CreateResource sends a request to have resource created on AWS.
-func (in *WebsiteConfigurationClient) CreateResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config != nil {
-		if _, err := client.PutBucketWebsiteRequest(in.GeneratePutBucketWebsiteInput(meta.GetExternalName(cr))).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket website")
-		}
+func (in *WebsiteConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+	if in.config == nil {
+		return managed.ExternalUpdate{}, nil
 	}
-	return managed.ExternalUpdate{}, nil
+	_, err := in.client.PutBucketWebsiteRequest(in.GeneratePutBucketWebsiteInput(meta.GetExternalName(in.bucket))).Send(ctx)
+	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket website")
 }
 
 // DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *WebsiteConfigurationClient) DeleteResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) error {
-	_, err := client.DeleteBucketWebsiteRequest(
+func (in *WebsiteConfigurationClient) DeleteResource(ctx context.Context) error {
+	_, err := in.client.DeleteBucketWebsiteRequest(
 		&awss3.DeleteBucketWebsiteInput{
-			Bucket: aws.String(meta.GetExternalName(cr)),
+			Bucket: aws.String(meta.GetExternalName(in.bucket)),
 		},
 	).Send(ctx)
-	if err != nil {
-		return errors.Wrap(err, "cannot delete bucket website configuration")
-	}
-	return nil
+	return errors.Wrap(err, "cannot delete bucket website configuration")
 }

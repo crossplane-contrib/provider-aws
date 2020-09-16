@@ -17,11 +17,13 @@ import (
 // SSEConfigurationClient is the client for API methods and reconciling the ServerSideEncryptionConfiguration
 type SSEConfigurationClient struct {
 	config *v1beta1.ServerSideEncryptionConfiguration
+	bucket *v1beta1.Bucket
+	client s3.BucketClient
 }
 
 // CreateSSEConfigurationClient creates the client for Server Side Encryption Configuration
-func CreateSSEConfigurationClient(parameters v1beta1.BucketParameters) BucketResource {
-	return &SSEConfigurationClient{config: parameters.ServerSideEncryptionConfiguration}
+func CreateSSEConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *SSEConfigurationClient {
+	return &SSEConfigurationClient{config: bucket.Spec.Parameters.ServerSideEncryptionConfiguration, bucket: bucket, client: client}
 }
 
 func (in *SSEConfigurationClient) sseNotFound(err error) bool {
@@ -32,8 +34,8 @@ func (in *SSEConfigurationClient) sseNotFound(err error) bool {
 }
 
 // ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *SSEConfigurationClient) ExistsAndUpdated(ctx context.Context, client s3.BucketClient, bucketName *string) (ResourceStatus, error) {
-	enc, err := client.GetBucketEncryptionRequest(&awss3.GetBucketEncryptionInput{Bucket: bucketName}).Send(ctx)
+func (in *SSEConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
+	enc, err := in.client.GetBucketEncryptionRequest(&awss3.GetBucketEncryptionInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
 	if err != nil && in.sseNotFound(err) {
 		return Updated, nil
 	} else if err != nil {
@@ -79,24 +81,20 @@ func (in *SSEConfigurationClient) GeneratePutBucketEncryptionInput(name string) 
 }
 
 // CreateResource sends a request to have resource created on AWS.
-func (in *SSEConfigurationClient) CreateResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config != nil {
-		if _, err := client.PutBucketEncryptionRequest(in.GeneratePutBucketEncryptionInput(meta.GetExternalName(cr))).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket encryption")
-		}
+func (in *SSEConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+	if in.config == nil {
+		return managed.ExternalUpdate{}, nil
 	}
-	return managed.ExternalUpdate{}, nil
+	_, err := in.client.PutBucketEncryptionRequest(in.GeneratePutBucketEncryptionInput(meta.GetExternalName(in.bucket))).Send(ctx)
+	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket encryption")
 }
 
 // DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *SSEConfigurationClient) DeleteResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) error {
-	_, err := client.DeleteBucketEncryptionRequest(
+func (in *SSEConfigurationClient) DeleteResource(ctx context.Context) error {
+	_, err := in.client.DeleteBucketEncryptionRequest(
 		&awss3.DeleteBucketEncryptionInput{
-			Bucket: aws.String(meta.GetExternalName(cr)),
+			Bucket: aws.String(meta.GetExternalName(in.bucket)),
 		},
 	).Send(ctx)
-	if err != nil {
-		return errors.Wrap(err, "cannot delete bucket encryption configuration")
-	}
-	return nil
+	return errors.Wrap(err, "cannot delete bucket encryption configuration")
 }

@@ -23,8 +23,8 @@ import (
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 )
 
-// ResolveReferences of this S3BucketPolicy
-func (mg *S3BucketPolicy) ResolveReferences(ctx context.Context, c client.Reader) error {
+// ResolveReferences of this BucketPolicy
+func (mg *BucketPolicy) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 	// Resolve spec.BucketName
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{

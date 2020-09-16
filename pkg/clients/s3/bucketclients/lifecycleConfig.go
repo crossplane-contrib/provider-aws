@@ -19,16 +19,18 @@ import (
 // LifecycleConfigurationClient is the client for API methods and reconciling the LifecycleConfiguration
 type LifecycleConfigurationClient struct {
 	config *v1beta1.BucketLifecycleConfiguration
+	bucket *v1beta1.Bucket
+	client s3.BucketClient
 }
 
 // CreateLifecycleConfigurationClient creates the client for Accelerate Configuration
-func CreateLifecycleConfigurationClient(parameters v1beta1.BucketParameters) BucketResource {
-	return &LifecycleConfigurationClient{config: parameters.LifecycleConfiguration}
+func CreateLifecycleConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *LifecycleConfigurationClient {
+	return &LifecycleConfigurationClient{config: bucket.Spec.Parameters.LifecycleConfiguration, bucket: bucket, client: client}
 }
 
 // ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *LifecycleConfigurationClient) ExistsAndUpdated(ctx context.Context, client s3.BucketClient, bucketName *string) (ResourceStatus, error) {
-	conf, err := client.GetBucketLifecycleConfigurationRequest(&awss3.GetBucketLifecycleConfigurationInput{Bucket: bucketName}).Send(ctx)
+func (in *LifecycleConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
+	conf, err := in.client.GetBucketLifecycleConfigurationRequest(&awss3.GetBucketLifecycleConfigurationInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
 	if err != nil {
 		if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchLifecycleConfiguration" && in.config == nil {
 			return Updated, nil
@@ -125,28 +127,25 @@ func (in *LifecycleConfigurationClient) GenerateLifecycleConfigurationInput(name
 }
 
 // CreateResource sends a request to have resource created on AWS
-func (in *LifecycleConfigurationClient) CreateResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config != nil {
-		input, err := in.GenerateLifecycleConfigurationInput(meta.GetExternalName(cr))
-		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "unable to create input for bucket lifecycle request")
-		}
-		if _, err := client.PutBucketLifecycleConfigurationRequest(input).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket lifecycle")
-		}
+func (in *LifecycleConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+	if in.config == nil {
+		return managed.ExternalUpdate{}, nil
 	}
-	return managed.ExternalUpdate{}, nil
+	input, err := in.GenerateLifecycleConfigurationInput(meta.GetExternalName(in.bucket))
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, "unable to create input for bucket lifecycle request")
+	}
+	_, err = in.client.PutBucketLifecycleConfigurationRequest(input).Send(ctx)
+	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket lifecycle")
+
 }
 
 // DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *LifecycleConfigurationClient) DeleteResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) error {
-	_, err := client.DeleteBucketLifecycleRequest(
+func (in *LifecycleConfigurationClient) DeleteResource(ctx context.Context) error {
+	_, err := in.client.DeleteBucketLifecycleRequest(
 		&awss3.DeleteBucketLifecycleInput{
-			Bucket: aws.String(meta.GetExternalName(cr)),
+			Bucket: aws.String(meta.GetExternalName(in.bucket)),
 		},
 	).Send(ctx)
-	if err != nil {
-		return errors.Wrap(err, "cannot delete bucket lifecycle configuration")
-	}
-	return nil
+	return errors.Wrap(err, "cannot delete bucket lifecycle configuration")
 }
