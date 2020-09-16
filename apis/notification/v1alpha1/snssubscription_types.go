@@ -24,6 +24,8 @@ import (
 
 // SNSSubscriptionParameters define the desired state of a AWS SNS Topic
 type SNSSubscriptionParameters struct {
+	// Region is the region you'd like your SNSSubscription to be in.
+	Region string `json:"region"`
 
 	// TopicArn is the Arn of the SNS Topic
 	// +immutable
