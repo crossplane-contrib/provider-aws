@@ -44,7 +44,7 @@ const (
 	errUnexpectedObject = "The managed resource is not an IAMRolePolicyAttachment resource"
 	errAttach           = "failed to attach the policy to role"
 	errDelete           = "failed to delete the policy for bucket"
-	errGet              = "failed to get S3BucketPolicy for bucket with name"
+	errGet              = "failed to get BucketPolicy for bucket with name"
 	errUpdate           = "failed to update the policy for bucket"
 )
 
@@ -55,7 +55,7 @@ func SetupS3BucketPolicy(mgr ctrl.Manager, l logging.Logger) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha1.S3BucketPolicy{}).
+		For(&v1alpha1.BucketPolicy{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.S3BucketPolicyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(),
@@ -87,7 +87,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha1.S3BucketPolicy)
+	cr, ok := mgd.(*v1alpha1.BucketPolicy)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -117,8 +117,8 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}, nil
 }
 
-// formatBucketPolicy parses and formats the bucket.Spec.BucketPolicy struct
-func (e *external) formatBucketPolicy(original *v1alpha1.S3BucketPolicy) (*string, error) {
+//formatBucketPolicy parses and formats the bucket.Spec.BucketPolicy struct
+func (e *external) formatBucketPolicy(original *v1alpha1.BucketPolicy) (*string, error) {
 	c := original.DeepCopy()
 	iamUsername := aws.StringValue(c.Spec.PolicyBody.UserName)
 	accountID, err := e.iamclient.GetAccountID()
@@ -126,11 +126,11 @@ func (e *external) formatBucketPolicy(original *v1alpha1.S3BucketPolicy) (*strin
 		return nil, err
 	}
 	statements := c.Spec.PolicyBody.PolicyStatement
-	newStatements := make([]v1alpha1.S3BucketPolicyStatement, 0)
+	newStatements := make([]v1alpha1.BucketPolicyStatement, 0)
 	for _, statement := range statements {
 		if statement.ApplyToIAMUser {
 			if statement.Principal == nil {
-				statement.Principal = &v1alpha1.S3BucketPrincipal{}
+				statement.Principal = &v1alpha1.BucketPrincipal{}
 			}
 			if statement.Principal.AWSPrincipal == nil {
 				statement.Principal.AWSPrincipal = make([]string, 0)
@@ -159,7 +159,7 @@ func (e *external) formatBucketPolicy(original *v1alpha1.S3BucketPolicy) (*strin
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.S3BucketPolicy)
+	cr, ok := mgd.(*v1alpha1.BucketPolicy)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -178,7 +178,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 // Update patches the existing policy for the bucket with the policy in the request body
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1alpha1.S3BucketPolicy)
+	cr, ok := mgd.(*v1alpha1.BucketPolicy)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -194,7 +194,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 // Delete removes the existing policy for a bucket
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.S3BucketPolicy)
+	cr, ok := mgd.(*v1alpha1.BucketPolicy)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

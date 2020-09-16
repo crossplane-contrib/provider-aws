@@ -22,8 +22,8 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
 
-// S3BucketPolicyParameters define the desired state of an AWS S3BucketPolicy.
-type S3BucketPolicyParameters struct {
+// BucketPolicyParameters define the desired state of an AWS BucketPolicy.
+type BucketPolicyParameters struct {
 	// This is the current IAM policy version
 	PolicyVersion string `json:"version"`
 
@@ -31,7 +31,7 @@ type S3BucketPolicyParameters struct {
 	PolicyID string `json:"id,omitempty"`
 
 	// This is the list of statement this policy applies
-	PolicyStatement []S3BucketPolicyStatement `json:"statement"`
+	PolicyStatement []BucketPolicyStatement `json:"statement"`
 
 	// BucketName presents the name of the bucket.
 	// +optional
@@ -58,8 +58,8 @@ type S3BucketPolicyParameters struct {
 	UserNameSelector *runtimev1alpha1.Selector `json:"userNameSelector,omitempty"`
 }
 
-// Serialize is the custom marshaller for the S3BucketPolicyParameters
-func (p *S3BucketPolicyParameters) Serialize() (interface{}, error) {
+// Serialize is the custom marshaller for the BucketPolicyParameters
+func (p *BucketPolicyParameters) Serialize() (interface{}, error) {
 	m := make(map[string]interface{})
 	m["Version"] = p.PolicyVersion
 	if p.PolicyID != "" {
@@ -77,9 +77,9 @@ func (p *S3BucketPolicyParameters) Serialize() (interface{}, error) {
 	return m, nil
 }
 
-// S3BucketPolicyStatement defines an individual statement within the
-// S3BucketPolicyBody
-type S3BucketPolicyStatement struct {
+// BucketPolicyStatement defines an individual statement within the
+// BucketPolicyBody
+type BucketPolicyStatement struct {
 	// Optional identifier for this statement, must be unique within the
 	// policy if provided.
 	StatementID string `json:"sid,omitempty"`
@@ -90,11 +90,11 @@ type S3BucketPolicyStatement struct {
 
 	// Used with the S3 policy to specify the principal that is allowed
 	// or denied access to a resource.
-	Principal *S3BucketPrincipal `json:"principal,omitempty"`
+	Principal *BucketPrincipal `json:"principal,omitempty"`
 
 	// Used with the S3 policy to specify the users which are not included
 	// in this policy
-	NotPrincipal *S3BucketPrincipal `json:"notPrincipal,omitempty"`
+	NotPrincipal *BucketPrincipal `json:"notPrincipal,omitempty"`
 
 	// Each element of the PolicyAction array describes the specific
 	// action or actions that will be allowed or denied with this PolicyStatement.
@@ -121,8 +121,8 @@ func checkExistsArray(slc []string) bool {
 	return len(slc) != 0
 }
 
-// Serialize is the custom marshaller for the S3BucketPolicyStatement
-func (p *S3BucketPolicyStatement) Serialize() (interface{}, error) {
+// Serialize is the custom marshaller for the BucketPolicyStatement
+func (p *BucketPolicyStatement) Serialize() (interface{}, error) {
 	m := make(map[string]interface{})
 	if p.Principal != nil {
 		principal, err := p.Principal.Serialize()
@@ -157,9 +157,9 @@ func (p *S3BucketPolicyStatement) Serialize() (interface{}, error) {
 	return m, nil
 }
 
-// S3BucketPrincipal defines the principal users affected by
-// the S3BucketPolicyStatement
-type S3BucketPrincipal struct {
+// BucketPrincipal defines the principal users affected by
+// the BucketPolicyStatement
+type BucketPrincipal struct {
 	// This flag indicates if the policy should be made available
 	// to all anonymous users.
 	AllowAnon bool `json:"allowAnon,omitempty"`
@@ -176,8 +176,8 @@ func tryFirst(slc []string) interface{} {
 	return slc
 }
 
-// Serialize is the custom serializer for the S3BucketPrincipal
-func (p *S3BucketPrincipal) Serialize() (interface{}, error) {
+// Serialize is the custom serializer for the BucketPrincipal
+func (p *BucketPrincipal) Serialize() (interface{}, error) {
 	all := "*"
 	if p.AllowAnon {
 		return all, nil
@@ -187,22 +187,22 @@ func (p *S3BucketPrincipal) Serialize() (interface{}, error) {
 	return m, nil
 }
 
-// An S3BucketPolicySpec defines the desired state of an
-// S3BucketPolicy.
-type S3BucketPolicySpec struct {
+// An BucketPolicySpec defines the desired state of an
+// BucketPolicy.
+type BucketPolicySpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	PolicyBody                   S3BucketPolicyParameters `json:"forProvider"`
+	PolicyBody                   BucketPolicyParameters `json:"forProvider"`
 }
 
-// An S3BucketPolicyStatus represents the observed state of an
-// S3BucketPolicy.
-type S3BucketPolicyStatus struct {
+// An BucketPolicyStatus represents the observed state of an
+// BucketPolicy.
+type BucketPolicyStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
 }
 
 // +kubebuilder:object:root=true
 
-// An S3BucketPolicy is a managed resource that represents an AWS Bucket
+// An BucketPolicy is a managed resource that represents an AWS Bucket
 // policy.
 // +kubebuilder:printcolumn:name="USERNAME",type="string",JSONPath=".spec.forProvider.userName"
 // +kubebuilder:printcolumn:name="BUCKETNAME",type="string",JSONPath=".spec.forProvider.bucketName"
@@ -210,20 +210,20 @@ type S3BucketPolicyStatus struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-type S3BucketPolicy struct {
+// +kubebuilder:resource:scope=Cluster
+type BucketPolicy struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   S3BucketPolicySpec   `json:"spec"`
-	Status S3BucketPolicyStatus `json:"status,omitempty"`
+	Spec   BucketPolicySpec   `json:"spec"`
+	Status BucketPolicyStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// S3BucketPolicyList contains a list of BucketPolicies
-type S3BucketPolicyList struct {
+// BucketPolicyList contains a list of BucketPolicies
+type BucketPolicyList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []S3BucketPolicy `json:"items"`
+	Items           []BucketPolicy `json:"items"`
 }

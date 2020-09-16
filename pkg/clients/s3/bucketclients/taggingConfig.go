@@ -18,16 +18,18 @@ import (
 // TaggingConfigurationClient is the client for API methods and reconciling the CORSConfiguration
 type TaggingConfigurationClient struct {
 	config *v1beta1.Tagging
+	bucket *v1beta1.Bucket
+	client s3.BucketClient
 }
 
 // CreateTaggingConfigurationClient creates the client for CORS Configuration
-func CreateTaggingConfigurationClient(parameters v1beta1.BucketParameters) BucketResource {
-	return &TaggingConfigurationClient{config: parameters.BucketTagging}
+func CreateTaggingConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *TaggingConfigurationClient {
+	return &TaggingConfigurationClient{config: bucket.Spec.Parameters.BucketTagging, bucket: bucket, client: client}
 }
 
 // ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *TaggingConfigurationClient) ExistsAndUpdated(ctx context.Context, client s3.BucketClient, bucketName *string) (ResourceStatus, error) {
-	conf, err := client.GetBucketTaggingRequest(&awss3.GetBucketTaggingInput{Bucket: bucketName}).Send(ctx)
+func (in *TaggingConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
+	conf, err := in.client.GetBucketTaggingRequest(&awss3.GetBucketTaggingInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
 	if err != nil {
 		if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchTagSet" && in.config == nil {
 			return Updated, nil
@@ -68,24 +70,20 @@ func (in *TaggingConfigurationClient) generatePutBucketTagging(name string) *aws
 }
 
 // CreateResource sends a request to have resource created on AWS
-func (in *TaggingConfigurationClient) CreateResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config != nil {
-		if _, err := client.PutBucketTaggingRequest(in.generatePutBucketTagging(meta.GetExternalName(cr))).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket tagging")
-		}
+func (in *TaggingConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+	if in.config == nil {
+		return managed.ExternalUpdate{}, nil
 	}
-	return managed.ExternalUpdate{}, nil
+	_, err := in.client.PutBucketTaggingRequest(in.generatePutBucketTagging(meta.GetExternalName(in.bucket))).Send(ctx)
+	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket tagging")
 }
 
 // DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *TaggingConfigurationClient) DeleteResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) error {
-	_, err := client.DeleteBucketTaggingRequest(
+func (in *TaggingConfigurationClient) DeleteResource(ctx context.Context) error {
+	_, err := in.client.DeleteBucketTaggingRequest(
 		&awss3.DeleteBucketTaggingInput{
-			Bucket: aws.String(meta.GetExternalName(cr)),
+			Bucket: aws.String(meta.GetExternalName(in.bucket)),
 		},
 	).Send(ctx)
-	if err != nil {
-		return errors.Wrap(err, "cannot delete bucket tagging configuration")
-	}
-	return nil
+	return errors.Wrap(err, "cannot delete bucket tagging configuration")
 }

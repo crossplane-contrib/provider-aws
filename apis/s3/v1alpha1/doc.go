@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha1 contains configuration resources for AWS storage services such as
+// Package v1alpha1 contains configuration resources for AWS S3 services such as
 // S3.
 // +kubebuilder:object:generate=true
 // +groupName=s3.aws.crossplane.io

@@ -123,7 +123,7 @@ type BucketParameters struct {
 // BucketSpec represents the desired state of the Bucket.
 type BucketSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  BucketParameters `json:"forProvider"`
+	Parameters                   BucketParameters `json:"forProvider"`
 }
 
 // BucketStatus represents the observed state of the Bucket.

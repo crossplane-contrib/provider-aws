@@ -125,9 +125,9 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	if _, err := e.client.HeadBucketRequest(&awss3.HeadBucketInput{Bucket: aws.String(meta.GetExternalName(cr))}).Send(ctx); err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(s3.IsNotFound, err), errHead)
 	}
-	clients := bucketclients.MakeClients(cr.Spec.ForProvider)
+	clients := bucketclients.MakeClients(cr, e.client)
 	for _, client := range clients {
-		updated, err := client.ExistsAndUpdated(ctx, e.client, aws.String(meta.GetExternalName(cr)))
+		updated, err := client.ExistsAndUpdated(ctx)
 		if err != nil {
 			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
 		}
@@ -154,7 +154,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	if _, err := e.client.CreateBucketRequest(s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx); err != nil {
+	if _, err := e.client.CreateBucketRequest(s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.Parameters)).Send(ctx); err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 	return managed.ExternalCreation{}, nil
@@ -166,22 +166,22 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	clients := bucketclients.MakeClients(cr.Spec.ForProvider)
+	clients := bucketclients.MakeClients(cr, e.client)
 	for _, client := range clients {
-		status, err := client.ExistsAndUpdated(ctx, e.client, aws.String(meta.GetExternalName(cr)))
+		status, err := client.ExistsAndUpdated(ctx)
 		if err != nil {
 			cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
 			return managed.ExternalUpdate{}, err
 		}
 		switch status {
 		case bucketclients.NeedsDeletion:
-			err = client.DeleteResource(ctx, e.client, cr)
+			err = client.DeleteResource(ctx)
 			if err != nil {
 				cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
 				return managed.ExternalUpdate{}, err
 			}
 		case bucketclients.NeedsUpdate:
-			update, err := client.CreateResource(ctx, e.client, cr)
+			update, err := client.CreateResource(ctx)
 			if err != nil {
 				cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
 				return update, err

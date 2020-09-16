@@ -45,12 +45,12 @@ var (
 	userName       = "12345667890"
 	policy         = `{"Statement":[{"Action":"s3:ListBucket","Effect":"Allow","Principal":"*","Resource":"arn:aws:s3:::test.s3.crossplane.com"}],"Version":"2012-10-17"}`
 
-	params = v1alpha1.S3BucketPolicyParameters{
+	params = v1alpha1.BucketPolicyParameters{
 		PolicyVersion: "2012-10-17",
-		PolicyStatement: []v1alpha1.S3BucketPolicyStatement{
+		PolicyStatement: []v1alpha1.BucketPolicyStatement{
 			{
 				Effect: "Allow",
-				Principal: &v1alpha1.S3BucketPrincipal{
+				Principal: &v1alpha1.BucketPrincipal{
 					AllowAnon: true,
 				},
 				PolicyAction:   []string{"s3:ListBucket"},
@@ -67,25 +67,25 @@ type args struct {
 	cr resource.Managed
 }
 
-type bucketPolicyModifier func(policy *v1alpha1.S3BucketPolicy)
+type bucketPolicyModifier func(policy *v1alpha1.BucketPolicy)
 
 func withConditions(c ...corev1alpha1.Condition) bucketPolicyModifier {
-	return func(r *v1alpha1.S3BucketPolicy) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1alpha1.BucketPolicy) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withPolicy(s *v1alpha1.S3BucketPolicyParameters) bucketPolicyModifier {
-	return func(r *v1alpha1.S3BucketPolicy) { r.Spec.PolicyBody = *s }
+func withPolicy(s *v1alpha1.BucketPolicyParameters) bucketPolicyModifier {
+	return func(r *v1alpha1.BucketPolicy) { r.Spec.PolicyBody = *s }
 }
 
-func bucketPolicy(m ...bucketPolicyModifier) *v1alpha1.S3BucketPolicy {
-	cr := &v1alpha1.S3BucketPolicy{
-		Spec: v1alpha1.S3BucketPolicySpec{
-			PolicyBody: v1alpha1.S3BucketPolicyParameters{
+func bucketPolicy(m ...bucketPolicyModifier) *v1alpha1.BucketPolicy {
+	cr := &v1alpha1.BucketPolicy{
+		Spec: v1alpha1.BucketPolicySpec{
+			PolicyBody: v1alpha1.BucketPolicyParameters{
 				UserName:        &userName,
 				BucketName:      &bucketName,
 				PolicyVersion:   "",
 				PolicyID:        "",
-				PolicyStatement: make([]v1alpha1.S3BucketPolicyStatement, 0),
+				PolicyStatement: make([]v1alpha1.BucketPolicyStatement, 0),
 			},
 		},
 	}

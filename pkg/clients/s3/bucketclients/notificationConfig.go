@@ -17,11 +17,13 @@ import (
 // NotificationConfigurationClient is the client for API methods and reconciling the LifecycleConfiguration
 type NotificationConfigurationClient struct {
 	config *v1beta1.NotificationConfiguration
+	bucket *v1beta1.Bucket
+	client s3.BucketClient
 }
 
 // CreateNotificationConfigurationClient creates the client for Accelerate Configuration
-func CreateNotificationConfigurationClient(parameters v1beta1.BucketParameters) BucketResource {
-	return &NotificationConfigurationClient{config: parameters.NotificationConfiguration}
+func CreateNotificationConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *NotificationConfigurationClient {
+	return &NotificationConfigurationClient{config: bucket.Spec.Parameters.NotificationConfiguration, bucket: bucket, client: client}
 }
 
 func notExistsUpdated(config *v1beta1.NotificationConfiguration, external *awss3.GetBucketNotificationConfigurationResponse) bool {
@@ -39,8 +41,8 @@ func bucketStatus(config *v1beta1.NotificationConfiguration, external *awss3.Get
 }
 
 // ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *NotificationConfigurationClient) ExistsAndUpdated(ctx context.Context, client s3.BucketClient, bucketName *string) (ResourceStatus, error) {
-	conf, err := client.GetBucketNotificationConfigurationRequest(&awss3.GetBucketNotificationConfigurationInput{Bucket: bucketName}).Send(ctx)
+func (in *NotificationConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
+	conf, err := in.client.GetBucketNotificationConfigurationRequest(&awss3.GetBucketNotificationConfigurationInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
 	if err != nil {
 		return NeedsUpdate, errors.Wrap(err, "cannot get bucket notification")
 	}
@@ -169,8 +171,8 @@ func (in *NotificationConfigurationClient) generateConfiguration() *awss3.Notifi
 	return conf
 }
 
-// GenerateLifecycleConfigurationInput creates the input for the LifecycleConfiguration request for the S3 Client
-func (in *NotificationConfigurationClient) GenerateLifecycleConfigurationInput(name string) (*awss3.PutBucketNotificationConfigurationInput, error) {
+// GenerateNotificationConfigurationInput creates the input for the LifecycleConfiguration request for the S3 Client
+func (in *NotificationConfigurationClient) GenerateNotificationConfigurationInput(name string) (*awss3.PutBucketNotificationConfigurationInput, error) {
 	conf := in.generateConfiguration()
 	return &awss3.PutBucketNotificationConfigurationInput{
 		Bucket:                    aws.String(name),
@@ -179,27 +181,24 @@ func (in *NotificationConfigurationClient) GenerateLifecycleConfigurationInput(n
 }
 
 // CreateResource sends a request to have resource created on AWS
-func (in *NotificationConfigurationClient) CreateResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config != nil {
-		input, err := in.GenerateLifecycleConfigurationInput(meta.GetExternalName(cr))
-		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "unable to create input for bucket notification request")
-		}
-		if _, err := client.PutBucketNotificationConfigurationRequest(input).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket notification")
-		}
+func (in *NotificationConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+	if in.config == nil {
+		return managed.ExternalUpdate{}, nil
 	}
-	return managed.ExternalUpdate{}, nil
+	input, err := in.GenerateNotificationConfigurationInput(meta.GetExternalName(in.bucket))
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, "unable to create input for bucket notification request")
+	}
+	_, err = in.client.PutBucketNotificationConfigurationRequest(input).Send(ctx)
+	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket notification")
 }
 
 // DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *NotificationConfigurationClient) DeleteResource(ctx context.Context, client s3.BucketClient, cr *v1beta1.Bucket) error {
+func (in *NotificationConfigurationClient) DeleteResource(ctx context.Context) error {
 	input := &awss3.PutBucketNotificationConfigurationInput{
-		Bucket:                    aws.String(meta.GetExternalName(cr)),
+		Bucket:                    aws.String(meta.GetExternalName(in.bucket)),
 		NotificationConfiguration: &awss3.NotificationConfiguration{},
 	}
-	if _, err := client.PutBucketNotificationConfigurationRequest(input).Send(ctx); err != nil {
-		return errors.Wrap(err, "cannot delete bucket notification")
-	}
-	return nil
+	_, err := in.client.PutBucketNotificationConfigurationRequest(input).Send(ctx)
+	return errors.Wrap(err, "cannot delete bucket notification")
 }
