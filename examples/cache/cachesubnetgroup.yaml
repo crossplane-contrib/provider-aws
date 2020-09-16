@@ -1,15 +1,13 @@
 apiVersion: cache.aws.crossplane.io/v1alpha1
 kind: CacheSubnetGroup
 metadata:
-  name: sample-subnet
+  name: sample-cache-subnet-group
 spec:
   forProvider:
     region: us-east-1
     description: desc for subnet
-    subnetIds:
-      - subnet-05c5f0ffc34973e8b
-      - subnet-089ef174d8b4addee
-      - subnet-0361b1970c606b733
+    subnetIdRefs:
+      - name: sample-subnet1
   reclaimPolicy: Delete
   providerConfigRef:
     name: example
