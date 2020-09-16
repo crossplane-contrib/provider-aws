@@ -24,7 +24,6 @@ import (
 
 // CertificateAuthorityParameters defines the desired state of an AWS CertificateAuthority.
 type CertificateAuthorityParameters struct {
-
 	// Region is the region you'd like your CertificateAuthority to be created in.
 	Region string `json:"region"`
 
