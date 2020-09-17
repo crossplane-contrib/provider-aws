@@ -34,6 +34,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/database/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -465,16 +466,10 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 }
 
 // GetPassword fetches the referenced input password for an RDSInstance CRD and determines whether it has changed or not
-func GetPassword(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance) (string, bool, error) {
-	if kube == nil {
-		return "", false, nil
-	}
+func GetPassword(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance) (newPwd string, changed bool, err error) {
 	if r.Spec.ForProvider.MasterPasswordSecretRef == nil && r.Spec.WriteConnectionSecretToReference == nil {
 		return "", false, nil
 	}
-
-	var newPwd string
-	var pwdChanged bool
 	if r.Spec.ForProvider.MasterPasswordSecretRef != nil {
 		nn := types.NamespacedName{
 			Name:      r.Spec.ForProvider.MasterPasswordSecretRef.Name,
@@ -493,15 +488,16 @@ func GetPassword(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance
 			Namespace: r.Spec.WriteConnectionSecretToReference.Namespace,
 		}
 		s := &corev1.Secret{}
-		if err := kube.Get(ctx, nn, s); err != nil {
-			pwdChanged = newPwd != ""
-		} else {
-			outPwd := string(s.Data[v1alpha1.ResourceCredentialsSecretPasswordKey])
-			pwdChanged = newPwd != "" && outPwd != newPwd
+		//the output secret may not exist yet, so we can skip returning an error
+		//if the error is NotFound
+		if err := kube.Get(ctx, nn, s); resource.IgnoreNotFound(err) != nil {
+			return "", false, err
 		}
+		//if newPwd was set to some value, compare value in output secret with newPwd
+		changed = newPwd != "" && newPwd != string(s.Data[v1alpha1.ResourceCredentialsSecretPasswordKey])
 	}
 
-	return newPwd, pwdChanged, nil
+	return newPwd, changed, nil
 }
 
 // GetConnectionDetails extracts managed.ConnectionDetails out of v1beta1.RDSInstance.
