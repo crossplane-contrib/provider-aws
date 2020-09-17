@@ -146,6 +146,10 @@ spec:
                 description:
                   description: A description for the cache subnet group.
                   type: string
+                region:
+                  description: Region is the region you'd like your CacheSubnetGroup
+                    to be created in.
+                  type: string
                 subnetIdRefs:
                   description: SubnetIDRefs references to a Subnet to and retrieves
                     its SubnetID
@@ -181,6 +185,7 @@ spec:
                   type: array
               required:
               - description
+              - region
               type: object
             providerConfigRef:
               description: ProviderConfigReference specifies how the provider that

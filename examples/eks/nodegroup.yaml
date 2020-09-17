@@ -1,0 +1,11 @@
+apiVersion: eks.aws.crossplane.io/v1alpha1
+kind: NodeGroup
+metadata:
+  name: my-group
+  labels:
+    example: "true"
+spec:
+  forProvider:
+    region: us-east-1
+    clusterNameRef:
+      name: do-cluster

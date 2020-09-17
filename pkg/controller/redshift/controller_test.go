@@ -53,7 +53,7 @@ type args struct {
 
 type redshiftModifier func(*v1alpha1.Cluster)
 
-func withMasterUsername(s *string) redshiftModifier {
+func withMasterUsername(s string) redshiftModifier {
 	return func(r *v1alpha1.Cluster) { r.Spec.ForProvider.MasterUsername = s }
 }
 
@@ -77,8 +77,8 @@ func cluster(m ...redshiftModifier) *v1alpha1.Cluster {
 	cr := &v1alpha1.Cluster{
 		Spec: v1alpha1.ClusterSpec{
 			ForProvider: v1alpha1.ClusterParameters{
-				MasterUsername: &masterUsername,
-				NodeType:       &nodeType,
+				MasterUsername: masterUsername,
+				NodeType:       nodeType,
 				ClusterType:    &singleNode,
 				NumberOfNodes:  aws.Int64(1),
 			},
@@ -307,11 +307,11 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: cluster(withMasterUsername(&masterUsername)),
+				cr: cluster(withMasterUsername(masterUsername)),
 			},
 			want: want{
 				cr: cluster(
-					withMasterUsername(&masterUsername),
+					withMasterUsername(masterUsername),
 					withConditions(runtimev1alpha1.Creating())),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{

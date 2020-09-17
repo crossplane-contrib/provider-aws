@@ -3,11 +3,12 @@ kind: SNSSubscription
 metadata:
   name: sample-subscription
 spec:
-  reclaimPolicy: Delete
-  providerConfigRef:
-    name: aws-provider
   forProvider:
+    region: us-east-1
     protocol: email
     endpoint: example@abc.com
     topicArnRef:
       name: some-topic
+  reclaimPolicy: Delete
+  providerConfigRef:
+    name: example

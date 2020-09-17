@@ -1,22 +1,25 @@
+---
 apiVersion: eks.aws.crossplane.io/v1beta1
 kind: Cluster
 metadata:
-  name: do-cluster
+  name: sample-cluster
   labels:
     example: "true"
 spec:
   forProvider:
-    roleArn: <your-role>
+    region: us-east-1
+    roleArnRef:
+      name: somerole
     resourcesVpcConfig:
       publicAccessCidrs:                                                                                                                                                                                    
       - 0.0.0.0/0
       endpointPublicAccess: true
       subnetIds:
-        - <your-subnet>
-    version: "1.15"
+        - sample-subnet1
+    version: "1.16"
   reclaimPolicy: Delete
   writeConnectionSecretToRef:
     name: cluster-conn
     namespace: default
   providerConfigRef:
-    name: aws-provider
+    name: example

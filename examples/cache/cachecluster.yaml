@@ -6,11 +6,12 @@ metadata:
     crossplane.io/external-name: some-cluster-id
 spec:
   forProvider:
+    region: us-east-1
     engine: memcached
     cacheNodeType: cache.t2.micro
     numCacheNodes: 1
     cacheSubnetGroupNameRef:
-      name: sample-subnet
+      name: sample-cache-subnet-group
     securityGroupIdRefs:
     - name: sample-cluster-sg
   reclaimPolicy: Delete

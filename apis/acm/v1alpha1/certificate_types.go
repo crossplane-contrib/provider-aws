@@ -76,6 +76,9 @@ type CertificateStatus struct {
 // CertificateParameters defines the desired state of an AWS Certificate.
 type CertificateParameters struct {
 
+	// Region is the region you'd like your Certificate to be created in.
+	Region string `json:"region"`
+
 	// The Amazon Resource Name (ARN) of the private certificate authority (CA)that will be used to issue the certificate.
 	// +optional
 	CertificateAuthorityARN *string `json:"certificateAuthorityARN,omitempty"`
@@ -130,7 +133,7 @@ type CertificateParameters struct {
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Certificate struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

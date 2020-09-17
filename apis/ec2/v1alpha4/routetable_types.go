@@ -93,6 +93,9 @@ type AssociationState struct {
 
 // RouteTableParameters define the desired state of an AWS VPC Route Table.
 type RouteTableParameters struct {
+	// Region is the region you'd like your VPC to be created in.
+	Region string `json:"region"`
+
 	// The associations between the route table and one or more subnets.
 	Associations []Association `json:"associations"`
 

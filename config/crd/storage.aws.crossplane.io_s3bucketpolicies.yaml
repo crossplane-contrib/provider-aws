@@ -26,6 +26,10 @@ spec:
     type: date
   group: storage.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - managed
+    - aws
     kind: S3BucketPolicy
     listKind: S3BucketPolicyList
     plural: s3bucketpolicies

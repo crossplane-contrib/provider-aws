@@ -65,8 +65,8 @@ func LateInitialize(in *v1alpha1.ClusterParameters, cl *redshift.Cluster) { // n
 	in.KMSKeyID = awsclients.LateInitializeStringPtr(in.KMSKeyID, cl.KmsKeyId)
 	in.MaintenanceTrackName = awsclients.LateInitializeStringPtr(in.MaintenanceTrackName, cl.MaintenanceTrackName)
 	in.ManualSnapshotRetentionPeriod = awsclients.LateInitializeInt64Ptr(in.ManualSnapshotRetentionPeriod, cl.ManualSnapshotRetentionPeriod)
-	in.MasterUsername = awsclients.LateInitializeStringPtr(in.MasterUsername, cl.MasterUsername)
-	in.NodeType = awsclients.LateInitializeStringPtr(in.NodeType, cl.NodeType)
+	in.MasterUsername = awsclients.LateInitializeString(in.MasterUsername, cl.MasterUsername)
+	in.NodeType = awsclients.LateInitializeString(in.NodeType, cl.NodeType)
 	in.NumberOfNodes = awsclients.LateInitializeInt64Ptr(in.NumberOfNodes, cl.NumberOfNodes)
 	in.PreferredMaintenanceWindow = awsclients.LateInitializeStringPtr(in.PreferredMaintenanceWindow, cl.PreferredMaintenanceWindow)
 	in.PubliclyAccessible = awsclients.LateInitializeBoolPtr(in.PubliclyAccessible, cl.PubliclyAccessible)
@@ -218,8 +218,8 @@ func GenerateCreateClusterInput(p *v1alpha1.ClusterParameters, cid, pw *string) 
 		MaintenanceTrackName:             p.MaintenanceTrackName,
 		ManualSnapshotRetentionPeriod:    p.ManualSnapshotRetentionPeriod,
 		MasterUserPassword:               pw,
-		MasterUsername:                   p.MasterUsername,
-		NodeType:                         p.NodeType,
+		MasterUsername:                   &p.MasterUsername,
+		NodeType:                         &p.NodeType,
 		NumberOfNodes:                    p.NumberOfNodes,
 		Port:                             p.Port,
 		PreferredMaintenanceWindow:       p.PreferredMaintenanceWindow,
@@ -247,9 +247,9 @@ func GenerateModifyClusterInput(p *v1alpha1.ClusterParameters, cl redshift.Clust
 	// If the cluster type, node type, or number of nodes changed, then the AWS API expects all three
 	// items to be sent over
 	// When a resize operation is requested, no other modifications are allowed in the same request
-	if patch.ClusterType != nil || patch.NodeType != nil || patch.NumberOfNodes != nil {
+	if patch.ClusterType != nil || patch.NodeType != "" || patch.NumberOfNodes != nil {
 		o.ClusterType = p.ClusterType
-		o.NodeType = p.NodeType
+		o.NodeType = &p.NodeType
 		o.NumberOfNodes = p.NumberOfNodes
 		return o
 	}

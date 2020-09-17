@@ -1,11 +1,14 @@
 apiVersion: ec2.aws.crossplane.io/v1beta1
-kind: InternetGateway
+kind: Subnet
 metadata:
-  name: sample-internetgateway
+  name: sample-subnet1
 spec:
   forProvider:
+    region: us-east-1
+    cidrBlock: 10.0.1.0/24
     vpcIdRef:
       name: sample-vpc
+    mapPublicIPOnLaunch: true
   reclaimPolicy: Delete
   providerConfigRef:
     name: example

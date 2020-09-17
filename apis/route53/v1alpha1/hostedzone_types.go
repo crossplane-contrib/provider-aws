@@ -31,7 +31,6 @@ import (
 // +kubebuilder:printcolumn:name="RRs",type="integer",JSONPath=".status.atProvider.hostedZone.resourceRecordSetCount"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:scope=Cluster
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type HostedZone struct {
 	metav1.TypeMeta   `json:",inline"`

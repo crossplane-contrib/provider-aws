@@ -143,6 +143,10 @@ spec:
                 description:
                   description: The description for the DB subnet group.
                   type: string
+                region:
+                  description: Region is the region you'd like your DBSubnetGroup
+                    to be created in.
+                  type: string
                 subnetIdRefs:
                   description: SubnetIDRefs is a set of references that each retrieve
                     the subnetID from the referenced Subnet
