@@ -157,6 +157,8 @@ spec:
                         not be scanned unless a scan is manually started with the
                         StartImageScan API.
                       type: boolean
+                  required:
+                  - scanOnPush
                   type: object
                 imageTagMutability:
                   description: The tag mutability setting for the repository. If this
@@ -167,6 +169,10 @@ spec:
                   enum:
                   - MUTABLE
                   - IMMUTABLE
+                  type: string
+                region:
+                  description: Region is the region you'd like your Certificate to
+                    be created in.
                   type: string
                 tags:
                   description: Metadata tagging key value pairs
@@ -184,6 +190,8 @@ spec:
                     - value
                     type: object
                   type: array
+              required:
+              - region
               type: object
             providerConfigRef:
               description: ProviderConfigReference specifies how the provider that
@@ -266,6 +274,8 @@ spec:
                         not be scanned unless a scan is manually started with the
                         StartImageScan API.
                       type: boolean
+                  required:
+                  - scanOnPush
                   type: object
                 imageTagMutability:
                   description: The tag mutability setting for the repository.

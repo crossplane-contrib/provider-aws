@@ -25,6 +25,9 @@ import (
 // RepositoryParameters define the desired state of an AWS Elastic Container Repository
 type RepositoryParameters struct {
 
+	// Region is the region you'd like your Certificate to be created in.
+	Region string `json:"region"`
+
 	// The image scanning configuration for the repository. This determines whether
 	// images are scanned for known vulnerabilities after being pushed to the repository.
 	// +optional
@@ -86,7 +89,7 @@ type ImageScanningConfiguration struct {
 	// If this parameter is not specified, it will default to false and images will
 	// not be scanned unless a scan is manually started with the StartImageScan
 	// API.
-	ScanOnPush bool `json:"scanOnPush,omitempty"`
+	ScanOnPush bool `json:"scanOnPush"`
 }
 
 // A RepositoryStatus represents the observed state of a Elastic Container Repository.
