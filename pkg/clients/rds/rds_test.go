@@ -26,8 +26,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -505,7 +507,9 @@ func TestGetPassword(t *testing.T) {
 							secret.DeepCopyInto(obj.(*corev1.Secret))
 							return nil
 						case outputSecretName:
-							return errBoom
+							return kerrors.NewNotFound(schema.GroupResource{
+								Resource: "Secret",
+							}, outputSecretName)
 						default:
 							return nil
 						}
@@ -535,7 +539,12 @@ func TestGetPassword(t *testing.T) {
 				},
 				kube: &test.MockClient{
 					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
-						return errBoom
+						secret := corev1.Secret{
+							Data: map[string][]byte{},
+						}
+						secret.Data[v1alpha1.ResourceCredentialsSecretPasswordKey] = []byte("not" + connectionCredData)
+						secret.DeepCopyInto(obj.(*corev1.Secret))
+						return nil
 					},
 				},
 			},
