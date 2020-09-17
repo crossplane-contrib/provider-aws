@@ -210,6 +210,10 @@ spec:
                   required:
                   - clusterLogging
                   type: object
+                region:
+                  description: Region is the region you'd like your Cluster to be
+                    created in.
+                  type: string
                 resourcesVpcConfig:
                   description: "The VPC configuration used by the cluster control
                     plane. Amazon EKS VPC resources have specific requirements to

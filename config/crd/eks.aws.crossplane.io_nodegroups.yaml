@@ -237,6 +237,10 @@ spec:
                         is selected.
                       type: object
                   type: object
+                region:
+                  description: Region is the region you'd like  the NodeGroup to be
+                    created in.
+                  type: string
                 releaseVersion:
                   description: The AMI version of the Amazon EKS-optimized AMI to
                     use with your node group. By default, the latest available AMI
@@ -368,6 +372,8 @@ spec:
                     By default, the Kubernetes version of the cluster is used, and
                     this is the only accepted specified value.
                   type: string
+              required:
+              - region
               type: object
             providerConfigRef:
               description: ProviderConfigReference specifies how the provider that

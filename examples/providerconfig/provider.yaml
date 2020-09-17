@@ -3,11 +3,11 @@
 apiVersion: v1
 kind: Secret
 metadata:
+  name: example-creds
   namespace: crossplane-system
-  name: example-provider-aws
 type: Opaque
 data:
-  credentials: BASE64ENCODED_AWS_PROVIDER_CREDS
+  credentials: <REPLACEME>
 ---
 # AWS provider that references the secrete credentials
 apiVersion: aws.crossplane.io/v1beta1
@@ -17,5 +17,5 @@ metadata:
 spec:
   credentialsSecretRef:
     namespace: crossplane-system
-    name: example-provider-aws
+    name: example-creds
     key: credentials

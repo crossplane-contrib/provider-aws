@@ -316,6 +316,10 @@ spec:
                       format: int64
                       type: integer
                   type: object
+                region:
+                  description: Region is the region you'd like your DynamoTable to
+                    be created in.
+                  type: string
                 sseSpecification:
                   description: Represents the settings used to enable server-side
                     encryption.
@@ -366,6 +370,7 @@ spec:
               required:
               - attributeDefinitions
               - keySchema
+              - region
               type: object
             providerConfigRef:
               description: ProviderConfigReference specifies how the provider that

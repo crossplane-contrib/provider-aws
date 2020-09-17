@@ -47,6 +47,9 @@ type Tag struct {
 
 // SNSTopicParameters define the desired state of a AWS SNS Topic
 type SNSTopicParameters struct {
+	// Region is the region you'd like your SNSTopic to be created in.
+	Region string `json:"region"`
+
 	// Name refers to the name of the AWS SNS Topic
 	// +immutable
 	Name string `json:"name"`

@@ -1,15 +1,14 @@
 apiVersion: elasticloadbalancing.aws.crossplane.io/v1alpha1
 kind: ELB
 metadata:
-  name: "sample-elb"
-  annotations:
-    crossplane.io/external-name: external-elb-name
+  name: sample-elb
 spec:
   forProvider:
+    region: us-east-1
     securityGroupIdRefs:
       - name: sample-cluster-sg
     subnetIdRefs:
-      - subnet-d297e9a8
+      - name: sample-subnet1
     listeners:
       - instancePort: 8180
         instanceProtocol: http

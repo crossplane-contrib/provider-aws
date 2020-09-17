@@ -66,6 +66,15 @@ type VPCIPv6CidrBlockAssociation struct {
 
 // VPCParameters define the desired state of an AWS Virtual Private Cloud.
 type VPCParameters struct {
+
+	// TODO(muvaf): Region is a required field but in order to keep backward compatibility
+	// with old Provider type and not bear the cost of bumping to v1beta2, we're
+	// keeping it optional for now. Reconsider before v1beta2 or v1.
+
+	// Region is the region you'd like your VPC to be created in.
+	// +optional
+	Region *string `json:"region,omitempty"`
+
 	// CIDRBlock is the IPv4 network range for the VPC, in CIDR notation. For
 	// example, 10.0.0.0/16.
 	// +kubebuilder:validation:Required

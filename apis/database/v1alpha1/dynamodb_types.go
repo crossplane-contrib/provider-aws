@@ -162,6 +162,9 @@ type StreamSpecification struct {
 
 // DynamoTableParameters define the desired state of an AWS DynomoDBTable
 type DynamoTableParameters struct {
+	// Region is the region you'd like your DynamoTable to be created in.
+	Region string `json:"region"`
+
 	// An array of attributes that describe the key schema for the table and indexes.
 	AttributeDefinitions []AttributeDefinition `json:"attributeDefinitions"`
 

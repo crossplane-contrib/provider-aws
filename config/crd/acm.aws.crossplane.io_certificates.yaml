@@ -26,6 +26,10 @@ spec:
     type: date
   group: acm.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - managed
+    - aws
     kind: Certificate
     listKind: CertificateList
     plural: certificates
@@ -197,6 +201,10 @@ spec:
                     - validationDomain
                     type: object
                   type: array
+                region:
+                  description: Region is the region you'd like your Certificate to
+                    be created in.
+                  type: string
                 renewCertificate:
                   description: Flag to renew the certificate
                   type: boolean
@@ -228,6 +236,7 @@ spec:
                   type: string
               required:
               - domainName
+              - region
               - tags
               type: object
             providerConfigRef:

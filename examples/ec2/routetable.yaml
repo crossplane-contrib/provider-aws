@@ -1,9 +1,10 @@
-apiVersion: ec2.aws.crossplane.io/v1beta1
+apiVersion: ec2.aws.crossplane.io/v1alpha4
 kind: RouteTable
 metadata:
   name: sample-routetable
 spec:
   forProvider:
+    region: us-east-1
     routes:
       - destinationCidrBlock: 0.0.0.0/0
         gatewayIdRef:

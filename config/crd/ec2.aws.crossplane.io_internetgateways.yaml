@@ -146,6 +146,10 @@ spec:
               description: InternetGatewayParameters define the desired state of an
                 AWS VPC Internet Gateway.
               properties:
+                region:
+                  description: Region is the region you'd like your VPC to be created
+                    in.
+                  type: string
                 tags:
                   description: Tags represents to current ec2 tags.
                   items:

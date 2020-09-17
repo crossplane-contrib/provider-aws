@@ -26,6 +26,10 @@ spec:
     type: date
   group: acmpca.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - managed
+    - aws
     kind: CertificateAuthority
     listKind: CertificateAuthorityList
     plural: certificateauthorities
@@ -232,6 +236,10 @@ spec:
                     has been deleted
                   format: int64
                   type: integer
+                region:
+                  description: Region is the region you'd like your CertificateAuthority
+                    to be created in.
+                  type: string
                 revocationConfiguration:
                   description: RevocationConfiguration to associate with the certificateAuthority.
                   properties:
@@ -256,13 +264,8 @@ spec:
                     be configured at creation, but can be updated to set a CA to ACTIVE
                     or DISABLED.
                   enum:
-                  - CREATING
-                  - PENDING_CERTIFICATE
                   - ACTIVE
-                  - DELETED
                   - DISABLED
-                  - EXPIRED
-                  - FAILED
                   type: string
                 tags:
                   description: One or more resource tags to associate with the certificateAuthority.
@@ -290,6 +293,7 @@ spec:
                   type: string
               required:
               - certificateAuthorityConfiguration
+              - region
               - tags
               - type
               type: object
@@ -366,6 +370,9 @@ spec:
                   type: string
                 serial:
                   description: Serial of the Certificate Authority
+                  type: string
+                status:
+                  description: Status is the current status of the CertificateAuthority.
                   type: string
               type: object
             bindingPhase:

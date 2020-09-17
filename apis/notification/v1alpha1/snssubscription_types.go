@@ -24,6 +24,8 @@ import (
 
 // SNSSubscriptionParameters define the desired state of a AWS SNS Topic
 type SNSSubscriptionParameters struct {
+	// Region is the region you'd like your SNSSubscription to be in.
+	Region string `json:"region"`
 
 	// TopicArn is the Arn of the SNS Topic
 	// +immutable
@@ -124,7 +126,7 @@ type SNSSubscriptionStatus struct {
 // +kubebuilder:printcolumn:name="STATUS",type="string",JSONPath=".status.atProvider.status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type SNSSubscription struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

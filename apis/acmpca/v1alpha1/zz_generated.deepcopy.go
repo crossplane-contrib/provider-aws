@@ -21,7 +21,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/aws/aws-sdk-go-v2/service/acmpca"
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -132,7 +131,7 @@ func (in *CertificateAuthorityParameters) DeepCopyInto(out *CertificateAuthority
 	}
 	if in.Status != nil {
 		in, out := &in.Status, &out.Status
-		*out = new(acmpca.CertificateAuthorityStatus)
+		*out = new(string)
 		**out = **in
 	}
 	if in.Tags != nil {

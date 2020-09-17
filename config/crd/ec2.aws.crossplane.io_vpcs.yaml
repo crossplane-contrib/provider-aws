@@ -162,6 +162,10 @@ spec:
                   description: The allowed tenancy of instances launched into the
                     VPC.
                   type: string
+                region:
+                  description: Region is the region you'd like your VPC to be created
+                    in.
+                  type: string
                 tags:
                   description: Tags are used as identification helpers between AWS
                     resources.

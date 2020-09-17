@@ -29,6 +29,10 @@ spec:
     type: date
   group: notification.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - managed
+    - aws
     kind: SNSSubscription
     listKind: SNSSubscriptionList
     plural: snssubscriptions
@@ -175,6 +179,10 @@ spec:
                     that powers the subscribed  endpoint becomes unavailable) are
                     held in the dead-letter queue for further  analysis or reprocessing.'
                   type: string
+                region:
+                  description: Region is the region you'd like your SNSSubscription
+                    to be in.
+                  type: string
                 topicArn:
                   description: TopicArn is the Arn of the SNS Topic
                   type: string
@@ -206,6 +214,7 @@ spec:
               required:
               - endpoint
               - protocol
+              - region
               type: object
             providerConfigRef:
               description: ProviderConfigReference specifies how the provider that

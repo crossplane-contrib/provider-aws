@@ -68,7 +68,11 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "")
+	cr, ok := mg.(*v1alpha1.DynamoTable)
+	if !ok {
+		return nil, errors.New(errNotDynamoTable)
+	}
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}

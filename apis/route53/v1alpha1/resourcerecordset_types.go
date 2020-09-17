@@ -786,7 +786,6 @@ type ResourceRecord struct {
 // +kubebuilder:printcolumn:name="TYPE",type="string",JSONPath=".spec.forProvider.type"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:scope=Cluster
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type ResourceRecordSet struct {
 	metav1.TypeMeta   `json:",inline"`

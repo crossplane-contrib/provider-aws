@@ -4,11 +4,12 @@ metadata:
   name: example
 spec:
   forProvider:
+    region: us-east-1
     type: ROOT
     revocationConfiguration:
       expirationInDays: 7
       enabled: true
-      s3BucketName: cpexample # bucket must already exist
+      s3BucketName: test-bucket # bucket must already exist
     certificateAuthorityConfiguration:
       keyAlgorithm: RSA_2048
       signingAlgorithm: SHA256WITHRSA
@@ -25,5 +26,4 @@ spec:
       value: example
   reclaimPolicy: Delete
   providerConfigRef:
-    name: aws-provider
-
+    name: example

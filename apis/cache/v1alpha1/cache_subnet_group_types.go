@@ -23,6 +23,9 @@ import (
 
 // CacheSubnetGroupParameters define the desired state of an AWS ElasticCache Subnet Group.
 type CacheSubnetGroupParameters struct {
+	// Region is the region you'd like your CacheSubnetGroup to be created in.
+	Region string `json:"region"`
+
 	// A description for the cache subnet group.
 	Description string `json:"description"`
 

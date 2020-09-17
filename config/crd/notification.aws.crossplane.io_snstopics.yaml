@@ -168,6 +168,10 @@ spec:
                     By default, only the topic owner can publish or subscribe to the
                     topic.
                   type: string
+                region:
+                  description: Region is the region you'd like your SNSTopic to be
+                    created in.
+                  type: string
                 tags:
                   description: Tags represetnt a list of user-provided metadata that
                     can be associated with a SNS Topic. For more information about
@@ -202,6 +206,7 @@ spec:
                   type: array
               required:
               - name
+              - region
               type: object
             providerConfigRef:
               description: ProviderConfigReference specifies how the provider that
