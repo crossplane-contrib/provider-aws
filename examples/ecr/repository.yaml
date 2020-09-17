@@ -6,6 +6,7 @@ metadata:
     region: us-east-1
 spec:
   forProvider:
+    region: us-east-1
     imageScanningConfiguration:
       scanOnPush: true
     imageTagMutability: IMMUTABLE
