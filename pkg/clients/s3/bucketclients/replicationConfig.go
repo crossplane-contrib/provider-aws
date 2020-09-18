@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package bucketclients
 
 import (
@@ -18,18 +34,17 @@ import (
 // ReplicationConfigurationClient is the client for API methods and reconciling the ReplicationConfiguration
 type ReplicationConfigurationClient struct {
 	config *v1beta1.ReplicationConfiguration
-	bucket *v1beta1.Bucket
 	client s3.BucketClient
 }
 
-// CreateReplicationConfigurationClient creates the client for Replication Configuration
-func CreateReplicationConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *ReplicationConfigurationClient {
-	return &ReplicationConfigurationClient{config: bucket.Spec.Parameters.ReplicationConfiguration, bucket: bucket, client: client}
+// NewReplicationConfigurationClient creates the client for Replication Configuration
+func NewReplicationConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *ReplicationConfigurationClient {
+	return &ReplicationConfigurationClient{config: bucket.Spec.Parameters.ReplicationConfiguration, client: client}
 }
 
-// ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *ReplicationConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
-	conf, err := in.client.GetBucketReplicationRequest(&awss3.GetBucketReplicationInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
+// Observe checks if the resource exists and if it matches the local configuration
+func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+	conf, err := in.client.GetBucketReplicationRequest(&awss3.GetBucketReplicationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "ReplicationConfigurationNotFoundError" && in.config == nil {
 			return Updated, nil
@@ -180,20 +195,20 @@ func (in *ReplicationConfigurationClient) GeneratePutBucketReplicationInput(name
 	}
 }
 
-// CreateResource sends a request to have resource created on AWS.
-func (in *ReplicationConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+// Create sends a request to have resource created on AWS.
+func (in *ReplicationConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketReplicationRequest(in.GeneratePutBucketReplicationInput(meta.GetExternalName(in.bucket))).Send(ctx)
+	_, err := in.client.PutBucketReplicationRequest(in.GeneratePutBucketReplicationInput(meta.GetExternalName(bucket))).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket replication")
 }
 
-// DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *ReplicationConfigurationClient) DeleteResource(ctx context.Context) error {
+// Delete creates the request to delete the resource on AWS or set it to the default value.
+func (in *ReplicationConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketReplicationRequest(
 		&awss3.DeleteBucketReplicationInput{
-			Bucket: aws.String(meta.GetExternalName(in.bucket)),
+			Bucket: aws.String(meta.GetExternalName(bucket)),
 		},
 	).Send(ctx)
 	return errors.Wrap(err, "cannot delete bucket replication")

@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package bucketclients
 
 import (
@@ -16,18 +32,17 @@ import (
 // AccelerateConfigurationClient is the client for API methods and reconciling the AccelerateConfiguration
 type AccelerateConfigurationClient struct {
 	config *v1beta1.AccelerateConfiguration
-	bucket *v1beta1.Bucket
 	client s3.BucketClient
 }
 
-// CreateAccelerateConfigurationClient creates the client for Accelerate Configuration
-func CreateAccelerateConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *AccelerateConfigurationClient {
-	return &AccelerateConfigurationClient{config: bucket.Spec.Parameters.AccelerateConfiguration, bucket: bucket, client: client}
+// NewAccelerateConfigurationClient creates the client for Accelerate Configuration
+func NewAccelerateConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *AccelerateConfigurationClient {
+	return &AccelerateConfigurationClient{config: bucket.Spec.Parameters.AccelerateConfiguration, client: client}
 }
 
-// ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *AccelerateConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
-	conf, err := in.client.GetBucketAccelerateConfigurationRequest(&awss3.GetBucketAccelerateConfigurationInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
+// Observe checks if the resource exists and if it matches the local configuration
+func (in *AccelerateConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+	conf, err := in.client.GetBucketAccelerateConfigurationRequest(&awss3.GetBucketAccelerateConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		return NeedsUpdate, errors.Wrap(err, "cannot get bucket accelerate configuration")
 	}
@@ -53,20 +68,20 @@ func (in *AccelerateConfigurationClient) GenerateAccelerateConfigurationInput(na
 	}
 }
 
-// CreateResource sends a request to have resource created on AWS
-func (in *AccelerateConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+// Create sends a request to have resource created on AWS
+func (in *AccelerateConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketAccelerateConfigurationRequest(in.GenerateAccelerateConfigurationInput(meta.GetExternalName(in.bucket))).Send(ctx)
+	_, err := in.client.PutBucketAccelerateConfigurationRequest(in.GenerateAccelerateConfigurationInput(meta.GetExternalName(bucket))).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket acceleration configuration")
 }
 
-// DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *AccelerateConfigurationClient) DeleteResource(ctx context.Context) error {
+// Delete creates the request to delete the resource on AWS or set it to the default value.
+func (in *AccelerateConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.PutBucketAccelerateConfigurationRequest(
 		&awss3.PutBucketAccelerateConfigurationInput{
-			Bucket: aws.String(meta.GetExternalName(in.bucket)),
+			Bucket: aws.String(meta.GetExternalName(bucket)),
 			AccelerateConfiguration: &awss3.AccelerateConfiguration{
 				Status: awss3.BucketAccelerateStatusSuspended,
 			},

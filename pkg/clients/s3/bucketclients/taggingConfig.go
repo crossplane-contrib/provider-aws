@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package bucketclients
 
 import (
@@ -18,18 +34,17 @@ import (
 // TaggingConfigurationClient is the client for API methods and reconciling the CORSConfiguration
 type TaggingConfigurationClient struct {
 	config *v1beta1.Tagging
-	bucket *v1beta1.Bucket
 	client s3.BucketClient
 }
 
-// CreateTaggingConfigurationClient creates the client for CORS Configuration
-func CreateTaggingConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *TaggingConfigurationClient {
-	return &TaggingConfigurationClient{config: bucket.Spec.Parameters.BucketTagging, bucket: bucket, client: client}
+// NewTaggingConfigurationClient creates the client for CORS Configuration
+func NewTaggingConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *TaggingConfigurationClient {
+	return &TaggingConfigurationClient{config: bucket.Spec.Parameters.BucketTagging, client: client}
 }
 
-// ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *TaggingConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
-	conf, err := in.client.GetBucketTaggingRequest(&awss3.GetBucketTaggingInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
+// Observe checks if the resource exists and if it matches the local configuration
+func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+	conf, err := in.client.GetBucketTaggingRequest(&awss3.GetBucketTaggingInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchTagSet" && in.config == nil {
 			return Updated, nil
@@ -69,20 +84,20 @@ func (in *TaggingConfigurationClient) generatePutBucketTagging(name string) *aws
 	}
 }
 
-// CreateResource sends a request to have resource created on AWS
-func (in *TaggingConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+// Create sends a request to have resource created on AWS
+func (in *TaggingConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketTaggingRequest(in.generatePutBucketTagging(meta.GetExternalName(in.bucket))).Send(ctx)
+	_, err := in.client.PutBucketTaggingRequest(in.generatePutBucketTagging(meta.GetExternalName(bucket))).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket tagging")
 }
 
-// DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *TaggingConfigurationClient) DeleteResource(ctx context.Context) error {
+// Delete creates the request to delete the resource on AWS or set it to the default value.
+func (in *TaggingConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketTaggingRequest(
 		&awss3.DeleteBucketTaggingInput{
-			Bucket: aws.String(meta.GetExternalName(in.bucket)),
+			Bucket: aws.String(meta.GetExternalName(bucket)),
 		},
 	).Send(ctx)
 	return errors.Wrap(err, "cannot delete bucket tagging configuration")

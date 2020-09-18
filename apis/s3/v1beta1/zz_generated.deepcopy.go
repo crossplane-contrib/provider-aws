@@ -586,8 +586,7 @@ func (in *LifecycleExpiration) DeepCopyInto(out *LifecycleExpiration) {
 	*out = *in
 	if in.Date != nil {
 		in, out := &in.Date, &out.Date
-		*out = new(string)
-		**out = **in
+		*out = (*in).DeepCopy()
 	}
 	if in.Days != nil {
 		in, out := &in.Days, &out.Days
@@ -1428,8 +1427,7 @@ func (in *Transition) DeepCopyInto(out *Transition) {
 	*out = *in
 	if in.Date != nil {
 		in, out := &in.Date, &out.Date
-		*out = new(string)
-		**out = **in
+		*out = (*in).DeepCopy()
 	}
 	if in.Days != nil {
 		in, out := &in.Days, &out.Days

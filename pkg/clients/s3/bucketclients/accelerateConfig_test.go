@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package bucketclients
 
 import (
@@ -17,6 +33,7 @@ import (
 func TestAccelerateExistsAndUpdated(t *testing.T) {
 	type args struct {
 		cl *AccelerateConfigurationClient
+		b  *v1beta1.Bucket
 	}
 
 	type want struct {
@@ -30,7 +47,8 @@ func TestAccelerateExistsAndUpdated(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				cl: CreateAccelerateConfigurationClient(
+				b: bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
+				cl: NewAccelerateConfigurationClient(
 					bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
 					fake.MockBucketClient{
 						MockGetBucketAccelerateConfigurationRequest: func(input *s3.GetBucketAccelerateConfigurationInput) s3.GetBucketAccelerateConfigurationRequest {
@@ -48,8 +66,9 @@ func TestAccelerateExistsAndUpdated(t *testing.T) {
 		},
 		"UpdateNeeded": {
 			args: args{
-				cl: CreateAccelerateConfigurationClient(
-					bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: "Enabled"})),
+				b: bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
+				cl: NewAccelerateConfigurationClient(
+					bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
 					fake.MockBucketClient{
 						MockGetBucketAccelerateConfigurationRequest: func(input *s3.GetBucketAccelerateConfigurationInput) s3.GetBucketAccelerateConfigurationRequest {
 							return s3.GetBucketAccelerateConfigurationRequest{
@@ -66,7 +85,8 @@ func TestAccelerateExistsAndUpdated(t *testing.T) {
 		},
 		"NeedsDelete": {
 			args: args{
-				cl: CreateAccelerateConfigurationClient(
+				b: bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: suspended})),
+				cl: NewAccelerateConfigurationClient(
 					bucket(withAccelerationConfig(nil)),
 					fake.MockBucketClient{
 						MockGetBucketAccelerateConfigurationRequest: func(input *s3.GetBucketAccelerateConfigurationInput) s3.GetBucketAccelerateConfigurationRequest {
@@ -84,7 +104,8 @@ func TestAccelerateExistsAndUpdated(t *testing.T) {
 		},
 		"NoUpdateNotExists": {
 			args: args{
-				cl: CreateAccelerateConfigurationClient(
+				b: bucket(withAccelerationConfig(nil)),
+				cl: NewAccelerateConfigurationClient(
 					bucket(withAccelerationConfig(nil)),
 					fake.MockBucketClient{
 						MockGetBucketAccelerateConfigurationRequest: func(input *s3.GetBucketAccelerateConfigurationInput) s3.GetBucketAccelerateConfigurationRequest {
@@ -102,7 +123,8 @@ func TestAccelerateExistsAndUpdated(t *testing.T) {
 		},
 		"NoUpdateExists": {
 			args: args{
-				cl: CreateAccelerateConfigurationClient(
+				b: bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: suspended})),
+				cl: NewAccelerateConfigurationClient(
 					bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: suspended})),
 					fake.MockBucketClient{
 						MockGetBucketAccelerateConfigurationRequest: func(input *s3.GetBucketAccelerateConfigurationInput) s3.GetBucketAccelerateConfigurationRequest {
@@ -122,7 +144,7 @@ func TestAccelerateExistsAndUpdated(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			status, err := tc.args.cl.ExistsAndUpdated(context.Background())
+			status, err := tc.args.cl.Observe(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
@@ -136,6 +158,7 @@ func TestAccelerateExistsAndUpdated(t *testing.T) {
 func TestAccelerateCreate(t *testing.T) {
 	type args struct {
 		cl BucketResource
+		b  *v1beta1.Bucket
 	}
 
 	type want struct {
@@ -148,7 +171,8 @@ func TestAccelerateCreate(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				cl: CreateAccelerateConfigurationClient(
+				b: bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
+				cl: NewAccelerateConfigurationClient(
 					bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
 					fake.MockBucketClient{
 						MockPutBucketAccelerateConfigurationRequest: func(input *s3.PutBucketAccelerateConfigurationInput) s3.PutBucketAccelerateConfigurationRequest {
@@ -165,7 +189,8 @@ func TestAccelerateCreate(t *testing.T) {
 		},
 		"InvalidConfig": {
 			args: args{
-				cl: CreateAccelerateConfigurationClient(
+				b: bucket(withAccelerationConfig(nil)),
+				cl: NewAccelerateConfigurationClient(
 					bucket(withAccelerationConfig(nil)),
 					fake.MockBucketClient{
 						MockPutBucketAccelerateConfigurationRequest: func(input *s3.PutBucketAccelerateConfigurationInput) s3.PutBucketAccelerateConfigurationRequest {
@@ -182,7 +207,8 @@ func TestAccelerateCreate(t *testing.T) {
 		},
 		"SuccessfulCreate": {
 			args: args{
-				cl: CreateAccelerateConfigurationClient(
+				b: bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
+				cl: NewAccelerateConfigurationClient(
 					bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
 					fake.MockBucketClient{
 						MockPutBucketAccelerateConfigurationRequest: func(input *s3.PutBucketAccelerateConfigurationInput) s3.PutBucketAccelerateConfigurationRequest {
@@ -201,7 +227,7 @@ func TestAccelerateCreate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			_, err := tc.args.cl.CreateResource(context.Background())
+			_, err := tc.args.cl.Create(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
@@ -212,6 +238,7 @@ func TestAccelerateCreate(t *testing.T) {
 func TestAccelerateDelete(t *testing.T) {
 	type args struct {
 		cl BucketResource
+		b  *v1beta1.Bucket
 	}
 
 	type want struct {
@@ -224,7 +251,8 @@ func TestAccelerateDelete(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				cl: CreateAccelerateConfigurationClient(
+				b: bucket(),
+				cl: NewAccelerateConfigurationClient(
 					bucket(),
 					fake.MockBucketClient{
 						MockPutBucketAccelerateConfigurationRequest: func(input *s3.PutBucketAccelerateConfigurationInput) s3.PutBucketAccelerateConfigurationRequest {
@@ -241,7 +269,8 @@ func TestAccelerateDelete(t *testing.T) {
 		},
 		"SuccessfulDelete": {
 			args: args{
-				cl: CreateAccelerateConfigurationClient(
+				b: bucket(),
+				cl: NewAccelerateConfigurationClient(
 					bucket(),
 					fake.MockBucketClient{
 						MockPutBucketAccelerateConfigurationRequest: func(input *s3.PutBucketAccelerateConfigurationInput) s3.PutBucketAccelerateConfigurationRequest {
@@ -260,7 +289,7 @@ func TestAccelerateDelete(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			err := tc.args.cl.DeleteResource(context.Background())
+			err := tc.args.cl.Delete(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

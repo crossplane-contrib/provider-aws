@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package bucketclients
 
 import (
@@ -17,18 +33,17 @@ import (
 // VersioningConfigurationClient is the client for API methods and reconciling the VersioningConfiguration
 type VersioningConfigurationClient struct {
 	config *v1beta1.VersioningConfiguration
-	bucket *v1beta1.Bucket
 	client s3.BucketClient
 }
 
-// CreateVersioningConfigurationClient creates the client for Versioning Configuration
-func CreateVersioningConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *VersioningConfigurationClient {
-	return &VersioningConfigurationClient{config: bucket.Spec.Parameters.VersioningConfiguration, bucket: bucket, client: client}
+// NewVersioningConfigurationClient creates the client for Versioning Configuration
+func NewVersioningConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *VersioningConfigurationClient {
+	return &VersioningConfigurationClient{config: bucket.Spec.Parameters.VersioningConfiguration, client: client}
 }
 
-// ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *VersioningConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
-	vers, err := in.client.GetBucketVersioningRequest(&awss3.GetBucketVersioningInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
+// Observe checks if the resource exists and if it matches the local configuration
+func (in *VersioningConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+	vers, err := in.client.GetBucketVersioningRequest(&awss3.GetBucketVersioningInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		return NeedsUpdate, errors.Wrap(err, "cannot get bucket encryption")
 	}
@@ -59,19 +74,19 @@ func (in *VersioningConfigurationClient) GeneratePutBucketVersioningInput(name s
 	}
 }
 
-// CreateResource sends a request to have resource created on AWS.
-func (in *VersioningConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+// Create sends a request to have resource created on AWS.
+func (in *VersioningConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketVersioningRequest(in.GeneratePutBucketVersioningInput(meta.GetExternalName(in.bucket))).Send(ctx)
+	_, err := in.client.PutBucketVersioningRequest(in.GeneratePutBucketVersioningInput(meta.GetExternalName(bucket))).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket versioning")
 }
 
-// DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *VersioningConfigurationClient) DeleteResource(ctx context.Context) error {
+// Delete creates the request to delete the resource on AWS or set it to the default value.
+func (in *VersioningConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	input := &awss3.PutBucketVersioningInput{
-		Bucket:                  aws.String(meta.GetExternalName(in.bucket)),
+		Bucket:                  aws.String(meta.GetExternalName(bucket)),
 		VersioningConfiguration: &awss3.VersioningConfiguration{Status: awss3.BucketVersioningStatusSuspended},
 	}
 	_, err := in.client.PutBucketVersioningRequest(input).Send(ctx)

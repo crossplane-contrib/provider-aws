@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package bucketclients
 
 import (
@@ -16,13 +32,12 @@ import (
 // LoggingConfigurationClient is the client for API methods and reconciling the LoggingConfiguration
 type LoggingConfigurationClient struct {
 	config *v1beta1.LoggingConfiguration
-	bucket *v1beta1.Bucket
 	client s3.BucketClient
 }
 
-// CreateLoggingConfigurationClient creates the client for Logging Configuration
-func CreateLoggingConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *LoggingConfigurationClient {
-	return &LoggingConfigurationClient{config: bucket.Spec.Parameters.LoggingConfiguration, bucket: bucket, client: client}
+// NewLoggingConfigurationClient creates the client for Logging Configuration
+func NewLoggingConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *LoggingConfigurationClient {
+	return &LoggingConfigurationClient{config: bucket.Spec.Parameters.LoggingConfiguration, client: client}
 }
 
 // CompareStrings compares pairs of strings passed in
@@ -70,9 +85,9 @@ func compareLogging(local *v1beta1.LoggingConfiguration, external *awss3.Logging
 	return Updated
 }
 
-// ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *LoggingConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
-	conf, err := in.client.GetBucketLoggingRequest(&awss3.GetBucketLoggingInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
+// Observe checks if the resource exists and if it matches the local configuration
+func (in *LoggingConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+	conf, err := in.client.GetBucketLoggingRequest(&awss3.GetBucketLoggingInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		return NeedsUpdate, errors.Wrap(err, "cannot get bucket encryption")
 	}
@@ -111,19 +126,19 @@ func (in *LoggingConfigurationClient) GeneratePutBucketLoggingInput(name string)
 	return bci
 }
 
-// CreateResource sends a request to have resource created on AWS
-func (in *LoggingConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+// Create sends a request to have resource created on AWS
+func (in *LoggingConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketLoggingRequest(in.GeneratePutBucketLoggingInput(meta.GetExternalName(in.bucket))).Send(ctx)
+	_, err := in.client.PutBucketLoggingRequest(in.GeneratePutBucketLoggingInput(meta.GetExternalName(bucket))).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket logging")
 }
 
-// DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *LoggingConfigurationClient) DeleteResource(ctx context.Context) error {
+// Delete creates the request to delete the resource on AWS or set it to the default value.
+func (in *LoggingConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	input := &awss3.PutBucketLoggingInput{
-		Bucket:              aws.String(meta.GetExternalName(in.bucket)),
+		Bucket:              aws.String(meta.GetExternalName(bucket)),
 		BucketLoggingStatus: &awss3.BucketLoggingStatus{}, //  Empty BucketLoggingStatus disables logging
 	}
 	_, err := in.client.PutBucketLoggingRequest(input).Send(ctx)

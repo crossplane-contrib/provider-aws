@@ -1,4 +1,22 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package v1beta1
+
+import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 // BucketLifecycleConfiguration specifies the lifecycle configuration for objects in an Amazon S3 bucket.
 // For more information, see Object Lifecycle Management (https://docs.aws.amazon.com/AmazonS3/latest/dev/object-lifecycle-mgmt.html)
@@ -68,9 +86,8 @@ type AbortIncompleteMultipartUpload struct {
 
 // LifecycleExpiration contains for the expiration for the lifecycle of the object.
 type LifecycleExpiration struct {
-	// Indicates at what date the object is to be moved or deleted. Should be in
-	// GMT ISO 8601 Format.
-	Date *string `json:"date,omitempty"`
+	// Indicates at what date the object is to be moved or deleted.
+	Date *metav1.Time `json:"date,omitempty"`
 
 	// Indicates the lifetime, in days, of the objects that are subject to the rule.
 	// The value must be a non-zero positive integer.
@@ -152,7 +169,7 @@ type NoncurrentVersionTransition struct {
 type Transition struct {
 	// Indicates when objects are transitioned to the specified storage class. The
 	// date value must be in ISO 8601 format. The time is always midnight UTC.
-	Date *string `json:"date,omitempty"`
+	Date *metav1.Time `json:"date,omitempty"`
 
 	// Indicates the number of days after creation when objects are transitioned
 	// to the specified storage class. The value must be a positive integer.
