@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package bucketclients
 
 import (
@@ -11,25 +27,25 @@ import (
 
 // BucketResource is the interface all bucket sub-resources must conform to
 type BucketResource interface {
-	ExistsAndUpdated(ctx context.Context) (ResourceStatus, error)
-	CreateResource(ctx context.Context) (managed.ExternalUpdate, error)
-	DeleteResource(ctx context.Context) error
+	Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error)
+	Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error)
+	Delete(ctx context.Context, bucket *v1beta1.Bucket) error
 }
 
 // MakeClients creates the array of all clients for a given BucketProvider
 func MakeClients(bucket *v1beta1.Bucket, client s3.BucketClient) []BucketResource {
 	clients := make([]BucketResource, 0)
-	clients = append(clients, CreateAccelerateConfigurationClient(bucket, client),
-		CreateCORSConfigurationClient(bucket, client),
-		CreateLifecycleConfigurationClient(bucket, client),
-		CreateLoggingConfigurationClient(bucket, client),
-		CreateNotificationConfigurationClient(bucket, client),
-		CreateReplicationConfigurationClient(bucket, client),
-		CreateRequestPaymentConfigurationClient(bucket, client),
-		CreateSSEConfigurationClient(bucket, client),
-		CreateTaggingConfigurationClient(bucket, client),
-		CreateVersioningConfigurationClient(bucket, client),
-		CreateWebsiteConfigurationClient(bucket, client),
+	clients = append(clients, NewAccelerateConfigurationClient(bucket, client),
+		NewCORSConfigurationClient(bucket, client),
+		NewLifecycleConfigurationClient(bucket, client),
+		NewLoggingConfigurationClient(bucket, client),
+		NewNotificationConfigurationClient(bucket, client),
+		NewReplicationConfigurationClient(bucket, client),
+		NewRequestPaymentConfigurationClient(bucket, client),
+		NewSSEConfigurationClient(bucket, client),
+		NewTaggingConfigurationClient(bucket, client),
+		NewVersioningConfigurationClient(bucket, client),
+		NewWebsiteConfigurationClient(bucket, client),
 	)
 	return clients
 }

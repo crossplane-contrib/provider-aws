@@ -72,7 +72,7 @@ func SetupBucket(mgr ctrl.Manager, l logging.Logger) error {
 			resource.ManagedKind(v1beta1.BucketGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: s3.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -95,7 +95,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 
 	if aws.BoolValue(p.Spec.UseServiceAccount) {
 		bucketClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{client: bucketClient, kube: c.kube}, errors.Wrap(err, errCreateBucketClient)
+		return &external{s3client: bucketClient, kube: c.kube, clients: bucketclients.MakeClients(cr, bucketClient)}, errors.Wrap(err, errCreateBucketClient)
 	}
 
 	if p.GetCredentialsSecretReference() == nil {
@@ -109,12 +109,13 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	}
 
 	bucketClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{client: bucketClient, kube: c.kube}, errors.Wrap(err, errCreateBucketClient)
+	return &external{s3client: bucketClient, kube: c.kube, clients: bucketclients.MakeClients(cr, bucketClient)}, errors.Wrap(err, errCreateBucketClient)
 }
 
 type external struct {
-	kube   client.Client
-	client s3.BucketClient
+	kube     client.Client
+	s3client s3.BucketClient
+	clients  []bucketclients.BucketResource
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
@@ -122,22 +123,19 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
-	if _, err := e.client.HeadBucketRequest(&awss3.HeadBucketInput{Bucket: aws.String(meta.GetExternalName(cr))}).Send(ctx); err != nil {
+	if _, err := e.s3client.HeadBucketRequest(&awss3.HeadBucketInput{Bucket: aws.String(meta.GetExternalName(cr))}).Send(ctx); err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(s3.IsNotFound, err), errHead)
 	}
-	clients := bucketclients.MakeClients(cr, e.client)
-	for _, client := range clients {
-		updated, err := client.ExistsAndUpdated(ctx)
+	for _, client := range e.clients {
+		updated, err := client.Observe(ctx, cr)
 		if err != nil {
 			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
 		}
 		if updated == bucketclients.NeedsUpdate {
-			println("Sub-resource needs update")
-			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
+			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
 		}
 		if updated == bucketclients.NeedsDeletion {
-			println("Sub-resource needs deletion")
-			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
+			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
 		}
 	}
 
@@ -154,10 +152,8 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	if _, err := e.client.CreateBucketRequest(s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.Parameters)).Send(ctx); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
-	}
-	return managed.ExternalCreation{}, nil
+	_, err := e.s3client.CreateBucketRequest(s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.Parameters)).Send(ctx)
+	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -166,22 +162,21 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	clients := bucketclients.MakeClients(cr, e.client)
-	for _, client := range clients {
-		status, err := client.ExistsAndUpdated(ctx)
+	for _, client := range e.clients {
+		status, err := client.Observe(ctx, cr)
 		if err != nil {
 			cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
 			return managed.ExternalUpdate{}, err
 		}
 		switch status {
 		case bucketclients.NeedsDeletion:
-			err = client.DeleteResource(ctx)
+			err = client.Delete(ctx, cr)
 			if err != nil {
 				cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
 				return managed.ExternalUpdate{}, err
 			}
 		case bucketclients.NeedsUpdate:
-			update, err := client.CreateResource(ctx)
+			update, err := client.Create(ctx, cr)
 			if err != nil {
 				cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
 				return update, err
@@ -199,18 +194,6 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
-	_, err := e.client.DeleteBucketRequest(&awss3.DeleteBucketInput{Bucket: aws.String(meta.GetExternalName(cr))}).Send(ctx)
+	_, err := e.s3client.DeleteBucketRequest(&awss3.DeleteBucketInput{Bucket: aws.String(meta.GetExternalName(cr))}).Send(ctx)
 	return resource.Ignore(s3.IsNotFound, err)
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
-	_, ok := mg.(*v1beta1.Bucket)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-	return nil
 }

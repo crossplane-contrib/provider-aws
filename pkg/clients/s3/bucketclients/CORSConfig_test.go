@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package bucketclients
 
 import (
@@ -44,6 +60,7 @@ func generateAWSCORS() *s3.CORSConfiguration {
 func TestCORSExistsAndUpdated(t *testing.T) {
 	type args struct {
 		cl *CORSConfigurationClient
+		b  *v1beta1.Bucket
 	}
 
 	type want struct {
@@ -57,7 +74,8 @@ func TestCORSExistsAndUpdated(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				cl: CreateCORSConfigurationClient(
+				b: bucket(withCORSConfig(generateCORSConfig())),
+				cl: NewCORSConfigurationClient(
 					bucket(withCORSConfig(generateCORSConfig())),
 					fake.MockBucketClient{
 						MockGetBucketCorsRequest: func(input *s3.GetBucketCorsInput) s3.GetBucketCorsRequest {
@@ -75,7 +93,8 @@ func TestCORSExistsAndUpdated(t *testing.T) {
 		},
 		"UpdateNeeded": {
 			args: args{
-				cl: CreateCORSConfigurationClient(
+				b: bucket(withCORSConfig(generateCORSConfig())),
+				cl: NewCORSConfigurationClient(
 					bucket(withCORSConfig(generateCORSConfig())),
 					fake.MockBucketClient{
 						MockGetBucketCorsRequest: func(input *s3.GetBucketCorsInput) s3.GetBucketCorsRequest {
@@ -93,7 +112,8 @@ func TestCORSExistsAndUpdated(t *testing.T) {
 		},
 		"NeedsDelete": {
 			args: args{
-				cl: CreateCORSConfigurationClient(
+				b: bucket(withCORSConfig(nil)),
+				cl: NewCORSConfigurationClient(
 					bucket(withCORSConfig(nil)),
 					fake.MockBucketClient{
 						MockGetBucketCorsRequest: func(input *s3.GetBucketCorsInput) s3.GetBucketCorsRequest {
@@ -111,7 +131,8 @@ func TestCORSExistsAndUpdated(t *testing.T) {
 		},
 		"NoUpdateNotExists": {
 			args: args{
-				cl: CreateCORSConfigurationClient(
+				b: bucket(withCORSConfig(nil)),
+				cl: NewCORSConfigurationClient(
 					bucket(withCORSConfig(nil)),
 					fake.MockBucketClient{
 						MockGetBucketCorsRequest: func(input *s3.GetBucketCorsInput) s3.GetBucketCorsRequest {
@@ -129,7 +150,8 @@ func TestCORSExistsAndUpdated(t *testing.T) {
 		},
 		"NoUpdateNotExistsNil": {
 			args: args{
-				cl: CreateCORSConfigurationClient(
+				b: bucket(withCORSConfig(nil)),
+				cl: NewCORSConfigurationClient(
 					bucket(withCORSConfig(nil)),
 					fake.MockBucketClient{
 						MockGetBucketCorsRequest: func(input *s3.GetBucketCorsInput) s3.GetBucketCorsRequest {
@@ -147,7 +169,8 @@ func TestCORSExistsAndUpdated(t *testing.T) {
 		},
 		"NoUpdateExists": {
 			args: args{
-				cl: CreateCORSConfigurationClient(
+				b: bucket(withCORSConfig(generateCORSConfig())),
+				cl: NewCORSConfigurationClient(
 					bucket(withCORSConfig(generateCORSConfig())),
 					fake.MockBucketClient{
 						MockGetBucketCorsRequest: func(input *s3.GetBucketCorsInput) s3.GetBucketCorsRequest {
@@ -167,7 +190,7 @@ func TestCORSExistsAndUpdated(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			status, err := tc.args.cl.ExistsAndUpdated(context.Background())
+			status, err := tc.args.cl.Observe(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
@@ -181,6 +204,7 @@ func TestCORSExistsAndUpdated(t *testing.T) {
 func TestCORSCreate(t *testing.T) {
 	type args struct {
 		cl *CORSConfigurationClient
+		b  *v1beta1.Bucket
 	}
 
 	type want struct {
@@ -193,7 +217,8 @@ func TestCORSCreate(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				cl: CreateCORSConfigurationClient(
+				b: bucket(withCORSConfig(generateCORSConfig())),
+				cl: NewCORSConfigurationClient(
 					bucket(withCORSConfig(generateCORSConfig())),
 					fake.MockBucketClient{
 						MockPutBucketCorsRequest: func(input *s3.PutBucketCorsInput) s3.PutBucketCorsRequest {
@@ -210,7 +235,8 @@ func TestCORSCreate(t *testing.T) {
 		},
 		"InvalidConfig": {
 			args: args{
-				cl: CreateCORSConfigurationClient(
+				b: bucket(withCORSConfig(generateCORSConfig())),
+				cl: NewCORSConfigurationClient(
 					bucket(withCORSConfig(nil)),
 					fake.MockBucketClient{
 						MockPutBucketCorsRequest: func(input *s3.PutBucketCorsInput) s3.PutBucketCorsRequest {
@@ -227,7 +253,8 @@ func TestCORSCreate(t *testing.T) {
 		},
 		"SuccessfulCreate": {
 			args: args{
-				cl: CreateCORSConfigurationClient(
+				b: bucket(withCORSConfig(generateCORSConfig())),
+				cl: NewCORSConfigurationClient(
 					bucket(withCORSConfig(generateCORSConfig())),
 					fake.MockBucketClient{
 						MockPutBucketCorsRequest: func(input *s3.PutBucketCorsInput) s3.PutBucketCorsRequest {
@@ -246,7 +273,7 @@ func TestCORSCreate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			_, err := tc.args.cl.CreateResource(context.Background())
+			_, err := tc.args.cl.Create(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
@@ -257,6 +284,7 @@ func TestCORSCreate(t *testing.T) {
 func TestCORSDelete(t *testing.T) {
 	type args struct {
 		cl *CORSConfigurationClient
+		b  *v1beta1.Bucket
 	}
 
 	type want struct {
@@ -269,7 +297,8 @@ func TestCORSDelete(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				cl: CreateCORSConfigurationClient(
+				b: bucket(withCORSConfig(generateCORSConfig())),
+				cl: NewCORSConfigurationClient(
 					bucket(withCORSConfig(generateCORSConfig())),
 					fake.MockBucketClient{
 						MockDeleteBucketCorsRequest: func(input *s3.DeleteBucketCorsInput) s3.DeleteBucketCorsRequest {
@@ -286,7 +315,8 @@ func TestCORSDelete(t *testing.T) {
 		},
 		"SuccessfulDelete": {
 			args: args{
-				cl: CreateCORSConfigurationClient(
+				b: bucket(withCORSConfig(generateCORSConfig())),
+				cl: NewCORSConfigurationClient(
 					bucket(),
 					fake.MockBucketClient{
 						MockDeleteBucketCorsRequest: func(input *s3.DeleteBucketCorsInput) s3.DeleteBucketCorsRequest {
@@ -305,7 +335,7 @@ func TestCORSDelete(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			err := tc.args.cl.DeleteResource(context.Background())
+			err := tc.args.cl.Delete(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

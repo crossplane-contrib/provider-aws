@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package bucketclients
 
 import (
@@ -16,18 +32,17 @@ import (
 // RequestPaymentConfigurationClient is the client for API methods and reconciling the PaymentConfiguration
 type RequestPaymentConfigurationClient struct {
 	config *v1beta1.PaymentConfiguration
-	bucket *v1beta1.Bucket
 	client s3.BucketClient
 }
 
-// CreateRequestPaymentConfigurationClient creates the client for Payment Configuration
-func CreateRequestPaymentConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *RequestPaymentConfigurationClient {
-	return &RequestPaymentConfigurationClient{config: bucket.Spec.Parameters.PayerConfiguration, bucket: bucket, client: client}
+// NewRequestPaymentConfigurationClient creates the client for Payment Configuration
+func NewRequestPaymentConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *RequestPaymentConfigurationClient {
+	return &RequestPaymentConfigurationClient{config: bucket.Spec.Parameters.PayerConfiguration, client: client}
 }
 
-// ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *RequestPaymentConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
-	conf, err := in.client.GetBucketRequestPaymentRequest(&awss3.GetBucketRequestPaymentInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
+// Observe checks if the resource exists and if it matches the local configuration
+func (in *RequestPaymentConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+	conf, err := in.client.GetBucketRequestPaymentRequest(&awss3.GetBucketRequestPaymentInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		return NeedsUpdate, errors.Wrap(err, "cannot get request payment configuration")
 	}
@@ -55,19 +70,19 @@ func (in *RequestPaymentConfigurationClient) GeneratePutBucketPaymentInput(name 
 	return bci
 }
 
-// CreateResource sends a request to have resource created on AWS.
-func (in *RequestPaymentConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+// Create sends a request to have resource created on AWS.
+func (in *RequestPaymentConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketRequestPaymentRequest(in.GeneratePutBucketPaymentInput(meta.GetExternalName(in.bucket))).Send(ctx)
+	_, err := in.client.PutBucketRequestPaymentRequest(in.GeneratePutBucketPaymentInput(meta.GetExternalName(bucket))).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket payment")
 }
 
-// DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *RequestPaymentConfigurationClient) DeleteResource(ctx context.Context) error {
+// Delete creates the request to delete the resource on AWS or set it to the default value.
+func (in *RequestPaymentConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	input := &awss3.PutBucketRequestPaymentInput{
-		Bucket:                      aws.String(meta.GetExternalName(in.bucket)),
+		Bucket:                      aws.String(meta.GetExternalName(bucket)),
 		RequestPaymentConfiguration: &awss3.RequestPaymentConfiguration{Payer: awss3.PayerBucketOwner},
 	}
 	_, err := in.client.PutBucketRequestPaymentRequest(input).Send(ctx)

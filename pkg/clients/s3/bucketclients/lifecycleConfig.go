@@ -1,8 +1,23 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package bucketclients
 
 import (
 	"context"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
@@ -19,18 +34,17 @@ import (
 // LifecycleConfigurationClient is the client for API methods and reconciling the LifecycleConfiguration
 type LifecycleConfigurationClient struct {
 	config *v1beta1.BucketLifecycleConfiguration
-	bucket *v1beta1.Bucket
 	client s3.BucketClient
 }
 
-// CreateLifecycleConfigurationClient creates the client for Accelerate Configuration
-func CreateLifecycleConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *LifecycleConfigurationClient {
-	return &LifecycleConfigurationClient{config: bucket.Spec.Parameters.LifecycleConfiguration, bucket: bucket, client: client}
+// NewLifecycleConfigurationClient creates the client for Accelerate Configuration
+func NewLifecycleConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *LifecycleConfigurationClient {
+	return &LifecycleConfigurationClient{config: bucket.Spec.Parameters.LifecycleConfiguration, client: client}
 }
 
-// ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *LifecycleConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
-	conf, err := in.client.GetBucketLifecycleConfigurationRequest(&awss3.GetBucketLifecycleConfigurationInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
+// Observe checks if the resource exists and if it matches the local configuration
+func (in *LifecycleConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+	conf, err := in.client.GetBucketLifecycleConfigurationRequest(&awss3.GetBucketLifecycleConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchLifecycleConfiguration" && in.config == nil {
 			return Updated, nil
@@ -42,109 +56,79 @@ func (in *LifecycleConfigurationClient) ExistsAndUpdated(ctx context.Context) (R
 		return NeedsDeletion, nil
 	}
 
-	rules, err := in.generateConfiguration()
-	if err != nil {
-		return NeedsUpdate, errors.Wrap(err, "unable to create rules for bucket lifecycle reconcile")
-	}
-	if cmp.Equal(conf.Rules, rules) {
+	if cmp.Equal(conf.Rules, in.generateConfiguration()) {
 		return Updated, nil
 	}
 	return NeedsUpdate, nil
 }
 
-func (in *LifecycleConfigurationClient) createLifecycleRule(other v1beta1.LifecycleRule) (*awss3.LifecycleRule, error) {
-	rule := awss3.LifecycleRule{
-		ID:     other.ID,
-		Status: awss3.ExpirationStatus(other.Status),
-	}
-	if other.AbortIncompleteMultipartUpload != nil {
-		rule.AbortIncompleteMultipartUpload = &awss3.AbortIncompleteMultipartUpload{
-			DaysAfterInitiation: other.AbortIncompleteMultipartUpload.DaysAfterInitiation,
-		}
-	}
-	if other.Expiration != nil {
-		date, err := time.Parse("2006-01-02T15:04:05.000Z", aws.StringValue(other.Expiration.Date))
-		if err != nil {
-			return nil, err
-		}
-		rule.Expiration = &awss3.LifecycleExpiration{
-			Date:                      &date,
-			Days:                      other.Expiration.Days,
-			ExpiredObjectDeleteMarker: other.Expiration.ExpiredObjectDeleteMarker,
-		}
-	}
-	if other.NoncurrentVersionExpiration != nil {
-		rule.NoncurrentVersionExpiration = &awss3.NoncurrentVersionExpiration{NoncurrentDays: other.NoncurrentVersionExpiration.NoncurrentDays}
-	}
-	if other.NoncurrentVersionTransitions != nil {
-		rule.NoncurrentVersionTransitions = make([]awss3.NoncurrentVersionTransition, len(other.NoncurrentVersionTransitions))
-		for tIndex, transition := range other.NoncurrentVersionTransitions {
-			rule.NoncurrentVersionTransitions[tIndex] = awss3.NoncurrentVersionTransition{
-				NoncurrentDays: transition.NoncurrentDays,
-				StorageClass:   awss3.TransitionStorageClass(transition.StorageClass),
-			}
-		}
-	}
-	if other.Transitions != nil {
-		rule.Transitions = make([]awss3.Transition, len(other.Transitions))
-		for tIndex, transition := range other.Transitions {
-			date, err := time.Parse("2006-01-02T15:04:05.000Z", aws.StringValue(transition.Date))
-			if err != nil {
-				return nil, err
-			}
-			rule.Transitions[tIndex] = awss3.Transition{
-				Date:         &date,
-				Days:         transition.Days,
-				StorageClass: awss3.TransitionStorageClass(transition.StorageClass),
-			}
-		}
-	}
-	return &rule, nil
-}
-
-func (in *LifecycleConfigurationClient) generateConfiguration() ([]awss3.LifecycleRule, error) {
+func (in *LifecycleConfigurationClient) generateConfiguration() []awss3.LifecycleRule {
 	rules := make([]awss3.LifecycleRule, len(in.config.Rules))
-	for i, v := range in.config.Rules {
-		rule, err := in.createLifecycleRule(v)
-		if err != nil {
-			return nil, err
+	for i, local := range in.config.Rules {
+		rule := awss3.LifecycleRule{
+			ID:     local.ID,
+			Status: awss3.ExpirationStatus(local.Status),
 		}
-		rules[i] = *rule
+		if local.AbortIncompleteMultipartUpload != nil {
+			rule.AbortIncompleteMultipartUpload = &awss3.AbortIncompleteMultipartUpload{
+				DaysAfterInitiation: local.AbortIncompleteMultipartUpload.DaysAfterInitiation,
+			}
+		}
+		if local.Expiration != nil {
+			rule.Expiration = &awss3.LifecycleExpiration{
+				Date:                      &local.Expiration.Date.Time,
+				Days:                      local.Expiration.Days,
+				ExpiredObjectDeleteMarker: local.Expiration.ExpiredObjectDeleteMarker,
+			}
+		}
+		if local.NoncurrentVersionExpiration != nil {
+			rule.NoncurrentVersionExpiration = &awss3.NoncurrentVersionExpiration{NoncurrentDays: local.NoncurrentVersionExpiration.NoncurrentDays}
+		}
+		if local.NoncurrentVersionTransitions != nil {
+			rule.NoncurrentVersionTransitions = make([]awss3.NoncurrentVersionTransition, len(local.NoncurrentVersionTransitions))
+			for tIndex, transition := range local.NoncurrentVersionTransitions {
+				rule.NoncurrentVersionTransitions[tIndex] = awss3.NoncurrentVersionTransition{
+					NoncurrentDays: transition.NoncurrentDays,
+					StorageClass:   awss3.TransitionStorageClass(transition.StorageClass),
+				}
+			}
+		}
+		if local.Transitions != nil {
+			rule.Transitions = make([]awss3.Transition, len(local.Transitions))
+			for tIndex, transition := range local.Transitions {
+				rule.Transitions[tIndex] = awss3.Transition{
+					Date:         &transition.Date.Time,
+					Days:         transition.Days,
+					StorageClass: awss3.TransitionStorageClass(transition.StorageClass),
+				}
+			}
+		}
+		rules[i] = rule
 	}
-	return rules, nil
+	return rules
 }
 
-// GenerateLifecycleConfigurationInput creates the input for the LifecycleConfiguration request for the S3 Client
-func (in *LifecycleConfigurationClient) GenerateLifecycleConfigurationInput(name string) (*awss3.PutBucketLifecycleConfigurationInput, error) {
-	rules, err := in.generateConfiguration()
-	if err != nil {
-		return nil, err
-	}
-	return &awss3.PutBucketLifecycleConfigurationInput{
-		Bucket:                 aws.String(name),
-		LifecycleConfiguration: &awss3.BucketLifecycleConfiguration{Rules: rules},
-	}, nil
-}
-
-// CreateResource sends a request to have resource created on AWS
-func (in *LifecycleConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+// Create sends a request to have resource created on AWS
+func (in *LifecycleConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	input, err := in.GenerateLifecycleConfigurationInput(meta.GetExternalName(in.bucket))
-	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, "unable to create input for bucket lifecycle request")
+
+	config := &awss3.PutBucketLifecycleConfigurationInput{
+		Bucket:                 aws.String(meta.GetExternalName(bucket)),
+		LifecycleConfiguration: &awss3.BucketLifecycleConfiguration{Rules: in.generateConfiguration()},
 	}
-	_, err = in.client.PutBucketLifecycleConfigurationRequest(input).Send(ctx)
+
+	_, err := in.client.PutBucketLifecycleConfigurationRequest(config).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket lifecycle")
 
 }
 
-// DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *LifecycleConfigurationClient) DeleteResource(ctx context.Context) error {
+// Delete creates the request to delete the resource on AWS or set it to the default value.
+func (in *LifecycleConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketLifecycleRequest(
 		&awss3.DeleteBucketLifecycleInput{
-			Bucket: aws.String(meta.GetExternalName(in.bucket)),
+			Bucket: aws.String(meta.GetExternalName(bucket)),
 		},
 	).Send(ctx)
 	return errors.Wrap(err, "cannot delete bucket lifecycle configuration")

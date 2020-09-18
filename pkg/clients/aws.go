@@ -254,7 +254,10 @@ func StringValue(v *string) string {
 // Int64Value converts the supplied int64 pointer to a int64, returning
 // 0 if the pointer is nil.
 func Int64Value(v *int64) int64 {
-	return aws.Int64Value(v)
+	if v != nil {
+		return *v
+	}
+	return 0
 }
 
 // LateInitializeStringPtr returns in if it's non-nil, otherwise returns from

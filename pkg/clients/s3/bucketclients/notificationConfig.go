@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package bucketclients
 
 import (
@@ -17,13 +33,12 @@ import (
 // NotificationConfigurationClient is the client for API methods and reconciling the LifecycleConfiguration
 type NotificationConfigurationClient struct {
 	config *v1beta1.NotificationConfiguration
-	bucket *v1beta1.Bucket
 	client s3.BucketClient
 }
 
-// CreateNotificationConfigurationClient creates the client for Accelerate Configuration
-func CreateNotificationConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *NotificationConfigurationClient {
-	return &NotificationConfigurationClient{config: bucket.Spec.Parameters.NotificationConfiguration, bucket: bucket, client: client}
+// NewNotificationConfigurationClient creates the client for Accelerate Configuration
+func NewNotificationConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *NotificationConfigurationClient {
+	return &NotificationConfigurationClient{config: bucket.Spec.Parameters.NotificationConfiguration, client: client}
 }
 
 func notExistsUpdated(config *v1beta1.NotificationConfiguration, external *awss3.GetBucketNotificationConfigurationResponse) bool {
@@ -40,9 +55,9 @@ func bucketStatus(config *v1beta1.NotificationConfiguration, external *awss3.Get
 	return NeedsUpdate
 }
 
-// ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *NotificationConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
-	conf, err := in.client.GetBucketNotificationConfigurationRequest(&awss3.GetBucketNotificationConfigurationInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
+// Observe checks if the resource exists and if it matches the local configuration
+func (in *NotificationConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+	conf, err := in.client.GetBucketNotificationConfigurationRequest(&awss3.GetBucketNotificationConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		return NeedsUpdate, errors.Wrap(err, "cannot get bucket notification")
 	}
@@ -180,12 +195,12 @@ func (in *NotificationConfigurationClient) GenerateNotificationConfigurationInpu
 	}, nil
 }
 
-// CreateResource sends a request to have resource created on AWS
-func (in *NotificationConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+// Create sends a request to have resource created on AWS
+func (in *NotificationConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	input, err := in.GenerateNotificationConfigurationInput(meta.GetExternalName(in.bucket))
+	input, err := in.GenerateNotificationConfigurationInput(meta.GetExternalName(bucket))
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, "unable to create input for bucket notification request")
 	}
@@ -193,10 +208,10 @@ func (in *NotificationConfigurationClient) CreateResource(ctx context.Context) (
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket notification")
 }
 
-// DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *NotificationConfigurationClient) DeleteResource(ctx context.Context) error {
+// Delete creates the request to delete the resource on AWS or set it to the default value.
+func (in *NotificationConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	input := &awss3.PutBucketNotificationConfigurationInput{
-		Bucket:                    aws.String(meta.GetExternalName(in.bucket)),
+		Bucket:                    aws.String(meta.GetExternalName(bucket)),
 		NotificationConfiguration: &awss3.NotificationConfiguration{},
 	}
 	_, err := in.client.PutBucketNotificationConfigurationRequest(input).Send(ctx)

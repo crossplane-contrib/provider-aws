@@ -274,8 +274,8 @@ spec:
                             properties:
                               date:
                                 description: Indicates at what date the object is
-                                  to be moved or deleted. Should be in GMT ISO 8601
-                                  Format.
+                                  to be moved or deleted.
+                                format: date-time
                                 type: string
                               days:
                                 description: Indicates the lifetime, in days, of the
@@ -434,6 +434,7 @@ spec:
                                     to the specified storage class. The date value
                                     must be in ISO 8601 format. The time is always
                                     midnight UTC.
+                                  format: date-time
                                   type: string
                                 days:
                                   description: Indicates the number of days after

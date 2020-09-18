@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package bucketclients
 
 import (
@@ -19,18 +35,17 @@ import (
 // WebsiteConfigurationClient is the client for API methods and reconciling the WebsiteConfiguration
 type WebsiteConfigurationClient struct {
 	config *v1beta1.WebsiteConfiguration
-	bucket *v1beta1.Bucket
 	client s3.BucketClient
 }
 
-// CreateWebsiteConfigurationClient creates the client for Website Configuration
-func CreateWebsiteConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *WebsiteConfigurationClient {
-	return &WebsiteConfigurationClient{config: bucket.Spec.Parameters.WebsiteConfiguration, bucket: bucket, client: client}
+// NewWebsiteConfigurationClient creates the client for Website Configuration
+func NewWebsiteConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *WebsiteConfigurationClient {
+	return &WebsiteConfigurationClient{config: bucket.Spec.Parameters.WebsiteConfiguration, client: client}
 }
 
-// ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *WebsiteConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
-	conf, err := in.client.GetBucketWebsiteRequest(&awss3.GetBucketWebsiteInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
+// Observe checks if the resource exists and if it matches the local configuration
+func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+	conf, err := in.client.GetBucketWebsiteRequest(&awss3.GetBucketWebsiteInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchWebsiteConfiguration" && in.config == nil {
 			return Updated, nil
@@ -103,20 +118,20 @@ func (in *WebsiteConfigurationClient) GeneratePutBucketWebsiteInput(name string)
 	return wi
 }
 
-// CreateResource sends a request to have resource created on AWS.
-func (in *WebsiteConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+// Create sends a request to have resource created on AWS.
+func (in *WebsiteConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketWebsiteRequest(in.GeneratePutBucketWebsiteInput(meta.GetExternalName(in.bucket))).Send(ctx)
+	_, err := in.client.PutBucketWebsiteRequest(in.GeneratePutBucketWebsiteInput(meta.GetExternalName(bucket))).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket website")
 }
 
-// DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *WebsiteConfigurationClient) DeleteResource(ctx context.Context) error {
+// Delete creates the request to delete the resource on AWS or set it to the default value.
+func (in *WebsiteConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketWebsiteRequest(
 		&awss3.DeleteBucketWebsiteInput{
-			Bucket: aws.String(meta.GetExternalName(in.bucket)),
+			Bucket: aws.String(meta.GetExternalName(bucket)),
 		},
 	).Send(ctx)
 	return errors.Wrap(err, "cannot delete bucket website configuration")

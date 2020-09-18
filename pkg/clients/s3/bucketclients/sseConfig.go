@@ -1,3 +1,19 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package bucketclients
 
 import (
@@ -17,13 +33,12 @@ import (
 // SSEConfigurationClient is the client for API methods and reconciling the ServerSideEncryptionConfiguration
 type SSEConfigurationClient struct {
 	config *v1beta1.ServerSideEncryptionConfiguration
-	bucket *v1beta1.Bucket
 	client s3.BucketClient
 }
 
-// CreateSSEConfigurationClient creates the client for Server Side Encryption Configuration
-func CreateSSEConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *SSEConfigurationClient {
-	return &SSEConfigurationClient{config: bucket.Spec.Parameters.ServerSideEncryptionConfiguration, bucket: bucket, client: client}
+// NewSSEConfigurationClient creates the client for Server Side Encryption Configuration
+func NewSSEConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *SSEConfigurationClient {
+	return &SSEConfigurationClient{config: bucket.Spec.Parameters.ServerSideEncryptionConfiguration, client: client}
 }
 
 func (in *SSEConfigurationClient) sseNotFound(err error) bool {
@@ -33,9 +48,9 @@ func (in *SSEConfigurationClient) sseNotFound(err error) bool {
 	return false
 }
 
-// ExistsAndUpdated checks if the resource exists and if it matches the local configuration
-func (in *SSEConfigurationClient) ExistsAndUpdated(ctx context.Context) (ResourceStatus, error) {
-	enc, err := in.client.GetBucketEncryptionRequest(&awss3.GetBucketEncryptionInput{Bucket: aws.String(meta.GetExternalName(in.bucket))}).Send(ctx)
+// Observe checks if the resource exists and if it matches the local configuration
+func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+	enc, err := in.client.GetBucketEncryptionRequest(&awss3.GetBucketEncryptionInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil && in.sseNotFound(err) {
 		return Updated, nil
 	} else if err != nil {
@@ -80,20 +95,20 @@ func (in *SSEConfigurationClient) GeneratePutBucketEncryptionInput(name string) 
 	return bei
 }
 
-// CreateResource sends a request to have resource created on AWS.
-func (in *SSEConfigurationClient) CreateResource(ctx context.Context) (managed.ExternalUpdate, error) {
+// Create sends a request to have resource created on AWS.
+func (in *SSEConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketEncryptionRequest(in.GeneratePutBucketEncryptionInput(meta.GetExternalName(in.bucket))).Send(ctx)
+	_, err := in.client.PutBucketEncryptionRequest(in.GeneratePutBucketEncryptionInput(meta.GetExternalName(bucket))).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket encryption")
 }
 
-// DeleteResource creates the request to delete the resource on AWS or set it to the default value.
-func (in *SSEConfigurationClient) DeleteResource(ctx context.Context) error {
+// Delete creates the request to delete the resource on AWS or set it to the default value.
+func (in *SSEConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketEncryptionRequest(
 		&awss3.DeleteBucketEncryptionInput{
-			Bucket: aws.String(meta.GetExternalName(in.bucket)),
+			Bucket: aws.String(meta.GetExternalName(bucket)),
 		},
 	).Send(ctx)
 	return errors.Wrap(err, "cannot delete bucket encryption configuration")
