@@ -4,14 +4,16 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
-	// NatGatewayIDNotFound is the code that is returned by ec2 when the given NATGatewayID is not valid
+	// NatGatewayNotFound is the code that is returned by ec2 when the given NATGatewayID is not valid
 	// ref: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html#api-error-codes-table-client
-	NatGatewayIDNotFound = "NatGatewayNotFound"
+	NatGatewayNotFound = "NatGatewayNotFound"
 )
 
 // NatGatewayClient is the external client used for NatGateway Custom Resource
@@ -30,7 +32,7 @@ func NewNatGatewayClient(cfg aws.Config) NatGatewayClient {
 // IsNatGatewayNotFoundErr returns true if the error is because the item doesn't exist
 func IsNatGatewayNotFoundErr(err error) bool {
 	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == NatGatewayIDNotFound {
+		if awsErr.Code() == NatGatewayNotFound {
 			return true
 		}
 	}
