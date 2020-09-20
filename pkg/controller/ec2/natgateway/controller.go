@@ -27,9 +27,8 @@ const (
 	errSpecUpdate       = "cannot update spec of the NatGateway resource"
 	errStatusUpdate     = "cannot update status of the NatGateway resource"
 	errCreate           = "failed to create the NatGateway resource"
-	invalidSubnetID     = ""
-	invalidAllocationID = ""
-	eipAlreadyAttached  = ""
+	errDelete           = "failed to delete the NatGateway resource"
+	errUpdateTags       = "failed to update tags for the NatGateway resource"
 )
 
 // SetupNatGateway adds a controller that reconciles NatGateways.
@@ -55,7 +54,11 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, "")
+	cr, ok := mg.(*v1beta1.NatGateway)
+	if !ok {
+		return nil, errors.New(errUnexpectedObject)
+	}
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -100,9 +103,22 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}
 	}
 
-	cr.SetConditions(runtimev1alpha1.Available())
-
 	cr.Status.AtProvider = ec2.GenerateNatObservation(observed)
+
+	switch cr.Status.AtProvider.State {
+	case v1beta1.NatGatewayStatusPending:
+		cr.SetConditions(runtimev1alpha1.Unavailable())
+	case v1beta1.NatGatewayStatusFailed:
+		cr.SetConditions(runtimev1alpha1.Unavailable().WithMessage(aws.StringValue(observed.FailureMessage)))
+	case v1beta1.NatGatewayStatusAvailable:
+		cr.SetConditions(runtimev1alpha1.Available())
+	case v1beta1.NatGatewayStatusDeleting:
+		cr.SetConditions(runtimev1alpha1.Deleting())
+	case v1beta1.NatGatewayStatusDeleted:
+		return managed.ExternalObservation{
+			ResourceExists: false,
+		}, nil
+	}
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
@@ -141,9 +157,47 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	return managed.ExternalUpdate{}, nil
+	cr, ok := mgd.(*v1beta1.NatGateway)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+
+	response, err := e.client.DescribeNatGatewaysRequest(&awsec2.DescribeNatGatewaysInput{
+		NatGatewayIds: []string{meta.GetExternalName(cr)},
+	}).Send(ctx)
+
+	if len(response.NatGateways) != 1 {
+		return managed.ExternalUpdate{}, errors.New(errNotSingleItem)
+	}
+
+	observed := response.NatGateways[0]
+
+	if !ec2.IsNatUpToDate(cr.Spec.ForProvider, observed) {
+		if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+			Resources: []string{meta.GetExternalName(cr)},
+			Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+		}).Send(ctx); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdateTags)
+		}
+	}
+	return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDescribe)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	return nil
+	cr, ok := mgd.(*v1beta1.NatGateway)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
+
+	cr.Status.SetConditions(runtimev1alpha1.Deleting())
+	if cr.Status.AtProvider.State == v1beta1.NatGatewayStatusDeleted ||
+		cr.Status.AtProvider.State == v1beta1.NatGatewayStatusPending {
+		return nil
+	}
+
+	_, err := e.client.DeleteNatGatewayRequest(&awsec2.DeleteNatGatewayInput{
+		NatGatewayId: aws.String(meta.GetExternalName(cr)),
+	}).Send(ctx)
+
+	return errors.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDelete)
 }

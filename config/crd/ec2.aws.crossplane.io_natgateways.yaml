@@ -18,7 +18,7 @@ spec:
   - JSONPath: .metadata.annotations.crossplane\.io/external-name
     name: ID
     type: string
-  - JSONPath: .spec.atProvider.vpcId
+  - JSONPath: .status.atProvider.vpcId
     name: VPC
     type: string
   - JSONPath: .spec.forProvider.subnetId
@@ -180,6 +180,10 @@ spec:
                         is selected.
                       type: object
                   type: object
+                region:
+                  description: Region is the region you'd like your NatGateway to
+                    be created in.
+                  type: string
                 subnetId:
                   description: SubnetID is the subnet the NAT gateways needs to be
                     associated to
@@ -294,6 +298,13 @@ spec:
                 createTime:
                   format: date-time
                   type: string
+                deleteTime:
+                  format: date-time
+                  type: string
+                failureCode:
+                  type: string
+                failureMessage:
+                  type: string
                 natGatewayAddresses:
                   items:
                     description: NatGatewayAddress describes the details of network
@@ -315,6 +326,8 @@ spec:
                   type: array
                 natGatewayId:
                   type: string
+                state:
+                  type: string
                 subnetId:
                   type: string
                 tags:
@@ -335,8 +348,6 @@ spec:
                 vpcId:
                   type: string
               required:
-              - createTime
-              - natGatewayAddresses
               - natGatewayId
               - subnetId
               - vpcId

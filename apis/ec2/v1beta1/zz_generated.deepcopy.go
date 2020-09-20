@@ -367,6 +367,10 @@ func (in *NatGatewayObservation) DeepCopyInto(out *NatGatewayObservation) {
 		in, out := &in.CreateTime, &out.CreateTime
 		*out = (*in).DeepCopy()
 	}
+	if in.DeleteTime != nil {
+		in, out := &in.DeleteTime, &out.DeleteTime
+		*out = (*in).DeepCopy()
+	}
 	if in.NatGatewayAddresses != nil {
 		in, out := &in.NatGatewayAddresses, &out.NatGatewayAddresses
 		*out = make([]NatGatewayAddress, len(*in))

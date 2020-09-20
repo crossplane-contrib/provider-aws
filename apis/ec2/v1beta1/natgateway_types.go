@@ -5,8 +5,27 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Defines the states of NatGateway
+const (
+	NatGatewayStatusPending   = "pending"
+	NatGatewayStatusFailed    = "failed"
+	NatGatewayStatusAvailable = "available"
+	NatGatewayStatusDeleting  = "deleting"
+	NatGatewayStatusDeleted   = "deleted"
+)
+
 // NatGatewayParameters defined the desired state of an AWS VPC NAT Gateway
 type NatGatewayParameters struct {
+
+	// TODO(muvaf): Region is a required field but in order to keep backward compatibility
+	// with old Provider type and not bear the cost of bumping to v1beta2, we're
+	// keeping it optional for now. Reconsider before v1beta2 or v1.
+
+	// Region is the region you'd like your NatGateway to be created in.
+	// +optional
+	// +immutable
+	Region string `json:"region,omitempty"`
+
 	// AllocationID is the Elastic IP allocation ID
 	// +immutable
 	// +optional
@@ -50,9 +69,13 @@ type NatGatewaySpec struct {
 
 // NatGatewayObservation keeps the state for the CR
 type NatGatewayObservation struct {
-	CreateTime          *metav1.Time        `json:"createTime"`
-	NatGatewayAddresses []NatGatewayAddress `json:"natGatewayAddresses"`
+	CreateTime          *metav1.Time        `json:"createTime,omitempty"`
+	DeleteTime          *metav1.Time        `json:"deleteTime,omitempty"`
+	FailureCode         string              `json:"failureCode,omitempty"`
+	FailureMessage      string              `json:"failureMessage,omitempty"`
+	NatGatewayAddresses []NatGatewayAddress `json:"natGatewayAddresses,omitempty"`
 	NatGatewayID        string              `json:"natGatewayId"`
+	State               string              `json:"state,omitempty"`
 	SubnetID            string              `json:"subnetId"`
 	Tags                []Tag               `json:"tags,omitempty"`
 	VpcID               string              `json:"vpcId"`
@@ -79,7 +102,7 @@ type NatGatewayStatus struct {
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
-// +kubebuilder:printcolumn:name="VPC",type="string",JSONPath=".spec.atProvider.vpcId"
+// +kubebuilder:printcolumn:name="VPC",type="string",JSONPath=".status.atProvider.vpcId"
 // +kubebuilder:printcolumn:name="SUBNET",type="string",JSONPath=".spec.forProvider.subnetId"
 // +kubebuilder:printcolumn:name="ALLOCATION ID",type="string",JSONPath=".spec.forProvider.allocationId"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
