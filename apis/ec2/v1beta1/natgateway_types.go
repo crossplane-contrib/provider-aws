@@ -24,7 +24,7 @@ type NatGatewayParameters struct {
 	// Region is the region you'd like your NatGateway to be created in.
 	// +optional
 	// +immutable
-	Region string `json:"region,omitempty"`
+	Region *string `json:"region,omitempty"`
 
 	// AllocationID is the Elastic IP allocation ID
 	// +immutable
