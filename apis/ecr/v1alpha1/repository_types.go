@@ -25,7 +25,7 @@ import (
 // RepositoryParameters define the desired state of an AWS Elastic Container Repository
 type RepositoryParameters struct {
 
-	// Region is the region you'd like your Certificate to be created in.
+	// Region is the region you'd like your Repository to be created in.
 	Region string `json:"region"`
 
 	// The image scanning configuration for the repository. This determines whether
@@ -49,20 +49,13 @@ type RepositoryParameters struct {
 // A RepositorySpec defines the desired state of a Elastic Container Repository.
 type RepositorySpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	// +optional
-	ForProvider RepositoryParameters `json:"forProvider"`
+	ForProvider                  RepositoryParameters `json:"forProvider"`
 }
 
 // RepositoryObservation keeps the state for the external resource
 type RepositoryObservation struct {
 	// The date and time, in JavaScript date format, when the repository was created.
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
-
-	// The image scanning configuration for a repository.
-	ImageScanningConfiguration ImageScanningConfiguration `json:"imageScanningConfiguration,omitempty"`
-
-	// The tag mutability setting for the repository.
-	ImageTagMutability string `json:"imageTagMutability,omitempty"`
 
 	// The AWS account ID associated with the registry that contains the repository.
 	RegistryID string `json:"registryId"`

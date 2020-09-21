@@ -40,7 +40,7 @@ import (
 )
 
 const (
-	errUnexpectedObject = "The managed resource is not an repository resource"
+	errUnexpectedObject = "managed resource is not an repository resource"
 	errKubeUpdateFailed = "cannot update repository custom resource"
 
 	errDescribe            = "failed to describe repository with id"

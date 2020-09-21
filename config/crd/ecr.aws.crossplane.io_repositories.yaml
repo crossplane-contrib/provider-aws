@@ -171,7 +171,7 @@ spec:
                   - IMMUTABLE
                   type: string
                 region:
-                  description: Region is the region you'd like your Certificate to
+                  description: Region is the region you'd like your Repository to
                     be created in.
                   type: string
                 tags:
@@ -249,6 +249,8 @@ spec:
               - name
               - namespace
               type: object
+          required:
+          - forProvider
           type: object
         status:
           description: A RepositoryStatus represents the observed state of a Elastic
@@ -262,23 +264,6 @@ spec:
                   description: The date and time, in JavaScript date format, when
                     the repository was created.
                   format: date-time
-                  type: string
-                imageScanningConfiguration:
-                  description: The image scanning configuration for a repository.
-                  properties:
-                    scanOnPush:
-                      description: The setting that determines whether images are
-                        scanned after being pushed to a repository. If set to true,
-                        images will be scanned after being pushed. If this parameter
-                        is not specified, it will default to false and images will
-                        not be scanned unless a scan is manually started with the
-                        StartImageScan API.
-                      type: boolean
-                  required:
-                  - scanOnPush
-                  type: object
-                imageTagMutability:
-                  description: The tag mutability setting for the repository.
                   type: string
                 registryId:
                   description: The AWS account ID associated with the registry that

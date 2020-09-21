@@ -148,9 +148,8 @@ func TestObserve(t *testing.T) {
 					ImageTagMutability: aws.String(string(awsecr.ImageTagMutabilityMutable)),
 					Tags:               []v1alpha1.Tag{testTag},
 				}), withStatus(v1alpha1.RepositoryObservation{
-					RepositoryName:     repoName,
-					RepositoryArn:      testARN,
-					ImageTagMutability: string(awsecr.ImageTagMutabilityMutable),
+					RepositoryName: repoName,
+					RepositoryArn:  testARN,
 				}), withExternalName(repoName),
 					withConditions(runtimev1alpha1.Available())),
 				result: managed.ExternalObservation{
