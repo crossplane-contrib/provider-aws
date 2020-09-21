@@ -47,13 +47,11 @@ func TestGenerateRepositoryObservation(t *testing.T) {
 				RepositoryUri:              aws.String(repositoryURI),
 			},
 			out: v1alpha1.RepositoryObservation{
-				CreatedAt:                  &metav1.Time{Time: createTime},
-				ImageScanningConfiguration: imageScanConfig,
-				ImageTagMutability:         tagMutability,
-				RegistryID:                 registryID,
-				RepositoryName:             repositoryName,
-				RepositoryArn:              repositoryARN,
-				RepositoryURI:              repositoryURI,
+				CreatedAt:      &metav1.Time{Time: createTime},
+				RegistryID:     registryID,
+				RepositoryName: repositoryName,
+				RepositoryArn:  repositoryARN,
+				RepositoryURI:  repositoryURI,
 			},
 		},
 	}

@@ -41,18 +41,10 @@ type RepositoryClient interface {
 // ecr.Repository
 func GenerateRepositoryObservation(repo ecr.Repository) v1alpha1.RepositoryObservation {
 	o := v1alpha1.RepositoryObservation{
-		ImageTagMutability: *aws.String(string(repo.ImageTagMutability)),
-		RegistryID:         aws.StringValue(repo.RegistryId),
-		RepositoryArn:      aws.StringValue(repo.RepositoryArn),
-		RepositoryName:     aws.StringValue(repo.RepositoryName),
-		RepositoryURI:      aws.StringValue(repo.RepositoryUri),
-	}
-
-	if repo.ImageScanningConfiguration != nil {
-		scanConfig := v1alpha1.ImageScanningConfiguration{
-			ScanOnPush: aws.BoolValue(repo.ImageScanningConfiguration.ScanOnPush),
-		}
-		o.ImageScanningConfiguration = scanConfig
+		RegistryID:     aws.StringValue(repo.RegistryId),
+		RepositoryArn:  aws.StringValue(repo.RepositoryArn),
+		RepositoryName: aws.StringValue(repo.RepositoryName),
+		RepositoryURI:  aws.StringValue(repo.RepositoryUri),
 	}
 
 	if repo.CreatedAt != nil {
