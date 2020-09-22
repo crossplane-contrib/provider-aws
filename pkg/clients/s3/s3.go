@@ -29,7 +29,6 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	storage "github.com/crossplane/crossplane/apis/storage/v1alpha1"
 
 	"github.com/crossplane/provider-aws/apis/storage/v1alpha3"
 	iamc "github.com/crossplane/provider-aws/pkg/clients/iam"
@@ -272,11 +271,11 @@ func newPolicyDocument(bucket *v1alpha3.S3Bucket) (string, error) {
 
 	if bucket.Spec.LocalPermission != nil {
 		switch *bucket.Spec.LocalPermission {
-		case storage.ReadOnlyPermission:
+		case v1alpha3.ReadOnlyPermission:
 			policy.Statement = append(policy.Statement, read)
-		case storage.WriteOnlyPermission:
+		case v1alpha3.WriteOnlyPermission:
 			policy.Statement = append(policy.Statement, write)
-		case storage.ReadWritePermission:
+		case v1alpha3.ReadWritePermission:
 			policy.Statement = append(policy.Statement, read, write)
 		default:
 			return "", fmt.Errorf("unknown permission, %s", *bucket.Spec.LocalPermission)

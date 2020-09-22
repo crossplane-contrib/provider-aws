@@ -122,7 +122,6 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	switch cr.Status.AtProvider.DBInstanceStatus {
 	case v1beta1.RDSInstanceStateAvailable:
 		cr.Status.SetConditions(runtimev1alpha1.Available())
-		resource.SetBindable(cr)
 	case v1beta1.RDSInstanceStateCreating:
 		cr.Status.SetConditions(runtimev1alpha1.Creating())
 	case v1beta1.RDSInstanceStateDeleting:

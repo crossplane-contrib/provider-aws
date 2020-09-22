@@ -121,7 +121,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	if strings.EqualFold(cr.Status.AtProvider.State, v1beta1.DBSubnetGroupStateAvailable) {
 		cr.Status.SetConditions(runtimev1alpha1.Available())
-		resource.SetBindable(cr)
 	} else {
 		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
 	}
