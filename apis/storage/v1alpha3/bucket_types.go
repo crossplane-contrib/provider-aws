@@ -115,39 +115,6 @@ type S3BucketList struct {
 	Items           []S3Bucket `json:"items"`
 }
 
-// An S3BucketClassSpecTemplate is a template for the spec of a dynamically
-// provisioned S3Bucket.
-type S3BucketClassSpecTemplate struct {
-	runtimev1alpha1.ClassSpecTemplate `json:",inline"`
-	S3BucketParameters                `json:",inline"`
-}
-
-// +kubebuilder:object:root=true
-
-// An S3BucketClass is a resource class. It defines the desired spec of resource
-// claims that use it to dynamically provision a managed resource.
-// +kubebuilder:printcolumn:name="PROVIDER-REF",type="string",JSONPath=".specTemplate.providerRef.name"
-// +kubebuilder:printcolumn:name="RECLAIM-POLICY",type="string",JSONPath=".specTemplate.reclaimPolicy"
-// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
-// +kubebuilder:resource:scope=Cluster,categories={crossplane,class,aws}
-type S3BucketClass struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	// SpecTemplate is a template for the spec of a dynamically provisioned
-	// S3Bucket.
-	SpecTemplate S3BucketClassSpecTemplate `json:"specTemplate"`
-}
-
-// +kubebuilder:object:root=true
-
-// S3BucketClassList contains a list of cloud memorystore resource classes.
-type S3BucketClassList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []S3BucketClass `json:"items"`
-}
-
 // SetUserPolicyVersion specifies this bucket's policy version.
 func (b *S3Bucket) SetUserPolicyVersion(policyVersion string) error {
 	policyInt, err := strconv.Atoi(policyVersion[1:])
