@@ -42,8 +42,7 @@ import (
 )
 
 const (
-	namespace = "coolNamespace"
-	name      = "coolGroup"
+	name = "coolGroup"
 )
 
 var (
