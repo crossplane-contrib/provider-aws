@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -28,6 +29,7 @@ import (
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
@@ -37,6 +39,11 @@ import (
 	"github.com/crossplane/provider-aws/apis/database/v1beta1"
 	"github.com/crossplane/provider-aws/pkg/clients/rds"
 	"github.com/crossplane/provider-aws/pkg/clients/rds/fake"
+)
+
+const (
+	secretKey = "credentials"
+	credData  = "confidential!"
 )
 
 var (
@@ -385,18 +392,25 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				kube: &test.MockClient{
-					MockGet: test.NewMockGetFn(nil),
+					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+						secret := corev1.Secret{
+							Data: map[string][]byte{},
+						}
+						secret.Data[secretKey] = []byte(credData)
+						secret.DeepCopyInto(obj.(*corev1.Secret))
+						return nil
+					},
 				},
-				cr: instance(withMasterUsername(&masterUsername), withPasswordSecretRef(runtimev1alpha1.SecretKeySelector{})),
+				cr: instance(withMasterUsername(&masterUsername), withPasswordSecretRef(runtimev1alpha1.SecretKeySelector{Key: secretKey})),
 			},
 			want: want{
 				cr: instance(
 					withMasterUsername(&masterUsername),
-					withPasswordSecretRef(runtimev1alpha1.SecretKeySelector{}),
+					withPasswordSecretRef(runtimev1alpha1.SecretKeySelector{Key: secretKey}),
 					withConditions(runtimev1alpha1.Creating())),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{
-						runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(""),
+						runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(credData),
 						runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
 					},
 				},
