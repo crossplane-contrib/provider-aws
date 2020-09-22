@@ -467,27 +467,25 @@ func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance,
 
 // GetPassword fetches the referenced input password for an RDSInstance CRD and determines whether it has changed or not
 func GetPassword(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance) (newPwd string, changed bool, err error) {
-	if r.Spec.ForProvider.MasterPasswordSecretRef == nil && r.Spec.WriteConnectionSecretToReference == nil {
+	if r.Spec.ForProvider.MasterPasswordSecretRef == nil {
 		return "", false, nil
 	}
-	if r.Spec.ForProvider.MasterPasswordSecretRef != nil {
-		nn := types.NamespacedName{
-			Name:      r.Spec.ForProvider.MasterPasswordSecretRef.Name,
-			Namespace: r.Spec.ForProvider.MasterPasswordSecretRef.Namespace,
-		}
-		s := &corev1.Secret{}
-		if err := kube.Get(ctx, nn, s); err != nil {
-			return "", false, errors.Wrap(err, errGetPasswordSecretFailed)
-		}
-		newPwd = string(s.Data[r.Spec.ForProvider.MasterPasswordSecretRef.Key])
+	nn := types.NamespacedName{
+		Name:      r.Spec.ForProvider.MasterPasswordSecretRef.Name,
+		Namespace: r.Spec.ForProvider.MasterPasswordSecretRef.Namespace,
 	}
+	s := &corev1.Secret{}
+	if err := kube.Get(ctx, nn, s); err != nil {
+		return "", false, errors.Wrap(err, errGetPasswordSecretFailed)
+	}
+	newPwd = string(s.Data[r.Spec.ForProvider.MasterPasswordSecretRef.Key])
 
 	if r.Spec.WriteConnectionSecretToReference != nil {
-		nn := types.NamespacedName{
+		nn = types.NamespacedName{
 			Name:      r.Spec.WriteConnectionSecretToReference.Name,
 			Namespace: r.Spec.WriteConnectionSecretToReference.Namespace,
 		}
-		s := &corev1.Secret{}
+		s = &corev1.Secret{}
 		//the output secret may not exist yet, so we can skip returning an error
 		//if the error is NotFound
 		if err := kube.Get(ctx, nn, s); resource.IgnoreNotFound(err) != nil {
