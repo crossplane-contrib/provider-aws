@@ -30,18 +30,13 @@ spec:
   subresources: {}
   validation:
     openAPIV3Schema:
-      description: A ProviderConfig configures how AWS controllers will connect to
-        AWS API.
+      description: A ProviderConfig configures how AWS controllers will connect to AWS API.
       properties:
         apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
           type: string
         kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
           type: string
         metadata:
           type: object
@@ -49,8 +44,7 @@ spec:
           description: A ProviderConfigSpec defines the desired state of a ProviderConfig.
           properties:
             credentialsSecretRef:
-              description: CredentialsSecretRef references a specific secret's key
-                that contains the credentials that are used to connect to the provider.
+              description: CredentialsSecretRef references a specific secret's key that contains the credentials that are used to connect to the provider.
               properties:
                 key:
                   description: The key to select.
@@ -67,10 +61,7 @@ spec:
               - namespace
               type: object
             useServiceAccount:
-              description: "UseServiceAccount indicates to use an IAM Role associated
-                Kubernetes ServiceAccount for authentication instead of a credentials
-                Secret. https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
-                \n If set to true, credentialsSecretRef will be ignored."
+              description: "UseServiceAccount indicates to use an IAM Role associated Kubernetes ServiceAccount for authentication instead of a credentials Secret. https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html \n If set to true, credentialsSecretRef will be ignored."
               type: boolean
           type: object
       required:

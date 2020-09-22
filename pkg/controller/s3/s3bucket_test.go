@@ -42,7 +42,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
-	storagev1alpha1 "github.com/crossplane/crossplane/apis/storage/v1alpha1"
 )
 
 const (
@@ -65,7 +64,7 @@ func init() {
 }
 
 func testResource() *S3Bucket {
-	perm := storagev1alpha1.ReadOnlyPermission
+	perm := ReadOnlyPermission
 	testIAMUsername := "test-username"
 	return &S3Bucket{
 		ObjectMeta: metav1.ObjectMeta{
@@ -163,11 +162,11 @@ func TestSyncBucketError(t *testing.T) {
 	}
 
 	// Update policy error
-	perm := storagev1alpha1.WriteOnlyPermission
+	perm := WriteOnlyPermission
 	bucketWithPolicyChanges := testResource()
 	bucketWithPolicyChanges.Spec.LocalPermission = &perm
 	bucketWithPolicyChanges.Status.LastUserPolicyVersion = 1
-	bucketWithPolicyChanges.Status.LastLocalPermission = storagev1alpha1.ReadOnlyPermission
+	bucketWithPolicyChanges.Status.LastLocalPermission = ReadOnlyPermission
 
 	testError = errors.New("policy-update-err")
 	cl.MockUpdatePolicyDocument = func(username string, bucket *S3Bucket) (string, error) {
@@ -182,7 +181,7 @@ func TestSyncBucket(t *testing.T) {
 	g := NewGomegaWithT(t)
 	tr := testResource()
 	tr.Status.LastUserPolicyVersion = 1
-	tr.Status.LastLocalPermission = storagev1alpha1.ReadOnlyPermission
+	tr.Status.LastLocalPermission = ReadOnlyPermission
 
 	r := &Reconciler{
 		Client: NewFakeClient(tr),
@@ -225,7 +224,7 @@ func TestDelete(t *testing.T) {
 	cl := &MockS3Client{}
 
 	// test delete w/ reclaim policy
-	tr.Spec.ReclaimPolicy = runtimev1alpha1.ReclaimRetain
+	tr.Spec.DeletionPolicy = runtimev1alpha1.DeletionOrphan
 	expectedStatus := runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.Deleting(), runtimev1alpha1.ReconcileSuccess())
 
@@ -235,7 +234,7 @@ func TestDelete(t *testing.T) {
 	assertResource(g, r, expectedStatus)
 
 	// test delete w/ delete policy
-	tr.Spec.ReclaimPolicy = runtimev1alpha1.ReclaimDelete
+	tr.Spec.DeletionPolicy = runtimev1alpha1.DeletionDelete
 	called := false
 	cl.MockDelete = func(bucket *S3Bucket) error {
 		called = true

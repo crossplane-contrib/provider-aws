@@ -25,8 +25,6 @@ import (
 	fakeiam "github.com/crossplane/provider-aws/pkg/clients/iam/fake"
 	fakeops "github.com/crossplane/provider-aws/pkg/clients/s3/operations/fake"
 
-	storage "github.com/crossplane/crossplane/apis/storage/v1alpha1"
-
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -162,7 +160,7 @@ func TestClient_CreateUser(t *testing.T) {
 	name := "han"
 	key := &iam.AccessKey{}
 	version := "v1.0.0"
-	fakePerm := storage.LocalPermissionType("fake")
+	fakePerm := awsstorage.LocalPermissionType("fake")
 
 	// Define test cases
 	tests := map[string]struct {
@@ -378,7 +376,7 @@ func TestClient_UpdatePolicyDocument(t *testing.T) {
 	boom := errors.New("boom")
 	user := "han"
 	ver := "version"
-	fakePerm := storage.LocalPermissionType("fake")
+	fakePerm := awsstorage.LocalPermissionType("fake")
 
 	// Define test cases
 	tests := map[string]struct {

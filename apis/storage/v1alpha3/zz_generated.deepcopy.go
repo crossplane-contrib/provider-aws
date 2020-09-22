@@ -22,7 +22,6 @@ package v1alpha3
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/crossplane/crossplane/apis/storage/v1alpha1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -95,7 +94,7 @@ func (in *S3BucketParameters) DeepCopyInto(out *S3BucketParameters) {
 	}
 	if in.LocalPermission != nil {
 		in, out := &in.LocalPermission, &out.LocalPermission
-		*out = new(v1alpha1.LocalPermissionType)
+		*out = new(LocalPermissionType)
 		**out = **in
 	}
 	if in.Tags != nil {

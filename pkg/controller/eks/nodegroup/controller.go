@@ -111,7 +111,6 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	switch cr.Status.AtProvider.Status {
 	case v1alpha1.NodeGroupStatusActive:
 		cr.Status.SetConditions(runtimev1alpha1.Available())
-		resource.SetBindable(cr)
 	case v1alpha1.NodeGroupStatusCreating:
 		cr.Status.SetConditions(runtimev1alpha1.Creating())
 	case v1alpha1.NodeGroupStatusDeleting:
