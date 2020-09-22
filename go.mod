@@ -8,7 +8,6 @@ require (
 	github.com/crossplane/crossplane-runtime v0.9.1-0.20200827134951-29150890d4c1
 	github.com/crossplane/crossplane-tools v0.0.0-20200827141855-f51a6598f2bc
 	github.com/evanphx/json-patch v4.5.0+incompatible
-	github.com/ghodss/yaml v1.0.0
 	github.com/go-ini/ini v1.46.0
 	github.com/google/go-cmp v0.4.0
 	github.com/gopherjs/gopherjs v0.0.0-20180825215210-0210a2f0f73c // indirect

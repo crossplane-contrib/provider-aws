@@ -46,7 +46,6 @@ import (
 )
 
 const (
-	namespace  = "default"
 	bucketName = "test-bucket"
 )
 

@@ -25,7 +25,6 @@ import (
 	integrationv1alpha1 "github.com/crossplane/provider-aws/apis/applicationintegration/v1alpha1"
 	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	cachev1beta1 "github.com/crossplane/provider-aws/apis/cache/v1beta1"
-	computev1alpha3 "github.com/crossplane/provider-aws/apis/compute/v1alpha3"
 	databasev1alpha1 "github.com/crossplane/provider-aws/apis/database/v1alpha1"
 	databasev1beta1 "github.com/crossplane/provider-aws/apis/database/v1beta1"
 	ec2v1alpha1 "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
@@ -51,7 +50,6 @@ func init() {
 	AddToSchemes = append(AddToSchemes,
 		cachev1alpha1.SchemeBuilder.AddToScheme,
 		cachev1beta1.SchemeBuilder.AddToScheme,
-		computev1alpha3.SchemeBuilder.AddToScheme,
 		databasev1beta1.SchemeBuilder.AddToScheme,
 		elasticloadbalancingv1alpha1.SchemeBuilder.AddToScheme,
 		identityv1alpha1.SchemeBuilder.AddToScheme,
