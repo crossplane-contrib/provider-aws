@@ -69,7 +69,7 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger) error {
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acm.NewClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

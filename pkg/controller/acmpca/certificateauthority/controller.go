@@ -68,7 +68,7 @@ func SetupCertificateAuthority(mgr ctrl.Manager, l logging.Logger) error {
 
 			// TODO: implement tag initializer
 
-			managed.WithInitializers(),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
