@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketclients
+package bucketresources
 
 import (
 	"context"
@@ -30,10 +30,11 @@ type BucketResource interface {
 	Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error)
 	Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error)
 	Delete(ctx context.Context, bucket *v1beta1.Bucket) error
+	LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error
 }
 
-// MakeClients creates the array of all clients for a given BucketProvider
-func MakeClients(bucket *v1beta1.Bucket, client s3.BucketClient) []BucketResource {
+// MakeControllers creates the array of all clients for a given BucketProvider
+func MakeControllers(bucket *v1beta1.Bucket, client s3.BucketClient) []BucketResource {
 	clients := make([]BucketResource, 0)
 	clients = append(clients, NewAccelerateConfigurationClient(bucket, client),
 		NewCORSConfigurationClient(bucket, client),

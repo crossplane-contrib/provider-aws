@@ -167,6 +167,7 @@ type Destination struct {
 
 	// A container that provides information about encryption. If SourceSelectionCriteria
 	// is specified, you must specify this element.
+	// +optional
 	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration"`
 
 	// A container specifying replication metrics-related settings enabling metrics

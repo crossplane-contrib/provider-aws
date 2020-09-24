@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketclients
+package bucketresources
 
 import (
 	"context"
@@ -31,15 +31,25 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
+var _ BucketResource = &LifecycleConfigurationClient{}
+
 // LifecycleConfigurationClient is the client for API methods and reconciling the LifecycleConfiguration
 type LifecycleConfigurationClient struct {
 	config *v1beta1.BucketLifecycleConfiguration
 	client s3.BucketClient
 }
 
+// LateInitialize is responsible for initializing the resource based on the external value
+func (in *LifecycleConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	// GetBucketLifecycleConfigurationRequest throws an error if nothing exists externally
+	// Future work can be done to support brownfield initialization for the LifecycleConfiguration
+	// TODO
+	return nil
+}
+
 // NewLifecycleConfigurationClient creates the client for Accelerate Configuration
 func NewLifecycleConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *LifecycleConfigurationClient {
-	return &LifecycleConfigurationClient{config: bucket.Spec.Parameters.LifecycleConfiguration, client: client}
+	return &LifecycleConfigurationClient{config: bucket.Spec.ForProvider.LifecycleConfiguration, client: client}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration

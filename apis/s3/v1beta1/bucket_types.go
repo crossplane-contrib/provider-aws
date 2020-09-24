@@ -67,6 +67,8 @@ type BucketParameters struct {
 	ServerSideEncryptionConfiguration *ServerSideEncryptionConfiguration `json:"serverSideEncryptionConfiguration,omitempty"`
 
 	// VersioningConfiguration describes the versioning state of an Amazon S3 bucket.
+	// See the AWS API reference guide for Amazon Simple Storage Service's API operation PutBucketVersioning for usage
+	// and error information. See also, https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/PutBucketVersioning
 	// +optional
 	VersioningConfiguration *VersioningConfiguration `json:"versioningConfiguration,omitempty"`
 
@@ -85,15 +87,23 @@ type BucketParameters struct {
 	CORSConfiguration *CORSConfiguration `json:"corsConfiguration,omitempty"`
 
 	// Specifies website configuration parameters for an Amazon S3 bucket.
+	// See the AWS API reference guide for Amazon Simple Storage Service's API operation PutBucketWebsite for usage
+	// and error information. See also, https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/PutBucketWebsite
+	// +optional
 	WebsiteConfiguration *WebsiteConfiguration `json:"websiteConfiguration,omitempty"`
 
-	// Specifies logging parameters for an Amazon S3 bucket.
+	// Specifies logging parameters for an Amazon S3 bucket. Set the logging parameters for a bucket and
+	// to specify permissions for who can view and modify the logging parameters. See the AWS API
+	// reference guide for Amazon Simple Storage Service's API operation PutBucketLogging for usage
+	// and error information. See also, https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/PutBucketLogging
+	// +optional
 	LoggingConfiguration *LoggingConfiguration `json:"loggingConfiguration,omitempty"`
 
 	// Specifies payer parameters for an Amazon S3 bucket.
 	// For more information, see Request Pays buckets
 	// (https://docs.aws.amazon.com/AmazonS3/latest/dev/RequesterPaysBuckets.html) in the Amazon
 	// Simple Storage Service Developer Guide.
+	// +optional
 	PayerConfiguration *PaymentConfiguration `json:"paymentConfiguration,omitempty"`
 
 	// Sets the tags for a bucket.
@@ -101,29 +111,33 @@ type BucketParameters struct {
 	// For more information, see Billing and usage reporting for S3 buckets.
 	// (https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketBilling.html) in the Amazon
 	// Simple Storage Service Developer Guide.
+	// +optional
 	BucketTagging *Tagging `json:"tagging,omitempty"`
 
 	// Creates a replication configuration or replaces an existing one.
 	// For more information, see Replication (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication.html)
 	// in the Amazon S3 Developer Guide.
+	// +optional
 	ReplicationConfiguration *ReplicationConfiguration `json:"replicationConfiguration,omitempty"`
 
 	// Creates a new lifecycle configuration for the bucket or replaces an existing
 	// lifecycle configuration. For information about lifecycle configuration, see
 	// Managing Access Permissions to Your Amazon S3 Resources
 	// (https://docs.aws.amazon.com/AmazonS3/latest/dev/s3-access-control.html).
+	// +optional
 	LifecycleConfiguration *BucketLifecycleConfiguration `json:"lifecycleConfiguration,omitempty"`
 
 	// Enables notifications of specified events for a bucket.
 	// For more information about event notifications, see Configuring Event Notifications
 	// (https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html).
+	// +optional
 	NotificationConfiguration *NotificationConfiguration `json:"notificationConfiguration,omitempty"`
 }
 
 // BucketSpec represents the desired state of the Bucket.
 type BucketSpec struct {
 	runtimev1alpha1.ResourceSpec `json:",inline"`
-	Parameters                   BucketParameters `json:"forProvider"`
+	ForProvider                  BucketParameters `json:"forProvider"`
 }
 
 // BucketStatus represents the observed state of the Bucket.

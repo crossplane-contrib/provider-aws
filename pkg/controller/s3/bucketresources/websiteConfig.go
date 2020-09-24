@@ -14,23 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketclients
+package bucketresources
 
 import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
-
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
+
+var _ BucketResource = &WebsiteConfigurationClient{}
 
 // WebsiteConfigurationClient is the client for API methods and reconciling the WebsiteConfiguration
 type WebsiteConfigurationClient struct {
@@ -38,9 +39,17 @@ type WebsiteConfigurationClient struct {
 	client s3.BucketClient
 }
 
+// LateInitialize is responsible for initializing the resource based on the external value
+func (in *WebsiteConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	// GetBucketWebsiteRequest throws an error if nothing exists externally
+	// Future work can be done to support brownfield initialization for the WebsiteConfiguration
+	// TODO
+	return nil
+}
+
 // NewWebsiteConfigurationClient creates the client for Website Configuration
 func NewWebsiteConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *WebsiteConfigurationClient {
-	return &WebsiteConfigurationClient{config: bucket.Spec.Parameters.WebsiteConfiguration, client: client}
+	return &WebsiteConfigurationClient{config: bucket.Spec.ForProvider.WebsiteConfiguration, client: client}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketclients
+package bucketresources
 
 import (
 	"context"
@@ -29,15 +29,35 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
+var _ BucketResource = &RequestPaymentConfigurationClient{}
+
 // RequestPaymentConfigurationClient is the client for API methods and reconciling the PaymentConfiguration
 type RequestPaymentConfigurationClient struct {
 	config *v1beta1.PaymentConfiguration
 	client s3.BucketClient
 }
 
+// LateInitialize is responsible for initializing the resource based on the external value
+func (in *RequestPaymentConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	conf, err := in.client.GetBucketRequestPaymentRequest(&awss3.GetBucketRequestPaymentInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	if err != nil {
+		return errors.Wrap(err, "cannot get request payment configuration")
+	}
+
+	if conf.GetBucketRequestPaymentOutput == nil {
+		return nil
+	}
+	if in.config == nil {
+		bucket.Spec.ForProvider.PayerConfiguration = &v1beta1.PaymentConfiguration{}
+		in.config = bucket.Spec.ForProvider.PayerConfiguration
+	}
+	in.config.Payer = aws.LateInitializeString(in.config.Payer, aws.String(string(conf.Payer)))
+	return nil
+}
+
 // NewRequestPaymentConfigurationClient creates the client for Payment Configuration
 func NewRequestPaymentConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *RequestPaymentConfigurationClient {
-	return &RequestPaymentConfigurationClient{config: bucket.Spec.Parameters.PayerConfiguration, client: client}
+	return &RequestPaymentConfigurationClient{config: bucket.Spec.ForProvider.PayerConfiguration, client: client}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
@@ -45,12 +65,6 @@ func (in *RequestPaymentConfigurationClient) Observe(ctx context.Context, bucket
 	conf, err := in.client.GetBucketRequestPaymentRequest(&awss3.GetBucketRequestPaymentInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		return NeedsUpdate, errors.Wrap(err, "cannot get request payment configuration")
-	}
-
-	if conf.GetBucketRequestPaymentOutput.Payer == "" && in.config == nil {
-		return Updated, nil
-	} else if conf.GetBucketRequestPaymentOutput.Payer != "" && in.config == nil {
-		return NeedsDeletion, nil
 	}
 
 	if in.config.Payer != string(conf.Payer) {
@@ -81,10 +95,7 @@ func (in *RequestPaymentConfigurationClient) Create(ctx context.Context, bucket 
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
 func (in *RequestPaymentConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
-	input := &awss3.PutBucketRequestPaymentInput{
-		Bucket:                      aws.String(meta.GetExternalName(bucket)),
-		RequestPaymentConfiguration: &awss3.RequestPaymentConfiguration{Payer: awss3.PayerBucketOwner},
-	}
-	_, err := in.client.PutBucketRequestPaymentRequest(input).Send(ctx)
-	return errors.Wrap(err, "cannot delete bucket payment configuration")
+	// There is no delete operation for the S3Bucket Payer
+	// The value must be BucketOwner or Requester
+	return nil
 }

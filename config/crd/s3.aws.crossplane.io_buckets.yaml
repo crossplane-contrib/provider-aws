@@ -475,11 +475,40 @@ spec:
                   type: string
                 loggingConfiguration:
                   description: Specifies logging parameters for an Amazon S3 bucket.
+                    Set the logging parameters for a bucket and to specify permissions
+                    for who can view and modify the logging parameters. See the AWS
+                    API reference guide for Amazon Simple Storage Service's API operation
+                    PutBucketLogging for usage and error information. See also, https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/PutBucketLogging
                   properties:
                     targetBucket:
                       description: the target bucket where logs will be stored, it
                         can be the same bucket.
                       type: string
+                    targetBucketRef:
+                      description: TargetBucketRef references an S3Bucket to retrieve
+                        its name
+                      properties:
+                        name:
+                          description: Name of the referenced object.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    targetBucketSelector:
+                      description: TargetBucketSelector selects a reference to an
+                        S3Bucket to retrieve its name
+                      properties:
+                        matchControllerRef:
+                          description: MatchControllerRef ensures an object with the
+                            same controller reference as the selecting object is selected.
+                          type: boolean
+                        matchLabels:
+                          additionalProperties:
+                            type: string
+                          description: MatchLabels ensures an object with matching
+                            labels is selected.
+                          type: object
+                      type: object
                     targetGrants:
                       description: Container for granting information.
                       items:
@@ -771,14 +800,37 @@ spec:
                               it detects events of the specified type. \n TopicArn
                               is a required field"
                             type: string
+                          topicRef:
+                            description: TopicArnRef references an SNS Topic to retrieve
+                              its Arn
+                            properties:
+                              name:
+                                description: Name of the referenced object.
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          topicSelector:
+                            description: TopicArnSelector selects a reference to an
+                              SNS Topic to retrieve its Arn
+                            properties:
+                              matchControllerRef:
+                                description: MatchControllerRef ensures an object
+                                  with the same controller reference as the selecting
+                                  object is selected.
+                                type: boolean
+                              matchLabels:
+                                additionalProperties:
+                                  type: string
+                                description: MatchLabels ensures an object with matching
+                                  labels is selected.
+                                type: object
+                            type: object
                         required:
                         - events
+                        - topicArn
                         type: object
                       type: array
-                  required:
-                  - lambdaFunctionConfigurations
-                  - queueConfigurations
-                  - topicConfigurations
                   type: object
                 objectLockEnabledForBucket:
                   description: Specifies whether you want S3 Object Lock to be enabled
@@ -1015,7 +1067,6 @@ spec:
                             - accessControlTranslation
                             - account
                             - bucket
-                            - encryptionConfiguration
                             - metrics
                             - replicationTime
                             - storageClass
@@ -1276,7 +1327,9 @@ spec:
                   type: object
                 versioningConfiguration:
                   description: VersioningConfiguration describes the versioning state
-                    of an Amazon S3 bucket.
+                    of an Amazon S3 bucket. See the AWS API reference guide for Amazon
+                    Simple Storage Service's API operation PutBucketVersioning for
+                    usage and error information. See also, https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/PutBucketVersioning
                   properties:
                     mfaDelete:
                       description: MFADelete specifies whether MFA delete is enabled
@@ -1294,13 +1347,12 @@ spec:
                       - Enabled
                       - Suspended
                       type: string
-                  required:
-                  - mfaDelete
-                  - status
                   type: object
                 websiteConfiguration:
                   description: Specifies website configuration parameters for an Amazon
-                    S3 bucket.
+                    S3 bucket. See the AWS API reference guide for Amazon Simple Storage
+                    Service's API operation PutBucketWebsite for usage and error information.
+                    See also, https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/PutBucketWebsite
                   properties:
                     errorDocument:
                       description: The name of the error document for the website.

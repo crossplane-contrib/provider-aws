@@ -1,5 +1,5 @@
-apiVersion: storage.aws.crossplane.io/v1alpha3
-kind: S3Bucket
+apiVersion: s3.aws.crossplane.io/v1beta1
+kind: Bucket
 metadata:
   name: test.s3bucket.aws.crossplane.io
   labels:

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketclients
+package bucketresources
 
 import (
 	"context"
@@ -31,15 +31,25 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
+var _ BucketResource = &CORSConfigurationClient{}
+
 // CORSConfigurationClient is the client for API methods and reconciling the CORSConfiguration
 type CORSConfigurationClient struct {
 	config *v1beta1.CORSConfiguration
 	client s3.BucketClient
 }
 
+// LateInitialize is responsible for initializing the resource based on the external value
+func (in *CORSConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	// GetBucketCorsRequest throws an error if nothing exists externally
+	// Future work can be done to support brownfield initialization for the CORSConfig
+	// TODO
+	return nil
+}
+
 // NewCORSConfigurationClient creates the client for CORS Configuration
 func NewCORSConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *CORSConfigurationClient {
-	return &CORSConfigurationClient{config: bucket.Spec.Parameters.CORSConfiguration, client: client}
+	return &CORSConfigurationClient{config: bucket.Spec.ForProvider.CORSConfiguration, client: client}
 }
 
 func (in *CORSConfigurationClient) corsNotFound(err error) bool {

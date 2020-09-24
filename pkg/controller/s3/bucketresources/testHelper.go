@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketclients
+package bucketresources
 
 import (
 	"errors"
@@ -45,53 +45,53 @@ func withConditions(c ...corev1alpha1.Condition) bucketModifier { //nolint
 }
 
 func withAccelerationConfig(s *v1beta1.AccelerateConfiguration) bucketModifier { //nolint
-	return func(r *v1beta1.Bucket) { r.Spec.Parameters.AccelerateConfiguration = s }
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.AccelerateConfiguration = s }
 }
 
 func withSSEConfig(s *v1beta1.ServerSideEncryptionConfiguration) bucketModifier { //nolint
-	return func(r *v1beta1.Bucket) { r.Spec.Parameters.ServerSideEncryptionConfiguration = s }
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.ServerSideEncryptionConfiguration = s }
 }
 
 func withVersioningConfig(s *v1beta1.VersioningConfiguration) bucketModifier { //nolint
-	return func(r *v1beta1.Bucket) { r.Spec.Parameters.VersioningConfiguration = s }
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.VersioningConfiguration = s }
 }
 
 func withCORSConfig(s *v1beta1.CORSConfiguration) bucketModifier { //nolint
-	return func(r *v1beta1.Bucket) { r.Spec.Parameters.CORSConfiguration = s }
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.CORSConfiguration = s }
 }
 
 func withWebConfig(s *v1beta1.WebsiteConfiguration) bucketModifier { //nolint
-	return func(r *v1beta1.Bucket) { r.Spec.Parameters.WebsiteConfiguration = s }
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.WebsiteConfiguration = s }
 }
 
 func withLoggingConfig(s *v1beta1.LoggingConfiguration) bucketModifier { //nolint
-	return func(r *v1beta1.Bucket) { r.Spec.Parameters.LoggingConfiguration = s }
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.LoggingConfiguration = s }
 }
 
 func withPayerConfig(s *v1beta1.PaymentConfiguration) bucketModifier { //nolint
-	return func(r *v1beta1.Bucket) { r.Spec.Parameters.PayerConfiguration = s }
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.PayerConfiguration = s }
 }
 
 func withTaggingConfig(s *v1beta1.Tagging) bucketModifier { //nolint
-	return func(r *v1beta1.Bucket) { r.Spec.Parameters.BucketTagging = s }
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.BucketTagging = s }
 }
 
 func withReplConfig(s *v1beta1.ReplicationConfiguration) bucketModifier { //nolint
-	return func(r *v1beta1.Bucket) { r.Spec.Parameters.ReplicationConfiguration = s }
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.ReplicationConfiguration = s }
 }
 
 func withLifecycleConfig(s *v1beta1.BucketLifecycleConfiguration) bucketModifier { //nolint
-	return func(r *v1beta1.Bucket) { r.Spec.Parameters.LifecycleConfiguration = s }
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.LifecycleConfiguration = s }
 }
 
 func withNotificationConfig(s *v1beta1.NotificationConfiguration) bucketModifier { //nolint
-	return func(r *v1beta1.Bucket) { r.Spec.Parameters.NotificationConfiguration = s }
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.NotificationConfiguration = s }
 }
 
 func bucket(m ...bucketModifier) *v1beta1.Bucket {
 	cr := &v1beta1.Bucket{
 		Spec: v1beta1.BucketSpec{
-			Parameters: v1beta1.BucketParameters{
+			ForProvider: v1beta1.BucketParameters{
 				ACL:                               aws.String("private"),
 				LocationConstraint:                aws.String("us-east-1"),
 				GrantFullControl:                  nil,

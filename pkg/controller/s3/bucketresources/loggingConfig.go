@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketclients
+package bucketresources
 
 import (
 	"context"
@@ -29,15 +29,57 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
+var _ BucketResource = &LoggingConfigurationClient{}
+
 // LoggingConfigurationClient is the client for API methods and reconciling the LoggingConfiguration
 type LoggingConfigurationClient struct {
 	config *v1beta1.LoggingConfiguration
 	client s3.BucketClient
 }
 
+// LateInitialize is responsible for initializing the resource based on the external value
+// this function support brownfield initialization, but it does not reconcile subsequent external updates.
+// TODO: This could be the subject for future work, pending further discussion with the maintainers
+func (in *LoggingConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	conf, err := in.client.GetBucketLoggingRequest(&awss3.GetBucketLoggingInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	if err != nil {
+		return errors.Wrap(err, "cannot get bucket accelerate configuration")
+	}
+	if conf.LoggingEnabled == nil {
+		// There is no value send by AWS to initialize
+		return nil
+	}
+	if in.config == nil {
+		// We need the configuration to exist so we can initialize
+		bucket.Spec.ForProvider.LoggingConfiguration = &v1beta1.LoggingConfiguration{}
+		in.config = bucket.Spec.ForProvider.LoggingConfiguration
+	}
+	// Late initialize the target bucket and target prefix
+	in.config.TargetBucket = aws.LateInitializeStringPtr(in.config.TargetBucket, conf.LoggingEnabled.TargetBucket)
+	in.config.TargetPrefix = aws.LateInitializeStringPtr(in.config.TargetPrefix, conf.LoggingEnabled.TargetPrefix)
+	// If the there is an external target grant list, and the local one does not exist
+	// we create the target grant list
+	if conf.LoggingEnabled.TargetGrants != nil && len(in.config.TargetGrants) == 0 {
+		in.config.TargetGrants = make([]v1beta1.TargetGrant, len(conf.LoggingEnabled.TargetGrants))
+		for i, v := range conf.LoggingEnabled.TargetGrants {
+			in.config.TargetGrants[i] = v1beta1.TargetGrant{
+				Grantee: v1beta1.TargetGrantee{
+					DisplayName:  v.Grantee.DisplayName,
+					EmailAddress: v.Grantee.EmailAddress,
+					ID:           v.Grantee.ID,
+					Type:         string(v.Grantee.Type),
+					URI:          v.Grantee.URI,
+				},
+				Permission: string(v.Permission),
+			}
+		}
+	}
+	return nil
+}
+
 // NewLoggingConfigurationClient creates the client for Logging Configuration
 func NewLoggingConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *LoggingConfigurationClient {
-	return &LoggingConfigurationClient{config: bucket.Spec.Parameters.LoggingConfiguration, client: client}
+	return &LoggingConfigurationClient{config: bucket.Spec.ForProvider.LoggingConfiguration, client: client}
 }
 
 // CompareStrings compares pairs of strings passed in

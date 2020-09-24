@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketclients
+package bucketresources
 
 import (
 	"context"
@@ -31,15 +31,25 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
+var _ BucketResource = &ReplicationConfigurationClient{}
+
 // ReplicationConfigurationClient is the client for API methods and reconciling the ReplicationConfiguration
 type ReplicationConfigurationClient struct {
 	config *v1beta1.ReplicationConfiguration
 	client s3.BucketClient
 }
 
+// LateInitialize is responsible for initializing the resource based on the external value
+func (in *ReplicationConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	// GetBucketReplicationRequest throws an error if nothing exists externally
+	// Future work can be done to support brownfield initialization for the ReplicationConfiguration
+	// TODO
+	return nil
+}
+
 // NewReplicationConfigurationClient creates the client for Replication Configuration
 func NewReplicationConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *ReplicationConfigurationClient {
-	return &ReplicationConfigurationClient{config: bucket.Spec.Parameters.ReplicationConfiguration, client: client}
+	return &ReplicationConfigurationClient{config: bucket.Spec.ForProvider.ReplicationConfiguration, client: client}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
