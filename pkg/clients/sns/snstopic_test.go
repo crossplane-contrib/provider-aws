@@ -61,6 +61,12 @@ func withOwner(s *string) topicAttrModifier {
 	}
 }
 
+func withARN(s *string) topicAttrModifier {
+	return func(attr *map[string]string) {
+		(*attr)[string(TopicARN)] = *s
+	}
+}
+
 func withTopicSubs(confirmed, pending, deleted string) topicAttrModifier {
 	return func(attr *map[string]string) {
 		a := *attr
@@ -94,6 +100,13 @@ func withObservationOwner(s *string) topicObservationModifier {
 		o.Owner = s
 	}
 }
+
+func withObservationARN(s string) topicObservationModifier {
+	return func(o *v1alpha1.SNSTopicObservation) {
+		o.ARN = s
+	}
+}
+
 func withObservationSubs(confirmed, pending, deleted string) topicObservationModifier {
 	return func(o *v1alpha1.SNSTopicObservation) {
 		if s, err := strconv.ParseInt(confirmed, 10, 64); err == nil {
@@ -219,24 +232,29 @@ func TestGenerateTopicObservation(t *testing.T) {
 			in: topicAttributes(
 				withOwner(&subOwner),
 				withTopicSubs(confirmedSubs, pendingSubs, deletedSubs),
+				withARN(&topicArn),
 			),
 			out: topicObservation(
 				withObservationOwner(&subOwner),
 				withObservationSubs(confirmedSubs, pendingSubs, deletedSubs),
+				withObservationARN(topicArn),
 			),
 		},
 		"NoSubscriptions": {
 			in: topicAttributes(
 				withOwner(&subOwner),
+				withARN(&topicArn),
 			),
 			out: topicObservation(
 				withObservationOwner(&subOwner),
+				withObservationARN(topicArn),
 			),
 		},
 		"Empty": {
 			in: topicAttributes(),
 			out: topicObservation(
 				withObservationOwner(&empty),
+				withObservationARN(empty),
 			),
 		},
 	}
