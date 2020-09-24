@@ -607,36 +607,3 @@ type ReplicationGroupList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []ReplicationGroup `json:"items"`
 }
-
-// A ReplicationGroupClassSpecTemplate is a template for the spec of a
-// dynamically provisioned ReplicationGroup.
-type ReplicationGroupClassSpecTemplate struct {
-	runtimev1alpha1.ClassSpecTemplate `json:",inline"`
-	ForProvider                       ReplicationGroupParameters `json:"forProvider"`
-}
-
-// +kubebuilder:object:root=true
-
-// A ReplicationGroupClass is a resource class. It defines the desired spec of
-// resource claims that use it to dynamically provision a managed resource.
-// +kubebuilder:printcolumn:name="PROVIDER-REF",type="string",JSONPath=".specTemplate.providerRef.name"
-// +kubebuilder:printcolumn:name="RECLAIM-POLICY",type="string",JSONPath=".specTemplate.reclaimPolicy"
-// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
-// +kubebuilder:resource:scope=Cluster,categories={crossplane,class,aws}
-type ReplicationGroupClass struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	// SpecTemplate is a template for the spec of a dynamically provisioned
-	// ReplicationGroup.
-	SpecTemplate ReplicationGroupClassSpecTemplate `json:"specTemplate"`
-}
-
-// +kubebuilder:object:root=true
-
-// ReplicationGroupClassList contains a list of cloud memorystore resource classes.
-type ReplicationGroupClassList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []ReplicationGroupClass `json:"items"`
-}

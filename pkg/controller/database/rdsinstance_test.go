@@ -70,10 +70,6 @@ func withConditions(c ...runtimev1alpha1.Condition) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withBindingPhase(p runtimev1alpha1.BindingPhase) rdsModifier {
-	return func(r *v1beta1.RDSInstance) { r.Status.SetBindingPhase(p) }
-}
-
 func withEngineVersion(s *string) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.EngineVersion = s }
 }
@@ -138,7 +134,6 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: instance(
 					withConditions(runtimev1alpha1.Available()),
-					withBindingPhase(runtimev1alpha1.BindingPhaseUnbound),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,

@@ -22,9 +22,20 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	storagev1alpha1 "github.com/crossplane/crossplane/apis/storage/v1alpha1"
-
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+)
+
+// A LocalPermissionType is a type of permission that may be granted to a
+// Bucket.
+type LocalPermissionType string
+
+const (
+	// ReadOnlyPermission will grant read objects in a bucket
+	ReadOnlyPermission LocalPermissionType = "Read"
+	// WriteOnlyPermission will grant write/delete objects in a bucket
+	WriteOnlyPermission LocalPermissionType = "Write"
+	// ReadWritePermission LocalPermissionType Grant both read and write permissions
+	ReadWritePermission LocalPermissionType = "ReadWrite"
 )
 
 //Tag is a metadata assigned to an Amazon S3 Bucket consisting of a key-value pair.
@@ -60,7 +71,7 @@ type S3BucketParameters struct {
 	// specific bucket service account that is available in a secret after
 	// provisioning.
 	// +kubebuilder:validation:Enum=Read;Write;ReadWrite
-	LocalPermission *storagev1alpha1.LocalPermissionType `json:"localPermission"`
+	LocalPermission *LocalPermissionType `json:"localPermission"`
 
 	// A list of key-value pairs to label the S3 Bucket
 	// +optional
@@ -86,7 +97,7 @@ type S3BucketStatus struct {
 
 	// LastLocalPermission is the most recent local permission that was set for
 	// this bucket.
-	LastLocalPermission storagev1alpha1.LocalPermissionType `json:"lastLocalPermission,omitempty"`
+	LastLocalPermission LocalPermissionType `json:"lastLocalPermission,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -113,39 +124,6 @@ type S3BucketList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []S3Bucket `json:"items"`
-}
-
-// An S3BucketClassSpecTemplate is a template for the spec of a dynamically
-// provisioned S3Bucket.
-type S3BucketClassSpecTemplate struct {
-	runtimev1alpha1.ClassSpecTemplate `json:",inline"`
-	S3BucketParameters                `json:",inline"`
-}
-
-// +kubebuilder:object:root=true
-
-// An S3BucketClass is a resource class. It defines the desired spec of resource
-// claims that use it to dynamically provision a managed resource.
-// +kubebuilder:printcolumn:name="PROVIDER-REF",type="string",JSONPath=".specTemplate.providerRef.name"
-// +kubebuilder:printcolumn:name="RECLAIM-POLICY",type="string",JSONPath=".specTemplate.reclaimPolicy"
-// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
-// +kubebuilder:resource:scope=Cluster,categories={crossplane,class,aws}
-type S3BucketClass struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	// SpecTemplate is a template for the spec of a dynamically provisioned
-	// S3Bucket.
-	SpecTemplate S3BucketClassSpecTemplate `json:"specTemplate"`
-}
-
-// +kubebuilder:object:root=true
-
-// S3BucketClassList contains a list of cloud memorystore resource classes.
-type S3BucketClassList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []S3BucketClass `json:"items"`
 }
 
 // SetUserPolicyVersion specifies this bucket's policy version.
