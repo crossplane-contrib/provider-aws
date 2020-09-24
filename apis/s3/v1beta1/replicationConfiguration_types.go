@@ -16,7 +16,9 @@ limitations under the License.
 
 package v1beta1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import (
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+)
 
 // ReplicationConfiguration contains replication rules. You can add up to 1,000 rules. The maximum
 // size of a replication configuration is 2 MB.
@@ -125,10 +127,6 @@ type DeleteMarkerReplication struct {
 	// +kubebuilder:validation:Enum=Disabled
 	Status string `json:"Status"`
 }
-
-//func (in DeleteMarkerReplication) compare(target awss3.DeleteMarkerReplication) bool {
-//	return in.Status != string(target.Status)
-//}
 
 // Destination specifies information about where to publish analysis or configuration results
 // for an Amazon S3 bucket and S3 Replication Time Control (S3 RTC).

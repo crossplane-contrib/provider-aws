@@ -57,7 +57,7 @@ func (in *NotificationConfigurationClient) LateInitialize(ctx context.Context, b
 	}
 
 	// A list is provided by AWS
-	if conf.LambdaFunctionConfigurations != nil{
+	if conf.LambdaFunctionConfigurations != nil {
 		if in.config.LambdaFunctionConfigurations == nil {
 			in.config.LambdaFunctionConfigurations = make([]v1beta1.LambdaFunctionConfiguration, len(conf.LambdaFunctionConfigurations))
 		}
@@ -65,7 +65,7 @@ func (in *NotificationConfigurationClient) LateInitialize(ctx context.Context, b
 	}
 
 	// A list is provided by AWS
-	if conf.QueueConfigurations != nil{
+	if conf.QueueConfigurations != nil {
 		if in.config.QueueConfigurations == nil {
 			in.config.QueueConfigurations = make([]v1beta1.QueueConfiguration, len(conf.QueueConfigurations))
 		}
@@ -73,7 +73,7 @@ func (in *NotificationConfigurationClient) LateInitialize(ctx context.Context, b
 	}
 
 	// A list is provided by AWS
-	if conf.TopicConfigurations != nil{
+	if conf.TopicConfigurations != nil {
 		if in.config.TopicConfigurations == nil {
 			in.config.TopicConfigurations = make([]v1beta1.TopicConfiguration, len(conf.TopicConfigurations))
 		}
@@ -187,7 +187,7 @@ func (in *NotificationConfigurationClient) Observe(ctx context.Context, bucket *
 	}
 
 	status := bucketStatus(in.config, conf)
-	switch status {
+	switch status { // nolint:exhaustive
 	case Updated, NeedsDeletion:
 		return status, nil
 	}
@@ -319,7 +319,7 @@ func (in *NotificationConfigurationClient) generateConfiguration() *awss3.Notifi
 }
 
 // GenerateNotificationConfigurationInput creates the input for the LifecycleConfiguration request for the S3 Client
-func (in *NotificationConfigurationClient) GenerateNotificationConfigurationInput(name string) (*awss3.PutBucketNotificationConfigurationInput, error) {
+func GenerateNotificationConfigurationInput(name string, in *NotificationConfigurationClient) (*awss3.PutBucketNotificationConfigurationInput, error) {
 	conf := in.generateConfiguration()
 	return &awss3.PutBucketNotificationConfigurationInput{
 		Bucket:                    aws.String(name),
@@ -327,12 +327,12 @@ func (in *NotificationConfigurationClient) GenerateNotificationConfigurationInpu
 	}, nil
 }
 
-// Create sends a request to have resource created on AWS
-func (in *NotificationConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
+// CreateOrUpdate sends a request to have resource created on AWS
+func (in *NotificationConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	input, err := in.GenerateNotificationConfigurationInput(meta.GetExternalName(bucket))
+	input, err := GenerateNotificationConfigurationInput(meta.GetExternalName(bucket), in)
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, "unable to create input for bucket notification request")
 	}

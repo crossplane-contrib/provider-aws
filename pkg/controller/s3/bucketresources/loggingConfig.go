@@ -131,7 +131,7 @@ func compareLogging(local *v1beta1.LoggingConfiguration, external *awss3.Logging
 func (in *LoggingConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
 	conf, err := in.client.GetBucketLoggingRequest(&awss3.GetBucketLoggingInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		return NeedsUpdate, errors.Wrap(err, "cannot get bucket encryption")
+		return NeedsUpdate, errors.Wrap(err, "cannot get bucket logging")
 	}
 
 	if conf.LoggingEnabled == nil && in.config == nil {
@@ -144,7 +144,7 @@ func (in *LoggingConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 }
 
 // GeneratePutBucketLoggingInput creates the input for the PutBucketLogging request for the S3 Client
-func (in *LoggingConfigurationClient) GeneratePutBucketLoggingInput(name string) *awss3.PutBucketLoggingInput {
+func GeneratePutBucketLoggingInput(name string, in *LoggingConfigurationClient) *awss3.PutBucketLoggingInput {
 	bci := &awss3.PutBucketLoggingInput{
 		Bucket: aws.String(name),
 		BucketLoggingStatus: &awss3.BucketLoggingStatus{LoggingEnabled: &awss3.LoggingEnabled{
@@ -168,12 +168,12 @@ func (in *LoggingConfigurationClient) GeneratePutBucketLoggingInput(name string)
 	return bci
 }
 
-// Create sends a request to have resource created on AWS
-func (in *LoggingConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
+// CreateOrUpdate sends a request to have resource created on AWS
+func (in *LoggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketLoggingRequest(in.GeneratePutBucketLoggingInput(meta.GetExternalName(bucket))).Send(ctx)
+	_, err := in.client.PutBucketLoggingRequest(GeneratePutBucketLoggingInput(meta.GetExternalName(bucket), in)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket logging")
 }
 

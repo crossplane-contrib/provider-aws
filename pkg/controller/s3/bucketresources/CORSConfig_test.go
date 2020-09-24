@@ -57,7 +57,7 @@ func generateAWSCORS() *s3.CORSConfiguration {
 	}
 }
 
-func TestCORSExistsAndUpdated(t *testing.T) {
+func TestCORSObserve(t *testing.T) {
 	type args struct {
 		cl *CORSConfigurationClient
 		b  *v1beta1.Bucket
@@ -201,7 +201,7 @@ func TestCORSExistsAndUpdated(t *testing.T) {
 	}
 }
 
-func TestCORSCreate(t *testing.T) {
+func TestCORSCreateOrUpdate(t *testing.T) {
 	type args struct {
 		cl *CORSConfigurationClient
 		b  *v1beta1.Bucket
@@ -273,7 +273,7 @@ func TestCORSCreate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			_, err := tc.args.cl.Create(context.Background(), tc.args.b)
+			_, err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

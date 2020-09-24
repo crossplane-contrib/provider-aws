@@ -30,7 +30,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 )
 
-func TestAccelerateExistsAndUpdated(t *testing.T) {
+func TestAccelerateObserve(t *testing.T) {
 	type args struct {
 		cl *AccelerateConfigurationClient
 		b  *v1beta1.Bucket
@@ -155,7 +155,7 @@ func TestAccelerateExistsAndUpdated(t *testing.T) {
 	}
 }
 
-func TestAccelerateCreate(t *testing.T) {
+func TestAccelerateCreateOrUpdate(t *testing.T) {
 	type args struct {
 		cl BucketResource
 		b  *v1beta1.Bucket
@@ -227,7 +227,7 @@ func TestAccelerateCreate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			_, err := tc.args.cl.Create(context.Background(), tc.args.b)
+			_, err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

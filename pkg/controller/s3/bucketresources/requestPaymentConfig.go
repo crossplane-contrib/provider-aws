@@ -75,7 +75,7 @@ func (in *RequestPaymentConfigurationClient) Observe(ctx context.Context, bucket
 }
 
 // GeneratePutBucketPaymentInput creates the input for the BucketRequestPayment request for the S3 Client
-func (in *RequestPaymentConfigurationClient) GeneratePutBucketPaymentInput(name string) *awss3.PutBucketRequestPaymentInput {
+func GeneratePutBucketPaymentInput(name string, in *RequestPaymentConfigurationClient) *awss3.PutBucketRequestPaymentInput {
 	bci := &awss3.PutBucketRequestPaymentInput{
 		Bucket:                      aws.String(name),
 		RequestPaymentConfiguration: &awss3.RequestPaymentConfiguration{Payer: awss3.Payer(in.config.Payer)},
@@ -84,12 +84,12 @@ func (in *RequestPaymentConfigurationClient) GeneratePutBucketPaymentInput(name 
 	return bci
 }
 
-// Create sends a request to have resource created on AWS.
-func (in *RequestPaymentConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
+// CreateOrUpdate sends a request to have resource created on AWS.
+func (in *RequestPaymentConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketRequestPaymentRequest(in.GeneratePutBucketPaymentInput(meta.GetExternalName(bucket))).Send(ctx)
+	_, err := in.client.PutBucketRequestPaymentRequest(GeneratePutBucketPaymentInput(meta.GetExternalName(bucket), in)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket payment")
 }
 

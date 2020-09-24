@@ -17,7 +17,7 @@ limitations under the License.
 package s3
 
 import (
-	"context"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
@@ -80,12 +80,8 @@ type BucketClient interface {
 }
 
 // NewClient returns a new client using AWS credentials as JSON encoded data.
-func NewClient(ctx context.Context, credentials []byte, region string, auth awsclients.AuthMethod) (BucketClient, error) {
-	cfg, err := auth(ctx, credentials, awsclients.DefaultSection, region)
-	if cfg == nil {
-		return nil, err
-	}
-	return s3.New(*cfg), nil
+func NewClient(cfg aws.Config) BucketClient {
+	return s3.New(cfg)
 }
 
 // IsNotFound helper function to test for ErrCodeNoSuchEntityException error
@@ -115,4 +111,59 @@ func GenerateCreateBucketInput(name string, s v1beta1.BucketParameters) *s3.Crea
 		cbi.CreateBucketConfiguration = &s3.CreateBucketConfiguration{LocationConstraint: s3.BucketLocationConstraint(awsclients.StringValue(s.LocationConstraint))}
 	}
 	return cbi
+}
+
+// GenerateBucketObservation generates the ARN string for the external status
+func GenerateBucketObservation(name string) v1beta1.BucketExternalStatus {
+	return v1beta1.BucketExternalStatus{
+		ARN: fmt.Sprintf("arn:aws:s3:::%s", name),
+	}
+}
+
+// CORSConfigurationNotFound is parses the aws Error and validates if the cors configuration does not exist
+func CORSConfigurationNotFound(err error) bool {
+	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchCORSConfiguration" {
+		return true
+	}
+	return false
+}
+
+// ReplicationConfigurationNotFound is parses the aws Error and validates if the replication configuration does not exist
+func ReplicationConfigurationNotFound(err error) bool {
+	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "ReplicationConfigurationNotFoundError" {
+		return true
+	}
+	return false
+}
+
+// LifecycleConfigurationNotFound is parses the aws Error and validates if the lifecycle configuration does not exist
+func LifecycleConfigurationNotFound(err error) bool {
+	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchLifecycleConfiguration" {
+		return true
+	}
+	return false
+}
+
+// SSEConfigurationNotFound is parses the aws Error and validates if the SSE configuration does not exist
+func SSEConfigurationNotFound(err error) bool {
+	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "ServerSideEncryptionConfigurationNotFoundError" {
+		return true
+	}
+	return false
+}
+
+// TaggingNotFound is parses the aws Error and validates if the tagging configuration does not exist
+func TaggingNotFound(err error) bool {
+	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchTagSet" {
+		return true
+	}
+	return false
+}
+
+// WebsiteConfigurationNotFound is parses the aws Error and validates if the website configuration does not exist
+func WebsiteConfigurationNotFound(err error) bool {
+	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchWebsiteConfiguration" {
+		return true
+	}
+	return false
 }

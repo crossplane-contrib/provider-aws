@@ -19,7 +19,6 @@ package bucketresources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -56,7 +55,7 @@ func NewTaggingConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClien
 func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
 	conf, err := in.client.GetBucketTaggingRequest(&awss3.GetBucketTaggingInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchTagSet" && in.config == nil {
+		if s3.TaggingNotFound(err) && in.config == nil {
 			return Updated, nil
 		}
 		return NeedsUpdate, errors.Wrap(err, "cannot get bucket tagging")
@@ -66,40 +65,42 @@ func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 		return NeedsDeletion, nil
 	}
 
-	if cmp.Equal(conf.TagSet, in.generateTagging().TagSet) {
+	if cmp.Equal(conf.TagSet, GenerateTagging(in).TagSet) {
 		return Updated, nil
 	}
 
 	return NeedsUpdate, nil
 }
 
-func (in *TaggingConfigurationClient) generateTagging() *awss3.Tagging {
-	if in.config.TagSet == nil {
+// GenerateTagging creates the Tagging for the AWS SDK
+func GenerateTagging(in *TaggingConfigurationClient) *awss3.Tagging {
+	if in.config == nil || in.config.TagSet == nil {
 		return &awss3.Tagging{TagSet: make([]awss3.Tag, 0)}
 	}
 	conf := &awss3.Tagging{TagSet: make([]awss3.Tag, len(in.config.TagSet))}
 	for i, v := range in.config.TagSet {
 		conf.TagSet[i] = awss3.Tag{
-			Key:   v.Key,
-			Value: v.Value,
+			Key:   aws.String(v.Key),
+			Value: aws.String(v.Value),
 		}
 	}
 	return conf
 }
 
-func (in *TaggingConfigurationClient) generatePutBucketTagging(name string) *awss3.PutBucketTaggingInput {
+// GeneratePutBucketTagging creates the PutBucketTaggingInput for the aws SDK
+func GeneratePutBucketTagging(name string, in *TaggingConfigurationClient) *awss3.PutBucketTaggingInput {
 	return &awss3.PutBucketTaggingInput{
 		Bucket:  aws.String(name),
-		Tagging: in.generateTagging(),
+		Tagging: GenerateTagging(in),
 	}
 }
 
-// Create sends a request to have resource created on AWS
-func (in *TaggingConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
+// CreateOrUpdate sends a request to have resource created on AWS
+func (in *TaggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketTaggingRequest(in.generatePutBucketTagging(meta.GetExternalName(bucket))).Send(ctx)
+	_, err := in.client.PutBucketTaggingRequest(GeneratePutBucketTagging(meta.GetExternalName(bucket), in)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket tagging")
 }
 

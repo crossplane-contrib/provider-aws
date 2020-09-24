@@ -89,7 +89,7 @@ func (in *VersioningConfigurationClient) Observe(ctx context.Context, bucket *v1
 }
 
 // GeneratePutBucketVersioningInput creates the input for the PutBucketVersioning request for the S3 Client
-func (in *VersioningConfigurationClient) GeneratePutBucketVersioningInput(name string) *awss3.PutBucketVersioningInput {
+func GeneratePutBucketVersioningInput(name string, in *VersioningConfigurationClient) *awss3.PutBucketVersioningInput {
 	return &awss3.PutBucketVersioningInput{
 		Bucket: aws.String(name),
 		VersioningConfiguration: &awss3.VersioningConfiguration{
@@ -99,12 +99,12 @@ func (in *VersioningConfigurationClient) GeneratePutBucketVersioningInput(name s
 	}
 }
 
-// Create sends a request to have resource created on AWS.
-func (in *VersioningConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
+// CreateOrUpdate sends a request to have resource created on AWS.
+func (in *VersioningConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketVersioningRequest(in.GeneratePutBucketVersioningInput(meta.GetExternalName(bucket))).Send(ctx)
+	_, err := in.client.PutBucketVersioningRequest(GeneratePutBucketVersioningInput(meta.GetExternalName(bucket), in)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket versioning")
 }
 

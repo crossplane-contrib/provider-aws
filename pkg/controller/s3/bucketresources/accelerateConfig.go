@@ -84,19 +84,19 @@ func (in *AccelerateConfigurationClient) Observe(ctx context.Context, bucket *v1
 }
 
 // GenerateAccelerateConfigurationInput creates the input for the AccelerateConfiguration request for the S3 Client
-func (in *AccelerateConfigurationClient) GenerateAccelerateConfigurationInput(name string) *awss3.PutBucketAccelerateConfigurationInput {
+func GenerateAccelerateConfigurationInput(name string, in *AccelerateConfigurationClient) *awss3.PutBucketAccelerateConfigurationInput {
 	return &awss3.PutBucketAccelerateConfigurationInput{
 		Bucket:                  aws.String(name),
 		AccelerateConfiguration: &awss3.AccelerateConfiguration{Status: awss3.BucketAccelerateStatus(in.config.Status)},
 	}
 }
 
-// Create sends a request to have resource created on AWS
-func (in *AccelerateConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
+// CreateOrUpdate sends a request to have resource created on AWS
+func (in *AccelerateConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketAccelerateConfigurationRequest(in.GenerateAccelerateConfigurationInput(meta.GetExternalName(bucket))).Send(ctx)
+	_, err := in.client.PutBucketAccelerateConfigurationRequest(GenerateAccelerateConfigurationInput(meta.GetExternalName(bucket), in)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket acceleration configuration")
 }
 
