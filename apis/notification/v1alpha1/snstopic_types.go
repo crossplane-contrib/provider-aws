@@ -72,7 +72,7 @@ type SNSTopicParameters struct {
 	Policy *string `json:"policy,omitempty"`
 
 	// DeliveryRetryPolicy - the JSON serialization of the effective
-	// delivery policy, taking system defaults into accoun
+	// delivery policy, taking system defaults into account
 	// +optional
 	DeliveryPolicy *string `json:"deliveryPolicy,omitempty"`
 
