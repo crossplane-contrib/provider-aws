@@ -16,12 +16,22 @@ limitations under the License.
 
 package v1beta1
 
+import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+
 // LoggingConfiguration describes where logs are stored and the prefix that Amazon S3 assigns to
 // all log object keys for a bucket. For more information, see PUT Bucket logging
 // (https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUTlogging.html)
 type LoggingConfiguration struct {
 	// the target bucket where logs will be stored, it can be the same bucket.
 	TargetBucket *string `json:"targetBucket"`
+
+	// TargetBucketRef references an S3Bucket to retrieve its name
+	// +optional
+	TargetBucketRef *runtimev1alpha1.Reference `json:"targetBucketRef,omitempty"`
+
+	// TargetBucketSelector selects a reference to an S3Bucket to retrieve its name
+	// +optional
+	TargetBucketSelector *runtimev1alpha1.Selector `json:"targetBucketSelector,omitempty"`
 
 	// A prefix for all log object keys.
 	TargetPrefix *string `json:"targetPrefix"`

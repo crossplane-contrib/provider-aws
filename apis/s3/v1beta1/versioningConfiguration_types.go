@@ -22,9 +22,9 @@ type VersioningConfiguration struct {
 	// This element is only returned if the bucket has been configured with MFA
 	// delete. If the bucket has never been so configured, this element is not returned.
 	// +kubebuilder:validation:Enum=Enabled;Disabled
-	MFADelete *string `json:"mfaDelete"`
+	MFADelete *string `json:"mfaDelete,omitempty"`
 
 	// Status is the desired versioning state of the bucket.
 	// +kubebuilder:validation:Enum=Enabled;Suspended
-	Status string `json:"status"`
+	Status *string `json:"status,omitempty"`
 }

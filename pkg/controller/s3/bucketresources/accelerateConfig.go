@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketclients
+package bucketresources
 
 import (
 	"context"
@@ -29,15 +29,38 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
+var _ BucketResource = &AccelerateConfigurationClient{}
+
 // AccelerateConfigurationClient is the client for API methods and reconciling the AccelerateConfiguration
 type AccelerateConfigurationClient struct {
 	config *v1beta1.AccelerateConfiguration
 	client s3.BucketClient
 }
 
+// LateInitialize is responsible for initializing the resource based on the external value
+func (in *AccelerateConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	conf, err := in.client.GetBucketAccelerateConfigurationRequest(&awss3.GetBucketAccelerateConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	if err != nil {
+		return errors.Wrap(err, "cannot get bucket accelerate configuration")
+	}
+
+	// We need the second check here because by default the accelerateConfig status is not set
+	// by default
+	if conf.GetBucketAccelerateConfigurationOutput == nil || len(conf.Status) == 0 {
+		return nil
+	}
+
+	if in.config == nil {
+		bucket.Spec.ForProvider.AccelerateConfiguration = &v1beta1.AccelerateConfiguration{}
+		in.config = bucket.Spec.ForProvider.AccelerateConfiguration
+	}
+	in.config.Status = aws.LateInitializeString(in.config.Status, aws.String(string(conf.GetBucketAccelerateConfigurationOutput.Status)))
+	return nil
+}
+
 // NewAccelerateConfigurationClient creates the client for Accelerate Configuration
 func NewAccelerateConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *AccelerateConfigurationClient {
-	return &AccelerateConfigurationClient{config: bucket.Spec.Parameters.AccelerateConfiguration, client: client}
+	return &AccelerateConfigurationClient{config: bucket.Spec.ForProvider.AccelerateConfiguration, client: client}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketclients
+package bucketresources
 
 import (
 	"context"
@@ -31,15 +31,25 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
+var _ BucketResource = &TaggingConfigurationClient{}
+
 // TaggingConfigurationClient is the client for API methods and reconciling the CORSConfiguration
 type TaggingConfigurationClient struct {
 	config *v1beta1.Tagging
 	client s3.BucketClient
 }
 
+// LateInitialize is responsible for initializing the resource based on the external value
+func (in *TaggingConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	// GetBucketTaggingRequest throws an error if nothing exists externally
+	// Future work can be done to support brownfield initialization for the TaggingConfiguration
+	// TODO
+	return nil
+}
+
 // NewTaggingConfigurationClient creates the client for CORS Configuration
 func NewTaggingConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *TaggingConfigurationClient {
-	return &TaggingConfigurationClient{config: bucket.Spec.Parameters.BucketTagging, client: client}
+	return &TaggingConfigurationClient{config: bucket.Spec.ForProvider.BucketTagging, client: client}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration

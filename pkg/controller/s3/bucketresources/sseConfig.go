@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketclients
+package bucketresources
 
 import (
 	"context"
@@ -30,15 +30,25 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
+var _ BucketResource = &SSEConfigurationClient{}
+
 // SSEConfigurationClient is the client for API methods and reconciling the ServerSideEncryptionConfiguration
 type SSEConfigurationClient struct {
 	config *v1beta1.ServerSideEncryptionConfiguration
 	client s3.BucketClient
 }
 
+// LateInitialize is responsible for initializing the resource based on the external value
+func (in *SSEConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	// GetBucketEncryptionRequest throws an error if nothing exists externally
+	// Future work can be done to support brownfield initialization for the SSEConfiguration
+	// TODO
+	return nil
+}
+
 // NewSSEConfigurationClient creates the client for Server Side Encryption Configuration
 func NewSSEConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *SSEConfigurationClient {
-	return &SSEConfigurationClient{config: bucket.Spec.Parameters.ServerSideEncryptionConfiguration, client: client}
+	return &SSEConfigurationClient{config: bucket.Spec.ForProvider.ServerSideEncryptionConfiguration, client: client}
 }
 
 func (in *SSEConfigurationClient) sseNotFound(err error) bool {

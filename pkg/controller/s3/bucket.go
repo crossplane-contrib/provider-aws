@@ -18,6 +18,7 @@ package s3
 
 import (
 	"context"
+	"reflect"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 
@@ -41,7 +42,7 @@ import (
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/s3/bucketclients"
+	"github.com/crossplane/provider-aws/pkg/controller/s3/bucketresources"
 )
 
 const (
@@ -51,6 +52,7 @@ const (
 	errGetProviderSecret  = "cannot get provider secret"
 	errHead               = "failed to query Bucket"
 	errCreate             = "failed to create the Bucket"
+	errKubeUpdateFailed   = "cannot update S3 custom resource"
 
 	//errKubeUpdateFailed = "cannot update VPC custom resource"
 	//errMultipleItems       = "retrieved multiple VPCs for the given vpcId"
@@ -95,7 +97,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 
 	if aws.BoolValue(p.Spec.UseServiceAccount) {
 		bucketClient, err := c.newClientFn(ctx, []byte{}, p.Spec.Region, awsclients.UsePodServiceAccount)
-		return &external{s3client: bucketClient, kube: c.kube, clients: bucketclients.MakeClients(cr, bucketClient)}, errors.Wrap(err, errCreateBucketClient)
+		return &external{s3client: bucketClient, kube: c.kube, clients: bucketresources.MakeControllers(cr, bucketClient)}, errors.Wrap(err, errCreateBucketClient)
 	}
 
 	if p.GetCredentialsSecretReference() == nil {
@@ -109,13 +111,13 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	}
 
 	bucketClient, err := c.newClientFn(ctx, s.Data[p.Spec.CredentialsSecretRef.Key], p.Spec.Region, awsclients.UseProviderSecret)
-	return &external{s3client: bucketClient, kube: c.kube, clients: bucketclients.MakeClients(cr, bucketClient)}, errors.Wrap(err, errCreateBucketClient)
+	return &external{s3client: bucketClient, kube: c.kube, clients: bucketresources.MakeControllers(cr, bucketClient)}, errors.Wrap(err, errCreateBucketClient)
 }
 
 type external struct {
 	kube     client.Client
 	s3client s3.BucketClient
-	clients  []bucketclients.BucketResource
+	clients  []bucketresources.BucketResource
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
@@ -126,16 +128,29 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	if _, err := e.s3client.HeadBucketRequest(&awss3.HeadBucketInput{Bucket: aws.String(meta.GetExternalName(cr))}).Send(ctx); err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(s3.IsNotFound, err), errHead)
 	}
+
+	current := cr.Spec.ForProvider.DeepCopy()
+
 	for _, client := range e.clients {
+		err := client.LateInitialize(ctx, cr)
+		if err != nil {
+			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
+		}
 		updated, err := client.Observe(ctx, cr)
 		if err != nil {
 			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
 		}
-		if updated == bucketclients.NeedsUpdate {
+		if updated == bucketresources.NeedsUpdate {
 			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
 		}
-		if updated == bucketclients.NeedsDeletion {
+		if updated == bucketresources.NeedsDeletion {
 			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
+		}
+	}
+
+	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
+		if err := e.kube.Update(ctx, cr); err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
 		}
 	}
 
@@ -152,7 +167,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	_, err := e.s3client.CreateBucketRequest(s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.Parameters)).Send(ctx)
+	_, err := e.s3client.CreateBucketRequest(s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx)
 	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 }
 
@@ -169,13 +184,13 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 			return managed.ExternalUpdate{}, err
 		}
 		switch status {
-		case bucketclients.NeedsDeletion:
+		case bucketresources.NeedsDeletion:
 			err = client.Delete(ctx, cr)
 			if err != nil {
 				cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
 				return managed.ExternalUpdate{}, err
 			}
-		case bucketclients.NeedsUpdate:
+		case bucketresources.NeedsUpdate:
 			update, err := client.Create(ctx, cr)
 			if err != nil {
 				cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))

@@ -16,20 +16,22 @@ limitations under the License.
 
 package v1beta1
 
+import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+
 // NotificationConfiguration specifies the notification configuration of the bucket.
 // If this element is empty, notifications are turned off for the bucket.
 type NotificationConfiguration struct {
 	// Describes the AWS Lambda functions to invoke and the events for which to
 	// invoke them.
-	LambdaFunctionConfigurations []LambdaFunctionConfiguration `json:"lambdaFunctionConfigurations"`
+	LambdaFunctionConfigurations []LambdaFunctionConfiguration `json:"lambdaFunctionConfigurations,omitempty"`
 
 	// The Amazon Simple Queue Service queues to publish messages to and the events
 	// for which to publish messages.
-	QueueConfigurations []QueueConfiguration `json:"queueConfigurations"`
+	QueueConfigurations []QueueConfiguration `json:"queueConfigurations,omitempty"`
 
 	// The topic to which notifications are sent and the events for which notifications
 	// are generated.
-	TopicConfigurations []TopicConfiguration `json:"topicConfigurations"`
+	TopicConfigurations []TopicConfiguration `json:"topicConfigurations,omitempty"`
 }
 
 // LambdaFunctionConfiguration contains the configuration for AWS Lambda notifications.
@@ -111,7 +113,15 @@ type TopicConfiguration struct {
 	// publishes a message when it detects events of the specified type.
 	//
 	// TopicArn is a required field
-	TopicArn *string `json:"topicArn,omitempty"`
+	TopicArn string `json:"topicArn"`
+
+	// TopicArnRef references an SNS Topic to retrieve its Arn
+	// +optional
+	TopicArnRef *runtimev1alpha1.Reference `json:"topicRef,omitempty"`
+
+	// TopicArnSelector selects a reference to an SNS Topic to retrieve its Arn
+	// +optional
+	TopicArnSelector *runtimev1alpha1.Selector `json:"topicSelector,omitempty"`
 }
 
 // NotificationConfigurationFilter specifies object key name filtering rules. For information about key name

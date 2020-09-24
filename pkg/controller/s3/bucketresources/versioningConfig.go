@@ -14,21 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketclients
+package bucketresources
 
 import (
 	"context"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/pkg/errors"
-
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
+
+var _ BucketResource = &VersioningConfigurationClient{}
 
 // VersioningConfigurationClient is the client for API methods and reconciling the VersioningConfiguration
 type VersioningConfigurationClient struct {
@@ -36,28 +38,51 @@ type VersioningConfigurationClient struct {
 	client s3.BucketClient
 }
 
+// LateInitialize is responsible for initializing the resource based on the external value
+func (in *VersioningConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	conf, err := in.client.GetBucketVersioningRequest(&awss3.GetBucketVersioningInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	if err != nil {
+		return errors.Wrap(err, "cannot get bucket versioning")
+	}
+
+	if len(conf.Status) == 0 && len(conf.MFADelete) == 0 {
+		return nil
+	}
+	if in.config == nil {
+		bucket.Spec.ForProvider.VersioningConfiguration = &v1beta1.VersioningConfiguration{}
+		in.config = bucket.Spec.ForProvider.VersioningConfiguration
+	}
+	if len(conf.Status) != 0 { // By default Status is the string ""
+		in.config.Status = aws.String(string(conf.Status))
+	}
+	if len(conf.MFADelete) != 0 { // By default MFADelete is the string ""
+		in.config.MFADelete = aws.String(string(conf.MFADelete))
+	}
+	return nil
+}
+
 // NewVersioningConfigurationClient creates the client for Versioning Configuration
 func NewVersioningConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *VersioningConfigurationClient {
-	return &VersioningConfigurationClient{config: bucket.Spec.Parameters.VersioningConfiguration, client: client}
+	return &VersioningConfigurationClient{config: bucket.Spec.ForProvider.VersioningConfiguration, client: client}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *VersioningConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
 	vers, err := in.client.GetBucketVersioningRequest(&awss3.GetBucketVersioningInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		return NeedsUpdate, errors.Wrap(err, "cannot get bucket encryption")
+		return NeedsUpdate, errors.Wrap(err, "cannot get bucket versioning")
 	}
 
-	if vers.Status == "" && vers.MFADelete == "" && in.config == nil {
+	if len(vers.Status) == 0 && len(vers.MFADelete) == 0 && in.config == nil {
 		return Updated, nil
-	} else if vers.GetBucketVersioningOutput != nil && in.config == nil {
+	} else if (len(vers.Status) != 0 || len(vers.MFADelete) != 0) && in.config == nil {
 		return NeedsDeletion, nil
 	}
 
-	if string(vers.Status) != in.config.Status {
+	if !cmp.Equal(vers.MFADelete, aws.StringValue(in.config.MFADelete)) {
 		return NeedsUpdate, nil
 	}
-	if string(vers.MFADelete) != aws.StringValue(in.config.MFADelete) {
+	if !cmp.Equal(vers.Status, aws.StringValue(in.config.Status)) {
 		return NeedsUpdate, nil
 	}
 	return Updated, nil
@@ -69,7 +94,7 @@ func (in *VersioningConfigurationClient) GeneratePutBucketVersioningInput(name s
 		Bucket: aws.String(name),
 		VersioningConfiguration: &awss3.VersioningConfiguration{
 			MFADelete: awss3.MFADelete(aws.StringValue(in.config.MFADelete)),
-			Status:    awss3.BucketVersioningStatus(in.config.Status),
+			Status:    awss3.BucketVersioningStatus(aws.StringValue(in.config.Status)),
 		},
 	}
 }
@@ -86,8 +111,11 @@ func (in *VersioningConfigurationClient) Create(ctx context.Context, bucket *v1b
 // Delete creates the request to delete the resource on AWS or set it to the default value.
 func (in *VersioningConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	input := &awss3.PutBucketVersioningInput{
-		Bucket:                  aws.String(meta.GetExternalName(bucket)),
-		VersioningConfiguration: &awss3.VersioningConfiguration{Status: awss3.BucketVersioningStatusSuspended},
+		Bucket: aws.String(meta.GetExternalName(bucket)),
+		VersioningConfiguration: &awss3.VersioningConfiguration{
+			Status:    awss3.BucketVersioningStatusSuspended,
+			MFADelete: awss3.MFADeleteDisabled,
+		},
 	}
 	_, err := in.client.PutBucketVersioningRequest(input).Send(ctx)
 	return errors.Wrap(err, "cannot delete bucket versioning configuration")
