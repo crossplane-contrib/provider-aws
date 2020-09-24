@@ -18,25 +18,7 @@ limitations under the License.
 
 package v1beta1
 
-import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	corev1 "k8s.io/api/core/v1"
-)
-
-// GetBindingPhase of this IAMRole.
-func (mg *IAMRole) GetBindingPhase() runtimev1alpha1.BindingPhase {
-	return mg.Status.GetBindingPhase()
-}
-
-// GetClaimReference of this IAMRole.
-func (mg *IAMRole) GetClaimReference() *corev1.ObjectReference {
-	return mg.Spec.ClaimReference
-}
-
-// GetClassReference of this IAMRole.
-func (mg *IAMRole) GetClassReference() *corev1.ObjectReference {
-	return mg.Spec.ClassReference
-}
+import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 
 // GetCondition of this IAMRole.
 func (mg *IAMRole) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
@@ -61,29 +43,9 @@ func (mg *IAMRole) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
-// GetReclaimPolicy of this IAMRole.
-func (mg *IAMRole) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
-	return mg.Spec.ReclaimPolicy
-}
-
 // GetWriteConnectionSecretToReference of this IAMRole.
 func (mg *IAMRole) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
-}
-
-// SetBindingPhase of this IAMRole.
-func (mg *IAMRole) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
-	mg.Status.SetBindingPhase(p)
-}
-
-// SetClaimReference of this IAMRole.
-func (mg *IAMRole) SetClaimReference(r *corev1.ObjectReference) {
-	mg.Spec.ClaimReference = r
-}
-
-// SetClassReference of this IAMRole.
-func (mg *IAMRole) SetClassReference(r *corev1.ObjectReference) {
-	mg.Spec.ClassReference = r
 }
 
 // SetConditions of this IAMRole.
@@ -109,29 +71,9 @@ func (mg *IAMRole) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
-// SetReclaimPolicy of this IAMRole.
-func (mg *IAMRole) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
-	mg.Spec.ReclaimPolicy = r
-}
-
 // SetWriteConnectionSecretToReference of this IAMRole.
 func (mg *IAMRole) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
-}
-
-// GetBindingPhase of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) GetBindingPhase() runtimev1alpha1.BindingPhase {
-	return mg.Status.GetBindingPhase()
-}
-
-// GetClaimReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) GetClaimReference() *corev1.ObjectReference {
-	return mg.Spec.ClaimReference
-}
-
-// GetClassReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) GetClassReference() *corev1.ObjectReference {
-	return mg.Spec.ClassReference
 }
 
 // GetCondition of this IAMRolePolicyAttachment.
@@ -157,29 +99,9 @@ func (mg *IAMRolePolicyAttachment) GetProviderReference() *runtimev1alpha1.Refer
 	return mg.Spec.ProviderReference
 }
 
-// GetReclaimPolicy of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) GetReclaimPolicy() runtimev1alpha1.ReclaimPolicy {
-	return mg.Spec.ReclaimPolicy
-}
-
 // GetWriteConnectionSecretToReference of this IAMRolePolicyAttachment.
 func (mg *IAMRolePolicyAttachment) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
-}
-
-// SetBindingPhase of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) SetBindingPhase(p runtimev1alpha1.BindingPhase) {
-	mg.Status.SetBindingPhase(p)
-}
-
-// SetClaimReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) SetClaimReference(r *corev1.ObjectReference) {
-	mg.Spec.ClaimReference = r
-}
-
-// SetClassReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) SetClassReference(r *corev1.ObjectReference) {
-	mg.Spec.ClassReference = r
 }
 
 // SetConditions of this IAMRolePolicyAttachment.
@@ -203,11 +125,6 @@ Deprecated: Use SetProviderConfigReference.
 */
 func (mg *IAMRolePolicyAttachment) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
-}
-
-// SetReclaimPolicy of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) SetReclaimPolicy(r runtimev1alpha1.ReclaimPolicy) {
-	mg.Spec.ReclaimPolicy = r
 }
 
 // SetWriteConnectionSecretToReference of this IAMRolePolicyAttachment.

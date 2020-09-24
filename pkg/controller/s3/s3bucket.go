@@ -31,7 +31,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	bucketv1alpha3 "github.com/crossplane/provider-aws/apis/storage/v1alpha3"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
@@ -66,7 +65,7 @@ type Reconciler struct {
 
 // SetupS3Bucket adds a controller that reconciles S3Buckets.
 func SetupS3Bucket(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(bucketv1alpha3.S3BucketClassGroupKind)
+	name := managed.ControllerName(bucketv1alpha3.S3BucketGroupKind)
 
 	r := &Reconciler{
 		Client:              mgr.GetClient(),
@@ -137,7 +136,6 @@ func (r *Reconciler) _create(bucket *bucketv1alpha3.S3Bucket, client s3.Service)
 
 	// No longer creating, we're ready!
 	bucket.Status.SetConditions(runtimev1alpha1.Available())
-	resource.SetBindable(bucket)
 	return result, r.Update(ctx, bucket)
 }
 
@@ -210,7 +208,7 @@ func updateTagging(bucket *bucketv1alpha3.S3Bucket, client s3.Service) error {
 
 func (r *Reconciler) _delete(bucket *bucketv1alpha3.S3Bucket, client s3.Service) (reconcile.Result, error) {
 	bucket.Status.SetConditions(runtimev1alpha1.Deleting(), runtimev1alpha1.ReconcileSuccess())
-	if bucket.Spec.ReclaimPolicy == runtimev1alpha1.ReclaimDelete {
+	if bucket.Spec.DeletionPolicy == runtimev1alpha1.DeletionDelete {
 		if err := client.DeleteBucket(bucket); err != nil {
 			return r.fail(bucket, err)
 		}

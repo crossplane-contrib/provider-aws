@@ -28,7 +28,6 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cluster"
-	"github.com/crossplane/provider-aws/pkg/controller/compute"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dynamodb"
@@ -64,24 +63,9 @@ import (
 // the supplied manager.
 func Setup(mgr ctrl.Manager, l logging.Logger) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger) error{
-		cache.SetupReplicationGroupClaimScheduling,
-		cache.SetupReplicationGroupClaimDefaulting,
-		cache.SetupReplicationGroupClaimBinding,
 		cache.SetupReplicationGroup,
 		cachesubnetgroup.SetupCacheSubnetGroup,
 		cluster.SetupCacheCluster,
-		compute.SetupEKSClusterClaimScheduling,
-		compute.SetupEKSClusterClaimDefaulting,
-		compute.SetupEKSClusterClaimBinding,
-		compute.SetupEKSClusterSecret,
-		compute.SetupEKSClusterTarget,
-		compute.SetupEKSCluster,
-		database.SetupPostgreSQLInstanceClaimScheduling,
-		database.SetupPostgreSQLInstanceClaimDefaulting,
-		database.SetupPostgreSQLInstanceClaimBinding,
-		database.SetupMySQLInstanceClaimScheduling,
-		database.SetupMySQLInstanceClaimDefaulting,
-		database.SetupMySQLInstanceClaimBinding,
 		database.SetupRDSInstance,
 		eks.SetupCluster,
 		eks.SetupClusterSecret,
@@ -89,9 +73,6 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		elb.SetupELB,
 		elbattachment.SetupELBAttachment,
 		nodegroup.SetupNodeGroup,
-		s3.SetupBucketClaimScheduling,
-		s3.SetupBucketClaimDefaulting,
-		s3.SetupBucketClaimBinding,
 		s3.SetupS3Bucket,
 		s3bucketpolicy.SetupS3BucketPolicy,
 		iamuser.SetupIAMUser,

@@ -56,10 +56,6 @@ func withConditions(c ...runtimev1alpha1.Condition) clusterModifier {
 	return func(r *v1beta1.Cluster) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withBindingPhase(p runtimev1alpha1.BindingPhase) clusterModifier {
-	return func(r *v1beta1.Cluster) { r.Status.SetBindingPhase(p) }
-}
-
 func withTags(tagMaps ...map[string]string) clusterModifier {
 	tags := map[string]string{}
 	for _, tagMap := range tagMaps {
@@ -122,7 +118,6 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: cluster(
 					withConditions(runtimev1alpha1.Available()),
-					withBindingPhase(runtimev1alpha1.BindingPhaseUnbound),
 					withStatus(v1beta1.ClusterStatusActive)),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,

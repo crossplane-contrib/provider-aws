@@ -57,10 +57,6 @@ func withConditions(c ...runtimev1alpha1.Condition) dbSubnetGroupModifier {
 	return func(sg *v1beta1.DBSubnetGroup) { sg.Status.ConditionedStatus.Conditions = c }
 }
 
-func withBindingPhase(p runtimev1alpha1.BindingPhase) dbSubnetGroupModifier {
-	return func(sg *v1beta1.DBSubnetGroup) { sg.Status.SetBindingPhase(p) }
-}
-
 func withDBSubnetGroupStatus(s string) dbSubnetGroupModifier {
 	return func(sg *v1beta1.DBSubnetGroup) { sg.Status.AtProvider.State = s }
 }
@@ -130,8 +126,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: dbSubnetGroup(
 					withConditions(runtimev1alpha1.Available()),
-					withBindingPhase(runtimev1alpha1.BindingPhaseUnbound),
-					withDBSubnetGroupStatus(string(v1beta1.DBSubnetGroupStateAvailable)),
+					withDBSubnetGroupStatus(v1beta1.DBSubnetGroupStateAvailable),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,

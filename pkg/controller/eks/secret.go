@@ -25,7 +25,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/secret"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/crossplane/crossplane/apis/compute/v1alpha1"
 	workloadv1alpha1 "github.com/crossplane/crossplane/apis/workload/v1alpha1"
 
 	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
@@ -41,7 +40,6 @@ func SetupClusterSecret(mgr ctrl.Manager, l logging.Logger) error {
 		Watches(&source.Kind{Type: &corev1.Secret{}}, &resource.EnqueueRequestForPropagated{}).
 		For(&corev1.Secret{}).
 		WithEventFilter(resource.NewPredicates(resource.AnyOf(
-			resource.AllOf(resource.IsControlledByKind(v1alpha1.KubernetesClusterGroupVersionKind), resource.IsPropagated()),
 			resource.AllOf(resource.IsControlledByKind(workloadv1alpha1.KubernetesTargetGroupVersionKind), resource.IsPropagated()),
 			resource.AllOf(resource.IsControlledByKind(v1beta1.ClusterGroupVersionKind), resource.IsPropagator())))).
 		Complete(secret.NewReconciler(mgr,
