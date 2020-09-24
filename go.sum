@@ -68,11 +68,11 @@ github.com/coreos/pkg v0.0.0-20160727233714-3ac0863d7acf/go.mod h1:E3G3o1h8I7cfc
 github.com/coreos/pkg v0.0.0-20180108230652-97fdf19511ea/go.mod h1:E3G3o1h8I7cfcXa63jLwjI0eiQQMgzzUDFVpN/nH/eA=
 github.com/cpuguy83/go-md2man v1.0.10/go.mod h1:SmD6nW6nTyfqj6ABTjUi3V3JVMnlJmwcJI5acqYI6dE=
 github.com/creack/pty v1.1.7/go.mod h1:lj5s0c3V2DBrqTV7llrYr5NG6My20zk30Fl46Y7DoTY=
-github.com/crossplane/crossplane v0.13.0-rc.0.20200923093448-00b4a76b0b35 h1:OxvQxEVF2U8cMyA7y0rVJ8KvgcQ4/IdeGBHOvgb4/rw=
-github.com/crossplane/crossplane v0.13.0-rc.0.20200923093448-00b4a76b0b35/go.mod h1:8p1eEPxkMSJ9rHS/INbs444kRw8Eq43rhx4VxRZe4ak=
+github.com/crossplane/crossplane v0.13.0-rc.0.20200924053741-18324aa15a19 h1:EG5jXE1je4w4kcOAtg35gYjmcVxvfM0uFdWYSS2SCTY=
+github.com/crossplane/crossplane v0.13.0-rc.0.20200924053741-18324aa15a19/go.mod h1:8p1eEPxkMSJ9rHS/INbs444kRw8Eq43rhx4VxRZe4ak=
 github.com/crossplane/crossplane-runtime v0.9.1-0.20200918014829-e7742464e49b/go.mod h1:cJl5ZZONisre4v6wTmbrC8Jh3AI+erq/lNaxZzv9tnU=
-github.com/crossplane/crossplane-runtime v0.9.1-0.20200923111851-e1fc0493b2e8 h1:UkHEmxX7q3WaGSEf+aCfulwiEfGXW3twMU1UYBfgrEc=
-github.com/crossplane/crossplane-runtime v0.9.1-0.20200923111851-e1fc0493b2e8/go.mod h1:cJl5ZZONisre4v6wTmbrC8Jh3AI+erq/lNaxZzv9tnU=
+github.com/crossplane/crossplane-runtime v0.9.1-0.20200924144923-240dbf0821e6 h1:7/A3T9mNnythycZYtSsAlEPdQtgvsGBsopTn2HIthKw=
+github.com/crossplane/crossplane-runtime v0.9.1-0.20200924144923-240dbf0821e6/go.mod h1:cJl5ZZONisre4v6wTmbrC8Jh3AI+erq/lNaxZzv9tnU=
 github.com/crossplane/crossplane-tools v0.0.0-20200923030414-95b434323cd4 h1:0kPoB8KBZSAP6HNeC/B3bs+LyRsMflpJDRtTYPzZ6AU=
 github.com/crossplane/crossplane-tools v0.0.0-20200923030414-95b434323cd4/go.mod h1:C735A9X0x0lR8iGVOOxb49Mt70Ua4EM2b7PGaRPBLd4=
 github.com/dave/jennifer v1.3.0 h1:p3tl41zjjCZTNBytMwrUuiAnherNUZktlhPTKoF/sEk=
