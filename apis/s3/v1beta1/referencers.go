@@ -17,46 +17,46 @@ import (
 	"context"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
-	_ "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
 )
 
-// TopicARN returns the status.atProvider.ARN of an IAMRole.
-//func TopicARN() reference.ExtractValueFn {
-//	return func(mg resource.Managed) string {
-//		r, ok := mg.(*v1alpha1.SNSTopic)
-//		if !ok {
-//			return ""
-//		}
-//		return
-//
-//	}
-//}
+// SNSTopicARN returns a function that returns the ARN of the given SNS Topic.
+func SNSTopicARN() reference.ExtractValueFn {
+	return func(mg resource.Managed) string {
+		r, ok := mg.(*v1alpha1.SNSTopic)
+		if !ok {
+			return ""
+		}
+		return r.Status.AtProvider.ARN
+	}
+}
 
 // ResolveReferences of this BucketPolicy
 func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 	// TODO - need a way to extract arbitrary ARNs from resources - for the topic we are missing a lot of information
-	//if mg.Spec.ForProvider.NotificationConfiguration != nil {
-	//	if len(mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations) != 0 {
-	//		for i, v := range mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations {
-	//			rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-	//				CurrentValue: v.TopicArn,
-	//				Reference:    v.TopicArnRef,
-	//				Selector:     v.TopicArnSelector,
-	//				To:           reference.To{Managed: &v1alpha1.SNSTopic{}, List: &v1alpha1.SNSTopicList{}},
-	//				Extract:      reference.ExternalName(),
-	//			})
-	//			if err != nil {
-	//				return err
-	//			}
-	//			mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i].TopicArn = rsp.ResolvedValue
-	//			mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i].TopicArnRef = rsp.ResolvedReference
-	//		}
-	//	}
-	//}
+	if mg.Spec.ForProvider.NotificationConfiguration != nil {
+		if len(mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations) != 0 {
+			for i, v := range mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations {
+				rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+					CurrentValue: v.TopicArn,
+					Reference:    v.TopicArnRef,
+					Selector:     v.TopicArnSelector,
+					To:           reference.To{Managed: &v1alpha1.SNSTopic{}, List: &v1alpha1.SNSTopicList{}},
+					Extract:      SNSTopicARN(),
+				})
+				if err != nil {
+					return err
+				}
+				mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i].TopicArn = rsp.ResolvedValue
+				mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i].TopicArnRef = rsp.ResolvedReference
+			}
+		}
+	}
 
 	if mg.Spec.ForProvider.LoggingConfiguration != nil {
 		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
@@ -73,14 +73,13 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 		mg.Spec.ForProvider.LoggingConfiguration.TargetBucketRef = rsp.ResolvedReference
 	}
 
-	// TODO - Same problem here, need the ARN
 	if mg.Spec.ForProvider.ReplicationConfiguration != nil {
 		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.ReplicationConfiguration.Role),
 			Reference:    mg.Spec.ForProvider.ReplicationConfiguration.RoleRef,
 			Selector:     mg.Spec.ForProvider.ReplicationConfiguration.RoleSelector,
 			To:           reference.To{Managed: &v1beta1.IAMRole{}, List: &v1beta1.IAMRoleList{}},
-			Extract:      reference.ExternalName(),
+			Extract:      v1beta1.IAMRoleARN(),
 		})
 		if err != nil {
 			return err

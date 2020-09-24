@@ -28,7 +28,7 @@ import (
 // BucketResource is the interface all bucket sub-resources must conform to
 type BucketResource interface {
 	Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error)
-	Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error)
+	CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error)
 	Delete(ctx context.Context, bucket *v1beta1.Bucket) error
 	LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error
 }

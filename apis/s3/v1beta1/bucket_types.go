@@ -140,9 +140,18 @@ type BucketSpec struct {
 	ForProvider                  BucketParameters `json:"forProvider"`
 }
 
+// BucketExternalStatus keeps the state for the external resource
+type BucketExternalStatus struct {
+	// ARN is the Amazon Resource Name (ARN) specifying the S3 Bucket. For more information
+	// about ARNs and how to use them, see S3 Resources (https://docs.aws.amazon.com/AmazonS3/latest/dev/s3-arn-format.html)
+	// in the Amazon Simple Storage Service guide.
+	ARN string `json:"arn"`
+}
+
 // BucketStatus represents the observed state of the Bucket.
 type BucketStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
+	AtProvider                     BucketExternalStatus `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

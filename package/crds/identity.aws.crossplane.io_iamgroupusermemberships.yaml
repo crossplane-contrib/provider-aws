@@ -28,6 +28,7 @@ spec:
     type: date
   group: identity.aws.crossplane.io
   names:
+<<<<<<< HEAD:package/crds/identity.aws.crossplane.io_iamgroupusermemberships.yaml
     categories:
     - crossplane
     - managed
@@ -38,6 +39,8 @@ spec:
     plural: iamgroupusermemberships
     singular: iamgroupusermembership
 =======
+=======
+>>>>>>> fixed rebase issues, added new connect function:config/crd/s3.aws.crossplane.io_bucketpolicies.yaml
     kind: BucketPolicy
     listKind: BucketPolicyList
     plural: bucketpolicies
@@ -49,11 +52,15 @@ spec:
   validation:
     openAPIV3Schema:
 <<<<<<< HEAD:package/crds/identity.aws.crossplane.io_iamgroupusermemberships.yaml
+<<<<<<< HEAD:package/crds/identity.aws.crossplane.io_iamgroupusermemberships.yaml
       description: An IAMGroupUserMembership is a managed resource that represents an AWS IAM User group membership.
 =======
       description: An BucketPolicy is a managed resource that represents an AWS Bucket
         policy.
 >>>>>>> renamed s3bucketpolicy -> bucketpolicy, refactored bucketclients to add struct values, bucket, added testing code for bucketclients:config/crd/s3.aws.crossplane.io_bucketpolicies.yaml
+=======
+      description: An BucketPolicy is a managed resource that represents an AWS Bucket policy.
+>>>>>>> fixed rebase issues, added new connect function:config/crd/s3.aws.crossplane.io_bucketpolicies.yaml
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -78,11 +85,15 @@ spec:
               type: string
             forProvider:
 <<<<<<< HEAD:package/crds/identity.aws.crossplane.io_iamgroupusermemberships.yaml
+<<<<<<< HEAD:package/crds/identity.aws.crossplane.io_iamgroupusermemberships.yaml
               description: IAMGroupUserMembershipParameters define the desired state of an AWS IAMGroupUserMembership.
 =======
               description: BucketPolicyParameters define the desired state of an AWS
                 BucketPolicy.
 >>>>>>> renamed s3bucketpolicy -> bucketpolicy, refactored bucketclients to add struct values, bucket, added testing code for bucketclients:config/crd/s3.aws.crossplane.io_bucketpolicies.yaml
+=======
+              description: BucketPolicyParameters define the desired state of an AWS BucketPolicy.
+>>>>>>> fixed rebase issues, added new connect function:config/crd/s3.aws.crossplane.io_bucketpolicies.yaml
               properties:
                 groupName:
                   description: GroupName is the Amazon IAM Group Name (IAMGroup) of the IAM group you want to add User to.
@@ -116,8 +127,7 @@ spec:
                 statement:
                   description: This is the list of statement this policy applies
                   items:
-                    description: BucketPolicyStatement defines an individual statement
-                      within the BucketPolicyBody
+                    description: BucketPolicyStatement defines an individual statement within the BucketPolicyBody
                     properties:
                       action:
                         description: Each element of the PolicyAction array describes the specific action or actions that will be allowed or denied with this PolicyStatement.
@@ -178,7 +188,11 @@ spec:
                   type: array
 >>>>>>> renamed s3bucketpolicy -> bucketpolicy, refactored bucketclients to add struct values, bucket, added testing code for bucketclients:config/crd/s3.aws.crossplane.io_bucketpolicies.yaml
                 userName:
+<<<<<<< HEAD:package/crds/identity.aws.crossplane.io_iamgroupusermemberships.yaml
                   description: UserName presents the name of the IAMUser.
+=======
+                  description: UserName presents the name of the IAM user this BucketPolicy is concerned with.
+>>>>>>> fixed rebase issues, added new connect function:config/crd/s3.aws.crossplane.io_bucketpolicies.yaml
                   type: string
                 userNameRef:
                   description: UserNameRef references to an IAMUser to retrieve its userName

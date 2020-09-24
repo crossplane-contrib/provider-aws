@@ -21,21 +21,25 @@ import (
 	"net/http"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 )
 
 var (
-	enabled           = "Enabled"
-	suspended         = "Suspended"
-	errBoom           = errors.New("boom")
-	accelGetFailed    = "cannot get bucket accelerate configuration"
-	accelPutFailed    = "cannot put bucket acceleration configuration"
-	accelDeleteFailed = "cannot delete bucket acceleration configuration"
-	corsGetFailed     = "cannot get bucket CORS configuration"
-	corsPutFailed     = "cannot put bucket cors"
-	corsDeleteFailed  = "cannot delete bucket CORS configuration"
+	enabled               = "Enabled"
+	suspended             = "Suspended"
+	errBoom               = errors.New("boom")
+	accelGetFailed        = "cannot get bucket accelerate configuration"
+	accelPutFailed        = "cannot put bucket acceleration configuration"
+	accelDeleteFailed     = "cannot delete bucket acceleration configuration"
+	corsGetFailed         = "cannot get bucket CORS configuration"
+	corsPutFailed         = "cannot put bucket cors"
+	corsDeleteFailed      = "cannot delete bucket CORS configuration"
+	lifecycleGetFailed    = "cannot get bucket lifecycle"
+	lifecyclePutFailed    = "cannot put bucket lifecycle"
+	lifecycleDeleteFailed = "cannot delete bucket lifecycle configuration"
 )
 
 type bucketModifier func(policy *v1beta1.Bucket)
@@ -122,4 +126,25 @@ func bucket(m ...bucketModifier) *v1beta1.Bucket {
 
 func createRequest(err error, data interface{}) *aws.Request {
 	return &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: err, Data: data}
+}
+
+func copyTag(tag *v1beta1.Tag) *awss3.Tag {
+	if tag == nil {
+		return nil
+	}
+	return &awss3.Tag{
+		Key:   aws.String(tag.Key),
+		Value: aws.String(tag.Value),
+	}
+}
+
+func copyTags(tags []v1beta1.Tag) []awss3.Tag {
+	if tags == nil {
+		return nil
+	}
+	out := make([]awss3.Tag, len(tags))
+	for i := range tags {
+		out[i] = *copyTag(&tags[i])
+	}
+	return out
 }

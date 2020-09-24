@@ -19,7 +19,6 @@ package bucketresources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -56,25 +55,36 @@ func NewLifecycleConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketCli
 func (in *LifecycleConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
 	conf, err := in.client.GetBucketLifecycleConfigurationRequest(&awss3.GetBucketLifecycleConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchLifecycleConfiguration" && in.config == nil {
+		if s3.LifecycleConfigurationNotFound(err) && in.config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, errors.Wrap(err, "cannot get bucket lifecycle")
+		return NeedsUpdate, errors.Wrap(err, lifecycleGetFailed)
 	}
 
-	if len(conf.Rules) != 0 && in.config == nil {
+	switch {
+	case len(conf.Rules) != 0 && in.config == nil:
 		return NeedsDeletion, nil
-	}
-
-	if cmp.Equal(conf.Rules, in.generateConfiguration()) {
+	case in.config == nil && len(conf.Rules) == 0:
 		return Updated, nil
+	case cmp.Equal(conf.Rules, GenerateRules(in.config)):
+		return Updated, nil
+	default:
+		return NeedsUpdate, nil
 	}
-	return NeedsUpdate, nil
 }
 
-func (in *LifecycleConfigurationClient) generateConfiguration() []awss3.LifecycleRule {
-	rules := make([]awss3.LifecycleRule, len(in.config.Rules))
-	for i, local := range in.config.Rules {
+// GenerateLifecycleConfiguration creates the PutBucketLifecycleConfigurationInput for the AWS SDK
+func GenerateLifecycleConfiguration(name string, in *LifecycleConfigurationClient) *awss3.PutBucketLifecycleConfigurationInput {
+	return &awss3.PutBucketLifecycleConfigurationInput{
+		Bucket:                 aws.String(name),
+		LifecycleConfiguration: &awss3.BucketLifecycleConfiguration{Rules: GenerateRules(in.config)},
+	}
+}
+
+// GenerateRules creates the list of LifecycleRules for the AWS SDK
+func GenerateRules(in *v1beta1.BucketLifecycleConfiguration) []awss3.LifecycleRule { // nolint:gocyclo
+	rules := make([]awss3.LifecycleRule, len(in.Rules))
+	for i, local := range in.Rules {
 		rule := awss3.LifecycleRule{
 			ID:     local.ID,
 			Status: awss3.ExpirationStatus(local.Status),
@@ -113,21 +123,30 @@ func (in *LifecycleConfigurationClient) generateConfiguration() []awss3.Lifecycl
 				}
 			}
 		}
+		if local.Filter != nil {
+			rule.Filter = &awss3.LifecycleRuleFilter{
+				Prefix: local.Filter.Prefix,
+				Tag:    copyTag(local.Filter.Tag),
+			}
+			if local.Filter.And != nil {
+				rule.Filter.And = &awss3.LifecycleRuleAndOperator{
+					Prefix: local.Filter.And.Prefix,
+					Tags:   copyTags(local.Filter.And.Tags),
+				}
+			}
+		}
 		rules[i] = rule
 	}
 	return rules
 }
 
-// Create sends a request to have resource created on AWS
-func (in *LifecycleConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
+// CreateOrUpdate sends a request to have resource created on AWS
+func (in *LifecycleConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
 
-	config := &awss3.PutBucketLifecycleConfigurationInput{
-		Bucket:                 aws.String(meta.GetExternalName(bucket)),
-		LifecycleConfiguration: &awss3.BucketLifecycleConfiguration{Rules: in.generateConfiguration()},
-	}
+	config := GenerateLifecycleConfiguration(meta.GetExternalName(bucket), in)
 
 	_, err := in.client.PutBucketLifecycleConfigurationRequest(config).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket lifecycle")

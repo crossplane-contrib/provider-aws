@@ -19,7 +19,6 @@ package bucketresources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -51,17 +50,10 @@ func NewSSEConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *
 	return &SSEConfigurationClient{config: bucket.Spec.ForProvider.ServerSideEncryptionConfiguration, client: client}
 }
 
-func (in *SSEConfigurationClient) sseNotFound(err error) bool {
-	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "ServerSideEncryptionConfigurationNotFoundError" && in.config == nil {
-		return true
-	}
-	return false
-}
-
 // Observe checks if the resource exists and if it matches the local configuration
-func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
 	enc, err := in.client.GetBucketEncryptionRequest(&awss3.GetBucketEncryptionInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
-	if err != nil && in.sseNotFound(err) {
+	if err != nil && s3.SSEConfigurationNotFound(err) && in.config == nil {
 		return Updated, nil
 	} else if err != nil {
 		return NeedsUpdate, errors.Wrap(err, "cannot get bucket encryption")
@@ -89,7 +81,7 @@ func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.B
 }
 
 // GeneratePutBucketEncryptionInput creates the input for the PutBucketEncryption request for the S3 Client
-func (in *SSEConfigurationClient) GeneratePutBucketEncryptionInput(name string) *awss3.PutBucketEncryptionInput {
+func GeneratePutBucketEncryptionInput(name string, in *SSEConfigurationClient) *awss3.PutBucketEncryptionInput {
 	bei := &awss3.PutBucketEncryptionInput{
 		Bucket:                            aws.String(name),
 		ServerSideEncryptionConfiguration: &awss3.ServerSideEncryptionConfiguration{},
@@ -105,12 +97,12 @@ func (in *SSEConfigurationClient) GeneratePutBucketEncryptionInput(name string) 
 	return bei
 }
 
-// Create sends a request to have resource created on AWS.
-func (in *SSEConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
+// CreateOrUpdate sends a request to have resource created on AWS.
+func (in *SSEConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketEncryptionRequest(in.GeneratePutBucketEncryptionInput(meta.GetExternalName(bucket))).Send(ctx)
+	_, err := in.client.PutBucketEncryptionRequest(GeneratePutBucketEncryptionInput(meta.GetExternalName(bucket), in)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket encryption")
 }
 

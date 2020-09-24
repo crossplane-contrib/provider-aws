@@ -117,7 +117,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}, nil
 }
 
-//formatBucketPolicy parses and formats the bucket.Spec.BucketPolicy struct
+// formatBucketPolicy parses and formats the bucket.Spec.BucketPolicy struct
 func (e *external) formatBucketPolicy(original *v1alpha1.BucketPolicy) (*string, error) {
 	c := original.DeepCopy()
 	iamUsername := aws.StringValue(c.Spec.PolicyBody.UserName)

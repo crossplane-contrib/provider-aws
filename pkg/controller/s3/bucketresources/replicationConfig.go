@@ -19,7 +19,6 @@ package bucketresources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -56,17 +55,17 @@ func NewReplicationConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketC
 func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
 	conf, err := in.client.GetBucketReplicationRequest(&awss3.GetBucketReplicationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "ReplicationConfigurationNotFoundError" && in.config == nil {
+		if s3.ReplicationConfigurationNotFound(err) && in.config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, errors.Wrap(err, "cannot get request payment configuration")
+		return NeedsUpdate, errors.Wrap(err, "cannot get replication configuration")
 	}
 
 	if conf.ReplicationConfiguration != nil && in.config == nil {
 		return NeedsDeletion, nil
 	}
 
-	source := in.GenerateConfiguration()
+	source := GenerateReplicationConfiguration(in)
 
 	if cmp.Equal(conf.ReplicationConfiguration, source) {
 		return Updated, nil
@@ -148,15 +147,15 @@ func createRule(input v1beta1.ReplicationRule) awss3.ReplicationRule {
 			}
 			for i, v := range Rule.Filter.And.Tags {
 				newRule.Filter.And.Tags[i] = awss3.Tag{
-					Key:   v.Key,
-					Value: v.Value,
+					Key:   aws.String(v.Key),
+					Value: aws.String(v.Value),
 				}
 			}
 		}
 		if Rule.Filter.Tag != nil {
 			newRule.Filter.Tag = &awss3.Tag{
-				Key:   Rule.Filter.Tag.Key,
-				Value: Rule.Filter.Tag.Value,
+				Key:   aws.String(Rule.Filter.Tag.Key),
+				Value: aws.String(Rule.Filter.Tag.Value),
 			}
 		}
 	}
@@ -184,8 +183,8 @@ func createRule(input v1beta1.ReplicationRule) awss3.ReplicationRule {
 	return newRule
 }
 
-// GenerateConfiguration is responsible for creating the Replication Configuration for requests.
-func (in *ReplicationConfigurationClient) GenerateConfiguration() *awss3.ReplicationConfiguration {
+// GenerateReplicationConfiguration is responsible for creating the Replication Configuration for requests.
+func GenerateReplicationConfiguration(in *ReplicationConfigurationClient) *awss3.ReplicationConfiguration {
 	source := &awss3.ReplicationConfiguration{
 		Role:  in.config.Role,
 		Rules: make([]awss3.ReplicationRule, len(in.config.Rules)),
@@ -201,12 +200,12 @@ func (in *ReplicationConfigurationClient) GenerateConfiguration() *awss3.Replica
 func (in *ReplicationConfigurationClient) GeneratePutBucketReplicationInput(name string) *awss3.PutBucketReplicationInput {
 	return &awss3.PutBucketReplicationInput{
 		Bucket:                   aws.String(name),
-		ReplicationConfiguration: in.GenerateConfiguration(),
+		ReplicationConfiguration: GenerateReplicationConfiguration(in),
 	}
 }
 
-// Create sends a request to have resource created on AWS.
-func (in *ReplicationConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
+// CreateOrUpdate sends a request to have resource created on AWS.
+func (in *ReplicationConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}

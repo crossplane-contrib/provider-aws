@@ -19,7 +19,6 @@ package bucketresources
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -56,7 +55,7 @@ func NewWebsiteConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClien
 func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
 	conf, err := in.client.GetBucketWebsiteRequest(&awss3.GetBucketWebsiteInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchWebsiteConfiguration" && in.config == nil {
+		if s3.WebsiteConfigurationNotFound(err) && in.config == nil {
 			return Updated, nil
 		}
 		return NeedsUpdate, errors.Wrap(err, "cannot get request bucket website configuration")
@@ -66,7 +65,7 @@ func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 		return NeedsDeletion, nil
 	}
 
-	source := in.GenerateConfiguration()
+	source := GenerateWebsiteConfiguration(in)
 	confBody := &awss3.WebsiteConfiguration{
 		ErrorDocument:         conf.ErrorDocument,
 		IndexDocument:         conf.IndexDocument,
@@ -81,8 +80,8 @@ func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 	return NeedsUpdate, nil
 }
 
-// GenerateConfiguration is responsible for creating the Website Configuration for requests.
-func (in *WebsiteConfigurationClient) GenerateConfiguration() *awss3.WebsiteConfiguration {
+// GenerateWebsiteConfiguration is responsible for creating the Website Configuration for requests.
+func GenerateWebsiteConfiguration(in *WebsiteConfigurationClient) *awss3.WebsiteConfiguration {
 	wi := &awss3.WebsiteConfiguration{}
 	if in.config.ErrorDocument != nil {
 		wi.ErrorDocument = &awss3.ErrorDocument{Key: aws.String(in.config.ErrorDocument.Key)}
@@ -119,20 +118,20 @@ func (in *WebsiteConfigurationClient) GenerateConfiguration() *awss3.WebsiteConf
 }
 
 // GeneratePutBucketWebsiteInput creates the input for the PutBucketWebsite request for the S3 Client
-func (in *WebsiteConfigurationClient) GeneratePutBucketWebsiteInput(name string) *awss3.PutBucketWebsiteInput {
+func GeneratePutBucketWebsiteInput(name string, in *WebsiteConfigurationClient) *awss3.PutBucketWebsiteInput {
 	wi := &awss3.PutBucketWebsiteInput{
 		Bucket:               aws.String(name),
-		WebsiteConfiguration: in.GenerateConfiguration(),
+		WebsiteConfiguration: GenerateWebsiteConfiguration(in),
 	}
 	return wi
 }
 
-// Create sends a request to have resource created on AWS.
-func (in *WebsiteConfigurationClient) Create(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
+// CreateOrUpdate sends a request to have resource created on AWS.
+func (in *WebsiteConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
 	if in.config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketWebsiteRequest(in.GeneratePutBucketWebsiteInput(meta.GetExternalName(bucket))).Send(ctx)
+	_, err := in.client.PutBucketWebsiteRequest(GeneratePutBucketWebsiteInput(meta.GetExternalName(bucket), in)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket website")
 }
 
