@@ -42,101 +42,18 @@ spec:
       description: A Queue is a managed resource that represents a AWS Simple Queue
       properties:
         apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
           type: string
         kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
           type: string
         metadata:
           type: object
         spec:
           description: QueueSpec defines the desired state of a Queue.
           properties:
-            claimRef:
-              description: ClaimReference specifies the resource claim to which this
-                managed resource will be bound. ClaimReference is set automatically
-                during dynamic provisioning. Deprecated. See https://github.com/crossplane/crossplane/issues/1670
-              properties:
-                apiVersion:
-                  description: API version of the referent.
-                  type: string
-                fieldPath:
-                  description: 'If referring to a piece of an object instead of an
-                    entire object, this string should contain a valid JSON/Go field
-                    access statement, such as desiredState.manifest.containers[2].
-                    For example, if the object reference is to a container within
-                    a pod, this would take on a value like: "spec.containers{name}"
-                    (where "name" refers to the name of the container that triggered
-                    the event) or if no container name is specified "spec.containers[2]"
-                    (container with index 2 in this pod). This syntax is chosen only
-                    to have some well-defined way of referencing a part of an object.
-                    TODO: this design is not final and this field is subject to change
-                    in the future.'
-                  type: string
-                kind:
-                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-                  type: string
-                name:
-                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
-                  type: string
-                namespace:
-                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
-                  type: string
-                resourceVersion:
-                  description: 'Specific resourceVersion to which this reference is
-                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
-                  type: string
-                uid:
-                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
-                  type: string
-              type: object
-            classRef:
-              description: ClassReference specifies the resource class that was used
-                to dynamically provision this managed resource, if any. Deprecated.
-                See https://github.com/crossplane/crossplane/issues/1670
-              properties:
-                apiVersion:
-                  description: API version of the referent.
-                  type: string
-                fieldPath:
-                  description: 'If referring to a piece of an object instead of an
-                    entire object, this string should contain a valid JSON/Go field
-                    access statement, such as desiredState.manifest.containers[2].
-                    For example, if the object reference is to a container within
-                    a pod, this would take on a value like: "spec.containers{name}"
-                    (where "name" refers to the name of the container that triggered
-                    the event) or if no container name is specified "spec.containers[2]"
-                    (container with index 2 in this pod). This syntax is chosen only
-                    to have some well-defined way of referencing a part of an object.
-                    TODO: this design is not final and this field is subject to change
-                    in the future.'
-                  type: string
-                kind:
-                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-                  type: string
-                name:
-                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
-                  type: string
-                namespace:
-                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
-                  type: string
-                resourceVersion:
-                  description: 'Specific resourceVersion to which this reference is
-                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
-                  type: string
-                uid:
-                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
-                  type: string
-              type: object
             deletionPolicy:
-              description: DeletionPolicy specifies what will happen to the underlying
-                external when this managed resource is deleted - either "Delete" or
-                "Orphan" the external resource. The "Delete" policy is the default
-                when no policy is specified.
+              description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
               enum:
               - Orphan
               - Delete
@@ -145,67 +62,52 @@ spec:
               description: QueueParameters define the desired state of an AWS Queue
               properties:
                 delaySeconds:
-                  description: The length of time, in seconds, for which the delivery
-                    of all messages in the queue is delayed.
+                  description: The length of time, in seconds, for which the delivery of all messages in the queue is delayed.
                   format: int64
                   type: integer
                 fifoQueue:
                   description: Designates a queue as FIFO.
                   type: boolean
                 kmsDataKeyReusePeriodSeconds:
-                  description: The length of time, in seconds, for which Amazon SQS
-                    can reuse a data key to encrypt or decrypt messages before calling
-                    AWS KMS again.
+                  description: The length of time, in seconds, for which Amazon SQS can reuse a data key to encrypt or decrypt messages before calling AWS KMS again.
                   format: int64
                   type: integer
                 kmsMasterKeyId:
-                  description: The ID of an AWS-managed customer master key (CMK)
-                    for Amazon SQS or a custom CMK.
+                  description: The ID of an AWS-managed customer master key (CMK) for Amazon SQS or a custom CMK.
                   type: string
                 maximumMessageSize:
-                  description: The limit of how many bytes a message can contain before
-                    Amazon SQS rejects it.
+                  description: The limit of how many bytes a message can contain before Amazon SQS rejects it.
                   format: int64
                   type: integer
                 messageRetentionPeriod:
-                  description: The length of time, in seconds, for which Amazon SQS
-                    retains a message.
+                  description: The length of time, in seconds, for which Amazon SQS retains a message.
                   format: int64
                   type: integer
                 receiveMessageWaitTimeSeconds:
-                  description: The length of time, in seconds, for which a ReceiveMessage
-                    action waits for a message to arrive.
+                  description: The length of time, in seconds, for which a ReceiveMessage action waits for a message to arrive.
                   format: int64
                   type: integer
                 redrivePolicy:
-                  description: RedrivePolicy includes the parameters for the dead-letter
-                    queue functionality of the source queue.
+                  description: RedrivePolicy includes the parameters for the dead-letter queue functionality of the source queue.
                   properties:
                     deadLetterQueueARN:
-                      description: The Amazon Resource Name (ARN) of the dead-letter
-                        queue to which Amazon SQS moves messages after the value of
-                        maxReceiveCount is exceeded.
+                      description: The Amazon Resource Name (ARN) of the dead-letter queue to which Amazon SQS moves messages after the value of maxReceiveCount is exceeded.
                       type: string
                     maxReceiveCount:
-                      description: The number of times a message is delivered to the
-                        source queue before being moved to the dead-letter queue.
+                      description: The number of times a message is delivered to the source queue before being moved to the dead-letter queue.
                       format: int64
                       type: integer
                   type: object
                 region:
-                  description: Region is the region you'd like your Queue to be created
-                    in.
+                  description: Region is the region you'd like your Queue to be created in.
                   type: string
                 tags:
-                  description: Tags add cost allocation tags to the specified Amazon
-                    SQS queue.
+                  description: Tags add cost allocation tags to the specified Amazon SQS queue.
                   items:
-                    description: Tag is a key value pairs attached to a Amazon SQS
-                      queue.
+                    description: Tag is a key value pairs attached to a Amazon SQS queue.
                     properties:
                       key:
-                        description: The key name that can be used to look up or retrieve
-                          the associated value.
+                        description: The key name that can be used to look up or retrieve the associated value.
                         type: string
                       value:
                         description: The value associated with a key in a tag.
@@ -222,9 +124,7 @@ spec:
               - region
               type: object
             providerConfigRef:
-              description: ProviderConfigReference specifies how the provider that
-                will be used to create, observe, update, and delete this managed resource
-                should be configured.
+              description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
               properties:
                 name:
                   description: Name of the referenced object.
@@ -233,9 +133,7 @@ spec:
               - name
               type: object
             providerRef:
-              description: 'ProviderReference specifies the provider that will be
-                used to create, observe, update, and delete this managed resource.
-                Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+              description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
               properties:
                 name:
                   description: Name of the referenced object.
@@ -243,29 +141,8 @@ spec:
               required:
               - name
               type: object
-            reclaimPolicy:
-              description: "ReclaimPolicy specifies what will happen to this managed
-                resource when its resource claim is deleted, and what will happen
-                to the underlying external resource when the managed resource is deleted.
-                The \"Delete\" policy causes the managed resource to be deleted when
-                its bound resource claim is deleted, and in turn causes the external
-                resource to be deleted when its managed resource is deleted. The \"Retain\"
-                policy causes the managed resource to be retained, in binding phase
-                \"Released\", when its resource claim is deleted, and in turn causes
-                the external resource to be retained when its managed resource is
-                deleted. The \"Delete\" policy is used when no policy is specified.
-                \n Deprecated. DeletionPolicy takes precedence when both are set.
-                See https://github.com/crossplane/crossplane-runtime/issues/179."
-              enum:
-              - Retain
-              - Delete
-              type: string
             writeConnectionSecretToRef:
-              description: WriteConnectionSecretToReference specifies the namespace
-                and name of a Secret to which any connection details for this managed
-                resource should be written. Connection details frequently include
-                the endpoint, username, and password required to connect to the managed
-                resource.
+              description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
               properties:
                 name:
                   description: Name of the secret.
@@ -284,8 +161,7 @@ spec:
           description: QueueStatus represents the observed state of a Queue.
           properties:
             atProvider:
-              description: QueueObservation is the representation of the current state
-                that is observed
+              description: QueueObservation is the representation of the current state that is observed
               properties:
                 arn:
                   description: The Amazon resource name (ARN) of the queue.
@@ -294,43 +170,26 @@ spec:
                   description: The URL of the created Amazon SQS queue.
                   type: string
               type: object
-            bindingPhase:
-              description: Phase represents the binding phase of a managed resource
-                or claim. Unbindable resources cannot be bound, typically because
-                they are currently unavailable, or still being created. Unbound resource
-                are available for binding, and Bound resources have successfully bound
-                to another resource. Deprecated. See https://github.com/crossplane/crossplane/issues/1670
-              enum:
-              - Unbindable
-              - Unbound
-              - Bound
-              - Released
-              type: string
             conditions:
               description: Conditions of the resource.
               items:
                 description: A Condition that may apply to a resource.
                 properties:
                   lastTransitionTime:
-                    description: LastTransitionTime is the last time this condition
-                      transitioned from one status to another.
+                    description: LastTransitionTime is the last time this condition transitioned from one status to another.
                     format: date-time
                     type: string
                   message:
-                    description: A Message containing details about this condition's
-                      last transition from one status to another, if any.
+                    description: A Message containing details about this condition's last transition from one status to another, if any.
                     type: string
                   reason:
-                    description: A Reason for this condition's last transition from
-                      one status to another.
+                    description: A Reason for this condition's last transition from one status to another.
                     type: string
                   status:
-                    description: Status of this condition; is it currently True, False,
-                      or Unknown?
+                    description: Status of this condition; is it currently True, False, or Unknown?
                     type: string
                   type:
-                    description: Type of this condition. At most one of each condition
-                      type may apply to a resource at any point in time.
+                    description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
                     type: string
                 required:
                 - lastTransitionTime

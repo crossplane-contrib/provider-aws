@@ -112,7 +112,6 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	switch cr.Status.AtProvider.TableStatus {
 	case v1alpha1.DynamoTableStateAvailable:
 		cr.Status.SetConditions(runtimev1alpha1.Available())
-		resource.SetBindable(cr)
 	case v1alpha1.DynamoTableStateCreating:
 		cr.Status.SetConditions(runtimev1alpha1.Creating())
 	case v1alpha1.DynamoTableStateDeleting:

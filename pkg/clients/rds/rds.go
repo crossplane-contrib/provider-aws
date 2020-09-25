@@ -17,6 +17,7 @@ limitations under the License.
 package rds
 
 import (
+	"context"
 	"encoding/json"
 	"strconv"
 	"strings"
@@ -25,13 +26,22 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/database/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+)
+
+const (
+	errGetPasswordSecretFailed = "cannot get password secret"
 )
 
 // Client defines RDS RDSClient operations
@@ -435,15 +445,12 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rds.DBInstance) { // 
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
-func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error) {
-	// TODO(muvaf): ApplyImmediately and other configurations that exist in
-	//  <Modify/Create/Delete>DBInstanceInput objects but not in DBInstance
-	//  object are not late-inited. So, this func always returns true when
-	//  those configurations are changed by the user.
-
-	// TODO(muvaf): If a secret is provided for password, this logic should check
-	// whether it's changed by comparing it to the password in the published secret.
-	patch, err := CreatePatch(&db, &p)
+func IsUpToDate(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance, db rds.DBInstance) (bool, error) {
+	_, pwdChanged, err := GetPassword(ctx, kube, r)
+	if err != nil {
+		return false, err
+	}
+	patch, err := CreatePatch(&db, &r.Spec.ForProvider)
 	if err != nil {
 		return false, err
 	}
@@ -452,7 +459,43 @@ func IsUpToDate(p v1beta1.RDSInstanceParameters, db rds.DBInstance) (bool, error
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "Tags"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "SkipFinalSnapshotBeforeDeletion"),
 		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "FinalDBSnapshotIdentifier"),
-	), nil
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "ApplyModificationsImmediately"),
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "AllowMajorVersionUpgrade"),
+		cmpopts.IgnoreFields(v1beta1.RDSInstanceParameters{}, "MasterPasswordSecretRef"),
+	) && !pwdChanged, nil
+}
+
+// GetPassword fetches the referenced input password for an RDSInstance CRD and determines whether it has changed or not
+func GetPassword(ctx context.Context, kube client.Client, r *v1beta1.RDSInstance) (newPwd string, changed bool, err error) {
+	if r.Spec.ForProvider.MasterPasswordSecretRef == nil {
+		return "", false, nil
+	}
+	nn := types.NamespacedName{
+		Name:      r.Spec.ForProvider.MasterPasswordSecretRef.Name,
+		Namespace: r.Spec.ForProvider.MasterPasswordSecretRef.Namespace,
+	}
+	s := &corev1.Secret{}
+	if err := kube.Get(ctx, nn, s); err != nil {
+		return "", false, errors.Wrap(err, errGetPasswordSecretFailed)
+	}
+	newPwd = string(s.Data[r.Spec.ForProvider.MasterPasswordSecretRef.Key])
+
+	if r.Spec.WriteConnectionSecretToReference != nil {
+		nn = types.NamespacedName{
+			Name:      r.Spec.WriteConnectionSecretToReference.Name,
+			Namespace: r.Spec.WriteConnectionSecretToReference.Namespace,
+		}
+		s = &corev1.Secret{}
+		//the output secret may not exist yet, so we can skip returning an error
+		//if the error is NotFound
+		if err := kube.Get(ctx, nn, s); resource.IgnoreNotFound(err) != nil {
+			return "", false, err
+		}
+		//if newPwd was set to some value, compare value in output secret with newPwd
+		changed = newPwd != "" && newPwd != string(s.Data[v1alpha1.ResourceCredentialsSecretPasswordKey])
+	}
+
+	return newPwd, changed, nil
 }
 
 // GetConnectionDetails extracts managed.ConnectionDetails out of v1beta1.RDSInstance.

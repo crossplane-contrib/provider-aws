@@ -53,10 +53,6 @@ func withConditions(c ...runtimev1alpha1.Condition) tableModifier {
 	return func(r *v1alpha1.DynamoTable) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withBindingPhase(p runtimev1alpha1.BindingPhase) tableModifier {
-	return func(r *v1alpha1.DynamoTable) { r.Status.SetBindingPhase(p) }
-}
-
 func withStatus(s v1alpha1.DynamoTableObservation) tableModifier {
 	return func(r *v1alpha1.DynamoTable) { r.Status.AtProvider = s }
 }
@@ -113,7 +109,7 @@ func TestObserve(t *testing.T) {
 					}),
 					withConditions(runtimev1alpha1.Available()),
 					withConditions(runtimev1alpha1.Available()),
-					withBindingPhase(runtimev1alpha1.BindingPhaseUnbound)),
+				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,

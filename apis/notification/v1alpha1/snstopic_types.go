@@ -22,7 +22,7 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 )
 
-// Tag represetnt a user-provided metadata that can be associated with a
+// Tag represent a user-provided metadata that can be associated with a
 // SNS Topic. For more information about tagging,
 // see Tagging SNS Topics (https://docs.aws.amazon.com/sns/latest/dg/sns-tags.html)
 // in the SNS User Guide.
@@ -72,7 +72,7 @@ type SNSTopicParameters struct {
 	Policy *string `json:"policy,omitempty"`
 
 	// DeliveryRetryPolicy - the JSON serialization of the effective
-	// delivery policy, taking system defaults into accoun
+	// delivery policy, taking system defaults into account
 	// +optional
 	DeliveryPolicy *string `json:"deliveryPolicy,omitempty"`
 
@@ -108,6 +108,9 @@ type SNSTopicObservation struct {
 	// DeletedSubscriptions - The no of deleted subscriptions
 	// +optional
 	DeletedSubscriptions *int64 `json:"deletedSubscriptions,omitempty"`
+
+	// ARN is the Amazon Resource Name (ARN) specifying the SNS Topic.
+	ARN string `json:"arn"`
 }
 
 // SNSTopicStatus is the status of AWS SNS Topic

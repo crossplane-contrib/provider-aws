@@ -25,12 +25,12 @@ import (
 	integrationv1alpha1 "github.com/crossplane/provider-aws/apis/applicationintegration/v1alpha1"
 	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	cachev1beta1 "github.com/crossplane/provider-aws/apis/cache/v1beta1"
-	computev1alpha3 "github.com/crossplane/provider-aws/apis/compute/v1alpha3"
 	databasev1alpha1 "github.com/crossplane/provider-aws/apis/database/v1alpha1"
 	databasev1beta1 "github.com/crossplane/provider-aws/apis/database/v1beta1"
 	ec2v1alpha1 "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 	ec2v1alpha4 "github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
 	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	ecrv1alpha1 "github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
 	eksv1alpha1 "github.com/crossplane/provider-aws/apis/eks/v1alpha1"
 	eksv1beta1 "github.com/crossplane/provider-aws/apis/eks/v1beta1"
 	elasticloadbalancingv1alpha1 "github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
@@ -50,7 +50,6 @@ func init() {
 	AddToSchemes = append(AddToSchemes,
 		cachev1alpha1.SchemeBuilder.AddToScheme,
 		cachev1beta1.SchemeBuilder.AddToScheme,
-		computev1alpha3.SchemeBuilder.AddToScheme,
 		databasev1beta1.SchemeBuilder.AddToScheme,
 		elasticloadbalancingv1alpha1.SchemeBuilder.AddToScheme,
 		identityv1alpha1.SchemeBuilder.AddToScheme,
@@ -71,6 +70,7 @@ func init() {
 		integrationv1alpha1.SchemeBuilder.AddToScheme,
 		redshiftv1alpha1.SchemeBuilder.AddToScheme,
 		eksv1alpha1.SchemeBuilder.AddToScheme,
+		ecrv1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 

@@ -42,8 +42,7 @@ import (
 )
 
 const (
-	namespace = "coolNamespace"
-	name      = "coolGroup"
+	name = "coolGroup"
 )
 
 var (
@@ -79,10 +78,6 @@ type replicationGroupModifier func(*v1beta1.ReplicationGroup)
 
 func withConditions(c ...runtimev1alpha1.Condition) replicationGroupModifier {
 	return func(r *v1beta1.ReplicationGroup) { r.Status.ConditionedStatus.Conditions = c }
-}
-
-func withBindingPhase(p runtimev1alpha1.BindingPhase) replicationGroupModifier {
-	return func(r *v1beta1.ReplicationGroup) { r.Status.SetBindingPhase(p) }
 }
 
 func withProviderStatus(s string) replicationGroupModifier {
@@ -305,7 +300,6 @@ func TestObserve(t *testing.T) {
 				withReplicationGroupID(name),
 				withProviderStatus(v1beta1.StatusAvailable),
 				withConditions(runtimev1alpha1.Available()),
-				withBindingPhase(runtimev1alpha1.BindingPhaseUnbound),
 				withEndpoint(host),
 				withPort(port),
 				withClusterEnabled(true),

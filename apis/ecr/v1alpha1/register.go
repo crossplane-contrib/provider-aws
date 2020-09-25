@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2020 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,8 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+// +kubebuilder:object:generate=true
+// +groupName=ecr.aws.crossplane.io
+// +versionName=v1alpha1
 
-package v1alpha3
+package v1alpha1
 
 import (
 	"reflect"
@@ -25,8 +28,8 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "compute.aws.crossplane.io"
-	Version = "v1alpha3"
+	Group   = "ecr.aws.crossplane.io"
+	Version = "v1alpha1"
 )
 
 var (
@@ -37,23 +40,14 @@ var (
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
 
-// EKSCluster type metadata.
+// Repository type metadata.
 var (
-	EKSClusterKind             = reflect.TypeOf(EKSCluster{}).Name()
-	EKSClusterGroupKind        = schema.GroupKind{Group: Group, Kind: EKSClusterKind}.String()
-	EKSClusterKindAPIVersion   = EKSClusterKind + "." + SchemeGroupVersion.String()
-	EKSClusterGroupVersionKind = SchemeGroupVersion.WithKind(EKSClusterKind)
-)
-
-// EKSClusterClass type metadata.
-var (
-	EKSClusterClassKind             = reflect.TypeOf(EKSClusterClass{}).Name()
-	EKSClusterClassGroupKind        = schema.GroupKind{Group: Group, Kind: EKSClusterClassKind}.String()
-	EKSClusterClassKindAPIVersion   = EKSClusterClassKind + "." + SchemeGroupVersion.String()
-	EKSClusterClassGroupVersionKind = SchemeGroupVersion.WithKind(EKSClusterClassKind)
+	RepositoryKind             = reflect.TypeOf(Repository{}).Name()
+	RepositoryGroupKind        = schema.GroupKind{Group: Group, Kind: RepositoryKind}.String()
+	RepositoryKindAPIVersion   = RepositoryKind + "." + SchemeGroupVersion.String()
+	RepositoryGroupVersionKind = SchemeGroupVersion.WithKind(RepositoryKind)
 )
 
 func init() {
-	SchemeBuilder.Register(&EKSCluster{}, &EKSClusterList{})
-	SchemeBuilder.Register(&EKSClusterClass{}, &EKSClusterClassList{})
+	SchemeBuilder.Register(&Repository{}, &RepositoryList{})
 }

@@ -36,138 +36,44 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      description: A Cluster is a managed resource that represents an AWS Elastic
-        Kubernetes Service cluster.
+      description: A Cluster is a managed resource that represents an AWS Elastic Kubernetes Service cluster.
       properties:
         apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
           type: string
         kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
           type: string
         metadata:
           type: object
         spec:
           description: A ClusterSpec defines the desired state of an EKS Cluster.
           properties:
-            claimRef:
-              description: ClaimReference specifies the resource claim to which this
-                managed resource will be bound. ClaimReference is set automatically
-                during dynamic provisioning. Deprecated. See https://github.com/crossplane/crossplane/issues/1670
-              properties:
-                apiVersion:
-                  description: API version of the referent.
-                  type: string
-                fieldPath:
-                  description: 'If referring to a piece of an object instead of an
-                    entire object, this string should contain a valid JSON/Go field
-                    access statement, such as desiredState.manifest.containers[2].
-                    For example, if the object reference is to a container within
-                    a pod, this would take on a value like: "spec.containers{name}"
-                    (where "name" refers to the name of the container that triggered
-                    the event) or if no container name is specified "spec.containers[2]"
-                    (container with index 2 in this pod). This syntax is chosen only
-                    to have some well-defined way of referencing a part of an object.
-                    TODO: this design is not final and this field is subject to change
-                    in the future.'
-                  type: string
-                kind:
-                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-                  type: string
-                name:
-                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
-                  type: string
-                namespace:
-                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
-                  type: string
-                resourceVersion:
-                  description: 'Specific resourceVersion to which this reference is
-                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
-                  type: string
-                uid:
-                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
-                  type: string
-              type: object
-            classRef:
-              description: ClassReference specifies the resource class that was used
-                to dynamically provision this managed resource, if any. Deprecated.
-                See https://github.com/crossplane/crossplane/issues/1670
-              properties:
-                apiVersion:
-                  description: API version of the referent.
-                  type: string
-                fieldPath:
-                  description: 'If referring to a piece of an object instead of an
-                    entire object, this string should contain a valid JSON/Go field
-                    access statement, such as desiredState.manifest.containers[2].
-                    For example, if the object reference is to a container within
-                    a pod, this would take on a value like: "spec.containers{name}"
-                    (where "name" refers to the name of the container that triggered
-                    the event) or if no container name is specified "spec.containers[2]"
-                    (container with index 2 in this pod). This syntax is chosen only
-                    to have some well-defined way of referencing a part of an object.
-                    TODO: this design is not final and this field is subject to change
-                    in the future.'
-                  type: string
-                kind:
-                  description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-                  type: string
-                name:
-                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
-                  type: string
-                namespace:
-                  description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
-                  type: string
-                resourceVersion:
-                  description: 'Specific resourceVersion to which this reference is
-                    made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
-                  type: string
-                uid:
-                  description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
-                  type: string
-              type: object
             deletionPolicy:
-              description: DeletionPolicy specifies what will happen to the underlying
-                external when this managed resource is deleted - either "Delete" or
-                "Orphan" the external resource. The "Delete" policy is the default
-                when no policy is specified.
+              description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
               enum:
               - Orphan
               - Delete
               type: string
             forProvider:
-              description: ClusterParameters define the desired state of an AWS Elastic
-                Kubernetes Service cluster.
+              description: ClusterParameters define the desired state of an AWS Elastic Kubernetes Service cluster.
               properties:
                 encryptionConfig:
                   description: The encryption configuration for the cluster.
                   items:
-                    description: EncryptionConfig is the encryption configuration
-                      for a cluster.
+                    description: EncryptionConfig is the encryption configuration for a cluster.
                     properties:
                       provider:
-                        description: AWS Key Management Service (AWS KMS) customer
-                          master key (CMK). Either the ARN or the alias can be used.
+                        description: AWS Key Management Service (AWS KMS) customer master key (CMK). Either the ARN or the alias can be used.
                         properties:
                           keyArn:
-                            description: Amazon Resource Name (ARN) or alias of the
-                              customer master key (CMK). The CMK must be symmetric,
-                              created in the same region as the cluster, and if the
-                              CMK was created in a different account, the user must
-                              have access to the CMK. For more information, see Allowing
-                              Users in Other Accounts to Use a CMK (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-modifying-external-accounts.html)
-                              in the AWS Key Management Service Developer Guide.
+                            description: Amazon Resource Name (ARN) or alias of the customer master key (CMK). The CMK must be symmetric, created in the same region as the cluster, and if the CMK was created in a different account, the user must have access to the CMK. For more information, see Allowing Users in Other Accounts to Use a CMK (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-modifying-external-accounts.html) in the AWS Key Management Service Developer Guide.
                             type: string
                         required:
                         - keyArn
                         type: object
                       resources:
-                        description: Specifies the resources to be encrypted. The
-                          only supported value is "secrets".
+                        description: Specifies the resources to be encrypted. The only supported value is "secrets".
                         items:
                           type: string
                         type: array
@@ -177,27 +83,15 @@ spec:
                     type: object
                   type: array
                 logging:
-                  description: "Enable or disable exporting the Kubernetes control
-                    plane logs for your cluster to CloudWatch Logs. By default, cluster
-                    control plane logs aren't exported to CloudWatch Logs. For more
-                    information, see Amazon EKS Cluster Control Plane Logs (https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html)
-                    in the Amazon EKS User Guide . \n CloudWatch Logs ingestion, archive
-                    storage, and data scanning rates apply to exported control plane
-                    logs. For more information, see Amazon CloudWatch Pricing (http://aws.amazon.com/cloudwatch/pricing/)."
+                  description: "Enable or disable exporting the Kubernetes control plane logs for your cluster to CloudWatch Logs. By default, cluster control plane logs aren't exported to CloudWatch Logs. For more information, see Amazon EKS Cluster Control Plane Logs (https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html) in the Amazon EKS User Guide . \n CloudWatch Logs ingestion, archive storage, and data scanning rates apply to exported control plane logs. For more information, see Amazon CloudWatch Pricing (http://aws.amazon.com/cloudwatch/pricing/)."
                   properties:
                     clusterLogging:
-                      description: The cluster control plane logging configuration
-                        for your cluster.
+                      description: The cluster control plane logging configuration for your cluster.
                       items:
-                        description: LogSetup specifies the logging types that are
-                          enabled.
+                        description: LogSetup specifies the logging types that are enabled.
                         properties:
                           enabled:
-                            description: If a log type is enabled, that log type exports
-                              its control plane logs to CloudWatch Logs. If a log
-                              type isn't enabled, that log type doesn't export its
-                              control plane logs. Each individual log type can be
-                              enabled or disabled independently.
+                            description: If a log type is enabled, that log type exports its control plane logs to CloudWatch Logs. If a log type isn't enabled, that log type doesn't export its control plane logs. Each individual log type can be enabled or disabled independently.
                             type: boolean
                           types:
                             description: The available cluster control plane log types.
@@ -211,56 +105,24 @@ spec:
                   - clusterLogging
                   type: object
                 region:
-                  description: Region is the region you'd like your Cluster to be
-                    created in.
+                  description: Region is the region you'd like your Cluster to be created in.
                   type: string
                 resourcesVpcConfig:
-                  description: "The VPC configuration used by the cluster control
-                    plane. Amazon EKS VPC resources have specific requirements to
-                    work properly with Kubernetes. For more information, see Cluster
-                    VPC Considerations (https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html)
-                    and Cluster Security Group Considerations (https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html)
-                    in the Amazon EKS User Guide. You must specify at least two subnets.
-                    You can specify up to five security groups, but we recommend that
-                    you use a dedicated security group for your cluster control plane.
-                    \n ResourcesVpcConfig is a required field"
+                  description: "The VPC configuration used by the cluster control plane. Amazon EKS VPC resources have specific requirements to work properly with Kubernetes. For more information, see Cluster VPC Considerations (https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html) and Cluster Security Group Considerations (https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html) in the Amazon EKS User Guide. You must specify at least two subnets. You can specify up to five security groups, but we recommend that you use a dedicated security group for your cluster control plane. \n ResourcesVpcConfig is a required field"
                   properties:
                     endpointPrivateAccess:
-                      description: Set this value to true to enable private access
-                        for your cluster's Kubernetes API server endpoint. If you
-                        enable private access, Kubernetes API requests from within
-                        your cluster's VPC use the private VPC endpoint. The default
-                        value for this parameter is false, which disables private
-                        access for your Kubernetes API server. For more information,
-                        see Amazon EKS Cluster Endpoint Access Control (https://docs.aws.amazon.com/eks/latest/userguide/cluster-endpoint.html)
-                        in the Amazon EKS User Guide.
+                      description: Set this value to true to enable private access for your cluster's Kubernetes API server endpoint. If you enable private access, Kubernetes API requests from within your cluster's VPC use the private VPC endpoint. The default value for this parameter is false, which disables private access for your Kubernetes API server. For more information, see Amazon EKS Cluster Endpoint Access Control (https://docs.aws.amazon.com/eks/latest/userguide/cluster-endpoint.html) in the Amazon EKS User Guide.
                       type: boolean
                     endpointPublicAccess:
-                      description: Set this value to false to disable public access
-                        for your cluster's Kubernetes API server endpoint. If you
-                        disable public access, your cluster's Kubernetes API server
-                        can receive only requests from within the cluster VPC. The
-                        default value for this parameter is true, which enables public
-                        access for your Kubernetes API server. For more information,
-                        see Amazon EKS Cluster Endpoint Access Control (https://docs.aws.amazon.com/eks/latest/userguide/cluster-endpoint.html)
-                        in the Amazon EKS User Guide.
+                      description: Set this value to false to disable public access for your cluster's Kubernetes API server endpoint. If you disable public access, your cluster's Kubernetes API server can receive only requests from within the cluster VPC. The default value for this parameter is true, which enables public access for your Kubernetes API server. For more information, see Amazon EKS Cluster Endpoint Access Control (https://docs.aws.amazon.com/eks/latest/userguide/cluster-endpoint.html) in the Amazon EKS User Guide.
                       type: boolean
                     publicAccessCidrs:
-                      description: The CIDR blocks that are allowed access to your
-                        cluster's public Kubernetes API server endpoint. Communication
-                        to the endpoint from addresses outside of the CIDR blocks
-                        that you specify is denied. The default value is 0.0.0.0/0.
-                        If you've disabled private endpoint access and you have worker
-                        nodes or AWS Fargate pods in the cluster, then ensure that
-                        you specify the necessary CIDR blocks. For more information,
-                        see Amazon EKS Cluster Endpoint Access Control (https://docs.aws.amazon.com/eks/latest/userguide/cluster-endpoint.html)
-                        in the Amazon EKS User Guide.
+                      description: The CIDR blocks that are allowed access to your cluster's public Kubernetes API server endpoint. Communication to the endpoint from addresses outside of the CIDR blocks that you specify is denied. The default value is 0.0.0.0/0. If you've disabled private endpoint access and you have worker nodes or AWS Fargate pods in the cluster, then ensure that you specify the necessary CIDR blocks. For more information, see Amazon EKS Cluster Endpoint Access Control (https://docs.aws.amazon.com/eks/latest/userguide/cluster-endpoint.html) in the Amazon EKS User Guide.
                       items:
                         type: string
                       type: array
                     securityGroupIdRefs:
-                      description: SecurityGroupIDRefs are references to SecurityGroups
-                        used to set the SecurityGroupIDs.
+                      description: SecurityGroupIDRefs are references to SecurityGroups used to set the SecurityGroupIDs.
                       items:
                         description: A Reference to a named object.
                         properties:
@@ -272,32 +134,24 @@ spec:
                         type: object
                       type: array
                     securityGroupIdSelector:
-                      description: SecurityGroupIDSelector selects references to SecurityGroups
-                        used to set the SecurityGroupIDs.
+                      description: SecurityGroupIDSelector selects references to SecurityGroups used to set the SecurityGroupIDs.
                       properties:
                         matchControllerRef:
-                          description: MatchControllerRef ensures an object with the
-                            same controller reference as the selecting object is selected.
+                          description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
                           type: boolean
                         matchLabels:
                           additionalProperties:
                             type: string
-                          description: MatchLabels ensures an object with matching
-                            labels is selected.
+                          description: MatchLabels ensures an object with matching labels is selected.
                           type: object
                       type: object
                     securityGroupIds:
-                      description: Specify one or more security groups for the cross-account
-                        elastic network interfaces that Amazon EKS creates to use
-                        to allow communication between your worker nodes and the Kubernetes
-                        control plane. If you don't specify a security group, the
-                        default security group for your VPC is used.
+                      description: Specify one or more security groups for the cross-account elastic network interfaces that Amazon EKS creates to use to allow communication between your worker nodes and the Kubernetes control plane. If you don't specify a security group, the default security group for your VPC is used.
                       items:
                         type: string
                       type: array
                     subnetIdRefs:
-                      description: SubnetIDRefs are references to Subnets used to
-                        set the SubnetIDs.
+                      description: SubnetIDRefs are references to Subnets used to set the SubnetIDs.
                       items:
                         description: A Reference to a named object.
                         properties:
@@ -309,39 +163,28 @@ spec:
                         type: object
                       type: array
                     subnetIdSelector:
-                      description: SubnetIDSelector selects references to Subnets
-                        used to set the SubnetIDs.
+                      description: SubnetIDSelector selects references to Subnets used to set the SubnetIDs.
                       properties:
                         matchControllerRef:
-                          description: MatchControllerRef ensures an object with the
-                            same controller reference as the selecting object is selected.
+                          description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
                           type: boolean
                         matchLabels:
                           additionalProperties:
                             type: string
-                          description: MatchLabels ensures an object with matching
-                            labels is selected.
+                          description: MatchLabels ensures an object with matching labels is selected.
                           type: object
                       type: object
                     subnetIds:
-                      description: Specify subnets for your Amazon EKS worker nodes.
-                        Amazon EKS creates cross-account elastic network interfaces
-                        in these subnets to allow communication between your worker
-                        nodes and the Kubernetes control plane.
+                      description: Specify subnets for your Amazon EKS worker nodes. Amazon EKS creates cross-account elastic network interfaces in these subnets to allow communication between your worker nodes and the Kubernetes control plane.
                       items:
                         type: string
                       type: array
                   type: object
                 roleArn:
-                  description: "The Amazon Resource Name (ARN) of the IAM role that
-                    provides permissions for Amazon EKS to make calls to other AWS
-                    API operations on your behalf. For more information, see Amazon
-                    EKS Service IAM Role (https://docs.aws.amazon.com/eks/latest/userguide/service_IAM_role.html)
-                    in the Amazon EKS User Guide . \n RoleArn is a required field"
+                  description: "The Amazon Resource Name (ARN) of the IAM role that provides permissions for Amazon EKS to make calls to other AWS API operations on your behalf. For more information, see Amazon EKS Service IAM Role (https://docs.aws.amazon.com/eks/latest/userguide/service_IAM_role.html) in the Amazon EKS User Guide . \n RoleArn is a required field"
                   type: string
                 roleArnRef:
-                  description: RoleArnRef is a reference to an IAMRole used to set
-                    the RoleArn.
+                  description: RoleArnRef is a reference to an IAMRole used to set the RoleArn.
                   properties:
                     name:
                       description: Name of the referenced object.
@@ -350,39 +193,30 @@ spec:
                   - name
                   type: object
                 roleArnSelector:
-                  description: RoleArnSelector selects references to IAMRole used
-                    to set the RoleArn.
+                  description: RoleArnSelector selects references to IAMRole used to set the RoleArn.
                   properties:
                     matchControllerRef:
-                      description: MatchControllerRef ensures an object with the same
-                        controller reference as the selecting object is selected.
+                      description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
                       type: boolean
                     matchLabels:
                       additionalProperties:
                         type: string
-                      description: MatchLabels ensures an object with matching labels
-                        is selected.
+                      description: MatchLabels ensures an object with matching labels is selected.
                       type: object
                   type: object
                 tags:
                   additionalProperties:
                     type: string
-                  description: The metadata to apply to the cluster to assist with
-                    categorization and organization. Each tag consists of a key and
-                    an optional value, both of which you define.
+                  description: The metadata to apply to the cluster to assist with categorization and organization. Each tag consists of a key and an optional value, both of which you define.
                   type: object
                 version:
-                  description: 'The desired Kubernetes version for your cluster. If
-                    you don''t specify a value here, the latest version available
-                    in Amazon EKS is used. Example: 1.15'
+                  description: 'The desired Kubernetes version for your cluster. If you don''t specify a value here, the latest version available in Amazon EKS is used. Example: 1.15'
                   type: string
               required:
               - resourcesVpcConfig
               type: object
             providerConfigRef:
-              description: ProviderConfigReference specifies how the provider that
-                will be used to create, observe, update, and delete this managed resource
-                should be configured.
+              description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
               properties:
                 name:
                   description: Name of the referenced object.
@@ -391,9 +225,7 @@ spec:
               - name
               type: object
             providerRef:
-              description: 'ProviderReference specifies the provider that will be
-                used to create, observe, update, and delete this managed resource.
-                Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+              description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
               properties:
                 name:
                   description: Name of the referenced object.
@@ -401,29 +233,8 @@ spec:
               required:
               - name
               type: object
-            reclaimPolicy:
-              description: "ReclaimPolicy specifies what will happen to this managed
-                resource when its resource claim is deleted, and what will happen
-                to the underlying external resource when the managed resource is deleted.
-                The \"Delete\" policy causes the managed resource to be deleted when
-                its bound resource claim is deleted, and in turn causes the external
-                resource to be deleted when its managed resource is deleted. The \"Retain\"
-                policy causes the managed resource to be retained, in binding phase
-                \"Released\", when its resource claim is deleted, and in turn causes
-                the external resource to be retained when its managed resource is
-                deleted. The \"Delete\" policy is used when no policy is specified.
-                \n Deprecated. DeletionPolicy takes precedence when both are set.
-                See https://github.com/crossplane/crossplane-runtime/issues/179."
-              enum:
-              - Retain
-              - Delete
-              type: string
             writeConnectionSecretToRef:
-              description: WriteConnectionSecretToReference specifies the namespace
-                and name of a Secret to which any connection details for this managed
-                resource should be written. Connection details frequently include
-                the endpoint, username, and password required to connect to the managed
-                resource.
+              description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
               properties:
                 name:
                   description: Name of the secret.
@@ -448,8 +259,7 @@ spec:
                   description: The Amazon Resource Name (ARN) of the cluster.
                   type: string
                 createdAt:
-                  description: The Unix epoch timestamp in seconds for when the cluster
-                    was created.
+                  description: The Unix epoch timestamp in seconds for when the cluster was created.
                   format: date-time
                   type: string
                 endpoint:
@@ -459,32 +269,21 @@ spec:
                   description: The identity provider information for the cluster.
                   properties:
                     oidc:
-                      description: The OpenID Connect (https://openid.net/connect/)
-                        identity provider information for the cluster.
+                      description: The OpenID Connect (https://openid.net/connect/) identity provider information for the cluster.
                       properties:
                         issuer:
-                          description: The issuer URL for the OpenID Connect identity
-                            provider.
+                          description: The issuer URL for the OpenID Connect identity provider.
                           type: string
                       type: object
                   type: object
                 platformVersion:
-                  description: The platform version of your Amazon EKS cluster. For
-                    more information, see Platform Versions (https://docs.aws.amazon.com/eks/latest/userguide/platform-versions.html)
-                    in the Amazon EKS User Guide .
+                  description: The platform version of your Amazon EKS cluster. For more information, see Platform Versions (https://docs.aws.amazon.com/eks/latest/userguide/platform-versions.html) in the Amazon EKS User Guide .
                   type: string
                 resourcesVpcConfig:
-                  description: The VPC configuration used by the cluster control plane.
-                    Amazon EKS VPC resources have specific requirements to work properly
-                    with Kubernetes. For more information, see Cluster VPC Considerations
-                    (https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html)
-                    and Cluster Security Group Considerations (https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html)
-                    in the Amazon EKS User Guide.
+                  description: The VPC configuration used by the cluster control plane. Amazon EKS VPC resources have specific requirements to work properly with Kubernetes. For more information, see Cluster VPC Considerations (https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html) and Cluster Security Group Considerations (https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html) in the Amazon EKS User Guide.
                   properties:
                     clusterSecurityGroupId:
-                      description: The cluster security group that was created by
-                        Amazon EKS for the cluster. Managed node groups use this security
-                        group for control-plane-to-data-plane communication.
+                      description: The cluster security group that was created by Amazon EKS for the cluster. Managed node groups use this security group for control-plane-to-data-plane communication.
                       type: string
                     vpcId:
                       description: The VPC associated with your cluster.
@@ -494,43 +293,26 @@ spec:
                   description: The current status of the cluster.
                   type: string
               type: object
-            bindingPhase:
-              description: Phase represents the binding phase of a managed resource
-                or claim. Unbindable resources cannot be bound, typically because
-                they are currently unavailable, or still being created. Unbound resource
-                are available for binding, and Bound resources have successfully bound
-                to another resource. Deprecated. See https://github.com/crossplane/crossplane/issues/1670
-              enum:
-              - Unbindable
-              - Unbound
-              - Bound
-              - Released
-              type: string
             conditions:
               description: Conditions of the resource.
               items:
                 description: A Condition that may apply to a resource.
                 properties:
                   lastTransitionTime:
-                    description: LastTransitionTime is the last time this condition
-                      transitioned from one status to another.
+                    description: LastTransitionTime is the last time this condition transitioned from one status to another.
                     format: date-time
                     type: string
                   message:
-                    description: A Message containing details about this condition's
-                      last transition from one status to another, if any.
+                    description: A Message containing details about this condition's last transition from one status to another, if any.
                     type: string
                   reason:
-                    description: A Reason for this condition's last transition from
-                      one status to another.
+                    description: A Reason for this condition's last transition from one status to another.
                     type: string
                   status:
-                    description: Status of this condition; is it currently True, False,
-                      or Unknown?
+                    description: Status of this condition; is it currently True, False, or Unknown?
                     type: string
                   type:
-                    description: Type of this condition. At most one of each condition
-                      type may apply to a resource at any point in time.
+                    description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
                     type: string
                 required:
                 - lastTransitionTime

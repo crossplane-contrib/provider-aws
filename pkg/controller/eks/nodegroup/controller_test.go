@@ -56,10 +56,6 @@ func withConditions(c ...runtimev1alpha1.Condition) nodeGroupModifier {
 	return func(r *v1alpha1.NodeGroup) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withBindingPhase(p runtimev1alpha1.BindingPhase) nodeGroupModifier {
-	return func(r *v1alpha1.NodeGroup) { r.Status.SetBindingPhase(p) }
-}
-
 func withTags(tagMaps ...map[string]string) nodeGroupModifier {
 	tags := map[string]string{}
 	for _, tagMap := range tagMaps {
@@ -122,7 +118,6 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: nodeGroup(
 					withConditions(runtimev1alpha1.Available()),
-					withBindingPhase(runtimev1alpha1.BindingPhaseUnbound),
 					withStatus(v1alpha1.NodeGroupStatusActive)),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
