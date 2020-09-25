@@ -62,7 +62,7 @@ spec:
               description: SNSTopicParameters define the desired state of a AWS SNS Topic
               properties:
                 deliveryPolicy:
-                  description: DeliveryRetryPolicy - the JSON serialization of the effective delivery policy, taking system defaults into accoun
+                  description: DeliveryRetryPolicy - the JSON serialization of the effective delivery policy, taking system defaults into account
                   type: string
                 displayName:
                   description: The display name to use for a topic with SNS subscriptions.
