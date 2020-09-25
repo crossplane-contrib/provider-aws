@@ -48,6 +48,8 @@ const (
 	TopicSubscriptionsPending TopicAttributes = "SubscriptionsPending"
 	// TopicSubscriptionsDeleted is status of SNS Topic Subscription Confirmation
 	TopicSubscriptionsDeleted TopicAttributes = "SubscriptionsDeleted"
+	// TopicARN is the ARN for the SNS Topic
+	TopicARN TopicAttributes = "TopicARN"
 )
 
 // TopicClient is the external client used for AWS SNSTopic
@@ -127,6 +129,8 @@ func GenerateTopicObservation(attr map[string]string) v1alpha1.SNSTopicObservati
 	if s, err := strconv.ParseInt(attr[string(TopicSubscriptionsDeleted)], 10, 64); err == nil {
 		o.DeletedSubscriptions = aws.Int64(s)
 	}
+
+	o.ARN = attr[string(TopicARN)]
 
 	return o
 }

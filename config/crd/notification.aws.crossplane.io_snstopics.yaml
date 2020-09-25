@@ -82,7 +82,7 @@ spec:
                 tags:
                   description: Tags represetnt a list of user-provided metadata that can be associated with a SNS Topic. For more information about tagging, see Tagging SNS Topics (https://docs.aws.amazon.com/sns/latest/dg/sns-tags.html) in the SNS User Guide.
                   items:
-                    description: Tag represetnt a user-provided metadata that can be associated with a SNS Topic. For more information about tagging, see Tagging SNS Topics (https://docs.aws.amazon.com/sns/latest/dg/sns-tags.html) in the SNS User Guide.
+                    description: Tag represent a user-provided metadata that can be associated with a SNS Topic. For more information about tagging, see Tagging SNS Topics (https://docs.aws.amazon.com/sns/latest/dg/sns-tags.html) in the SNS User Guide.
                     properties:
                       key:
                         description: The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.
@@ -138,6 +138,9 @@ spec:
             atProvider:
               description: SNSTopicObservation represents the observed state of a AWS SNS Topic
               properties:
+                arn:
+                  description: ARN is the Amazon Resource Name (ARN) specifying the SNS Topic.
+                  type: string
                 confirmedSubscriptions:
                   description: ConfirmedSubscriptions - The no of confirmed subscriptions
                   format: int64
@@ -153,6 +156,8 @@ spec:
                   description: PendingSubscriptions - The no of pending subscriptions
                   format: int64
                   type: integer
+              required:
+              - arn
               type: object
             conditions:
               description: Conditions of the resource.
