@@ -86,7 +86,7 @@ func specAddresses() []v1beta1.NatGatewayAddress {
 	}
 }
 
-func specNatStatus(state string, time time.Time, FailureCode *string, FailureMessage *string, delete bool) v1beta1.NatGatewayObservation {
+func specNatStatus(state string, time time.Time, failureCode *string, failureMessage *string, delete bool) v1beta1.NatGatewayObservation {
 	observation := v1beta1.NatGatewayObservation{
 		CreateTime:          &v1.Time{Time: time},
 		NatGatewayAddresses: specAddresses(),
@@ -97,8 +97,8 @@ func specNatStatus(state string, time time.Time, FailureCode *string, FailureMes
 		VpcID:               natVpcID,
 	}
 	if state == v1beta1.NatGatewayStatusFailed {
-		observation.FailureCode = aws.StringValue(FailureCode)
-		observation.FailureMessage = aws.StringValue(FailureMessage)
+		observation.FailureCode = aws.StringValue(failureCode)
+		observation.FailureMessage = aws.StringValue(failureMessage)
 	}
 	if delete {
 		observation.DeleteTime = &v1.Time{Time: time}
