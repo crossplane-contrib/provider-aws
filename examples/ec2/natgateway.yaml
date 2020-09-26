@@ -1,0 +1,16 @@
+apiVersion: ec2.aws.crossplane.io/v1beta1
+kind: NatGateway
+metadata:
+  name: sample-natgateway
+spec:
+  forProvider:
+    region: us-east-1
+    allocationId: "" # pass in an Elastic IP allocation ID, once ElasticIP lands in v1beta1 we can use allocationIdRef
+    subnetIdRef:
+      name: sample-subnet
+    tags:
+      - key: Name
+        value: sample-natgateway
+  reclaimPolicy: Delete
+  providerConfigRef:
+    name: example
