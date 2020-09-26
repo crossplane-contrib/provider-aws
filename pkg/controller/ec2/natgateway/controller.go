@@ -193,7 +193,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 	if cr.Status.AtProvider.State == v1beta1.NatGatewayStatusDeleted ||
-		cr.Status.AtProvider.State == v1beta1.NatGatewayStatusPending {
+		cr.Status.AtProvider.State == v1beta1.NatGatewayStatusDeleting {
 		return nil
 	}
 

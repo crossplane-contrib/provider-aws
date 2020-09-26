@@ -86,6 +86,34 @@ func specAddresses() []v1beta1.NatGatewayAddress {
 	}
 }
 
+func specNatStatus(state string, time time.Time, FailureCode *string, FailureMessage *string, delete bool) v1beta1.NatGatewayObservation {
+	observation := v1beta1.NatGatewayObservation{
+		CreateTime:          &v1.Time{Time: time},
+		NatGatewayAddresses: specAddresses(),
+		NatGatewayID:        natGatewayID,
+		State:               state,
+		SubnetID:            natSubnetID,
+		Tags:                specTags(),
+		VpcID:               natVpcID,
+	}
+	if state == v1beta1.NatGatewayStatusFailed {
+		observation.FailureCode = aws.StringValue(FailureCode)
+		observation.FailureMessage = aws.StringValue(FailureMessage)
+	}
+	if delete {
+		observation.DeleteTime = &v1.Time{Time: time}
+	}
+	return observation
+}
+
+func specNatSpec() v1beta1.NatGatewayParameters {
+	return v1beta1.NatGatewayParameters{
+		AllocationID: &natAllocationID,
+		SubnetID:     &natSubnetID,
+		Tags:         specTags(),
+	}
+}
+
 func natTags() []awsec2.Tag {
 	return []awsec2.Tag{
 		{
@@ -219,7 +247,7 @@ func TestObserve(t *testing.T) {
 											CreateTime:          &time,
 											NatGatewayAddresses: natAddresses(),
 											NatGatewayId:        aws.String(natGatewayID),
-											State:               v1beta1.NatGatewayStatusPending,
+											State:               awsec2.NatGatewayStatePending,
 											SubnetId:            aws.String(natSubnetID),
 											Tags:                natTags(),
 											VpcId:               aws.String(natVpcID),
@@ -230,29 +258,13 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1beta1.NatGatewayParameters{
-						AllocationID: &natAllocationID,
-						SubnetID:     &natSubnetID,
-						Tags:         specTags(),
-					}),
+					withSpec(specNatSpec()),
 				),
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1beta1.NatGatewayParameters{
-						AllocationID: &natAllocationID,
-						SubnetID:     &natSubnetID,
-						Tags:         specTags(),
-					}),
-					withStatus(v1beta1.NatGatewayObservation{
-						CreateTime:          &v1.Time{Time: time},
-						NatGatewayAddresses: specAddresses(),
-						NatGatewayID:        natGatewayID,
-						State:               v1beta1.NatGatewayStatusPending,
-						SubnetID:            natSubnetID,
-						Tags:                specTags(),
-						VpcID:               natVpcID,
-					}),
+					withSpec(specNatSpec()),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusPending, time, nil, nil, false)),
 					withConditions(runtimev1alpha1.Unavailable()),
 				),
 				result: managed.ExternalObservation{
@@ -279,7 +291,7 @@ func TestObserve(t *testing.T) {
 											FailureMessage:      aws.String(natFailureMessage),
 											NatGatewayAddresses: natAddresses(),
 											NatGatewayId:        aws.String(natGatewayID),
-											State:               v1beta1.NatGatewayStatusFailed,
+											State:               awsec2.NatGatewayStateFailed,
 											SubnetId:            aws.String(natSubnetID),
 											Tags:                natTags(),
 											VpcId:               aws.String(natVpcID),
@@ -290,32 +302,13 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1beta1.NatGatewayParameters{
-						AllocationID: &natAllocationID,
-						SubnetID:     &natSubnetID,
-						Tags:         specTags(),
-					}),
+					withSpec(specNatSpec()),
 				),
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1beta1.NatGatewayParameters{
-						AllocationID: &natAllocationID,
-						SubnetID:     &natSubnetID,
-						Tags:         specTags(),
-					}),
-					withStatus(v1beta1.NatGatewayObservation{
-						CreateTime:          &v1.Time{Time: time},
-						DeleteTime:          &v1.Time{Time: time},
-						FailureCode:         natFailureCode,
-						FailureMessage:      natFailureMessage,
-						NatGatewayAddresses: specAddresses(),
-						NatGatewayID:        natGatewayID,
-						State:               v1beta1.NatGatewayStatusFailed,
-						SubnetID:            natSubnetID,
-						Tags:                specTags(),
-						VpcID:               natVpcID,
-					}),
+					withSpec(specNatSpec()),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusFailed, time, &natFailureCode, &natFailureMessage, true)),
 					withConditions(runtimev1alpha1.Unavailable().WithMessage(natFailureMessage)),
 				),
 				result: managed.ExternalObservation{
@@ -339,7 +332,7 @@ func TestObserve(t *testing.T) {
 											CreateTime:          &time,
 											NatGatewayAddresses: natAddresses(),
 											NatGatewayId:        aws.String(natGatewayID),
-											State:               v1beta1.NatGatewayStatusAvailable,
+											State:               awsec2.NatGatewayStateAvailable,
 											SubnetId:            aws.String(natSubnetID),
 											Tags:                natTags(),
 											VpcId:               aws.String(natVpcID),
@@ -350,29 +343,13 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1beta1.NatGatewayParameters{
-						AllocationID: &natAllocationID,
-						SubnetID:     &natSubnetID,
-						Tags:         specTags(),
-					}),
+					withSpec(specNatSpec()),
 				),
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1beta1.NatGatewayParameters{
-						AllocationID: &natAllocationID,
-						SubnetID:     &natSubnetID,
-						Tags:         specTags(),
-					}),
-					withStatus(v1beta1.NatGatewayObservation{
-						CreateTime:          &v1.Time{Time: time},
-						NatGatewayAddresses: specAddresses(),
-						NatGatewayID:        natGatewayID,
-						State:               v1beta1.NatGatewayStatusAvailable,
-						SubnetID:            natSubnetID,
-						Tags:                specTags(),
-						VpcID:               natVpcID,
-					}),
+					withSpec(specNatSpec()),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false)),
 					withConditions(runtimev1alpha1.Available()),
 				),
 				result: managed.ExternalObservation{
@@ -397,7 +374,7 @@ func TestObserve(t *testing.T) {
 											DeleteTime:          &time,
 											NatGatewayAddresses: natAddresses(),
 											NatGatewayId:        aws.String(natGatewayID),
-											State:               v1beta1.NatGatewayStatusDeleting,
+											State:               awsec2.NatGatewayStateDeleting,
 											SubnetId:            aws.String(natSubnetID),
 											Tags:                natTags(),
 											VpcId:               aws.String(natVpcID),
@@ -408,30 +385,13 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1beta1.NatGatewayParameters{
-						AllocationID: &natAllocationID,
-						SubnetID:     &natSubnetID,
-						Tags:         specTags(),
-					}),
+					withSpec(specNatSpec()),
 				),
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1beta1.NatGatewayParameters{
-						AllocationID: &natAllocationID,
-						SubnetID:     &natSubnetID,
-						Tags:         specTags(),
-					}),
-					withStatus(v1beta1.NatGatewayObservation{
-						CreateTime:          &v1.Time{Time: time},
-						DeleteTime:          &v1.Time{Time: time},
-						NatGatewayAddresses: specAddresses(),
-						NatGatewayID:        natGatewayID,
-						State:               v1beta1.NatGatewayStatusDeleting,
-						SubnetID:            natSubnetID,
-						Tags:                specTags(),
-						VpcID:               natVpcID,
-					}),
+					withSpec(specNatSpec()),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleting, time, nil, nil, true)),
 					withConditions(runtimev1alpha1.Deleting()),
 				),
 				result: managed.ExternalObservation{
@@ -456,7 +416,7 @@ func TestObserve(t *testing.T) {
 											DeleteTime:          &time,
 											NatGatewayAddresses: natAddresses(),
 											NatGatewayId:        aws.String(natGatewayID),
-											State:               v1beta1.NatGatewayStatusDeleted,
+											State:               awsec2.NatGatewayStateDeleted,
 											SubnetId:            aws.String(natSubnetID),
 											Tags:                natTags(),
 											VpcId:               aws.String(natVpcID),
@@ -467,30 +427,13 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1beta1.NatGatewayParameters{
-						AllocationID: &natAllocationID,
-						SubnetID:     &natSubnetID,
-						Tags:         specTags(),
-					}),
+					withSpec(specNatSpec()),
 				),
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1beta1.NatGatewayParameters{
-						AllocationID: &natAllocationID,
-						SubnetID:     &natSubnetID,
-						Tags:         specTags(),
-					}),
-					withStatus(v1beta1.NatGatewayObservation{
-						CreateTime:          &v1.Time{Time: time},
-						DeleteTime:          &v1.Time{Time: time},
-						NatGatewayAddresses: specAddresses(),
-						NatGatewayID:        natGatewayID,
-						State:               v1beta1.NatGatewayStatusDeleted,
-						SubnetID:            natSubnetID,
-						Tags:                specTags(),
-						VpcID:               natVpcID,
-					}),
+					withSpec(specNatSpec()),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleted, time, nil, nil, true)),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists: false,
@@ -512,6 +455,316 @@ func TestObserve(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestCreate(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.NatGateway
+		result managed.ExternalCreation
+		err    error
+	}
+
+	time := time.Now()
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate:       test.NewMockClient().Update,
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
+				nat: &fake.MockNatGatewayClient{
+					MockCreate: func(e *awsec2.CreateNatGatewayInput) awsec2.CreateNatGatewayRequest {
+						return awsec2.CreateNatGatewayRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateNatGatewayOutput{
+								NatGateway: &awsec2.NatGateway{
+									CreateTime:          &time,
+									NatGatewayAddresses: natAddresses(),
+									NatGatewayId:        aws.String(natGatewayID),
+									State:               awsec2.NatGatewayStatePending,
+									SubnetId:            aws.String(natSubnetID),
+									Tags:                natTags(),
+									VpcId:               aws.String(natVpcID),
+								},
+							}},
+						}
+					},
+				},
+				cr: nat(withSpec(v1beta1.NatGatewayParameters{
+					AllocationID: &natAllocationID,
+					SubnetID:     &natSubnetID,
+					Tags:         specTags(),
+				})),
+			},
+			want: want{
+				cr: nat(withConditions(runtimev1alpha1.Creating()),
+					withExternalName(natGatewayID),
+					withSpec(specNatSpec()),
+				),
+				result: managed.ExternalCreation{},
+			},
+		},
+		"FailedRequest": {
+			args: args{
+				kube: &test.MockClient{
+					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
+				},
+				nat: &fake.MockNatGatewayClient{
+					MockCreate: func(e *awsec2.CreateNatGatewayInput) awsec2.CreateNatGatewayRequest {
+						return awsec2.CreateNatGatewayRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: nat(),
+			},
+			want: want{
+				cr:  nat(withConditions(runtimev1alpha1.Creating())),
+				err: errors.Wrap(errBoom, errCreate),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.nat}
+			o, err := e.Create(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.NatGateway
+		result managed.ExternalUpdate
+		err    error
+	}
+
+	time := time.Now()
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"TagsUptoDate": {
+			args: args{
+				nat: &fake.MockNatGatewayClient{
+					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
+						return awsec2.DescribeNatGatewaysRequest{
+							Request: &aws.Request{
+								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
+								Data: &awsec2.DescribeNatGatewaysOutput{
+									NatGateways: []awsec2.NatGateway{
+										{
+											CreateTime:          &time,
+											DeleteTime:          &time,
+											NatGatewayAddresses: natAddresses(),
+											NatGatewayId:        aws.String(natGatewayID),
+											State:               awsec2.NatGatewayStateDeleted,
+											SubnetId:            aws.String(natSubnetID),
+											Tags:                natTags(),
+											VpcId:               aws.String(natVpcID),
+										},
+									},
+								}},
+						}
+					},
+				},
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(specNatSpec()),
+				),
+			},
+			want: want{
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(specNatSpec())),
+				result: managed.ExternalUpdate{},
+			},
+		},
+		"TagsNotUptoDate": {
+			args: args{
+				nat: &fake.MockNatGatewayClient{
+					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
+						return awsec2.DescribeNatGatewaysRequest{
+							Request: &aws.Request{
+								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
+								Data: &awsec2.DescribeNatGatewaysOutput{
+									NatGateways: []awsec2.NatGateway{
+										{
+											CreateTime:          &time,
+											DeleteTime:          &time,
+											NatGatewayAddresses: natAddresses(),
+											NatGatewayId:        aws.String(natGatewayID),
+											State:               awsec2.NatGatewayStateDeleted,
+											SubnetId:            aws.String(natSubnetID),
+											Tags:                natTags(),
+											VpcId:               aws.String(natVpcID),
+										},
+									},
+								}},
+						}
+					},
+					MockCreateTags: func(e *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
+						return awsec2.CreateTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
+						}
+					},
+				},
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(v1beta1.NatGatewayParameters{
+						AllocationID: &natAllocationID,
+						SubnetID:     &natSubnetID,
+						Tags: []v1beta1.Tag{
+							specTags()[0],
+						},
+					}),
+				),
+			},
+			want: want{
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(v1beta1.NatGatewayParameters{
+						AllocationID: &natAllocationID,
+						SubnetID:     &natSubnetID,
+						Tags: []v1beta1.Tag{
+							specTags()[0],
+						},
+					}),
+				),
+				result: managed.ExternalUpdate{},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.nat}
+			o, err := e.Update(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestDelete(t *testing.T) {
+	type want struct {
+		cr  *v1beta1.NatGateway
+		err error
+	}
+
+	time := time.Now()
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				nat: &fake.MockNatGatewayClient{
+					MockDelete: func(e *awsec2.DeleteNatGatewayInput) awsec2.DeleteNatGatewayRequest {
+						return awsec2.DeleteNatGatewayRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteNatGatewayOutput{}},
+						}
+					},
+				},
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(specNatSpec())),
+			},
+			want: want{
+				cr: nat(withExternalName(natGatewayID),
+					withConditions(runtimev1alpha1.Deleting()),
+					withSpec(specNatSpec()),
+				),
+				err: nil,
+			},
+		},
+		"SkipDeleteForStateDeleting": {
+			args: args{
+				nat: &fake.MockNatGatewayClient{},
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(specNatSpec()),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleting, time, nil, nil, false)),
+				),
+			},
+			want: want{
+				cr: nat(withExternalName(natGatewayID),
+					withConditions(runtimev1alpha1.Deleting()),
+					withSpec(specNatSpec()),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleting, time, nil, nil, false)),
+				),
+				err: nil,
+			},
+		},
+		"SkipDeleteForStateDeleted": {
+			args: args{
+				nat: &fake.MockNatGatewayClient{},
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(specNatSpec()),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleted, time, nil, nil, false)),
+				),
+			},
+			want: want{
+				cr: nat(withExternalName(natGatewayID),
+					withConditions(runtimev1alpha1.Deleting()),
+					withSpec(specNatSpec()),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleted, time, nil, nil, false)),
+				),
+				err: nil,
+			},
+		},
+		"DeleteFail": {
+			args: args{
+				nat: &fake.MockNatGatewayClient{
+					MockDelete: func(e *awsec2.DeleteNatGatewayInput) awsec2.DeleteNatGatewayRequest {
+						return awsec2.DeleteNatGatewayRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: nat(withExternalName(natGatewayID)),
+			},
+			want: want{
+				cr: nat(withExternalName(natGatewayID),
+					withConditions(runtimev1alpha1.Deleting())),
+				err: errors.Wrap(errBoom, errDelete),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.nat}
+			err := e.Delete(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
