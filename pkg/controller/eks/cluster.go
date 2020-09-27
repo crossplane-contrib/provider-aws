@@ -112,7 +112,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	cr.Status.AtProvider = eks.GenerateObservation(rsp.Cluster)
-	switch cr.Status.AtProvider.Status {
+	switch cr.Status.AtProvider.Status { //nolint:exhaustive
 	case v1beta1.ClusterStatusActive:
 		cr.Status.SetConditions(runtimev1alpha1.Available())
 	case v1beta1.ClusterStatusCreating:
@@ -152,7 +152,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotEKSCluster)
 	}
-	switch cr.Status.AtProvider.Status {
+	switch cr.Status.AtProvider.Status { //nolint:exhaustive
 	case v1beta1.ClusterStatusUpdating, v1beta1.ClusterStatusCreating:
 		return managed.ExternalUpdate{}, nil
 	}
