@@ -85,6 +85,15 @@ check-diff: reviewable
 manifests:
 	@$(WARN) Deprecated. Please run make generate instead.
 
+# integration tests
+e2e.run: test-integration
+
+# Run integration tests.
+test-integration: $(KIND) $(KUBECTL)
+	@$(INFO) running integration tests using kind $(KIND_VERSION)
+	@$(ROOT_DIR)/cluster/local/integration_tests.sh || $(FAIL)
+	@$(OK) integration tests passed
+
 # Update the submodules, such as the common build scripts.
 submodules:
 	@git submodule sync
@@ -131,7 +140,7 @@ clean: clean-package
 clean-package:
 	@rm -rf $(PACKAGE)
 
-.PHONY: cobertura reviewable manifests submodules fallthrough run clean-package build-package
+.PHONY: cobertura reviewable manifests submodules fallthrough test-integration run clean-package build-package
 
 # ====================================================================================
 # Special Targets
