@@ -108,7 +108,9 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	cr.Status.AtProvider = eks.GenerateNodeGroupObservation(rsp.Nodegroup)
-	switch cr.Status.AtProvider.Status {
+	// Any of the statuses we don't explicitly address should be considered as
+	// the node group being unavailable.
+	switch cr.Status.AtProvider.Status { // nolint:exhaustive
 	case v1alpha1.NodeGroupStatusActive:
 		cr.Status.SetConditions(runtimev1alpha1.Available())
 	case v1alpha1.NodeGroupStatusCreating:
@@ -143,7 +145,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotEKSNodeGroup)
 	}
-	switch cr.Status.AtProvider.Status {
+	switch cr.Status.AtProvider.Status { // nolint:exhaustive
 	case v1alpha1.NodeGroupStatusUpdating, v1alpha1.NodeGroupStatusCreating:
 		return managed.ExternalUpdate{}, nil
 	}

@@ -121,7 +121,7 @@ func TestSyncBucketError(t *testing.T) {
 	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(testError))
 	assert(testResource(), cl, resultRequeue, expectedStatus)
 
-	//update versioning error
+	// update versioning error
 	cl.MockGetBucketInfo = func(username string, bucket *S3Bucket) (*client.Bucket, error) {
 		return &client.Bucket{Versioning: true, UserPolicyVersion: "v1"}, nil
 	}
@@ -134,7 +134,7 @@ func TestSyncBucketError(t *testing.T) {
 	expectedStatus.SetConditions(runtimev1alpha1.ReconcileError(testError))
 	assert(testResource(), cl, resultRequeue, expectedStatus)
 
-	//update tagging error
+	// update tagging error
 	testError = errors.New("bucket-tagging-update-error")
 	cl.MockUpdateTagging = func(bucket *S3Bucket) error {
 		return testError
