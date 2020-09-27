@@ -5,11 +5,12 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/mitchellh/copystructure"
 	"github.com/pkg/errors"
+
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -47,10 +48,10 @@ func GenerateCreateRoleInput(name string, p *v1beta1.IAMRoleParameters) *iam.Cre
 
 	if len(p.Tags) != 0 {
 		m.Tags = make([]iam.Tag, len(p.Tags))
-		for i, val := range p.Tags {
+		for i := range p.Tags {
 			m.Tags[i] = iam.Tag{
-				Key:   &val.Key,
-				Value: &val.Value,
+				Key:   &p.Tags[i].Key,
+				Value: &p.Tags[i].Value,
 			}
 		}
 	}
@@ -83,10 +84,10 @@ func GenerateIAMRole(in v1beta1.IAMRoleParameters, role *iam.Role) error {
 
 	if len(in.Tags) != 0 {
 		role.Tags = make([]iam.Tag, len(in.Tags))
-		for i, val := range in.Tags {
+		for i := range in.Tags {
 			role.Tags[i] = iam.Tag{
-				Key:   &val.Key,
-				Value: &val.Value,
+				Key:   &in.Tags[i].Key,
+				Value: &in.Tags[i].Value,
 			}
 		}
 	}

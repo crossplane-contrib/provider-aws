@@ -139,7 +139,7 @@ type SNSTopic struct {
 
 // +kubebuilder:object:root=true
 
-//SNSTopicList contains a list of SNSTopic
+// SNSTopicList contains a list of SNSTopic
 type SNSTopicList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

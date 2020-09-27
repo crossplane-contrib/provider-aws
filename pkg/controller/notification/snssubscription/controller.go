@@ -121,7 +121,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	cr.Status.AtProvider = snsclient.GenerateSubscriptionObservation(res.Attributes)
 
 	// Set Status for SNS Subcription
-	switch *cr.Status.AtProvider.Status {
+	switch *cr.Status.AtProvider.Status { //nolint:exhaustive
 	case v1alpha1.ConfirmationSuccessful:
 		cr.Status.SetConditions(runtimev1alpha1.Available())
 	default:
