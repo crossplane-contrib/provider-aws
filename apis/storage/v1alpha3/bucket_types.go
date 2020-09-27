@@ -38,7 +38,7 @@ const (
 	ReadWritePermission LocalPermissionType = "ReadWrite"
 )
 
-//Tag is a metadata assigned to an Amazon S3 Bucket consisting of a key-value pair.
+// Tag is a metadata assigned to an Amazon S3 Bucket consisting of a key-value pair.
 // Please also see https://docs.aws.amazon.com/AmazonS3/latest/API/API_Tag.html
 type Tag struct {
 	// Name of the object key
