@@ -25,7 +25,42 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
-// BucketResource is the interface all bucket sub-resources must conform to
+var (
+	accelGetFailed           = "cannot get Bucket accelerate configuration"
+	accelPutFailed           = "cannot put Bucket acceleration configuration"
+	accelDeleteFailed        = "cannot delete Bucket acceleration configuration"
+	corsGetFailed            = "cannot get Bucket CORS configuration"
+	corsPutFailed            = "cannot put Bucket cors"
+	corsDeleteFailed         = "cannot delete Bucket CORS configuration"
+	lifecycleGetFailed       = "cannot get Bucket lifecycle"
+	lifecyclePutFailed       = "cannot put Bucket lifecycle"
+	lifecycleDeleteFailed    = "cannot delete Bucket lifecycle configuration"
+	loggingGetFailed         = "cannot get Bucket logging configuration"
+	loggingPutFailed         = "cannot put Bucket logging configuration"
+	loggingDeleteFailed      = "cannot delete Bucket logging configuration"
+	notificationGetFailed    = "cannot get Bucket notification"
+	notificationPutFailed    = "cannot put Bucket notification"
+	notificationDeleteFailed = "cannot delete Bucket notification"
+	replicationGetFailed     = "cannot get replication configuration"
+	replicationPutFailed     = "cannot put Bucket replication"
+	replicationDeleteFailed  = "cannot delete Bucket replication"
+	paymentGetFailed         = "cannot get request payment configuration"
+	paymentPutFailed         = "cannot put Bucket payment"
+	sseGetFailed             = "cannot get Bucket encryption configuration"
+	ssePutFailed             = "cannot put Bucket encryption configuration"
+	sseDeleteFailed          = "cannot delete Bucket encryption configuration"
+	taggingGetFailed         = "cannot get Bucket tagging set"
+	taggingPutFailed         = "cannot put Bucket tagging set"
+	taggingDeleteFailed      = "cannot delete Bucket tagging set"
+	versioningGetFailed      = "cannot get Bucket versioning configuration"
+	versioningPutFailed      = "cannot put Bucket versioning configuration"
+	versioningDeleteFailed   = "cannot delete Bucket versioning configuration"
+	websiteGetFailed         = "cannot get Bucket website configuration"
+	websitePutFailed         = "cannot put Bucket website configuration"
+	websiteDeleteFailed      = "cannot delete Bucket website configuration"
+)
+
+// BucketResource is the interface all Bucket sub-resources must conform to
 type BucketResource interface {
 	Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error)
 	CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error)

@@ -56,14 +56,17 @@ func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.B
 	if err != nil && s3.SSEConfigurationNotFound(err) && in.config == nil {
 		return Updated, nil
 	} else if err != nil {
-		return NeedsUpdate, errors.Wrap(err, "cannot get bucket encryption")
+		return NeedsUpdate, errors.Wrap(err, sseGetFailed)
 	}
 
-	if enc.ServerSideEncryptionConfiguration != nil && in.config == nil {
+	switch {
+	case enc.ServerSideEncryptionConfiguration != nil && in.config == nil:
 		return NeedsDeletion, nil
-	}
-
-	if len(enc.ServerSideEncryptionConfiguration.Rules) != len(in.config.Rules) {
+	case enc.ServerSideEncryptionConfiguration == nil && in.config == nil:
+		return Updated, nil
+	case enc.ServerSideEncryptionConfiguration == nil && in.config != nil:
+		return NeedsUpdate, nil
+	case len(enc.ServerSideEncryptionConfiguration.Rules) != len(in.config.Rules):
 		return NeedsUpdate, nil
 	}
 
@@ -103,7 +106,7 @@ func (in *SSEConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1
 		return managed.ExternalUpdate{}, nil
 	}
 	_, err := in.client.PutBucketEncryptionRequest(GeneratePutBucketEncryptionInput(meta.GetExternalName(bucket), in)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket encryption")
+	return managed.ExternalUpdate{}, errors.Wrap(err, ssePutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
@@ -113,5 +116,5 @@ func (in *SSEConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bu
 			Bucket: aws.String(meta.GetExternalName(bucket)),
 		},
 	).Send(ctx)
-	return errors.Wrap(err, "cannot delete bucket encryption configuration")
+	return errors.Wrap(err, sseDeleteFailed)
 }

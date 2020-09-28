@@ -28,6 +28,7 @@ import (
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
+	"github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
 var _ BucketResource = &LifecycleConfigurationClient{}
@@ -126,12 +127,12 @@ func GenerateRules(in *v1beta1.BucketLifecycleConfiguration) []awss3.LifecycleRu
 		if local.Filter != nil {
 			rule.Filter = &awss3.LifecycleRuleFilter{
 				Prefix: local.Filter.Prefix,
-				Tag:    copyTag(local.Filter.Tag),
+				Tag:    testing.CopyTag(local.Filter.Tag),
 			}
 			if local.Filter.And != nil {
 				rule.Filter.And = &awss3.LifecycleRuleAndOperator{
 					Prefix: local.Filter.And.Prefix,
-					Tags:   copyTags(local.Filter.And.Tags),
+					Tags:   testing.CopyTags(local.Filter.And.Tags),
 				}
 			}
 		}
@@ -149,7 +150,7 @@ func (in *LifecycleConfigurationClient) CreateOrUpdate(ctx context.Context, buck
 	config := GenerateLifecycleConfiguration(meta.GetExternalName(bucket), in)
 
 	_, err := in.client.PutBucketLifecycleConfigurationRequest(config).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket lifecycle")
+	return managed.ExternalUpdate{}, errors.Wrap(err, lifecyclePutFailed)
 
 }
 
@@ -160,5 +161,5 @@ func (in *LifecycleConfigurationClient) Delete(ctx context.Context, bucket *v1be
 			Bucket: aws.String(meta.GetExternalName(bucket)),
 		},
 	).Send(ctx)
-	return errors.Wrap(err, "cannot delete bucket lifecycle configuration")
+	return errors.Wrap(err, lifecycleDeleteFailed)
 }

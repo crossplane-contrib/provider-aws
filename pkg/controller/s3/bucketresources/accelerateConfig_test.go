@@ -28,6 +28,7 @@ import (
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
+	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
 func TestAccelerateObserve(t *testing.T) {
@@ -47,13 +48,13 @@ func TestAccelerateObserve(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
+				b: s3Testing.Bucket(s3Testing.WithAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
 				cl: NewAccelerateConfigurationClient(
-					bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
+					s3Testing.Bucket(s3Testing.WithAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
 					fake.MockBucketClient{
 						MockGetBucketAccelerateConfigurationRequest: func(input *s3.GetBucketAccelerateConfigurationInput) s3.GetBucketAccelerateConfigurationRequest {
 							return s3.GetBucketAccelerateConfigurationRequest{
-								Request: createRequest(errBoom, &s3.GetBucketAccelerateConfigurationOutput{}),
+								Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketAccelerateConfigurationOutput{}),
 							}
 						},
 					},
@@ -66,13 +67,13 @@ func TestAccelerateObserve(t *testing.T) {
 		},
 		"UpdateNeeded": {
 			args: args{
-				b: bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
+				b: s3Testing.Bucket(s3Testing.WithAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
 				cl: NewAccelerateConfigurationClient(
-					bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
+					s3Testing.Bucket(s3Testing.WithAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
 					fake.MockBucketClient{
 						MockGetBucketAccelerateConfigurationRequest: func(input *s3.GetBucketAccelerateConfigurationInput) s3.GetBucketAccelerateConfigurationRequest {
 							return s3.GetBucketAccelerateConfigurationRequest{
-								Request: createRequest(nil, &s3.GetBucketAccelerateConfigurationOutput{Status: s3.BucketAccelerateStatusSuspended}),
+								Request: s3Testing.CreateRequest(nil, &s3.GetBucketAccelerateConfigurationOutput{Status: s3.BucketAccelerateStatusSuspended}),
 							}
 						},
 					},
@@ -85,13 +86,13 @@ func TestAccelerateObserve(t *testing.T) {
 		},
 		"NeedsDelete": {
 			args: args{
-				b: bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: suspended})),
+				b: s3Testing.Bucket(s3Testing.WithAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: suspended})),
 				cl: NewAccelerateConfigurationClient(
-					bucket(withAccelerationConfig(nil)),
+					s3Testing.Bucket(s3Testing.WithAccelerationConfig(nil)),
 					fake.MockBucketClient{
 						MockGetBucketAccelerateConfigurationRequest: func(input *s3.GetBucketAccelerateConfigurationInput) s3.GetBucketAccelerateConfigurationRequest {
 							return s3.GetBucketAccelerateConfigurationRequest{
-								Request: createRequest(nil, &s3.GetBucketAccelerateConfigurationOutput{Status: s3.BucketAccelerateStatusSuspended}),
+								Request: s3Testing.CreateRequest(nil, &s3.GetBucketAccelerateConfigurationOutput{Status: s3.BucketAccelerateStatusSuspended}),
 							}
 						},
 					},
@@ -104,13 +105,13 @@ func TestAccelerateObserve(t *testing.T) {
 		},
 		"NoUpdateNotExists": {
 			args: args{
-				b: bucket(withAccelerationConfig(nil)),
+				b: s3Testing.Bucket(s3Testing.WithAccelerationConfig(nil)),
 				cl: NewAccelerateConfigurationClient(
-					bucket(withAccelerationConfig(nil)),
+					s3Testing.Bucket(s3Testing.WithAccelerationConfig(nil)),
 					fake.MockBucketClient{
 						MockGetBucketAccelerateConfigurationRequest: func(input *s3.GetBucketAccelerateConfigurationInput) s3.GetBucketAccelerateConfigurationRequest {
 							return s3.GetBucketAccelerateConfigurationRequest{
-								Request: createRequest(nil, &s3.GetBucketAccelerateConfigurationOutput{}),
+								Request: s3Testing.CreateRequest(nil, &s3.GetBucketAccelerateConfigurationOutput{}),
 							}
 						},
 					},
@@ -123,13 +124,13 @@ func TestAccelerateObserve(t *testing.T) {
 		},
 		"NoUpdateExists": {
 			args: args{
-				b: bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: suspended})),
+				b: s3Testing.Bucket(s3Testing.WithAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: suspended})),
 				cl: NewAccelerateConfigurationClient(
-					bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: suspended})),
+					s3Testing.Bucket(s3Testing.WithAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: suspended})),
 					fake.MockBucketClient{
 						MockGetBucketAccelerateConfigurationRequest: func(input *s3.GetBucketAccelerateConfigurationInput) s3.GetBucketAccelerateConfigurationRequest {
 							return s3.GetBucketAccelerateConfigurationRequest{
-								Request: createRequest(nil, &s3.GetBucketAccelerateConfigurationOutput{Status: s3.BucketAccelerateStatusSuspended}),
+								Request: s3Testing.CreateRequest(nil, &s3.GetBucketAccelerateConfigurationOutput{Status: s3.BucketAccelerateStatusSuspended}),
 							}
 						},
 					},
@@ -171,13 +172,13 @@ func TestAccelerateCreateOrUpdate(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
+				b: s3Testing.Bucket(s3Testing.WithAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
 				cl: NewAccelerateConfigurationClient(
-					bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
+					s3Testing.Bucket(s3Testing.WithAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
 					fake.MockBucketClient{
 						MockPutBucketAccelerateConfigurationRequest: func(input *s3.PutBucketAccelerateConfigurationInput) s3.PutBucketAccelerateConfigurationRequest {
 							return s3.PutBucketAccelerateConfigurationRequest{
-								Request: createRequest(errBoom, &s3.PutBucketAccelerateConfigurationOutput{}),
+								Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketAccelerateConfigurationOutput{}),
 							}
 						},
 					},
@@ -189,13 +190,13 @@ func TestAccelerateCreateOrUpdate(t *testing.T) {
 		},
 		"InvalidConfig": {
 			args: args{
-				b: bucket(withAccelerationConfig(nil)),
+				b: s3Testing.Bucket(s3Testing.WithAccelerationConfig(nil)),
 				cl: NewAccelerateConfigurationClient(
-					bucket(withAccelerationConfig(nil)),
+					s3Testing.Bucket(s3Testing.WithAccelerationConfig(nil)),
 					fake.MockBucketClient{
 						MockPutBucketAccelerateConfigurationRequest: func(input *s3.PutBucketAccelerateConfigurationInput) s3.PutBucketAccelerateConfigurationRequest {
 							return s3.PutBucketAccelerateConfigurationRequest{
-								Request: createRequest(nil, &s3.PutBucketAccelerateConfigurationOutput{}),
+								Request: s3Testing.CreateRequest(nil, &s3.PutBucketAccelerateConfigurationOutput{}),
 							}
 						},
 					},
@@ -207,13 +208,13 @@ func TestAccelerateCreateOrUpdate(t *testing.T) {
 		},
 		"SuccessfulCreate": {
 			args: args{
-				b: bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
+				b: s3Testing.Bucket(s3Testing.WithAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
 				cl: NewAccelerateConfigurationClient(
-					bucket(withAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
+					s3Testing.Bucket(s3Testing.WithAccelerationConfig(&v1beta1.AccelerateConfiguration{Status: enabled})),
 					fake.MockBucketClient{
 						MockPutBucketAccelerateConfigurationRequest: func(input *s3.PutBucketAccelerateConfigurationInput) s3.PutBucketAccelerateConfigurationRequest {
 							return s3.PutBucketAccelerateConfigurationRequest{
-								Request: createRequest(nil, &s3.PutBucketAccelerateConfigurationOutput{}),
+								Request: s3Testing.CreateRequest(nil, &s3.PutBucketAccelerateConfigurationOutput{}),
 							}
 						},
 					},
@@ -251,13 +252,13 @@ func TestAccelerateDelete(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: bucket(),
+				b: s3Testing.Bucket(),
 				cl: NewAccelerateConfigurationClient(
-					bucket(),
+					s3Testing.Bucket(),
 					fake.MockBucketClient{
 						MockPutBucketAccelerateConfigurationRequest: func(input *s3.PutBucketAccelerateConfigurationInput) s3.PutBucketAccelerateConfigurationRequest {
 							return s3.PutBucketAccelerateConfigurationRequest{
-								Request: createRequest(errBoom, &s3.PutBucketAccelerateConfigurationOutput{}),
+								Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketAccelerateConfigurationOutput{}),
 							}
 						},
 					},
@@ -269,13 +270,13 @@ func TestAccelerateDelete(t *testing.T) {
 		},
 		"SuccessfulDelete": {
 			args: args{
-				b: bucket(),
+				b: s3Testing.Bucket(),
 				cl: NewAccelerateConfigurationClient(
-					bucket(),
+					s3Testing.Bucket(),
 					fake.MockBucketClient{
 						MockPutBucketAccelerateConfigurationRequest: func(input *s3.PutBucketAccelerateConfigurationInput) s3.PutBucketAccelerateConfigurationRequest {
 							return s3.PutBucketAccelerateConfigurationRequest{
-								Request: createRequest(nil, &s3.PutBucketAccelerateConfigurationOutput{}),
+								Request: s3Testing.CreateRequest(nil, &s3.PutBucketAccelerateConfigurationOutput{}),
 							}
 						},
 					},

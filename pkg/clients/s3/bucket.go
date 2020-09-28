@@ -27,6 +27,23 @@ import (
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
+var (
+	// BucketErrCode is the error code sent by AWS when a bucket does not exist
+	BucketErrCode = "NotFound"
+	// CORSErrCode is the error code sent by AWS when the CORS configuration does not exist
+	CORSErrCode = "NoSuchCORSConfiguration"
+	// ReplicationErrCode is the error code sent by AWS when the replication config does not exist
+	ReplicationErrCode = "ReplicationConfigurationNotFoundError"
+	// LifecycleErrCode is the error code sent by AWS when the lifecycle config does not exist
+	LifecycleErrCode = "NoSuchLifecycleConfiguration"
+	// SSEErrCode is the error code sent by AWS when the SSE config does not exist
+	SSEErrCode = "ServerSideEncryptionConfigurationNotFoundError"
+	// TaggingErrCode is the error code sent by AWS when the tagging does not exist
+	TaggingErrCode = "NoSuchTagSet"
+	// WebsiteErrCode is the error code sent by AWS when the website config does not exist
+	WebsiteErrCode = "NoSuchWebsiteConfiguration"
+)
+
 // BucketClient is the interface for Client for making S3 Bucket requests.
 type BucketClient interface {
 	HeadBucketRequest(input *s3.HeadBucketInput) s3.HeadBucketRequest
@@ -84,12 +101,12 @@ func NewClient(cfg aws.Config) BucketClient {
 	return s3.New(cfg)
 }
 
-// IsNotFound helper function to test for ErrCodeNoSuchEntityException error
+// IsNotFound helper function to test for NotFound error
 func IsNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
-	if bucketErr, ok := err.(awserr.Error); ok && bucketErr.Code() == "NotFound" {
+	if bucketErr, ok := err.(awserr.Error); ok && bucketErr.Code() == BucketErrCode {
 		return true
 	}
 	return false
@@ -122,7 +139,7 @@ func GenerateBucketObservation(name string) v1beta1.BucketExternalStatus {
 
 // CORSConfigurationNotFound is parses the aws Error and validates if the cors configuration does not exist
 func CORSConfigurationNotFound(err error) bool {
-	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchCORSConfiguration" {
+	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == CORSErrCode {
 		return true
 	}
 	return false
@@ -130,7 +147,7 @@ func CORSConfigurationNotFound(err error) bool {
 
 // ReplicationConfigurationNotFound is parses the aws Error and validates if the replication configuration does not exist
 func ReplicationConfigurationNotFound(err error) bool {
-	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "ReplicationConfigurationNotFoundError" {
+	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == ReplicationErrCode {
 		return true
 	}
 	return false
@@ -138,7 +155,7 @@ func ReplicationConfigurationNotFound(err error) bool {
 
 // LifecycleConfigurationNotFound is parses the aws Error and validates if the lifecycle configuration does not exist
 func LifecycleConfigurationNotFound(err error) bool {
-	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchLifecycleConfiguration" {
+	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == LifecycleErrCode {
 		return true
 	}
 	return false
@@ -146,7 +163,7 @@ func LifecycleConfigurationNotFound(err error) bool {
 
 // SSEConfigurationNotFound is parses the aws Error and validates if the SSE configuration does not exist
 func SSEConfigurationNotFound(err error) bool {
-	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "ServerSideEncryptionConfigurationNotFoundError" {
+	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == SSEErrCode {
 		return true
 	}
 	return false
@@ -154,7 +171,7 @@ func SSEConfigurationNotFound(err error) bool {
 
 // TaggingNotFound is parses the aws Error and validates if the tagging configuration does not exist
 func TaggingNotFound(err error) bool {
-	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchTagSet" {
+	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == TaggingErrCode {
 		return true
 	}
 	return false
@@ -162,7 +179,7 @@ func TaggingNotFound(err error) bool {
 
 // WebsiteConfigurationNotFound is parses the aws Error and validates if the website configuration does not exist
 func WebsiteConfigurationNotFound(err error) bool {
-	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == "NoSuchWebsiteConfiguration" {
+	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == WebsiteErrCode {
 		return true
 	}
 	return false

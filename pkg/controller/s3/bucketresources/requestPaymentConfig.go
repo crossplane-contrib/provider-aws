@@ -41,10 +41,10 @@ type RequestPaymentConfigurationClient struct {
 func (in *RequestPaymentConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
 	conf, err := in.client.GetBucketRequestPaymentRequest(&awss3.GetBucketRequestPaymentInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		return errors.Wrap(err, "cannot get request payment configuration")
+		return errors.Wrap(err, paymentGetFailed)
 	}
 
-	if conf.GetBucketRequestPaymentOutput == nil {
+	if len(conf.Payer) == 0 {
 		return nil
 	}
 	if in.config == nil {
@@ -64,14 +64,19 @@ func NewRequestPaymentConfigurationClient(bucket *v1beta1.Bucket, client s3.Buck
 func (in *RequestPaymentConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
 	conf, err := in.client.GetBucketRequestPaymentRequest(&awss3.GetBucketRequestPaymentInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		return NeedsUpdate, errors.Wrap(err, "cannot get request payment configuration")
+		return NeedsUpdate, errors.Wrap(err, paymentGetFailed)
 	}
 
-	if in.config.Payer != string(conf.Payer) {
+	switch {
+	case in.config == nil && len(conf.Payer) == 0:
+		return Updated, nil
+	case in.config == nil && len(conf.Payer) != 0:
 		return NeedsUpdate, nil
+	case in.config.Payer != string(conf.Payer):
+		return NeedsUpdate, nil
+	default:
+		return Updated, nil
 	}
-
-	return Updated, nil
 }
 
 // GeneratePutBucketPaymentInput creates the input for the BucketRequestPayment request for the S3 Client
@@ -90,7 +95,7 @@ func (in *RequestPaymentConfigurationClient) CreateOrUpdate(ctx context.Context,
 		return managed.ExternalUpdate{}, nil
 	}
 	_, err := in.client.PutBucketRequestPaymentRequest(GeneratePutBucketPaymentInput(meta.GetExternalName(bucket), in)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket payment")
+	return managed.ExternalUpdate{}, errors.Wrap(err, paymentPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.

@@ -52,16 +52,21 @@ func NewReplicationConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketC
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
-func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
 	conf, err := in.client.GetBucketReplicationRequest(&awss3.GetBucketReplicationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		if s3.ReplicationConfigurationNotFound(err) && in.config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, errors.Wrap(err, "cannot get replication configuration")
+		return NeedsUpdate, errors.Wrap(err, replicationGetFailed)
 	}
 
-	if conf.ReplicationConfiguration != nil && in.config == nil {
+	switch {
+	case (conf == nil || conf.ReplicationConfiguration == nil) && in.config != nil:
+		return NeedsUpdate, nil
+	case (conf == nil || conf.ReplicationConfiguration == nil) && in.config == nil:
+		return Updated, nil
+	case conf.ReplicationConfiguration != nil && in.config == nil:
 		return NeedsDeletion, nil
 	}
 
@@ -74,7 +79,7 @@ func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v
 	return NeedsUpdate, nil
 }
 
-func copyDestintation(input *v1beta1.ReplicationRule, newRule *awss3.ReplicationRule) {
+func copyDestination(input *v1beta1.ReplicationRule, newRule *awss3.ReplicationRule) {
 	Rule := input
 	if Rule.Destination == nil {
 		return
@@ -125,14 +130,9 @@ func copyDestintation(input *v1beta1.ReplicationRule, newRule *awss3.Replication
 func createRule(input v1beta1.ReplicationRule) awss3.ReplicationRule {
 	Rule := input
 	newRule := awss3.ReplicationRule{
-		DeleteMarkerReplication:   nil,
-		Destination:               nil,
-		ExistingObjectReplication: nil,
-		Filter:                    nil,
-		ID:                        Rule.ID,
-		Priority:                  Rule.Priority,
-		SourceSelectionCriteria:   nil,
-		Status:                    awss3.ReplicationRuleStatus(Rule.Status),
+		ID:       Rule.ID,
+		Priority: Rule.Priority,
+		Status:   awss3.ReplicationRuleStatus(Rule.Status),
 	}
 	if Rule.Filter != nil {
 		newRule.Filter = &awss3.ReplicationRuleFilter{
@@ -173,13 +173,10 @@ func createRule(input v1beta1.ReplicationRule) awss3.ReplicationRule {
 		}
 	}
 	if Rule.DeleteMarkerReplication != nil {
-		newRule.DeleteMarkerReplication.Status = awss3.DeleteMarkerReplicationStatus(Rule.DeleteMarkerReplication.Status)
+		newRule.DeleteMarkerReplication = &awss3.DeleteMarkerReplication{Status: awss3.DeleteMarkerReplicationStatus(Rule.DeleteMarkerReplication.Status)}
 	}
 
-	if Rule.DeleteMarkerReplication != nil {
-		newRule.DeleteMarkerReplication.Status = awss3.DeleteMarkerReplicationStatus(Rule.DeleteMarkerReplication.Status)
-	}
-	copyDestintation(&Rule, &newRule)
+	copyDestination(&Rule, &newRule)
 	return newRule
 }
 
@@ -210,7 +207,7 @@ func (in *ReplicationConfigurationClient) CreateOrUpdate(ctx context.Context, bu
 		return managed.ExternalUpdate{}, nil
 	}
 	_, err := in.client.PutBucketReplicationRequest(in.GeneratePutBucketReplicationInput(meta.GetExternalName(bucket))).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket replication")
+	return managed.ExternalUpdate{}, errors.Wrap(err, replicationPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
@@ -220,5 +217,5 @@ func (in *ReplicationConfigurationClient) Delete(ctx context.Context, bucket *v1
 			Bucket: aws.String(meta.GetExternalName(bucket)),
 		},
 	).Send(ctx)
-	return errors.Wrap(err, "cannot delete bucket replication")
+	return errors.Wrap(err, replicationDeleteFailed)
 }

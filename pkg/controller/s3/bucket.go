@@ -80,7 +80,6 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 type external struct {
 	kube     client.Client
 	s3client s3.BucketClient
-	clients  []bucketresources.BucketResource
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
@@ -96,7 +95,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	current := cr.Spec.ForProvider.DeepCopy()
 
-	for _, client := range e.clients {
+	for _, client := range bucketresources.MakeControllers(cr, e.s3client) {
 		err := client.LateInitialize(ctx, cr)
 		if err != nil {
 			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
@@ -133,6 +132,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 	_, err := e.s3client.CreateBucketRequest(s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx)
+	cr.Status.SetConditions(runtimev1alpha1.Creating())
 	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 }
 
@@ -142,7 +142,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	for _, client := range e.clients {
+	for _, client := range bucketresources.MakeControllers(cr, e.s3client) {
 		status, err := client.Observe(ctx, cr)
 		if err != nil {
 			cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))

@@ -58,18 +58,19 @@ func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 		if s3.TaggingNotFound(err) && in.config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, errors.Wrap(err, "cannot get bucket tagging")
+		return NeedsUpdate, errors.Wrap(err, taggingGetFailed)
 	}
 
-	if in.config == nil && len(conf.TagSet) != 0 {
-		return NeedsDeletion, nil
-	}
-
-	if cmp.Equal(conf.TagSet, GenerateTagging(in).TagSet) {
+	switch {
+	case in.config == nil && len(conf.TagSet) == 0:
 		return Updated, nil
+	case in.config == nil && len(conf.TagSet) != 0:
+		return NeedsDeletion, nil
+	case cmp.Equal(conf.TagSet, GenerateTagging(in).TagSet):
+		return Updated, nil
+	default:
+		return NeedsUpdate, nil
 	}
-
-	return NeedsUpdate, nil
 }
 
 // GenerateTagging creates the Tagging for the AWS SDK
@@ -101,7 +102,7 @@ func (in *TaggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 		return managed.ExternalUpdate{}, nil
 	}
 	_, err := in.client.PutBucketTaggingRequest(GeneratePutBucketTagging(meta.GetExternalName(bucket), in)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket tagging")
+	return managed.ExternalUpdate{}, errors.Wrap(err, taggingPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
@@ -111,5 +112,5 @@ func (in *TaggingConfigurationClient) Delete(ctx context.Context, bucket *v1beta
 			Bucket: aws.String(meta.GetExternalName(bucket)),
 		},
 	).Send(ctx)
-	return errors.Wrap(err, "cannot delete bucket tagging configuration")
+	return errors.Wrap(err, taggingDeleteFailed)
 }

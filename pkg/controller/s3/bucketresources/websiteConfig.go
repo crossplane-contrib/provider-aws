@@ -52,16 +52,19 @@ func NewWebsiteConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClien
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
-func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
 	conf, err := in.client.GetBucketWebsiteRequest(&awss3.GetBucketWebsiteInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		if s3.WebsiteConfigurationNotFound(err) && in.config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, errors.Wrap(err, "cannot get request bucket website configuration")
+		return NeedsUpdate, errors.Wrap(err, websiteGetFailed)
 	}
 
-	if conf.GetBucketWebsiteOutput != nil && in.config == nil {
+	switch {
+	case conf.RoutingRules == nil && conf.RedirectAllRequestsTo == nil && conf.IndexDocument == nil && conf.ErrorDocument == nil && in.config == nil:
+		return Updated, nil
+	case conf.GetBucketWebsiteOutput != nil && in.config == nil:
 		return NeedsDeletion, nil
 	}
 
@@ -132,7 +135,7 @@ func (in *WebsiteConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 		return managed.ExternalUpdate{}, nil
 	}
 	_, err := in.client.PutBucketWebsiteRequest(GeneratePutBucketWebsiteInput(meta.GetExternalName(bucket), in)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket website")
+	return managed.ExternalUpdate{}, errors.Wrap(err, websitePutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
@@ -142,5 +145,5 @@ func (in *WebsiteConfigurationClient) Delete(ctx context.Context, bucket *v1beta
 			Bucket: aws.String(meta.GetExternalName(bucket)),
 		},
 	).Send(ctx)
-	return errors.Wrap(err, "cannot delete bucket website configuration")
+	return errors.Wrap(err, websiteDeleteFailed)
 }
