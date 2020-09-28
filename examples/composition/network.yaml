@@ -3,7 +3,6 @@ kind: Network
 metadata:
   name: my-network
 spec:
-  reclaimPolicy: Delete
   sgName: my-super-cool-sg
   providerConfigRef:
     name: aws-provider

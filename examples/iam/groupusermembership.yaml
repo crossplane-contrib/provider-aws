@@ -10,4 +10,3 @@ spec:
       name: someuser
   providerConfigRef:
     name: aws-provider
-  reclaimPolicy: Delete

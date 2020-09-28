@@ -9,6 +9,5 @@ spec:
     enableDnsSupport: true
     enableDnsHostNames: true
     instanceTenancy: default
-  reclaimPolicy: Delete
   providerConfigRef:
     name: example

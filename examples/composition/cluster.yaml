@@ -3,7 +3,6 @@ kind: Cluster
 metadata:
   name: my-cluster
 spec:
-  reclaimPolicy: Delete
   networkName: my-network
   providerConfigRef:
     name: aws-provider

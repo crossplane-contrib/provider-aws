@@ -12,4 +12,3 @@ spec:
     displayName: display-topic-name
   providerConfigRef:
     name: example
-  reclaimPolicy: Delete

@@ -17,7 +17,6 @@ spec:
       subnetIds:
         - sample-subnet1
     version: "1.16"
-  reclaimPolicy: Delete
   writeConnectionSecretToRef:
     name: cluster-conn
     namespace: default
