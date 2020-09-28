@@ -134,9 +134,9 @@ BUILD_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-${HOSTARCH}"
 CONTROLLER_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-controller-${HOSTARCH}"
 
 version_tag="$(cat ${projectdir}/_output/version)"
-# tag as master to load into kind cluster
-PACKAGE_IMAGE="${DOCKER_REGISTRY}/${PROJECT_NAME}:master"
-PACKAGE_CONTROLLER_IMAGE="${DOCKER_REGISTRY}/${PROJECT_NAME}-controller:master"
+# tag as latest version to load into kind cluster
+PACKAGE_IMAGE="${DOCKER_REGISTRY}/${PROJECT_NAME}:${VERSION}"
+PACKAGE_CONTROLLER_IMAGE="${DOCKER_REGISTRY}/${PROJECT_NAME}-controller:${VERSION}"
 K8S_CLUSTER="${K8S_CLUSTER:-${BUILD_REGISTRY}-INTTESTS}"
 
 CROSSPLANE_NAMESPACE="crossplane-system"
@@ -207,6 +207,7 @@ metadata:
   name: "${PACKAGE_NAME}"
 spec:
   package: "${PACKAGE_IMAGE}"
+  packagePullPolicy: Never
 EOF
 )"
 
