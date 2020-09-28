@@ -90,6 +90,17 @@ pipeline {
             }
         }
 
+        stage("Integration Tests"){
+            when {
+                expression {
+                    return env.shouldBuild != "false"
+                }
+            }
+            steps {
+                sh './build/run make -j\$(nproc) e2e'
+            }
+        }
+
         stage('Publish Coverage to Codecov') {
             when {
                 expression {
