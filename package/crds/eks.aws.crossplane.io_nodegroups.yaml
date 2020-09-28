@@ -16,9 +16,6 @@ spec:
   - JSONPath: .spec.forProvider.clusterName
     name: CLUSTER
     type: string
-  - JSONPath: .spec.reclaimPolicy
-    name: RECLAIM-POLICY
-    type: string
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
