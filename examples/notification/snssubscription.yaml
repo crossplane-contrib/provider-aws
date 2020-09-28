@@ -9,6 +9,5 @@ spec:
     endpoint: example@abc.com
     topicArnRef:
       name: some-topic
-  reclaimPolicy: Delete
   providerConfigRef:
     name: example

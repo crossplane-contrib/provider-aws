@@ -12,4 +12,3 @@ spec:
       name: someuser
   providerConfigRef:
     name: example
-  reclaimPolicy: Delete

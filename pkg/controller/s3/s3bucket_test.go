@@ -223,7 +223,7 @@ func TestDelete(t *testing.T) {
 
 	cl := &MockS3Client{}
 
-	// test delete w/ reclaim policy
+	// test delete w/ deletion policy
 	tr.Spec.DeletionPolicy = runtimev1alpha1.DeletionOrphan
 	expectedStatus := runtimev1alpha1.ConditionedStatus{}
 	expectedStatus.SetConditions(runtimev1alpha1.Deleting(), runtimev1alpha1.ReconcileSuccess())

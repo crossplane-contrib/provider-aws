@@ -13,4 +13,3 @@ spec:
     name: bucket-internal-secret
   providerRef:
     name: aws-provider
-  reclaimPolicy: Delete
