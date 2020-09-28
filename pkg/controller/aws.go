@@ -56,7 +56,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/route53/hostedzone"
 	"github.com/crossplane/provider-aws/pkg/controller/route53/resourcerecordset"
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
-	"github.com/crossplane/provider-aws/pkg/controller/s3/s3bucketpolicy"
+	"github.com/crossplane/provider-aws/pkg/controller/s3/bucketpolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
 )
 
@@ -76,7 +76,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		elbattachment.SetupELBAttachment,
 		nodegroup.SetupNodeGroup,
 		s3.SetupBucket,
-		s3bucketpolicy.SetupS3BucketPolicy,
+		bucketpolicy.SetupBucketPolicy,
 		iamuser.SetupIAMUser,
 		iamgroup.SetupIAMGroup,
 		iampolicy.SetupIAMPolicy,
