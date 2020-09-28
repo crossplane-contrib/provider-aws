@@ -409,6 +409,7 @@ spec:
                             type: string
                         required:
                         - events
+                        - lambdaFunctionArn
                         type: object
                       type: array
                     queueConfigurations:
@@ -457,6 +458,7 @@ spec:
                             type: string
                         required:
                         - events
+                        - queueArn
                         type: object
                       type: array
                     topicConfigurations:
@@ -648,9 +650,6 @@ spec:
                                 - eventThreshold
                                 - status
                                 type: object
-                              referenceCurrentAccount:
-                                description: Reference the AWS account assigned in the provider as the destination bucket owner account ID.
-                                type: boolean
                               replicationTime:
                                 description: A container specifying S3 Replication Time Control (S3 RTC), including whether S3 RTC is enabled and the time when all objects and operations on objects must be replicated. Must be specified together with a Metrics block.
                                 properties:

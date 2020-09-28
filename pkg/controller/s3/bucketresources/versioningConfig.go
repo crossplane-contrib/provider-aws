@@ -22,7 +22,6 @@ import (
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
@@ -42,7 +41,7 @@ type VersioningConfigurationClient struct {
 func (in *VersioningConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
 	conf, err := in.client.GetBucketVersioningRequest(&awss3.GetBucketVersioningInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		return errors.Wrap(err, "cannot get bucket versioning")
+		return errors.Wrap(err, versioningGetFailed)
 	}
 
 	if len(conf.Status) == 0 && len(conf.MFADelete) == 0 {
@@ -67,25 +66,22 @@ func NewVersioningConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketCl
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
-func (in *VersioningConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+func (in *VersioningConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
 	vers, err := in.client.GetBucketVersioningRequest(&awss3.GetBucketVersioningInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		return NeedsUpdate, errors.Wrap(err, "cannot get bucket versioning")
+		return NeedsUpdate, errors.Wrap(err, versioningGetFailed)
 	}
 
-	if len(vers.Status) == 0 && len(vers.MFADelete) == 0 && in.config == nil {
+	switch {
+	case len(vers.Status) == 0 && len(vers.MFADelete) == 0 && in.config == nil:
 		return Updated, nil
-	} else if (len(vers.Status) != 0 || len(vers.MFADelete) != 0) && in.config == nil {
+	case (len(vers.Status) != 0 || len(vers.MFADelete) != 0) && in.config == nil:
 		return NeedsDeletion, nil
-	}
-
-	if !cmp.Equal(vers.MFADelete, aws.StringValue(in.config.MFADelete)) {
+	case aws.StringValue(in.config.Status) == string(vers.Status) && aws.StringValue(in.config.MFADelete) == string(vers.MFADelete):
+		return Updated, nil
+	default:
 		return NeedsUpdate, nil
 	}
-	if !cmp.Equal(vers.Status, aws.StringValue(in.config.Status)) {
-		return NeedsUpdate, nil
-	}
-	return Updated, nil
 }
 
 // GeneratePutBucketVersioningInput creates the input for the PutBucketVersioning request for the S3 Client
@@ -105,7 +101,7 @@ func (in *VersioningConfigurationClient) CreateOrUpdate(ctx context.Context, buc
 		return managed.ExternalUpdate{}, nil
 	}
 	_, err := in.client.PutBucketVersioningRequest(GeneratePutBucketVersioningInput(meta.GetExternalName(bucket), in)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket versioning")
+	return managed.ExternalUpdate{}, errors.Wrap(err, versioningPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
@@ -118,5 +114,5 @@ func (in *VersioningConfigurationClient) Delete(ctx context.Context, bucket *v1b
 		},
 	}
 	_, err := in.client.PutBucketVersioningRequest(input).Send(ctx)
-	return errors.Wrap(err, "cannot delete bucket versioning configuration")
+	return errors.Wrap(err, versioningDeleteFailed)
 }

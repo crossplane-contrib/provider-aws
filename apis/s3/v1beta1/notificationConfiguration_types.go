@@ -58,7 +58,7 @@ type LambdaFunctionConfiguration struct {
 	// invokes when the specified event type occurs.
 	//
 	// LambdaFunctionArn is a required field
-	LambdaFunctionArn *string `json:"lambdaFunctionArn,omitempty"`
+	LambdaFunctionArn string `json:"lambdaFunctionArn"`
 }
 
 // QueueConfiguration specifies the configuration for publishing messages to an Amazon Simple Queue
@@ -84,7 +84,7 @@ type QueueConfiguration struct {
 	// publishes a message when it detects events of the specified type.
 	//
 	// QueueArn is a required field
-	QueueArn *string `json:"queueArn,omitempty"`
+	QueueArn string `json:"queueArn"`
 }
 
 // TopicConfiguration specifies the configuration for publication of messages

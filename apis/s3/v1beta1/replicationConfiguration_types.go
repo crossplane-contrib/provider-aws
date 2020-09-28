@@ -146,10 +146,6 @@ type Destination struct {
 	// in the Amazon Simple Storage Service Developer Guide.
 	Account *string `json:"account"`
 
-	// Reference the AWS account assigned in the provider as the destination bucket owner
-	// account ID.
-	ReferenceCurrentAccount *bool `json:"referenceCurrentAccount,omitempty"`
-
 	// The Amazon Resource Name (ARN) of the bucket where you want Amazon S3 to
 	// store the results.
 	// Bucket is a required field

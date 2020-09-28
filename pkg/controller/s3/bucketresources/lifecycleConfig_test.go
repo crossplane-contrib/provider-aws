@@ -31,7 +31,9 @@ import (
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
+	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
+	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
 var (
@@ -140,7 +142,7 @@ func TestGenerateLifecycleConfiguration(t *testing.T) {
 	}{
 		"SameStruct": {
 			args: args{
-				b: bucket(withLifecycleConfig(generateLifecycleConfig())),
+				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 			},
 			want: want{
 				input: generateAWSLifecycle().Rules,
@@ -175,13 +177,13 @@ func TestLifecycleObserve(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: bucket(withLifecycleConfig(generateLifecycleConfig())),
+				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(
-					bucket(withLifecycleConfig(generateLifecycleConfig())),
+					s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 					fake.MockBucketClient{
 						MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
 							return s3.GetBucketLifecycleConfigurationRequest{
-								Request: createRequest(errBoom, &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle().Rules}),
+								Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle().Rules}),
 							}
 						},
 					},
@@ -194,13 +196,13 @@ func TestLifecycleObserve(t *testing.T) {
 		},
 		"UpdateNeeded": {
 			args: args{
-				b: bucket(withLifecycleConfig(generateLifecycleConfig())),
+				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(
-					bucket(withLifecycleConfig(generateLifecycleConfig())),
+					s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 					fake.MockBucketClient{
 						MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
 							return s3.GetBucketLifecycleConfigurationRequest{
-								Request: createRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: nil}),
+								Request: s3Testing.CreateRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: nil}),
 							}
 						},
 					},
@@ -213,13 +215,13 @@ func TestLifecycleObserve(t *testing.T) {
 		},
 		"NeedsDelete": {
 			args: args{
-				b: bucket(withLifecycleConfig(nil)),
+				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(nil)),
 				cl: NewLifecycleConfigurationClient(
-					bucket(withLifecycleConfig(nil)),
+					s3Testing.Bucket(s3Testing.WithLifecycleConfig(nil)),
 					fake.MockBucketClient{
 						MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
 							return s3.GetBucketLifecycleConfigurationRequest{
-								Request: createRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle().Rules}),
+								Request: s3Testing.CreateRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle().Rules}),
 							}
 						},
 					},
@@ -232,13 +234,13 @@ func TestLifecycleObserve(t *testing.T) {
 		},
 		"NoUpdateNotExists": {
 			args: args{
-				b: bucket(withLifecycleConfig(nil)),
+				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(nil)),
 				cl: NewLifecycleConfigurationClient(
-					bucket(withLifecycleConfig(nil)),
+					s3Testing.Bucket(s3Testing.WithLifecycleConfig(nil)),
 					fake.MockBucketClient{
 						MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
 							return s3.GetBucketLifecycleConfigurationRequest{
-								Request: createRequest(awserr.New("NoSuchLifecycleConfiguration", "", nil), &s3.GetBucketLifecycleConfigurationOutput{Rules: nil}),
+								Request: s3Testing.CreateRequest(awserr.New(clients3.LifecycleErrCode, "", nil), &s3.GetBucketLifecycleConfigurationOutput{Rules: nil}),
 							}
 						},
 					},
@@ -251,13 +253,13 @@ func TestLifecycleObserve(t *testing.T) {
 		},
 		"NoUpdateNotExistsNil": {
 			args: args{
-				b: bucket(withLifecycleConfig(nil)),
+				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(nil)),
 				cl: NewLifecycleConfigurationClient(
-					bucket(withLifecycleConfig(nil)),
+					s3Testing.Bucket(s3Testing.WithLifecycleConfig(nil)),
 					fake.MockBucketClient{
 						MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
 							return s3.GetBucketLifecycleConfigurationRequest{
-								Request: createRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: nil}),
+								Request: s3Testing.CreateRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: nil}),
 							}
 						},
 					},
@@ -270,13 +272,13 @@ func TestLifecycleObserve(t *testing.T) {
 		},
 		"NoUpdateExists": {
 			args: args{
-				b: bucket(withLifecycleConfig(generateLifecycleConfig())),
+				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(
-					bucket(withLifecycleConfig(generateLifecycleConfig())),
+					s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 					fake.MockBucketClient{
 						MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
 							return s3.GetBucketLifecycleConfigurationRequest{
-								Request: createRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle().Rules}),
+								Request: s3Testing.CreateRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle().Rules}),
 							}
 						},
 					},
@@ -318,13 +320,13 @@ func TestLifecycleCreateOrUpdate(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: bucket(withLifecycleConfig(generateLifecycleConfig())),
+				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(
-					bucket(withLifecycleConfig(generateLifecycleConfig())),
+					s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 					fake.MockBucketClient{
 						MockPutBucketLifecycleConfigurationRequest: func(input *s3.PutBucketLifecycleConfigurationInput) s3.PutBucketLifecycleConfigurationRequest {
 							return s3.PutBucketLifecycleConfigurationRequest{
-								Request: createRequest(errBoom, &s3.PutBucketLifecycleConfigurationOutput{}),
+								Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketLifecycleConfigurationOutput{}),
 							}
 						},
 					},
@@ -336,13 +338,13 @@ func TestLifecycleCreateOrUpdate(t *testing.T) {
 		},
 		"InvalidConfig": {
 			args: args{
-				b: bucket(withLifecycleConfig(generateLifecycleConfig())),
+				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(
-					bucket(withLifecycleConfig(nil)),
+					s3Testing.Bucket(s3Testing.WithLifecycleConfig(nil)),
 					fake.MockBucketClient{
 						MockPutBucketLifecycleConfigurationRequest: func(input *s3.PutBucketLifecycleConfigurationInput) s3.PutBucketLifecycleConfigurationRequest {
 							return s3.PutBucketLifecycleConfigurationRequest{
-								Request: createRequest(nil, &s3.PutBucketLifecycleConfigurationOutput{}),
+								Request: s3Testing.CreateRequest(nil, &s3.PutBucketLifecycleConfigurationOutput{}),
 							}
 						},
 					},
@@ -354,13 +356,13 @@ func TestLifecycleCreateOrUpdate(t *testing.T) {
 		},
 		"SuccessfulCreate": {
 			args: args{
-				b: bucket(withLifecycleConfig(generateLifecycleConfig())),
+				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(
-					bucket(withLifecycleConfig(generateLifecycleConfig())),
+					s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 					fake.MockBucketClient{
 						MockPutBucketLifecycleConfigurationRequest: func(input *s3.PutBucketLifecycleConfigurationInput) s3.PutBucketLifecycleConfigurationRequest {
 							return s3.PutBucketLifecycleConfigurationRequest{
-								Request: createRequest(nil, &s3.PutBucketLifecycleConfigurationOutput{}),
+								Request: s3Testing.CreateRequest(nil, &s3.PutBucketLifecycleConfigurationOutput{}),
 							}
 						},
 					},
@@ -398,13 +400,13 @@ func TestLifecycleDelete(t *testing.T) {
 	}{
 		"Error": {
 			args: args{
-				b: bucket(withLifecycleConfig(generateLifecycleConfig())),
+				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(
-					bucket(withLifecycleConfig(generateLifecycleConfig())),
+					s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 					fake.MockBucketClient{
 						MockDeleteBucketLifecycleRequest: func(input *s3.DeleteBucketLifecycleInput) s3.DeleteBucketLifecycleRequest {
 							return s3.DeleteBucketLifecycleRequest{
-								Request: createRequest(errBoom, &s3.DeleteBucketLifecycleOutput{}),
+								Request: s3Testing.CreateRequest(errBoom, &s3.DeleteBucketLifecycleOutput{}),
 							}
 						},
 					},
@@ -416,13 +418,13 @@ func TestLifecycleDelete(t *testing.T) {
 		},
 		"SuccessfulDelete": {
 			args: args{
-				b: bucket(withLifecycleConfig(generateLifecycleConfig())),
+				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 				cl: NewLifecycleConfigurationClient(
-					bucket(),
+					s3Testing.Bucket(),
 					fake.MockBucketClient{
 						MockDeleteBucketLifecycleRequest: func(input *s3.DeleteBucketLifecycleInput) s3.DeleteBucketLifecycleRequest {
 							return s3.DeleteBucketLifecycleRequest{
-								Request: createRequest(nil, &s3.DeleteBucketLifecycleOutput{}),
+								Request: s3Testing.CreateRequest(nil, &s3.DeleteBucketLifecycleOutput{}),
 							}
 						},
 					},

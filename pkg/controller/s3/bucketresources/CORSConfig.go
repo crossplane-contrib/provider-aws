@@ -86,7 +86,7 @@ func (in *CORSConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.
 	if err != nil && s3.CORSConfigurationNotFound(err) && in.config == nil {
 		return Updated, nil
 	} else if err != nil {
-		return NeedsUpdate, errors.Wrap(err, "cannot get bucket CORS configuration")
+		return NeedsUpdate, errors.Wrap(err, corsGetFailed)
 	}
 
 	return CompareCORS(in.config, conf.CORSRules), nil
@@ -116,7 +116,7 @@ func (in *CORSConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v
 		return managed.ExternalUpdate{}, nil
 	}
 	_, err := in.client.PutBucketCorsRequest(GeneratePutBucketCorsInput(meta.GetExternalName(bucket), in)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket cors")
+	return managed.ExternalUpdate{}, errors.Wrap(err, corsPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
@@ -126,5 +126,5 @@ func (in *CORSConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.B
 			Bucket: aws.String(meta.GetExternalName(bucket)),
 		},
 	).Send(ctx)
-	return errors.Wrap(err, "cannot delete bucket CORS configuration")
+	return errors.Wrap(err, corsDeleteFailed)
 }

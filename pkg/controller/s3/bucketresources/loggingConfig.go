@@ -22,6 +22,7 @@ import (
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
@@ -38,12 +39,10 @@ type LoggingConfigurationClient struct {
 }
 
 // LateInitialize is responsible for initializing the resource based on the external value
-// this function support brownfield initialization, but it does not reconcile subsequent external updates.
-// TODO: This could be the subject for future work, pending further discussion with the maintainers
 func (in *LoggingConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
 	conf, err := in.client.GetBucketLoggingRequest(&awss3.GetBucketLoggingInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		return errors.Wrap(err, "cannot get bucket accelerate configuration")
+		return errors.Wrap(err, loggingGetFailed)
 	}
 	if conf.LoggingEnabled == nil {
 		// There is no value send by AWS to initialize
@@ -54,7 +53,7 @@ func (in *LoggingConfigurationClient) LateInitialize(ctx context.Context, bucket
 		bucket.Spec.ForProvider.LoggingConfiguration = &v1beta1.LoggingConfiguration{}
 		in.config = bucket.Spec.ForProvider.LoggingConfiguration
 	}
-	// Late initialize the target bucket and target prefix
+	// Late initialize the target Bucket and target prefix
 	in.config.TargetBucket = aws.LateInitializeStringPtr(in.config.TargetBucket, conf.LoggingEnabled.TargetBucket)
 	in.config.TargetPrefix = aws.LateInitializeStringPtr(in.config.TargetPrefix, conf.LoggingEnabled.TargetPrefix)
 	// If the there is an external target grant list, and the local one does not exist
@@ -82,65 +81,49 @@ func NewLoggingConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClien
 	return &LoggingConfigurationClient{config: bucket.Spec.ForProvider.LoggingConfiguration, client: client}
 }
 
-// CompareStrings compares pairs of strings passed in
-func CompareStrings(strings ...*string) bool {
-	if len(strings)%2 != 0 {
-		return false
+// GenerateAWSLogging creates an S3 logging enabled struct from the local logging configuration
+func GenerateAWSLogging(local *v1beta1.LoggingConfiguration) *awss3.LoggingEnabled {
+	output := awss3.LoggingEnabled{
+		TargetBucket: local.TargetBucket,
+		TargetPrefix: local.TargetPrefix,
 	}
-	for i := 0; i < len(strings); i += 2 {
-		if aws.StringValue(strings[i]) != aws.StringValue(strings[i+1]) {
-			return false
+	if local.TargetGrants != nil {
+		output.TargetGrants = make([]awss3.TargetGrant, len(local.TargetGrants))
+	}
+	for i := range local.TargetGrants {
+		target := awss3.TargetGrant{
+			Grantee: &awss3.Grantee{
+				DisplayName:  local.TargetGrants[i].Grantee.DisplayName,
+				EmailAddress: local.TargetGrants[i].Grantee.EmailAddress,
+				ID:           local.TargetGrants[i].Grantee.ID,
+				Type:         awss3.Type(local.TargetGrants[i].Grantee.Type),
+				URI:          local.TargetGrants[i].Grantee.URI,
+			},
+			Permission: awss3.BucketLogsPermission(local.TargetGrants[i].Permission),
 		}
-	}
-	return true
-}
 
-func compareLogging(local *v1beta1.LoggingConfiguration, external *awss3.LoggingEnabled) ResourceStatus {
-	if aws.StringValue(external.TargetBucket) != aws.StringValue(local.TargetBucket) {
-		return NeedsUpdate
+		output.TargetGrants[i] = target
 	}
-
-	if aws.StringValue(external.TargetPrefix) != aws.StringValue(local.TargetPrefix) {
-		return NeedsUpdate
-	}
-
-	for i, grant := range local.TargetGrants {
-		outputGrant := external.TargetGrants[i]
-		if outputGrant.Grantee != nil {
-			oGrant := outputGrant.Grantee
-			lGrant := grant.Grantee
-			if !CompareStrings(oGrant.DisplayName, lGrant.DisplayName,
-				oGrant.EmailAddress, lGrant.EmailAddress,
-				oGrant.ID, lGrant.ID,
-				oGrant.URI, lGrant.URI) {
-				return NeedsUpdate
-			}
-			if string(oGrant.Type) != lGrant.Type {
-				return NeedsUpdate
-			}
-		}
-		if string(outputGrant.Permission) != grant.Permission {
-			return NeedsUpdate
-		}
-	}
-
-	return Updated
+	return &output
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *LoggingConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
 	conf, err := in.client.GetBucketLoggingRequest(&awss3.GetBucketLoggingInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		return NeedsUpdate, errors.Wrap(err, "cannot get bucket logging")
+		return NeedsUpdate, errors.Wrap(err, loggingGetFailed)
 	}
 
-	if conf.LoggingEnabled == nil && in.config == nil {
+	switch {
+	case conf.LoggingEnabled == nil && in.config == nil:
 		return Updated, nil
-	} else if conf.LoggingEnabled != nil && in.config == nil {
+	case conf.LoggingEnabled != nil && in.config == nil:
 		return NeedsDeletion, nil
+	case cmp.Equal(GenerateAWSLogging(in.config), conf.LoggingEnabled):
+		return Updated, nil
+	default:
+		return NeedsUpdate, nil
 	}
-
-	return compareLogging(in.config, conf.LoggingEnabled), nil
 }
 
 // GeneratePutBucketLoggingInput creates the input for the PutBucketLogging request for the S3 Client
@@ -174,7 +157,7 @@ func (in *LoggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 		return managed.ExternalUpdate{}, nil
 	}
 	_, err := in.client.PutBucketLoggingRequest(GeneratePutBucketLoggingInput(meta.GetExternalName(bucket), in)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket logging")
+	return managed.ExternalUpdate{}, errors.Wrap(err, loggingPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
@@ -184,5 +167,5 @@ func (in *LoggingConfigurationClient) Delete(ctx context.Context, bucket *v1beta
 		BucketLoggingStatus: &awss3.BucketLoggingStatus{}, //  Empty BucketLoggingStatus disables logging
 	}
 	_, err := in.client.PutBucketLoggingRequest(input).Send(ctx)
-	return errors.Wrap(err, "cannot delete bucket logging")
+	return errors.Wrap(err, loggingDeleteFailed)
 }

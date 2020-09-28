@@ -430,11 +430,6 @@ func (in *Destination) DeepCopyInto(out *Destination) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.ReferenceCurrentAccount != nil {
-		in, out := &in.ReferenceCurrentAccount, &out.ReferenceCurrentAccount
-		*out = new(bool)
-		**out = **in
-	}
 	if in.Bucket != nil {
 		in, out := &in.Bucket, &out.Bucket
 		*out = new(string)
@@ -577,11 +572,6 @@ func (in *LambdaFunctionConfiguration) DeepCopyInto(out *LambdaFunctionConfigura
 	}
 	if in.ID != nil {
 		in, out := &in.ID, &out.ID
-		*out = new(string)
-		**out = **in
-	}
-	if in.LambdaFunctionArn != nil {
-		in, out := &in.LambdaFunctionArn, &out.LambdaFunctionArn
 		*out = new(string)
 		**out = **in
 	}
@@ -923,11 +913,6 @@ func (in *QueueConfiguration) DeepCopyInto(out *QueueConfiguration) {
 	}
 	if in.ID != nil {
 		in, out := &in.ID, &out.ID
-		*out = new(string)
-		**out = **in
-	}
-	if in.QueueArn != nil {
-		in, out := &in.QueueArn, &out.QueueArn
 		*out = new(string)
 		**out = **in
 	}

@@ -31,6 +31,12 @@ import (
 
 var _ BucketResource = &AccelerateConfigurationClient{}
 
+var (
+	enabled   = "Enabled"
+	suspended = "Suspended"
+	errBoom   = errors.New("boom")
+)
+
 // AccelerateConfigurationClient is the client for API methods and reconciling the AccelerateConfiguration
 type AccelerateConfigurationClient struct {
 	config *v1beta1.AccelerateConfiguration
@@ -41,7 +47,7 @@ type AccelerateConfigurationClient struct {
 func (in *AccelerateConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
 	conf, err := in.client.GetBucketAccelerateConfigurationRequest(&awss3.GetBucketAccelerateConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		return errors.Wrap(err, "cannot get bucket accelerate configuration")
+		return errors.Wrap(err, accelGetFailed)
 	}
 
 	// We need the second check here because by default the accelerateConfig status is not set
@@ -67,7 +73,7 @@ func NewAccelerateConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketCl
 func (in *AccelerateConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
 	conf, err := in.client.GetBucketAccelerateConfigurationRequest(&awss3.GetBucketAccelerateConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		return NeedsUpdate, errors.Wrap(err, "cannot get bucket accelerate configuration")
+		return NeedsUpdate, errors.Wrap(err, accelGetFailed)
 	}
 
 	if conf.Status == "" && in.config == nil {
@@ -97,7 +103,7 @@ func (in *AccelerateConfigurationClient) CreateOrUpdate(ctx context.Context, buc
 		return managed.ExternalUpdate{}, nil
 	}
 	_, err := in.client.PutBucketAccelerateConfigurationRequest(GenerateAccelerateConfigurationInput(meta.GetExternalName(bucket), in)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, "cannot put bucket acceleration configuration")
+	return managed.ExternalUpdate{}, errors.Wrap(err, accelPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
@@ -110,5 +116,5 @@ func (in *AccelerateConfigurationClient) Delete(ctx context.Context, bucket *v1b
 			},
 		},
 	).Send(ctx)
-	return errors.Wrap(err, "cannot delete bucket acceleration configuration")
+	return errors.Wrap(err, accelDeleteFailed)
 }
