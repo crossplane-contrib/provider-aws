@@ -1,0 +1,204 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: snstopics.notification.aws.crossplane.io
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.conditions[?(@.type=='Ready')].status
+    name: READY
+    type: string
+  - JSONPath: .status.conditions[?(@.type=='Synced')].status
+    name: SYNCED
+    type: string
+  - JSONPath: .spec.forProvider.name
+    name: TOPIC-NAME
+    type: string
+  - JSONPath: .spec.forProvider.displayName
+    name: DISPLAY-NAME
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: AGE
+    type: date
+  group: notification.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: SNSTopic
+    listKind: SNSTopicList
+    plural: snstopics
+    singular: snstopic
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: SNSTopic defines a managed resource that represents state of a AWS SNSTopic
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: SNSTopicSpec defined the desired state of a AWS SNS Topic
+          properties:
+            deletionPolicy:
+              description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+              enum:
+              - Orphan
+              - Delete
+              type: string
+            forProvider:
+              description: SNSTopicParameters define the desired state of a AWS SNS Topic
+              properties:
+                deliveryPolicy:
+                  description: DeliveryRetryPolicy - the JSON serialization of the effective delivery policy, taking system defaults into account
+                  type: string
+                displayName:
+                  description: The display name to use for a topic with SNS subscriptions.
+                  type: string
+                kmsMasterKeyId:
+                  description: "Setting this enables server side encryption at-rest to your topic. The ID of an AWS-managed customer master key (CMK) for Amazon SNS or a custom CMK \n For more examples, see KeyId (https://docs.aws.amazon.com/kms/latest/APIReference/API_DescribeKey.html#API_DescribeKey_RequestParameters) in the AWS Key Management Service API Reference."
+                  type: string
+                name:
+                  description: Name refers to the name of the AWS SNS Topic
+                  type: string
+                policy:
+                  description: The policy that defines who can access your topic. By default, only the topic owner can publish or subscribe to the topic.
+                  type: string
+                region:
+                  description: Region is the region you'd like your SNSTopic to be created in.
+                  type: string
+                tags:
+                  description: Tags represetnt a list of user-provided metadata that can be associated with a SNS Topic. For more information about tagging, see Tagging SNS Topics (https://docs.aws.amazon.com/sns/latest/dg/sns-tags.html) in the SNS User Guide.
+                  items:
+                    description: Tag represent a user-provided metadata that can be associated with a SNS Topic. For more information about tagging, see Tagging SNS Topics (https://docs.aws.amazon.com/sns/latest/dg/sns-tags.html) in the SNS User Guide.
+                    properties:
+                      key:
+                        description: The key name that can be used to look up or retrieve the associated value. For example, Department or Cost Center are common choices.
+                        type: string
+                      value:
+                        description: "The value associated with this tag. For example, tags with a key name of Department could have values such as Human Resources, Accounting, and Support. Tags with a key name of Cost Center might have values that consist of the number associated with the different cost centers in your company. Typically, many resources have tags with the same key name but with different values. \n AWS always interprets the tag Value as a single string. If you need to store an array, you can store comma-separated values in the string. However, you must interpret the value in your code."
+                        type: string
+                    required:
+                    - key
+                    type: object
+                  type: array
+              required:
+              - name
+              - region
+              type: object
+            providerConfigRef:
+              description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+              properties:
+                name:
+                  description: Name of the referenced object.
+                  type: string
+              required:
+              - name
+              type: object
+            providerRef:
+              description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+              properties:
+                name:
+                  description: Name of the referenced object.
+                  type: string
+              required:
+              - name
+              type: object
+            writeConnectionSecretToRef:
+              description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+              properties:
+                name:
+                  description: Name of the secret.
+                  type: string
+                namespace:
+                  description: Namespace of the secret.
+                  type: string
+              required:
+              - name
+              - namespace
+              type: object
+          required:
+          - forProvider
+          type: object
+        status:
+          description: SNSTopicStatus is the status of AWS SNS Topic
+          properties:
+            atProvider:
+              description: SNSTopicObservation represents the observed state of a AWS SNS Topic
+              properties:
+                arn:
+                  description: ARN is the Amazon Resource Name (ARN) specifying the SNS Topic.
+                  type: string
+                confirmedSubscriptions:
+                  description: ConfirmedSubscriptions - The no of confirmed subscriptions
+                  format: int64
+                  type: integer
+                deletedSubscriptions:
+                  description: DeletedSubscriptions - The no of deleted subscriptions
+                  format: int64
+                  type: integer
+                owner:
+                  description: Owner refers to owner of SNS Topic
+                  type: string
+                pendingSubscriptions:
+                  description: PendingSubscriptions - The no of pending subscriptions
+                  format: int64
+                  type: integer
+              required:
+              - arn
+              type: object
+            conditions:
+              description: Conditions of the resource.
+              items:
+                description: A Condition that may apply to a resource.
+                properties:
+                  lastTransitionTime:
+                    description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                    format: date-time
+                    type: string
+                  message:
+                    description: A Message containing details about this condition's last transition from one status to another, if any.
+                    type: string
+                  reason:
+                    description: A Reason for this condition's last transition from one status to another.
+                    type: string
+                  status:
+                    description: Status of this condition; is it currently True, False, or Unknown?
+                    type: string
+                  type:
+                    description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                    type: string
+                required:
+                - lastTransitionTime
+                - reason
+                - status
+                - type
+                type: object
+              type: array
+          required:
+          - atProvider
+          type: object
+      required:
+      - spec
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
