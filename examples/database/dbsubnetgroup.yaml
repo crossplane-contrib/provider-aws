@@ -8,6 +8,5 @@ spec:
     description: "sample group"
     subnetIdRefs:
       - name: sample-subnet1
-  reclaimPolicy: Delete
   providerConfigRef:
     name: example

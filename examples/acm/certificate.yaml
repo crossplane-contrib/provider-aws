@@ -11,6 +11,5 @@ spec:
     tags:
     - key: Name
       value: example
-  reclaimPolicy: Delete
   providerConfigRef:
     name: example

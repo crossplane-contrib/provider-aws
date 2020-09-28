@@ -14,6 +14,5 @@ spec:
           name: sample-subnet1
     vpcIdRef:
       name: sample-vpc
-  reclaimPolicy: Delete
   providerConfigRef:
     name: example

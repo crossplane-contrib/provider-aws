@@ -24,6 +24,5 @@ spec:
           - test.s3bucket.aws.crossplane.io
     version: '2012-10-17'
     name: aws-provider
-  reclaimPolicy: Delete
   providerRef:
     name: aws-provider

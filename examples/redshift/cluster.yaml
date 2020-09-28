@@ -9,6 +9,5 @@ spec:
     masterUsername: testing
     clusterType: single-node
     skipFinalClusterSnapshot: true
-  reclaimPolicy: Delete
   providerConfigRef:
     name: example

@@ -4,7 +4,6 @@ kind: ResourceRecordSet
 metadata:
   name: dev.crossplane.io
 spec:
-  reclaimPolicy: Delete
   providerConfigRef:
     name: aws-provider
   forProvider:
