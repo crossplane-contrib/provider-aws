@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package s3bucketpolicy
+package bucketpolicy
 
 import (
 	"context"
@@ -48,9 +48,9 @@ const (
 	errUpdate           = "failed to update the policy for bucket"
 )
 
-// SetupS3BucketPolicy adds a controller that reconciles
-// S3BucketPolicies.
-func SetupS3BucketPolicy(mgr ctrl.Manager, l logging.Logger) error {
+// SetupBucketPolicy adds a controller that reconciles
+// BucketPolicies.
+func SetupBucketPolicy(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(v1alpha1.S3BucketPolicyGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
