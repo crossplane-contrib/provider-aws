@@ -27,7 +27,6 @@ spec:
     storageType: gp2
   providerConfigRef:
     name: aws-provider
-  reclaimPolicy: Delete
   writeConnectionSecretToRef:
     name: 66258c8a-24ad-45e6-a79e-1d54c19d908c-mysqlserver
     namespace: crossplane-system

@@ -8,6 +8,5 @@ spec:
     description: desc for subnet
     subnetIdRefs:
       - name: sample-subnet1
-  reclaimPolicy: Delete
   providerConfigRef:
     name: example

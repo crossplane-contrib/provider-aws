@@ -15,6 +15,5 @@ spec:
         ipProtocol: tcp
         ipRanges:
           - cidrIp: 192.168.0.0/32
-  reclaimPolicy: Delete
   providerConfigRef:
     name: example

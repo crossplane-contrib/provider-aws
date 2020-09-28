@@ -41,7 +41,6 @@ metadata:
   name: networks.aws.example.org
 spec:
   writeConnectionSecretsToNamespace: crossplane-system
-  reclaimPolicy: Delete
   from:
     apiVersion: aws.example.org/v1alpha1
     kind: Network
@@ -55,7 +54,6 @@ spec:
           enableDnsSupport: true
           enableDnsHostNames: true
           instanceTenancy: default
-        reclaimPolicy: Delete
     patches:
     - fromFieldPath: "metadata.labels"
       toFieldPath: "metadata.labels"
@@ -75,7 +73,6 @@ spec:
           vpcIdSelector:
             matchControllerRef: true
           mapPublicIPOnLaunch: true
-        reclaimPolicy: Delete
     patches:
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
@@ -94,7 +91,6 @@ spec:
           vpcIdSelector:
             matchControllerRef: true
           mapPublicIPOnLaunch: true
-        reclaimPolicy: Delete
     patches:
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
@@ -113,7 +109,6 @@ spec:
           vpcIdSelector:
             matchControllerRef: true
           mapPublicIPOnLaunch: true
-        reclaimPolicy: Delete
     patches:
     - fromFieldPath: "metadata.annotations[crossplane.io/external-name]"
       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
@@ -126,7 +121,6 @@ spec:
         forProvider:
           vpcIdSelector:
             matchControllerRef: true
-        reclaimPolicy: Delete
     patches:
     - fromFieldPath: "metadata.labels"
       toFieldPath: "metadata.labels"
@@ -158,7 +152,6 @@ spec:
                   subnet-3: "true"
           vpcIdSelector:
             matchControllerRef: true
-        reclaimPolicy: Delete
     patches:
     - fromFieldPath: "metadata.labels"
       toFieldPath: "metadata.labels"
@@ -180,7 +173,6 @@ spec:
               ipProtocol: tcp
               ipRanges:
                 - cidrIp: 192.168.0.0/16
-        reclaimPolicy: Delete
     patches:
     - fromFieldPath: "metadata.labels"
       toFieldPath: "metadata.labels"
