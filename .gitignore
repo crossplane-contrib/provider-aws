@@ -10,3 +10,4 @@ cover.out
 
 # ignore vscode files (debug config etc...)
 /.vscode
+package/.registry
