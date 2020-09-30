@@ -88,18 +88,17 @@ func CreatePatch(in *ecr.Repository, target *v1alpha1.RepositoryParameters) (*v1
 // IsRepositoryUpToDate checks whether there is a change in any of the modifiable fields.
 func IsRepositoryUpToDate(e *v1alpha1.RepositoryParameters, tags []ecr.Tag, repo *ecr.Repository) bool {
 	switch {
-	case !strings.EqualFold(aws.StringValue(e.ImageTagMutability), string(repo.ImageTagMutability)):
-		return false
+	case e.ImageScanningConfiguration != nil && repo.ImageScanningConfiguration != nil:
+		if e.ImageScanningConfiguration.ScanOnPush != aws.BoolValue(repo.ImageScanningConfiguration.ScanOnPush) {
+			return false
+		}
 	case e.ImageScanningConfiguration != nil && repo.ImageScanningConfiguration == nil:
 		return false
 	case e.ImageScanningConfiguration == nil && repo.ImageScanningConfiguration != nil:
 		return false
-	case e.ImageScanningConfiguration.ScanOnPush != aws.BoolValue(repo.ImageScanningConfiguration.ScanOnPush):
-		return false
-	case !v1alpha1.CompareTags(e.Tags, tags):
-		return false
 	}
-	return true
+	return strings.EqualFold(aws.StringValue(e.ImageTagMutability), string(repo.ImageTagMutability)) &&
+		v1alpha1.CompareTags(e.Tags, tags)
 }
 
 // IsRepoNotFoundErr returns true if the error is because the item doesn't exist
