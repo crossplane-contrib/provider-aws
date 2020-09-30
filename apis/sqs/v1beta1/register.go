@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	"reflect"
@@ -25,8 +25,8 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "applicationintegration.aws.crossplane.io"
-	Version = "v1alpha1"
+	Group   = "sqs.aws.crossplane.io"
+	Version = "v1beta1"
 )
 
 var (

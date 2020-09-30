@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package sqs
+package queue
 
 import (
 	"context"
@@ -31,7 +31,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/applicationintegration/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/sqs/v1beta1"
 	"github.com/crossplane/provider-aws/pkg/clients/sqs"
 	"github.com/crossplane/provider-aws/pkg/clients/sqs/fake"
 )
@@ -48,29 +48,29 @@ var (
 type args struct {
 	kube client.Client
 	sqs  sqs.Client
-	cr   *v1alpha1.Queue
+	cr   *v1beta1.Queue
 }
 
-type sqsModifier func(*v1alpha1.Queue)
+type sqsModifier func(*v1beta1.Queue)
 
 func withExternalName(s string) sqsModifier {
-	return func(r *v1alpha1.Queue) { meta.SetExternalName(r, s) }
+	return func(r *v1beta1.Queue) { meta.SetExternalName(r, s) }
 }
 
 func withConditions(c ...runtimev1alpha1.Condition) sqsModifier {
-	return func(r *v1alpha1.Queue) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.Queue) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withSpec(p v1alpha1.QueueParameters) sqsModifier {
-	return func(r *v1alpha1.Queue) { r.Spec.ForProvider = p }
+func withSpec(p v1beta1.QueueParameters) sqsModifier {
+	return func(r *v1beta1.Queue) { r.Spec.ForProvider = p }
 }
 
-func withStatus(o v1alpha1.QueueObservation) sqsModifier {
-	return func(r *v1alpha1.Queue) { r.Status.AtProvider = o }
+func withStatus(o v1beta1.QueueObservation) sqsModifier {
+	return func(r *v1beta1.Queue) { r.Status.AtProvider = o }
 }
 
-func queue(m ...sqsModifier) *v1alpha1.Queue {
-	cr := &v1alpha1.Queue{}
+func queue(m ...sqsModifier) *v1beta1.Queue {
+	cr := &v1beta1.Queue{}
 	for _, f := range m {
 		f(cr)
 	}
@@ -82,7 +82,7 @@ var _ managed.ExternalConnecter = &connector{}
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.Queue
+		cr     *v1beta1.Queue
 		result managed.ExternalObservation
 		err    error
 	}
@@ -121,7 +121,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: queue(withExternalName(queueName),
 					withConditions(runtimev1alpha1.Available()),
-					withStatus(v1alpha1.QueueObservation{
+					withStatus(v1beta1.QueueObservation{
 						URL: queueURL,
 					})),
 				result: managed.ExternalObservation{
@@ -205,7 +205,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.Queue
+		cr     *v1beta1.Queue
 		result managed.ExternalCreation
 		err    error
 	}
@@ -245,7 +245,7 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				cr: queue(withExternalName(queueURL),
-					withSpec(v1alpha1.QueueParameters{})),
+					withSpec(v1beta1.QueueParameters{})),
 			},
 			want: want{
 				cr: queue(withExternalName(queueURL),
@@ -275,7 +275,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.Queue
+		cr     *v1beta1.Queue
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -298,12 +298,12 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: queue(withStatus(v1alpha1.QueueObservation{
+				cr: queue(withStatus(v1beta1.QueueObservation{
 					URL: queueURL,
 				})),
 			},
 			want: want{
-				cr: queue(withStatus(v1alpha1.QueueObservation{
+				cr: queue(withStatus(v1beta1.QueueObservation{
 					URL: queueURL,
 				})),
 			},
@@ -337,34 +337,22 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: queue(withSpec(v1alpha1.QueueParameters{
-					Tags: []v1alpha1.Tag{
-						{
-							Key:   "k1",
-							Value: aws.String("v1"),
-						},
-						{
-							Key:   "k2",
-							Value: aws.String("k2"),
-						},
+				cr: queue(withSpec(v1beta1.QueueParameters{
+					Tags: map[string]string{
+						"k1": "v1",
+						"k2": "v2",
 					},
-				}), withStatus(v1alpha1.QueueObservation{
+				}), withStatus(v1beta1.QueueObservation{
 					URL: queueURL,
 				})),
 			},
 			want: want{
-				cr: queue(withSpec(v1alpha1.QueueParameters{
-					Tags: []v1alpha1.Tag{
-						{
-							Key:   "k1",
-							Value: aws.String("v1"),
-						},
-						{
-							Key:   "k2",
-							Value: aws.String("k2"),
-						},
+				cr: queue(withSpec(v1beta1.QueueParameters{
+					Tags: map[string]string{
+						"k1": "v1",
+						"k2": "v2",
 					},
-				}), withStatus(v1alpha1.QueueObservation{
+				}), withStatus(v1beta1.QueueObservation{
 					URL: queueURL,
 				})),
 			},
@@ -378,12 +366,12 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: queue(withStatus(v1alpha1.QueueObservation{
+				cr: queue(withStatus(v1beta1.QueueObservation{
 					URL: queueURL,
 				})),
 			},
 			want: want{
-				cr: queue(withStatus(v1alpha1.QueueObservation{
+				cr: queue(withStatus(v1beta1.QueueObservation{
 					URL: queueURL,
 				})),
 				err: errors.Wrap(errBoom, errUpdateFailed),
@@ -411,7 +399,7 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *v1alpha1.Queue
+		cr  *v1beta1.Queue
 		err error
 	}
 
@@ -429,13 +417,13 @@ func TestDelete(t *testing.T) {
 					},
 				},
 				cr: queue(withConditions(runtimev1alpha1.Deleting()),
-					withStatus(v1alpha1.QueueObservation{
+					withStatus(v1beta1.QueueObservation{
 						URL: queueURL,
 					})),
 			},
 			want: want{
 				cr: queue(withConditions(runtimev1alpha1.Deleting()),
-					withStatus(v1alpha1.QueueObservation{
+					withStatus(v1beta1.QueueObservation{
 						URL: queueURL,
 					})),
 			},
@@ -450,13 +438,13 @@ func TestDelete(t *testing.T) {
 					},
 				},
 				cr: queue(withConditions(runtimev1alpha1.Deleting()),
-					withStatus(v1alpha1.QueueObservation{
+					withStatus(v1beta1.QueueObservation{
 						URL: queueURL,
 					})),
 			},
 			want: want{
 				cr: queue(withConditions(runtimev1alpha1.Deleting()),
-					withStatus(v1alpha1.QueueObservation{
+					withStatus(v1beta1.QueueObservation{
 						URL: queueURL,
 					})),
 				err: errors.Wrap(errBoom, errDeleteFailed),
