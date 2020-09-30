@@ -17,27 +17,29 @@ limitations under the License.
 package bucketresources
 
 import (
+	"context"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"golang.org/x/net/context"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
 var (
-	mfadelete = "Enabled"
+	mfadelete                = "Enabled"
+	_         BucketResource = &VersioningConfigurationClient{}
 )
 
 func generateVersioningConfig() *v1beta1.VersioningConfiguration {
 	return &v1beta1.VersioningConfiguration{
 		MFADelete: &mfadelete,
-		Status:    &enabled,
+		Status:    aws.String(enabled),
 	}
 }
 
@@ -66,16 +68,13 @@ func TestVersioningObserve(t *testing.T) {
 		"Error": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-				cl: NewVersioningConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-					fake.MockBucketClient{
-						MockGetBucketVersioningRequest: func(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
-							return s3.GetBucketVersioningRequest{
-								Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketVersioningOutput{}),
-							}
-						},
+				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
+					MockGetBucketVersioningRequest: func(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
+						return s3.GetBucketVersioningRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketVersioningOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: NeedsUpdate,
@@ -85,16 +84,13 @@ func TestVersioningObserve(t *testing.T) {
 		"UpdateNeededFull": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-				cl: NewVersioningConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-					fake.MockBucketClient{
-						MockGetBucketVersioningRequest: func(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
-							return s3.GetBucketVersioningRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketVersioningOutput{}),
-							}
-						},
+				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
+					MockGetBucketVersioningRequest: func(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
+						return s3.GetBucketVersioningRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketVersioningOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: NeedsUpdate,
@@ -104,19 +100,16 @@ func TestVersioningObserve(t *testing.T) {
 		"NeedsDelete": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(nil)),
-				cl: NewVersioningConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithVersioningConfig(nil)),
-					fake.MockBucketClient{
-						MockGetBucketVersioningRequest: func(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
-							return s3.GetBucketVersioningRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketVersioningOutput{
-									MFADelete: s3.MFADeleteStatusEnabled,
-									Status:    generateAWSVersioning().Status,
-								}),
-							}
-						},
+				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
+					MockGetBucketVersioningRequest: func(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
+						return s3.GetBucketVersioningRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketVersioningOutput{
+								MFADelete: s3.MFADeleteStatusEnabled,
+								Status:    generateAWSVersioning().Status,
+							}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: NeedsDeletion,
@@ -126,16 +119,13 @@ func TestVersioningObserve(t *testing.T) {
 		"NoUpdateNotExists": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(nil)),
-				cl: NewVersioningConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithVersioningConfig(nil)),
-					fake.MockBucketClient{
-						MockGetBucketVersioningRequest: func(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
-							return s3.GetBucketVersioningRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketVersioningOutput{}),
-							}
-						},
+				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
+					MockGetBucketVersioningRequest: func(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
+						return s3.GetBucketVersioningRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketVersioningOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: Updated,
@@ -145,19 +135,16 @@ func TestVersioningObserve(t *testing.T) {
 		"NoUpdateExists": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-				cl: NewVersioningConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-					fake.MockBucketClient{
-						MockGetBucketVersioningRequest: func(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
-							return s3.GetBucketVersioningRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketVersioningOutput{
-									MFADelete: s3.MFADeleteStatusEnabled,
-									Status:    generateAWSVersioning().Status,
-								}),
-							}
-						},
+				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
+					MockGetBucketVersioningRequest: func(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
+						return s3.GetBucketVersioningRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketVersioningOutput{
+								MFADelete: s3.MFADeleteStatusEnabled,
+								Status:    generateAWSVersioning().Status,
+							}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: Updated,
@@ -196,16 +183,13 @@ func TestVersioningCreateOrUpdate(t *testing.T) {
 		"Error": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-				cl: NewVersioningConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-					fake.MockBucketClient{
-						MockPutBucketVersioningRequest: func(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest {
-							return s3.PutBucketVersioningRequest{
-								Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketVersioningOutput{}),
-							}
-						},
+				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
+					MockPutBucketVersioningRequest: func(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest {
+						return s3.PutBucketVersioningRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketVersioningOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: errors.Wrap(errBoom, versioningPutFailed),
@@ -214,16 +198,13 @@ func TestVersioningCreateOrUpdate(t *testing.T) {
 		"InvalidConfig": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-				cl: NewVersioningConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithVersioningConfig(nil)),
-					fake.MockBucketClient{
-						MockPutBucketVersioningRequest: func(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest {
-							return s3.PutBucketVersioningRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.PutBucketVersioningOutput{}),
-							}
-						},
+				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
+					MockPutBucketVersioningRequest: func(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest {
+						return s3.PutBucketVersioningRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.PutBucketVersioningOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: nil,
@@ -232,16 +213,13 @@ func TestVersioningCreateOrUpdate(t *testing.T) {
 		"SuccessfulCreate": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-				cl: NewVersioningConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-					fake.MockBucketClient{
-						MockPutBucketVersioningRequest: func(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest {
-							return s3.PutBucketVersioningRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.PutBucketVersioningOutput{}),
-							}
-						},
+				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
+					MockPutBucketVersioningRequest: func(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest {
+						return s3.PutBucketVersioningRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.PutBucketVersioningOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: nil,
@@ -276,16 +254,13 @@ func TestVersioningDelete(t *testing.T) {
 		"Error": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-				cl: NewVersioningConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-					fake.MockBucketClient{
-						MockPutBucketVersioningRequest: func(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest {
-							return s3.PutBucketVersioningRequest{
-								Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketVersioningOutput{}),
-							}
-						},
+				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
+					MockPutBucketVersioningRequest: func(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest {
+						return s3.PutBucketVersioningRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketVersioningOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: errors.Wrap(errBoom, versioningDeleteFailed),
@@ -294,16 +269,13 @@ func TestVersioningDelete(t *testing.T) {
 		"SuccessfulDelete": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-				cl: NewVersioningConfigurationClient(
-					s3Testing.Bucket(),
-					fake.MockBucketClient{
-						MockPutBucketVersioningRequest: func(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest {
-							return s3.PutBucketVersioningRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.PutBucketVersioningOutput{}),
-							}
-						},
+				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
+					MockPutBucketVersioningRequest: func(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest {
+						return s3.PutBucketVersioningRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.PutBucketVersioningOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: nil,

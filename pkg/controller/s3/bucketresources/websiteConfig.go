@@ -30,11 +30,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
-var _ BucketResource = &WebsiteConfigurationClient{}
-
 // WebsiteConfigurationClient is the client for API methods and reconciling the WebsiteConfiguration
 type WebsiteConfigurationClient struct {
-	config *v1beta1.WebsiteConfiguration
 	client s3.BucketClient
 }
 
@@ -47,33 +44,34 @@ func (in *WebsiteConfigurationClient) LateInitialize(ctx context.Context, bucket
 }
 
 // NewWebsiteConfigurationClient creates the client for Website Configuration
-func NewWebsiteConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *WebsiteConfigurationClient {
-	return &WebsiteConfigurationClient{config: bucket.Spec.ForProvider.WebsiteConfiguration, client: client}
+func NewWebsiteConfigurationClient(client s3.BucketClient) *WebsiteConfigurationClient {
+	return &WebsiteConfigurationClient{client: client}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
-	conf, err := in.client.GetBucketWebsiteRequest(&awss3.GetBucketWebsiteInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketWebsiteRequest(&awss3.GetBucketWebsiteInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	config := bucket.Spec.ForProvider.WebsiteConfiguration
 	if err != nil {
-		if s3.WebsiteConfigurationNotFound(err) && in.config == nil {
+		if s3.WebsiteConfigurationNotFound(err) && config == nil {
 			return Updated, nil
 		}
 		return NeedsUpdate, errors.Wrap(err, websiteGetFailed)
 	}
 
 	switch {
-	case conf.RoutingRules == nil && conf.RedirectAllRequestsTo == nil && conf.IndexDocument == nil && conf.ErrorDocument == nil && in.config == nil:
+	case external.RoutingRules == nil && external.RedirectAllRequestsTo == nil && external.IndexDocument == nil && external.ErrorDocument == nil && config == nil:
 		return Updated, nil
-	case conf.GetBucketWebsiteOutput != nil && in.config == nil:
+	case external.GetBucketWebsiteOutput != nil && config == nil:
 		return NeedsDeletion, nil
 	}
 
-	source := GenerateWebsiteConfiguration(in)
+	source := GenerateWebsiteConfiguration(config)
 	confBody := &awss3.WebsiteConfiguration{
-		ErrorDocument:         conf.ErrorDocument,
-		IndexDocument:         conf.IndexDocument,
-		RedirectAllRequestsTo: conf.RedirectAllRequestsTo,
-		RoutingRules:          conf.RoutingRules,
+		ErrorDocument:         external.ErrorDocument,
+		IndexDocument:         external.IndexDocument,
+		RedirectAllRequestsTo: external.RedirectAllRequestsTo,
+		RoutingRules:          external.RoutingRules,
 	}
 
 	if cmp.Equal(confBody, source) {
@@ -84,22 +82,22 @@ func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 }
 
 // GenerateWebsiteConfiguration is responsible for creating the Website Configuration for requests.
-func GenerateWebsiteConfiguration(in *WebsiteConfigurationClient) *awss3.WebsiteConfiguration {
+func GenerateWebsiteConfiguration(config *v1beta1.WebsiteConfiguration) *awss3.WebsiteConfiguration {
 	wi := &awss3.WebsiteConfiguration{}
-	if in.config.ErrorDocument != nil {
-		wi.ErrorDocument = &awss3.ErrorDocument{Key: aws.String(in.config.ErrorDocument.Key)}
+	if config.ErrorDocument != nil {
+		wi.ErrorDocument = &awss3.ErrorDocument{Key: aws.String(config.ErrorDocument.Key)}
 	}
-	if in.config.IndexDocument != nil {
-		wi.IndexDocument = &awss3.IndexDocument{Suffix: aws.String(in.config.IndexDocument.Suffix)}
+	if config.IndexDocument != nil {
+		wi.IndexDocument = &awss3.IndexDocument{Suffix: aws.String(config.IndexDocument.Suffix)}
 	}
-	if in.config.RedirectAllRequestsTo != nil {
+	if config.RedirectAllRequestsTo != nil {
 		wi.RedirectAllRequestsTo = &awss3.RedirectAllRequestsTo{
-			HostName: aws.String(in.config.RedirectAllRequestsTo.HostName),
-			Protocol: awss3.Protocol(in.config.RedirectAllRequestsTo.Protocol),
+			HostName: aws.String(config.RedirectAllRequestsTo.HostName),
+			Protocol: awss3.Protocol(config.RedirectAllRequestsTo.Protocol),
 		}
 	}
-	wi.RoutingRules = make([]awss3.RoutingRule, len(in.config.RoutingRules))
-	for i, rule := range in.config.RoutingRules {
+	wi.RoutingRules = make([]awss3.RoutingRule, len(config.RoutingRules))
+	for i, rule := range config.RoutingRules {
 		rr := awss3.RoutingRule{
 			Redirect: &awss3.Redirect{
 				HostName:             rule.Redirect.HostName,
@@ -121,20 +119,21 @@ func GenerateWebsiteConfiguration(in *WebsiteConfigurationClient) *awss3.Website
 }
 
 // GeneratePutBucketWebsiteInput creates the input for the PutBucketWebsite request for the S3 Client
-func GeneratePutBucketWebsiteInput(name string, in *WebsiteConfigurationClient) *awss3.PutBucketWebsiteInput {
+func GeneratePutBucketWebsiteInput(name string, config *v1beta1.WebsiteConfiguration) *awss3.PutBucketWebsiteInput {
 	wi := &awss3.PutBucketWebsiteInput{
 		Bucket:               aws.String(name),
-		WebsiteConfiguration: GenerateWebsiteConfiguration(in),
+		WebsiteConfiguration: GenerateWebsiteConfiguration(config),
 	}
 	return wi
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS.
 func (in *WebsiteConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config == nil {
+	config := bucket.Spec.ForProvider.WebsiteConfiguration
+	if config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketWebsiteRequest(GeneratePutBucketWebsiteInput(meta.GetExternalName(bucket), in)).Send(ctx)
+	_, err := in.client.PutBucketWebsiteRequest(GeneratePutBucketWebsiteInput(meta.GetExternalName(bucket), config)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, websitePutFailed)
 }
 

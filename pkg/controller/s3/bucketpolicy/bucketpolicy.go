@@ -51,13 +51,13 @@ const (
 // SetupBucketPolicy adds a controller that reconciles
 // BucketPolicies.
 func SetupBucketPolicy(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha1.S3BucketPolicyGroupKind)
+	name := managed.ControllerName(v1alpha1.BucketPolicyGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&v1alpha1.BucketPolicy{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.S3BucketPolicyGroupVersionKind),
+			resource.ManagedKind(v1alpha1.BucketPolicyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(),
 				newClientFn:    s3.NewBucketPolicyClient,
 				newIAMClientFn: iam.NewClient}),
@@ -77,7 +77,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if err != nil {
 		return nil, err
 	}
-	return &external{client: c.newClientFn(*cfg), kube: c.kube}, nil
+	return &external{client: c.newClientFn(*cfg), iamclient: c.newIAMClientFn(*cfg), kube: c.kube}, nil
 }
 
 type external struct {

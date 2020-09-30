@@ -17,13 +17,13 @@ limitations under the License.
 package bucketresources
 
 import (
+	"context"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"golang.org/x/net/context"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
@@ -31,12 +31,13 @@ import (
 )
 
 var (
-	bucketName  = "test.Bucket.name"
-	permission  = "FULL_CONTROL"
-	displayName = "name"
-	email       = "test@user.com"
-	userType    = "CanonicalUser"
-	groupURI    = "uri"
+	_           BucketResource = &LoggingConfigurationClient{}
+	bucketName                 = "test.Bucket.name"
+	permission                 = "FULL_CONTROL"
+	displayName                = "name"
+	email                      = "test@user.com"
+	userType                   = "CanonicalUser"
+	groupURI                   = "uri"
 )
 
 func generateLoggingConfig() *v1beta1.LoggingConfiguration {
@@ -91,16 +92,13 @@ func TestLoggingObserve(t *testing.T) {
 		"Error": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-				cl: NewLoggingConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-					fake.MockBucketClient{
-						MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
-							return s3.GetBucketLoggingRequest{
-								Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLogging()}),
-							}
-						},
+				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
+					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
+						return s3.GetBucketLoggingRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLogging()}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: NeedsUpdate,
@@ -110,16 +108,13 @@ func TestLoggingObserve(t *testing.T) {
 		"UpdateNeeded": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-				cl: NewLoggingConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-					fake.MockBucketClient{
-						MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
-							return s3.GetBucketLoggingRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: nil}),
-							}
-						},
+				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
+					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
+						return s3.GetBucketLoggingRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: nil}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: NeedsUpdate,
@@ -129,16 +124,13 @@ func TestLoggingObserve(t *testing.T) {
 		"NeedsDelete": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(nil)),
-				cl: NewLoggingConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithLoggingConfig(nil)),
-					fake.MockBucketClient{
-						MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
-							return s3.GetBucketLoggingRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLogging()}),
-							}
-						},
+				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
+					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
+						return s3.GetBucketLoggingRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLogging()}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: NeedsDeletion,
@@ -148,16 +140,13 @@ func TestLoggingObserve(t *testing.T) {
 		"NoUpdateNotExists": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(nil)),
-				cl: NewLoggingConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithLoggingConfig(nil)),
-					fake.MockBucketClient{
-						MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
-							return s3.GetBucketLoggingRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: nil}),
-							}
-						},
+				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
+					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
+						return s3.GetBucketLoggingRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: nil}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: Updated,
@@ -167,16 +156,13 @@ func TestLoggingObserve(t *testing.T) {
 		"NoUpdateExists": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-				cl: NewLoggingConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-					fake.MockBucketClient{
-						MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
-							return s3.GetBucketLoggingRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLogging()}),
-							}
-						},
+				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
+					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
+						return s3.GetBucketLoggingRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLogging()}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: Updated,
@@ -215,16 +201,13 @@ func TestLoggingCreateOrUpdate(t *testing.T) {
 		"Error": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-				cl: NewLoggingConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-					fake.MockBucketClient{
-						MockPutBucketLoggingRequest: func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
-							return s3.PutBucketLoggingRequest{
-								Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketLoggingOutput{}),
-							}
-						},
+				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
+					MockPutBucketLoggingRequest: func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
+						return s3.PutBucketLoggingRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketLoggingOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: errors.Wrap(errBoom, loggingPutFailed),
@@ -233,16 +216,13 @@ func TestLoggingCreateOrUpdate(t *testing.T) {
 		"InvalidConfig": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-				cl: NewLoggingConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithLoggingConfig(nil)),
-					fake.MockBucketClient{
-						MockPutBucketLoggingRequest: func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
-							return s3.PutBucketLoggingRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.PutBucketLoggingOutput{}),
-							}
-						},
+				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
+					MockPutBucketLoggingRequest: func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
+						return s3.PutBucketLoggingRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.PutBucketLoggingOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: nil,
@@ -251,16 +231,13 @@ func TestLoggingCreateOrUpdate(t *testing.T) {
 		"SuccessfulCreate": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-				cl: NewLoggingConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-					fake.MockBucketClient{
-						MockPutBucketLoggingRequest: func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
-							return s3.PutBucketLoggingRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.PutBucketLoggingOutput{}),
-							}
-						},
+				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
+					MockPutBucketLoggingRequest: func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
+						return s3.PutBucketLoggingRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.PutBucketLoggingOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: nil,
@@ -295,16 +272,13 @@ func TestLoggingDelete(t *testing.T) {
 		"Error": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-				cl: NewLoggingConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-					fake.MockBucketClient{
-						MockPutBucketLoggingRequest: func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
-							return s3.PutBucketLoggingRequest{
-								Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketLoggingOutput{}),
-							}
-						},
+				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
+					MockPutBucketLoggingRequest: func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
+						return s3.PutBucketLoggingRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketLoggingOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: errors.Wrap(errBoom, loggingDeleteFailed),
@@ -313,16 +287,13 @@ func TestLoggingDelete(t *testing.T) {
 		"SuccessfulDelete": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-				cl: NewLoggingConfigurationClient(
-					s3Testing.Bucket(),
-					fake.MockBucketClient{
-						MockPutBucketLoggingRequest: func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
-							return s3.PutBucketLoggingRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.PutBucketLoggingOutput{}),
-							}
-						},
+				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
+					MockPutBucketLoggingRequest: func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
+						return s3.PutBucketLoggingRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.PutBucketLoggingOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: nil,

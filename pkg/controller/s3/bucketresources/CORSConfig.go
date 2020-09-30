@@ -30,11 +30,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
-var _ BucketResource = &CORSConfigurationClient{}
-
 // CORSConfigurationClient is the client for API methods and reconciling the CORSConfiguration
 type CORSConfigurationClient struct {
-	config *v1beta1.CORSConfiguration
 	client s3.BucketClient
 }
 
@@ -47,8 +44,8 @@ func (in *CORSConfigurationClient) LateInitialize(ctx context.Context, bucket *v
 }
 
 // NewCORSConfigurationClient creates the client for CORS Configuration
-func NewCORSConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *CORSConfigurationClient {
-	return &CORSConfigurationClient{config: bucket.Spec.ForProvider.CORSConfiguration, client: client}
+func NewCORSConfigurationClient(client s3.BucketClient) *CORSConfigurationClient {
+	return &CORSConfigurationClient{client: client}
 }
 
 // CompareCORS compares the external and internal representations for the list of CORSRules
@@ -82,23 +79,24 @@ func CompareCORS(local *v1beta1.CORSConfiguration, external []awss3.CORSRule) Re
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *CORSConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	conf, err := in.client.GetBucketCorsRequest(&awss3.GetBucketCorsInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
-	if err != nil && s3.CORSConfigurationNotFound(err) && in.config == nil {
+	external, err := in.client.GetBucketCorsRequest(&awss3.GetBucketCorsInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	config := bucket.Spec.ForProvider.CORSConfiguration
+	if err != nil && s3.CORSConfigurationNotFound(err) && config == nil {
 		return Updated, nil
 	} else if err != nil {
 		return NeedsUpdate, errors.Wrap(err, corsGetFailed)
 	}
 
-	return CompareCORS(in.config, conf.CORSRules), nil
+	return CompareCORS(config, external.CORSRules), nil
 }
 
 // GeneratePutBucketCorsInput creates the input for the PutBucketCors request for the S3 Client
-func GeneratePutBucketCorsInput(name string, in *CORSConfigurationClient) *awss3.PutBucketCorsInput {
+func GeneratePutBucketCorsInput(name string, config *v1beta1.CORSConfiguration) *awss3.PutBucketCorsInput {
 	bci := &awss3.PutBucketCorsInput{
 		Bucket:            aws.String(name),
 		CORSConfiguration: &awss3.CORSConfiguration{CORSRules: make([]awss3.CORSRule, 0)},
 	}
-	for _, cors := range in.config.CORSRules {
+	for _, cors := range config.CORSRules {
 		bci.CORSConfiguration.CORSRules = append(bci.CORSConfiguration.CORSRules, awss3.CORSRule{
 			AllowedHeaders: cors.AllowedHeaders,
 			AllowedMethods: cors.AllowedMethods,
@@ -112,10 +110,11 @@ func GeneratePutBucketCorsInput(name string, in *CORSConfigurationClient) *awss3
 
 // CreateOrUpdate sends a request to have resource created on AWS
 func (in *CORSConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config == nil {
+	config := bucket.Spec.ForProvider.CORSConfiguration
+	if config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketCorsRequest(GeneratePutBucketCorsInput(meta.GetExternalName(bucket), in)).Send(ctx)
+	_, err := in.client.PutBucketCorsRequest(GeneratePutBucketCorsInput(meta.GetExternalName(bucket), config)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, corsPutFailed)
 }
 

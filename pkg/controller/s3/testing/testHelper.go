@@ -117,7 +117,7 @@ func Bucket(m ...BucketModifier) *v1beta1.Bucket {
 		Spec: v1beta1.BucketSpec{
 			ForProvider: v1beta1.BucketParameters{
 				ACL:                        &acl,
-				LocationConstraint:         &region,
+				LocationConstraint:         region,
 				GrantFullControl:           &grantFullControl,
 				GrantRead:                  &grantRead,
 				GrantReadACP:               &grantReadACP,
