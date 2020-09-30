@@ -338,15 +338,9 @@ func TestUpdate(t *testing.T) {
 					},
 				},
 				cr: queue(withSpec(v1alpha1.QueueParameters{
-					Tags: []v1alpha1.Tag{
-						{
-							Key:   "k1",
-							Value: aws.String("v1"),
-						},
-						{
-							Key:   "k2",
-							Value: aws.String("k2"),
-						},
+					Tags: map[string]string{
+						"k1": "v1",
+						"k2": "v2",
 					},
 				}), withStatus(v1alpha1.QueueObservation{
 					URL: queueURL,
@@ -354,15 +348,9 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: queue(withSpec(v1alpha1.QueueParameters{
-					Tags: []v1alpha1.Tag{
-						{
-							Key:   "k1",
-							Value: aws.String("v1"),
-						},
-						{
-							Key:   "k2",
-							Value: aws.String("k2"),
-						},
+					Tags: map[string]string{
+						"k1": "v1",
+						"k2": "v2",
 					},
 				}), withStatus(v1alpha1.QueueObservation{
 					URL: queueURL,
