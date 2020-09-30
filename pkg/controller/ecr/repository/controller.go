@@ -139,14 +139,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.Status.AtProvider = ecr.GenerateRepositoryObservation(observed)
 
-	upToDate, err := ecr.IsRepositoryUpToDate(&cr.Spec.ForProvider, tagsResp.Tags, &observed)
-	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
-	}
-
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: upToDate,
+		ResourceUpToDate: ecr.IsRepositoryUpToDate(&cr.Spec.ForProvider, tagsResp.Tags, &observed),
 	}, nil
 }
 
