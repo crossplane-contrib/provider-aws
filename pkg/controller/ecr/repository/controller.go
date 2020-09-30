@@ -52,7 +52,6 @@ const (
 	errDelete              = "failed to delete the repository resource"
 	errSpecUpdate          = "cannot update spec of repository custom resource"
 	errStatusUpdate        = "cannot update status of repository custom resource"
-	errUpToDateFailed      = "cannot check whether object is up-to-date"
 	errUpdateScan          = "failed to update scan config for repository resource"
 	errUpdateMutability    = "failed to update mutability for repository resource"
 	errPatchCreationFailed = "cannot create a patch object"
@@ -139,14 +138,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.Status.AtProvider = ecr.GenerateRepositoryObservation(observed)
 
-	upToDate, err := ecr.IsRepositoryUpToDate(&cr.Spec.ForProvider, tagsResp.Tags, &observed)
-	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
-	}
-
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: upToDate,
+		ResourceUpToDate: ecr.IsRepositoryUpToDate(&cr.Spec.ForProvider, tagsResp.Tags, &observed),
 	}, nil
 }
 

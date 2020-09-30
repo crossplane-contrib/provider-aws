@@ -109,7 +109,7 @@ func TestIsRepositoryUpToDate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got, _ := IsRepositoryUpToDate(&tc.args.e, tc.args.ecrTags, &tc.args.repo)
+			got := IsRepositoryUpToDate(&tc.args.e, tc.args.ecrTags, &tc.args.repo)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
