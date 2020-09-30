@@ -24,7 +24,6 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/acm"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthority"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthoritypermission"
-	"github.com/crossplane/provider-aws/pkg/controller/applicationintegration/sqs"
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cluster"
@@ -57,6 +56,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/route53/resourcerecordset"
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
 	"github.com/crossplane/provider-aws/pkg/controller/s3/s3bucketpolicy"
+	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
 )
 
 // Setup creates all AWS controllers with the supplied logger and adds them to
@@ -97,7 +97,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		hostedzone.SetupHostedZone,
 		snstopic.SetupSNSTopic,
 		snssubscription.SetupSubscription,
-		sqs.SetupQueue,
+		queue.SetupQueue,
 		redshift.SetupCluster,
 		elasticip.SetupElasticIP,
 		repository.SetupRepository,

@@ -11,11 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqs
+package queue
 
 import (
 	"context"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/google/go-cmp/cmp"
@@ -31,7 +30,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/applicationintegration/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/sqs/v1beta1"
 	awscommon "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/sqs"
 )
@@ -40,26 +39,24 @@ const (
 	errNotQueue                 = "managed resource is not a Queue custom resource"
 	errKubeUpdateFailed         = "cannot update Queue custom resource"
 	errCreateFailed             = "cannot create Queue"
-	errInvalidNameForFifoQueue  = "cannot create Queue, FIFO queue name must have .fifo suffix"
 	errDeleteFailed             = "cannot delete Queue"
 	errGetQueueAttributesFailed = "cannot get Queue attributes"
+	errTag                      = "cannot tag Queue"
 	errGetQueueURLFailed        = "cannot get Queue URL"
 	errListQueueTagsFailed      = "cannot list Queue tags"
 	errUpdateFailed             = "failed to update the Queue resource"
-	fifoQueueSuffix             = ".fifo"
 )
 
 // SetupQueue adds a controller that reconciles Queue.
 func SetupQueue(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha1.QueueGroupKind)
+	name := managed.ControllerName(v1beta1.QueueGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha1.Queue{}).
+		For(&v1beta1.Queue{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.QueueGroupVersionKind),
+			resource.ManagedKind(v1beta1.QueueGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: sqs.NewClient}),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -70,7 +67,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.Queue)
+	cr, ok := mg.(*v1beta1.Queue)
 	if !ok {
 		return nil, errors.New(errNotQueue)
 	}
@@ -87,7 +84,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
-	cr, ok := mg.(*v1alpha1.Queue)
+	cr, ok := mg.(*v1beta1.Queue)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotQueue)
 	}
@@ -103,7 +100,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	// Get all the attributes.
 	resAttributes, err := e.client.GetQueueAttributesRequest(&awssqs.GetQueueAttributesInput{
 		QueueUrl:       getURLResponse.QueueUrl,
-		AttributeNames: []awssqs.QueueAttributeName{awssqs.QueueAttributeNameAll},
+		AttributeNames: []awssqs.QueueAttributeName{awssqs.QueueAttributeName(v1beta1.AttributeAll)},
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(sqs.IsNotFound, err), errGetQueueAttributesFailed)
@@ -126,10 +123,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	cr.Status.SetConditions(runtimev1alpha1.Available())
 
-	cr.Status.AtProvider = v1alpha1.QueueObservation{
-		ARN: resAttributes.Attributes[v1alpha1.AttributeQueueArn],
-		URL: *getURLResponse.QueueUrl,
-	}
+	cr.Status.AtProvider = sqs.GenerateQueueObservation(*getURLResponse.QueueUrl, resAttributes.Attributes)
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
@@ -138,32 +132,23 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*v1alpha1.Queue)
+	cr, ok := mg.(*v1beta1.Queue)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotQueue)
 	}
 
 	cr.SetConditions(runtimev1alpha1.Creating())
 
-	// FIFO queues names should end with ".fifo"
-	if aws.BoolValue(cr.Spec.ForProvider.FIFOQueue) && !strings.HasSuffix(meta.GetExternalName(cr), fifoQueueSuffix) {
-		return managed.ExternalCreation{}, errors.New(errInvalidNameForFifoQueue)
-	}
-
-	createResp, err := e.client.CreateQueueRequest(&awssqs.CreateQueueInput{
+	_, err := e.client.CreateQueueRequest(&awssqs.CreateQueueInput{
 		Attributes: sqs.GenerateCreateAttributes(&cr.Spec.ForProvider),
 		QueueName:  aws.String(meta.GetExternalName(cr)),
-		Tags:       sqs.GenerateQueueTags(cr.Spec.ForProvider.Tags),
+		Tags:       cr.Spec.ForProvider.Tags,
 	}).Send(ctx)
-	if err != nil || createResp.CreateQueueOutput.QueueUrl == nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
-	}
-
-	return managed.ExternalCreation{}, nil
+	return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*v1alpha1.Queue)
+	cr, ok := mg.(*v1beta1.Queue)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotQueue)
 	}
@@ -174,7 +159,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	_, err := e.client.SetQueueAttributesRequest(&awssqs.SetQueueAttributesInput{
 		QueueUrl:   aws.String(cr.Status.AtProvider.URL),
-		Attributes: sqs.GenerateUpdateAttributes(&cr.Spec.ForProvider),
+		Attributes: sqs.GenerateQueueAttributes(&cr.Spec.ForProvider),
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdateFailed)
@@ -209,18 +194,17 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 			QueueUrl: aws.String(cr.Status.AtProvider.URL),
 			Tags:     addedTags,
 		}).Send(ctx)
+		if err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errTag)
+		}
 	}
-	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdateFailed)
+	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1alpha1.Queue)
+	cr, ok := mg.(*v1beta1.Queue)
 	if !ok {
 		return errors.New(errNotQueue)
-	}
-
-	if cr.Status.AtProvider.URL == "" {
-		return nil
 	}
 
 	cr.SetConditions(runtimev1alpha1.Deleting())

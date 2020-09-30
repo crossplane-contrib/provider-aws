@@ -1,0 +1,10 @@
+apiVersion: sqs.aws.crossplane.io/v1beta1
+kind: Queue
+metadata:
+  name: sample-queue
+spec:
+  forProvider:
+    region: us-east-1
+    delaySeconds: 4
+  providerConfigRef:
+    name: example
