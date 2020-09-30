@@ -30,7 +30,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/sqs/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/sqs/v1beta1"
 	awscommon "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/sqs"
 )
@@ -49,13 +49,13 @@ const (
 
 // SetupQueue adds a controller that reconciles Queue.
 func SetupQueue(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha1.QueueGroupKind)
+	name := managed.ControllerName(v1beta1.QueueGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha1.Queue{}).
+		For(&v1beta1.Queue{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.QueueGroupVersionKind),
+			resource.ManagedKind(v1beta1.QueueGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: sqs.NewClient}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -67,7 +67,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.Queue)
+	cr, ok := mg.(*v1beta1.Queue)
 	if !ok {
 		return nil, errors.New(errNotQueue)
 	}
@@ -84,7 +84,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
-	cr, ok := mg.(*v1alpha1.Queue)
+	cr, ok := mg.(*v1beta1.Queue)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotQueue)
 	}
@@ -100,7 +100,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	// Get all the attributes.
 	resAttributes, err := e.client.GetQueueAttributesRequest(&awssqs.GetQueueAttributesInput{
 		QueueUrl:       getURLResponse.QueueUrl,
-		AttributeNames: []awssqs.QueueAttributeName{awssqs.QueueAttributeName(v1alpha1.AttributeAll)},
+		AttributeNames: []awssqs.QueueAttributeName{awssqs.QueueAttributeName(v1beta1.AttributeAll)},
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(sqs.IsNotFound, err), errGetQueueAttributesFailed)
@@ -132,7 +132,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*v1alpha1.Queue)
+	cr, ok := mg.(*v1beta1.Queue)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotQueue)
 	}
@@ -148,7 +148,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*v1alpha1.Queue)
+	cr, ok := mg.(*v1beta1.Queue)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotQueue)
 	}
@@ -202,7 +202,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1alpha1.Queue)
+	cr, ok := mg.(*v1beta1.Queue)
 	if !ok {
 		return errors.New(errNotQueue)
 	}
