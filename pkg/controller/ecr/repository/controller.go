@@ -52,7 +52,6 @@ const (
 	errDelete              = "failed to delete the repository resource"
 	errSpecUpdate          = "cannot update spec of repository custom resource"
 	errStatusUpdate        = "cannot update status of repository custom resource"
-	errUpToDateFailed      = "cannot check whether object is up-to-date"
 	errUpdateScan          = "failed to update scan config for repository resource"
 	errUpdateMutability    = "failed to update mutability for repository resource"
 	errPatchCreationFailed = "cannot create a patch object"
