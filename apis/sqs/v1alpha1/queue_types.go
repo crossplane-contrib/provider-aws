@@ -46,17 +46,6 @@ const (
 	AttributeKmsDataKeyReusePeriodSeconds          string = "KmsDataKeyReusePeriodSeconds"
 )
 
-// Tag is a key value pairs attached to a Amazon SQS queue.
-type Tag struct {
-
-	// The key name that can be used to look up or retrieve the associated value.
-	Key string `json:"key"`
-
-	// The value associated with a key in a tag.
-	// +optional
-	Value *string `json:"value,omitempty"`
-}
-
 // RedrivePolicy includes the parameters for the dead-letter queue functionality of the source queue.
 type RedrivePolicy struct {
 	// The Amazon Resource Name (ARN) of the dead-letter queue to which Amazon
@@ -226,7 +215,6 @@ type QueueStatus struct {
 // +kubebuilder:object:root=true
 
 // A Queue is a managed resource that represents a AWS Simple Queue
-// +kubebuilder:printcolumn:name="QUEUENAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:printcolumn:name="ARN",type="string",JSONPath=".status.atProvider.arn"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"

@@ -17,6 +17,6 @@ limitations under the License.
 // Package v1alpha1 contains managed resources for AWS application integration services such as
 // SQS.
 // +kubebuilder:object:generate=true
-// +groupName=applicationintegration.aws.crossplane.io
+// +groupName=sqs.aws.crossplane.io
 // +versionName=v1alpha1
 package v1alpha1

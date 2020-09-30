@@ -1,4 +1,4 @@
-apiVersion: applicationintegration.aws.crossplane.io/v1alpha1
+apiVersion: sqs.aws.crossplane.io/v1alpha1
 kind: Queue
 metadata:
   name: sample-queue
