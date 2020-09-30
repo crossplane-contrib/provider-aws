@@ -18,7 +18,6 @@ package acm
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacm "github.com/aws/aws-sdk-go-v2/service/acm"
@@ -120,7 +119,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errSDK)
 	}
 
-	fmt.Println("CertificateDetails: ", response.Certificate)
 	certificate := *response.Certificate
 	current := cr.Spec.ForProvider.DeepCopy()
 	acm.LateInitializeCertificate(&cr.Spec.ForProvider, &certificate)
