@@ -314,6 +314,7 @@ func IsUpToDate(p *v1beta1.ClusterParameters, cluster *eks.Cluster) (bool, error
 
 	return cmp.Equal(&v1beta1.ClusterParameters{}, patch, cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{}),
+		cmpopts.IgnoreFields(v1beta1.ClusterParameters{}, "Region"),
 		cmpopts.IgnoreFields(v1beta1.VpcConfigRequest{}, "SecurityGroupIDRefs", "SubnetIDRefs", "PublicAccessCidrs")), nil
 }
 

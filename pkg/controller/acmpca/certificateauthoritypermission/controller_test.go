@@ -99,7 +99,8 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: certificateAuthorityPermission(withConditions(corev1alpha1.Available())),
 				result: managed.ExternalObservation{
-					ResourceExists: true,
+					ResourceExists:   true,
+					ResourceUpToDate: true,
 				},
 			},
 		},

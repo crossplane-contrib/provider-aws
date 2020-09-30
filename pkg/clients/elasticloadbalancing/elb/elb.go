@@ -172,7 +172,9 @@ func IsUpToDate(p v1alpha1.ELBParameters, elb elb.LoadBalancerDescription, elbTa
 	if err != nil {
 		return false, err
 	}
-	return cmp.Equal(&v1alpha1.ELBParameters{}, patch, cmpopts.IgnoreTypes([]corev1alpha1.Reference{}, []corev1alpha1.Selector{})), nil
+	return cmp.Equal(&v1alpha1.ELBParameters{}, patch,
+		cmpopts.IgnoreTypes([]corev1alpha1.Reference{}, []corev1alpha1.Selector{}),
+		cmpopts.IgnoreFields(v1alpha1.ELBParameters{}, "Region")), nil
 }
 
 // BuildELBListeners builds a list of elb.Listener from given list of v1alpha1.Listener.

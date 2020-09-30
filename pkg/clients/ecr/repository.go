@@ -2,12 +2,11 @@ package ecr
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
@@ -87,14 +86,19 @@ func CreatePatch(in *ecr.Repository, target *v1alpha1.RepositoryParameters) (*v1
 }
 
 // IsRepositoryUpToDate checks whether there is a change in any of the modifiable fields.
-func IsRepositoryUpToDate(e *v1alpha1.RepositoryParameters, tags []ecr.Tag, repo *ecr.Repository) (bool, error) {
-	patch, err := CreatePatch(repo, e)
-	if err != nil {
-		return false, err
+func IsRepositoryUpToDate(e *v1alpha1.RepositoryParameters, tags []ecr.Tag, repo *ecr.Repository) bool {
+	switch {
+	case e.ImageScanningConfiguration != nil && repo.ImageScanningConfiguration != nil:
+		if e.ImageScanningConfiguration.ScanOnPush != aws.BoolValue(repo.ImageScanningConfiguration.ScanOnPush) {
+			return false
+		}
+	case e.ImageScanningConfiguration != nil && repo.ImageScanningConfiguration == nil:
+		return false
+	case e.ImageScanningConfiguration == nil && repo.ImageScanningConfiguration != nil:
+		return false
 	}
-	tagsUpToDate := v1alpha1.CompareTags(e.Tags, tags)
-
-	return cmp.Equal(&v1alpha1.RepositoryParameters{}, patch, cmpopts.EquateEmpty(), cmpopts.IgnoreFields(v1alpha1.RepositoryParameters{}, "Tags")) && tagsUpToDate, nil
+	return strings.EqualFold(aws.StringValue(e.ImageTagMutability), string(repo.ImageTagMutability)) &&
+		v1alpha1.CompareTags(e.Tags, tags)
 }
 
 // IsRepoNotFoundErr returns true if the error is because the item doesn't exist

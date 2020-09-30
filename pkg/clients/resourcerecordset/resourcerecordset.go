@@ -144,7 +144,9 @@ func IsUpToDate(p v1alpha1.ResourceRecordSetParameters, rrset route53.ResourceRe
 	if err != nil {
 		return false, err
 	}
-	return cmp.Equal(&v1alpha1.ResourceRecordSetParameters{}, patch, cmpopts.IgnoreTypes(&runtimev1alpha1.Reference{}, &runtimev1alpha1.Selector{})), nil
+	return cmp.Equal(&v1alpha1.ResourceRecordSetParameters{}, patch,
+		cmpopts.IgnoreTypes(&runtimev1alpha1.Reference{}, &runtimev1alpha1.Selector{}),
+		cmpopts.IgnoreFields(v1alpha1.ResourceRecordSetParameters{}, "Region")), nil
 }
 
 // LateInitialize fills the empty fields in *v1alpha1.ResourceRecordSetParameters with

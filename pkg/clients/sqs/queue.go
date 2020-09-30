@@ -197,6 +197,12 @@ func IsUpToDate(p v1beta1.QueueParameters, attributes map[string]string, tags ma
 	if !cmp.Equal(aws.StringValue(p.KMSMasterKeyID), attributes[v1beta1.AttributeKmsMasterKeyID]) {
 		return false
 	}
+	if !cmp.Equal(aws.StringValue(p.Policy), attributes[v1beta1.AttributePolicy]) {
+		return false
+	}
+	if attributes[v1beta1.AttributeVisibilityTimeout] != "" && strconv.FormatBool(aws.BoolValue(p.ContentBasedDeduplication)) != attributes[v1beta1.AttributeVisibilityTimeout] {
+		return false
+	}
 
 	if p.RedrivePolicy != nil {
 		if !cmp.Equal(aws.StringValue(p.RedrivePolicy.DeadLetterQueueARN), attributes[v1beta1.AttributeDeadLetterQueueARN]) {
