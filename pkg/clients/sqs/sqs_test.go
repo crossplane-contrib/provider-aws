@@ -103,11 +103,8 @@ func TestLateInitialize(t *testing.T) {
 				},
 			},
 			want: sqsParams(func(p *v1alpha1.QueueParameters) {
-				p.Tags = []v1alpha1.Tag{
-					{
-						Key:   tagKey,
-						Value: aws.String(tagValue),
-					},
+				p.Tags = map[string]string{
+					tagKey: tagValue,
 				}
 			}),
 		},
@@ -157,11 +154,8 @@ func TestIsUpToDate(t *testing.T) {
 		"Tags": {
 			args: args{
 				p: v1alpha1.QueueParameters{
-					Tags: []v1alpha1.Tag{
-						{
-							Key:   tagKey,
-							Value: aws.String(tagValue),
-						},
+					Tags: map[string]string{
+						tagKey: tagValue,
 					},
 				},
 				tags: map[string]string{
@@ -219,39 +213,9 @@ func TestGenerateQueueAttributes(t *testing.T) {
 	}
 }
 
-func TestGenerateQueueTags(t *testing.T) {
-	cases := map[string]struct {
-		in  v1alpha1.QueueParameters
-		out map[string]string
-	}{
-		"FilledInput": {
-			in: *sqsParams(func(p *v1alpha1.QueueParameters) {
-				p.Tags = []v1alpha1.Tag{
-					{
-						Key:   tagKey,
-						Value: aws.String(tagValue),
-					},
-				}
-			}),
-			out: map[string]string{
-				tagKey: tagValue,
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			r := GenerateQueueTags(tc.in.Tags)
-			if diff := cmp.Diff(r, tc.out); diff != "" {
-				t.Errorf("GenerateNetworkObservation(...): -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
 func TestTagsDiff(t *testing.T) {
 	type args struct {
-		specTags []v1alpha1.Tag
+		specTags map[string]string
 		sqsTags  map[string]string
 	}
 
@@ -265,15 +229,9 @@ func TestTagsDiff(t *testing.T) {
 	}{
 		"SameTags": {
 			args: args{
-				specTags: []v1alpha1.Tag{
-					{
-						Key:   "k1",
-						Value: aws.String("v1"),
-					},
-					{
-						Key:   "k2",
-						Value: aws.String("v2"),
-					},
+				specTags: map[string]string{
+					"k1": "v1",
+					"k2": "v2",
 				},
 				sqsTags: map[string]string{
 					"k1": "v1",
@@ -287,11 +245,8 @@ func TestTagsDiff(t *testing.T) {
 		},
 		"RemovedTags": {
 			args: args{
-				specTags: []v1alpha1.Tag{
-					{
-						Key:   "k2",
-						Value: aws.String("v2"),
-					},
+				specTags: map[string]string{
+					"k2": "v2",
 				},
 				sqsTags: map[string]string{
 					"k1": "v1",
@@ -307,19 +262,10 @@ func TestTagsDiff(t *testing.T) {
 		},
 		"AddedTags": {
 			args: args{
-				specTags: []v1alpha1.Tag{
-					{
-						Key:   "k1",
-						Value: aws.String("v1"),
-					},
-					{
-						Key:   "k2",
-						Value: aws.String("v2"),
-					},
-					{
-						Key:   "k3",
-						Value: aws.String("v3"),
-					},
+				specTags: map[string]string{
+					"k1": "v1",
+					"k2": "v2",
+					"k3": "v3",
 				},
 				sqsTags: map[string]string{
 					"k1": "v1",

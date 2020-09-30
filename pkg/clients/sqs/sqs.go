@@ -18,6 +18,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
@@ -59,11 +62,6 @@ func GenerateCreateAttributes(p *v1alpha1.QueueParameters) map[string]string {
 	return m
 }
 
-// GenerateUpdateAttributes returns a map of queue attributes for update operation
-func GenerateUpdateAttributes(p *v1alpha1.QueueParameters) map[string]string {
-	return GenerateQueueAttributes(p)
-}
-
 // GenerateQueueAttributes returns a map of queue attributes
 func GenerateQueueAttributes(p *v1alpha1.QueueParameters) map[string]string { // nolint:gocyclo
 	m := map[string]string{}
@@ -76,8 +74,20 @@ func GenerateQueueAttributes(p *v1alpha1.QueueParameters) map[string]string { //
 	if p.MessageRetentionPeriod != nil {
 		m[v1alpha1.AttributeMessageRetentionPeriod] = strconv.FormatInt(aws.Int64Value(p.MessageRetentionPeriod), 10)
 	}
+	if p.Policy != nil {
+		m[v1alpha1.AttributePolicy] = aws.StringValue(p.Policy)
+	}
 	if p.ReceiveMessageWaitTimeSeconds != nil {
 		m[v1alpha1.AttributeReceiveMessageWaitTimeSeconds] = strconv.FormatInt(aws.Int64Value(p.ReceiveMessageWaitTimeSeconds), 10)
+	}
+	if p.ReceiveMessageWaitTimeSeconds != nil {
+		m[v1alpha1.AttributeReceiveMessageWaitTimeSeconds] = strconv.FormatInt(aws.Int64Value(p.ReceiveMessageWaitTimeSeconds), 10)
+	}
+	if p.RedrivePolicy != nil && aws.StringValue(p.RedrivePolicy.DeadLetterQueueARN) != "" {
+		val, err := json.Marshal(p.RedrivePolicy)
+		if err == nil {
+			m[v1alpha1.AttributeRedrivePolicy] = string(val)
+		}
 	}
 	if p.VisibilityTimeout != nil {
 		m[v1alpha1.AttributeVisibilityTimeout] = strconv.FormatInt(aws.Int64Value(p.VisibilityTimeout), 10)
@@ -88,29 +98,31 @@ func GenerateQueueAttributes(p *v1alpha1.QueueParameters) map[string]string { //
 	if p.KMSDataKeyReusePeriodSeconds != nil {
 		m[v1alpha1.AttributeKmsDataKeyReusePeriodSeconds] = strconv.FormatInt(aws.Int64Value(p.KMSDataKeyReusePeriodSeconds), 10)
 	}
-	if p.ReceiveMessageWaitTimeSeconds != nil {
-		m[v1alpha1.AttributeReceiveMessageWaitTimeSeconds] = strconv.FormatInt(aws.Int64Value(p.ReceiveMessageWaitTimeSeconds), 10)
-	}
-
-	if p.RedrivePolicy != nil && aws.StringValue(p.RedrivePolicy.DeadLetterQueueARN) != "" {
-		val, err := json.Marshal(p.RedrivePolicy)
-		if err == nil {
-			m[v1alpha1.AttributeRedrivePolicy] = string(val)
-		}
+	if p.ContentBasedDeduplication != nil {
+		m[v1alpha1.AttributeContentBasedDeduplication] = strconv.FormatBool(aws.BoolValue(p.ContentBasedDeduplication))
 	}
 	return m
 }
 
-// GenerateQueueTags returns a map of queue tags
-func GenerateQueueTags(tags []v1alpha1.Tag) map[string]string {
-	if len(tags) != 0 {
-		m := map[string]string{}
-		for _, val := range tags {
-			m[val.Key] = aws.StringValue(val.Value)
-		}
-		return m
+// GenerateQueueObservation returns a QueueObservation with information retrieved
+// from AWS.
+func GenerateQueueObservation(url string, attr map[string]string) v1alpha1.QueueObservation {
+	o := v1alpha1.QueueObservation{
+		URL: url,
+		ARN: attr[v1alpha1.AttributeQueueArn],
 	}
-	return nil
+	o.ApproximateNumberOfMessages, _ = strconv.ParseInt(attr[v1alpha1.AttributeApproximateNumberOfMessages], 10, 0)
+	o.ApproximateNumberOfMessagesDelayed, _ = strconv.ParseInt(attr[v1alpha1.AttributeApproximateNumberOfMessagesDelayed], 10, 0)
+	o.ApproximateNumberOfMessagesNotVisible, _ = strconv.ParseInt(attr[v1alpha1.AttributeApproximateNumberOfMessagesNotVisible], 10, 0)
+	if i, err := strconv.ParseInt(attr[v1alpha1.AttributeCreatedTimestamp], 10, 64); err == nil {
+		t := metav1.NewTime(time.Unix(i, 0))
+		o.CreatedTimestamp = &t
+	}
+	if i, err := strconv.ParseInt(attr[v1alpha1.AttributeLastModifiedTimestamp], 10, 64); err == nil {
+		t := metav1.NewTime(time.Unix(i, 0))
+		o.LastModifiedTimestamp = &t
+	}
+	return o
 }
 
 // IsNotFound checks if the error returned by AWS API says that the queue being probed doesn't exist
@@ -127,15 +139,13 @@ func IsNotFound(err error) bool {
 // LateInitialize fills the empty fields in *v1alpha1.QueueParameters with
 // the values seen in queue.Attributes
 func LateInitialize(in *v1alpha1.QueueParameters, attributes map[string]string, tags map[string]string) {
-	if in.Tags == nil && tags != nil {
+	if in.Tags == nil && len(tags) > 0 {
+		in.Tags = map[string]string{}
 		for k, v := range tags {
-			in.Tags = append(in.Tags, v1alpha1.Tag{Key: k, Value: aws.String(v)})
+			in.Tags[k] = v
 		}
 	}
 
-	if len(attributes) == 0 {
-		return
-	}
 	in.DelaySeconds = awsclients.LateInitializeInt64Ptr(in.DelaySeconds, int64Ptr(attributes[v1alpha1.AttributeDelaySeconds]))
 	in.KMSDataKeyReusePeriodSeconds = awsclients.LateInitializeInt64Ptr(in.KMSDataKeyReusePeriodSeconds, int64Ptr(attributes[v1alpha1.AttributeKmsDataKeyReusePeriodSeconds]))
 	in.MaximumMessageSize = awsclients.LateInitializeInt64Ptr(in.MaximumMessageSize, int64Ptr(attributes[v1alpha1.AttributeMaximumMessageSize]))
@@ -159,9 +169,9 @@ func IsUpToDate(p v1alpha1.QueueParameters, attributes map[string]string, tags m
 		return false
 	}
 
-	for _, tag := range p.Tags {
-		pVal, ok := tags[tag.Key]
-		if !ok || !strings.EqualFold(pVal, aws.StringValue(tag.Value)) {
+	for k, v := range p.Tags {
+		pVal, ok := tags[k]
+		if !ok || !strings.EqualFold(pVal, v) {
 			return false
 		}
 	}
@@ -201,9 +211,7 @@ func IsUpToDate(p v1alpha1.QueueParameters, attributes map[string]string, tags m
 }
 
 // TagsDiff returns the tags added and removed from spec when compared to the AWS SQS tags.
-func TagsDiff(sqsTags map[string]string, specTags []v1alpha1.Tag) (removed, added map[string]string) {
-	newTags := GenerateQueueTags(specTags)
-
+func TagsDiff(sqsTags map[string]string, newTags map[string]string) (removed, added map[string]string) {
 	removed = map[string]string{}
 	for k, v := range sqsTags {
 		if _, ok := newTags[k]; !ok {
