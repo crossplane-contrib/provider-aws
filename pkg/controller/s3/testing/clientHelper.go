@@ -72,6 +72,11 @@ func Client(m ...ClientModifier) *fake.MockBucketClient {
 				Request: CreateRequest(awserr.New(s3.WebsiteErrCode, "", nil), &awss3.GetBucketWebsiteOutput{}),
 			}
 		},
+		MockPutBucketAclRequest: func(input *awss3.PutBucketAclInput) awss3.PutBucketAclRequest {
+			return awss3.PutBucketAclRequest{
+				Request: CreateRequest(nil, &awss3.PutBucketAclOutput{}),
+			}
+		},
 	}
 	for _, v := range m {
 		v(client)
@@ -107,5 +112,12 @@ func WithGetSSE(input func(input *awss3.GetBucketEncryptionInput) awss3.GetBucke
 func WithDeleteSSE(input func(input *awss3.DeleteBucketEncryptionInput) awss3.DeleteBucketEncryptionRequest) ClientModifier {
 	return func(client *fake.MockBucketClient) {
 		client.MockDeleteBucketEncryptionRequest = input
+	}
+}
+
+// WithPutACL sets the MockPutBucketAclRequest of the mock S3 Client
+func WithPutACL(input func(input *awss3.PutBucketAclInput) awss3.PutBucketAclRequest) ClientModifier {
+	return func(client *fake.MockBucketClient) {
+		client.MockPutBucketAclRequest = input
 	}
 }

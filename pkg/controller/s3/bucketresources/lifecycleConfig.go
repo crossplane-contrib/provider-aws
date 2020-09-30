@@ -31,11 +31,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
-var _ BucketResource = &LifecycleConfigurationClient{}
-
 // LifecycleConfigurationClient is the client for API methods and reconciling the LifecycleConfiguration
 type LifecycleConfigurationClient struct {
-	config *v1beta1.BucketLifecycleConfiguration
 	client s3.BucketClient
 }
 
@@ -48,26 +45,27 @@ func (in *LifecycleConfigurationClient) LateInitialize(ctx context.Context, buck
 }
 
 // NewLifecycleConfigurationClient creates the client for Accelerate Configuration
-func NewLifecycleConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *LifecycleConfigurationClient {
-	return &LifecycleConfigurationClient{config: bucket.Spec.ForProvider.LifecycleConfiguration, client: client}
+func NewLifecycleConfigurationClient(client s3.BucketClient) *LifecycleConfigurationClient {
+	return &LifecycleConfigurationClient{client: client}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *LifecycleConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	conf, err := in.client.GetBucketLifecycleConfigurationRequest(&awss3.GetBucketLifecycleConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketLifecycleConfigurationRequest(&awss3.GetBucketLifecycleConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	config := bucket.Spec.ForProvider.LifecycleConfiguration
 	if err != nil {
-		if s3.LifecycleConfigurationNotFound(err) && in.config == nil {
+		if s3.LifecycleConfigurationNotFound(err) && config == nil {
 			return Updated, nil
 		}
 		return NeedsUpdate, errors.Wrap(err, lifecycleGetFailed)
 	}
 
 	switch {
-	case len(conf.Rules) != 0 && in.config == nil:
+	case len(external.Rules) != 0 && config == nil:
 		return NeedsDeletion, nil
-	case in.config == nil && len(conf.Rules) == 0:
+	case config == nil && len(external.Rules) == 0:
 		return Updated, nil
-	case cmp.Equal(conf.Rules, GenerateRules(in.config)):
+	case cmp.Equal(external.Rules, GenerateRules(config)):
 		return Updated, nil
 	default:
 		return NeedsUpdate, nil
@@ -75,10 +73,10 @@ func (in *LifecycleConfigurationClient) Observe(ctx context.Context, bucket *v1b
 }
 
 // GenerateLifecycleConfiguration creates the PutBucketLifecycleConfigurationInput for the AWS SDK
-func GenerateLifecycleConfiguration(name string, in *LifecycleConfigurationClient) *awss3.PutBucketLifecycleConfigurationInput {
+func GenerateLifecycleConfiguration(name string, config *v1beta1.BucketLifecycleConfiguration) *awss3.PutBucketLifecycleConfigurationInput {
 	return &awss3.PutBucketLifecycleConfigurationInput{
 		Bucket:                 aws.String(name),
-		LifecycleConfiguration: &awss3.BucketLifecycleConfiguration{Rules: GenerateRules(in.config)},
+		LifecycleConfiguration: &awss3.BucketLifecycleConfiguration{Rules: GenerateRules(config)},
 	}
 }
 
@@ -143,13 +141,12 @@ func GenerateRules(in *v1beta1.BucketLifecycleConfiguration) []awss3.LifecycleRu
 
 // CreateOrUpdate sends a request to have resource created on AWS
 func (in *LifecycleConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config == nil {
+	config := bucket.Spec.ForProvider.LifecycleConfiguration
+	if config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
 
-	config := GenerateLifecycleConfiguration(meta.GetExternalName(bucket), in)
-
-	_, err := in.client.PutBucketLifecycleConfigurationRequest(config).Send(ctx)
+	_, err := in.client.PutBucketLifecycleConfigurationRequest(GenerateLifecycleConfiguration(meta.GetExternalName(bucket), config)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, lifecyclePutFailed)
 
 }

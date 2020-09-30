@@ -39,10 +39,10 @@ var (
 
 // BucketPolicy type metadata.
 var (
-	S3BucketPolicyKind             = reflect.TypeOf(BucketPolicy{}).Name()
-	S3BucketPolicyGroupKind        = schema.GroupKind{Group: Group, Kind: S3BucketPolicyKind}.String()
-	S3BucketPolicyKindAPIVersion   = S3BucketPolicyKind + "." + SchemeGroupVersion.String()
-	S3BucketPolicyGroupVersionKind = SchemeGroupVersion.WithKind(S3BucketPolicyKind)
+	BucketPolicyKind             = reflect.TypeOf(BucketPolicy{}).Name()
+	BucketPolicyGroupKind        = schema.GroupKind{Group: Group, Kind: BucketPolicyKind}.String()
+	BucketPolicyKindAPIVersion   = BucketPolicyKind + "." + SchemeGroupVersion.String()
+	BucketPolicyGroupVersionKind = SchemeGroupVersion.WithKind(BucketPolicyKind)
 )
 
 func init() {

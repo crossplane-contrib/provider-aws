@@ -17,13 +17,13 @@ limitations under the License.
 package bucketresources
 
 import (
+	"context"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"golang.org/x/net/context"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
@@ -31,11 +31,12 @@ import (
 )
 
 var (
-	filterRuleName  = "prefix"
-	filterRuleValue = "value"
-	lambdaArn       = "lambda::123"
-	queueArn        = "queue::123"
-	topicArn        = "topic::123"
+	_               BucketResource = &NotificationConfigurationClient{}
+	filterRuleName                 = "prefix"
+	filterRuleValue                = "value"
+	lambdaArn                      = "lambda::123"
+	queueArn                       = "queue::123"
+	topicArn                       = "topic::123"
 )
 
 func generateNotificationEvents() []string {
@@ -132,16 +133,13 @@ func TestNotificationObserve(t *testing.T) {
 		"Error": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-				cl: NewNotificationConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-					fake.MockBucketClient{
-						MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-							return s3.GetBucketNotificationConfigurationRequest{
-								Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketNotificationConfigurationOutput{}),
-							}
-						},
+				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
+					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
+						return s3.GetBucketNotificationConfigurationRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketNotificationConfigurationOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: NeedsUpdate,
@@ -151,16 +149,13 @@ func TestNotificationObserve(t *testing.T) {
 		"UpdateNeededFull": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-				cl: NewNotificationConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-					fake.MockBucketClient{
-						MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-							return s3.GetBucketNotificationConfigurationRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{}),
-							}
-						},
+				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
+					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
+						return s3.GetBucketNotificationConfigurationRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: NeedsUpdate,
@@ -170,19 +165,16 @@ func TestNotificationObserve(t *testing.T) {
 		"UpdateNeededPartial": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-				cl: NewNotificationConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-					fake.MockBucketClient{
-						MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-							return s3.GetBucketNotificationConfigurationRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{
-									LambdaFunctionConfigurations: generateAWSNotification().LambdaFunctionConfigurations,
-									TopicConfigurations:          generateAWSNotification().TopicConfigurations,
-								}),
-							}
-						},
+				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
+					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
+						return s3.GetBucketNotificationConfigurationRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{
+								LambdaFunctionConfigurations: generateAWSNotification().LambdaFunctionConfigurations,
+								TopicConfigurations:          generateAWSNotification().TopicConfigurations,
+							}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: NeedsUpdate,
@@ -192,20 +184,17 @@ func TestNotificationObserve(t *testing.T) {
 		"NeedsDelete": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(nil)),
-				cl: NewNotificationConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithNotificationConfig(nil)),
-					fake.MockBucketClient{
-						MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-							return s3.GetBucketNotificationConfigurationRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{
-									LambdaFunctionConfigurations: generateAWSNotification().LambdaFunctionConfigurations,
-									QueueConfigurations:          generateAWSNotification().QueueConfigurations,
-									TopicConfigurations:          generateAWSNotification().TopicConfigurations,
-								}),
-							}
-						},
+				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
+					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
+						return s3.GetBucketNotificationConfigurationRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{
+								LambdaFunctionConfigurations: generateAWSNotification().LambdaFunctionConfigurations,
+								QueueConfigurations:          generateAWSNotification().QueueConfigurations,
+								TopicConfigurations:          generateAWSNotification().TopicConfigurations,
+							}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: NeedsDeletion,
@@ -215,16 +204,13 @@ func TestNotificationObserve(t *testing.T) {
 		"NoUpdateNotExists": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(nil)),
-				cl: NewNotificationConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithNotificationConfig(nil)),
-					fake.MockBucketClient{
-						MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-							return s3.GetBucketNotificationConfigurationRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{}),
-							}
-						},
+				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
+					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
+						return s3.GetBucketNotificationConfigurationRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: Updated,
@@ -234,20 +220,17 @@ func TestNotificationObserve(t *testing.T) {
 		"NoUpdateExists": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-				cl: NewNotificationConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-					fake.MockBucketClient{
-						MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-							return s3.GetBucketNotificationConfigurationRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{
-									LambdaFunctionConfigurations: generateAWSNotification().LambdaFunctionConfigurations,
-									QueueConfigurations:          generateAWSNotification().QueueConfigurations,
-									TopicConfigurations:          generateAWSNotification().TopicConfigurations,
-								}),
-							}
-						},
+				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
+					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
+						return s3.GetBucketNotificationConfigurationRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{
+								LambdaFunctionConfigurations: generateAWSNotification().LambdaFunctionConfigurations,
+								QueueConfigurations:          generateAWSNotification().QueueConfigurations,
+								TopicConfigurations:          generateAWSNotification().TopicConfigurations,
+							}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: Updated,
@@ -286,16 +269,13 @@ func TestNotificationCreateOrUpdate(t *testing.T) {
 		"Error": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-				cl: NewNotificationConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-					fake.MockBucketClient{
-						MockPutBucketNotificationConfigurationRequest: func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
-							return s3.PutBucketNotificationConfigurationRequest{
-								Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketNotificationConfigurationOutput{}),
-							}
-						},
+				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
+					MockPutBucketNotificationConfigurationRequest: func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
+						return s3.PutBucketNotificationConfigurationRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketNotificationConfigurationOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: errors.Wrap(errBoom, notificationPutFailed),
@@ -304,16 +284,13 @@ func TestNotificationCreateOrUpdate(t *testing.T) {
 		"InvalidConfig": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-				cl: NewNotificationConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithNotificationConfig(nil)),
-					fake.MockBucketClient{
-						MockPutBucketNotificationConfigurationRequest: func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
-							return s3.PutBucketNotificationConfigurationRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.PutBucketNotificationConfigurationOutput{}),
-							}
-						},
+				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
+					MockPutBucketNotificationConfigurationRequest: func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
+						return s3.PutBucketNotificationConfigurationRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.PutBucketNotificationConfigurationOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: nil,
@@ -322,16 +299,13 @@ func TestNotificationCreateOrUpdate(t *testing.T) {
 		"SuccessfulCreate": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-				cl: NewNotificationConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-					fake.MockBucketClient{
-						MockPutBucketNotificationConfigurationRequest: func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
-							return s3.PutBucketNotificationConfigurationRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.PutBucketNotificationConfigurationOutput{}),
-							}
-						},
+				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
+					MockPutBucketNotificationConfigurationRequest: func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
+						return s3.PutBucketNotificationConfigurationRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.PutBucketNotificationConfigurationOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: nil,
@@ -366,16 +340,13 @@ func TestNotificationDelete(t *testing.T) {
 		"Error": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-				cl: NewNotificationConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-					fake.MockBucketClient{
-						MockPutBucketNotificationConfigurationRequest: func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
-							return s3.PutBucketNotificationConfigurationRequest{
-								Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketNotificationConfigurationOutput{}),
-							}
-						},
+				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
+					MockPutBucketNotificationConfigurationRequest: func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
+						return s3.PutBucketNotificationConfigurationRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketNotificationConfigurationOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: errors.Wrap(errBoom, notificationDeleteFailed),
@@ -384,16 +355,13 @@ func TestNotificationDelete(t *testing.T) {
 		"SuccessfulDelete": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-				cl: NewNotificationConfigurationClient(
-					s3Testing.Bucket(),
-					fake.MockBucketClient{
-						MockPutBucketNotificationConfigurationRequest: func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
-							return s3.PutBucketNotificationConfigurationRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.PutBucketNotificationConfigurationOutput{}),
-							}
-						},
+				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
+					MockPutBucketNotificationConfigurationRequest: func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
+						return s3.PutBucketNotificationConfigurationRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.PutBucketNotificationConfigurationOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: nil,

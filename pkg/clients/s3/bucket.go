@@ -17,14 +17,15 @@ limitations under the License.
 package s3
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 var (
@@ -112,6 +113,17 @@ func IsNotFound(err error) bool {
 	return false
 }
 
+// IsAlreadyExists helper function to test for ErrCodeBucketAlreadyOwnedByYou error
+func IsAlreadyExists(err error) bool {
+	if err == nil {
+		return false
+	}
+	if bucketErr, ok := err.(awserr.Error); ok && bucketErr.Code() == s3.ErrCodeBucketAlreadyOwnedByYou {
+		return true
+	}
+	return false
+}
+
 // GenerateCreateBucketInput creates the input for CreateBucket S3 Client request
 func GenerateCreateBucketInput(name string, s v1beta1.BucketParameters) *s3.CreateBucketInput {
 	cbi := &s3.CreateBucketInput{
@@ -124,8 +136,8 @@ func GenerateCreateBucketInput(name string, s v1beta1.BucketParameters) *s3.Crea
 		GrantWriteACP:              s.GrantWriteACP,
 		ObjectLockEnabledForBucket: s.ObjectLockEnabledForBucket,
 	}
-	if awsclients.StringValue(s.LocationConstraint) != "us-east-1" {
-		cbi.CreateBucketConfiguration = &s3.CreateBucketConfiguration{LocationConstraint: s3.BucketLocationConstraint(awsclients.StringValue(s.LocationConstraint))}
+	if s.LocationConstraint != "us-east-1" {
+		cbi.CreateBucketConfiguration = &s3.CreateBucketConfiguration{LocationConstraint: s3.BucketLocationConstraint(s.LocationConstraint)}
 	}
 	return cbi
 }
@@ -183,4 +195,19 @@ func WebsiteConfigurationNotFound(err error) bool {
 		return true
 	}
 	return false
+}
+
+// UpdateBucketACL creates the ACLInput, sends the request to put an ACL based on the bucket
+func UpdateBucketACL(ctx context.Context, client BucketClient, bucket *v1beta1.Bucket) error {
+	config := &s3.PutBucketAclInput{
+		ACL:              s3.BucketCannedACL(aws.StringValue(bucket.Spec.ForProvider.ACL)),
+		Bucket:           aws.String(meta.GetExternalName(bucket)),
+		GrantFullControl: bucket.Spec.ForProvider.GrantFullControl,
+		GrantRead:        bucket.Spec.ForProvider.GrantRead,
+		GrantReadACP:     bucket.Spec.ForProvider.GrantReadACP,
+		GrantWrite:       bucket.Spec.ForProvider.GrantWrite,
+		GrantWriteACP:    bucket.Spec.ForProvider.GrantWriteACP,
+	}
+	_, err := client.PutBucketAclRequest(config).Send(ctx)
+	return err
 }

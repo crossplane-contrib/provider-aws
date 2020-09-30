@@ -30,52 +30,50 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
-var _ BucketResource = &NotificationConfigurationClient{}
-
 // NotificationConfigurationClient is the client for API methods and reconciling the LifecycleConfiguration
 type NotificationConfigurationClient struct {
-	config *v1beta1.NotificationConfiguration
 	client s3.BucketClient
 }
 
 // LateInitialize is responsible for initializing the resource based on the external value
 func (in *NotificationConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	conf, err := in.client.GetBucketNotificationConfigurationRequest(&awss3.GetBucketNotificationConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketNotificationConfigurationRequest(&awss3.GetBucketNotificationConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		return errors.Wrap(err, notificationGetFailed)
 	}
-	if emptyConfiguration(conf) {
+	if emptyConfiguration(external) {
 		// There is nothing to initialize from AWS
 		return nil
 	}
-	if in.config == nil {
+	config := bucket.Spec.ForProvider.NotificationConfiguration
+	if config == nil {
 		// We need the configuration to exist so we can initialize
 		bucket.Spec.ForProvider.NotificationConfiguration = &v1beta1.NotificationConfiguration{}
-		in.config = bucket.Spec.ForProvider.NotificationConfiguration
+		config = bucket.Spec.ForProvider.NotificationConfiguration
 	}
 
 	// A list is provided by AWS
-	if conf.LambdaFunctionConfigurations != nil {
-		if in.config.LambdaFunctionConfigurations == nil {
-			in.config.LambdaFunctionConfigurations = make([]v1beta1.LambdaFunctionConfiguration, len(conf.LambdaFunctionConfigurations))
+	if external.LambdaFunctionConfigurations != nil {
+		if config.LambdaFunctionConfigurations == nil {
+			config.LambdaFunctionConfigurations = make([]v1beta1.LambdaFunctionConfiguration, len(external.LambdaFunctionConfigurations))
 		}
-		LateInitializeLambda(conf.LambdaFunctionConfigurations, in.config.LambdaFunctionConfigurations)
+		LateInitializeLambda(external.LambdaFunctionConfigurations, config.LambdaFunctionConfigurations)
 	}
 
 	// A list is provided by AWS
-	if conf.QueueConfigurations != nil {
-		if in.config.QueueConfigurations == nil {
-			in.config.QueueConfigurations = make([]v1beta1.QueueConfiguration, len(conf.QueueConfigurations))
+	if external.QueueConfigurations != nil {
+		if config.QueueConfigurations == nil {
+			config.QueueConfigurations = make([]v1beta1.QueueConfiguration, len(external.QueueConfigurations))
 		}
-		LateInitializeQueue(conf.QueueConfigurations, in.config.QueueConfigurations)
+		LateInitializeQueue(external.QueueConfigurations, config.QueueConfigurations)
 	}
 
 	// A list is provided by AWS
-	if conf.TopicConfigurations != nil {
-		if in.config.TopicConfigurations == nil {
-			in.config.TopicConfigurations = make([]v1beta1.TopicConfiguration, len(conf.TopicConfigurations))
+	if external.TopicConfigurations != nil {
+		if config.TopicConfigurations == nil {
+			config.TopicConfigurations = make([]v1beta1.TopicConfiguration, len(external.TopicConfigurations))
 		}
-		LateInitializeTopic(conf.TopicConfigurations, in.config.TopicConfigurations)
+		LateInitializeTopic(external.TopicConfigurations, config.TopicConfigurations)
 	}
 	return nil
 }
@@ -163,8 +161,8 @@ func LateInitializeTopic(external []awss3.TopicConfiguration, local []v1beta1.To
 }
 
 // NewNotificationConfigurationClient creates the client for Accelerate Configuration
-func NewNotificationConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *NotificationConfigurationClient {
-	return &NotificationConfigurationClient{config: bucket.Spec.ForProvider.NotificationConfiguration, client: client}
+func NewNotificationConfigurationClient(client s3.BucketClient) *NotificationConfigurationClient {
+	return &NotificationConfigurationClient{client: client}
 }
 
 func emptyConfiguration(external *awss3.GetBucketNotificationConfigurationResponse) bool {
@@ -182,22 +180,23 @@ func bucketStatus(config *v1beta1.NotificationConfiguration, external *awss3.Get
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *NotificationConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	conf, err := in.client.GetBucketNotificationConfigurationRequest(&awss3.GetBucketNotificationConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketNotificationConfigurationRequest(&awss3.GetBucketNotificationConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		return NeedsUpdate, errors.Wrap(err, notificationGetFailed)
 	}
 
-	status := bucketStatus(in.config, conf)
+	config := bucket.Spec.ForProvider.NotificationConfiguration
+	status := bucketStatus(config, external)
 	switch status { // nolint:exhaustive
 	case Updated, NeedsDeletion:
 		return status, nil
 	}
 
-	generated := in.generateConfiguration()
+	generated := GenerateConfiguration(config)
 
-	if cmp.Equal(conf.LambdaFunctionConfigurations, generated.LambdaFunctionConfigurations) &&
-		cmp.Equal(conf.QueueConfigurations, generated.QueueConfigurations) &&
-		cmp.Equal(conf.TopicConfigurations, generated.TopicConfigurations) {
+	if cmp.Equal(external.LambdaFunctionConfigurations, generated.LambdaFunctionConfigurations) &&
+		cmp.Equal(external.QueueConfigurations, generated.QueueConfigurations) &&
+		cmp.Equal(external.TopicConfigurations, generated.TopicConfigurations) {
 		return Updated, nil
 	}
 
@@ -234,12 +233,13 @@ func generateFilter(src *v1beta1.NotificationConfigurationFilter) *awss3.Notific
 	return out
 }
 
-func (in *NotificationConfigurationClient) generateLambdaConfiguration() []awss3.LambdaFunctionConfiguration {
-	if in.config.LambdaFunctionConfigurations == nil {
+// GenerateLambdaConfiguration creates []awss3.LambdaFunctionConfiguration from the local NotificationConfiguration
+func GenerateLambdaConfiguration(config *v1beta1.NotificationConfiguration) []awss3.LambdaFunctionConfiguration {
+	if config.LambdaFunctionConfigurations == nil {
 		return make([]awss3.LambdaFunctionConfiguration, 0)
 	}
-	configurations := make([]awss3.LambdaFunctionConfiguration, len(in.config.LambdaFunctionConfigurations))
-	for i, v := range in.config.LambdaFunctionConfigurations {
+	configurations := make([]awss3.LambdaFunctionConfiguration, len(config.LambdaFunctionConfigurations))
+	for i, v := range config.LambdaFunctionConfigurations {
 		conf := awss3.LambdaFunctionConfiguration{
 			Filter:            nil,
 			Id:                v.ID,
@@ -256,12 +256,13 @@ func (in *NotificationConfigurationClient) generateLambdaConfiguration() []awss3
 	return configurations
 }
 
-func (in *NotificationConfigurationClient) generateTopicConfigurations() []awss3.TopicConfiguration {
-	if in.config.TopicConfigurations == nil {
+// GenerateTopicConfigurations creates []awss3.TopicConfiguration from the local NotificationConfiguration
+func GenerateTopicConfigurations(config *v1beta1.NotificationConfiguration) []awss3.TopicConfiguration {
+	if config.TopicConfigurations == nil {
 		return make([]awss3.TopicConfiguration, 0)
 	}
-	configurations := make([]awss3.TopicConfiguration, len(in.config.TopicConfigurations))
-	for i, v := range in.config.TopicConfigurations {
+	configurations := make([]awss3.TopicConfiguration, len(config.TopicConfigurations))
+	for i, v := range config.TopicConfigurations {
 		conf := awss3.TopicConfiguration{
 			Id:       v.ID,
 			TopicArn: aws.String(v.TopicArn),
@@ -277,12 +278,13 @@ func (in *NotificationConfigurationClient) generateTopicConfigurations() []awss3
 	return configurations
 }
 
-func (in *NotificationConfigurationClient) generateQueueConfigurations() []awss3.QueueConfiguration {
-	if in.config.QueueConfigurations == nil {
+// GenerateQueueConfigurations creates []awss3.QueueConfiguration from the local NotificationConfiguration
+func GenerateQueueConfigurations(config *v1beta1.NotificationConfiguration) []awss3.QueueConfiguration {
+	if config.QueueConfigurations == nil {
 		return make([]awss3.QueueConfiguration, 0)
 	}
-	configurations := make([]awss3.QueueConfiguration, len(in.config.QueueConfigurations))
-	for i, v := range in.config.QueueConfigurations {
+	configurations := make([]awss3.QueueConfiguration, len(config.QueueConfigurations))
+	for i, v := range config.QueueConfigurations {
 		conf := awss3.QueueConfiguration{
 			Filter:   nil,
 			Id:       v.ID,
@@ -299,38 +301,40 @@ func (in *NotificationConfigurationClient) generateQueueConfigurations() []awss3
 	return configurations
 }
 
-func (in *NotificationConfigurationClient) generateConfiguration() *awss3.NotificationConfiguration {
-	conf := &awss3.NotificationConfiguration{}
-	lambda := in.generateLambdaConfiguration()
+// GenerateConfiguration creates the external aws NotificationConfiguration from the local representation
+func GenerateConfiguration(config *v1beta1.NotificationConfiguration) *awss3.NotificationConfiguration {
+	awsConfig := &awss3.NotificationConfiguration{}
+	lambda := GenerateLambdaConfiguration(config)
 	if len(lambda) != 0 {
-		conf.LambdaFunctionConfigurations = lambda
+		awsConfig.LambdaFunctionConfigurations = lambda
 	}
-	queue := in.generateQueueConfigurations()
+	queue := GenerateQueueConfigurations(config)
 	if len(lambda) != 0 {
-		conf.QueueConfigurations = queue
+		awsConfig.QueueConfigurations = queue
 	}
-	topic := in.generateTopicConfigurations()
+	topic := GenerateTopicConfigurations(config)
 	if len(lambda) != 0 {
-		conf.TopicConfigurations = topic
+		awsConfig.TopicConfigurations = topic
 	}
-	return conf
+	return awsConfig
 }
 
 // GenerateNotificationConfigurationInput creates the input for the LifecycleConfiguration request for the S3 Client
-func GenerateNotificationConfigurationInput(name string, in *NotificationConfigurationClient) *awss3.PutBucketNotificationConfigurationInput {
-	conf := in.generateConfiguration()
+func GenerateNotificationConfigurationInput(name string, config *v1beta1.NotificationConfiguration) *awss3.PutBucketNotificationConfigurationInput {
+	awsConfig := GenerateConfiguration(config)
 	return &awss3.PutBucketNotificationConfigurationInput{
 		Bucket:                    aws.String(name),
-		NotificationConfiguration: conf,
+		NotificationConfiguration: awsConfig,
 	}
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS
 func (in *NotificationConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config == nil {
+	config := bucket.Spec.ForProvider.NotificationConfiguration
+	if config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	input := GenerateNotificationConfigurationInput(meta.GetExternalName(bucket), in)
+	input := GenerateNotificationConfigurationInput(meta.GetExternalName(bucket), config)
 	_, err := in.client.PutBucketNotificationConfigurationRequest(input).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, notificationPutFailed)
 }

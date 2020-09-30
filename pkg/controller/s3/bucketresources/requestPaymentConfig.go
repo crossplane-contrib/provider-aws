@@ -29,50 +29,49 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
-var _ BucketResource = &RequestPaymentConfigurationClient{}
-
 // RequestPaymentConfigurationClient is the client for API methods and reconciling the PaymentConfiguration
 type RequestPaymentConfigurationClient struct {
-	config *v1beta1.PaymentConfiguration
 	client s3.BucketClient
 }
 
 // LateInitialize is responsible for initializing the resource based on the external value
 func (in *RequestPaymentConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	conf, err := in.client.GetBucketRequestPaymentRequest(&awss3.GetBucketRequestPaymentInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketRequestPaymentRequest(&awss3.GetBucketRequestPaymentInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		return errors.Wrap(err, paymentGetFailed)
 	}
 
-	if len(conf.Payer) == 0 {
+	if len(external.Payer) == 0 {
 		return nil
 	}
-	if in.config == nil {
+	config := bucket.Spec.ForProvider.PayerConfiguration
+	if config == nil {
 		bucket.Spec.ForProvider.PayerConfiguration = &v1beta1.PaymentConfiguration{}
-		in.config = bucket.Spec.ForProvider.PayerConfiguration
+		config = bucket.Spec.ForProvider.PayerConfiguration
 	}
-	in.config.Payer = aws.LateInitializeString(in.config.Payer, aws.String(string(conf.Payer)))
+	config.Payer = aws.LateInitializeString(config.Payer, aws.String(string(external.Payer)))
 	return nil
 }
 
 // NewRequestPaymentConfigurationClient creates the client for Payment Configuration
-func NewRequestPaymentConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *RequestPaymentConfigurationClient {
-	return &RequestPaymentConfigurationClient{config: bucket.Spec.ForProvider.PayerConfiguration, client: client}
+func NewRequestPaymentConfigurationClient(client s3.BucketClient) *RequestPaymentConfigurationClient {
+	return &RequestPaymentConfigurationClient{client: client}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *RequestPaymentConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	conf, err := in.client.GetBucketRequestPaymentRequest(&awss3.GetBucketRequestPaymentInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketRequestPaymentRequest(&awss3.GetBucketRequestPaymentInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		return NeedsUpdate, errors.Wrap(err, paymentGetFailed)
 	}
+	config := bucket.Spec.ForProvider.PayerConfiguration
 
 	switch {
-	case in.config == nil && len(conf.Payer) == 0:
+	case config == nil && len(external.Payer) == 0:
 		return Updated, nil
-	case in.config == nil && len(conf.Payer) != 0:
+	case config == nil && len(external.Payer) != 0:
 		return NeedsUpdate, nil
-	case in.config.Payer != string(conf.Payer):
+	case config.Payer != string(external.Payer):
 		return NeedsUpdate, nil
 	default:
 		return Updated, nil
@@ -80,21 +79,21 @@ func (in *RequestPaymentConfigurationClient) Observe(ctx context.Context, bucket
 }
 
 // GeneratePutBucketPaymentInput creates the input for the BucketRequestPayment request for the S3 Client
-func GeneratePutBucketPaymentInput(name string, in *RequestPaymentConfigurationClient) *awss3.PutBucketRequestPaymentInput {
+func GeneratePutBucketPaymentInput(name string, config *v1beta1.PaymentConfiguration) *awss3.PutBucketRequestPaymentInput {
 	bci := &awss3.PutBucketRequestPaymentInput{
 		Bucket:                      aws.String(name),
-		RequestPaymentConfiguration: &awss3.RequestPaymentConfiguration{Payer: awss3.Payer(in.config.Payer)},
+		RequestPaymentConfiguration: &awss3.RequestPaymentConfiguration{Payer: awss3.Payer(config.Payer)},
 	}
-
 	return bci
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS.
 func (in *RequestPaymentConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config == nil {
+	config := bucket.Spec.ForProvider.PayerConfiguration
+	if config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketRequestPaymentRequest(GeneratePutBucketPaymentInput(meta.GetExternalName(bucket), in)).Send(ctx)
+	_, err := in.client.PutBucketRequestPaymentRequest(GeneratePutBucketPaymentInput(meta.GetExternalName(bucket), config)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, paymentPutFailed)
 }
 

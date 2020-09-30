@@ -17,13 +17,13 @@ limitations under the License.
 package bucketresources
 
 import (
+	"context"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"golang.org/x/net/context"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
@@ -31,7 +31,8 @@ import (
 )
 
 var (
-	payer = "Requester"
+	payer                = "Requester"
+	_     BucketResource = &RequestPaymentConfigurationClient{}
 )
 
 func generateRequestPaymentConfig() *v1beta1.PaymentConfiguration {
@@ -64,16 +65,13 @@ func TestRequestPaymentObserve(t *testing.T) {
 		"Error": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
-				cl: NewRequestPaymentConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
-					fake.MockBucketClient{
-						MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
-							return s3.GetBucketRequestPaymentRequest{
-								Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketRequestPaymentOutput{Payer: generateAWSPayment().Payer}),
-							}
-						},
+				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
+					MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
+						return s3.GetBucketRequestPaymentRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketRequestPaymentOutput{Payer: generateAWSPayment().Payer}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: NeedsUpdate,
@@ -83,16 +81,13 @@ func TestRequestPaymentObserve(t *testing.T) {
 		"UpdateNeeded": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
-				cl: NewRequestPaymentConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
-					fake.MockBucketClient{
-						MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
-							return s3.GetBucketRequestPaymentRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketRequestPaymentOutput{}),
-							}
-						},
+				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
+					MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
+						return s3.GetBucketRequestPaymentRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketRequestPaymentOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: NeedsUpdate,
@@ -102,16 +97,13 @@ func TestRequestPaymentObserve(t *testing.T) {
 		"NoUpdateExists": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
-				cl: NewRequestPaymentConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
-					fake.MockBucketClient{
-						MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
-							return s3.GetBucketRequestPaymentRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketRequestPaymentOutput{Payer: generateAWSPayment().Payer}),
-							}
-						},
+				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
+					MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
+						return s3.GetBucketRequestPaymentRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketRequestPaymentOutput{Payer: generateAWSPayment().Payer}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: Updated,
@@ -150,16 +142,13 @@ func TestRequestPaymentCreateOrUpdate(t *testing.T) {
 		"Error": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
-				cl: NewRequestPaymentConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
-					fake.MockBucketClient{
-						MockPutBucketRequestPaymentRequest: func(input *s3.PutBucketRequestPaymentInput) s3.PutBucketRequestPaymentRequest {
-							return s3.PutBucketRequestPaymentRequest{
-								Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketRequestPaymentOutput{}),
-							}
-						},
+				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
+					MockPutBucketRequestPaymentRequest: func(input *s3.PutBucketRequestPaymentInput) s3.PutBucketRequestPaymentRequest {
+						return s3.PutBucketRequestPaymentRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketRequestPaymentOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: errors.Wrap(errBoom, paymentPutFailed),
@@ -168,16 +157,13 @@ func TestRequestPaymentCreateOrUpdate(t *testing.T) {
 		"InvalidConfig": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
-				cl: NewRequestPaymentConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithPayerConfig(nil)),
-					fake.MockBucketClient{
-						MockPutBucketRequestPaymentRequest: func(input *s3.PutBucketRequestPaymentInput) s3.PutBucketRequestPaymentRequest {
-							return s3.PutBucketRequestPaymentRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.PutBucketRequestPaymentOutput{}),
-							}
-						},
+				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
+					MockPutBucketRequestPaymentRequest: func(input *s3.PutBucketRequestPaymentInput) s3.PutBucketRequestPaymentRequest {
+						return s3.PutBucketRequestPaymentRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.PutBucketRequestPaymentOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: nil,
@@ -186,16 +172,13 @@ func TestRequestPaymentCreateOrUpdate(t *testing.T) {
 		"SuccessfulCreate": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
-				cl: NewRequestPaymentConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
-					fake.MockBucketClient{
-						MockPutBucketRequestPaymentRequest: func(input *s3.PutBucketRequestPaymentInput) s3.PutBucketRequestPaymentRequest {
-							return s3.PutBucketRequestPaymentRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.PutBucketRequestPaymentOutput{}),
-							}
-						},
+				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
+					MockPutBucketRequestPaymentRequest: func(input *s3.PutBucketRequestPaymentInput) s3.PutBucketRequestPaymentRequest {
+						return s3.PutBucketRequestPaymentRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.PutBucketRequestPaymentOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: nil,

@@ -17,6 +17,7 @@ limitations under the License.
 package bucketresources
 
 import (
+	"context"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
@@ -24,7 +25,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	"golang.org/x/net/context"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
@@ -33,8 +33,9 @@ import (
 )
 
 var (
-	sseAlgo = "AES256"
-	keyID   = "test-key-id"
+	sseAlgo                = "AES256"
+	keyID                  = "test-key-id"
+	_       BucketResource = &SSEConfigurationClient{}
 )
 
 func generateSSEConfig() *v1beta1.ServerSideEncryptionConfiguration {
@@ -81,16 +82,13 @@ func TestSSEObserve(t *testing.T) {
 		"Error": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
-				cl: NewSSEConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
-					fake.MockBucketClient{
-						MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
-							return s3.GetBucketEncryptionRequest{
-								Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketEncryptionOutput{}),
-							}
-						},
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
+						return s3.GetBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketEncryptionOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: NeedsUpdate,
@@ -100,16 +98,13 @@ func TestSSEObserve(t *testing.T) {
 		"UpdateNeeded": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
-				cl: NewSSEConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
-					fake.MockBucketClient{
-						MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
-							return s3.GetBucketEncryptionRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketEncryptionOutput{ServerSideEncryptionConfiguration: nil}),
-							}
-						},
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
+						return s3.GetBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketEncryptionOutput{ServerSideEncryptionConfiguration: nil}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: NeedsUpdate,
@@ -119,16 +114,13 @@ func TestSSEObserve(t *testing.T) {
 		"NeedsDelete": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithSSEConfig(nil)),
-				cl: NewSSEConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithSSEConfig(nil)),
-					fake.MockBucketClient{
-						MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
-							return s3.GetBucketEncryptionRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketEncryptionOutput{ServerSideEncryptionConfiguration: generateAWSSSE()}),
-							}
-						},
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
+						return s3.GetBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketEncryptionOutput{ServerSideEncryptionConfiguration: generateAWSSSE()}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: NeedsDeletion,
@@ -138,16 +130,13 @@ func TestSSEObserve(t *testing.T) {
 		"NoUpdateNotExists": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithSSEConfig(nil)),
-				cl: NewSSEConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithSSEConfig(nil)),
-					fake.MockBucketClient{
-						MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
-							return s3.GetBucketEncryptionRequest{
-								Request: s3Testing.CreateRequest(awserr.New(clients3.SSEErrCode, "", nil), &s3.GetBucketEncryptionOutput{}),
-							}
-						},
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
+						return s3.GetBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(awserr.New(clients3.SSEErrCode, "", nil), &s3.GetBucketEncryptionOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: Updated,
@@ -157,16 +146,13 @@ func TestSSEObserve(t *testing.T) {
 		"NoUpdateNotExistsNil": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithSSEConfig(nil)),
-				cl: NewSSEConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithSSEConfig(nil)),
-					fake.MockBucketClient{
-						MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
-							return s3.GetBucketEncryptionRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketEncryptionOutput{ServerSideEncryptionConfiguration: nil}),
-							}
-						},
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
+						return s3.GetBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketEncryptionOutput{ServerSideEncryptionConfiguration: nil}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: Updated,
@@ -176,16 +162,13 @@ func TestSSEObserve(t *testing.T) {
 		"NoUpdateExists": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
-				cl: NewSSEConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
-					fake.MockBucketClient{
-						MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
-							return s3.GetBucketEncryptionRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.GetBucketEncryptionOutput{ServerSideEncryptionConfiguration: generateAWSSSE()}),
-							}
-						},
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
+						return s3.GetBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketEncryptionOutput{ServerSideEncryptionConfiguration: generateAWSSSE()}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				status: Updated,
@@ -224,16 +207,13 @@ func TestSSECreateOrUpdate(t *testing.T) {
 		"Error": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
-				cl: NewSSEConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
-					fake.MockBucketClient{
-						MockPutBucketEncryptionRequest: func(input *s3.PutBucketEncryptionInput) s3.PutBucketEncryptionRequest {
-							return s3.PutBucketEncryptionRequest{
-								Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketEncryptionOutput{}),
-							}
-						},
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockPutBucketEncryptionRequest: func(input *s3.PutBucketEncryptionInput) s3.PutBucketEncryptionRequest {
+						return s3.PutBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketEncryptionOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: errors.Wrap(errBoom, ssePutFailed),
@@ -242,16 +222,13 @@ func TestSSECreateOrUpdate(t *testing.T) {
 		"InvalidConfig": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
-				cl: NewSSEConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithSSEConfig(nil)),
-					fake.MockBucketClient{
-						MockPutBucketEncryptionRequest: func(input *s3.PutBucketEncryptionInput) s3.PutBucketEncryptionRequest {
-							return s3.PutBucketEncryptionRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.PutBucketEncryptionOutput{}),
-							}
-						},
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockPutBucketEncryptionRequest: func(input *s3.PutBucketEncryptionInput) s3.PutBucketEncryptionRequest {
+						return s3.PutBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.PutBucketEncryptionOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: nil,
@@ -260,16 +237,13 @@ func TestSSECreateOrUpdate(t *testing.T) {
 		"SuccessfulCreate": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
-				cl: NewSSEConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
-					fake.MockBucketClient{
-						MockPutBucketEncryptionRequest: func(input *s3.PutBucketEncryptionInput) s3.PutBucketEncryptionRequest {
-							return s3.PutBucketEncryptionRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.PutBucketEncryptionOutput{}),
-							}
-						},
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockPutBucketEncryptionRequest: func(input *s3.PutBucketEncryptionInput) s3.PutBucketEncryptionRequest {
+						return s3.PutBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.PutBucketEncryptionOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: nil,
@@ -304,16 +278,13 @@ func TestSSEDelete(t *testing.T) {
 		"Error": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
-				cl: NewSSEConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
-					fake.MockBucketClient{
-						MockDeleteBucketEncryptionRequest: func(input *s3.DeleteBucketEncryptionInput) s3.DeleteBucketEncryptionRequest {
-							return s3.DeleteBucketEncryptionRequest{
-								Request: s3Testing.CreateRequest(errBoom, &s3.DeleteBucketEncryptionOutput{}),
-							}
-						},
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockDeleteBucketEncryptionRequest: func(input *s3.DeleteBucketEncryptionInput) s3.DeleteBucketEncryptionRequest {
+						return s3.DeleteBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.DeleteBucketEncryptionOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: errors.Wrap(errBoom, sseDeleteFailed),
@@ -322,16 +293,13 @@ func TestSSEDelete(t *testing.T) {
 		"SuccessfulDelete": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
-				cl: NewSSEConfigurationClient(
-					s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
-					fake.MockBucketClient{
-						MockDeleteBucketEncryptionRequest: func(input *s3.DeleteBucketEncryptionInput) s3.DeleteBucketEncryptionRequest {
-							return s3.DeleteBucketEncryptionRequest{
-								Request: s3Testing.CreateRequest(nil, &s3.DeleteBucketEncryptionOutput{}),
-							}
-						},
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockDeleteBucketEncryptionRequest: func(input *s3.DeleteBucketEncryptionInput) s3.DeleteBucketEncryptionRequest {
+						return s3.DeleteBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.DeleteBucketEncryptionOutput{}),
+						}
 					},
-				),
+				}),
 			},
 			want: want{
 				err: nil,

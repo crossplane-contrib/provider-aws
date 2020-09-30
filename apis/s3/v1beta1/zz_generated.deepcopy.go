@@ -179,11 +179,6 @@ func (in *BucketParameters) DeepCopyInto(out *BucketParameters) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.LocationConstraint != nil {
-		in, out := &in.LocationConstraint, &out.LocationConstraint
-		*out = new(string)
-		**out = **in
-	}
 	if in.GrantFullControl != nil {
 		in, out := &in.GrantFullControl, &out.GrantFullControl
 		*out = new(string)

@@ -30,11 +30,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
-var _ BucketResource = &TaggingConfigurationClient{}
-
 // TaggingConfigurationClient is the client for API methods and reconciling the CORSConfiguration
 type TaggingConfigurationClient struct {
-	config *v1beta1.Tagging
 	client s3.BucketClient
 }
 
@@ -47,26 +44,27 @@ func (in *TaggingConfigurationClient) LateInitialize(ctx context.Context, bucket
 }
 
 // NewTaggingConfigurationClient creates the client for CORS Configuration
-func NewTaggingConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *TaggingConfigurationClient {
-	return &TaggingConfigurationClient{config: bucket.Spec.ForProvider.BucketTagging, client: client}
+func NewTaggingConfigurationClient(client s3.BucketClient) *TaggingConfigurationClient {
+	return &TaggingConfigurationClient{client: client}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	conf, err := in.client.GetBucketTaggingRequest(&awss3.GetBucketTaggingInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketTaggingRequest(&awss3.GetBucketTaggingInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	config := bucket.Spec.ForProvider.BucketTagging
 	if err != nil {
-		if s3.TaggingNotFound(err) && in.config == nil {
+		if s3.TaggingNotFound(err) && config == nil {
 			return Updated, nil
 		}
 		return NeedsUpdate, errors.Wrap(err, taggingGetFailed)
 	}
 
 	switch {
-	case in.config == nil && len(conf.TagSet) == 0:
+	case config == nil && len(external.TagSet) == 0:
 		return Updated, nil
-	case in.config == nil && len(conf.TagSet) != 0:
+	case config == nil && len(external.TagSet) != 0:
 		return NeedsDeletion, nil
-	case cmp.Equal(conf.TagSet, GenerateTagging(in).TagSet):
+	case cmp.Equal(external.TagSet, GenerateTagging(config).TagSet):
 		return Updated, nil
 	default:
 		return NeedsUpdate, nil
@@ -74,12 +72,12 @@ func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 }
 
 // GenerateTagging creates the Tagging for the AWS SDK
-func GenerateTagging(in *TaggingConfigurationClient) *awss3.Tagging {
-	if in.config == nil || in.config.TagSet == nil {
+func GenerateTagging(config *v1beta1.Tagging) *awss3.Tagging {
+	if config == nil || config.TagSet == nil {
 		return &awss3.Tagging{TagSet: make([]awss3.Tag, 0)}
 	}
-	conf := &awss3.Tagging{TagSet: make([]awss3.Tag, len(in.config.TagSet))}
-	for i, v := range in.config.TagSet {
+	conf := &awss3.Tagging{TagSet: make([]awss3.Tag, len(config.TagSet))}
+	for i, v := range config.TagSet {
 		conf.TagSet[i] = awss3.Tag{
 			Key:   aws.String(v.Key),
 			Value: aws.String(v.Value),
@@ -89,19 +87,20 @@ func GenerateTagging(in *TaggingConfigurationClient) *awss3.Tagging {
 }
 
 // GeneratePutBucketTagging creates the PutBucketTaggingInput for the aws SDK
-func GeneratePutBucketTagging(name string, in *TaggingConfigurationClient) *awss3.PutBucketTaggingInput {
+func GeneratePutBucketTagging(name string, config *v1beta1.Tagging) *awss3.PutBucketTaggingInput {
 	return &awss3.PutBucketTaggingInput{
 		Bucket:  aws.String(name),
-		Tagging: GenerateTagging(in),
+		Tagging: GenerateTagging(config),
 	}
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS
 func (in *TaggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config == nil {
+	config := bucket.Spec.ForProvider.BucketTagging
+	if config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketTaggingRequest(GeneratePutBucketTagging(meta.GetExternalName(bucket), in)).Send(ctx)
+	_, err := in.client.PutBucketTaggingRequest(GeneratePutBucketTagging(meta.GetExternalName(bucket), config)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, taggingPutFailed)
 }
 

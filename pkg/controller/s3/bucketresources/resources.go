@@ -25,7 +25,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
-var (
+const (
 	accelGetFailed           = "cannot get Bucket accelerate configuration"
 	accelPutFailed           = "cannot put Bucket acceleration configuration"
 	accelDeleteFailed        = "cannot delete Bucket acceleration configuration"
@@ -71,17 +71,17 @@ type BucketResource interface {
 // MakeControllers creates the array of all clients for a given BucketProvider
 func MakeControllers(bucket *v1beta1.Bucket, client s3.BucketClient) []BucketResource {
 	clients := make([]BucketResource, 0)
-	clients = append(clients, NewAccelerateConfigurationClient(bucket, client),
-		NewCORSConfigurationClient(bucket, client),
-		NewLifecycleConfigurationClient(bucket, client),
-		NewLoggingConfigurationClient(bucket, client),
-		NewNotificationConfigurationClient(bucket, client),
-		NewReplicationConfigurationClient(bucket, client),
-		NewRequestPaymentConfigurationClient(bucket, client),
-		NewSSEConfigurationClient(bucket, client),
-		NewTaggingConfigurationClient(bucket, client),
-		NewVersioningConfigurationClient(bucket, client),
-		NewWebsiteConfigurationClient(bucket, client),
+	clients = append(clients, NewAccelerateConfigurationClient(client),
+		NewCORSConfigurationClient(client),
+		NewLifecycleConfigurationClient(client),
+		NewLoggingConfigurationClient(client),
+		NewNotificationConfigurationClient(client),
+		NewReplicationConfigurationClient(client),
+		NewRequestPaymentConfigurationClient(client),
+		NewSSEConfigurationClient(client),
+		NewTaggingConfigurationClient(client),
+		NewVersioningConfigurationClient(client),
+		NewWebsiteConfigurationClient(client),
 	)
 	return clients
 }

@@ -29,11 +29,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
-var _ BucketResource = &SSEConfigurationClient{}
-
 // SSEConfigurationClient is the client for API methods and reconciling the ServerSideEncryptionConfiguration
 type SSEConfigurationClient struct {
-	config *v1beta1.ServerSideEncryptionConfiguration
 	client s3.BucketClient
 }
 
@@ -46,32 +43,33 @@ func (in *SSEConfigurationClient) LateInitialize(ctx context.Context, bucket *v1
 }
 
 // NewSSEConfigurationClient creates the client for Server Side Encryption Configuration
-func NewSSEConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *SSEConfigurationClient {
-	return &SSEConfigurationClient{config: bucket.Spec.ForProvider.ServerSideEncryptionConfiguration, client: client}
+func NewSSEConfigurationClient(client s3.BucketClient) *SSEConfigurationClient {
+	return &SSEConfigurationClient{client: client}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
-	enc, err := in.client.GetBucketEncryptionRequest(&awss3.GetBucketEncryptionInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
-	if err != nil && s3.SSEConfigurationNotFound(err) && in.config == nil {
+	config := bucket.Spec.ForProvider.ServerSideEncryptionConfiguration
+	external, err := in.client.GetBucketEncryptionRequest(&awss3.GetBucketEncryptionInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	if err != nil && s3.SSEConfigurationNotFound(err) && config == nil {
 		return Updated, nil
 	} else if err != nil {
 		return NeedsUpdate, errors.Wrap(err, sseGetFailed)
 	}
 
 	switch {
-	case enc.ServerSideEncryptionConfiguration != nil && in.config == nil:
+	case external.ServerSideEncryptionConfiguration != nil && config == nil:
 		return NeedsDeletion, nil
-	case enc.ServerSideEncryptionConfiguration == nil && in.config == nil:
+	case external.ServerSideEncryptionConfiguration == nil && config == nil:
 		return Updated, nil
-	case enc.ServerSideEncryptionConfiguration == nil && in.config != nil:
+	case external.ServerSideEncryptionConfiguration == nil && config != nil:
 		return NeedsUpdate, nil
-	case len(enc.ServerSideEncryptionConfiguration.Rules) != len(in.config.Rules):
+	case len(external.ServerSideEncryptionConfiguration.Rules) != len(config.Rules):
 		return NeedsUpdate, nil
 	}
 
-	for i, Rule := range in.config.Rules {
-		outputRule := enc.ServerSideEncryptionConfiguration.Rules[i].ApplyServerSideEncryptionByDefault
+	for i, Rule := range config.Rules {
+		outputRule := external.ServerSideEncryptionConfiguration.Rules[i].ApplyServerSideEncryptionByDefault
 		if outputRule.KMSMasterKeyID != Rule.ApplyServerSideEncryptionByDefault.KMSMasterKeyID {
 			return NeedsUpdate, nil
 		}
@@ -84,12 +82,12 @@ func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.B
 }
 
 // GeneratePutBucketEncryptionInput creates the input for the PutBucketEncryption request for the S3 Client
-func GeneratePutBucketEncryptionInput(name string, in *SSEConfigurationClient) *awss3.PutBucketEncryptionInput {
+func GeneratePutBucketEncryptionInput(name string, config *v1beta1.ServerSideEncryptionConfiguration) *awss3.PutBucketEncryptionInput {
 	bei := &awss3.PutBucketEncryptionInput{
 		Bucket:                            aws.String(name),
 		ServerSideEncryptionConfiguration: &awss3.ServerSideEncryptionConfiguration{},
 	}
-	for _, rule := range in.config.Rules {
+	for _, rule := range config.Rules {
 		bei.ServerSideEncryptionConfiguration.Rules = append(bei.ServerSideEncryptionConfiguration.Rules, awss3.ServerSideEncryptionRule{
 			ApplyServerSideEncryptionByDefault: &awss3.ServerSideEncryptionByDefault{
 				KMSMasterKeyID: rule.ApplyServerSideEncryptionByDefault.KMSMasterKeyID,
@@ -102,10 +100,11 @@ func GeneratePutBucketEncryptionInput(name string, in *SSEConfigurationClient) *
 
 // CreateOrUpdate sends a request to have resource created on AWS.
 func (in *SSEConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config == nil {
+	config := bucket.Spec.ForProvider.ServerSideEncryptionConfiguration
+	if config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketEncryptionRequest(GeneratePutBucketEncryptionInput(meta.GetExternalName(bucket), in)).Send(ctx)
+	_, err := in.client.PutBucketEncryptionRequest(GeneratePutBucketEncryptionInput(meta.GetExternalName(bucket), config)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, ssePutFailed)
 }
 

@@ -118,6 +118,26 @@ func TestObserve(t *testing.T) {
 				},
 			},
 		},
+		"ValidInputNoLateInitializeUpdateACLFail": {
+			args: args{
+				s3: s3Testing.Client(s3Testing.WithPutACL(func(input *awss3.PutBucketAclInput) awss3.PutBucketAclRequest {
+					return awss3.PutBucketAclRequest{
+						Request: s3Testing.CreateRequest(errBoom, &awss3.PutBucketAclOutput{}),
+					}
+				})),
+				cr: s3Testing.Bucket(),
+			},
+			want: want{
+				cr: s3Testing.Bucket(
+					s3Testing.WithArn(fmt.Sprintf("arn:aws:s3:::%s", s3Testing.BucketName)),
+				),
+				err: errBoom,
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
+			},
+		},
 		"ValidInputLateInitialize": {
 			args: args{
 				kube: &test.MockClient{
@@ -240,6 +260,22 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr:  s3Testing.Bucket(s3Testing.WithConditions(corev1alpha1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
+			},
+		},
+		"AlreadyExistsError": {
+			args: args{
+				s3: &fake.MockBucketClient{
+					MockCreateBucketRequest: func(input *awss3.CreateBucketInput) awss3.CreateBucketRequest {
+						return awss3.CreateBucketRequest{
+							Request: s3Testing.CreateRequest(awserr.New(awss3.ErrCodeBucketAlreadyOwnedByYou, "", nil), &awss3.CreateBucketOutput{}),
+						}
+					},
+				},
+				cr: s3Testing.Bucket(),
+			},
+			want: want{
+				cr:  s3Testing.Bucket(),
+				err: nil,
 			},
 		},
 	}

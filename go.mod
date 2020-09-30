@@ -18,7 +18,6 @@ require (
 	github.com/smartystreets/assertions v0.0.0-20180820201707-7c9eb446e3cf // indirect
 	github.com/smartystreets/goconvey v0.0.0-20180222194500-ef6db91d284a // indirect
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/ini.v1 v1.47.0 // indirect
 	k8s.io/api v0.18.6

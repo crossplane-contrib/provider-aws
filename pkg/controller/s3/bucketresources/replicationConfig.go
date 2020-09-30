@@ -30,11 +30,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
-var _ BucketResource = &ReplicationConfigurationClient{}
-
 // ReplicationConfigurationClient is the client for API methods and reconciling the ReplicationConfiguration
 type ReplicationConfigurationClient struct {
-	config *v1beta1.ReplicationConfiguration
 	client s3.BucketClient
 }
 
@@ -47,32 +44,33 @@ func (in *ReplicationConfigurationClient) LateInitialize(ctx context.Context, bu
 }
 
 // NewReplicationConfigurationClient creates the client for Replication Configuration
-func NewReplicationConfigurationClient(bucket *v1beta1.Bucket, client s3.BucketClient) *ReplicationConfigurationClient {
-	return &ReplicationConfigurationClient{config: bucket.Spec.ForProvider.ReplicationConfiguration, client: client}
+func NewReplicationConfigurationClient(client s3.BucketClient) *ReplicationConfigurationClient {
+	return &ReplicationConfigurationClient{client: client}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
-	conf, err := in.client.GetBucketReplicationRequest(&awss3.GetBucketReplicationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketReplicationRequest(&awss3.GetBucketReplicationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	config := bucket.Spec.ForProvider.ReplicationConfiguration
 	if err != nil {
-		if s3.ReplicationConfigurationNotFound(err) && in.config == nil {
+		if s3.ReplicationConfigurationNotFound(err) && config == nil {
 			return Updated, nil
 		}
 		return NeedsUpdate, errors.Wrap(err, replicationGetFailed)
 	}
 
 	switch {
-	case (conf == nil || conf.ReplicationConfiguration == nil) && in.config != nil:
+	case (external == nil || external.ReplicationConfiguration == nil) && config != nil:
 		return NeedsUpdate, nil
-	case (conf == nil || conf.ReplicationConfiguration == nil) && in.config == nil:
+	case (external == nil || external.ReplicationConfiguration == nil) && config == nil:
 		return Updated, nil
-	case conf.ReplicationConfiguration != nil && in.config == nil:
+	case external.ReplicationConfiguration != nil && config == nil:
 		return NeedsDeletion, nil
 	}
 
-	source := GenerateReplicationConfiguration(in)
+	source := GenerateReplicationConfiguration(config)
 
-	if cmp.Equal(conf.ReplicationConfiguration, source) {
+	if cmp.Equal(external.ReplicationConfiguration, source) {
 		return Updated, nil
 	}
 
@@ -181,32 +179,33 @@ func createRule(input v1beta1.ReplicationRule) awss3.ReplicationRule {
 }
 
 // GenerateReplicationConfiguration is responsible for creating the Replication Configuration for requests.
-func GenerateReplicationConfiguration(in *ReplicationConfigurationClient) *awss3.ReplicationConfiguration {
+func GenerateReplicationConfiguration(config *v1beta1.ReplicationConfiguration) *awss3.ReplicationConfiguration {
 	source := &awss3.ReplicationConfiguration{
-		Role:  in.config.Role,
-		Rules: make([]awss3.ReplicationRule, len(in.config.Rules)),
+		Role:  config.Role,
+		Rules: make([]awss3.ReplicationRule, len(config.Rules)),
 	}
 
-	for i, Rule := range in.config.Rules {
+	for i, Rule := range config.Rules {
 		source.Rules[i] = createRule(Rule)
 	}
 	return source
 }
 
 // GeneratePutBucketReplicationInput creates the input for the PutBucketReplication request for the S3 Client
-func (in *ReplicationConfigurationClient) GeneratePutBucketReplicationInput(name string) *awss3.PutBucketReplicationInput {
+func (in *ReplicationConfigurationClient) GeneratePutBucketReplicationInput(name string, config *v1beta1.ReplicationConfiguration) *awss3.PutBucketReplicationInput {
 	return &awss3.PutBucketReplicationInput{
 		Bucket:                   aws.String(name),
-		ReplicationConfiguration: GenerateReplicationConfiguration(in),
+		ReplicationConfiguration: GenerateReplicationConfiguration(config),
 	}
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS.
 func (in *ReplicationConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	if in.config == nil {
+	config := bucket.Spec.ForProvider.ReplicationConfiguration
+	if config == nil {
 		return managed.ExternalUpdate{}, nil
 	}
-	_, err := in.client.PutBucketReplicationRequest(in.GeneratePutBucketReplicationInput(meta.GetExternalName(bucket))).Send(ctx)
+	_, err := in.client.PutBucketReplicationRequest(in.GeneratePutBucketReplicationInput(meta.GetExternalName(bucket), config)).Send(ctx)
 	return managed.ExternalUpdate{}, errors.Wrap(err, replicationPutFailed)
 }
 
