@@ -20,7 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/sqs/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/sqs/v1beta1"
 )
 
 var (
@@ -33,8 +33,8 @@ var (
 	m               map[string]string = make(map[string]string)
 )
 
-func sqsParams(m ...func(*v1alpha1.QueueParameters)) *v1alpha1.QueueParameters {
-	o := &v1alpha1.QueueParameters{
+func sqsParams(m ...func(*v1beta1.QueueParameters)) *v1beta1.QueueParameters {
+	o := &v1beta1.QueueParameters{
 		DelaySeconds:   aws.Int64(delaySeconds),
 		KMSMasterKeyID: aws.String(kmsMasterKeyID),
 	}
@@ -49,7 +49,7 @@ func sqsParams(m ...func(*v1alpha1.QueueParameters)) *v1alpha1.QueueParameters {
 func attributes(p ...map[string]string) map[string]string {
 	m := map[string]string{}
 
-	m[v1alpha1.AttributeDelaySeconds] = strconv.FormatInt(delaySeconds, 10)
+	m[v1beta1.AttributeDelaySeconds] = strconv.FormatInt(delaySeconds, 10)
 
 	for _, item := range p {
 		for k, v := range item {
@@ -62,13 +62,13 @@ func attributes(p ...map[string]string) map[string]string {
 
 func TestLateInitialize(t *testing.T) {
 	type args struct {
-		spec *v1alpha1.QueueParameters
+		spec *v1beta1.QueueParameters
 		in   map[string]string
 		tags map[string]string
 	}
 	cases := map[string]struct {
 		args args
-		want *v1alpha1.QueueParameters
+		want *v1beta1.QueueParameters
 	}{
 		"AllFilledNoDiff": {
 			args: args{
@@ -81,14 +81,14 @@ func TestLateInitialize(t *testing.T) {
 			args: args{
 				spec: sqsParams(),
 				in: attributes(map[string]string{
-					v1alpha1.AttributeKmsMasterKeyID: kmsMasterKeyID,
+					v1beta1.AttributeKmsMasterKeyID: kmsMasterKeyID,
 				}),
 			},
 			want: sqsParams(),
 		},
 		"PartialFilled": {
 			args: args{
-				spec: sqsParams(func(p *v1alpha1.QueueParameters) {
+				spec: sqsParams(func(p *v1beta1.QueueParameters) {
 					p.DelaySeconds = nil
 				}),
 				in: attributes(),
@@ -102,7 +102,7 @@ func TestLateInitialize(t *testing.T) {
 					tagKey: tagValue,
 				},
 			},
-			want: sqsParams(func(p *v1alpha1.QueueParameters) {
+			want: sqsParams(func(p *v1beta1.QueueParameters) {
 				p.Tags = map[string]string{
 					tagKey: tagValue,
 				}
@@ -122,7 +122,7 @@ func TestLateInitialize(t *testing.T) {
 
 func TestIsUpToDate(t *testing.T) {
 	type args struct {
-		p          v1alpha1.QueueParameters
+		p          v1beta1.QueueParameters
 		attributes map[string]string
 		tags       map[string]string
 	}
@@ -133,18 +133,18 @@ func TestIsUpToDate(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				p: v1alpha1.QueueParameters{
+				p: v1beta1.QueueParameters{
 					KMSMasterKeyID: &kmsMasterKeyID,
 				},
 				attributes: map[string]string{
-					v1alpha1.AttributeKmsMasterKeyID: kmsMasterKeyID,
+					v1beta1.AttributeKmsMasterKeyID: kmsMasterKeyID,
 				},
 			},
 			want: true,
 		},
 		"DifferentFields": {
 			args: args{
-				p: v1alpha1.QueueParameters{
+				p: v1beta1.QueueParameters{
 					KMSMasterKeyID: &kmsMasterKeyID,
 				},
 				attributes: map[string]string{},
@@ -153,7 +153,7 @@ func TestIsUpToDate(t *testing.T) {
 		},
 		"Tags": {
 			args: args{
-				p: v1alpha1.QueueParameters{
+				p: v1beta1.QueueParameters{
 					Tags: map[string]string{
 						tagKey: tagValue,
 					},
@@ -178,27 +178,27 @@ func TestIsUpToDate(t *testing.T) {
 
 func TestGenerateQueueAttributes(t *testing.T) {
 	cases := map[string]struct {
-		in  v1alpha1.QueueParameters
+		in  v1beta1.QueueParameters
 		out map[string]string
 	}{
 		"FilledInput": {
 			in: *sqsParams(),
 			out: map[string]string{
-				v1alpha1.AttributeDelaySeconds:   strconv.FormatInt(delaySeconds, 10),
-				v1alpha1.AttributeKmsMasterKeyID: kmsMasterKeyID,
+				v1beta1.AttributeDelaySeconds:   strconv.FormatInt(delaySeconds, 10),
+				v1beta1.AttributeKmsMasterKeyID: kmsMasterKeyID,
 			},
 		},
 		"RedrivePolicy": {
-			in: *sqsParams(func(p *v1alpha1.QueueParameters) {
-				p.RedrivePolicy = &v1alpha1.RedrivePolicy{
+			in: *sqsParams(func(p *v1beta1.QueueParameters) {
+				p.RedrivePolicy = &v1beta1.RedrivePolicy{
 					DeadLetterQueueARN: &arn,
 					MaxReceiveCount:    &maxReceiveCount,
 				}
 			}),
 			out: map[string]string{
-				v1alpha1.AttributeDelaySeconds:   strconv.FormatInt(delaySeconds, 10),
-				v1alpha1.AttributeRedrivePolicy:  `{"deadLetterQueueARN":"arn","maxReceiveCount":5}`,
-				v1alpha1.AttributeKmsMasterKeyID: kmsMasterKeyID,
+				v1beta1.AttributeDelaySeconds:   strconv.FormatInt(delaySeconds, 10),
+				v1beta1.AttributeRedrivePolicy:  `{"deadLetterQueueARN":"arn","maxReceiveCount":5}`,
+				v1beta1.AttributeKmsMasterKeyID: kmsMasterKeyID,
 			},
 		},
 	}
