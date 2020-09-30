@@ -2,16 +2,9 @@ apiVersion: sqs.aws.crossplane.io/v1alpha1
 kind: Queue
 metadata:
   name: sample-queue
-  annotations:
-    crossplane.io/external-name: aws-queue-name
 spec:
   forProvider:
     region: us-east-1
     delaySeconds: 4
-    tags:
-      - key: k
-        value: v
-      - key: k1
-        value: v1
   providerConfigRef:
     name: example
