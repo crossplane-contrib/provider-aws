@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package sqs
+package queue
 
 import (
 	"context"
@@ -31,7 +31,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/applicationintegration/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/sqs/v1alpha1"
 	"github.com/crossplane/provider-aws/pkg/clients/sqs"
 	"github.com/crossplane/provider-aws/pkg/clients/sqs/fake"
 )

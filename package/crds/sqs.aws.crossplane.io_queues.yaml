@@ -4,12 +4,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: queues.applicationintegration.aws.crossplane.io
+  name: queues.sqs.aws.crossplane.io
 spec:
   additionalPrinterColumns:
-  - JSONPath: .metadata.annotations.crossplane\.io/external-name
-    name: QUEUENAME
-    type: string
   - JSONPath: .status.atProvider.arn
     name: ARN
     type: string
@@ -22,7 +19,7 @@ spec:
   - JSONPath: .metadata.creationTimestamp
     name: AGE
     type: date
-  group: applicationintegration.aws.crossplane.io
+  group: sqs.aws.crossplane.io
   names:
     categories:
     - crossplane

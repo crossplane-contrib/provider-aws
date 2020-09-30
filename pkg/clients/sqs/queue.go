@@ -27,7 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/applicationintegration/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/sqs/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
