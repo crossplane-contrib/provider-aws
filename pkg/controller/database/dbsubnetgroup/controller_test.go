@@ -269,7 +269,7 @@ func TestObserve(t *testing.T) {
 				cr: dbSubnetGroup(
 					withDBSubnetGroupDescription(dbSubnetGroupDescription),
 				),
-				err: errors.Wrap(errBoom, errKubeUpdateFailed),
+				err: errors.Wrap(errBoom, errLateInit),
 			},
 		},
 	}

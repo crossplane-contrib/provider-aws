@@ -70,6 +70,10 @@ func GetConfig(ctx context.Context, kube client.Client, cr resource.Managed, reg
 	pc := &v1beta1.ProviderConfig{}
 	switch {
 	case cr.GetProviderConfigReference() != nil && cr.GetProviderConfigReference().Name != "":
+		ut := resource.NewProviderConfigUsageTracker(kube, &v1beta1.ProviderConfigUsage{})
+		if err := ut.Track(ctx, cr); err != nil {
+			return nil, errors.Wrap(err, "cannot track ProviderConfig usage")
+		}
 		nn := types.NamespacedName{Name: cr.GetProviderConfigReference().Name}
 		if err := kube.Get(ctx, nn, pc); err != nil {
 			return nil, errors.Wrap(err, "cannot get referenced ProviderConfig")
