@@ -41,15 +41,15 @@ import (
 )
 
 const (
-	errKubeUpdateFailed   = "cannot update DBSubnetGroup custom resource"
-	errUnexpectedObject   = "The managed resource is not an DBSubnetGroup resource"
-	errDescribe           = "failed to describe DBSubnetGroup with groupName: %v"
-	errZeroOrMoreResource = "received zero or more than one DBSubnetGroups for the given groupName: %v"
-	errCreate             = "failed to create the DBSubnetGroup resource with name: %v"
-	errDelete             = "failed to delete the DBSubnetGroup resource: %v"
-	errUpdate             = "failed to update the DBSubnetGroup resource: %v"
-	errAddTagsFailed      = "cannot add tags to DB Subnet Group: %v"
-	errListTagsFailed     = "failed to list tags for DB Subnet Group: %v"
+	errLateInit         = "cannot late initialize DBSubnetGroup"
+	errUnexpectedObject = "the managed resource is not an DBSubnetGroup"
+	errDescribe         = "cannot describe DBSubnetGroup"
+	errCreate           = "cannot create the DBSubnetGroup"
+	errDelete           = "cannot delete the DBSubnetGroup"
+	errUpdate           = "cannot update the DBSubnetGroup"
+	errAddTagsFailed    = "cannot add tags to DBSubnetGroup"
+	errListTagsFailed   = "cannot list tags for DBSubnetGroup"
+	errNotOne           = "expected exactly one DBSubnetGroup"
 )
 
 // SetupDBSubnetGroup adds a controller that reconciles DBSubnetGroups.
@@ -106,7 +106,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	// in a successful response, there should be one and only one object
 	if len(res.DBSubnetGroups) != 1 {
-		return managed.ExternalObservation{}, errors.Errorf(errZeroOrMoreResource, meta.GetExternalName(cr))
+		return managed.ExternalObservation{}, errors.New(errNotOne)
 	}
 
 	observed := res.DBSubnetGroups[0]
@@ -114,7 +114,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	dbsg.LateInitialize(&cr.Spec.ForProvider, &observed)
 	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
+			return managed.ExternalObservation{}, errors.Wrap(err, errLateInit)
 		}
 	}
 	cr.Status.AtProvider = dbsg.GenerateObservation(observed)
