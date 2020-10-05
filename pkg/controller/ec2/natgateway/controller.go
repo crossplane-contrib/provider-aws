@@ -5,7 +5,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -61,7 +60,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +72,7 @@ type external struct {
 	client ec2.NatGatewayClient
 }
 
-func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
+func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mgd.(*v1beta1.NATGateway)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
@@ -98,13 +97,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	observed := response.NatGateways[0]
-
-	current := cr.Spec.ForProvider.DeepCopy()
-	if !cmp.Equal(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errSpecUpdate)
-		}
-	}
 
 	cr.Status.AtProvider = ec2.GenerateNATGatewayObservation(observed)
 
@@ -165,11 +157,25 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
+	response, err := e.client.DescribeNatGatewaysRequest(&awsec2.DescribeNatGatewaysInput{
+		NatGatewayIds: []string{meta.GetExternalName(cr)},
+	}).Send(ctx)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDescribe)
+	}
+
+	// in a successful response, there should be one and only one object
+	if len(response.NatGateways) != 1 {
+		return managed.ExternalUpdate{}, errors.New(errNotSingleItem)
+	}
+
+	observed := response.NatGateways[0]
+
 	// This implies additional tags have been manually added to the resource
-	if len(cr.Status.AtProvider.Tags) > len(cr.Spec.ForProvider.Tags) {
+	if len(observed.Tags) > len(cr.Spec.ForProvider.Tags) {
 		if _, err := e.client.DeleteTagsRequest(&awsec2.DeleteTagsInput{
 			Resources: []string{meta.GetExternalName(cr)},
-			Tags:      v1beta1.EC2TagsNotInCRSpec(cr.Spec.ForProvider.Tags, v1beta1.GenerateEC2Tags(cr.Status.AtProvider.Tags)),
+			Tags:      v1beta1.EC2TagsNotInCRSpec(cr.Spec.ForProvider.Tags, observed.Tags),
 		}).Send(ctx); err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errDeleteTags)
 		}

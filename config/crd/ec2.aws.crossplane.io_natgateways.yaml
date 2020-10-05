@@ -92,7 +92,7 @@ spec:
                       type: object
                   type: object
                 region:
-                  description: Region is the region you'd like your NatGateway to be created in.
+                  description: Region is the region you'd like your NATGateway to be created in.
                   type: string
                 subnetId:
                   description: SubnetID is the subnet the NAT gateways needs to be associated to
@@ -134,6 +134,8 @@ spec:
                     - value
                     type: object
                   type: array
+              required:
+              - region
               type: object
             providerConfigRef:
               description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
@@ -203,23 +205,6 @@ spec:
                   type: string
                 state:
                   type: string
-                subnetId:
-                  type: string
-                tags:
-                  items:
-                    description: Tag defines a tag
-                    properties:
-                      key:
-                        description: Key is the name of the tag.
-                        type: string
-                      value:
-                        description: Value is the value of the tag.
-                        type: string
-                    required:
-                    - key
-                    - value
-                    type: object
-                  type: array
                 vpcId:
                   type: string
               type: object

@@ -53,14 +53,11 @@ func GenerateNATGatewayObservation(nat ec2.NatGateway) v1beta1.NATGatewayObserva
 			PublicIP:           aws.StringValue(a.PublicIp),
 		}
 	}
-	tags := v1beta1.BuildFromEC2Tags(nat.Tags)
 	observation := v1beta1.NATGatewayObservation{
 		CreateTime:          &metav1.Time{Time: *nat.CreateTime},
 		NatGatewayAddresses: addresses,
 		NatGatewayID:        aws.StringValue(nat.NatGatewayId),
 		State:               string(nat.State),
-		SubnetID:            aws.StringValue(nat.SubnetId),
-		Tags:                tags,
 		VpcID:               aws.StringValue(nat.VpcId),
 	}
 	if nat.DeleteTime != nil {
@@ -71,9 +68,4 @@ func GenerateNATGatewayObservation(nat ec2.NatGateway) v1beta1.NATGatewayObserva
 		observation.FailureMessage = aws.StringValue(nat.FailureMessage)
 	}
 	return observation
-}
-
-// IsNatUpToDate checks whether there is a change in any of the modifiable fields.
-func IsNatUpToDate(p v1beta1.NATGatewayParameters, nat ec2.NatGateway) bool {
-	return v1beta1.CompareTags(p.Tags, nat.Tags)
 }

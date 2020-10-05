@@ -38,19 +38,6 @@ func natTags() []ec2.Tag {
 	}
 }
 
-func specTags() []v1beta1.Tag {
-	return []v1beta1.Tag{
-		{
-			Key:   "key1",
-			Value: "value1",
-		},
-		{
-			Key:   "key2",
-			Value: "value2",
-		},
-	}
-}
-
 func natAddresses() []ec2.NatGatewayAddress {
 	return []ec2.NatGatewayAddress{
 		{
@@ -94,8 +81,6 @@ func TestGenerateNATGatewayObservation(t *testing.T) {
 				NatGatewayAddresses: specAddresses(),
 				NatGatewayID:        natGatewayID,
 				State:               v1beta1.NatGatewayStatusAvailable,
-				SubnetID:            natSubnetID,
-				Tags:                specTags(),
 				VpcID:               natVpcID,
 			},
 		},
@@ -116,8 +101,6 @@ func TestGenerateNATGatewayObservation(t *testing.T) {
 				NatGatewayAddresses: specAddresses(),
 				NatGatewayID:        natGatewayID,
 				State:               v1beta1.NatGatewayStatusPending,
-				SubnetID:            natSubnetID,
-				Tags:                specTags(),
 				VpcID:               natVpcID,
 			},
 		},
@@ -142,8 +125,6 @@ func TestGenerateNATGatewayObservation(t *testing.T) {
 				NatGatewayAddresses: specAddresses(),
 				NatGatewayID:        natGatewayID,
 				State:               v1beta1.NatGatewayStatusFailed,
-				SubnetID:            natSubnetID,
-				Tags:                specTags(),
 				VpcID:               natVpcID,
 			},
 		},

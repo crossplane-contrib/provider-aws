@@ -92,8 +92,6 @@ func specNatStatus(state string, time time.Time, failureCode *string, failureMes
 		NatGatewayAddresses: specAddresses(),
 		NatGatewayID:        natGatewayID,
 		State:               state,
-		SubnetID:            natSubnetID,
-		Tags:                specTags(),
 		VpcID:               natVpcID,
 	}
 	if state == v1beta1.NatGatewayStatusFailed {
@@ -137,6 +135,30 @@ func specTags() []v1beta1.Tag {
 			Key:   "key2",
 			Value: "value2",
 		},
+	}
+}
+
+func natGatewayDescription(state awsec2.NatGatewayState, time time.Time, failureCode *string, failureMessage *string, delete bool) *awsec2.DescribeNatGatewaysOutput {
+	natGatewayDescription := []awsec2.NatGateway{
+		{
+			CreateTime:          &time,
+			NatGatewayAddresses: natAddresses(),
+			NatGatewayId:        aws.String(natGatewayID),
+			State:               state,
+			SubnetId:            aws.String(natSubnetID),
+			Tags:                natTags(),
+			VpcId:               aws.String(natVpcID),
+		},
+	}
+	if state == awsec2.NatGatewayStateFailed {
+		natGatewayDescription[0].FailureCode = failureCode
+		natGatewayDescription[0].FailureMessage = failureMessage
+	}
+	if delete {
+		natGatewayDescription[0].DeleteTime = &time
+	}
+	return &awsec2.DescribeNatGatewaysOutput{
+		NatGateways: natGatewayDescription,
 	}
 }
 
@@ -241,19 +263,8 @@ func TestObserve(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Retryer:     aws.NoOpRetryer{},
-								Data: &awsec2.DescribeNatGatewaysOutput{
-									NatGateways: []awsec2.NatGateway{
-										{
-											CreateTime:          &time,
-											NatGatewayAddresses: natAddresses(),
-											NatGatewayId:        aws.String(natGatewayID),
-											State:               awsec2.NatGatewayStatePending,
-											SubnetId:            aws.String(natSubnetID),
-											Tags:                natTags(),
-											VpcId:               aws.String(natVpcID),
-										},
-									},
-								}},
+								Data:        natGatewayDescription(awsec2.NatGatewayStatePending, time, nil, nil, false),
+							},
 						}
 					},
 				},
@@ -282,22 +293,8 @@ func TestObserve(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Retryer:     aws.NoOpRetryer{},
-								Data: &awsec2.DescribeNatGatewaysOutput{
-									NatGateways: []awsec2.NatGateway{
-										{
-											CreateTime:          &time,
-											DeleteTime:          &time,
-											FailureCode:         aws.String(natFailureCode),
-											FailureMessage:      aws.String(natFailureMessage),
-											NatGatewayAddresses: natAddresses(),
-											NatGatewayId:        aws.String(natGatewayID),
-											State:               awsec2.NatGatewayStateFailed,
-											SubnetId:            aws.String(natSubnetID),
-											Tags:                natTags(),
-											VpcId:               aws.String(natVpcID),
-										},
-									},
-								}},
+								Data:        natGatewayDescription(awsec2.NatGatewayStateFailed, time, aws.String(natFailureCode), aws.String(natFailureMessage), true),
+							},
 						}
 					},
 				},
@@ -326,19 +323,8 @@ func TestObserve(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Retryer:     aws.NoOpRetryer{},
-								Data: &awsec2.DescribeNatGatewaysOutput{
-									NatGateways: []awsec2.NatGateway{
-										{
-											CreateTime:          &time,
-											NatGatewayAddresses: natAddresses(),
-											NatGatewayId:        aws.String(natGatewayID),
-											State:               awsec2.NatGatewayStateAvailable,
-											SubnetId:            aws.String(natSubnetID),
-											Tags:                natTags(),
-											VpcId:               aws.String(natVpcID),
-										},
-									},
-								}},
+								Data:        natGatewayDescription(awsec2.NatGatewayStateAvailable, time, nil, nil, false),
+							},
 						}
 					},
 				},
@@ -367,20 +353,8 @@ func TestObserve(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Retryer:     aws.NoOpRetryer{},
-								Data: &awsec2.DescribeNatGatewaysOutput{
-									NatGateways: []awsec2.NatGateway{
-										{
-											CreateTime:          &time,
-											DeleteTime:          &time,
-											NatGatewayAddresses: natAddresses(),
-											NatGatewayId:        aws.String(natGatewayID),
-											State:               awsec2.NatGatewayStateDeleting,
-											SubnetId:            aws.String(natSubnetID),
-											Tags:                natTags(),
-											VpcId:               aws.String(natVpcID),
-										},
-									},
-								}},
+								Data:        natGatewayDescription(awsec2.NatGatewayStateDeleting, time, nil, nil, true),
+							},
 						}
 					},
 				},
@@ -409,20 +383,8 @@ func TestObserve(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Retryer:     aws.NoOpRetryer{},
-								Data: &awsec2.DescribeNatGatewaysOutput{
-									NatGateways: []awsec2.NatGateway{
-										{
-											CreateTime:          &time,
-											DeleteTime:          &time,
-											NatGatewayAddresses: natAddresses(),
-											NatGatewayId:        aws.String(natGatewayID),
-											State:               awsec2.NatGatewayStateDeleted,
-											SubnetId:            aws.String(natSubnetID),
-											Tags:                natTags(),
-											VpcId:               aws.String(natVpcID),
-										},
-									},
-								}},
+								Data:        natGatewayDescription(awsec2.NatGatewayStateDeleted, time, nil, nil, true),
+							},
 						}
 					},
 				},
@@ -566,6 +528,15 @@ func TestUpdate(t *testing.T) {
 		"UpdateTagsSuccessful": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
+					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
+						return awsec2.DescribeNatGatewaysRequest{
+							Request: &aws.Request{
+								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
+								Data:        natGatewayDescription(awsec2.NatGatewayStateDeleted, time, nil, nil, false),
+							},
+						}
+					},
 					MockCreateTags: func(e *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
 						return awsec2.CreateTagsRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
@@ -585,6 +556,15 @@ func TestUpdate(t *testing.T) {
 		"UpdateTagsFailed": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
+					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
+						return awsec2.DescribeNatGatewaysRequest{
+							Request: &aws.Request{
+								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
+								Data:        natGatewayDescription(awsec2.NatGatewayStateDeleted, time, nil, nil, false),
+							},
+						}
+					},
 					MockCreateTags: func(e *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
 						return awsec2.CreateTagsRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
@@ -605,6 +585,15 @@ func TestUpdate(t *testing.T) {
 		"DeleteTagsSuccessFul": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
+					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
+						return awsec2.DescribeNatGatewaysRequest{
+							Request: &aws.Request{
+								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
+								Data:        natGatewayDescription(awsec2.NatGatewayStateDeleted, time, nil, nil, false),
+							},
+						}
+					},
 					MockDeleteTags: func(e *awsec2.DeleteTagsInput) awsec2.DeleteTagsRequest {
 						return awsec2.DeleteTagsRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteTagsOutput{}},
@@ -638,6 +627,15 @@ func TestUpdate(t *testing.T) {
 		"DeleteTagsFailed": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
+					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
+						return awsec2.DescribeNatGatewaysRequest{
+							Request: &aws.Request{
+								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
+								Data:        natGatewayDescription(awsec2.NatGatewayStateDeleted, time, nil, nil, false),
+							},
+						}
+					},
 					MockDeleteTags: func(e *awsec2.DeleteTagsInput) awsec2.DeleteTagsRequest {
 						return awsec2.DeleteTagsRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
@@ -726,14 +724,14 @@ func TestDelete(t *testing.T) {
 				nat: &fake.MockNatGatewayClient{},
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
-					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleting, time, nil, nil, false)),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleting, time, nil, nil, true)),
 				),
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
 					withConditions(runtimev1alpha1.Deleting()),
 					withSpec(specNatSpec()),
-					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleting, time, nil, nil, false)),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleting, time, nil, nil, true)),
 				),
 				err: nil,
 			},
@@ -743,14 +741,14 @@ func TestDelete(t *testing.T) {
 				nat: &fake.MockNatGatewayClient{},
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
-					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleted, time, nil, nil, false)),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleted, time, nil, nil, true)),
 				),
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
 					withConditions(runtimev1alpha1.Deleting()),
 					withSpec(specNatSpec()),
-					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleted, time, nil, nil, false)),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusDeleted, time, nil, nil, true)),
 				),
 				err: nil,
 			},
