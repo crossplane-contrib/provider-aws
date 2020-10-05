@@ -1,3 +1,3 @@
 FROM BASEIMAGE
 
-COPY package .
+COPY package.yaml .
