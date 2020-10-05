@@ -38,26 +38,26 @@ var (
 	errBoom               = errors.New("nat boomed")
 )
 
-type natModifier func(*v1beta1.NatGateway)
+type natModifier func(*v1beta1.NATGateway)
 
 func withExternalName(name string) natModifier {
-	return func(r *v1beta1.NatGateway) { meta.SetExternalName(r, name) }
+	return func(r *v1beta1.NATGateway) { meta.SetExternalName(r, name) }
 }
 
 func withConditions(c ...runtimev1alpha1.Condition) natModifier {
-	return func(r *v1beta1.NatGateway) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.NATGateway) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withSpec(p v1beta1.NatGatewayParameters) natModifier {
-	return func(r *v1beta1.NatGateway) { r.Spec.ForProvider = p }
+func withSpec(p v1beta1.NATGatewayParameters) natModifier {
+	return func(r *v1beta1.NATGateway) { r.Spec.ForProvider = p }
 }
 
-func withStatus(s v1beta1.NatGatewayObservation) natModifier {
-	return func(r *v1beta1.NatGateway) { r.Status.AtProvider = s }
+func withStatus(s v1beta1.NATGatewayObservation) natModifier {
+	return func(r *v1beta1.NATGateway) { r.Status.AtProvider = s }
 }
 
-func nat(m ...natModifier) *v1beta1.NatGateway {
-	cr := &v1beta1.NatGateway{}
+func nat(m ...natModifier) *v1beta1.NATGateway {
+	cr := &v1beta1.NATGateway{}
 	for _, f := range m {
 		f(cr)
 	}
@@ -75,8 +75,8 @@ func natAddresses() []awsec2.NatGatewayAddress {
 	}
 }
 
-func specAddresses() []v1beta1.NatGatewayAddress {
-	return []v1beta1.NatGatewayAddress{
+func specAddresses() []v1beta1.NATGatewayAddress {
+	return []v1beta1.NATGatewayAddress{
 		{
 			AllocationID:       natAllocationID,
 			NetworkInterfaceID: natNetworkInterfaceID,
@@ -86,8 +86,8 @@ func specAddresses() []v1beta1.NatGatewayAddress {
 	}
 }
 
-func specNatStatus(state string, time time.Time, failureCode *string, failureMessage *string, delete bool) v1beta1.NatGatewayObservation {
-	observation := v1beta1.NatGatewayObservation{
+func specNatStatus(state string, time time.Time, failureCode *string, failureMessage *string, delete bool) v1beta1.NATGatewayObservation {
+	observation := v1beta1.NATGatewayObservation{
 		CreateTime:          &v1.Time{Time: time},
 		NatGatewayAddresses: specAddresses(),
 		NatGatewayID:        natGatewayID,
@@ -106,8 +106,8 @@ func specNatStatus(state string, time time.Time, failureCode *string, failureMes
 	return observation
 }
 
-func specNatSpec() v1beta1.NatGatewayParameters {
-	return v1beta1.NatGatewayParameters{
+func specNatSpec() v1beta1.NATGatewayParameters {
+	return v1beta1.NATGatewayParameters{
 		AllocationID: &natAllocationID,
 		SubnetID:     &natSubnetID,
 		Tags:         specTags(),
@@ -146,12 +146,12 @@ var _ managed.ExternalConnecter = &connector{}
 type args struct {
 	nat  ec2.NatGatewayClient
 	kube client.Client
-	cr   *v1beta1.NatGateway
+	cr   *v1beta1.NATGateway
 }
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.NatGateway
+		cr     *v1beta1.NATGateway
 		result managed.ExternalObservation
 		err    error
 	}
@@ -463,7 +463,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.NatGateway
+		cr     *v1beta1.NATGateway
 		result managed.ExternalCreation
 		err    error
 	}
@@ -497,7 +497,7 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: nat(withSpec(v1beta1.NatGatewayParameters{
+				cr: nat(withSpec(v1beta1.NATGatewayParameters{
 					AllocationID: &natAllocationID,
 					SubnetID:     &natSubnetID,
 					Tags:         specTags(),
@@ -552,7 +552,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1beta1.NatGateway
+		cr     *v1beta1.NATGateway
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -563,28 +563,12 @@ func TestUpdate(t *testing.T) {
 		args
 		want
 	}{
-		"TagsUptoDate": {
+		"UpdateTagsSuccessful": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
-					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
-						return awsec2.DescribeNatGatewaysRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data: &awsec2.DescribeNatGatewaysOutput{
-									NatGateways: []awsec2.NatGateway{
-										{
-											CreateTime:          &time,
-											DeleteTime:          &time,
-											NatGatewayAddresses: natAddresses(),
-											NatGatewayId:        aws.String(natGatewayID),
-											State:               awsec2.NatGatewayStateDeleted,
-											SubnetId:            aws.String(natSubnetID),
-											Tags:                natTags(),
-											VpcId:               aws.String(natVpcID),
-										},
-									},
-								}},
+					MockCreateTags: func(e *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
+						return awsec2.CreateTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
 						}
 					},
 				},
@@ -598,57 +582,91 @@ func TestUpdate(t *testing.T) {
 				result: managed.ExternalUpdate{},
 			},
 		},
-		"TagsNotUptoDate": {
+		"UpdateTagsFailed": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
-					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
-						return awsec2.DescribeNatGatewaysRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data: &awsec2.DescribeNatGatewaysOutput{
-									NatGateways: []awsec2.NatGateway{
-										{
-											CreateTime:          &time,
-											DeleteTime:          &time,
-											NatGatewayAddresses: natAddresses(),
-											NatGatewayId:        aws.String(natGatewayID),
-											State:               awsec2.NatGatewayStateDeleted,
-											SubnetId:            aws.String(natSubnetID),
-											Tags:                natTags(),
-											VpcId:               aws.String(natVpcID),
-										},
-									},
-								}},
-						}
-					},
 					MockCreateTags: func(e *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
 						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
 						}
 					},
 				},
 				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1beta1.NatGatewayParameters{
-						AllocationID: &natAllocationID,
-						SubnetID:     &natSubnetID,
-						Tags: []v1beta1.Tag{
-							specTags()[0],
-						},
-					}),
+					withSpec(specNatSpec()),
 				),
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1beta1.NatGatewayParameters{
+					withSpec(specNatSpec()),
+				),
+				err: errors.Wrap(errBoom, errUpdateTags),
+			},
+		},
+		"DeleteTagsSuccessFul": {
+			args: args{
+				nat: &fake.MockNatGatewayClient{
+					MockDeleteTags: func(e *awsec2.DeleteTagsInput) awsec2.DeleteTagsRequest {
+						return awsec2.DeleteTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteTagsOutput{}},
+						}
+					},
+				},
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(v1beta1.NATGatewayParameters{
 						AllocationID: &natAllocationID,
 						SubnetID:     &natSubnetID,
 						Tags: []v1beta1.Tag{
 							specTags()[0],
 						},
 					}),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false)),
 				),
-				result: managed.ExternalUpdate{},
+			},
+			want: want{
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(v1beta1.NATGatewayParameters{
+						AllocationID: &natAllocationID,
+						SubnetID:     &natSubnetID,
+						Tags: []v1beta1.Tag{
+							specTags()[0],
+						},
+					}),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false)),
+				),
+			},
+		},
+		"DeleteTagsFailed": {
+			args: args{
+				nat: &fake.MockNatGatewayClient{
+					MockDeleteTags: func(e *awsec2.DeleteTagsInput) awsec2.DeleteTagsRequest {
+						return awsec2.DeleteTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
+						}
+					},
+				},
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(v1beta1.NATGatewayParameters{
+						AllocationID: &natAllocationID,
+						SubnetID:     &natSubnetID,
+						Tags: []v1beta1.Tag{
+							specTags()[0],
+						},
+					}),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false)),
+				),
+			},
+			want: want{
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(v1beta1.NATGatewayParameters{
+						AllocationID: &natAllocationID,
+						SubnetID:     &natSubnetID,
+						Tags: []v1beta1.Tag{
+							specTags()[0],
+						},
+					}),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false)),
+				),
+				err: errors.Wrap(errBoom, errDeleteTags),
 			},
 		},
 	}
@@ -673,7 +691,7 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *v1beta1.NatGateway
+		cr  *v1beta1.NATGateway
 		err error
 	}
 

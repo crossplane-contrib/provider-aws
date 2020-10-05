@@ -59,7 +59,7 @@ func (mg *InternetGateway) ResolveReferences(ctx context.Context, c client.Reade
 }
 
 // ResolveReferences of this NatGateway
-func (mg *NatGateway) ResolveReferences(ctx context.Context, c client.Reader) error {
+func (mg *NATGateway) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
 	// Resolve spec.subnetId

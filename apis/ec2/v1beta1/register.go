@@ -74,10 +74,10 @@ var (
 
 // NatGateway type metadata.
 var (
-	NatGatewayKind             = reflect.TypeOf(NatGateway{}).Name()
-	NatGatewayGroupKind        = schema.GroupKind{Group: Group, Kind: NatGatewayKind}.String()
-	NatGatewayKindAPIVersion   = NatGatewayKind + "." + SchemeGroupVersion.String()
-	NatGatewayGroupVersionKind = SchemeGroupVersion.WithKind(NatGatewayKind)
+	NATGatewayKind             = reflect.TypeOf(NATGateway{}).Name()
+	NATGatewayGroupKind        = schema.GroupKind{Group: Group, Kind: NATGatewayKind}.String()
+	NATGatewayKindAPIVersion   = NATGatewayKind + "." + SchemeGroupVersion.String()
+	NATGatewayGroupVersionKind = SchemeGroupVersion.WithKind(NATGatewayKind)
 )
 
 func init() {
@@ -85,5 +85,5 @@ func init() {
 	SchemeBuilder.Register(&Subnet{}, &SubnetList{})
 	SchemeBuilder.Register(&SecurityGroup{}, &SecurityGroupList{})
 	SchemeBuilder.Register(&InternetGateway{}, &InternetGatewayList{})
-	SchemeBuilder.Register(&NatGateway{}, &NatGatewayList{})
+	SchemeBuilder.Register(&NATGateway{}, &NATGatewayList{})
 }

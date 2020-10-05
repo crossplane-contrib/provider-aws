@@ -76,59 +76,59 @@ func (mg *InternetGateway) SetWriteConnectionSecretToReference(r *runtimev1alpha
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
-// GetCondition of this NatGateway.
-func (mg *NatGateway) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+// GetCondition of this NATGateway.
+func (mg *NATGateway) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
-// GetDeletionPolicy of this NatGateway.
-func (mg *NatGateway) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+// GetDeletionPolicy of this NATGateway.
+func (mg *NATGateway) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
-// GetProviderConfigReference of this NatGateway.
-func (mg *NatGateway) GetProviderConfigReference() *runtimev1alpha1.Reference {
+// GetProviderConfigReference of this NATGateway.
+func (mg *NATGateway) GetProviderConfigReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 /*
-GetProviderReference of this NatGateway.
+GetProviderReference of this NATGateway.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *NatGateway) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *NATGateway) GetProviderReference() *runtimev1alpha1.Reference {
 	return mg.Spec.ProviderReference
 }
 
-// GetWriteConnectionSecretToReference of this NatGateway.
-func (mg *NatGateway) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+// GetWriteConnectionSecretToReference of this NATGateway.
+func (mg *NATGateway) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
-// SetConditions of this NatGateway.
-func (mg *NatGateway) SetConditions(c ...runtimev1alpha1.Condition) {
+// SetConditions of this NATGateway.
+func (mg *NATGateway) SetConditions(c ...runtimev1alpha1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetDeletionPolicy of this NatGateway.
-func (mg *NatGateway) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+// SetDeletionPolicy of this NATGateway.
+func (mg *NATGateway) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
-// SetProviderConfigReference of this NatGateway.
-func (mg *NatGateway) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+// SetProviderConfigReference of this NATGateway.
+func (mg *NATGateway) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 /*
-SetProviderReference of this NatGateway.
+SetProviderReference of this NATGateway.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *NatGateway) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *NATGateway) SetProviderReference(r *runtimev1alpha1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
-// SetWriteConnectionSecretToReference of this NatGateway.
-func (mg *NatGateway) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+// SetWriteConnectionSecretToReference of this NATGateway.
+func (mg *NATGateway) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 

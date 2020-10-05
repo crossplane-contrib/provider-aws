@@ -23,25 +23,26 @@ import (
 )
 
 const (
-	errUnexpectedObject = "The managed resource is not an NatGateway resource"
-	errDescribe         = "failed to describe NatGateway"
-	errNotSingleItem    = "either no or multiple NatGateways retrieved for the given natGatewayId"
-	errSpecUpdate       = "cannot update spec of the NatGateway resource"
-	errStatusUpdate     = "cannot update status of the NatGateway resource"
-	errCreate           = "failed to create the NatGateway resource"
-	errDelete           = "failed to delete the NatGateway resource"
-	errUpdateTags       = "failed to update tags for the NatGateway resource"
+	errUnexpectedObject = "The managed resource is not an NATGateway resource"
+	errDescribe         = "failed to describe NATGateway"
+	errNotSingleItem    = "either no or multiple NATGateways retrieved for the given natGatewayId"
+	errSpecUpdate       = "cannot update spec of the NATGateway resource"
+	errStatusUpdate     = "cannot update status of the NATGateway resource"
+	errCreate           = "failed to create the NATGateway resource"
+	errDelete           = "failed to delete the NATGateway resource"
+	errUpdateTags       = "failed to update tags for the NATGateway resource"
+	errDeleteTags       = "failed to delete tags for NATGateway resource"
 )
 
 // SetupNatGateway adds a controller that reconciles NatGateways.
 func SetupNatGateway(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1beta1.NatGatewayGroupKind)
+	name := managed.ControllerName(v1beta1.NATGatewayGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1beta1.NatGateway{}).
+		For(&v1beta1.NATGateway{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1beta1.NatGatewayGroupVersionKind),
+			resource.ManagedKind(v1beta1.NATGatewayGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewNatGatewayClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
@@ -56,7 +57,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1beta1.NatGateway)
+	cr, ok := mg.(*v1beta1.NATGateway)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -73,7 +74,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
-	cr, ok := mgd.(*v1beta1.NatGateway)
+	cr, ok := mgd.(*v1beta1.NATGateway)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -105,7 +106,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}
 	}
 
-	cr.Status.AtProvider = ec2.GenerateNatObservation(observed)
+	cr.Status.AtProvider = ec2.GenerateNATGatewayObservation(observed)
 
 	switch cr.Status.AtProvider.State {
 	case v1beta1.NatGatewayStatusPending:
@@ -124,12 +125,12 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: ec2.IsNatUpToDate(cr.Spec.ForProvider, observed),
+		ResourceUpToDate: v1beta1.CompareTags(cr.Spec.ForProvider.Tags, observed.Tags),
 	}, nil
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1beta1.NatGateway)
+	cr, ok := mgd.(*v1beta1.NATGateway)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -159,22 +160,20 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1beta1.NatGateway)
+	cr, ok := mgd.(*v1beta1.NATGateway)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	response, err := e.client.DescribeNatGatewaysRequest(&awsec2.DescribeNatGatewaysInput{
-		NatGatewayIds: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
-
-	if len(response.NatGateways) != 1 {
-		return managed.ExternalUpdate{}, errors.New(errNotSingleItem)
-	}
-
-	observed := response.NatGateways[0]
-
-	if !ec2.IsNatUpToDate(cr.Spec.ForProvider, observed) {
+	// This implies additional tags have been manually added to the resource
+	if len(cr.Status.AtProvider.Tags) > len(cr.Spec.ForProvider.Tags) {
+		if _, err := e.client.DeleteTagsRequest(&awsec2.DeleteTagsInput{
+			Resources: []string{meta.GetExternalName(cr)},
+			Tags:      v1beta1.EC2TagsNotInCRSpec(cr.Spec.ForProvider.Tags, v1beta1.GenerateEC2Tags(cr.Status.AtProvider.Tags)),
+		}).Send(ctx); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, errDeleteTags)
+		}
+	} else {
 		if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
@@ -182,11 +181,11 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdateTags)
 		}
 	}
-	return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDescribe)
+	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.NatGateway)
+	cr, ok := mgd.(*v1beta1.NATGateway)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

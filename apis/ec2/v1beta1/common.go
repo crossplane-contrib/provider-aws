@@ -55,6 +55,23 @@ func GenerateEC2Tags(tags []Tag) []ec2.Tag {
 	return res
 }
 
+// EC2TagsNotInCRSpec returns an []ec2.Tag which are present in status.AtProvider and not in spec.ForProvider
+func EC2TagsNotInCRSpec(tags []Tag, ec2Tags []ec2.Tag) []ec2.Tag {
+	var ec2TagsToDelete []ec2.Tag
+
+	SortTags(tags, ec2Tags)
+
+	for _, t := range tags {
+		for _, u := range ec2Tags {
+			if *u.Key != t.Key {
+				ec2TagsToDelete = append(ec2TagsToDelete, u)
+			}
+		}
+	}
+
+	return ec2TagsToDelete
+}
+
 // CompareTags compares arrays of v1beta1.Tag and ec2.Tag
 func CompareTags(tags []Tag, ec2Tags []ec2.Tag) bool {
 	if len(tags) != len(ec2Tags) {

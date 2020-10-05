@@ -22,6 +22,7 @@ type NatGatewayClient interface {
 	DeleteNatGatewayRequest(input *ec2.DeleteNatGatewayInput) ec2.DeleteNatGatewayRequest
 	DescribeNatGatewaysRequest(input *ec2.DescribeNatGatewaysInput) ec2.DescribeNatGatewaysRequest
 	CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest
+	DeleteTagsRequest(input *ec2.DeleteTagsInput) ec2.DeleteTagsRequest
 }
 
 // NewNatGatewayClient returns a new client using AWS credentials as JSON encoded data.
@@ -40,12 +41,12 @@ func IsNatGatewayNotFoundErr(err error) bool {
 	return false
 }
 
-// GenerateNatObservation is used to produce v1beta1.NatGatewayObservation from
+// GenerateNATGatewayObservation is used to produce v1beta1.NatGatewayObservation from
 // ec2.NatGateway.
-func GenerateNatObservation(nat ec2.NatGateway) v1beta1.NatGatewayObservation {
-	addresses := make([]v1beta1.NatGatewayAddress, len(nat.NatGatewayAddresses))
+func GenerateNATGatewayObservation(nat ec2.NatGateway) v1beta1.NATGatewayObservation {
+	addresses := make([]v1beta1.NATGatewayAddress, len(nat.NatGatewayAddresses))
 	for k, a := range nat.NatGatewayAddresses {
-		addresses[k] = v1beta1.NatGatewayAddress{
+		addresses[k] = v1beta1.NATGatewayAddress{
 			AllocationID:       aws.StringValue(a.AllocationId),
 			NetworkInterfaceID: aws.StringValue(a.NetworkInterfaceId),
 			PrivateIP:          aws.StringValue(a.PrivateIp),
@@ -53,7 +54,7 @@ func GenerateNatObservation(nat ec2.NatGateway) v1beta1.NatGatewayObservation {
 		}
 	}
 	tags := v1beta1.BuildFromEC2Tags(nat.Tags)
-	observation := v1beta1.NatGatewayObservation{
+	observation := v1beta1.NATGatewayObservation{
 		CreateTime:          &metav1.Time{Time: *nat.CreateTime},
 		NatGatewayAddresses: addresses,
 		NatGatewayID:        aws.StringValue(nat.NatGatewayId),
@@ -73,6 +74,6 @@ func GenerateNatObservation(nat ec2.NatGateway) v1beta1.NatGatewayObservation {
 }
 
 // IsNatUpToDate checks whether there is a change in any of the modifiable fields.
-func IsNatUpToDate(p v1beta1.NatGatewayParameters, nat ec2.NatGateway) bool {
+func IsNatUpToDate(p v1beta1.NATGatewayParameters, nat ec2.NatGateway) bool {
 	return v1beta1.CompareTags(p.Tags, nat.Tags)
 }

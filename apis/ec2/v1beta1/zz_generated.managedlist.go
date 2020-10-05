@@ -29,8 +29,8 @@ func (l *InternetGatewayList) GetItems() []resource.Managed {
 	return items
 }
 
-// GetItems of this NatGatewayList.
-func (l *NatGatewayList) GetItems() []resource.Managed {
+// GetItems of this NATGatewayList.
+func (l *NATGatewayList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
 	for i := range l.Items {
 		items[i] = &l.Items[i]

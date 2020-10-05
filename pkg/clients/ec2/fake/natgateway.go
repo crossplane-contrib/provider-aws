@@ -15,6 +15,7 @@ type MockNatGatewayClient struct {
 	MockDelete     func(*ec2.DeleteNatGatewayInput) ec2.DeleteNatGatewayRequest
 	MockDescribe   func(*ec2.DescribeNatGatewaysInput) ec2.DescribeNatGatewaysRequest
 	MockCreateTags func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
+	MockDeleteTags func(*ec2.DeleteTagsInput) ec2.DeleteTagsRequest
 }
 
 // CreateNatGatewayRequest mocks CreateNatGatewayRequest method
@@ -35,4 +36,9 @@ func (m *MockNatGatewayClient) DescribeNatGatewaysRequest(input *ec2.DescribeNat
 // CreateTagsRequest mocks CreateTagsRequest method
 func (m *MockNatGatewayClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
 	return m.MockCreateTags(input)
+}
+
+// DeleteTagsRequest mocks DeleteTagsRequest method
+func (m *MockNatGatewayClient) DeleteTagsRequest(input *ec2.DeleteTagsInput) ec2.DeleteTagsRequest {
+	return m.MockDeleteTags(input)
 }

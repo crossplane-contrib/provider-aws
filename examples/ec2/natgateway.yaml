@@ -1,5 +1,5 @@
 apiVersion: ec2.aws.crossplane.io/v1beta1
-kind: NatGateway
+kind: NATGateway
 metadata:
   name: sample-natgateway
 spec:
@@ -14,3 +14,4 @@ spec:
   reclaimPolicy: Delete
   providerConfigRef:
     name: example
+

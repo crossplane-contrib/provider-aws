@@ -62,8 +62,8 @@ func natAddresses() []ec2.NatGatewayAddress {
 	}
 }
 
-func specAddresses() []v1beta1.NatGatewayAddress {
-	return []v1beta1.NatGatewayAddress{
+func specAddresses() []v1beta1.NATGatewayAddress {
+	return []v1beta1.NATGatewayAddress{
 		{
 			AllocationID:       natAllocationID,
 			NetworkInterfaceID: natNetworkInterfaceID,
@@ -73,67 +73,11 @@ func specAddresses() []v1beta1.NatGatewayAddress {
 	}
 }
 
-func TestIsNatUpToDate(t *testing.T) {
-	type args struct {
-		nat ec2.NatGateway
-		p   v1beta1.NatGatewayParameters
-	}
-
-	cases := map[string]struct {
-		args args
-		want bool
-	}{
-		"SameTags": {
-			args: args{
-				nat: ec2.NatGateway{
-					Tags: natTags(),
-				},
-				p: v1beta1.NatGatewayParameters{
-					Tags: specTags(),
-				},
-			},
-			want: true,
-		},
-		"DifferentTags": {
-			args: args{
-				nat: ec2.NatGateway{
-					Tags: natTags(),
-				},
-				p: v1beta1.NatGatewayParameters{
-					Tags: []v1beta1.Tag{
-						specTags()[0],
-					},
-				},
-			},
-			want: false,
-		},
-		"EmptyTags": {
-			args: args{
-				nat: ec2.NatGateway{
-					Tags: natTags(),
-				},
-				p: v1beta1.NatGatewayParameters{
-					Tags: []v1beta1.Tag{},
-				},
-			},
-			want: false,
-		},
-	}
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			got := IsNatUpToDate(tc.args.p, tc.args.nat)
-			if diff := cmp.Diff(tc.want, got); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestGenerateNatObservation(t *testing.T) {
+func TestGenerateNATGatewayObservation(t *testing.T) {
 	time := time.Now()
 	cases := map[string]struct {
 		in  ec2.NatGateway
-		out v1beta1.NatGatewayObservation
+		out v1beta1.NATGatewayObservation
 	}{
 		"AllFilled": {
 			in: ec2.NatGateway{
@@ -145,7 +89,7 @@ func TestGenerateNatObservation(t *testing.T) {
 				Tags:                natTags(),
 				VpcId:               aws.String(natVpcID),
 			},
-			out: v1beta1.NatGatewayObservation{
+			out: v1beta1.NATGatewayObservation{
 				CreateTime:          &v1.Time{Time: time},
 				NatGatewayAddresses: specAddresses(),
 				NatGatewayID:        natGatewayID,
@@ -166,7 +110,7 @@ func TestGenerateNatObservation(t *testing.T) {
 				Tags:                natTags(),
 				VpcId:               aws.String(natVpcID),
 			},
-			out: v1beta1.NatGatewayObservation{
+			out: v1beta1.NATGatewayObservation{
 				CreateTime:          &v1.Time{Time: time},
 				DeleteTime:          &v1.Time{Time: time},
 				NatGatewayAddresses: specAddresses(),
@@ -190,7 +134,7 @@ func TestGenerateNatObservation(t *testing.T) {
 				Tags:                natTags(),
 				VpcId:               aws.String(natVpcID),
 			},
-			out: v1beta1.NatGatewayObservation{
+			out: v1beta1.NATGatewayObservation{
 				CreateTime:          &v1.Time{Time: time},
 				DeleteTime:          &v1.Time{Time: time},
 				FailureCode:         natFailureCode,
@@ -206,9 +150,9 @@ func TestGenerateNatObservation(t *testing.T) {
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			r := GenerateNatObservation(tc.in)
+			r := GenerateNATGatewayObservation(tc.in)
 			if diff := cmp.Diff(r, tc.out); diff != "" {
-				t.Errorf("GenerateNatObservation(...): -want, +got:\n%s", diff)
+				t.Errorf("GenerateNATGatewayObservation(...): -want, +got:\n%s", diff)
 			}
 		})
 	}
