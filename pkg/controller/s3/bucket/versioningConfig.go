@@ -21,7 +21,6 @@ import (
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
@@ -100,13 +99,13 @@ func GeneratePutBucketVersioningInput(name string, config *v1beta1.VersioningCon
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS.
-func (in *VersioningConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	config := bucket.Spec.ForProvider.VersioningConfiguration
-	if config == nil {
-		return managed.ExternalUpdate{}, nil
+func (in *VersioningConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
+	if bucket.Spec.ForProvider.VersioningConfiguration == nil {
+		return nil
 	}
-	_, err := in.client.PutBucketVersioningRequest(GeneratePutBucketVersioningInput(meta.GetExternalName(bucket), config)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, versioningPutFailed)
+	input := GeneratePutBucketVersioningInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.VersioningConfiguration)
+	_, err := in.client.PutBucketVersioningRequest(input).Send(ctx)
+	return errors.Wrap(err, versioningPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.

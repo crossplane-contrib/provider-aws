@@ -46,6 +46,8 @@ const (
 	errUnexpectedObject = "The managed resource is not a Bucket"
 	errHead             = "failed to query Bucket"
 	errCreate           = "failed to create the Bucket"
+	errCreateOrUpdate   = "cannot create or update"
+	errDelete           = "cannot delete"
 	errKubeUpdateFailed = "cannot update S3 custom resource"
 )
 
@@ -146,9 +148,6 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
 	_, err := e.s3client.CreateBucketRequest(s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx)
-	if s3.IsAlreadyExists(err) {
-		return managed.ExternalCreation{}, nil
-	}
 	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 }
 
@@ -168,14 +167,12 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		case bucket.NeedsDeletion:
 			err = awsClient.Delete(ctx, cr)
 			if err != nil {
-				cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
-				return managed.ExternalUpdate{}, err
+				return managed.ExternalUpdate{}, errors.Wrap(err, errDelete)
 			}
 		case bucket.NeedsUpdate:
-			update, err := awsClient.CreateOrUpdate(ctx, cr)
-			if err != nil {
-				cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
-				return update, err
+			if err := awsClient.CreateOrUpdate(ctx, cr); err != nil {
+				// TODO(muvaf): let the user know which client failed.
+				return managed.ExternalUpdate{}, errors.Wrap(err, errCreateOrUpdate)
 			}
 		}
 	}

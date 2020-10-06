@@ -19,8 +19,6 @@ package bucket
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
@@ -28,7 +26,7 @@ import (
 // SubresourceClient is the interface all Bucket sub-resources must conform to
 type SubresourceClient interface {
 	Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error)
-	CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error)
+	CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error
 	Delete(ctx context.Context, bucket *v1beta1.Bucket) error
 	LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error
 }

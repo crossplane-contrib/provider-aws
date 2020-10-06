@@ -250,7 +250,7 @@ func TestCORSCreateOrUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			_, err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
+			err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

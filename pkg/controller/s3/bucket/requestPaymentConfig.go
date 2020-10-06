@@ -21,7 +21,6 @@ import (
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
@@ -93,13 +92,13 @@ func GeneratePutBucketPaymentInput(name string, config *v1beta1.PaymentConfigura
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS.
-func (in *RequestPaymentConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	config := bucket.Spec.ForProvider.PayerConfiguration
-	if config == nil {
-		return managed.ExternalUpdate{}, nil
+func (in *RequestPaymentConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
+	if bucket.Spec.ForProvider.PayerConfiguration == nil {
+		return nil
 	}
-	_, err := in.client.PutBucketRequestPaymentRequest(GeneratePutBucketPaymentInput(meta.GetExternalName(bucket), config)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, paymentPutFailed)
+	input := GeneratePutBucketPaymentInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.PayerConfiguration)
+	_, err := in.client.PutBucketRequestPaymentRequest(input).Send(ctx)
+	return errors.Wrap(err, paymentPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
