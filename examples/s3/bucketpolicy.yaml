@@ -1,9 +1,10 @@
 apiVersion: s3.aws.crossplane.io/v1alpha1
-kind: S3BucketPolicy
+kind: BucketPolicy
 metadata:
   name: bucketpolicy-public
 spec:
   forProvider:
+    region: us-west-2
     bucketNameRef:
       name: test-bucket
     userNameRef:
@@ -19,7 +20,7 @@ spec:
         principal:
           allowAnon: true # this boolean flag makes the bucket public, this takes priority over the aws principal.
         resource:
-          - test.s3bucket.aws.crossplane.io
+          - test-bucket
     version: '2012-10-17'
   providerConfigRef:
     name: example

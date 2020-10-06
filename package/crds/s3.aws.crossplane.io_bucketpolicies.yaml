@@ -24,6 +24,10 @@ spec:
     type: date
   group: s3.aws.crossplane.io
   names:
+    categories:
+    - crossplane
+    - managed
+    - aws
     kind: BucketPolicy
     listKind: BucketPolicyList
     plural: bucketpolicies
@@ -81,6 +85,9 @@ spec:
                   type: object
                 id:
                   description: This is the policy's optional identifier
+                  type: string
+                region:
+                  description: Region is where the Bucket referenced by this BucketPolicy resides.
                   type: string
                 statement:
                   description: This is the list of statement this policy applies
@@ -172,6 +179,7 @@ spec:
                   description: This is the current IAM policy version
                   type: string
               required:
+              - region
               - statement
               - version
               type: object

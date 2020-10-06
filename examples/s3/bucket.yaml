@@ -4,7 +4,7 @@ metadata:
   name: test-bucket
 spec:
   forProvider:
-    locationConstraint: us-east-2
+    locationConstraint: us-west-2
     acl: private
   providerConfigRef:
     name: example
