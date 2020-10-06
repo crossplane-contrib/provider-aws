@@ -28,9 +28,8 @@ type BucketParameters struct {
 	// +optional
 	ACL *string `json:"acl,omitempty"`
 
-	// Specifies the Region where the bucket will be created. If you don't specify
-	// a Region, the bucket is created in the US East (N. Virginia) Region (us-east-1).
-	// +optional
+	// LocationConstraint specifies the Region where the bucket will be created.
+	// It is a required field.
 	LocationConstraint string `json:"locationConstraint"`
 
 	// Allows grantee the read, write, read ACP, and write ACP permissions on the

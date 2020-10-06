@@ -75,11 +75,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	region := cr.Spec.ForProvider.LocationConstraint
-	if region == "" {
-		region = "us-east-1"
-	}
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, region)
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.LocationConstraint)
 	if err != nil {
 		return nil, err
 	}
