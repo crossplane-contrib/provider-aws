@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -33,16 +33,16 @@ import (
 )
 
 var (
-	errorObjectKey                = "errorKey"
-	indexSuffix                   = "suffix"
-	hostname                      = "web-hostname"
-	webProtocol                   = "https"
-	errorCode                     = "httpErrorCode"
-	keyPrefix                     = "condition-key-prefix"
-	httpRedirect                  = "http-redirect-code"
-	replacePrefix                 = "replace-prefix-key"
-	replaceKey                    = "replace-key"
-	_              BucketResource = &WebsiteConfigurationClient{}
+	errorObjectKey                   = "errorKey"
+	indexSuffix                      = "suffix"
+	hostname                         = "web-hostname"
+	webProtocol                      = "https"
+	errorCode                        = "httpErrorCode"
+	keyPrefix                        = "condition-key-prefix"
+	httpRedirect                     = "http-redirect-code"
+	replacePrefix                    = "replace-prefix-key"
+	replaceKey                       = "replace-key"
+	_              SubresourceClient = &WebsiteConfigurationClient{}
 )
 
 func generateWebsiteConfig() *v1beta1.WebsiteConfiguration {

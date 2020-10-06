@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -32,7 +32,7 @@ import (
 	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
-var _ BucketResource = &TaggingConfigurationClient{}
+var _ SubresourceClient = &TaggingConfigurationClient{}
 
 func generateTaggingConfig() *v1beta1.Tagging {
 	return &v1beta1.Tagging{

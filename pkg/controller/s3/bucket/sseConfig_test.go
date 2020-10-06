@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -33,9 +33,9 @@ import (
 )
 
 var (
-	sseAlgo                = "AES256"
-	keyID                  = "test-key-id"
-	_       BucketResource = &SSEConfigurationClient{}
+	sseAlgo                   = "AES256"
+	keyID                     = "test-key-id"
+	_       SubresourceClient = &SSEConfigurationClient{}
 )
 
 func generateSSEConfig() *v1beta1.ServerSideEncryptionConfiguration {

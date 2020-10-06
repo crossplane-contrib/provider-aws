@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -31,8 +31,8 @@ import (
 )
 
 var (
-	payer                = "Requester"
-	_     BucketResource = &RequestPaymentConfigurationClient{}
+	payer                   = "Requester"
+	_     SubresourceClient = &RequestPaymentConfigurationClient{}
 )
 
 func generateRequestPaymentConfig() *v1beta1.PaymentConfiguration {

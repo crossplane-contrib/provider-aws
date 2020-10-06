@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -31,12 +31,12 @@ import (
 )
 
 var (
-	_               BucketResource = &NotificationConfigurationClient{}
-	filterRuleName                 = "prefix"
-	filterRuleValue                = "value"
-	lambdaArn                      = "lambda::123"
-	queueArn                       = "queue::123"
-	topicArn                       = "topic::123"
+	_               SubresourceClient = &NotificationConfigurationClient{}
+	filterRuleName                    = "prefix"
+	filterRuleValue                   = "value"
+	lambdaArn                         = "lambda::123"
+	queueArn                          = "queue::123"
+	topicArn                          = "topic::123"
 )
 
 func generateNotificationEvents() []string {

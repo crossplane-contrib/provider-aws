@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -28,6 +28,12 @@ import (
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
+)
+
+const (
+	websiteGetFailed    = "cannot get Bucket website configuration"
+	websitePutFailed    = "cannot put Bucket website configuration"
+	websiteDeleteFailed = "cannot delete Bucket website configuration"
 )
 
 // WebsiteConfigurationClient is the client for API methods and reconciling the WebsiteConfiguration
