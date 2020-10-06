@@ -16,9 +16,12 @@ package v1beta1
 import (
 	"context"
 
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/pkg/errors"
+
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
@@ -35,10 +38,12 @@ func SNSTopicARN() reference.ExtractValueFn {
 	}
 }
 
-// ResolveReferences of this BucketPolicy
+// ResolveReferences of this Bucket
 func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
-	// TODO - need a way to extract arbitrary ARNs from resources - for the topic we are missing a lot of information
+	// Resolve spec.forProvider.notificationConfiguration.topicConfigurations[].topicArn
+	// TODO - need a way to extract arbitrary ARNs from resources - for the
+	// topic we are missing a lot of information
 	if mg.Spec.ForProvider.NotificationConfiguration != nil {
 		if len(mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations) != 0 {
 			for i, v := range mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations {
@@ -50,7 +55,7 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 					Extract:      SNSTopicARN(),
 				})
 				if err != nil {
-					return err
+					return errors.Wrapf(err, "spec.forProvider.notificationConfiguration.topicConfigurations[%d].topicArn", i)
 				}
 				mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i].TopicArn = rsp.ResolvedValue
 				mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i].TopicArnRef = rsp.ResolvedReference
@@ -58,6 +63,7 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 		}
 	}
 
+	// Resolve spec.forProvider.loggingConfiguration.targetBucket
 	if mg.Spec.ForProvider.LoggingConfiguration != nil {
 		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.LoggingConfiguration.TargetBucket),
@@ -67,12 +73,13 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 			Extract:      reference.ExternalName(),
 		})
 		if err != nil {
-			return err
+			return errors.Wrap(err, "spec.forProvider.loggingConfiguration.targetBucket")
 		}
 		mg.Spec.ForProvider.LoggingConfiguration.TargetBucket = reference.ToPtrValue(rsp.ResolvedValue)
 		mg.Spec.ForProvider.LoggingConfiguration.TargetBucketRef = rsp.ResolvedReference
 	}
 
+	// Resolve spec.forProvider.replicationConfiguration.role
 	if mg.Spec.ForProvider.ReplicationConfiguration != nil {
 		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.ReplicationConfiguration.Role),
@@ -82,7 +89,7 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 			Extract:      v1beta1.IAMRoleARN(),
 		})
 		if err != nil {
-			return err
+			return errors.Wrap(err, "spec.forProvider.replicationConfiguration.role")
 		}
 		mg.Spec.ForProvider.ReplicationConfiguration.Role = reference.ToPtrValue(rsp.ResolvedValue)
 		mg.Spec.ForProvider.ReplicationConfiguration.RoleRef = rsp.ResolvedReference
