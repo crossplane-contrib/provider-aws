@@ -19,8 +19,10 @@ package v1alpha1
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
 	acmpcav1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
 )
@@ -38,7 +40,7 @@ func (mg *Certificate) ResolveReferences(ctx context.Context, c client.Reader) e
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.CertificateAuthorityARN")
 	}
 	mg.Spec.ForProvider.CertificateAuthorityARN = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.CertificateAuthorityARNRef = rsp.ResolvedReference

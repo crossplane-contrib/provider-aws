@@ -19,6 +19,7 @@ package v1alpha1
 import (
 	"context"
 
+	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
@@ -37,7 +38,7 @@ func (mg *CertificateAuthorityPermission) ResolveReferences(ctx context.Context,
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.CertificateAuthorityARN")
 	}
 	mg.Spec.ForProvider.CertificateAuthorityARN = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.CertificateAuthorityARNRef = rsp.ResolvedReference

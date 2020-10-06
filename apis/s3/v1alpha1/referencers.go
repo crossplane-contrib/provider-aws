@@ -16,8 +16,10 @@ package v1alpha1
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
@@ -26,7 +28,7 @@ import (
 // ResolveReferences of this BucketPolicy
 func (mg *BucketPolicy) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
-	// Resolve spec.BucketName
+	// Resolve spec.forProvider.bucketName
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.PolicyBody.BucketName),
 		Reference:    mg.Spec.PolicyBody.BucketNameRef,
@@ -35,12 +37,12 @@ func (mg *BucketPolicy) ResolveReferences(ctx context.Context, c client.Reader) 
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.bucketName")
 	}
 	mg.Spec.PolicyBody.BucketName = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.PolicyBody.BucketNameRef = rsp.ResolvedReference
 
-	// Resolve spec.UserName
+	// Resolve spec.forProvider.userName
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.PolicyBody.UserName),
 		Reference:    mg.Spec.PolicyBody.UserNameRef,
@@ -49,7 +51,7 @@ func (mg *BucketPolicy) ResolveReferences(ctx context.Context, c client.Reader) 
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.userName")
 	}
 	mg.Spec.PolicyBody.UserName = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.PolicyBody.UserNameRef = rsp.ResolvedReference
