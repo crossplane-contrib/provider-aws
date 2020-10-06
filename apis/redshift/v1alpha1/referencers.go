@@ -19,6 +19,7 @@ package v1alpha1
 import (
 	"context"
 
+	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
@@ -31,7 +32,7 @@ import (
 func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.forProvider.vpcSecurityGroupIDs
+	// Resolve spec.forProvider.vpcSecurityGroupIds
 	mrsp, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
 		CurrentValues: mg.Spec.ForProvider.VPCSecurityGroupIDs,
 		References:    mg.Spec.ForProvider.VPCSecurityGroupIDRefs,
@@ -40,12 +41,12 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.vpcSecurityGroupIds")
 	}
 	mg.Spec.ForProvider.VPCSecurityGroupIDs = mrsp.ResolvedValues
 	mg.Spec.ForProvider.VPCSecurityGroupIDRefs = mrsp.ResolvedReferences
 
-	// Resolve spec.forProvider.IAMRole
+	// Resolve spec.forProvider.IAMRoles
 	mnrsp, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
 		CurrentValues: mg.Spec.ForProvider.IAMRoles,
 		References:    mg.Spec.ForProvider.IAMRoleRefs,
@@ -54,7 +55,7 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.IAMRoles")
 	}
 	mg.Spec.ForProvider.IAMRoles = mnrsp.ResolvedValues
 	mg.Spec.ForProvider.IAMRoleRefs = mnrsp.ResolvedReferences
@@ -68,7 +69,7 @@ func (mg *Cluster) ResolveReferences(ctx context.Context, c client.Reader) error
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.clusterSecurityGroups")
 	}
 	mg.Spec.ForProvider.ClusterSecurityGroups = msgrsp.ResolvedValues
 	mg.Spec.ForProvider.ClusterSecurityGroupRefs = msgrsp.ResolvedReferences

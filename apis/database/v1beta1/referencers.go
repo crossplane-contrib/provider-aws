@@ -19,6 +19,7 @@ package v1beta1
 import (
 	"context"
 
+	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
@@ -31,7 +32,7 @@ import (
 func (mg *DBSubnetGroup) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.forProvider.subnetIDs
+	// Resolve spec.forProvider.subnetIds
 	mrsp, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
 		CurrentValues: mg.Spec.ForProvider.SubnetIDs,
 		References:    mg.Spec.ForProvider.SubnetIDRefs,
@@ -40,7 +41,7 @@ func (mg *DBSubnetGroup) ResolveReferences(ctx context.Context, c client.Reader)
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.subnetIds")
 	}
 	mg.Spec.ForProvider.SubnetIDs = mrsp.ResolvedValues
 	mg.Spec.ForProvider.SubnetIDRefs = mrsp.ResolvedReferences
@@ -61,7 +62,7 @@ func (mg *RDSInstance) ResolveReferences(ctx context.Context, c client.Reader) e
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.dbSubnetGroupName")
 	}
 	mg.Spec.ForProvider.DBSubnetGroupName = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.DBSubnetGroupNameRef = rsp.ResolvedReference
@@ -75,7 +76,7 @@ func (mg *RDSInstance) ResolveReferences(ctx context.Context, c client.Reader) e
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.domainIAMRoleName")
 	}
 	mg.Spec.ForProvider.DomainIAMRoleName = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.DomainIAMRoleNameRef = rsp.ResolvedReference
@@ -89,7 +90,7 @@ func (mg *RDSInstance) ResolveReferences(ctx context.Context, c client.Reader) e
 		Extract:      v1beta1.IAMRoleARN(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.monitoringRoleArn")
 	}
 	mg.Spec.ForProvider.MonitoringRoleARN = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.MonitoringRoleARNRef = rsp.ResolvedReference
@@ -103,7 +104,7 @@ func (mg *RDSInstance) ResolveReferences(ctx context.Context, c client.Reader) e
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.vpcSecurityGroupIds")
 	}
 	mg.Spec.ForProvider.VPCSecurityGroupIDs = mrsp.ResolvedValues
 	mg.Spec.ForProvider.VPCSecurityGroupIDRefs = mrsp.ResolvedReferences

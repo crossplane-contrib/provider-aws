@@ -19,8 +19,10 @@ package v1alpha4
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
 	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
@@ -30,7 +32,7 @@ import (
 func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.vpcID
+	// Resolve spec.forProvider.vpcId
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: aws.StringValue(mg.Spec.ForProvider.VPCID),
 		Reference:    mg.Spec.ForProvider.VPCIDRef,
@@ -39,12 +41,12 @@ func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) er
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.vpcId")
 	}
 	mg.Spec.ForProvider.VPCID = aws.String(rsp.ResolvedValue)
 	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference
 
-	// Resolve spec.routes[].gatewayID
+	// Resolve spec.forProvider.routes[].gatewayId
 	for i := range mg.Spec.ForProvider.Routes {
 		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 			CurrentValue: aws.StringValue(mg.Spec.ForProvider.Routes[i].GatewayID),
@@ -54,13 +56,13 @@ func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) er
 			Extract:      reference.ExternalName(),
 		})
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "spec.forProvider.routes[%d].gatewayId", i)
 		}
 		mg.Spec.ForProvider.Routes[i].GatewayID = aws.String(rsp.ResolvedValue)
 		mg.Spec.ForProvider.Routes[i].GatewayIDRef = rsp.ResolvedReference
 	}
 
-	// Resolve spec.associations[].subnetID
+	// Resolve spec.associations[].subnetId
 	for i := range mg.Spec.ForProvider.Associations {
 		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 			CurrentValue: aws.StringValue(mg.Spec.ForProvider.Associations[i].SubnetID),
@@ -70,7 +72,7 @@ func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) er
 			Extract:      reference.ExternalName(),
 		})
 		if err != nil {
-			return err
+			return errors.Wrapf(err, "spec.forProvider.associations[%d].subnetId", i)
 		}
 		mg.Spec.ForProvider.Associations[i].SubnetID = aws.String(rsp.ResolvedValue)
 		mg.Spec.ForProvider.Associations[i].SubnetIDRef = rsp.ResolvedReference

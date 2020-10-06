@@ -19,8 +19,10 @@ package v1alpha1
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
 	ec2 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
@@ -38,7 +40,7 @@ func (mg *ELB) ResolveReferences(ctx context.Context, c client.Reader) error {
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.subnetIds")
 	}
 	mg.Spec.ForProvider.SubnetIDs = mrsp.ResolvedValues
 	mg.Spec.ForProvider.SubnetIDRefs = mrsp.ResolvedReferences
@@ -52,7 +54,7 @@ func (mg *ELB) ResolveReferences(ctx context.Context, c client.Reader) error {
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.securityGroupIds")
 	}
 	mg.Spec.ForProvider.SecurityGroupIDs = mrsp.ResolvedValues
 	mg.Spec.ForProvider.SecurityGroupIDRefs = mrsp.ResolvedReferences
@@ -73,7 +75,7 @@ func (mg *ELBAttachment) ResolveReferences(ctx context.Context, c client.Reader)
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.elbName")
 	}
 	mg.Spec.ForProvider.ELBName = rsp.ResolvedValue
 	mg.Spec.ForProvider.ELBNameRef = rsp.ResolvedReference

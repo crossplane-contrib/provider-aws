@@ -19,11 +19,13 @@ package v1beta1
 import (
 	"context"
 
-	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
+	"github.com/pkg/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
 )
 
 // IAMRoleARN returns the status.atProvider.ARN of an IAMRole.
@@ -51,7 +53,7 @@ func (mg *IAMRolePolicyAttachment) ResolveReferences(ctx context.Context, c clie
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.roleName")
 	}
 	mg.Spec.ForProvider.RoleName = iamRole.ResolvedValue
 	mg.Spec.ForProvider.RoleNameRef = iamRole.ResolvedReference
@@ -65,7 +67,7 @@ func (mg *IAMRolePolicyAttachment) ResolveReferences(ctx context.Context, c clie
 		Extract:      v1alpha1.IAMPolicyARN(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.policyArn")
 	}
 	mg.Spec.ForProvider.PolicyARN = iamPolicy.ResolvedValue
 	mg.Spec.ForProvider.PolicyARNRef = iamPolicy.ResolvedReference
