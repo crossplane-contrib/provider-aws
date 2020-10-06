@@ -9,4 +9,4 @@ spec:
       - key: k1
         value: v1
   providerConfigRef:
-    name: aws-provider
+    name: example

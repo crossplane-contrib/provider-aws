@@ -5,4 +5,4 @@ metadata:
 spec:
   sgName: my-super-cool-sg
   providerConfigRef:
-    name: aws-provider
+    name: example
