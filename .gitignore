@@ -4,6 +4,7 @@
 cover.out
 /vendor
 /.vendor-new
+.registry
 
 # ignore GoLand files (debug config etc...)
 /.idea
