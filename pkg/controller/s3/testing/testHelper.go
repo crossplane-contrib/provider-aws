@@ -1,0 +1,163 @@
+/*
+Copyright 2020 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package testing
+
+import (
+	"net/http"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
+	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+
+	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
+)
+
+var (
+	// an arbitrary managed resource
+	acl              = "private"
+	region           = "us-east-1"
+	grantFullControl = "fullGrant"
+	grantRead        = "readGrant"
+	grantReadACP     = "readACPGrant"
+	grantWrite       = "writeGrant"
+	grantWriteACP    = "writeACPGrant"
+	objectLock       = true
+	// BucketName is the name of the s3 bucket in testing
+	BucketName = "test.bucket.name"
+)
+
+// BucketModifier is a function which modifies the Bucket for testing
+type BucketModifier func(bucket *v1beta1.Bucket)
+
+// WithArn sets the ARN for an S3 Bucket
+func WithArn(arn string) BucketModifier {
+	return func(bucket *v1beta1.Bucket) {
+		bucket.Status.AtProvider.ARN = arn
+	}
+}
+
+// WithConditions sets the Conditions for an S3 Bucket
+func WithConditions(c ...corev1alpha1.Condition) BucketModifier { //nolint
+	return func(r *v1beta1.Bucket) { r.Status.ConditionedStatus.Conditions = c }
+}
+
+// WithAccelerationConfig sets the AccelerateConfiguration for an S3 Bucket
+func WithAccelerationConfig(s *v1beta1.AccelerateConfiguration) BucketModifier { //nolint
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.AccelerateConfiguration = s }
+}
+
+// WithSSEConfig sets the ServerSideEncryptionConfiguration for an S3 Bucket
+func WithSSEConfig(s *v1beta1.ServerSideEncryptionConfiguration) BucketModifier { //nolint
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.ServerSideEncryptionConfiguration = s }
+}
+
+// WithVersioningConfig sets the VersioningConfiguration for an S3 Bucket
+func WithVersioningConfig(s *v1beta1.VersioningConfiguration) BucketModifier { //nolint
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.VersioningConfiguration = s }
+}
+
+// WithCORSConfig sets the CORSConfiguration for an S3 Bucket
+func WithCORSConfig(s *v1beta1.CORSConfiguration) BucketModifier { //nolint
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.CORSConfiguration = s }
+}
+
+// WithWebConfig sets the WebsiteConfiguration for an S3 Bucket
+func WithWebConfig(s *v1beta1.WebsiteConfiguration) BucketModifier { //nolint
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.WebsiteConfiguration = s }
+}
+
+// WithLoggingConfig sets the LoggingConfiguration for an S3 Bucket
+func WithLoggingConfig(s *v1beta1.LoggingConfiguration) BucketModifier { //nolint
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.LoggingConfiguration = s }
+}
+
+// WithPayerConfig sets the PaymentConfiguration for an S3 Bucket
+func WithPayerConfig(s *v1beta1.PaymentConfiguration) BucketModifier { //nolint
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.PayerConfiguration = s }
+}
+
+// WithTaggingConfig sets the Tagging for an S3 Bucket
+func WithTaggingConfig(s *v1beta1.Tagging) BucketModifier { //nolint
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.BucketTagging = s }
+}
+
+// WithReplConfig sets the ReplicationConfiguration for an S3 Bucket
+func WithReplConfig(s *v1beta1.ReplicationConfiguration) BucketModifier { //nolint
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.ReplicationConfiguration = s }
+}
+
+// WithLifecycleConfig sets the BucketLifecycleConfiguration for an S3 Bucket
+func WithLifecycleConfig(s *v1beta1.BucketLifecycleConfiguration) BucketModifier { //nolint
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.LifecycleConfiguration = s }
+}
+
+// WithNotificationConfig sets the NotificationConfiguration for an S3 Bucket
+func WithNotificationConfig(s *v1beta1.NotificationConfiguration) BucketModifier { //nolint
+	return func(r *v1beta1.Bucket) { r.Spec.ForProvider.NotificationConfiguration = s }
+}
+
+// Bucket creates a v1beta1 Bucket for use in testing
+func Bucket(m ...BucketModifier) *v1beta1.Bucket {
+	cr := &v1beta1.Bucket{
+		Spec: v1beta1.BucketSpec{
+			ForProvider: v1beta1.BucketParameters{
+				ACL:                        &acl,
+				LocationConstraint:         region,
+				GrantFullControl:           &grantFullControl,
+				GrantRead:                  &grantRead,
+				GrantReadACP:               &grantReadACP,
+				GrantWrite:                 &grantWrite,
+				GrantWriteACP:              &grantWriteACP,
+				ObjectLockEnabledForBucket: &objectLock,
+			},
+		},
+	}
+	for _, f := range m {
+		f(cr)
+	}
+	meta.SetExternalName(cr, BucketName)
+	return cr
+}
+
+// CreateRequest creates an AWS request from an error and some data
+func CreateRequest(err error, data interface{}) *aws.Request {
+	return &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: err, Data: data}
+}
+
+// CopyTag converts a local v1beta.Tag to an S3 Tag
+func CopyTag(tag *v1beta1.Tag) *awss3.Tag {
+	if tag == nil {
+		return nil
+	}
+	return &awss3.Tag{
+		Key:   aws.String(tag.Key),
+		Value: aws.String(tag.Value),
+	}
+}
+
+// CopyTags converts a list of local v1beta.Tags to S3 Tags
+func CopyTags(tags []v1beta1.Tag) []awss3.Tag {
+	if tags == nil {
+		return nil
+	}
+	out := make([]awss3.Tag, len(tags))
+	for i := range tags {
+		out[i] = *CopyTag(&tags[i])
+	}
+	return out
+}

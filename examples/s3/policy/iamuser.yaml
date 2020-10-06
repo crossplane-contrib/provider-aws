@@ -1,0 +1,14 @@
+---
+apiVersion: identity.aws.crossplane.io/v1alpha1
+kind: IAMUser
+metadata:
+  name: test-bucket-user
+  label:
+    type: test
+spec:
+  forProvider:
+    tags:
+      - key: k1
+        value: v1
+  providerConfigRef:
+    name: example
