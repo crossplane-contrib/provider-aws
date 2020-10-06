@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -34,13 +34,13 @@ import (
 )
 
 var (
-	role                           = "replication-role"
-	owner                          = "Destination"
-	accountID                      = "test-account-id"
-	kmsID                          = "encKmsID"
-	replicationTime                = 15
-	priority                       = 1
-	_               BucketResource = &ReplicationConfigurationClient{}
+	role                              = "replication-role"
+	owner                             = "Destination"
+	accountID                         = "test-account-id"
+	kmsID                             = "encKmsID"
+	replicationTime                   = 15
+	priority                          = 1
+	_               SubresourceClient = &ReplicationConfigurationClient{}
 )
 
 func generateReplicationConfig() *v1beta1.ReplicationConfiguration {

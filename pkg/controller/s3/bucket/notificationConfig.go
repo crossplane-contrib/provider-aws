@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -28,6 +28,12 @@ import (
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
+)
+
+const (
+	notificationGetFailed    = "cannot get Bucket notification"
+	notificationPutFailed    = "cannot put Bucket notification"
+	notificationDeleteFailed = "cannot delete Bucket notification"
 )
 
 // NotificationConfigurationClient is the client for API methods and reconciling the LifecycleConfiguration

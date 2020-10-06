@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -32,8 +32,8 @@ import (
 )
 
 var (
-	mfadelete                = "Enabled"
-	_         BucketResource = &VersioningConfigurationClient{}
+	mfadelete                   = "Enabled"
+	_         SubresourceClient = &VersioningConfigurationClient{}
 )
 
 func generateVersioningConfig() *v1beta1.VersioningConfiguration {

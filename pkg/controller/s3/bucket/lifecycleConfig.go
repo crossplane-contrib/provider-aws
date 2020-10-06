@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -29,6 +29,12 @@ import (
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/controller/s3/testing"
+)
+
+const (
+	lifecycleGetFailed    = "cannot get Bucket lifecycle"
+	lifecyclePutFailed    = "cannot put Bucket lifecycle"
+	lifecycleDeleteFailed = "cannot delete Bucket lifecycle configuration"
 )
 
 // LifecycleConfigurationClient is the client for API methods and reconciling the LifecycleConfiguration

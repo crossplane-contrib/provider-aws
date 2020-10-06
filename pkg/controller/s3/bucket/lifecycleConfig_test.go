@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -51,10 +51,10 @@ var (
 		Key:   aws.String("test"),
 		Value: aws.String("value"),
 	}
-	_       BucketResource = &LifecycleConfigurationClient{}
-	awsTags                = []s3.Tag{awsTag}
-	id                     = "test-id"
-	storage                = "ONEZONE_IA"
+	_       SubresourceClient = &LifecycleConfigurationClient{}
+	awsTags                   = []s3.Tag{awsTag}
+	id                        = "test-id"
+	storage                   = "ONEZONE_IA"
 )
 
 func generateLifecycleConfig() *v1beta1.BucketLifecycleConfiguration {

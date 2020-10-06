@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -31,13 +31,13 @@ import (
 )
 
 var (
-	_           BucketResource = &LoggingConfigurationClient{}
-	bucketName                 = "test.Bucket.name"
-	permission                 = "FULL_CONTROL"
-	displayName                = "name"
-	email                      = "test@user.com"
-	userType                   = "CanonicalUser"
-	groupURI                   = "uri"
+	_           SubresourceClient = &LoggingConfigurationClient{}
+	bucketName                    = "test.Bucket.name"
+	permission                    = "FULL_CONTROL"
+	displayName                   = "name"
+	email                         = "test@user.com"
+	userType                      = "CanonicalUser"
+	groupURI                      = "uri"
 )
 
 func generateLoggingConfig() *v1beta1.LoggingConfiguration {

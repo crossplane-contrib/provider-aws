@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -27,6 +27,12 @@ import (
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
+)
+
+const (
+	sseGetFailed    = "cannot get Bucket encryption configuration"
+	ssePutFailed    = "cannot put Bucket encryption configuration"
+	sseDeleteFailed = "cannot delete Bucket encryption configuration"
 )
 
 // SSEConfigurationClient is the client for API methods and reconciling the ServerSideEncryptionConfiguration
