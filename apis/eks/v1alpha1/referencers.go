@@ -19,8 +19,10 @@ package v1alpha1
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
 	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	eksv1beta1 "github.com/crossplane/provider-aws/apis/eks/v1beta1"
@@ -40,7 +42,7 @@ func (mg *NodeGroup) ResolveReferences(ctx context.Context, c client.Reader) err
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.clusterName")
 	}
 	mg.Spec.ForProvider.ClusterName = rsp.ResolvedValue
 	mg.Spec.ForProvider.ClusterNameRef = rsp.ResolvedReference
@@ -54,7 +56,7 @@ func (mg *NodeGroup) ResolveReferences(ctx context.Context, c client.Reader) err
 		Extract:      iamv1beta1.IAMRoleARN(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.nodeRole")
 	}
 	mg.Spec.ForProvider.NodeRole = rsp.ResolvedValue
 	mg.Spec.ForProvider.NodeRoleRef = rsp.ResolvedReference
@@ -68,7 +70,7 @@ func (mg *NodeGroup) ResolveReferences(ctx context.Context, c client.Reader) err
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.subnets")
 	}
 	mg.Spec.ForProvider.Subnets = mrsp.ResolvedValues
 	mg.Spec.ForProvider.SubnetRefs = mrsp.ResolvedReferences
@@ -83,7 +85,7 @@ func (mg *NodeGroup) ResolveReferences(ctx context.Context, c client.Reader) err
 			Extract:       reference.ExternalName(),
 		})
 		if err != nil {
-			return err
+			return errors.Wrap(err, "spec.forProvider.remoteAccess.sourceSecurityGroups")
 		}
 		mg.Spec.ForProvider.RemoteAccess.SourceSecurityGroups = mrsp.ResolvedValues
 		mg.Spec.ForProvider.RemoteAccess.SourceSecurityGroupRefs = mrsp.ResolvedReferences

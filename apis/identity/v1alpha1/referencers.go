@@ -16,9 +16,11 @@ package v1alpha1
 import (
 	"context"
 
+	"github.com/pkg/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	resource "github.com/crossplane/crossplane-runtime/pkg/resource"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // IAMPolicyARN returns a function that returns the ARN of the given policy.
@@ -45,7 +47,7 @@ func (mg *IAMUserPolicyAttachment) ResolveReferences(ctx context.Context, c clie
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.userName")
 	}
 	mg.Spec.ForProvider.UserName = user.ResolvedValue
 	mg.Spec.ForProvider.UserNameRef = user.ResolvedReference
@@ -59,7 +61,7 @@ func (mg *IAMUserPolicyAttachment) ResolveReferences(ctx context.Context, c clie
 		Extract:      IAMPolicyARN(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.policyArn")
 	}
 	mg.Spec.ForProvider.PolicyARN = policy.ResolvedValue
 	mg.Spec.ForProvider.PolicyARNRef = policy.ResolvedReference
@@ -80,7 +82,7 @@ func (mg *IAMGroupUserMembership) ResolveReferences(ctx context.Context, c clien
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.userName")
 	}
 	mg.Spec.ForProvider.UserName = user.ResolvedValue
 	mg.Spec.ForProvider.UserNameRef = user.ResolvedReference
@@ -94,7 +96,7 @@ func (mg *IAMGroupUserMembership) ResolveReferences(ctx context.Context, c clien
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.groupName")
 	}
 	mg.Spec.ForProvider.GroupName = group.ResolvedValue
 	mg.Spec.ForProvider.GroupNameRef = group.ResolvedReference
@@ -115,7 +117,7 @@ func (mg *IAMGroupPolicyAttachment) ResolveReferences(ctx context.Context, c cli
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.groupName")
 	}
 	mg.Spec.ForProvider.GroupName = group.ResolvedValue
 	mg.Spec.ForProvider.GroupNameRef = group.ResolvedReference
@@ -129,7 +131,7 @@ func (mg *IAMGroupPolicyAttachment) ResolveReferences(ctx context.Context, c cli
 		Extract:      IAMPolicyARN(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.policyArn")
 	}
 	mg.Spec.ForProvider.PolicyARN = policy.ResolvedValue
 	mg.Spec.ForProvider.PolicyARNRef = policy.ResolvedReference
