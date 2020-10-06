@@ -21,7 +21,6 @@ import (
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
@@ -146,14 +145,13 @@ func GenerateRules(in *v1beta1.BucketLifecycleConfiguration) []awss3.LifecycleRu
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS
-func (in *LifecycleConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	config := bucket.Spec.ForProvider.LifecycleConfiguration
-	if config == nil {
-		return managed.ExternalUpdate{}, nil
+func (in *LifecycleConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
+	if bucket.Spec.ForProvider.LifecycleConfiguration == nil {
+		return nil
 	}
-
-	_, err := in.client.PutBucketLifecycleConfigurationRequest(GenerateLifecycleConfiguration(meta.GetExternalName(bucket), config)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, lifecyclePutFailed)
+	input := GenerateLifecycleConfiguration(meta.GetExternalName(bucket), bucket.Spec.ForProvider.LifecycleConfiguration)
+	_, err := in.client.PutBucketLifecycleConfigurationRequest(input).Send(ctx)
+	return errors.Wrap(err, lifecyclePutFailed)
 
 }
 

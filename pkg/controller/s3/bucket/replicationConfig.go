@@ -21,7 +21,6 @@ import (
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
@@ -198,7 +197,7 @@ func GenerateReplicationConfiguration(config *v1beta1.ReplicationConfiguration) 
 }
 
 // GeneratePutBucketReplicationInput creates the input for the PutBucketReplication request for the S3 Client
-func (in *ReplicationConfigurationClient) GeneratePutBucketReplicationInput(name string, config *v1beta1.ReplicationConfiguration) *awss3.PutBucketReplicationInput {
+func GeneratePutBucketReplicationInput(name string, config *v1beta1.ReplicationConfiguration) *awss3.PutBucketReplicationInput {
 	return &awss3.PutBucketReplicationInput{
 		Bucket:                   aws.String(name),
 		ReplicationConfiguration: GenerateReplicationConfiguration(config),
@@ -206,13 +205,13 @@ func (in *ReplicationConfigurationClient) GeneratePutBucketReplicationInput(name
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS.
-func (in *ReplicationConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	config := bucket.Spec.ForProvider.ReplicationConfiguration
-	if config == nil {
-		return managed.ExternalUpdate{}, nil
+func (in *ReplicationConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
+	if bucket.Spec.ForProvider.ReplicationConfiguration == nil {
+		return nil
 	}
-	_, err := in.client.PutBucketReplicationRequest(in.GeneratePutBucketReplicationInput(meta.GetExternalName(bucket), config)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, replicationPutFailed)
+	input := GeneratePutBucketReplicationInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.ReplicationConfiguration)
+	_, err := in.client.PutBucketReplicationRequest(input).Send(ctx)
+	return errors.Wrap(err, replicationPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
