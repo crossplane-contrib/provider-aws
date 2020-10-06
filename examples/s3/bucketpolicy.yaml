@@ -4,12 +4,10 @@ metadata:
   name: bucketpolicy-public
 spec:
   forProvider:
-    bucketNameSelector:
-      matchLabels:
-        type: test
-    userNameSelector:
-      matchLabels:
-        type: test
+    bucketNameRef:
+      name: test-bucket
+    userNameRef:
+      name: someuser
     statement:
       - action:
           - s3:ListBucket
