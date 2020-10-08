@@ -26,7 +26,7 @@ spec:
     storageEncrypted: false
     storageType: gp2
   providerConfigRef:
-    name: aws-provider
+    name: example
   writeConnectionSecretToRef:
     name: 66258c8a-24ad-45e6-a79e-1d54c19d908c-mysqlserver
     namespace: crossplane-system

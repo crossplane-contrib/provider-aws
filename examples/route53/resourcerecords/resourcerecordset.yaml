@@ -5,7 +5,7 @@ metadata:
   name: dev.crossplane.io
 spec:
   providerConfigRef:
-    name: aws-provider
+    name: example
   forProvider:
     type: A
     ttl: 300

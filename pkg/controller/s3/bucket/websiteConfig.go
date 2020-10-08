@@ -14,20 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
+)
+
+const (
+	websiteGetFailed    = "cannot get Bucket website configuration"
+	websitePutFailed    = "cannot put Bucket website configuration"
+	websiteDeleteFailed = "cannot delete Bucket website configuration"
 )
 
 // WebsiteConfigurationClient is the client for API methods and reconciling the WebsiteConfiguration
@@ -128,13 +133,13 @@ func GeneratePutBucketWebsiteInput(name string, config *v1beta1.WebsiteConfigura
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS.
-func (in *WebsiteConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	config := bucket.Spec.ForProvider.WebsiteConfiguration
-	if config == nil {
-		return managed.ExternalUpdate{}, nil
+func (in *WebsiteConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
+	if bucket.Spec.ForProvider.WebsiteConfiguration == nil {
+		return nil
 	}
-	_, err := in.client.PutBucketWebsiteRequest(GeneratePutBucketWebsiteInput(meta.GetExternalName(bucket), config)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, websitePutFailed)
+	input := GeneratePutBucketWebsiteInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.WebsiteConfiguration)
+	_, err := in.client.PutBucketWebsiteRequest(input).Send(ctx)
+	return errors.Wrap(err, websitePutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.

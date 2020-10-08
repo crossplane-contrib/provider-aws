@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -34,13 +34,13 @@ import (
 )
 
 var (
-	role                           = "replication-role"
-	owner                          = "Destination"
-	accountID                      = "test-account-id"
-	kmsID                          = "encKmsID"
-	replicationTime                = 15
-	priority                       = 1
-	_               BucketResource = &ReplicationConfigurationClient{}
+	role                              = "replication-role"
+	owner                             = "Destination"
+	accountID                         = "test-account-id"
+	kmsID                             = "encKmsID"
+	replicationTime                   = 15
+	priority                          = 1
+	_               SubresourceClient = &ReplicationConfigurationClient{}
 )
 
 func generateReplicationConfig() *v1beta1.ReplicationConfiguration {
@@ -306,7 +306,7 @@ func TestReplicationCreateOrUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			_, err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
+			err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

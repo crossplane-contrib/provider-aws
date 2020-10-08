@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -38,7 +38,7 @@ const (
 
 var errBoom = errors.New("boom")
 
-var _ BucketResource = &AccelerateConfigurationClient{}
+var _ SubresourceClient = &AccelerateConfigurationClient{}
 
 func TestAccelerateObserve(t *testing.T) {
 	type args struct {
@@ -152,7 +152,7 @@ func TestAccelerateObserve(t *testing.T) {
 
 func TestAccelerateCreateOrUpdate(t *testing.T) {
 	type args struct {
-		cl BucketResource
+		cl SubresourceClient
 		b  *v1beta1.Bucket
 	}
 
@@ -213,7 +213,7 @@ func TestAccelerateCreateOrUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			_, err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
+			err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
@@ -223,7 +223,7 @@ func TestAccelerateCreateOrUpdate(t *testing.T) {
 
 func TestAccelerateDelete(t *testing.T) {
 	type args struct {
-		cl BucketResource
+		cl SubresourceClient
 		b  *v1beta1.Bucket
 	}
 

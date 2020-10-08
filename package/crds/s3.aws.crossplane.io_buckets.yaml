@@ -279,7 +279,7 @@ spec:
                   - rules
                   type: object
                 locationConstraint:
-                  description: Specifies the Region where the bucket will be created. If you don't specify a Region, the bucket is created in the US East (N. Virginia) Region (us-east-1).
+                  description: LocationConstraint specifies the Region where the bucket will be created. It is a required field.
                   type: string
                 loggingConfiguration:
                   description: Specifies logging parameters for an Amazon S3 bucket. Set the logging parameters for a bucket and to specify permissions for who can view and modify the logging parameters. See the AWS API reference guide for Amazon Simple Storage Service's API operation PutBucketLogging for usage and error information. See also, https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/PutBucketLogging
@@ -943,6 +943,8 @@ spec:
                         type: object
                       type: array
                   type: object
+              required:
+              - locationConstraint
               type: object
             providerConfigRef:
               description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.

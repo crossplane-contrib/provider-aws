@@ -5,4 +5,4 @@ metadata:
 spec:
   networkName: my-network
   providerConfigRef:
-    name: aws-provider
+    name: example

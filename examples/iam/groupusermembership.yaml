@@ -9,4 +9,4 @@ spec:
     userNameRef:
       name: someuser
   providerConfigRef:
-    name: aws-provider
+    name: example
