@@ -25,11 +25,6 @@ func (p *ProviderConfig) GetCondition(ct runtimev1alpha1.ConditionType) runtimev
 	return p.Status.GetCondition(ct)
 }
 
-// GetCredentialsSecretReference of this ProviderConfig.
-func (p *ProviderConfig) GetCredentialsSecretReference() *runtimev1alpha1.SecretKeySelector {
-	return p.Spec.CredentialsSecretRef
-}
-
 // GetUsers of this ProviderConfig.
 func (p *ProviderConfig) GetUsers() int64 {
 	return p.Status.Users
@@ -38,11 +33,6 @@ func (p *ProviderConfig) GetUsers() int64 {
 // SetConditions of this ProviderConfig.
 func (p *ProviderConfig) SetConditions(c ...runtimev1alpha1.Condition) {
 	p.Status.SetConditions(c...)
-}
-
-// SetCredentialsSecretReference of this ProviderConfig.
-func (p *ProviderConfig) SetCredentialsSecretReference(r *runtimev1alpha1.SecretKeySelector) {
-	p.Spec.CredentialsSecretRef = r
 }
 
 // SetUsers of this ProviderConfig.
