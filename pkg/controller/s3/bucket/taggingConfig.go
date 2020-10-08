@@ -14,20 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
+)
+
+const (
+	taggingGetFailed    = "cannot get Bucket tagging set"
+	taggingPutFailed    = "cannot put Bucket tagging set"
+	taggingDeleteFailed = "cannot delete Bucket tagging set"
 )
 
 // TaggingConfigurationClient is the client for API methods and reconciling the CORSConfiguration
@@ -95,13 +100,13 @@ func GeneratePutBucketTagging(name string, config *v1beta1.Tagging) *awss3.PutBu
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS
-func (in *TaggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	config := bucket.Spec.ForProvider.BucketTagging
-	if config == nil {
-		return managed.ExternalUpdate{}, nil
+func (in *TaggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
+	if bucket.Spec.ForProvider.BucketTagging == nil {
+		return nil
 	}
-	_, err := in.client.PutBucketTaggingRequest(GeneratePutBucketTagging(meta.GetExternalName(bucket), config)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, taggingPutFailed)
+	input := GeneratePutBucketTagging(meta.GetExternalName(bucket), bucket.Spec.ForProvider.BucketTagging)
+	_, err := in.client.PutBucketTaggingRequest(input).Send(ctx)
+	return errors.Wrap(err, taggingPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.

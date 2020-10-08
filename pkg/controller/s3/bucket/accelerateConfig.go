@@ -14,19 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
+)
+
+const (
+	accelGetFailed    = "cannot get Bucket accelerate configuration"
+	accelPutFailed    = "cannot put Bucket acceleration configuration"
+	accelDeleteFailed = "cannot delete Bucket acceleration configuration"
 )
 
 // AccelerateConfigurationClient is the client for API methods and reconciling the AccelerateConfiguration
@@ -91,13 +96,13 @@ func GenerateAccelerateConfigurationInput(name string, config *v1beta1.Accelerat
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS
-func (in *AccelerateConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	config := bucket.Spec.ForProvider.AccelerateConfiguration
-	if config == nil {
-		return managed.ExternalUpdate{}, nil
+func (in *AccelerateConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
+	if bucket.Spec.ForProvider.AccelerateConfiguration == nil {
+		return nil
 	}
-	_, err := in.client.PutBucketAccelerateConfigurationRequest(GenerateAccelerateConfigurationInput(meta.GetExternalName(bucket), config)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, accelPutFailed)
+	input := GenerateAccelerateConfigurationInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.AccelerateConfiguration)
+	_, err := in.client.PutBucketAccelerateConfigurationRequest(input).Send(ctx)
+	return errors.Wrap(err, accelPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.

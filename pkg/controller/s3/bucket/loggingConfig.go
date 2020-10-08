@@ -14,20 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
+)
+
+const (
+	loggingGetFailed    = "cannot get Bucket logging configuration"
+	loggingPutFailed    = "cannot put Bucket logging configuration"
+	loggingDeleteFailed = "cannot delete Bucket logging configuration"
 )
 
 // LoggingConfigurationClient is the client for API methods and reconciling the LoggingConfiguration
@@ -151,13 +156,13 @@ func GeneratePutBucketLoggingInput(name string, config *v1beta1.LoggingConfigura
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS
-func (in *LoggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	config := bucket.Spec.ForProvider.LoggingConfiguration
-	if config == nil {
-		return managed.ExternalUpdate{}, nil
+func (in *LoggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
+	if bucket.Spec.ForProvider.LoggingConfiguration == nil {
+		return nil
 	}
-	_, err := in.client.PutBucketLoggingRequest(GeneratePutBucketLoggingInput(meta.GetExternalName(bucket), config)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, loggingPutFailed)
+	input := GeneratePutBucketLoggingInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.LoggingConfiguration)
+	_, err := in.client.PutBucketLoggingRequest(input).Send(ctx)
+	return errors.Wrap(err, loggingPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.

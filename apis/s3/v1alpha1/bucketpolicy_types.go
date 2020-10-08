@@ -24,6 +24,10 @@ import (
 
 // BucketPolicyParameters define the desired state of an AWS BucketPolicy.
 type BucketPolicyParameters struct {
+
+	// Region is where the Bucket referenced by this BucketPolicy resides.
+	Region string `json:"region"`
+
 	// This is the current IAM policy version
 	PolicyVersion string `json:"version"`
 
@@ -211,6 +215,7 @@ type BucketPolicyStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster
+// +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type BucketPolicy struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

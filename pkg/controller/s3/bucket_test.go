@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/crossplane/provider-aws/pkg/controller/s3/bucket"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
@@ -194,7 +196,7 @@ func TestObserve(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{s3client: tc.s3, kube: tc.kube}
+			e := &external{s3client: tc.s3, subresourceClients: bucket.NewSubresourceClients(tc.s3), kube: tc.kube}
 			o, err := e.Observe(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -260,22 +262,6 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr:  s3Testing.Bucket(s3Testing.WithConditions(corev1alpha1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
-			},
-		},
-		"AlreadyExistsError": {
-			args: args{
-				s3: &fake.MockBucketClient{
-					MockCreateBucketRequest: func(input *awss3.CreateBucketInput) awss3.CreateBucketRequest {
-						return awss3.CreateBucketRequest{
-							Request: s3Testing.CreateRequest(awserr.New(awss3.ErrCodeBucketAlreadyOwnedByYou, "", nil), &awss3.CreateBucketOutput{}),
-						}
-					},
-				},
-				cr: s3Testing.Bucket(),
-			},
-			want: want{
-				cr:  s3Testing.Bucket(),
-				err: nil,
 			},
 		},
 	}
@@ -371,10 +357,9 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(corev1alpha1.ReconcileError(errors.Wrap(errBoom, "cannot put Bucket payment"))),
 					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
 				),
-				err:    errors.Wrap(errBoom, "cannot put Bucket payment"),
+				err:    errors.Wrap(errors.Wrap(errBoom, "cannot put Bucket payment"), errCreateOrUpdate),
 				result: managed.ExternalUpdate{},
 			},
 		},
@@ -467,10 +452,9 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(corev1alpha1.ReconcileError(errors.Wrap(errBoom, "cannot delete Bucket encryption configuration"))),
 					s3Testing.WithSSEConfig(nil),
 				),
-				err:    errors.Wrap(errBoom, "cannot delete Bucket encryption configuration"),
+				err:    errors.Wrap(errors.Wrap(errBoom, "cannot delete Bucket encryption configuration"), errDelete),
 				result: managed.ExternalUpdate{},
 			},
 		},
@@ -514,7 +498,7 @@ func TestUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{s3client: tc.s3}
+			e := &external{s3client: tc.s3, subresourceClients: bucket.NewSubresourceClients(tc.s3)}
 			o, err := e.Update(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {

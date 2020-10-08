@@ -14,19 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
+)
+
+const (
+	sseGetFailed    = "cannot get Bucket encryption configuration"
+	ssePutFailed    = "cannot put Bucket encryption configuration"
+	sseDeleteFailed = "cannot delete Bucket encryption configuration"
 )
 
 // SSEConfigurationClient is the client for API methods and reconciling the ServerSideEncryptionConfiguration
@@ -99,13 +104,13 @@ func GeneratePutBucketEncryptionInput(name string, config *v1beta1.ServerSideEnc
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS.
-func (in *SSEConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	config := bucket.Spec.ForProvider.ServerSideEncryptionConfiguration
-	if config == nil {
-		return managed.ExternalUpdate{}, nil
+func (in *SSEConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
+	if bucket.Spec.ForProvider.ServerSideEncryptionConfiguration == nil {
+		return nil
 	}
-	_, err := in.client.PutBucketEncryptionRequest(GeneratePutBucketEncryptionInput(meta.GetExternalName(bucket), config)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, ssePutFailed)
+	input := GeneratePutBucketEncryptionInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.ServerSideEncryptionConfiguration)
+	_, err := in.client.PutBucketEncryptionRequest(input).Send(ctx)
+	return errors.Wrap(err, ssePutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -33,7 +33,7 @@ import (
 	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
-var _ BucketResource = &CORSConfigurationClient{}
+var _ SubresourceClient = &CORSConfigurationClient{}
 
 func generateCORSConfig() *v1beta1.CORSConfiguration {
 	return &v1beta1.CORSConfiguration{CORSRules: []v1beta1.CORSRule{
@@ -250,7 +250,7 @@ func TestCORSCreateOrUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			_, err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
+			err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

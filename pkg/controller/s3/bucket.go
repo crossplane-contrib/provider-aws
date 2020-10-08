@@ -39,13 +39,15 @@ import (
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	awscommon "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/controller/s3/bucketresources"
+	"github.com/crossplane/provider-aws/pkg/controller/s3/bucket"
 )
 
 const (
 	errUnexpectedObject = "The managed resource is not a Bucket"
 	errHead             = "failed to query Bucket"
 	errCreate           = "failed to create the Bucket"
+	errCreateOrUpdate   = "cannot create or update"
+	errDelete           = "cannot delete"
 	errKubeUpdateFailed = "cannot update S3 custom resource"
 )
 
@@ -59,7 +61,6 @@ func SetupBucket(mgr ctrl.Manager, l logging.Logger) error {
 			resource.ManagedKind(v1beta1.BucketGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: s3.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewNameAsExternalName(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -74,20 +75,18 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	region := cr.Spec.ForProvider.LocationConstraint
-	if region == "" {
-		region = "us-east-1"
-	}
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, region)
+	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.LocationConstraint)
 	if err != nil {
 		return nil, err
 	}
-	return &external{s3client: c.newClientFn(*cfg), kube: c.kube}, nil
+	s3client := c.newClientFn(*cfg)
+	return &external{s3client: s3client, subresourceClients: bucket.NewSubresourceClients(s3client), kube: c.kube}, nil
 }
 
 type external struct {
-	kube     client.Client
-	s3client s3.BucketClient
+	kube               client.Client
+	s3client           s3.BucketClient
+	subresourceClients []bucket.SubresourceClient
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
@@ -103,7 +102,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	current := cr.Spec.ForProvider.DeepCopy()
 
-	for _, awsClient := range bucketresources.MakeControllers(cr, e.s3client) {
+	for _, awsClient := range e.subresourceClients {
 		err := awsClient.LateInitialize(ctx, cr)
 		if err != nil {
 			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
@@ -112,7 +111,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		if err != nil {
 			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
 		}
-		if updated != bucketresources.Updated {
+		if updated != bucket.Updated {
 			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
 		}
 	}
@@ -142,11 +141,8 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	_, err := e.s3client.CreateBucketRequest(s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx)
-	if s3.IsAlreadyExists(err) {
-		return managed.ExternalCreation{}, nil
-	}
 	cr.Status.SetConditions(runtimev1alpha1.Creating())
+	_, err := e.s3client.CreateBucketRequest(s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx)
 	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 }
 
@@ -156,24 +152,22 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	for _, awsClient := range bucketresources.MakeControllers(cr, e.s3client) {
+	for _, awsClient := range e.subresourceClients {
 		status, err := awsClient.Observe(ctx, cr)
 		if err != nil {
 			cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
 			return managed.ExternalUpdate{}, err
 		}
 		switch status { //nolint:exhaustive
-		case bucketresources.NeedsDeletion:
+		case bucket.NeedsDeletion:
 			err = awsClient.Delete(ctx, cr)
 			if err != nil {
-				cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
-				return managed.ExternalUpdate{}, err
+				return managed.ExternalUpdate{}, errors.Wrap(err, errDelete)
 			}
-		case bucketresources.NeedsUpdate:
-			update, err := awsClient.CreateOrUpdate(ctx, cr)
-			if err != nil {
-				cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
-				return update, err
+		case bucket.NeedsUpdate:
+			if err := awsClient.CreateOrUpdate(ctx, cr); err != nil {
+				// TODO(muvaf): let the user know which client failed.
+				return managed.ExternalUpdate{}, errors.Wrap(err, errCreateOrUpdate)
 			}
 		}
 	}

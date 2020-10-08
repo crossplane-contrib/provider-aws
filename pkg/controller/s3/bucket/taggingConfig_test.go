@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -32,7 +32,7 @@ import (
 	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
-var _ BucketResource = &TaggingConfigurationClient{}
+var _ SubresourceClient = &TaggingConfigurationClient{}
 
 func generateTaggingConfig() *v1beta1.Tagging {
 	return &v1beta1.Tagging{
@@ -235,7 +235,7 @@ func TestTaggingCreateOrUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			_, err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
+			err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

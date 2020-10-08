@@ -14,20 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
+)
+
+const (
+	notificationGetFailed    = "cannot get Bucket notification"
+	notificationPutFailed    = "cannot put Bucket notification"
+	notificationDeleteFailed = "cannot delete Bucket notification"
 )
 
 // NotificationConfigurationClient is the client for API methods and reconciling the LifecycleConfiguration
@@ -329,14 +334,13 @@ func GenerateNotificationConfigurationInput(name string, config *v1beta1.Notific
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS
-func (in *NotificationConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	config := bucket.Spec.ForProvider.NotificationConfiguration
-	if config == nil {
-		return managed.ExternalUpdate{}, nil
+func (in *NotificationConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
+	if bucket.Spec.ForProvider.NotificationConfiguration == nil {
+		return nil
 	}
-	input := GenerateNotificationConfigurationInput(meta.GetExternalName(bucket), config)
+	input := GenerateNotificationConfigurationInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.NotificationConfiguration)
 	_, err := in.client.PutBucketNotificationConfigurationRequest(input).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, notificationPutFailed)
+	return errors.Wrap(err, notificationPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.

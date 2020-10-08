@@ -14,19 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
+)
+
+const (
+	versioningGetFailed    = "cannot get Bucket versioning configuration"
+	versioningPutFailed    = "cannot put Bucket versioning configuration"
+	versioningDeleteFailed = "cannot delete Bucket versioning configuration"
 )
 
 // VersioningConfigurationClient is the client for API methods and reconciling the VersioningConfiguration
@@ -94,13 +99,13 @@ func GeneratePutBucketVersioningInput(name string, config *v1beta1.VersioningCon
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS.
-func (in *VersioningConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) (managed.ExternalUpdate, error) {
-	config := bucket.Spec.ForProvider.VersioningConfiguration
-	if config == nil {
-		return managed.ExternalUpdate{}, nil
+func (in *VersioningConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
+	if bucket.Spec.ForProvider.VersioningConfiguration == nil {
+		return nil
 	}
-	_, err := in.client.PutBucketVersioningRequest(GeneratePutBucketVersioningInput(meta.GetExternalName(bucket), config)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, versioningPutFailed)
+	input := GeneratePutBucketVersioningInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.VersioningConfiguration)
+	_, err := in.client.PutBucketVersioningRequest(input).Send(ctx)
+	return errors.Wrap(err, versioningPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.

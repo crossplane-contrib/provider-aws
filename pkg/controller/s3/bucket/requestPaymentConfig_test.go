@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package bucketresources
+package bucket
 
 import (
 	"context"
@@ -31,8 +31,8 @@ import (
 )
 
 var (
-	payer                = "Requester"
-	_     BucketResource = &RequestPaymentConfigurationClient{}
+	payer                   = "Requester"
+	_     SubresourceClient = &RequestPaymentConfigurationClient{}
 )
 
 func generateRequestPaymentConfig() *v1beta1.PaymentConfiguration {
@@ -188,7 +188,7 @@ func TestRequestPaymentCreateOrUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			_, err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
+			err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
