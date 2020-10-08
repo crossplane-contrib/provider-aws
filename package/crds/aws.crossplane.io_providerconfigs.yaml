@@ -42,26 +42,41 @@ spec:
         spec:
           description: A ProviderConfigSpec defines the desired state of a ProviderConfig.
           properties:
-            credentialsSecretRef:
-              description: CredentialsSecretRef references a specific secret's key that contains the credentials that are used to connect to the provider.
+            credentials:
+              description: Credentials required to authenticate to this provider.
               properties:
-                key:
-                  description: The key to select.
-                  type: string
-                name:
-                  description: Name of the secret.
-                  type: string
-                namespace:
-                  description: Namespace of the secret.
+                secretRef:
+                  description: A CredentialsSecretRef is a reference to a secret key that contains the credentials that must be used to connect to the provider.
+                  properties:
+                    key:
+                      description: The key to select.
+                      type: string
+                    name:
+                      description: Name of the secret.
+                      type: string
+                    namespace:
+                      description: Namespace of the secret.
+                      type: string
+                  required:
+                  - key
+                  - name
+                  - namespace
+                  type: object
+                source:
+                  description: Source of the provider credentials.
+                  enum:
+                  - None
+                  - Secret
+                  - InjectedIdentity
                   type: string
               required:
-              - key
-              - name
-              - namespace
+              - source
               type: object
             useServiceAccount:
               description: "UseServiceAccount indicates to use an IAM Role associated Kubernetes ServiceAccount for authentication instead of a credentials Secret. https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html \n If set to true, credentialsSecretRef will be ignored."
               type: boolean
+          required:
+          - credentials
           type: object
         status:
           description: A ProviderConfigStatus represents the status of a ProviderConfig.
