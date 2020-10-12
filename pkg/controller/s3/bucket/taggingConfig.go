@@ -24,6 +24,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
@@ -59,7 +61,7 @@ func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 		if s3.TaggingNotFound(err) && config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, errors.Wrap(err, taggingGetFailed)
+		return NeedsUpdate, errors.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
 	}
 
 	switch {
