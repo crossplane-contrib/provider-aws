@@ -41,11 +41,9 @@ type LifecycleConfigurationClient struct {
 	client s3.BucketClient
 }
 
-// LateInitialize is responsible for initializing the resource based on the external value
-func (in *LifecycleConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	// GetBucketLifecycleConfigurationRequest throws an error if nothing exists externally
-	// Future work can be done to support brownfield initialization for the LifecycleConfiguration
-	// TODO
+// LateInitialize does nothing because LifecycleConfiguration might have been be
+// deleted by the user.
+func (*LifecycleConfigurationClient) LateInitialize(_ context.Context, _ *v1beta1.Bucket) error {
 	return nil
 }
 

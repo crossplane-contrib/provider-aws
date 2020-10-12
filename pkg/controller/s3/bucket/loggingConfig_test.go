@@ -121,22 +121,6 @@ func TestLoggingObserve(t *testing.T) {
 				err:    nil,
 			},
 		},
-		"NeedsDelete": {
-			args: args{
-				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(nil)),
-				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
-						return s3.GetBucketLoggingRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLogging()}),
-						}
-					},
-				}),
-			},
-			want: want{
-				status: NeedsDeletion,
-				err:    nil,
-			},
-		},
 		"NoUpdateNotExists": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(nil)),
@@ -248,62 +232,6 @@ func TestLoggingCreateOrUpdate(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestLoggingDelete(t *testing.T) {
-	type args struct {
-		cl *LoggingConfigurationClient
-		b  *v1beta1.Bucket
-	}
-
-	type want struct {
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"Error": {
-			args: args{
-				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockPutBucketLoggingRequest: func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
-						return s3.PutBucketLoggingRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketLoggingOutput{}),
-						}
-					},
-				}),
-			},
-			want: want{
-				err: errors.Wrap(errBoom, loggingDeleteFailed),
-			},
-		},
-		"SuccessfulDelete": {
-			args: args{
-				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
-				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockPutBucketLoggingRequest: func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
-						return s3.PutBucketLoggingRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.PutBucketLoggingOutput{}),
-						}
-					},
-				}),
-			},
-			want: want{
-				err: nil,
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			err := tc.args.cl.Delete(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

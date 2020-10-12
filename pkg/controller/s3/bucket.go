@@ -101,7 +101,6 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr.Status.AtProvider = s3.GenerateBucketObservation(meta.GetExternalName(cr))
 
 	current := cr.Spec.ForProvider.DeepCopy()
-
 	for _, awsClient := range e.subresourceClients {
 		err := awsClient.LateInitialize(ctx, cr)
 		if err != nil {
