@@ -343,12 +343,7 @@ func (in *NotificationConfigurationClient) CreateOrUpdate(ctx context.Context, b
 	return errors.Wrap(err, notificationPutFailed)
 }
 
-// Delete creates the request to delete the resource on AWS or set it to the default value.
-func (in *NotificationConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
-	input := &awss3.PutBucketNotificationConfigurationInput{
-		Bucket:                    aws.String(meta.GetExternalName(bucket)),
-		NotificationConfiguration: &awss3.NotificationConfiguration{},
-	}
-	_, err := in.client.PutBucketNotificationConfigurationRequest(input).Send(ctx)
-	return errors.Wrap(err, notificationDeleteFailed)
+// Delete does nothing because there is no corresponding deletion call in AWS.
+func (in *NotificationConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
+	return nil
 }
