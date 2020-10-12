@@ -39,11 +39,9 @@ type SSEConfigurationClient struct {
 	client s3.BucketClient
 }
 
-// LateInitialize is responsible for initializing the resource based on the external value
-func (in *SSEConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	// GetBucketEncryptionRequest throws an error if nothing exists externally
-	// Future work can be done to support brownfield initialization for the SSEConfiguration
-	// TODO
+// LateInitialize does nothing because the resource might have been deleted by
+// the user.
+func (*SSEConfigurationClient) LateInitialize(_ context.Context, _ *v1beta1.Bucket) error {
 	return nil
 }
 

@@ -29,9 +29,8 @@ import (
 )
 
 const (
-	versioningGetFailed    = "cannot get Bucket versioning configuration"
-	versioningPutFailed    = "cannot put Bucket versioning configuration"
-	versioningDeleteFailed = "cannot delete Bucket versioning configuration"
+	versioningGetFailed = "cannot get Bucket versioning configuration"
+	versioningPutFailed = "cannot put Bucket versioning configuration"
 )
 
 // VersioningConfigurationClient is the client for API methods and reconciling the VersioningConfiguration
@@ -74,17 +73,14 @@ func (in *VersioningConfigurationClient) Observe(ctx context.Context, bucket *v1
 	if err != nil {
 		return NeedsUpdate, errors.Wrap(err, versioningGetFailed)
 	}
-	config := bucket.Spec.ForProvider.VersioningConfiguration
-	switch {
-	case len(external.Status) == 0 && len(external.MFADelete) == 0 && config == nil:
+	if bucket.Spec.ForProvider.VersioningConfiguration == nil {
 		return Updated, nil
-	case (len(external.Status) != 0 || len(external.MFADelete) != 0) && config == nil:
-		return NeedsDeletion, nil
-	case aws.StringValue(config.Status) == string(external.Status) && aws.StringValue(config.MFADelete) == string(external.MFADelete):
-		return Updated, nil
-	default:
+	}
+	if string(external.Status) != aws.StringValue(bucket.Spec.ForProvider.VersioningConfiguration.Status) ||
+		string(external.MFADelete) != aws.StringValue(bucket.Spec.ForProvider.VersioningConfiguration.MFADelete) {
 		return NeedsUpdate, nil
 	}
+	return Updated, nil
 }
 
 // GeneratePutBucketVersioningInput creates the input for the PutBucketVersioning request for the S3 Client
@@ -108,15 +104,7 @@ func (in *VersioningConfigurationClient) CreateOrUpdate(ctx context.Context, buc
 	return errors.Wrap(err, versioningPutFailed)
 }
 
-// Delete creates the request to delete the resource on AWS or set it to the default value.
-func (in *VersioningConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
-	input := &awss3.PutBucketVersioningInput{
-		Bucket: aws.String(meta.GetExternalName(bucket)),
-		VersioningConfiguration: &awss3.VersioningConfiguration{
-			Status:    awss3.BucketVersioningStatusSuspended,
-			MFADelete: awss3.MFADeleteDisabled,
-		},
-	}
-	_, err := in.client.PutBucketVersioningRequest(input).Send(ctx)
-	return errors.Wrap(err, versioningDeleteFailed)
+// Delete does nothing because there is no corresponding deletion call in AWS.
+func (*VersioningConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
+	return nil
 }

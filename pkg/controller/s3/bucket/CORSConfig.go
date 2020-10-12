@@ -40,8 +40,8 @@ type CORSConfigurationClient struct {
 	client s3.BucketClient
 }
 
-// LateInitialize does nothing because CORSConfiguration might have been be
-// deleted by the user.
+// LateInitialize does nothing because CORSConfiguration might have been deleted
+// by the user.
 func (*CORSConfigurationClient) LateInitialize(_ context.Context, _ *v1beta1.Bucket) error {
 	return nil
 }
