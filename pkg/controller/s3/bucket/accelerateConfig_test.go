@@ -87,22 +87,6 @@ func TestAccelerateObserve(t *testing.T) {
 				err:    nil,
 			},
 		},
-		"NeedsDelete": {
-			args: args{
-				b: s3Testing.Bucket(s3Testing.WithAccelerationConfig(nil)),
-				cl: NewAccelerateConfigurationClient(fake.MockBucketClient{
-					MockGetBucketAccelerateConfigurationRequest: func(input *s3.GetBucketAccelerateConfigurationInput) s3.GetBucketAccelerateConfigurationRequest {
-						return s3.GetBucketAccelerateConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketAccelerateConfigurationOutput{Status: s3.BucketAccelerateStatusSuspended}),
-						}
-					},
-				}),
-			},
-			want: want{
-				status: NeedsDeletion,
-				err:    nil,
-			},
-		},
 		"NoUpdateNotExists": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithAccelerationConfig(nil)),
@@ -214,62 +198,6 @@ func TestAccelerateCreateOrUpdate(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestAccelerateDelete(t *testing.T) {
-	type args struct {
-		cl SubresourceClient
-		b  *v1beta1.Bucket
-	}
-
-	type want struct {
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"Error": {
-			args: args{
-				b: s3Testing.Bucket(),
-				cl: NewAccelerateConfigurationClient(fake.MockBucketClient{
-					MockPutBucketAccelerateConfigurationRequest: func(input *s3.PutBucketAccelerateConfigurationInput) s3.PutBucketAccelerateConfigurationRequest {
-						return s3.PutBucketAccelerateConfigurationRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketAccelerateConfigurationOutput{}),
-						}
-					},
-				}),
-			},
-			want: want{
-				err: errors.Wrap(errBoom, accelDeleteFailed),
-			},
-		},
-		"SuccessfulDelete": {
-			args: args{
-				b: s3Testing.Bucket(),
-				cl: NewAccelerateConfigurationClient(fake.MockBucketClient{
-					MockPutBucketAccelerateConfigurationRequest: func(input *s3.PutBucketAccelerateConfigurationInput) s3.PutBucketAccelerateConfigurationRequest {
-						return s3.PutBucketAccelerateConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.PutBucketAccelerateConfigurationOutput{}),
-						}
-					},
-				}),
-			},
-			want: want{
-				err: nil,
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			err := tc.args.cl.Delete(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
