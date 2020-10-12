@@ -53,12 +53,8 @@ func (in *VersioningConfigurationClient) LateInitialize(ctx context.Context, buc
 		bucket.Spec.ForProvider.VersioningConfiguration = &v1beta1.VersioningConfiguration{}
 		config = bucket.Spec.ForProvider.VersioningConfiguration
 	}
-	if len(external.Status) != 0 { // By default Status is the string ""
-		config.Status = aws.String(string(external.Status))
-	}
-	if len(external.MFADelete) != 0 { // By default MFADelete is the string ""
-		config.MFADelete = aws.String(string(external.MFADelete))
-	}
+	config.Status = aws.LateInitializeStringPtr(config.Status, aws.String(string(external.Status)))
+	config.MFADelete = aws.LateInitializeStringPtr(config.MFADelete, aws.String(string(external.MFADelete)))
 	return nil
 }
 
