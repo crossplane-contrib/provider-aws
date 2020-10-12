@@ -29,9 +29,8 @@ import (
 )
 
 const (
-	accelGetFailed    = "cannot get Bucket accelerate configuration"
-	accelPutFailed    = "cannot put Bucket acceleration configuration"
-	accelDeleteFailed = "cannot delete Bucket acceleration configuration"
+	accelGetFailed = "cannot get Bucket accelerate configuration"
+	accelPutFailed = "cannot put Bucket accelerate configuration"
 )
 
 // AccelerateConfigurationClient is the client for API methods and reconciling the AccelerateConfiguration
@@ -52,12 +51,12 @@ func (in *AccelerateConfigurationClient) LateInitialize(ctx context.Context, buc
 		return nil
 	}
 
-	config := bucket.Spec.ForProvider.AccelerateConfiguration
-	if config == nil {
+	if bucket.Spec.ForProvider.AccelerateConfiguration == nil {
 		bucket.Spec.ForProvider.AccelerateConfiguration = &v1beta1.AccelerateConfiguration{}
-		config = bucket.Spec.ForProvider.AccelerateConfiguration
 	}
-	config.Status = aws.LateInitializeString(config.Status, aws.String(string(external.GetBucketAccelerateConfigurationOutput.Status)))
+	bucket.Spec.ForProvider.AccelerateConfiguration.Status = aws.LateInitializeString(
+		bucket.Spec.ForProvider.AccelerateConfiguration.Status,
+		aws.String(string(external.GetBucketAccelerateConfigurationOutput.Status)))
 	return nil
 }
 
@@ -72,18 +71,10 @@ func (in *AccelerateConfigurationClient) Observe(ctx context.Context, bucket *v1
 	if err != nil {
 		return NeedsUpdate, errors.Wrap(err, accelGetFailed)
 	}
-
-	config := bucket.Spec.ForProvider.AccelerateConfiguration
-	if external.Status == "" && config == nil {
-		return Updated, nil
-	} else if external.Status != "" && config == nil {
-		return NeedsDeletion, nil
-	}
-
-	if string(external.Status) != config.Status {
+	if bucket.Spec.ForProvider.AccelerateConfiguration != nil &&
+		bucket.Spec.ForProvider.AccelerateConfiguration.Status != string(external.Status) {
 		return NeedsUpdate, nil
 	}
-
 	return Updated, nil
 }
 
@@ -105,15 +96,7 @@ func (in *AccelerateConfigurationClient) CreateOrUpdate(ctx context.Context, buc
 	return errors.Wrap(err, accelPutFailed)
 }
 
-// Delete creates the request to delete the resource on AWS or set it to the default value.
-func (in *AccelerateConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
-	_, err := in.client.PutBucketAccelerateConfigurationRequest(
-		&awss3.PutBucketAccelerateConfigurationInput{
-			Bucket: aws.String(meta.GetExternalName(bucket)),
-			AccelerateConfiguration: &awss3.AccelerateConfiguration{
-				Status: awss3.BucketAccelerateStatusSuspended,
-			},
-		},
-	).Send(ctx)
-	return errors.Wrap(err, accelDeleteFailed)
+// Delete does not do anything since AccelerateConfiguration doesn't have Delete call.
+func (in *AccelerateConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
+	return nil
 }
