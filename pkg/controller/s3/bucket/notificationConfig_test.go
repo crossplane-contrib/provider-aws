@@ -181,26 +181,6 @@ func TestNotificationObserve(t *testing.T) {
 				err:    nil,
 			},
 		},
-		"NeedsDelete": {
-			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(nil)),
-				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-						return s3.GetBucketNotificationConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{
-								LambdaFunctionConfigurations: generateAWSNotification().LambdaFunctionConfigurations,
-								QueueConfigurations:          generateAWSNotification().QueueConfigurations,
-								TopicConfigurations:          generateAWSNotification().TopicConfigurations,
-							}),
-						}
-					},
-				}),
-			},
-			want: want{
-				status: NeedsDeletion,
-				err:    nil,
-			},
-		},
 		"NoUpdateNotExists": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(nil)),
@@ -316,62 +296,6 @@ func TestNotificationCreateOrUpdate(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestNotificationDelete(t *testing.T) {
-	type args struct {
-		cl *NotificationConfigurationClient
-		b  *v1beta1.Bucket
-	}
-
-	type want struct {
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"Error": {
-			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
-					MockPutBucketNotificationConfigurationRequest: func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
-						return s3.PutBucketNotificationConfigurationRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketNotificationConfigurationOutput{}),
-						}
-					},
-				}),
-			},
-			want: want{
-				err: errors.Wrap(errBoom, notificationDeleteFailed),
-			},
-		},
-		"SuccessfulDelete": {
-			args: args{
-				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
-				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
-					MockPutBucketNotificationConfigurationRequest: func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
-						return s3.PutBucketNotificationConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.PutBucketNotificationConfigurationOutput{}),
-						}
-					},
-				}),
-			},
-			want: want{
-				err: nil,
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			err := tc.args.cl.Delete(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
