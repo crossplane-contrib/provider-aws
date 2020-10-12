@@ -164,6 +164,6 @@ func (in *LoggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 }
 
 // Delete does nothing because there is no deletion call for logging config.
-func (in *LoggingConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
+func (*LoggingConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
 	return nil
 }

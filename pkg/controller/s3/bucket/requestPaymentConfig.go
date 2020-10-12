@@ -101,9 +101,7 @@ func (in *RequestPaymentConfigurationClient) CreateOrUpdate(ctx context.Context,
 	return errors.Wrap(err, paymentPutFailed)
 }
 
-// Delete creates the request to delete the resource on AWS or set it to the default value.
-func (in *RequestPaymentConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
-	// There is no delete operation for the S3Bucket Payer
-	// The value must be BucketOwner or Requester
+// Delete does nothing since there is no corresponding deletion call in AWS.
+func (*RequestPaymentConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
 	return nil
 }

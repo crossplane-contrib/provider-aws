@@ -97,6 +97,6 @@ func (in *AccelerateConfigurationClient) CreateOrUpdate(ctx context.Context, buc
 }
 
 // Delete does not do anything since AccelerateConfiguration doesn't have Delete call.
-func (in *AccelerateConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
+func (*AccelerateConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
 	return nil
 }

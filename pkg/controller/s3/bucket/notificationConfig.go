@@ -30,9 +30,8 @@ import (
 )
 
 const (
-	notificationGetFailed    = "cannot get Bucket notification"
-	notificationPutFailed    = "cannot put Bucket notification"
-	notificationDeleteFailed = "cannot delete Bucket notification"
+	notificationGetFailed = "cannot get Bucket notification"
+	notificationPutFailed = "cannot put Bucket notification"
 )
 
 // NotificationConfigurationClient is the client for API methods and reconciling the LifecycleConfiguration
@@ -344,6 +343,6 @@ func (in *NotificationConfigurationClient) CreateOrUpdate(ctx context.Context, b
 }
 
 // Delete does nothing because there is no corresponding deletion call in AWS.
-func (in *NotificationConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
+func (*NotificationConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
 	return nil
 }
