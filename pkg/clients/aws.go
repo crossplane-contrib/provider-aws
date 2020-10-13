@@ -25,11 +25,13 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/endpoints"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
@@ -96,7 +98,8 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
 	case runtimev1alpha1.CredentialsSourceInjectedIdentity:
-		return UsePodServiceAccount(ctx, []byte{}, DefaultSection, region)
+		cfg, err := UsePodServiceAccount(ctx, []byte{}, DefaultSection, region)
+		return SetResolver(ctx, mg, cfg), err
 	case runtimev1alpha1.CredentialsSourceSecret:
 		csr := pc.Spec.Credentials.SecretRef
 		if csr == nil {
@@ -106,10 +109,33 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 		if err := c.Get(ctx, types.NamespacedName{Namespace: csr.Namespace, Name: csr.Name}, s); err != nil {
 			return nil, errors.Wrap(err, "cannot get credentials secret")
 		}
-		return UseProviderSecret(ctx, s.Data[csr.Key], DefaultSection, region)
+		cfg, err := UseProviderSecret(ctx, s.Data[csr.Key], DefaultSection, region)
+		return SetResolver(ctx, mg, cfg), err
 	default:
 		return nil, errors.Errorf("credentials source %s is not currently supported", s)
 	}
+}
+
+// SetResolver parses annotations from the managed resource
+// and returns a configuration accordingly.
+func SetResolver(ctx context.Context, mg resource.Managed, cfg *aws.Config) *aws.Config {
+	if URL, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointURL"]; ok {
+		if SigningRegion, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointSigningRegion"]; ok {
+			defaultResolver := endpoints.NewDefaultResolver()
+			endpointResolver := func(service, region string) (aws.Endpoint, error) {
+				if strings.Contains(mg.GetObjectKind().GroupVersionKind().Version, service) {
+					return aws.Endpoint{
+						URL:           URL,
+						SigningRegion: SigningRegion,
+					}, nil
+				}
+
+				return defaultResolver.ResolveEndpoint(service, region)
+			}
+			cfg.EndpointResolver = aws.EndpointResolverFunc(endpointResolver)
+		}
+	}
+	return cfg
 }
 
 // UseProvider to produce a config that can be used to authenticate to AWS.
