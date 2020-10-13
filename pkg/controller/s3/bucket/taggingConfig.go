@@ -24,6 +24,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
@@ -40,11 +42,9 @@ type TaggingConfigurationClient struct {
 	client s3.BucketClient
 }
 
-// LateInitialize is responsible for initializing the resource based on the external value
-func (in *TaggingConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	// GetBucketTaggingRequest throws an error if nothing exists externally
-	// Future work can be done to support brownfield initialization for the TaggingConfiguration
-	// TODO
+// LateInitialize does nothing because the resource might have been deleted by
+// the user.
+func (*TaggingConfigurationClient) LateInitialize(_ context.Context, _ *v1beta1.Bucket) error {
 	return nil
 }
 
@@ -61,7 +61,7 @@ func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 		if s3.TaggingNotFound(err) && config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, errors.Wrap(err, taggingGetFailed)
+		return NeedsUpdate, errors.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
 	}
 
 	switch {

@@ -97,25 +97,6 @@ func TestVersioningObserve(t *testing.T) {
 				err:    nil,
 			},
 		},
-		"NeedsDelete": {
-			args: args{
-				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(nil)),
-				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
-					MockGetBucketVersioningRequest: func(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest {
-						return s3.GetBucketVersioningRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketVersioningOutput{
-								MFADelete: s3.MFADeleteStatusEnabled,
-								Status:    generateAWSVersioning().Status,
-							}),
-						}
-					},
-				}),
-			},
-			want: want{
-				status: NeedsDeletion,
-				err:    nil,
-			},
-		},
 		"NoUpdateNotExists": {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(nil)),
@@ -230,62 +211,6 @@ func TestVersioningCreateOrUpdate(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			err := tc.args.cl.CreateOrUpdate(context.Background(), tc.args.b)
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestVersioningDelete(t *testing.T) {
-	type args struct {
-		cl *VersioningConfigurationClient
-		b  *v1beta1.Bucket
-	}
-
-	type want struct {
-		err error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"Error": {
-			args: args{
-				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
-					MockPutBucketVersioningRequest: func(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest {
-						return s3.PutBucketVersioningRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketVersioningOutput{}),
-						}
-					},
-				}),
-			},
-			want: want{
-				err: errors.Wrap(errBoom, versioningDeleteFailed),
-			},
-		},
-		"SuccessfulDelete": {
-			args: args{
-				b: s3Testing.Bucket(s3Testing.WithVersioningConfig(generateVersioningConfig())),
-				cl: NewVersioningConfigurationClient(fake.MockBucketClient{
-					MockPutBucketVersioningRequest: func(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest {
-						return s3.PutBucketVersioningRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.PutBucketVersioningOutput{}),
-						}
-					},
-				}),
-			},
-			want: want{
-				err: nil,
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			err := tc.args.cl.Delete(context.Background(), tc.args.b)
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
