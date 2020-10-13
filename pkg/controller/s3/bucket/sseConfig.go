@@ -21,6 +21,7 @@ import (
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
@@ -54,10 +55,11 @@ func NewSSEConfigurationClient(client s3.BucketClient) *SSEConfigurationClient {
 func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
 	config := bucket.Spec.ForProvider.ServerSideEncryptionConfiguration
 	external, err := in.client.GetBucketEncryptionRequest(&awss3.GetBucketEncryptionInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
-	if err != nil && s3.SSEConfigurationNotFound(err) && config == nil {
-		return Updated, nil
-	} else if err != nil {
-		return NeedsUpdate, errors.Wrap(err, sseGetFailed)
+	if err != nil {
+		if s3.SSEConfigurationNotFound(err) && config == nil {
+			return Updated, nil
+		}
+		return NeedsUpdate, errors.Wrap(resource.Ignore(s3.SSEConfigurationNotFound, err), sseGetFailed)
 	}
 
 	switch {
