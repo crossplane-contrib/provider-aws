@@ -21,6 +21,7 @@ import (
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
@@ -60,7 +61,7 @@ func (in *LifecycleConfigurationClient) Observe(ctx context.Context, bucket *v1b
 		if s3.LifecycleConfigurationNotFound(err) && config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, errors.Wrap(err, lifecycleGetFailed)
+		return NeedsUpdate, errors.Wrap(resource.Ignore(s3.LifecycleConfigurationNotFound, err), lifecycleGetFailed)
 	}
 
 	switch {
