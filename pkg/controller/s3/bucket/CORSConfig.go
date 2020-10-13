@@ -40,11 +40,9 @@ type CORSConfigurationClient struct {
 	client s3.BucketClient
 }
 
-// LateInitialize is responsible for initializing the resource based on the external value
-func (in *CORSConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	// GetBucketCorsRequest throws an error if nothing exists externally
-	// Future work can be done to support brownfield initialization for the CORSConfig
-	// TODO
+// LateInitialize does nothing because CORSConfiguration might have been deleted
+// by the user.
+func (*CORSConfigurationClient) LateInitialize(_ context.Context, _ *v1beta1.Bucket) error {
 	return nil
 }
 

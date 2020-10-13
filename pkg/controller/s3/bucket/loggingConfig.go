@@ -19,6 +19,9 @@ package bucket
 import (
 	"context"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/google/go-cmp/cmp"
@@ -30,9 +33,8 @@ import (
 )
 
 const (
-	loggingGetFailed    = "cannot get Bucket logging configuration"
-	loggingPutFailed    = "cannot put Bucket logging configuration"
-	loggingDeleteFailed = "cannot delete Bucket logging configuration"
+	loggingGetFailed = "cannot get Bucket logging configuration"
+	loggingPutFailed = "cannot put Bucket logging configuration"
 )
 
 // LoggingConfigurationClient is the client for API methods and reconciling the LoggingConfiguration
@@ -86,6 +88,9 @@ func NewLoggingConfigurationClient(client s3.BucketClient) *LoggingConfiguration
 
 // GenerateAWSLogging creates an S3 logging enabled struct from the local logging configuration
 func GenerateAWSLogging(local *v1beta1.LoggingConfiguration) *awss3.LoggingEnabled {
+	if local == nil {
+		return nil
+	}
 	output := awss3.LoggingEnabled{
 		TargetBucket: local.TargetBucket,
 		TargetPrefix: local.TargetPrefix,
@@ -116,18 +121,11 @@ func (in *LoggingConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 	if err != nil {
 		return NeedsUpdate, errors.Wrap(err, loggingGetFailed)
 	}
-	config := bucket.Spec.ForProvider.LoggingConfiguration
-
-	switch {
-	case external.LoggingEnabled == nil && config == nil:
-		return Updated, nil
-	case external.LoggingEnabled != nil && config == nil:
-		return NeedsDeletion, nil
-	case cmp.Equal(GenerateAWSLogging(config), external.LoggingEnabled):
-		return Updated, nil
-	default:
+	if !cmp.Equal(GenerateAWSLogging(bucket.Spec.ForProvider.LoggingConfiguration), external.LoggingEnabled,
+		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{})) {
 		return NeedsUpdate, nil
 	}
+	return Updated, nil
 }
 
 // GeneratePutBucketLoggingInput creates the input for the PutBucketLogging request for the S3 Client
@@ -165,12 +163,7 @@ func (in *LoggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 	return errors.Wrap(err, loggingPutFailed)
 }
 
-// Delete creates the request to delete the resource on AWS or set it to the default value.
-func (in *LoggingConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
-	input := &awss3.PutBucketLoggingInput{
-		Bucket:              aws.String(meta.GetExternalName(bucket)),
-		BucketLoggingStatus: &awss3.BucketLoggingStatus{}, //  Empty BucketLoggingStatus disables logging
-	}
-	_, err := in.client.PutBucketLoggingRequest(input).Send(ctx)
-	return errors.Wrap(err, loggingDeleteFailed)
+// Delete does nothing because there is no deletion call for logging config.
+func (*LoggingConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
+	return nil
 }
