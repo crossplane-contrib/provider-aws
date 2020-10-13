@@ -14,5 +14,9 @@ spec:
       tagSet:
         - key: key1
           value: val1
+    serverSideEncryptionConfiguration:
+      rules:
+        - applyServerSideEncryptionByDefault:
+            sseAlgorithm: AES256
   providerConfigRef:
     name: example
