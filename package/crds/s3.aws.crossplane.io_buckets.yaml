@@ -136,9 +136,6 @@ spec:
                       items:
                         description: LifecycleRule for individual objects in an Amazon S3 bucket.
                         properties:
-                          ID:
-                            description: Unique identifier for the rule. The value cannot be longer than 255 characters.
-                            type: string
                           abortIncompleteMultipartUpload:
                             description: Specifies the days since the initiation of an incomplete multipart upload that Amazon S3 will wait before permanently removing all parts of the upload. For more information, see Aborting Incomplete Multipart Uploads Using a Bucket Lifecycle Policy (https://docs.aws.amazon.com/AmazonS3/latest/dev/mpuoverview.html#mpu-abort-incomplete-mpu-lifecycle-config) in the Amazon Simple Storage Service Developer Guide.
                             properties:
@@ -207,6 +204,9 @@ spec:
                                 - value
                                 type: object
                             type: object
+                          id:
+                            description: Unique identifier for the rule. The value cannot be longer than 255 characters.
+                            type: string
                           noncurrentVersionExpiration:
                             description: Specifies when noncurrent object versions expire. Upon expiration, Amazon S3 permanently deletes the noncurrent object versions. You set this lifecycle configuration action on a bucket that has versioning enabled (or suspended) to request that Amazon S3 delete noncurrent object versions at a specific period in the object's lifetime.
                             properties:
@@ -501,7 +501,7 @@ spec:
                                 type: object
                             type: object
                           topicArn:
-                            description: "The Amazon Resource Name (ARN) of the Amazon SNS topic to which Amazon S3 publishes a message when it detects events of the specified type. \n TopicArn is a required field"
+                            description: The Amazon Resource Name (ARN) of the Amazon SNS topic to which Amazon S3 publishes a message when it detects events of the specified type. At least one of topicArn, topicArnRef or topicSelector is required.
                             type: string
                           topicRef:
                             description: TopicArnRef references an SNS Topic to retrieve its Arn
@@ -526,7 +526,6 @@ spec:
                             type: object
                         required:
                         - events
-                        - topicArn
                         type: object
                       type: array
                   type: object
@@ -549,7 +548,7 @@ spec:
                   description: Creates a replication configuration or replaces an existing one. For more information, see Replication (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication.html) in the Amazon S3 Developer Guide.
                   properties:
                     role:
-                      description: "The Amazon Resource Name (ARN) of the AWS Identity and Access Management (IAM) role that Amazon S3 assumes when replicating objects. For more information, see How to Set Up Replication (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-how-setup.html) in the Amazon Simple Storage Service Developer Guide. \n Role is a required field"
+                      description: "The Amazon Resource Name (ARN) of the AWS Identity and Access Management (IAM) role that Amazon S3 assumes when replicating objects. For more information, see How to Set Up Replication (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-how-setup.html) in the Amazon Simple Storage Service Developer Guide. \n At least one of role, roleRef or roleSelector fields is required."
                       type: string
                     roleRef:
                       description: RoleRef references an IAMRole to retrieve its Name
@@ -577,10 +576,21 @@ spec:
                       items:
                         description: ReplicationRule specifies which Amazon S3 objects to replicate and where to store the replicas.
                         properties:
-                          Destination:
+                          deleteMarkerReplication:
+                            description: "Specifies whether Amazon S3 replicates the delete markers. If you specify a Filter, you must specify this element. However, in the latest version of replication configuration (when Filter is specified), Amazon S3 doesn't replicate delete markers. Therefore, the DeleteMarkerReplication element can contain only <Status>Disabled</Status>. For an example configuration, see Basic Rule Configuration (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-add-config.html#replication-config-min-rule-config). \n If you don't specify the Filter element, Amazon S3 assumes that the replication configuration is the earlier version, V1. In the earlier version, Amazon S3 handled replication of delete markers differently. For more information, see Backward Compatibility (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-add-config.html#replication-backward-compat-considerations)."
+                            properties:
+                              Status:
+                                description: Indicates whether to replicate delete markers. In the current implementation, Amazon S3 doesn't replicate the delete markers. The status must be "Disabled".
+                                enum:
+                                - Disabled
+                                type: string
+                            required:
+                            - Status
+                            type: object
+                          destination:
                             description: "A container for information about the replication destination and its configurations including enabling the S3 Replication Time Control (S3 RTC). \n Destination is a required field"
                             properties:
-                              accessControlTranslation:
+                              accessControlTranslation.omitempty:
                                 description: Specify this only in a cross-account scenario (where source and destination bucket owners are not the same), and you want to change replica ownership to the AWS account that owns the destination bucket. If this is not specified in the replication configuration, the replicas are owned by same AWS account that owns the source object.
                                 properties:
                                   ownerOverride:
@@ -593,7 +603,7 @@ spec:
                                 description: 'Destination bucket owner account ID. In a cross-account scenario, if you direct Amazon S3 to change replica ownership to the AWS account that owns the destination bucket by specifying the AccessControlTranslation property, this is the account ID of the destination bucket owner. For more information, see Replication Additional Configuration: Changing the Replica Owner (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-change-owner.html) in the Amazon Simple Storage Service Developer Guide.'
                                 type: string
                               bucket:
-                                description: The Amazon Resource Name (ARN) of the bucket where you want Amazon S3 to store the results. Bucket is a required field
+                                description: The Amazon Resource Name (ARN) of the bucket where you want Amazon S3 to store the results. At least one of bucket, bucketRef or bucketSelector is required.
                                 type: string
                               bucketRef:
                                 description: BucketRef references a Bucket to retrieve its Name
@@ -619,11 +629,11 @@ spec:
                               encryptionConfiguration:
                                 description: A container that provides information about encryption. If SourceSelectionCriteria is specified, you must specify this element.
                                 properties:
-                                  replicaKmsKeyID:
+                                  replicaKmsKeyId:
                                     description: Specifies the ID (Key ARN or Alias ARN) of the customer managed customer master key (CMK) stored in AWS Key Management Service (KMS) for the destination bucket. Amazon S3 uses this key to encrypt replica objects. Amazon S3 only supports symmetric customer managed CMKs. For more information, see Using Symmetric and Asymmetric Keys (https://docs.aws.amazon.com/kms/latest/developerguide/symmetric-asymmetric.html) in the AWS Key Management Service Developer Guide.
                                     type: string
                                 required:
-                                - replicaKmsKeyID
+                                - replicaKmsKeyId
                                 type: object
                               metrics:
                                 description: A container specifying replication metrics-related settings enabling metrics and Amazon S3 events for S3 Replication Time Control (S3 RTC). Must be specified together with a ReplicationTime block.
@@ -675,14 +685,9 @@ spec:
                                 description: The storage class to use when replicating objects, such as S3 Standard or reduced redundancy. By default, Amazon S3 uses the storage class of the source object to create the object replica. For valid values, see the StorageClass element of the PUT Bucket replication (https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUTreplication.html) action in the Amazon Simple Storage Service API Reference.
                                 type: string
                             required:
-                            - accessControlTranslation
-                            - account
-                            - bucket
-                            - metrics
-                            - replicationTime
-                            - storageClass
+                            - accessControlTranslation.omitempty
                             type: object
-                          ExistingObjectReplication:
+                          existingObjectReplication:
                             description: Optional configuration to replicate existing source bucket objects. For more information, see Replicating Existing Objects (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-what-is-isnot-replicated.html#existing-object-replication) in the Amazon S3 Developer Guide.
                             properties:
                               status:
@@ -693,17 +698,6 @@ spec:
                                 type: string
                             required:
                             - status
-                            type: object
-                          deleteMarkerReplication:
-                            description: "Specifies whether Amazon S3 replicates the delete markers. If you specify a Filter, you must specify this element. However, in the latest version of replication configuration (when Filter is specified), Amazon S3 doesn't replicate delete markers. Therefore, the DeleteMarkerReplication element can contain only <Status>Disabled</Status>. For an example configuration, see Basic Rule Configuration (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-add-config.html#replication-config-min-rule-config). \n If you don't specify the Filter element, Amazon S3 assumes that the replication configuration is the earlier version, V1. In the earlier version, Amazon S3 handled replication of delete markers differently. For more information, see Backward Compatibility (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-add-config.html#replication-backward-compat-considerations)."
-                            properties:
-                              Status:
-                                description: Indicates whether to replicate delete markers. In the current implementation, Amazon S3 doesn't replicate the delete markers. The status must be "Disabled".
-                                enum:
-                                - Disabled
-                                type: string
-                            required:
-                            - Status
                             type: object
                           filter:
                             description: A filter that identifies the subset of objects to which the replication rule applies. A Filter must specify exactly one Prefix, Tag, or an And child element.
@@ -730,9 +724,6 @@ spec:
                                       - value
                                       type: object
                                     type: array
-                                required:
-                                - prefix
-                                - tag
                                 type: object
                               prefix:
                                 description: An object key name prefix that identifies the subset of objects to which the rule applies.
@@ -750,10 +741,6 @@ spec:
                                 - key
                                 - value
                                 type: object
-                            required:
-                            - and
-                            - prefix
-                            - tag
                             type: object
                           id:
                             description: A unique identifier for the rule. The maximum value is 255 characters.
@@ -787,13 +774,7 @@ spec:
                             - Disabled
                             type: string
                         required:
-                        - Destination
-                        - ExistingObjectReplication
-                        - deleteMarkerReplication
-                        - filter
-                        - id
-                        - priority
-                        - sourceSelectionCriteria
+                        - destination
                         - status
                         type: object
                       type: array

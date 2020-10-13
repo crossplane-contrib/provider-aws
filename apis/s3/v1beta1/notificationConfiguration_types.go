@@ -111,9 +111,8 @@ type TopicConfiguration struct {
 
 	// The Amazon Resource Name (ARN) of the Amazon SNS topic to which Amazon S3
 	// publishes a message when it detects events of the specified type.
-	//
-	// TopicArn is a required field
-	TopicArn string `json:"topicArn"`
+	// At least one of topicArn, topicArnRef or topicSelector is required.
+	TopicArn string `json:"topicArn,omitempty"`
 
 	// TopicArnRef references an SNS Topic to retrieve its Arn
 	// +optional
