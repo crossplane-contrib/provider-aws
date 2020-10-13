@@ -106,11 +106,11 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		if err != nil {
 			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
 		}
-		updated, err := awsClient.Observe(ctx, cr)
+		obs, err := awsClient.Observe(ctx, cr)
 		if err != nil {
 			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
 		}
-		if updated != bucket.Updated {
+		if obs != bucket.Updated {
 			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
 		}
 	}

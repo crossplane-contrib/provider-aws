@@ -46,7 +46,7 @@ type LifecycleRule struct {
 	Filter *LifecycleRuleFilter `json:"filter,omitempty"`
 
 	// Unique identifier for the rule. The value cannot be longer than 255 characters.
-	ID *string `json:"ID,omitempty"`
+	ID *string `json:"id,omitempty"`
 
 	// Specifies when noncurrent object versions expire. Upon expiration, Amazon
 	// S3 permanently deletes the noncurrent object versions. You set this lifecycle
