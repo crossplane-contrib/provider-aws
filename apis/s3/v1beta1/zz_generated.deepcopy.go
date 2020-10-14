@@ -1364,6 +1364,11 @@ func (in *TopicConfiguration) DeepCopyInto(out *TopicConfiguration) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.TopicArn != nil {
+		in, out := &in.TopicArn, &out.TopicArn
+		*out = new(string)
+		**out = **in
+	}
 	if in.TopicArnRef != nil {
 		in, out := &in.TopicArnRef, &out.TopicArnRef
 		*out = new(v1alpha1.Reference)

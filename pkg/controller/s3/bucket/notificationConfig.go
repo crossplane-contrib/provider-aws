@@ -159,7 +159,7 @@ func LateInitializeTopic(external []awss3.TopicConfiguration, local []v1beta1.To
 			Events:   LateInitializeEvents(local[i].Events, v.Events),
 			Filter:   LateInitializeFilter(local[i].Filter, v.Filter),
 			ID:       aws.LateInitializeStringPtr(local[i].ID, v.Id),
-			TopicArn: aws.LateInitializeString(local[i].TopicArn, v.TopicArn),
+			TopicArn: aws.LateInitializeStringPtr(local[i].TopicArn, v.TopicArn),
 		}
 	}
 }
@@ -269,7 +269,7 @@ func GenerateTopicConfigurations(config *v1beta1.NotificationConfiguration) []aw
 	for i, v := range config.TopicConfigurations {
 		conf := awss3.TopicConfiguration{
 			Id:       v.ID,
-			TopicArn: aws.String(v.TopicArn),
+			TopicArn: v.TopicArn,
 		}
 		if v.Events != nil {
 			conf.Events = copyEvents(v.Events)

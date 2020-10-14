@@ -35,14 +35,17 @@ type LifecycleRule struct {
 	// For more information, see Aborting Incomplete Multipart Uploads Using a Bucket
 	// Lifecycle Policy (https://docs.aws.amazon.com/AmazonS3/latest/dev/mpuoverview.html#mpu-abort-incomplete-mpu-lifecycle-config)
 	// in the Amazon Simple Storage Service Developer Guide.
+	// +optional
 	AbortIncompleteMultipartUpload *AbortIncompleteMultipartUpload `json:"abortIncompleteMultipartUpload,omitempty"`
 
 	// Specifies the expiration for the lifecycle of the object in the form of date,
 	// days and, whether the object has a delete marker.
+	// +optional
 	Expiration *LifecycleExpiration `json:"expiration,omitempty"`
 
 	// The Filter is used to identify objects that a Lifecycle Rule applies to.
 	// A Filter must have exactly one of Prefix, Tag, or And specified.
+	// +optional
 	Filter *LifecycleRuleFilter `json:"filter,omitempty"`
 
 	// Unique identifier for the rule. The value cannot be longer than 255 characters.
@@ -53,6 +56,7 @@ type LifecycleRule struct {
 	// configuration action on a bucket that has versioning enabled (or suspended)
 	// to request that Amazon S3 delete noncurrent object versions at a specific
 	// period in the object's lifetime.
+	// +optional
 	NoncurrentVersionExpiration *NoncurrentVersionExpiration `json:"noncurrentVersionExpiration,omitempty"`
 
 	// Specifies the transition rule for the lifecycle rule that describes when
@@ -60,6 +64,7 @@ type LifecycleRule struct {
 	// is versioning-enabled (or versioning is suspended), you can set this action
 	// to request that Amazon S3 transition noncurrent object versions to a specific
 	// storage class at a set period in the object's lifetime.
+	// +optional
 	NoncurrentVersionTransitions []NoncurrentVersionTransition `json:"noncurrentVersionTransitions,omitempty"`
 
 	// If 'Enabled', the rule is currently being applied. If 'Disabled', the rule
@@ -70,6 +75,7 @@ type LifecycleRule struct {
 	Status string `json:"status"`
 
 	// Specifies when an Amazon S3 object transitions to a specified storage class.
+	// +optional
 	Transitions []Transition `json:"transitions,omitempty"`
 }
 
@@ -91,6 +97,7 @@ type LifecycleExpiration struct {
 
 	// Indicates the lifetime, in days, of the objects that are subject to the rule.
 	// The value must be a non-zero positive integer.
+	// +kubebuilder:validation:Minimum=1
 	Days *int64 `json:"days,omitempty"`
 
 	// Indicates whether Amazon S3 will remove a delete marker with no noncurrent
@@ -173,6 +180,7 @@ type Transition struct {
 
 	// Indicates the number of days after creation when objects are transitioned
 	// to the specified storage class. The value must be a positive integer.
+	// +kubebuilder:validation:Minimum=1
 	Days *int64 `json:"days,omitempty"`
 
 	// The storage class to which you want the object to transition.

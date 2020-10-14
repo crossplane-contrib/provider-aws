@@ -23,14 +23,17 @@ import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alp
 type NotificationConfiguration struct {
 	// Describes the AWS Lambda functions to invoke and the events for which to
 	// invoke them.
+	// +optional
 	LambdaFunctionConfigurations []LambdaFunctionConfiguration `json:"lambdaFunctionConfigurations,omitempty"`
 
 	// The Amazon Simple Queue Service queues to publish messages to and the events
 	// for which to publish messages.
+	// +optional
 	QueueConfigurations []QueueConfiguration `json:"queueConfigurations,omitempty"`
 
 	// The topic to which notifications are sent and the events for which notifications
 	// are generated.
+	// +optional
 	TopicConfigurations []TopicConfiguration `json:"topicConfigurations,omitempty"`
 }
 
@@ -52,6 +55,7 @@ type LambdaFunctionConfiguration struct {
 
 	// An optional unique identifier for configurations in a notification configuration.
 	// If you don't provide one, Amazon S3 will assign an ID.
+	// +optional
 	ID *string `json:"ID,omitempty"`
 
 	// The Amazon Resource Name (ARN) of the AWS Lambda function that Amazon S3
@@ -78,6 +82,7 @@ type QueueConfiguration struct {
 
 	// An optional unique identifier for configurations in a notification configuration.
 	// If you don't provide one, Amazon S3 will assign an ID.
+	// +optional
 	ID *string `json:"ID,omitempty"`
 
 	// The Amazon Resource Name (ARN) of the Amazon SQS queue to which Amazon S3
@@ -107,12 +112,14 @@ type TopicConfiguration struct {
 
 	// An optional unique identifier for configurations in a notification configuration.
 	// If you don't provide one, Amazon S3 will assign an ID.
+	// +optional
 	ID *string `json:"ID,omitempty"`
 
 	// The Amazon Resource Name (ARN) of the Amazon SNS topic to which Amazon S3
 	// publishes a message when it detects events of the specified type.
 	// At least one of topicArn, topicArnRef or topicSelector is required.
-	TopicArn string `json:"topicArn,omitempty"`
+	// +optional
+	TopicArn *string `json:"topicArn,omitempty"`
 
 	// TopicArnRef references an SNS Topic to retrieve its Arn
 	// +optional

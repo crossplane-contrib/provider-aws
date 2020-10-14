@@ -29,6 +29,7 @@ type ReplicationConfiguration struct {
 	// in the Amazon Simple Storage Service Developer Guide.
 	//
 	// At least one of role, roleRef or roleSelector fields is required.
+	// +optional
 	Role *string `json:"role,omitempty"`
 
 	// RoleRef references an IAMRole to retrieve its Name
@@ -136,6 +137,7 @@ type Destination struct {
 	// to the AWS account that owns the destination bucket. If this is not specified
 	// in the replication configuration, the replicas are owned by same AWS account
 	// that owns the source object.
+	// +optional
 	AccessControlTranslation *AccessControlTranslation `json:"accessControlTranslation,omitempty"`
 
 	// Destination bucket owner account ID. In a cross-account scenario, if you
@@ -149,6 +151,7 @@ type Destination struct {
 	// The Amazon Resource Name (ARN) of the bucket where you want Amazon S3 to
 	// store the results.
 	// At least one of bucket, bucketRef or bucketSelector is required.
+	// +optional
 	Bucket *string `json:"bucket,omitempty"`
 
 	// BucketRef references a Bucket to retrieve its Name
@@ -180,7 +183,9 @@ type Destination struct {
 	// For valid values, see the StorageClass element of the PUT Bucket replication
 	// (https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUTreplication.html)
 	// action in the Amazon Simple Storage Service API Reference.
-	StorageClass *string `json:"storageClass,omitempty"`
+	// +kubebuilder:validation:Enum=GLACIER;STANDARD_IA;ONEZONE_IA;INTELLIGENT_TIERING;DEEP_ARCHIVE
+	// +optional
+	StorageClass *string `json:"storageClass"`
 }
 
 // AccessControlTranslation contains information about access control for replicas.
@@ -276,7 +281,6 @@ type ReplicationRuleFilter struct {
 	Prefix *string `json:"prefix,omitempty"`
 
 	// A container for specifying a tag key and value.
-	//
 	// The rule applies only to objects that have the tag in their tag set.
 	Tag *Tag `json:"tag,omitempty"`
 }
