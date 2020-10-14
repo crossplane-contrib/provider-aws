@@ -49,7 +49,7 @@ const (
 	// TopicSubscriptionsDeleted is status of SNS Topic Subscription Confirmation
 	TopicSubscriptionsDeleted TopicAttributes = "SubscriptionsDeleted"
 	// TopicARN is the ARN for the SNS Topic
-	TopicARN TopicAttributes = "TopicARN"
+	TopicARN TopicAttributes = "TopicArn"
 )
 
 // TopicClient is the external client used for AWS SNSTopic
