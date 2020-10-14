@@ -38,27 +38,25 @@ func SNSTopicARN() reference.ExtractValueFn {
 }
 
 // ResolveReferences of this Bucket
-func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error {
+func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error { // nolint:gocyclo
 	r := reference.NewAPIResolver(c, mg)
 	// Resolve spec.forProvider.notificationConfiguration.topicConfigurations[].topicArn
 	// TODO - need a way to extract arbitrary ARNs from resources - for the
 	// topic we are missing a lot of information
 	if mg.Spec.ForProvider.NotificationConfiguration != nil {
-		if len(mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations) != 0 {
-			for i, v := range mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations {
-				rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-					CurrentValue: v.TopicArn,
-					Reference:    v.TopicArnRef,
-					Selector:     v.TopicArnSelector,
-					To:           reference.To{Managed: &v1alpha1.SNSTopic{}, List: &v1alpha1.SNSTopicList{}},
-					Extract:      SNSTopicARN(),
-				})
-				if err != nil {
-					return errors.Wrapf(err, "spec.forProvider.notificationConfiguration.topicConfigurations[%d].topicArn", i)
-				}
-				mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i].TopicArn = rsp.ResolvedValue
-				mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i].TopicArnRef = rsp.ResolvedReference
+		for i, v := range mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations {
+			rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: v.TopicArn,
+				Reference:    v.TopicArnRef,
+				Selector:     v.TopicArnSelector,
+				To:           reference.To{Managed: &v1alpha1.SNSTopic{}, List: &v1alpha1.SNSTopicList{}},
+				Extract:      SNSTopicARN(),
+			})
+			if err != nil {
+				return errors.Wrapf(err, "spec.forProvider.notificationConfiguration.topicConfigurations[%d].topicArn", i)
 			}
+			mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i].TopicArn = rsp.ResolvedValue
+			mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i].TopicArnRef = rsp.ResolvedReference
 		}
 	}
 
@@ -92,6 +90,24 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 		}
 		mg.Spec.ForProvider.ReplicationConfiguration.Role = reference.ToPtrValue(rsp.ResolvedValue)
 		mg.Spec.ForProvider.ReplicationConfiguration.RoleRef = rsp.ResolvedReference
+	}
+
+	// Resolve spec.forProvider.replicationConfiguration.rules[*].bucket
+	if mg.Spec.ForProvider.ReplicationConfiguration != nil {
+		for i, v := range mg.Spec.ForProvider.ReplicationConfiguration.Rules {
+			rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(v.Destination.Bucket),
+				Reference:    v.Destination.BucketRef,
+				Selector:     v.Destination.BucketSelector,
+				To:           reference.To{Managed: &Bucket{}, List: &BucketList{}},
+				Extract:      reference.ExternalName(),
+			})
+			if err != nil {
+				return errors.Wrapf(err, "spec.forProvider.replicationConfiguration.rules[%d].bucket", i)
+			}
+			mg.Spec.ForProvider.ReplicationConfiguration.Rules[i].Destination.Bucket = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.ForProvider.ReplicationConfiguration.Rules[i].Destination.BucketRef = rsp.ResolvedReference
+		}
 	}
 
 	return nil

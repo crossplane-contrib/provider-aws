@@ -170,7 +170,7 @@ func NewNotificationConfigurationClient(client s3.BucketClient) *NotificationCon
 }
 
 func emptyConfiguration(external *awss3.GetBucketNotificationConfigurationResponse) bool {
-	return len(external.TopicConfigurations) == 0 || len(external.QueueConfigurations) == 0 || len(external.LambdaFunctionConfigurations) == 0
+	return external == nil || len(external.TopicConfigurations) == 0 || len(external.QueueConfigurations) == 0 || len(external.LambdaFunctionConfigurations) == 0
 }
 
 func bucketStatus(config *v1beta1.NotificationConfiguration, external *awss3.GetBucketNotificationConfigurationResponse) ResourceStatus { // nolint:gocyclo
@@ -240,7 +240,7 @@ func generateFilter(src *v1beta1.NotificationConfigurationFilter) *awss3.Notific
 // GenerateLambdaConfiguration creates []awss3.LambdaFunctionConfiguration from the local NotificationConfiguration
 func GenerateLambdaConfiguration(config *v1beta1.NotificationConfiguration) []awss3.LambdaFunctionConfiguration {
 	if config.LambdaFunctionConfigurations == nil {
-		return make([]awss3.LambdaFunctionConfiguration, 0)
+		return nil
 	}
 	configurations := make([]awss3.LambdaFunctionConfiguration, len(config.LambdaFunctionConfigurations))
 	for i, v := range config.LambdaFunctionConfigurations {
@@ -263,7 +263,7 @@ func GenerateLambdaConfiguration(config *v1beta1.NotificationConfiguration) []aw
 // GenerateTopicConfigurations creates []awss3.TopicConfiguration from the local NotificationConfiguration
 func GenerateTopicConfigurations(config *v1beta1.NotificationConfiguration) []awss3.TopicConfiguration {
 	if config.TopicConfigurations == nil {
-		return make([]awss3.TopicConfiguration, 0)
+		return nil
 	}
 	configurations := make([]awss3.TopicConfiguration, len(config.TopicConfigurations))
 	for i, v := range config.TopicConfigurations {
@@ -313,11 +313,11 @@ func GenerateConfiguration(config *v1beta1.NotificationConfiguration) *awss3.Not
 		awsConfig.LambdaFunctionConfigurations = lambda
 	}
 	queue := GenerateQueueConfigurations(config)
-	if len(lambda) != 0 {
+	if len(queue) != 0 {
 		awsConfig.QueueConfigurations = queue
 	}
 	topic := GenerateTopicConfigurations(config)
-	if len(lambda) != 0 {
+	if len(topic) != 0 {
 		awsConfig.TopicConfigurations = topic
 	}
 	return awsConfig

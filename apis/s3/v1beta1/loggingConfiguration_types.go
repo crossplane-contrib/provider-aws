@@ -22,8 +22,10 @@ import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alp
 // all log object keys for a bucket. For more information, see PUT Bucket logging
 // (https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUTlogging.html)
 type LoggingConfiguration struct {
-	// the target bucket where logs will be stored, it can be the same bucket.
-	TargetBucket *string `json:"targetBucket"`
+	// TargetBucket where logs will be stored, it can be the same bucket.
+	// At least one of targetBucket, targetBucketRef or targetBucketSelector is
+	// required.
+	TargetBucket *string `json:"targetBucket,omitempty"`
 
 	// TargetBucketRef references an S3Bucket to retrieve its name
 	// +optional
@@ -34,10 +36,10 @@ type LoggingConfiguration struct {
 	TargetBucketSelector *runtimev1alpha1.Selector `json:"targetBucketSelector,omitempty"`
 
 	// A prefix for all log object keys.
-	TargetPrefix *string `json:"targetPrefix"`
+	TargetPrefix string `json:"targetPrefix"`
 
 	// Container for granting information.
-	TargetGrants []TargetGrant `json:"targetGrants"`
+	TargetGrants []TargetGrant `json:"targetGrants,omitempty"`
 }
 
 // TargetGrant is the container for granting information.
