@@ -156,6 +156,7 @@ spec:
                               days:
                                 description: Indicates the lifetime, in days, of the objects that are subject to the rule. The value must be a non-zero positive integer.
                                 format: int64
+                                minimum: 1
                                 type: integer
                               expiredObjectDeleteMarker:
                                 description: Indicates whether Amazon S3 will remove a delete marker with no noncurrent versions. If set to true, the delete marker will be expired; if set to false the policy takes no action. This cannot be specified with Days or Date in a Lifecycle Expiration Policy.
@@ -257,6 +258,7 @@ spec:
                                 days:
                                   description: Indicates the number of days after creation when objects are transitioned to the specified storage class. The value must be a positive integer.
                                   format: int64
+                                  minimum: 1
                                   type: integer
                                 storageClass:
                                   description: 'The storage class to which you want the object to transition. Valid values are: GLACIER, STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, DEEP_ARCHIVE'
@@ -681,6 +683,12 @@ spec:
                                 type: object
                               storageClass:
                                 description: The storage class to use when replicating objects, such as S3 Standard or reduced redundancy. By default, Amazon S3 uses the storage class of the source object to create the object replica. For valid values, see the StorageClass element of the PUT Bucket replication (https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUTreplication.html) action in the Amazon Simple Storage Service API Reference.
+                                enum:
+                                - GLACIER
+                                - STANDARD_IA
+                                - ONEZONE_IA
+                                - INTELLIGENT_TIERING
+                                - DEEP_ARCHIVE
                                 type: string
                             type: object
                           existingObjectReplication:
@@ -725,7 +733,7 @@ spec:
                                 description: An object key name prefix that identifies the subset of objects to which the rule applies.
                                 type: string
                               tag:
-                                description: "A container for specifying a tag key and value. \n The rule applies only to objects that have the tag in their tag set."
+                                description: A container for specifying a tag key and value. The rule applies only to objects that have the tag in their tag set.
                                 properties:
                                   key:
                                     description: Name of the tag. Key is a required field

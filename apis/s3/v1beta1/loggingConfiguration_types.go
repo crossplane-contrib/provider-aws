@@ -25,6 +25,7 @@ type LoggingConfiguration struct {
 	// TargetBucket where logs will be stored, it can be the same bucket.
 	// At least one of targetBucket, targetBucketRef or targetBucketSelector is
 	// required.
+	// +optional
 	TargetBucket *string `json:"targetBucket,omitempty"`
 
 	// TargetBucketRef references an S3Bucket to retrieve its name

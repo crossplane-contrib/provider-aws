@@ -46,7 +46,7 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 	if mg.Spec.ForProvider.NotificationConfiguration != nil {
 		for i, v := range mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations {
 			rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-				CurrentValue: v.TopicArn,
+				CurrentValue: reference.FromPtrValue(v.TopicArn),
 				Reference:    v.TopicArnRef,
 				Selector:     v.TopicArnSelector,
 				To:           reference.To{Managed: &v1alpha1.SNSTopic{}, List: &v1alpha1.SNSTopicList{}},
@@ -55,7 +55,7 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 			if err != nil {
 				return errors.Wrapf(err, "spec.forProvider.notificationConfiguration.topicConfigurations[%d].topicArn", i)
 			}
-			mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i].TopicArn = rsp.ResolvedValue
+			mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i].TopicArn = reference.ToPtrValue(rsp.ResolvedValue)
 			mg.Spec.ForProvider.NotificationConfiguration.TopicConfigurations[i].TopicArnRef = rsp.ResolvedReference
 		}
 	}
