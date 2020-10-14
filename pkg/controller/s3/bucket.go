@@ -165,7 +165,6 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 			}
 		case bucket.NeedsUpdate:
 			if err := awsClient.CreateOrUpdate(ctx, cr); err != nil {
-				// TODO(muvaf): let the user know which client failed.
 				return managed.ExternalUpdate{}, errors.Wrap(err, errCreateOrUpdate)
 			}
 		}

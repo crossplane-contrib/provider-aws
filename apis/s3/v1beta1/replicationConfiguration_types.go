@@ -136,7 +136,7 @@ type Destination struct {
 	// to the AWS account that owns the destination bucket. If this is not specified
 	// in the replication configuration, the replicas are owned by same AWS account
 	// that owns the source object.
-	AccessControlTranslation *AccessControlTranslation `json:"accessControlTranslation.omitempty"`
+	AccessControlTranslation *AccessControlTranslation `json:"accessControlTranslation,omitempty"`
 
 	// Destination bucket owner account ID. In a cross-account scenario, if you
 	// direct Amazon S3 to change replica ownership to the AWS account that owns

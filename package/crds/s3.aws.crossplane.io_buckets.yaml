@@ -143,6 +143,8 @@ spec:
                                 description: Specifies the number of days after which Amazon S3 aborts an incomplete multipart upload.
                                 format: int64
                                 type: integer
+                            required:
+                            - daysAfterInitiation
                             type: object
                           expiration:
                             description: Specifies the expiration for the lifecycle of the object in the form of date, days and, whether the object has a delete marker.
@@ -270,9 +272,7 @@ spec:
                               type: object
                             type: array
                         required:
-                        - noncurrentVersionTransitions
                         - status
-                        - transitions
                         type: object
                       type: array
                   required:
@@ -285,7 +285,7 @@ spec:
                   description: Specifies logging parameters for an Amazon S3 bucket. Set the logging parameters for a bucket and to specify permissions for who can view and modify the logging parameters. See the AWS API reference guide for Amazon Simple Storage Service's API operation PutBucketLogging for usage and error information. See also, https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/PutBucketLogging
                   properties:
                     targetBucket:
-                      description: the target bucket where logs will be stored, it can be the same bucket.
+                      description: TargetBucket where logs will be stored, it can be the same bucket. At least one of targetBucket, targetBucketRef or targetBucketSelector is required.
                       type: string
                     targetBucketRef:
                       description: TargetBucketRef references an S3Bucket to retrieve its name
@@ -354,8 +354,6 @@ spec:
                       description: A prefix for all log object keys.
                       type: string
                   required:
-                  - targetBucket
-                  - targetGrants
                   - targetPrefix
                   type: object
                 notificationConfiguration:
@@ -590,7 +588,7 @@ spec:
                           destination:
                             description: "A container for information about the replication destination and its configurations including enabling the S3 Replication Time Control (S3 RTC). \n Destination is a required field"
                             properties:
-                              accessControlTranslation.omitempty:
+                              accessControlTranslation:
                                 description: Specify this only in a cross-account scenario (where source and destination bucket owners are not the same), and you want to change replica ownership to the AWS account that owns the destination bucket. If this is not specified in the replication configuration, the replicas are owned by same AWS account that owns the source object.
                                 properties:
                                   ownerOverride:
@@ -684,8 +682,6 @@ spec:
                               storageClass:
                                 description: The storage class to use when replicating objects, such as S3 Standard or reduced redundancy. By default, Amazon S3 uses the storage class of the source object to create the object replica. For valid values, see the StorageClass element of the PUT Bucket replication (https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUTreplication.html) action in the Amazon Simple Storage Service API Reference.
                                 type: string
-                            required:
-                            - accessControlTranslation.omitempty
                             type: object
                           existingObjectReplication:
                             description: Optional configuration to replicate existing source bucket objects. For more information, see Replicating Existing Objects (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-what-is-isnot-replicated.html#existing-object-replication) in the Amazon S3 Developer Guide.

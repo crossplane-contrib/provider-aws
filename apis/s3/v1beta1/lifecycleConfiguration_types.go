@@ -60,7 +60,7 @@ type LifecycleRule struct {
 	// is versioning-enabled (or versioning is suspended), you can set this action
 	// to request that Amazon S3 transition noncurrent object versions to a specific
 	// storage class at a set period in the object's lifetime.
-	NoncurrentVersionTransitions []NoncurrentVersionTransition `json:"noncurrentVersionTransitions"`
+	NoncurrentVersionTransitions []NoncurrentVersionTransition `json:"noncurrentVersionTransitions,omitempty"`
 
 	// If 'Enabled', the rule is currently being applied. If 'Disabled', the rule
 	// is not currently being applied.
@@ -70,7 +70,7 @@ type LifecycleRule struct {
 	Status string `json:"status"`
 
 	// Specifies when an Amazon S3 object transitions to a specified storage class.
-	Transitions []Transition `json:"transitions"`
+	Transitions []Transition `json:"transitions,omitempty"`
 }
 
 // AbortIncompleteMultipartUpload specifies the days since the initiation of an incomplete multipart upload
@@ -81,7 +81,7 @@ type LifecycleRule struct {
 type AbortIncompleteMultipartUpload struct {
 	// Specifies the number of days after which Amazon S3 aborts an incomplete multipart
 	// upload.
-	DaysAfterInitiation *int64 `json:"daysAfterInitiation,omitempty"`
+	DaysAfterInitiation int64 `json:"daysAfterInitiation"`
 }
 
 // LifecycleExpiration contains for the expiration for the lifecycle of the object.

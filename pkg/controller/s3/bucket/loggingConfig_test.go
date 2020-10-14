@@ -43,7 +43,7 @@ var (
 func generateLoggingConfig() *v1beta1.LoggingConfiguration {
 	return &v1beta1.LoggingConfiguration{
 		TargetBucket: &bucketName,
-		TargetPrefix: &prefix,
+		TargetPrefix: prefix,
 		TargetGrants: []v1beta1.TargetGrant{{
 			Grantee: v1beta1.TargetGrantee{
 				DisplayName:  &displayName,

@@ -52,7 +52,7 @@ func generateLifecycleConfig() *v1beta1.BucketLifecycleConfiguration {
 	return &v1beta1.BucketLifecycleConfiguration{
 		Rules: []v1beta1.LifecycleRule{
 			{
-				AbortIncompleteMultipartUpload: &v1beta1.AbortIncompleteMultipartUpload{DaysAfterInitiation: aws.Int64(1)},
+				AbortIncompleteMultipartUpload: &v1beta1.AbortIncompleteMultipartUpload{DaysAfterInitiation: 1},
 				Expiration: &v1beta1.LifecycleExpiration{
 					Date:                      &date,
 					Days:                      aws.Int64(days),
@@ -147,7 +147,7 @@ func TestGenerateLifecycleConfiguration(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			generated := GenerateRules(tc.args.b.Spec.ForProvider.LifecycleConfiguration)
+			generated := GenerateLifecycleRules(tc.args.b.Spec.ForProvider.LifecycleConfiguration.Rules)
 			if diff := cmp.Diff(generated, tc.want.input); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
