@@ -99,12 +99,38 @@ spec:
                           items:
                             type: string
                           type: array
+                        condition:
+                          additionalProperties:
+                            description: Condition represents one condition inside of the set of conditions for a bucket policy
+                            properties:
+                              booleanValue:
+                                description: ConditionBooleanValue is the expected boolean value of the key from the parent condition
+                                type: boolean
+                              dateValue:
+                                description: ConditionDateValue is the expected string value of the key from the parent condition. The date value must be in ISO 8601 format. The time is always midnight UTC.
+                                format: date-time
+                                type: string
+                              key:
+                                description: ConditionKey is the key condition being applied to the parent condition
+                                type: string
+                              numericValue:
+                                description: ConditionNumericValue is the expected string value of the key from the parent condition
+                                format: int64
+                                type: integer
+                              stringValue:
+                                description: ConditionStringValue is the expected string value of the key from the parent condition
+                                type: string
+                            required:
+                            - key
+                            type: object
+                          description: Condition specifies where conditions for policy are in effect. https://docs.aws.amazon.com/AmazonS3/latest/dev/amazon-s3-policy-keys.html
+                          type: object
                         effect:
                           description: The effect is required and specifies whether the statement results in an allow or an explicit deny. Valid values for Effect are Allow and Deny.
+                          enum:
+                          - Allow
+                          - Deny
                           type: string
-                        effectIAMUser:
-                          description: This flag indicates that this policy should apply to the IAMUsername that was either passed in or created for this bucket, this user will added to the action array
-                          type: boolean
                         notAction:
                           description: Each element of the NotPolicyAction array will allow the property to match all but the listed actions.
                           items:
@@ -117,7 +143,68 @@ spec:
                               description: This flag indicates if the policy should be made available to all anonymous users.
                               type: boolean
                             aws:
-                              description: This list contains the all of the AWS IAM users which are affected by the policy statement
+                              description: This list contains the all of the AWS IAM users which are affected by the policy statement.
+                              items:
+                                description: AWSPrincipal wraps the potential values a policy principal can take. Only one of the values should be set.
+                                properties:
+                                  IAMRoleArn:
+                                    description: IAMRoleARN contains the ARN of an IAM role
+                                    type: string
+                                  IAMRoleArnRef:
+                                    description: IAMRoleARNRef contains the reference to an IAMRole
+                                    properties:
+                                      name:
+                                        description: Name of the referenced object.
+                                        type: string
+                                    required:
+                                    - name
+                                    type: object
+                                  IAMRoleArnSelector:
+                                    description: IAMRoleARNSelector queries for an IAM role to retrieve its userName
+                                    properties:
+                                      matchControllerRef:
+                                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                                        type: boolean
+                                      matchLabels:
+                                        additionalProperties:
+                                          type: string
+                                        description: MatchLabels ensures an object with matching labels is selected.
+                                        type: object
+                                    type: object
+                                  IAMUserArn:
+                                    description: IAMUserARN contains the ARN of an IAM user
+                                    type: string
+                                  IAMUserArnRef:
+                                    description: IAMUserARNRef contains the reference to an IAMUser
+                                    properties:
+                                      name:
+                                        description: Name of the referenced object.
+                                        type: string
+                                    required:
+                                    - name
+                                    type: object
+                                  IAMUserArnSelector:
+                                    description: IAMUserARNSelector queries for an IAMUser to retrieve its userName
+                                    properties:
+                                      matchControllerRef:
+                                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                                        type: boolean
+                                      matchLabels:
+                                        additionalProperties:
+                                          type: string
+                                        description: MatchLabels ensures an object with matching labels is selected.
+                                        type: object
+                                    type: object
+                                  awsAccountId:
+                                    description: AWSAccountID identifies an AWS account as the principal
+                                    type: string
+                                type: object
+                              type: array
+                            federated:
+                              description: This string contains the identifier for any federated web identity provider.
+                              type: string
+                            service:
+                              description: Service define the services which can have access to this bucket
                               items:
                                 type: string
                               type: array
@@ -134,7 +221,68 @@ spec:
                               description: This flag indicates if the policy should be made available to all anonymous users.
                               type: boolean
                             aws:
-                              description: This list contains the all of the AWS IAM users which are affected by the policy statement
+                              description: This list contains the all of the AWS IAM users which are affected by the policy statement.
+                              items:
+                                description: AWSPrincipal wraps the potential values a policy principal can take. Only one of the values should be set.
+                                properties:
+                                  IAMRoleArn:
+                                    description: IAMRoleARN contains the ARN of an IAM role
+                                    type: string
+                                  IAMRoleArnRef:
+                                    description: IAMRoleARNRef contains the reference to an IAMRole
+                                    properties:
+                                      name:
+                                        description: Name of the referenced object.
+                                        type: string
+                                    required:
+                                    - name
+                                    type: object
+                                  IAMRoleArnSelector:
+                                    description: IAMRoleARNSelector queries for an IAM role to retrieve its userName
+                                    properties:
+                                      matchControllerRef:
+                                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                                        type: boolean
+                                      matchLabels:
+                                        additionalProperties:
+                                          type: string
+                                        description: MatchLabels ensures an object with matching labels is selected.
+                                        type: object
+                                    type: object
+                                  IAMUserArn:
+                                    description: IAMUserARN contains the ARN of an IAM user
+                                    type: string
+                                  IAMUserArnRef:
+                                    description: IAMUserARNRef contains the reference to an IAMUser
+                                    properties:
+                                      name:
+                                        description: Name of the referenced object.
+                                        type: string
+                                    required:
+                                    - name
+                                    type: object
+                                  IAMUserArnSelector:
+                                    description: IAMUserARNSelector queries for an IAMUser to retrieve its userName
+                                    properties:
+                                      matchControllerRef:
+                                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                                        type: boolean
+                                      matchLabels:
+                                        additionalProperties:
+                                          type: string
+                                        description: MatchLabels ensures an object with matching labels is selected.
+                                        type: object
+                                    type: object
+                                  awsAccountId:
+                                    description: AWSAccountID identifies an AWS account as the principal
+                                    type: string
+                                type: object
+                              type: array
+                            federated:
+                              description: This string contains the identifier for any federated web identity provider.
+                              type: string
+                            service:
+                              description: Service define the services which can have access to this bucket
                               items:
                                 type: string
                               type: array
@@ -151,30 +299,6 @@ spec:
                       - effect
                       type: object
                     type: array
-                  userName:
-                    description: UserName presents the name of the IAM user this BucketPolicy is concerned with.
-                    type: string
-                  userNameRef:
-                    description: UserNameRef references to an S3Bucket to retrieve its userName
-                    properties:
-                      name:
-                        description: Name of the referenced object.
-                        type: string
-                    required:
-                    - name
-                    type: object
-                  userNameSelector:
-                    description: UserNameSelector selects a reference to an S3Bucket to retrieve its userName
-                    properties:
-                      matchControllerRef:
-                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
-                        type: boolean
-                      matchLabels:
-                        additionalProperties:
-                          type: string
-                        description: MatchLabels ensures an object with matching labels is selected.
-                        type: object
-                    type: object
                   version:
                     description: This is the current IAM policy version
                     type: string
