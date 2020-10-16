@@ -1,8 +1,0 @@
-apiVersion: aws.example.org/v1alpha1
-kind: Network
-metadata:
-  name: my-network
-spec:
-  sgName: my-super-cool-sg
-  providerConfigRef:
-    name: example

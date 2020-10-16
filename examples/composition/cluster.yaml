@@ -1,8 +1,0 @@
-apiVersion: aws.example.org/v1alpha1
-kind: Cluster
-metadata:
-  name: my-cluster
-spec:
-  networkName: my-network
-  providerConfigRef:
-    name: example
