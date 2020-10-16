@@ -33,7 +33,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1alpha1"
-	iamfake "github.com/crossplane/provider-aws/pkg/clients/iam/fake"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 )
@@ -42,7 +41,6 @@ var (
 	// an arbitrary managed resource
 	unexpectedItem resource.Managed
 	bucketName     = "test.s3.crossplane.com"
-	userName       = "12345667890"
 	policy         = `{"Statement":[{"Action":"s3:ListBucket","Effect":"Allow","Principal":"*","Resource":"arn:aws:s3:::test.s3.crossplane.com"}],"Version":"2012-10-17"}`
 
 	params = v1alpha1.BucketPolicyParameters{
@@ -53,9 +51,8 @@ var (
 				Principal: &v1alpha1.BucketPrincipal{
 					AllowAnon: true,
 				},
-				PolicyAction:   []string{"s3:ListBucket"},
-				ResourcePath:   []string{"test.s3.crossplane.com"},
-				ApplyToIAMUser: false,
+				PolicyAction: []string{"s3:ListBucket"},
+				ResourcePath: []string{"test.s3.crossplane.com"},
 			},
 		},
 	}
@@ -81,7 +78,6 @@ func bucketPolicy(m ...bucketPolicyModifier) *v1alpha1.BucketPolicy {
 	cr := &v1alpha1.BucketPolicy{
 		Spec: v1alpha1.BucketPolicySpec{
 			PolicyBody: v1alpha1.BucketPolicyParameters{
-				UserName:        &userName,
 				BucketName:      &bucketName,
 				PolicyVersion:   "",
 				PolicyID:        "",
@@ -171,12 +167,9 @@ func TestObserve(t *testing.T) {
 		},
 	}
 
-	iamc := new(iamfake.Client)
-	iamc.On("GetAccountID").Return("1234567890", nil)
-
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{client: tc.s3, iamclient: iamc}
+			e := &external{client: tc.s3}
 			o, err := e.Observe(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -250,12 +243,9 @@ func TestCreate(t *testing.T) {
 		},
 	}
 
-	iamc := new(iamfake.Client)
-	iamc.On("GetAccountID").Return("1234567890", nil)
-
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{client: tc.s3, iamclient: iamc}
+			e := &external{client: tc.s3}
 			o, err := e.Create(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -300,12 +290,9 @@ func TestUpdate(t *testing.T) {
 		},
 	}
 
-	iamc := new(iamfake.Client)
-	iamc.On("GetAccountID").Return("1234567890", nil)
-
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{client: tc.s3, iamclient: iamc}
+			e := &external{client: tc.s3}
 			o, err := e.Update(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -391,12 +378,9 @@ func TestDelete(t *testing.T) {
 		},
 	}
 
-	iamc := new(iamfake.Client)
-	iamc.On("GetAccountID").Return("1234567890", nil)
-
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{client: tc.s3, iamclient: iamc}
+			e := &external{client: tc.s3}
 			err := e.Delete(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {

@@ -3,8 +3,8 @@ kind: Bucket
 metadata:
   name: test-bucket
 spec:
+  deletionPolicy: Delete
   forProvider:
-    locationConstraint: us-west-2
     acl: private
     accelerateConfiguration:
       status: Enabled
@@ -18,6 +18,8 @@ spec:
           value: val2
         - key: key3
           value: val3
+    locationConstraint: us-west-1
+    objectLockEnabledForBucket: false
     serverSideEncryptionConfiguration:
       rules:
         - applyServerSideEncryptionByDefault:
@@ -37,3 +39,6 @@ spec:
             days: 15
   providerConfigRef:
     name: example
+  writeConnectionSecretToRef:
+    name: mybucket-1
+    namespace: crossplane-system

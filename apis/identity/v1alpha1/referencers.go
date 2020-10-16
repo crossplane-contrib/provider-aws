@@ -34,6 +34,17 @@ func IAMPolicyARN() reference.ExtractValueFn {
 	}
 }
 
+// IAMUserARN returns a function that returns the ARN of the given policy.
+func IAMUserARN() reference.ExtractValueFn {
+	return func(mg resource.Managed) string {
+		r, ok := mg.(*IAMUser)
+		if !ok {
+			return ""
+		}
+		return r.Status.AtProvider.ARN
+	}
+}
+
 // ResolveReferences of this IAMUserPolicyAttachment
 func (mg *IAMUserPolicyAttachment) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
