@@ -119,15 +119,19 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 // SetResolver parses annotations from the managed resource
 // and returns a configuration accordingly.
 func SetResolver(ctx context.Context, mg resource.Managed, cfg *aws.Config) *aws.Config {
-	if URL, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointURL"]; ok {
-		if SigningRegion, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointSigningRegion"]; ok {
+	if ServiceID, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointServiceID"]; ok {
+		if URL, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointURL"]; ok {
+			endpoint := aws.Endpoint{
+				URL: URL,
+			}
+			if Region, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointSigningRegion"]; ok {
+				endpoint.SigningRegion = Region
+			}
+
 			defaultResolver := endpoints.NewDefaultResolver()
 			endpointResolver := func(service, region string) (aws.Endpoint, error) {
-				if strings.Contains(mg.GetObjectKind().GroupVersionKind().Version, service) {
-					return aws.Endpoint{
-						URL:           URL,
-						SigningRegion: SigningRegion,
-					}, nil
+				if strings.Contains(ServiceID, service) {
+					return endpoint, nil
 				}
 
 				return defaultResolver.ResolveEndpoint(service, region)
