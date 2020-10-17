@@ -42,6 +42,10 @@ type AccelerateConfigurationClient struct {
 func (in *AccelerateConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
 	external, err := in.client.GetBucketAccelerateConfigurationRequest(&awss3.GetBucketAccelerateConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
+		// Short stop method for requests in a region without Acceleration Support
+		if s3.MethodNotSupported(err) || s3.ArgumentNotSupported(err) {
+			return nil
+		}
 		return errors.Wrap(err, accelGetFailed)
 	}
 
@@ -69,6 +73,10 @@ func NewAccelerateConfigurationClient(client s3.BucketClient) *AccelerateConfigu
 func (in *AccelerateConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
 	external, err := in.client.GetBucketAccelerateConfigurationRequest(&awss3.GetBucketAccelerateConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
+		// Short stop method for requests in a region without Acceleration Support
+		if s3.MethodNotSupported(err) || s3.ArgumentNotSupported(err) {
+			return Updated, nil
+		}
 		return NeedsUpdate, errors.Wrap(err, accelGetFailed)
 	}
 	if bucket.Spec.ForProvider.AccelerateConfiguration != nil &&
