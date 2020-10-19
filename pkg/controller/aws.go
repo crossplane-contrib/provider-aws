@@ -70,8 +70,6 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		cluster.SetupCacheCluster,
 		database.SetupRDSInstance,
 		eks.SetupCluster,
-		eks.SetupClusterSecret,
-		eks.SetupClusterTarget,
 		elb.SetupELB,
 		elbattachment.SetupELBAttachment,
 		nodegroup.SetupNodeGroup,
