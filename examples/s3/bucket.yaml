@@ -14,6 +14,10 @@ spec:
       tagSet:
         - key: key1
           value: val1
+        - key: secondKey
+          value: val2
+        - key: key3
+          value: val3
     serverSideEncryptionConfiguration:
       rules:
         - applyServerSideEncryptionByDefault:

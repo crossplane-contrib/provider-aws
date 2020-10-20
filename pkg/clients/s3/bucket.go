@@ -19,6 +19,7 @@ package s3
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
@@ -210,4 +211,43 @@ func UpdateBucketACL(ctx context.Context, client BucketClient, bucket *v1beta1.B
 	}
 	_, err := client.PutBucketAclRequest(config).Send(ctx)
 	return err
+}
+
+// CopyTag converts a local v1beta.Tag to an S3 Tag
+func CopyTag(tag *v1beta1.Tag) *s3.Tag {
+	if tag == nil {
+		return nil
+	}
+	return &s3.Tag{
+		Key:   aws.String(tag.Key),
+		Value: aws.String(tag.Value),
+	}
+}
+
+// CopyTags converts a list of local v1beta.Tags to S3 Tags
+func CopyTags(tags []v1beta1.Tag) []s3.Tag {
+	if tags == nil {
+		return nil
+	}
+	out := make([]s3.Tag, len(tags))
+	for i := range tags {
+		out[i] = *CopyTag(&tags[i])
+	}
+	return out
+}
+
+// SortS3TagSet stable sorts an external s3 tag list by the key and value.
+func SortS3TagSet(tags []s3.Tag) []s3.Tag {
+	if len(tags) == 0 {
+		return tags
+	}
+	sort.SliceStable(tags, func(i, j int) bool {
+		if aws.StringValue(tags[i].Key) < aws.StringValue(tags[j].Key) {
+			return true
+		} else if aws.StringValue(tags[i].Key) == aws.StringValue(tags[j].Key) {
+			return aws.StringValue(tags[i].Value) < aws.StringValue(tags[j].Value)
+		}
+		return false
+	})
+	return tags
 }
