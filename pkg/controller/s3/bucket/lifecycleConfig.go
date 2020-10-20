@@ -28,7 +28,6 @@ import (
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
-	"github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
 const (
@@ -63,6 +62,8 @@ func (in *LifecycleConfigurationClient) Observe(ctx context.Context, bucket *v1b
 		}
 		return NeedsUpdate, errors.Wrap(resource.Ignore(s3.LifecycleConfigurationNotFound, err), lifecycleGetFailed)
 	}
+
+	sortFilterTags(external.Rules)
 
 	switch {
 	case len(external.Rules) != 0 && config == nil:
@@ -129,13 +130,14 @@ func GenerateRules(in *v1beta1.BucketLifecycleConfiguration) []awss3.LifecycleRu
 		if local.Filter != nil {
 			rule.Filter = &awss3.LifecycleRuleFilter{
 				Prefix: local.Filter.Prefix,
-				Tag:    testing.CopyTag(local.Filter.Tag),
+				Tag:    s3.CopyTag(local.Filter.Tag),
 			}
 			if local.Filter.And != nil {
 				rule.Filter.And = &awss3.LifecycleRuleAndOperator{
 					Prefix: local.Filter.And.Prefix,
-					Tags:   testing.CopyTags(local.Filter.And.Tags),
+					Tags:   s3.CopyTags(local.Filter.And.Tags),
 				}
+				s3.SortS3TagSet(rule.Filter.And.Tags)
 			}
 		}
 		rules[i] = rule
@@ -162,4 +164,14 @@ func (in *LifecycleConfigurationClient) Delete(ctx context.Context, bucket *v1be
 		},
 	).Send(ctx)
 	return errors.Wrap(err, lifecycleDeleteFailed)
+}
+
+func sortFilterTags(rules []awss3.LifecycleRule) {
+	if len(rules) != 0 {
+		for i := range rules {
+			if rules[i].Filter != nil && rules[i].Filter.And != nil {
+				s3.SortS3TagSet(rules[i].Filter.And.Tags)
+			}
+		}
+	}
 }
