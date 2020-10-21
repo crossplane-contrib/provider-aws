@@ -171,18 +171,19 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	observed := response.NatGateways[0]
 
-	// This implies additional tags have been manually added to the resource
-	if len(observed.Tags) > len(cr.Spec.ForProvider.Tags) {
+	addTags, RemoveTags := awscommon.DiffEC2Tags(v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags), observed.Tags)
+	if len(RemoveTags) > 0 {
 		if _, err := e.client.DeleteTagsRequest(&awsec2.DeleteTagsInput{
 			Resources: []string{meta.GetExternalName(cr)},
-			Tags:      v1beta1.EC2TagsNotInCRSpec(cr.Spec.ForProvider.Tags, observed.Tags),
+			Tags:      RemoveTags,
 		}).Send(ctx); err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errDeleteTags)
 		}
-	} else {
+	}
+	if len(addTags) > 0 {
 		if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
 			Resources: []string{meta.GetExternalName(cr)},
-			Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+			Tags:      addTags,
 		}).Send(ctx); err != nil {
 			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdateTags)
 		}

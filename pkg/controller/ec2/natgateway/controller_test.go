@@ -525,7 +525,7 @@ func TestUpdate(t *testing.T) {
 		args
 		want
 	}{
-		"UpdateTagsSuccessful": {
+		"TagsInSync": {
 			args: args{
 				nat: &fake.MockNatGatewayClient{
 					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
@@ -533,65 +533,38 @@ func TestUpdate(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Retryer:     aws.NoOpRetryer{},
-								Data:        natGatewayDescription(awsec2.NatGatewayStateDeleted, time, nil, nil, false),
+								Data:        natGatewayDescription(awsec2.NatGatewayStateAvailable, time, nil, nil, false),
+							},
+						}
+					},
+				},
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(specNatSpec()),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false)),
+				),
+			},
+			want: want{
+				cr: nat(withExternalName(natGatewayID),
+					withSpec(specNatSpec()),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false))),
+				result: managed.ExternalUpdate{},
+			},
+		},
+		"TagsNotInSync": {
+			args: args{
+				nat: &fake.MockNatGatewayClient{
+					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
+						return awsec2.DescribeNatGatewaysRequest{
+							Request: &aws.Request{
+								HTTPRequest: &http.Request{},
+								Retryer:     aws.NoOpRetryer{},
+								Data:        natGatewayDescription(awsec2.NatGatewayStateAvailable, time, nil, nil, false),
 							},
 						}
 					},
 					MockCreateTags: func(e *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
 						return awsec2.CreateTagsRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
-						}
-					},
-				},
-				cr: nat(withExternalName(natGatewayID),
-					withSpec(specNatSpec()),
-				),
-			},
-			want: want{
-				cr: nat(withExternalName(natGatewayID),
-					withSpec(specNatSpec())),
-				result: managed.ExternalUpdate{},
-			},
-		},
-		"UpdateTagsFailed": {
-			args: args{
-				nat: &fake.MockNatGatewayClient{
-					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
-						return awsec2.DescribeNatGatewaysRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        natGatewayDescription(awsec2.NatGatewayStateDeleted, time, nil, nil, false),
-							},
-						}
-					},
-					MockCreateTags: func(e *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
-						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
-					},
-				},
-				cr: nat(withExternalName(natGatewayID),
-					withSpec(specNatSpec()),
-				),
-			},
-			want: want{
-				cr: nat(withExternalName(natGatewayID),
-					withSpec(specNatSpec()),
-				),
-				err: errors.Wrap(errBoom, errUpdateTags),
-			},
-		},
-		"DeleteTagsSuccessFul": {
-			args: args{
-				nat: &fake.MockNatGatewayClient{
-					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
-						return awsec2.DescribeNatGatewaysRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        natGatewayDescription(awsec2.NatGatewayStateDeleted, time, nil, nil, false),
-							},
 						}
 					},
 					MockDeleteTags: func(e *awsec2.DeleteTagsInput) awsec2.DeleteTagsRequest {
@@ -602,52 +575,17 @@ func TestUpdate(t *testing.T) {
 				},
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(v1beta1.NATGatewayParameters{
-						AllocationID: &natAllocationID,
-						SubnetID:     &natSubnetID,
+						AllocationID: aws.String(natAllocationID),
+						SubnetID:     aws.String(natSubnetID),
 						Tags: []v1beta1.Tag{
-							specTags()[0],
-						},
-					}),
-					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false)),
-				),
-			},
-			want: want{
-				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1beta1.NATGatewayParameters{
-						AllocationID: &natAllocationID,
-						SubnetID:     &natSubnetID,
-						Tags: []v1beta1.Tag{
-							specTags()[0],
-						},
-					}),
-					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false)),
-				),
-			},
-		},
-		"DeleteTagsFailed": {
-			args: args{
-				nat: &fake.MockNatGatewayClient{
-					MockDescribe: func(e *awsec2.DescribeNatGatewaysInput) awsec2.DescribeNatGatewaysRequest {
-						return awsec2.DescribeNatGatewaysRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        natGatewayDescription(awsec2.NatGatewayStateDeleted, time, nil, nil, false),
+							{
+								Key:   "somekey",
+								Value: "somevalue",
 							},
-						}
-					},
-					MockDeleteTags: func(e *awsec2.DeleteTagsInput) awsec2.DeleteTagsRequest {
-						return awsec2.DeleteTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
-					},
-				},
-				cr: nat(withExternalName(natGatewayID),
-					withSpec(v1beta1.NATGatewayParameters{
-						AllocationID: &natAllocationID,
-						SubnetID:     &natSubnetID,
-						Tags: []v1beta1.Tag{
-							specTags()[0],
+							{
+								Key:   "somekey1",
+								Value: "somevalue1",
+							},
 						},
 					}),
 					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false)),
@@ -656,15 +594,21 @@ func TestUpdate(t *testing.T) {
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(v1beta1.NATGatewayParameters{
-						AllocationID: &natAllocationID,
-						SubnetID:     &natSubnetID,
+						AllocationID: aws.String(natAllocationID),
+						SubnetID:     aws.String(natSubnetID),
 						Tags: []v1beta1.Tag{
-							specTags()[0],
+							{
+								Key:   "somekey",
+								Value: "somevalue",
+							},
+							{
+								Key:   "somekey1",
+								Value: "somevalue1",
+							},
 						},
 					}),
-					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false)),
-				),
-				err: errors.Wrap(errBoom, errDeleteTags),
+					withStatus(specNatStatus(v1beta1.NatGatewayStatusAvailable, time, nil, nil, false))),
+				result: managed.ExternalUpdate{},
 			},
 		},
 	}
