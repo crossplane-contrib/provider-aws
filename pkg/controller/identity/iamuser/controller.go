@@ -60,7 +60,6 @@ func SetupIAMUser(mgr ctrl.Manager, l logging.Logger) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.IAMUserGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewUserClient}),
-			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -137,7 +136,21 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		Tags:                iam.BuildIAMTags(cr.Spec.ForProvider.Tags),
 		UserName:            aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
-	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+
+	if err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+	}
+
+	keysResponse, err := e.client.CreateAccessKeyRequest(&awsiam.CreateAccessKeyInput{UserName: aws.String(meta.GetExternalName(cr))}).Send(ctx)
+	if err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+	}
+
+	conn := managed.ConnectionDetails{}
+	conn[runtimev1alpha1.ResourceCredentialsSecretUserKey] = []byte(aws.StringValue(keysResponse.AccessKey.AccessKeyId))
+	conn[runtimev1alpha1.ResourceCredentialsSecretPasswordKey] = []byte(aws.StringValue(keysResponse.AccessKey.SecretAccessKey))
+
+	return managed.ExternalCreation{ConnectionDetails: conn}, errors.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -162,7 +175,21 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
 
-	_, err := e.client.DeleteUserRequest(&awsiam.DeleteUserInput{
+	keys, err := e.client.ListAccessKeysRequest(&awsiam.ListAccessKeysInput{UserName: aws.String(meta.GetExternalName(cr))}).Send(ctx)
+	if resource.Ignore(iam.IsErrorNotFound, err) != nil {
+		return errors.Wrap(err, errDelete)
+	}
+
+	if keys != nil {
+		for _, key := range keys.AccessKeyMetadata {
+			_, err = e.client.DeleteAccessKeyRequest(&awsiam.DeleteAccessKeyInput{AccessKeyId: key.AccessKeyId, UserName: aws.String(meta.GetExternalName(cr))}).Send(context.TODO())
+			if resource.Ignore(iam.IsErrorNotFound, err) != nil {
+				return errors.Wrap(err, errDelete)
+			}
+		}
+	}
+
+	_, err = e.client.DeleteUserRequest(&awsiam.DeleteUserInput{
 		UserName: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 

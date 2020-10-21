@@ -40,6 +40,8 @@ import (
 var (
 	unexpecedItem resource.Managed
 	userName      = "some user"
+	accessKey     = "accessKey"
+	secretKey     = "secretKey"
 
 	errBoom = errors.New("boom")
 )
@@ -166,6 +168,18 @@ func TestCreate(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.CreateUserOutput{}},
 						}
 					},
+					MockCreateAccessKey: func(input *awsiam.CreateAccessKeyInput) awsiam.CreateAccessKeyRequest {
+						return awsiam.CreateAccessKeyRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.CreateAccessKeyOutput{
+								AccessKey: &awsiam.AccessKey{
+									AccessKeyId:     &accessKey,
+									SecretAccessKey: &secretKey,
+									Status:          "Active",
+									UserName:        &userName,
+								},
+							}},
+						}
+					},
 				},
 				cr: user(withExternalName(userName)),
 			},
@@ -173,6 +187,10 @@ func TestCreate(t *testing.T) {
 				cr: user(
 					withExternalName(userName),
 					withConditions(corev1alpha1.Creating())),
+				result: managed.ExternalCreation{ConnectionDetails: managed.ConnectionDetails{
+					corev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(secretKey),
+					corev1alpha1.ResourceCredentialsSecretUserKey: []byte(accessKey),
+				}},
 			},
 		},
 		"InValidInput": {
@@ -189,6 +207,11 @@ func TestCreate(t *testing.T) {
 				iam: &fake.MockUserClient{
 					MockCreateUser: func(input *awsiam.CreateUserInput) awsiam.CreateUserRequest {
 						return awsiam.CreateUserRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+					MockCreateAccessKey: func(input *awsiam.CreateAccessKeyInput) awsiam.CreateAccessKeyRequest {
+						return awsiam.CreateAccessKeyRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
@@ -295,6 +318,13 @@ func TestDelete(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DeleteUserOutput{}},
 						}
 					},
+					MockListAccessKeys: func(input *awsiam.ListAccessKeysInput) awsiam.ListAccessKeysRequest {
+						return awsiam.ListAccessKeysRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListAccessKeysOutput{
+								AccessKeyMetadata: make([]awsiam.AccessKeyMetadata, 0),
+							}},
+						}
+					},
 				},
 				cr: user(withExternalName(userName)),
 			},
@@ -317,6 +347,11 @@ func TestDelete(t *testing.T) {
 				iam: &fake.MockUserClient{
 					MockDeleteUser: func(input *awsiam.DeleteUserInput) awsiam.DeleteUserRequest {
 						return awsiam.DeleteUserRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+					MockListAccessKeys: func(input *awsiam.ListAccessKeysInput) awsiam.ListAccessKeysRequest {
+						return awsiam.ListAccessKeysRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},

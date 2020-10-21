@@ -10,3 +10,6 @@ spec:
         value: v1
   providerConfigRef:
     name: example
+  writeConnectionSecretToRef:
+    name: accesskey
+    namespace: default

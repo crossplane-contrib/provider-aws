@@ -27,10 +27,28 @@ var _ clientset.UserClient = (*MockUserClient)(nil)
 
 // MockUserClient is a type that implements all the methods for RoleClient interface
 type MockUserClient struct {
-	MockGetUser    func(*iam.GetUserInput) iam.GetUserRequest
-	MockCreateUser func(*iam.CreateUserInput) iam.CreateUserRequest
-	MockDeleteUser func(*iam.DeleteUserInput) iam.DeleteUserRequest
-	MockUpdateUser func(*iam.UpdateUserInput) iam.UpdateUserRequest
+	MockGetUser         func(*iam.GetUserInput) iam.GetUserRequest
+	MockCreateUser      func(*iam.CreateUserInput) iam.CreateUserRequest
+	MockDeleteUser      func(*iam.DeleteUserInput) iam.DeleteUserRequest
+	MockUpdateUser      func(*iam.UpdateUserInput) iam.UpdateUserRequest
+	MockCreateAccessKey func(*iam.CreateAccessKeyInput) iam.CreateAccessKeyRequest
+	MockListAccessKeys  func(*iam.ListAccessKeysInput) iam.ListAccessKeysRequest
+	MockDeleteAccessKey func(*iam.DeleteAccessKeyInput) iam.DeleteAccessKeyRequest
+}
+
+// ListAccessKeysRequest mocks ListAccessKeysRequest method
+func (m *MockUserClient) ListAccessKeysRequest(input *iam.ListAccessKeysInput) iam.ListAccessKeysRequest {
+	return m.MockListAccessKeys(input)
+}
+
+// DeleteAccessKeyRequest mocks DeleteAccessKeyRequest method
+func (m *MockUserClient) DeleteAccessKeyRequest(input *iam.DeleteAccessKeyInput) iam.DeleteAccessKeyRequest {
+	return m.MockDeleteAccessKey(input)
+}
+
+// CreateAccessKeyRequest mocks CreateAccessKeyRequest method
+func (m *MockUserClient) CreateAccessKeyRequest(input *iam.CreateAccessKeyInput) iam.CreateAccessKeyRequest {
+	return m.MockCreateAccessKey(input)
 }
 
 // GetUserRequest mocks GetUserRequest method

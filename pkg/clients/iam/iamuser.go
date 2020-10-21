@@ -15,6 +15,9 @@ type UserClient interface {
 	CreateUserRequest(*iam.CreateUserInput) iam.CreateUserRequest
 	UpdateUserRequest(*iam.UpdateUserInput) iam.UpdateUserRequest
 	DeleteUserRequest(*iam.DeleteUserInput) iam.DeleteUserRequest
+	CreateAccessKeyRequest(*iam.CreateAccessKeyInput) iam.CreateAccessKeyRequest
+	ListAccessKeysRequest(*iam.ListAccessKeysInput) iam.ListAccessKeysRequest
+	DeleteAccessKeyRequest(input *iam.DeleteAccessKeyInput) iam.DeleteAccessKeyRequest
 }
 
 // NewUserClient returns a new client using AWS credentials as JSON encoded data.
