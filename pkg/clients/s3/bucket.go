@@ -213,41 +213,21 @@ func UpdateBucketACL(ctx context.Context, client BucketClient, bucket *v1beta1.B
 	return err
 }
 
-// CopyTag converts a local v1beta.Tag to an S3 Tag
-func CopyTag(tag *v1beta1.Tag) *s3.Tag {
-	if tag == nil {
-		return nil
-	}
-	return &s3.Tag{
-		Key:   aws.String(tag.Key),
-		Value: aws.String(tag.Value),
-	}
-}
-
 // CopyTags converts a list of local v1beta.Tags to S3 Tags
 func CopyTags(tags []v1beta1.Tag) []s3.Tag {
-	if tags == nil {
-		return nil
-	}
-	out := make([]s3.Tag, len(tags))
-	for i := range tags {
-		out[i] = *CopyTag(&tags[i])
+	out := make([]s3.Tag, 0)
+	for _, one := range tags {
+		out = append(out, s3.Tag{Key: aws.String(one.Key), Value: aws.String(one.Value)})
 	}
 	return out
 }
 
 // SortS3TagSet stable sorts an external s3 tag list by the key and value.
 func SortS3TagSet(tags []s3.Tag) []s3.Tag {
-	if len(tags) == 0 {
-		return tags
-	}
-	sort.SliceStable(tags, func(i, j int) bool {
-		if aws.StringValue(tags[i].Key) < aws.StringValue(tags[j].Key) {
-			return true
-		} else if aws.StringValue(tags[i].Key) == aws.StringValue(tags[j].Key) {
-			return aws.StringValue(tags[i].Value) < aws.StringValue(tags[j].Value)
-		}
-		return false
+	outTags := make([]s3.Tag, len(tags))
+	copy(outTags, tags)
+	sort.SliceStable(outTags, func(i, j int) bool {
+		return aws.StringValue(outTags[i].Key) < aws.StringValue(outTags[j].Key)
 	})
-	return tags
+	return outTags
 }

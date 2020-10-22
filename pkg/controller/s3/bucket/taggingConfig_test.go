@@ -40,8 +40,8 @@ var (
 		Value: "value",
 	}
 	tag1 = v1beta1.Tag{
-		Key:   "abc",
-		Value: "xyz",
+		Key:   "xyz",
+		Value: "abc",
 	}
 	tag2 = v1beta1.Tag{
 		Key:   "abc",
@@ -53,8 +53,8 @@ var (
 		Value: aws.String("value"),
 	}
 	awsTag1 = s3.Tag{
-		Key:   aws.String("abc"),
-		Value: aws.String("xyz"),
+		Key:   aws.String("xyz"),
+		Value: aws.String("abc"),
 	}
 	awsTag2 = s3.Tag{
 		Key:   aws.String("abc"),

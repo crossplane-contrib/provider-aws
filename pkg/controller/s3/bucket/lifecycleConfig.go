@@ -130,14 +130,17 @@ func GenerateRules(in *v1beta1.BucketLifecycleConfiguration) []awss3.LifecycleRu
 		if local.Filter != nil {
 			rule.Filter = &awss3.LifecycleRuleFilter{
 				Prefix: local.Filter.Prefix,
-				Tag:    s3.CopyTag(local.Filter.Tag),
+			}
+			if local.Filter.Tag != nil {
+				rule.Filter.Tag = &awss3.Tag{Key: aws.String(local.Filter.Tag.Key), Value: aws.String(local.Filter.Tag.Value)}
 			}
 			if local.Filter.And != nil {
 				rule.Filter.And = &awss3.LifecycleRuleAndOperator{
 					Prefix: local.Filter.And.Prefix,
-					Tags:   s3.CopyTags(local.Filter.And.Tags),
 				}
-				s3.SortS3TagSet(rule.Filter.And.Tags)
+				if local.Filter.And.Tags != nil {
+					rule.Filter.And.Tags = s3.SortS3TagSet(s3.CopyTags(local.Filter.And.Tags))
+				}
 			}
 		}
 		rules[i] = rule
@@ -167,11 +170,9 @@ func (in *LifecycleConfigurationClient) Delete(ctx context.Context, bucket *v1be
 }
 
 func sortFilterTags(rules []awss3.LifecycleRule) {
-	if len(rules) != 0 {
-		for i := range rules {
-			if rules[i].Filter != nil && rules[i].Filter.And != nil {
-				s3.SortS3TagSet(rules[i].Filter.And.Tags)
-			}
+	for i := range rules {
+		if rules[i].Filter != nil && rules[i].Filter.And != nil {
+			rules[i].Filter.And.Tags = s3.SortS3TagSet(rules[i].Filter.And.Tags)
 		}
 	}
 }
