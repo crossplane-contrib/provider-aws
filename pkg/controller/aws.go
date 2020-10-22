@@ -43,6 +43,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elb"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elbattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/identity/iamaccesskey"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgrouppolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgroupusermembership"
@@ -76,6 +77,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		nodegroup.SetupNodeGroup,
 		s3.SetupBucket,
 		bucketpolicy.SetupBucketPolicy,
+		iamaccesskey.SetupIAMAccessKey,
 		iamuser.SetupIAMUser,
 		iamgroup.SetupIAMGroup,
 		iampolicy.SetupIAMPolicy,
