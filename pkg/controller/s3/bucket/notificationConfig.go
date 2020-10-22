@@ -239,7 +239,9 @@ func generateFilter(src *v1beta1.NotificationConfigurationFilter) *awss3.Notific
 
 // GenerateLambdaConfiguration creates []awss3.LambdaFunctionConfiguration from the local NotificationConfiguration
 func GenerateLambdaConfiguration(config *v1beta1.NotificationConfiguration) []awss3.LambdaFunctionConfiguration {
-	var configurations []awss3.LambdaFunctionConfiguration
+	// NOTE(muvaf): We skip prealloc because the behavior of AWS SDK differs when
+	// the array is 0 element vs nil.
+	var configurations []awss3.LambdaFunctionConfiguration // nolint:prealloc
 	for _, v := range config.LambdaFunctionConfigurations {
 		conf := awss3.LambdaFunctionConfiguration{
 			Filter:            nil,
@@ -259,7 +261,9 @@ func GenerateLambdaConfiguration(config *v1beta1.NotificationConfiguration) []aw
 
 // GenerateTopicConfigurations creates []awss3.TopicConfiguration from the local NotificationConfiguration
 func GenerateTopicConfigurations(config *v1beta1.NotificationConfiguration) []awss3.TopicConfiguration {
-	var configurations []awss3.TopicConfiguration
+	// NOTE(muvaf): We skip prealloc because the behavior of AWS SDK differs when
+	// the array is 0 element vs nil.
+	var configurations []awss3.TopicConfiguration // nolint:prealloc
 	for _, v := range config.TopicConfigurations {
 		conf := awss3.TopicConfiguration{
 			Id:       v.ID,
@@ -278,7 +282,9 @@ func GenerateTopicConfigurations(config *v1beta1.NotificationConfiguration) []aw
 
 // GenerateQueueConfigurations creates []awss3.QueueConfiguration from the local NotificationConfiguration
 func GenerateQueueConfigurations(config *v1beta1.NotificationConfiguration) []awss3.QueueConfiguration {
-	var configurations []awss3.QueueConfiguration
+	// NOTE(muvaf): We skip prealloc because the behavior of AWS SDK differs when
+	// the array is 0 element vs nil.
+	var configurations []awss3.QueueConfiguration // nolint:prealloc
 	for _, v := range config.QueueConfigurations {
 		conf := awss3.QueueConfiguration{
 			Id:       v.ID,
