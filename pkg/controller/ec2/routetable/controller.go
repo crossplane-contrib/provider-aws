@@ -53,7 +53,6 @@ const (
 	errAssociateSubnet    = "failed to associate subnet %v to the RouteTable resource"
 	errDisassociateSubnet = "failed to disassociate subnet %v from the RouteTable resource"
 	errSpecUpdate         = "cannot update spec of the RouteTable custom resource"
-	errStatusUpdate       = "cannot update status of the RouteTable custom resource"
 	errCreateTags         = "failed to create tags for the RouteTable resource"
 )
 
@@ -162,26 +161,16 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-	if err := e.kube.Status().Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
-	}
-
 	result, err := e.client.CreateRouteTableRequest(&awsec2.CreateRouteTableInput{
 		VpcId: cr.Spec.ForProvider.VPCID,
 	}).Send(ctx)
-
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
-
 	if result.RouteTable == nil {
 		return managed.ExternalCreation{}, errors.New(errCreate)
 	}
-
 	meta.SetExternalName(cr, aws.StringValue(result.RouteTable.RouteTableId))
-
 	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
 }
 
