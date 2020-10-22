@@ -7,6 +7,5 @@ spec:
     region: us-east-1
     certificateAuthorityARNRef:
       name: example
-  reclaimPolicy: Delete
   providerConfigRef:
     name: example

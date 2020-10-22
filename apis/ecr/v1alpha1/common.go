@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"fmt"
 	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -127,9 +126,6 @@ func DiffTags(spec []Tag, current []ecr.Tag) (addTags []ecr.Tag, remove []string
 		value := value
 		key := key
 		addTags = append(addTags, ecr.Tag{Key: &key, Value: &value})
-	}
-	if len(addTags) > len(add) {
-		fmt.Printf("what")
 	}
 	return
 }

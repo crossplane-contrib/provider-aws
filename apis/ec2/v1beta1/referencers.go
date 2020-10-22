@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
@@ -41,7 +42,7 @@ func SecurityGroupName() reference.ExtractValueFn {
 func (mg *InternetGateway) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.vpcID
+	// Resolve spec.forProvider.vpcId
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: aws.StringValue(mg.Spec.ForProvider.VPCID),
 		Reference:    mg.Spec.ForProvider.VPCIDRef,
@@ -50,7 +51,7 @@ func (mg *InternetGateway) ResolveReferences(ctx context.Context, c client.Reade
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.vpcId")
 	}
 	mg.Spec.ForProvider.VPCID = aws.String(rsp.ResolvedValue)
 	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference
@@ -98,7 +99,7 @@ func (mg *InternetGateway) ResolveReferences(ctx context.Context, c client.Reade
 func (mg *SecurityGroup) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.vpcID
+	// Resolve spec.forProvider.vpcId
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.VPCID),
 		Reference:    mg.Spec.ForProvider.VPCIDRef,
@@ -107,7 +108,7 @@ func (mg *SecurityGroup) ResolveReferences(ctx context.Context, c client.Reader)
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.vpcId")
 	}
 	mg.Spec.ForProvider.VPCID = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference
@@ -119,7 +120,7 @@ func (mg *SecurityGroup) ResolveReferences(ctx context.Context, c client.Reader)
 func (mg *Subnet) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.vpcID
+	// Resolve spec.forProvider.vpcId
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: aws.StringValue(mg.Spec.ForProvider.VPCID),
 		Reference:    mg.Spec.ForProvider.VPCIDRef,
@@ -128,7 +129,7 @@ func (mg *Subnet) ResolveReferences(ctx context.Context, c client.Reader) error 
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.vpcId")
 	}
 	mg.Spec.ForProvider.VPCID = aws.String(rsp.ResolvedValue)
 	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference

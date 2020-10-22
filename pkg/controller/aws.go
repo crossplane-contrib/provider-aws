@@ -24,10 +24,10 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/acm"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthority"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthoritypermission"
-	"github.com/crossplane/provider-aws/pkg/controller/applicationintegration/sqs"
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cluster"
+	"github.com/crossplane/provider-aws/pkg/controller/config"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dynamodb"
@@ -57,25 +57,25 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/route53/hostedzone"
 	"github.com/crossplane/provider-aws/pkg/controller/route53/resourcerecordset"
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
-	"github.com/crossplane/provider-aws/pkg/controller/s3/s3bucketpolicy"
+	"github.com/crossplane/provider-aws/pkg/controller/s3/bucketpolicy"
+	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
 )
 
 // Setup creates all AWS controllers with the supplied logger and adds them to
 // the supplied manager.
 func Setup(mgr ctrl.Manager, l logging.Logger) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger) error{
+		config.Setup,
 		cache.SetupReplicationGroup,
 		cachesubnetgroup.SetupCacheSubnetGroup,
 		cluster.SetupCacheCluster,
 		database.SetupRDSInstance,
 		eks.SetupCluster,
-		eks.SetupClusterSecret,
-		eks.SetupClusterTarget,
 		elb.SetupELB,
 		elbattachment.SetupELBAttachment,
 		nodegroup.SetupNodeGroup,
-		s3.SetupS3Bucket,
-		s3bucketpolicy.SetupS3BucketPolicy,
+		s3.SetupBucket,
+		bucketpolicy.SetupBucketPolicy,
 		iamuser.SetupIAMUser,
 		iamgroup.SetupIAMGroup,
 		iampolicy.SetupIAMPolicy,
@@ -99,7 +99,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		hostedzone.SetupHostedZone,
 		snstopic.SetupSNSTopic,
 		snssubscription.SetupSubscription,
-		sqs.SetupQueue,
+		queue.SetupQueue,
 		redshift.SetupCluster,
 		elasticip.SetupElasticIP,
 		repository.SetupRepository,

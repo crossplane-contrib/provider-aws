@@ -40,6 +40,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/v1alpha3"
@@ -67,44 +68,74 @@ const (
 
 // GetConfig constructs an *aws.Config that can be used to authenticate to AWS
 // API by the AWS clients.
-func GetConfig(ctx context.Context, kube client.Client, cr resource.Managed, region string) (*aws.Config, error) { // nolint:gocyclo
-	pc := &v1beta1.ProviderConfig{}
+func GetConfig(ctx context.Context, c client.Client, mg resource.Managed, region string) (*aws.Config, error) {
 	switch {
-	case cr.GetProviderConfigReference() != nil && cr.GetProviderConfigReference().Name != "":
-		nn := types.NamespacedName{Name: cr.GetProviderConfigReference().Name}
-		if err := kube.Get(ctx, nn, pc); resource.IgnoreNotFound(err) != nil {
-			return nil, errors.Wrap(err, "cannot get referenced ProviderConfig")
-		}
-	case cr.GetProviderReference() != nil && cr.GetProviderReference().Name != "":
-		nn := types.NamespacedName{Name: cr.GetProviderReference().Name}
-		p := &v1alpha3.Provider{}
-		if err := kube.Get(ctx, nn, p); err != nil {
-			return nil, errors.Wrap(err, "cannot get referenced Provider")
-		}
-		p.DeepCopyIntoPC(pc)
-		if region == "" {
-			region = p.Spec.Region
-		}
+	case mg.GetProviderConfigReference() != nil:
+		return UseProviderConfig(ctx, c, mg, region)
+	case mg.GetProviderReference() != nil:
+		return UseProvider(ctx, c, mg, region)
 	default:
 		return nil, errors.New("neither providerConfigRef nor providerRef is given")
 	}
+}
 
-	if aws.BoolValue(pc.Spec.UseServiceAccount) {
+// UseProviderConfig to produce a config that can be used to authenticate to AWS.
+func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed, region string) (*aws.Config, error) {
+	pc := &v1beta1.ProviderConfig{}
+	if err := c.Get(ctx, types.NamespacedName{Name: mg.GetProviderConfigReference().Name}, pc); err != nil {
+		return nil, errors.Wrap(err, "cannot get referenced Provider")
+	}
+
+	t := resource.NewProviderConfigUsageTracker(c, &v1beta1.ProviderConfigUsage{})
+	if err := t.Track(ctx, mg); err != nil {
+		return nil, errors.Wrap(err, "cannot track ProviderConfig usage")
+	}
+
+	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
+	case runtimev1alpha1.CredentialsSourceInjectedIdentity:
+		return UsePodServiceAccount(ctx, []byte{}, DefaultSection, region)
+	case runtimev1alpha1.CredentialsSourceSecret:
+		csr := pc.Spec.Credentials.SecretRef
+		if csr == nil {
+			return nil, errors.New("no credentials secret referenced")
+		}
+		s := &corev1.Secret{}
+		if err := c.Get(ctx, types.NamespacedName{Namespace: csr.Namespace, Name: csr.Name}, s); err != nil {
+			return nil, errors.Wrap(err, "cannot get credentials secret")
+		}
+		return UseProviderSecret(ctx, s.Data[csr.Key], DefaultSection, region)
+	default:
+		return nil, errors.Errorf("credentials source %s is not currently supported", s)
+	}
+}
+
+// UseProvider to produce a config that can be used to authenticate to AWS.
+// Deprecated: Use UseProviderConfig.
+func UseProvider(ctx context.Context, c client.Client, mg resource.Managed, region string) (*aws.Config, error) {
+	p := &v1alpha3.Provider{}
+	if err := c.Get(ctx, types.NamespacedName{Name: mg.GetProviderReference().Name}, p); err != nil {
+		return nil, errors.Wrap(err, "cannot get referenced Provider")
+	}
+
+	if region == "" {
+		region = p.Spec.Region
+	}
+
+	if aws.BoolValue(p.Spec.UseServiceAccount) {
 		return UsePodServiceAccount(ctx, []byte{}, DefaultSection, region)
 	}
 
-	if pc.Spec.CredentialsSecretRef == nil {
+	if p.Spec.CredentialsSecretRef == nil {
 		return nil, errors.New("provider does not have a secret reference")
 	}
 
+	csr := p.Spec.CredentialsSecretRef
 	secret := &corev1.Secret{}
-	nn := types.NamespacedName{Namespace: pc.Spec.CredentialsSecretRef.Namespace, Name: pc.Spec.CredentialsSecretRef.Name}
-	err := kube.Get(ctx, nn, secret)
-	if err != nil {
-		return nil, errors.Wrapf(err, "cannot get credentials secret %s", nn)
+	if err := c.Get(ctx, types.NamespacedName{Namespace: csr.Namespace, Name: csr.Name}, secret); err != nil {
+		return nil, errors.Wrap(err, "cannot get credentials secret")
 	}
 
-	return UseProviderSecret(ctx, secret.Data[pc.Spec.CredentialsSecretRef.Key], DefaultSection, region)
+	return UseProviderSecret(ctx, secret.Data[csr.Key], DefaultSection, region)
 }
 
 // CredentialsIDSecret retrieves AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY from the data which contains
@@ -246,6 +277,15 @@ func String(v string, o ...FieldOption) *string {
 // TODO(muvaf): is this really meaningful? why not implement it?
 func StringValue(v *string) string {
 	return aws.StringValue(v)
+}
+
+// Int64Value converts the supplied int64 pointer to a int64, returning
+// 0 if the pointer is nil.
+func Int64Value(v *int64) int64 {
+	if v != nil {
+		return *v
+	}
+	return 0
 }
 
 // LateInitializeStringPtr returns in if it's non-nil, otherwise returns from

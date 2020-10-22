@@ -1,0 +1,26 @@
+apiVersion: s3.aws.crossplane.io/v1alpha1
+kind: BucketPolicy
+metadata:
+  name: bucketpolicy-public
+spec:
+  forProvider:
+    region: us-west-2
+    bucketNameRef:
+      name: test-bucket
+    userNameRef:
+      name: someuser
+    statement:
+      - action:
+          - s3:ListBucket
+          - s3:GetBucketLocation
+          - s3:ListBucketMultipartUploads
+          - s3:PutBucketCORS
+        effect: Allow
+        effectIAMUser: true # this will extract the username from the bucket, format it and use it for the principal
+        principal:
+          allowAnon: true # this boolean flag makes the bucket public, this takes priority over the aws principal.
+        resource:
+          - test-bucket
+    version: '2012-10-17'
+  providerConfigRef:
+    name: example

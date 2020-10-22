@@ -23,4 +23,3 @@ spec:
     namespace: crossplane-system
   providerConfigRef:
     name: example
-  reclaimPolicy: Delete

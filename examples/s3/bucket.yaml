@@ -1,0 +1,22 @@
+apiVersion: s3.aws.crossplane.io/v1beta1
+kind: Bucket
+metadata:
+  name: test-bucket
+spec:
+  forProvider:
+    locationConstraint: us-west-2
+    acl: private
+    accelerateConfiguration:
+      status: Enabled
+    versioningConfiguration:
+      status: Enabled
+    tagging:
+      tagSet:
+        - key: key1
+          value: val1
+    serverSideEncryptionConfiguration:
+      rules:
+        - applyServerSideEncryptionByDefault:
+            sseAlgorithm: AES256
+  providerConfigRef:
+    name: example

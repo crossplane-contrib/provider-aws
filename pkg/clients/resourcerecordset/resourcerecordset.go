@@ -104,11 +104,10 @@ func GenerateChangeResourceRecordSetsInput(name string, p v1alpha1.ResourceRecor
 		Region:                  route53.ResourceRecordSetRegion(p.Region),
 		TrafficPolicyInstanceId: p.TrafficPolicyInstanceID,
 	}
-	r.ResourceRecords = make([]route53.ResourceRecord, len(p.ResourceRecords))
-	for i, v := range p.ResourceRecords {
-		r.ResourceRecords[i] = route53.ResourceRecord{
+	for _, v := range p.ResourceRecords {
+		r.ResourceRecords = append(r.ResourceRecords, route53.ResourceRecord{
 			Value: aws.String(v.Value),
-		}
+		})
 	}
 	if p.AliasTarget != nil {
 		r.AliasTarget = &route53.AliasTarget{
@@ -144,7 +143,9 @@ func IsUpToDate(p v1alpha1.ResourceRecordSetParameters, rrset route53.ResourceRe
 	if err != nil {
 		return false, err
 	}
-	return cmp.Equal(&v1alpha1.ResourceRecordSetParameters{}, patch, cmpopts.IgnoreTypes(&runtimev1alpha1.Reference{}, &runtimev1alpha1.Selector{})), nil
+	return cmp.Equal(&v1alpha1.ResourceRecordSetParameters{}, patch,
+		cmpopts.IgnoreTypes(&runtimev1alpha1.Reference{}, &runtimev1alpha1.Selector{}),
+		cmpopts.IgnoreFields(v1alpha1.ResourceRecordSetParameters{}, "Region")), nil
 }
 
 // LateInitialize fills the empty fields in *v1alpha1.ResourceRecordSetParameters with

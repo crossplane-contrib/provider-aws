@@ -7,5 +7,4 @@ metadata:
     crossplane.io/external-name: external-name
 spec:
   providerConfigRef:
-    name: aws-provider
-  reclaimPolicy: Delete
+    name: example

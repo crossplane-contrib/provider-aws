@@ -10,6 +10,5 @@ spec:
     imageScanningConfiguration:
       scanOnPush: true
     imageTagMutability: IMMUTABLE
-  reclaimPolicy: Delete
   providerConfigRef:
     name: example

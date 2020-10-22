@@ -19,8 +19,10 @@ package v1alpha1
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
@@ -29,7 +31,7 @@ import (
 func (mg *ResourceRecordSet) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.zoneID
+	// Resolve spec.forProvider.zoneId
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.ZoneID),
 		Reference:    mg.Spec.ForProvider.ZoneIDRef,
@@ -38,7 +40,7 @@ func (mg *ResourceRecordSet) ResolveReferences(ctx context.Context, c client.Rea
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.zoneId")
 	}
 	mg.Spec.ForProvider.ZoneID = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.ZoneIDRef = rsp.ResolvedReference
@@ -53,6 +55,7 @@ func (mg *HostedZone) ResolveReferences(ctx context.Context, c client.Reader) er
 	}
 	r := reference.NewAPIResolver(c, mg)
 
+	// Resolve spec.forProvider.vpc.vpcId
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.VPC.VPCID),
 		Reference:    mg.Spec.ForProvider.VPC.VPCIDRef,
@@ -61,7 +64,7 @@ func (mg *HostedZone) ResolveReferences(ctx context.Context, c client.Reader) er
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.vpc.vpcId")
 	}
 
 	mg.Spec.ForProvider.VPC.VPCID = reference.ToPtrValue(rsp.ResolvedValue)

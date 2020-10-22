@@ -23,9 +23,9 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
-	crossplaneapis "github.com/crossplane/crossplane/apis"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
 	"github.com/crossplane/provider-aws/apis"
 	"github.com/crossplane/provider-aws/pkg/controller"
@@ -56,7 +56,6 @@ func main() {
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{SyncPeriod: syncPeriod})
 	kingpin.FatalIfError(err, "Cannot create controller manager")
 
-	kingpin.FatalIfError(crossplaneapis.AddToScheme(mgr.GetScheme()), "Cannot add core Crossplane APIs to scheme")
 	kingpin.FatalIfError(apis.AddToScheme(mgr.GetScheme()), "Cannot add AWS APIs to scheme")
 	kingpin.FatalIfError(controller.Setup(mgr, log), "Cannot setup AWS controllers")
 	kingpin.FatalIfError(mgr.Start(ctrl.SetupSignalHandler()), "Cannot start controller manager")

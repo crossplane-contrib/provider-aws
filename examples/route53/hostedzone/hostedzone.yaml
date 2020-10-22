@@ -4,8 +4,7 @@ kind: HostedZone
 metadata:
   name: crossplane.io
 spec:
-  reclaimPolicy: Delete
   providerConfigRef:
-    name: aws-provider
+    name: example
   forProvider:
     name: crossplane.io

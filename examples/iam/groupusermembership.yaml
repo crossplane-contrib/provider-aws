@@ -9,5 +9,4 @@ spec:
     userNameRef:
       name: someuser
   providerConfigRef:
-    name: aws-provider
-  reclaimPolicy: Delete
+    name: example

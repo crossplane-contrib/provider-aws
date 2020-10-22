@@ -10,4 +10,3 @@ spec:
     instanceId: i-0c6df00f98699e3ca
   providerConfigRef:
     name: example
-  reclaimPolicy: Delete

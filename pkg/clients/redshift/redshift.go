@@ -145,8 +145,10 @@ func IsUpToDate(p v1alpha1.ClusterParameters, cl redshift.Cluster) (bool, error)
 	if err != nil {
 		return false, err
 	}
-	updated := cmp.Equal(&v1alpha1.ClusterParameters{}, patch, cmpopts.IgnoreTypes(&runtimev1alpha1.Reference{}, &runtimev1alpha1.Selector{}))
-	return (updated && found), nil
+	updated := cmp.Equal(&v1alpha1.ClusterParameters{}, patch,
+		cmpopts.IgnoreTypes(&runtimev1alpha1.Reference{}, &runtimev1alpha1.Selector{}),
+		cmpopts.IgnoreFields(v1alpha1.ClusterParameters{}, "Region"))
+	return updated && found, nil
 }
 
 // initializeModifyandDeleteParameters fills the four v1alpha1.ClusterParameters

@@ -19,6 +19,7 @@ package v1beta1
 import (
 	"context"
 
+	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
@@ -40,12 +41,12 @@ func (mg *ReplicationGroup) ResolveReferences(ctx context.Context, c client.Read
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.cacheSubnetGroupName")
 	}
 	mg.Spec.ForProvider.CacheSubnetGroupName = reference.ToPtrValue(resp.ResolvedValue)
 	mg.Spec.ForProvider.CacheSubnetGroupNameRef = resp.ResolvedReference
 
-	// Resolve spec.forProvider.securityGroupIDs
+	// Resolve spec.forProvider.securityGroupIds
 	mrsp, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
 		CurrentValues: mg.Spec.ForProvider.SecurityGroupIDs,
 		References:    mg.Spec.ForProvider.SecurityGroupIDRefs,
@@ -54,7 +55,7 @@ func (mg *ReplicationGroup) ResolveReferences(ctx context.Context, c client.Read
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.securityGroupIds")
 	}
 	mg.Spec.ForProvider.SecurityGroupIDs = mrsp.ResolvedValues
 	mg.Spec.ForProvider.SecurityGroupIDRefs = mrsp.ResolvedReferences
@@ -68,7 +69,7 @@ func (mg *ReplicationGroup) ResolveReferences(ctx context.Context, c client.Read
 		Extract:       v1beta1.SecurityGroupName(),
 	})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.cacheSecurityGroupNames")
 	}
 	mg.Spec.ForProvider.CacheSecurityGroupNames = mrsp.ResolvedValues
 	mg.Spec.ForProvider.CacheSecurityGroupNameRefs = mrsp.ResolvedReferences

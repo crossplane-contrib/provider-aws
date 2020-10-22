@@ -23,6 +23,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 
 	"github.com/crossplane/provider-aws/apis/database/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -221,7 +224,9 @@ func IsUpToDate(p v1alpha1.DynamoTableParameters, t dynamodb.TableDescription) (
 	if err != nil {
 		return false, err
 	}
-	return cmp.Equal(&v1alpha1.DynamoTableParameters{}, patch), nil
+	return cmp.Equal(&v1alpha1.DynamoTableParameters{}, patch,
+		cmpopts.IgnoreTypes(&runtimev1alpha1.Reference{}, &runtimev1alpha1.Selector{}, []runtimev1alpha1.Reference{}),
+		cmpopts.IgnoreFields(v1alpha1.DynamoTableParameters{}, "Region")), nil
 }
 
 // IsErrorNotFound helper function to test for ErrCodeTableNotFoundException error

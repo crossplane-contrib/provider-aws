@@ -40,15 +40,10 @@ GO111MODULE = on
 -include build/makelib/k8s_tools.mk
 
 # ====================================================================================
-# Setup Package
-
-PACKAGE=package
-export PACKAGE
-PACKAGE_REGISTRY=$(PACKAGE)/.registry
-PACKAGE_REGISTRY_SOURCE=config/package/manifests
+# Setup Images
 
 DOCKER_REGISTRY = crossplane
-IMAGES = provider-aws
+IMAGES = provider-aws provider-aws-controller
 -include build/makelib/image.mk
 
 # ====================================================================================
@@ -72,6 +67,14 @@ cobertura:
 		grep -v zz_generated.deepcopy | \
 		$(GOCOVER_COBERTURA) > $(GO_TEST_OUTPUT)/cobertura-coverage.xml
 
+crds.clean:
+	@$(INFO) cleaning generated CRDs
+	@find package/crds -name *.yaml -exec sed -i.sed -e '1,2d' {} \; || $(FAIL)
+	@find package/crds -name *.yaml.sed -delete || $(FAIL)
+	@$(OK) cleaned generated CRDs
+
+generate: crds.clean
+
 # Ensure a PR is ready for review.
 reviewable: generate lint
 	@go mod tidy
@@ -84,6 +87,15 @@ check-diff: reviewable
 
 manifests:
 	@$(WARN) Deprecated. Please run make generate instead.
+
+# integration tests
+e2e.run: test-integration
+
+# Run integration tests.
+test-integration: $(KIND) $(KUBECTL) $(HELM3)
+	@$(INFO) running integration tests using kind $(KIND_VERSION)
+	@$(ROOT_DIR)/cluster/local/integration_tests.sh || $(FAIL)
+	@$(OK) integration tests passed
 
 # Update the submodules, such as the common build scripts.
 submodules:
@@ -98,40 +110,7 @@ run: go.build
 	@# To see other arguments that can be provided, run the command with --help instead
 	$(GO_OUT_DIR)/provider --debug
 
-# ====================================================================================
-# Package related targets
-
-# Initialize the package folder
-$(PACKAGE_REGISTRY):
-	@mkdir -p $(PACKAGE_REGISTRY)/resources
-	@touch $(PACKAGE_REGISTRY)/app.yaml $(PACKAGE_REGISTRY)/install.yaml
-
-build.artifacts: build-package
-
-CRD_DIR=config/crd
-build-package: $(PACKAGE_REGISTRY)
-# Copy CRDs over
-#
-# The reason this looks complicated is because it is
-# preserving the original crd filenames and changing
-# *.yaml to *.crd.yaml.
-#
-# An alternate and simpler-looking approach would
-# be to cat all of the files into a single crd.yaml,
-# but then we couldn't use per CRD metadata files.
-	@$(INFO) building package in $(PACKAGE)
-	@find $(CRD_DIR) -type f -name '*.yaml' | \
-		while read filename ; do cat $$filename > \
-		$(PACKAGE_REGISTRY)/resources/$$( basename $${filename/.yaml/.crd.yaml} ) \
-		; done
-	@cp -r $(PACKAGE_REGISTRY_SOURCE)/* $(PACKAGE_REGISTRY)
-
-clean: clean-package
-
-clean-package:
-	@rm -rf $(PACKAGE)
-
-.PHONY: cobertura reviewable manifests submodules fallthrough run clean-package build-package
+.PHONY: cobertura reviewable manifests submodules fallthrough test-integration run crds.clean
 
 # ====================================================================================
 # Special Targets
@@ -142,8 +121,6 @@ Crossplane Targets:
     reviewable            Ensure a PR is ready for review.
     submodules            Update the submodules, such as the common build scripts.
     run                   Run crossplane locally, out-of-cluster. Useful for development.
-    build-package         Builds the package contents in the package directory (./$(PACKAGE))
-    clean-package         Cleans out the generated package directory (./$(PACKAGE))
 
 endef
 # The reason CROSSPLANE_MAKE_HELP is used instead of CROSSPLANE_HELP is because the crossplane

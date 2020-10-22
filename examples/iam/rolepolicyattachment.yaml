@@ -12,4 +12,3 @@ spec:
       name: somerole
   providerConfigRef:
     name: example
-  reclaimPolicy: Delete

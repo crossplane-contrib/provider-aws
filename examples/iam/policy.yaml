@@ -20,4 +20,3 @@ spec:
       }
   providerConfigRef:
     name: example
-  reclaimPolicy: Delete

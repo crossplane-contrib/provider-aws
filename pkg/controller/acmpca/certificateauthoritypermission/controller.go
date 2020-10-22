@@ -102,7 +102,8 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 	cr.SetConditions(runtimev1alpha1.Available())
 	return managed.ExternalObservation{
-		ResourceExists: true,
+		ResourceExists:   true,
+		ResourceUpToDate: true,
 	}, nil
 }
 

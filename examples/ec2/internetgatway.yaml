@@ -7,6 +7,5 @@ spec:
     region: us-east-1
     vpcIdRef:
       name: sample-vpc
-  reclaimPolicy: Delete
   providerConfigRef:
     name: example

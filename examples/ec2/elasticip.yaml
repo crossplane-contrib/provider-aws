@@ -6,6 +6,5 @@ spec:
   forProvider:
     region: us-east-1
     domain: "vpc"
-  reclaimPolicy: Delete
   providerConfigRef:
     name: example

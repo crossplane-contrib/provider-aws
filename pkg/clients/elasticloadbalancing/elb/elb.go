@@ -25,9 +25,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/elasticloadbalancingiface"
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+
+	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 
 	"github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
 	clients "github.com/crossplane/provider-aws/pkg/clients"
@@ -171,25 +172,24 @@ func IsUpToDate(p v1alpha1.ELBParameters, elb elb.LoadBalancerDescription, elbTa
 	if err != nil {
 		return false, err
 	}
-	return cmp.Equal(&v1alpha1.ELBParameters{}, patch, cmpopts.IgnoreTypes([]corev1alpha1.Reference{}, []corev1alpha1.Selector{})), nil
+	return cmp.Equal(&v1alpha1.ELBParameters{}, patch,
+		cmpopts.IgnoreTypes([]corev1alpha1.Reference{}, []corev1alpha1.Selector{}),
+		cmpopts.IgnoreFields(v1alpha1.ELBParameters{}, "Region")), nil
 }
 
 // BuildELBListeners builds a list of elb.Listener from given list of v1alpha1.Listener.
-func BuildELBListeners(listeners []v1alpha1.Listener) []elb.Listener {
-	if len(listeners) > 0 {
-		elbListeners := []elb.Listener{}
-		for _, v := range listeners {
-			elbListeners = append(elbListeners, elb.Listener{
-				InstancePort:     &v.InstancePort,
-				InstanceProtocol: v.InstanceProtocol,
-				LoadBalancerPort: &v.LoadBalancerPort,
-				Protocol:         &v.Protocol,
-				SSLCertificateId: v.SSLCertificateID,
-			})
+func BuildELBListeners(l []v1alpha1.Listener) []elb.Listener {
+	out := make([]elb.Listener, len(l))
+	for i := range l {
+		out[i] = elb.Listener{
+			InstancePort:     &l[i].InstancePort,
+			InstanceProtocol: l[i].InstanceProtocol,
+			LoadBalancerPort: &l[i].LoadBalancerPort,
+			Protocol:         &l[i].Protocol,
+			SSLCertificateId: l[i].SSLCertificateID,
 		}
-		return elbListeners
 	}
-	return nil
+	return out
 }
 
 // BuildELBTags generates a list of elb.Tag from given list of v1alpha1.Tag

@@ -19,15 +19,17 @@ package v1alpha1
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/crossplane/crossplane-runtime/pkg/reference"
 )
 
 // ResolveReferences for SNS Subscription managed type
 func (mg *SNSSubscription) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.TopicARN
+	// Resolve spec.forProvider.topicArn
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: mg.Spec.ForProvider.TopicARN,
 		Reference:    mg.Spec.ForProvider.TopicARNRef,
@@ -37,7 +39,7 @@ func (mg *SNSSubscription) ResolveReferences(ctx context.Context, c client.Reade
 	})
 
 	if err != nil {
-		return err
+		return errors.Wrap(err, "spec.forProvider.topicArn")
 	}
 	mg.Spec.ForProvider.TopicARN = rsp.ResolvedValue
 	mg.Spec.ForProvider.TopicARNRef = rsp.ResolvedReference
