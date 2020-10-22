@@ -80,8 +80,7 @@ func GenerateTagging(config *v1beta1.Tagging) *awss3.Tagging {
 	if config == nil || config.TagSet == nil {
 		return &awss3.Tagging{TagSet: make([]awss3.Tag, 0)}
 	}
-	conf := &awss3.Tagging{TagSet: nil}
-	conf.TagSet = s3.CopyTags(config.TagSet)
+	conf := &awss3.Tagging{TagSet: s3.CopyTags(config.TagSet)}
 	return conf
 }
 

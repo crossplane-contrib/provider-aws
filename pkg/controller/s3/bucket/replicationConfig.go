@@ -147,12 +147,13 @@ func createRule(input v1beta1.ReplicationRule) awss3.ReplicationRule {
 		if Rule.Filter.And != nil {
 			newRule.Filter.And = &awss3.ReplicationRuleAndOperator{
 				Prefix: Rule.Filter.And.Prefix,
-				Tags:   s3.CopyTags(Rule.Filter.And.Tags),
 			}
-			s3.SortS3TagSet(newRule.Filter.And.Tags)
+			if Rule.Filter.And.Tags != nil {
+				newRule.Filter.And.Tags = s3.SortS3TagSet(s3.CopyTags(Rule.Filter.And.Tags))
+			}
 		}
 		if Rule.Filter.Tag != nil {
-			newRule.Filter.Tag = s3.CopyTag(Rule.Filter.Tag)
+			newRule.Filter.Tag = &awss3.Tag{Key: aws.String(Rule.Filter.Tag.Key), Value: aws.String(Rule.Filter.Tag.Value)}
 		}
 	}
 	if Rule.SourceSelectionCriteria != nil {
@@ -218,11 +219,9 @@ func (in *ReplicationConfigurationClient) Delete(ctx context.Context, bucket *v1
 }
 
 func sortReplicationRules(rules []awss3.ReplicationRule) {
-	if len(rules) != 0 {
-		for i := range rules {
-			if rules[i].Filter != nil && rules[i].Filter.And != nil {
-				s3.SortS3TagSet(rules[i].Filter.And.Tags)
-			}
+	for i := range rules {
+		if rules[i].Filter != nil && rules[i].Filter.And != nil {
+			rules[i].Filter.And.Tags = s3.SortS3TagSet(rules[i].Filter.And.Tags)
 		}
 	}
 }
