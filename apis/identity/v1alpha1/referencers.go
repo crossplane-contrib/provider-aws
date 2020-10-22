@@ -1,9 +1,12 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2020 The Crossplane Authors.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
+
     http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -135,6 +138,27 @@ func (mg *IAMGroupPolicyAttachment) ResolveReferences(ctx context.Context, c cli
 	}
 	mg.Spec.ForProvider.PolicyARN = policy.ResolvedValue
 	mg.Spec.ForProvider.PolicyARNRef = policy.ResolvedReference
+
+	return nil
+}
+
+// ResolveReferences of this IAMAccessKey
+func (mg *IAMAccessKey) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.forProvider.userName
+	user, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: mg.Spec.ForProvider.IAMUsername,
+		Reference:    mg.Spec.ForProvider.IAMUsernameRef,
+		Selector:     mg.Spec.ForProvider.IAMUsernameSelector,
+		To:           reference.To{Managed: &IAMUser{}, List: &IAMUserList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.userName")
+	}
+	mg.Spec.ForProvider.IAMUsername = user.ResolvedValue
+	mg.Spec.ForProvider.IAMUsernameRef = user.ResolvedReference
 
 	return nil
 }
