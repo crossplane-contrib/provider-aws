@@ -16,6 +16,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
+	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awscommon "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -35,13 +36,13 @@ const (
 
 // SetupNatGateway adds a controller that reconciles NatGateways.
 func SetupNatGateway(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1beta1.NATGatewayGroupKind)
+	name := managed.ControllerName(v1alpha1.NATGatewayGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1beta1.NATGateway{}).
+		For(&v1alpha1.NATGateway{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1beta1.NATGatewayGroupVersionKind),
+			resource.ManagedKind(v1alpha1.NATGatewayGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewNatGatewayClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
@@ -56,7 +57,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1beta1.NATGateway)
+	cr, ok := mg.(*v1alpha1.NATGateway)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -73,7 +74,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1beta1.NATGateway)
+	cr, ok := mgd.(*v1alpha1.NATGateway)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -101,15 +102,15 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	cr.Status.AtProvider = ec2.GenerateNATGatewayObservation(observed)
 
 	switch cr.Status.AtProvider.State {
-	case v1beta1.NatGatewayStatusPending:
+	case v1alpha1.NatGatewayStatusPending:
 		cr.SetConditions(runtimev1alpha1.Unavailable())
-	case v1beta1.NatGatewayStatusFailed:
+	case v1alpha1.NatGatewayStatusFailed:
 		cr.SetConditions(runtimev1alpha1.Unavailable().WithMessage(aws.StringValue(observed.FailureMessage)))
-	case v1beta1.NatGatewayStatusAvailable:
+	case v1alpha1.NatGatewayStatusAvailable:
 		cr.SetConditions(runtimev1alpha1.Available())
-	case v1beta1.NatGatewayStatusDeleting:
+	case v1alpha1.NatGatewayStatusDeleting:
 		cr.SetConditions(runtimev1alpha1.Deleting())
-	case v1beta1.NatGatewayStatusDeleted:
+	case v1alpha1.NatGatewayStatusDeleted:
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
@@ -122,7 +123,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1beta1.NATGateway)
+	cr, ok := mgd.(*v1alpha1.NATGateway)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -152,7 +153,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1beta1.NATGateway)
+	cr, ok := mgd.(*v1alpha1.NATGateway)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -192,14 +193,14 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.NATGateway)
+	cr, ok := mgd.(*v1alpha1.NATGateway)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
 
 	cr.Status.SetConditions(runtimev1alpha1.Deleting())
-	if cr.Status.AtProvider.State == v1beta1.NatGatewayStatusDeleted ||
-		cr.Status.AtProvider.State == v1beta1.NatGatewayStatusDeleting {
+	if cr.Status.AtProvider.State == v1alpha1.NatGatewayStatusDeleted ||
+		cr.Status.AtProvider.State == v1alpha1.NatGatewayStatusDeleting {
 		return nil
 	}
 

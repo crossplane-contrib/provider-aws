@@ -72,18 +72,9 @@ var (
 	InternetGatewayGroupVersionKind = SchemeGroupVersion.WithKind(InternetGatewayKind)
 )
 
-// NatGateway type metadata.
-var (
-	NATGatewayKind             = reflect.TypeOf(NATGateway{}).Name()
-	NATGatewayGroupKind        = schema.GroupKind{Group: Group, Kind: NATGatewayKind}.String()
-	NATGatewayKindAPIVersion   = NATGatewayKind + "." + SchemeGroupVersion.String()
-	NATGatewayGroupVersionKind = SchemeGroupVersion.WithKind(NATGatewayKind)
-)
-
 func init() {
 	SchemeBuilder.Register(&VPC{}, &VPCList{})
 	SchemeBuilder.Register(&Subnet{}, &SubnetList{})
 	SchemeBuilder.Register(&SecurityGroup{}, &SecurityGroupList{})
 	SchemeBuilder.Register(&InternetGateway{}, &InternetGatewayList{})
-	SchemeBuilder.Register(&NATGateway{}, &NATGatewayList{})
 }

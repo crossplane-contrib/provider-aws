@@ -58,41 +58,41 @@ func (mg *InternetGateway) ResolveReferences(ctx context.Context, c client.Reade
 	return nil
 }
 
-// ResolveReferences of this NatGateway
-func (mg *NATGateway) ResolveReferences(ctx context.Context, c client.Reader) error {
-	r := reference.NewAPIResolver(c, mg)
+// TODO: Enable references once both ElasticIP and NATGateway are in v1beta1
+// // ResolveReferences of this NatGateway
+// func (mg *NATGateway) ResolveReferences(ctx context.Context, c client.Reader) error {
+// 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.subnetId
-	subnetIDResponse, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: aws.StringValue(mg.Spec.ForProvider.SubnetID),
-		Reference:    mg.Spec.ForProvider.SubnetIDRef,
-		Selector:     mg.Spec.ForProvider.SubnetIDSelector,
-		To:           reference.To{Managed: &Subnet{}, List: &SubnetList{}},
-		Extract:      reference.ExternalName(),
-	})
-	if err != nil {
-		return err
-	}
-	mg.Spec.ForProvider.SubnetID = aws.String(subnetIDResponse.ResolvedValue)
-	mg.Spec.ForProvider.SubnetIDRef = subnetIDResponse.ResolvedReference
+// 	// Resolve spec.subnetId
+// 	subnetIDResponse, err := r.Resolve(ctx, reference.ResolutionRequest{
+// 		CurrentValue: aws.StringValue(mg.Spec.ForProvider.SubnetID),
+// 		Reference:    mg.Spec.ForProvider.SubnetIDRef,
+// 		Selector:     mg.Spec.ForProvider.SubnetIDSelector,
+// 		To:           reference.To{Managed: &Subnet{}, List: &SubnetList{}},
+// 		Extract:      reference.ExternalName(),
+// 	})
+// 	if err != nil {
+// 		return err
+// 	}
+// 	mg.Spec.ForProvider.SubnetID = aws.String(subnetIDResponse.ResolvedValue)
+// 	mg.Spec.ForProvider.SubnetIDRef = subnetIDResponse.ResolvedReference
 
-	// TODO: Enable this once ElasticIP is in v1beta1
-	// // Resolve spec.elasticIp
-	// AllocationIDRespone, err := r.Resolve(ctx, reference.ResolutionRequest{
-	// 	CurrentValue: aws.StringValue(mg.Spec.ForProvider.AllocationID),
-	// 	Reference:    mg.Spec.ForProvider.AllocationIDRef,
-	// 	Selector:     mg.Spec.ForProvider.AllocationIDSelector,
-	// 	To:           reference.To{Managed: &ElasticIP{}, List: &ElasticIPList{}},
-	// 	Extract:      reference.ExternalName(),
-	// })
-	// if err != nil {
-	// 	return err
-	// }
-	// mg.Spec.ForProvider.AllocationID = aws.String(AllocationIDRespone.ResolvedValue)
-	// mg.Spec.ForProvider.AllocationIDRef = AllocationIDRespone.ResolvedReference
+// 	// // Resolve spec.elasticIp
+// 	// AllocationIDRespone, err := r.Resolve(ctx, reference.ResolutionRequest{
+// 	// 	CurrentValue: aws.StringValue(mg.Spec.ForProvider.AllocationID),
+// 	// 	Reference:    mg.Spec.ForProvider.AllocationIDRef,
+// 	// 	Selector:     mg.Spec.ForProvider.AllocationIDSelector,
+// 	// 	To:           reference.To{Managed: &ElasticIP{}, List: &ElasticIPList{}},
+// 	// 	Extract:      reference.ExternalName(),
+// 	// })
+// 	// if err != nil {
+// 	// 	return err
+// 	// }
+// 	// mg.Spec.ForProvider.AllocationID = aws.String(AllocationIDRespone.ResolvedValue)
+// 	// mg.Spec.ForProvider.AllocationIDRef = AllocationIDRespone.ResolvedReference
 
-	return nil
-}
+// 	return nil
+// }
 
 // ResolveReferences of this SecurityGroup
 func (mg *SecurityGroup) ResolveReferences(ctx context.Context, c client.Reader) error {

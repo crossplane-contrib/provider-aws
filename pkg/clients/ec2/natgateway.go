@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -43,17 +43,17 @@ func IsNatGatewayNotFoundErr(err error) bool {
 
 // GenerateNATGatewayObservation is used to produce v1beta1.NatGatewayObservation from
 // ec2.NatGateway.
-func GenerateNATGatewayObservation(nat ec2.NatGateway) v1beta1.NATGatewayObservation {
-	addresses := make([]v1beta1.NATGatewayAddress, len(nat.NatGatewayAddresses))
+func GenerateNATGatewayObservation(nat ec2.NatGateway) v1alpha1.NATGatewayObservation {
+	addresses := make([]v1alpha1.NATGatewayAddress, len(nat.NatGatewayAddresses))
 	for k, a := range nat.NatGatewayAddresses {
-		addresses[k] = v1beta1.NATGatewayAddress{
+		addresses[k] = v1alpha1.NATGatewayAddress{
 			AllocationID:       aws.StringValue(a.AllocationId),
 			NetworkInterfaceID: aws.StringValue(a.NetworkInterfaceId),
 			PrivateIP:          aws.StringValue(a.PrivateIp),
 			PublicIP:           aws.StringValue(a.PublicIp),
 		}
 	}
-	observation := v1beta1.NATGatewayObservation{
+	observation := v1alpha1.NATGatewayObservation{
 		CreateTime:          &metav1.Time{Time: *nat.CreateTime},
 		NatGatewayAddresses: addresses,
 		NatGatewayID:        aws.StringValue(nat.NatGatewayId),
