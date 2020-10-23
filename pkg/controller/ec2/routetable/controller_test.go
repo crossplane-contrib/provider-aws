@@ -206,8 +206,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: rt(withSpec(v1alpha4.RouteTableParameters{
 					VPCID: aws.String(vpcID),
-				}), withExternalName(rtID),
-					withConditions(runtimev1alpha1.Creating())),
+				}), withExternalName(rtID)),
 			},
 		},
 		"EmptyResult": {
@@ -230,7 +229,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: rt(withSpec(v1alpha4.RouteTableParameters{
 					VPCID: aws.String(vpcID),
-				}), withExternalName(rtID), withConditions(runtimev1alpha1.Creating())),
+				}), withExternalName(rtID)),
 				err: errors.New(errCreate),
 			},
 		},
@@ -254,7 +253,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: rt(withSpec(v1alpha4.RouteTableParameters{
 					VPCID: aws.String(vpcID),
-				}), withConditions(runtimev1alpha1.Creating())),
+				})),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
