@@ -4,11 +4,9 @@ metadata:
   name: bucketpolicy-public
 spec:
   forProvider:
-    region: us-west-2
+    region: us-west-1
     bucketNameRef:
-      name: test-bucket
-    userNameRef:
-      name: someuser
+      name: test-bucket-rh-krish
     statement:
       - action:
           - s3:ListBucket
@@ -16,11 +14,19 @@ spec:
           - s3:ListBucketMultipartUploads
           - s3:PutBucketCORS
         effect: Allow
-        effectIAMUser: true # this will extract the username from the bucket, format it and use it for the principal
         principal:
-          allowAnon: true # this boolean flag makes the bucket public, this takes priority over the aws principal.
+          aws:
+            - IAMUserArnSelector:
+                example: "true"
         resource:
-          - test-bucket
+          - "arn:aws:s3:::test-bucket-rh-krish"
+        condition:
+          IpAddress:
+            key: "aws:SourceIp"
+            stringValue: "192.0.2.0/24"
+          NotIpAddress:
+            key: "aws:SourceIp"
+            stringValue: "192.0.2.188/32"
     version: '2012-10-17'
   providerConfigRef:
     name: example

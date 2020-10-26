@@ -79,8 +79,6 @@ func bucketPolicy(m ...bucketPolicyModifier) *v1alpha1.BucketPolicy {
 		Spec: v1alpha1.BucketPolicySpec{
 			PolicyBody: v1alpha1.BucketPolicyParameters{
 				BucketName:      &bucketName,
-				PolicyVersion:   "",
-				PolicyID:        "",
 				PolicyStatement: make([]v1alpha1.BucketPolicyStatement, 0),
 			},
 		},

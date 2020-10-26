@@ -1,7 +1,7 @@
 apiVersion: s3.aws.crossplane.io/v1beta1
 kind: Bucket
 metadata:
-  name: test-bucket
+  name: test-bucket-rh-krish
 spec:
   deletionPolicy: Delete
   forProvider:

@@ -24,7 +24,6 @@ import (
 
 // BucketPolicyParameters define the desired state of an AWS BucketPolicy.
 type BucketPolicyParameters struct {
-
 	// Region is where the Bucket referenced by this BucketPolicy resides.
 	Region string `json:"region"`
 
@@ -100,6 +99,8 @@ type BucketPolicyStatement struct {
 
 // BucketPrincipal defines the principal users affected by
 // the BucketPolicyStatement
+// Please see the AWS S3 docs for more information
+// https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html
 type BucketPrincipal struct {
 	// This flag indicates if the policy should be made available
 	// to all anonymous users.
@@ -192,7 +193,6 @@ type BucketPolicyStatus struct {
 
 // An BucketPolicy is a managed resource that represents an AWS Bucket
 // policy.
-// +kubebuilder:printcolumn:name="USERNAME",type="string",JSONPath=".spec.forProvider.userName"
 // +kubebuilder:printcolumn:name="BUCKETNAME",type="string",JSONPath=".spec.forProvider.bucketName"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
