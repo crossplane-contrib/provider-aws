@@ -19,7 +19,6 @@ package bucketpolicy
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
@@ -120,18 +119,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 // formatBucketPolicy parses and formats the bucket.Spec.BucketPolicy struct
 func (e *external) formatBucketPolicy(original *v1alpha1.BucketPolicy) (*string, error) {
 	c := original.DeepCopy()
-	statements := c.Spec.PolicyBody.PolicyStatement
-	newStatements := make([]v1alpha1.BucketPolicyStatement, 0)
-	for _, statement := range statements {
-		updatedPaths := make([]string, 0)
-		for _, v := range statement.ResourcePath {
-			formatted := fmt.Sprintf("arn:aws:s3:::%s", v)
-			updatedPaths = append(updatedPaths, formatted)
-		}
-		statement.ResourcePath = updatedPaths
-		newStatements = append(newStatements, statement)
-	}
-	c.Spec.PolicyBody.PolicyStatement = newStatements
 	body, err := s3.Serialize(c.Spec.PolicyBody)
 	if err != nil {
 		return nil, err

@@ -19,9 +19,6 @@ spec:
   scope: Cluster
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.forProvider.userName
-      name: USERNAME
-      type: string
     - jsonPath: .spec.forProvider.bucketName
       name: BUCKETNAME
       type: string

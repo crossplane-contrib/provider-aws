@@ -132,9 +132,9 @@ func SerializeBucketPrincipal(p *v1alpha1.BucketPrincipal) (interface{}, error) 
 	if len(p.AWSPrincipals) == 1 {
 		m["AWS"] = aws.StringValue(SerializeAWSPrincipal(p.AWSPrincipals[0]))
 	} else if len(p.AWSPrincipals) > 1 {
-		values := make([]string, len(p.AWSPrincipals))
+		values := make([]interface{}, len(p.AWSPrincipals))
 		for i := range p.AWSPrincipals {
-			values[i] = aws.StringValue(SerializeAWSPrincipal(p.AWSPrincipals[0]))
+			values[i] = aws.StringValue(SerializeAWSPrincipal(p.AWSPrincipals[i]))
 		}
 		m["AWS"] = values
 	}
