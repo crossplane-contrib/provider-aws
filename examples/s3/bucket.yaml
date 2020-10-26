@@ -22,5 +22,18 @@ spec:
       rules:
         - applyServerSideEncryptionByDefault:
             sseAlgorithm: AES256
+    corsConfiguration:
+      corsRules:
+        - allowedMethods:
+            - "GET"
+          allowedOrigins:
+            - "ola"
+    lifecycleConfiguration:
+      rules:
+        - status: Enabled
+          filter:
+            prefix: "ola/"
+          expiration:
+            days: 15
   providerConfigRef:
     name: example

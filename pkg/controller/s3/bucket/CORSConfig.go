@@ -19,6 +19,8 @@ package bucket
 import (
 	"context"
 
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/google/go-cmp/cmp"
@@ -52,27 +54,23 @@ func NewCORSConfigurationClient(client s3.BucketClient) *CORSConfigurationClient
 }
 
 // CompareCORS compares the external and internal representations for the list of CORSRules
-func CompareCORS(local *v1beta1.CORSConfiguration, external []awss3.CORSRule) ResourceStatus { // nolint:gocyclo
+func CompareCORS(local []v1beta1.CORSRule, external []awss3.CORSRule) ResourceStatus { // nolint:gocyclo
 	switch {
-	case local == nil && external != nil:
+	case len(local) == 0 && len(external) != 0:
 		return NeedsDeletion
-	case local == nil && len(external) == 0:
+	case len(local) == 0 && len(external) == 0:
 		return Updated
-	case local == nil:
-		return NeedsUpdate
-	case external == nil:
-		return NeedsUpdate
-	case len(local.CORSRules) != len(external):
+	case len(local) != len(external):
 		return NeedsUpdate
 	}
 
-	for i := range local.CORSRules {
+	for i := range local {
 		outputRule := external[i]
-		if !(cmp.Equal(local.CORSRules[i].AllowedHeaders, outputRule.AllowedHeaders) &&
-			cmp.Equal(local.CORSRules[i].AllowedMethods, outputRule.AllowedMethods) &&
-			cmp.Equal(local.CORSRules[i].AllowedOrigins, outputRule.AllowedOrigins) &&
-			cmp.Equal(local.CORSRules[i].ExposeHeaders, outputRule.ExposeHeaders) &&
-			cmp.Equal(local.CORSRules[i].MaxAgeSeconds, outputRule.MaxAgeSeconds)) {
+		if !(cmp.Equal(local[i].AllowedHeaders, outputRule.AllowedHeaders) &&
+			cmp.Equal(local[i].AllowedMethods, outputRule.AllowedMethods) &&
+			cmp.Equal(local[i].AllowedOrigins, outputRule.AllowedOrigins) &&
+			cmp.Equal(local[i].ExposeHeaders, outputRule.ExposeHeaders) &&
+			cmp.Equal(local[i].MaxAgeSeconds, outputRule.MaxAgeSeconds)) {
 			return NeedsUpdate
 		}
 	}
@@ -82,15 +80,19 @@ func CompareCORS(local *v1beta1.CORSConfiguration, external []awss3.CORSRule) Re
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *CORSConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetBucketCorsRequest(&awss3.GetBucketCorsInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
-	config := bucket.Spec.ForProvider.CORSConfiguration
-	if err != nil && s3.CORSConfigurationNotFound(err) && config == nil {
-		return Updated, nil
-	} else if err != nil {
+	result, err := in.client.GetBucketCorsRequest(&awss3.GetBucketCorsInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	if resource.Ignore(s3.CORSConfigurationNotFound, err) != nil {
 		return NeedsUpdate, errors.Wrap(err, corsGetFailed)
 	}
-
-	return CompareCORS(config, external.CORSRules), nil
+	var local []v1beta1.CORSRule
+	if bucket.Spec.ForProvider.CORSConfiguration != nil {
+		local = bucket.Spec.ForProvider.CORSConfiguration.CORSRules
+	}
+	var external []awss3.CORSRule
+	if result != nil {
+		external = result.CORSRules
+	}
+	return CompareCORS(local, external), nil
 }
 
 // GeneratePutBucketCorsInput creates the input for the PutBucketCors request for the S3 Client
