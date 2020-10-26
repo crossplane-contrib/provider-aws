@@ -21,10 +21,9 @@ import (
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
@@ -69,7 +68,7 @@ func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 		return Updated, nil
 	case config == nil && len(external.TagSet) != 0:
 		return NeedsDeletion, nil
-	case cmp.Equal(external.TagSet, GenerateTagging(config).TagSet):
+	case cmp.Equal(s3.SortS3TagSet(external.TagSet), s3.SortS3TagSet(GenerateTagging(config).TagSet)):
 		return Updated, nil
 	default:
 		return NeedsUpdate, nil
@@ -81,13 +80,7 @@ func GenerateTagging(config *v1beta1.Tagging) *awss3.Tagging {
 	if config == nil || config.TagSet == nil {
 		return &awss3.Tagging{TagSet: make([]awss3.Tag, 0)}
 	}
-	conf := &awss3.Tagging{TagSet: make([]awss3.Tag, len(config.TagSet))}
-	for i, v := range config.TagSet {
-		conf.TagSet[i] = awss3.Tag{
-			Key:   aws.String(v.Key),
-			Value: aws.String(v.Value),
-		}
-	}
+	conf := &awss3.Tagging{TagSet: s3.CopyTags(config.TagSet)}
 	return conf
 }
 

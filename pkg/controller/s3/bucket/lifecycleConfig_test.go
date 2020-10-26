@@ -42,20 +42,11 @@ var (
 	awsDate     = time.Date(2020, time.September, 25, 11, 40, 0, 0, location)
 	marker      = false
 	prefix      = "test-"
-	tag         = v1beta1.Tag{
-		Key:   "test",
-		Value: "value",
-	}
-	tags   = []v1beta1.Tag{tag}
-	awsTag = s3.Tag{
-		Key:   aws.String("test"),
-		Value: aws.String("value"),
-	}
-	_       SubresourceClient = &LifecycleConfigurationClient{}
-	awsTags                   = []s3.Tag{awsTag}
-	id                        = "test-id"
-	storage                   = "ONEZONE_IA"
+	id          = "test-id"
+	storage     = "ONEZONE_IA"
 )
+
+var _ SubresourceClient = &LifecycleConfigurationClient{}
 
 func generateLifecycleConfig() *v1beta1.BucketLifecycleConfiguration {
 	return &v1beta1.BucketLifecycleConfiguration{
@@ -92,8 +83,8 @@ func generateLifecycleConfig() *v1beta1.BucketLifecycleConfiguration {
 	}
 }
 
-func generateAWSLifecycle() *s3.BucketLifecycleConfiguration {
-	return &s3.BucketLifecycleConfiguration{
+func generateAWSLifecycle(sortTag bool) *s3.BucketLifecycleConfiguration {
+	conf := &s3.BucketLifecycleConfiguration{
 		Rules: []s3.LifecycleRule{
 			{
 				AbortIncompleteMultipartUpload: &s3.AbortIncompleteMultipartUpload{DaysAfterInitiation: aws.Int64(1)},
@@ -125,6 +116,10 @@ func generateAWSLifecycle() *s3.BucketLifecycleConfiguration {
 			},
 		},
 	}
+	if sortTag {
+		sortFilterTags(conf.Rules)
+	}
+	return conf
 }
 
 func TestGenerateLifecycleConfiguration(t *testing.T) {
@@ -145,7 +140,7 @@ func TestGenerateLifecycleConfiguration(t *testing.T) {
 				b: s3Testing.Bucket(s3Testing.WithLifecycleConfig(generateLifecycleConfig())),
 			},
 			want: want{
-				input: generateAWSLifecycle().Rules,
+				input: generateAWSLifecycle(true).Rules,
 			},
 		},
 	}
@@ -181,7 +176,7 @@ func TestLifecycleObserve(t *testing.T) {
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
 					MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
 						return s3.GetBucketLifecycleConfigurationRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle().Rules}),
+							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle(false).Rules}),
 						}
 					},
 				}),
@@ -213,7 +208,7 @@ func TestLifecycleObserve(t *testing.T) {
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
 					MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
 						return s3.GetBucketLifecycleConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle().Rules}),
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle(false).Rules}),
 						}
 					},
 				}),
@@ -261,7 +256,7 @@ func TestLifecycleObserve(t *testing.T) {
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
 					MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
 						return s3.GetBucketLifecycleConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle().Rules}),
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLifecycleConfigurationOutput{Rules: generateAWSLifecycle(false).Rules}),
 						}
 					},
 				}),
