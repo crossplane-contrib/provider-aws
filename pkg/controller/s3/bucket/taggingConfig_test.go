@@ -20,6 +20,8 @@ import (
 	"context"
 	"testing"
 
+	aws "github.com/crossplane/provider-aws/pkg/clients"
+
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -32,7 +34,35 @@ import (
 	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
-var _ SubresourceClient = &TaggingConfigurationClient{}
+var (
+	tag = v1beta1.Tag{
+		Key:   "test",
+		Value: "value",
+	}
+	tag1 = v1beta1.Tag{
+		Key:   "xyz",
+		Value: "abc",
+	}
+	tag2 = v1beta1.Tag{
+		Key:   "abc",
+		Value: "abc",
+	}
+	tags   = []v1beta1.Tag{tag, tag1, tag2}
+	awsTag = s3.Tag{
+		Key:   aws.String("test"),
+		Value: aws.String("value"),
+	}
+	awsTag1 = s3.Tag{
+		Key:   aws.String("xyz"),
+		Value: aws.String("abc"),
+	}
+	awsTag2 = s3.Tag{
+		Key:   aws.String("abc"),
+		Value: aws.String("abc"),
+	}
+	awsTags                   = []s3.Tag{awsTag, awsTag1, awsTag2}
+	_       SubresourceClient = &TaggingConfigurationClient{}
+)
 
 func generateTaggingConfig() *v1beta1.Tagging {
 	return &v1beta1.Tagging{
@@ -148,6 +178,22 @@ func TestTaggingObserve(t *testing.T) {
 					MockGetBucketTaggingRequest: func(input *s3.GetBucketTaggingInput) s3.GetBucketTaggingRequest {
 						return s3.GetBucketTaggingRequest{
 							Request: s3Testing.CreateRequest(nil, &s3.GetBucketTaggingOutput{TagSet: generateAWSTagging().TagSet}),
+						}
+					},
+				}),
+			},
+			want: want{
+				status: Updated,
+				err:    nil,
+			},
+		},
+		"NoUpdateExistsOrder": {
+			args: args{
+				b: s3Testing.Bucket(s3Testing.WithTaggingConfig(generateTaggingConfig())),
+				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
+					MockGetBucketTaggingRequest: func(input *s3.GetBucketTaggingInput) s3.GetBucketTaggingRequest {
+						return s3.GetBucketTaggingRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketTaggingOutput{TagSet: []s3.Tag{awsTag2, awsTag, awsTag1}}),
 						}
 					},
 				}),
