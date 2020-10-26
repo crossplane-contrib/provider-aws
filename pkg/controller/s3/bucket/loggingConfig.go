@@ -60,7 +60,7 @@ func (in *LoggingConfigurationClient) LateInitialize(ctx context.Context, bucket
 	}
 	// Late initialize the target Bucket and target prefix
 	config.TargetBucket = aws.LateInitializeStringPtr(config.TargetBucket, external.LoggingEnabled.TargetBucket)
-	config.TargetPrefix = aws.LateInitializeStringPtr(config.TargetPrefix, external.LoggingEnabled.TargetPrefix)
+	config.TargetPrefix = aws.LateInitializeString(config.TargetPrefix, external.LoggingEnabled.TargetPrefix)
 	// If the there is an external target grant list, and the local one does not exist
 	// we create the target grant list
 	if external.LoggingEnabled.TargetGrants != nil && len(config.TargetGrants) == 0 {
@@ -93,7 +93,7 @@ func GenerateAWSLogging(local *v1beta1.LoggingConfiguration) *awss3.LoggingEnabl
 	}
 	output := awss3.LoggingEnabled{
 		TargetBucket: local.TargetBucket,
-		TargetPrefix: local.TargetPrefix,
+		TargetPrefix: aws.String(local.TargetPrefix),
 	}
 	if local.TargetGrants != nil {
 		output.TargetGrants = make([]awss3.TargetGrant, len(local.TargetGrants))
@@ -135,7 +135,7 @@ func GeneratePutBucketLoggingInput(name string, config *v1beta1.LoggingConfigura
 		BucketLoggingStatus: &awss3.BucketLoggingStatus{LoggingEnabled: &awss3.LoggingEnabled{
 			TargetBucket: config.TargetBucket,
 			TargetGrants: make([]awss3.TargetGrant, 0),
-			TargetPrefix: config.TargetPrefix,
+			TargetPrefix: aws.String(config.TargetPrefix),
 		}},
 	}
 	for _, grant := range config.TargetGrants {

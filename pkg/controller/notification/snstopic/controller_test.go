@@ -87,6 +87,7 @@ func withTopicARN(s *string) topicModifier {
 	return func(t *v1alpha1.SNSTopic) {
 		t.Spec.ForProvider.Name = *s
 		meta.SetExternalName(t, makeARN(*s))
+		t.Status.AtProvider.ARN = makeARN(*s)
 	}
 }
 
