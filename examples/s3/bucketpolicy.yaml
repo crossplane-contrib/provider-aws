@@ -6,7 +6,7 @@ spec:
   forProvider:
     region: us-west-1
     bucketNameRef:
-      name: test-bucket-rh-krish
+      name: test-bucket
     statement:
       - action:
           - s3:ListBucket
@@ -19,7 +19,7 @@ spec:
             - IAMUserArnSelector:
                 example: "true"
         resource:
-          - "arn:aws:s3:::test-bucket-rh-krish"
+          - "arn:aws:s3:::test-bucket"
         condition:
           IpAddress:
             key: "aws:SourceIp"

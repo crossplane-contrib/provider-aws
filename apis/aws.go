@@ -38,7 +38,7 @@ import (
 	notificationv1alpha3 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
 	redshiftv1alpha1 "github.com/crossplane/provider-aws/apis/redshift/v1alpha1"
 	route53v1alpha1 "github.com/crossplane/provider-aws/apis/route53/v1alpha1"
-	s3v1alpha1 "github.com/crossplane/provider-aws/apis/s3/v1alpha1"
+	s3v1alpha2 "github.com/crossplane/provider-aws/apis/s3/v1alpha2"
 	s3v1beta1 "github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	sqsv1beta1 "github.com/crossplane/provider-aws/apis/sqs/v1beta1"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
@@ -62,7 +62,7 @@ func init() {
 		awsv1alpha3.SchemeBuilder.AddToScheme,
 		awsv1beta1.SchemeBuilder.AddToScheme,
 		acmv1alpha1.SchemeBuilder.AddToScheme,
-		s3v1alpha1.SchemeBuilder.AddToScheme,
+		s3v1alpha2.SchemeBuilder.AddToScheme,
 		s3v1beta1.SchemeBuilder.AddToScheme,
 		acmpcav1alpha1.SchemeBuilder.AddToScheme,
 		databasev1alpha1.SchemeBuilder.AddToScheme,
