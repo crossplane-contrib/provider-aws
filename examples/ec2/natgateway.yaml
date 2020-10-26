@@ -5,8 +5,10 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
-    allocationId: "" # pass in an Elastic IP allocation ID, once NATGateway lands in v1beta1 we can use allocationIdRef
-    subnetId: "" # pass in an Subnet ID, once NATGateway lands in v1beta1 we can use subnetIDRef
+    allocationIdrRef:
+      name: sample-eip
+    subnetIdRef:
+      name: sample-subnet
     tags:
       - key: Name
         value: sample-natgateway

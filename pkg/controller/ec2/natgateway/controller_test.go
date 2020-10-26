@@ -467,8 +467,7 @@ func TestCreate(t *testing.T) {
 				})),
 			},
 			want: want{
-				cr: nat(withConditions(runtimev1alpha1.Creating()),
-					withExternalName(natGatewayID),
+				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
 				),
 				result: managed.ExternalCreation{},
@@ -489,7 +488,7 @@ func TestCreate(t *testing.T) {
 				cr: nat(),
 			},
 			want: want{
-				cr:  nat(withConditions(runtimev1alpha1.Creating())),
+				cr:  nat(),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},

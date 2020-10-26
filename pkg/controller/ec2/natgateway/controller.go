@@ -27,7 +27,6 @@ const (
 	errDescribe         = "failed to describe NATGateway"
 	errNotSingleItem    = "either no or multiple NATGateways retrieved for the given natGatewayId"
 	errSpecUpdate       = "cannot update spec of the NATGateway resource"
-	errStatusUpdate     = "cannot update status of the NATGateway resource"
 	errCreate           = "failed to create the NATGateway resource"
 	errDelete           = "failed to delete the NATGateway resource"
 	errUpdateTags       = "failed to update tags for the NATGateway resource"
@@ -126,11 +125,6 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	cr, ok := mgd.(*v1alpha1.NATGateway)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
-	}
-
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-	if err := e.kube.Status().Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
 	}
 
 	nat, err := e.client.CreateNatGatewayRequest(&awsec2.CreateNatGatewayInput{
