@@ -32,7 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/s3/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/s3/v1alpha2"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 )
@@ -43,16 +43,16 @@ var (
 	bucketName     = "test.s3.crossplane.com"
 	policy         = `{"Statement":[{"Action":"s3:ListBucket","Effect":"Allow","Principal":"*","Resource":"arn:aws:s3:::test.s3.crossplane.com"}],"Version":"2012-10-17"}`
 
-	params = v1alpha1.BucketPolicyParameters{
+	params = v1alpha2.BucketPolicyParameters{
 		PolicyVersion: "2012-10-17",
-		PolicyStatement: []v1alpha1.BucketPolicyStatement{
+		PolicyStatement: []v1alpha2.BucketPolicyStatement{
 			{
 				Effect: "Allow",
-				Principal: &v1alpha1.BucketPrincipal{
+				Principal: &v1alpha2.BucketPrincipal{
 					AllowAnon: true,
 				},
 				PolicyAction: []string{"s3:ListBucket"},
-				ResourcePath: []string{"test.s3.crossplane.com"},
+				ResourcePath: []string{"arn:aws:s3:::test.s3.crossplane.com"},
 			},
 		},
 	}
@@ -64,22 +64,22 @@ type args struct {
 	cr resource.Managed
 }
 
-type bucketPolicyModifier func(policy *v1alpha1.BucketPolicy)
+type bucketPolicyModifier func(policy *v1alpha2.BucketPolicy)
 
 func withConditions(c ...corev1alpha1.Condition) bucketPolicyModifier {
-	return func(r *v1alpha1.BucketPolicy) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1alpha2.BucketPolicy) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withPolicy(s *v1alpha1.BucketPolicyParameters) bucketPolicyModifier {
-	return func(r *v1alpha1.BucketPolicy) { r.Spec.PolicyBody = *s }
+func withPolicy(s *v1alpha2.BucketPolicyParameters) bucketPolicyModifier {
+	return func(r *v1alpha2.BucketPolicy) { r.Spec.PolicyBody = *s }
 }
 
-func bucketPolicy(m ...bucketPolicyModifier) *v1alpha1.BucketPolicy {
-	cr := &v1alpha1.BucketPolicy{
-		Spec: v1alpha1.BucketPolicySpec{
-			PolicyBody: v1alpha1.BucketPolicyParameters{
+func bucketPolicy(m ...bucketPolicyModifier) *v1alpha2.BucketPolicy {
+	cr := &v1alpha2.BucketPolicy{
+		Spec: v1alpha2.BucketPolicySpec{
+			PolicyBody: v1alpha2.BucketPolicyParameters{
 				BucketName:      &bucketName,
-				PolicyStatement: make([]v1alpha1.BucketPolicyStatement, 0),
+				PolicyStatement: make([]v1alpha2.BucketPolicyStatement, 0),
 			},
 		},
 	}

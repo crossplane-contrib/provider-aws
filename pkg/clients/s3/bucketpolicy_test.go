@@ -23,7 +23,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/s3/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/s3/v1alpha2"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -33,34 +33,34 @@ var (
 	statementID = aws.String("1")
 )
 
-type statementModifier func(statement *v1alpha1.BucketPolicyStatement)
+type statementModifier func(statement *v1alpha2.BucketPolicyStatement)
 
-func withPrincipal(s *v1alpha1.BucketPrincipal) statementModifier {
-	return func(statement *v1alpha1.BucketPolicyStatement) {
+func withPrincipal(s *v1alpha2.BucketPrincipal) statementModifier {
+	return func(statement *v1alpha2.BucketPolicyStatement) {
 		statement.Principal = s
 	}
 }
 
 func withPolicyAction(s []string) statementModifier {
-	return func(statement *v1alpha1.BucketPolicyStatement) {
+	return func(statement *v1alpha2.BucketPolicyStatement) {
 		statement.PolicyAction = s
 	}
 }
 
 func withResourcePath(s []string) statementModifier {
-	return func(statement *v1alpha1.BucketPolicyStatement) {
+	return func(statement *v1alpha2.BucketPolicyStatement) {
 		statement.ResourcePath = s
 	}
 }
 
-func withConditionBlock(m map[string]v1alpha1.Condition) statementModifier {
-	return func(statement *v1alpha1.BucketPolicyStatement) {
+func withConditionBlock(m map[string]v1alpha2.Condition) statementModifier {
+	return func(statement *v1alpha2.BucketPolicyStatement) {
 		statement.ConditionBlock = m
 	}
 }
 
-func policyStatement(m ...statementModifier) *v1alpha1.BucketPolicyStatement {
-	cr := &v1alpha1.BucketPolicyStatement{
+func policyStatement(m ...statementModifier) *v1alpha2.BucketPolicyStatement {
+	cr := &v1alpha2.BucketPolicyStatement{
 		StatementID: statementID,
 		Effect:      effect,
 	}
@@ -72,7 +72,7 @@ func policyStatement(m ...statementModifier) *v1alpha1.BucketPolicyStatement {
 
 func TestSerializeBucketPolicyStatement(t *testing.T) {
 	cases := map[string]struct {
-		in  v1alpha1.BucketPolicyStatement
+		in  v1alpha2.BucketPolicyStatement
 		out string
 		err error
 	}{
@@ -82,7 +82,7 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 		},
 		"ValidInput": {
 			in: *policyStatement(
-				withPrincipal(&v1alpha1.BucketPrincipal{
+				withPrincipal(&v1alpha2.BucketPrincipal{
 					AllowAnon: true,
 				}),
 				withPolicyAction([]string{"s3:ListBucket"}),
@@ -92,8 +92,8 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 		},
 		"ComplexInput": {
 			in: *policyStatement(
-				withPrincipal(&v1alpha1.BucketPrincipal{
-					AWSPrincipals: []v1alpha1.AWSPrincipal{
+				withPrincipal(&v1alpha2.BucketPrincipal{
+					AWSPrincipals: []v1alpha2.AWSPrincipal{
 						{
 							IAMUserARN: aws.String("arn:aws:iam::111122223333:userARN"),
 						},
@@ -107,7 +107,7 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 				}),
 				withPolicyAction([]string{"s3:ListBucket"}),
 				withResourcePath([]string{"arn:aws:s3:::test.s3.crossplane.com"}),
-				withConditionBlock(map[string]v1alpha1.Condition{
+				withConditionBlock(map[string]v1alpha2.Condition{
 					"test": {
 						ConditionKey:         "test",
 						ConditionStringValue: aws.String("testKey"),

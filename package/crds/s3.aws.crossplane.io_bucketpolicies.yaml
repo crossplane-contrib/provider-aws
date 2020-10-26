@@ -31,7 +31,7 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: v1alpha1
+    name: v1alpha2
     schema:
       openAPIV3Schema:
         description: An BucketPolicy is a managed resource that represents an AWS Bucket policy.
