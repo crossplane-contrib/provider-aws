@@ -87,7 +87,7 @@ func generateNotificationConfig() *v1beta1.NotificationConfiguration {
 			Events:   generateNotificationEvents(),
 			Filter:   generateNotificationFilter(),
 			ID:       &id,
-			TopicArn: topicArn,
+			TopicArn: &topicArn,
 		}},
 	}
 }

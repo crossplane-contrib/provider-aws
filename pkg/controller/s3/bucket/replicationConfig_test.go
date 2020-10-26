@@ -48,20 +48,20 @@ func generateReplicationConfig() *v1beta1.ReplicationConfiguration {
 		Role: &role,
 		Rules: []v1beta1.ReplicationRule{{
 			DeleteMarkerReplication: &v1beta1.DeleteMarkerReplication{Status: enabled},
-			Destination: &v1beta1.Destination{
+			Destination: v1beta1.Destination{
 				AccessControlTranslation: &v1beta1.AccessControlTranslation{Owner: owner},
 				Account:                  &accountID,
 				Bucket:                   &bucketName,
-				EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
+				EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: kmsID},
 				Metrics: &v1beta1.Metrics{
-					EventThreshold: &v1beta1.ReplicationTimeValue{Minutes: aws.Int64(replicationTime)},
+					EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int64(replicationTime)},
 					Status:         enabled,
 				},
 				ReplicationTime: &v1beta1.ReplicationTime{
 					Status: enabled,
-					Time:   &v1beta1.ReplicationTimeValue{Minutes: aws.Int64(replicationTime)},
+					Time:   v1beta1.ReplicationTimeValue{Minutes: int64(replicationTime)},
 				},
-				StorageClass: storage,
+				StorageClass: &storage,
 			},
 			ExistingObjectReplication: &v1beta1.ExistingObjectReplication{Status: enabled},
 			Filter: &v1beta1.ReplicationRuleFilter{
@@ -74,7 +74,7 @@ func generateReplicationConfig() *v1beta1.ReplicationConfiguration {
 			},
 			ID:                      &id,
 			Priority:                aws.Int64(priority),
-			SourceSelectionCriteria: &v1beta1.SourceSelectionCriteria{SseKmsEncryptedObjects: &v1beta1.SseKmsEncryptedObjects{Status: enabled}},
+			SourceSelectionCriteria: &v1beta1.SourceSelectionCriteria{SseKmsEncryptedObjects: v1beta1.SseKmsEncryptedObjects{Status: enabled}},
 			Status:                  enabled,
 		}},
 	}

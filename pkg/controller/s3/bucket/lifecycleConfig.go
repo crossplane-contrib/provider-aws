@@ -19,6 +19,8 @@ package bucket
 import (
 	"context"
 
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -31,8 +33,8 @@ import (
 )
 
 const (
-	lifecycleGetFailed    = "cannot get Bucket lifecycle"
-	lifecyclePutFailed    = "cannot put Bucket lifecycle"
+	lifecycleGetFailed    = "cannot get Bucket lifecycle configuration"
+	lifecyclePutFailed    = "cannot put Bucket lifecycle configuration"
 	lifecycleDeleteFailed = "cannot delete Bucket lifecycle configuration"
 )
 
@@ -54,23 +56,30 @@ func NewLifecycleConfigurationClient(client s3.BucketClient) *LifecycleConfigura
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *LifecycleConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetBucketLifecycleConfigurationRequest(&awss3.GetBucketLifecycleConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
-	config := bucket.Spec.ForProvider.LifecycleConfiguration
-	if err != nil {
-		if s3.LifecycleConfigurationNotFound(err) && config == nil {
-			return Updated, nil
-		}
-		return NeedsUpdate, errors.Wrap(resource.Ignore(s3.LifecycleConfigurationNotFound, err), lifecycleGetFailed)
-	}
-
-	sortFilterTags(external.Rules)
-
-	switch {
-	case len(external.Rules) != 0 && config == nil:
-		return NeedsDeletion, nil
-	case config == nil && len(external.Rules) == 0:
+	response, err := in.client.GetBucketLifecycleConfigurationRequest(&awss3.GetBucketLifecycleConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	if bucket.Spec.ForProvider.LifecycleConfiguration == nil && s3.LifecycleConfigurationNotFound(err) {
 		return Updated, nil
-	case cmp.Equal(external.Rules, GenerateRules(config)):
+	}
+	if resource.Ignore(s3.LifecycleConfigurationNotFound, err) != nil {
+		return NeedsUpdate, errors.Wrap(err, lifecycleGetFailed)
+	}
+	var local []v1beta1.LifecycleRule
+	if bucket.Spec.ForProvider.LifecycleConfiguration != nil {
+		local = bucket.Spec.ForProvider.LifecycleConfiguration.Rules
+	}
+	var external []awss3.LifecycleRule
+	if response != nil {
+		external = response.Rules
+	}
+	sortFilterTags(external)
+	switch {
+	case len(external) != 0 && len(local) == 0:
+		return NeedsDeletion, nil
+	// NOTE(muvaf): We ignore ID because it might have been auto-assigned by AWS
+	// and we don't have late-init for this subresource. Besides, a change in ID
+	// is almost never expected.
+	case cmp.Equal(external, GenerateLifecycleRules(local),
+		cmpopts.IgnoreFields(awss3.LifecycleRule{}, "ID")):
 		return Updated, nil
 	default:
 		return NeedsUpdate, nil
@@ -79,30 +88,37 @@ func (in *LifecycleConfigurationClient) Observe(ctx context.Context, bucket *v1b
 
 // GenerateLifecycleConfiguration creates the PutBucketLifecycleConfigurationInput for the AWS SDK
 func GenerateLifecycleConfiguration(name string, config *v1beta1.BucketLifecycleConfiguration) *awss3.PutBucketLifecycleConfigurationInput {
+	if config == nil {
+		return nil
+	}
 	return &awss3.PutBucketLifecycleConfigurationInput{
 		Bucket:                 aws.String(name),
-		LifecycleConfiguration: &awss3.BucketLifecycleConfiguration{Rules: GenerateRules(config)},
+		LifecycleConfiguration: &awss3.BucketLifecycleConfiguration{Rules: GenerateLifecycleRules(config.Rules)},
 	}
 }
 
-// GenerateRules creates the list of LifecycleRules for the AWS SDK
-func GenerateRules(in *v1beta1.BucketLifecycleConfiguration) []awss3.LifecycleRule { // nolint:gocyclo
-	rules := make([]awss3.LifecycleRule, len(in.Rules))
-	for i, local := range in.Rules {
+// GenerateLifecycleRules creates the list of LifecycleRules for the AWS SDK
+func GenerateLifecycleRules(in []v1beta1.LifecycleRule) []awss3.LifecycleRule { // nolint:gocyclo
+	// NOTE(muvaf): prealloc is disabled due to AWS requiring nil instead
+	// of 0-length for empty slices.
+	var result []awss3.LifecycleRule // nolint:prealloc
+	for _, local := range in {
 		rule := awss3.LifecycleRule{
 			ID:     local.ID,
 			Status: awss3.ExpirationStatus(local.Status),
 		}
 		if local.AbortIncompleteMultipartUpload != nil {
 			rule.AbortIncompleteMultipartUpload = &awss3.AbortIncompleteMultipartUpload{
-				DaysAfterInitiation: local.AbortIncompleteMultipartUpload.DaysAfterInitiation,
+				DaysAfterInitiation: &local.AbortIncompleteMultipartUpload.DaysAfterInitiation,
 			}
 		}
 		if local.Expiration != nil {
 			rule.Expiration = &awss3.LifecycleExpiration{
-				Date:                      &local.Expiration.Date.Time,
 				Days:                      local.Expiration.Days,
 				ExpiredObjectDeleteMarker: local.Expiration.ExpiredObjectDeleteMarker,
+			}
+			if local.Expiration.Date != nil {
+				rule.Expiration.Date = &local.Expiration.Date.Time
 			}
 		}
 		if local.NoncurrentVersionExpiration != nil {
@@ -143,9 +159,9 @@ func GenerateRules(in *v1beta1.BucketLifecycleConfiguration) []awss3.LifecycleRu
 				}
 			}
 		}
-		rules[i] = rule
+		result = append(result, rule)
 	}
-	return rules
+	return result
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS

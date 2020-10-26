@@ -84,48 +84,39 @@ func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v
 }
 
 func copyDestination(input *v1beta1.ReplicationRule, newRule *awss3.ReplicationRule) {
-	Rule := input
-	if Rule.Destination == nil {
-		return
-	}
 	newRule.Destination = &awss3.Destination{
 		AccessControlTranslation: nil,
-		Account:                  Rule.Destination.Account,
-		Bucket:                   Rule.Destination.Bucket,
+		Account:                  input.Destination.Account,
+		Bucket:                   input.Destination.Bucket,
 		EncryptionConfiguration:  nil,
 		Metrics:                  nil,
 		ReplicationTime:          nil,
-		StorageClass:             awss3.StorageClass(Rule.Destination.StorageClass),
+		StorageClass:             awss3.StorageClass(aws.StringValue(input.Destination.StorageClass)),
 	}
-	if Rule.Destination.AccessControlTranslation != nil {
+	if input.Destination.AccessControlTranslation != nil {
 		newRule.Destination.AccessControlTranslation = &awss3.AccessControlTranslation{
-			Owner: awss3.OwnerOverride(Rule.Destination.AccessControlTranslation.Owner),
+			Owner: awss3.OwnerOverride(input.Destination.AccessControlTranslation.Owner),
 		}
 	}
-	if Rule.Destination.EncryptionConfiguration != nil {
+	if input.Destination.EncryptionConfiguration != nil {
 		newRule.Destination.EncryptionConfiguration = &awss3.EncryptionConfiguration{
-			ReplicaKmsKeyID: Rule.Destination.EncryptionConfiguration.ReplicaKmsKeyID,
+			ReplicaKmsKeyID: aws.String(input.Destination.EncryptionConfiguration.ReplicaKmsKeyID),
 		}
 	}
-	if Rule.Destination.Metrics != nil {
+	if input.Destination.Metrics != nil {
 		newRule.Destination.Metrics = &awss3.Metrics{
-			EventThreshold: nil,
-			Status:         awss3.MetricsStatus(Rule.Destination.Metrics.Status),
-		}
-		if Rule.Destination.Metrics.EventThreshold != nil {
-			newRule.Destination.Metrics.EventThreshold = &awss3.ReplicationTimeValue{
-				Minutes: Rule.Destination.Metrics.EventThreshold.Minutes,
-			}
+			EventThreshold: &awss3.ReplicationTimeValue{Minutes: &input.Destination.Metrics.EventThreshold.Minutes},
+			Status:         awss3.MetricsStatus(input.Destination.Metrics.Status),
 		}
 	}
-	if Rule.Destination.ReplicationTime != nil {
+	if input.Destination.ReplicationTime != nil {
 		newRule.Destination.ReplicationTime = &awss3.ReplicationTime{
-			Status: awss3.ReplicationTimeStatus(Rule.Destination.ReplicationTime.Status),
+			Status: awss3.ReplicationTimeStatus(input.Destination.ReplicationTime.Status),
 			Time:   nil,
 		}
-		if Rule.Destination.ReplicationTime.Time != nil {
+		if input.Destination.ReplicationTime != nil {
 			newRule.Destination.ReplicationTime.Time = &awss3.ReplicationTimeValue{
-				Minutes: Rule.Destination.ReplicationTime.Time.Minutes,
+				Minutes: &input.Destination.ReplicationTime.Time.Minutes,
 			}
 		}
 	}
@@ -157,11 +148,10 @@ func createRule(input v1beta1.ReplicationRule) awss3.ReplicationRule {
 		}
 	}
 	if Rule.SourceSelectionCriteria != nil {
-		newRule.SourceSelectionCriteria = &awss3.SourceSelectionCriteria{SseKmsEncryptedObjects: nil}
-		if Rule.SourceSelectionCriteria.SseKmsEncryptedObjects != nil {
-			newRule.SourceSelectionCriteria.SseKmsEncryptedObjects = &awss3.SseKmsEncryptedObjects{
+		newRule.SourceSelectionCriteria = &awss3.SourceSelectionCriteria{
+			SseKmsEncryptedObjects: &awss3.SseKmsEncryptedObjects{
 				Status: awss3.SseKmsEncryptedObjectsStatus(Rule.SourceSelectionCriteria.SseKmsEncryptedObjects.Status),
-			}
+			},
 		}
 	}
 	if Rule.ExistingObjectReplication != nil {
