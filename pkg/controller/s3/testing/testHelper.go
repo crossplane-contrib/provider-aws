@@ -20,7 +20,6 @@ import (
 	"net/http"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
@@ -137,27 +136,4 @@ func Bucket(m ...BucketModifier) *v1beta1.Bucket {
 // CreateRequest creates an AWS request from an error and some data
 func CreateRequest(err error, data interface{}) *aws.Request {
 	return &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: err, Data: data}
-}
-
-// CopyTag converts a local v1beta.Tag to an S3 Tag
-func CopyTag(tag *v1beta1.Tag) *awss3.Tag {
-	if tag == nil {
-		return nil
-	}
-	return &awss3.Tag{
-		Key:   aws.String(tag.Key),
-		Value: aws.String(tag.Value),
-	}
-}
-
-// CopyTags converts a list of local v1beta.Tags to S3 Tags
-func CopyTags(tags []v1beta1.Tag) []awss3.Tag {
-	if tags == nil {
-		return nil
-	}
-	out := make([]awss3.Tag, len(tags))
-	for i := range tags {
-		out[i] = *CopyTag(&tags[i])
-	}
-	return out
 }

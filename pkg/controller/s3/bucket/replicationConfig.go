@@ -74,6 +74,8 @@ func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v
 
 	source := GenerateReplicationConfiguration(config)
 
+	sortReplicationRules(external.ReplicationConfiguration.Rules)
+
 	if cmp.Equal(external.ReplicationConfiguration, source) {
 		return Updated, nil
 	}
@@ -145,20 +147,13 @@ func createRule(input v1beta1.ReplicationRule) awss3.ReplicationRule {
 		if Rule.Filter.And != nil {
 			newRule.Filter.And = &awss3.ReplicationRuleAndOperator{
 				Prefix: Rule.Filter.And.Prefix,
-				Tags:   make([]awss3.Tag, len(Rule.Filter.And.Tags)),
 			}
-			for i, v := range Rule.Filter.And.Tags {
-				newRule.Filter.And.Tags[i] = awss3.Tag{
-					Key:   aws.String(v.Key),
-					Value: aws.String(v.Value),
-				}
+			if Rule.Filter.And.Tags != nil {
+				newRule.Filter.And.Tags = s3.SortS3TagSet(s3.CopyTags(Rule.Filter.And.Tags))
 			}
 		}
 		if Rule.Filter.Tag != nil {
-			newRule.Filter.Tag = &awss3.Tag{
-				Key:   aws.String(Rule.Filter.Tag.Key),
-				Value: aws.String(Rule.Filter.Tag.Value),
-			}
+			newRule.Filter.Tag = &awss3.Tag{Key: aws.String(Rule.Filter.Tag.Key), Value: aws.String(Rule.Filter.Tag.Value)}
 		}
 	}
 	if Rule.SourceSelectionCriteria != nil {
@@ -221,4 +216,12 @@ func (in *ReplicationConfigurationClient) Delete(ctx context.Context, bucket *v1
 		},
 	).Send(ctx)
 	return errors.Wrap(err, replicationDeleteFailed)
+}
+
+func sortReplicationRules(rules []awss3.ReplicationRule) {
+	for i := range rules {
+		if rules[i].Filter != nil && rules[i].Filter.And != nil {
+			rules[i].Filter.And.Tags = s3.SortS3TagSet(rules[i].Filter.And.Tags)
+		}
+	}
 }
