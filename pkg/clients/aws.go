@@ -31,6 +31,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-ini/ini"
@@ -409,6 +410,34 @@ func DiffTags(local, remote map[string]string) (add map[string]string, remove []
 		default:
 			delete(add, k)
 		}
+	}
+	return
+}
+
+// DiffEC2Tags returns []ec2.Tag that should be added or removed.
+func DiffEC2Tags(local []ec2.Tag, remote []ec2.Tag) (add []ec2.Tag, remove []ec2.Tag) {
+	var tagsToAdd = make(map[string]string, len(local))
+	add = []ec2.Tag{}
+	remove = []ec2.Tag{}
+	for _, j := range local {
+		tagsToAdd[aws.StringValue(j.Key)] = aws.StringValue(j.Value)
+	}
+	for _, j := range remote {
+		switch val, ok := tagsToAdd[aws.StringValue(j.Key)]; {
+		case ok && val == aws.StringValue(j.Value):
+			delete(tagsToAdd, aws.StringValue(j.Key))
+		case !ok:
+			remove = append(remove, ec2.Tag{
+				Key:   j.Key,
+				Value: nil,
+			})
+		}
+	}
+	for i, j := range tagsToAdd {
+		add = append(add, ec2.Tag{
+			Key:   aws.String(i),
+			Value: aws.String(j),
+		})
 	}
 	return
 }

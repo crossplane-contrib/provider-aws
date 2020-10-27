@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	. "github.com/onsi/gomega"
@@ -135,6 +137,228 @@ func TestDiffTags(t *testing.T) {
 			}
 			if diff := cmp.Diff(tc.want.remove, remove, cmpopts.SortSlices(func(a, b string) bool { return a > b })); diff != "" {
 				t.Errorf("remove: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestDiffEC2Tags(t *testing.T) {
+	type args struct {
+		local  []ec2.Tag
+		remote []ec2.Tag
+	}
+	type want struct {
+		add    []ec2.Tag
+		remove []ec2.Tag
+	}
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"EmptyLocalAndRemote": {
+			args: args{
+				local:  []ec2.Tag{},
+				remote: []ec2.Tag{},
+			},
+			want: want{
+				add:    []ec2.Tag{},
+				remove: []ec2.Tag{},
+			},
+		},
+		"TagsWithSameKeyValuesAndLength": {
+			args: args{
+				local: []ec2.Tag{
+					{
+						Key:   aws.String("name"),
+						Value: aws.String("somename"),
+					},
+				},
+				remote: []ec2.Tag{
+					{
+						Key:   aws.String("name"),
+						Value: aws.String("somename"),
+					},
+				},
+			},
+			want: want{
+				add:    []ec2.Tag{},
+				remove: []ec2.Tag{},
+			},
+		},
+		"TagsWithSameKeyDifferentValuesAndSameLength": {
+			args: args{
+				local: []ec2.Tag{
+					{
+						Key:   aws.String("name"),
+						Value: aws.String("somename"),
+					},
+				},
+				remote: []ec2.Tag{
+					{
+						Key:   aws.String("name"),
+						Value: aws.String("somenames"),
+					},
+				},
+			},
+			want: want{
+				add: []ec2.Tag{
+					{
+						Key:   aws.String("name"),
+						Value: aws.String("somename"),
+					},
+				},
+				remove: []ec2.Tag{},
+			},
+		},
+		"EmptyRemoteAndMultipleInputs": {
+			args: args{
+				local: []ec2.Tag{
+					{
+						Key:   aws.String("name"),
+						Value: aws.String("somename"),
+					},
+					{
+						Key:   aws.String("tags"),
+						Value: aws.String("True"),
+					},
+				},
+				remote: []ec2.Tag{},
+			},
+			want: want{
+				add: []ec2.Tag{
+					{
+						Key:   aws.String("name"),
+						Value: aws.String("somename"),
+					},
+					{
+						Key:   aws.String("tags"),
+						Value: aws.String("True"),
+					},
+				},
+				remove: []ec2.Tag{},
+			},
+		},
+		"EmptyLocalAndMultipleRemote": {
+			args: args{
+				local: []ec2.Tag{},
+				remote: []ec2.Tag{
+					{
+						Key:   aws.String("name"),
+						Value: aws.String("somename"),
+					},
+					{
+						Key:   aws.String("tags"),
+						Value: aws.String("True"),
+					},
+				},
+			},
+			want: want{
+				add: []ec2.Tag{},
+				remove: []ec2.Tag{
+					{
+						Key:   aws.String("name"),
+						Value: nil,
+					},
+					{
+						Key:   aws.String("tags"),
+						Value: nil,
+					},
+				},
+			},
+		},
+		"LocalHaveMoreTags": {
+			args: args{
+				local: []ec2.Tag{
+					{
+						Key:   aws.String("name"),
+						Value: aws.String("somename"),
+					},
+					{
+						Key:   aws.String("tags"),
+						Value: aws.String("True"),
+					},
+				},
+				remote: []ec2.Tag{
+					{
+						Key:   aws.String("name"),
+						Value: aws.String("somename"),
+					},
+					{
+						Key:   aws.String("val"),
+						Value: aws.String("key"),
+					},
+					{
+						Key:   aws.String("val1"),
+						Value: aws.String("key2"),
+					},
+				},
+			},
+			want: want{
+				add: []ec2.Tag{
+					{
+						Key:   aws.String("tags"),
+						Value: aws.String("True"),
+					},
+				},
+				remove: []ec2.Tag{
+					{
+						Key:   aws.String("val"),
+						Value: nil,
+					},
+					{
+						Key:   aws.String("val1"),
+						Value: nil,
+					},
+				},
+			},
+		},
+		"RemoteHaveMoreTags": {
+			args: args{
+				local: []ec2.Tag{
+					{
+						Key:   aws.String("name"),
+						Value: aws.String("somename"),
+					},
+					{
+						Key:   aws.String("val"),
+						Value: aws.String("key"),
+					},
+				},
+				remote: []ec2.Tag{
+					{
+						Key:   aws.String("name"),
+						Value: aws.String("somename"),
+					},
+					{
+						Key:   aws.String("tags"),
+						Value: aws.String("True"),
+					},
+					{
+						Key:   aws.String("val"),
+						Value: aws.String("key"),
+					},
+				},
+			},
+			want: want{
+				add: []ec2.Tag{},
+				remove: []ec2.Tag{
+					{
+						Key:   aws.String("tags"),
+						Value: nil,
+					},
+				},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			add, remove := DiffEC2Tags(tc.args.local, tc.args.remote)
+			if diff := cmp.Diff(tc.want.add, add); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.remove, remove); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
 	}
