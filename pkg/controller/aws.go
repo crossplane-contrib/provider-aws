@@ -33,6 +33,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/database/dynamodb"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/elasticip"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/internetgateway"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/natgateway"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/routetable"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/securitygroup"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
@@ -87,6 +88,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		subnet.SetupSubnet,
 		securitygroup.SetupSecurityGroup,
 		internetgateway.SetupInternetGateway,
+		natgateway.SetupNatGateway,
 		routetable.SetupRouteTable,
 		dbsubnetgroup.SetupDBSubnetGroup,
 		certificateauthority.SetupCertificateAuthority,

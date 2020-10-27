@@ -1,0 +1,17 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: NATGateway
+metadata:
+  name: sample-natgateway
+spec:
+  forProvider:
+    region: us-east-1
+    allocationIdrRef:
+      name: sample-eip
+    subnetIdRef:
+      name: sample-subnet
+    tags:
+      - key: Name
+        value: sample-natgateway
+  reclaimPolicy: Delete
+  providerConfigRef:
+    name: example
