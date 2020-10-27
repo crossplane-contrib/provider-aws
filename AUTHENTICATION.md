@@ -5,7 +5,7 @@ AWS API. This can be done in one of two ways:
 
 1. Base64 encoding static credentials in a Kubernetes `Secret`. This is
    described in detail
-   [here](https://crossplane.io/docs/v0.8/cloud-providers/aws/aws-provider.html).
+   [here](https://crossplane.io/docs/v0.13/getting-started/install-configure.html#select-provider).
 2. Authenticating using IAM Roles for Kubernetes `ServiceAccounts`. This
    functionality is only available when running Crossplane on EKS, and the
    feature has been
@@ -28,7 +28,44 @@ large node pool.
 aws eks --region <region> update-kubeconfig --name <cluster-name>
 ```
 
-3. Create OIDC provider for cluster
+2. Install Crossplane and provider-aws
+
+Install Crossplane from `alpha` channel:
+
+```
+kubectl create namespace crossplane-system
+helm repo add crossplane-alpha https://charts.crossplane.io/alpha
+
+helm install crossplane --namespace crossplane-system crossplane-alpha/crossplane
+```
+
+Install `provider-aws` (assumes you have [installed the Crossplane
+CLI](https://crossplane.io/docs/v0.13/getting-started/install-configure.html#install-crossplane-cli)):
+
+```
+kubectl crossplane install provider crossplane/provider-aws:master
+```
+
+3. Identify provider-aws service account
+
+Make sure that the appropriate `ServiceAccount` exists:
+
+```
+kubectl get serviceaccounts -n crossplane-system
+```
+
+If you used the install command above you should see a `ServiceAccount` in the
+output named `provider-aws-*`. You should also see the `provider-aws-*`
+controller `Pod` running if you execute `kubectl get pods -n crossplane-system`.
+Set environment variables to match the name and namespace of this
+`ServiceAccount`:
+
+```
+SERVICE_ACCOUNT_NAMESPACE=crossplane-system
+SERVICE_ACCOUNT_NAME=provider-aws-<YOUR-SERVICE-ACCOUNT-EXTENSION>
+```
+
+4. Create OIDC provider for cluster
 
 *If you do not have `eksctl` installed you may use the [AWS
 Console](https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html)*
@@ -37,17 +74,13 @@ Console](https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-s
 eksctl utils associate-iam-oidc-provider --cluster <cluster-name> --region <region> --approve
 ```
 
-4. Create IAM Role that provider-aws will use
+5. Create IAM Role that provider-aws will use
 
 Set environment variables that will be used in subsequent commands:
 
 ```
 AWS_ACCOUNT_ID=$(aws2 sts get-caller-identity --query "Account" --output text)
 OIDC_PROVIDER=$(aws2 eks describe-cluster --name <cluster-name> --region <region> --query "cluster.identity.oidc.issuer" --output text | sed -e "s/^https:\/\///")
-# namespace for provider-aws should match namespace of your ClusterPackageInstall
-SERVICE_ACCOUNT_NAMESPACE=crossplane-system
-# service account name for provider-aws should match name of your ClusterPackageInstall
-SERVICE_ACCOUNT_NAME=provider-aws
 IAM_ROLE_NAME=provider-aws # name for IAM role, can be anything you want
 ```
 
@@ -90,76 +123,43 @@ provision your resources.
 aws iam attach-role-policy --role-name $IAM_ROLE_NAME --policy-arn=arn:aws:iam::aws:policy/AdministratorAccess
 ```
 
-5. Install Crossplane and provider-aws
+6. Inject credentials into provider-aws Pod
 
-Install Crossplane from `alpha` channel:
-
-```
-kubectl create namespace crossplane-system
-helm repo add crossplane-alpha https://charts.crossplane.io/alpha
-
-helm install crossplane --namespace crossplane-system crossplane-alpha/crossplane
-```
-
-Install `provider-aws`:
-
-```yaml
-apiVersion: packages.crossplane.io/v1alpha1
-kind: ClusterPackageInstall
-metadata:
-  name: provider-aws # crossplane will create service account with this name
-  namespace: crossplane-system # service account will be created in this namespace
-spec:
-  package: "crossplane/provider-aws:v0.6.0"
-```
-
-6. Enable IAM Role for provider-aws Service Account
-
-First, check to make sure that the appropriate `ServiceAccount` exists:
-
-```
-kubectl get serviceaccounts -n crossplane-system
-```
-
-If you used the `ClusterPackageInstall` above you should see a `ServiceAccount` in
-the output named `provider-aws`. You should also see the `provider-aws` controller
-`Pod` running if you execute `kubectl get pods -n crossplane-system`. To inject
-the credential information into the Pod, we must annotate its `ServiceAccount`
-with the desired IAM role:
+To inject the credential information into the `provider-aws` controller `Pod`,
+we must annotate its `ServiceAccount` with the desired IAM role:
 
 ```
 kubectl annotate serviceaccount -n $SERVICE_ACCOUNT_NAMESPACE $SERVICE_ACCOUNT_NAME \
 eks.amazonaws.com/role-arn=arn:aws:iam::$AWS_ACCOUNT_ID\:role/$IAM_ROLE_NAME
 ```
 
-Because the credentials get injected when the `Pod` starts, we need to restart
-it. This can be done by deleting the `Pod` and letting its `Deployment` recreate
-it:
+Because the credentials are injected when the `Pod` starts, we need to restart
+it. However, before doing so, we must set the `fsGroup` on the `Deployment` to
+accommodate for how Kubernetes [mounts a projected service account
+volume](https://github.com/aws/amazon-eks-pod-identity-webhook/issues/8#issuecomment-636888074).
+You can set the `fsGroup` to any sensible value. This will automatically kill
+the existing `Pod` and you should immediately see another one created for the
+`provider-aws` controller. It will have access to credentials used to assume the
+IAM role.
 
-```
-kubectl delete pod <pod-name> -n crossplane-system
-```
-
-You should immediately see another `Pod` be created for the `provider-aws`
-controller. It will have access to credentials used to assume the IAM role.
-
-7. Create `Provider`
+7. Create `ProviderConfig`
 
 To utilize those credentials to provision new resources, you must create a
-`Provider` with `useServiceAccount: true`:
+`ProviderConfig` with `source: InjectedIdentity`:
 
 ```
-cat > aws-provider.yaml <<EOF
-apiVersion: aws.crossplane.io/v1alpha3
-kind: Provider
+cat > provider-config.yaml <<EOF
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
 metadata:
   name: aws-provider
 spec:
-  useServiceAccount: true # this tells crossplane to look for credentials injected from service account
-  region: us-west-2
+  credentials:
+    source: InjectedIdentity
 EOF
 
-kubectl apply -f aws-provider.yaml
+kubectl apply -f provider-config.yaml
 ```
 
-You can now reference this `Provider` to provision any `provider-aws` resources.
+You can now reference this `ProviderConfig` to provision any `provider-aws`
+resources.

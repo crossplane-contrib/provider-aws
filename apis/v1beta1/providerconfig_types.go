@@ -25,14 +25,6 @@ import (
 // A ProviderConfigSpec defines the desired state of a ProviderConfig.
 type ProviderConfigSpec struct {
 	runtimev1alpha1.ProviderConfigSpec `json:",inline"`
-
-	// UseServiceAccount indicates to use an IAM Role associated Kubernetes
-	// ServiceAccount for authentication instead of a credentials Secret.
-	// https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
-	//
-	// If set to true, credentialsSecretRef will be ignored.
-	// +optional
-	UseServiceAccount *bool `json:"useServiceAccount,omitempty"`
 }
 
 // A ProviderConfigStatus represents the status of a ProviderConfig.
