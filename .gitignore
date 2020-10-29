@@ -11,3 +11,6 @@ cover.out
 
 # ignore vscode files (debug config etc...)
 /.vscode
+
+# ignore asdf local versions
+/.tool-versions
