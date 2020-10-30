@@ -1,0 +1,8 @@
+ignore:
+  shape_names:
+    - RepositoryName
+resources:
+  Repository:
+    exceptions:
+      codes:
+        404: RepositoryNotFoundException

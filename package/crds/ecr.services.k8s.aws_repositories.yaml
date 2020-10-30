@@ -4,7 +4,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: repositories.ecr.aws.crossplane.io
+  name: repositories.ecr.services.k8s.aws
 spec:
   additionalPrinterColumns:
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
@@ -14,12 +14,9 @@ spec:
     name: SYNCED
     type: string
   - JSONPath: .metadata.annotations.crossplane\.io/external-name
-    name: ID
+    name: EXTERNAL-NAME
     type: string
-  - JSONPath: .status.atProvider.repositoryUri
-    name: URI
-    type: string
-  group: ecr.aws.crossplane.io
+  group: ecr.services.k8s.aws
   names:
     categories:
     - crossplane
@@ -34,7 +31,7 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      description: A Repository is a managed resource that represents an Elastic Container Repository
+      description: Repository is the Schema for the Repositories API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -45,7 +42,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: A RepositorySpec defines the desired state of a Elastic Container Repository.
+          description: RepositorySpec defines the desired state of Repository
           properties:
             deletionPolicy:
               description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
@@ -54,44 +51,43 @@ spec:
               - Delete
               type: string
             forProvider:
-              description: RepositoryParameters define the desired state of an AWS Elastic Container Repository
+              description: RepositoryParameters defines the desired state of Repository
               properties:
+                encryptionConfiguration:
+                  description: The encryption configuration for the repository. This determines how the contents of your repository are encrypted at rest.
+                  properties:
+                    encryptionType:
+                      description: "The encryption type to use. \n If you use the KMS encryption type, the contents of the repository will be encrypted using server-side encryption with customer master keys (CMKs) stored in AWS KMS. When you use AWS KMS to encrypt your data, you can either use the default AWS managed CMK for Amazon ECR, or specify your own CMK, which you already created. For more information, see Protecting Data Using Server-Side Encryption with CMKs Stored in AWS Key Management Service (SSE-KMS) (https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingKMSEncryption.html) in the Amazon Simple Storage Service Console Developer Guide.. \n If you use the AES256 encryption type, Amazon ECR uses server-side encryption with Amazon S3-managed encryption keys which encrypts the images in the repository using an AES-256 encryption algorithm. For more information, see Protecting Data Using Server-Side Encryption with Amazon S3-Managed Encryption Keys (SSE-S3) (https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingServerSideEncryption.html) in the Amazon Simple Storage Service Console Developer Guide.."
+                      type: string
+                    kmsKey:
+                      description: If you use the KMS encryption type, specify the CMK to use for encryption. The alias, key ID, or full ARN of the CMK can be specified. The key must exist in the same Region as the repository. If no key is specified, the default AWS managed CMK for Amazon ECR will be used.
+                      type: string
+                  type: object
                 imageScanningConfiguration:
                   description: The image scanning configuration for the repository. This determines whether images are scanned for known vulnerabilities after being pushed to the repository.
                   properties:
                     scanOnPush:
                       description: The setting that determines whether images are scanned after being pushed to a repository. If set to true, images will be scanned after being pushed. If this parameter is not specified, it will default to false and images will not be scanned unless a scan is manually started with the StartImageScan API.
                       type: boolean
-                  required:
-                  - scanOnPush
                   type: object
                 imageTagMutability:
                   description: The tag mutability setting for the repository. If this parameter is omitted, the default setting of MUTABLE will be used which will allow image tags to be overwritten. If IMMUTABLE is specified, all image tags within the repository will be immutable which will prevent them from being overwritten.
-                  enum:
-                  - MUTABLE
-                  - IMMUTABLE
                   type: string
                 region:
-                  description: Region is the region you'd like your Repository to be created in.
+                  description: Region is which region the Repository will be created.
                   type: string
                 tags:
-                  description: Metadata tagging key value pairs
+                  description: The metadata that you apply to the repository to help you categorize and organize them. Each tag consists of a key and an optional value, both of which you define. Tag keys can have a maximum character length of 128 characters, and tag values can have a maximum length of 256 characters.
                   items:
-                    description: Tag defines a tag
                     properties:
                       key:
-                        description: Key is the name of the tag.
+                        description: One part of a key-value pair that make up a tag. A key is a general label that acts like a category for more specific tag values.
                         type: string
                       value:
-                        description: Value is the value of the tag.
+                        description: The optional part of a key-value pair that make up a tag. A value acts as a descriptor within a tag category (key).
                         type: string
-                    required:
-                    - key
-                    - value
                     type: object
                   type: array
-              required:
-              - region
               type: object
             providerConfigRef:
               description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
@@ -128,29 +124,24 @@ spec:
           - forProvider
           type: object
         status:
-          description: A RepositoryStatus represents the observed state of a Elastic Container Repository.
+          description: RepositoryStatus defines the observed state of Repository.
           properties:
             atProvider:
-              description: RepositoryObservation keeps the state for the external resource
+              description: RepositoryObservation defines the observed state of Repository
               properties:
                 createdAt:
                   description: The date and time, in JavaScript date format, when the repository was created.
                   format: date-time
                   type: string
-                registryId:
+                registryID:
                   description: The AWS account ID associated with the registry that contains the repository.
                   type: string
-                repositoryArn:
+                repositoryARN:
                   description: The Amazon Resource Name (ARN) that identifies the repository. The ARN contains the arn:aws:ecr namespace, followed by the region of the repository, AWS account ID of the repository owner, repository namespace, and repository name. For example, arn:aws:ecr:region:012345678910:repository/test.
                   type: string
-                repositoryName:
-                  description: The name of the repository.
-                  type: string
-                repositoryUri:
+                repositoryURI:
                   description: The URI for the repository. You can use this URI for container image push and pull operations.
                   type: string
-              required:
-              - registryId
               type: object
             conditions:
               description: Conditions of the resource.
@@ -183,8 +174,6 @@ spec:
           required:
           - atProvider
           type: object
-      required:
-      - spec
       type: object
   version: v1alpha1
   versions:
