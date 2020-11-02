@@ -2,6 +2,14 @@ apiVersion: meta.pkg.crossplane.io/v1alpha1
 kind: Provider
 metadata:
   name: provider-aws
+  annotations:
+    company: Crossplane
+    maintainer: Crossplane Maintainers <info@crossplane.io>
+    source: github.com/crossplane/provider-aws
+    license: Apache-2.0
+    description: |
+      provider-aws is the Crossplane infrastructure provider for Amazon Web Services (AWS).
+
 spec:
   controller:
     image: crossplane/provider-aws-controller:VERSION
