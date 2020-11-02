@@ -4,7 +4,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: repositories.ecr.services.k8s.aws
+  name: repositories.ecr.aws.crossplane.io
 spec:
   additionalPrinterColumns:
   - JSONPath: .status.conditions[?(@.type=='Ready')].status
@@ -16,7 +16,7 @@ spec:
   - JSONPath: .metadata.annotations.crossplane\.io/external-name
     name: EXTERNAL-NAME
     type: string
-  group: ecr.services.k8s.aws
+  group: ecr.aws.crossplane.io
   names:
     categories:
     - crossplane

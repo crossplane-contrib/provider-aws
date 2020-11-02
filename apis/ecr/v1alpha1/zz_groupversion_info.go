@@ -22,7 +22,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "ecr.services.k8s.aws"
+	Group   = "ecr.aws.crossplane.io"
 	Version = "v1alpha1"
 )
 

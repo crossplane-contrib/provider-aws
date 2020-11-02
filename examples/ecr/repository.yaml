@@ -1,4 +1,4 @@
-apiVersion: ecr.services.k8s.aws/v1alpha1
+apiVersion: ecr.aws.crossplane.io/v1alpha1
 kind: Repository
 metadata:
   name: example

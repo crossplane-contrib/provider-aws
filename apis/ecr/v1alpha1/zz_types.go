@@ -45,12 +45,12 @@ type EncryptionConfiguration struct {
 }
 
 type Image struct {
-	// The AWS account ID associated with the registry that contains the repository.
+	// The AWS account ID associated with the registry to which this image belongs.
 	RegistryID *string `json:"registryID,omitempty"`
 }
 
 type ImageDetail struct {
-	// The AWS account ID associated with the registry that contains the repository.
+	// The AWS account ID associated with the registry to which this image belongs.
 	RegistryID *string `json:"registryID,omitempty"`
 }
 
@@ -74,11 +74,12 @@ type Repository_SDK struct {
 	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 	// The encryption configuration for the repository. This determines how the
 	// contents of your repository are encrypted at rest.
-	EncryptionConfiguration    *EncryptionConfiguration    `json:"encryptionConfiguration,omitempty"`
+	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
+
 	ImageScanningConfiguration *ImageScanningConfiguration `json:"imageScanningConfiguration,omitempty"`
 	// The tag mutability setting for the repository.
 	ImageTagMutability *string `json:"imageTagMutability,omitempty"`
-	// The AWS account ID associated with the registry that contains the repository.
+	// The AWS account ID associated with the registry to which this image belongs.
 	RegistryID *string `json:"registryID,omitempty"`
 	// The Amazon Resource Name (ARN) that identifies the repository. The ARN contains
 	// the arn:aws:ecr namespace, followed by the region of the repository, AWS
