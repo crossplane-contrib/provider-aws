@@ -33,9 +33,10 @@ import (
 
 func main() {
 	var (
-		app        = kingpin.New(filepath.Base(os.Args[0]), "AWS support for Crossplane.").DefaultEnvars()
-		debug      = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
-		syncPeriod = app.Flag("sync", "Controller manager sync period duration such as 300ms, 1.5h or 2h45m").Short('s').Default("1h").Duration()
+		app            = kingpin.New(filepath.Base(os.Args[0]), "AWS support for Crossplane.").DefaultEnvars()
+		debug          = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
+		syncPeriod     = app.Flag("sync", "Controller manager sync period duration such as 300ms, 1.5h or 2h45m").Short('s').Default("1h").Duration()
+		leaderElection = app.Flag("leader-election", "Use leader election for the conroller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
 	)
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
@@ -53,7 +54,11 @@ func main() {
 	cfg, err := ctrl.GetConfig()
 	kingpin.FatalIfError(err, "Cannot get API server rest config")
 
-	mgr, err := ctrl.NewManager(cfg, ctrl.Options{SyncPeriod: syncPeriod})
+	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
+		LeaderElection:   *leaderElection,
+		LeaderElectionID: "crossplane-leader-election-provider-aws",
+		SyncPeriod:       syncPeriod,
+	})
 	kingpin.FatalIfError(err, "Cannot create controller manager")
 
 	kingpin.FatalIfError(apis.AddToScheme(mgr.GetScheme()), "Cannot add AWS APIs to scheme")
