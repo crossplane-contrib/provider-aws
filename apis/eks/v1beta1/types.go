@@ -196,6 +196,7 @@ type VpcConfigRequest struct {
 	// interfaces that Amazon EKS creates to use to allow communication between
 	// your worker nodes and the Kubernetes control plane. If you don't specify
 	// a security group, the default security group for your VPC is used.
+	// +immutable
 	// +optional
 	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
 
@@ -212,6 +213,7 @@ type VpcConfigRequest struct {
 	// Specify subnets for your Amazon EKS worker nodes. Amazon EKS creates cross-account
 	// elastic network interfaces in these subnets to allow communication between
 	// your worker nodes and the Kubernetes control plane.
+	// +immutable
 	// +optional
 	SubnetIDs []string `json:"subnetIds,omitempty"`
 

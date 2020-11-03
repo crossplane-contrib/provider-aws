@@ -176,12 +176,13 @@ func GenerateUpdateClusterConfigInput(name string, p *v1beta1.ClusterParameters)
 		}
 	}
 
+	// NOTE(muvaf): SecurityGroupIds and SubnetIds cannot be updated. They are
+	// included in VpcConfigRequest probably because it is used in Create call
+	// as well.
 	u.ResourcesVpcConfig = &eks.VpcConfigRequest{
 		EndpointPrivateAccess: p.ResourcesVpcConfig.EndpointPrivateAccess,
 		EndpointPublicAccess:  p.ResourcesVpcConfig.EndpointPublicAccess,
 		PublicAccessCidrs:     p.ResourcesVpcConfig.PublicAccessCidrs,
-		SecurityGroupIds:      p.ResourcesVpcConfig.SecurityGroupIDs,
-		SubnetIds:             p.ResourcesVpcConfig.SubnetIDs,
 	}
 	return u
 }
@@ -311,11 +312,11 @@ func IsUpToDate(p *v1beta1.ClusterParameters, cluster *eks.Cluster) (bool, error
 			}
 		}
 	}
-
-	return cmp.Equal(&v1beta1.ClusterParameters{}, patch, cmpopts.EquateEmpty(),
-		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{}),
+	res := cmp.Equal(&v1beta1.ClusterParameters{}, patch, cmpopts.EquateEmpty(),
+		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{}, []v1alpha1.Reference{}),
 		cmpopts.IgnoreFields(v1beta1.ClusterParameters{}, "Region"),
-		cmpopts.IgnoreFields(v1beta1.VpcConfigRequest{}, "SecurityGroupIDRefs", "SubnetIDRefs", "PublicAccessCidrs")), nil
+		cmpopts.IgnoreFields(v1beta1.VpcConfigRequest{}, "PublicAccessCidrs", "SubnetIDs", "SecurityGroupIDs"))
+	return res, nil
 }
 
 // GetConnectionDetails extracts managed.ConnectionDetails out of eks.Cluster.
