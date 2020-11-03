@@ -54,20 +54,38 @@ type FargateProfileObservation struct {
 
 	// The full Amazon Resource Name (ARN) of the Fargate profile.
 	FargateProfileArn string `json:"fargateProfileArn"`
-
+	
 	// The current status of the Fargate profile.
 	Status FargateProfileStatusType `json:"status"`
 }
 
 // FargateProfileParameters define the desired state of an AWS Elastic Kubernetes
 // Service FargateProfile.
+// All fields are immutable as it is not possible to update a Fargate profile.
 type FargateProfileParameters struct {
+	
+	// Region is the region you'd like  the FargateProfile to be created in.
+	// +immutable
+	Region string `json:"region"`
 
 	// The name of the Amazon EKS cluster to apply the Fargate profile to.
 	//
 	// ClusterName is a required field
-	ClusterName string `json:"clusterName"`
+	// +immutable
+	ClusterName string `json:"clusterName,omitempty"`
 
+	// ClusterNameRef is a reference to a Cluster used to set
+	// the ClusterName.
+	// +immutable
+	// +optional
+	ClusterNameRef *runtimev1alpha1.Reference `json:"clusterNameRef,omitempty"`
+	
+	// ClusterNameSelector selects references to a Cluster used
+	// to set the ClusterName.
+	// +immutable
+	// +optional
+	ClusterNameSelector *runtimev1alpha1.Selector `json:"clusterNameSelector,omitempty"`
+	
 	// The Amazon Resource Name (ARN) of the pod execution role to use for pods
 	// that match the selectors in the Fargate profile. The pod execution role allows
 	// Fargate infrastructure to register with your cluster as a node, and it provides
@@ -76,25 +94,39 @@ type FargateProfileParameters struct {
 	// in the Amazon EKS User Guide.
 	//
 	// PodExecutionRoleArn is a required field
+	// +immutable
 	PodExecutionRoleArn string `json:"podExecutionRoleArn"`
-
+	
 	// The selectors to match for pods to use this Fargate profile. Each selector
 	// must have an associated namespace. Optionally, you can also specify labels
 	// for a namespace. You may specify up to five selectors in a Fargate profile.
+	// +immutable
 	// +optional
-	Selectors []*FargateProfileSelector `json:"selectors,omitempty"`
+	Selectors []FargateProfileSelector `json:"selectors,omitempty"`
 
 	// The IDs of subnets to launch your pods into. At this time, pods running on
 	// Fargate are not assigned public IP addresses, so only private subnets (with
 	// no direct route to an Internet Gateway) are accepted for this parameter.
 	// +optional
+	// +immutable
 	Subnets []string `json:"subnets,omitempty"`
 
+	// SubnetRefs are references to Subnets used to set the Subnets.
+	// +immutable
+	// +optional
+	SubnetRefs []runtimev1alpha1.Reference `json:"subnetRefs,omitempty"`
+	
+	// SubnetSelector selects references to Subnets used to set the Subnets.
+	// +immutable
+	// +optional
+	SubnetSelector *runtimev1alpha1.Selector `json:"subnetSelector,omitempty"`
+	
 	// The metadata to apply to the Fargate profile to assist with categorization
 	// and organization. Each tag consists of a key and an optional value, both
 	// of which you define. Fargate profile tags do not propagate to any other resources
 	// associated with the Fargate profile, such as the pods that are scheduled
 	// with it.
+	// +immutable
 	// +optional
 	Tags map[string]string `json:"tags,omitempty"`
 }

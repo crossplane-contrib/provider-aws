@@ -1,0 +1,17 @@
+apiVersion: eks.aws.crossplane.io/v1alpha1
+kind: FargateProfile
+metadata:
+  name: my-fargateprofile
+  labels:
+    examplelabelkey: "examplelabelval"
+spec:
+  forProvider:
+    region: eu-central-1
+    clusterName: my-awesome-cluster
+    podExecutionRoleArn: "arn:aws:iam::123456789:role/AmazonEKSFargatePodExecutionRole"
+    selectors:
+    - namespace: default
+    tags:
+      exampletagkey: "exampletagval"
+  providerConfigRef:
+    name: provider
