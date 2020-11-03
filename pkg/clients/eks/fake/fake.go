@@ -40,6 +40,10 @@ type MockClient struct {
 	MockUpdateNodegroupVersionRequest func(*eks.UpdateNodegroupVersionInput) eks.UpdateNodegroupVersionRequest
 	MockUpdateNodegroupConfigRequest  func(*eks.UpdateNodegroupConfigInput) eks.UpdateNodegroupConfigRequest
 	MockDeleteNodegroupRequest        func(*eks.DeleteNodegroupInput) eks.DeleteNodegroupRequest
+
+	MockDescribeFargateProfileRequest func(*eks.DescribeFargateProfileInput) eks.DescribeFargateProfileRequest
+	MockCreateFargateProfileRequest   func(*eks.CreateFargateProfileInput) eks.CreateFargateProfileRequest
+	MockDeleteFargateProfileRequest   func(*eks.DeleteFargateProfileInput) eks.DeleteFargateProfileRequest
 }
 
 // CreateClusterRequest calls the underlying MockCreateClusterRequest method.
@@ -108,4 +112,22 @@ func (c *MockClient) UpdateNodegroupConfigRequest(i *eks.UpdateNodegroupConfigIn
 // method.
 func (c *MockClient) DeleteNodegroupRequest(i *eks.DeleteNodegroupInput) eks.DeleteNodegroupRequest {
 	return c.MockDeleteNodegroupRequest(i)
+}
+
+// DescribeFargateProfileRequest calls the underlying MockDescribeFargateProfileRequest
+// method.
+func (c *MockClient) DescribeFargateProfileRequest(i *eks.DescribeFargateProfileInput) eks.DescribeFargateProfileRequest {
+	return c.MockDescribeFargateProfileRequest(i)
+}
+
+// CreateFargateProfileRequest calls the underlying MockCreateFargateProfileRequest
+// method.
+func (c *MockClient) CreateFargateProfileRequest(i *eks.CreateFargateProfileInput) eks.CreateFargateProfileRequest {
+	return c.MockCreateFargateProfileRequest(i)
+}
+
+// DeleteFargateProfileRequest calls the underlying MockDeleteFargateProfileRequest
+// method.
+func (c *MockClient) DeleteFargateProfileRequest(i *eks.DeleteFargateProfileInput) eks.DeleteFargateProfileRequest {
+	return c.MockDeleteFargateProfileRequest(i)
 }
