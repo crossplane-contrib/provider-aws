@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2019 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,19 +25,23 @@ import (
 // BucketPolicyParameters define the desired state of an AWS BucketPolicy.
 type BucketPolicyParameters struct {
 	// Region is where the Bucket referenced by this BucketPolicy resides.
+	// +immutable
 	Region string `json:"region"`
 
 	// This is the current IAM policy version
-	PolicyVersion string `json:"version"`
+	Version string `json:"version"`
 
 	// This is the policy's optional identifier
-	PolicyID string `json:"id,omitempty"`
+	// +immutable
+	// +optional
+	ID string `json:"id,omitempty"`
 
 	// This is the list of statement this policy applies
-	PolicyStatement []BucketPolicyStatement `json:"statement"`
+	Statements []BucketPolicyStatement `json:"statements"`
 
 	// BucketName presents the name of the bucket.
 	// +optional
+	// +immutable
 	BucketName *string `json:"bucketName,omitempty"`
 
 	// BucketNameRef references to an S3Bucket to retrieve its bucketName
@@ -55,7 +59,7 @@ type BucketPolicyStatement struct {
 	// Optional identifier for this statement, must be unique within the
 	// policy if provided.
 	// +optional
-	StatementID *string `json:"sid,omitempty"`
+	SID *string `json:"sid,omitempty"`
 
 	// The effect is required and specifies whether the statement results
 	// in an allow or an explicit deny. Valid values for Effect are Allow and Deny.
@@ -75,26 +79,26 @@ type BucketPolicyStatement struct {
 	// Each element of the PolicyAction array describes the specific
 	// action or actions that will be allowed or denied with this PolicyStatement.
 	// +optional
-	PolicyAction []string `json:"action,omitempty"`
+	Action []string `json:"action,omitempty"`
 
 	// Each element of the NotPolicyAction array will allow the property to match
 	// all but the listed actions.
 	// +optional
-	NotPolicyAction []string `json:"notAction,omitempty"`
+	NotAction []string `json:"notAction,omitempty"`
 
 	// The paths on which this resource will apply
 	// +optional
-	ResourcePath []string `json:"resource,omitempty"`
+	Resource []string `json:"resource,omitempty"`
 
 	// This will explicitly match all resource paths except the ones
 	// specified in this array
 	// +optional
-	NotResourcePath []string `json:"notResource,omitempty"`
+	NotResource []string `json:"notResource,omitempty"`
 
 	// Condition specifies where conditions for policy are in effect.
 	// https://docs.aws.amazon.com/AmazonS3/latest/dev/amazon-s3-policy-keys.html
 	// +optional
-	ConditionBlock map[string]Condition `json:"condition,omitempty"`
+	Condition map[string]Condition `json:"condition,omitempty"`
 }
 
 // BucketPrincipal defines the principal users affected by
@@ -104,11 +108,13 @@ type BucketPolicyStatement struct {
 type BucketPrincipal struct {
 	// This flag indicates if the policy should be made available
 	// to all anonymous users.
+	// +optional
 	AllowAnon bool `json:"allowAnon,omitempty"`
 
 	// This list contains the all of the AWS IAM users which are affected
 	// by the policy statement.
-	AWSPrincipals []AWSPrincipal `json:"aws,omitempty"`
+	// +optional
+	AWSPrincipals []AWSPrincipal `json:"awsPrincipals,omitempty"`
 
 	// This string contains the identifier for any federated web identity
 	// provider.
@@ -125,31 +131,34 @@ type BucketPrincipal struct {
 type AWSPrincipal struct {
 	// IAMUserARN contains the ARN of an IAM user
 	// +optional
-	IAMUserARN *string `json:"IAMUserArn,omitempty"`
+	// +immutable
+	IAMUserARN *string `json:"iamUserArn,omitempty"`
 
 	// IAMUserARNRef contains the reference to an IAMUser
 	// +optional
-	IAMUserARNRef *runtimev1alpha1.Reference `json:"IAMUserArnRef,omitempty"`
+	IAMUserARNRef *runtimev1alpha1.Reference `json:"iamUserArnRef,omitempty"`
 
 	// IAMUserARNSelector queries for an IAMUser to retrieve its userName
 	// +optional
-	IAMUserARNSelector *runtimev1alpha1.Selector `json:"IAMUserArnSelector,omitempty"`
+	IAMUserARNSelector *runtimev1alpha1.Selector `json:"iamUserArnSelector,omitempty"`
 
 	// AWSAccountID identifies an AWS account as the principal
 	// +optional
+	// +immutable
 	AWSAccountID *string `json:"awsAccountId,omitempty"`
 
 	// IAMRoleARN contains the ARN of an IAM role
 	// +optional
-	IAMRoleARN *string `json:"IAMRoleArn,omitempty"`
+	// +immutable
+	IAMRoleARN *string `json:"iamRoleArn,omitempty"`
 
 	// IAMRoleARNRef contains the reference to an IAMRole
 	// +optional
-	IAMRoleARNRef *runtimev1alpha1.Reference `json:"IAMRoleArnRef,omitempty"`
+	IAMRoleARNRef *runtimev1alpha1.Reference `json:"iamRoleArnRef,omitempty"`
 
 	// IAMRoleARNSelector queries for an IAM role to retrieve its userName
 	// +optional
-	IAMRoleARNSelector *runtimev1alpha1.Selector `json:"IAMRoleArnSelector,omitempty"`
+	IAMRoleARNSelector *runtimev1alpha1.Selector `json:"iamRoleArnSelector,omitempty"`
 }
 
 // Condition represents one condition inside of the set of conditions for

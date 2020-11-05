@@ -43,26 +43,26 @@ func withPrincipal(s *v1alpha2.BucketPrincipal) statementModifier {
 
 func withPolicyAction(s []string) statementModifier {
 	return func(statement *v1alpha2.BucketPolicyStatement) {
-		statement.PolicyAction = s
+		statement.Action = s
 	}
 }
 
 func withResourcePath(s []string) statementModifier {
 	return func(statement *v1alpha2.BucketPolicyStatement) {
-		statement.ResourcePath = s
+		statement.Resource = s
 	}
 }
 
 func withConditionBlock(m map[string]v1alpha2.Condition) statementModifier {
 	return func(statement *v1alpha2.BucketPolicyStatement) {
-		statement.ConditionBlock = m
+		statement.Condition = m
 	}
 }
 
 func policyStatement(m ...statementModifier) *v1alpha2.BucketPolicyStatement {
 	cr := &v1alpha2.BucketPolicyStatement{
-		StatementID: statementID,
-		Effect:      effect,
+		SID:    statementID,
+		Effect: effect,
 	}
 	for _, f := range m {
 		f(cr)

@@ -65,11 +65,19 @@ spec:
                       name:
                         description: Name of the referenced object.
                         type: string
-                    required:
-                    - name
-                    type: object
-                  bucketNameSelector:
-                    description: BucketNameSelector selects a reference to an S3Bucket to retrieve its bucketName
+                      description: MatchLabels ensures an object with matching labels is selected.
+                      type: object
+                  type: object
+                id:
+                  description: This is the policy's optional identifier
+                  type: string
+                region:
+                  description: Region is where the Bucket referenced by this BucketPolicy resides.
+                  type: string
+                statements:
+                  description: This is the list of statement this policy applies
+                  items:
+                    description: BucketPolicyStatement defines an individual statement within the BucketPolicyBody
                     properties:
                       matchControllerRef:
                         description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
@@ -128,155 +136,155 @@ spec:
                           - Allow
                           - Deny
                           type: string
-                        notAction:
-                          description: Each element of the NotPolicyAction array will allow the property to match all but the listed actions.
-                          items:
+                        type: array
+                      notPrincipal:
+                        description: Used with the S3 policy to specify the users which are not included in this policy
+                        properties:
+                          allowAnon:
+                            description: This flag indicates if the policy should be made available to all anonymous users.
+                            type: boolean
+                          awsPrincipals:
+                            description: This list contains the all of the AWS IAM users which are affected by the policy statement.
+                            items:
+                              description: AWSPrincipal wraps the potential values a policy principal can take. Only one of the values should be set.
+                              properties:
+                                awsAccountId:
+                                  description: AWSAccountID identifies an AWS account as the principal
+                                  type: string
+                                iamRoleArn:
+                                  description: IAMRoleARN contains the ARN of an IAM role
+                                  type: string
+                                iamRoleArnRef:
+                                  description: IAMRoleARNRef contains the reference to an IAMRole
+                                  properties:
+                                    name:
+                                      description: Name of the referenced object.
+                                      type: string
+                                  required:
+                                  - name
+                                  type: object
+                                iamRoleArnSelector:
+                                  description: IAMRoleARNSelector queries for an IAM role to retrieve its userName
+                                  properties:
+                                    matchControllerRef:
+                                      description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                                      type: boolean
+                                    matchLabels:
+                                      additionalProperties:
+                                        type: string
+                                      description: MatchLabels ensures an object with matching labels is selected.
+                                      type: object
+                                  type: object
+                                iamUserArn:
+                                  description: IAMUserARN contains the ARN of an IAM user
+                                  type: string
+                                iamUserArnRef:
+                                  description: IAMUserARNRef contains the reference to an IAMUser
+                                  properties:
+                                    name:
+                                      description: Name of the referenced object.
+                                      type: string
+                                  required:
+                                  - name
+                                  type: object
+                                iamUserArnSelector:
+                                  description: IAMUserARNSelector queries for an IAMUser to retrieve its userName
+                                  properties:
+                                    matchControllerRef:
+                                      description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                                      type: boolean
+                                    matchLabels:
+                                      additionalProperties:
+                                        type: string
+                                      description: MatchLabels ensures an object with matching labels is selected.
+                                      type: object
+                                  type: object
+                              type: object
+                            type: array
+                          federated:
+                            description: This string contains the identifier for any federated web identity provider.
                             type: string
-                          type: array
-                        notPrincipal:
-                          description: Used with the S3 policy to specify the users which are not included in this policy
-                          properties:
-                            allowAnon:
-                              description: This flag indicates if the policy should be made available to all anonymous users.
-                              type: boolean
-                            aws:
-                              description: This list contains the all of the AWS IAM users which are affected by the policy statement.
-                              items:
-                                description: AWSPrincipal wraps the potential values a policy principal can take. Only one of the values should be set.
-                                properties:
-                                  IAMRoleArn:
-                                    description: IAMRoleARN contains the ARN of an IAM role
-                                    type: string
-                                  IAMRoleArnRef:
-                                    description: IAMRoleARNRef contains the reference to an IAMRole
-                                    properties:
-                                      name:
-                                        description: Name of the referenced object.
-                                        type: string
-                                    required:
-                                    - name
-                                    type: object
-                                  IAMRoleArnSelector:
-                                    description: IAMRoleARNSelector queries for an IAM role to retrieve its userName
-                                    properties:
-                                      matchControllerRef:
-                                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
-                                        type: boolean
-                                      matchLabels:
-                                        additionalProperties:
-                                          type: string
-                                        description: MatchLabels ensures an object with matching labels is selected.
-                                        type: object
-                                    type: object
-                                  IAMUserArn:
-                                    description: IAMUserARN contains the ARN of an IAM user
-                                    type: string
-                                  IAMUserArnRef:
-                                    description: IAMUserARNRef contains the reference to an IAMUser
-                                    properties:
-                                      name:
-                                        description: Name of the referenced object.
-                                        type: string
-                                    required:
-                                    - name
-                                    type: object
-                                  IAMUserArnSelector:
-                                    description: IAMUserARNSelector queries for an IAMUser to retrieve its userName
-                                    properties:
-                                      matchControllerRef:
-                                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
-                                        type: boolean
-                                      matchLabels:
-                                        additionalProperties:
-                                          type: string
-                                        description: MatchLabels ensures an object with matching labels is selected.
-                                        type: object
-                                    type: object
-                                  awsAccountId:
-                                    description: AWSAccountID identifies an AWS account as the principal
-                                    type: string
-                                type: object
-                              type: array
-                            federated:
-                              description: This string contains the identifier for any federated web identity provider.
+                          service:
+                            description: Service define the services which can have access to this bucket
+                            items:
                               type: string
-                            service:
-                              description: Service define the services which can have access to this bucket
-                              items:
-                                type: string
-                              type: array
-                          type: object
-                        notResource:
-                          description: This will explicitly match all resource paths except the ones specified in this array
-                          items:
+                            type: array
+                        type: object
+                      notResource:
+                        description: This will explicitly match all resource paths except the ones specified in this array
+                        items:
+                          type: string
+                        type: array
+                      principal:
+                        description: Used with the S3 policy to specify the principal that is allowed or denied access to a resource.
+                        properties:
+                          allowAnon:
+                            description: This flag indicates if the policy should be made available to all anonymous users.
+                            type: boolean
+                          awsPrincipals:
+                            description: This list contains the all of the AWS IAM users which are affected by the policy statement.
+                            items:
+                              description: AWSPrincipal wraps the potential values a policy principal can take. Only one of the values should be set.
+                              properties:
+                                awsAccountId:
+                                  description: AWSAccountID identifies an AWS account as the principal
+                                  type: string
+                                iamRoleArn:
+                                  description: IAMRoleARN contains the ARN of an IAM role
+                                  type: string
+                                iamRoleArnRef:
+                                  description: IAMRoleARNRef contains the reference to an IAMRole
+                                  properties:
+                                    name:
+                                      description: Name of the referenced object.
+                                      type: string
+                                  required:
+                                  - name
+                                  type: object
+                                iamRoleArnSelector:
+                                  description: IAMRoleARNSelector queries for an IAM role to retrieve its userName
+                                  properties:
+                                    matchControllerRef:
+                                      description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                                      type: boolean
+                                    matchLabels:
+                                      additionalProperties:
+                                        type: string
+                                      description: MatchLabels ensures an object with matching labels is selected.
+                                      type: object
+                                  type: object
+                                iamUserArn:
+                                  description: IAMUserARN contains the ARN of an IAM user
+                                  type: string
+                                iamUserArnRef:
+                                  description: IAMUserARNRef contains the reference to an IAMUser
+                                  properties:
+                                    name:
+                                      description: Name of the referenced object.
+                                      type: string
+                                  required:
+                                  - name
+                                  type: object
+                                iamUserArnSelector:
+                                  description: IAMUserARNSelector queries for an IAMUser to retrieve its userName
+                                  properties:
+                                    matchControllerRef:
+                                      description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                                      type: boolean
+                                    matchLabels:
+                                      additionalProperties:
+                                        type: string
+                                      description: MatchLabels ensures an object with matching labels is selected.
+                                      type: object
+                                  type: object
+                              type: object
+                            type: array
+                          federated:
+                            description: This string contains the identifier for any federated web identity provider.
                             type: string
-                          type: array
-                        principal:
-                          description: Used with the S3 policy to specify the principal that is allowed or denied access to a resource.
-                          properties:
-                            allowAnon:
-                              description: This flag indicates if the policy should be made available to all anonymous users.
-                              type: boolean
-                            aws:
-                              description: This list contains the all of the AWS IAM users which are affected by the policy statement.
-                              items:
-                                description: AWSPrincipal wraps the potential values a policy principal can take. Only one of the values should be set.
-                                properties:
-                                  IAMRoleArn:
-                                    description: IAMRoleARN contains the ARN of an IAM role
-                                    type: string
-                                  IAMRoleArnRef:
-                                    description: IAMRoleARNRef contains the reference to an IAMRole
-                                    properties:
-                                      name:
-                                        description: Name of the referenced object.
-                                        type: string
-                                    required:
-                                    - name
-                                    type: object
-                                  IAMRoleArnSelector:
-                                    description: IAMRoleARNSelector queries for an IAM role to retrieve its userName
-                                    properties:
-                                      matchControllerRef:
-                                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
-                                        type: boolean
-                                      matchLabels:
-                                        additionalProperties:
-                                          type: string
-                                        description: MatchLabels ensures an object with matching labels is selected.
-                                        type: object
-                                    type: object
-                                  IAMUserArn:
-                                    description: IAMUserARN contains the ARN of an IAM user
-                                    type: string
-                                  IAMUserArnRef:
-                                    description: IAMUserARNRef contains the reference to an IAMUser
-                                    properties:
-                                      name:
-                                        description: Name of the referenced object.
-                                        type: string
-                                    required:
-                                    - name
-                                    type: object
-                                  IAMUserArnSelector:
-                                    description: IAMUserARNSelector queries for an IAMUser to retrieve its userName
-                                    properties:
-                                      matchControllerRef:
-                                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
-                                        type: boolean
-                                      matchLabels:
-                                        additionalProperties:
-                                          type: string
-                                        description: MatchLabels ensures an object with matching labels is selected.
-                                        type: object
-                                    type: object
-                                  awsAccountId:
-                                    description: AWSAccountID identifies an AWS account as the principal
-                                    type: string
-                                type: object
-                              type: array
-                            federated:
-                              description: This string contains the identifier for any federated web identity provider.
+                          service:
+                            description: Service define the services which can have access to this bucket
+                            items:
                               type: string
                             service:
                               description: Service define the services which can have access to this bucket
@@ -292,12 +300,67 @@ spec:
                         sid:
                           description: Optional identifier for this statement, must be unique within the policy if provided.
                           type: string
-                      required:
-                      - effect
-                      type: object
-                    type: array
-                  version:
-                    description: This is the current IAM policy version
+                        type: array
+                      sid:
+                        description: Optional identifier for this statement, must be unique within the policy if provided.
+                        type: string
+                    required:
+                    - effect
+                    type: object
+                  type: array
+                version:
+                  description: This is the current IAM policy version
+                  type: string
+              required:
+              - region
+              - statements
+              - version
+              type: object
+            providerConfigRef:
+              description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+              properties:
+                name:
+                  description: Name of the referenced object.
+                  type: string
+              required:
+              - name
+              type: object
+            providerRef:
+              description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+              properties:
+                name:
+                  description: Name of the referenced object.
+                  type: string
+              required:
+              - name
+              type: object
+            writeConnectionSecretToRef:
+              description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+              properties:
+                name:
+                  description: Name of the secret.
+                  type: string
+                namespace:
+                  description: Namespace of the secret.
+                  type: string
+              required:
+              - name
+              - namespace
+              type: object
+          required:
+          - forProvider
+          type: object
+        status:
+          description: An BucketPolicyStatus represents the observed state of an BucketPolicy.
+          properties:
+            conditions:
+              description: Conditions of the resource.
+              items:
+                description: A Condition that may apply to a resource.
+                properties:
+                  lastTransitionTime:
+                    description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                    format: date-time
                     type: string
                 required:
                 - region

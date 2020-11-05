@@ -57,12 +57,12 @@ func IsErrorBucketNotFound(err error) bool {
 // Serialize is the custom marshaller for the BucketPolicyParameters
 func Serialize(p v1alpha2.BucketPolicyParameters) (interface{}, error) {
 	m := make(map[string]interface{})
-	m["Version"] = p.PolicyVersion
-	if p.PolicyID != "" {
-		m["Id"] = p.PolicyID
+	m["Version"] = p.Version
+	if p.ID != "" {
+		m["Id"] = p.ID
 	}
-	slc := make([]interface{}, len(p.PolicyStatement))
-	for i, v := range p.PolicyStatement {
+	slc := make([]interface{}, len(p.Statements))
+	for i, v := range p.Statements {
 		msg, err := SerializeBucketPolicyStatement(v)
 		if err != nil {
 			return nil, err
@@ -90,28 +90,28 @@ func SerializeBucketPolicyStatement(p v1alpha2.BucketPolicyStatement) (interface
 		}
 		m["NotPrincipal"] = notPrincipal
 	}
-	if checkExistsArray(p.PolicyAction) {
-		m["Action"] = tryFirst(p.PolicyAction)
+	if checkExistsArray(p.Action) {
+		m["Action"] = tryFirst(p.Action)
 	}
-	if checkExistsArray(p.NotPolicyAction) {
-		m["NotAction"] = tryFirst(p.NotPolicyAction)
+	if checkExistsArray(p.NotAction) {
+		m["NotAction"] = tryFirst(p.NotAction)
 	}
-	if checkExistsArray(p.ResourcePath) {
-		m["Resource"] = tryFirst(p.ResourcePath)
+	if checkExistsArray(p.Resource) {
+		m["Resource"] = tryFirst(p.Resource)
 	}
-	if checkExistsArray(p.NotResourcePath) {
-		m["NotResource"] = tryFirst(p.NotResourcePath)
+	if checkExistsArray(p.NotResource) {
+		m["NotResource"] = tryFirst(p.NotResource)
 	}
-	if p.ConditionBlock != nil {
-		condition, err := SerializeBucketCondition(p.ConditionBlock)
+	if p.Condition != nil {
+		condition, err := SerializeBucketCondition(p.Condition)
 		if err != nil {
 			return nil, err
 		}
 		m["Condition"] = condition
 	}
 	m["Effect"] = p.Effect
-	if p.StatementID != nil {
-		m["Sid"] = *p.StatementID
+	if p.SID != nil {
+		m["Sid"] = *p.SID
 	}
 	return m, nil
 }

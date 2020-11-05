@@ -1,9 +1,8 @@
 apiVersion: s3.aws.crossplane.io/v1beta1
 kind: Bucket
 metadata:
-  name: test-bucket
+  name: test-bucket12341234
 spec:
-  deletionPolicy: Delete
   forProvider:
     acl: private
     accelerateConfiguration:
@@ -39,6 +38,3 @@ spec:
             days: 15
   providerConfigRef:
     name: example
-  writeConnectionSecretToRef:
-    name: mybucket-1
-    namespace: crossplane-system
