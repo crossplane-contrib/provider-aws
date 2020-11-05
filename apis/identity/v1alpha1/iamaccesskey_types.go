@@ -26,6 +26,7 @@ import (
 type IAMAccessKeyParameters struct {
 	// IAMUsername contains the name of the IAMUser.
 	// +optional
+	// +immutable
 	IAMUsername string `json:"userName,omitempty"`
 
 	// IAMUsernameRef references to an IAMUser to retrieve its userName
@@ -35,6 +36,11 @@ type IAMAccessKeyParameters struct {
 	// IAMUsernameSelector selects a reference to an IAMUser to retrieve its userName
 	// +optional
 	IAMUsernameSelector *runtimev1alpha1.Selector `json:"userNameSelector,omitempty"`
+
+	// The current status of this IAMAccessKey on the AWS
+	// Must be either Active or Inactive.
+	// +kubebuilder:validation:Enum=Active;Inactive
+	Status string `json:"accessKeyStatus,omitempty"`
 }
 
 // An IAMAccessKeySpec defines the desired state of an IAM Access Key.
@@ -43,20 +49,9 @@ type IAMAccessKeySpec struct {
 	ForProvider                  IAMAccessKeyParameters `json:"forProvider"`
 }
 
-// IAMAccessKeyObservation keeps the state for the external resource
-type IAMAccessKeyObservation struct {
-	// The ID of the access key that unique identifies this resource
-	AccessKeyID string `json:"accessKeyId,omitempty"`
-
-	// The current status of this IAMAccessKey
-	// +kubebuilder:validation:Enum=Active;Inactive
-	Status string `json:"accessKeyStatus,omitempty"`
-}
-
 // IAMAccessKeyStatus represents the observed state of an IAM Access Key.
 type IAMAccessKeyStatus struct {
 	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     IAMAccessKeyObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true
@@ -65,8 +60,7 @@ type IAMAccessKeyStatus struct {
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
-// +kubebuilder:printcolumn:name="STATUS",type="string",JSONPath=".status.atProvider.accessKeyStatus"
-// +kubebuilder:printcolumn:name="KEYID",type="string",JSONPath=".status.atProvider.accessKeyId"
+// +kubebuilder:printcolumn:name="STATUS",type="string",JSONPath=".spec.forProvider.accessKeyStatus"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type IAMAccessKey struct {

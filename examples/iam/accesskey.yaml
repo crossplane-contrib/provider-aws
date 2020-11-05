@@ -5,9 +5,8 @@ metadata:
   name: test-accesskey
 spec:
   forProvider:
-    userNameSelector:
-      matchLabels:
-        example: "true"
+    userNameRef:
+      name: someuser
   providerConfigRef:
     name: example
   writeConnectionSecretToRef:

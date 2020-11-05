@@ -3,8 +3,6 @@ apiVersion: identity.aws.crossplane.io/v1alpha1
 kind: IAMUser
 metadata:
   name: someuser
-  labels:
-    example: "true"
 spec:
   forProvider:
     tags:
