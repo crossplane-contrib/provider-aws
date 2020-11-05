@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -70,13 +71,13 @@ func withUsername(username string) accessModifier {
 
 func withStatus(status string) accessModifier {
 	return func(r *v1alpha1.IAMAccessKey) {
-		r.Status.AtProvider.Status = status
+		r.Spec.ForProvider.Status = status
 	}
 }
 
 func withAccessKey(keyid string) accessModifier {
 	return func(r *v1alpha1.IAMAccessKey) {
-		r.Status.AtProvider.AccessKeyID = keyid
+		meta.SetExternalName(r, keyid)
 	}
 }
 
@@ -196,10 +197,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: accesskey(),
+				cr: accesskey(withAccessKey("test")),
 			},
 			want: want{
-				cr:  accesskey(),
+				cr:  accesskey(withAccessKey("test")),
 				err: errors.Wrap(errBoom, errList),
 			},
 		},
@@ -476,21 +477,6 @@ func TestUpdate(t *testing.T) {
 			want: want{
 				cr:  accesskey(withStatus(string(activeStatus))),
 				err: errors.Wrap(errBoom, errUpdate),
-			},
-		},
-		"ResourceDoesNotExist": {
-			args: args{
-				iam: &fake.MockAccessClient{
-					MockUpdateAccessKeyRequest: func(input *awsiam.UpdateAccessKeyInput) awsiam.UpdateAccessKeyRequest {
-						return awsiam.UpdateAccessKeyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: awserr.New(awsiam.ErrCodeNoSuchEntityException, "", nil)},
-						}
-					},
-				},
-				cr: accesskey(withStatus(string(activeStatus))),
-			},
-			want: want{
-				cr: accesskey(withStatus(string(activeStatus))),
 			},
 		},
 	}
