@@ -1,4 +1,4 @@
-apiVersion: s3.aws.crossplane.io/v1alpha1
+apiVersion: s3.aws.crossplane.io/v1alpha2
 kind: BucketPolicy
 metadata:
   name: bucketpolicy-public
@@ -7,7 +7,7 @@ spec:
     region: us-west-1
     bucketNameRef:
       name: test-bucket
-    statement:
+    statements:
       - action:
           - s3:ListBucket
           - s3:GetBucketLocation
@@ -15,8 +15,8 @@ spec:
           - s3:PutBucketCORS
         effect: Allow
         principal:
-          aws:
-            - IAMUserArnSelector:
+          awsPrincipals:
+            - iamUserArnSelector:
                 example: "true"
         resource:
           - "arn:aws:s3:::test-bucket"

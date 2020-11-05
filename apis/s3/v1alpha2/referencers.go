@@ -44,9 +44,9 @@ func (mg *BucketPolicy) ResolveReferences(ctx context.Context, c client.Reader) 
 	mg.Spec.PolicyBody.BucketNameRef = rsp.ResolvedReference
 
 	// Resolve spec.forProvider.userName
-	if mg.Spec.PolicyBody.PolicyStatement != nil {
-		for i := range mg.Spec.PolicyBody.PolicyStatement {
-			statement := mg.Spec.PolicyBody.PolicyStatement[i]
+	if mg.Spec.PolicyBody.Statements != nil {
+		for i := range mg.Spec.PolicyBody.Statements {
+			statement := mg.Spec.PolicyBody.Statements[i]
 			err = ResolvePrincipal(ctx, r, statement.Principal, i)
 			if err != nil {
 				return err
@@ -63,7 +63,7 @@ func (mg *BucketPolicy) ResolveReferences(ctx context.Context, c client.Reader) 
 
 // ResolvePrincipal resolves all the IAMUser and IAMRole references in a BucketPrincipal
 func ResolvePrincipal(ctx context.Context, r *reference.APIResolver, principal *BucketPrincipal, statementIndex int) error {
-	if principal == nil || principal.AWSPrincipals == nil {
+	if principal == nil {
 		return nil
 	}
 	for i := range principal.AWSPrincipals {

@@ -44,15 +44,15 @@ var (
 	policy         = `{"Statement":[{"Action":"s3:ListBucket","Effect":"Allow","Principal":"*","Resource":"arn:aws:s3:::test.s3.crossplane.com"}],"Version":"2012-10-17"}`
 
 	params = v1alpha2.BucketPolicyParameters{
-		PolicyVersion: "2012-10-17",
-		PolicyStatement: []v1alpha2.BucketPolicyStatement{
+		Version: "2012-10-17",
+		Statements: []v1alpha2.BucketPolicyStatement{
 			{
 				Effect: "Allow",
 				Principal: &v1alpha2.BucketPrincipal{
 					AllowAnon: true,
 				},
-				PolicyAction: []string{"s3:ListBucket"},
-				ResourcePath: []string{"arn:aws:s3:::test.s3.crossplane.com"},
+				Action:   []string{"s3:ListBucket"},
+				Resource: []string{"arn:aws:s3:::test.s3.crossplane.com"},
 			},
 		},
 	}
@@ -78,8 +78,8 @@ func bucketPolicy(m ...bucketPolicyModifier) *v1alpha2.BucketPolicy {
 	cr := &v1alpha2.BucketPolicy{
 		Spec: v1alpha2.BucketPolicySpec{
 			PolicyBody: v1alpha2.BucketPolicyParameters{
-				BucketName:      &bucketName,
-				PolicyStatement: make([]v1alpha2.BucketPolicyStatement, 0),
+				BucketName: &bucketName,
+				Statements: make([]v1alpha2.BucketPolicyStatement, 0),
 			},
 		},
 	}
