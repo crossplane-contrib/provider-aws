@@ -88,6 +88,14 @@ var (
 	IAMGroupPolicyAttachmentGroupVersionKind = SchemeGroupVersion.WithKind(IAMGroupPolicyAttachmentKind)
 )
 
+// IAMAccessKey type metadata.
+var (
+	IAMAccessKeyKind             = reflect.TypeOf(IAMAccessKey{}).Name()
+	IAMAccessKeyGroupKind        = schema.GroupKind{Group: Group, Kind: IAMAccessKeyKind}.String()
+	IAMAccessKeyKindAPIVersion   = IAMAccessKeyKind + "." + SchemeGroupVersion.String()
+	IAMAccessKeyGroupVersionKind = SchemeGroupVersion.WithKind(IAMAccessKeyKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&IAMUser{}, &IAMUserList{})
 	SchemeBuilder.Register(&IAMPolicy{}, &IAMPolicyList{})
@@ -95,4 +103,5 @@ func init() {
 	SchemeBuilder.Register(&IAMGroup{}, &IAMGroupList{})
 	SchemeBuilder.Register(&IAMGroupUserMembership{}, &IAMGroupUserMembershipList{})
 	SchemeBuilder.Register(&IAMGroupPolicyAttachment{}, &IAMGroupPolicyAttachmentList{})
+	SchemeBuilder.Register(&IAMAccessKey{}, &IAMAccessKeyList{})
 }

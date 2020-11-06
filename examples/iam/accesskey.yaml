@@ -1,0 +1,14 @@
+---
+apiVersion: identity.aws.crossplane.io/v1alpha1
+kind: IAMAccessKey
+metadata:
+  name: test-accesskey
+spec:
+  forProvider:
+    userNameRef:
+      name: someuser
+  providerConfigRef:
+    name: example
+  writeConnectionSecretToRef:
+    name: access-key-secret
+    namespace: default
