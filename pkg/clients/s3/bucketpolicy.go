@@ -17,9 +17,13 @@ limitations under the License.
 package s3
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+
+	"github.com/crossplane/provider-aws/apis/s3/v1alpha2"
 )
 
 // BucketPolicyClient is the external client used for S3BucketPolicy Custom Resource
@@ -48,4 +52,139 @@ func IsErrorBucketNotFound(err error) bool {
 		return true
 	}
 	return false
+}
+
+// Serialize is the custom marshaller for the BucketPolicyParameters
+func Serialize(p v1alpha2.BucketPolicyParameters) (interface{}, error) {
+	m := make(map[string]interface{})
+	m["Version"] = p.Version
+	if p.ID != "" {
+		m["Id"] = p.ID
+	}
+	slc := make([]interface{}, len(p.Statements))
+	for i, v := range p.Statements {
+		msg, err := SerializeBucketPolicyStatement(v)
+		if err != nil {
+			return nil, err
+		}
+		slc[i] = msg
+	}
+	m["Statement"] = slc
+	return m, nil
+}
+
+// SerializeBucketPolicyStatement is the custom marshaller for the BucketPolicyStatement
+func SerializeBucketPolicyStatement(p v1alpha2.BucketPolicyStatement) (interface{}, error) { // nolint:gocyclo
+	m := make(map[string]interface{})
+	if p.Principal != nil {
+		principal, err := SerializeBucketPrincipal(p.Principal)
+		if err != nil {
+			return nil, err
+		}
+		m["Principal"] = principal
+	}
+	if p.NotPrincipal != nil {
+		notPrincipal, err := SerializeBucketPrincipal(p.NotPrincipal)
+		if err != nil {
+			return nil, err
+		}
+		m["NotPrincipal"] = notPrincipal
+	}
+	if checkExistsArray(p.Action) {
+		m["Action"] = tryFirst(p.Action)
+	}
+	if checkExistsArray(p.NotAction) {
+		m["NotAction"] = tryFirst(p.NotAction)
+	}
+	if checkExistsArray(p.Resource) {
+		m["Resource"] = tryFirst(p.Resource)
+	}
+	if checkExistsArray(p.NotResource) {
+		m["NotResource"] = tryFirst(p.NotResource)
+	}
+	if p.Condition != nil {
+		condition, err := SerializeBucketCondition(p.Condition)
+		if err != nil {
+			return nil, err
+		}
+		m["Condition"] = condition
+	}
+	m["Effect"] = p.Effect
+	if p.SID != nil {
+		m["Sid"] = *p.SID
+	}
+	return m, nil
+}
+
+// SerializeBucketPrincipal is the custom serializer for the BucketPrincipal
+func SerializeBucketPrincipal(p *v1alpha2.BucketPrincipal) (interface{}, error) {
+	all := "*"
+	if p.AllowAnon {
+		return all, nil
+	}
+	m := make(map[string]interface{})
+	if p.Service != nil {
+		m["Service"] = tryFirst(p.Service)
+	}
+	if p.Federated != nil {
+		m["Federated"] = aws.StringValue(p.Federated)
+	}
+	if len(p.AWSPrincipals) == 1 {
+		m["AWS"] = aws.StringValue(SerializeAWSPrincipal(p.AWSPrincipals[0]))
+	} else if len(p.AWSPrincipals) > 1 {
+		values := make([]interface{}, len(p.AWSPrincipals))
+		for i := range p.AWSPrincipals {
+			values[i] = aws.StringValue(SerializeAWSPrincipal(p.AWSPrincipals[i]))
+		}
+		m["AWS"] = values
+	}
+	return m, nil
+}
+
+// SerializeAWSPrincipal converts an AWSPrincipal to a string
+func SerializeAWSPrincipal(p v1alpha2.AWSPrincipal) *string {
+	switch {
+	case p.AWSAccountID != nil:
+		return p.AWSAccountID
+	case p.IAMRoleARN != nil:
+		return p.IAMRoleARN
+	case p.IAMUserARN != nil:
+		return p.IAMUserARN
+	default:
+		return nil
+	}
+}
+
+// SerializeBucketCondition converts the string -> Condition map
+// into a serialized version
+func SerializeBucketCondition(p map[string]v1alpha2.Condition) (interface{}, error) {
+	m := make(map[string]interface{})
+	for k, v := range p {
+		subMap := make(map[string]interface{})
+		switch {
+		case v.ConditionStringValue != nil:
+			subMap[v.ConditionKey] = *v.ConditionStringValue
+		case v.ConditionBooleanValue != nil:
+			subMap[v.ConditionKey] = *v.ConditionBooleanValue
+		case v.ConditionNumericValue != nil:
+			subMap[v.ConditionKey] = *v.ConditionNumericValue
+		case v.ConditionDateValue != nil:
+			subMap[v.ConditionKey] = v.ConditionDateValue.Time.Format("2006-01-02T15:04:05-0700")
+		default:
+			return nil, fmt.Errorf("no value provided for key with value %s, condition %s", v.ConditionKey, k)
+		}
+		m[k] = subMap
+	}
+	return m, nil
+}
+
+func checkExistsArray(slc []string) bool {
+	return len(slc) != 0
+}
+
+func tryFirst(slc []string) interface{} {
+	if len(slc) == 1 {
+		return slc[0]
+	}
+	return slc
 }

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,21 +24,24 @@ import (
 
 // BucketPolicyParameters define the desired state of an AWS BucketPolicy.
 type BucketPolicyParameters struct {
-
 	// Region is where the Bucket referenced by this BucketPolicy resides.
+	// +immutable
 	Region string `json:"region"`
 
 	// This is the current IAM policy version
-	PolicyVersion string `json:"version"`
+	Version string `json:"version"`
 
 	// This is the policy's optional identifier
-	PolicyID string `json:"id,omitempty"`
+	// +immutable
+	// +optional
+	ID string `json:"id,omitempty"`
 
 	// This is the list of statement this policy applies
-	PolicyStatement []BucketPolicyStatement `json:"statement"`
+	Statements []BucketPolicyStatement `json:"statements"`
 
 	// BucketName presents the name of the bucket.
 	// +optional
+	// +immutable
 	BucketName *string `json:"bucketName,omitempty"`
 
 	// BucketNameRef references to an S3Bucket to retrieve its bucketName
@@ -48,37 +51,6 @@ type BucketPolicyParameters struct {
 	// BucketNameSelector selects a reference to an S3Bucket to retrieve its bucketName
 	// +optional
 	BucketNameSelector *runtimev1alpha1.Selector `json:"bucketNameSelector,omitempty"`
-
-	// UserName presents the name of the IAM user this BucketPolicy is concerned with.
-	// +optional
-	UserName *string `json:"userName,omitempty"`
-
-	// UserNameRef references to an S3Bucket to retrieve its userName
-	// +optional
-	UserNameRef *runtimev1alpha1.Reference `json:"userNameRef,omitempty"`
-
-	// UserNameSelector selects a reference to an S3Bucket to retrieve its userName
-	// +optional
-	UserNameSelector *runtimev1alpha1.Selector `json:"userNameSelector,omitempty"`
-}
-
-// Serialize is the custom marshaller for the BucketPolicyParameters
-func (p *BucketPolicyParameters) Serialize() (interface{}, error) {
-	m := make(map[string]interface{})
-	m["Version"] = p.PolicyVersion
-	if p.PolicyID != "" {
-		m["Id"] = p.PolicyID
-	}
-	slc := make([]interface{}, len(p.PolicyStatement))
-	for i, v := range p.PolicyStatement {
-		msg, err := v.Serialize()
-		if err != nil {
-			return nil, err
-		}
-		slc[i] = msg
-	}
-	m["Statement"] = slc
-	return m, nil
 }
 
 // BucketPolicyStatement defines an individual statement within the
@@ -86,109 +58,131 @@ func (p *BucketPolicyParameters) Serialize() (interface{}, error) {
 type BucketPolicyStatement struct {
 	// Optional identifier for this statement, must be unique within the
 	// policy if provided.
-	StatementID string `json:"sid,omitempty"`
+	// +optional
+	SID *string `json:"sid,omitempty"`
 
 	// The effect is required and specifies whether the statement results
 	// in an allow or an explicit deny. Valid values for Effect are Allow and Deny.
+	// +kubebuilder:validation:Enum=Allow;Deny
 	Effect string `json:"effect"`
 
 	// Used with the S3 policy to specify the principal that is allowed
 	// or denied access to a resource.
+	// +optional
 	Principal *BucketPrincipal `json:"principal,omitempty"`
 
 	// Used with the S3 policy to specify the users which are not included
 	// in this policy
+	// +optional
 	NotPrincipal *BucketPrincipal `json:"notPrincipal,omitempty"`
 
 	// Each element of the PolicyAction array describes the specific
 	// action or actions that will be allowed or denied with this PolicyStatement.
-	PolicyAction []string `json:"action,omitempty"`
+	// +optional
+	Action []string `json:"action,omitempty"`
 
 	// Each element of the NotPolicyAction array will allow the property to match
 	// all but the listed actions.
-	NotPolicyAction []string `json:"notAction,omitempty"`
-
-	// This flag indicates that this policy should apply to the IAMUsername
-	// that was either passed in or created for this bucket, this user will
-	// added to the action array
-	ApplyToIAMUser bool `json:"effectIAMUser,omitempty"`
+	// +optional
+	NotAction []string `json:"notAction,omitempty"`
 
 	// The paths on which this resource will apply
-	ResourcePath []string `json:"resource,omitempty"`
+	// +optional
+	Resource []string `json:"resource,omitempty"`
 
 	// This will explicitly match all resource paths except the ones
 	// specified in this array
-	NotResourcePath []string `json:"notResource,omitempty"`
-}
+	// +optional
+	NotResource []string `json:"notResource,omitempty"`
 
-func checkExistsArray(slc []string) bool {
-	return len(slc) != 0
-}
-
-// Serialize is the custom marshaller for the BucketPolicyStatement
-func (p *BucketPolicyStatement) Serialize() (interface{}, error) {
-	m := make(map[string]interface{})
-	if p.Principal != nil {
-		principal, err := p.Principal.Serialize()
-		if err != nil {
-			return nil, err
-		}
-		m["Principal"] = principal
-	}
-	if p.NotPrincipal != nil {
-		notPrincipal, err := p.NotPrincipal.Serialize()
-		if err != nil {
-			return nil, err
-		}
-		m["NotPrincipal"] = notPrincipal
-	}
-	if checkExistsArray(p.PolicyAction) {
-		m["Action"] = tryFirst(p.PolicyAction)
-	}
-	if checkExistsArray(p.NotPolicyAction) {
-		m["NotAction"] = tryFirst(p.NotPolicyAction)
-	}
-	if checkExistsArray(p.ResourcePath) {
-		m["Resource"] = tryFirst(p.ResourcePath)
-	}
-	if checkExistsArray(p.NotResourcePath) {
-		m["NotResource"] = tryFirst(p.NotResourcePath)
-	}
-	m["Effect"] = p.Effect
-	if p.StatementID != "" {
-		m["Sid"] = p.StatementID
-	}
-	return m, nil
+	// Condition specifies where conditions for policy are in effect.
+	// https://docs.aws.amazon.com/AmazonS3/latest/dev/amazon-s3-policy-keys.html
+	// +optional
+	Condition map[string]Condition `json:"condition,omitempty"`
 }
 
 // BucketPrincipal defines the principal users affected by
 // the BucketPolicyStatement
+// Please see the AWS S3 docs for more information
+// https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html
 type BucketPrincipal struct {
 	// This flag indicates if the policy should be made available
 	// to all anonymous users.
+	// +optional
 	AllowAnon bool `json:"allowAnon,omitempty"`
 
 	// This list contains the all of the AWS IAM users which are affected
-	// by the policy statement
-	AWSPrincipal []string `json:"aws,omitempty"`
+	// by the policy statement.
+	// +optional
+	AWSPrincipals []AWSPrincipal `json:"awsPrincipals,omitempty"`
+
+	// This string contains the identifier for any federated web identity
+	// provider.
+	// +optional
+	Federated *string `json:"federated,omitempty"`
+
+	// Service define the services which can have access to this bucket
+	// +optional
+	Service []string `json:"service,omitempty"`
 }
 
-func tryFirst(slc []string) interface{} {
-	if len(slc) == 1 {
-		return slc[0]
-	}
-	return slc
+// AWSPrincipal wraps the potential values a policy
+// principal can take. Only one of the values should be set.
+type AWSPrincipal struct {
+	// IAMUserARN contains the ARN of an IAM user
+	// +optional
+	// +immutable
+	IAMUserARN *string `json:"iamUserArn,omitempty"`
+
+	// IAMUserARNRef contains the reference to an IAMUser
+	// +optional
+	IAMUserARNRef *runtimev1alpha1.Reference `json:"iamUserArnRef,omitempty"`
+
+	// IAMUserARNSelector queries for an IAMUser to retrieve its userName
+	// +optional
+	IAMUserARNSelector *runtimev1alpha1.Selector `json:"iamUserArnSelector,omitempty"`
+
+	// AWSAccountID identifies an AWS account as the principal
+	// +optional
+	// +immutable
+	AWSAccountID *string `json:"awsAccountId,omitempty"`
+
+	// IAMRoleARN contains the ARN of an IAM role
+	// +optional
+	// +immutable
+	IAMRoleARN *string `json:"iamRoleArn,omitempty"`
+
+	// IAMRoleARNRef contains the reference to an IAMRole
+	// +optional
+	IAMRoleARNRef *runtimev1alpha1.Reference `json:"iamRoleArnRef,omitempty"`
+
+	// IAMRoleARNSelector queries for an IAM role to retrieve its userName
+	// +optional
+	IAMRoleARNSelector *runtimev1alpha1.Selector `json:"iamRoleArnSelector,omitempty"`
 }
 
-// Serialize is the custom serializer for the BucketPrincipal
-func (p *BucketPrincipal) Serialize() (interface{}, error) {
-	all := "*"
-	if p.AllowAnon {
-		return all, nil
-	}
-	m := make(map[string]interface{})
-	m["AWS"] = tryFirst(p.AWSPrincipal)
-	return m, nil
+// Condition represents one condition inside of the set of conditions for
+// a bucket policy
+type Condition struct {
+	// ConditionKey is the key condition being applied to the parent condition
+	ConditionKey string `json:"key"`
+
+	// ConditionStringValue is the expected string value of the key from the parent condition
+	// +optional
+	ConditionStringValue *string `json:"stringValue,omitempty"`
+
+	// ConditionDateValue is the expected string value of the key from the parent condition. The
+	// date value must be in ISO 8601 format. The time is always midnight UTC.
+	// +optional
+	ConditionDateValue *metav1.Time `json:"dateValue,omitempty"`
+
+	// ConditionNumericValue is the expected string value of the key from the parent condition
+	// +optional
+	ConditionNumericValue *int64 `json:"numericValue,omitempty"`
+
+	// ConditionBooleanValue is the expected boolean value of the key from the parent condition
+	// +optional
+	ConditionBooleanValue *bool `json:"booleanValue,omitempty"`
 }
 
 // An BucketPolicySpec defines the desired state of an
@@ -208,7 +202,6 @@ type BucketPolicyStatus struct {
 
 // An BucketPolicy is a managed resource that represents an AWS Bucket
 // policy.
-// +kubebuilder:printcolumn:name="USERNAME",type="string",JSONPath=".spec.forProvider.userName"
 // +kubebuilder:printcolumn:name="BUCKETNAME",type="string",JSONPath=".spec.forProvider.bucketName"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
