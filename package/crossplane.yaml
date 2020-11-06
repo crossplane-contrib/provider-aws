@@ -7,8 +7,25 @@ metadata:
     maintainer: Crossplane Maintainers <info@crossplane.io>
     source: github.com/crossplane/provider-aws
     license: Apache-2.0
+    descriptionShort: |
+      The AWS Crossplane provider enables infrastructure management for Amazon
+      Web Services.
+
     description: |
-      provider-aws is the Crossplane infrastructure provider for Amazon Web Services (AWS).
+      The Amazon Web Services (AWS) Crossplane provider adds support for
+      managing AWS resources in Kubernetes.
+
+    readme: |
+      `provider-aws` is the Crossplane infrastructure provider for [Amazon Web
+      Services (AWS)](https://aws.amazon.com/).
+
+      Available resources and their fields can be found in the [CRD
+      Docs](https://doc.crds.dev/github.com/crossplane/provider-aws).
+
+      If you encounter an issue please reach out on
+      [slack.crossplane.io](https://slack.crossplane.io) and create an issue in
+      the [crossplane/provider-aws](https://github.com/crossplane/provider-aws)
+      repo.
 
 spec:
   controller:
