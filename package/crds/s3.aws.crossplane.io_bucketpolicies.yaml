@@ -1,27 +1,11 @@
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.2.4
+    controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
   name: bucketpolicies.s3.aws.crossplane.io
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .spec.forProvider.userName
-    name: USERNAME
-    type: string
-  - JSONPath: .spec.forProvider.bucketName
-    name: BUCKETNAME
-    type: string
-  - JSONPath: .status.conditions[?(@.type=='Ready')].status
-    name: READY
-    type: string
-  - JSONPath: .status.conditions[?(@.type=='Synced')].status
-    name: SYNCED
-    type: string
-  - JSONPath: .metadata.creationTimestamp
-    name: AGE
-    type: date
   group: s3.aws.crossplane.io
   names:
     categories:
@@ -33,230 +17,245 @@ spec:
     plural: bucketpolicies
     singular: bucketpolicy
   scope: Cluster
-  subresources:
-    status: {}
-  validation:
-    openAPIV3Schema:
-      description: An BucketPolicy is a managed resource that represents an AWS Bucket policy.
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        spec:
-          description: An BucketPolicySpec defines the desired state of an BucketPolicy.
-          properties:
-            deletionPolicy:
-              description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
-              enum:
-              - Orphan
-              - Delete
-              type: string
-            forProvider:
-              description: BucketPolicyParameters define the desired state of an AWS BucketPolicy.
-              properties:
-                bucketName:
-                  description: BucketName presents the name of the bucket.
-                  type: string
-                bucketNameRef:
-                  description: BucketNameRef references to an S3Bucket to retrieve its bucketName
-                  properties:
-                    name:
-                      description: Name of the referenced object.
-                      type: string
-                  required:
-                  - name
-                  type: object
-                bucketNameSelector:
-                  description: BucketNameSelector selects a reference to an S3Bucket to retrieve its bucketName
-                  properties:
-                    matchControllerRef:
-                      description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
-                      type: boolean
-                    matchLabels:
-                      additionalProperties:
-                        type: string
-                      description: MatchLabels ensures an object with matching labels is selected.
-                      type: object
-                  type: object
-                id:
-                  description: This is the policy's optional identifier
-                  type: string
-                region:
-                  description: Region is where the Bucket referenced by this BucketPolicy resides.
-                  type: string
-                statement:
-                  description: This is the list of statement this policy applies
-                  items:
-                    description: BucketPolicyStatement defines an individual statement within the BucketPolicyBody
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.forProvider.userName
+      name: USERNAME
+      type: string
+    - jsonPath: .spec.forProvider.bucketName
+      name: BUCKETNAME
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: An BucketPolicy is a managed resource that represents an AWS Bucket policy.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: An BucketPolicySpec defines the desired state of an BucketPolicy.
+            properties:
+              deletionPolicy:
+                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: BucketPolicyParameters define the desired state of an AWS BucketPolicy.
+                properties:
+                  bucketName:
+                    description: BucketName presents the name of the bucket.
+                    type: string
+                  bucketNameRef:
+                    description: BucketNameRef references to an S3Bucket to retrieve its bucketName
                     properties:
-                      action:
-                        description: Each element of the PolicyAction array describes the specific action or actions that will be allowed or denied with this PolicyStatement.
-                        items:
-                          type: string
-                        type: array
-                      effect:
-                        description: The effect is required and specifies whether the statement results in an allow or an explicit deny. Valid values for Effect are Allow and Deny.
-                        type: string
-                      effectIAMUser:
-                        description: This flag indicates that this policy should apply to the IAMUsername that was either passed in or created for this bucket, this user will added to the action array
-                        type: boolean
-                      notAction:
-                        description: Each element of the NotPolicyAction array will allow the property to match all but the listed actions.
-                        items:
-                          type: string
-                        type: array
-                      notPrincipal:
-                        description: Used with the S3 policy to specify the users which are not included in this policy
-                        properties:
-                          allowAnon:
-                            description: This flag indicates if the policy should be made available to all anonymous users.
-                            type: boolean
-                          aws:
-                            description: This list contains the all of the AWS IAM users which are affected by the policy statement
-                            items:
-                              type: string
-                            type: array
-                        type: object
-                      notResource:
-                        description: This will explicitly match all resource paths except the ones specified in this array
-                        items:
-                          type: string
-                        type: array
-                      principal:
-                        description: Used with the S3 policy to specify the principal that is allowed or denied access to a resource.
-                        properties:
-                          allowAnon:
-                            description: This flag indicates if the policy should be made available to all anonymous users.
-                            type: boolean
-                          aws:
-                            description: This list contains the all of the AWS IAM users which are affected by the policy statement
-                            items:
-                              type: string
-                            type: array
-                        type: object
-                      resource:
-                        description: The paths on which this resource will apply
-                        items:
-                          type: string
-                        type: array
-                      sid:
-                        description: Optional identifier for this statement, must be unique within the policy if provided.
+                      name:
+                        description: Name of the referenced object.
                         type: string
                     required:
-                    - effect
+                    - name
                     type: object
-                  type: array
-                userName:
-                  description: UserName presents the name of the IAM user this BucketPolicy is concerned with.
-                  type: string
-                userNameRef:
-                  description: UserNameRef references to an S3Bucket to retrieve its userName
-                  properties:
-                    name:
-                      description: Name of the referenced object.
-                      type: string
-                  required:
-                  - name
-                  type: object
-                userNameSelector:
-                  description: UserNameSelector selects a reference to an S3Bucket to retrieve its userName
-                  properties:
-                    matchControllerRef:
-                      description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
-                      type: boolean
-                    matchLabels:
-                      additionalProperties:
-                        type: string
-                      description: MatchLabels ensures an object with matching labels is selected.
+                  bucketNameSelector:
+                    description: BucketNameSelector selects a reference to an S3Bucket to retrieve its bucketName
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
+                  id:
+                    description: This is the policy's optional identifier
+                    type: string
+                  region:
+                    description: Region is where the Bucket referenced by this BucketPolicy resides.
+                    type: string
+                  statement:
+                    description: This is the list of statement this policy applies
+                    items:
+                      description: BucketPolicyStatement defines an individual statement within the BucketPolicyBody
+                      properties:
+                        action:
+                          description: Each element of the PolicyAction array describes the specific action or actions that will be allowed or denied with this PolicyStatement.
+                          items:
+                            type: string
+                          type: array
+                        effect:
+                          description: The effect is required and specifies whether the statement results in an allow or an explicit deny. Valid values for Effect are Allow and Deny.
+                          type: string
+                        effectIAMUser:
+                          description: This flag indicates that this policy should apply to the IAMUsername that was either passed in or created for this bucket, this user will added to the action array
+                          type: boolean
+                        notAction:
+                          description: Each element of the NotPolicyAction array will allow the property to match all but the listed actions.
+                          items:
+                            type: string
+                          type: array
+                        notPrincipal:
+                          description: Used with the S3 policy to specify the users which are not included in this policy
+                          properties:
+                            allowAnon:
+                              description: This flag indicates if the policy should be made available to all anonymous users.
+                              type: boolean
+                            aws:
+                              description: This list contains the all of the AWS IAM users which are affected by the policy statement
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        notResource:
+                          description: This will explicitly match all resource paths except the ones specified in this array
+                          items:
+                            type: string
+                          type: array
+                        principal:
+                          description: Used with the S3 policy to specify the principal that is allowed or denied access to a resource.
+                          properties:
+                            allowAnon:
+                              description: This flag indicates if the policy should be made available to all anonymous users.
+                              type: boolean
+                            aws:
+                              description: This list contains the all of the AWS IAM users which are affected by the policy statement
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        resource:
+                          description: The paths on which this resource will apply
+                          items:
+                            type: string
+                          type: array
+                        sid:
+                          description: Optional identifier for this statement, must be unique within the policy if provided.
+                          type: string
+                      required:
+                      - effect
                       type: object
-                  type: object
-                version:
-                  description: This is the current IAM policy version
-                  type: string
-              required:
-              - region
-              - statement
-              - version
-              type: object
-            providerConfigRef:
-              description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
-              properties:
-                name:
-                  description: Name of the referenced object.
-                  type: string
-              required:
-              - name
-              type: object
-            providerRef:
-              description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
-              properties:
-                name:
-                  description: Name of the referenced object.
-                  type: string
-              required:
-              - name
-              type: object
-            writeConnectionSecretToRef:
-              description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
-              properties:
-                name:
-                  description: Name of the secret.
-                  type: string
-                namespace:
-                  description: Namespace of the secret.
-                  type: string
-              required:
-              - name
-              - namespace
-              type: object
-          required:
-          - forProvider
-          type: object
-        status:
-          description: An BucketPolicyStatus represents the observed state of an BucketPolicy.
-          properties:
-            conditions:
-              description: Conditions of the resource.
-              items:
-                description: A Condition that may apply to a resource.
-                properties:
-                  lastTransitionTime:
-                    description: LastTransitionTime is the last time this condition transitioned from one status to another.
-                    format: date-time
+                    type: array
+                  userName:
+                    description: UserName presents the name of the IAM user this BucketPolicy is concerned with.
                     type: string
-                  message:
-                    description: A Message containing details about this condition's last transition from one status to another, if any.
-                    type: string
-                  reason:
-                    description: A Reason for this condition's last transition from one status to another.
-                    type: string
-                  status:
-                    description: Status of this condition; is it currently True, False, or Unknown?
-                    type: string
-                  type:
-                    description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                  userNameRef:
+                    description: UserNameRef references to an S3Bucket to retrieve its userName
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  userNameSelector:
+                    description: UserNameSelector selects a reference to an S3Bucket to retrieve its userName
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
+                  version:
+                    description: This is the current IAM policy version
                     type: string
                 required:
-                - lastTransitionTime
-                - reason
-                - status
-                - type
+                - region
+                - statement
+                - version
                 type: object
-              type: array
-          type: object
-      required:
-      - spec
-      type: object
-  version: v1alpha1
-  versions:
-  - name: v1alpha1
+              providerConfigRef:
+                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: An BucketPolicyStatus represents the observed state of an BucketPolicy.
+            properties:
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True, False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        required:
+        - spec
+        type: object
     served: true
     storage: true
+    subresources:
+      status: {}
 status:
   acceptedNames:
     kind: ""
