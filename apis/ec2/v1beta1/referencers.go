@@ -18,6 +18,7 @@ package v1beta1
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/pkg/errors"
@@ -76,6 +77,24 @@ func (mg *SecurityGroup) ResolveReferences(ctx context.Context, c client.Reader)
 	}
 	mg.Spec.ForProvider.VPCID = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference
+
+	for i, ing := range mg.Spec.ForProvider.Ingress {
+		for j, pair := range ing.UserIDGroupPairs {
+			// Resolve spec.forProvider.ingress[*].userIdGroupPairs[*]
+			rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(pair.VPCID),
+				Reference:    pair.VPCIDRef,
+				Selector:     pair.VPCIDSelector,
+				To:           reference.To{Managed: &VPC{}, List: &VPCList{}},
+				Extract:      reference.ExternalName(),
+			})
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("spec.forProvider.ingress[%d].userIdGroupPairs[%d]", i, j))
+			}
+			mg.Spec.ForProvider.Ingress[i].UserIDGroupPairs[j].VPCID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.ForProvider.Ingress[i].UserIDGroupPairs[j].VPCIDRef = rsp.ResolvedReference
+		}
+	}
 
 	return nil
 }
