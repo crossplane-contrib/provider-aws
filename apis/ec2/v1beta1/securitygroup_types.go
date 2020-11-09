@@ -150,6 +150,15 @@ type UserIDGroupPair struct {
 	// +optional
 	VPCID *string `json:"vpcId,omitempty"`
 
+	// VPCIDRef reference a VPC to retrieve its vpcId
+	// +optional
+	// +immutable
+	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
+
+	// VPCIDSelector selects reference to a VPC to retrieve its vpcId
+	// +optional
+	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
+
 	// The ID of the VPC peering connection, if applicable.
 	// +optional
 	VPCPeeringConnectionID *string `json:"vpcPeeringConnectionId,omitempty"`

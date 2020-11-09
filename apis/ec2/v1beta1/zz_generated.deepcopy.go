@@ -684,6 +684,16 @@ func (in *UserIDGroupPair) DeepCopyInto(out *UserIDGroupPair) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.VPCIDRef != nil {
+		in, out := &in.VPCIDRef, &out.VPCIDRef
+		*out = new(v1alpha1.Reference)
+		**out = **in
+	}
+	if in.VPCIDSelector != nil {
+		in, out := &in.VPCIDSelector, &out.VPCIDSelector
+		*out = new(v1alpha1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.VPCPeeringConnectionID != nil {
 		in, out := &in.VPCPeeringConnectionID, &out.VPCPeeringConnectionID
 		*out = new(string)
