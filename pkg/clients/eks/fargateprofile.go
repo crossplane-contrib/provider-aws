@@ -69,17 +69,6 @@ func LateInitializeFargateProfile(in *v1alpha1.FargateProfileParameters, fp *eks
 	if fp == nil {
 		return
 	}
-	if len(in.Selectors) == 0 && len(fp.Selectors) > 0 {
-		in.Selectors = make([]v1alpha1.FargateProfileSelector, len(fp.Selectors))
-		for i, s := range fp.Selectors {
-			if s.Labels != nil {
-				in.Selectors[i].Labels = s.Labels
-			}
-			if s.Namespace != nil {
-				in.Selectors[i].Namespace = s.Namespace
-			}
-		}
-	}
 
 	if len(in.Subnets) == 0 && len(fp.Subnets) > 0 {
 		in.Subnets = fp.Subnets

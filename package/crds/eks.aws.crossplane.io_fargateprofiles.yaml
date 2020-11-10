@@ -54,7 +54,7 @@ spec:
               - Delete
               type: string
             forProvider:
-              description: FargateProfileParameters define the desired state of an AWS Elastic Kubernetes Service FargateProfile.
+              description: FargateProfileParameters define the desired state of an AWS Elastic Kubernetes Service FargateProfile. All fields are immutable as it is not possible to update a Fargate profile.
               properties:
                 clusterName:
                   description: "The name of the Amazon EKS cluster to apply the Fargate profile to. \n ClusterName is a required field"
@@ -83,6 +83,27 @@ spec:
                 podExecutionRoleArn:
                   description: "The Amazon Resource Name (ARN) of the pod execution role to use for pods that match the selectors in the Fargate profile. The pod execution role allows Fargate infrastructure to register with your cluster as a node, and it provides read access to Amazon ECR image repositories. For more information, see Pod Execution Role (https://docs.aws.amazon.com/eks/latest/userguide/pod-execution-role.html) in the Amazon EKS User Guide. \n PodExecutionRoleArn is a required field"
                   type: string
+                podExecutionRoleArnRef:
+                  description: PodExecutionRoleArnRef is a reference to an IAMRole used to set the PodExecutionRoleArn.
+                  properties:
+                    name:
+                      description: Name of the referenced object.
+                      type: string
+                  required:
+                  - name
+                  type: object
+                podExecutionRoleArnSelector:
+                  description: PodExecutionRoleArnSelector selects references to IAMRole used to set the PodExecutionRoleArn.
+                  properties:
+                    matchControllerRef:
+                      description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                      type: boolean
+                    matchLabels:
+                      additionalProperties:
+                        type: string
+                      description: MatchLabels ensures an object with matching labels is selected.
+                      type: object
+                  type: object
                 region:
                   description: Region is the region you'd like  the FargateProfile to be created in.
                   type: string

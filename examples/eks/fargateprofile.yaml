@@ -8,7 +8,8 @@ spec:
   forProvider:
     region: eu-central-1
     clusterName: my-awesome-cluster
-    podExecutionRoleArn: "arn:aws:iam::123456789:role/AmazonEKSFargatePodExecutionRole"
+    podExecutionRoleRef:
+      name: fargate-pod-execution-role
     selectors:
     - namespace: default
     tags:

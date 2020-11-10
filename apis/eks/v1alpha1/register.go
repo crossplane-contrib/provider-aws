@@ -43,6 +43,7 @@ var (
 	NodeGroupGroupKind             = schema.GroupKind{Group: Group, Kind: NodeGroupKind}.String()
 	NodeGroupKindAPIVersion        = NodeGroupKind + "." + SchemeGroupVersion.String()
 	NodeGroupGroupVersionKind      = SchemeGroupVersion.WithKind(NodeGroupKind)
+
 	FargateProfileKind             = reflect.TypeOf(FargateProfile{}).Name()
 	FargateProfileGroupKind        = schema.GroupKind{Group: Group, Kind: FargateProfileKind}.String()
 	FargateProfileKindAPIVersion   = FargateProfileKind + "." + SchemeGroupVersion.String()

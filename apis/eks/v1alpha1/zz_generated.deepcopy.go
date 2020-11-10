@@ -131,6 +131,16 @@ func (in *FargateProfileParameters) DeepCopyInto(out *FargateProfileParameters) 
 		*out = new(corev1alpha1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.PodExecutionRoleArnRef != nil {
+		in, out := &in.PodExecutionRoleArnRef, &out.PodExecutionRoleArnRef
+		*out = new(corev1alpha1.Reference)
+		**out = **in
+	}
+	if in.PodExecutionRoleArnSelector != nil {
+		in, out := &in.PodExecutionRoleArnSelector, &out.PodExecutionRoleArnSelector
+		*out = new(corev1alpha1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Selectors != nil {
 		in, out := &in.Selectors, &out.Selectors
 		*out = make([]FargateProfileSelector, len(*in))
