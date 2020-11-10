@@ -50,20 +50,20 @@ type FargateProfileSelector struct {
 // FargateProfileObservation is the observed state of a FargateProfile.
 type FargateProfileObservation struct {
 	// The Unix epoch timestamp in seconds for when the Fargate profile was created.
-	CreatedAt *metav1.Time `json:"createdAt"`
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 
 	// The full Amazon Resource Name (ARN) of the Fargate profile.
-	FargateProfileArn string `json:"fargateProfileArn"`
-	
+	FargateProfileArn string `json:"fargateProfileArn,omitempty"`
+
 	// The current status of the Fargate profile.
-	Status FargateProfileStatusType `json:"status"`
+	Status FargateProfileStatusType `json:"status,omitempty"`
 }
 
 // FargateProfileParameters define the desired state of an AWS Elastic Kubernetes
 // Service FargateProfile.
 // All fields are immutable as it is not possible to update a Fargate profile.
 type FargateProfileParameters struct {
-	
+
 	// Region is the region you'd like  the FargateProfile to be created in.
 	// +immutable
 	Region string `json:"region"`
@@ -79,13 +79,12 @@ type FargateProfileParameters struct {
 	// +immutable
 	// +optional
 	ClusterNameRef *runtimev1alpha1.Reference `json:"clusterNameRef,omitempty"`
-	
+
 	// ClusterNameSelector selects references to a Cluster used
 	// to set the ClusterName.
-	// +immutable
 	// +optional
 	ClusterNameSelector *runtimev1alpha1.Selector `json:"clusterNameSelector,omitempty"`
-	
+
 	// The Amazon Resource Name (ARN) of the pod execution role to use for pods
 	// that match the selectors in the Fargate profile. The pod execution role allows
 	// Fargate infrastructure to register with your cluster as a node, and it provides
@@ -96,12 +95,22 @@ type FargateProfileParameters struct {
 	// PodExecutionRoleArn is a required field
 	// +immutable
 	PodExecutionRoleArn string `json:"podExecutionRoleArn"`
-	
+
+	// PodExecutionRoleArnRef is a reference to an IAMRole used to set
+	// the PodExecutionRoleArn.
+	// +immutable
+	// +optional
+	PodExecutionRoleArnRef *runtimev1alpha1.Reference `json:"podExecutionRoleArnRef,omitempty"`
+
+	// PodExecutionRoleArnSelector selects references to IAMRole used
+	// to set the PodExecutionRoleArn.
+	// +optional
+	PodExecutionRoleArnSelector *runtimev1alpha1.Selector `json:"podExecutionRoleArnSelector,omitempty"`
+
 	// The selectors to match for pods to use this Fargate profile. Each selector
 	// must have an associated namespace. Optionally, you can also specify labels
 	// for a namespace. You may specify up to five selectors in a Fargate profile.
 	// +immutable
-	// +optional
 	Selectors []FargateProfileSelector `json:"selectors,omitempty"`
 
 	// The IDs of subnets to launch your pods into. At this time, pods running on
@@ -115,18 +124,16 @@ type FargateProfileParameters struct {
 	// +immutable
 	// +optional
 	SubnetRefs []runtimev1alpha1.Reference `json:"subnetRefs,omitempty"`
-	
+
 	// SubnetSelector selects references to Subnets used to set the Subnets.
-	// +immutable
 	// +optional
 	SubnetSelector *runtimev1alpha1.Selector `json:"subnetSelector,omitempty"`
-	
+
 	// The metadata to apply to the Fargate profile to assist with categorization
 	// and organization. Each tag consists of a key and an optional value, both
 	// of which you define. Fargate profile tags do not propagate to any other resources
 	// associated with the Fargate profile, such as the pods that are scheduled
 	// with it.
-	// +immutable
 	// +optional
 	Tags map[string]string `json:"tags,omitempty"`
 }

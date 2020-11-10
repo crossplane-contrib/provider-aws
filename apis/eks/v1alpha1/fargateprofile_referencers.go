@@ -26,6 +26,7 @@ import (
 
 	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	eksv1beta1 "github.com/crossplane/provider-aws/apis/eks/v1beta1"
+	iamv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
 )
 
 // ResolveReferences of FargateProfile
@@ -45,6 +46,20 @@ func (mg *FargateProfile) ResolveReferences(ctx context.Context, c client.Reader
 	}
 	mg.Spec.ForProvider.ClusterName = rsp.ResolvedValue
 	mg.Spec.ForProvider.ClusterNameRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.roleArn
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: mg.Spec.ForProvider.PodExecutionRoleArn,
+		Reference:    mg.Spec.ForProvider.PodExecutionRoleArnRef,
+		Selector:     mg.Spec.ForProvider.PodExecutionRoleArnSelector,
+		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
+		Extract:      iamv1beta1.IAMRoleARN(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.podExecutionRoleArn")
+	}
+	mg.Spec.ForProvider.PodExecutionRoleArn = rsp.ResolvedValue
+	mg.Spec.ForProvider.PodExecutionRoleArnRef = rsp.ResolvedReference
 
 	// Resolve spec.forProvider.subnets
 	mrsp, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
