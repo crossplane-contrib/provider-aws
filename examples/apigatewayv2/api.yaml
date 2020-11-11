@@ -1,0 +1,8 @@
+apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
+kind: API
+metadata:
+  name: test-api
+spec:
+  forProvider:
+    region: us-west-2
+    protocolType: HTTP
