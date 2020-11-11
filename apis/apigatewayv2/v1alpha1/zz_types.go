@@ -23,205 +23,153 @@ import (
 )
 
 type APIMapping_SDK struct {
-	// The authorizer identifier.
+	// The identifier.
 	APIID *string `json:"apiID,omitempty"`
-	// The authorizer identifier.
+	// The identifier.
 	APIMappingID *string `json:"apiMappingID,omitempty"`
-	// The integration response key.
+	// After evaluating a selection expression, the result is compared against one
+	// or more selection keys to find a matching key. See Selection Expressions
+	// (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-apikey-selection-expressions)
+	// for a list of expressions and each expression's associated selection key
+	// type.
 	APIMappingKey *string `json:"apiMappingKey,omitempty"`
-	// The name of the authorizer.
+	// A string with a length between [1-128].
 	Stage *string `json:"stage,omitempty"`
 }
 
 type API_SDK struct {
-	// The URI of the API, of the form {api-id}.execute-api.{region}.amazonaws.com.
-	// The stage name is typically appended to this URI to form a complete path
-	// to a deployed API stage.
 	APIEndpoint *string `json:"apiEndpoint,omitempty"`
-	// Specifies whether a Lambda authorizer returns a response in a simple format.
-	// If enabled, the Lambda authorizer can return a boolean value instead of an
-	// IAM policy. Supported only for HTTP APIs. To learn more, see Working with
-	// AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
+
 	APIGatewayManaged *bool `json:"apiGatewayManaged,omitempty"`
-	// The authorizer identifier.
+	// The identifier.
 	APIID *string `json:"apiID,omitempty"`
-	// The API mapping selection expression.
+	// An expression used to extract information at runtime. See Selection Expressions
+	// (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-apikey-selection-expressions)
+	// for more information.
 	APIKeySelectionExpression *string `json:"apiKeySelectionExpression,omitempty"`
-	// A CORS configuration. Supported only for HTTP APIs.
+	// Represents a CORS configuration. Supported only for HTTP APIs. See Configuring
+	// CORS (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-cors.html)
+	// for more information.
 	CorsConfiguration *Cors `json:"corsConfiguration,omitempty"`
-	// The timestamp when the API was created.
+
 	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
-	// The validation expression does not apply to the REQUEST authorizer.
+	// A string with a length between [0-1024].
 	Description *string `json:"description,omitempty"`
-	// Specifies whether a Lambda authorizer returns a response in a simple format.
-	// If enabled, the Lambda authorizer can return a boolean value instead of an
-	// IAM policy. Supported only for HTTP APIs. To learn more, see Working with
-	// AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
+
 	DisableExecuteAPIEndpoint *bool `json:"disableExecuteAPIEndpoint,omitempty"`
-	// Specifies whether a Lambda authorizer returns a response in a simple format.
-	// If enabled, the Lambda authorizer can return a boolean value instead of an
-	// IAM policy. Supported only for HTTP APIs. To learn more, see Working with
-	// AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
+
 	DisableSchemaValidation *bool `json:"disableSchemaValidation,omitempty"`
-	// A list of warnings that API Gateway returns while processing your truststore.
-	// Invalid certificates produce warnings. Mutual TLS is still enabled, but some
-	// clients might not be able to access your API. To resolve warnings, upload
-	// a new truststore to S3, and then update you domain name to use the new version.
+
 	ImportInfo []*string `json:"importInfo,omitempty"`
-	// The name of the authorizer.
+	// A string with a length between [1-128].
 	Name *string `json:"name,omitempty"`
-	// The API protocol.
+	// Represents a protocol type.
 	ProtocolType *string `json:"protocolType,omitempty"`
-	// The API mapping selection expression.
+	// An expression used to extract information at runtime. See Selection Expressions
+	// (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-apikey-selection-expressions)
+	// for more information.
 	RouteSelectionExpression *string `json:"routeSelectionExpression,omitempty"`
-	// The collection of tags associated with a domain name.
+	// Represents a collection of tags associated with the resource.
 	Tags map[string]*string `json:"tags,omitempty"`
-	// Specifies the format of the payload sent to an HTTP API Lambda authorizer.
-	// Required for HTTP API Lambda authorizers. Supported values are 1.0 and 2.0.
-	// To learn more, see Working with AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html).
+	// A string with a length between [1-64].
 	Version *string `json:"version,omitempty"`
-	// A list of warnings that API Gateway returns while processing your truststore.
-	// Invalid certificates produce warnings. Mutual TLS is still enabled, but some
-	// clients might not be able to access your API. To resolve warnings, upload
-	// a new truststore to S3, and then update you domain name to use the new version.
+
 	Warnings []*string `json:"warnings,omitempty"`
 }
 
 type AccessLogSettings struct {
-	// The ARN of the CloudWatch Logs log group to receive access logs.
+	// Represents an Amazon Resource Name (ARN).
 	DestinationARN *string `json:"destinationARN,omitempty"`
-	// A single line format of the access logs of data, as specified by selected
-	// $context variables. The format must include at least $context.requestId.
+	// A string with a length between [1-1024].
 	Format *string `json:"format,omitempty"`
 }
 
 type Authorizer_SDK struct {
-	// The ARN of the CloudWatch Logs log group to receive access logs.
+	// Represents an Amazon Resource Name (ARN).
 	AuthorizerCredentialsARN *string `json:"authorizerCredentialsARN,omitempty"`
-	// The authorizer identifier.
+	// The identifier.
 	AuthorizerID *string `json:"authorizerID,omitempty"`
-	// Specifies the format of the payload sent to an HTTP API Lambda authorizer.
-	// Required for HTTP API Lambda authorizers. Supported values are 1.0 and 2.0.
-	// To learn more, see Working with AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html).
+	// A string with a length between [1-64].
 	AuthorizerPayloadFormatVersion *string `json:"authorizerPayloadFormatVersion,omitempty"`
-	// The time to live (TTL) for cached authorizer results, in seconds. If it equals
-	// 0, authorization caching is disabled. If it is greater than 0, API Gateway
-	// caches authorizer responses. The maximum value is 3600, or 1 hour. Supported
-	// only for HTTP API Lambda authorizers.
+	// An integer with a value between [0-3600].
 	AuthorizerResultTtlInSeconds *int64 `json:"authorizerResultTtlInSeconds,omitempty"`
 	// The authorizer type. Specify REQUEST for a Lambda function using incoming
 	// request parameters. Specify JWT to use JSON Web Tokens (supported only for
 	// HTTP APIs).
 	AuthorizerType *string `json:"authorizerType,omitempty"`
-	// The authorizer's Uniform Resource Identifier (URI). For REQUEST authorizers,
-	// this must be a well-formed Lambda function URI, for example, arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:{account_id}:function:{lambda_function_name}/invocations.
-	// In general, the URI has this form: arn:aws:apigateway:{region}:lambda:path/{service_api}
-	// , where {region} is the same as the region hosting the Lambda function, path
-	// indicates that the remaining substring in the URI should be treated as the
-	// path to the resource, including the initial /. For Lambda functions, this
-	// is usually of the form /2015-03-31/functions/[FunctionARN]/invocations. Supported
-	// only for REQUEST authorizers.
+	// A string representation of a URI with a length between [1-2048].
 	AuthorizerURI *string `json:"authorizerURI,omitempty"`
-	// Specifies whether a Lambda authorizer returns a response in a simple format.
-	// If enabled, the Lambda authorizer can return a boolean value instead of an
-	// IAM policy. Supported only for HTTP APIs. To learn more, see Working with
-	// AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
+
 	EnableSimpleResponses *bool `json:"enableSimpleResponses,omitempty"`
-	// The identity source for which authorization is requested.
-	//
-	// For a REQUEST authorizer, this is optional. The value is a set of one or
-	// more mapping expressions of the specified request parameters. The identity
-	// source can be headers, query string parameters, stage variables, and context
-	// parameters. For example, if an Auth header and a Name query string parameter
-	// are defined as identity sources, this value is route.request.header.Auth,
-	// route.request.querystring.Name for WebSocket APIs. For HTTP APIs, use selection
-	// expressions prefixed with $, for example, $request.header.Auth, $request.querystring.Name.
-	// These parameters are used to perform runtime validation for Lambda-based
-	// authorizers by verifying all of the identity-related request parameters are
-	// present in the request, not null, and non-empty. Only when this is true does
-	// the authorizer invoke the authorizer Lambda function. Otherwise, it returns
-	// a 401 Unauthorized response without calling the Lambda function. For HTTP
-	// APIs, identity sources are also used as the cache key when caching is enabled.
-	// To learn more, see Working with AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html).
-	//
-	// For JWT, a single entry that specifies where to extract the JSON Web Token
-	// (JWT) from inbound requests. Currently only header-based and query parameter-based
-	// selections are supported, for example $request.header.Authorization.
+	// The identity source for which authorization is requested. For the REQUEST
+	// authorizer, this is required when authorization caching is enabled. The value
+	// is a comma-separated string of one or more mapping expressions of the specified
+	// request parameters. For example, if an Auth header, a Name query string parameter
+	// are defined as identity sources, this value is $method.request.header.Auth,
+	// $method.request.querystring.Name. These parameters will be used to derive
+	// the authorization caching key and to perform runtime validation of the REQUEST
+	// authorizer by verifying all of the identity-related request parameters are
+	// present, not null and non-empty. Only when this is true does the authorizer
+	// invoke the authorizer Lambda function, otherwise, it returns a 401 Unauthorized
+	// response without calling the Lambda function. The valid value is a string
+	// of comma-separated mapping expressions of the specified request parameters.
+	// When the authorization caching is not enabled, this property is optional.
 	IDentitySource []*string `json:"identitySource,omitempty"`
-	// The validation expression does not apply to the REQUEST authorizer.
+	// A string with a length between [0-1024].
 	IDentityValidationExpression *string `json:"identityValidationExpression,omitempty"`
 	// Represents the configuration of a JWT authorizer. Required for the JWT authorizer
 	// type. Supported only for HTTP APIs.
 	JWTConfiguration *JWTConfiguration `json:"jwtConfiguration,omitempty"`
-	// The name of the authorizer.
+	// A string with a length between [1-128].
 	Name *string `json:"name,omitempty"`
 }
 
 type Cors struct {
-	// Specifies whether a Lambda authorizer returns a response in a simple format.
-	// If enabled, the Lambda authorizer can return a boolean value instead of an
-	// IAM policy. Supported only for HTTP APIs. To learn more, see Working with
-	// AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
 	AllowCredentials *bool `json:"allowCredentials,omitempty"`
-	// Represents a collection of exposed headers. Supported only for HTTP APIs.
+	// Represents a collection of allowed headers. Supported only for HTTP APIs.
 	AllowHeaders []*string `json:"allowHeaders,omitempty"`
-	// Represents a collection of allowed HTTP methods. Supported only for HTTP
-	// APIs.
+	// Represents a collection of methods. Supported only for HTTP APIs.
 	AllowMethods []*string `json:"allowMethods,omitempty"`
-	// Represents a collection of allowed origins. Supported only for HTTP APIs.
+	// Represents a collection of origins. Supported only for HTTP APIs.
 	AllowOrigins []*string `json:"allowOrigins,omitempty"`
-	// Represents a collection of exposed headers. Supported only for HTTP APIs.
+	// Represents a collection of allowed headers. Supported only for HTTP APIs.
 	ExposeHeaders []*string `json:"exposeHeaders,omitempty"`
-	// The number of seconds that the browser should cache preflight request results.
-	// Supported only for HTTP APIs.
+	// An integer with a value between -1 and 86400. Supported only for HTTP APIs.
 	MaxAge *int64 `json:"maxAge,omitempty"`
 }
 
 type Deployment_SDK struct {
-	// Specifies whether a Lambda authorizer returns a response in a simple format.
-	// If enabled, the Lambda authorizer can return a boolean value instead of an
-	// IAM policy. Supported only for HTTP APIs. To learn more, see Working with
-	// AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
 	AutoDeployed *bool `json:"autoDeployed,omitempty"`
-	// The timestamp when the API was created.
+
 	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
-	// The authorizer identifier.
+	// The identifier.
 	DeploymentID *string `json:"deploymentID,omitempty"`
-	// The status of the deployment: PENDING, FAILED, or SUCCEEDED.
+	// Represents a deployment status.
 	DeploymentStatus *string `json:"deploymentStatus,omitempty"`
-	// The URI of the API, of the form {api-id}.execute-api.{region}.amazonaws.com.
-	// The stage name is typically appended to this URI to form a complete path
-	// to a deployed API stage.
+
 	DeploymentStatusMessage *string `json:"deploymentStatusMessage,omitempty"`
-	// The validation expression does not apply to the REQUEST authorizer.
+	// A string with a length between [0-1024].
 	Description *string `json:"description,omitempty"`
 }
 
 type DomainNameConfiguration struct {
-	// The URI of the API, of the form {api-id}.execute-api.{region}.amazonaws.com.
-	// The stage name is typically appended to this URI to form a complete path
-	// to a deployed API stage.
 	APIGatewayDomainName *string `json:"apiGatewayDomainName,omitempty"`
-	// The ARN of the CloudWatch Logs log group to receive access logs.
+	// Represents an Amazon Resource Name (ARN).
 	CertificateARN *string `json:"certificateARN,omitempty"`
-	// The name of the authorizer.
+	// A string with a length between [1-128].
 	CertificateName *string `json:"certificateName,omitempty"`
-	// The timestamp when the API was created.
+
 	CertificateUploadDate *metav1.Time `json:"certificateUploadDate,omitempty"`
 	// The status of the domain name migration. The valid values are AVAILABLE and
 	// UPDATING. If the status is UPDATING, the domain cannot be modified further
 	// until the existing operation is complete. If it is AVAILABLE, the domain
 	// can be updated.
 	DomainNameStatus *string `json:"domainNameStatus,omitempty"`
-	// The URI of the API, of the form {api-id}.execute-api.{region}.amazonaws.com.
-	// The stage name is typically appended to this URI to form a complete path
-	// to a deployed API stage.
+
 	DomainNameStatusMessage *string `json:"domainNameStatusMessage,omitempty"`
-	// The endpoint type.
+	// Represents an endpoint type.
 	EndpointType *string `json:"endpointType,omitempty"`
-	// The URI of the API, of the form {api-id}.execute-api.{region}.amazonaws.com.
-	// The stage name is typically appended to this URI to form a complete path
-	// to a deployed API stage.
+
 	HostedZoneID *string `json:"hostedZoneID,omitempty"`
 	// The Transport Layer Security (TLS) version of the security policy for this
 	// domain name. The valid values are TLS_1_0 and TLS_1_2.
@@ -229,36 +177,33 @@ type DomainNameConfiguration struct {
 }
 
 type DomainName_SDK struct {
-	// The API mapping selection expression.
+	// An expression used to extract information at runtime. See Selection Expressions
+	// (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-apikey-selection-expressions)
+	// for more information.
 	APIMappingSelectionExpression *string `json:"apiMappingSelectionExpression,omitempty"`
-	// The name of the DomainName resource.
+	// A string with a length between [1-512].
 	DomainName *string `json:"domainName,omitempty"`
 	// The domain name configurations.
 	DomainNameConfigurations []*DomainNameConfiguration `json:"domainNameConfigurations,omitempty"`
-	// The mutual TLS authentication configuration for a custom domain name.
+	// If specified, API Gateway performs two-way authentication between the client
+	// and the server. Clients must present a trusted certificate to access your
+	// API.
 	MutualTLSAuthentication *MutualTLSAuthentication `json:"mutualTLSAuthentication,omitempty"`
-	// The collection of tags associated with a domain name.
+	// Represents a collection of tags associated with the resource.
 	Tags map[string]*string `json:"tags,omitempty"`
 }
 
 type IntegrationResponse_SDK struct {
-	// Supported only for WebSocket APIs. Specifies how to handle response payload
-	// content type conversions. Supported values are CONVERT_TO_BINARY and CONVERT_TO_TEXT,
-	// with the following behaviors:
-	//
-	// CONVERT_TO_BINARY: Converts a response payload from a Base64-encoded string
-	// to the corresponding binary blob.
-	//
-	// CONVERT_TO_TEXT: Converts a response payload from a binary blob to a Base64-encoded
-	// string.
-	//
-	// If this property is not defined, the response payload will be passed through
-	// from the integration response to the route response or method response without
-	// modification.
+	// Specifies how to handle response payload content type conversions. Supported
+	// only for WebSocket APIs.
 	ContentHandlingStrategy *string `json:"contentHandlingStrategy,omitempty"`
-	// The authorizer identifier.
+	// The identifier.
 	IntegrationResponseID *string `json:"integrationResponseID,omitempty"`
-	// The integration response key.
+	// After evaluating a selection expression, the result is compared against one
+	// or more selection keys to find a matching key. See Selection Expressions
+	// (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-apikey-selection-expressions)
+	// for a list of expressions and each expression's associated selection key
+	// type.
 	IntegrationResponseKey *string `json:"integrationResponseKey,omitempty"`
 	// A key-value map specifying response parameters that are passed to the method
 	// response from the backend. The key is a method response header parameter
@@ -271,108 +216,47 @@ type IntegrationResponse_SDK struct {
 	// unique response header name and JSON-expression is a valid JSON expression
 	// without the $ prefix.
 	ResponseParameters map[string]*string `json:"responseParameters,omitempty"`
-	// The collection of response templates for the integration response as a string-to-string
-	// map of key-value pairs. Response templates are represented as a key/value
-	// map, with a content-type as the key and a template as the value.
+	// A mapping of identifier keys to templates. The value is an actual template
+	// script. The key is typically a SelectionKey which is chosen based on evaluating
+	// a selection expression.
 	ResponseTemplates map[string]*string `json:"responseTemplates,omitempty"`
-	// The API mapping selection expression.
+	// An expression used to extract information at runtime. See Selection Expressions
+	// (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-apikey-selection-expressions)
+	// for more information.
 	TemplateSelectionExpression *string `json:"templateSelectionExpression,omitempty"`
 }
 
 type Integration_SDK struct {
-	// Specifies whether a Lambda authorizer returns a response in a simple format.
-	// If enabled, the Lambda authorizer can return a boolean value instead of an
-	// IAM policy. Supported only for HTTP APIs. To learn more, see Working with
-	// AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
 	APIGatewayManaged *bool `json:"apiGatewayManaged,omitempty"`
-	// A single line format of the access logs of data, as specified by selected
-	// $context variables. The format must include at least $context.requestId.
+	// A string with a length between [1-1024].
 	ConnectionID *string `json:"connectionID,omitempty"`
-	// The type of the network connection to the integration endpoint. Specify INTERNET
-	// for connections through the public routable internet or VPC_LINK for private
-	// connections between API Gateway and resources in a VPC. The default value
-	// is INTERNET.
+	// Represents a connection type.
 	ConnectionType *string `json:"connectionType,omitempty"`
-	// Supported only for WebSocket APIs. Specifies how to handle response payload
-	// content type conversions. Supported values are CONVERT_TO_BINARY and CONVERT_TO_TEXT,
-	// with the following behaviors:
-	//
-	// CONVERT_TO_BINARY: Converts a response payload from a Base64-encoded string
-	// to the corresponding binary blob.
-	//
-	// CONVERT_TO_TEXT: Converts a response payload from a binary blob to a Base64-encoded
-	// string.
-	//
-	// If this property is not defined, the response payload will be passed through
-	// from the integration response to the route response or method response without
-	// modification.
-	ContentHandlingStrategy *string `json:"contentHandlingStrategy,omitempty"`
-	// The ARN of the CloudWatch Logs log group to receive access logs.
-	CredentialsARN *string `json:"credentialsARN,omitempty"`
-	// The validation expression does not apply to the REQUEST authorizer.
-	Description *string `json:"description,omitempty"`
-	// The authorizer identifier.
-	IntegrationID *string `json:"integrationID,omitempty"`
-	// Specifies the format of the payload sent to an HTTP API Lambda authorizer.
-	// Required for HTTP API Lambda authorizers. Supported values are 1.0 and 2.0.
-	// To learn more, see Working with AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html).
-	IntegrationMethod *string `json:"integrationMethod,omitempty"`
-	// The API mapping selection expression.
-	IntegrationResponseSelectionExpression *string `json:"integrationResponseSelectionExpression,omitempty"`
-	// The name of the authorizer.
-	IntegrationSubtype *string `json:"integrationSubtype,omitempty"`
-	// The integration type of an integration. One of the following:
-	//
-	// AWS: for integrating the route or method request with an AWS service action,
-	// including the Lambda function-invoking action. With the Lambda function-invoking
-	// action, this is referred to as the Lambda custom integration. With any other
-	// AWS service action, this is known as AWS integration. Supported only for
-	// WebSocket APIs.
-	//
-	// AWS_PROXY: for integrating the route or method request with a Lambda function
-	// or other AWS service action. This integration is also referred to as a Lambda
-	// proxy integration.
-	//
-	// HTTP: for integrating the route or method request with an HTTP endpoint.
-	// This integration is also referred to as the HTTP custom integration. Supported
+	// Specifies how to handle response payload content type conversions. Supported
 	// only for WebSocket APIs.
-	//
-	// HTTP_PROXY: for integrating the route or method request with an HTTP endpoint,
-	// with the client request passed through as-is. This is also referred to as
-	// HTTP proxy integration.
-	//
-	// MOCK: for integrating the route or method request with API Gateway as a "loopback"
-	// endpoint without invoking any backend. Supported only for WebSocket APIs.
+	ContentHandlingStrategy *string `json:"contentHandlingStrategy,omitempty"`
+	// Represents an Amazon Resource Name (ARN).
+	CredentialsARN *string `json:"credentialsARN,omitempty"`
+	// A string with a length between [0-1024].
+	Description *string `json:"description,omitempty"`
+	// The identifier.
+	IntegrationID *string `json:"integrationID,omitempty"`
+	// A string with a length between [1-64].
+	IntegrationMethod *string `json:"integrationMethod,omitempty"`
+	// An expression used to extract information at runtime. See Selection Expressions
+	// (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-apikey-selection-expressions)
+	// for more information.
+	IntegrationResponseSelectionExpression *string `json:"integrationResponseSelectionExpression,omitempty"`
+	// A string with a length between [1-128].
+	IntegrationSubtype *string `json:"integrationSubtype,omitempty"`
+	// Represents an API method integration type.
 	IntegrationType *string `json:"integrationType,omitempty"`
-	// The authorizer's Uniform Resource Identifier (URI). For REQUEST authorizers,
-	// this must be a well-formed Lambda function URI, for example, arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:{account_id}:function:{lambda_function_name}/invocations.
-	// In general, the URI has this form: arn:aws:apigateway:{region}:lambda:path/{service_api}
-	// , where {region} is the same as the region hosting the Lambda function, path
-	// indicates that the remaining substring in the URI should be treated as the
-	// path to the resource, including the initial /. For Lambda functions, this
-	// is usually of the form /2015-03-31/functions/[FunctionARN]/invocations. Supported
-	// only for REQUEST authorizers.
+	// A string representation of a URI with a length between [1-2048].
 	IntegrationURI *string `json:"integrationURI,omitempty"`
-	// Specifies the pass-through behavior for incoming requests based on the Content-Type
-	// header in the request, and the available mapping templates specified as the
-	// requestTemplates property on the Integration resource. There are three valid
-	// values: WHEN_NO_MATCH, WHEN_NO_TEMPLATES, and NEVER. Supported only for WebSocket
-	// APIs.
-	//
-	// WHEN_NO_MATCH passes the request body for unmapped content types through
-	// to the integration backend without transformation.
-	//
-	// NEVER rejects unmapped content types with an HTTP 415 Unsupported Media Type
-	// response.
-	//
-	// WHEN_NO_TEMPLATES allows pass-through when the integration has no content
-	// types mapped to templates. However, if there is at least one content type
-	// defined, unmapped content types will be rejected with the same HTTP 415 Unsupported
-	// Media Type response.
+	// Represents passthrough behavior for an integration response. Supported only
+	// for WebSocket APIs.
 	PassthroughBehavior *string `json:"passthroughBehavior,omitempty"`
-	// Specifies the format of the payload sent to an HTTP API Lambda authorizer.
-	// Required for HTTP API Lambda authorizers. Supported values are 1.0 and 2.0.
-	// To learn more, see Working with AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html).
+	// A string with a length between [1-64].
 	PayloadFormatVersion *string `json:"payloadFormatVersion,omitempty"`
 	// A key-value map specifying response parameters that are passed to the method
 	// response from the backend. The key is a method response header parameter
@@ -385,15 +269,15 @@ type Integration_SDK struct {
 	// unique response header name and JSON-expression is a valid JSON expression
 	// without the $ prefix.
 	RequestParameters map[string]*string `json:"requestParameters,omitempty"`
-	// The collection of response templates for the integration response as a string-to-string
-	// map of key-value pairs. Response templates are represented as a key/value
-	// map, with a content-type as the key and a template as the value.
+	// A mapping of identifier keys to templates. The value is an actual template
+	// script. The key is typically a SelectionKey which is chosen based on evaluating
+	// a selection expression.
 	RequestTemplates map[string]*string `json:"requestTemplates,omitempty"`
-	// The API mapping selection expression.
+	// An expression used to extract information at runtime. See Selection Expressions
+	// (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-apikey-selection-expressions)
+	// for more information.
 	TemplateSelectionExpression *string `json:"templateSelectionExpression,omitempty"`
-	// Custom timeout between 50 and 29,000 milliseconds for WebSocket APIs and
-	// between 50 and 30,000 milliseconds for HTTP APIs. The default timeout is
-	// 29 seconds for WebSocket APIs and 30 seconds for HTTP APIs.
+	// An integer with a value between [50-30000].
 	TimeoutInMillis *int64 `json:"timeoutInMillis,omitempty"`
 	// The TLS configuration for a private integration. If you specify a TLS configuration,
 	// private integration traffic uses the HTTPS protocol. Supported only for HTTP
@@ -402,125 +286,78 @@ type Integration_SDK struct {
 }
 
 type JWTConfiguration struct {
-	// A list of warnings that API Gateway returns while processing your truststore.
-	// Invalid certificates produce warnings. Mutual TLS is still enabled, but some
-	// clients might not be able to access your API. To resolve warnings, upload
-	// a new truststore to S3, and then update you domain name to use the new version.
 	Audience []*string `json:"audience,omitempty"`
-	// The authorizer's Uniform Resource Identifier (URI). For REQUEST authorizers,
-	// this must be a well-formed Lambda function URI, for example, arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:{account_id}:function:{lambda_function_name}/invocations.
-	// In general, the URI has this form: arn:aws:apigateway:{region}:lambda:path/{service_api}
-	// , where {region} is the same as the region hosting the Lambda function, path
-	// indicates that the remaining substring in the URI should be treated as the
-	// path to the resource, including the initial /. For Lambda functions, this
-	// is usually of the form /2015-03-31/functions/[FunctionARN]/invocations. Supported
-	// only for REQUEST authorizers.
+	// A string representation of a URI with a length between [1-2048].
 	Issuer *string `json:"issuer,omitempty"`
 }
 
 type Model_SDK struct {
-	// The content-type for the model, for example, "application/json".
+	// A string with a length between [1-256].
 	ContentType *string `json:"contentType,omitempty"`
-	// The validation expression does not apply to the REQUEST authorizer.
+	// A string with a length between [0-1024].
 	Description *string `json:"description,omitempty"`
-	// The authorizer identifier.
+	// The identifier.
 	ModelID *string `json:"modelID,omitempty"`
-	// The name of the authorizer.
+	// A string with a length between [1-128].
 	Name *string `json:"name,omitempty"`
-	// The schema for the model. For application/json models, this should be JSON
-	// schema draft 4 model.
+	// A string with a length between [0-32768].
 	Schema *string `json:"schema,omitempty"`
 }
 
 type MutualTLSAuthentication struct {
-	// The authorizer's Uniform Resource Identifier (URI). For REQUEST authorizers,
-	// this must be a well-formed Lambda function URI, for example, arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:{account_id}:function:{lambda_function_name}/invocations.
-	// In general, the URI has this form: arn:aws:apigateway:{region}:lambda:path/{service_api}
-	// , where {region} is the same as the region hosting the Lambda function, path
-	// indicates that the remaining substring in the URI should be treated as the
-	// path to the resource, including the initial /. For Lambda functions, this
-	// is usually of the form /2015-03-31/functions/[FunctionARN]/invocations. Supported
-	// only for REQUEST authorizers.
+	// A string representation of a URI with a length between [1-2048].
 	TruststoreURI *string `json:"truststoreURI,omitempty"`
-	// Specifies the format of the payload sent to an HTTP API Lambda authorizer.
-	// Required for HTTP API Lambda authorizers. Supported values are 1.0 and 2.0.
-	// To learn more, see Working with AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html).
+	// A string with a length between [1-64].
 	TruststoreVersion *string `json:"truststoreVersion,omitempty"`
-	// A list of warnings that API Gateway returns while processing your truststore.
-	// Invalid certificates produce warnings. Mutual TLS is still enabled, but some
-	// clients might not be able to access your API. To resolve warnings, upload
-	// a new truststore to S3, and then update you domain name to use the new version.
+
 	TruststoreWarnings []*string `json:"truststoreWarnings,omitempty"`
 }
 
 type MutualTLSAuthenticationInput struct {
-	// The authorizer's Uniform Resource Identifier (URI). For REQUEST authorizers,
-	// this must be a well-formed Lambda function URI, for example, arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:{account_id}:function:{lambda_function_name}/invocations.
-	// In general, the URI has this form: arn:aws:apigateway:{region}:lambda:path/{service_api}
-	// , where {region} is the same as the region hosting the Lambda function, path
-	// indicates that the remaining substring in the URI should be treated as the
-	// path to the resource, including the initial /. For Lambda functions, this
-	// is usually of the form /2015-03-31/functions/[FunctionARN]/invocations. Supported
-	// only for REQUEST authorizers.
+	// A string representation of a URI with a length between [1-2048].
 	TruststoreURI *string `json:"truststoreURI,omitempty"`
-	// Specifies the format of the payload sent to an HTTP API Lambda authorizer.
-	// Required for HTTP API Lambda authorizers. Supported values are 1.0 and 2.0.
-	// To learn more, see Working with AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html).
+	// A string with a length between [1-64].
 	TruststoreVersion *string `json:"truststoreVersion,omitempty"`
 }
 
 type ParameterConstraints struct {
-	// Specifies whether a Lambda authorizer returns a response in a simple format.
-	// If enabled, the Lambda authorizer can return a boolean value instead of an
-	// IAM policy. Supported only for HTTP APIs. To learn more, see Working with
-	// AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
 	Required *bool `json:"required,omitempty"`
 }
 
 type RouteResponse_SDK struct {
-	// The API mapping selection expression.
+	// An expression used to extract information at runtime. See Selection Expressions
+	// (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-apikey-selection-expressions)
+	// for more information.
 	ModelSelectionExpression *string `json:"modelSelectionExpression,omitempty"`
-	// The request models for the route. Supported only for WebSocket APIs.
+	// The route models.
 	ResponseModels map[string]*string `json:"responseModels,omitempty"`
-	// The request parameters for the route. Supported only for WebSocket APIs.
+	// The route parameters.
 	ResponseParameters []map[string]*ParameterConstraints `json:"responseParameters,omitempty"`
-	// The authorizer identifier.
+	// The identifier.
 	RouteResponseID *string `json:"routeResponseID,omitempty"`
-	// The integration response key.
+	// After evaluating a selection expression, the result is compared against one
+	// or more selection keys to find a matching key. See Selection Expressions
+	// (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-apikey-selection-expressions)
+	// for a list of expressions and each expression's associated selection key
+	// type.
 	RouteResponseKey *string `json:"routeResponseKey,omitempty"`
 }
 
 type RouteSettings struct {
-	// Specifies whether a Lambda authorizer returns a response in a simple format.
-	// If enabled, the Lambda authorizer can return a boolean value instead of an
-	// IAM policy. Supported only for HTTP APIs. To learn more, see Working with
-	// AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
 	DataTraceEnabled *bool `json:"dataTraceEnabled,omitempty"`
-	// Specifies whether a Lambda authorizer returns a response in a simple format.
-	// If enabled, the Lambda authorizer can return a boolean value instead of an
-	// IAM policy. Supported only for HTTP APIs. To learn more, see Working with
-	// AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
+
 	DetailedMetricsEnabled *bool `json:"detailedMetricsEnabled,omitempty"`
-	// Specifies the logging level for this route: INFO, ERROR, or OFF. This property
-	// affects the log entries pushed to Amazon CloudWatch Logs. Supported only
-	// for WebSocket APIs.
+	// The logging level.
 	LoggingLevel *string `json:"loggingLevel,omitempty"`
-	// Specifies the throttling burst limit.
+
 	ThrottlingBurstLimit *int64 `json:"throttlingBurstLimit,omitempty"`
-	// Specifies the throttling rate limit.
+
 	ThrottlingRateLimit *float64 `json:"throttlingRateLimit,omitempty"`
 }
 
 type Route_SDK struct {
-	// Specifies whether a Lambda authorizer returns a response in a simple format.
-	// If enabled, the Lambda authorizer can return a boolean value instead of an
-	// IAM policy. Supported only for HTTP APIs. To learn more, see Working with
-	// AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
 	APIGatewayManaged *bool `json:"apiGatewayManaged,omitempty"`
-	// Specifies whether a Lambda authorizer returns a response in a simple format.
-	// If enabled, the Lambda authorizer can return a boolean value instead of an
-	// IAM policy. Supported only for HTTP APIs. To learn more, see Working with
-	// AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
+
 	APIKeyRequired *bool `json:"apiKeyRequired,omitempty"`
 	// A list of authorization scopes configured on a route. The scopes are used
 	// with a JWT authorizer to authorize the method invocation. The authorization
@@ -530,101 +367,96 @@ type Route_SDK struct {
 	// is not authorized. When the route scope is configured, the client must provide
 	// an access token instead of an identity token for authorization purposes.
 	AuthorizationScopes []*string `json:"authorizationScopes,omitempty"`
-	// The authorization type for the route. For WebSocket APIs, valid values are
-	// NONE for open access, AWS_IAM for using AWS IAM permissions, and CUSTOM for
-	// using a Lambda authorizer For HTTP APIs, valid values are NONE for open access,
-	// JWT for using JSON Web Tokens, AWS_IAM for using AWS IAM permissions, and
-	// CUSTOM for using a Lambda authorizer.
+	// The authorization type. For WebSocket APIs, valid values are NONE for open
+	// access, AWS_IAM for using AWS IAM permissions, and CUSTOM for using a Lambda
+	// authorizer. For HTTP APIs, valid values are NONE for open access, JWT for
+	// using JSON Web Tokens, AWS_IAM for using AWS IAM permissions, and CUSTOM
+	// for using a Lambda authorizer.
 	AuthorizationType *string `json:"authorizationType,omitempty"`
-	// The authorizer identifier.
+	// The identifier.
 	AuthorizerID *string `json:"authorizerID,omitempty"`
-	// The API mapping selection expression.
+	// An expression used to extract information at runtime. See Selection Expressions
+	// (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-apikey-selection-expressions)
+	// for more information.
 	ModelSelectionExpression *string `json:"modelSelectionExpression,omitempty"`
-	// Specifies the format of the payload sent to an HTTP API Lambda authorizer.
-	// Required for HTTP API Lambda authorizers. Supported values are 1.0 and 2.0.
-	// To learn more, see Working with AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html).
+	// A string with a length between [1-64].
 	OperationName *string `json:"operationName,omitempty"`
-	// The request models for the route. Supported only for WebSocket APIs.
+	// The route models.
 	RequestModels map[string]*string `json:"requestModels,omitempty"`
-	// The request parameters for the route. Supported only for WebSocket APIs.
+	// The route parameters.
 	RequestParameters []map[string]*ParameterConstraints `json:"requestParameters,omitempty"`
-	// The authorizer identifier.
+	// The identifier.
 	RouteID *string `json:"routeID,omitempty"`
-	// The integration response key.
+	// After evaluating a selection expression, the result is compared against one
+	// or more selection keys to find a matching key. See Selection Expressions
+	// (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-apikey-selection-expressions)
+	// for a list of expressions and each expression's associated selection key
+	// type.
 	RouteKey *string `json:"routeKey,omitempty"`
-	// The API mapping selection expression.
+	// An expression used to extract information at runtime. See Selection Expressions
+	// (https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-selection-expressions.html#apigateway-websocket-api-apikey-selection-expressions)
+	// for more information.
 	RouteResponseSelectionExpression *string `json:"routeResponseSelectionExpression,omitempty"`
-	// The name of the authorizer.
+	// A string with a length between [1-128].
 	Target *string `json:"target,omitempty"`
 }
 
 type Stage_SDK struct {
-	// Settings for logging access in this stage.
+	// Settings for logging access in a stage.
 	AccessLogSettings *AccessLogSettings `json:"accessLogSettings,omitempty"`
-	// Specifies whether a Lambda authorizer returns a response in a simple format.
-	// If enabled, the Lambda authorizer can return a boolean value instead of an
-	// IAM policy. Supported only for HTTP APIs. To learn more, see Working with
-	// AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
+
 	APIGatewayManaged *bool `json:"apiGatewayManaged,omitempty"`
-	// Specifies whether a Lambda authorizer returns a response in a simple format.
-	// If enabled, the Lambda authorizer can return a boolean value instead of an
-	// IAM policy. Supported only for HTTP APIs. To learn more, see Working with
-	// AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
+
 	AutoDeploy *bool `json:"autoDeploy,omitempty"`
-	// The authorizer identifier.
+	// The identifier.
 	ClientCertificateID *string `json:"clientCertificateID,omitempty"`
-	// The timestamp when the API was created.
+
 	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
-	// Default route settings for the stage.
+	// Represents a collection of route settings.
 	DefaultRouteSettings *RouteSettings `json:"defaultRouteSettings,omitempty"`
-	// The authorizer identifier.
+	// The identifier.
 	DeploymentID *string `json:"deploymentID,omitempty"`
-	// The validation expression does not apply to the REQUEST authorizer.
+	// A string with a length between [0-1024].
 	Description *string `json:"description,omitempty"`
-	// The URI of the API, of the form {api-id}.execute-api.{region}.amazonaws.com.
-	// The stage name is typically appended to this URI to form a complete path
-	// to a deployed API stage.
+
 	LastDeploymentStatusMessage *string `json:"lastDeploymentStatusMessage,omitempty"`
-	// The timestamp when the API was created.
+
 	LastUpdatedDate *metav1.Time `json:"lastUpdatedDate,omitempty"`
-	// Route settings for the stage, by routeKey.
+	// The route settings map.
 	RouteSettings []map[string]*RouteSettings `json:"routeSettings,omitempty"`
-	// The name of the authorizer.
+	// A string with a length between [1-128].
 	StageName *string `json:"stageName,omitempty"`
-	// A map that defines the stage variables for a stage resource. Variable names
-	// can have alphanumeric and underscore characters, and the values must match
-	// [A-Za-z0-9-._~:/?#&=,]+.
+	// The stage variable map.
 	StageVariables map[string]*string `json:"stageVariables,omitempty"`
-	// The collection of tags associated with a domain name.
+	// Represents a collection of tags associated with the resource.
 	Tags map[string]*string `json:"tags,omitempty"`
 }
 
 type TLSConfig struct {
-	// The name of the DomainName resource.
+	// A string with a length between [1-512].
 	ServerNameToVerify *string `json:"serverNameToVerify,omitempty"`
 }
 
 type TLSConfigInput struct {
-	// The name of the DomainName resource.
+	// A string with a length between [1-512].
 	ServerNameToVerify *string `json:"serverNameToVerify,omitempty"`
 }
 
 type VPCLink_SDK struct {
-	// The timestamp when the API was created.
 	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
-	// The name of the authorizer.
+	// A string with a length between [1-128].
 	Name *string `json:"name,omitempty"`
 	// A list of security group IDs for the VPC link.
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 	// A list of subnet IDs to include in the VPC link.
 	SubnetIDs []*string `json:"subnetIDs,omitempty"`
-	// The collection of tags associated with a domain name.
+	// Represents a collection of tags associated with the resource.
 	Tags map[string]*string `json:"tags,omitempty"`
-	// The authorizer identifier.
+	// The identifier.
 	VPCLinkID *string `json:"vpcLinkID,omitempty"`
 	// The status of the VPC link.
 	VPCLinkStatus *string `json:"vpcLinkStatus,omitempty"`
-	// The validation expression does not apply to the REQUEST authorizer.
+	// A string with a length between [0-1024].
 	VPCLinkStatusMessage *string `json:"vpcLinkStatusMessage,omitempty"`
 	// The version of the VPC link.
 	VPCLinkVersion *string `json:"vpcLinkVersion,omitempty"`

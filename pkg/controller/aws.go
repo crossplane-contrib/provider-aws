@@ -24,6 +24,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/acm"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthority"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthoritypermission"
+	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/api"
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cluster"
@@ -105,6 +106,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		redshift.SetupCluster,
 		elasticip.SetupElasticIP,
 		repository.SetupRepository,
+		api.SetupAPI,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err

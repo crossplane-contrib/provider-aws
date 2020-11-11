@@ -59,29 +59,25 @@ spec:
                     items:
                       properties:
                         apiGatewayDomainName:
-                          description: The URI of the API, of the form {api-id}.execute-api.{region}.amazonaws.com. The stage name is typically appended to this URI to form a complete path to a deployed API stage.
                           type: string
                         certificateARN:
-                          description: The ARN of the CloudWatch Logs log group to receive access logs.
+                          description: Represents an Amazon Resource Name (ARN).
                           type: string
                         certificateName:
-                          description: The name of the authorizer.
+                          description: A string with a length between [1-128].
                           type: string
                         certificateUploadDate:
-                          description: The timestamp when the API was created.
                           format: date-time
                           type: string
                         domainNameStatus:
                           description: The status of the domain name migration. The valid values are AVAILABLE and UPDATING. If the status is UPDATING, the domain cannot be modified further until the existing operation is complete. If it is AVAILABLE, the domain can be updated.
                           type: string
                         domainNameStatusMessage:
-                          description: The URI of the API, of the form {api-id}.execute-api.{region}.amazonaws.com. The stage name is typically appended to this URI to form a complete path to a deployed API stage.
                           type: string
                         endpointType:
-                          description: The endpoint type.
+                          description: Represents an endpoint type.
                           type: string
                         hostedZoneID:
-                          description: The URI of the API, of the form {api-id}.execute-api.{region}.amazonaws.com. The stage name is typically appended to this URI to form a complete path to a deployed API stage.
                           type: string
                         securityPolicy:
                           description: The Transport Layer Security (TLS) version of the security policy for this domain name. The valid values are TLS_1_0 and TLS_1_2.
@@ -91,10 +87,10 @@ spec:
                   mutualTLSAuthentication:
                     properties:
                       truststoreURI:
-                        description: 'The authorizer''s Uniform Resource Identifier (URI). For REQUEST authorizers, this must be a well-formed Lambda function URI, for example, arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:{account_id}:function:{lambda_function_name}/invocations. In general, the URI has this form: arn:aws:apigateway:{region}:lambda:path/{service_api} , where {region} is the same as the region hosting the Lambda function, path indicates that the remaining substring in the URI should be treated as the path to the resource, including the initial /. For Lambda functions, this is usually of the form /2015-03-31/functions/[FunctionARN]/invocations. Supported only for REQUEST authorizers.'
+                        description: A string representation of a URI with a length between [1-2048].
                         type: string
                       truststoreVersion:
-                        description: Specifies the format of the payload sent to an HTTP API Lambda authorizer. Required for HTTP API Lambda authorizers. Supported values are 1.0 and 2.0. To learn more, see Working with AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html).
+                        description: A string with a length between [1-64].
                         type: string
                     type: object
                   region:

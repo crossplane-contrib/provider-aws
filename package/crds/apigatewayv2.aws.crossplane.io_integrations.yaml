@@ -96,7 +96,7 @@ spec:
                   tlsConfig:
                     properties:
                       serverNameToVerify:
-                        description: The name of the DomainName resource.
+                        description: A string with a length between [1-512].
                         type: string
                     type: object
                 required:

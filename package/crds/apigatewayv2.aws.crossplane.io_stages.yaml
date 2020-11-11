@@ -56,10 +56,10 @@ spec:
                   accessLogSettings:
                     properties:
                       destinationARN:
-                        description: The ARN of the CloudWatch Logs log group to receive access logs.
+                        description: Represents an Amazon Resource Name (ARN).
                         type: string
                       format:
-                        description: A single line format of the access logs of data, as specified by selected $context variables. The format must include at least $context.requestId.
+                        description: A string with a length between [1-1024].
                         type: string
                     type: object
                   apiID:
@@ -71,20 +71,16 @@ spec:
                   defaultRouteSettings:
                     properties:
                       dataTraceEnabled:
-                        description: Specifies whether a Lambda authorizer returns a response in a simple format. If enabled, the Lambda authorizer can return a boolean value instead of an IAM policy. Supported only for HTTP APIs. To learn more, see Working with AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
                         type: boolean
                       detailedMetricsEnabled:
-                        description: Specifies whether a Lambda authorizer returns a response in a simple format. If enabled, the Lambda authorizer can return a boolean value instead of an IAM policy. Supported only for HTTP APIs. To learn more, see Working with AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
                         type: boolean
                       loggingLevel:
-                        description: 'Specifies the logging level for this route: INFO, ERROR, or OFF. This property affects the log entries pushed to Amazon CloudWatch Logs. Supported only for WebSocket APIs.'
+                        description: The logging level.
                         type: string
                       throttlingBurstLimit:
-                        description: Specifies the throttling burst limit.
                         format: int64
                         type: integer
                       throttlingRateLimit:
-                        description: Specifies the throttling rate limit.
                         type: number
                     type: object
                   deploymentID:
@@ -98,20 +94,16 @@ spec:
                     additionalProperties:
                       properties:
                         dataTraceEnabled:
-                          description: Specifies whether a Lambda authorizer returns a response in a simple format. If enabled, the Lambda authorizer can return a boolean value instead of an IAM policy. Supported only for HTTP APIs. To learn more, see Working with AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
                           type: boolean
                         detailedMetricsEnabled:
-                          description: Specifies whether a Lambda authorizer returns a response in a simple format. If enabled, the Lambda authorizer can return a boolean value instead of an IAM policy. Supported only for HTTP APIs. To learn more, see Working with AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
                           type: boolean
                         loggingLevel:
-                          description: 'Specifies the logging level for this route: INFO, ERROR, or OFF. This property affects the log entries pushed to Amazon CloudWatch Logs. Supported only for WebSocket APIs.'
+                          description: The logging level.
                           type: string
                         throttlingBurstLimit:
-                          description: Specifies the throttling burst limit.
                           format: int64
                           type: integer
                         throttlingRateLimit:
-                          description: Specifies the throttling rate limit.
                           type: number
                       type: object
                     type: object
