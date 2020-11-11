@@ -22,16 +22,40 @@ import (
 	"context"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
+	ctrl "sigs.k8s.io/controller-runtime"
+
+	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
 )
+
+// SetupRoute adds a controller that reconciles Route.
+func SetupRoute(mgr ctrl.Manager, l logging.Logger) error {
+	name := managed.ControllerName(svcapitypes.RouteGroupKind)
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		For(&svcapitypes.Route{}).
+		Complete(managed.NewReconciler(mgr,
+			resource.ManagedKind(svcapitypes.RouteGroupVersionKind),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithConnectionPublishers(),
+			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+}
 
 func (*external) preObserve(context.Context, *svcapitypes.Route) error {
 	return nil
 }
 func (*external) postObserve(_ context.Context, _ *svcapitypes.Route, _ *svcsdk.GetRoutesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	return obs, err
+}
+
+func (*external) filterList(_ *svcapitypes.Route, list *svcsdk.GetRoutesOutput) *svcsdk.GetRoutesOutput {
+	return list
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.Route) error {

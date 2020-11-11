@@ -22,6 +22,7 @@ import (
 
 	acmv1alpha1 "github.com/crossplane/provider-aws/apis/acm/v1alpha1"
 	acmpcav1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	apigatewayv2 "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
 	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	cachev1beta1 "github.com/crossplane/provider-aws/apis/cache/v1beta1"
 	databasev1alpha1 "github.com/crossplane/provider-aws/apis/database/v1alpha1"
@@ -71,6 +72,7 @@ func init() {
 		redshiftv1alpha1.SchemeBuilder.AddToScheme,
 		eksv1alpha1.SchemeBuilder.AddToScheme,
 		ecrv1alpha1.SchemeBuilder.AddToScheme,
+		apigatewayv2.SchemeBuilder.AddToScheme,
 	)
 }
 

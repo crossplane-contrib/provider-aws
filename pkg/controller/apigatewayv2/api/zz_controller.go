@@ -90,6 +90,10 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	if err != nil {
 		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
 	}
+	resp = e.filterList(cr, resp)
+	if len(resp.Items) == 0 {
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
 	lateInitialize(&cr.Spec.ForProvider, resp)
 	GenerateAPI(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
@@ -135,6 +139,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f9 = append(f9, &f9elem)
 		}
 		cr.Status.AtProvider.ImportInfo = f9
+	}
+	if resp.Name != nil {
+		cr.Status.AtProvider.Name = resp.Name
 	}
 	if resp.Warnings != nil {
 		f15 := []*string{}

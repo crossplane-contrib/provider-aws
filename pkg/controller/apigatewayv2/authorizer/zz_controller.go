@@ -89,6 +89,10 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	if err != nil {
 		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
 	}
+	resp = e.filterList(cr, resp)
+	if len(resp.Items) == 0 {
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
 	lateInitialize(&cr.Spec.ForProvider, resp)
 	GenerateAuthorizer(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)

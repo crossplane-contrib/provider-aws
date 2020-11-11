@@ -58,30 +58,29 @@ spec:
                   corsConfiguration:
                     properties:
                       allowCredentials:
-                        description: Specifies whether a Lambda authorizer returns a response in a simple format. If enabled, the Lambda authorizer can return a boolean value instead of an IAM policy. Supported only for HTTP APIs. To learn more, see Working with AWS Lambda authorizers for HTTP APIs (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html)
                         type: boolean
                       allowHeaders:
-                        description: Represents a collection of exposed headers. Supported only for HTTP APIs.
+                        description: Represents a collection of allowed headers. Supported only for HTTP APIs.
                         items:
                           type: string
                         type: array
                       allowMethods:
-                        description: Represents a collection of allowed HTTP methods. Supported only for HTTP APIs.
+                        description: Represents a collection of methods. Supported only for HTTP APIs.
                         items:
                           type: string
                         type: array
                       allowOrigins:
-                        description: Represents a collection of allowed origins. Supported only for HTTP APIs.
+                        description: Represents a collection of origins. Supported only for HTTP APIs.
                         items:
                           type: string
                         type: array
                       exposeHeaders:
-                        description: Represents a collection of exposed headers. Supported only for HTTP APIs.
+                        description: Represents a collection of allowed headers. Supported only for HTTP APIs.
                         items:
                           type: string
                         type: array
                       maxAge:
-                        description: The number of seconds that the browser should cache preflight request results. Supported only for HTTP APIs.
+                        description: An integer with a value between -1 and 86400. Supported only for HTTP APIs.
                         format: int64
                         type: integer
                     type: object
@@ -93,8 +92,6 @@ spec:
                     type: boolean
                   disableSchemaValidation:
                     type: boolean
-                  name:
-                    type: string
                   protocolType:
                     type: string
                   region:
@@ -113,7 +110,6 @@ spec:
                   version:
                     type: string
                 required:
-                - name
                 - protocolType
                 type: object
               providerConfigRef:
@@ -169,6 +165,8 @@ spec:
                     items:
                       type: string
                     type: array
+                  name:
+                    type: string
                   warnings:
                     items:
                       type: string

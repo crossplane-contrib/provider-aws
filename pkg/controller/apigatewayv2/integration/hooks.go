@@ -22,16 +22,40 @@ import (
 	"context"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
+	ctrl "sigs.k8s.io/controller-runtime"
+
+	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
 )
+
+// SetupIntegration adds a controller that reconciles Integration.
+func SetupIntegration(mgr ctrl.Manager, l logging.Logger) error {
+	name := managed.ControllerName(svcapitypes.IntegrationGroupKind)
+	return ctrl.NewControllerManagedBy(mgr).
+		Named(name).
+		For(&svcapitypes.Integration{}).
+		Complete(managed.NewReconciler(mgr,
+			resource.ManagedKind(svcapitypes.IntegrationGroupVersionKind),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithConnectionPublishers(),
+			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+}
 
 func (*external) preObserve(context.Context, *svcapitypes.Integration) error {
 	return nil
 }
 func (*external) postObserve(_ context.Context, _ *svcapitypes.Integration, _ *svcsdk.GetIntegrationsOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	return obs, err
+}
+
+func (*external) filterList(_ *svcapitypes.Integration, list *svcsdk.GetIntegrationsOutput) *svcsdk.GetIntegrationsOutput {
+	return list
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.Integration) error {

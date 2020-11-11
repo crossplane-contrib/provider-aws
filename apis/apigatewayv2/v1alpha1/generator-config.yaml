@@ -1,0 +1,4 @@
+ignore:
+  field_paths:
+    - CreateApiInput.Name
+    - DeleteApiInput.Name
