@@ -43,7 +43,8 @@ type RouteResponseParameters struct {
 	RouteID *string `json:"routeID"`
 
 	// +kubebuilder:validation:Required
-	RouteResponseKey *string `json:"routeResponseKey"`
+	RouteResponseKey              *string `json:"routeResponseKey"`
+	CustomRouteResponseParameters `json:",inline"`
 }
 
 // RouteResponseSpec defines the desired state of RouteResponse

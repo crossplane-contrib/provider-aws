@@ -35,7 +35,8 @@ type DeploymentParameters struct {
 
 	Description *string `json:"description,omitempty"`
 
-	StageName *string `json:"stageName,omitempty"`
+	StageName                  *string `json:"stageName,omitempty"`
+	CustomDeploymentParameters `json:",inline"`
 }
 
 // DeploymentSpec defines the desired state of Deployment

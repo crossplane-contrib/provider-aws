@@ -53,7 +53,8 @@ type APIParameters struct {
 
 	Target *string `json:"target,omitempty"`
 
-	Version *string `json:"version,omitempty"`
+	Version             *string `json:"version,omitempty"`
+	CustomAPIParameters `json:",inline"`
 }
 
 // APISpec defines the desired state of API

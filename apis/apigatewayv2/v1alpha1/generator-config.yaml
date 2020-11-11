@@ -2,3 +2,6 @@ ignore:
   field_paths:
     - CreateApiInput.Name
     - DeleteApiInput.Name
+    - CreateStageInput.ApiId
+    - CreateStageInput.StageName
+    - DeleteStageInput.StageName

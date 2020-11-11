@@ -35,10 +35,6 @@ import (
 func GenerateGetStagesInput(cr *svcapitypes.Stage) *svcsdk.GetStagesInput {
 	res := preGenerateGetStagesInput(cr, &svcsdk.GetStagesInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
-
 	return postGenerateGetStagesInput(cr, res)
 }
 
@@ -125,7 +121,7 @@ func GenerateStage(resp *svcsdk.GetStagesOutput) *svcapitypes.Stage {
 			cr.Spec.ForProvider.RouteSettings = f10
 		}
 		if elem.StageName != nil {
-			cr.Spec.ForProvider.StageName = elem.StageName
+			cr.Status.AtProvider.StageName = elem.StageName
 		}
 		if elem.StageVariables != nil {
 			f12 := map[string]*string{}
@@ -169,9 +165,6 @@ func GenerateCreateStageInput(cr *svcapitypes.Stage) *svcsdk.CreateStageInput {
 		}
 		res.SetAccessLogSettings(f0)
 	}
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
 	if cr.Spec.ForProvider.AutoDeploy != nil {
 		res.SetAutoDeploy(*cr.Spec.ForProvider.AutoDeploy)
 	}
@@ -179,23 +172,23 @@ func GenerateCreateStageInput(cr *svcapitypes.Stage) *svcsdk.CreateStageInput {
 		res.SetClientCertificateId(*cr.Spec.ForProvider.ClientCertificateID)
 	}
 	if cr.Spec.ForProvider.DefaultRouteSettings != nil {
-		f4 := &svcsdk.RouteSettings{}
+		f3 := &svcsdk.RouteSettings{}
 		if cr.Spec.ForProvider.DefaultRouteSettings.DataTraceEnabled != nil {
-			f4.SetDataTraceEnabled(*cr.Spec.ForProvider.DefaultRouteSettings.DataTraceEnabled)
+			f3.SetDataTraceEnabled(*cr.Spec.ForProvider.DefaultRouteSettings.DataTraceEnabled)
 		}
 		if cr.Spec.ForProvider.DefaultRouteSettings.DetailedMetricsEnabled != nil {
-			f4.SetDetailedMetricsEnabled(*cr.Spec.ForProvider.DefaultRouteSettings.DetailedMetricsEnabled)
+			f3.SetDetailedMetricsEnabled(*cr.Spec.ForProvider.DefaultRouteSettings.DetailedMetricsEnabled)
 		}
 		if cr.Spec.ForProvider.DefaultRouteSettings.LoggingLevel != nil {
-			f4.SetLoggingLevel(*cr.Spec.ForProvider.DefaultRouteSettings.LoggingLevel)
+			f3.SetLoggingLevel(*cr.Spec.ForProvider.DefaultRouteSettings.LoggingLevel)
 		}
 		if cr.Spec.ForProvider.DefaultRouteSettings.ThrottlingBurstLimit != nil {
-			f4.SetThrottlingBurstLimit(*cr.Spec.ForProvider.DefaultRouteSettings.ThrottlingBurstLimit)
+			f3.SetThrottlingBurstLimit(*cr.Spec.ForProvider.DefaultRouteSettings.ThrottlingBurstLimit)
 		}
 		if cr.Spec.ForProvider.DefaultRouteSettings.ThrottlingRateLimit != nil {
-			f4.SetThrottlingRateLimit(*cr.Spec.ForProvider.DefaultRouteSettings.ThrottlingRateLimit)
+			f3.SetThrottlingRateLimit(*cr.Spec.ForProvider.DefaultRouteSettings.ThrottlingRateLimit)
 		}
-		res.SetDefaultRouteSettings(f4)
+		res.SetDefaultRouteSettings(f3)
 	}
 	if cr.Spec.ForProvider.DeploymentID != nil {
 		res.SetDeploymentId(*cr.Spec.ForProvider.DeploymentID)
@@ -204,48 +197,45 @@ func GenerateCreateStageInput(cr *svcapitypes.Stage) *svcsdk.CreateStageInput {
 		res.SetDescription(*cr.Spec.ForProvider.Description)
 	}
 	if cr.Spec.ForProvider.RouteSettings != nil {
-		f7 := map[string]*svcsdk.RouteSettings{}
-		for f7key, f7valiter := range cr.Spec.ForProvider.RouteSettings {
-			f7val := &svcsdk.RouteSettings{}
-			if f7valiter.DataTraceEnabled != nil {
-				f7val.SetDataTraceEnabled(*f7valiter.DataTraceEnabled)
+		f6 := map[string]*svcsdk.RouteSettings{}
+		for f6key, f6valiter := range cr.Spec.ForProvider.RouteSettings {
+			f6val := &svcsdk.RouteSettings{}
+			if f6valiter.DataTraceEnabled != nil {
+				f6val.SetDataTraceEnabled(*f6valiter.DataTraceEnabled)
 			}
-			if f7valiter.DetailedMetricsEnabled != nil {
-				f7val.SetDetailedMetricsEnabled(*f7valiter.DetailedMetricsEnabled)
+			if f6valiter.DetailedMetricsEnabled != nil {
+				f6val.SetDetailedMetricsEnabled(*f6valiter.DetailedMetricsEnabled)
 			}
-			if f7valiter.LoggingLevel != nil {
-				f7val.SetLoggingLevel(*f7valiter.LoggingLevel)
+			if f6valiter.LoggingLevel != nil {
+				f6val.SetLoggingLevel(*f6valiter.LoggingLevel)
 			}
-			if f7valiter.ThrottlingBurstLimit != nil {
-				f7val.SetThrottlingBurstLimit(*f7valiter.ThrottlingBurstLimit)
+			if f6valiter.ThrottlingBurstLimit != nil {
+				f6val.SetThrottlingBurstLimit(*f6valiter.ThrottlingBurstLimit)
 			}
-			if f7valiter.ThrottlingRateLimit != nil {
-				f7val.SetThrottlingRateLimit(*f7valiter.ThrottlingRateLimit)
+			if f6valiter.ThrottlingRateLimit != nil {
+				f6val.SetThrottlingRateLimit(*f6valiter.ThrottlingRateLimit)
 			}
-			f7[f7key] = f7val
+			f6[f6key] = f6val
 		}
-		res.SetRouteSettings(f7)
-	}
-	if cr.Spec.ForProvider.StageName != nil {
-		res.SetStageName(*cr.Spec.ForProvider.StageName)
+		res.SetRouteSettings(f6)
 	}
 	if cr.Spec.ForProvider.StageVariables != nil {
-		f9 := map[string]*string{}
-		for f9key, f9valiter := range cr.Spec.ForProvider.StageVariables {
-			var f9val string
-			f9val = *f9valiter
-			f9[f9key] = &f9val
+		f7 := map[string]*string{}
+		for f7key, f7valiter := range cr.Spec.ForProvider.StageVariables {
+			var f7val string
+			f7val = *f7valiter
+			f7[f7key] = &f7val
 		}
-		res.SetStageVariables(f9)
+		res.SetStageVariables(f7)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f10 := map[string]*string{}
-		for f10key, f10valiter := range cr.Spec.ForProvider.Tags {
-			var f10val string
-			f10val = *f10valiter
-			f10[f10key] = &f10val
+		f8 := map[string]*string{}
+		for f8key, f8valiter := range cr.Spec.ForProvider.Tags {
+			var f8val string
+			f8val = *f8valiter
+			f8[f8key] = &f8val
 		}
-		res.SetTags(f10)
+		res.SetTags(f8)
 	}
 
 	return postGenerateCreateStageInput(cr, res)
@@ -254,13 +244,6 @@ func GenerateCreateStageInput(cr *svcapitypes.Stage) *svcsdk.CreateStageInput {
 // GenerateDeleteStageInput returns a deletion input.
 func GenerateDeleteStageInput(cr *svcapitypes.Stage) *svcsdk.DeleteStageInput {
 	res := preGenerateDeleteStageInput(cr, &svcsdk.DeleteStageInput{})
-
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
-	if cr.Spec.ForProvider.StageName != nil {
-		res.SetStageName(*cr.Spec.ForProvider.StageName)
-	}
 
 	return postGenerateDeleteStageInput(cr, res)
 }

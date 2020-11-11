@@ -45,7 +45,8 @@ type IntegrationResponseParameters struct {
 
 	ResponseTemplates map[string]*string `json:"responseTemplates,omitempty"`
 
-	TemplateSelectionExpression *string `json:"templateSelectionExpression,omitempty"`
+	TemplateSelectionExpression         *string `json:"templateSelectionExpression,omitempty"`
+	CustomIntegrationResponseParameters `json:",inline"`
 }
 
 // IntegrationResponseSpec defines the desired state of IntegrationResponse

@@ -54,7 +54,8 @@ type RouteParameters struct {
 
 	RouteResponseSelectionExpression *string `json:"routeResponseSelectionExpression,omitempty"`
 
-	Target *string `json:"target,omitempty"`
+	Target                *string `json:"target,omitempty"`
+	CustomRouteParameters `json:",inline"`
 }
 
 // RouteSpec defines the desired state of Route

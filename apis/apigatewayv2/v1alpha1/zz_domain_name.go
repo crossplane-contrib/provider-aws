@@ -37,7 +37,8 @@ type DomainNameParameters struct {
 
 	MutualTLSAuthentication *MutualTLSAuthenticationInput `json:"mutualTLSAuthentication,omitempty"`
 
-	Tags map[string]*string `json:"tags,omitempty"`
+	Tags                       map[string]*string `json:"tags,omitempty"`
+	CustomDomainNameParameters `json:",inline"`
 }
 
 // DomainNameSpec defines the desired state of DomainName

@@ -54,7 +54,8 @@ type AuthorizerParameters struct {
 	JWTConfiguration *JWTConfiguration `json:"jwtConfiguration,omitempty"`
 
 	// +kubebuilder:validation:Required
-	Name *string `json:"name"`
+	Name                       *string `json:"name"`
+	CustomAuthorizerParameters `json:",inline"`
 }
 
 // AuthorizerSpec defines the desired state of Authorizer

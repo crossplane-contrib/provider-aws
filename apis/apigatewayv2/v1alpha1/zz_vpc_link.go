@@ -38,7 +38,8 @@ type VPCLinkParameters struct {
 	// +kubebuilder:validation:Required
 	SubnetIDs []*string `json:"subnetIDs"`
 
-	Tags map[string]*string `json:"tags,omitempty"`
+	Tags                    map[string]*string `json:"tags,omitempty"`
+	CustomVPCLinkParameters `json:",inline"`
 }
 
 // VPCLinkSpec defines the desired state of VPCLink

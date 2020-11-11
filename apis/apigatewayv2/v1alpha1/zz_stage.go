@@ -32,9 +32,6 @@ type StageParameters struct {
 
 	AccessLogSettings *AccessLogSettings `json:"accessLogSettings,omitempty"`
 
-	// +kubebuilder:validation:Required
-	APIID *string `json:"apiID"`
-
 	AutoDeploy *bool `json:"autoDeploy,omitempty"`
 
 	ClientCertificateID *string `json:"clientCertificateID,omitempty"`
@@ -47,12 +44,10 @@ type StageParameters struct {
 
 	RouteSettings map[string]*RouteSettings `json:"routeSettings,omitempty"`
 
-	// +kubebuilder:validation:Required
-	StageName *string `json:"stageName"`
-
 	StageVariables map[string]*string `json:"stageVariables,omitempty"`
 
-	Tags map[string]*string `json:"tags,omitempty"`
+	Tags                  map[string]*string `json:"tags,omitempty"`
+	CustomStageParameters `json:",inline"`
 }
 
 // StageSpec defines the desired state of Stage
@@ -70,6 +65,8 @@ type StageObservation struct {
 	LastDeploymentStatusMessage *string `json:"lastDeploymentStatusMessage,omitempty"`
 
 	LastUpdatedDate *metav1.Time `json:"lastUpdatedDate,omitempty"`
+
+	StageName *string `json:"stageName,omitempty"`
 }
 
 // StageStatus defines the observed state of Stage.
