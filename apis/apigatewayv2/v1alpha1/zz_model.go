@@ -41,7 +41,8 @@ type ModelParameters struct {
 	Name *string `json:"name"`
 
 	// +kubebuilder:validation:Required
-	Schema *string `json:"schema"`
+	Schema                *string `json:"schema"`
+	CustomModelParameters `json:",inline"`
 }
 
 // ModelSpec defines the desired state of Model

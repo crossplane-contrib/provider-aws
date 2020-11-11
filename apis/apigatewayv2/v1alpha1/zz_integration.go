@@ -64,7 +64,8 @@ type IntegrationParameters struct {
 
 	TimeoutInMillis *int64 `json:"timeoutInMillis,omitempty"`
 
-	TLSConfig *TLSConfigInput `json:"tlsConfig,omitempty"`
+	TLSConfig                   *TLSConfigInput `json:"tlsConfig,omitempty"`
+	CustomIntegrationParameters `json:",inline"`
 }
 
 // IntegrationSpec defines the desired state of Integration

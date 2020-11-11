@@ -131,6 +131,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	if resp.LastUpdatedDate != nil {
 		cr.Status.AtProvider.LastUpdatedDate = &metav1.Time{*resp.LastUpdatedDate}
 	}
+	if resp.StageName != nil {
+		cr.Status.AtProvider.StageName = resp.StageName
+	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }

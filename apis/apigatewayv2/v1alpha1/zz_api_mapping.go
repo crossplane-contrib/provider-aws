@@ -39,7 +39,8 @@ type APIMappingParameters struct {
 	DomainName *string `json:"domainName"`
 
 	// +kubebuilder:validation:Required
-	Stage *string `json:"stage"`
+	Stage                      *string `json:"stage"`
+	CustomAPIMappingParameters `json:",inline"`
 }
 
 // APIMappingSpec defines the desired state of APIMapping
