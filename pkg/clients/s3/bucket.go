@@ -44,6 +44,10 @@ var (
 	TaggingErrCode = "NoSuchTagSet"
 	// WebsiteErrCode is the error code sent by AWS when the website config does not exist
 	WebsiteErrCode = "NoSuchWebsiteConfiguration"
+	// MethodNotAllowed is the error code sent by AWS when the request method for an object is not allowed
+	MethodNotAllowed = "MethodNotAllowed"
+	// UnsupportedArgument is the error code sent by AWS when the request fields contain an argument that is not supported
+	UnsupportedArgument = "UnsupportedArgument"
 )
 
 // BucketClient is the interface for Client for making S3 Bucket requests.
@@ -193,6 +197,22 @@ func TaggingNotFound(err error) bool {
 // WebsiteConfigurationNotFound is parses the aws Error and validates if the website configuration does not exist
 func WebsiteConfigurationNotFound(err error) bool {
 	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == WebsiteErrCode {
+		return true
+	}
+	return false
+}
+
+// MethodNotSupported is parses the aws Error and validates if the method is allowed for a request
+func MethodNotSupported(err error) bool {
+	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == MethodNotAllowed {
+		return true
+	}
+	return false
+}
+
+// ArgumentNotSupported is parses the aws Error and validates if parameters are now allowed for a request
+func ArgumentNotSupported(err error) bool {
+	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == UnsupportedArgument {
 		return true
 	}
 	return false
