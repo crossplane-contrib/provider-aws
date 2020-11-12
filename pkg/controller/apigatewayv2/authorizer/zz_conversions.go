@@ -34,10 +34,6 @@ import (
 func GenerateGetAuthorizersInput(cr *svcapitypes.Authorizer) *svcsdk.GetAuthorizersInput {
 	res := preGenerateGetAuthorizersInput(cr, &svcsdk.GetAuthorizersInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
-
 	return postGenerateGetAuthorizersInput(cr, res)
 }
 
@@ -97,7 +93,7 @@ func GenerateAuthorizer(resp *svcsdk.GetAuthorizersOutput) *svcapitypes.Authoriz
 			cr.Spec.ForProvider.JWTConfiguration = f9
 		}
 		if elem.Name != nil {
-			cr.Spec.ForProvider.Name = elem.Name
+			cr.Status.AtProvider.Name = elem.Name
 		}
 		found = true
 		break
@@ -113,9 +109,6 @@ func GenerateAuthorizer(resp *svcsdk.GetAuthorizersOutput) *svcapitypes.Authoriz
 func GenerateCreateAuthorizerInput(cr *svcapitypes.Authorizer) *svcsdk.CreateAuthorizerInput {
 	res := preGenerateCreateAuthorizerInput(cr, &svcsdk.CreateAuthorizerInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
 	if cr.Spec.ForProvider.AuthorizerCredentialsARN != nil {
 		res.SetAuthorizerCredentialsArn(*cr.Spec.ForProvider.AuthorizerCredentialsARN)
 	}
@@ -135,35 +128,32 @@ func GenerateCreateAuthorizerInput(cr *svcapitypes.Authorizer) *svcsdk.CreateAut
 		res.SetEnableSimpleResponses(*cr.Spec.ForProvider.EnableSimpleResponses)
 	}
 	if cr.Spec.ForProvider.IDentitySource != nil {
-		f7 := []*string{}
-		for _, f7iter := range cr.Spec.ForProvider.IDentitySource {
-			var f7elem string
-			f7elem = *f7iter
-			f7 = append(f7, &f7elem)
+		f6 := []*string{}
+		for _, f6iter := range cr.Spec.ForProvider.IDentitySource {
+			var f6elem string
+			f6elem = *f6iter
+			f6 = append(f6, &f6elem)
 		}
-		res.SetIdentitySource(f7)
+		res.SetIdentitySource(f6)
 	}
 	if cr.Spec.ForProvider.IDentityValidationExpression != nil {
 		res.SetIdentityValidationExpression(*cr.Spec.ForProvider.IDentityValidationExpression)
 	}
 	if cr.Spec.ForProvider.JWTConfiguration != nil {
-		f9 := &svcsdk.JWTConfiguration{}
+		f8 := &svcsdk.JWTConfiguration{}
 		if cr.Spec.ForProvider.JWTConfiguration.Audience != nil {
-			f9f0 := []*string{}
-			for _, f9f0iter := range cr.Spec.ForProvider.JWTConfiguration.Audience {
-				var f9f0elem string
-				f9f0elem = *f9f0iter
-				f9f0 = append(f9f0, &f9f0elem)
+			f8f0 := []*string{}
+			for _, f8f0iter := range cr.Spec.ForProvider.JWTConfiguration.Audience {
+				var f8f0elem string
+				f8f0elem = *f8f0iter
+				f8f0 = append(f8f0, &f8f0elem)
 			}
-			f9.SetAudience(f9f0)
+			f8.SetAudience(f8f0)
 		}
 		if cr.Spec.ForProvider.JWTConfiguration.Issuer != nil {
-			f9.SetIssuer(*cr.Spec.ForProvider.JWTConfiguration.Issuer)
+			f8.SetIssuer(*cr.Spec.ForProvider.JWTConfiguration.Issuer)
 		}
-		res.SetJwtConfiguration(f9)
-	}
-	if cr.Spec.ForProvider.Name != nil {
-		res.SetName(*cr.Spec.ForProvider.Name)
+		res.SetJwtConfiguration(f8)
 	}
 
 	return postGenerateCreateAuthorizerInput(cr, res)
@@ -173,9 +163,6 @@ func GenerateCreateAuthorizerInput(cr *svcapitypes.Authorizer) *svcsdk.CreateAut
 func GenerateDeleteAuthorizerInput(cr *svcapitypes.Authorizer) *svcsdk.DeleteAuthorizerInput {
 	res := preGenerateDeleteAuthorizerInput(cr, &svcsdk.DeleteAuthorizerInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
 	if cr.Status.AtProvider.AuthorizerID != nil {
 		res.SetAuthorizerId(*cr.Status.AtProvider.AuthorizerID)
 	}
