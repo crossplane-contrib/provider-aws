@@ -30,9 +30,6 @@ type IntegrationParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region,omitempty"`
 
-	// +kubebuilder:validation:Required
-	APIID *string `json:"apiID"`
-
 	ConnectionID *string `json:"connectionID,omitempty"`
 
 	ConnectionType *string `json:"connectionType,omitempty"`

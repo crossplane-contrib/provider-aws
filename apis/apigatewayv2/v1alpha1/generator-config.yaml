@@ -11,3 +11,5 @@ ignore:
     - DeleteAuthorizerInput.ApiId
     - CreateAuthorizerInput.Name
     - DeleteAuthorizerInput.Name
+    - CreateIntegrationInput.ApiId
+    - DeleteIntegrationInput.ApiId
