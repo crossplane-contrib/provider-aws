@@ -71,6 +71,16 @@ type CustomRouteParameters struct {
 	// to set the APIID.
 	// +optional
 	APIIDSelector *runtimev1alpha1.Selector `json:"apiIdSelector,omitempty"`
+
+	// AuthorizerIDRef is a reference to an Authorizer used to set
+	// the AuthorizerID.
+	// +optional
+	AuthorizerIDRef *runtimev1alpha1.Reference `json:"authorizerIDRef,omitempty"`
+
+	// AuthorizerIDSelector selects references to Authorizer used
+	// to set the AuthorizerID.
+	// +optional
+	AuthorizerIDSelector *runtimev1alpha1.Selector `json:"authorizerIDSelector,omitempty"`
 }
 
 // CustomRouteResponseParameters includes the custom fields.

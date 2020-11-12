@@ -87,6 +87,27 @@ spec:
                     type: string
                   authorizerID:
                     type: string
+                  authorizerIDRef:
+                    description: AuthorizerIDRef is a reference to an Authorizer used to set the AuthorizerID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  authorizerIDSelector:
+                    description: AuthorizerIDSelector selects references to Authorizer used to set the AuthorizerID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   modelSelectionExpression:
                     type: string
                   operationName:

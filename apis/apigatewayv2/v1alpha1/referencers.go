@@ -36,6 +36,17 @@ func APIID() reference.ExtractValueFn {
 	}
 }
 
+// AuthorizerID extracts the resolved Authorizer's ID.
+func AuthorizerID() reference.ExtractValueFn {
+	return func(mg resource.Managed) string {
+		cr, ok := mg.(*Authorizer)
+		if !ok {
+			return ""
+		}
+		return reference.FromPtrValue(cr.Status.AtProvider.AuthorizerID)
+	}
+}
+
 // ResolveReferences of this Stage
 func (mg *Stage) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
@@ -73,6 +84,21 @@ func (mg *Route) ResolveReferences(ctx context.Context, c client.Reader) error {
 	}
 	mg.Spec.ForProvider.APIID = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.APIIDRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.authorizerId
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.AuthorizerID),
+		Reference:    mg.Spec.ForProvider.AuthorizerIDRef,
+		Selector:     mg.Spec.ForProvider.AuthorizerIDSelector,
+		To:           reference.To{Managed: &Authorizer{}, List: &AuthorizerList{}},
+		Extract:      AuthorizerID(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.authorizerId")
+	}
+	mg.Spec.ForProvider.AuthorizerID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.AuthorizerIDRef = rsp.ResolvedReference
+
 	return nil
 }
 
