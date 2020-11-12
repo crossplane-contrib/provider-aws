@@ -1,0 +1,14 @@
+apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
+kind: Authorizer
+metadata:
+  name: test-authorizer
+spec:
+  forProvider:
+    apiIdRef:
+      name: test-api
+    region: us-west-2
+    authorizerType: REQUEST
+    authorizerURI: "arn:aws:apigateway:REGION:lambda:path/2015-03-31/functions/arn:aws:lambda:REGION:ACCOUNT_ID:function:FUNCTION_NAME/invocations"
+    authorizerPayloadFormatVersion: "2.0"
+    identitySource:
+      - "$request.header.Authorization"
