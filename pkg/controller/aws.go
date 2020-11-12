@@ -25,6 +25,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthority"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthoritypermission"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/api"
+	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/authorizer"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/route"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/stage"
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
@@ -111,6 +112,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		api.SetupAPI,
 		stage.SetupStage,
 		route.SetupRoute,
+		authorizer.SetupAuthorizer,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err
