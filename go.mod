@@ -3,6 +3,7 @@ module github.com/crossplane/provider-aws
 go 1.13
 
 require (
+	github.com/aws/aws-sdk-go v1.34.32
 	github.com/aws/aws-sdk-go-v2 v0.23.0
 	github.com/crossplane/crossplane-runtime v0.11.0
 	github.com/crossplane/crossplane-tools v0.0.0-20201007233256-88b291e145bb
@@ -12,7 +13,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/google/go-cmp v0.5.0
 	github.com/gopherjs/gopherjs v0.0.0-20180825215210-0210a2f0f73c // indirect
-	github.com/jmespath/go-jmespath v0.3.0 // indirect
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mitchellh/copystructure v1.0.0

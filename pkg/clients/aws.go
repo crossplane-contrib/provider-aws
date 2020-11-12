@@ -27,12 +27,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/crossplane/provider-aws/apis/v1beta1"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	awsv1 "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-ini/ini"
 	"github.com/pkg/errors"
@@ -44,6 +44,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/v1alpha3"
+	"github.com/crossplane/provider-aws/apis/v1beta1"
 )
 
 // DefaultSection for INI files.
@@ -233,6 +234,108 @@ func UsePodServiceAccount(ctx context.Context, _ []byte, _, region string) (*aws
 	}
 	config, err := external.LoadDefaultAWSConfig(shared)
 	return &config, err
+}
+
+// NOTE(muvaf): ACK-generated controllers use aws/aws-sdk-go instead of
+// aws/aws-sdk-go-v2. These functions are implemented to be used by those controllers.
+
+// GetConfigV1 constructs an *awsv1.Config that can be used to authenticate to AWS
+// API by the AWSv1 clients.
+func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, region string) (*awsv1.Config, error) {
+	if mg.GetProviderConfigReference() == nil {
+		return nil, errors.New("providerConfigRef cannot be empty")
+	}
+	pc := &v1beta1.ProviderConfig{}
+	if err := c.Get(ctx, types.NamespacedName{Name: mg.GetProviderConfigReference().Name}, pc); err != nil {
+		return nil, errors.Wrap(err, "cannot get referenced Provider")
+	}
+
+	t := resource.NewProviderConfigUsageTracker(c, &v1beta1.ProviderConfigUsage{})
+	if err := t.Track(ctx, mg); err != nil {
+		return nil, errors.Wrap(err, "cannot track ProviderConfig usage")
+	}
+
+	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
+	case runtimev1alpha1.CredentialsSourceInjectedIdentity:
+		return UsePodServiceAccountV1(ctx, []byte{}, DefaultSection, region)
+	case runtimev1alpha1.CredentialsSourceSecret:
+		csr := pc.Spec.Credentials.SecretRef
+		if csr == nil {
+			return nil, errors.New("no credentials secret referenced")
+		}
+		s := &corev1.Secret{}
+		if err := c.Get(ctx, types.NamespacedName{Namespace: csr.Namespace, Name: csr.Name}, s); err != nil {
+			return nil, errors.Wrap(err, "cannot get credentials secret")
+		}
+		return UseProviderSecretV1(s.Data[csr.Key], DefaultSection, region)
+	default:
+		return nil, errors.Errorf("credentials source %s is not currently supported", s)
+	}
+}
+
+// UseProviderSecretV1 retrieves AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY from
+// the data which contains aws credentials under given profile and produces a *awsv1.Config
+// Example:
+// [default]
+// aws_access_key_id = <YOUR_ACCESS_KEY_ID>
+// aws_secret_access_key = <YOUR_SECRET_ACCESS_KEY>
+func UseProviderSecretV1(data []byte, profile, region string) (*awsv1.Config, error) {
+	config, err := ini.InsensitiveLoad(data)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot parse credentials secret")
+	}
+
+	iniProfile, err := config.GetSection(profile)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("cannot get %s profile in credentials secret", profile))
+	}
+
+	accessKeyID := iniProfile.Key("aws_access_key_id")
+	secretAccessKey := iniProfile.Key("aws_secret_access_key")
+	sessionToken := iniProfile.Key("aws_session_token")
+
+	// NOTE(muvaf): Key function implementation never returns nil but still its
+	// type is pointer so we check to make sure its next versions doesn't break
+	// that implicit contract.
+	if accessKeyID == nil || secretAccessKey == nil || sessionToken == nil {
+		return nil, errors.New("returned key can be empty but cannot be nil")
+	}
+
+	creds := credentials.NewStaticCredentials(accessKeyID.Value(), secretAccessKey.Value(), sessionToken.Value())
+	return awsv1.NewConfig().WithCredentials(creds).WithRegion(region), nil
+}
+
+// UsePodServiceAccountV1 assumes an IAM role configured via a ServiceAccount.
+// https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
+func UsePodServiceAccountV1(ctx context.Context, _ []byte, _, region string) (*awsv1.Config, error) {
+	cfg, err := external.LoadDefaultAWSConfig()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load default AWS config")
+	}
+	cfg.Region = region
+	svc := sts.New(cfg)
+
+	b, err := ioutil.ReadFile(os.Getenv("AWS_WEB_IDENTITY_TOKEN_FILE"))
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to read web identity token file in pod")
+	}
+	token := string(b)
+	sess := strconv.FormatInt(time.Now().UnixNano(), 10)
+	role := os.Getenv("AWS_ROLE_ARN")
+	resp, err := svc.AssumeRoleWithWebIdentityRequest(
+		&sts.AssumeRoleWithWebIdentityInput{
+			RoleSessionName:  &sess,
+			WebIdentityToken: &token,
+			RoleArn:          &role,
+		}).Send(ctx)
+	if err != nil {
+		return nil, err
+	}
+	creds := credentials.NewStaticCredentials(
+		aws.StringValue(resp.Credentials.AccessKeyId),
+		aws.StringValue(resp.Credentials.SecretAccessKey),
+		aws.StringValue(resp.Credentials.SessionToken))
+	return awsv1.NewConfig().WithCredentials(creds).WithRegion(region), nil
 }
 
 // TODO(muvaf): All the types that use CreateJSONPatch are known during
