@@ -5,3 +5,5 @@ ignore:
     - CreateStageInput.ApiId
     - CreateStageInput.StageName
     - DeleteStageInput.StageName
+    - CreateRouteInput.ApiId
+    - DeleteRouteInput.ApiId
