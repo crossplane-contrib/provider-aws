@@ -56,6 +56,16 @@ type CustomDeploymentParameters struct {
 	// to set the APIID.
 	// +optional
 	APIIDSelector *runtimev1alpha1.Selector `json:"apiIdSelector,omitempty"`
+
+	// StageNameRef is a reference to an Stage used to set
+	// the StageName.
+	// +optional
+	StageNameRef *runtimev1alpha1.Reference `json:"stageNameRef,omitempty"`
+
+	// StageNameSelector selects references to Stage used
+	// to set the StageName.
+	// +optional
+	StageNameSelector *runtimev1alpha1.Selector `json:"stageNameSelector,omitempty"`
 }
 
 // CustomDomainNameParameters includes the custom fields.

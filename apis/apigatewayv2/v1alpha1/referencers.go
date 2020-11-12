@@ -159,5 +159,19 @@ func (mg *Deployment) ResolveReferences(ctx context.Context, c client.Reader) er
 	}
 	mg.Spec.ForProvider.APIID = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.APIIDRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.stageName
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.StageName),
+		Reference:    mg.Spec.ForProvider.StageNameRef,
+		Selector:     mg.Spec.ForProvider.StageNameSelector,
+		To:           reference.To{Managed: &Stage{}, List: &StageList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.stageName")
+	}
+	mg.Spec.ForProvider.StageName = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.StageNameRef = rsp.ResolvedReference
 	return nil
 }
