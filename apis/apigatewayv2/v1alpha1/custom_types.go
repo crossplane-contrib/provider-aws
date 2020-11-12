@@ -43,7 +43,21 @@ type CustomIntegrationResponseParameters struct{}
 type CustomModelParameters struct{}
 
 // CustomRouteParameters includes the custom fields.
-type CustomRouteParameters struct{}
+type CustomRouteParameters struct {
+	// APIID is the ID for the API.
+	// +immutable
+	APIID *string `json:"apiId,omitempty"`
+
+	// APIIDRef is a reference to an API used to set
+	// the APIID.
+	// +optional
+	APIIDRef *runtimev1alpha1.Reference `json:"apiIdRef,omitempty"`
+
+	// APIIDSelector selects references to API used
+	// to set the APIID.
+	// +optional
+	APIIDSelector *runtimev1alpha1.Selector `json:"apiIdSelector,omitempty"`
+}
 
 // CustomRouteResponseParameters includes the custom fields.
 type CustomRouteResponseParameters struct{}
@@ -57,7 +71,7 @@ type CustomStageParameters struct {
 	// +immutable
 	APIID *string `json:"apiId,omitempty"`
 
-	// RoleArnRef is a reference to an API used to set
+	// APIIDRef is a reference to an API used to set
 	// the APIID.
 	// +optional
 	APIIDRef *runtimev1alpha1.Reference `json:"apiIdRef,omitempty"`
