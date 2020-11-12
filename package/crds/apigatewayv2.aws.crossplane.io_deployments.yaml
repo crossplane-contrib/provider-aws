@@ -53,8 +53,30 @@ spec:
               forProvider:
                 description: DeploymentParameters defines the desired state of Deployment
                 properties:
-                  apiID:
+                  apiId:
+                    description: APIID is the ID for the API.
                     type: string
+                  apiIdRef:
+                    description: APIIDRef is a reference to an API used to set the APIID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  apiIdSelector:
+                    description: APIIDSelector selects references to API used to set the APIID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   description:
                     type: string
                   region:
@@ -62,8 +84,6 @@ spec:
                     type: string
                   stageName:
                     type: string
-                required:
-                - apiID
                 type: object
               providerConfigRef:
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.

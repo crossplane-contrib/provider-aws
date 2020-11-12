@@ -30,9 +30,6 @@ type DeploymentParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region,omitempty"`
 
-	// +kubebuilder:validation:Required
-	APIID *string `json:"apiID"`
-
 	Description *string `json:"description,omitempty"`
 
 	StageName                  *string `json:"stageName,omitempty"`
