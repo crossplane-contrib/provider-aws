@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2020 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -33,10 +33,6 @@ import (
 // operation.
 func GenerateGetRoutesInput(cr *svcapitypes.Route) *svcsdk.GetRoutesInput {
 	res := preGenerateGetRoutesInput(cr, &svcsdk.GetRoutesInput{})
-
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
 
 	return postGenerateGetRoutesInput(cr, res)
 }
@@ -120,20 +116,17 @@ func GenerateRoute(resp *svcsdk.GetRoutesOutput) *svcapitypes.Route {
 func GenerateCreateRouteInput(cr *svcapitypes.Route) *svcsdk.CreateRouteInput {
 	res := preGenerateCreateRouteInput(cr, &svcsdk.CreateRouteInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
 	if cr.Spec.ForProvider.APIKeyRequired != nil {
 		res.SetApiKeyRequired(*cr.Spec.ForProvider.APIKeyRequired)
 	}
 	if cr.Spec.ForProvider.AuthorizationScopes != nil {
-		f2 := []*string{}
-		for _, f2iter := range cr.Spec.ForProvider.AuthorizationScopes {
-			var f2elem string
-			f2elem = *f2iter
-			f2 = append(f2, &f2elem)
+		f1 := []*string{}
+		for _, f1iter := range cr.Spec.ForProvider.AuthorizationScopes {
+			var f1elem string
+			f1elem = *f1iter
+			f1 = append(f1, &f1elem)
 		}
-		res.SetAuthorizationScopes(f2)
+		res.SetAuthorizationScopes(f1)
 	}
 	if cr.Spec.ForProvider.AuthorizationType != nil {
 		res.SetAuthorizationType(*cr.Spec.ForProvider.AuthorizationType)
@@ -148,24 +141,24 @@ func GenerateCreateRouteInput(cr *svcapitypes.Route) *svcsdk.CreateRouteInput {
 		res.SetOperationName(*cr.Spec.ForProvider.OperationName)
 	}
 	if cr.Spec.ForProvider.RequestModels != nil {
-		f7 := map[string]*string{}
-		for f7key, f7valiter := range cr.Spec.ForProvider.RequestModels {
-			var f7val string
-			f7val = *f7valiter
-			f7[f7key] = &f7val
+		f6 := map[string]*string{}
+		for f6key, f6valiter := range cr.Spec.ForProvider.RequestModels {
+			var f6val string
+			f6val = *f6valiter
+			f6[f6key] = &f6val
 		}
-		res.SetRequestModels(f7)
+		res.SetRequestModels(f6)
 	}
 	if cr.Spec.ForProvider.RequestParameters != nil {
-		f8 := map[string]*svcsdk.ParameterConstraints{}
-		for f8key, f8valiter := range cr.Spec.ForProvider.RequestParameters {
-			f8val := &svcsdk.ParameterConstraints{}
-			if f8valiter.Required != nil {
-				f8val.SetRequired(*f8valiter.Required)
+		f7 := map[string]*svcsdk.ParameterConstraints{}
+		for f7key, f7valiter := range cr.Spec.ForProvider.RequestParameters {
+			f7val := &svcsdk.ParameterConstraints{}
+			if f7valiter.Required != nil {
+				f7val.SetRequired(*f7valiter.Required)
 			}
-			f8[f8key] = f8val
+			f7[f7key] = f7val
 		}
-		res.SetRequestParameters(f8)
+		res.SetRequestParameters(f7)
 	}
 	if cr.Spec.ForProvider.RouteKey != nil {
 		res.SetRouteKey(*cr.Spec.ForProvider.RouteKey)
@@ -184,9 +177,6 @@ func GenerateCreateRouteInput(cr *svcapitypes.Route) *svcsdk.CreateRouteInput {
 func GenerateDeleteRouteInput(cr *svcapitypes.Route) *svcsdk.DeleteRouteInput {
 	res := preGenerateDeleteRouteInput(cr, &svcsdk.DeleteRouteInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
 	if cr.Status.AtProvider.RouteID != nil {
 		res.SetRouteId(*cr.Status.AtProvider.RouteID)
 	}
