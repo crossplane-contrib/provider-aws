@@ -75,26 +75,26 @@ func lateInitialize(*svcapitypes.APIMappingParameters, *svcsdk.GetApiMappingsOut
 	return nil
 }
 
-func preGenerateGetApiMappingsInput(_ *svcapitypes.APIMapping, obj *svcsdk.GetApiMappingsInput) *svcsdk.GetApiMappingsInput {
+func preGenerateGetApiMappingsInput(_ *svcapitypes.APIMapping, obj *svcsdk.GetApiMappingsInput) *svcsdk.GetApiMappingsInput { // nolint:golint
 	return obj
 }
 
-func postGenerateGetApiMappingsInput(_ *svcapitypes.APIMapping, obj *svcsdk.GetApiMappingsInput) *svcsdk.GetApiMappingsInput {
+func postGenerateGetApiMappingsInput(_ *svcapitypes.APIMapping, obj *svcsdk.GetApiMappingsInput) *svcsdk.GetApiMappingsInput { // nolint:golint
 	return obj
 }
 
-func preGenerateCreateApiMappingInput(_ *svcapitypes.APIMapping, obj *svcsdk.CreateApiMappingInput) *svcsdk.CreateApiMappingInput {
+func preGenerateCreateApiMappingInput(_ *svcapitypes.APIMapping, obj *svcsdk.CreateApiMappingInput) *svcsdk.CreateApiMappingInput { // nolint:golint
 	return obj
 }
 
-func postGenerateCreateApiMappingInput(_ *svcapitypes.APIMapping, obj *svcsdk.CreateApiMappingInput) *svcsdk.CreateApiMappingInput {
+func postGenerateCreateApiMappingInput(_ *svcapitypes.APIMapping, obj *svcsdk.CreateApiMappingInput) *svcsdk.CreateApiMappingInput { // nolint:golint
 	return obj
 }
 
-func preGenerateDeleteApiMappingInput(_ *svcapitypes.APIMapping, obj *svcsdk.DeleteApiMappingInput) *svcsdk.DeleteApiMappingInput {
+func preGenerateDeleteApiMappingInput(_ *svcapitypes.APIMapping, obj *svcsdk.DeleteApiMappingInput) *svcsdk.DeleteApiMappingInput { // nolint:golint
 	return obj
 }
 
-func postGenerateDeleteApiMappingInput(_ *svcapitypes.APIMapping, obj *svcsdk.DeleteApiMappingInput) *svcsdk.DeleteApiMappingInput {
+func postGenerateDeleteApiMappingInput(_ *svcapitypes.APIMapping, obj *svcsdk.DeleteApiMappingInput) *svcsdk.DeleteApiMappingInput { // nolint:golint
 	return obj
 }
