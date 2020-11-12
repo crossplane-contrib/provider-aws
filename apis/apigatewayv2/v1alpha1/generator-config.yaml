@@ -7,3 +7,7 @@ ignore:
     - DeleteStageInput.StageName
     - CreateRouteInput.ApiId
     - DeleteRouteInput.ApiId
+    - CreateAuthorizerInput.ApiId
+    - DeleteAuthorizerInput.ApiId
+    - CreateAuthorizerInput.Name
+    - DeleteAuthorizerInput.Name

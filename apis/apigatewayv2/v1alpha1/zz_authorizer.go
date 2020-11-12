@@ -30,9 +30,6 @@ type AuthorizerParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region,omitempty"`
 
-	// +kubebuilder:validation:Required
-	APIID *string `json:"apiID"`
-
 	AuthorizerCredentialsARN *string `json:"authorizerCredentialsARN,omitempty"`
 
 	AuthorizerPayloadFormatVersion *string `json:"authorizerPayloadFormatVersion,omitempty"`
@@ -51,10 +48,7 @@ type AuthorizerParameters struct {
 
 	IDentityValidationExpression *string `json:"identityValidationExpression,omitempty"`
 
-	JWTConfiguration *JWTConfiguration `json:"jwtConfiguration,omitempty"`
-
-	// +kubebuilder:validation:Required
-	Name                       *string `json:"name"`
+	JWTConfiguration           *JWTConfiguration `json:"jwtConfiguration,omitempty"`
 	CustomAuthorizerParameters `json:",inline"`
 }
 
@@ -67,6 +61,8 @@ type AuthorizerSpec struct {
 // AuthorizerObservation defines the observed state of Authorizer
 type AuthorizerObservation struct {
 	AuthorizerID *string `json:"authorizerID,omitempty"`
+
+	Name *string `json:"name,omitempty"`
 }
 
 // AuthorizerStatus defines the observed state of Authorizer.

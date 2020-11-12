@@ -121,6 +121,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	if resp.AuthorizerId != nil {
 		cr.Status.AtProvider.AuthorizerID = resp.AuthorizerId
 	}
+	if resp.Name != nil {
+		cr.Status.AtProvider.Name = resp.Name
+	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }
