@@ -20,14 +20,17 @@ import (
 	"context"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
+	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupDeployment adds a controller that reconciles Deployment.
@@ -40,6 +43,7 @@ func SetupDeployment(mgr ctrl.Manager, l logging.Logger) error {
 			resource.ManagedKind(svcapitypes.DeploymentGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -52,16 +56,26 @@ func (*external) postObserve(_ context.Context, _ *svcapitypes.Deployment, _ *sv
 	return obs, err
 }
 
-func (*external) filterList(_ *svcapitypes.Deployment, list *svcsdk.GetDeploymentsOutput) *svcsdk.GetDeploymentsOutput {
-	return list
+func (*external) filterList(cr *svcapitypes.Deployment, list *svcsdk.GetDeploymentsOutput) *svcsdk.GetDeploymentsOutput {
+	res := &svcsdk.GetDeploymentsOutput{}
+	for _, deployment := range list.Items {
+		if aws.StringValue(deployment.DeploymentId) == meta.GetExternalName(cr) {
+			res.Items = append(res.Items, deployment)
+		}
+	}
+	return res
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.Deployment) error {
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, _ *svcapitypes.Deployment, _ *svcsdk.CreateDeploymentOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	return cre, err
+func (e *external) postCreate(ctx context.Context, cr *svcapitypes.Deployment, resp *svcsdk.CreateDeploymentOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+	meta.SetExternalName(cr, aws.StringValue(resp.DeploymentId))
+	return cre, errors.Wrap(e.kube.Update(ctx, cr), "cannot update Deployment")
 }
 
 func (*external) preUpdate(context.Context, *svcapitypes.Deployment) error {
@@ -79,7 +93,8 @@ func preGenerateGetDeploymentsInput(_ *svcapitypes.Deployment, obj *svcsdk.GetDe
 	return obj
 }
 
-func postGenerateGetDeploymentsInput(_ *svcapitypes.Deployment, obj *svcsdk.GetDeploymentsInput) *svcsdk.GetDeploymentsInput {
+func postGenerateGetDeploymentsInput(cr *svcapitypes.Deployment, obj *svcsdk.GetDeploymentsInput) *svcsdk.GetDeploymentsInput {
+	obj.ApiId = cr.Spec.ForProvider.APIID
 	return obj
 }
 
@@ -87,7 +102,8 @@ func preGenerateCreateDeploymentInput(_ *svcapitypes.Deployment, obj *svcsdk.Cre
 	return obj
 }
 
-func postGenerateCreateDeploymentInput(_ *svcapitypes.Deployment, obj *svcsdk.CreateDeploymentInput) *svcsdk.CreateDeploymentInput {
+func postGenerateCreateDeploymentInput(cr *svcapitypes.Deployment, obj *svcsdk.CreateDeploymentInput) *svcsdk.CreateDeploymentInput {
+	obj.ApiId = cr.Spec.ForProvider.APIID
 	return obj
 }
 
@@ -95,6 +111,8 @@ func preGenerateDeleteDeploymentInput(_ *svcapitypes.Deployment, obj *svcsdk.Del
 	return obj
 }
 
-func postGenerateDeleteDeploymentInput(_ *svcapitypes.Deployment, obj *svcsdk.DeleteDeploymentInput) *svcsdk.DeleteDeploymentInput {
+func postGenerateDeleteDeploymentInput(cr *svcapitypes.Deployment, obj *svcsdk.DeleteDeploymentInput) *svcsdk.DeleteDeploymentInput {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.DeploymentId = aws.String(meta.GetExternalName(cr))
 	return obj
 }
