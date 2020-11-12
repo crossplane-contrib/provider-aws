@@ -242,6 +242,9 @@ func UsePodServiceAccount(ctx context.Context, _ []byte, _, region string) (*aws
 // GetConfigV1 constructs an *awsv1.Config that can be used to authenticate to AWS
 // API by the AWSv1 clients.
 func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, region string) (*awsv1.Config, error) {
+	if mg.GetProviderConfigReference() == nil {
+		return nil, errors.New("providerConfigRef cannot be empty")
+	}
 	pc := &v1beta1.ProviderConfig{}
 	if err := c.Get(ctx, types.NamespacedName{Name: mg.GetProviderConfigReference().Name}, pc); err != nil {
 		return nil, errors.Wrap(err, "cannot get referenced Provider")
@@ -252,8 +255,9 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 		return nil, errors.Wrap(err, "cannot track ProviderConfig usage")
 	}
 
-	// TODO(muvaf): Support IRSA.
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
+	case runtimev1alpha1.CredentialsSourceInjectedIdentity:
+		return UsePodServiceAccountV1(ctx, []byte{}, DefaultSection, region)
 	case runtimev1alpha1.CredentialsSourceSecret:
 		csr := pc.Spec.Credentials.SecretRef
 		if csr == nil {
@@ -298,6 +302,39 @@ func UseProviderSecretV1(data []byte, profile, region string) (*awsv1.Config, er
 	}
 
 	creds := credentials.NewStaticCredentials(accessKeyID.Value(), secretAccessKey.Value(), sessionToken.Value())
+	return awsv1.NewConfig().WithCredentials(creds).WithRegion(region), nil
+}
+
+// UsePodServiceAccountV1 assumes an IAM role configured via a ServiceAccount.
+// https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
+func UsePodServiceAccountV1(ctx context.Context, _ []byte, _, region string) (*awsv1.Config, error) {
+	cfg, err := external.LoadDefaultAWSConfig()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load default AWS config")
+	}
+	cfg.Region = region
+	svc := sts.New(cfg)
+
+	b, err := ioutil.ReadFile(os.Getenv("AWS_WEB_IDENTITY_TOKEN_FILE"))
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to read web identity token file in pod")
+	}
+	token := string(b)
+	sess := strconv.FormatInt(time.Now().UnixNano(), 10)
+	role := os.Getenv("AWS_ROLE_ARN")
+	resp, err := svc.AssumeRoleWithWebIdentityRequest(
+		&sts.AssumeRoleWithWebIdentityInput{
+			RoleSessionName:  &sess,
+			WebIdentityToken: &token,
+			RoleArn:          &role,
+		}).Send(ctx)
+	if err != nil {
+		return nil, err
+	}
+	creds := credentials.NewStaticCredentials(
+		aws.StringValue(resp.Credentials.AccessKeyId),
+		aws.StringValue(resp.Credentials.SecretAccessKey),
+		aws.StringValue(resp.Credentials.SessionToken))
 	return awsv1.NewConfig().WithCredentials(creds).WithRegion(region), nil
 }
 
