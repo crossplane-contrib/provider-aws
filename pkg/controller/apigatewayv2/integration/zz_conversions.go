@@ -34,10 +34,6 @@ import (
 func GenerateGetIntegrationsInput(cr *svcapitypes.Integration) *svcsdk.GetIntegrationsInput {
 	res := preGenerateGetIntegrationsInput(cr, &svcsdk.GetIntegrationsInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
-
 	return postGenerateGetIntegrationsInput(cr, res)
 }
 
@@ -134,9 +130,6 @@ func GenerateIntegration(resp *svcsdk.GetIntegrationsOutput) *svcapitypes.Integr
 func GenerateCreateIntegrationInput(cr *svcapitypes.Integration) *svcsdk.CreateIntegrationInput {
 	res := preGenerateCreateIntegrationInput(cr, &svcsdk.CreateIntegrationInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
 	if cr.Spec.ForProvider.ConnectionID != nil {
 		res.SetConnectionId(*cr.Spec.ForProvider.ConnectionID)
 	}
@@ -171,22 +164,22 @@ func GenerateCreateIntegrationInput(cr *svcapitypes.Integration) *svcsdk.CreateI
 		res.SetPayloadFormatVersion(*cr.Spec.ForProvider.PayloadFormatVersion)
 	}
 	if cr.Spec.ForProvider.RequestParameters != nil {
+		f11 := map[string]*string{}
+		for f11key, f11valiter := range cr.Spec.ForProvider.RequestParameters {
+			var f11val string
+			f11val = *f11valiter
+			f11[f11key] = &f11val
+		}
+		res.SetRequestParameters(f11)
+	}
+	if cr.Spec.ForProvider.RequestTemplates != nil {
 		f12 := map[string]*string{}
-		for f12key, f12valiter := range cr.Spec.ForProvider.RequestParameters {
+		for f12key, f12valiter := range cr.Spec.ForProvider.RequestTemplates {
 			var f12val string
 			f12val = *f12valiter
 			f12[f12key] = &f12val
 		}
-		res.SetRequestParameters(f12)
-	}
-	if cr.Spec.ForProvider.RequestTemplates != nil {
-		f13 := map[string]*string{}
-		for f13key, f13valiter := range cr.Spec.ForProvider.RequestTemplates {
-			var f13val string
-			f13val = *f13valiter
-			f13[f13key] = &f13val
-		}
-		res.SetRequestTemplates(f13)
+		res.SetRequestTemplates(f12)
 	}
 	if cr.Spec.ForProvider.TemplateSelectionExpression != nil {
 		res.SetTemplateSelectionExpression(*cr.Spec.ForProvider.TemplateSelectionExpression)
@@ -195,11 +188,11 @@ func GenerateCreateIntegrationInput(cr *svcapitypes.Integration) *svcsdk.CreateI
 		res.SetTimeoutInMillis(*cr.Spec.ForProvider.TimeoutInMillis)
 	}
 	if cr.Spec.ForProvider.TLSConfig != nil {
-		f16 := &svcsdk.TlsConfigInput{}
+		f15 := &svcsdk.TlsConfigInput{}
 		if cr.Spec.ForProvider.TLSConfig.ServerNameToVerify != nil {
-			f16.SetServerNameToVerify(*cr.Spec.ForProvider.TLSConfig.ServerNameToVerify)
+			f15.SetServerNameToVerify(*cr.Spec.ForProvider.TLSConfig.ServerNameToVerify)
 		}
-		res.SetTlsConfig(f16)
+		res.SetTlsConfig(f15)
 	}
 
 	return postGenerateCreateIntegrationInput(cr, res)
@@ -209,9 +202,6 @@ func GenerateCreateIntegrationInput(cr *svcapitypes.Integration) *svcsdk.CreateI
 func GenerateDeleteIntegrationInput(cr *svcapitypes.Integration) *svcsdk.DeleteIntegrationInput {
 	res := preGenerateDeleteIntegrationInput(cr, &svcsdk.DeleteIntegrationInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
 	if cr.Status.AtProvider.IntegrationID != nil {
 		res.SetIntegrationId(*cr.Status.AtProvider.IntegrationID)
 	}
