@@ -1,0 +1,10 @@
+apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
+kind: Route
+metadata:
+  name: test-route
+spec:
+  forProvider:
+    region: us-west-2
+    apiIdRef:
+      name: test-api
+    routeKey: "GET /newpath"
