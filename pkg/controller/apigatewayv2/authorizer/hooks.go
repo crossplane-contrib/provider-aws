@@ -20,10 +20,13 @@ import (
 	"context"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -48,12 +51,22 @@ func SetupAuthorizer(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.Authorizer) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, _ *svcapitypes.Authorizer, _ *svcsdk.GetAuthorizersOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
-	return obs, err
+func (*external) postObserve(_ context.Context, cr *svcapitypes.Authorizer, _ *svcsdk.GetAuthorizersOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+	cr.SetConditions(v1alpha1.Available())
+	return obs, nil
 }
 
-func (*external) filterList(_ *svcapitypes.Authorizer, list *svcsdk.GetAuthorizersOutput) *svcsdk.GetAuthorizersOutput {
-	return list
+func (*external) filterList(cr *svcapitypes.Authorizer, list *svcsdk.GetAuthorizersOutput) *svcsdk.GetAuthorizersOutput {
+	res := &svcsdk.GetAuthorizersOutput{}
+	for _, authorizer := range list.Items {
+		if meta.GetExternalName(cr) == aws.StringValue(authorizer.Name) {
+			res.Items = append(res.Items, authorizer)
+		}
+	}
+	return res
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.Authorizer) error {
@@ -79,7 +92,8 @@ func preGenerateGetAuthorizersInput(_ *svcapitypes.Authorizer, obj *svcsdk.GetAu
 	return obj
 }
 
-func postGenerateGetAuthorizersInput(_ *svcapitypes.Authorizer, obj *svcsdk.GetAuthorizersInput) *svcsdk.GetAuthorizersInput {
+func postGenerateGetAuthorizersInput(cr *svcapitypes.Authorizer, obj *svcsdk.GetAuthorizersInput) *svcsdk.GetAuthorizersInput {
+	obj.ApiId = cr.Spec.ForProvider.APIID
 	return obj
 }
 
@@ -87,7 +101,9 @@ func preGenerateCreateAuthorizerInput(_ *svcapitypes.Authorizer, obj *svcsdk.Cre
 	return obj
 }
 
-func postGenerateCreateAuthorizerInput(_ *svcapitypes.Authorizer, obj *svcsdk.CreateAuthorizerInput) *svcsdk.CreateAuthorizerInput {
+func postGenerateCreateAuthorizerInput(cr *svcapitypes.Authorizer, obj *svcsdk.CreateAuthorizerInput) *svcsdk.CreateAuthorizerInput {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.Name = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
@@ -95,6 +111,8 @@ func preGenerateDeleteAuthorizerInput(_ *svcapitypes.Authorizer, obj *svcsdk.Del
 	return obj
 }
 
-func postGenerateDeleteAuthorizerInput(_ *svcapitypes.Authorizer, obj *svcsdk.DeleteAuthorizerInput) *svcsdk.DeleteAuthorizerInput {
+func postGenerateDeleteAuthorizerInput(cr *svcapitypes.Authorizer, obj *svcsdk.DeleteAuthorizerInput) *svcsdk.DeleteAuthorizerInput {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.AuthorizerId = cr.Status.AtProvider.AuthorizerID
 	return obj
 }
