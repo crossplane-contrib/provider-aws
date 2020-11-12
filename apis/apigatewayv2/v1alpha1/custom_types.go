@@ -42,7 +42,21 @@ type CustomAuthorizerParameters struct {
 }
 
 // CustomDeploymentParameters includes the custom fields.
-type CustomDeploymentParameters struct{}
+type CustomDeploymentParameters struct {
+	// APIID is the ID for the API.
+	// +immutable
+	APIID *string `json:"apiId,omitempty"`
+
+	// APIIDRef is a reference to an API used to set
+	// the APIID.
+	// +optional
+	APIIDRef *runtimev1alpha1.Reference `json:"apiIdRef,omitempty"`
+
+	// APIIDSelector selects references to API used
+	// to set the APIID.
+	// +optional
+	APIIDSelector *runtimev1alpha1.Selector `json:"apiIdSelector,omitempty"`
+}
 
 // CustomDomainNameParameters includes the custom fields.
 type CustomDomainNameParameters struct{}

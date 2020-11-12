@@ -35,10 +35,6 @@ import (
 func GenerateGetDeploymentsInput(cr *svcapitypes.Deployment) *svcsdk.GetDeploymentsInput {
 	res := preGenerateGetDeploymentsInput(cr, &svcsdk.GetDeploymentsInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
-
 	return postGenerateGetDeploymentsInput(cr, res)
 }
 
@@ -80,9 +76,6 @@ func GenerateDeployment(resp *svcsdk.GetDeploymentsOutput) *svcapitypes.Deployme
 func GenerateCreateDeploymentInput(cr *svcapitypes.Deployment) *svcsdk.CreateDeploymentInput {
 	res := preGenerateCreateDeploymentInput(cr, &svcsdk.CreateDeploymentInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
 	if cr.Spec.ForProvider.Description != nil {
 		res.SetDescription(*cr.Spec.ForProvider.Description)
 	}
@@ -97,9 +90,6 @@ func GenerateCreateDeploymentInput(cr *svcapitypes.Deployment) *svcsdk.CreateDep
 func GenerateDeleteDeploymentInput(cr *svcapitypes.Deployment) *svcsdk.DeleteDeploymentInput {
 	res := preGenerateDeleteDeploymentInput(cr, &svcsdk.DeleteDeploymentInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
 	if cr.Status.AtProvider.DeploymentID != nil {
 		res.SetDeploymentId(*cr.Status.AtProvider.DeploymentID)
 	}
