@@ -237,7 +237,33 @@ type CustomRouteResponseParameters struct {
 }
 
 // CustomVPCLinkParameters includes the custom fields.
-type CustomVPCLinkParameters struct{}
+type CustomVPCLinkParameters struct {
+	// SecurityGroupIDs is the list of IDs for the SecurityGroups.
+	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
+
+	// SecurityGroupIDRefs is a list of references to SecurityGroups used to set
+	// the SecurityGroupIDs.
+	// +optional
+	SecurityGroupIDRefs []runtimev1alpha1.Reference `json:"securityGroupIdRefs,omitempty"`
+
+	// SecurityGroupIDsSelector selects references to SecurityGroupID used
+	// to set the SecurityGroupIDs.
+	// +optional
+	SecurityGroupIDSelector *runtimev1alpha1.Selector `json:"securityGroupIdSelector,omitempty"`
+
+	// SecurityGroupIDs is the list of IDs for the SecurityGroups.
+	SubnetIDs []string `json:"subnetIds,omitempty"`
+
+	// SubnetIDRefs is a list of references to Subnets used to set
+	// the SubnetIDs.
+	// +optional
+	SubnetIDRefs []runtimev1alpha1.Reference `json:"subnetIdRefs,omitempty"`
+
+	// SubnetIDsSelector selects references to Subnets used
+	// to set the SubnetIDs.
+	// +optional
+	SubnetIDSelector *runtimev1alpha1.Selector `json:"subnetIdSelector,omitempty"`
+}
 
 // CustomStageParameters includes the custom fields.
 type CustomStageParameters struct {

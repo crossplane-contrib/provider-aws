@@ -53,16 +53,64 @@ spec:
               forProvider:
                 description: VPCLinkParameters defines the desired state of VPCLink
                 properties:
-                  name:
-                    type: string
                   region:
                     description: Region is which region the VPCLink will be created.
                     type: string
-                  securityGroupIDs:
+                  securityGroupIdRefs:
+                    description: SecurityGroupIDRefs is a list of references to SecurityGroups used to set the SecurityGroupIDs.
+                    items:
+                      description: A Reference to a named object.
+                      properties:
+                        name:
+                          description: Name of the referenced object.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                  securityGroupIdSelector:
+                    description: SecurityGroupIDsSelector selects references to SecurityGroupID used to set the SecurityGroupIDs.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
+                  securityGroupIds:
+                    description: SecurityGroupIDs is the list of IDs for the SecurityGroups.
                     items:
                       type: string
                     type: array
-                  subnetIDs:
+                  subnetIdRefs:
+                    description: SubnetIDRefs is a list of references to Subnets used to set the SubnetIDs.
+                    items:
+                      description: A Reference to a named object.
+                      properties:
+                        name:
+                          description: Name of the referenced object.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                  subnetIdSelector:
+                    description: SubnetIDsSelector selects references to Subnets used to set the SubnetIDs.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
+                  subnetIds:
+                    description: SecurityGroupIDs is the list of IDs for the SecurityGroups.
                     items:
                       type: string
                     type: array
@@ -70,9 +118,6 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
-                required:
-                - name
-                - subnetIDs
                 type: object
               providerConfigRef:
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
@@ -117,6 +162,16 @@ spec:
                   createdDate:
                     format: date-time
                     type: string
+                  name:
+                    type: string
+                  securityGroupIDs:
+                    items:
+                      type: string
+                    type: array
+                  subnetIDs:
+                    items:
+                      type: string
+                    type: array
                   vpcLinkID:
                     type: string
                   vpcLinkStatus:

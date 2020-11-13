@@ -20,14 +20,18 @@ import (
 	"context"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
+	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupVPCLink adds a controller that reconciles VPCLink.
@@ -48,12 +52,29 @@ func SetupVPCLink(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.VPCLink) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, _ *svcapitypes.VPCLink, _ *svcsdk.GetVpcLinksOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
-	return obs, err
+func (e *external) postObserve(_ context.Context, cr *svcapitypes.VPCLink, resp *svcsdk.GetVpcLinksOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+	vl := e.filterList(cr, resp).Items
+	if len(vl) != 1 {
+		return managed.ExternalObservation{}, errors.New("there needs to be one element in the filtered response")
+	}
+	if aws.StringValue(vl[0].VpcLinkStatus) == "AVAILABLE" {
+		cr.SetConditions(v1alpha1.Available())
+	}
+	return obs, nil
 }
 
-func (*external) filterList(_ *svcapitypes.VPCLink, list *svcsdk.GetVpcLinksOutput) *svcsdk.GetVpcLinksOutput {
-	return list
+func (*external) filterList(cr *svcapitypes.VPCLink, list *svcsdk.GetVpcLinksOutput) *svcsdk.GetVpcLinksOutput {
+	res := &svcsdk.GetVpcLinksOutput{}
+	for _, vl := range list.Items {
+		if meta.GetExternalName(cr) == aws.StringValue(vl.Name) {
+			res.Items = append(res.Items, vl)
+			break
+		}
+	}
+	return res
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.VPCLink) error {
@@ -87,7 +108,14 @@ func preGenerateCreateVpcLinkInput(_ *svcapitypes.VPCLink, obj *svcsdk.CreateVpc
 	return obj
 }
 
-func postGenerateCreateVpcLinkInput(_ *svcapitypes.VPCLink, obj *svcsdk.CreateVpcLinkInput) *svcsdk.CreateVpcLinkInput {
+func postGenerateCreateVpcLinkInput(cr *svcapitypes.VPCLink, obj *svcsdk.CreateVpcLinkInput) *svcsdk.CreateVpcLinkInput {
+	obj.Name = aws.String(meta.GetExternalName(cr))
+	for _, sg := range cr.Spec.ForProvider.SecurityGroupIDs {
+		obj.SecurityGroupIds = append(obj.SecurityGroupIds, aws.String(sg))
+	}
+	for _, s := range cr.Spec.ForProvider.SubnetIDs {
+		obj.SubnetIds = append(obj.SubnetIds, aws.String(s))
+	}
 	return obj
 }
 

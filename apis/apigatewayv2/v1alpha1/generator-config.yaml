@@ -35,3 +35,6 @@ ignore:
     - CreateRouteResponseInput.RouteId
     - DeleteRouteResponseInput.ApiId
     - DeleteRouteResponseInput.RouteId
+    - CreateVpcLinkInput.Name
+    - CreateVpcLinkInput.SecurityGroupIds
+    - CreateVpcLinkInput.SubnetIds

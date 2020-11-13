@@ -48,7 +48,7 @@ func GenerateVPCLink(resp *svcsdk.GetVpcLinksOutput) *svcapitypes.VPCLink {
 			cr.Status.AtProvider.CreatedDate = &metav1.Time{*elem.CreatedDate}
 		}
 		if elem.Name != nil {
-			cr.Spec.ForProvider.Name = elem.Name
+			cr.Status.AtProvider.Name = elem.Name
 		}
 		if elem.SecurityGroupIds != nil {
 			f2 := []*string{}
@@ -57,7 +57,7 @@ func GenerateVPCLink(resp *svcsdk.GetVpcLinksOutput) *svcapitypes.VPCLink {
 				f2elem = *f2iter
 				f2 = append(f2, &f2elem)
 			}
-			cr.Spec.ForProvider.SecurityGroupIDs = f2
+			cr.Status.AtProvider.SecurityGroupIDs = f2
 		}
 		if elem.SubnetIds != nil {
 			f3 := []*string{}
@@ -66,7 +66,7 @@ func GenerateVPCLink(resp *svcsdk.GetVpcLinksOutput) *svcapitypes.VPCLink {
 				f3elem = *f3iter
 				f3 = append(f3, &f3elem)
 			}
-			cr.Spec.ForProvider.SubnetIDs = f3
+			cr.Status.AtProvider.SubnetIDs = f3
 		}
 		if elem.Tags != nil {
 			f4 := map[string]*string{}
@@ -103,35 +103,14 @@ func GenerateVPCLink(resp *svcsdk.GetVpcLinksOutput) *svcapitypes.VPCLink {
 func GenerateCreateVpcLinkInput(cr *svcapitypes.VPCLink) *svcsdk.CreateVpcLinkInput {
 	res := preGenerateCreateVpcLinkInput(cr, &svcsdk.CreateVpcLinkInput{})
 
-	if cr.Spec.ForProvider.Name != nil {
-		res.SetName(*cr.Spec.ForProvider.Name)
-	}
-	if cr.Spec.ForProvider.SecurityGroupIDs != nil {
-		f1 := []*string{}
-		for _, f1iter := range cr.Spec.ForProvider.SecurityGroupIDs {
-			var f1elem string
-			f1elem = *f1iter
-			f1 = append(f1, &f1elem)
-		}
-		res.SetSecurityGroupIds(f1)
-	}
-	if cr.Spec.ForProvider.SubnetIDs != nil {
-		f2 := []*string{}
-		for _, f2iter := range cr.Spec.ForProvider.SubnetIDs {
-			var f2elem string
-			f2elem = *f2iter
-			f2 = append(f2, &f2elem)
-		}
-		res.SetSubnetIds(f2)
-	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f3 := map[string]*string{}
-		for f3key, f3valiter := range cr.Spec.ForProvider.Tags {
-			var f3val string
-			f3val = *f3valiter
-			f3[f3key] = &f3val
+		f0 := map[string]*string{}
+		for f0key, f0valiter := range cr.Spec.ForProvider.Tags {
+			var f0val string
+			f0val = *f0valiter
+			f0[f0key] = &f0val
 		}
-		res.SetTags(f3)
+		res.SetTags(f0)
 	}
 
 	return postGenerateCreateVpcLinkInput(cr, res)
