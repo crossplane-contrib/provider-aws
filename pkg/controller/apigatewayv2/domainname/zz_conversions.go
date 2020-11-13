@@ -48,7 +48,7 @@ func GenerateDomainName(resp *svcsdk.GetDomainNamesOutput) *svcapitypes.DomainNa
 			cr.Status.AtProvider.APIMappingSelectionExpression = elem.ApiMappingSelectionExpression
 		}
 		if elem.DomainName != nil {
-			cr.Spec.ForProvider.DomainName = elem.DomainName
+			cr.Status.AtProvider.DomainName = elem.DomainName
 		}
 		if elem.DomainNameConfigurations != nil {
 			f2 := []*svcapitypes.DomainNameConfiguration{}
@@ -118,62 +118,59 @@ func GenerateDomainName(resp *svcsdk.GetDomainNamesOutput) *svcapitypes.DomainNa
 func GenerateCreateDomainNameInput(cr *svcapitypes.DomainName) *svcsdk.CreateDomainNameInput {
 	res := preGenerateCreateDomainNameInput(cr, &svcsdk.CreateDomainNameInput{})
 
-	if cr.Spec.ForProvider.DomainName != nil {
-		res.SetDomainName(*cr.Spec.ForProvider.DomainName)
-	}
 	if cr.Spec.ForProvider.DomainNameConfigurations != nil {
-		f1 := []*svcsdk.DomainNameConfiguration{}
-		for _, f1iter := range cr.Spec.ForProvider.DomainNameConfigurations {
-			f1elem := &svcsdk.DomainNameConfiguration{}
-			if f1iter.APIGatewayDomainName != nil {
-				f1elem.SetApiGatewayDomainName(*f1iter.APIGatewayDomainName)
+		f0 := []*svcsdk.DomainNameConfiguration{}
+		for _, f0iter := range cr.Spec.ForProvider.DomainNameConfigurations {
+			f0elem := &svcsdk.DomainNameConfiguration{}
+			if f0iter.APIGatewayDomainName != nil {
+				f0elem.SetApiGatewayDomainName(*f0iter.APIGatewayDomainName)
 			}
-			if f1iter.CertificateARN != nil {
-				f1elem.SetCertificateArn(*f1iter.CertificateARN)
+			if f0iter.CertificateARN != nil {
+				f0elem.SetCertificateArn(*f0iter.CertificateARN)
 			}
-			if f1iter.CertificateName != nil {
-				f1elem.SetCertificateName(*f1iter.CertificateName)
+			if f0iter.CertificateName != nil {
+				f0elem.SetCertificateName(*f0iter.CertificateName)
 			}
-			if f1iter.CertificateUploadDate != nil {
-				f1elem.SetCertificateUploadDate(f1iter.CertificateUploadDate.Time)
+			if f0iter.CertificateUploadDate != nil {
+				f0elem.SetCertificateUploadDate(f0iter.CertificateUploadDate.Time)
 			}
-			if f1iter.DomainNameStatus != nil {
-				f1elem.SetDomainNameStatus(*f1iter.DomainNameStatus)
+			if f0iter.DomainNameStatus != nil {
+				f0elem.SetDomainNameStatus(*f0iter.DomainNameStatus)
 			}
-			if f1iter.DomainNameStatusMessage != nil {
-				f1elem.SetDomainNameStatusMessage(*f1iter.DomainNameStatusMessage)
+			if f0iter.DomainNameStatusMessage != nil {
+				f0elem.SetDomainNameStatusMessage(*f0iter.DomainNameStatusMessage)
 			}
-			if f1iter.EndpointType != nil {
-				f1elem.SetEndpointType(*f1iter.EndpointType)
+			if f0iter.EndpointType != nil {
+				f0elem.SetEndpointType(*f0iter.EndpointType)
 			}
-			if f1iter.HostedZoneID != nil {
-				f1elem.SetHostedZoneId(*f1iter.HostedZoneID)
+			if f0iter.HostedZoneID != nil {
+				f0elem.SetHostedZoneId(*f0iter.HostedZoneID)
 			}
-			if f1iter.SecurityPolicy != nil {
-				f1elem.SetSecurityPolicy(*f1iter.SecurityPolicy)
+			if f0iter.SecurityPolicy != nil {
+				f0elem.SetSecurityPolicy(*f0iter.SecurityPolicy)
 			}
-			f1 = append(f1, f1elem)
+			f0 = append(f0, f0elem)
 		}
-		res.SetDomainNameConfigurations(f1)
+		res.SetDomainNameConfigurations(f0)
 	}
 	if cr.Spec.ForProvider.MutualTLSAuthentication != nil {
-		f2 := &svcsdk.MutualTlsAuthenticationInput{}
+		f1 := &svcsdk.MutualTlsAuthenticationInput{}
 		if cr.Spec.ForProvider.MutualTLSAuthentication.TruststoreURI != nil {
-			f2.SetTruststoreUri(*cr.Spec.ForProvider.MutualTLSAuthentication.TruststoreURI)
+			f1.SetTruststoreUri(*cr.Spec.ForProvider.MutualTLSAuthentication.TruststoreURI)
 		}
 		if cr.Spec.ForProvider.MutualTLSAuthentication.TruststoreVersion != nil {
-			f2.SetTruststoreVersion(*cr.Spec.ForProvider.MutualTLSAuthentication.TruststoreVersion)
+			f1.SetTruststoreVersion(*cr.Spec.ForProvider.MutualTLSAuthentication.TruststoreVersion)
 		}
-		res.SetMutualTlsAuthentication(f2)
+		res.SetMutualTlsAuthentication(f1)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f3 := map[string]*string{}
-		for f3key, f3valiter := range cr.Spec.ForProvider.Tags {
-			var f3val string
-			f3val = *f3valiter
-			f3[f3key] = &f3val
+		f2 := map[string]*string{}
+		for f2key, f2valiter := range cr.Spec.ForProvider.Tags {
+			var f2val string
+			f2val = *f2valiter
+			f2[f2key] = &f2val
 		}
-		res.SetTags(f3)
+		res.SetTags(f2)
 	}
 
 	return postGenerateCreateDomainNameInput(cr, res)
@@ -182,10 +179,6 @@ func GenerateCreateDomainNameInput(cr *svcapitypes.DomainName) *svcsdk.CreateDom
 // GenerateDeleteDomainNameInput returns a deletion input.
 func GenerateDeleteDomainNameInput(cr *svcapitypes.DomainName) *svcsdk.DeleteDomainNameInput {
 	res := preGenerateDeleteDomainNameInput(cr, &svcsdk.DeleteDomainNameInput{})
-
-	if cr.Spec.ForProvider.DomainName != nil {
-		res.SetDomainName(*cr.Spec.ForProvider.DomainName)
-	}
 
 	return postGenerateDeleteDomainNameInput(cr, res)
 }

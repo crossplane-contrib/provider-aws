@@ -27,6 +27,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/api"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/authorizer"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/deployment"
+	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/domainname"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/integration"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/route"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/stage"
@@ -117,6 +118,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		authorizer.SetupAuthorizer,
 		integration.SetupIntegration,
 		deployment.SetupDeployment,
+		domainname.SetupDomainName,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err

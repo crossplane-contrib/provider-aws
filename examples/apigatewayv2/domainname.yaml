@@ -1,0 +1,8 @@
+# This YAML has not been tested manually.
+apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
+kind: DomainName
+metadata:
+  name: test-domainname
+spec:
+  forProvider:
+    region: us-west-2

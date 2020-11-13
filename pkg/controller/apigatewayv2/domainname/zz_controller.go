@@ -121,6 +121,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	if resp.ApiMappingSelectionExpression != nil {
 		cr.Status.AtProvider.APIMappingSelectionExpression = resp.ApiMappingSelectionExpression
 	}
+	if resp.DomainName != nil {
+		cr.Status.AtProvider.DomainName = resp.DomainName
+	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }

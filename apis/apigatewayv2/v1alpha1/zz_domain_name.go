@@ -30,9 +30,6 @@ type DomainNameParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region,omitempty"`
 
-	// +kubebuilder:validation:Required
-	DomainName *string `json:"domainName"`
-
 	DomainNameConfigurations []*DomainNameConfiguration `json:"domainNameConfigurations,omitempty"`
 
 	MutualTLSAuthentication *MutualTLSAuthenticationInput `json:"mutualTLSAuthentication,omitempty"`
@@ -50,6 +47,8 @@ type DomainNameSpec struct {
 // DomainNameObservation defines the observed state of DomainName
 type DomainNameObservation struct {
 	APIMappingSelectionExpression *string `json:"apiMappingSelectionExpression,omitempty"`
+
+	DomainName *string `json:"domainName,omitempty"`
 }
 
 // DomainNameStatus defines the observed state of DomainName.
