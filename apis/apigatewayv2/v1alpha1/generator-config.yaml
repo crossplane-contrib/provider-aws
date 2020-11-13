@@ -15,3 +15,5 @@ ignore:
     - DeleteIntegrationInput.ApiId
     - CreateDeploymentInput.ApiId
     - DeleteDeploymentInput.ApiId
+    - CreateDomainNameInput.DomainName
+    - DeleteDomainNameInput.DomainName

@@ -22,12 +22,15 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupDomainName adds a controller that reconciles DomainName.
@@ -48,12 +51,19 @@ func SetupDomainName(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.DomainName) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, _ *svcapitypes.DomainName, _ *svcsdk.GetDomainNamesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (*external) postObserve(_ context.Context, cr *svcapitypes.DomainName, _ *svcsdk.GetDomainNamesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	cr.SetConditions(v1alpha1.Available())
 	return obs, err
 }
 
-func (*external) filterList(_ *svcapitypes.DomainName, list *svcsdk.GetDomainNamesOutput) *svcsdk.GetDomainNamesOutput {
-	return list
+func (*external) filterList(cr *svcapitypes.DomainName, list *svcsdk.GetDomainNamesOutput) *svcsdk.GetDomainNamesOutput {
+	res := &svcsdk.GetDomainNamesOutput{}
+	for _, dn := range list.Items {
+		if meta.GetExternalName(cr) == aws.StringValue(dn.DomainName) {
+			res.Items = append(res.Items, dn)
+		}
+	}
+	return res
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.DomainName) error {
@@ -87,7 +97,8 @@ func preGenerateCreateDomainNameInput(_ *svcapitypes.DomainName, obj *svcsdk.Cre
 	return obj
 }
 
-func postGenerateCreateDomainNameInput(_ *svcapitypes.DomainName, obj *svcsdk.CreateDomainNameInput) *svcsdk.CreateDomainNameInput {
+func postGenerateCreateDomainNameInput(cr *svcapitypes.DomainName, obj *svcsdk.CreateDomainNameInput) *svcsdk.CreateDomainNameInput {
+	obj.DomainName = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
@@ -95,6 +106,7 @@ func preGenerateDeleteDomainNameInput(_ *svcapitypes.DomainName, obj *svcsdk.Del
 	return obj
 }
 
-func postGenerateDeleteDomainNameInput(_ *svcapitypes.DomainName, obj *svcsdk.DeleteDomainNameInput) *svcsdk.DeleteDomainNameInput {
+func postGenerateDeleteDomainNameInput(cr *svcapitypes.DomainName, obj *svcsdk.DeleteDomainNameInput) *svcsdk.DeleteDomainNameInput {
+	obj.DomainName = aws.String(meta.GetExternalName(cr))
 	return obj
 }

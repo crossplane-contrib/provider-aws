@@ -94,12 +94,13 @@ func postGenerateGetApisInput(_ *svcapitypes.API, obj *svcsdk.GetApisInput) *svc
 	return obj
 }
 
-func preGenerateCreateApiInput(cr *svcapitypes.API, obj *svcsdk.CreateApiInput) *svcsdk.CreateApiInput { //nolint:golint
-	obj.Name = aws.String(meta.GetExternalName(cr))
+func preGenerateCreateApiInput(_ *svcapitypes.API, obj *svcsdk.CreateApiInput) *svcsdk.CreateApiInput { //nolint:golint
+
 	return obj
 }
 
-func postGenerateCreateApiInput(_ *svcapitypes.API, obj *svcsdk.CreateApiInput) *svcsdk.CreateApiInput { //nolint:golint
+func postGenerateCreateApiInput(cr *svcapitypes.API, obj *svcsdk.CreateApiInput) *svcsdk.CreateApiInput { //nolint:golint
+	obj.Name = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
