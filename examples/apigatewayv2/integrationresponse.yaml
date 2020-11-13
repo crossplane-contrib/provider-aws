@@ -1,0 +1,12 @@
+apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
+kind: IntegrationResponse
+metadata:
+  name: test-integrationresponse
+spec:
+  forProvider:
+    apiIdRef:
+      name: test-api
+    region: us-west-2
+    integrationIdRef:
+      name: test-integration
+    integrationResponseKey: "$default"
