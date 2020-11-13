@@ -85,6 +85,9 @@ spec:
                     type: object
                   certificateTransparencyLoggingPreference:
                     description: Parameter add the certificate to a certificate transparency log.
+                    enum:
+                    - ENABLED
+                    - DISABLED
                     type: string
                   domainName:
                     description: Fully qualified domain name (FQDN),that to secure with an ACM certificate.
@@ -134,6 +137,9 @@ spec:
                     type: array
                   validationMethod:
                     description: Method to validate certificate.
+                    enum:
+                    - DNS
+                    - EMAIL
                     type: string
                 required:
                 - domainName
