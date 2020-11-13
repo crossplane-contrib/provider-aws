@@ -34,10 +34,6 @@ import (
 func GenerateGetModelsInput(cr *svcapitypes.Model) *svcsdk.GetModelsInput {
 	res := preGenerateGetModelsInput(cr, &svcsdk.GetModelsInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
-
 	return postGenerateGetModelsInput(cr, res)
 }
 
@@ -57,7 +53,7 @@ func GenerateModel(resp *svcsdk.GetModelsOutput) *svcapitypes.Model {
 			cr.Status.AtProvider.ModelID = elem.ModelId
 		}
 		if elem.Name != nil {
-			cr.Spec.ForProvider.Name = elem.Name
+			cr.Status.AtProvider.Name = elem.Name
 		}
 		if elem.Schema != nil {
 			cr.Spec.ForProvider.Schema = elem.Schema
@@ -76,17 +72,11 @@ func GenerateModel(resp *svcsdk.GetModelsOutput) *svcapitypes.Model {
 func GenerateCreateModelInput(cr *svcapitypes.Model) *svcsdk.CreateModelInput {
 	res := preGenerateCreateModelInput(cr, &svcsdk.CreateModelInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
 	if cr.Spec.ForProvider.ContentType != nil {
 		res.SetContentType(*cr.Spec.ForProvider.ContentType)
 	}
 	if cr.Spec.ForProvider.Description != nil {
 		res.SetDescription(*cr.Spec.ForProvider.Description)
-	}
-	if cr.Spec.ForProvider.Name != nil {
-		res.SetName(*cr.Spec.ForProvider.Name)
 	}
 	if cr.Spec.ForProvider.Schema != nil {
 		res.SetSchema(*cr.Spec.ForProvider.Schema)
@@ -99,9 +89,6 @@ func GenerateCreateModelInput(cr *svcapitypes.Model) *svcsdk.CreateModelInput {
 func GenerateDeleteModelInput(cr *svcapitypes.Model) *svcsdk.DeleteModelInput {
 	res := preGenerateDeleteModelInput(cr, &svcsdk.DeleteModelInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
 	if cr.Status.AtProvider.ModelID != nil {
 		res.SetModelId(*cr.Status.AtProvider.ModelID)
 	}
