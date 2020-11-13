@@ -35,6 +35,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/route"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/routeresponse"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/stage"
+	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/vpclink"
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cluster"
@@ -127,6 +128,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		model.SetupModel,
 		apimapping.SetupAPIMapping,
 		routeresponse.SetupRouteResponse,
+		vpclink.SetupVPCLink,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err
