@@ -53,21 +53,83 @@ spec:
               forProvider:
                 description: APIMappingParameters defines the desired state of APIMapping
                 properties:
-                  apiID:
+                  apiId:
+                    description: APIID is the ID for the API.
                     type: string
+                  apiIdRef:
+                    description: APIIDRef is a reference to an API used to set the APIID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  apiIdSelector:
+                    description: APIIDSelector selects references to API used to set the APIID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   apiMappingKey:
                     type: string
                   domainName:
+                    description: DomainName is the DomainName for the DomainName.
                     type: string
+                  domainNameRef:
+                    description: DomainNameRef is a reference to a DomainName used to set the DomainName.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  domainNameSelector:
+                    description: DomainNameSelector selects references to DomainName used to set the DomainName.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   region:
                     description: Region is which region the APIMapping will be created.
                     type: string
                   stage:
+                    description: Stage is the name for the Stage.
                     type: string
-                required:
-                - apiID
-                - domainName
-                - stage
+                  stageRef:
+                    description: StageDRef is a reference to an Stage used to set the Stage.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  stageSelector:
+                    description: StageSelector selects references to Stage used to set the Stage.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                 type: object
               providerConfigRef:
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
@@ -109,7 +171,11 @@ spec:
               atProvider:
                 description: APIMappingObservation defines the observed state of APIMapping
                 properties:
+                  apiID:
+                    type: string
                   apiMappingID:
+                    type: string
+                  stage:
                     type: string
                 type: object
               conditions:

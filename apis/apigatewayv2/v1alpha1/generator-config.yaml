@@ -25,3 +25,9 @@ ignore:
     - CreateModelInput.Name
     - DeleteModelInput.ApiId
     - DeleteModelInput.Name
+    - CreateApiMappingInput.ApiId
+    - CreateApiMappingInput.Stage
+    - CreateApiMappingInput.DomainName
+    - DeleteApiMappingInput.ApiId
+    - DeleteApiMappingInput.Stage
+    - DeleteApiMappingInput.DomainName

@@ -34,10 +34,6 @@ import (
 func GenerateGetApiMappingsInput(cr *svcapitypes.APIMapping) *svcsdk.GetApiMappingsInput {
 	res := preGenerateGetApiMappingsInput(cr, &svcsdk.GetApiMappingsInput{})
 
-	if cr.Spec.ForProvider.DomainName != nil {
-		res.SetDomainName(*cr.Spec.ForProvider.DomainName)
-	}
-
 	return postGenerateGetApiMappingsInput(cr, res)
 }
 
@@ -48,7 +44,7 @@ func GenerateAPIMapping(resp *svcsdk.GetApiMappingsOutput) *svcapitypes.APIMappi
 	found := false
 	for _, elem := range resp.Items {
 		if elem.ApiId != nil {
-			cr.Spec.ForProvider.APIID = elem.ApiId
+			cr.Status.AtProvider.APIID = elem.ApiId
 		}
 		if elem.ApiMappingId != nil {
 			cr.Status.AtProvider.APIMappingID = elem.ApiMappingId
@@ -57,7 +53,7 @@ func GenerateAPIMapping(resp *svcsdk.GetApiMappingsOutput) *svcapitypes.APIMappi
 			cr.Spec.ForProvider.APIMappingKey = elem.ApiMappingKey
 		}
 		if elem.Stage != nil {
-			cr.Spec.ForProvider.Stage = elem.Stage
+			cr.Status.AtProvider.Stage = elem.Stage
 		}
 		found = true
 		break
@@ -73,17 +69,8 @@ func GenerateAPIMapping(resp *svcsdk.GetApiMappingsOutput) *svcapitypes.APIMappi
 func GenerateCreateApiMappingInput(cr *svcapitypes.APIMapping) *svcsdk.CreateApiMappingInput {
 	res := preGenerateCreateApiMappingInput(cr, &svcsdk.CreateApiMappingInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
 	if cr.Spec.ForProvider.APIMappingKey != nil {
 		res.SetApiMappingKey(*cr.Spec.ForProvider.APIMappingKey)
-	}
-	if cr.Spec.ForProvider.DomainName != nil {
-		res.SetDomainName(*cr.Spec.ForProvider.DomainName)
-	}
-	if cr.Spec.ForProvider.Stage != nil {
-		res.SetStage(*cr.Spec.ForProvider.Stage)
 	}
 
 	return postGenerateCreateApiMappingInput(cr, res)
@@ -95,9 +82,6 @@ func GenerateDeleteApiMappingInput(cr *svcapitypes.APIMapping) *svcsdk.DeleteApi
 
 	if cr.Status.AtProvider.APIMappingID != nil {
 		res.SetApiMappingId(*cr.Status.AtProvider.APIMappingID)
-	}
-	if cr.Spec.ForProvider.DomainName != nil {
-		res.SetDomainName(*cr.Spec.ForProvider.DomainName)
 	}
 
 	return postGenerateDeleteApiMappingInput(cr, res)
