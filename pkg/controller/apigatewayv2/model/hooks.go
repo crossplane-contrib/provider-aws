@@ -22,12 +22,15 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupModel adds a controller that reconciles Model.
@@ -48,12 +51,22 @@ func SetupModel(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.Model) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, _ *svcapitypes.Model, _ *svcsdk.GetModelsOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (*external) postObserve(_ context.Context, cr *svcapitypes.Model, _ *svcsdk.GetModelsOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+	cr.SetConditions(v1alpha1.Available())
 	return obs, err
 }
 
-func (*external) filterList(_ *svcapitypes.Model, list *svcsdk.GetModelsOutput) *svcsdk.GetModelsOutput {
-	return list
+func (*external) filterList(cr *svcapitypes.Model, list *svcsdk.GetModelsOutput) *svcsdk.GetModelsOutput {
+	res := &svcsdk.GetModelsOutput{}
+	for _, m := range list.Items {
+		if meta.GetExternalName(cr) == aws.StringValue(m.Name) {
+			res.Items = append(res.Items, m)
+		}
+	}
+	return res
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.Model) error {
@@ -79,7 +92,8 @@ func preGenerateGetModelsInput(_ *svcapitypes.Model, obj *svcsdk.GetModelsInput)
 	return obj
 }
 
-func postGenerateGetModelsInput(_ *svcapitypes.Model, obj *svcsdk.GetModelsInput) *svcsdk.GetModelsInput {
+func postGenerateGetModelsInput(cr *svcapitypes.Model, obj *svcsdk.GetModelsInput) *svcsdk.GetModelsInput {
+	obj.ApiId = cr.Spec.ForProvider.APIID
 	return obj
 }
 
@@ -87,7 +101,9 @@ func preGenerateCreateModelInput(_ *svcapitypes.Model, obj *svcsdk.CreateModelIn
 	return obj
 }
 
-func postGenerateCreateModelInput(_ *svcapitypes.Model, obj *svcsdk.CreateModelInput) *svcsdk.CreateModelInput {
+func postGenerateCreateModelInput(cr *svcapitypes.Model, obj *svcsdk.CreateModelInput) *svcsdk.CreateModelInput {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.Name = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
@@ -95,6 +111,7 @@ func preGenerateDeleteModelInput(_ *svcapitypes.Model, obj *svcsdk.DeleteModelIn
 	return obj
 }
 
-func postGenerateDeleteModelInput(_ *svcapitypes.Model, obj *svcsdk.DeleteModelInput) *svcsdk.DeleteModelInput {
+func postGenerateDeleteModelInput(cr *svcapitypes.Model, obj *svcsdk.DeleteModelInput) *svcsdk.DeleteModelInput {
+	obj.ApiId = cr.Spec.ForProvider.APIID
 	return obj
 }
