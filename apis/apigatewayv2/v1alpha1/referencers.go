@@ -142,6 +142,40 @@ func (mg *Integration) ResolveReferences(ctx context.Context, c client.Reader) e
 	return nil
 }
 
+// ResolveReferences of this IntegrationResponse
+func (mg *IntegrationResponse) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.forProvider.apiId
+	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.APIID),
+		Reference:    mg.Spec.ForProvider.APIIDRef,
+		Selector:     mg.Spec.ForProvider.APIIDSelector,
+		To:           reference.To{Managed: &API{}, List: &APIList{}},
+		Extract:      APIID(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.apiId")
+	}
+	mg.Spec.ForProvider.APIID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.APIIDRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.integrationId
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.IntegrationID),
+		Reference:    mg.Spec.ForProvider.IntegrationIDRef,
+		Selector:     mg.Spec.ForProvider.IntegrationIDSelector,
+		To:           reference.To{Managed: &Integration{}, List: &IntegrationList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.integrationId")
+	}
+	mg.Spec.ForProvider.IntegrationID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.IntegrationIDRef = rsp.ResolvedReference
+	return nil
+}
+
 // ResolveReferences of this Deployment
 func (mg *Deployment) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)

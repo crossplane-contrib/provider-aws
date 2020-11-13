@@ -30,13 +30,7 @@ type IntegrationResponseParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region,omitempty"`
 
-	// +kubebuilder:validation:Required
-	APIID *string `json:"apiID"`
-
 	ContentHandlingStrategy *string `json:"contentHandlingStrategy,omitempty"`
-
-	// +kubebuilder:validation:Required
-	IntegrationID *string `json:"integrationID"`
 
 	// +kubebuilder:validation:Required
 	IntegrationResponseKey *string `json:"integrationResponseKey"`

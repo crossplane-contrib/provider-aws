@@ -20,14 +20,18 @@ import (
 	"context"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
+	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupIntegrationResponse adds a controller that reconciles IntegrationResponse.
@@ -40,6 +44,7 @@ func SetupIntegrationResponse(mgr ctrl.Manager, l logging.Logger) error {
 			resource.ManagedKind(svcapitypes.IntegrationResponseGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -48,20 +53,35 @@ func SetupIntegrationResponse(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.IntegrationResponse) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, _ *svcapitypes.IntegrationResponse, _ *svcsdk.GetIntegrationResponsesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
-	return obs, err
+func (*external) postObserve(_ context.Context, cr *svcapitypes.IntegrationResponse, _ *svcsdk.GetIntegrationResponsesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+	cr.SetConditions(v1alpha1.Available())
+	return obs, nil
 }
 
-func (*external) filterList(_ *svcapitypes.IntegrationResponse, list *svcsdk.GetIntegrationResponsesOutput) *svcsdk.GetIntegrationResponsesOutput {
-	return list
+func (*external) filterList(cr *svcapitypes.IntegrationResponse, list *svcsdk.GetIntegrationResponsesOutput) *svcsdk.GetIntegrationResponsesOutput {
+	res := &svcsdk.GetIntegrationResponsesOutput{}
+	for _, ir := range list.Items {
+		if meta.GetExternalName(cr) == aws.StringValue(ir.IntegrationResponseId) {
+			res.Items = append(res.Items, ir)
+			break
+		}
+	}
+	return res
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.IntegrationResponse) error {
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, _ *svcapitypes.IntegrationResponse, _ *svcsdk.CreateIntegrationResponseOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	return cre, err
+func (e *external) postCreate(ctx context.Context, cr *svcapitypes.IntegrationResponse, resp *svcsdk.CreateIntegrationResponseOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+	meta.SetExternalName(cr, aws.StringValue(resp.IntegrationResponseId))
+	return cre, errors.Wrap(e.kube.Update(ctx, cr), "cannot update IntegrationResponse")
 }
 
 func (*external) preUpdate(context.Context, *svcapitypes.IntegrationResponse) error {
@@ -79,7 +99,9 @@ func preGenerateGetIntegrationResponsesInput(_ *svcapitypes.IntegrationResponse,
 	return obj
 }
 
-func postGenerateGetIntegrationResponsesInput(_ *svcapitypes.IntegrationResponse, obj *svcsdk.GetIntegrationResponsesInput) *svcsdk.GetIntegrationResponsesInput {
+func postGenerateGetIntegrationResponsesInput(cr *svcapitypes.IntegrationResponse, obj *svcsdk.GetIntegrationResponsesInput) *svcsdk.GetIntegrationResponsesInput {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.IntegrationId = cr.Spec.ForProvider.IntegrationID
 	return obj
 }
 
@@ -87,7 +109,9 @@ func preGenerateCreateIntegrationResponseInput(_ *svcapitypes.IntegrationRespons
 	return obj
 }
 
-func postGenerateCreateIntegrationResponseInput(_ *svcapitypes.IntegrationResponse, obj *svcsdk.CreateIntegrationResponseInput) *svcsdk.CreateIntegrationResponseInput {
+func postGenerateCreateIntegrationResponseInput(cr *svcapitypes.IntegrationResponse, obj *svcsdk.CreateIntegrationResponseInput) *svcsdk.CreateIntegrationResponseInput {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.IntegrationId = cr.Spec.ForProvider.IntegrationID
 	return obj
 }
 
@@ -95,6 +119,9 @@ func preGenerateDeleteIntegrationResponseInput(_ *svcapitypes.IntegrationRespons
 	return obj
 }
 
-func postGenerateDeleteIntegrationResponseInput(_ *svcapitypes.IntegrationResponse, obj *svcsdk.DeleteIntegrationResponseInput) *svcsdk.DeleteIntegrationResponseInput {
+func postGenerateDeleteIntegrationResponseInput(cr *svcapitypes.IntegrationResponse, obj *svcsdk.DeleteIntegrationResponseInput) *svcsdk.DeleteIntegrationResponseInput {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.IntegrationId = cr.Spec.ForProvider.IntegrationID
+	obj.IntegrationResponseId = aws.String(meta.GetExternalName(cr))
 	return obj
 }

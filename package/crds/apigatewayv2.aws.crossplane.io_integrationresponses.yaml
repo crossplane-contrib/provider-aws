@@ -53,12 +53,56 @@ spec:
               forProvider:
                 description: IntegrationResponseParameters defines the desired state of IntegrationResponse
                 properties:
-                  apiID:
+                  apiId:
+                    description: APIID is the ID for the API.
                     type: string
+                  apiIdRef:
+                    description: APIIDRef is a reference to an API used to set the APIID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  apiIdSelector:
+                    description: APIIDSelector selects references to API used to set the APIID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   contentHandlingStrategy:
                     type: string
-                  integrationID:
+                  integrationId:
+                    description: IntegrationID is the ID for the Integration.
                     type: string
+                  integrationIdRef:
+                    description: IntegrationIDRef is a reference to an Integration used to set the IntegrationID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  integrationIdSelector:
+                    description: IntegrationIDSelector selects references to Integration used to set the IntegrationID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   integrationResponseKey:
                     type: string
                   region:
@@ -75,8 +119,6 @@ spec:
                   templateSelectionExpression:
                     type: string
                 required:
-                - apiID
-                - integrationID
                 - integrationResponseKey
                 type: object
               providerConfigRef:
