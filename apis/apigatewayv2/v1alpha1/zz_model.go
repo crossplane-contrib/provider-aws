@@ -30,15 +30,9 @@ type ModelParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region,omitempty"`
 
-	// +kubebuilder:validation:Required
-	APIID *string `json:"apiID"`
-
 	ContentType *string `json:"contentType,omitempty"`
 
 	Description *string `json:"description,omitempty"`
-
-	// +kubebuilder:validation:Required
-	Name *string `json:"name"`
 
 	// +kubebuilder:validation:Required
 	Schema                *string `json:"schema"`
@@ -54,6 +48,8 @@ type ModelSpec struct {
 // ModelObservation defines the observed state of Model
 type ModelObservation struct {
 	ModelID *string `json:"modelID,omitempty"`
+
+	Name *string `json:"name,omitempty"`
 }
 
 // ModelStatus defines the observed state of Model.

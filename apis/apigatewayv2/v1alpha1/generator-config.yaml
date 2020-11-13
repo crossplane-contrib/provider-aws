@@ -21,3 +21,7 @@ ignore:
     - CreateIntegrationResponseInput.IntegrationId
     - DeleteIntegrationResponseInput.ApiId
     - DeleteIntegrationResponseInput.IntegrationId
+    - CreateModelInput.ApiId
+    - CreateModelInput.Name
+    - DeleteModelInput.ApiId
+    - DeleteModelInput.Name
