@@ -25,6 +25,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthority"
 	"github.com/crossplane/provider-aws/pkg/controller/acmpca/certificateauthoritypermission"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/api"
+	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/apimapping"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/authorizer"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/deployment"
 	"github.com/crossplane/provider-aws/pkg/controller/apigatewayv2/domainname"
@@ -123,6 +124,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		domainname.SetupDomainName,
 		integrationresponse.SetupIntegrationResponse,
 		model.SetupModel,
+		apimapping.SetupAPIMapping,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err
