@@ -103,7 +103,7 @@ type CertificateParameters struct {
 
 	// Parameter add the certificate to a certificate transparency log.
 	// +optional
-	// +kubebuilder:validation:ENABLED;DISABLED
+	// +kubebuilder:validation:Enum=ENABLED;DISABLED
 	CertificateTransparencyLoggingPreference *acm.CertificateTransparencyLoggingPreference `json:"certificateTransparencyLoggingPreference,omitempty"`
 
 	// Subject Alternative Name extension of the ACM certificate.
@@ -116,7 +116,7 @@ type CertificateParameters struct {
 
 	// Method to validate certificate.
 	// +optional
-	// +kubebuilder:validation:DNS;EMAIL
+	// +kubebuilder:validation:Enum=DNS;EMAIL
 	ValidationMethod *acm.ValidationMethod `json:"validationMethod,omitempty"`
 
 	// Flag to renew the certificate
