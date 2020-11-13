@@ -1,0 +1,26 @@
+apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
+kind: Model
+metadata:
+  name: testmodel
+spec:
+  forProvider:
+    apiIdRef:
+      name: test-api2
+    region: us-west-2
+    contentType: application/json
+    schema: |-
+      {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "firstModel",
+        "type": "object",
+        "properties": {
+          "firstProperty": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
