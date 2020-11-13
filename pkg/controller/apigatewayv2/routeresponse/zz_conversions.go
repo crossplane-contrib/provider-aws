@@ -34,13 +34,6 @@ import (
 func GenerateGetRouteResponsesInput(cr *svcapitypes.RouteResponse) *svcsdk.GetRouteResponsesInput {
 	res := preGenerateGetRouteResponsesInput(cr, &svcsdk.GetRouteResponsesInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
-	if cr.Spec.ForProvider.RouteID != nil {
-		res.SetRouteId(*cr.Spec.ForProvider.RouteID)
-	}
-
 	return postGenerateGetRouteResponsesInput(cr, res)
 }
 
@@ -93,34 +86,28 @@ func GenerateRouteResponse(resp *svcsdk.GetRouteResponsesOutput) *svcapitypes.Ro
 func GenerateCreateRouteResponseInput(cr *svcapitypes.RouteResponse) *svcsdk.CreateRouteResponseInput {
 	res := preGenerateCreateRouteResponseInput(cr, &svcsdk.CreateRouteResponseInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
 	if cr.Spec.ForProvider.ModelSelectionExpression != nil {
 		res.SetModelSelectionExpression(*cr.Spec.ForProvider.ModelSelectionExpression)
 	}
 	if cr.Spec.ForProvider.ResponseModels != nil {
-		f2 := map[string]*string{}
-		for f2key, f2valiter := range cr.Spec.ForProvider.ResponseModels {
-			var f2val string
-			f2val = *f2valiter
-			f2[f2key] = &f2val
+		f1 := map[string]*string{}
+		for f1key, f1valiter := range cr.Spec.ForProvider.ResponseModels {
+			var f1val string
+			f1val = *f1valiter
+			f1[f1key] = &f1val
 		}
-		res.SetResponseModels(f2)
+		res.SetResponseModels(f1)
 	}
 	if cr.Spec.ForProvider.ResponseParameters != nil {
-		f3 := map[string]*svcsdk.ParameterConstraints{}
-		for f3key, f3valiter := range cr.Spec.ForProvider.ResponseParameters {
-			f3val := &svcsdk.ParameterConstraints{}
-			if f3valiter.Required != nil {
-				f3val.SetRequired(*f3valiter.Required)
+		f2 := map[string]*svcsdk.ParameterConstraints{}
+		for f2key, f2valiter := range cr.Spec.ForProvider.ResponseParameters {
+			f2val := &svcsdk.ParameterConstraints{}
+			if f2valiter.Required != nil {
+				f2val.SetRequired(*f2valiter.Required)
 			}
-			f3[f3key] = f3val
+			f2[f2key] = f2val
 		}
-		res.SetResponseParameters(f3)
-	}
-	if cr.Spec.ForProvider.RouteID != nil {
-		res.SetRouteId(*cr.Spec.ForProvider.RouteID)
+		res.SetResponseParameters(f2)
 	}
 	if cr.Spec.ForProvider.RouteResponseKey != nil {
 		res.SetRouteResponseKey(*cr.Spec.ForProvider.RouteResponseKey)
@@ -133,12 +120,6 @@ func GenerateCreateRouteResponseInput(cr *svcapitypes.RouteResponse) *svcsdk.Cre
 func GenerateDeleteRouteResponseInput(cr *svcapitypes.RouteResponse) *svcsdk.DeleteRouteResponseInput {
 	res := preGenerateDeleteRouteResponseInput(cr, &svcsdk.DeleteRouteResponseInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
-	if cr.Spec.ForProvider.RouteID != nil {
-		res.SetRouteId(*cr.Spec.ForProvider.RouteID)
-	}
 	if cr.Status.AtProvider.RouteResponseID != nil {
 		res.SetRouteResponseId(*cr.Status.AtProvider.RouteResponseID)
 	}

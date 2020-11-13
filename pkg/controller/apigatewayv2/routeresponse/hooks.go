@@ -22,12 +22,15 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupRouteResponse adds a controller that reconciles RouteResponse.
@@ -40,6 +43,7 @@ func SetupRouteResponse(mgr ctrl.Manager, l logging.Logger) error {
 			resource.ManagedKind(svcapitypes.RouteResponseGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -48,20 +52,35 @@ func SetupRouteResponse(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.RouteResponse) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, _ *svcapitypes.RouteResponse, _ *svcsdk.GetRouteResponsesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
-	return obs, err
+func (*external) postObserve(_ context.Context, cr *svcapitypes.RouteResponse, _ *svcsdk.GetRouteResponsesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+	cr.SetConditions(v1alpha1.Available())
+	return obs, nil
 }
 
-func (*external) filterList(_ *svcapitypes.RouteResponse, list *svcsdk.GetRouteResponsesOutput) *svcsdk.GetRouteResponsesOutput {
-	return list
+func (*external) filterList(cr *svcapitypes.RouteResponse, list *svcsdk.GetRouteResponsesOutput) *svcsdk.GetRouteResponsesOutput {
+	res := &svcsdk.GetRouteResponsesOutput{}
+	for _, rr := range list.Items {
+		if meta.GetExternalName(cr) == aws.StringValue(rr.RouteResponseId) {
+			res.Items = append(res.Items, rr)
+			break
+		}
+	}
+	return res
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.RouteResponse) error {
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, _ *svcapitypes.RouteResponse, _ *svcsdk.CreateRouteResponseOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	return cre, err
+func (e *external) postCreate(ctx context.Context, cr *svcapitypes.RouteResponse, resp *svcsdk.CreateRouteResponseOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+	meta.SetExternalName(cr, aws.StringValue(resp.RouteResponseId))
+	return cre, e.kube.Update(ctx, cr)
 }
 
 func (*external) preUpdate(context.Context, *svcapitypes.RouteResponse) error {
@@ -79,7 +98,9 @@ func preGenerateGetRouteResponsesInput(_ *svcapitypes.RouteResponse, obj *svcsdk
 	return obj
 }
 
-func postGenerateGetRouteResponsesInput(_ *svcapitypes.RouteResponse, obj *svcsdk.GetRouteResponsesInput) *svcsdk.GetRouteResponsesInput {
+func postGenerateGetRouteResponsesInput(cr *svcapitypes.RouteResponse, obj *svcsdk.GetRouteResponsesInput) *svcsdk.GetRouteResponsesInput {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.RouteId = cr.Spec.ForProvider.RouteID
 	return obj
 }
 
@@ -87,7 +108,9 @@ func preGenerateCreateRouteResponseInput(_ *svcapitypes.RouteResponse, obj *svcs
 	return obj
 }
 
-func postGenerateCreateRouteResponseInput(_ *svcapitypes.RouteResponse, obj *svcsdk.CreateRouteResponseInput) *svcsdk.CreateRouteResponseInput {
+func postGenerateCreateRouteResponseInput(cr *svcapitypes.RouteResponse, obj *svcsdk.CreateRouteResponseInput) *svcsdk.CreateRouteResponseInput {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.RouteId = cr.Spec.ForProvider.RouteID
 	return obj
 }
 
@@ -95,6 +118,9 @@ func preGenerateDeleteRouteResponseInput(_ *svcapitypes.RouteResponse, obj *svcs
 	return obj
 }
 
-func postGenerateDeleteRouteResponseInput(_ *svcapitypes.RouteResponse, obj *svcsdk.DeleteRouteResponseInput) *svcsdk.DeleteRouteResponseInput {
+func postGenerateDeleteRouteResponseInput(cr *svcapitypes.RouteResponse, obj *svcsdk.DeleteRouteResponseInput) *svcsdk.DeleteRouteResponseInput {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.RouteId = cr.Spec.ForProvider.RouteID
+	obj.RouteResponseId = aws.String(meta.GetExternalName(cr))
 	return obj
 }

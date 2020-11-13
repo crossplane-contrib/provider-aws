@@ -30,17 +30,11 @@ type RouteResponseParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region,omitempty"`
 
-	// +kubebuilder:validation:Required
-	APIID *string `json:"apiID"`
-
 	ModelSelectionExpression *string `json:"modelSelectionExpression,omitempty"`
 
 	ResponseModels map[string]*string `json:"responseModels,omitempty"`
 
 	ResponseParameters map[string]*ParameterConstraints `json:"responseParameters,omitempty"`
-
-	// +kubebuilder:validation:Required
-	RouteID *string `json:"routeID"`
 
 	// +kubebuilder:validation:Required
 	RouteResponseKey              *string `json:"routeResponseKey"`
