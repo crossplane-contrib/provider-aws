@@ -30,16 +30,7 @@ type APIMappingParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region,omitempty"`
 
-	// +kubebuilder:validation:Required
-	APIID *string `json:"apiID"`
-
-	APIMappingKey *string `json:"apiMappingKey,omitempty"`
-
-	// +kubebuilder:validation:Required
-	DomainName *string `json:"domainName"`
-
-	// +kubebuilder:validation:Required
-	Stage                      *string `json:"stage"`
+	APIMappingKey              *string `json:"apiMappingKey,omitempty"`
 	CustomAPIMappingParameters `json:",inline"`
 }
 
@@ -51,7 +42,11 @@ type APIMappingSpec struct {
 
 // APIMappingObservation defines the observed state of APIMapping
 type APIMappingObservation struct {
+	APIID *string `json:"apiID,omitempty"`
+
 	APIMappingID *string `json:"apiMappingID,omitempty"`
+
+	Stage *string `json:"stage,omitempty"`
 }
 
 // APIMappingStatus defines the observed state of APIMapping.

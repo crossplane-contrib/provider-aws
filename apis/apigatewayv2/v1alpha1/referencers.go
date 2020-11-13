@@ -229,3 +229,51 @@ func (mg *Model) ResolveReferences(ctx context.Context, c client.Reader) error {
 	mg.Spec.ForProvider.APIIDRef = rsp.ResolvedReference
 	return nil
 }
+
+// ResolveReferences of this APIMapping
+func (mg *APIMapping) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.forProvider.apiId
+	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.APIID),
+		Reference:    mg.Spec.ForProvider.APIIDRef,
+		Selector:     mg.Spec.ForProvider.APIIDSelector,
+		To:           reference.To{Managed: &API{}, List: &APIList{}},
+		Extract:      APIID(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.apiId")
+	}
+	mg.Spec.ForProvider.APIID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.APIIDRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.stage
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.Stage),
+		Reference:    mg.Spec.ForProvider.StageRef,
+		Selector:     mg.Spec.ForProvider.StageSelector,
+		To:           reference.To{Managed: &Stage{}, List: &StageList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.stage")
+	}
+	mg.Spec.ForProvider.Stage = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.StageRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.domainName
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.DomainName),
+		Reference:    mg.Spec.ForProvider.DomainNameRef,
+		Selector:     mg.Spec.ForProvider.DomainNameSelector,
+		To:           reference.To{Managed: &DomainName{}, List: &DomainNameList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.domainName")
+	}
+	mg.Spec.ForProvider.DomainName = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.DomainNameRef = rsp.ResolvedReference
+	return nil
+}

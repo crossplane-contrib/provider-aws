@@ -22,7 +22,49 @@ import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alp
 type CustomAPIParameters struct{}
 
 // CustomAPIMappingParameters includes the custom fields.
-type CustomAPIMappingParameters struct{}
+type CustomAPIMappingParameters struct {
+	// APIID is the ID for the API.
+	// +immutable
+	APIID *string `json:"apiId,omitempty"`
+
+	// APIIDRef is a reference to an API used to set
+	// the APIID.
+	// +optional
+	APIIDRef *runtimev1alpha1.Reference `json:"apiIdRef,omitempty"`
+
+	// APIIDSelector selects references to API used
+	// to set the APIID.
+	// +optional
+	APIIDSelector *runtimev1alpha1.Selector `json:"apiIdSelector,omitempty"`
+
+	// Stage is the name for the Stage.
+	// +immutable
+	Stage *string `json:"stage,omitempty"`
+
+	// StageDRef is a reference to an Stage used to set
+	// the Stage.
+	// +optional
+	StageRef *runtimev1alpha1.Reference `json:"stageRef,omitempty"`
+
+	// StageSelector selects references to Stage used
+	// to set the Stage.
+	// +optional
+	StageSelector *runtimev1alpha1.Selector `json:"stageSelector,omitempty"`
+
+	// DomainName is the DomainName for the DomainName.
+	// +immutable
+	DomainName *string `json:"domainName,omitempty"`
+
+	// DomainNameRef is a reference to a DomainName used to set
+	// the DomainName.
+	// +optional
+	DomainNameRef *runtimev1alpha1.Reference `json:"domainNameRef,omitempty"`
+
+	// DomainNameSelector selects references to DomainName used
+	// to set the DomainName.
+	// +optional
+	DomainNameSelector *runtimev1alpha1.Selector `json:"domainNameSelector,omitempty"`
+}
 
 // CustomAuthorizerParameters includes the custom fields.
 type CustomAuthorizerParameters struct {

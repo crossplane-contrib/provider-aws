@@ -118,8 +118,14 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 
+	if resp.ApiId != nil {
+		cr.Status.AtProvider.APIID = resp.ApiId
+	}
 	if resp.ApiMappingId != nil {
 		cr.Status.AtProvider.APIMappingID = resp.ApiMappingId
+	}
+	if resp.Stage != nil {
+		cr.Status.AtProvider.Stage = resp.Stage
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
