@@ -7,7 +7,7 @@ spec:
     region: us-east-1
     certificateAuthorityArn: somearn
     domainName: www.example.com
-    certificateTransparencyLoggingPreference: disabled
+    certificateTransparencyLoggingPreference: DISABLED
     tags:
     - key: Name
       value: example
