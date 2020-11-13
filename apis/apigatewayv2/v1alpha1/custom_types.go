@@ -89,7 +89,35 @@ type CustomIntegrationParameters struct {
 }
 
 // CustomIntegrationResponseParameters includes the custom fields.
-type CustomIntegrationResponseParameters struct{}
+type CustomIntegrationResponseParameters struct {
+	// APIID is the ID for the API.
+	// +immutable
+	APIID *string `json:"apiId,omitempty"`
+
+	// APIIDRef is a reference to an API used to set
+	// the APIID.
+	// +optional
+	APIIDRef *runtimev1alpha1.Reference `json:"apiIdRef,omitempty"`
+
+	// APIIDSelector selects references to API used
+	// to set the APIID.
+	// +optional
+	APIIDSelector *runtimev1alpha1.Selector `json:"apiIdSelector,omitempty"`
+
+	// IntegrationID is the ID for the Integration.
+	// +immutable
+	IntegrationID *string `json:"integrationId,omitempty"`
+
+	// IntegrationIDRef is a reference to an Integration used to set
+	// the IntegrationID.
+	// +optional
+	IntegrationIDRef *runtimev1alpha1.Reference `json:"integrationIdRef,omitempty"`
+
+	// IntegrationIDSelector selects references to Integration used
+	// to set the IntegrationID.
+	// +optional
+	IntegrationIDSelector *runtimev1alpha1.Selector `json:"integrationIdSelector,omitempty"`
+}
 
 // CustomModelParameters includes the custom fields.
 type CustomModelParameters struct{}

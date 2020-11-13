@@ -34,13 +34,6 @@ import (
 func GenerateGetIntegrationResponsesInput(cr *svcapitypes.IntegrationResponse) *svcsdk.GetIntegrationResponsesInput {
 	res := preGenerateGetIntegrationResponsesInput(cr, &svcsdk.GetIntegrationResponsesInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
-	if cr.Spec.ForProvider.IntegrationID != nil {
-		res.SetIntegrationId(*cr.Spec.ForProvider.IntegrationID)
-	}
-
 	return postGenerateGetIntegrationResponsesInput(cr, res)
 }
 
@@ -94,35 +87,29 @@ func GenerateIntegrationResponse(resp *svcsdk.GetIntegrationResponsesOutput) *sv
 func GenerateCreateIntegrationResponseInput(cr *svcapitypes.IntegrationResponse) *svcsdk.CreateIntegrationResponseInput {
 	res := preGenerateCreateIntegrationResponseInput(cr, &svcsdk.CreateIntegrationResponseInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
 	if cr.Spec.ForProvider.ContentHandlingStrategy != nil {
 		res.SetContentHandlingStrategy(*cr.Spec.ForProvider.ContentHandlingStrategy)
-	}
-	if cr.Spec.ForProvider.IntegrationID != nil {
-		res.SetIntegrationId(*cr.Spec.ForProvider.IntegrationID)
 	}
 	if cr.Spec.ForProvider.IntegrationResponseKey != nil {
 		res.SetIntegrationResponseKey(*cr.Spec.ForProvider.IntegrationResponseKey)
 	}
 	if cr.Spec.ForProvider.ResponseParameters != nil {
-		f4 := map[string]*string{}
-		for f4key, f4valiter := range cr.Spec.ForProvider.ResponseParameters {
-			var f4val string
-			f4val = *f4valiter
-			f4[f4key] = &f4val
+		f2 := map[string]*string{}
+		for f2key, f2valiter := range cr.Spec.ForProvider.ResponseParameters {
+			var f2val string
+			f2val = *f2valiter
+			f2[f2key] = &f2val
 		}
-		res.SetResponseParameters(f4)
+		res.SetResponseParameters(f2)
 	}
 	if cr.Spec.ForProvider.ResponseTemplates != nil {
-		f5 := map[string]*string{}
-		for f5key, f5valiter := range cr.Spec.ForProvider.ResponseTemplates {
-			var f5val string
-			f5val = *f5valiter
-			f5[f5key] = &f5val
+		f3 := map[string]*string{}
+		for f3key, f3valiter := range cr.Spec.ForProvider.ResponseTemplates {
+			var f3val string
+			f3val = *f3valiter
+			f3[f3key] = &f3val
 		}
-		res.SetResponseTemplates(f5)
+		res.SetResponseTemplates(f3)
 	}
 	if cr.Spec.ForProvider.TemplateSelectionExpression != nil {
 		res.SetTemplateSelectionExpression(*cr.Spec.ForProvider.TemplateSelectionExpression)
@@ -135,12 +122,6 @@ func GenerateCreateIntegrationResponseInput(cr *svcapitypes.IntegrationResponse)
 func GenerateDeleteIntegrationResponseInput(cr *svcapitypes.IntegrationResponse) *svcsdk.DeleteIntegrationResponseInput {
 	res := preGenerateDeleteIntegrationResponseInput(cr, &svcsdk.DeleteIntegrationResponseInput{})
 
-	if cr.Spec.ForProvider.APIID != nil {
-		res.SetApiId(*cr.Spec.ForProvider.APIID)
-	}
-	if cr.Spec.ForProvider.IntegrationID != nil {
-		res.SetIntegrationId(*cr.Spec.ForProvider.IntegrationID)
-	}
 	if cr.Status.AtProvider.IntegrationResponseID != nil {
 		res.SetIntegrationResponseId(*cr.Status.AtProvider.IntegrationResponseID)
 	}

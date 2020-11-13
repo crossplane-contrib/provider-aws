@@ -52,8 +52,11 @@ func (*external) preObserve(context.Context, *svcapitypes.DomainName) error {
 	return nil
 }
 func (*external) postObserve(_ context.Context, cr *svcapitypes.DomainName, _ *svcsdk.GetDomainNamesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
 	cr.SetConditions(v1alpha1.Available())
-	return obs, err
+	return obs, nil
 }
 
 func (*external) filterList(cr *svcapitypes.DomainName, list *svcsdk.GetDomainNamesOutput) *svcsdk.GetDomainNamesOutput {
