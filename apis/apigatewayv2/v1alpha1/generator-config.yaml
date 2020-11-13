@@ -31,3 +31,7 @@ ignore:
     - DeleteApiMappingInput.ApiId
     - DeleteApiMappingInput.Stage
     - DeleteApiMappingInput.DomainName
+    - CreateRouteResponseInput.ApiId
+    - CreateRouteResponseInput.RouteId
+    - DeleteRouteResponseInput.ApiId
+    - DeleteRouteResponseInput.RouteId

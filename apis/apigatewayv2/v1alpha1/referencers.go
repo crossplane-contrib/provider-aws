@@ -102,6 +102,41 @@ func (mg *Route) ResolveReferences(ctx context.Context, c client.Reader) error {
 	return nil
 }
 
+// ResolveReferences of this RouteResponse
+func (mg *RouteResponse) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.forProvider.apiId
+	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.APIID),
+		Reference:    mg.Spec.ForProvider.APIIDRef,
+		Selector:     mg.Spec.ForProvider.APIIDSelector,
+		To:           reference.To{Managed: &API{}, List: &APIList{}},
+		Extract:      APIID(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.apiId")
+	}
+	mg.Spec.ForProvider.APIID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.APIIDRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.routeId
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.RouteID),
+		Reference:    mg.Spec.ForProvider.RouteIDRef,
+		Selector:     mg.Spec.ForProvider.RouteIDSelector,
+		To:           reference.To{Managed: &Route{}, List: &RouteList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.routeId")
+	}
+	mg.Spec.ForProvider.RouteID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.RouteIDRef = rsp.ResolvedReference
+
+	return nil
+}
+
 // ResolveReferences of this Authorizer
 func (mg *Authorizer) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
