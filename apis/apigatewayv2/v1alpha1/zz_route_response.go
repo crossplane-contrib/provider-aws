@@ -28,7 +28,7 @@ import (
 type RouteResponseParameters struct {
 	// Region is which region the RouteResponse will be created.
 	// +kubebuilder:validation:Required
-	Region string `json:"region,omitempty"`
+	Region string `json:"region"`
 
 	ModelSelectionExpression *string `json:"modelSelectionExpression,omitempty"`
 

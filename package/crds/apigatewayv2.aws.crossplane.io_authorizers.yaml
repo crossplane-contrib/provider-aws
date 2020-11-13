@@ -112,6 +112,7 @@ spec:
                 required:
                 - authorizerType
                 - identitySource
+                - region
                 type: object
               providerConfigRef:
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.

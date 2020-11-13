@@ -28,7 +28,7 @@ import (
 type APIParameters struct {
 	// Region is which region the API will be created.
 	// +kubebuilder:validation:Required
-	Region string `json:"region,omitempty"`
+	Region string `json:"region"`
 
 	APIKeySelectionExpression *string `json:"apiKeySelectionExpression,omitempty"`
 

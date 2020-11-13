@@ -28,7 +28,7 @@ import (
 type IntegrationParameters struct {
 	// Region is which region the Integration will be created.
 	// +kubebuilder:validation:Required
-	Region string `json:"region,omitempty"`
+	Region string `json:"region"`
 
 	ConnectionID *string `json:"connectionID,omitempty"`
 

@@ -28,7 +28,7 @@ import (
 type APIMappingParameters struct {
 	// Region is which region the APIMapping will be created.
 	// +kubebuilder:validation:Required
-	Region string `json:"region,omitempty"`
+	Region string `json:"region"`
 
 	APIMappingKey              *string `json:"apiMappingKey,omitempty"`
 	CustomAPIMappingParameters `json:",inline"`

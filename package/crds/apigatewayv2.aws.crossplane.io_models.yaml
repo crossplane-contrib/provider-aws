@@ -87,6 +87,7 @@ spec:
                   schema:
                     type: string
                 required:
+                - region
                 - schema
                 type: object
               providerConfigRef:
