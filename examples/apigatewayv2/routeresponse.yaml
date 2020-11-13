@@ -1,0 +1,12 @@
+apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
+kind: RouteResponse
+metadata:
+  name: test-routeresponse
+spec:
+  forProvider:
+    region: us-west-2
+    apiIdRef:
+      name: test-api
+    routeIdRef:
+      name: test-route
+    routeResponseKey: my-route-resp-key
