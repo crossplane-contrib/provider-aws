@@ -137,9 +137,11 @@ func GenerateLifecycleRules(in []v1beta1.LifecycleRule) []awss3.LifecycleRule { 
 			rule.Transitions = make([]awss3.Transition, len(local.Transitions))
 			for tIndex, transition := range local.Transitions {
 				rule.Transitions[tIndex] = awss3.Transition{
-					Date:         &transition.Date.Time,
 					Days:         transition.Days,
 					StorageClass: awss3.TransitionStorageClass(transition.StorageClass),
+				}
+				if transition.Date != nil {
+					rule.Transitions[tIndex].Date = &transition.Date.Time
 				}
 			}
 		}
