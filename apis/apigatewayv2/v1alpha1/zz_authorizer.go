@@ -28,7 +28,7 @@ import (
 type AuthorizerParameters struct {
 	// Region is which region the Authorizer will be created.
 	// +kubebuilder:validation:Required
-	Region string `json:"region,omitempty"`
+	Region string `json:"region"`
 
 	AuthorizerCredentialsARN *string `json:"authorizerCredentialsARN,omitempty"`
 

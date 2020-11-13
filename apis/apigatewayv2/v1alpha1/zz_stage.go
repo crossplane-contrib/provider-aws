@@ -28,7 +28,7 @@ import (
 type StageParameters struct {
 	// Region is which region the Stage will be created.
 	// +kubebuilder:validation:Required
-	Region string `json:"region,omitempty"`
+	Region string `json:"region"`
 
 	AccessLogSettings *AccessLogSettings `json:"accessLogSettings,omitempty"`
 

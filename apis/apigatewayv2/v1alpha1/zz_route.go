@@ -28,7 +28,7 @@ import (
 type RouteParameters struct {
 	// Region is which region the Route will be created.
 	// +kubebuilder:validation:Required
-	Region string `json:"region,omitempty"`
+	Region string `json:"region"`
 
 	APIKeyRequired *bool `json:"apiKeyRequired,omitempty"`
 

@@ -21,7 +21,6 @@ package domainname
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/aws/session"
 	svcapi "github.com/aws/aws-sdk-go/service/apigatewayv2"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/apigatewayv2/apigatewayv2iface"
 	"github.com/google/go-cmp/cmp"
@@ -55,11 +54,10 @@ func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	sess, err := awsclient.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
-	sess, err := session.NewSession(cfg)
 	return &external{client: svcapi.New(sess), kube: c.kube}, errors.Wrap(err, errCreateSession)
 }
 

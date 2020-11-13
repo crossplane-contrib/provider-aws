@@ -133,6 +133,7 @@ spec:
                   target:
                     type: string
                 required:
+                - region
                 - routeKey
                 type: object
               providerConfigRef:

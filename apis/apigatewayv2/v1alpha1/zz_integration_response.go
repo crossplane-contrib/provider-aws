@@ -28,7 +28,7 @@ import (
 type IntegrationResponseParameters struct {
 	// Region is which region the IntegrationResponse will be created.
 	// +kubebuilder:validation:Required
-	Region string `json:"region,omitempty"`
+	Region string `json:"region"`
 
 	ContentHandlingStrategy *string `json:"contentHandlingStrategy,omitempty"`
 

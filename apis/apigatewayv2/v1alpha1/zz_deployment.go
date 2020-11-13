@@ -28,7 +28,7 @@ import (
 type DeploymentParameters struct {
 	// Region is which region the Deployment will be created.
 	// +kubebuilder:validation:Required
-	Region string `json:"region,omitempty"`
+	Region string `json:"region"`
 
 	Description *string `json:"description,omitempty"`
 

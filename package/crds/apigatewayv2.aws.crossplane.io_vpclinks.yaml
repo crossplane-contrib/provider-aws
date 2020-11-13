@@ -118,6 +118,8 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                required:
+                - region
                 type: object
               providerConfigRef:
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.

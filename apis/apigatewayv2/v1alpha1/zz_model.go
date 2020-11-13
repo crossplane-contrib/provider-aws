@@ -28,7 +28,7 @@ import (
 type ModelParameters struct {
 	// Region is which region the Model will be created.
 	// +kubebuilder:validation:Required
-	Region string `json:"region,omitempty"`
+	Region string `json:"region"`
 
 	ContentType *string `json:"contentType,omitempty"`
 

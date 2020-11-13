@@ -28,7 +28,7 @@ import (
 type VPCLinkParameters struct {
 	// Region is which region the VPCLink will be created.
 	// +kubebuilder:validation:Required
-	Region string `json:"region,omitempty"`
+	Region string `json:"region"`
 
 	Tags                    map[string]*string `json:"tags,omitempty"`
 	CustomVPCLinkParameters `json:",inline"`
