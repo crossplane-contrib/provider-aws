@@ -45,8 +45,7 @@ const (
 	errDelete           = "failed to delete the ACMPCA resource"
 	errEmpty            = "empty ACMPCA received from ACMPCA API"
 
-	errKubeUpdateFailed    = "cannot late initialize ACMPCA"
-	errPersistExternalName = "failed to persist Certificate ARN"
+	errKubeUpdateFailed = "cannot late initialize ACMPCA"
 
 	errAddTagsFailed        = "cannot add tags to ACMPCA"
 	errListTagsFailed       = "failed to list tags for ACMPCA"
@@ -153,18 +152,12 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-
 	response, err := e.client.CreateCertificateAuthorityRequest(acmpca.GenerateCreateCertificateAuthorityInput(&cr.Spec.ForProvider)).Send(ctx)
-
-	if response != nil {
-		meta.SetExternalName(cr, aws.StringValue(response.CreateCertificateAuthorityOutput.CertificateAuthorityArn))
-		if err = e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalCreation{}, errors.Wrap(err, errPersistExternalName)
-		}
+	if err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
-
-	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+	meta.SetExternalName(cr, aws.StringValue(response.CreateCertificateAuthorityOutput.CertificateAuthorityArn))
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 
 }
 

@@ -224,6 +224,7 @@ func TestCreate(t *testing.T) {
 		"Successful": {
 			args: args{
 				kube: &test.MockClient{
+					MockGet:          test.NewMockGetFn(nil),
 					MockUpdate:       test.NewMockUpdateFn(nil),
 					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
 				},
@@ -271,6 +272,7 @@ func TestCreate(t *testing.T) {
 		"RevokeFail": {
 			args: args{
 				kube: &test.MockClient{
+					MockGet:          test.NewMockGetFn(nil),
 					MockUpdate:       test.NewMockUpdateFn(nil),
 					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
 				},

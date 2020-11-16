@@ -40,12 +40,11 @@ import (
 )
 
 const (
-	errKubeSubscriptionUpdateFailed = "cannot update SNSSubscription custom resource"
-	errUnexpectedObject             = "the managed resource is not a SNS Subscription resource"
-	errGetSubscriptionAttr          = "failed to get SNS Subscription Attributes"
-	errCreate                       = "failed to create the SNS Subscription"
-	errDelete                       = "failed to delete the SNS Subscription"
-	errUpdate                       = "failed to update the SNS Subscription"
+	errUnexpectedObject    = "the managed resource is not a SNS Subscription resource"
+	errGetSubscriptionAttr = "failed to get SNS Subscription Attributes"
+	errCreate              = "failed to create the SNS Subscription"
+	errDelete              = "failed to delete the SNS Subscription"
+	errUpdate              = "failed to update the SNS Subscription"
 )
 
 // SetupSubscription adds a controller than reconciles SNSSubscription
@@ -110,12 +109,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	current := cr.Spec.ForProvider.DeepCopy()
 	snsclient.LateInitializeSubscription(&cr.Spec.ForProvider, res.Attributes)
-	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{},
-				errors.Wrap(err, errKubeSubscriptionUpdateFailed)
-		}
-	}
 
 	// GenerateObservation for SNS Subscription
 	cr.Status.AtProvider = snsclient.GenerateSubscriptionObservation(res.Attributes)
@@ -130,8 +123,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	upToDate := snsclient.IsSNSSubscriptionAttributesUpToDate(cr.Spec.ForProvider, res.Attributes)
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: upToDate,
+		ResourceExists:          true,
+		ResourceUpToDate:        upToDate,
+		ResourceLateInitialized: !reflect.DeepEqual(current, &cr.Spec.ForProvider),
 	}, nil
 }
 
@@ -141,8 +135,6 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-
 	input := snsclient.GenerateSubscribeInput(&cr.Spec.ForProvider)
 	res, err := e.client.SubscribeRequest(input).Send(ctx)
 
@@ -151,11 +143,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	meta.SetExternalName(cr, aws.StringValue(res.SubscribeOutput.SubscriptionArn))
-	if err := e.kube.Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errKubeSubscriptionUpdateFailed)
-	}
-
-	return managed.ExternalCreation{}, nil
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {

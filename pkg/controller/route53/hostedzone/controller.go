@@ -43,11 +43,10 @@ import (
 const (
 	errUnexpectedObject = "The managed resource is not an Hosted Zone resource"
 
-	errCreate     = "failed to create the Hosted Zone resource"
-	errDelete     = "failed to delete the Hosted Zone resource"
-	errUpdate     = "failed to update the Hosted Zone resource"
-	errGet        = "failed to get the Hosted Zone resource"
-	errKubeUpdate = "failed to update the Hosted Zone custom resource"
+	errCreate = "failed to create the Hosted Zone resource"
+	errDelete = "failed to delete the Hosted Zone resource"
+	errUpdate = "failed to update the Hosted Zone resource"
+	errGet    = "failed to get the Hosted Zone resource"
 )
 
 // SetupHostedZone adds a controller that reconciles Hosted Zones.
@@ -106,17 +105,13 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	current := cr.Spec.ForProvider.DeepCopy()
 	hostedzone.LateInitialize(&cr.Spec.ForProvider, res)
-	if !cmp.Equal(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdate)
-		}
-	}
 
 	cr.Status.AtProvider = hostedzone.GenerateObservation(res)
 	cr.Status.SetConditions(runtimev1alpha1.Available())
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: hostedzone.IsUpToDate(cr.Spec.ForProvider, *res.HostedZone),
+		ResourceExists:          true,
+		ResourceUpToDate:        hostedzone.IsUpToDate(cr.Spec.ForProvider, *res.HostedZone),
+		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }
 
@@ -125,8 +120,6 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
 
 	res, err := e.client.CreateHostedZoneRequest(hostedzone.GenerateCreateHostedZoneInput(cr)).Send(ctx)
 	if err != nil {
@@ -137,7 +130,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.Wrap(errors.New("returned id does not contain /hostedzone/ prefix"), errCreate)
 	}
 	meta.SetExternalName(cr, id[1])
-	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errKubeUpdate)
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {

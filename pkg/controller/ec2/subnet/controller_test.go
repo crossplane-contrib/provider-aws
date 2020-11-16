@@ -218,10 +218,6 @@ func TestCreate(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				kube: &test.MockClient{
-					MockUpdate:       test.NewMockClient().Update,
-					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
-				},
 				subnet: &fake.MockSubnetClient{
 					MockCreate: func(input *awsec2.CreateSubnetInput) awsec2.CreateSubnetRequest {
 						return awsec2.CreateSubnetRequest{
@@ -236,8 +232,8 @@ func TestCreate(t *testing.T) {
 				cr: subnet(),
 			},
 			want: want{
-				cr: subnet(withExternalName(subnetID),
-					withConditions(runtimev1alpha1.Creating())),
+				cr:     subnet(withExternalName(subnetID)),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"CreateFailed": {
@@ -256,7 +252,7 @@ func TestCreate(t *testing.T) {
 				cr: subnet(),
 			},
 			want: want{
-				cr:  subnet(withConditions(runtimev1alpha1.Creating())),
+				cr:  subnet(),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},

@@ -237,6 +237,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: elasticIP(withExternalName(allocationID),
 					withConditions(runtimev1alpha1.Creating())),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"SuccessfulStandard": {
@@ -264,6 +265,7 @@ func TestCreate(t *testing.T) {
 					withSpec(v1alpha1.ElasticIPParameters{
 						Domain: &domainStandard,
 					})),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"CreateFail": {

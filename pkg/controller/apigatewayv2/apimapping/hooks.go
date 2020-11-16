@@ -72,12 +72,13 @@ func (*external) preCreate(context.Context, *svcapitypes.APIMapping) error {
 	return nil
 }
 
-func (e *external) postCreate(ctx context.Context, cr *svcapitypes.APIMapping, resp *svcsdk.CreateApiMappingOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func (e *external) postCreate(_ context.Context, cr *svcapitypes.APIMapping, resp *svcsdk.CreateApiMappingOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.ApiMappingId))
-	return cre, e.kube.Update(ctx, cr)
+	cre.ExternalNameAssigned = true
+	return cre, nil
 }
 
 func (*external) preUpdate(context.Context, *svcapitypes.APIMapping) error {
