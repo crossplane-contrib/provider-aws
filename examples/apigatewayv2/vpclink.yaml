@@ -1,0 +1,11 @@
+apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
+kind: VPCLink
+metadata:
+  name: test-vpclink
+spec:
+  forProvider:
+    region: us-east-1
+    securityGroupIdRefs:
+      - name: sample-cluster-sg
+    subnetIdRefs:
+      - name: sample-subnet1

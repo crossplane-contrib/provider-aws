@@ -27,6 +27,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -241,23 +243,26 @@ func UsePodServiceAccount(ctx context.Context, _ []byte, _, region string) (*aws
 
 // GetConfigV1 constructs an *awsv1.Config that can be used to authenticate to AWS
 // API by the AWSv1 clients.
-func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, region string) (*awsv1.Config, error) {
+func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, region string) (*session.Session, error) { // nolint:gocyclo
 	if mg.GetProviderConfigReference() == nil {
 		return nil, errors.New("providerConfigRef cannot be empty")
 	}
 	pc := &v1beta1.ProviderConfig{}
 	if err := c.Get(ctx, types.NamespacedName{Name: mg.GetProviderConfigReference().Name}, pc); err != nil {
-		return nil, errors.Wrap(err, "cannot get referenced Provider")
+		return nil, errors.Wrap(err, "cannot get referenced ProviderConfig")
 	}
 
 	t := resource.NewProviderConfigUsageTracker(c, &v1beta1.ProviderConfigUsage{})
 	if err := t.Track(ctx, mg); err != nil {
 		return nil, errors.Wrap(err, "cannot track ProviderConfig usage")
 	}
-
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
 	case runtimev1alpha1.CredentialsSourceInjectedIdentity:
-		return UsePodServiceAccountV1(ctx, []byte{}, DefaultSection, region)
+		cfg, err := UsePodServiceAccountV1(ctx, []byte{}, DefaultSection, region)
+		if err != nil {
+			return nil, errors.Wrap(err, "cannot use pod service account")
+		}
+		return session.NewSession(cfg)
 	case runtimev1alpha1.CredentialsSourceSecret:
 		csr := pc.Spec.Credentials.SecretRef
 		if csr == nil {
@@ -267,10 +272,13 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 		if err := c.Get(ctx, types.NamespacedName{Namespace: csr.Namespace, Name: csr.Name}, s); err != nil {
 			return nil, errors.Wrap(err, "cannot get credentials secret")
 		}
-		return UseProviderSecretV1(s.Data[csr.Key], DefaultSection, region)
-	default:
-		return nil, errors.Errorf("credentials source %s is not currently supported", s)
+		cfg, err := UseProviderSecretV1(s.Data[csr.Key], DefaultSection, region)
+		if err != nil {
+			return nil, errors.Wrap(err, "cannot use secret")
+		}
+		return session.NewSession(cfg)
 	}
+	return nil, errors.Errorf("credentials source %s is not currently supported", pc.Spec.Credentials.Source)
 }
 
 // UseProviderSecretV1 retrieves AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY from

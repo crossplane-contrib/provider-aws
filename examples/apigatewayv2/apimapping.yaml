@@ -1,0 +1,15 @@
+# This YAML has not been tested manually.
+apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
+kind: APIMapping
+metadata:
+  name: test-apimapping
+spec:
+  forProvider:
+    region: us-west-2
+    apiIdRef:
+      name: test-api
+    stageRef:
+      name: test-stage
+    domainNameRef:
+      name: test-domainname
+    apiMappingKey: some-key
