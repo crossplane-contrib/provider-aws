@@ -20,7 +20,6 @@ import (
 	"context"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
-	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -68,12 +67,13 @@ func (*external) preCreate(context.Context, *svcapitypes.Deployment) error {
 	return nil
 }
 
-func (e *external) postCreate(ctx context.Context, cr *svcapitypes.Deployment, resp *svcsdk.CreateDeploymentOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func (e *external) postCreate(_ context.Context, cr *svcapitypes.Deployment, resp *svcsdk.CreateDeploymentOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.DeploymentId))
-	return cre, errors.Wrap(e.kube.Update(ctx, cr), "cannot update Deployment")
+	cre.ExternalNameAssigned = true
+	return cre, nil
 }
 
 func (*external) preUpdate(context.Context, *svcapitypes.Deployment) error {

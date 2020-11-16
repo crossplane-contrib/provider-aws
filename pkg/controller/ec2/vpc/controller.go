@@ -50,8 +50,6 @@ const (
 	errModifyVPCAttributes = "failed to modify the VPC resource attributes"
 	errCreateTags          = "failed to create tags for the VPC resource"
 	errDelete              = "failed to delete the VPC resource"
-	errSpecUpdate          = "cannot update spec of VPC custom resource"
-	errStatusUpdate        = "cannot update status of VPC custom resource"
 )
 
 // SetupVPC adds a controller that reconciles VPCs.
@@ -121,11 +119,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	// update the CRD spec for any new values from provider
 	current := cr.Spec.ForProvider.DeepCopy()
 	ec2.LateInitializeVPC(&cr.Spec.ForProvider, &observed)
-	if !cmp.Equal(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errSpecUpdate)
-		}
-	}
 
 	switch observed.State {
 	case awsec2.VpcStateAvailable:
@@ -161,8 +154,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: ec2.IsVpcUpToDate(cr.Spec.ForProvider, observed, o),
+		ResourceExists:          true,
+		ResourceUpToDate:        ec2.IsVpcUpToDate(cr.Spec.ForProvider, observed, o),
+		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }
 
@@ -170,11 +164,6 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	cr, ok := mgd.(*v1beta1.VPC)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
-	}
-
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-	if err := e.kube.Status().Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
 	}
 
 	result, err := e.client.CreateVpcRequest(&awsec2.CreateVpcInput{
@@ -187,7 +176,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	meta.SetExternalName(cr, aws.StringValue(result.Vpc.VpcId))
 
-	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {

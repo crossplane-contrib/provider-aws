@@ -40,12 +40,11 @@ import (
 )
 
 const (
-	errKubeTopicUpdateFailed = "cannot update SNSTopic custom resource"
-	errUnexpectedObject      = "the managed resource is not a SNSTopic resource"
-	errGetTopicAttr          = "failed to get SNS Topic Attribute"
-	errCreate                = "failed to create the SNS Topic"
-	errDelete                = "failed to delete the SNS Topic"
-	errUpdate                = "failed to update the SNS Topic"
+	errUnexpectedObject = "the managed resource is not a SNSTopic resource"
+	errGetTopicAttr     = "failed to get SNS Topic Attribute"
+	errCreate           = "failed to create the SNS Topic"
+	errDelete           = "failed to delete the SNS Topic"
+	errUpdate           = "failed to update the SNS Topic"
 )
 
 // SetupSNSTopic adds a controller that reconciles SNSTopic.
@@ -108,11 +107,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	current := cr.Spec.ForProvider.DeepCopy()
 	snsclient.LateInitializeTopicAttr(&cr.Spec.ForProvider, res.Attributes)
-	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errKubeTopicUpdateFailed)
-		}
-	}
 
 	cr.SetConditions(runtimev1alpha1.Available())
 
@@ -120,8 +114,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	cr.Status.AtProvider = snsclient.GenerateTopicObservation(res.Attributes)
 
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: snsclient.IsSNSTopicUpToDate(cr.Spec.ForProvider, res.Attributes),
+		ResourceExists:          true,
+		ResourceUpToDate:        snsclient.IsSNSTopicUpToDate(cr.Spec.ForProvider, res.Attributes),
+		ResourceLateInitialized: !reflect.DeepEqual(current, &cr.Spec.ForProvider),
 	}, nil
 }
 
@@ -132,19 +127,13 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-
 	resp, err := e.client.CreateTopicRequest(snsclient.GenerateCreateTopicInput(&cr.Spec.ForProvider)).Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 
 	meta.SetExternalName(cr, aws.StringValue(resp.CreateTopicOutput.TopicArn))
-	if err := e.kube.Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errKubeTopicUpdateFailed)
-	}
-
-	return managed.ExternalCreation{}, nil
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {

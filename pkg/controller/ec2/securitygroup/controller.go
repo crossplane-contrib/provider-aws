@@ -23,6 +23,8 @@ import (
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -40,7 +42,6 @@ import (
 
 const (
 	errUnexpectedObject = "The managed resource is not an SecurityGroup resource"
-	errKubeUpdateFailed = "cannot update Security Group instance custom resource"
 
 	errDescribe         = "failed to describe SecurityGroup"
 	errMultipleItems    = "retrieved multiple SecurityGroups for the given securityGroupId"
@@ -120,11 +121,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	current := cr.Spec.ForProvider.DeepCopy()
 	ec2.LateInitializeSG(&cr.Spec.ForProvider, &observed)
-	if !cmp.Equal(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
-		}
-	}
 
 	cr.Status.AtProvider = ec2.GenerateSGObservation(observed)
 
@@ -139,8 +135,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: upToDate,
+		ResourceExists:          true,
+		ResourceUpToDate:        upToDate,
+		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }
 
@@ -164,12 +161,20 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
-	if result.CreateSecurityGroupOutput.GroupId == nil {
-		return managed.ExternalCreation{}, errors.New(errCreate)
-	}
-	meta.SetExternalName(cr, aws.StringValue(result.GroupId))
-
-	if err := e.kube.Update(ctx, cr); err != nil {
+	en := aws.StringValue(result.GroupId)
+	// NOTE(muvaf): We have this code block in managed reconciler but this resource
+	// has an exception where it needs to make another API call right after the
+	// Create and we cannot afford losing the identifier in case RevokeSecurityGroupEgressRequest
+	// fails.
+	err = retry.OnError(retry.DefaultRetry, resource.IsAPIError, func() error {
+		nn := types.NamespacedName{Name: cr.GetName()}
+		if err := e.kube.Get(ctx, nn, cr); err != nil {
+			return err
+		}
+		meta.SetExternalName(cr, en)
+		return e.kube.Update(ctx, cr)
+	})
+	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errSpecUpdate)
 	}
 	// NOTE(muvaf): AWS creates an initial egress rule and there is no way to

@@ -162,7 +162,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(input.MasterUsername)),
 	}
 
-	return managed.ExternalCreation{ConnectionDetails: conn}, errors.Wrap(err, errCreateFailed)
+	return managed.ExternalCreation{ConnectionDetails: conn}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {

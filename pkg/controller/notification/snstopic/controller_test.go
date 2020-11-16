@@ -26,8 +26,6 @@ import (
 	awssns "github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
@@ -241,8 +239,9 @@ func TestObserve(t *testing.T) {
 					withObservationOwner(&empty),
 				),
 				result: managed.ExternalObservation{
-					ResourceExists:   true,
-					ResourceUpToDate: false,
+					ResourceExists:          true,
+					ResourceUpToDate:        false,
+					ResourceLateInitialized: true,
 				},
 			},
 		},
@@ -286,19 +285,10 @@ func TestCreate(t *testing.T) {
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
 								Retryer:     aws.NoOpRetryer{},
-								Data:        &awssns.CreateTopicOutput{},
+								Data:        &awssns.CreateTopicOutput{TopicArn: aws.String(topicName)},
 							},
 						}
 					},
-				},
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockUpdateFn(nil, func(obj runtime.Object) error {
-						o := obj.(metav1.Object)
-						o.SetAnnotations(map[string]string{
-							meta.AnnotationKeyExternalName: topicName,
-						})
-						return nil
-					}),
 				},
 				cr: topic(
 					withDisplayName(&topicDisplayName),
@@ -308,9 +298,8 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: topic(
 					withDisplayName(&topicDisplayName),
-					withTopicName(&topicName),
-					withConditions(corev1alpha1.Creating()),
-				),
+					withTopicName(&topicName)),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"InValidInput": {
@@ -343,46 +332,8 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: topic(
 					withDisplayName(&topicDisplayName),
-					withTopicName(&topicName),
-					withConditions(corev1alpha1.Creating()),
-				),
+					withTopicName(&topicName)),
 				err: errors.Wrap(errBoom, errCreate),
-			},
-		},
-		"KubeUpdateError": {
-			args: args{
-				topic: &fake.MockTopicClient{
-					MockCreateTopicRequest: func(input *awssns.CreateTopicInput) awssns.CreateTopicRequest {
-						return awssns.CreateTopicRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        &awssns.CreateTopicOutput{},
-							},
-						}
-					},
-				},
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockUpdateFn(nil, func(obj runtime.Object) error {
-						o := obj.(metav1.Object)
-						o.SetAnnotations(map[string]string{
-							meta.AnnotationKeyExternalName: topicName,
-						})
-						return errBoom
-					}),
-				},
-				cr: topic(
-					withDisplayName(&topicDisplayName),
-					withTopicName(&topicName),
-				),
-			},
-			want: want{
-				cr: topic(
-					withDisplayName(&topicDisplayName),
-					withTopicName(&topicName),
-					withConditions(corev1alpha1.Creating()),
-				),
-				err: errors.Wrap(errBoom, errKubeTopicUpdateFailed),
 			},
 		},
 	}

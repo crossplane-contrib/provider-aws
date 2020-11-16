@@ -10,9 +10,6 @@ import (
 	awssns "github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -33,9 +30,8 @@ var (
 )
 
 type args struct {
-	sub  sns.SubscriptionClient
-	kube client.Client
-	cr   resource.Managed
+	sub sns.SubscriptionClient
+	cr  resource.Managed
 }
 
 func makeARN(s string) string {
@@ -89,7 +85,7 @@ func TestObserve(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{client: tc.sub, kube: tc.kube}
+			e := &external{client: tc.sub}
 			o, err := e.Observe(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -124,30 +120,19 @@ func TestCreate(t *testing.T) {
 						return awssns.SubscribeRequest{
 							Request: &aws.Request{
 								HTTPRequest: &http.Request{},
-								Data:        &awssns.SubscribeOutput{},
+								Data:        &awssns.SubscribeOutput{SubscriptionArn: aws.String(makeARN(subName))},
 								Retryer:     aws.NoOpRetryer{},
 							},
 						}
 					},
-				},
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockUpdateFn(nil, func(obj runtime.Object) error {
-						o := obj.(metav1.Object)
-						o.SetAnnotations(map[string]string{
-							meta.AnnotationKeyExternalName: makeARN(subName),
-						})
-						return nil
-					}),
 				},
 				cr: subscription(
 					withSubARN(&subName),
 				),
 			},
 			want: want{
-				cr: subscription(
-					withSubARN(&subName),
-					withConditions(corev1alpha1.Creating()),
-				),
+				cr:     subscription(withSubARN(&subName)),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"InValidInput": {
@@ -178,50 +163,14 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: subscription(
-					withSubARN(&subName),
-					withConditions(corev1alpha1.Creating()),
-				),
-				err: errors.Wrap(errBoom, errCreate),
-			},
-		},
-		"KubeUpdateError": {
-			args: args{
-				sub: &fake.MockSubscriptionClient{
-					MockSubscribeRequest: func(input *awssns.SubscribeInput) awssns.SubscribeRequest {
-						return awssns.SubscribeRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Error:       errBoom,
-								Retryer:     aws.NoOpRetryer{},
-							},
-						}
-					},
-				},
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockUpdateFn(nil, func(obj runtime.Object) error {
-						o := obj.(metav1.Object)
-						o.SetAnnotations(map[string]string{
-							meta.AnnotationKeyExternalName: makeARN(subName),
-						})
-						return errBoom
-					}),
-				},
-				cr: subscription(
-					withSubARN(&subName),
-				),
-			},
-			want: want{
-				cr: subscription(
-					withSubARN(&subName),
-					withConditions(corev1alpha1.Creating()),
-				),
+					withSubARN(&subName)),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{client: tc.sub, kube: tc.kube}
+			e := &external{client: tc.sub}
 			o, err := e.Create(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.err, err, test.EquateErrors()); diff != "" {

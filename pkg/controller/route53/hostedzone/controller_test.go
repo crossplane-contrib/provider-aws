@@ -266,8 +266,8 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: instance(
-					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
-					withConditions(runtimev1alpha1.Creating())),
+					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1])),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"InValidInput": {
@@ -291,7 +291,7 @@ func TestCreate(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr:  instance(withConditions(runtimev1alpha1.Creating())),
+				cr:  instance(),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},

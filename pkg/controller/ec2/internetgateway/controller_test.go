@@ -261,6 +261,7 @@ func TestCreate(t *testing.T) {
 				}),
 					withExternalName(igID),
 					withConditions(runtimev1alpha1.Creating())),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"FailedRequest": {
