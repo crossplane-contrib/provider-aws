@@ -1,0 +1,216 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.0
+  creationTimestamp: null
+  name: integrations.apigatewayv2.aws.crossplane.io
+spec:
+  group: apigatewayv2.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: Integration
+    listKind: IntegrationList
+    plural: integrations
+    singular: integration
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Integration is the Schema for the Integrations API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: IntegrationSpec defines the desired state of Integration
+            properties:
+              deletionPolicy:
+                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: IntegrationParameters defines the desired state of Integration
+                properties:
+                  apiId:
+                    description: APIID is the ID for the API.
+                    type: string
+                  apiIdRef:
+                    description: APIIDRef is a reference to an API used to set the APIID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  apiIdSelector:
+                    description: APIIDSelector selects references to API used to set the APIID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
+                  connectionID:
+                    type: string
+                  connectionType:
+                    type: string
+                  contentHandlingStrategy:
+                    type: string
+                  credentialsARN:
+                    type: string
+                  description:
+                    type: string
+                  integrationMethod:
+                    type: string
+                  integrationSubtype:
+                    type: string
+                  integrationType:
+                    type: string
+                  integrationURI:
+                    type: string
+                  passthroughBehavior:
+                    type: string
+                  payloadFormatVersion:
+                    type: string
+                  region:
+                    description: Region is which region the Integration will be created.
+                    type: string
+                  requestParameters:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  requestTemplates:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  templateSelectionExpression:
+                    type: string
+                  timeoutInMillis:
+                    format: int64
+                    type: integer
+                  tlsConfig:
+                    properties:
+                      serverNameToVerify:
+                        description: A string with a length between [1-512].
+                        type: string
+                    type: object
+                required:
+                - integrationType
+                - region
+                type: object
+              providerConfigRef:
+                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: IntegrationStatus defines the observed state of Integration.
+            properties:
+              atProvider:
+                description: IntegrationObservation defines the observed state of Integration
+                properties:
+                  apiGatewayManaged:
+                    type: boolean
+                  integrationID:
+                    type: string
+                  integrationResponseSelectionExpression:
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True, False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            required:
+            - atProvider
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

@@ -22,7 +22,6 @@ require (
 	github.com/prometheus/client_golang v1.1.0 // indirect
 	github.com/smartystreets/assertions v0.0.0-20180820201707-7c9eb446e3cf // indirect
 	github.com/smartystreets/goconvey v0.0.0-20180222194500-ef6db91d284a // indirect
-	github.com/spf13/cobra v1.0.0 // indirect
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/net v0.0.0-20200904194848-62affa334b73 // indirect
@@ -39,5 +38,5 @@ require (
 	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v0.18.8
 	sigs.k8s.io/controller-runtime v0.6.2
-	sigs.k8s.io/controller-tools v0.3.0
+	sigs.k8s.io/controller-tools v0.4.0
 )
