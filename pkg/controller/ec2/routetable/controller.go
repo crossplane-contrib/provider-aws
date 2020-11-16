@@ -42,7 +42,6 @@ import (
 const (
 	errUnexpectedObject = "The managed resource is not an RouteTable resource"
 
-	errKubeUpdateFailed   = "cannot update Subnet custom resource"
 	errDescribe           = "failed to describe RouteTable"
 	errMultipleItems      = "retrieved multiple RouteTables for the given routeTableId"
 	errCreate             = "failed to create the RouteTable resource"
@@ -52,7 +51,6 @@ const (
 	errCreateRoute        = "failed to create a route in the RouteTable resource"
 	errAssociateSubnet    = "failed to associate subnet %v to the RouteTable resource"
 	errDisassociateSubnet = "failed to disassociate subnet %v from the RouteTable resource"
-	errSpecUpdate         = "cannot update spec of the RouteTable custom resource"
 	errCreateTags         = "failed to create tags for the RouteTable resource"
 )
 
@@ -126,11 +124,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	observed := response.RouteTables[0]
 	current := cr.Spec.ForProvider.DeepCopy()
 	ec2.LateInitializeRT(&cr.Spec.ForProvider, &response.RouteTables[0])
-	if !cmp.Equal(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
-		}
-	}
 
 	stateAvailable := true
 	for _, rt := range observed.Routes {
@@ -151,8 +144,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: upToDate,
+		ResourceExists:          true,
+		ResourceUpToDate:        upToDate,
+		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }
 
@@ -167,11 +161,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
-	if result.RouteTable == nil {
-		return managed.ExternalCreation{}, errors.New(errCreate)
-	}
 	meta.SetExternalName(cr, aws.StringValue(result.RouteTable.RouteTableId))
-	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo

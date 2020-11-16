@@ -117,7 +117,7 @@ func TestObserve(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityClient{
 					MockDescribeCertificateAuthorityRequest: func(*awsacmpca.DescribeCertificateAuthorityInput) awsacmpca.DescribeCertificateAuthorityRequest {
@@ -235,7 +235,7 @@ func TestCreate(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityClient{
 					MockCreateCertificateAuthorityRequest: func(input *awsacmpca.CreateCertificateAuthorityInput) awsacmpca.CreateCertificateAuthorityRequest {
@@ -254,7 +254,8 @@ func TestCreate(t *testing.T) {
 				cr: certificateAuthority(withCertificateAuthorityArn()),
 			},
 			want: want{
-				cr: certificateAuthority(withCertificateAuthorityArn(), withConditions(corev1alpha1.Creating())),
+				cr:     certificateAuthority(withCertificateAuthorityArn()),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"InValidInput": {
@@ -283,7 +284,7 @@ func TestCreate(t *testing.T) {
 				cr: certificateAuthority(),
 			},
 			want: want{
-				cr:  certificateAuthority(withConditions(corev1alpha1.Creating())),
+				cr:  certificateAuthority(),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
@@ -324,7 +325,7 @@ func TestUpdate(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityClient{
 					MockDeletePermissionRequest: func(*awsacmpca.DeletePermissionInput) awsacmpca.DeletePermissionRequest {
@@ -468,7 +469,7 @@ func TestDelete(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityClient{
 					MockDeleteCertificateAuthorityRequest: func(*awsacmpca.DeleteCertificateAuthorityInput) awsacmpca.DeleteCertificateAuthorityRequest {

@@ -20,7 +20,6 @@ import (
 	"context"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
-	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
@@ -74,12 +73,13 @@ func (*external) preCreate(context.Context, *svcapitypes.Integration) error {
 	return nil
 }
 
-func (e *external) postCreate(ctx context.Context, cr *svcapitypes.Integration, resp *svcsdk.CreateIntegrationOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func (e *external) postCreate(_ context.Context, cr *svcapitypes.Integration, resp *svcsdk.CreateIntegrationOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.IntegrationId))
-	return cre, errors.Wrap(e.kube.Update(ctx, cr), "cannot update Integration")
+	cre.ExternalNameAssigned = true
+	return cre, nil
 }
 
 func (*external) preUpdate(context.Context, *svcapitypes.Integration) error {

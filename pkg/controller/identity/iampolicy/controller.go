@@ -143,8 +143,6 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-
 	createResp, err := e.client.CreatePolicyRequest(&awsiam.CreatePolicyInput{
 		Description:    cr.Spec.ForProvider.Description,
 		Path:           cr.Spec.ForProvider.Path,
@@ -158,7 +156,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	meta.SetExternalName(cr, aws.StringValue(createResp.CreatePolicyOutput.Policy.Arn))
 
-	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errCreate)
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {

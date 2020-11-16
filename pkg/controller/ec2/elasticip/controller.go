@@ -49,7 +49,6 @@ const (
 	errCreate        = "failed to create the ElasticIP resource"
 	errCreateTags    = "failed to create tags for the ElasticIP resource"
 	errDelete        = "failed to delete the ElasticIP resource"
-	errSpecUpdate    = "cannot update spec of ElasticIP custom resource"
 	errStatusUpdate  = "cannot update status of ElasticIP custom resource"
 )
 
@@ -131,19 +130,15 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	// update the CRD spec for any new values from provider
 	current := cr.Spec.ForProvider.DeepCopy()
 	ec2.LateInitializeElasticIP(&cr.Spec.ForProvider, &observed)
-	if !cmp.Equal(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errSpecUpdate)
-		}
-	}
 
 	cr.SetConditions(runtimev1alpha1.Available())
 
 	cr.Status.AtProvider = ec2.GenerateElasticIPObservation(observed)
 
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: ec2.IsElasticIPUpToDate(cr.Spec.ForProvider, observed),
+		ResourceExists:          true,
+		ResourceUpToDate:        ec2.IsElasticIPUpToDate(cr.Spec.ForProvider, observed),
+		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }
 
@@ -174,7 +169,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	} else {
 		meta.SetExternalName(cr, aws.StringValue(result.AllocateAddressOutput.AllocationId))
 	}
-	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {

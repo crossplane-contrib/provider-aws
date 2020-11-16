@@ -207,30 +207,7 @@ func TestCreate(t *testing.T) {
 				cr: rt(withSpec(v1alpha4.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				}), withExternalName(rtID)),
-			},
-		},
-		"EmptyResult": {
-			args: args{
-				kube: &test.MockClient{
-					MockUpdate:       test.NewMockClient().MockUpdate,
-					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
-				},
-				rt: &fake.MockRouteTableClient{
-					MockCreate: func(input *awsec2.CreateRouteTableInput) awsec2.CreateRouteTableRequest {
-						return awsec2.CreateRouteTableRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateRouteTableOutput{}},
-						}
-					},
-				},
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					VPCID: aws.String(vpcID),
-				}), withExternalName(rtID)),
-			},
-			want: want{
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					VPCID: aws.String(vpcID),
-				}), withExternalName(rtID)),
-				err: errors.New(errCreate),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"CreateFailed": {

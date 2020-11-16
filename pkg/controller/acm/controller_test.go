@@ -116,7 +116,7 @@ func TestObserve(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				acm: &fake.MockCertificateClient{
 					MockDescribeCertificateRequest: func(input *awsacm.DescribeCertificateInput) awsacm.DescribeCertificateRequest {
@@ -225,7 +225,7 @@ func TestCreate(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				acm: &fake.MockCertificateClient{
 					MockRequestCertificateRequest: func(input *awsacm.RequestCertificateInput) awsacm.RequestCertificateRequest {
@@ -240,8 +240,8 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: certificate(
-					withDomainName(),
-					withConditions(corev1alpha1.Creating())),
+					withDomainName()),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"InValidInput": {
@@ -265,7 +265,7 @@ func TestCreate(t *testing.T) {
 				cr: certificate(),
 			},
 			want: want{
-				cr:  certificate(withConditions(corev1alpha1.Creating())),
+				cr:  certificate(),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
@@ -306,7 +306,7 @@ func TestUpdate(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				acm: &fake.MockCertificateClient{
 
@@ -450,7 +450,7 @@ func TestDelete(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				acm: &fake.MockCertificateClient{
 					MockDeleteCertificateRequest: func(input *awsacm.DeleteCertificateInput) awsacm.DeleteCertificateRequest {

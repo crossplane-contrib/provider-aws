@@ -251,8 +251,8 @@ func TestCreate(t *testing.T) {
 						Document: document,
 						Name:     name,
 					}),
-					withExterName(arn),
-					withConditions(corev1alpha1.Creating())),
+					withExterName(arn)),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"InValidInput": {
@@ -276,7 +276,7 @@ func TestCreate(t *testing.T) {
 				cr: policy(),
 			},
 			want: want{
-				cr:  policy(withConditions(corev1alpha1.Creating())),
+				cr:  policy(),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},

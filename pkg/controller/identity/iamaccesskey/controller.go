@@ -43,8 +43,6 @@ const (
 	errCreate           = "failed to create the IAMAccessKey resource"
 	errDelete           = "failed to delete the IAMAccessKey resource"
 	errUpdate           = "failed to update the IAMAccessKey resource"
-
-	errKubeUpdateFailed = "cannot late initialize IAMAccessKey"
 )
 
 // SetupIAMAccessKey adds a controller that reconciles IAMAccessKeys.
@@ -91,24 +89,33 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	keys, err := e.client.ListAccessKeysRequest(&awsiam.ListAccessKeysInput{UserName: aws.String(cr.Spec.ForProvider.IAMUsername)}).Send(ctx)
-	if resource.Ignore(iam.IsErrorNotFound, err) != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, errList)
+	if err != nil || len(keys.AccessKeyMetadata) == 0 {
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errList)
 	}
-
-	if keys != nil {
-		for _, key := range keys.AccessKeyMetadata {
-			if aws.StringValue(key.AccessKeyId) == meta.GetExternalName(cr) {
-				cr.SetConditions(runtimev1alpha1.Available())
-
-				return managed.ExternalObservation{
-					ResourceExists:   true,
-					ResourceUpToDate: string(key.Status) == cr.Spec.ForProvider.Status,
-				}, nil
-			}
+	found := false
+	var accessKey awsiam.AccessKeyMetadata
+	for _, key := range keys.AccessKeyMetadata {
+		if aws.StringValue(key.AccessKeyId) == meta.GetExternalName(cr) {
+			found = true
+			accessKey = key
 		}
 	}
-
-	return managed.ExternalObservation{}, nil
+	if !found {
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
+	switch accessKey.Status {
+	case awsiam.StatusTypeActive:
+		cr.SetConditions(runtimev1alpha1.Available())
+	case awsiam.StatusTypeInactive:
+		cr.SetConditions(runtimev1alpha1.Unavailable())
+	}
+	current := cr.Spec.ForProvider.Status
+	cr.Spec.ForProvider.Status = awscommon.LateInitializeString(cr.Spec.ForProvider.Status, aws.String(string(accessKey.Status)))
+	return managed.ExternalObservation{
+		ResourceExists:          true,
+		ResourceUpToDate:        string(accessKey.Status) == cr.Spec.ForProvider.Status,
+		ResourceLateInitialized: current != cr.Spec.ForProvider.Status,
+	}, nil
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
@@ -117,30 +124,20 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-
 	response, err := e.client.CreateAccessKeyRequest(&awsiam.CreateAccessKeyInput{UserName: aws.String(cr.Spec.ForProvider.IAMUsername)}).Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
 
-	var conn managed.ConnectionDetails = nil
+	var conn managed.ConnectionDetails
 	if response != nil && response.AccessKey != nil {
-		conn = managed.ConnectionDetails{}
-		conn[runtimev1alpha1.ResourceCredentialsSecretUserKey] = []byte(aws.StringValue(response.AccessKey.AccessKeyId))
-		conn[runtimev1alpha1.ResourceCredentialsSecretPasswordKey] = []byte(aws.StringValue(response.AccessKey.SecretAccessKey))
-
-		cr.Spec.ForProvider.Status = string(response.AccessKey.Status)
-
-		meta.SetExternalName(cr, aws.StringValue(response.AccessKey.AccessKeyId))
-
-		err := e.kube.Update(ctx, cr)
-		if err != nil {
-			return managed.ExternalCreation{}, errors.Wrap(err, errKubeUpdateFailed)
+		conn = managed.ConnectionDetails{
+			runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(response.AccessKey.AccessKeyId)),
+			runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(aws.StringValue(response.AccessKey.SecretAccessKey)),
 		}
 	}
-
-	return managed.ExternalCreation{ConnectionDetails: conn}, nil
+	meta.SetExternalName(cr, aws.StringValue(response.AccessKey.AccessKeyId))
+	return managed.ExternalCreation{ExternalNameAssigned: true, ConnectionDetails: conn}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
