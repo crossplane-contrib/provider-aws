@@ -46,8 +46,7 @@ const (
 	errUpdate           = "failed to update the Certificate resource"
 	errSDK              = "empty Certificate received from ACM API"
 
-	errKubeUpdateFailed    = "cannot late initialize Certificate"
-	errPersistExternalName = "failed to persist Certificate ARN"
+	errKubeUpdateFailed = "cannot late initialize Certificate"
 
 	errAddTagsFailed        = "cannot add tags to Certificate"
 	errListTagsFailed       = "failed to list tags for Certificate"
@@ -152,16 +151,12 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-
 	response, err := e.client.RequestCertificateRequest(acm.GenerateCreateCertificateInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)).Send(ctx)
-
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
-
 	meta.SetExternalName(cr, aws.StringValue(response.RequestCertificateOutput.CertificateArn))
-	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errPersistExternalName)
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 
 }
 

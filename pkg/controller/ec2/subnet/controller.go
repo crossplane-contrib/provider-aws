@@ -40,15 +40,12 @@ import (
 
 const (
 	errUnexpectedObject = "The managed resource is not an Subnet resource"
-	errKubeUpdateFailed = "cannot update Subnet custom resource"
 
 	errDescribe      = "failed to describe Subnet"
 	errMultipleItems = "retrieved multiple Subnets"
 	errCreate        = "failed to create the Subnet resource"
 	errDelete        = "failed to delete the Subnet resource"
 	errUpdate        = "failed to update the Subnet resource"
-	errSpecUpdate    = "cannot update spec of the Subnet custom resource"
-	errStatusUpdate  = "cannot update status of the Subnet custom resource"
 	errCreateTags    = "failed to create tags for the Subnet resource"
 )
 
@@ -120,11 +117,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	// update CRD spec for any new values from provider
 	current := cr.Spec.ForProvider.DeepCopy()
 	ec2.LateInitializeSubnet(&cr.Spec.ForProvider, &observed)
-	if !cmp.Equal(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
-		}
-	}
 
 	switch observed.State {
 	case awsec2.SubnetStateAvailable:
@@ -136,8 +128,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	cr.Status.AtProvider = ec2.GenerateSubnetObservation(observed)
 
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: ec2.IsSubnetUpToDate(cr.Spec.ForProvider, observed),
+		ResourceExists:          true,
+		ResourceUpToDate:        ec2.IsSubnetUpToDate(cr.Spec.ForProvider, observed),
+		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }
 
@@ -145,11 +138,6 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	cr, ok := mgd.(*v1beta1.Subnet)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
-	}
-
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-	if err := e.kube.Status().Update(ctx, cr); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
 	}
 
 	result, err := e.client.CreateSubnetRequest(&awsec2.CreateSubnetInput{
@@ -166,7 +154,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	meta.SetExternalName(cr, aws.StringValue(result.Subnet.SubnetId))
 
-	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {

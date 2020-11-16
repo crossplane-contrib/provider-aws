@@ -233,10 +233,6 @@ func TestCreate(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				kube: &test.MockClient{
-					MockUpdate:       test.NewMockClient().Update,
-					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
-				},
 				vpc: &fake.MockVPCClient{
 					MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
 						return awsec2.CreateVpcRequest{
@@ -257,16 +253,12 @@ func TestCreate(t *testing.T) {
 				cr: vpc(),
 			},
 			want: want{
-				cr: vpc(withExternalName(vpcID),
-					withConditions(runtimev1alpha1.Creating())),
+				cr:     vpc(withExternalName(vpcID)),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"CreateFail": {
 			args: args{
-				kube: &test.MockClient{
-					MockUpdate:       test.NewMockClient().Update,
-					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
-				},
 				vpc: &fake.MockVPCClient{
 					MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
 						return awsec2.CreateVpcRequest{
@@ -277,7 +269,7 @@ func TestCreate(t *testing.T) {
 				cr: vpc(),
 			},
 			want: want{
-				cr:  vpc(withConditions(runtimev1alpha1.Creating())),
+				cr:  vpc(),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},

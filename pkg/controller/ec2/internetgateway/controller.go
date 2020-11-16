@@ -47,7 +47,6 @@ const (
 	errDetach              = "failed to detach the InternetGateway from VPC"
 	errDelete              = "failed to delete the InternetGateway resource"
 	errUpdate              = "failed to update the InternetGateway resource"
-	errSpecUpdate          = "cannot update spec of the InternetGateway resource"
 	errStatusUpdate        = "cannot update status of the InternetGateway resource"
 	errCreateTags          = "failed to create tags for the InternetGateway resource"
 )
@@ -119,19 +118,15 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	current := cr.Spec.ForProvider.DeepCopy()
 	ec2.LateInitializeIG(&cr.Spec.ForProvider, &observed)
-	if !cmp.Equal(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errSpecUpdate)
-		}
-	}
 
 	cr.SetConditions(runtimev1alpha1.Available())
 
 	cr.Status.AtProvider = ec2.GenerateIGObservation(observed)
 
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: ec2.IsIgUpToDate(cr.Spec.ForProvider, observed),
+		ResourceExists:          true,
+		ResourceUpToDate:        ec2.IsIgUpToDate(cr.Spec.ForProvider, observed),
+		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }
 
@@ -153,7 +148,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	meta.SetExternalName(cr, aws.StringValue(ig.InternetGateway.InternetGatewayId))
 
-	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {

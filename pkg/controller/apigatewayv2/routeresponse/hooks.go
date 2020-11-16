@@ -73,12 +73,13 @@ func (*external) preCreate(context.Context, *svcapitypes.RouteResponse) error {
 	return nil
 }
 
-func (e *external) postCreate(ctx context.Context, cr *svcapitypes.RouteResponse, resp *svcsdk.CreateRouteResponseOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func (e *external) postCreate(_ context.Context, cr *svcapitypes.RouteResponse, resp *svcsdk.CreateRouteResponseOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.RouteResponseId))
-	return cre, e.kube.Update(ctx, cr)
+	cre.ExternalNameAssigned = true
+	return cre, nil
 }
 
 func (*external) preUpdate(context.Context, *svcapitypes.RouteResponse) error {

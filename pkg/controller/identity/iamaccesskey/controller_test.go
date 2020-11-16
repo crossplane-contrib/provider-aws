@@ -149,7 +149,7 @@ func TestObserve(t *testing.T) {
 				cr: accesskey(withUsername(userName),
 					withAccessKey(accessKeyID),
 					withStatus(string(activeStatus)),
-					withConditions(corev1alpha1.Available())),
+					withConditions(corev1alpha1.Unavailable())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: false,
@@ -260,43 +260,13 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: accesskey(
 					withUsername(userName),
-					withAccessKey(accessKeyID),
-					withStatus(string(activeStatus)),
-					withConditions(corev1alpha1.Creating())),
-				result: managed.ExternalCreation{ConnectionDetails: map[string][]byte{
-					corev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(secretKeyID),
-					corev1alpha1.ResourceCredentialsSecretUserKey:     []byte(accessKeyID),
-				}},
-			},
-		},
-		"CreateFailedKubeUpdate": {
-			args: args{
-				iam: &fake.MockAccessClient{
-					MockCreateAccessKeyRequest: func(input *awsiam.CreateAccessKeyInput) awsiam.CreateAccessKeyRequest {
-						return awsiam.CreateAccessKeyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.CreateAccessKeyOutput{
-								AccessKey: &awsiam.AccessKey{
-									AccessKeyId:     aws.String(accessKeyID),
-									SecretAccessKey: aws.String(secretKeyID),
-									Status:          activeStatus,
-									UserName:        aws.String(userName),
-								},
-							}},
-						}
-					},
-				},
-				cr: accesskey(withUsername(userName)),
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockUpdateFn(errBoom),
-				},
-			},
-			want: want{
-				cr: accesskey(
-					withUsername(userName),
-					withAccessKey(accessKeyID),
-					withStatus(string(activeStatus)),
-					withConditions(corev1alpha1.Creating())),
-				err: errors.Wrap(errBoom, errKubeUpdateFailed),
+					withAccessKey(accessKeyID)),
+				result: managed.ExternalCreation{
+					ExternalNameAssigned: true,
+					ConnectionDetails: map[string][]byte{
+						corev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(secretKeyID),
+						corev1alpha1.ResourceCredentialsSecretUserKey:     []byte(accessKeyID),
+					}},
 			},
 		},
 		"InValidInput": {
@@ -320,7 +290,7 @@ func TestCreate(t *testing.T) {
 				cr: accesskey(),
 			},
 			want: want{
-				cr:  accesskey(withConditions(corev1alpha1.Creating())),
+				cr:  accesskey(),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},

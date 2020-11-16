@@ -26,7 +26,6 @@ const (
 	errUnexpectedObject = "The managed resource is not an NATGateway resource"
 	errDescribe         = "failed to describe NATGateway"
 	errNotSingleItem    = "either no or multiple NATGateways retrieved for the given natGatewayId"
-	errSpecUpdate       = "cannot update spec of the NATGateway resource"
 	errCreate           = "failed to create the NATGateway resource"
 	errDelete           = "failed to delete the NATGateway resource"
 	errUpdateTags       = "failed to update tags for the NATGateway resource"
@@ -140,10 +139,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 	}
-
 	meta.SetExternalName(cr, aws.StringValue(nat.NatGateway.NatGatewayId))
-
-	return managed.ExternalCreation{}, errors.Wrap(e.kube.Update(ctx, cr), errSpecUpdate)
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
