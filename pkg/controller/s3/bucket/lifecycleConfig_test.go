@@ -60,10 +60,10 @@ func generateLifecycleConfig() *v1beta1.BucketLifecycleConfiguration {
 				},
 				Filter: &v1beta1.LifecycleRuleFilter{
 					And: &v1beta1.LifecycleRuleAndOperator{
-						Prefix: &prefix,
+						Prefix: aws.String(prefix),
 						Tags:   tags,
 					},
-					Prefix: &prefix,
+					Prefix: aws.String(prefix),
 					Tag:    &tag,
 				},
 				ID:                          aws.String(id),
@@ -95,10 +95,10 @@ func generateAWSLifecycle(sortTag bool) *s3.BucketLifecycleConfiguration {
 				},
 				Filter: &s3.LifecycleRuleFilter{
 					And: &s3.LifecycleRuleAndOperator{
-						Prefix: &prefix,
+						Prefix: aws.String(prefix),
 						Tags:   awsTags,
 					},
-					Prefix: &prefix,
+					Prefix: aws.String(prefix),
 					Tag:    &awsTag,
 				},
 				ID:                          aws.String(id),
