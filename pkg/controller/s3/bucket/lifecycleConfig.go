@@ -145,10 +145,10 @@ func GenerateLifecycleRules(in []v1beta1.LifecycleRule) []awss3.LifecycleRule { 
 				}
 			}
 		}
+		// This is done because S3 expects an empty filter, and never nil
+		rule.Filter = &awss3.LifecycleRuleFilter{}
 		if local.Filter != nil {
-			rule.Filter = &awss3.LifecycleRuleFilter{
-				Prefix: local.Filter.Prefix,
-			}
+			rule.Filter.Prefix = local.Filter.Prefix
 			if local.Filter.Tag != nil {
 				rule.Filter.Tag = &awss3.Tag{Key: aws.String(local.Filter.Tag.Key), Value: aws.String(local.Filter.Tag.Value)}
 			}
