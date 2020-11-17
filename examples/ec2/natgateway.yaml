@@ -5,13 +5,12 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
-    allocationIdrRef:
+    allocationIdRef:
       name: sample-eip
     subnetIdRef:
-      name: sample-subnet
+      name: sample-subnet1
     tags:
       - key: Name
         value: sample-natgateway
-  reclaimPolicy: Delete
   providerConfigRef:
     name: example
