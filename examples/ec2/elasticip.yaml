@@ -1,7 +1,7 @@
 apiVersion: ec2.aws.crossplane.io/v1alpha1
 kind: ElasticIP
 metadata:
-  name: "eip"
+  name: sample-eip
 spec:
   forProvider:
     region: us-east-1
