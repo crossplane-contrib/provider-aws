@@ -210,10 +210,6 @@ spec:
                 status:
                   description: The current status of the Fargate profile.
                   type: string
-              required:
-              - createdAt
-              - fargateProfileArn
-              - status
               type: object
             conditions:
               description: Conditions of the resource.

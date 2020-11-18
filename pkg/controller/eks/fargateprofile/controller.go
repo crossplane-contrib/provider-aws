@@ -98,11 +98,6 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	current := cr.Spec.ForProvider.DeepCopy()
 	eks.LateInitializeFargateProfile(&cr.Spec.ForProvider, rsp.FargateProfile)
-	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
-		}
-	}
 
 	cr.Status.AtProvider = eks.GenerateFargateProfileObservation(rsp.FargateProfile)
 	// Any of the statuses we don't explicitly address should be considered as
@@ -119,8 +114,9 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: eks.IsFargateProfileUpToDate(&cr.Spec.ForProvider, rsp.FargateProfile),
+		ResourceExists:          true,
+		ResourceUpToDate:        eks.IsFargateProfileUpToDate(&cr.Spec.ForProvider, rsp.FargateProfile),
+		ResourceLateInitialized: !reflect.DeepEqual(current, &cr.Spec.ForProvider),
 	}, nil
 }
 
@@ -133,7 +129,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if cr.Status.AtProvider.Status == v1alpha1.FargateProfileStatusCreating {
 		return managed.ExternalCreation{}, nil
 	}
-	_, err := e.client.CreateFargateProfileRequest(eks.GenerateCreateFargateProfileInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)).Send(ctx)
+	_, err := e.client.CreateFargateProfileRequest(eks.GenerateCreateFargateProfileInput(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx)
 	return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
 }
 

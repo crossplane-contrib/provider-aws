@@ -115,8 +115,9 @@ func TestObserve(t *testing.T) {
 					withConditions(runtimev1alpha1.Available()),
 					withStatus(v1alpha1.FargateProfileStatusActive)),
 				result: managed.ExternalObservation{
-					ResourceExists:   true,
-					ResourceUpToDate: true,
+					ResourceExists:          true,
+					ResourceUpToDate:        true,
+					ResourceLateInitialized: false,
 				},
 			},
 		},
@@ -140,8 +141,9 @@ func TestObserve(t *testing.T) {
 					withConditions(runtimev1alpha1.Deleting()),
 					withStatus(v1alpha1.FargateProfileStatusDeleting)),
 				result: managed.ExternalObservation{
-					ResourceExists:   true,
-					ResourceUpToDate: true,
+					ResourceExists:          true,
+					ResourceUpToDate:        true,
+					ResourceLateInitialized: false,
 				},
 			},
 		},
@@ -202,33 +204,10 @@ func TestObserve(t *testing.T) {
 					withSubnets(subnets),
 				),
 				result: managed.ExternalObservation{
-					ResourceExists:   true,
-					ResourceUpToDate: true,
+					ResourceExists:          true,
+					ResourceUpToDate:        true,
+					ResourceLateInitialized: true,
 				},
-			},
-		},
-		"LateInitFailedKubeUpdate": {
-			args: args{
-				kube: &test.MockClient{
-					MockUpdate: test.NewMockUpdateFn(errBoom),
-				},
-				eks: &fake.MockClient{
-					MockDescribeFargateProfileRequest: func(_ *awseks.DescribeFargateProfileInput) awseks.DescribeFargateProfileRequest {
-						return awseks.DescribeFargateProfileRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awseks.DescribeFargateProfileOutput{
-								FargateProfile: &awseks.FargateProfile{
-									Status:  awseks.FargateProfileStatusCreating,
-									Subnets: subnets,
-								},
-							}},
-						}
-					},
-				},
-				cr: fargateProfile(),
-			},
-			want: want{
-				cr:  fargateProfile(withSubnets(subnets)),
-				err: errors.Wrap(errBoom, errKubeUpdateFailed),
 			},
 		},
 	}
