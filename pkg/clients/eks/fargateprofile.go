@@ -27,7 +27,7 @@ import (
 )
 
 // GenerateCreateFargateProfileInput from FargateProfileInputParameters.
-func GenerateCreateFargateProfileInput(name string, p *v1alpha1.FargateProfileParameters) *eks.CreateFargateProfileInput {
+func GenerateCreateFargateProfileInput(name string, p v1alpha1.FargateProfileParameters) *eks.CreateFargateProfileInput {
 	c := &eks.CreateFargateProfileInput{
 		FargateProfileName:  &name,
 		ClusterName:         &p.ClusterName,
@@ -83,6 +83,6 @@ func LateInitializeFargateProfile(in *v1alpha1.FargateProfileParameters, fp *eks
 
 // IsFargateProfileUpToDate checks whether there is a change in the tags.
 // Any other field is immutable and can't be updated.
-func IsFargateProfileUpToDate(p *v1alpha1.FargateProfileParameters, fp *eks.FargateProfile) bool { // nolint:gocyclo
+func IsFargateProfileUpToDate(p v1alpha1.FargateProfileParameters, fp *eks.FargateProfile) bool { // nolint:gocyclo
 	return cmp.Equal(p.Tags, fp.Tags, cmpopts.EquateEmpty())
 }

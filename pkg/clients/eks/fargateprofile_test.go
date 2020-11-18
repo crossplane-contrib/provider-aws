@@ -38,7 +38,7 @@ var (
 func TestGenerateCreateFargateProfileInput(t *testing.T) {
 	type args struct {
 		name string
-		p    *v1alpha1.FargateProfileParameters
+		p    v1alpha1.FargateProfileParameters
 	}
 
 	cases := map[string]struct {
@@ -48,7 +48,7 @@ func TestGenerateCreateFargateProfileInput(t *testing.T) {
 		"AllFields": {
 			args: args{
 				name: fpName,
-				p: &v1alpha1.FargateProfileParameters{
+				p: v1alpha1.FargateProfileParameters{
 					ClusterName:         clusterName,
 					PodExecutionRoleArn: podExecutionRoleArn,
 					Subnets:             subnets,
@@ -82,7 +82,7 @@ func TestGenerateCreateFargateProfileInput(t *testing.T) {
 		"SomeFields": {
 			args: args{
 				name: fpName,
-				p: &v1alpha1.FargateProfileParameters{
+				p: v1alpha1.FargateProfileParameters{
 					ClusterName:         clusterName,
 					PodExecutionRoleArn: podExecutionRoleArn,
 					Selectors: []v1alpha1.FargateProfileSelector{
@@ -158,7 +158,7 @@ func TestLateInitializeFargateProfile(t *testing.T) {
 
 func TestIsFargateProfileUpToDate(t *testing.T) {
 	type args struct {
-		p *v1alpha1.FargateProfileParameters
+		p v1alpha1.FargateProfileParameters
 		n *eks.FargateProfile
 	}
 
@@ -168,7 +168,7 @@ func TestIsFargateProfileUpToDate(t *testing.T) {
 	}{
 		"UpToDate": {
 			args: args{
-				p: &v1alpha1.FargateProfileParameters{
+				p: v1alpha1.FargateProfileParameters{
 					Tags: map[string]string{"cool": "tag"},
 				},
 				n: &eks.FargateProfile{
@@ -179,7 +179,7 @@ func TestIsFargateProfileUpToDate(t *testing.T) {
 		},
 		"UpdateTags": {
 			args: args{
-				p: &v1alpha1.FargateProfileParameters{
+				p: v1alpha1.FargateProfileParameters{
 					Tags: map[string]string{"cool": "tag", "another": "tag"},
 				},
 				n: &eks.FargateProfile{
