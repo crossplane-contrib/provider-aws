@@ -143,6 +143,27 @@ spec:
                               vpcId:
                                 description: The ID of the VPC for the referenced security group, if applicable.
                                 type: string
+                              vpcIdRef:
+                                description: VPCIDRef reference a VPC to retrieve its vpcId
+                                properties:
+                                  name:
+                                    description: Name of the referenced object.
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                              vpcIdSelector:
+                                description: VPCIDSelector selects reference to a VPC to retrieve its vpcId
+                                properties:
+                                  matchControllerRef:
+                                    description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                                    type: boolean
+                                  matchLabels:
+                                    additionalProperties:
+                                      type: string
+                                    description: MatchLabels ensures an object with matching labels is selected.
+                                    type: object
+                                type: object
                               vpcPeeringConnectionId:
                                 description: The ID of the VPC peering connection, if applicable.
                                 type: string
@@ -236,6 +257,27 @@ spec:
                               vpcId:
                                 description: The ID of the VPC for the referenced security group, if applicable.
                                 type: string
+                              vpcIdRef:
+                                description: VPCIDRef reference a VPC to retrieve its vpcId
+                                properties:
+                                  name:
+                                    description: Name of the referenced object.
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                              vpcIdSelector:
+                                description: VPCIDSelector selects reference to a VPC to retrieve its vpcId
+                                properties:
+                                  matchControllerRef:
+                                    description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                                    type: boolean
+                                  matchLabels:
+                                    additionalProperties:
+                                      type: string
+                                    description: MatchLabels ensures an object with matching labels is selected.
+                                    type: object
+                                type: object
                               vpcPeeringConnectionId:
                                 description: The ID of the VPC peering connection, if applicable.
                                 type: string
