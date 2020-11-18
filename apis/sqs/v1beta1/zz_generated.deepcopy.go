@@ -21,6 +21,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -224,6 +225,16 @@ func (in *RedrivePolicy) DeepCopyInto(out *RedrivePolicy) {
 		in, out := &in.DeadLetterQueueARN, &out.DeadLetterQueueARN
 		*out = new(string)
 		**out = **in
+	}
+	if in.DeadLetterQueueARNRef != nil {
+		in, out := &in.DeadLetterQueueARNRef, &out.DeadLetterQueueARNRef
+		*out = new(v1alpha1.Reference)
+		**out = **in
+	}
+	if in.DeadLetterQueueARNSelector != nil {
+		in, out := &in.DeadLetterQueueARNSelector, &out.DeadLetterQueueARNSelector
+		*out = new(v1alpha1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.MaxReceiveCount != nil {
 		in, out := &in.MaxReceiveCount, &out.MaxReceiveCount
