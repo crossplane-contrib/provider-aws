@@ -53,6 +53,14 @@ type RedrivePolicy struct {
 	// +optional
 	DeadLetterQueueARN *string `json:"deadLetterQueueARN,omitempty"`
 
+	// DeadLetterQueueARNRef reference a Queue to retrieve its ARN.
+	// +optional
+	DeadLetterQueueARNRef *runtimev1alpha1.Reference `json:"deadLetterQueueArnRef,omitempty"`
+
+	// DeadLetterQueueARNSelector selects reference to a Queue to retrieve its ARN
+	// +optional
+	DeadLetterQueueARNSelector *runtimev1alpha1.Selector `json:"deadLetterQueueArnSelector,omitempty"`
+
 	// The number of times a message is delivered to the source queue before
 	// being moved to the dead-letter queue.
 	// +optional

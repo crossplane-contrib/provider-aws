@@ -94,6 +94,27 @@ spec:
                       deadLetterQueueARN:
                         description: The Amazon Resource Name (ARN) of the dead-letter queue to which Amazon SQS moves messages after the value of maxReceiveCount is exceeded.
                         type: string
+                      deadLetterQueueArnRef:
+                        description: DeadLetterQueueARNRef reference a Queue to retrieve its ARN.
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      deadLetterQueueArnSelector:
+                        description: DeadLetterQueueARNSelector selects reference to a Queue to retrieve its ARN
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching labels is selected.
+                            type: object
+                        type: object
                       maxReceiveCount:
                         description: The number of times a message is delivered to the source queue before being moved to the dead-letter queue.
                         format: int64
