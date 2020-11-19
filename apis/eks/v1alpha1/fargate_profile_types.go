@@ -44,7 +44,6 @@ type FargateProfileSelector struct {
 
 	// The Kubernetes namespace that the selector should match.
 	Namespace *string `json:"namespace,omitempty"`
-	// contains filtered or unexported fields
 }
 
 // FargateProfileObservation is the observed state of a FargateProfile.
@@ -92,18 +91,21 @@ type FargateProfileParameters struct {
 	// Execution Role (https://docs.aws.amazon.com/eks/latest/userguide/pod-execution-role.html)
 	// in the Amazon EKS User Guide.
 	//
-	// PodExecutionRoleArn is a required field
+	// At least one of podExecutionRoleArn, podExecutionRoleArnRef or podExecutionRoleArnSelector has to be given
 	// +immutable
-	PodExecutionRoleArn string `json:"podExecutionRoleArn"`
+	// +optional
+	PodExecutionRoleArn string `json:"podExecutionRoleArn,omitempty"`
 
 	// PodExecutionRoleArnRef is a reference to an IAMRole used to set
 	// the PodExecutionRoleArn.
+	// At least one of podExecutionRoleArn, podExecutionRoleArnRef or podExecutionRoleArnSelector has to be given
 	// +immutable
 	// +optional
 	PodExecutionRoleArnRef *runtimev1alpha1.Reference `json:"podExecutionRoleArnRef,omitempty"`
 
 	// PodExecutionRoleArnSelector selects references to IAMRole used
 	// to set the PodExecutionRoleArn.
+	// At least one of podExecutionRoleArn, podExecutionRoleArnRef or podExecutionRoleArnSelector has to be given
 	// +optional
 	PodExecutionRoleArnSelector *runtimev1alpha1.Selector `json:"podExecutionRoleArnSelector,omitempty"`
 
