@@ -38,8 +38,6 @@ const (
 	AttributeDelaySeconds                          string = "DelaySeconds"
 	AttributeReceiveMessageWaitTimeSeconds         string = "ReceiveMessageWaitTimeSeconds"
 	AttributeRedrivePolicy                         string = "RedrivePolicy"
-	AttributeDeadLetterQueueARN                    string = "DeadLetterQueueARN"
-	AttributeMaxReceiveCount                       string = "MaxReceiveCount"
 	AttributeFifoQueue                             string = "FifoQueue"
 	AttributeContentBasedDeduplication             string = "ContentBasedDeduplication"
 	AttributeKmsMasterKeyID                        string = "KmsMasterKeyId"
@@ -51,15 +49,15 @@ type RedrivePolicy struct {
 	// The Amazon Resource Name (ARN) of the dead-letter queue to which Amazon
 	// SQS moves messages after the value of maxReceiveCount is exceeded.
 	// +optional
-	DeadLetterQueueARN *string `json:"deadLetterQueueArn,omitempty"`
+	DeadLetterTargetARN *string `json:"deadLetterTargetArn,omitempty"`
 
-	// DeadLetterQueueARNRef reference a Queue to retrieve its ARN.
+	// DeadLetterTargetARNRef reference a Queue to retrieve its ARN.
 	// +optional
-	DeadLetterQueueARNRef *runtimev1alpha1.Reference `json:"deadLetterQueueArnRef,omitempty"`
+	DeadLetterTargetARNRef *runtimev1alpha1.Reference `json:"deadLetterTargetArnRef,omitempty"`
 
-	// DeadLetterQueueARNSelector selects reference to a Queue to retrieve its ARN
+	// DeadLetterTargetARNSelector selects reference to a Queue to retrieve its ARN
 	// +optional
-	DeadLetterQueueARNSelector *runtimev1alpha1.Selector `json:"deadLetterQueueArnSelector,omitempty"`
+	DeadLetterTargetARNSelector *runtimev1alpha1.Selector `json:"deadLetterTargetArnSelector,omitempty"`
 
 	// The number of times a message is delivered to the source queue before
 	// being moved to the dead-letter queue.

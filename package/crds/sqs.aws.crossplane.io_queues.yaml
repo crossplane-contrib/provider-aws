@@ -91,11 +91,11 @@ spec:
                   redrivePolicy:
                     description: RedrivePolicy includes the parameters for the dead-letter queue functionality of the source queue. For more information about the redrive policy and dead-letter queues, see Using Amazon SQS Dead-Letter Queues (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html) in the Amazon Simple Queue Service Developer Guide
                     properties:
-                      deadLetterQueueArn:
+                      deadLetterTargetArn:
                         description: The Amazon Resource Name (ARN) of the dead-letter queue to which Amazon SQS moves messages after the value of maxReceiveCount is exceeded.
                         type: string
-                      deadLetterQueueArnRef:
-                        description: DeadLetterQueueARNRef reference a Queue to retrieve its ARN.
+                      deadLetterTargetArnRef:
+                        description: DeadLetterTargetARNRef reference a Queue to retrieve its ARN.
                         properties:
                           name:
                             description: Name of the referenced object.
@@ -103,8 +103,8 @@ spec:
                         required:
                         - name
                         type: object
-                      deadLetterQueueArnSelector:
-                        description: DeadLetterQueueARNSelector selects reference to a Queue to retrieve its ARN
+                      deadLetterTargetArnSelector:
+                        description: DeadLetterTargetARNSelector selects reference to a Queue to retrieve its ARN
                         properties:
                           matchControllerRef:
                             description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
