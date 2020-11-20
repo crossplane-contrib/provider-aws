@@ -18,14 +18,14 @@ package fargateprofile
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	awseks "github.com/aws/aws-sdk-go-v2/service/eks"
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	awseks "github.com/aws/aws-sdk-go-v2/service/eks"
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
@@ -116,7 +116,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	return managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        eks.IsFargateProfileUpToDate(cr.Spec.ForProvider, rsp.FargateProfile),
-		ResourceLateInitialized: !reflect.DeepEqual(current, &cr.Spec.ForProvider),
+		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }
 
