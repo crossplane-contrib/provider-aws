@@ -191,13 +191,13 @@ func TestGenerateQueueAttributes(t *testing.T) {
 		"RedrivePolicy": {
 			in: *sqsParams(func(p *v1beta1.QueueParameters) {
 				p.RedrivePolicy = &v1beta1.RedrivePolicy{
-					DeadLetterQueueARN: &arn,
-					MaxReceiveCount:    &maxReceiveCount,
+					DeadLetterTargetARN: &arn,
+					MaxReceiveCount:     maxReceiveCount,
 				}
 			}),
 			out: map[string]string{
 				v1beta1.AttributeDelaySeconds:   strconv.FormatInt(delaySeconds, 10),
-				v1beta1.AttributeRedrivePolicy:  `{"deadLetterQueueARN":"arn","maxReceiveCount":5}`,
+				v1beta1.AttributeRedrivePolicy:  `{"deadLetterTargetArn":"arn","maxReceiveCount":5}`,
 				v1beta1.AttributeKmsMasterKeyID: kmsMasterKeyID,
 			},
 		},
@@ -207,7 +207,7 @@ func TestGenerateQueueAttributes(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			r := GenerateQueueAttributes(&tc.in)
 			if diff := cmp.Diff(r, tc.out); diff != "" {
-				t.Errorf("GenerateNetworkObservation(...): -want, +got:\n%s", diff)
+				t.Errorf("GenerateQueueAttributes(...): -want, +got:\n%s", diff)
 			}
 		})
 	}

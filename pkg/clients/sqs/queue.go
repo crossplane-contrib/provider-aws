@@ -83,8 +83,12 @@ func GenerateQueueAttributes(p *v1beta1.QueueParameters) map[string]string { // 
 	if p.ReceiveMessageWaitTimeSeconds != nil {
 		m[v1beta1.AttributeReceiveMessageWaitTimeSeconds] = strconv.FormatInt(aws.Int64Value(p.ReceiveMessageWaitTimeSeconds), 10)
 	}
-	if p.RedrivePolicy != nil && aws.StringValue(p.RedrivePolicy.DeadLetterQueueARN) != "" {
-		val, err := json.Marshal(p.RedrivePolicy)
+	if p.RedrivePolicy != nil && aws.StringValue(p.RedrivePolicy.DeadLetterTargetARN) != "" {
+		r := map[string]interface{}{
+			"deadLetterTargetArn": p.RedrivePolicy.DeadLetterTargetARN,
+			"maxReceiveCount":     p.RedrivePolicy.MaxReceiveCount,
+		}
+		val, err := json.Marshal(r)
 		if err == nil {
 			m[v1beta1.AttributeRedrivePolicy] = string(val)
 		}
@@ -155,12 +159,6 @@ func LateInitialize(in *v1beta1.QueueParameters, attributes map[string]string, t
 	if in.KMSMasterKeyID == nil && attributes[v1beta1.AttributeKmsMasterKeyID] != "" {
 		in.KMSMasterKeyID = aws.String(attributes[v1beta1.AttributeKmsMasterKeyID])
 	}
-
-	if attributes[v1beta1.AttributeDeadLetterQueueARN] != "" || attributes[v1beta1.AttributeMaxReceiveCount] != "" {
-		in.RedrivePolicy = &v1beta1.RedrivePolicy{}
-		in.RedrivePolicy.MaxReceiveCount = awsclients.LateInitializeInt64Ptr(in.RedrivePolicy.MaxReceiveCount, int64Ptr(attributes[v1beta1.AttributeMaxReceiveCount]))
-		in.RedrivePolicy.DeadLetterQueueARN = awsclients.LateInitializeStringPtr(in.RedrivePolicy.DeadLetterQueueARN, aws.String(attributes[v1beta1.AttributeDeadLetterQueueARN]))
-	}
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
@@ -200,19 +198,21 @@ func IsUpToDate(p v1beta1.QueueParameters, attributes map[string]string, tags ma
 	if !cmp.Equal(aws.StringValue(p.Policy), attributes[v1beta1.AttributePolicy]) {
 		return false
 	}
-	if attributes[v1beta1.AttributeVisibilityTimeout] != "" && strconv.FormatBool(aws.BoolValue(p.ContentBasedDeduplication)) != attributes[v1beta1.AttributeVisibilityTimeout] {
+	if attributes[v1beta1.AttributeContentBasedDeduplication] != "" && strconv.FormatBool(aws.BoolValue(p.ContentBasedDeduplication)) != attributes[v1beta1.AttributeContentBasedDeduplication] {
 		return false
 	}
-
 	if p.RedrivePolicy != nil {
-		if !cmp.Equal(aws.StringValue(p.RedrivePolicy.DeadLetterQueueARN), attributes[v1beta1.AttributeDeadLetterQueueARN]) {
-			return false
+		r := map[string]interface{}{
+			"deadLetterTargetArn": p.RedrivePolicy.DeadLetterTargetARN,
+			"maxReceiveCount":     p.RedrivePolicy.MaxReceiveCount,
 		}
-		if aws.Int64Value(p.RedrivePolicy.MaxReceiveCount) != int64Value(attributes[v1beta1.AttributeMaxReceiveCount]) {
-			return false
+		val, err := json.Marshal(r)
+		if err == nil {
+			if string(val) != attributes[v1beta1.AttributeRedrivePolicy] {
+				return false
+			}
 		}
 	}
-
 	return true
 }
 
