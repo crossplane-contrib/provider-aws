@@ -29,9 +29,6 @@ type BackupParameters struct {
 	// Region is which region the Backup will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// Specified name for the backup.
-	// +kubebuilder:validation:Required
-	BackupName *string `json:"backupName"`
 	// The name of the table.
 	// +kubebuilder:validation:Required
 	TableName              *string `json:"tableName"`
@@ -53,6 +50,8 @@ type BackupObservation struct {
 	// Time at which the automatic on-demand backup created by DynamoDB will expire.
 	// This SYSTEM on-demand backup expires automatically 35 days after its creation.
 	BackupExpiryDateTime *metav1.Time `json:"backupExpiryDateTime,omitempty"`
+	// Name of the requested backup.
+	BackupName *string `json:"backupName,omitempty"`
 	// Size of the backup in bytes.
 	BackupSizeBytes *int64 `json:"backupSizeBytes,omitempty"`
 	// Backup can be in one of the following states: CREATING, ACTIVE, DELETED.

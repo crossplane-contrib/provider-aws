@@ -171,9 +171,6 @@ spec:
                       streamViewType:
                         type: string
                     type: object
-                  tableName:
-                    description: The name of the table to create.
-                    type: string
                   tags:
                     description: A list of key-value pairs to label the table. For more information, see Tagging for DynamoDB (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Tagging.html).
                     items:
@@ -188,7 +185,6 @@ spec:
                 - attributeDefinitions
                 - keySchema
                 - region
-                - tableName
                 type: object
               providerConfigRef:
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
@@ -335,6 +331,9 @@ spec:
                     type: string
                   tableID:
                     description: Unique identifier for the table for which the backup was created.
+                    type: string
+                  tableName:
+                    description: The name of the table.
                     type: string
                   tableSizeBytes:
                     description: The total size of the specified table, in bytes. DynamoDB updates this value approximately every six hours. Recent changes might not be reflected in this value.

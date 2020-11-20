@@ -116,6 +116,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	if resp.GlobalTableDescription.GlobalTableArn != nil {
 		cr.Status.AtProvider.GlobalTableARN = resp.GlobalTableDescription.GlobalTableArn
 	}
+	if resp.GlobalTableDescription.GlobalTableName != nil {
+		cr.Status.AtProvider.GlobalTableName = resp.GlobalTableDescription.GlobalTableName
+	}
 	if resp.GlobalTableDescription.GlobalTableStatus != nil {
 		cr.Status.AtProvider.GlobalTableStatus = resp.GlobalTableDescription.GlobalTableStatus
 	}

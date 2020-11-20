@@ -29,9 +29,6 @@ type GlobalTableParameters struct {
 	// Region is which region the GlobalTable will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// The global table name.
-	// +kubebuilder:validation:Required
-	GlobalTableName *string `json:"globalTableName"`
 	// The Regions where the global table needs to be created.
 	// +kubebuilder:validation:Required
 	ReplicationGroup            []*Replica `json:"replicationGroup"`
@@ -50,6 +47,8 @@ type GlobalTableObservation struct {
 	CreationDateTime *metav1.Time `json:"creationDateTime,omitempty"`
 	// The unique identifier of the global table.
 	GlobalTableARN *string `json:"globalTableARN,omitempty"`
+	// The global table name.
+	GlobalTableName *string `json:"globalTableName,omitempty"`
 	// The current state of the global table:
 	//
 	//    * CREATING - The global table is being created.

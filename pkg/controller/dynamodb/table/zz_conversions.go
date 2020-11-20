@@ -36,8 +36,8 @@ import (
 func GenerateDescribeTableInput(cr *svcapitypes.Table) *svcsdk.DescribeTableInput {
 	res := preGenerateDescribeTableInput(cr, &svcsdk.DescribeTableInput{})
 
-	if cr.Spec.ForProvider.TableName != nil {
-		res.SetTableName(*cr.Spec.ForProvider.TableName)
+	if cr.Status.AtProvider.TableName != nil {
+		res.SetTableName(*cr.Status.AtProvider.TableName)
 	}
 
 	return postGenerateDescribeTableInput(cr, res)
@@ -170,6 +170,9 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 	}
 	if resp.Table.TableId != nil {
 		cr.Status.AtProvider.TableID = resp.Table.TableId
+	}
+	if resp.Table.TableName != nil {
+		cr.Status.AtProvider.TableName = resp.Table.TableName
 	}
 	if resp.Table.TableSizeBytes != nil {
 		cr.Status.AtProvider.TableSizeBytes = resp.Table.TableSizeBytes
@@ -341,22 +344,19 @@ func GenerateCreateTableInput(cr *svcapitypes.Table) *svcsdk.CreateTableInput {
 		}
 		res.SetStreamSpecification(f7)
 	}
-	if cr.Spec.ForProvider.TableName != nil {
-		res.SetTableName(*cr.Spec.ForProvider.TableName)
-	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f9 := []*svcsdk.Tag{}
-		for _, f9iter := range cr.Spec.ForProvider.Tags {
-			f9elem := &svcsdk.Tag{}
-			if f9iter.Key != nil {
-				f9elem.SetKey(*f9iter.Key)
+		f8 := []*svcsdk.Tag{}
+		for _, f8iter := range cr.Spec.ForProvider.Tags {
+			f8elem := &svcsdk.Tag{}
+			if f8iter.Key != nil {
+				f8elem.SetKey(*f8iter.Key)
 			}
-			if f9iter.Value != nil {
-				f9elem.SetValue(*f9iter.Value)
+			if f8iter.Value != nil {
+				f8elem.SetValue(*f8iter.Value)
 			}
-			f9 = append(f9, f9elem)
+			f8 = append(f8, f8elem)
 		}
-		res.SetTags(f9)
+		res.SetTags(f8)
 	}
 
 	return postGenerateCreateTableInput(cr, res)
@@ -365,10 +365,6 @@ func GenerateCreateTableInput(cr *svcapitypes.Table) *svcsdk.CreateTableInput {
 // GenerateDeleteTableInput returns a deletion input.
 func GenerateDeleteTableInput(cr *svcapitypes.Table) *svcsdk.DeleteTableInput {
 	res := preGenerateDeleteTableInput(cr, &svcsdk.DeleteTableInput{})
-
-	if cr.Spec.ForProvider.TableName != nil {
-		res.SetTableName(*cr.Spec.ForProvider.TableName)
-	}
 
 	return postGenerateDeleteTableInput(cr, res)
 }
