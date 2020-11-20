@@ -68,9 +68,6 @@ func GenerateAPI(resp *svcsdk.GetApiOutput) *svcapitypes.API {
 		}
 		cr.Status.AtProvider.ImportInfo = f9
 	}
-	if resp.Name != nil {
-		cr.Status.AtProvider.Name = resp.Name
-	}
 	if resp.Warnings != nil {
 		f15 := []*string{}
 		for _, f15iter := range resp.Warnings {
@@ -149,6 +146,9 @@ func GenerateCreateApiInput(cr *svcapitypes.API) *svcsdk.CreateApiInput {
 	if cr.Spec.ForProvider.DisableSchemaValidation != nil {
 		res.SetDisableSchemaValidation(*cr.Spec.ForProvider.DisableSchemaValidation)
 	}
+	if cr.Spec.ForProvider.Name != nil {
+		res.SetName(*cr.Spec.ForProvider.Name)
+	}
 	if cr.Spec.ForProvider.ProtocolType != nil {
 		res.SetProtocolType(*cr.Spec.ForProvider.ProtocolType)
 	}
@@ -159,13 +159,13 @@ func GenerateCreateApiInput(cr *svcapitypes.API) *svcsdk.CreateApiInput {
 		res.SetRouteSelectionExpression(*cr.Spec.ForProvider.RouteSelectionExpression)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f9 := map[string]*string{}
-		for f9key, f9valiter := range cr.Spec.ForProvider.Tags {
-			var f9val string
-			f9val = *f9valiter
-			f9[f9key] = &f9val
+		f10 := map[string]*string{}
+		for f10key, f10valiter := range cr.Spec.ForProvider.Tags {
+			var f10val string
+			f10val = *f10valiter
+			f10[f10key] = &f10val
 		}
-		res.SetTags(f9)
+		res.SetTags(f10)
 	}
 	if cr.Spec.ForProvider.Target != nil {
 		res.SetTarget(*cr.Spec.ForProvider.Target)

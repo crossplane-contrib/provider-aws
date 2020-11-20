@@ -131,9 +131,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		}
 		cr.Status.AtProvider.ImportInfo = f9
 	}
-	if resp.Name != nil {
-		cr.Status.AtProvider.Name = resp.Name
-	}
 	if resp.Warnings != nil {
 		f15 := []*string{}
 		for _, f15iter := range resp.Warnings {

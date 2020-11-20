@@ -296,11 +296,6 @@ func (in *APIObservation) DeepCopyInto(out *APIObservation) {
 			}
 		}
 	}
-	if in.Name != nil {
-		in, out := &in.Name, &out.Name
-		*out = new(string)
-		**out = **in
-	}
 	if in.Warnings != nil {
 		in, out := &in.Warnings, &out.Warnings
 		*out = make([]*string, len(*in))
@@ -355,6 +350,11 @@ func (in *APIParameters) DeepCopyInto(out *APIParameters) {
 	if in.DisableSchemaValidation != nil {
 		in, out := &in.DisableSchemaValidation, &out.DisableSchemaValidation
 		*out = new(bool)
+		**out = **in
+	}
+	if in.Name != nil {
+		in, out := &in.Name, &out.Name
+		*out = new(string)
 		**out = **in
 	}
 	if in.ProtocolType != nil {
