@@ -197,7 +197,7 @@ func TestGenerateQueueAttributes(t *testing.T) {
 			}),
 			out: map[string]string{
 				v1beta1.AttributeDelaySeconds:   strconv.FormatInt(delaySeconds, 10),
-				v1beta1.AttributeRedrivePolicy:  `{"deadLetterQueueARN":"arn","maxReceiveCount":5}`,
+				v1beta1.AttributeRedrivePolicy:  `{"deadLetterQueueArn":"arn","maxReceiveCount":5}`,
 				v1beta1.AttributeKmsMasterKeyID: kmsMasterKeyID,
 			},
 		},
@@ -207,7 +207,7 @@ func TestGenerateQueueAttributes(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			r := GenerateQueueAttributes(&tc.in)
 			if diff := cmp.Diff(r, tc.out); diff != "" {
-				t.Errorf("GenerateNetworkObservation(...): -want, +got:\n%s", diff)
+				t.Errorf("GenerateQueueAttributes(...): -want, +got:\n%s", diff)
 			}
 		})
 	}
