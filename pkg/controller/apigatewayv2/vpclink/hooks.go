@@ -42,6 +42,7 @@ func SetupVPCLink(mgr ctrl.Manager, l logging.Logger) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.VPCLinkGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
