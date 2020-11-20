@@ -83,6 +83,10 @@ func lateInitialize(*svcapitypes.GlobalTableParameters, *svcsdk.DescribeGlobalTa
 	return nil
 }
 
+func isUpToDate(*svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput) bool {
+	return true
+}
+
 func preGenerateDescribeGlobalTableInput(_ *svcapitypes.GlobalTable, obj *svcsdk.DescribeGlobalTableInput) *svcsdk.DescribeGlobalTableInput {
 	return obj
 }
