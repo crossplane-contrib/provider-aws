@@ -44,6 +44,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dynamodb"
 	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/backup"
+	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/globaltable"
 	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/table"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/elasticip"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/internetgateway"
@@ -135,6 +136,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		fargateprofile.SetupFargateProfile,
 		table.SetupTable,
 		backup.SetupBackup,
+		globaltable.SetupGlobalTable,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err
