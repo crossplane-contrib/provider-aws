@@ -29,77 +29,28 @@ import (
 // empty object, hence need to return a new pointer.
 // TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
 // ACK doesn't support not generating if file exists.
-// GenerateGetAuthorizersInput returns input for read
-// operation.
-func GenerateGetAuthorizersInput(cr *svcapitypes.Authorizer) *svcsdk.GetAuthorizersInput {
-	res := preGenerateGetAuthorizersInput(cr, &svcsdk.GetAuthorizersInput{})
 
-	return postGenerateGetAuthorizersInput(cr, res)
+// GenerateGetAuthorizerInput returns input for read
+// operation.
+func GenerateGetAuthorizerInput(cr *svcapitypes.Authorizer) *svcsdk.GetAuthorizerInput {
+	res := preGenerateGetAuthorizerInput(cr, &svcsdk.GetAuthorizerInput{})
+
+	if cr.Status.AtProvider.AuthorizerID != nil {
+		res.SetAuthorizerId(*cr.Status.AtProvider.AuthorizerID)
+	}
+
+	return postGenerateGetAuthorizerInput(cr, res)
 }
 
 // GenerateAuthorizer returns the current state in the form of *svcapitypes.Authorizer.
-func GenerateAuthorizer(resp *svcsdk.GetAuthorizersOutput) *svcapitypes.Authorizer {
+func GenerateAuthorizer(resp *svcsdk.GetAuthorizerOutput) *svcapitypes.Authorizer {
 	cr := &svcapitypes.Authorizer{}
 
-	found := false
-	for _, elem := range resp.Items {
-		if elem.AuthorizerCredentialsArn != nil {
-			cr.Spec.ForProvider.AuthorizerCredentialsARN = elem.AuthorizerCredentialsArn
-		}
-		if elem.AuthorizerId != nil {
-			cr.Status.AtProvider.AuthorizerID = elem.AuthorizerId
-		}
-		if elem.AuthorizerPayloadFormatVersion != nil {
-			cr.Spec.ForProvider.AuthorizerPayloadFormatVersion = elem.AuthorizerPayloadFormatVersion
-		}
-		if elem.AuthorizerResultTtlInSeconds != nil {
-			cr.Spec.ForProvider.AuthorizerResultTtlInSeconds = elem.AuthorizerResultTtlInSeconds
-		}
-		if elem.AuthorizerType != nil {
-			cr.Spec.ForProvider.AuthorizerType = elem.AuthorizerType
-		}
-		if elem.AuthorizerUri != nil {
-			cr.Spec.ForProvider.AuthorizerURI = elem.AuthorizerUri
-		}
-		if elem.EnableSimpleResponses != nil {
-			cr.Spec.ForProvider.EnableSimpleResponses = elem.EnableSimpleResponses
-		}
-		if elem.IdentitySource != nil {
-			f7 := []*string{}
-			for _, f7iter := range elem.IdentitySource {
-				var f7elem string
-				f7elem = *f7iter
-				f7 = append(f7, &f7elem)
-			}
-			cr.Spec.ForProvider.IDentitySource = f7
-		}
-		if elem.IdentityValidationExpression != nil {
-			cr.Spec.ForProvider.IDentityValidationExpression = elem.IdentityValidationExpression
-		}
-		if elem.JwtConfiguration != nil {
-			f9 := &svcapitypes.JWTConfiguration{}
-			if elem.JwtConfiguration.Audience != nil {
-				f9f0 := []*string{}
-				for _, f9f0iter := range elem.JwtConfiguration.Audience {
-					var f9f0elem string
-					f9f0elem = *f9f0iter
-					f9f0 = append(f9f0, &f9f0elem)
-				}
-				f9.Audience = f9f0
-			}
-			if elem.JwtConfiguration.Issuer != nil {
-				f9.Issuer = elem.JwtConfiguration.Issuer
-			}
-			cr.Spec.ForProvider.JWTConfiguration = f9
-		}
-		if elem.Name != nil {
-			cr.Status.AtProvider.Name = elem.Name
-		}
-		found = true
-		break
+	if resp.AuthorizerId != nil {
+		cr.Status.AtProvider.AuthorizerID = resp.AuthorizerId
 	}
-	if !found {
-		return cr
+	if resp.Name != nil {
+		cr.Status.AtProvider.Name = resp.Name
 	}
 
 	return cr
