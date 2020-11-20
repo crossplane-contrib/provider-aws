@@ -18,12 +18,9 @@ package eks
 
 import (
 	"testing"
-	// "time"
 
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"github.com/google/go-cmp/cmp"
-
-	// 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
 )
