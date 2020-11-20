@@ -43,6 +43,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dynamodb"
+	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/table"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/elasticip"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/internetgateway"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/natgateway"
@@ -131,6 +132,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		routeresponse.SetupRouteResponse,
 		vpclink.SetupVPCLink,
 		fargateprofile.SetupFargateProfile,
+		table.SetupTable,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err
