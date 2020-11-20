@@ -86,9 +86,7 @@ func GenerateQueueAttributes(p *v1beta1.QueueParameters) map[string]string { // 
 	if p.RedrivePolicy != nil && aws.StringValue(p.RedrivePolicy.DeadLetterQueueARN) != "" {
 		r := map[string]interface{}{
 			"deadLetterQueueArn": p.RedrivePolicy.DeadLetterQueueARN,
-		}
-		if p.RedrivePolicy.MaxReceiveCount != nil {
-			r["maxReceiveCount"] = p.RedrivePolicy.MaxReceiveCount
+			"maxReceiveCount":    p.RedrivePolicy.MaxReceiveCount,
 		}
 		val, err := json.Marshal(r)
 		if err == nil {
@@ -163,9 +161,12 @@ func LateInitialize(in *v1beta1.QueueParameters, attributes map[string]string, t
 	}
 
 	if attributes[v1beta1.AttributeDeadLetterQueueARN] != "" || attributes[v1beta1.AttributeMaxReceiveCount] != "" {
-		in.RedrivePolicy = &v1beta1.RedrivePolicy{}
-		in.RedrivePolicy.MaxReceiveCount = awsclients.LateInitializeInt64Ptr(in.RedrivePolicy.MaxReceiveCount, int64Ptr(attributes[v1beta1.AttributeMaxReceiveCount]))
-		in.RedrivePolicy.DeadLetterQueueARN = awsclients.LateInitializeStringPtr(in.RedrivePolicy.DeadLetterQueueARN, aws.String(attributes[v1beta1.AttributeDeadLetterQueueARN]))
+		if in.RedrivePolicy == nil {
+			in.RedrivePolicy = &v1beta1.RedrivePolicy{
+				DeadLetterQueueARN: aws.String(attributes[v1beta1.AttributeDeadLetterQueueARN]),
+				MaxReceiveCount:    int64Value(attributes[v1beta1.AttributeMaxReceiveCount]),
+			}
+		}
 	}
 }
 
@@ -214,7 +215,7 @@ func IsUpToDate(p v1beta1.QueueParameters, attributes map[string]string, tags ma
 		if !cmp.Equal(aws.StringValue(p.RedrivePolicy.DeadLetterQueueARN), attributes[v1beta1.AttributeDeadLetterQueueARN]) {
 			return false
 		}
-		if aws.Int64Value(p.RedrivePolicy.MaxReceiveCount) != int64Value(attributes[v1beta1.AttributeMaxReceiveCount]) {
+		if p.RedrivePolicy.MaxReceiveCount != int64Value(attributes[v1beta1.AttributeMaxReceiveCount]) {
 			return false
 		}
 	}

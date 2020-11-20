@@ -63,8 +63,7 @@ type RedrivePolicy struct {
 
 	// The number of times a message is delivered to the source queue before
 	// being moved to the dead-letter queue.
-	// +optional
-	MaxReceiveCount *int64 `json:"maxReceiveCount,omitempty"`
+	MaxReceiveCount int64 `json:"maxReceiveCount"`
 }
 
 // QueueParameters define the desired state of an AWS Queue

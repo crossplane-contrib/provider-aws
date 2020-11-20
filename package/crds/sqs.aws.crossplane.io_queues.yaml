@@ -119,6 +119,8 @@ spec:
                         description: The number of times a message is delivered to the source queue before being moved to the dead-letter queue.
                         format: int64
                         type: integer
+                    required:
+                    - maxReceiveCount
                     type: object
                   region:
                     description: Region is the region you'd like your Queue to be created in.
