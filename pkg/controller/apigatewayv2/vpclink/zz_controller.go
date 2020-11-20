@@ -113,9 +113,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	if resp.CreatedDate != nil {
 		cr.Status.AtProvider.CreatedDate = &metav1.Time{*resp.CreatedDate}
 	}
-	if resp.Name != nil {
-		cr.Status.AtProvider.Name = resp.Name
-	}
 	if resp.SecurityGroupIds != nil {
 		f2 := []*string{}
 		for _, f2iter := range resp.SecurityGroupIds {

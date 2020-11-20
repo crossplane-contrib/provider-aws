@@ -50,9 +50,6 @@ func GenerateVPCLink(resp *svcsdk.GetVpcLinkOutput) *svcapitypes.VPCLink {
 	if resp.CreatedDate != nil {
 		cr.Status.AtProvider.CreatedDate = &metav1.Time{*resp.CreatedDate}
 	}
-	if resp.Name != nil {
-		cr.Status.AtProvider.Name = resp.Name
-	}
 	if resp.SecurityGroupIds != nil {
 		f2 := []*string{}
 		for _, f2iter := range resp.SecurityGroupIds {
@@ -91,14 +88,17 @@ func GenerateVPCLink(resp *svcsdk.GetVpcLinkOutput) *svcapitypes.VPCLink {
 func GenerateCreateVpcLinkInput(cr *svcapitypes.VPCLink) *svcsdk.CreateVpcLinkInput {
 	res := preGenerateCreateVpcLinkInput(cr, &svcsdk.CreateVpcLinkInput{})
 
+	if cr.Spec.ForProvider.Name != nil {
+		res.SetName(*cr.Spec.ForProvider.Name)
+	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f0 := map[string]*string{}
-		for f0key, f0valiter := range cr.Spec.ForProvider.Tags {
-			var f0val string
-			f0val = *f0valiter
-			f0[f0key] = &f0val
+		f1 := map[string]*string{}
+		for f1key, f1valiter := range cr.Spec.ForProvider.Tags {
+			var f1val string
+			f1val = *f1valiter
+			f1[f1key] = &f1val
 		}
-		res.SetTags(f0)
+		res.SetTags(f1)
 	}
 
 	return postGenerateCreateVpcLinkInput(cr, res)

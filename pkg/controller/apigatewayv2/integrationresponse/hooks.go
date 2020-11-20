@@ -50,23 +50,12 @@ func SetupIntegrationResponse(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.IntegrationResponse) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.IntegrationResponse, _ *svcsdk.GetIntegrationResponsesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (*external) postObserve(_ context.Context, cr *svcapitypes.IntegrationResponse, _ *svcsdk.GetIntegrationResponseOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
 	cr.SetConditions(v1alpha1.Available())
 	return obs, nil
-}
-
-func (*external) filterList(cr *svcapitypes.IntegrationResponse, list *svcsdk.GetIntegrationResponsesOutput) *svcsdk.GetIntegrationResponsesOutput {
-	res := &svcsdk.GetIntegrationResponsesOutput{}
-	for _, ir := range list.Items {
-		if meta.GetExternalName(cr) == aws.StringValue(ir.IntegrationResponseId) {
-			res.Items = append(res.Items, ir)
-			break
-		}
-	}
-	return res
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.IntegrationResponse) error {
@@ -89,17 +78,18 @@ func (*external) preUpdate(context.Context, *svcapitypes.IntegrationResponse) er
 func (*external) postUpdate(_ context.Context, _ *svcapitypes.IntegrationResponse, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
 	return upd, err
 }
-func lateInitialize(*svcapitypes.IntegrationResponseParameters, *svcsdk.GetIntegrationResponsesOutput) error {
+func lateInitialize(*svcapitypes.IntegrationResponseParameters, *svcsdk.GetIntegrationResponseOutput) error {
 	return nil
 }
 
-func preGenerateGetIntegrationResponsesInput(_ *svcapitypes.IntegrationResponse, obj *svcsdk.GetIntegrationResponsesInput) *svcsdk.GetIntegrationResponsesInput {
+func preGenerateGetIntegrationResponseInput(_ *svcapitypes.IntegrationResponse, obj *svcsdk.GetIntegrationResponseInput) *svcsdk.GetIntegrationResponseInput {
 	return obj
 }
 
-func postGenerateGetIntegrationResponsesInput(cr *svcapitypes.IntegrationResponse, obj *svcsdk.GetIntegrationResponsesInput) *svcsdk.GetIntegrationResponsesInput {
+func postGenerateGetIntegrationResponseInput(cr *svcapitypes.IntegrationResponse, obj *svcsdk.GetIntegrationResponseInput) *svcsdk.GetIntegrationResponseInput {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.IntegrationId = cr.Spec.ForProvider.IntegrationID
+	obj.IntegrationResponseId = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 

@@ -18,9 +18,7 @@ ignore:
     - DeleteIntegrationResponseInput.ApiId
     - DeleteIntegrationResponseInput.IntegrationId
     - CreateModelInput.ApiId
-    - CreateModelInput.Name
     - DeleteModelInput.ApiId
-    - DeleteModelInput.Name
     - CreateApiMappingInput.ApiId
     - CreateApiMappingInput.Stage
     - CreateApiMappingInput.DomainName
@@ -31,6 +29,5 @@ ignore:
     - CreateRouteResponseInput.RouteId
     - DeleteRouteResponseInput.ApiId
     - DeleteRouteResponseInput.RouteId
-    - CreateVpcLinkInput.Name
     - CreateVpcLinkInput.SecurityGroupIds
     - CreateVpcLinkInput.SubnetIds
