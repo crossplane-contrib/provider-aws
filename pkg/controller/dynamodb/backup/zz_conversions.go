@@ -53,8 +53,8 @@ func GenerateBackup(resp *svcsdk.DescribeBackupOutput) *svcapitypes.Backup {
 func GenerateCreateBackupInput(cr *svcapitypes.Backup) *svcsdk.CreateBackupInput {
 	res := preGenerateCreateBackupInput(cr, &svcsdk.CreateBackupInput{})
 
-	if cr.Spec.ForProvider.TableName != nil {
-		res.SetTableName(*cr.Spec.ForProvider.TableName)
+	if cr.Spec.ForProvider.BackupName != nil {
+		res.SetBackupName(*cr.Spec.ForProvider.BackupName)
 	}
 
 	return postGenerateCreateBackupInput(cr, res)
