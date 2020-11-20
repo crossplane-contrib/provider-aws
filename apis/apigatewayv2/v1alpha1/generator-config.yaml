@@ -7,8 +7,6 @@ ignore:
     - DeleteRouteInput.ApiId
     - CreateAuthorizerInput.ApiId
     - DeleteAuthorizerInput.ApiId
-    - CreateAuthorizerInput.Name
-    - DeleteAuthorizerInput.Name
     - CreateIntegrationInput.ApiId
     - DeleteIntegrationInput.ApiId
     - CreateDeploymentInput.ApiId

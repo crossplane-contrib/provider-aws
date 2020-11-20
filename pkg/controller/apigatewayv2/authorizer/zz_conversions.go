@@ -49,9 +49,6 @@ func GenerateAuthorizer(resp *svcsdk.GetAuthorizerOutput) *svcapitypes.Authorize
 	if resp.AuthorizerId != nil {
 		cr.Status.AtProvider.AuthorizerID = resp.AuthorizerId
 	}
-	if resp.Name != nil {
-		cr.Status.AtProvider.Name = resp.Name
-	}
 
 	return cr
 }
@@ -105,6 +102,9 @@ func GenerateCreateAuthorizerInput(cr *svcapitypes.Authorizer) *svcsdk.CreateAut
 			f8.SetIssuer(*cr.Spec.ForProvider.JWTConfiguration.Issuer)
 		}
 		res.SetJwtConfiguration(f8)
+	}
+	if cr.Spec.ForProvider.Name != nil {
+		res.SetName(*cr.Spec.ForProvider.Name)
 	}
 
 	return postGenerateCreateAuthorizerInput(cr, res)
