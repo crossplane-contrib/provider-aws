@@ -192,7 +192,7 @@ func TestGenerateQueueAttributes(t *testing.T) {
 			in: *sqsParams(func(p *v1beta1.QueueParameters) {
 				p.RedrivePolicy = &v1beta1.RedrivePolicy{
 					DeadLetterQueueARN: &arn,
-					MaxReceiveCount:    &maxReceiveCount,
+					MaxReceiveCount:    maxReceiveCount,
 				}
 			}),
 			out: map[string]string{
