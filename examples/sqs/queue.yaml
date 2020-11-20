@@ -1,21 +1,22 @@
 apiVersion: sqs.aws.crossplane.io/v1beta1
 kind: Queue
 metadata:
-  name: sample-queue
+  name: test-queue
 spec:
   forProvider:
     region: us-east-1
     delaySeconds: 4
     redrivePolicy:
-      deadLetterQueueArnRef:
-        name: sample-queue2
+      deadLetterTargetArnRef:
+        name: test-queue2
+      maxReceiveCount: 1
   providerConfigRef:
     name: example
 ---
 apiVersion: sqs.aws.crossplane.io/v1beta1
 kind: Queue
 metadata:
-  name: sample-queue2
+  name: test-queue2
 spec:
   forProvider:
     region: us-east-1
