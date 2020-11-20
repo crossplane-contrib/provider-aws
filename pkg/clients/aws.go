@@ -36,6 +36,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	awsv1 "github.com/aws/aws-sdk-go/aws"
+	endpointsv1 "github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-ini/ini"
@@ -288,7 +289,7 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 	}
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
 	case runtimev1alpha1.CredentialsSourceInjectedIdentity:
-		cfg, err := UsePodServiceAccountV1(ctx, []byte{}, DefaultSection, region)
+		cfg, err := UsePodServiceAccountV1(ctx, []byte{}, mg, DefaultSection, region)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot use pod service account")
 		}
@@ -302,7 +303,7 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 		if err := c.Get(ctx, types.NamespacedName{Namespace: csr.Namespace, Name: csr.Name}, s); err != nil {
 			return nil, errors.Wrap(err, "cannot get credentials secret")
 		}
-		cfg, err := UseProviderSecretV1(s.Data[csr.Key], DefaultSection, region)
+		cfg, err := UseProviderSecretV1(ctx, s.Data[csr.Key], mg, DefaultSection, region)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot use secret")
 		}
@@ -317,7 +318,7 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 // [default]
 // aws_access_key_id = <YOUR_ACCESS_KEY_ID>
 // aws_secret_access_key = <YOUR_SECRET_ACCESS_KEY>
-func UseProviderSecretV1(data []byte, profile, region string) (*awsv1.Config, error) {
+func UseProviderSecretV1(ctx context.Context, data []byte, mg resource.Managed, profile, region string) (*awsv1.Config, error) {
 	config, err := ini.InsensitiveLoad(data)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot parse credentials secret")
@@ -340,12 +341,12 @@ func UseProviderSecretV1(data []byte, profile, region string) (*awsv1.Config, er
 	}
 
 	creds := credentials.NewStaticCredentials(accessKeyID.Value(), secretAccessKey.Value(), sessionToken.Value())
-	return awsv1.NewConfig().WithCredentials(creds).WithRegion(region), nil
+	return SetResolverV1(ctx, mg, awsv1.NewConfig().WithCredentials(creds).WithRegion(region)), nil
 }
 
 // UsePodServiceAccountV1 assumes an IAM role configured via a ServiceAccount.
 // https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
-func UsePodServiceAccountV1(ctx context.Context, _ []byte, _, region string) (*awsv1.Config, error) {
+func UsePodServiceAccountV1(ctx context.Context, _ []byte, mg resource.Managed,  _, region string) (*awsv1.Config, error) {
 	cfg, err := external.LoadDefaultAWSConfig()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
@@ -373,7 +374,33 @@ func UsePodServiceAccountV1(ctx context.Context, _ []byte, _, region string) (*a
 		aws.StringValue(resp.Credentials.AccessKeyId),
 		aws.StringValue(resp.Credentials.SecretAccessKey),
 		aws.StringValue(resp.Credentials.SessionToken))
-	return awsv1.NewConfig().WithCredentials(creds).WithRegion(region), nil
+
+	return SetResolverV1(ctx, mg, awsv1.NewConfig().WithCredentials(creds).WithRegion(region)), nil
+}
+
+// SetResolverV1 parses annotations from the managed resource
+// and returns a V1 configuration accordingly.
+func SetResolverV1(ctx context.Context, mg resource.Managed, cfg *awsv1.Config) *awsv1.Config {
+	if ServiceID, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointServiceID"]; ok {
+		if URL, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointURL"]; ok {
+			endpoint := endpointsv1.ResolvedEndpoint{
+				URL: URL,
+			}
+			if Region, ok := mg.GetAnnotations()["aws.alpha.crossplane.io/endpointSigningRegion"]; ok {
+				endpoint.SigningRegion = Region
+			}
+
+			endpointResolver := func(service, region string, optFns ...func(*endpointsv1.Options)) (endpointsv1.ResolvedEndpoint, error) {
+				if strings.Contains(ServiceID, service) {
+					return endpoint, nil
+				}
+
+				return endpointsv1.DefaultResolver().EndpointFor(service, region, optFns...)
+			}
+			cfg.EndpointResolver = endpointsv1.ResolverFunc(endpointResolver)
+		}
+	}
+	return cfg
 }
 
 // TODO(muvaf): All the types that use CreateJSONPatch are known during
