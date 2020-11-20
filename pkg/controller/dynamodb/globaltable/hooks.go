@@ -22,12 +22,15 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/dynamodb/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupGlobalTable adds a controller that reconciles GlobalTable.
@@ -46,8 +49,19 @@ func SetupGlobalTable(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.GlobalTable) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, _ *svcapitypes.GlobalTable, _ *svcsdk.DescribeGlobalTableOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
-	return obs, err
+func (*external) postObserve(_ context.Context, cr *svcapitypes.GlobalTable, resp *svcsdk.DescribeGlobalTableOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+	switch aws.StringValue(resp.GlobalTableDescription.GlobalTableStatus) {
+	case string(svcapitypes.GlobalTableStatus_SDK_ACTIVE):
+		cr.SetConditions(v1alpha1.Available())
+	case string(svcapitypes.GlobalTableStatus_SDK_CREATING):
+		cr.SetConditions(v1alpha1.Creating())
+	case string(svcapitypes.GlobalTableStatus_SDK_DELETING):
+		cr.SetConditions(v1alpha1.Deleting())
+	}
+	return obs, nil
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.GlobalTable) error {
@@ -73,7 +87,8 @@ func preGenerateDescribeGlobalTableInput(_ *svcapitypes.GlobalTable, obj *svcsdk
 	return obj
 }
 
-func postGenerateDescribeGlobalTableInput(_ *svcapitypes.GlobalTable, obj *svcsdk.DescribeGlobalTableInput) *svcsdk.DescribeGlobalTableInput {
+func postGenerateDescribeGlobalTableInput(cr *svcapitypes.GlobalTable, obj *svcsdk.DescribeGlobalTableInput) *svcsdk.DescribeGlobalTableInput {
+	obj.GlobalTableName = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
@@ -81,6 +96,7 @@ func preGenerateCreateGlobalTableInput(_ *svcapitypes.GlobalTable, obj *svcsdk.C
 	return obj
 }
 
-func postGenerateCreateGlobalTableInput(_ *svcapitypes.GlobalTable, obj *svcsdk.CreateGlobalTableInput) *svcsdk.CreateGlobalTableInput {
+func postGenerateCreateGlobalTableInput(cr *svcapitypes.GlobalTable, obj *svcsdk.CreateGlobalTableInput) *svcsdk.CreateGlobalTableInput {
+	obj.GlobalTableName = aws.String(meta.GetExternalName(cr))
 	return obj
 }
