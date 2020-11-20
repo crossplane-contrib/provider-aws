@@ -49,9 +49,6 @@ func GenerateModel(resp *svcsdk.GetModelOutput) *svcapitypes.Model {
 	if resp.ModelId != nil {
 		cr.Status.AtProvider.ModelID = resp.ModelId
 	}
-	if resp.Name != nil {
-		cr.Status.AtProvider.Name = resp.Name
-	}
 
 	return cr
 }
@@ -65,6 +62,9 @@ func GenerateCreateModelInput(cr *svcapitypes.Model) *svcsdk.CreateModelInput {
 	}
 	if cr.Spec.ForProvider.Description != nil {
 		res.SetDescription(*cr.Spec.ForProvider.Description)
+	}
+	if cr.Spec.ForProvider.Name != nil {
+		res.SetName(*cr.Spec.ForProvider.Name)
 	}
 	if cr.Spec.ForProvider.Schema != nil {
 		res.SetSchema(*cr.Spec.ForProvider.Schema)

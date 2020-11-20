@@ -112,9 +112,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	if resp.ModelId != nil {
 		cr.Status.AtProvider.ModelID = resp.ModelId
 	}
-	if resp.Name != nil {
-		cr.Status.AtProvider.Name = resp.Name
-	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
 }

@@ -81,12 +81,15 @@ spec:
                     type: string
                   description:
                     type: string
+                  name:
+                    type: string
                   region:
                     description: Region is which region the Model will be created.
                     type: string
                   schema:
                     type: string
                 required:
+                - name
                 - region
                 - schema
                 type: object
@@ -131,8 +134,6 @@ spec:
                 description: ModelObservation defines the observed state of Model
                 properties:
                   modelID:
-                    type: string
-                  name:
                     type: string
                 type: object
               conditions:

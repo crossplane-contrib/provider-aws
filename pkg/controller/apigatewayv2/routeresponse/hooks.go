@@ -50,23 +50,12 @@ func SetupRouteResponse(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.RouteResponse) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.RouteResponse, _ *svcsdk.GetRouteResponsesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (*external) postObserve(_ context.Context, cr *svcapitypes.RouteResponse, _ *svcsdk.GetRouteResponseOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
 	cr.SetConditions(v1alpha1.Available())
 	return obs, nil
-}
-
-func (*external) filterList(cr *svcapitypes.RouteResponse, list *svcsdk.GetRouteResponsesOutput) *svcsdk.GetRouteResponsesOutput {
-	res := &svcsdk.GetRouteResponsesOutput{}
-	for _, rr := range list.Items {
-		if meta.GetExternalName(cr) == aws.StringValue(rr.RouteResponseId) {
-			res.Items = append(res.Items, rr)
-			break
-		}
-	}
-	return res
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.RouteResponse) error {
@@ -89,17 +78,18 @@ func (*external) preUpdate(context.Context, *svcapitypes.RouteResponse) error {
 func (*external) postUpdate(_ context.Context, _ *svcapitypes.RouteResponse, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
 	return upd, err
 }
-func lateInitialize(*svcapitypes.RouteResponseParameters, *svcsdk.GetRouteResponsesOutput) error {
+func lateInitialize(*svcapitypes.RouteResponseParameters, *svcsdk.GetRouteResponseOutput) error {
 	return nil
 }
 
-func preGenerateGetRouteResponsesInput(_ *svcapitypes.RouteResponse, obj *svcsdk.GetRouteResponsesInput) *svcsdk.GetRouteResponsesInput {
+func preGenerateGetRouteResponseInput(_ *svcapitypes.RouteResponse, obj *svcsdk.GetRouteResponseInput) *svcsdk.GetRouteResponseInput {
 	return obj
 }
 
-func postGenerateGetRouteResponsesInput(cr *svcapitypes.RouteResponse, obj *svcsdk.GetRouteResponsesInput) *svcsdk.GetRouteResponsesInput {
+func postGenerateGetRouteResponseInput(cr *svcapitypes.RouteResponse, obj *svcsdk.GetRouteResponseInput) *svcsdk.GetRouteResponseInput {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.RouteId = cr.Spec.ForProvider.RouteID
+	obj.RouteResponseId = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 

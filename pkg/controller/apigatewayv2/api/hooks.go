@@ -19,20 +19,18 @@ package api
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
-
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupAPI adds a controller that reconciles API.
@@ -60,7 +58,7 @@ func (*external) preCreate(context.Context, *svcapitypes.API) error {
 	return nil
 }
 
-func (*external) postCreate(ctx context.Context, cr *svcapitypes.API, resp *svcsdk.CreateApiOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func (*external) postCreate(_ context.Context, cr *svcapitypes.API, resp *svcsdk.CreateApiOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	meta.SetExternalName(cr, aws.StringValue(resp.ApiId))
 	return cre, err
 }
@@ -76,11 +74,11 @@ func lateInitialize(*svcapitypes.APIParameters, *svcsdk.GetApiOutput) error {
 	return nil
 }
 
-func preGenerateGetApiInput(_ *svcapitypes.API, obj *svcsdk.GetApiInput) *svcsdk.GetApiInput {
+func preGenerateGetApiInput(_ *svcapitypes.API, obj *svcsdk.GetApiInput) *svcsdk.GetApiInput { //nolint:golint
 	return obj
 }
 
-func postGenerateGetApiInput(cr *svcapitypes.API, obj *svcsdk.GetApiInput) *svcsdk.GetApiInput {
+func postGenerateGetApiInput(cr *svcapitypes.API, obj *svcsdk.GetApiInput) *svcsdk.GetApiInput { //nolint:golint
 	obj.ApiId = aws.String(meta.GetExternalName(cr))
 	return obj
 }

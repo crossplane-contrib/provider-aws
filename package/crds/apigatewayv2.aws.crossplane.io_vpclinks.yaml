@@ -53,6 +53,8 @@ spec:
               forProvider:
                 description: VPCLinkParameters defines the desired state of VPCLink
                 properties:
+                  name:
+                    type: string
                   region:
                     description: Region is which region the VPCLink will be created.
                     type: string
@@ -119,6 +121,7 @@ spec:
                       type: string
                     type: object
                 required:
+                - name
                 - region
                 type: object
               providerConfigRef:
@@ -163,8 +166,6 @@ spec:
                 properties:
                   createdDate:
                     format: date-time
-                    type: string
-                  name:
                     type: string
                   securityGroupIDs:
                     items:
