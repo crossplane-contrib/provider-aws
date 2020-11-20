@@ -22,6 +22,7 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -49,18 +50,12 @@ func SetupDeployment(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.Deployment) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, _ *svcapitypes.Deployment, _ *svcsdk.GetDeploymentsOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
-	return obs, err
-}
-
-func (*external) filterList(cr *svcapitypes.Deployment, list *svcsdk.GetDeploymentsOutput) *svcsdk.GetDeploymentsOutput {
-	res := &svcsdk.GetDeploymentsOutput{}
-	for _, deployment := range list.Items {
-		if aws.StringValue(deployment.DeploymentId) == meta.GetExternalName(cr) {
-			res.Items = append(res.Items, deployment)
-		}
+func (*external) postObserve(_ context.Context, cr *svcapitypes.Deployment, _ *svcsdk.GetDeploymentOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
 	}
-	return res
+	cr.SetConditions(v1alpha1.Available())
+	return obs, nil
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.Deployment) error {
@@ -83,16 +78,17 @@ func (*external) preUpdate(context.Context, *svcapitypes.Deployment) error {
 func (*external) postUpdate(_ context.Context, _ *svcapitypes.Deployment, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
 	return upd, err
 }
-func lateInitialize(*svcapitypes.DeploymentParameters, *svcsdk.GetDeploymentsOutput) error {
+func lateInitialize(*svcapitypes.DeploymentParameters, *svcsdk.GetDeploymentOutput) error {
 	return nil
 }
 
-func preGenerateGetDeploymentsInput(_ *svcapitypes.Deployment, obj *svcsdk.GetDeploymentsInput) *svcsdk.GetDeploymentsInput {
+func preGenerateGetDeploymentInput(_ *svcapitypes.Deployment, obj *svcsdk.GetDeploymentInput) *svcsdk.GetDeploymentInput {
 	return obj
 }
 
-func postGenerateGetDeploymentsInput(cr *svcapitypes.Deployment, obj *svcsdk.GetDeploymentsInput) *svcsdk.GetDeploymentsInput {
+func postGenerateGetDeploymentInput(cr *svcapitypes.Deployment, obj *svcsdk.GetDeploymentInput) *svcsdk.GetDeploymentInput {
 	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.DeploymentId = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
