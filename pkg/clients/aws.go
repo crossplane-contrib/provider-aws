@@ -36,8 +36,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	awsv1 "github.com/aws/aws-sdk-go/aws"
-	endpointsv1 "github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	endpointsv1 "github.com/aws/aws-sdk-go/aws/endpoints"
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-ini/ini"
 	"github.com/pkg/errors"
@@ -346,7 +346,7 @@ func UseProviderSecretV1(ctx context.Context, data []byte, mg resource.Managed, 
 
 // UsePodServiceAccountV1 assumes an IAM role configured via a ServiceAccount.
 // https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
-func UsePodServiceAccountV1(ctx context.Context, _ []byte, mg resource.Managed,  _, region string) (*awsv1.Config, error) {
+func UsePodServiceAccountV1(ctx context.Context, _ []byte, mg resource.Managed, _, region string) (*awsv1.Config, error) {
 	cfg, err := external.LoadDefaultAWSConfig()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to load default AWS config")
