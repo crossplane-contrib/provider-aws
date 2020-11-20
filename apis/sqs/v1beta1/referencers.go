@@ -27,19 +27,19 @@ func (mg *Queue) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
 	if mg.Spec.ForProvider.RedrivePolicy != nil {
-		// Resolve spec.forProvider.redrivePolicy.deadLetterQueueArn
+		// Resolve spec.forProvider.redrivePolicy.deadLetterTargetArn
 		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.RedrivePolicy.DeadLetterQueueARN),
-			Reference:    mg.Spec.ForProvider.RedrivePolicy.DeadLetterQueueARNRef,
-			Selector:     mg.Spec.ForProvider.RedrivePolicy.DeadLetterQueueARNSelector,
+			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.RedrivePolicy.DeadLetterTargetARN),
+			Reference:    mg.Spec.ForProvider.RedrivePolicy.DeadLetterTargetARNRef,
+			Selector:     mg.Spec.ForProvider.RedrivePolicy.DeadLetterTargetARNSelector,
 			To:           reference.To{Managed: &Queue{}, List: &QueueList{}},
 			Extract:      QueueARN(),
 		})
 		if err != nil {
-			return errors.Wrap(err, "spec.forProvider.redrivePolicy.deadLetterQueueArn")
+			return errors.Wrap(err, "spec.forProvider.redrivePolicy.deadLetterTargetArn")
 		}
-		mg.Spec.ForProvider.RedrivePolicy.DeadLetterQueueARN = aws.String(rsp.ResolvedValue)
-		mg.Spec.ForProvider.RedrivePolicy.DeadLetterQueueARNRef = rsp.ResolvedReference
+		mg.Spec.ForProvider.RedrivePolicy.DeadLetterTargetARN = aws.String(rsp.ResolvedValue)
+		mg.Spec.ForProvider.RedrivePolicy.DeadLetterTargetARNRef = rsp.ResolvedReference
 	}
 	return nil
 }
