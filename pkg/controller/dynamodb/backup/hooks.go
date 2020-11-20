@@ -89,6 +89,10 @@ func lateInitialize(*svcapitypes.BackupParameters, *svcsdk.DescribeBackupOutput)
 	return nil
 }
 
+func isUpToDate(*svcapitypes.Backup, *svcsdk.DescribeBackupOutput) bool {
+	return true
+}
+
 func preGenerateDescribeBackupInput(_ *svcapitypes.Backup, obj *svcsdk.DescribeBackupInput) *svcsdk.DescribeBackupInput {
 	return obj
 }

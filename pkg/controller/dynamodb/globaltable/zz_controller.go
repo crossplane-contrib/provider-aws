@@ -90,7 +90,7 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	GenerateGlobalTable(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceUpToDate:        true,
+		ResourceUpToDate:        isUpToDate(cr, resp),
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
