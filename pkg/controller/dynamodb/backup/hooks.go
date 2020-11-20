@@ -22,12 +22,15 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/dynamodb/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupBackup adds a controller that reconciles Backup.
@@ -39,6 +42,7 @@ func SetupBackup(mgr ctrl.Manager, l logging.Logger) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.BackupGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -46,15 +50,31 @@ func SetupBackup(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.Backup) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, _ *svcapitypes.Backup, _ *svcsdk.DescribeBackupOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
-	return obs, err
+func (*external) postObserve(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.DescribeBackupOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+	switch aws.StringValue(resp.BackupDescription.BackupDetails.BackupStatus) {
+	case string(svcapitypes.BackupStatus_SDK_AVAILABLE):
+		cr.SetConditions(v1alpha1.Available())
+	case string(svcapitypes.BackupStatus_SDK_CREATING):
+		cr.SetConditions(v1alpha1.Creating())
+	case string(svcapitypes.BackupStatus_SDK_DELETED):
+		cr.SetConditions(v1alpha1.Unavailable())
+	}
+	return obs, nil
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.Backup) error {
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, _ *svcapitypes.Backup, _ *svcsdk.CreateBackupOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func (*external) postCreate(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.CreateBackupOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+	meta.SetExternalName(cr, aws.StringValue(resp.BackupDetails.BackupArn))
+	cre.ExternalNameAssigned = true
 	return cre, err
 }
 
@@ -73,7 +93,8 @@ func preGenerateDescribeBackupInput(_ *svcapitypes.Backup, obj *svcsdk.DescribeB
 	return obj
 }
 
-func postGenerateDescribeBackupInput(_ *svcapitypes.Backup, obj *svcsdk.DescribeBackupInput) *svcsdk.DescribeBackupInput {
+func postGenerateDescribeBackupInput(cr *svcapitypes.Backup, obj *svcsdk.DescribeBackupInput) *svcsdk.DescribeBackupInput {
+	obj.BackupArn = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
@@ -81,13 +102,16 @@ func preGenerateCreateBackupInput(_ *svcapitypes.Backup, obj *svcsdk.CreateBacku
 	return obj
 }
 
-func postGenerateCreateBackupInput(_ *svcapitypes.Backup, obj *svcsdk.CreateBackupInput) *svcsdk.CreateBackupInput {
+func postGenerateCreateBackupInput(cr *svcapitypes.Backup, obj *svcsdk.CreateBackupInput) *svcsdk.CreateBackupInput {
+	obj.TableName = aws.String(cr.Spec.ForProvider.TableName)
 	return obj
 }
+
 func preGenerateDeleteBackupInput(_ *svcapitypes.Backup, obj *svcsdk.DeleteBackupInput) *svcsdk.DeleteBackupInput {
 	return obj
 }
 
-func postGenerateDeleteBackupInput(_ *svcapitypes.Backup, obj *svcsdk.DeleteBackupInput) *svcsdk.DeleteBackupInput {
+func postGenerateDeleteBackupInput(cr *svcapitypes.Backup, obj *svcsdk.DeleteBackupInput) *svcsdk.DeleteBackupInput {
+	obj.BackupArn = aws.String(meta.GetExternalName(cr))
 	return obj
 }

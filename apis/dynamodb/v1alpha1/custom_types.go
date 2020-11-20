@@ -16,8 +16,20 @@ limitations under the License.
 
 package v1alpha1
 
+import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+
 // CustomBackupParameters are custom parameters for Backup.
-type CustomBackupParameters struct{}
+type CustomBackupParameters struct {
+	// TableName is the name of the Table whose backup will be taken.
+	TableName string `json:"tableName,omitempty"`
+
+	// TableNameRef points to the Table resource whose Name will be used to fill
+	// TableName field.
+	TableNameRef *runtimev1alpha1.Reference `json:"tableNameRef,omitempty"`
+
+	// TableNameSelector selects a Table resource.
+	TableNameSelector *runtimev1alpha1.Selector `json:"tableNameSelector,omitempty"`
+}
 
 // CustomTableParameters are custom parameters for Table.
 type CustomTableParameters struct{}

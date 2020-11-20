@@ -119,9 +119,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	if resp.BackupDetails.BackupExpiryDateTime != nil {
 		cr.Status.AtProvider.BackupExpiryDateTime = &metav1.Time{*resp.BackupDetails.BackupExpiryDateTime}
 	}
-	if resp.BackupDetails.BackupName != nil {
-		cr.Status.AtProvider.BackupName = resp.BackupDetails.BackupName
-	}
 	if resp.BackupDetails.BackupSizeBytes != nil {
 		cr.Status.AtProvider.BackupSizeBytes = resp.BackupDetails.BackupSizeBytes
 	}

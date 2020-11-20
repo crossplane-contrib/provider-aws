@@ -2,6 +2,5 @@ ignore:
   field_paths:
     - CreateTableInput.TableName
     - DeleteTableInput.TableName
-    - CreateBackupInput.BackupName
-    - DeleteBackupInput.BackupName
+    - CreateBackupInput.TableName
     - CreateGlobalTableInput.GlobalTableName
