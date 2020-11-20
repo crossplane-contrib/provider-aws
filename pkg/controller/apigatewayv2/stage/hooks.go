@@ -50,8 +50,11 @@ func (*external) preObserve(context.Context, *svcapitypes.Stage) error {
 	return nil
 }
 func (*external) postObserve(_ context.Context, cr *svcapitypes.Stage, _ *svcsdk.GetStageOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
 	cr.SetConditions(v1alpha1.Available())
-	return obs, err
+	return obs, nil
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.Stage) error {
