@@ -36,8 +36,8 @@ import (
 func GenerateDescribeGlobalTableInput(cr *svcapitypes.GlobalTable) *svcsdk.DescribeGlobalTableInput {
 	res := preGenerateDescribeGlobalTableInput(cr, &svcsdk.DescribeGlobalTableInput{})
 
-	if cr.Spec.ForProvider.GlobalTableName != nil {
-		res.SetGlobalTableName(*cr.Spec.ForProvider.GlobalTableName)
+	if cr.Status.AtProvider.GlobalTableName != nil {
+		res.SetGlobalTableName(*cr.Status.AtProvider.GlobalTableName)
 	}
 
 	return postGenerateDescribeGlobalTableInput(cr, res)
@@ -53,6 +53,9 @@ func GenerateGlobalTable(resp *svcsdk.DescribeGlobalTableOutput) *svcapitypes.Gl
 	if resp.GlobalTableDescription.GlobalTableArn != nil {
 		cr.Status.AtProvider.GlobalTableARN = resp.GlobalTableDescription.GlobalTableArn
 	}
+	if resp.GlobalTableDescription.GlobalTableName != nil {
+		cr.Status.AtProvider.GlobalTableName = resp.GlobalTableDescription.GlobalTableName
+	}
 	if resp.GlobalTableDescription.GlobalTableStatus != nil {
 		cr.Status.AtProvider.GlobalTableStatus = resp.GlobalTableDescription.GlobalTableStatus
 	}
@@ -64,19 +67,16 @@ func GenerateGlobalTable(resp *svcsdk.DescribeGlobalTableOutput) *svcapitypes.Gl
 func GenerateCreateGlobalTableInput(cr *svcapitypes.GlobalTable) *svcsdk.CreateGlobalTableInput {
 	res := preGenerateCreateGlobalTableInput(cr, &svcsdk.CreateGlobalTableInput{})
 
-	if cr.Spec.ForProvider.GlobalTableName != nil {
-		res.SetGlobalTableName(*cr.Spec.ForProvider.GlobalTableName)
-	}
 	if cr.Spec.ForProvider.ReplicationGroup != nil {
-		f1 := []*svcsdk.Replica{}
-		for _, f1iter := range cr.Spec.ForProvider.ReplicationGroup {
-			f1elem := &svcsdk.Replica{}
-			if f1iter.RegionName != nil {
-				f1elem.SetRegionName(*f1iter.RegionName)
+		f0 := []*svcsdk.Replica{}
+		for _, f0iter := range cr.Spec.ForProvider.ReplicationGroup {
+			f0elem := &svcsdk.Replica{}
+			if f0iter.RegionName != nil {
+				f0elem.SetRegionName(*f0iter.RegionName)
 			}
-			f1 = append(f1, f1elem)
+			f0 = append(f0, f0elem)
 		}
-		res.SetReplicationGroup(f1)
+		res.SetReplicationGroup(f0)
 	}
 
 	return postGenerateCreateGlobalTableInput(cr, res)

@@ -53,9 +53,6 @@ spec:
               forProvider:
                 description: GlobalTableParameters defines the desired state of GlobalTable
                 properties:
-                  globalTableName:
-                    description: The global table name.
-                    type: string
                   region:
                     description: Region is which region the GlobalTable will be created.
                     type: string
@@ -68,7 +65,6 @@ spec:
                       type: object
                     type: array
                 required:
-                - globalTableName
                 - region
                 - replicationGroup
                 type: object
@@ -118,6 +114,9 @@ spec:
                     type: string
                   globalTableARN:
                     description: The unique identifier of the global table.
+                    type: string
+                  globalTableName:
+                    description: The global table name.
                     type: string
                   globalTableStatus:
                     description: "The current state of the global table: \n    * CREATING - The global table is being created. \n    * UPDATING - The global table is being updated. \n    * DELETING - The global table is being deleted. \n    * ACTIVE - The global table is ready for use."

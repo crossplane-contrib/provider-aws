@@ -234,6 +234,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	if resp.TableDescription.TableId != nil {
 		cr.Status.AtProvider.TableID = resp.TableDescription.TableId
 	}
+	if resp.TableDescription.TableName != nil {
+		cr.Status.AtProvider.TableName = resp.TableDescription.TableName
+	}
 	if resp.TableDescription.TableSizeBytes != nil {
 		cr.Status.AtProvider.TableSizeBytes = resp.TableDescription.TableSizeBytes
 	}

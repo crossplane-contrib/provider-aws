@@ -151,9 +151,6 @@ type TableParameters struct {
 	//    NEW_AND_OLD_IMAGES - Both the new and the old item images of the item
 	//    are written to the stream.
 	StreamSpecification *StreamSpecification `json:"streamSpecification,omitempty"`
-	// The name of the table to create.
-	// +kubebuilder:validation:Required
-	TableName *string `json:"tableName"`
 	// A list of key-value pairs to label the table. For more information, see Tagging
 	// for DynamoDB (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Tagging.html).
 	Tags                  []*Tag `json:"tags,omitempty"`
@@ -207,6 +204,8 @@ type TableObservation struct {
 	TableARN *string `json:"tableARN,omitempty"`
 	// Unique identifier for the table for which the backup was created.
 	TableID *string `json:"tableID,omitempty"`
+	// The name of the table.
+	TableName *string `json:"tableName,omitempty"`
 	// The total size of the specified table, in bytes. DynamoDB updates this value
 	// approximately every six hours. Recent changes might not be reflected in this
 	// value.

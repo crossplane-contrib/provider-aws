@@ -22,5 +22,5 @@ type CustomBackupParameters struct{}
 // CustomTableParameters are custom parameters for Table.
 type CustomTableParameters struct{}
 
-// // CustomGlobalTableParameters are custom parameters for GlobalTable.
+// CustomGlobalTableParameters are custom parameters for GlobalTable.
 type CustomGlobalTableParameters struct{}

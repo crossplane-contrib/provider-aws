@@ -53,9 +53,6 @@ spec:
               forProvider:
                 description: BackupParameters defines the desired state of Backup
                 properties:
-                  backupName:
-                    description: Specified name for the backup.
-                    type: string
                   region:
                     description: Region is which region the Backup will be created.
                     type: string
@@ -63,7 +60,6 @@ spec:
                     description: The name of the table.
                     type: string
                 required:
-                - backupName
                 - region
                 - tableName
                 type: object
@@ -117,6 +113,9 @@ spec:
                   backupExpiryDateTime:
                     description: Time at which the automatic on-demand backup created by DynamoDB will expire. This SYSTEM on-demand backup expires automatically 35 days after its creation.
                     format: date-time
+                    type: string
+                  backupName:
+                    description: Name of the requested backup.
                     type: string
                   backupSizeBytes:
                     description: Size of the backup in bytes.
