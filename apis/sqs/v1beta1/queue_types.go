@@ -51,7 +51,7 @@ type RedrivePolicy struct {
 	// The Amazon Resource Name (ARN) of the dead-letter queue to which Amazon
 	// SQS moves messages after the value of maxReceiveCount is exceeded.
 	// +optional
-	DeadLetterQueueARN *string `json:"deadLetterQueueARN,omitempty"`
+	DeadLetterQueueARN *string `json:"deadLetterQueueArn,omitempty"`
 
 	// DeadLetterQueueARNRef reference a Queue to retrieve its ARN.
 	// +optional

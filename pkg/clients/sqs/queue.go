@@ -84,7 +84,13 @@ func GenerateQueueAttributes(p *v1beta1.QueueParameters) map[string]string { // 
 		m[v1beta1.AttributeReceiveMessageWaitTimeSeconds] = strconv.FormatInt(aws.Int64Value(p.ReceiveMessageWaitTimeSeconds), 10)
 	}
 	if p.RedrivePolicy != nil && aws.StringValue(p.RedrivePolicy.DeadLetterQueueARN) != "" {
-		val, err := json.Marshal(p.RedrivePolicy)
+		r := map[string]interface{}{
+			"deadLetterQueueArn": p.RedrivePolicy.DeadLetterQueueARN,
+		}
+		if p.RedrivePolicy.MaxReceiveCount != nil {
+			r["maxReceiveCount"] = p.RedrivePolicy.MaxReceiveCount
+		}
+		val, err := json.Marshal(r)
 		if err == nil {
 			m[v1beta1.AttributeRedrivePolicy] = string(val)
 		}
