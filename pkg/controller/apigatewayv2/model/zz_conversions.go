@@ -29,40 +29,28 @@ import (
 // empty object, hence need to return a new pointer.
 // TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
 // ACK doesn't support not generating if file exists.
-// GenerateGetModelsInput returns input for read
-// operation.
-func GenerateGetModelsInput(cr *svcapitypes.Model) *svcsdk.GetModelsInput {
-	res := preGenerateGetModelsInput(cr, &svcsdk.GetModelsInput{})
 
-	return postGenerateGetModelsInput(cr, res)
+// GenerateGetModelInput returns input for read
+// operation.
+func GenerateGetModelInput(cr *svcapitypes.Model) *svcsdk.GetModelInput {
+	res := preGenerateGetModelInput(cr, &svcsdk.GetModelInput{})
+
+	if cr.Status.AtProvider.ModelID != nil {
+		res.SetModelId(*cr.Status.AtProvider.ModelID)
+	}
+
+	return postGenerateGetModelInput(cr, res)
 }
 
 // GenerateModel returns the current state in the form of *svcapitypes.Model.
-func GenerateModel(resp *svcsdk.GetModelsOutput) *svcapitypes.Model {
+func GenerateModel(resp *svcsdk.GetModelOutput) *svcapitypes.Model {
 	cr := &svcapitypes.Model{}
 
-	found := false
-	for _, elem := range resp.Items {
-		if elem.ContentType != nil {
-			cr.Spec.ForProvider.ContentType = elem.ContentType
-		}
-		if elem.Description != nil {
-			cr.Spec.ForProvider.Description = elem.Description
-		}
-		if elem.ModelId != nil {
-			cr.Status.AtProvider.ModelID = elem.ModelId
-		}
-		if elem.Name != nil {
-			cr.Status.AtProvider.Name = elem.Name
-		}
-		if elem.Schema != nil {
-			cr.Spec.ForProvider.Schema = elem.Schema
-		}
-		found = true
-		break
+	if resp.ModelId != nil {
+		cr.Status.AtProvider.ModelID = resp.ModelId
 	}
-	if !found {
-		return cr
+	if resp.Name != nil {
+		cr.Status.AtProvider.Name = resp.Name
 	}
 
 	return cr

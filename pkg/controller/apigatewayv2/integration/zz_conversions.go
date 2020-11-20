@@ -29,98 +29,31 @@ import (
 // empty object, hence need to return a new pointer.
 // TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
 // ACK doesn't support not generating if file exists.
-// GenerateGetIntegrationsInput returns input for read
-// operation.
-func GenerateGetIntegrationsInput(cr *svcapitypes.Integration) *svcsdk.GetIntegrationsInput {
-	res := preGenerateGetIntegrationsInput(cr, &svcsdk.GetIntegrationsInput{})
 
-	return postGenerateGetIntegrationsInput(cr, res)
+// GenerateGetIntegrationInput returns input for read
+// operation.
+func GenerateGetIntegrationInput(cr *svcapitypes.Integration) *svcsdk.GetIntegrationInput {
+	res := preGenerateGetIntegrationInput(cr, &svcsdk.GetIntegrationInput{})
+
+	if cr.Status.AtProvider.IntegrationID != nil {
+		res.SetIntegrationId(*cr.Status.AtProvider.IntegrationID)
+	}
+
+	return postGenerateGetIntegrationInput(cr, res)
 }
 
 // GenerateIntegration returns the current state in the form of *svcapitypes.Integration.
-func GenerateIntegration(resp *svcsdk.GetIntegrationsOutput) *svcapitypes.Integration {
+func GenerateIntegration(resp *svcsdk.GetIntegrationOutput) *svcapitypes.Integration {
 	cr := &svcapitypes.Integration{}
 
-	found := false
-	for _, elem := range resp.Items {
-		if elem.ApiGatewayManaged != nil {
-			cr.Status.AtProvider.APIGatewayManaged = elem.ApiGatewayManaged
-		}
-		if elem.ConnectionId != nil {
-			cr.Spec.ForProvider.ConnectionID = elem.ConnectionId
-		}
-		if elem.ConnectionType != nil {
-			cr.Spec.ForProvider.ConnectionType = elem.ConnectionType
-		}
-		if elem.ContentHandlingStrategy != nil {
-			cr.Spec.ForProvider.ContentHandlingStrategy = elem.ContentHandlingStrategy
-		}
-		if elem.CredentialsArn != nil {
-			cr.Spec.ForProvider.CredentialsARN = elem.CredentialsArn
-		}
-		if elem.Description != nil {
-			cr.Spec.ForProvider.Description = elem.Description
-		}
-		if elem.IntegrationId != nil {
-			cr.Status.AtProvider.IntegrationID = elem.IntegrationId
-		}
-		if elem.IntegrationMethod != nil {
-			cr.Spec.ForProvider.IntegrationMethod = elem.IntegrationMethod
-		}
-		if elem.IntegrationResponseSelectionExpression != nil {
-			cr.Status.AtProvider.IntegrationResponseSelectionExpression = elem.IntegrationResponseSelectionExpression
-		}
-		if elem.IntegrationSubtype != nil {
-			cr.Spec.ForProvider.IntegrationSubtype = elem.IntegrationSubtype
-		}
-		if elem.IntegrationType != nil {
-			cr.Spec.ForProvider.IntegrationType = elem.IntegrationType
-		}
-		if elem.IntegrationUri != nil {
-			cr.Spec.ForProvider.IntegrationURI = elem.IntegrationUri
-		}
-		if elem.PassthroughBehavior != nil {
-			cr.Spec.ForProvider.PassthroughBehavior = elem.PassthroughBehavior
-		}
-		if elem.PayloadFormatVersion != nil {
-			cr.Spec.ForProvider.PayloadFormatVersion = elem.PayloadFormatVersion
-		}
-		if elem.RequestParameters != nil {
-			f14 := map[string]*string{}
-			for f14key, f14valiter := range elem.RequestParameters {
-				var f14val string
-				f14val = *f14valiter
-				f14[f14key] = &f14val
-			}
-			cr.Spec.ForProvider.RequestParameters = f14
-		}
-		if elem.RequestTemplates != nil {
-			f15 := map[string]*string{}
-			for f15key, f15valiter := range elem.RequestTemplates {
-				var f15val string
-				f15val = *f15valiter
-				f15[f15key] = &f15val
-			}
-			cr.Spec.ForProvider.RequestTemplates = f15
-		}
-		if elem.TemplateSelectionExpression != nil {
-			cr.Spec.ForProvider.TemplateSelectionExpression = elem.TemplateSelectionExpression
-		}
-		if elem.TimeoutInMillis != nil {
-			cr.Spec.ForProvider.TimeoutInMillis = elem.TimeoutInMillis
-		}
-		if elem.TlsConfig != nil {
-			f18 := &svcapitypes.TLSConfigInput{}
-			if elem.TlsConfig.ServerNameToVerify != nil {
-				f18.ServerNameToVerify = elem.TlsConfig.ServerNameToVerify
-			}
-			cr.Spec.ForProvider.TLSConfig = f18
-		}
-		found = true
-		break
+	if resp.ApiGatewayManaged != nil {
+		cr.Status.AtProvider.APIGatewayManaged = resp.ApiGatewayManaged
 	}
-	if !found {
-		return cr
+	if resp.IntegrationId != nil {
+		cr.Status.AtProvider.IntegrationID = resp.IntegrationId
+	}
+	if resp.IntegrationResponseSelectionExpression != nil {
+		cr.Status.AtProvider.IntegrationResponseSelectionExpression = resp.IntegrationResponseSelectionExpression
 	}
 
 	return cr

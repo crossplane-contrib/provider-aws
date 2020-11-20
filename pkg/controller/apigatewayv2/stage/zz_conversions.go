@@ -30,122 +30,37 @@ import (
 // empty object, hence need to return a new pointer.
 // TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
 // ACK doesn't support not generating if file exists.
-// GenerateGetStagesInput returns input for read
-// operation.
-func GenerateGetStagesInput(cr *svcapitypes.Stage) *svcsdk.GetStagesInput {
-	res := preGenerateGetStagesInput(cr, &svcsdk.GetStagesInput{})
 
-	return postGenerateGetStagesInput(cr, res)
+// GenerateGetStageInput returns input for read
+// operation.
+func GenerateGetStageInput(cr *svcapitypes.Stage) *svcsdk.GetStageInput {
+	res := preGenerateGetStageInput(cr, &svcsdk.GetStageInput{})
+
+	if cr.Status.AtProvider.StageName != nil {
+		res.SetStageName(*cr.Status.AtProvider.StageName)
+	}
+
+	return postGenerateGetStageInput(cr, res)
 }
 
 // GenerateStage returns the current state in the form of *svcapitypes.Stage.
-func GenerateStage(resp *svcsdk.GetStagesOutput) *svcapitypes.Stage {
+func GenerateStage(resp *svcsdk.GetStageOutput) *svcapitypes.Stage {
 	cr := &svcapitypes.Stage{}
 
-	found := false
-	for _, elem := range resp.Items {
-		if elem.AccessLogSettings != nil {
-			f0 := &svcapitypes.AccessLogSettings{}
-			if elem.AccessLogSettings.DestinationArn != nil {
-				f0.DestinationARN = elem.AccessLogSettings.DestinationArn
-			}
-			if elem.AccessLogSettings.Format != nil {
-				f0.Format = elem.AccessLogSettings.Format
-			}
-			cr.Spec.ForProvider.AccessLogSettings = f0
-		}
-		if elem.ApiGatewayManaged != nil {
-			cr.Status.AtProvider.APIGatewayManaged = elem.ApiGatewayManaged
-		}
-		if elem.AutoDeploy != nil {
-			cr.Spec.ForProvider.AutoDeploy = elem.AutoDeploy
-		}
-		if elem.ClientCertificateId != nil {
-			cr.Spec.ForProvider.ClientCertificateID = elem.ClientCertificateId
-		}
-		if elem.CreatedDate != nil {
-			cr.Status.AtProvider.CreatedDate = &metav1.Time{*elem.CreatedDate}
-		}
-		if elem.DefaultRouteSettings != nil {
-			f5 := &svcapitypes.RouteSettings{}
-			if elem.DefaultRouteSettings.DataTraceEnabled != nil {
-				f5.DataTraceEnabled = elem.DefaultRouteSettings.DataTraceEnabled
-			}
-			if elem.DefaultRouteSettings.DetailedMetricsEnabled != nil {
-				f5.DetailedMetricsEnabled = elem.DefaultRouteSettings.DetailedMetricsEnabled
-			}
-			if elem.DefaultRouteSettings.LoggingLevel != nil {
-				f5.LoggingLevel = elem.DefaultRouteSettings.LoggingLevel
-			}
-			if elem.DefaultRouteSettings.ThrottlingBurstLimit != nil {
-				f5.ThrottlingBurstLimit = elem.DefaultRouteSettings.ThrottlingBurstLimit
-			}
-			if elem.DefaultRouteSettings.ThrottlingRateLimit != nil {
-				f5.ThrottlingRateLimit = elem.DefaultRouteSettings.ThrottlingRateLimit
-			}
-			cr.Spec.ForProvider.DefaultRouteSettings = f5
-		}
-		if elem.DeploymentId != nil {
-			cr.Spec.ForProvider.DeploymentID = elem.DeploymentId
-		}
-		if elem.Description != nil {
-			cr.Spec.ForProvider.Description = elem.Description
-		}
-		if elem.LastDeploymentStatusMessage != nil {
-			cr.Status.AtProvider.LastDeploymentStatusMessage = elem.LastDeploymentStatusMessage
-		}
-		if elem.LastUpdatedDate != nil {
-			cr.Status.AtProvider.LastUpdatedDate = &metav1.Time{*elem.LastUpdatedDate}
-		}
-		if elem.RouteSettings != nil {
-			f10 := map[string]*svcapitypes.RouteSettings{}
-			for f10key, f10valiter := range elem.RouteSettings {
-				f10val := &svcapitypes.RouteSettings{}
-				if f10valiter.DataTraceEnabled != nil {
-					f10val.DataTraceEnabled = f10valiter.DataTraceEnabled
-				}
-				if f10valiter.DetailedMetricsEnabled != nil {
-					f10val.DetailedMetricsEnabled = f10valiter.DetailedMetricsEnabled
-				}
-				if f10valiter.LoggingLevel != nil {
-					f10val.LoggingLevel = f10valiter.LoggingLevel
-				}
-				if f10valiter.ThrottlingBurstLimit != nil {
-					f10val.ThrottlingBurstLimit = f10valiter.ThrottlingBurstLimit
-				}
-				if f10valiter.ThrottlingRateLimit != nil {
-					f10val.ThrottlingRateLimit = f10valiter.ThrottlingRateLimit
-				}
-				f10[f10key] = f10val
-			}
-			cr.Spec.ForProvider.RouteSettings = f10
-		}
-		if elem.StageName != nil {
-			cr.Status.AtProvider.StageName = elem.StageName
-		}
-		if elem.StageVariables != nil {
-			f12 := map[string]*string{}
-			for f12key, f12valiter := range elem.StageVariables {
-				var f12val string
-				f12val = *f12valiter
-				f12[f12key] = &f12val
-			}
-			cr.Spec.ForProvider.StageVariables = f12
-		}
-		if elem.Tags != nil {
-			f13 := map[string]*string{}
-			for f13key, f13valiter := range elem.Tags {
-				var f13val string
-				f13val = *f13valiter
-				f13[f13key] = &f13val
-			}
-			cr.Spec.ForProvider.Tags = f13
-		}
-		found = true
-		break
+	if resp.ApiGatewayManaged != nil {
+		cr.Status.AtProvider.APIGatewayManaged = resp.ApiGatewayManaged
 	}
-	if !found {
-		return cr
+	if resp.CreatedDate != nil {
+		cr.Status.AtProvider.CreatedDate = &metav1.Time{*resp.CreatedDate}
+	}
+	if resp.LastDeploymentStatusMessage != nil {
+		cr.Status.AtProvider.LastDeploymentStatusMessage = resp.LastDeploymentStatusMessage
+	}
+	if resp.LastUpdatedDate != nil {
+		cr.Status.AtProvider.LastUpdatedDate = &metav1.Time{*resp.LastUpdatedDate}
+	}
+	if resp.StageName != nil {
+		cr.Status.AtProvider.StageName = resp.StageName
 	}
 
 	return cr
