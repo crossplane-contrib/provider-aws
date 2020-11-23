@@ -9,3 +9,7 @@ resources:
     exceptions:
       codes:
         404: ResourceNotFoundException
+  GlobalTable:
+    exceptions:
+      codes:
+        404: GlobalTableNotFoundException

@@ -14,6 +14,6 @@ spec:
     provisionedThroughput:
       readCapacityUnits: 1
       writeCapacityUnits: 1
-    tags:
-      - key: example-tag
-        value: example-val
+    streamSpecification:
+      streamEnabled: true
+      streamViewType: NEW_AND_OLD_IMAGES
