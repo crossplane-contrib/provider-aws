@@ -72,6 +72,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/route53/resourcerecordset"
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
 	"github.com/crossplane/provider-aws/pkg/controller/s3/bucketpolicy"
+	"github.com/crossplane/provider-aws/pkg/controller/sfn/activity"
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
 )
 
@@ -131,6 +132,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		routeresponse.SetupRouteResponse,
 		vpclink.SetupVPCLink,
 		fargateprofile.SetupFargateProfile,
+		activity.SetupActivity,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err

@@ -22,12 +22,15 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/sfn"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/sfn/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupActivity adds a controller that reconciles Activity.
@@ -39,6 +42,7 @@ func SetupActivity(mgr ctrl.Manager, l logging.Logger) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ActivityGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -46,7 +50,11 @@ func SetupActivity(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.Activity) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, _ *svcapitypes.Activity, _ *svcsdk.DescribeActivityOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (*external) postObserve(_ context.Context, cr *svcapitypes.Activity, _ *svcsdk.DescribeActivityOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+	cr.SetConditions(v1alpha1.Available())
 	return obs, err
 }
 
@@ -54,7 +62,12 @@ func (*external) preCreate(context.Context, *svcapitypes.Activity) error {
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, _ *svcapitypes.Activity, _ *svcsdk.CreateActivityOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func (*external) postCreate(_ context.Context, cr *svcapitypes.Activity, resp *svcsdk.CreateActivityOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+	meta.SetExternalName(cr, aws.StringValue(resp.ActivityArn))
+	cre.ExternalNameAssigned = true
 	return cre, err
 }
 
@@ -77,7 +90,8 @@ func preGenerateDescribeActivityInput(_ *svcapitypes.Activity, obj *svcsdk.Descr
 	return obj
 }
 
-func postGenerateDescribeActivityInput(_ *svcapitypes.Activity, obj *svcsdk.DescribeActivityInput) *svcsdk.DescribeActivityInput {
+func postGenerateDescribeActivityInput(cr *svcapitypes.Activity, obj *svcsdk.DescribeActivityInput) *svcsdk.DescribeActivityInput {
+	obj.ActivityArn = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
@@ -92,6 +106,7 @@ func preGenerateDeleteActivityInput(_ *svcapitypes.Activity, obj *svcsdk.DeleteA
 	return obj
 }
 
-func postGenerateDeleteActivityInput(_ *svcapitypes.Activity, obj *svcsdk.DeleteActivityInput) *svcsdk.DeleteActivityInput {
+func postGenerateDeleteActivityInput(cr *svcapitypes.Activity, obj *svcsdk.DeleteActivityInput) *svcsdk.DeleteActivityInput {
+	obj.ActivityArn = aws.String(meta.GetExternalName(cr))
 	return obj
 }
