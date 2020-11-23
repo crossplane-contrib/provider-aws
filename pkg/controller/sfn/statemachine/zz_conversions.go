@@ -92,29 +92,26 @@ func GenerateCreateStateMachineInput(cr *svcapitypes.StateMachine) *svcsdk.Creat
 	if cr.Spec.ForProvider.Name != nil {
 		res.SetName(*cr.Spec.ForProvider.Name)
 	}
-	if cr.Spec.ForProvider.RoleARN != nil {
-		res.SetRoleArn(*cr.Spec.ForProvider.RoleARN)
-	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f4 := []*svcsdk.Tag{}
-		for _, f4iter := range cr.Spec.ForProvider.Tags {
-			f4elem := &svcsdk.Tag{}
-			if f4iter.Key != nil {
-				f4elem.SetKey(*f4iter.Key)
+		f3 := []*svcsdk.Tag{}
+		for _, f3iter := range cr.Spec.ForProvider.Tags {
+			f3elem := &svcsdk.Tag{}
+			if f3iter.Key != nil {
+				f3elem.SetKey(*f3iter.Key)
 			}
-			if f4iter.Value != nil {
-				f4elem.SetValue(*f4iter.Value)
+			if f3iter.Value != nil {
+				f3elem.SetValue(*f3iter.Value)
 			}
-			f4 = append(f4, f4elem)
+			f3 = append(f3, f3elem)
 		}
-		res.SetTags(f4)
+		res.SetTags(f3)
 	}
 	if cr.Spec.ForProvider.TracingConfiguration != nil {
-		f5 := &svcsdk.TracingConfiguration{}
+		f4 := &svcsdk.TracingConfiguration{}
 		if cr.Spec.ForProvider.TracingConfiguration.Enabled != nil {
-			f5.SetEnabled(*cr.Spec.ForProvider.TracingConfiguration.Enabled)
+			f4.SetEnabled(*cr.Spec.ForProvider.TracingConfiguration.Enabled)
 		}
-		res.SetTracingConfiguration(f5)
+		res.SetTracingConfiguration(f4)
 	}
 	if cr.Spec.ForProvider.Type != nil {
 		res.SetType(*cr.Spec.ForProvider.Type)

@@ -16,8 +16,24 @@ limitations under the License.
 
 package v1alpha1
 
+import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+
 // CustomActivityParameters includes custom additional fields for ActivityParameters.
 type CustomActivityParameters struct{}
 
 // CustomStateMachineParameters includes custom additional fields for StateMachineParameters.
-type CustomStateMachineParameters struct{}
+type CustomStateMachineParameters struct {
+	// RoleARN is the ARN for the IAMRole.
+	// +immutable
+	RoleARN *string `json:"roleArn,omitempty"`
+
+	// RoleARNRef is a reference to an IAMRole used to set
+	// the RoleARN.
+	// +optional
+	RoleARNRef *runtimev1alpha1.Reference `json:"roleArnRef,omitempty"`
+
+	// RoleARNSelector selects references to IAMRole used
+	// to set the RoleARN.
+	// +optional
+	RoleARNSelector *runtimev1alpha1.Selector `json:"roleArnSelector,omitempty"`
+}
