@@ -120,8 +120,8 @@ spec:
                       enabled:
                         type: boolean
                     type: object
-                  type_:
-                    description: Determines whether a Standard or Express state machine is created. The default is STANDARD. You cannot update the type of a state machine once it has been created.
+                  type:
+                    description: 'Determines whether a Standard or Express state machine is created. You cannot update the type of a state machine once it has been created. The default is STANDARD. Possible values: STANDARD, EXPRESS'
                     type: string
                 required:
                 - definition

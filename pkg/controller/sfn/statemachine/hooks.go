@@ -22,12 +22,15 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/sfn"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/sfn/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupStateMachine adds a controller that reconciles StateMachine.
@@ -39,6 +42,7 @@ func SetupStateMachine(mgr ctrl.Manager, l logging.Logger) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.StateMachineGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -46,16 +50,30 @@ func SetupStateMachine(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.StateMachine) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, _ *svcapitypes.StateMachine, _ *svcsdk.DescribeStateMachineOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
-	return obs, err
+func (*external) postObserve(_ context.Context, cr *svcapitypes.StateMachine, resp *svcsdk.DescribeStateMachineOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+	switch aws.StringValue(resp.Status) {
+	case "ACTIVE":
+		cr.SetConditions(v1alpha1.Available())
+	case "DELETING":
+		cr.SetConditions(v1alpha1.Deleting())
+	}
+	return obs, nil
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.StateMachine) error {
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, _ *svcapitypes.StateMachine, _ *svcsdk.CreateStateMachineOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	return cre, err
+func (*external) postCreate(_ context.Context, cr *svcapitypes.StateMachine, resp *svcsdk.CreateStateMachineOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+	meta.SetExternalName(cr, aws.StringValue(resp.StateMachineArn))
+	cre.ExternalNameAssigned = true
+	return cre, nil
 }
 
 func (*external) preUpdate(context.Context, *svcapitypes.StateMachine) error {
@@ -77,7 +95,8 @@ func preGenerateDescribeStateMachineInput(_ *svcapitypes.StateMachine, obj *svcs
 	return obj
 }
 
-func postGenerateDescribeStateMachineInput(_ *svcapitypes.StateMachine, obj *svcsdk.DescribeStateMachineInput) *svcsdk.DescribeStateMachineInput {
+func postGenerateDescribeStateMachineInput(cr *svcapitypes.StateMachine, obj *svcsdk.DescribeStateMachineInput) *svcsdk.DescribeStateMachineInput {
+	obj.StateMachineArn = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
@@ -85,13 +104,16 @@ func preGenerateCreateStateMachineInput(_ *svcapitypes.StateMachine, obj *svcsdk
 	return obj
 }
 
-func postGenerateCreateStateMachineInput(_ *svcapitypes.StateMachine, obj *svcsdk.CreateStateMachineInput) *svcsdk.CreateStateMachineInput {
+func postGenerateCreateStateMachineInput(cr *svcapitypes.StateMachine, obj *svcsdk.CreateStateMachineInput) *svcsdk.CreateStateMachineInput {
+	obj.Type = cr.Spec.ForProvider.Type
+	obj.RoleArn = cr.Spec.ForProvider.RoleARN
 	return obj
 }
 func preGenerateDeleteStateMachineInput(_ *svcapitypes.StateMachine, obj *svcsdk.DeleteStateMachineInput) *svcsdk.DeleteStateMachineInput {
 	return obj
 }
 
-func postGenerateDeleteStateMachineInput(_ *svcapitypes.StateMachine, obj *svcsdk.DeleteStateMachineInput) *svcsdk.DeleteStateMachineInput {
+func postGenerateDeleteStateMachineInput(cr *svcapitypes.StateMachine, obj *svcsdk.DeleteStateMachineInput) *svcsdk.DeleteStateMachineInput {
+	obj.StateMachineArn = aws.String(meta.GetExternalName(cr))
 	return obj
 }

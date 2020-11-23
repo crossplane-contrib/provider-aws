@@ -19,10 +19,12 @@ package v1alpha1
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/pkg/reference"
-	iamv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/crossplane/crossplane-runtime/pkg/reference"
+
+	iamv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
 )
 
 // ResolveReferences of this StateMachine

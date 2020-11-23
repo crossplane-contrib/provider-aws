@@ -5,9 +5,6 @@ metadata:
   name: somerole
 spec:
   forProvider:
-    # policyArn: arn:aws:iam::aws:policy/AmazonEC2FullAccess
-    policyArnRef:
-      name: somepolicy
     assumeRolePolicyDocument: |
       {
         "Version": "2012-10-17",
@@ -28,5 +25,3 @@ spec:
     tags:
       - key: k1
         value: v1
-  providerConfigRef:
-    name: example

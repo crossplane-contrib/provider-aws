@@ -68,7 +68,7 @@ func (*external) postCreate(_ context.Context, cr *svcapitypes.Activity, resp *s
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.ActivityArn))
 	cre.ExternalNameAssigned = true
-	return cre, err
+	return cre, nil
 }
 
 func (*external) preUpdate(context.Context, *svcapitypes.Activity) error {

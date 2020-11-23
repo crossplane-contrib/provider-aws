@@ -1,6 +1,7 @@
 ignore:
   field_paths:
     - CreateStateMachineInput.RoleArn
+    - CreateStateMachineInput.Type # its jsontag is type_ in SDK and we don't want that.
 resources:
   StateMachine:
     exceptions:

@@ -68,11 +68,7 @@ type StateMachineParameters struct {
 	// _ . : / = + - @.
 	Tags []*Tag `json:"tags,omitempty"`
 	// Selects whether AWS X-Ray tracing is enabled.
-	TracingConfiguration *TracingConfiguration `json:"tracingConfiguration,omitempty"`
-	// Determines whether a Standard or Express state machine is created. The default
-	// is STANDARD. You cannot update the type of a state machine once it has been
-	// created.
-	Type                         *string `json:"type_,omitempty"`
+	TracingConfiguration         *TracingConfiguration `json:"tracingConfiguration,omitempty"`
 	CustomStateMachineParameters `json:",inline"`
 }
 
