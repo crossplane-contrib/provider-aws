@@ -13,3 +13,7 @@ resources:
     exceptions:
       codes:
         404: GlobalTableNotFoundException
+  Backup:
+    exceptions:
+      codes:
+        404: BackupNotFoundException
