@@ -113,9 +113,6 @@ func GenerateCreateStateMachineInput(cr *svcapitypes.StateMachine) *svcsdk.Creat
 		}
 		res.SetTracingConfiguration(f4)
 	}
-	if cr.Spec.ForProvider.Type != nil {
-		res.SetType(*cr.Spec.ForProvider.Type)
-	}
 
 	return postGenerateCreateStateMachineInput(cr, res)
 }

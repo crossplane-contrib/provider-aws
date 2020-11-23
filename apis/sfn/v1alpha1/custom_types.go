@@ -36,4 +36,10 @@ type CustomStateMachineParameters struct {
 	// to set the RoleARN.
 	// +optional
 	RoleARNSelector *runtimev1alpha1.Selector `json:"roleArnSelector,omitempty"`
+
+	// Determines whether a Standard or Express state machine is created.
+	// You cannot update the type of a state machine once it has been created.
+	// The default is STANDARD. Possible values: STANDARD, EXPRESS
+	// +immutable
+	Type *string `json:"type,omitempty"`
 }
