@@ -241,7 +241,7 @@ func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) bool {
 	}
 	return cmp.Equal(&svcapitypes.TableParameters{}, patch,
 		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{}, []v1alpha1.Reference{}),
-		cmpopts.IgnoreFields(svcapitypes.TableParameters{}, "Region"))
+		cmpopts.IgnoreFields(svcapitypes.TableParameters{}, "Region", "Tags"))
 }
 
 func (e *external) preUpdate(ctx context.Context, cr *svcapitypes.Table) error {
