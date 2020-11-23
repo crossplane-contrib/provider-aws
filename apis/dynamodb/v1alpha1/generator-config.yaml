@@ -4,3 +4,8 @@ ignore:
     - DeleteTableInput.TableName
     - CreateBackupInput.TableName
     - CreateGlobalTableInput.GlobalTableName
+resources:
+  Table:
+    exceptions:
+      codes:
+        404: ResourceNotFoundException
