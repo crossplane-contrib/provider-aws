@@ -52,6 +52,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpc"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
 	"github.com/crossplane/provider-aws/pkg/controller/eks"
+	"github.com/crossplane/provider-aws/pkg/controller/eks/fargateprofile"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elb"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elbattachment"
@@ -129,6 +130,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		apimapping.SetupAPIMapping,
 		routeresponse.SetupRouteResponse,
 		vpclink.SetupVPCLink,
+		fargateprofile.SetupFargateProfile,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err
