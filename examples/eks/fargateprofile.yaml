@@ -1,0 +1,19 @@
+apiVersion: eks.aws.crossplane.io/v1alpha1
+kind: FargateProfile
+metadata:
+  name: my-fargateprofile
+  labels:
+    examplelabelkey: "examplelabelval"
+spec:
+  forProvider:
+    region: us-east-1
+    clusterNameRef:
+      name: sample-cluster
+    podExecutionRoleArnRef:
+      name: somerole
+    selectors:
+    - namespace: default
+    tags:
+      exampletagkey: "exampletagval"
+  providerConfigRef:
+    name: provider
