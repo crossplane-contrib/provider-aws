@@ -57,9 +57,6 @@ type StateMachineParameters struct {
 	// A-Z, a-z, - and _.
 	// +kubebuilder:validation:Required
 	Name *string `json:"name"`
-	// The Amazon Resource Name (ARN) of the IAM role to use for this state machine.
-	// +kubebuilder:validation:Required
-	RoleARN *string `json:"roleARN"`
 	// Tags to be added when creating a state machine.
 	//
 	// An array of key-value pairs. For more information, see Using Cost Allocation

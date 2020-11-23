@@ -1,3 +1,6 @@
+ignore:
+  field_paths:
+    - CreateStateMachineInput.RoleArn
 resources:
   StateMachine:
     exceptions:
