@@ -143,6 +143,17 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 			WriteCapacityUnits: t.Table.ProvisionedThroughput.WriteCapacityUnits,
 		}
 	}
+	if in.SSESpecification == nil && t.Table.SSEDescription != nil {
+		in.SSESpecification = &svcapitypes.SSESpecification{
+			SSEType: t.Table.SSEDescription.SSEType,
+		}
+	}
+	if in.StreamSpecification == nil && t.Table.StreamSpecification != nil {
+		in.StreamSpecification = &svcapitypes.StreamSpecification{
+			StreamEnabled:  t.Table.StreamSpecification.StreamEnabled,
+			StreamViewType: t.Table.StreamSpecification.StreamViewType,
+		}
+	}
 	return nil
 }
 
