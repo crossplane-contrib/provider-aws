@@ -201,6 +201,10 @@ func TestGenerateQueueAttributes(t *testing.T) {
 				v1beta1.AttributeKmsMasterKeyID: kmsMasterKeyID,
 			},
 		},
+		"EmptyInput": {
+			in:  v1beta1.QueueParameters{},
+			out: nil,
+		},
 	}
 
 	for name, tc := range cases {
@@ -208,6 +212,41 @@ func TestGenerateQueueAttributes(t *testing.T) {
 			r := GenerateQueueAttributes(&tc.in)
 			if diff := cmp.Diff(r, tc.out); diff != "" {
 				t.Errorf("GenerateQueueAttributes(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGenerateCreateAttributes(t *testing.T) {
+	cases := map[string]struct {
+		in  v1beta1.QueueParameters
+		out map[string]string
+	}{
+		"EmptyInput": {
+			in:  v1beta1.QueueParameters{},
+			out: nil,
+		},
+		"FifoQueueFalseShouldNotBeSent": {
+			in: v1beta1.QueueParameters{
+				FIFOQueue: aws.Bool(false),
+			},
+			out: nil,
+		},
+		"FifoQueueTrue": {
+			in: v1beta1.QueueParameters{
+				FIFOQueue: aws.Bool(true),
+			},
+			out: map[string]string{
+				v1beta1.AttributeFifoQueue: "true",
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			r := GenerateCreateAttributes(&tc.in)
+			if diff := cmp.Diff(r, tc.out); diff != "" {
+				t.Errorf("GenerateCreateAttributes(...): -want, +got:\n%s", diff)
 			}
 		})
 	}
