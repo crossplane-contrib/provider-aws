@@ -50,22 +50,12 @@ func SetupAPIMapping(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.APIMapping) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.APIMapping, _ *svcsdk.GetApiMappingsOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (*external) postObserve(_ context.Context, cr *svcapitypes.APIMapping, _ *svcsdk.GetApiMappingOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
 	cr.SetConditions(v1alpha1.Available())
 	return obs, nil
-}
-
-func (*external) filterList(cr *svcapitypes.APIMapping, list *svcsdk.GetApiMappingsOutput) *svcsdk.GetApiMappingsOutput {
-	res := &svcsdk.GetApiMappingsOutput{}
-	for _, am := range list.Items {
-		if meta.GetExternalName(cr) == aws.StringValue(am.ApiMappingId) {
-			res.Items = append(res.Items, am)
-		}
-	}
-	return res
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.APIMapping) error {
@@ -88,16 +78,17 @@ func (*external) preUpdate(context.Context, *svcapitypes.APIMapping) error {
 func (*external) postUpdate(_ context.Context, _ *svcapitypes.APIMapping, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
 	return upd, err
 }
-func lateInitialize(*svcapitypes.APIMappingParameters, *svcsdk.GetApiMappingsOutput) error {
+func lateInitialize(*svcapitypes.APIMappingParameters, *svcsdk.GetApiMappingOutput) error {
 	return nil
 }
 
-func preGenerateGetApiMappingsInput(_ *svcapitypes.APIMapping, obj *svcsdk.GetApiMappingsInput) *svcsdk.GetApiMappingsInput { // nolint:golint
+func preGenerateGetApiMappingInput(_ *svcapitypes.APIMapping, obj *svcsdk.GetApiMappingInput) *svcsdk.GetApiMappingInput { // nolint:golint
 	return obj
 }
 
-func postGenerateGetApiMappingsInput(cr *svcapitypes.APIMapping, obj *svcsdk.GetApiMappingsInput) *svcsdk.GetApiMappingsInput { // nolint:golint
+func postGenerateGetApiMappingInput(cr *svcapitypes.APIMapping, obj *svcsdk.GetApiMappingInput) *svcsdk.GetApiMappingInput { // nolint:golint
 	obj.DomainName = cr.Spec.ForProvider.DomainName
+	obj.ApiMappingId = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 

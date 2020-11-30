@@ -50,23 +50,12 @@ func SetupRoute(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.Route) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.Route, _ *svcsdk.GetRoutesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (*external) postObserve(_ context.Context, cr *svcapitypes.Route, _ *svcsdk.GetRouteOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
 	cr.SetConditions(v1alpha1.Available())
 	return obs, nil
-}
-
-func (*external) filterList(cr *svcapitypes.Route, list *svcsdk.GetRoutesOutput) *svcsdk.GetRoutesOutput {
-	res := &svcsdk.GetRoutesOutput{}
-	for _, route := range list.Items {
-		if aws.StringValue(route.RouteId) == meta.GetExternalName(cr) {
-			res.Items = append(res.Items, route)
-			break
-		}
-	}
-	return res
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.Route) error {
@@ -91,16 +80,17 @@ func (*external) preUpdate(context.Context, *svcapitypes.Route) error {
 func (*external) postUpdate(_ context.Context, _ *svcapitypes.Route, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
 	return upd, err
 }
-func lateInitialize(*svcapitypes.RouteParameters, *svcsdk.GetRoutesOutput) error {
+func lateInitialize(*svcapitypes.RouteParameters, *svcsdk.GetRouteOutput) error {
 	return nil
 }
 
-func preGenerateGetRoutesInput(_ *svcapitypes.Route, obj *svcsdk.GetRoutesInput) *svcsdk.GetRoutesInput {
+func preGenerateGetRouteInput(_ *svcapitypes.Route, obj *svcsdk.GetRouteInput) *svcsdk.GetRouteInput {
 	return obj
 }
 
-func postGenerateGetRoutesInput(cr *svcapitypes.Route, obj *svcsdk.GetRoutesInput) *svcsdk.GetRoutesInput {
+func postGenerateGetRouteInput(cr *svcapitypes.Route, obj *svcsdk.GetRouteInput) *svcsdk.GetRouteInput {
 	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.RouteId = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 

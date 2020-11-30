@@ -29,37 +29,31 @@ import (
 // empty object, hence need to return a new pointer.
 // TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
 // ACK doesn't support not generating if file exists.
-// GenerateGetApiMappingsInput returns input for read
-// operation.
-func GenerateGetApiMappingsInput(cr *svcapitypes.APIMapping) *svcsdk.GetApiMappingsInput {
-	res := preGenerateGetApiMappingsInput(cr, &svcsdk.GetApiMappingsInput{})
 
-	return postGenerateGetApiMappingsInput(cr, res)
+// GenerateGetApiMappingInput returns input for read
+// operation.
+func GenerateGetApiMappingInput(cr *svcapitypes.APIMapping) *svcsdk.GetApiMappingInput {
+	res := preGenerateGetApiMappingInput(cr, &svcsdk.GetApiMappingInput{})
+
+	if cr.Status.AtProvider.APIMappingID != nil {
+		res.SetApiMappingId(*cr.Status.AtProvider.APIMappingID)
+	}
+
+	return postGenerateGetApiMappingInput(cr, res)
 }
 
 // GenerateAPIMapping returns the current state in the form of *svcapitypes.APIMapping.
-func GenerateAPIMapping(resp *svcsdk.GetApiMappingsOutput) *svcapitypes.APIMapping {
+func GenerateAPIMapping(resp *svcsdk.GetApiMappingOutput) *svcapitypes.APIMapping {
 	cr := &svcapitypes.APIMapping{}
 
-	found := false
-	for _, elem := range resp.Items {
-		if elem.ApiId != nil {
-			cr.Status.AtProvider.APIID = elem.ApiId
-		}
-		if elem.ApiMappingId != nil {
-			cr.Status.AtProvider.APIMappingID = elem.ApiMappingId
-		}
-		if elem.ApiMappingKey != nil {
-			cr.Spec.ForProvider.APIMappingKey = elem.ApiMappingKey
-		}
-		if elem.Stage != nil {
-			cr.Status.AtProvider.Stage = elem.Stage
-		}
-		found = true
-		break
+	if resp.ApiId != nil {
+		cr.Status.AtProvider.APIID = resp.ApiId
 	}
-	if !found {
-		return cr
+	if resp.ApiMappingId != nil {
+		cr.Status.AtProvider.APIMappingID = resp.ApiMappingId
+	}
+	if resp.Stage != nil {
+		cr.Status.AtProvider.Stage = resp.Stage
 	}
 
 	return cr

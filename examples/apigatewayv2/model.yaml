@@ -7,6 +7,7 @@ spec:
     apiIdRef:
       name: test-api2
     region: us-west-2
+    name: testmodel
     contentType: application/json
     schema: |-
       {
