@@ -15,7 +15,6 @@ package sqs
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -56,8 +55,13 @@ func NewClient(cfg aws.Config) Client {
 // GenerateCreateAttributes returns a map of queue attributes for Create operation
 func GenerateCreateAttributes(p *v1beta1.QueueParameters) map[string]string {
 	m := GenerateQueueAttributes(p)
-	if p.FIFOQueue != nil {
-		m[v1beta1.AttributeFifoQueue] = fmt.Sprint(*p.FIFOQueue)
+	if aws.BoolValue(p.FIFOQueue) {
+		// SQS expects this attribute only if its value is true.
+		// https://github.com/aws/aws-sdk-php/issues/1331
+		if m == nil {
+			m = map[string]string{}
+		}
+		m[v1beta1.AttributeFifoQueue] = "true"
 	}
 	return m
 }
@@ -104,6 +108,9 @@ func GenerateQueueAttributes(p *v1beta1.QueueParameters) map[string]string { // 
 	}
 	if p.ContentBasedDeduplication != nil {
 		m[v1beta1.AttributeContentBasedDeduplication] = strconv.FormatBool(aws.BoolValue(p.ContentBasedDeduplication))
+	}
+	if len(m) == 0 {
+		return nil
 	}
 	return m
 }
