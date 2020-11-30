@@ -29,84 +29,28 @@ import (
 // empty object, hence need to return a new pointer.
 // TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
 // ACK doesn't support not generating if file exists.
-// GenerateGetRoutesInput returns input for read
-// operation.
-func GenerateGetRoutesInput(cr *svcapitypes.Route) *svcsdk.GetRoutesInput {
-	res := preGenerateGetRoutesInput(cr, &svcsdk.GetRoutesInput{})
 
-	return postGenerateGetRoutesInput(cr, res)
+// GenerateGetRouteInput returns input for read
+// operation.
+func GenerateGetRouteInput(cr *svcapitypes.Route) *svcsdk.GetRouteInput {
+	res := preGenerateGetRouteInput(cr, &svcsdk.GetRouteInput{})
+
+	if cr.Status.AtProvider.RouteID != nil {
+		res.SetRouteId(*cr.Status.AtProvider.RouteID)
+	}
+
+	return postGenerateGetRouteInput(cr, res)
 }
 
 // GenerateRoute returns the current state in the form of *svcapitypes.Route.
-func GenerateRoute(resp *svcsdk.GetRoutesOutput) *svcapitypes.Route {
+func GenerateRoute(resp *svcsdk.GetRouteOutput) *svcapitypes.Route {
 	cr := &svcapitypes.Route{}
 
-	found := false
-	for _, elem := range resp.Items {
-		if elem.ApiGatewayManaged != nil {
-			cr.Status.AtProvider.APIGatewayManaged = elem.ApiGatewayManaged
-		}
-		if elem.ApiKeyRequired != nil {
-			cr.Spec.ForProvider.APIKeyRequired = elem.ApiKeyRequired
-		}
-		if elem.AuthorizationScopes != nil {
-			f2 := []*string{}
-			for _, f2iter := range elem.AuthorizationScopes {
-				var f2elem string
-				f2elem = *f2iter
-				f2 = append(f2, &f2elem)
-			}
-			cr.Spec.ForProvider.AuthorizationScopes = f2
-		}
-		if elem.AuthorizationType != nil {
-			cr.Spec.ForProvider.AuthorizationType = elem.AuthorizationType
-		}
-		if elem.AuthorizerId != nil {
-			cr.Spec.ForProvider.AuthorizerID = elem.AuthorizerId
-		}
-		if elem.ModelSelectionExpression != nil {
-			cr.Spec.ForProvider.ModelSelectionExpression = elem.ModelSelectionExpression
-		}
-		if elem.OperationName != nil {
-			cr.Spec.ForProvider.OperationName = elem.OperationName
-		}
-		if elem.RequestModels != nil {
-			f7 := map[string]*string{}
-			for f7key, f7valiter := range elem.RequestModels {
-				var f7val string
-				f7val = *f7valiter
-				f7[f7key] = &f7val
-			}
-			cr.Spec.ForProvider.RequestModels = f7
-		}
-		if elem.RequestParameters != nil {
-			f8 := map[string]*svcapitypes.ParameterConstraints{}
-			for f8key, f8valiter := range elem.RequestParameters {
-				f8val := &svcapitypes.ParameterConstraints{}
-				if f8valiter.Required != nil {
-					f8val.Required = f8valiter.Required
-				}
-				f8[f8key] = f8val
-			}
-			cr.Spec.ForProvider.RequestParameters = f8
-		}
-		if elem.RouteId != nil {
-			cr.Status.AtProvider.RouteID = elem.RouteId
-		}
-		if elem.RouteKey != nil {
-			cr.Spec.ForProvider.RouteKey = elem.RouteKey
-		}
-		if elem.RouteResponseSelectionExpression != nil {
-			cr.Spec.ForProvider.RouteResponseSelectionExpression = elem.RouteResponseSelectionExpression
-		}
-		if elem.Target != nil {
-			cr.Spec.ForProvider.Target = elem.Target
-		}
-		found = true
-		break
+	if resp.ApiGatewayManaged != nil {
+		cr.Status.AtProvider.APIGatewayManaged = resp.ApiGatewayManaged
 	}
-	if !found {
-		return cr
+	if resp.RouteId != nil {
+		cr.Status.AtProvider.RouteID = resp.RouteId
 	}
 
 	return cr

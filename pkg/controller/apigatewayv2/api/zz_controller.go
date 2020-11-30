@@ -38,7 +38,7 @@ import (
 )
 
 const (
-	errUnexpectedObject = "managed resource is not an repository resource"
+	errUnexpectedObject = "managed resource is not an API resource"
 
 	errCreateSession = "cannot create a new session"
 	errCreate        = "cannot create API in AWS"
@@ -80,17 +80,10 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 			ResourceExists: false,
 		}, nil
 	}
-	input := GenerateGetApisInput(cr)
-	// TODO(muvaf): Generated code has an assumption about the module name of the type (svcapitypes)
-	// but that doesn't always hold true.
-
-	resp, err := e.client.GetApisWithContext(ctx, input)
+	input := GenerateGetApiInput(cr)
+	resp, err := e.client.GetApiWithContext(ctx, input)
 	if err != nil {
 		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
-	}
-	resp = e.filterList(cr, resp)
-	if len(resp.Items) == 0 {
-		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
 	lateInitialize(&cr.Spec.ForProvider, resp)
@@ -137,9 +130,6 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f9 = append(f9, &f9elem)
 		}
 		cr.Status.AtProvider.ImportInfo = f9
-	}
-	if resp.Name != nil {
-		cr.Status.AtProvider.Name = resp.Name
 	}
 	if resp.Warnings != nil {
 		f15 := []*string{}

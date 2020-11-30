@@ -5,6 +5,7 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
+    name: test-vpclink
     securityGroupIdRefs:
       - name: sample-cluster-sg
     subnetIdRefs:

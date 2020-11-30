@@ -30,70 +30,55 @@ import (
 // empty object, hence need to return a new pointer.
 // TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
 // ACK doesn't support not generating if file exists.
-// GenerateGetVpcLinksInput returns input for read
-// operation.
-func GenerateGetVpcLinksInput(cr *svcapitypes.VPCLink) *svcsdk.GetVpcLinksInput {
-	res := preGenerateGetVpcLinksInput(cr, &svcsdk.GetVpcLinksInput{})
 
-	return postGenerateGetVpcLinksInput(cr, res)
+// GenerateGetVpcLinkInput returns input for read
+// operation.
+func GenerateGetVpcLinkInput(cr *svcapitypes.VPCLink) *svcsdk.GetVpcLinkInput {
+	res := preGenerateGetVpcLinkInput(cr, &svcsdk.GetVpcLinkInput{})
+
+	if cr.Status.AtProvider.VPCLinkID != nil {
+		res.SetVpcLinkId(*cr.Status.AtProvider.VPCLinkID)
+	}
+
+	return postGenerateGetVpcLinkInput(cr, res)
 }
 
 // GenerateVPCLink returns the current state in the form of *svcapitypes.VPCLink.
-func GenerateVPCLink(resp *svcsdk.GetVpcLinksOutput) *svcapitypes.VPCLink {
+func GenerateVPCLink(resp *svcsdk.GetVpcLinkOutput) *svcapitypes.VPCLink {
 	cr := &svcapitypes.VPCLink{}
 
-	found := false
-	for _, elem := range resp.Items {
-		if elem.CreatedDate != nil {
-			cr.Status.AtProvider.CreatedDate = &metav1.Time{*elem.CreatedDate}
-		}
-		if elem.Name != nil {
-			cr.Status.AtProvider.Name = elem.Name
-		}
-		if elem.SecurityGroupIds != nil {
-			f2 := []*string{}
-			for _, f2iter := range elem.SecurityGroupIds {
-				var f2elem string
-				f2elem = *f2iter
-				f2 = append(f2, &f2elem)
-			}
-			cr.Status.AtProvider.SecurityGroupIDs = f2
-		}
-		if elem.SubnetIds != nil {
-			f3 := []*string{}
-			for _, f3iter := range elem.SubnetIds {
-				var f3elem string
-				f3elem = *f3iter
-				f3 = append(f3, &f3elem)
-			}
-			cr.Status.AtProvider.SubnetIDs = f3
-		}
-		if elem.Tags != nil {
-			f4 := map[string]*string{}
-			for f4key, f4valiter := range elem.Tags {
-				var f4val string
-				f4val = *f4valiter
-				f4[f4key] = &f4val
-			}
-			cr.Spec.ForProvider.Tags = f4
-		}
-		if elem.VpcLinkId != nil {
-			cr.Status.AtProvider.VPCLinkID = elem.VpcLinkId
-		}
-		if elem.VpcLinkStatus != nil {
-			cr.Status.AtProvider.VPCLinkStatus = elem.VpcLinkStatus
-		}
-		if elem.VpcLinkStatusMessage != nil {
-			cr.Status.AtProvider.VPCLinkStatusMessage = elem.VpcLinkStatusMessage
-		}
-		if elem.VpcLinkVersion != nil {
-			cr.Status.AtProvider.VPCLinkVersion = elem.VpcLinkVersion
-		}
-		found = true
-		break
+	if resp.CreatedDate != nil {
+		cr.Status.AtProvider.CreatedDate = &metav1.Time{*resp.CreatedDate}
 	}
-	if !found {
-		return cr
+	if resp.SecurityGroupIds != nil {
+		f2 := []*string{}
+		for _, f2iter := range resp.SecurityGroupIds {
+			var f2elem string
+			f2elem = *f2iter
+			f2 = append(f2, &f2elem)
+		}
+		cr.Status.AtProvider.SecurityGroupIDs = f2
+	}
+	if resp.SubnetIds != nil {
+		f3 := []*string{}
+		for _, f3iter := range resp.SubnetIds {
+			var f3elem string
+			f3elem = *f3iter
+			f3 = append(f3, &f3elem)
+		}
+		cr.Status.AtProvider.SubnetIDs = f3
+	}
+	if resp.VpcLinkId != nil {
+		cr.Status.AtProvider.VPCLinkID = resp.VpcLinkId
+	}
+	if resp.VpcLinkStatus != nil {
+		cr.Status.AtProvider.VPCLinkStatus = resp.VpcLinkStatus
+	}
+	if resp.VpcLinkStatusMessage != nil {
+		cr.Status.AtProvider.VPCLinkStatusMessage = resp.VpcLinkStatusMessage
+	}
+	if resp.VpcLinkVersion != nil {
+		cr.Status.AtProvider.VPCLinkVersion = resp.VpcLinkVersion
 	}
 
 	return cr
@@ -103,14 +88,17 @@ func GenerateVPCLink(resp *svcsdk.GetVpcLinksOutput) *svcapitypes.VPCLink {
 func GenerateCreateVpcLinkInput(cr *svcapitypes.VPCLink) *svcsdk.CreateVpcLinkInput {
 	res := preGenerateCreateVpcLinkInput(cr, &svcsdk.CreateVpcLinkInput{})
 
+	if cr.Spec.ForProvider.Name != nil {
+		res.SetName(*cr.Spec.ForProvider.Name)
+	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f0 := map[string]*string{}
-		for f0key, f0valiter := range cr.Spec.ForProvider.Tags {
-			var f0val string
-			f0val = *f0valiter
-			f0[f0key] = &f0val
+		f1 := map[string]*string{}
+		for f1key, f1valiter := range cr.Spec.ForProvider.Tags {
+			var f1val string
+			f1val = *f1valiter
+			f1[f1key] = &f1val
 		}
-		res.SetTags(f0)
+		res.SetTags(f1)
 	}
 
 	return postGenerateCreateVpcLinkInput(cr, res)

@@ -42,6 +42,7 @@ func SetupAuthorizer(mgr ctrl.Manager, l logging.Logger) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.AuthorizerGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -49,7 +50,7 @@ func SetupAuthorizer(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.Authorizer) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.Authorizer, _ *svcsdk.GetAuthorizersOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (*external) postObserve(_ context.Context, cr *svcapitypes.Authorizer, _ *svcsdk.GetAuthorizerOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -57,21 +58,16 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Authorizer, _ *s
 	return obs, nil
 }
 
-func (*external) filterList(cr *svcapitypes.Authorizer, list *svcsdk.GetAuthorizersOutput) *svcsdk.GetAuthorizersOutput {
-	res := &svcsdk.GetAuthorizersOutput{}
-	for _, authorizer := range list.Items {
-		if meta.GetExternalName(cr) == aws.StringValue(authorizer.Name) {
-			res.Items = append(res.Items, authorizer)
-		}
-	}
-	return res
-}
-
 func (*external) preCreate(context.Context, *svcapitypes.Authorizer) error {
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, _ *svcapitypes.Authorizer, _ *svcsdk.CreateAuthorizerOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func (*external) postCreate(_ context.Context, cr *svcapitypes.Authorizer, resp *svcsdk.CreateAuthorizerOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+	meta.SetExternalName(cr, aws.StringValue(resp.AuthorizerId))
+	cre.ExternalNameAssigned = true
 	return cre, err
 }
 
@@ -82,16 +78,17 @@ func (*external) preUpdate(context.Context, *svcapitypes.Authorizer) error {
 func (*external) postUpdate(_ context.Context, _ *svcapitypes.Authorizer, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
 	return upd, err
 }
-func lateInitialize(*svcapitypes.AuthorizerParameters, *svcsdk.GetAuthorizersOutput) error {
+func lateInitialize(*svcapitypes.AuthorizerParameters, *svcsdk.GetAuthorizerOutput) error {
 	return nil
 }
 
-func preGenerateGetAuthorizersInput(_ *svcapitypes.Authorizer, obj *svcsdk.GetAuthorizersInput) *svcsdk.GetAuthorizersInput {
+func preGenerateGetAuthorizerInput(_ *svcapitypes.Authorizer, obj *svcsdk.GetAuthorizerInput) *svcsdk.GetAuthorizerInput {
 	return obj
 }
 
-func postGenerateGetAuthorizersInput(cr *svcapitypes.Authorizer, obj *svcsdk.GetAuthorizersInput) *svcsdk.GetAuthorizersInput {
+func postGenerateGetAuthorizerInput(cr *svcapitypes.Authorizer, obj *svcsdk.GetAuthorizerInput) *svcsdk.GetAuthorizerInput {
 	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.AuthorizerId = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
@@ -101,7 +98,6 @@ func preGenerateCreateAuthorizerInput(_ *svcapitypes.Authorizer, obj *svcsdk.Cre
 
 func postGenerateCreateAuthorizerInput(cr *svcapitypes.Authorizer, obj *svcsdk.CreateAuthorizerInput) *svcsdk.CreateAuthorizerInput {
 	obj.ApiId = cr.Spec.ForProvider.APIID
-	obj.Name = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
@@ -111,6 +107,6 @@ func preGenerateDeleteAuthorizerInput(_ *svcapitypes.Authorizer, obj *svcsdk.Del
 
 func postGenerateDeleteAuthorizerInput(cr *svcapitypes.Authorizer, obj *svcsdk.DeleteAuthorizerInput) *svcsdk.DeleteAuthorizerInput {
 	obj.ApiId = cr.Spec.ForProvider.APIID
-	obj.AuthorizerId = cr.Status.AtProvider.AuthorizerID
+	obj.AuthorizerId = aws.String(meta.GetExternalName(cr))
 	return obj
 }

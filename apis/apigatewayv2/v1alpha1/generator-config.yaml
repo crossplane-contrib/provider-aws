@@ -1,7 +1,5 @@
 ignore:
   field_paths:
-    - CreateApiInput.Name
-    - DeleteApiInput.Name
     - CreateStageInput.ApiId
     - CreateStageInput.StageName
     - DeleteStageInput.StageName
@@ -9,8 +7,6 @@ ignore:
     - DeleteRouteInput.ApiId
     - CreateAuthorizerInput.ApiId
     - DeleteAuthorizerInput.ApiId
-    - CreateAuthorizerInput.Name
-    - DeleteAuthorizerInput.Name
     - CreateIntegrationInput.ApiId
     - DeleteIntegrationInput.ApiId
     - CreateDeploymentInput.ApiId
@@ -22,9 +18,7 @@ ignore:
     - DeleteIntegrationResponseInput.ApiId
     - DeleteIntegrationResponseInput.IntegrationId
     - CreateModelInput.ApiId
-    - CreateModelInput.Name
     - DeleteModelInput.ApiId
-    - DeleteModelInput.Name
     - CreateApiMappingInput.ApiId
     - CreateApiMappingInput.Stage
     - CreateApiMappingInput.DomainName
@@ -35,6 +29,5 @@ ignore:
     - CreateRouteResponseInput.RouteId
     - DeleteRouteResponseInput.ApiId
     - DeleteRouteResponseInput.RouteId
-    - CreateVpcLinkInput.Name
     - CreateVpcLinkInput.SecurityGroupIds
     - CreateVpcLinkInput.SubnetIds

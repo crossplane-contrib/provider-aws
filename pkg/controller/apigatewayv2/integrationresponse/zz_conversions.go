@@ -29,55 +29,25 @@ import (
 // empty object, hence need to return a new pointer.
 // TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
 // ACK doesn't support not generating if file exists.
-// GenerateGetIntegrationResponsesInput returns input for read
-// operation.
-func GenerateGetIntegrationResponsesInput(cr *svcapitypes.IntegrationResponse) *svcsdk.GetIntegrationResponsesInput {
-	res := preGenerateGetIntegrationResponsesInput(cr, &svcsdk.GetIntegrationResponsesInput{})
 
-	return postGenerateGetIntegrationResponsesInput(cr, res)
+// GenerateGetIntegrationResponseInput returns input for read
+// operation.
+func GenerateGetIntegrationResponseInput(cr *svcapitypes.IntegrationResponse) *svcsdk.GetIntegrationResponseInput {
+	res := preGenerateGetIntegrationResponseInput(cr, &svcsdk.GetIntegrationResponseInput{})
+
+	if cr.Status.AtProvider.IntegrationResponseID != nil {
+		res.SetIntegrationResponseId(*cr.Status.AtProvider.IntegrationResponseID)
+	}
+
+	return postGenerateGetIntegrationResponseInput(cr, res)
 }
 
 // GenerateIntegrationResponse returns the current state in the form of *svcapitypes.IntegrationResponse.
-func GenerateIntegrationResponse(resp *svcsdk.GetIntegrationResponsesOutput) *svcapitypes.IntegrationResponse {
+func GenerateIntegrationResponse(resp *svcsdk.GetIntegrationResponseOutput) *svcapitypes.IntegrationResponse {
 	cr := &svcapitypes.IntegrationResponse{}
 
-	found := false
-	for _, elem := range resp.Items {
-		if elem.ContentHandlingStrategy != nil {
-			cr.Spec.ForProvider.ContentHandlingStrategy = elem.ContentHandlingStrategy
-		}
-		if elem.IntegrationResponseId != nil {
-			cr.Status.AtProvider.IntegrationResponseID = elem.IntegrationResponseId
-		}
-		if elem.IntegrationResponseKey != nil {
-			cr.Spec.ForProvider.IntegrationResponseKey = elem.IntegrationResponseKey
-		}
-		if elem.ResponseParameters != nil {
-			f3 := map[string]*string{}
-			for f3key, f3valiter := range elem.ResponseParameters {
-				var f3val string
-				f3val = *f3valiter
-				f3[f3key] = &f3val
-			}
-			cr.Spec.ForProvider.ResponseParameters = f3
-		}
-		if elem.ResponseTemplates != nil {
-			f4 := map[string]*string{}
-			for f4key, f4valiter := range elem.ResponseTemplates {
-				var f4val string
-				f4val = *f4valiter
-				f4[f4key] = &f4val
-			}
-			cr.Spec.ForProvider.ResponseTemplates = f4
-		}
-		if elem.TemplateSelectionExpression != nil {
-			cr.Spec.ForProvider.TemplateSelectionExpression = elem.TemplateSelectionExpression
-		}
-		found = true
-		break
-	}
-	if !found {
-		return cr
+	if resp.IntegrationResponseId != nil {
+		cr.Status.AtProvider.IntegrationResponseID = resp.IntegrationResponseId
 	}
 
 	return cr

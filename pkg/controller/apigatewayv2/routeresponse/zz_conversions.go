@@ -29,54 +29,25 @@ import (
 // empty object, hence need to return a new pointer.
 // TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
 // ACK doesn't support not generating if file exists.
-// GenerateGetRouteResponsesInput returns input for read
-// operation.
-func GenerateGetRouteResponsesInput(cr *svcapitypes.RouteResponse) *svcsdk.GetRouteResponsesInput {
-	res := preGenerateGetRouteResponsesInput(cr, &svcsdk.GetRouteResponsesInput{})
 
-	return postGenerateGetRouteResponsesInput(cr, res)
+// GenerateGetRouteResponseInput returns input for read
+// operation.
+func GenerateGetRouteResponseInput(cr *svcapitypes.RouteResponse) *svcsdk.GetRouteResponseInput {
+	res := preGenerateGetRouteResponseInput(cr, &svcsdk.GetRouteResponseInput{})
+
+	if cr.Status.AtProvider.RouteResponseID != nil {
+		res.SetRouteResponseId(*cr.Status.AtProvider.RouteResponseID)
+	}
+
+	return postGenerateGetRouteResponseInput(cr, res)
 }
 
 // GenerateRouteResponse returns the current state in the form of *svcapitypes.RouteResponse.
-func GenerateRouteResponse(resp *svcsdk.GetRouteResponsesOutput) *svcapitypes.RouteResponse {
+func GenerateRouteResponse(resp *svcsdk.GetRouteResponseOutput) *svcapitypes.RouteResponse {
 	cr := &svcapitypes.RouteResponse{}
 
-	found := false
-	for _, elem := range resp.Items {
-		if elem.ModelSelectionExpression != nil {
-			cr.Spec.ForProvider.ModelSelectionExpression = elem.ModelSelectionExpression
-		}
-		if elem.ResponseModels != nil {
-			f1 := map[string]*string{}
-			for f1key, f1valiter := range elem.ResponseModels {
-				var f1val string
-				f1val = *f1valiter
-				f1[f1key] = &f1val
-			}
-			cr.Spec.ForProvider.ResponseModels = f1
-		}
-		if elem.ResponseParameters != nil {
-			f2 := map[string]*svcapitypes.ParameterConstraints{}
-			for f2key, f2valiter := range elem.ResponseParameters {
-				f2val := &svcapitypes.ParameterConstraints{}
-				if f2valiter.Required != nil {
-					f2val.Required = f2valiter.Required
-				}
-				f2[f2key] = f2val
-			}
-			cr.Spec.ForProvider.ResponseParameters = f2
-		}
-		if elem.RouteResponseId != nil {
-			cr.Status.AtProvider.RouteResponseID = elem.RouteResponseId
-		}
-		if elem.RouteResponseKey != nil {
-			cr.Spec.ForProvider.RouteResponseKey = elem.RouteResponseKey
-		}
-		found = true
-		break
-	}
-	if !found {
-		return cr
+	if resp.RouteResponseId != nil {
+		cr.Status.AtProvider.RouteResponseID = resp.RouteResponseId
 	}
 
 	return cr

@@ -35,6 +35,9 @@ type ModelParameters struct {
 	Description *string `json:"description,omitempty"`
 
 	// +kubebuilder:validation:Required
+	Name *string `json:"name"`
+
+	// +kubebuilder:validation:Required
 	Schema                *string `json:"schema"`
 	CustomModelParameters `json:",inline"`
 }
@@ -48,8 +51,6 @@ type ModelSpec struct {
 // ModelObservation defines the observed state of Model
 type ModelObservation struct {
 	ModelID *string `json:"modelID,omitempty"`
-
-	Name *string `json:"name,omitempty"`
 }
 
 // ModelStatus defines the observed state of Model.
