@@ -81,7 +81,7 @@ spec:
                     description: Region is which region the StateMachine will be created.
                     type: string
                   roleArn:
-                    description: RoleARN is the ARN for the IAMRole.
+                    description: RoleARN is the ARN for the IAMRole. It has to be given directly or resolved using RoleARNRef or RoleARNSelector.
                     type: string
                   roleArnRef:
                     description: RoleARNRef is a reference to an IAMRole used to set the RoleARN.
@@ -122,6 +122,9 @@ spec:
                     type: object
                   type:
                     description: 'Determines whether a Standard or Express state machine is created. You cannot update the type of a state machine once it has been created. The default is STANDARD. Possible values: STANDARD, EXPRESS'
+                    enum:
+                    - STANDARD
+                    - EXPRESS
                     type: string
                 required:
                 - definition

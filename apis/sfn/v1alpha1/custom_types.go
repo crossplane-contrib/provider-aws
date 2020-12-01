@@ -24,7 +24,9 @@ type CustomActivityParameters struct{}
 // CustomStateMachineParameters includes custom additional fields for StateMachineParameters.
 type CustomStateMachineParameters struct {
 	// RoleARN is the ARN for the IAMRole.
+	// It has to be given directly or resolved using RoleARNRef or RoleARNSelector.
 	// +immutable
+	// +optional
 	RoleARN *string `json:"roleArn,omitempty"`
 
 	// RoleARNRef is a reference to an IAMRole used to set
@@ -41,5 +43,6 @@ type CustomStateMachineParameters struct {
 	// You cannot update the type of a state machine once it has been created.
 	// The default is STANDARD. Possible values: STANDARD, EXPRESS
 	// +immutable
-	Type *string `json:"type,omitempty"`
+	// +kubebuilder:validation:Enum=STANDARD;EXPRESS
+	Type StateMachineType `json:"type,omitempty"`
 }
