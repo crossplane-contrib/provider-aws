@@ -23,12 +23,10 @@ import (
 
 	svcapi "github.com/aws/aws-sdk-go/service/sns"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/sns/snsiface"
-	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -66,28 +64,8 @@ type external struct {
 	client svcsdkapi.SNSAPI
 }
 
-func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*svcapitypes.PlatformEndpoint)
-	if !ok {
-		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
-	}
-	if err := e.preObserve(ctx, cr); err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, "pre-observe failed")
-	}
-	if meta.GetExternalName(cr) == "" {
-		return managed.ExternalObservation{
-			ResourceExists: false,
-		}, nil
-	}
-	currentSpec := cr.Spec.ForProvider.DeepCopy()
-	lateInitialize(&cr.Spec.ForProvider, resp)
-	GeneratePlatformEndpoint(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
-	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
-		ResourceExists:          true,
-		ResourceUpToDate:        isUpToDate(cr, resp),
-		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
-	}, nil)
-}
+// PlatformEndpoint API does not natively implement a Get call. It should
+// be handled with custom code.
 
 func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.ExternalCreation, error) {
 	cr, ok := mg.(*svcapitypes.PlatformEndpoint)

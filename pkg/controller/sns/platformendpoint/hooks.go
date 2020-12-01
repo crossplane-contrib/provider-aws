@@ -26,6 +26,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/sns/v1alpha1"
 )
@@ -43,8 +44,8 @@ func SetupPlatformEndpoint(mgr ctrl.Manager, l logging.Logger) error {
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.PlatformEndpoint) error {
-	return nil
+func (e *external) Observe(_ context.Context, _ cpresource.Managed) (managed.ExternalObservation, error) {
+	return managed.ExternalObservation{}, nil
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.PlatformEndpoint) error {
