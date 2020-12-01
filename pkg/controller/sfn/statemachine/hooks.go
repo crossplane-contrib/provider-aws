@@ -55,9 +55,9 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.StateMachine, re
 		return managed.ExternalObservation{}, err
 	}
 	switch aws.StringValue(resp.Status) {
-	case "ACTIVE":
+	case string(svcapitypes.StateMachineStatus_SDK_ACTIVE):
 		cr.SetConditions(v1alpha1.Available())
-	case "DELETING":
+	case string(svcapitypes.StateMachineStatus_SDK_DELETING):
 		cr.SetConditions(v1alpha1.Deleting())
 	}
 	return obs, nil
@@ -105,10 +105,11 @@ func preGenerateCreateStateMachineInput(_ *svcapitypes.StateMachine, obj *svcsdk
 }
 
 func postGenerateCreateStateMachineInput(cr *svcapitypes.StateMachine, obj *svcsdk.CreateStateMachineInput) *svcsdk.CreateStateMachineInput {
-	obj.Type = cr.Spec.ForProvider.Type
+	obj.Type = aws.String(string(cr.Spec.ForProvider.Type))
 	obj.RoleArn = cr.Spec.ForProvider.RoleARN
 	return obj
 }
+
 func preGenerateDeleteStateMachineInput(_ *svcapitypes.StateMachine, obj *svcsdk.DeleteStateMachineInput) *svcsdk.DeleteStateMachineInput {
 	return obj
 }
