@@ -20,12 +20,10 @@ import (
 	"context"
 	"encoding/json"
 
+	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-
 	"github.com/pkg/errors"
-
-	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
