@@ -20,7 +20,10 @@ import (
 	"context"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/sns"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
@@ -32,10 +35,13 @@ import (
 )
 
 // SetupPlatformEndpoint adds a controller that reconciles PlatformEndpoint.
-func SetupPlatformEndpoint(mgr ctrl.Manager, l logging.Logger) error {
+func SetupPlatformEndpoint(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(svcapitypes.PlatformEndpointGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+		}).
 		For(&svcapitypes.PlatformEndpoint{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.PlatformEndpointGroupVersionKind),
