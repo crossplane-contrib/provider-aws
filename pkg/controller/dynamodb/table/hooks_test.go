@@ -30,9 +30,7 @@ var (
 	readCapacityUnits  = 1
 	writeCapacityUnits = 1
 
-	tableName = "some name"
-	arn       = "some arn"
-	tableID   = "some ID"
+	arn = "some arn"
 )
 
 func tableParams(m ...func(*v1alpha1.TableParameters)) *v1alpha1.TableParameters {
