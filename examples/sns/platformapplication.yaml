@@ -1,0 +1,14 @@
+# This YAML is not tested since it depends on an external service (platform).
+apiVersion: sns.aws.crossplane.io/v1alpha1
+kind: PlatformApplication
+metadata:
+  name: test-pa
+spec:
+  forProvider:
+    region: us-east-1
+    name: test-pa
+    platform: ADM
+    platformCredential: "some client secret from ADM"
+    platformPrincipal: "some client id from ADM"
+    eventEndpointCreatedRef:
+      name: test-topic
