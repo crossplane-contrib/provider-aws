@@ -44,13 +44,9 @@ func GenerateGetTopicAttributesInput(cr *svcapitypes.Topic) *svcsdk.GetTopicAttr
 func GenerateTopic(resp *svcsdk.GetTopicAttributesOutput) *svcapitypes.Topic {
 	cr := &svcapitypes.Topic{}
 
-	cr.EffectiveDeliveryPolicy = resp.Attributes["EffectiveDeliveryPolicy"]
-	if cr.ACKResourceMetadata == nil {
-		cr.ACKResourceMetadata = &ackv1alpha1.ResourceMetadata{}
-	}
-	tmpOwnerID := ackv1alpha1.AWSAccountID(*resp.Attributes["Owner"])
-	cr.ACKResourceMetadata.OwnerAccountID = &tmpOwnerID
-	cr.TopicARN = resp.Attributes["TopicArn"]
+	cr.Status.AtProvider.EffectiveDeliveryPolicy = resp.Attributes["EffectiveDeliveryPolicy"]
+	cr.Status.AtProvider.Owner = resp.Attributes["Owner"]
+	cr.Status.AtProvider.TopicARN = resp.Attributes["TopicArn"]
 
 	return cr
 }

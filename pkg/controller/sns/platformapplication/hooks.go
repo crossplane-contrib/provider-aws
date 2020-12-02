@@ -27,10 +27,12 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/sns/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupPlatformApplication adds a controller that reconciles PlatformApplication.
@@ -45,6 +47,7 @@ func SetupPlatformApplication(mgr ctrl.Manager, l logging.Logger, rl workqueue.R
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.PlatformApplicationGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -83,7 +86,8 @@ func preGenerateGetPlatformApplicationAttributesInput(_ *svcapitypes.PlatformApp
 	return obj
 }
 
-func postGenerateGetPlatformApplicationAttributesInput(_ *svcapitypes.PlatformApplication, obj *svcsdk.GetPlatformApplicationAttributesInput) *svcsdk.GetPlatformApplicationAttributesInput {
+func postGenerateGetPlatformApplicationAttributesInput(cr *svcapitypes.PlatformApplication, obj *svcsdk.GetPlatformApplicationAttributesInput) *svcsdk.GetPlatformApplicationAttributesInput {
+	obj.PlatformApplicationArn = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
@@ -91,13 +95,14 @@ func preGenerateCreatePlatformApplicationInput(_ *svcapitypes.PlatformApplicatio
 	return obj
 }
 
-func postGenerateCreatePlatformApplicationInput(_ *svcapitypes.PlatformApplication, obj *svcsdk.CreatePlatformApplicationInput) *svcsdk.CreatePlatformApplicationInput {
+func postGenerateCreatePlatformApplicationInput(cr *svcapitypes.PlatformApplication, obj *svcsdk.CreatePlatformApplicationInput) *svcsdk.CreatePlatformApplicationInput {
 	return obj
 }
 func preGenerateDeletePlatformApplicationInput(_ *svcapitypes.PlatformApplication, obj *svcsdk.DeletePlatformApplicationInput) *svcsdk.DeletePlatformApplicationInput {
 	return obj
 }
 
-func postGenerateDeletePlatformApplicationInput(_ *svcapitypes.PlatformApplication, obj *svcsdk.DeletePlatformApplicationInput) *svcsdk.DeletePlatformApplicationInput {
+func postGenerateDeletePlatformApplicationInput(cr *svcapitypes.PlatformApplication, obj *svcsdk.DeletePlatformApplicationInput) *svcsdk.DeletePlatformApplicationInput {
+	obj.PlatformApplicationArn = aws.String(meta.GetExternalName(cr))
 	return obj
 }

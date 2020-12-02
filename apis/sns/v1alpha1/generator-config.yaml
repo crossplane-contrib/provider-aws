@@ -1,6 +1,8 @@
 resources:
   # For resources whose API is based on map keys instead of Go types, ACK requires
   # the full list of fields. The following list is taken from https://github.com/aws/aws-controllers-k8s/blob/22b1c93/services/sns/generator.yaml
+  # SuccessFeedbackRoleArn and FailureFeedbackRoleArn are removed since they can
+  # be referenced.
   Topic:
     unpack_attributes_map:
       set_attributes_single_attribute: true
@@ -11,7 +13,9 @@ resources:
         KmsMasterKeyId:
         Owner:
           is_read_only: true
-          contains_owner_account_id: true
+          # Commented out contains_owner_account_id since it causes ACK-specific
+          # logic to be generated.
+          # contains_owner_account_id: true
         EffectiveDeliveryPolicy:
           is_read_only: true
         TopicArn:
