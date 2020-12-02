@@ -1,0 +1,10 @@
+# This YAML has not been tested manually since it depends on external service.
+apiVersion: sns.aws.crossplane.io/v1alpha1
+kind: PlatformEndpoint
+metadata:
+  name: test-pe
+spec:
+  forProvider:
+    region: us-east-1
+    platformApplicationArnRef:
+      name: test-pa

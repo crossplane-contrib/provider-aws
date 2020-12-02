@@ -76,6 +76,7 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
 	lateInitialize(&cr.Spec.ForProvider, resp)
+	cr.SetConditions(runtimev1alpha1.Available())
 	return managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        isUpToDate(cr, resp),
