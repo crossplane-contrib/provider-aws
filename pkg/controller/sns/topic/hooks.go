@@ -28,10 +28,12 @@ import (
 	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/sns/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupTopic adds a controller that reconciles Topic.
@@ -46,6 +48,7 @@ func SetupTopic(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) er
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.TopicGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -65,8 +68,13 @@ func (*external) preCreate(context.Context, *svcapitypes.Topic) error {
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, _ *svcapitypes.Topic, _ *svcsdk.CreateTopicOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	return cre, err
+func (*external) postCreate(_ context.Context, cr *svcapitypes.Topic, resp *svcsdk.CreateTopicOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+	meta.SetExternalName(cr, aws.StringValue(resp.TopicArn))
+	cre.ExternalNameAssigned = true
+	return cre, nil
 }
 
 func (*external) preUpdate(context.Context, *svcapitypes.Topic) error {
@@ -88,7 +96,8 @@ func preGenerateGetTopicAttributesInput(_ *svcapitypes.Topic, obj *svcsdk.GetTop
 	return obj
 }
 
-func postGenerateGetTopicAttributesInput(_ *svcapitypes.Topic, obj *svcsdk.GetTopicAttributesInput) *svcsdk.GetTopicAttributesInput {
+func postGenerateGetTopicAttributesInput(cr *svcapitypes.Topic, obj *svcsdk.GetTopicAttributesInput) *svcsdk.GetTopicAttributesInput {
+	obj.TopicArn = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
@@ -103,6 +112,7 @@ func preGenerateDeleteTopicInput(_ *svcapitypes.Topic, obj *svcsdk.DeleteTopicIn
 	return obj
 }
 
-func postGenerateDeleteTopicInput(_ *svcapitypes.Topic, obj *svcsdk.DeleteTopicInput) *svcsdk.DeleteTopicInput {
+func postGenerateDeleteTopicInput(cr *svcapitypes.Topic, obj *svcsdk.DeleteTopicInput) *svcsdk.DeleteTopicInput {
+	obj.TopicArn = aws.String(meta.GetExternalName(cr))
 	return obj
 }
