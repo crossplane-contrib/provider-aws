@@ -25,6 +25,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -52,8 +53,12 @@ func SetupTopic(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) er
 func (*external) preObserve(context.Context, *svcapitypes.Topic) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, _ *svcapitypes.Topic, _ *svcsdk.GetTopicAttributesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
-	return obs, err
+func (*external) postObserve(_ context.Context, cr *svcapitypes.Topic, _ *svcsdk.GetTopicAttributesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+	cr.SetConditions(runtimev1alpha1.Available())
+	return obs, nil
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.Topic) error {

@@ -25,6 +25,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
+	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -55,16 +56,25 @@ func SetupPlatformApplication(mgr ctrl.Manager, l logging.Logger, rl workqueue.R
 func (*external) preObserve(context.Context, *svcapitypes.PlatformApplication) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, _ *svcapitypes.PlatformApplication, _ *svcsdk.GetPlatformApplicationAttributesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
-	return obs, err
+func (*external) postObserve(_ context.Context, cr *svcapitypes.PlatformApplication, _ *svcsdk.GetPlatformApplicationAttributesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+	cr.SetConditions(runtimev1alpha1.Available())
+	return obs, nil
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.PlatformApplication) error {
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, _ *svcapitypes.PlatformApplication, _ *svcsdk.CreatePlatformApplicationOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	return cre, err
+func (*external) postCreate(_ context.Context, cr *svcapitypes.PlatformApplication, resp *svcsdk.CreatePlatformApplicationOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+	meta.SetExternalName(cr, aws.StringValue(resp.PlatformApplicationArn))
+	cre.ExternalNameAssigned = true
+	return cre, nil
 }
 
 func (*external) preUpdate(context.Context, *svcapitypes.PlatformApplication) error {
@@ -95,7 +105,7 @@ func preGenerateCreatePlatformApplicationInput(_ *svcapitypes.PlatformApplicatio
 	return obj
 }
 
-func postGenerateCreatePlatformApplicationInput(cr *svcapitypes.PlatformApplication, obj *svcsdk.CreatePlatformApplicationInput) *svcsdk.CreatePlatformApplicationInput {
+func postGenerateCreatePlatformApplicationInput(_ *svcapitypes.PlatformApplication, obj *svcsdk.CreatePlatformApplicationInput) *svcsdk.CreatePlatformApplicationInput {
 	return obj
 }
 func preGenerateDeletePlatformApplicationInput(_ *svcapitypes.PlatformApplication, obj *svcsdk.DeletePlatformApplicationInput) *svcsdk.DeletePlatformApplicationInput {
