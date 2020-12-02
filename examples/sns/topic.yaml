@@ -1,0 +1,8 @@
+apiVersion: sns.aws.crossplane.io/v1alpha1
+kind: Topic
+metadata:
+  name: test-topic
+spec:
+  forProvider:
+    region: us-east-1
+    name: test-topic
