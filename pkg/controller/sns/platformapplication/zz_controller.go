@@ -126,7 +126,6 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	}
 	return e.postUpdate(ctx, cr, managed.ExternalUpdate{}, nil)
 }
-
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 	cr, ok := mg.(*svcapitypes.PlatformApplication)
 	if !ok {
