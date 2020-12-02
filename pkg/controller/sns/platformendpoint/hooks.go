@@ -127,6 +127,7 @@ func preGenerateCreatePlatformEndpointInput(_ *svcapitypes.PlatformEndpoint, obj
 	return obj
 }
 
-func postGenerateCreatePlatformEndpointInput(_ *svcapitypes.PlatformEndpoint, obj *svcsdk.CreatePlatformEndpointInput) *svcsdk.CreatePlatformEndpointInput {
+func postGenerateCreatePlatformEndpointInput(cr *svcapitypes.PlatformEndpoint, obj *svcsdk.CreatePlatformEndpointInput) *svcsdk.CreatePlatformEndpointInput {
+	obj.SetPlatformApplicationArn(aws.StringValue(cr.Spec.ForProvider.PlatformApplicationARN))
 	return obj
 }

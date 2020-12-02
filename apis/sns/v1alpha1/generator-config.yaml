@@ -1,3 +1,6 @@
+ignore:
+  field_paths:
+    - CreatePlatformEndpointInput.PlatformApplicationArn
 resources:
   # For resources whose API is based on map keys instead of Go types, ACK requires
   # the full list of fields. The following list is taken from https://github.com/aws/aws-controllers-k8s/blob/22b1c93/services/sns/generator.yaml

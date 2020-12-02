@@ -44,9 +44,6 @@ func GenerateCreatePlatformEndpointInput(cr *svcapitypes.PlatformEndpoint) *svcs
 	if cr.Spec.ForProvider.CustomUserData != nil {
 		res.SetCustomUserData(*cr.Spec.ForProvider.CustomUserData)
 	}
-	if cr.Spec.ForProvider.PlatformApplicationARN != nil {
-		res.SetPlatformApplicationArn(*cr.Spec.ForProvider.PlatformApplicationARN)
-	}
 	if cr.Spec.ForProvider.Token != nil {
 		res.SetToken(*cr.Spec.ForProvider.Token)
 	}

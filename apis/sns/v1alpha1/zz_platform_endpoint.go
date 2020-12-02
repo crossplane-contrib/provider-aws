@@ -34,10 +34,6 @@ type PlatformEndpointParameters struct {
 	// Arbitrary user data to associate with the endpoint. Amazon SNS does not use
 	// this data. The data must be in UTF-8 format and less than 2KB.
 	CustomUserData *string `json:"customUserData,omitempty"`
-	// PlatformApplicationArn returned from CreatePlatformApplication is used to
-	// create a an endpoint.
-	// +kubebuilder:validation:Required
-	PlatformApplicationARN *string `json:"platformApplicationARN"`
 	// Unique identifier created by the notification service for an app on a device.
 	// The specific name for Token will vary, depending on which notification service
 	// is being used. For example, when using APNS as the notification service,

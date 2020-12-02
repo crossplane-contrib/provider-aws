@@ -65,7 +65,7 @@ spec:
                     - name
                     type: object
                   eventDeliveryFailureSelector:
-                    description: EventDeliveryFailureSelector selects references to Topic used to to set the EventDeliveryFailure.
+                    description: EventDeliveryFailureSelector selects references to Topic used to set the EventDeliveryFailure.
                     properties:
                       matchControllerRef:
                         description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
@@ -88,7 +88,7 @@ spec:
                     - name
                     type: object
                   eventEndpointCreatedSelector:
-                    description: EventEndpointCreatedSelector selects references to Topic used to to set the EventEndpointCreated.
+                    description: EventEndpointCreatedSelector selects references to Topic used to set the EventEndpointCreated.
                     properties:
                       matchControllerRef:
                         description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
@@ -111,7 +111,7 @@ spec:
                     - name
                     type: object
                   eventEndpointDeletedSelector:
-                    description: EventEndpointDeletedSelector selects references to Topic used to to set the EventEndpointDeleted.
+                    description: EventEndpointDeletedSelector selects references to Topic used to set the EventEndpointDeleted.
                     properties:
                       matchControllerRef:
                         description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
@@ -134,7 +134,7 @@ spec:
                     - name
                     type: object
                   eventEndpointUpdatedSelector:
-                    description: EventEndpointUpdatedSelector selects references to Topic used to to set the EventEndpointUpdated.
+                    description: EventEndpointUpdatedSelector selects references to Topic used to set the EventEndpointUpdated.
                     properties:
                       matchControllerRef:
                         description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.

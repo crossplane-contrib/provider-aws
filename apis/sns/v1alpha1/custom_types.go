@@ -46,8 +46,8 @@ type CustomPlatformApplicationParameters struct {
 	// +optional
 	EventDeliveryFailureRef *runtimev1alpha1.Reference `json:"eventDeliveryFailureRef,omitempty"`
 
-	// EventDeliveryFailureSelector selects references to Topic used to
-	// to set the EventDeliveryFailure.
+	// EventDeliveryFailureSelector selects references to Topic used to set the
+	// EventDeliveryFailure.
 	// +optional
 	EventDeliveryFailureSelector *runtimev1alpha1.Selector `json:"eventDeliveryFailureSelector,omitempty"`
 
@@ -56,8 +56,8 @@ type CustomPlatformApplicationParameters struct {
 	// +optional
 	EventEndpointCreatedRef *runtimev1alpha1.Reference `json:"eventEndpointCreatedRef,omitempty"`
 
-	// EventEndpointCreatedSelector selects references to Topic used to
-	// to set the EventEndpointCreated.
+	// EventEndpointCreatedSelector selects references to Topic used to set the
+	// EventEndpointCreated.
 	// +optional
 	EventEndpointCreatedSelector *runtimev1alpha1.Selector `json:"eventEndpointCreatedSelector,omitempty"`
 
@@ -66,8 +66,8 @@ type CustomPlatformApplicationParameters struct {
 	// +optional
 	EventEndpointDeletedRef *runtimev1alpha1.Reference `json:"eventEndpointDeletedRef,omitempty"`
 
-	// EventEndpointDeletedSelector selects references to Topic used to
-	// to set the EventEndpointDeleted.
+	// EventEndpointDeletedSelector selects references to Topic used to set the
+	// EventEndpointDeleted.
 	// +optional
 	EventEndpointDeletedSelector *runtimev1alpha1.Selector `json:"eventEndpointDeletedSelector,omitempty"`
 
@@ -76,15 +76,30 @@ type CustomPlatformApplicationParameters struct {
 	// +optional
 	EventEndpointUpdatedRef *runtimev1alpha1.Reference `json:"eventEndpointUpdatedRef,omitempty"`
 
-	// EventEndpointUpdatedSelector selects references to Topic used to
-	// to set the EventEndpointUpdated.
+	// EventEndpointUpdatedSelector selects references to Topic used to set the
+	// EventEndpointUpdated.
 	// +optional
 	EventEndpointUpdatedSelector *runtimev1alpha1.Selector `json:"eventEndpointUpdatedSelector,omitempty"`
 }
 
 // CustomPlatformEndpointParameters are the additional parameters for
 // PlatformEndpointParameters.
-type CustomPlatformEndpointParameters struct{}
+type CustomPlatformEndpointParameters struct {
+
+	// PlatformApplicationARN is ARN of the Platform Application that this Endpoint
+	// targets.
+	PlatformApplicationARN *string `json:"platformApplicationArn,omitempty"`
+
+	// PlatformApplicationARNRef is a reference to a a PlatformApplication used
+	// to set the PlatformApplicationARN.
+	// +optional
+	PlatformApplicationARNRef *runtimev1alpha1.Reference `json:"platformApplicationArnRef,omitempty"`
+
+	// PlatformApplicationARNSelector selects references to PlatformApplication
+	// used to set the PlatformApplicationARN.
+	// +optional
+	PlatformApplicationARNSelector *runtimev1alpha1.Selector `json:"platformApplicationArnSelector,omitempty"`
+}
 
 // CustomTopicParameters are the additional parameters for TopicParameters.
 type CustomTopicParameters struct{}
