@@ -161,9 +161,12 @@ type AWSPrincipal struct {
 	IAMRoleARNSelector *xpv1.Selector `json:"iamRoleArnSelector,omitempty"`
 }
 
-// Condition represents one condition inside of the set of conditions for
+// Condition represents a set of condition pairs for a bucket policy
+type Condition []ConditionPair
+
+// ConditionPair represents one condition inside of the set of conditions for
 // a bucket policy
-type Condition struct {
+type ConditionPair struct {
 	// ConditionKey is the key condition being applied to the parent condition
 	ConditionKey string `json:"key"`
 
@@ -183,6 +186,10 @@ type Condition struct {
 	// ConditionBooleanValue is the expected boolean value of the key from the parent condition
 	// +optional
 	ConditionBooleanValue *bool `json:"booleanValue,omitempty"`
+
+	// ConditionListValue is the list value of the key from the parent condition
+	// +optional
+	ConditionListValue []string `json:"listValue,omitempty"`
 }
 
 // An BucketPolicySpec defines the desired state of an

@@ -21,12 +21,17 @@ spec:
         resource:
           - "arn:aws:s3:::test-bucket"
         condition:
+          StringEquals:
+            - key: "aws:Key1"
+              stringValue: "value1"
+            - key: "aws:Key2"
+              stringValue: "value2"
           IpAddress:
-            key: "aws:SourceIp"
-            stringValue: "192.0.2.0/24"
+            - key: "aws:SourceIp"
+              stringValue: "192.0.2.0/24"
           NotIpAddress:
-            key: "aws:SourceIp"
-            stringValue: "192.0.2.188/32"
+            - key: "aws:SourceIp"
+              stringValue: "192.0.2.188/32"
     version: '2012-10-17'
   providerConfigRef:
     name: example

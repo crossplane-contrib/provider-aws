@@ -161,17 +161,21 @@ func SerializeBucketCondition(p map[string]v1alpha2.Condition) (interface{}, err
 	m := make(map[string]interface{})
 	for k, v := range p {
 		subMap := make(map[string]interface{})
-		switch {
-		case v.ConditionStringValue != nil:
-			subMap[v.ConditionKey] = *v.ConditionStringValue
-		case v.ConditionBooleanValue != nil:
-			subMap[v.ConditionKey] = *v.ConditionBooleanValue
-		case v.ConditionNumericValue != nil:
-			subMap[v.ConditionKey] = *v.ConditionNumericValue
-		case v.ConditionDateValue != nil:
-			subMap[v.ConditionKey] = v.ConditionDateValue.Time.Format("2006-01-02T15:04:05-0700")
-		default:
-			return nil, fmt.Errorf("no value provided for key with value %s, condition %s", v.ConditionKey, k)
+		for _, c := range v {
+			switch {
+			case c.ConditionStringValue != nil:
+				subMap[c.ConditionKey] = *c.ConditionStringValue
+			case c.ConditionBooleanValue != nil:
+				subMap[c.ConditionKey] = *c.ConditionBooleanValue
+			case c.ConditionNumericValue != nil:
+				subMap[c.ConditionKey] = *c.ConditionNumericValue
+			case c.ConditionDateValue != nil:
+				subMap[c.ConditionKey] = c.ConditionDateValue.Time.Format("2006-01-02T15:04:05-0700")
+			case c.ConditionListValue != nil:
+				subMap[c.ConditionKey] = c.ConditionListValue
+			default:
+				return nil, fmt.Errorf("no value provided for key with value %s, condition %s", c.ConditionKey, k)
+			}
 		}
 		m[k] = subMap
 	}

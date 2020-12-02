@@ -109,12 +109,18 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 				withResourcePath([]string{"arn:aws:s3:::test.s3.crossplane.com"}),
 				withConditionBlock(map[string]v1alpha2.Condition{
 					"test": {
-						ConditionKey:         "test",
-						ConditionStringValue: aws.String("testKey"),
+						{
+							ConditionKey:         "test",
+							ConditionStringValue: aws.String("testKey"),
+						},
+						{
+							ConditionKey:         "test2",
+							ConditionStringValue: aws.String("testKey2"),
+						},
 					},
 				}),
 			),
-			out: `{"Condition":{"test":{"test":"testKey"}},"Action":"s3:ListBucket","Effect":"Allow","Principal":{"AWS":["arn:aws:iam::111122223333:userARN","111122223333","arn:aws:iam::111122223333:roleARN"]},"Resource":"arn:aws:s3:::test.s3.crossplane.com","Sid":"1"}`,
+			out: `{"Condition":{"test":{"test":"testKey","test2":"testKey2"}},"Action":"s3:ListBucket","Effect":"Allow","Principal":{"AWS":["arn:aws:iam::111122223333:userARN","111122223333","arn:aws:iam::111122223333:roleARN"]},"Resource":"arn:aws:s3:::test.s3.crossplane.com","Sid":"1"}`,
 		},
 	}
 
