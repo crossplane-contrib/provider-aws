@@ -76,7 +76,6 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
 	"github.com/crossplane/provider-aws/pkg/controller/lambda/function"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
-	"github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbcluster"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbparametergroup"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/globalcluster"
@@ -134,7 +133,6 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		resourcerecordset.SetupResourceRecordSet,
 		hostedzone.SetupHostedZone,
 		secret.SetupSecret,
-		snstopic.SetupSNSTopic,
 		snssubscription.SetupSubscription,
 		queue.SetupQueue,
 		redshift.SetupCluster,

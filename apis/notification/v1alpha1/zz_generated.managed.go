@@ -75,6 +75,7 @@ func (mg *SNSSubscription) SetProviderReference(r *xpv1.Reference) {
 func (mg *SNSSubscription) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
+<<<<<<< HEAD
 
 // GetCondition of this SNSTopic.
 func (mg *SNSTopic) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
@@ -131,3 +132,5 @@ func (mg *SNSTopic) SetProviderReference(r *xpv1.Reference) {
 func (mg *SNSTopic) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
+=======
+>>>>>>> 1c1c531b (notification: removed SNSTopic in favor of generated Topic resource)

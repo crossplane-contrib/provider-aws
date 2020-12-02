@@ -117,3 +117,23 @@ func (mg *PlatformApplication) ResolveReferences(ctx context.Context, c client.R
 
 	return nil
 }
+
+// ResolveReferences of this Stage
+func (mg *PlatformEndpoint) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.forProvider.platformApplicationARN
+	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.PlatformApplicationARN),
+		Reference:    mg.Spec.ForProvider.PlatformApplicationARNRef,
+		Selector:     mg.Spec.ForProvider.PlatformApplicationARNSelector,
+		To:           reference.To{Managed: &PlatformApplication{}, List: &PlatformApplicationList{}},
+		Extract:      iamv1beta1.IAMRoleARN(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.platformApplicationARN")
+	}
+	mg.Spec.ForProvider.PlatformApplicationARN = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.PlatformApplicationARNRef = rsp.ResolvedReference
+	return nil
+}

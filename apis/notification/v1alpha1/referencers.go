@@ -23,6 +23,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
+
+	"github.com/crossplane/provider-aws/apis/sns/v1alpha1"
 )
 
 // ResolveReferences for SNS Subscription managed type
@@ -34,7 +36,7 @@ func (mg *SNSSubscription) ResolveReferences(ctx context.Context, c client.Reade
 		CurrentValue: mg.Spec.ForProvider.TopicARN,
 		Reference:    mg.Spec.ForProvider.TopicARNRef,
 		Selector:     mg.Spec.ForProvider.TopicARNSelector,
-		To:           reference.To{Managed: &SNSTopic{}, List: &SNSTopicList{}},
+		To:           reference.To{Managed: &v1alpha1.Topic{}, List: &v1alpha1.TopicList{}},
 		Extract:      reference.ExternalName(),
 	})
 

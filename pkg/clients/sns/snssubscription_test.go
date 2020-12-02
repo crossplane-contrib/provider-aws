@@ -39,6 +39,7 @@ var (
 	subStringFalse         = "false"
 	subStringTrue          = "true"
 	subBoolTrue            = true
+	topicArn               = "arn:dsda:1231"
 )
 
 // Subscription Attribute Modifier

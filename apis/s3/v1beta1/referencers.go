@@ -23,22 +23,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
-	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/sns/v1alpha1"
 )
-
-// SNSTopicARN returns a function that returns the ARN of the given SNS Topic.
-func SNSTopicARN() reference.ExtractValueFn {
-	return func(mg resource.Managed) string {
-		r, ok := mg.(*v1alpha1.SNSTopic)
-		if !ok {
-			return ""
-		}
-		return r.Status.AtProvider.ARN
-	}
-}
 
 // ResolveReferences of this Bucket
 func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error { // nolint:gocyclo
@@ -52,8 +40,8 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 				CurrentValue: reference.FromPtrValue(v.TopicArn),
 				Reference:    v.TopicArnRef,
 				Selector:     v.TopicArnSelector,
-				To:           reference.To{Managed: &v1alpha1.SNSTopic{}, List: &v1alpha1.SNSTopicList{}},
-				Extract:      SNSTopicARN(),
+				To:           reference.To{Managed: &v1alpha1.Topic{}, List: &v1alpha1.TopicList{}},
+				Extract:      reference.ExternalName(),
 			})
 			if err != nil {
 				return errors.Wrapf(err, "spec.forProvider.notificationConfiguration.topicConfigurations[%d].topicArn", i)

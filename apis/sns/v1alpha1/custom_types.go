@@ -101,5 +101,22 @@ type CustomPlatformEndpointParameters struct {
 	PlatformApplicationARNSelector *runtimev1alpha1.Selector `json:"platformApplicationArnSelector,omitempty"`
 }
 
+// TopicAttributes refers to AWS SNS Topic Attributes List
+// ref: https://docs.aws.amazon.com/cli/latest/reference/sns/get-topic-attributes.html#output
+type TopicAttributes string
+
+const (
+	// TopicDisplayName is Display Name of SNS Topic
+	TopicDisplayName TopicAttributes = "DisplayName"
+	// TopicDeliveryPolicy is Delivery Policy of SNS Topic
+	TopicDeliveryPolicy TopicAttributes = "DeliveryPolicy"
+	// TopicKmsMasterKeyID is KmsMasterKeyId of SNS Topic
+	TopicKmsMasterKeyID TopicAttributes = "KmsMasterKeyId"
+	// TopicPolicy is Policy of SNS Topic
+	TopicPolicy TopicAttributes = "Policy"
+	// TopicOwner is Owner of SNS Topic
+	TopicOwner TopicAttributes = "Owner"
+)
+
 // CustomTopicParameters are the additional parameters for TopicParameters.
 type CustomTopicParameters struct{}
