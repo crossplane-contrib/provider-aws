@@ -55,12 +55,96 @@ spec:
                 properties:
                   eventDeliveryFailure:
                     type: string
+                  eventDeliveryFailureRef:
+                    description: EventDeliveryFailureRef is a reference to a a Topic used to set the EventDeliveryFailure.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  eventDeliveryFailureSelector:
+                    description: EventDeliveryFailureSelector selects references to Topic used to to set the EventDeliveryFailure.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   eventEndpointCreated:
                     type: string
+                  eventEndpointCreatedRef:
+                    description: EventEndpointCreatedRef is a reference to a a Topic used to set the EventEndpointCreated.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  eventEndpointCreatedSelector:
+                    description: EventEndpointCreatedSelector selects references to Topic used to to set the EventEndpointCreated.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   eventEndpointDeleted:
                     type: string
+                  eventEndpointDeletedRef:
+                    description: EventEndpointDeletedRef is a reference to a a Topic used to set the EventEndpointDeleted.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  eventEndpointDeletedSelector:
+                    description: EventEndpointDeletedSelector selects references to Topic used to to set the EventEndpointDeleted.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   eventEndpointUpdated:
                     type: string
+                  eventEndpointUpdatedRef:
+                    description: EventEndpointUpdatedRef is a reference to a a Topic used to set the EventEndpointUpdated.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  eventEndpointUpdatedSelector:
+                    description: EventEndpointUpdatedSelector selects references to Topic used to to set the EventEndpointUpdated.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   failureFeedbackRoleARN:
                     type: string
                   failureFeedbackRoleARNRef:

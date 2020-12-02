@@ -58,5 +58,62 @@ func (mg *PlatformApplication) ResolveReferences(ctx context.Context, c client.R
 	}
 	mg.Spec.ForProvider.FailureFeedbackRoleARN = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.FailureFeedbackRoleARNRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.eventDeliveryFailure
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.EventDeliveryFailure),
+		Reference:    mg.Spec.ForProvider.EventDeliveryFailureRef,
+		Selector:     mg.Spec.ForProvider.EventDeliveryFailureSelector,
+		To:           reference.To{Managed: &Topic{}, List: &TopicList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.eventDeliveryFailure")
+	}
+	mg.Spec.ForProvider.EventDeliveryFailure = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.EventDeliveryFailureRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.eventEndpointCreated
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.EventEndpointCreated),
+		Reference:    mg.Spec.ForProvider.EventEndpointCreatedRef,
+		Selector:     mg.Spec.ForProvider.EventEndpointCreatedSelector,
+		To:           reference.To{Managed: &Topic{}, List: &TopicList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.eventEndpointCreated")
+	}
+	mg.Spec.ForProvider.EventEndpointCreated = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.EventEndpointCreatedRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.eventEndpointDeleted
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.EventEndpointDeleted),
+		Reference:    mg.Spec.ForProvider.EventEndpointDeletedRef,
+		Selector:     mg.Spec.ForProvider.EventEndpointDeletedSelector,
+		To:           reference.To{Managed: &Topic{}, List: &TopicList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.eventEndpointDeleted")
+	}
+	mg.Spec.ForProvider.EventEndpointDeleted = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.EventEndpointDeletedRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.eventEndpointUpdated
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.EventEndpointUpdated),
+		Reference:    mg.Spec.ForProvider.EventEndpointUpdatedRef,
+		Selector:     mg.Spec.ForProvider.EventEndpointUpdatedSelector,
+		To:           reference.To{Managed: &Topic{}, List: &TopicList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.eventEndpointUpdated")
+	}
+	mg.Spec.ForProvider.EventEndpointUpdated = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.EventEndpointUpdatedRef = rsp.ResolvedReference
+
 	return nil
 }

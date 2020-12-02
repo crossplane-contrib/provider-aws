@@ -40,6 +40,46 @@ type CustomPlatformApplicationParameters struct {
 	// to set the SuccessFeedbackRoleARN.
 	// +optional
 	SuccessFeedbackRoleARNSelector *runtimev1alpha1.Selector `json:"successFeedbackRoleARNSelector,omitempty"`
+
+	// EventDeliveryFailureRef is a reference to a a Topic used to set
+	// the EventDeliveryFailure.
+	// +optional
+	EventDeliveryFailureRef *runtimev1alpha1.Reference `json:"eventDeliveryFailureRef,omitempty"`
+
+	// EventDeliveryFailureSelector selects references to Topic used to
+	// to set the EventDeliveryFailure.
+	// +optional
+	EventDeliveryFailureSelector *runtimev1alpha1.Selector `json:"eventDeliveryFailureSelector,omitempty"`
+
+	// EventEndpointCreatedRef is a reference to a a Topic used to set
+	// the EventEndpointCreated.
+	// +optional
+	EventEndpointCreatedRef *runtimev1alpha1.Reference `json:"eventEndpointCreatedRef,omitempty"`
+
+	// EventEndpointCreatedSelector selects references to Topic used to
+	// to set the EventEndpointCreated.
+	// +optional
+	EventEndpointCreatedSelector *runtimev1alpha1.Selector `json:"eventEndpointCreatedSelector,omitempty"`
+
+	// EventEndpointDeletedRef is a reference to a a Topic used to set
+	// the EventEndpointDeleted.
+	// +optional
+	EventEndpointDeletedRef *runtimev1alpha1.Reference `json:"eventEndpointDeletedRef,omitempty"`
+
+	// EventEndpointDeletedSelector selects references to Topic used to
+	// to set the EventEndpointDeleted.
+	// +optional
+	EventEndpointDeletedSelector *runtimev1alpha1.Selector `json:"eventEndpointDeletedSelector,omitempty"`
+
+	// EventEndpointUpdatedRef is a reference to a a Topic used to set
+	// the EventEndpointUpdated.
+	// +optional
+	EventEndpointUpdatedRef *runtimev1alpha1.Reference `json:"eventEndpointUpdatedRef,omitempty"`
+
+	// EventEndpointUpdatedSelector selects references to Topic used to
+	// to set the EventEndpointUpdated.
+	// +optional
+	EventEndpointUpdatedSelector *runtimev1alpha1.Selector `json:"eventEndpointUpdatedSelector,omitempty"`
 }
 
 // CustomPlatformEndpointParameters are the additional parameters for
