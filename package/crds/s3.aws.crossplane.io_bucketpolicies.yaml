@@ -98,28 +98,36 @@ spec:
                           type: array
                         condition:
                           additionalProperties:
-                            description: Condition represents one condition inside of the set of conditions for a bucket policy
-                            properties:
-                              booleanValue:
-                                description: ConditionBooleanValue is the expected boolean value of the key from the parent condition
-                                type: boolean
-                              dateValue:
-                                description: ConditionDateValue is the expected string value of the key from the parent condition. The date value must be in ISO 8601 format. The time is always midnight UTC.
-                                format: date-time
-                                type: string
-                              key:
-                                description: ConditionKey is the key condition being applied to the parent condition
-                                type: string
-                              numericValue:
-                                description: ConditionNumericValue is the expected string value of the key from the parent condition
-                                format: int64
-                                type: integer
-                              stringValue:
-                                description: ConditionStringValue is the expected string value of the key from the parent condition
-                                type: string
-                            required:
-                            - key
-                            type: object
+                            description: Condition represents a set of condition pairs for a bucket policy
+                            items:
+                              description: ConditionPair represents one condition inside of the set of conditions for a bucket policy
+                              properties:
+                                booleanValue:
+                                  description: ConditionBooleanValue is the expected boolean value of the key from the parent condition
+                                  type: boolean
+                                dateValue:
+                                  description: ConditionDateValue is the expected string value of the key from the parent condition. The date value must be in ISO 8601 format. The time is always midnight UTC.
+                                  format: date-time
+                                  type: string
+                                key:
+                                  description: ConditionKey is the key condition being applied to the parent condition
+                                  type: string
+                                listValue:
+                                  description: ConditionListValue is the list value of the key from the parent condition
+                                  items:
+                                    type: string
+                                  type: array
+                                numericValue:
+                                  description: ConditionNumericValue is the expected string value of the key from the parent condition
+                                  format: int64
+                                  type: integer
+                                stringValue:
+                                  description: ConditionStringValue is the expected string value of the key from the parent condition
+                                  type: string
+                              required:
+                              - key
+                              type: object
+                            type: array
                           description: Condition specifies where conditions for policy are in effect. https://docs.aws.amazon.com/AmazonS3/latest/dev/amazon-s3-policy-keys.html
                           type: object
                         effect:
