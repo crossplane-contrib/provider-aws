@@ -19,11 +19,10 @@ package api
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -43,6 +42,7 @@ func SetupAPI(mgr ctrl.Manager, l logging.Logger) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.APIGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -50,27 +50,22 @@ func SetupAPI(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.API) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.API, _ *svcsdk.GetApisOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (*external) postObserve(_ context.Context, cr *svcapitypes.API, _ *svcsdk.GetApiOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	cr.SetConditions(v1alpha1.Available())
 	return obs, err
-}
-
-func (*external) filterList(cr *svcapitypes.API, list *svcsdk.GetApisOutput) *svcsdk.GetApisOutput {
-	res := &svcsdk.GetApisOutput{}
-	for _, api := range list.Items {
-		if meta.GetExternalName(cr) == aws.StringValue(api.Name) {
-			res.Items = append(res.Items, api)
-		}
-	}
-	return res
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.API) error {
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, _ *svcapitypes.API, _ *svcsdk.CreateApiOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	return cre, err
+func (*external) postCreate(_ context.Context, cr *svcapitypes.API, resp *svcsdk.CreateApiOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+	meta.SetExternalName(cr, aws.StringValue(resp.ApiId))
+	cre.ExternalNameAssigned = true
+	return cre, nil
 }
 
 func (*external) preUpdate(context.Context, *svcapitypes.API) error {
@@ -80,15 +75,16 @@ func (*external) preUpdate(context.Context, *svcapitypes.API) error {
 func (*external) postUpdate(_ context.Context, _ *svcapitypes.API, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
 	return upd, err
 }
-func lateInitialize(*svcapitypes.APIParameters, *svcsdk.GetApisOutput) error {
+func lateInitialize(*svcapitypes.APIParameters, *svcsdk.GetApiOutput) error {
 	return nil
 }
 
-func preGenerateGetApisInput(_ *svcapitypes.API, obj *svcsdk.GetApisInput) *svcsdk.GetApisInput {
+func preGenerateGetApiInput(_ *svcapitypes.API, obj *svcsdk.GetApiInput) *svcsdk.GetApiInput { //nolint:golint
 	return obj
 }
 
-func postGenerateGetApisInput(_ *svcapitypes.API, obj *svcsdk.GetApisInput) *svcsdk.GetApisInput {
+func postGenerateGetApiInput(cr *svcapitypes.API, obj *svcsdk.GetApiInput) *svcsdk.GetApiInput { //nolint:golint
+	obj.ApiId = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
@@ -98,7 +94,6 @@ func preGenerateCreateApiInput(_ *svcapitypes.API, obj *svcsdk.CreateApiInput) *
 }
 
 func postGenerateCreateApiInput(cr *svcapitypes.API, obj *svcsdk.CreateApiInput) *svcsdk.CreateApiInput { //nolint:golint
-	obj.Name = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
@@ -106,6 +101,7 @@ func preGenerateDeleteApiInput(_ *svcapitypes.API, obj *svcsdk.DeleteApiInput) *
 	return obj
 }
 
-func postGenerateDeleteApiInput(_ *svcapitypes.API, obj *svcsdk.DeleteApiInput) *svcsdk.DeleteApiInput { //nolint:golint
+func postGenerateDeleteApiInput(cr *svcapitypes.API, obj *svcsdk.DeleteApiInput) *svcsdk.DeleteApiInput { //nolint:golint
+	obj.ApiId = aws.String(meta.GetExternalName(cr))
 	return obj
 }

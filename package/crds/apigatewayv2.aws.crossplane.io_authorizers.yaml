@@ -106,12 +106,15 @@ spec:
                         description: A string representation of a URI with a length between [1-2048].
                         type: string
                     type: object
+                  name:
+                    type: string
                   region:
                     description: Region is which region the Authorizer will be created.
                     type: string
                 required:
                 - authorizerType
                 - identitySource
+                - name
                 - region
                 type: object
               providerConfigRef:
@@ -155,8 +158,6 @@ spec:
                 description: AuthorizerObservation defines the observed state of Authorizer
                 properties:
                   authorizerID:
-                    type: string
-                  name:
                     type: string
                 type: object
               conditions:

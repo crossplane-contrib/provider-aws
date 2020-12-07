@@ -22,32 +22,9 @@ import (
 	ec2 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
-
-// APIID extracts the resolved API's ID.
-func APIID() reference.ExtractValueFn {
-	return func(mg resource.Managed) string {
-		cr, ok := mg.(*API)
-		if !ok {
-			return ""
-		}
-		return reference.FromPtrValue(cr.Status.AtProvider.APIID)
-	}
-}
-
-// AuthorizerID extracts the resolved Authorizer's ID.
-func AuthorizerID() reference.ExtractValueFn {
-	return func(mg resource.Managed) string {
-		cr, ok := mg.(*Authorizer)
-		if !ok {
-			return ""
-		}
-		return reference.FromPtrValue(cr.Status.AtProvider.AuthorizerID)
-	}
-}
 
 // ResolveReferences of this Stage
 func (mg *Stage) ResolveReferences(ctx context.Context, c client.Reader) error {
@@ -59,7 +36,7 @@ func (mg *Stage) ResolveReferences(ctx context.Context, c client.Reader) error {
 		Reference:    mg.Spec.ForProvider.APIIDRef,
 		Selector:     mg.Spec.ForProvider.APIIDSelector,
 		To:           reference.To{Managed: &API{}, List: &APIList{}},
-		Extract:      APIID(),
+		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.apiId")
@@ -79,7 +56,7 @@ func (mg *Route) ResolveReferences(ctx context.Context, c client.Reader) error {
 		Reference:    mg.Spec.ForProvider.APIIDRef,
 		Selector:     mg.Spec.ForProvider.APIIDSelector,
 		To:           reference.To{Managed: &API{}, List: &APIList{}},
-		Extract:      APIID(),
+		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.apiId")
@@ -93,7 +70,7 @@ func (mg *Route) ResolveReferences(ctx context.Context, c client.Reader) error {
 		Reference:    mg.Spec.ForProvider.AuthorizerIDRef,
 		Selector:     mg.Spec.ForProvider.AuthorizerIDSelector,
 		To:           reference.To{Managed: &Authorizer{}, List: &AuthorizerList{}},
-		Extract:      AuthorizerID(),
+		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.authorizerId")
@@ -114,7 +91,7 @@ func (mg *RouteResponse) ResolveReferences(ctx context.Context, c client.Reader)
 		Reference:    mg.Spec.ForProvider.APIIDRef,
 		Selector:     mg.Spec.ForProvider.APIIDSelector,
 		To:           reference.To{Managed: &API{}, List: &APIList{}},
-		Extract:      APIID(),
+		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.apiId")
@@ -149,7 +126,7 @@ func (mg *Authorizer) ResolveReferences(ctx context.Context, c client.Reader) er
 		Reference:    mg.Spec.ForProvider.APIIDRef,
 		Selector:     mg.Spec.ForProvider.APIIDSelector,
 		To:           reference.To{Managed: &API{}, List: &APIList{}},
-		Extract:      APIID(),
+		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.apiId")
@@ -169,7 +146,7 @@ func (mg *Integration) ResolveReferences(ctx context.Context, c client.Reader) e
 		Reference:    mg.Spec.ForProvider.APIIDRef,
 		Selector:     mg.Spec.ForProvider.APIIDSelector,
 		To:           reference.To{Managed: &API{}, List: &APIList{}},
-		Extract:      APIID(),
+		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.apiId")
@@ -189,7 +166,7 @@ func (mg *IntegrationResponse) ResolveReferences(ctx context.Context, c client.R
 		Reference:    mg.Spec.ForProvider.APIIDRef,
 		Selector:     mg.Spec.ForProvider.APIIDSelector,
 		To:           reference.To{Managed: &API{}, List: &APIList{}},
-		Extract:      APIID(),
+		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.apiId")
@@ -223,7 +200,7 @@ func (mg *Deployment) ResolveReferences(ctx context.Context, c client.Reader) er
 		Reference:    mg.Spec.ForProvider.APIIDRef,
 		Selector:     mg.Spec.ForProvider.APIIDSelector,
 		To:           reference.To{Managed: &API{}, List: &APIList{}},
-		Extract:      APIID(),
+		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.apiId")
@@ -257,7 +234,7 @@ func (mg *Model) ResolveReferences(ctx context.Context, c client.Reader) error {
 		Reference:    mg.Spec.ForProvider.APIIDRef,
 		Selector:     mg.Spec.ForProvider.APIIDSelector,
 		To:           reference.To{Managed: &API{}, List: &APIList{}},
-		Extract:      APIID(),
+		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.apiId")
@@ -277,7 +254,7 @@ func (mg *APIMapping) ResolveReferences(ctx context.Context, c client.Reader) er
 		Reference:    mg.Spec.ForProvider.APIIDRef,
 		Selector:     mg.Spec.ForProvider.APIIDSelector,
 		To:           reference.To{Managed: &API{}, List: &APIList{}},
-		Extract:      APIID(),
+		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.apiId")

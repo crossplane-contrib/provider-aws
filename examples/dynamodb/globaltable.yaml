@@ -1,0 +1,9 @@
+apiVersion: dynamodb.aws.crossplane.io/v1alpha1
+kind: GlobalTable
+metadata:
+  name: sample-table # GlobalTable has to have the same name with Tables it exposes globally.
+spec:
+  forProvider:
+    region: us-east-1
+    replicationGroup:
+      - regionName: us-east-1

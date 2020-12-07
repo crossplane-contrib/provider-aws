@@ -49,19 +49,12 @@ func SetupStage(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.Stage) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.Stage, _ *svcsdk.GetStagesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
-	cr.SetConditions(v1alpha1.Available())
-	return obs, err
-}
-
-func (*external) filterList(cr *svcapitypes.Stage, list *svcsdk.GetStagesOutput) *svcsdk.GetStagesOutput {
-	res := &svcsdk.GetStagesOutput{}
-	for _, stage := range list.Items {
-		if meta.GetExternalName(cr) == aws.StringValue(stage.StageName) {
-			res.Items = append(res.Items, stage)
-		}
+func (*external) postObserve(_ context.Context, cr *svcapitypes.Stage, _ *svcsdk.GetStageOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
 	}
-	return res
+	cr.SetConditions(v1alpha1.Available())
+	return obs, nil
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.Stage) error {
@@ -79,16 +72,17 @@ func (*external) preUpdate(context.Context, *svcapitypes.Stage) error {
 func (*external) postUpdate(_ context.Context, _ *svcapitypes.Stage, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
 	return upd, err
 }
-func lateInitialize(*svcapitypes.StageParameters, *svcsdk.GetStagesOutput) error {
+func lateInitialize(*svcapitypes.StageParameters, *svcsdk.GetStageOutput) error {
 	return nil
 }
 
-func preGenerateGetStagesInput(_ *svcapitypes.Stage, obj *svcsdk.GetStagesInput) *svcsdk.GetStagesInput {
+func preGenerateGetStageInput(_ *svcapitypes.Stage, obj *svcsdk.GetStageInput) *svcsdk.GetStageInput {
 	return obj
 }
 
-func postGenerateGetStagesInput(cr *svcapitypes.Stage, obj *svcsdk.GetStagesInput) *svcsdk.GetStagesInput {
+func postGenerateGetStageInput(cr *svcapitypes.Stage, obj *svcsdk.GetStageInput) *svcsdk.GetStageInput {
 	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.StageName = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 
@@ -102,12 +96,12 @@ func postGenerateCreateStageInput(cr *svcapitypes.Stage, obj *svcsdk.CreateStage
 	return obj
 }
 
-func preGenerateDeleteStageInput(cr *svcapitypes.Stage, obj *svcsdk.DeleteStageInput) *svcsdk.DeleteStageInput {
-	obj.StageName = aws.String(meta.GetExternalName(cr))
-	obj.ApiId = cr.Spec.ForProvider.CustomStageParameters.APIID
+func preGenerateDeleteStageInput(_ *svcapitypes.Stage, obj *svcsdk.DeleteStageInput) *svcsdk.DeleteStageInput {
 	return obj
 }
 
-func postGenerateDeleteStageInput(_ *svcapitypes.Stage, obj *svcsdk.DeleteStageInput) *svcsdk.DeleteStageInput {
+func postGenerateDeleteStageInput(cr *svcapitypes.Stage, obj *svcsdk.DeleteStageInput) *svcsdk.DeleteStageInput {
+	obj.StageName = aws.String(meta.GetExternalName(cr))
+	obj.ApiId = cr.Spec.ForProvider.CustomStageParameters.APIID
 	return obj
 }

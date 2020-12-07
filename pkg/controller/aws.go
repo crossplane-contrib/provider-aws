@@ -42,7 +42,9 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/config"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
-	"github.com/crossplane/provider-aws/pkg/controller/database/dynamodb"
+	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/backup"
+	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/globaltable"
+	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/table"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/elasticip"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/internetgateway"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/natgateway"
@@ -111,7 +113,6 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		certificateauthority.SetupCertificateAuthority,
 		certificateauthoritypermission.SetupCertificateAuthorityPermission,
 		acm.SetupCertificate,
-		dynamodb.SetupDynamoTable,
 		resourcerecordset.SetupResourceRecordSet,
 		hostedzone.SetupHostedZone,
 		snstopic.SetupSNSTopic,
@@ -135,6 +136,9 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		fargateprofile.SetupFargateProfile,
 		activity.SetupActivity,
 		statemachine.SetupStateMachine,
+		table.SetupTable,
+		backup.SetupBackup,
+		globaltable.SetupGlobalTable,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err

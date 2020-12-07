@@ -49,22 +49,12 @@ func SetupDomainName(mgr ctrl.Manager, l logging.Logger) error {
 func (*external) preObserve(context.Context, *svcapitypes.DomainName) error {
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.DomainName, _ *svcsdk.GetDomainNamesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func (*external) postObserve(_ context.Context, cr *svcapitypes.DomainName, _ *svcsdk.GetDomainNameOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
 	cr.SetConditions(v1alpha1.Available())
 	return obs, nil
-}
-
-func (*external) filterList(cr *svcapitypes.DomainName, list *svcsdk.GetDomainNamesOutput) *svcsdk.GetDomainNamesOutput {
-	res := &svcsdk.GetDomainNamesOutput{}
-	for _, dn := range list.Items {
-		if meta.GetExternalName(cr) == aws.StringValue(dn.DomainName) {
-			res.Items = append(res.Items, dn)
-		}
-	}
-	return res
 }
 
 func (*external) preCreate(context.Context, *svcapitypes.DomainName) error {
@@ -82,15 +72,16 @@ func (*external) preUpdate(context.Context, *svcapitypes.DomainName) error {
 func (*external) postUpdate(_ context.Context, _ *svcapitypes.DomainName, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
 	return upd, err
 }
-func lateInitialize(*svcapitypes.DomainNameParameters, *svcsdk.GetDomainNamesOutput) error {
+func lateInitialize(*svcapitypes.DomainNameParameters, *svcsdk.GetDomainNameOutput) error {
 	return nil
 }
 
-func preGenerateGetDomainNamesInput(_ *svcapitypes.DomainName, obj *svcsdk.GetDomainNamesInput) *svcsdk.GetDomainNamesInput {
+func preGenerateGetDomainNameInput(_ *svcapitypes.DomainName, obj *svcsdk.GetDomainNameInput) *svcsdk.GetDomainNameInput {
 	return obj
 }
 
-func postGenerateGetDomainNamesInput(_ *svcapitypes.DomainName, obj *svcsdk.GetDomainNamesInput) *svcsdk.GetDomainNamesInput {
+func postGenerateGetDomainNameInput(cr *svcapitypes.DomainName, obj *svcsdk.GetDomainNameInput) *svcsdk.GetDomainNameInput {
+	obj.DomainName = aws.String(meta.GetExternalName(cr))
 	return obj
 }
 

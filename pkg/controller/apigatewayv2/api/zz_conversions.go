@@ -30,134 +30,52 @@ import (
 // empty object, hence need to return a new pointer.
 // TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
 // ACK doesn't support not generating if file exists.
-// GenerateGetApisInput returns input for read
-// operation.
-func GenerateGetApisInput(cr *svcapitypes.API) *svcsdk.GetApisInput {
-	res := preGenerateGetApisInput(cr, &svcsdk.GetApisInput{})
 
-	return postGenerateGetApisInput(cr, res)
+// GenerateGetApiInput returns input for read
+// operation.
+func GenerateGetApiInput(cr *svcapitypes.API) *svcsdk.GetApiInput {
+	res := preGenerateGetApiInput(cr, &svcsdk.GetApiInput{})
+
+	if cr.Status.AtProvider.APIID != nil {
+		res.SetApiId(*cr.Status.AtProvider.APIID)
+	}
+
+	return postGenerateGetApiInput(cr, res)
 }
 
 // GenerateAPI returns the current state in the form of *svcapitypes.API.
-func GenerateAPI(resp *svcsdk.GetApisOutput) *svcapitypes.API {
+func GenerateAPI(resp *svcsdk.GetApiOutput) *svcapitypes.API {
 	cr := &svcapitypes.API{}
 
-	found := false
-	for _, elem := range resp.Items {
-		if elem.ApiEndpoint != nil {
-			cr.Status.AtProvider.APIEndpoint = elem.ApiEndpoint
-		}
-		if elem.ApiGatewayManaged != nil {
-			cr.Status.AtProvider.APIGatewayManaged = elem.ApiGatewayManaged
-		}
-		if elem.ApiId != nil {
-			cr.Status.AtProvider.APIID = elem.ApiId
-		}
-		if elem.ApiKeySelectionExpression != nil {
-			cr.Spec.ForProvider.APIKeySelectionExpression = elem.ApiKeySelectionExpression
-		}
-		if elem.CorsConfiguration != nil {
-			f4 := &svcapitypes.Cors{}
-			if elem.CorsConfiguration.AllowCredentials != nil {
-				f4.AllowCredentials = elem.CorsConfiguration.AllowCredentials
-			}
-			if elem.CorsConfiguration.AllowHeaders != nil {
-				f4f1 := []*string{}
-				for _, f4f1iter := range elem.CorsConfiguration.AllowHeaders {
-					var f4f1elem string
-					f4f1elem = *f4f1iter
-					f4f1 = append(f4f1, &f4f1elem)
-				}
-				f4.AllowHeaders = f4f1
-			}
-			if elem.CorsConfiguration.AllowMethods != nil {
-				f4f2 := []*string{}
-				for _, f4f2iter := range elem.CorsConfiguration.AllowMethods {
-					var f4f2elem string
-					f4f2elem = *f4f2iter
-					f4f2 = append(f4f2, &f4f2elem)
-				}
-				f4.AllowMethods = f4f2
-			}
-			if elem.CorsConfiguration.AllowOrigins != nil {
-				f4f3 := []*string{}
-				for _, f4f3iter := range elem.CorsConfiguration.AllowOrigins {
-					var f4f3elem string
-					f4f3elem = *f4f3iter
-					f4f3 = append(f4f3, &f4f3elem)
-				}
-				f4.AllowOrigins = f4f3
-			}
-			if elem.CorsConfiguration.ExposeHeaders != nil {
-				f4f4 := []*string{}
-				for _, f4f4iter := range elem.CorsConfiguration.ExposeHeaders {
-					var f4f4elem string
-					f4f4elem = *f4f4iter
-					f4f4 = append(f4f4, &f4f4elem)
-				}
-				f4.ExposeHeaders = f4f4
-			}
-			if elem.CorsConfiguration.MaxAge != nil {
-				f4.MaxAge = elem.CorsConfiguration.MaxAge
-			}
-			cr.Spec.ForProvider.CorsConfiguration = f4
-		}
-		if elem.CreatedDate != nil {
-			cr.Status.AtProvider.CreatedDate = &metav1.Time{*elem.CreatedDate}
-		}
-		if elem.Description != nil {
-			cr.Spec.ForProvider.Description = elem.Description
-		}
-		if elem.DisableExecuteApiEndpoint != nil {
-			cr.Spec.ForProvider.DisableExecuteAPIEndpoint = elem.DisableExecuteApiEndpoint
-		}
-		if elem.DisableSchemaValidation != nil {
-			cr.Spec.ForProvider.DisableSchemaValidation = elem.DisableSchemaValidation
-		}
-		if elem.ImportInfo != nil {
-			f9 := []*string{}
-			for _, f9iter := range elem.ImportInfo {
-				var f9elem string
-				f9elem = *f9iter
-				f9 = append(f9, &f9elem)
-			}
-			cr.Status.AtProvider.ImportInfo = f9
-		}
-		if elem.Name != nil {
-			cr.Status.AtProvider.Name = elem.Name
-		}
-		if elem.ProtocolType != nil {
-			cr.Spec.ForProvider.ProtocolType = elem.ProtocolType
-		}
-		if elem.RouteSelectionExpression != nil {
-			cr.Spec.ForProvider.RouteSelectionExpression = elem.RouteSelectionExpression
-		}
-		if elem.Tags != nil {
-			f13 := map[string]*string{}
-			for f13key, f13valiter := range elem.Tags {
-				var f13val string
-				f13val = *f13valiter
-				f13[f13key] = &f13val
-			}
-			cr.Spec.ForProvider.Tags = f13
-		}
-		if elem.Version != nil {
-			cr.Spec.ForProvider.Version = elem.Version
-		}
-		if elem.Warnings != nil {
-			f15 := []*string{}
-			for _, f15iter := range elem.Warnings {
-				var f15elem string
-				f15elem = *f15iter
-				f15 = append(f15, &f15elem)
-			}
-			cr.Status.AtProvider.Warnings = f15
-		}
-		found = true
-		break
+	if resp.ApiEndpoint != nil {
+		cr.Status.AtProvider.APIEndpoint = resp.ApiEndpoint
 	}
-	if !found {
-		return cr
+	if resp.ApiGatewayManaged != nil {
+		cr.Status.AtProvider.APIGatewayManaged = resp.ApiGatewayManaged
+	}
+	if resp.ApiId != nil {
+		cr.Status.AtProvider.APIID = resp.ApiId
+	}
+	if resp.CreatedDate != nil {
+		cr.Status.AtProvider.CreatedDate = &metav1.Time{*resp.CreatedDate}
+	}
+	if resp.ImportInfo != nil {
+		f9 := []*string{}
+		for _, f9iter := range resp.ImportInfo {
+			var f9elem string
+			f9elem = *f9iter
+			f9 = append(f9, &f9elem)
+		}
+		cr.Status.AtProvider.ImportInfo = f9
+	}
+	if resp.Warnings != nil {
+		f15 := []*string{}
+		for _, f15iter := range resp.Warnings {
+			var f15elem string
+			f15elem = *f15iter
+			f15 = append(f15, &f15elem)
+		}
+		cr.Status.AtProvider.Warnings = f15
 	}
 
 	return cr
@@ -228,6 +146,9 @@ func GenerateCreateApiInput(cr *svcapitypes.API) *svcsdk.CreateApiInput {
 	if cr.Spec.ForProvider.DisableSchemaValidation != nil {
 		res.SetDisableSchemaValidation(*cr.Spec.ForProvider.DisableSchemaValidation)
 	}
+	if cr.Spec.ForProvider.Name != nil {
+		res.SetName(*cr.Spec.ForProvider.Name)
+	}
 	if cr.Spec.ForProvider.ProtocolType != nil {
 		res.SetProtocolType(*cr.Spec.ForProvider.ProtocolType)
 	}
@@ -238,13 +159,13 @@ func GenerateCreateApiInput(cr *svcapitypes.API) *svcsdk.CreateApiInput {
 		res.SetRouteSelectionExpression(*cr.Spec.ForProvider.RouteSelectionExpression)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f9 := map[string]*string{}
-		for f9key, f9valiter := range cr.Spec.ForProvider.Tags {
-			var f9val string
-			f9val = *f9valiter
-			f9[f9key] = &f9val
+		f10 := map[string]*string{}
+		for f10key, f10valiter := range cr.Spec.ForProvider.Tags {
+			var f10val string
+			f10val = *f10valiter
+			f10[f10key] = &f10val
 		}
-		res.SetTags(f9)
+		res.SetTags(f10)
 	}
 	if cr.Spec.ForProvider.Target != nil {
 		res.SetTarget(*cr.Spec.ForProvider.Target)

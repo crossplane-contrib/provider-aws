@@ -43,6 +43,9 @@ type APIParameters struct {
 	DisableSchemaValidation *bool `json:"disableSchemaValidation,omitempty"`
 
 	// +kubebuilder:validation:Required
+	Name *string `json:"name"`
+
+	// +kubebuilder:validation:Required
 	ProtocolType *string `json:"protocolType"`
 
 	RouteKey *string `json:"routeKey,omitempty"`
@@ -74,8 +77,6 @@ type APIObservation struct {
 	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
 
 	ImportInfo []*string `json:"importInfo,omitempty"`
-
-	Name *string `json:"name,omitempty"`
 
 	Warnings []*string `json:"warnings,omitempty"`
 }

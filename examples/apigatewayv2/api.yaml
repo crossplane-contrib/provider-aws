@@ -5,4 +5,5 @@ metadata:
 spec:
   forProvider:
     region: us-west-2
+    name: test-api
     protocolType: HTTP

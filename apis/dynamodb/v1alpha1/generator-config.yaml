@@ -1,0 +1,19 @@
+ignore:
+  field_paths:
+    - CreateTableInput.TableName
+    - DeleteTableInput.TableName
+    - CreateBackupInput.TableName
+    - CreateGlobalTableInput.GlobalTableName
+resources:
+  Table:
+    exceptions:
+      codes:
+        404: ResourceNotFoundException
+  GlobalTable:
+    exceptions:
+      codes:
+        404: GlobalTableNotFoundException
+  Backup:
+    exceptions:
+      codes:
+        404: BackupNotFoundException
