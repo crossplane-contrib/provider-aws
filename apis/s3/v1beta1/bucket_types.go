@@ -23,7 +23,9 @@ import (
 
 // BucketParameters are parameters for configuring the calls made to AWS Bucket API.
 type BucketParameters struct {
-	// The canned ACL to apply to the bucket.
+	// The canned ACL to apply to the bucket. Note that either canned ACL or specific access
+	// permissions are required. If neither (or both) are provided, the creation of the bucket
+	// will fail.
 	// +kubebuilder:validation:Enum=private;public-read;public-read-write;authenticated-read
 	// +optional
 	ACL *string `json:"acl,omitempty"`

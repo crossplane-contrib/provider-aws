@@ -117,6 +117,10 @@ func TestObserve(t *testing.T) {
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
+					ConnectionDetails: map[string][]byte{
+						corev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(s3Testing.BucketName),
+						ResourceCredentialsSecretRegionKey:                []byte(s3Testing.Region),
+					},
 				},
 			},
 		},
@@ -163,6 +167,10 @@ func TestObserve(t *testing.T) {
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
+					ConnectionDetails: map[string][]byte{
+						corev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(s3Testing.BucketName),
+						ResourceCredentialsSecretRegionKey:                []byte(s3Testing.Region),
+					},
 				},
 			},
 		},
