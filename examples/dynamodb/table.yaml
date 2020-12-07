@@ -1,5 +1,5 @@
-apiVersion: database.aws.crossplane.io/v1alpha1
-kind: DynamoTable
+apiVersion: dynamodb.aws.crossplane.io/v1alpha1
+kind: Table
 metadata:
   name: sample-table
 spec:
@@ -11,11 +11,9 @@ spec:
     keySchema:
       - attributeName: attribute1
         keyType: HASH
-    provisionedThroughput: 
+    provisionedThroughput:
       readCapacityUnits: 1
       writeCapacityUnits: 1
-    tags:
-      - key: k
-        value: v
-  providerConfigRef:
-    name: example
+    streamSpecification:
+      streamEnabled: true
+      streamViewType: NEW_AND_OLD_IMAGES

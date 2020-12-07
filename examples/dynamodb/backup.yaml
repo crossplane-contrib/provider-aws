@@ -1,0 +1,10 @@
+apiVersion: dynamodb.aws.crossplane.io/v1alpha1
+kind: Backup
+metadata:
+  name: sample-backup
+spec:
+  forProvider:
+    region: us-east-1
+    backupName: sample-backup # backup id is used as external-name.
+    tableNameRef:
+      name: sample-table

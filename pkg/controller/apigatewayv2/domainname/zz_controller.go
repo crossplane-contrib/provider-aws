@@ -37,7 +37,7 @@ import (
 )
 
 const (
-	errUnexpectedObject = "managed resource is not an repository resource"
+	errUnexpectedObject = "managed resource is not an DomainName resource"
 
 	errCreateSession = "cannot create a new session"
 	errCreate        = "cannot create DomainName in AWS"
@@ -79,17 +79,10 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 			ResourceExists: false,
 		}, nil
 	}
-	input := GenerateGetDomainNamesInput(cr)
-	// TODO(muvaf): Generated code has an assumption about the module name of the type (svcapitypes)
-	// but that doesn't always hold true.
-
-	resp, err := e.client.GetDomainNamesWithContext(ctx, input)
+	input := GenerateGetDomainNameInput(cr)
+	resp, err := e.client.GetDomainNameWithContext(ctx, input)
 	if err != nil {
 		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
-	}
-	resp = e.filterList(cr, resp)
-	if len(resp.Items) == 0 {
-		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
 	lateInitialize(&cr.Spec.ForProvider, resp)

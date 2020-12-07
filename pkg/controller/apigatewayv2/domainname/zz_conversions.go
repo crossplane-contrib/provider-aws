@@ -21,7 +21,6 @@ package domainname
 import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/apigatewayv2/v1alpha1"
 )
@@ -30,85 +29,28 @@ import (
 // empty object, hence need to return a new pointer.
 // TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
 // ACK doesn't support not generating if file exists.
-// GenerateGetDomainNamesInput returns input for read
-// operation.
-func GenerateGetDomainNamesInput(cr *svcapitypes.DomainName) *svcsdk.GetDomainNamesInput {
-	res := preGenerateGetDomainNamesInput(cr, &svcsdk.GetDomainNamesInput{})
 
-	return postGenerateGetDomainNamesInput(cr, res)
+// GenerateGetDomainNameInput returns input for read
+// operation.
+func GenerateGetDomainNameInput(cr *svcapitypes.DomainName) *svcsdk.GetDomainNameInput {
+	res := preGenerateGetDomainNameInput(cr, &svcsdk.GetDomainNameInput{})
+
+	if cr.Status.AtProvider.DomainName != nil {
+		res.SetDomainName(*cr.Status.AtProvider.DomainName)
+	}
+
+	return postGenerateGetDomainNameInput(cr, res)
 }
 
 // GenerateDomainName returns the current state in the form of *svcapitypes.DomainName.
-func GenerateDomainName(resp *svcsdk.GetDomainNamesOutput) *svcapitypes.DomainName {
+func GenerateDomainName(resp *svcsdk.GetDomainNameOutput) *svcapitypes.DomainName {
 	cr := &svcapitypes.DomainName{}
 
-	found := false
-	for _, elem := range resp.Items {
-		if elem.ApiMappingSelectionExpression != nil {
-			cr.Status.AtProvider.APIMappingSelectionExpression = elem.ApiMappingSelectionExpression
-		}
-		if elem.DomainName != nil {
-			cr.Status.AtProvider.DomainName = elem.DomainName
-		}
-		if elem.DomainNameConfigurations != nil {
-			f2 := []*svcapitypes.DomainNameConfiguration{}
-			for _, f2iter := range elem.DomainNameConfigurations {
-				f2elem := &svcapitypes.DomainNameConfiguration{}
-				if f2iter.ApiGatewayDomainName != nil {
-					f2elem.APIGatewayDomainName = f2iter.ApiGatewayDomainName
-				}
-				if f2iter.CertificateArn != nil {
-					f2elem.CertificateARN = f2iter.CertificateArn
-				}
-				if f2iter.CertificateName != nil {
-					f2elem.CertificateName = f2iter.CertificateName
-				}
-				if f2iter.CertificateUploadDate != nil {
-					f2elem.CertificateUploadDate = &metav1.Time{*f2iter.CertificateUploadDate}
-				}
-				if f2iter.DomainNameStatus != nil {
-					f2elem.DomainNameStatus = f2iter.DomainNameStatus
-				}
-				if f2iter.DomainNameStatusMessage != nil {
-					f2elem.DomainNameStatusMessage = f2iter.DomainNameStatusMessage
-				}
-				if f2iter.EndpointType != nil {
-					f2elem.EndpointType = f2iter.EndpointType
-				}
-				if f2iter.HostedZoneId != nil {
-					f2elem.HostedZoneID = f2iter.HostedZoneId
-				}
-				if f2iter.SecurityPolicy != nil {
-					f2elem.SecurityPolicy = f2iter.SecurityPolicy
-				}
-				f2 = append(f2, f2elem)
-			}
-			cr.Spec.ForProvider.DomainNameConfigurations = f2
-		}
-		if elem.MutualTlsAuthentication != nil {
-			f3 := &svcapitypes.MutualTLSAuthenticationInput{}
-			if elem.MutualTlsAuthentication.TruststoreUri != nil {
-				f3.TruststoreURI = elem.MutualTlsAuthentication.TruststoreUri
-			}
-			if elem.MutualTlsAuthentication.TruststoreVersion != nil {
-				f3.TruststoreVersion = elem.MutualTlsAuthentication.TruststoreVersion
-			}
-			cr.Spec.ForProvider.MutualTLSAuthentication = f3
-		}
-		if elem.Tags != nil {
-			f4 := map[string]*string{}
-			for f4key, f4valiter := range elem.Tags {
-				var f4val string
-				f4val = *f4valiter
-				f4[f4key] = &f4val
-			}
-			cr.Spec.ForProvider.Tags = f4
-		}
-		found = true
-		break
+	if resp.ApiMappingSelectionExpression != nil {
+		cr.Status.AtProvider.APIMappingSelectionExpression = resp.ApiMappingSelectionExpression
 	}
-	if !found {
-		return cr
+	if resp.DomainName != nil {
+		cr.Status.AtProvider.DomainName = resp.DomainName
 	}
 
 	return cr

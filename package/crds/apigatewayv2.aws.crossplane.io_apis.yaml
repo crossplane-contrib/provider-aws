@@ -92,6 +92,8 @@ spec:
                     type: boolean
                   disableSchemaValidation:
                     type: boolean
+                  name:
+                    type: string
                   protocolType:
                     type: string
                   region:
@@ -110,6 +112,7 @@ spec:
                   version:
                     type: string
                 required:
+                - name
                 - protocolType
                 - region
                 type: object
@@ -166,8 +169,6 @@ spec:
                     items:
                       type: string
                     type: array
-                  name:
-                    type: string
                   warnings:
                     items:
                       type: string

@@ -30,43 +30,37 @@ import (
 // empty object, hence need to return a new pointer.
 // TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
 // ACK doesn't support not generating if file exists.
-// GenerateGetDeploymentsInput returns input for read
-// operation.
-func GenerateGetDeploymentsInput(cr *svcapitypes.Deployment) *svcsdk.GetDeploymentsInput {
-	res := preGenerateGetDeploymentsInput(cr, &svcsdk.GetDeploymentsInput{})
 
-	return postGenerateGetDeploymentsInput(cr, res)
+// GenerateGetDeploymentInput returns input for read
+// operation.
+func GenerateGetDeploymentInput(cr *svcapitypes.Deployment) *svcsdk.GetDeploymentInput {
+	res := preGenerateGetDeploymentInput(cr, &svcsdk.GetDeploymentInput{})
+
+	if cr.Status.AtProvider.DeploymentID != nil {
+		res.SetDeploymentId(*cr.Status.AtProvider.DeploymentID)
+	}
+
+	return postGenerateGetDeploymentInput(cr, res)
 }
 
 // GenerateDeployment returns the current state in the form of *svcapitypes.Deployment.
-func GenerateDeployment(resp *svcsdk.GetDeploymentsOutput) *svcapitypes.Deployment {
+func GenerateDeployment(resp *svcsdk.GetDeploymentOutput) *svcapitypes.Deployment {
 	cr := &svcapitypes.Deployment{}
 
-	found := false
-	for _, elem := range resp.Items {
-		if elem.AutoDeployed != nil {
-			cr.Status.AtProvider.AutoDeployed = elem.AutoDeployed
-		}
-		if elem.CreatedDate != nil {
-			cr.Status.AtProvider.CreatedDate = &metav1.Time{*elem.CreatedDate}
-		}
-		if elem.DeploymentId != nil {
-			cr.Status.AtProvider.DeploymentID = elem.DeploymentId
-		}
-		if elem.DeploymentStatus != nil {
-			cr.Status.AtProvider.DeploymentStatus = elem.DeploymentStatus
-		}
-		if elem.DeploymentStatusMessage != nil {
-			cr.Status.AtProvider.DeploymentStatusMessage = elem.DeploymentStatusMessage
-		}
-		if elem.Description != nil {
-			cr.Spec.ForProvider.Description = elem.Description
-		}
-		found = true
-		break
+	if resp.AutoDeployed != nil {
+		cr.Status.AtProvider.AutoDeployed = resp.AutoDeployed
 	}
-	if !found {
-		return cr
+	if resp.CreatedDate != nil {
+		cr.Status.AtProvider.CreatedDate = &metav1.Time{*resp.CreatedDate}
+	}
+	if resp.DeploymentId != nil {
+		cr.Status.AtProvider.DeploymentID = resp.DeploymentId
+	}
+	if resp.DeploymentStatus != nil {
+		cr.Status.AtProvider.DeploymentStatus = resp.DeploymentStatus
+	}
+	if resp.DeploymentStatusMessage != nil {
+		cr.Status.AtProvider.DeploymentStatusMessage = resp.DeploymentStatusMessage
 	}
 
 	return cr

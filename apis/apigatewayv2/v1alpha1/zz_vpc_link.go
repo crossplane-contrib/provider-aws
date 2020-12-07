@@ -30,6 +30,9 @@ type VPCLinkParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 
+	// +kubebuilder:validation:Required
+	Name *string `json:"name"`
+
 	Tags                    map[string]*string `json:"tags,omitempty"`
 	CustomVPCLinkParameters `json:",inline"`
 }
@@ -43,8 +46,6 @@ type VPCLinkSpec struct {
 // VPCLinkObservation defines the observed state of VPCLink
 type VPCLinkObservation struct {
 	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
-
-	Name *string `json:"name,omitempty"`
 
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 
