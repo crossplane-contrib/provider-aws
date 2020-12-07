@@ -41,6 +41,7 @@ import (
 	route53v1alpha1 "github.com/crossplane/provider-aws/apis/route53/v1alpha1"
 	s3v1alpha2 "github.com/crossplane/provider-aws/apis/s3/v1alpha2"
 	s3v1beta1 "github.com/crossplane/provider-aws/apis/s3/v1beta1"
+	sfnv1alpha1 "github.com/crossplane/provider-aws/apis/sfn/v1alpha1"
 	sqsv1beta1 "github.com/crossplane/provider-aws/apis/sqs/v1beta1"
 	awsv1alpha3 "github.com/crossplane/provider-aws/apis/v1alpha3"
 	awsv1beta1 "github.com/crossplane/provider-aws/apis/v1beta1"
@@ -72,6 +73,7 @@ func init() {
 		eksv1alpha1.SchemeBuilder.AddToScheme,
 		ecrv1alpha1.SchemeBuilder.AddToScheme,
 		apigatewayv2.SchemeBuilder.AddToScheme,
+		sfnv1alpha1.SchemeBuilder.AddToScheme,
 		dynamodbv1alpha1.SchemeBuilder.AddToScheme,
 	)
 }

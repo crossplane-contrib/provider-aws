@@ -1,0 +1,11 @@
+apiVersion: sfn.aws.crossplane.io/v1alpha1
+kind: Activity
+metadata:
+  name: sample-activity
+spec:
+  forProvider:
+    region: us-east-1
+    name: sample-activity
+    tags:
+    - key: mykey
+      value: myvalue

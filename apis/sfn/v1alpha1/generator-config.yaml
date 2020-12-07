@@ -1,0 +1,13 @@
+ignore:
+  field_paths:
+    - CreateStateMachineInput.RoleArn
+    - CreateStateMachineInput.Type # its jsontag is type_ in SDK and we don't want that.
+resources:
+  StateMachine:
+    exceptions:
+      codes:
+        404: StateMachineDoesNotExist
+  Activity:
+    exceptions:
+      codes:
+        404: ActivityDoesNotExist
