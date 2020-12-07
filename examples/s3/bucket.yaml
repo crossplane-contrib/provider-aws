@@ -5,6 +5,7 @@ metadata:
 spec:
   forProvider:
     acl: private
+    locationConstraint: us-west-1
     accelerateConfiguration:
       status: Enabled
     versioningConfiguration:
@@ -17,7 +18,6 @@ spec:
           value: val2
         - key: key3
           value: val3
-    locationConstraint: us-west-1
     objectLockEnabledForBucket: false
     serverSideEncryptionConfiguration:
       rules:

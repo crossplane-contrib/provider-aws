@@ -49,6 +49,8 @@ const (
 	errCreateOrUpdate   = "cannot create or update"
 	errDelete           = "cannot delete"
 	errKubeUpdateFailed = "cannot update S3 custom resource"
+	// ResourceCredentialsSecretRegionKey is the key for region that the S3 bucket is located
+	ResourceCredentialsSecretRegionKey = "region"
 )
 
 // SetupBucket adds a controller that reconciles Buckets.
@@ -94,6 +96,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
+
 	if _, err := e.s3client.HeadBucketRequest(&awss3.HeadBucketInput{Bucket: aws.String(meta.GetExternalName(cr))}).Send(ctx); err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(s3.IsNotFound, err), errHead)
 	}
@@ -132,6 +135,10 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: true,
+		ConnectionDetails: map[string][]byte{
+			runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(meta.GetExternalName(cr)),
+			ResourceCredentialsSecretRegionKey:                   []byte(cr.Spec.ForProvider.LocationConstraint),
+		},
 	}, nil
 }
 
