@@ -28,8 +28,9 @@ import (
 
 var (
 	// an arbitrary managed resource
-	acl              = "private"
-	region           = "us-east-1"
+	acl = "private"
+	// Region is the test region of the bucket
+	Region           = "us-east-1"
 	grantFullControl = "fullGrant"
 	grantRead        = "readGrant"
 	grantReadACP     = "readACPGrant"
@@ -116,7 +117,7 @@ func Bucket(m ...BucketModifier) *v1beta1.Bucket {
 		Spec: v1beta1.BucketSpec{
 			ForProvider: v1beta1.BucketParameters{
 				ACL:                        &acl,
-				LocationConstraint:         region,
+				LocationConstraint:         Region,
 				GrantFullControl:           &grantFullControl,
 				GrantRead:                  &grantRead,
 				GrantReadACP:               &grantReadACP,
