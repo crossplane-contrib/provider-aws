@@ -19,12 +19,15 @@ package table
 import (
 	"context"
 	"encoding/json"
+	"sort"
 
+	awsgo "github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -50,6 +53,10 @@ func SetupTable(mgr ctrl.Manager, l logging.Logger) error {
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.TableGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithInitializers(
+				managed.NewNameAsExternalName(mgr.GetClient()),
+				managed.NewDefaultProviderConfig(mgr.GetClient()),
+				&tagger{kube: mgr.GetClient()}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -110,6 +117,36 @@ func preGenerateDeleteTableInput(_ *svcapitypes.Table, obj *svcsdk.DeleteTableIn
 func postGenerateDeleteTableInput(cr *svcapitypes.Table, obj *svcsdk.DeleteTableInput) *svcsdk.DeleteTableInput {
 	obj.TableName = aws.String(meta.GetExternalName(cr))
 	return obj
+}
+
+type tagger struct {
+	kube client.Client
+}
+
+func (e *tagger) Initialize(ctx context.Context, mg resource.Managed) error {
+	cr, ok := mg.(*svcapitypes.Table)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
+	tagMap := map[string]string{}
+	for _, t := range cr.Spec.ForProvider.Tags {
+		tagMap[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
+	}
+	for k, v := range resource.GetExternalTags(cr) {
+		tagMap[k] = v
+	}
+	tags := make([]*svcapitypes.Tag, 0)
+	for k, v := range tagMap {
+		tags = append(tags, &svcapitypes.Tag{Key: aws.String(k), Value: aws.String(v)})
+	}
+	sort.Slice(tags, func(i, j int) bool {
+		return aws.StringValue(tags[i].Key) < aws.StringValue(tags[j].Key)
+	})
+	if cmp.Equal(cr.Spec.ForProvider.Tags, tags) {
+		return nil
+	}
+	cr.Spec.ForProvider.Tags = tags
+	return errors.Wrap(e.kube.Update(ctx, cr), "cannot update Table Spec")
 }
 
 // NOTE(muvaf): The rest is taken from manually written controller.
@@ -250,14 +287,36 @@ func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) bool {
 	}
 	return cmp.Equal(&svcapitypes.TableParameters{}, patch,
 		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{}, []v1alpha1.Reference{}),
-		cmpopts.IgnoreFields(svcapitypes.TableParameters{}, "Region", "Tags"))
+		cmpopts.IgnoreFields(svcapitypes.TableParameters{}, "Region", "Tags", "GlobalSecondaryIndexes", "KeySchema", "LocalSecondaryIndexes", "CustomTableParameters"))
 }
 
 func (e *external) preUpdate(ctx context.Context, cr *svcapitypes.Table) error {
-	if aws.StringValue(cr.Status.AtProvider.TableStatus) == string(svcapitypes.TableStatus_SDK_UPDATING) {
+	switch aws.StringValue(cr.Status.AtProvider.TableStatus) {
+	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING):
 		return nil
 	}
-	_, err := e.client.UpdateTableWithContext(ctx, GenerateUpdateTableInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
+	t, err := e.client.DescribeTable(&svcsdk.DescribeTableInput{TableName: aws.String(meta.GetExternalName(cr))})
+	if err != nil {
+		return errors.Wrap(err, errDescribe)
+	}
+
+	u := GenerateUpdateTableInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)
+	// NOTE(muvaf): AWS API prohibits doing those calls in the same call.
+	// See https://github.com/aws/aws-sdk-go/blob/v1.34.32/service/dynamodb/api.go#L5605
+	switch {
+	case aws.Int64Value(t.Table.ProvisionedThroughput.ReadCapacityUnits) != aws.Int64Value(cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits) ||
+		aws.Int64Value(t.Table.ProvisionedThroughput.WriteCapacityUnits) != aws.Int64Value(cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits):
+		u.ProvisionedThroughput = &svcsdk.ProvisionedThroughput{
+			WriteCapacityUnits: cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits,
+			ReadCapacityUnits:  cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits,
+		}
+	case awsgo.BoolValue(t.Table.StreamSpecification.StreamEnabled) != awsgo.BoolValue(cr.Spec.ForProvider.StreamSpecification.StreamEnabled):
+		u.StreamSpecification = &svcsdk.StreamSpecification{StreamEnabled: cr.Spec.ForProvider.StreamSpecification.StreamEnabled}
+	}
+	// TODO(muvaf): ReplicationGroupUpdate and GlobalSecondaryIndexUpdate features
+	// are not implemented yet.
+
+	_, err = e.client.UpdateTableWithContext(ctx, u)
 	return errors.Wrap(err, errUpdateFailed)
 }
 
@@ -277,25 +336,11 @@ func GenerateUpdateTableInput(name string, p *svcapitypes.TableParameters) *svcs
 		}
 	}
 
-	if p.ProvisionedThroughput != nil {
-		u.ProvisionedThroughput = &svcsdk.ProvisionedThroughput{
-			ReadCapacityUnits:  p.ProvisionedThroughput.ReadCapacityUnits,
-			WriteCapacityUnits: p.ProvisionedThroughput.WriteCapacityUnits,
-		}
-	}
-
 	if p.SSESpecification != nil {
 		u.SSESpecification = &svcsdk.SSESpecification{
 			Enabled:        p.SSESpecification.Enabled,
 			KMSMasterKeyId: p.SSESpecification.KMSMasterKeyID,
 			SSEType:        p.SSESpecification.SSEType,
-		}
-	}
-
-	if p.StreamSpecification != nil {
-		u.StreamSpecification = &svcsdk.StreamSpecification{
-			StreamEnabled:  p.StreamSpecification.StreamEnabled,
-			StreamViewType: p.StreamSpecification.StreamViewType,
 		}
 	}
 
