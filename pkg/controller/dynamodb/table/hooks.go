@@ -20,6 +20,8 @@ import (
 	"context"
 	"encoding/json"
 
+	aws2 "github.com/aws/aws-sdk-go/aws"
+
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -250,14 +252,36 @@ func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) bool {
 	}
 	return cmp.Equal(&svcapitypes.TableParameters{}, patch,
 		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{}, []v1alpha1.Reference{}),
-		cmpopts.IgnoreFields(svcapitypes.TableParameters{}, "Region", "Tags"))
+		cmpopts.IgnoreFields(svcapitypes.TableParameters{}, "Region", "Tags", "GlobalSecondaryIndexes", "KeySchema", "LocalSecondaryIndexes", "CustomTableParameters"))
 }
 
 func (e *external) preUpdate(ctx context.Context, cr *svcapitypes.Table) error {
-	if aws.StringValue(cr.Status.AtProvider.TableStatus) == string(svcapitypes.TableStatus_SDK_UPDATING) {
+	switch aws.StringValue(cr.Status.AtProvider.TableStatus) {
+	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING):
 		return nil
 	}
-	_, err := e.client.UpdateTableWithContext(ctx, GenerateUpdateTableInput(meta.GetExternalName(cr), &cr.Spec.ForProvider))
+	t, err := e.client.DescribeTable(&svcsdk.DescribeTableInput{TableName: aws.String(meta.GetExternalName(cr))})
+	if err != nil {
+		return errors.Wrap(err, errDescribe)
+	}
+
+	u := GenerateUpdateTableInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)
+	// NOTE(muvaf): AWS API prohibits doing those calls in the same call.
+	// See https://github.com/aws/aws-sdk-go/blob/v1.34.32/service/dynamodb/api.go#L5605
+	switch {
+	case aws.Int64Value(t.Table.ProvisionedThroughput.ReadCapacityUnits) != aws.Int64Value(cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits) ||
+		aws.Int64Value(t.Table.ProvisionedThroughput.WriteCapacityUnits) != aws.Int64Value(cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits):
+		u.ProvisionedThroughput = &svcsdk.ProvisionedThroughput{
+			WriteCapacityUnits: cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits,
+			ReadCapacityUnits:  cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits,
+		}
+	case aws2.BoolValue(t.Table.StreamSpecification.StreamEnabled) != aws2.BoolValue(cr.Spec.ForProvider.StreamSpecification.StreamEnabled):
+		u.StreamSpecification = &svcsdk.StreamSpecification{StreamEnabled: cr.Spec.ForProvider.StreamSpecification.StreamEnabled}
+	}
+	// TODO(muvaf): ReplicationGroupUpdate and GlobalSecondaryIndexUpdate features
+	// are not implemented yet.
+
+	_, err = e.client.UpdateTableWithContext(ctx, u)
 	return errors.Wrap(err, errUpdateFailed)
 }
 
@@ -277,25 +301,11 @@ func GenerateUpdateTableInput(name string, p *svcapitypes.TableParameters) *svcs
 		}
 	}
 
-	if p.ProvisionedThroughput != nil {
-		u.ProvisionedThroughput = &svcsdk.ProvisionedThroughput{
-			ReadCapacityUnits:  p.ProvisionedThroughput.ReadCapacityUnits,
-			WriteCapacityUnits: p.ProvisionedThroughput.WriteCapacityUnits,
-		}
-	}
-
 	if p.SSESpecification != nil {
 		u.SSESpecification = &svcsdk.SSESpecification{
 			Enabled:        p.SSESpecification.Enabled,
 			KMSMasterKeyId: p.SSESpecification.KMSMasterKeyID,
 			SSEType:        p.SSESpecification.SSEType,
-		}
-	}
-
-	if p.StreamSpecification != nil {
-		u.StreamSpecification = &svcsdk.StreamSpecification{
-			StreamEnabled:  p.StreamSpecification.StreamEnabled,
-			StreamViewType: p.StreamSpecification.StreamViewType,
 		}
 	}
 
