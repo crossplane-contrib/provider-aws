@@ -25,7 +25,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
 )
@@ -666,29 +666,29 @@ func TestIsUpToDate(t *testing.T) {
 						EndpointPublicAccess:  &trueVal,
 						PublicAccessCidrs:     []string{"0.0.0.0/0"},
 						SecurityGroupIDs:      []string{"cool-sg-1"},
-						SecurityGroupIDRefs: []v1alpha1.Reference{
+						SecurityGroupIDRefs: []xpv1.Reference{
 							{
 								Name: "cool-ref",
 							},
 						},
-						SecurityGroupIDSelector: &v1alpha1.Selector{
+						SecurityGroupIDSelector: &xpv1.Selector{
 							MatchLabels: map[string]string{"key": "val"},
 						},
 						SubnetIDs: []string{"cool-subnet"},
-						SubnetIDRefs: []v1alpha1.Reference{
+						SubnetIDRefs: []xpv1.Reference{
 							{
 								Name: "cool-ref",
 							},
 						},
-						SubnetIDSelector: &v1alpha1.Selector{
+						SubnetIDSelector: &xpv1.Selector{
 							MatchLabels: map[string]string{"key": "val"},
 						},
 					},
 					RoleArn: roleArn,
-					RoleArnRef: &v1alpha1.Reference{
+					RoleArnRef: &xpv1.Reference{
 						Name: "fun-ref",
 					},
-					RoleArnSelector: &v1alpha1.Selector{
+					RoleArnSelector: &xpv1.Selector{
 						MatchLabels: map[string]string{"key": "val"},
 					},
 					Tags:    map[string]string{"key": "val"},
@@ -763,29 +763,29 @@ func TestIsUpToDate(t *testing.T) {
 						EndpointPublicAccess:  &trueVal,
 						PublicAccessCidrs:     []string{"0.0.0.0/0"},
 						SecurityGroupIDs:      []string{"cool-sg-1"},
-						SecurityGroupIDRefs: []v1alpha1.Reference{
+						SecurityGroupIDRefs: []xpv1.Reference{
 							{
 								Name: "cool-ref",
 							},
 						},
-						SecurityGroupIDSelector: &v1alpha1.Selector{
+						SecurityGroupIDSelector: &xpv1.Selector{
 							MatchLabels: map[string]string{"key": "val"},
 						},
 						SubnetIDs: []string{"cool-subnet"},
-						SubnetIDRefs: []v1alpha1.Reference{
+						SubnetIDRefs: []xpv1.Reference{
 							{
 								Name: "cool-ref",
 							},
 						},
-						SubnetIDSelector: &v1alpha1.Selector{
+						SubnetIDSelector: &xpv1.Selector{
 							MatchLabels: map[string]string{"key": "val"},
 						},
 					},
 					RoleArn: roleArn,
-					RoleArnRef: &v1alpha1.Reference{
+					RoleArnRef: &xpv1.Reference{
 						Name: "fun-ref",
 					},
-					RoleArnSelector: &v1alpha1.Selector{
+					RoleArnSelector: &xpv1.Selector{
 						MatchLabels: map[string]string{"key": "val"},
 					},
 					Tags:    map[string]string{"key": "val", "another": "tag"},

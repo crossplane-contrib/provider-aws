@@ -28,7 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -73,7 +73,7 @@ type args struct {
 	cr      resource.Managed
 }
 
-func withConditions(c ...runtimev1alpha1.Condition) rrModifier {
+func withConditions(c ...xpv1.Condition) rrModifier {
 	return func(r *v1alpha1.ResourceRecordSet) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -147,7 +147,7 @@ func TestObserve(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr: instance(withConditions(runtimev1alpha1.Available())),
+				cr: instance(withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -237,7 +237,7 @@ func TestCreate(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr: instance(withConditions(runtimev1alpha1.Creating())),
+				cr: instance(withConditions(xpv1.Creating())),
 			},
 		},
 		"InValidInput": {
@@ -257,7 +257,7 @@ func TestCreate(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr:  instance(withConditions(runtimev1alpha1.Creating())),
+				cr:  instance(withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
@@ -362,7 +362,7 @@ func TestDelete(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr: instance(withConditions(runtimev1alpha1.Deleting())),
+				cr: instance(withConditions(xpv1.Deleting())),
 			},
 		},
 		"InValidInput": {
@@ -382,7 +382,7 @@ func TestDelete(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr:  instance(withConditions(runtimev1alpha1.Deleting())),
+				cr:  instance(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},

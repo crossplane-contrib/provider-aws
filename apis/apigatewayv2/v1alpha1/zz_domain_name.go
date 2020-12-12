@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -40,8 +40,8 @@ type DomainNameParameters struct {
 
 // DomainNameSpec defines the desired state of DomainName
 type DomainNameSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  DomainNameParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       DomainNameParameters `json:"forProvider"`
 }
 
 // DomainNameObservation defines the observed state of DomainName
@@ -53,8 +53,8 @@ type DomainNameObservation struct {
 
 // DomainNameStatus defines the observed state of DomainName.
 type DomainNameStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     DomainNameObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          DomainNameObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

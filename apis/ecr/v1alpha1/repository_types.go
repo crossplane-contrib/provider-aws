@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // RepositoryParameters define the desired state of an AWS Elastic Container Repository
@@ -48,8 +48,8 @@ type RepositoryParameters struct {
 
 // A RepositorySpec defines the desired state of a Elastic Container Repository.
 type RepositorySpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  RepositoryParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       RepositoryParameters `json:"forProvider"`
 }
 
 // RepositoryObservation keeps the state for the external resource
@@ -87,8 +87,8 @@ type ImageScanningConfiguration struct {
 
 // A RepositoryStatus represents the observed state of a Elastic Container Repository.
 type RepositoryStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     RepositoryObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          RepositoryObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

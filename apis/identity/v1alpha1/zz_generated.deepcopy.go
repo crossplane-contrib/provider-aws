@@ -21,7 +21,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -89,12 +89,12 @@ func (in *IAMAccessKeyParameters) DeepCopyInto(out *IAMAccessKeyParameters) {
 	*out = *in
 	if in.IAMUsernameRef != nil {
 		in, out := &in.IAMUsernameRef, &out.IAMUsernameRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.IAMUsernameSelector != nil {
 		in, out := &in.IAMUsernameSelector, &out.IAMUsernameSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -315,22 +315,22 @@ func (in *IAMGroupPolicyAttachmentParameters) DeepCopyInto(out *IAMGroupPolicyAt
 	*out = *in
 	if in.PolicyARNRef != nil {
 		in, out := &in.PolicyARNRef, &out.PolicyARNRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.PolicyARNSelector != nil {
 		in, out := &in.PolicyARNSelector, &out.PolicyARNSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.GroupNameRef != nil {
 		in, out := &in.GroupNameRef, &out.GroupNameRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.GroupNameSelector != nil {
 		in, out := &in.GroupNameSelector, &out.GroupNameSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -492,22 +492,22 @@ func (in *IAMGroupUserMembershipParameters) DeepCopyInto(out *IAMGroupUserMember
 	*out = *in
 	if in.GroupNameRef != nil {
 		in, out := &in.GroupNameRef, &out.GroupNameRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.GroupNameSelector != nil {
 		in, out := &in.GroupNameSelector, &out.GroupNameSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.UserNameRef != nil {
 		in, out := &in.UserNameRef, &out.UserNameRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.UserNameSelector != nil {
 		in, out := &in.UserNameSelector, &out.UserNameSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -872,22 +872,22 @@ func (in *IAMUserPolicyAttachmentParameters) DeepCopyInto(out *IAMUserPolicyAtta
 	*out = *in
 	if in.PolicyARNRef != nil {
 		in, out := &in.PolicyARNRef, &out.PolicyARNRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.PolicyARNSelector != nil {
 		in, out := &in.PolicyARNSelector, &out.PolicyARNSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.UserNameRef != nil {
 		in, out := &in.UserNameRef, &out.UserNameRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.UserNameSelector != nil {
 		in, out := &in.UserNameSelector, &out.UserNameSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }

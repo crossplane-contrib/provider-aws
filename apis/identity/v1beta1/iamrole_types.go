@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // Tag represents user-provided metadata that can be associated
@@ -84,8 +84,8 @@ type IAMRoleParameters struct {
 
 // An IAMRoleSpec defines the desired state of an IAMRole.
 type IAMRoleSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  IAMRoleParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       IAMRoleParameters `json:"forProvider"`
 }
 
 // IAMRoleExternalStatus keeps the state for the external resource
@@ -103,8 +103,8 @@ type IAMRoleExternalStatus struct {
 
 // An IAMRoleStatus represents the observed state of an IAMRole.
 type IAMRoleStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     IAMRoleExternalStatus `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          IAMRoleExternalStatus `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

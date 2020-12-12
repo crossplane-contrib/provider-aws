@@ -45,7 +45,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/v1alpha3"
@@ -98,10 +98,10 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 	}
 
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
-	case runtimev1alpha1.CredentialsSourceInjectedIdentity:
+	case xpv1.CredentialsSourceInjectedIdentity:
 		cfg, err := UsePodServiceAccount(ctx, []byte{}, DefaultSection, region)
 		return SetResolver(ctx, mg, cfg), err
-	case runtimev1alpha1.CredentialsSourceSecret:
+	case xpv1.CredentialsSourceSecret:
 		csr := pc.Spec.Credentials.SecretRef
 		if csr == nil {
 			return nil, errors.New("no credentials secret referenced")
@@ -288,13 +288,13 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 		return nil, errors.Wrap(err, "cannot track ProviderConfig usage")
 	}
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
-	case runtimev1alpha1.CredentialsSourceInjectedIdentity:
+	case xpv1.CredentialsSourceInjectedIdentity:
 		cfg, err := UsePodServiceAccountV1(ctx, []byte{}, mg, DefaultSection, region)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot use pod service account")
 		}
 		return session.NewSession(cfg)
-	case runtimev1alpha1.CredentialsSourceSecret:
+	case xpv1.CredentialsSourceSecret:
 		csr := pc.Spec.Credentials.SecretRef
 		if csr == nil {
 			return nil, errors.New("no credentials secret referenced")

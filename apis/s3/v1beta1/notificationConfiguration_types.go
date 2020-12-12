@@ -16,7 +16,7 @@ limitations under the License.
 
 package v1beta1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // NotificationConfiguration specifies the notification configuration of the bucket.
 // If this element is empty, notifications are turned off for the bucket.
@@ -123,11 +123,11 @@ type TopicConfiguration struct {
 
 	// TopicArnRef references an SNS Topic to retrieve its Arn
 	// +optional
-	TopicArnRef *runtimev1alpha1.Reference `json:"topicRef,omitempty"`
+	TopicArnRef *xpv1.Reference `json:"topicRef,omitempty"`
 
 	// TopicArnSelector selects a reference to an SNS Topic to retrieve its Arn
 	// +optional
-	TopicArnSelector *runtimev1alpha1.Selector `json:"topicSelector,omitempty"`
+	TopicArnSelector *xpv1.Selector `json:"topicSelector,omitempty"`
 }
 
 // NotificationConfigurationFilter specifies object key name filtering rules. For information about key name

@@ -18,20 +18,20 @@ limitations under the License.
 
 package v1alpha2
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this BucketPolicy.
-func (mg *BucketPolicy) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *BucketPolicy) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this BucketPolicy.
-func (mg *BucketPolicy) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *BucketPolicy) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this BucketPolicy.
-func (mg *BucketPolicy) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *BucketPolicy) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -39,27 +39,27 @@ func (mg *BucketPolicy) GetProviderConfigReference() *runtimev1alpha1.Reference 
 GetProviderReference of this BucketPolicy.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *BucketPolicy) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *BucketPolicy) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this BucketPolicy.
-func (mg *BucketPolicy) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *BucketPolicy) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this BucketPolicy.
-func (mg *BucketPolicy) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *BucketPolicy) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this BucketPolicy.
-func (mg *BucketPolicy) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *BucketPolicy) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this BucketPolicy.
-func (mg *BucketPolicy) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *BucketPolicy) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -67,11 +67,11 @@ func (mg *BucketPolicy) SetProviderConfigReference(r *runtimev1alpha1.Reference)
 SetProviderReference of this BucketPolicy.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *BucketPolicy) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *BucketPolicy) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this BucketPolicy.
-func (mg *BucketPolicy) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *BucketPolicy) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

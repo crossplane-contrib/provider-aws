@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // IAMRolePolicyAttachmentParameters define the desired state of an AWS IAM
@@ -33,12 +33,12 @@ type IAMRolePolicyAttachmentParameters struct {
 
 	// PolicyARNRef references an IAMPolicy to retrieve its Policy ARN.
 	// +optional
-	PolicyARNRef *runtimev1alpha1.Reference `json:"policyArnRef,omitempty"`
+	PolicyARNRef *xpv1.Reference `json:"policyArnRef,omitempty"`
 
 	// PolicyARNSelector selects a reference to an IAMPolicy to retrieve its
 	// Policy ARN
 	// +optional
-	PolicyARNSelector *runtimev1alpha1.Selector `json:"policyArnSelector,omitempty"`
+	PolicyARNSelector *xpv1.Selector `json:"policyArnSelector,omitempty"`
 
 	// RoleName presents the name of the IAM role.
 	// +immutable
@@ -46,18 +46,18 @@ type IAMRolePolicyAttachmentParameters struct {
 
 	// RoleNameRef references an IAMRole to retrieve its Name
 	// +optional
-	RoleNameRef *runtimev1alpha1.Reference `json:"roleNameRef,omitempty"`
+	RoleNameRef *xpv1.Reference `json:"roleNameRef,omitempty"`
 
 	// RoleNameSelector selects a reference to an IAMRole to retrieve its Name
 	// +optional
-	RoleNameSelector *runtimev1alpha1.Selector `json:"roleNameSelector,omitempty"`
+	RoleNameSelector *xpv1.Selector `json:"roleNameSelector,omitempty"`
 }
 
 // An IAMRolePolicyAttachmentSpec defines the desired state of an
 // IAMRolePolicyAttachment.
 type IAMRolePolicyAttachmentSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  IAMRolePolicyAttachmentParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       IAMRolePolicyAttachmentParameters `json:"forProvider"`
 }
 
 // IAMRolePolicyAttachmentExternalStatus keeps the state for the external resource
@@ -70,8 +70,8 @@ type IAMRolePolicyAttachmentExternalStatus struct {
 // An IAMRolePolicyAttachmentStatus represents the observed state of an
 // IAMRolePolicyAttachment.
 type IAMRolePolicyAttachmentStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     IAMRolePolicyAttachmentExternalStatus `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          IAMRolePolicyAttachmentExternalStatus `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

@@ -11,7 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -41,7 +41,7 @@ func makeARN(s string) string {
 // Subscription Modifier
 type subModifier func(*v1alpha1.SNSSubscription)
 
-func withConditions(c ...corev1alpha1.Condition) subModifier {
+func withConditions(c ...xpv1.Condition) subModifier {
 	return func(r *v1alpha1.SNSSubscription) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -367,13 +367,13 @@ func TestDelete(t *testing.T) {
 				},
 				cr: subscription(
 					withSubARN(&subName),
-					withConditions(corev1alpha1.Deleting()),
+					withConditions(xpv1.Deleting()),
 				),
 			},
 			want: want{
 				cr: subscription(
 					withSubARN(&subName),
-					withConditions(corev1alpha1.Deleting()),
+					withConditions(xpv1.Deleting()),
 				),
 			},
 		},
@@ -406,7 +406,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: subscription(
 					withSubARN(&subName),
-					withConditions(corev1alpha1.Deleting()),
+					withConditions(xpv1.Deleting()),
 				),
 				err: errors.Wrap(errBoom, errDelete),
 			},
@@ -432,7 +432,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: subscription(
 					withSubARN(&subName),
-					withConditions(corev1alpha1.Deleting()),
+					withConditions(xpv1.Deleting()),
 				),
 			},
 		},

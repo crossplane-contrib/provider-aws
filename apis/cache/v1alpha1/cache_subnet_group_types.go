@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -35,17 +35,17 @@ type CacheSubnetGroupParameters struct {
 
 	// SubnetIDRefs references to a Subnet to and retrieves its SubnetID
 	// +optional
-	SubnetIDRefs []runtimev1alpha1.Reference `json:"subnetIdRefs,omitempty"`
+	SubnetIDRefs []xpv1.Reference `json:"subnetIdRefs,omitempty"`
 
 	// SubnetIDSelector selects a set of references that each retrieve the subnetID from the referenced Subnet
 	// +optional
-	SubnetIDSelector *runtimev1alpha1.Selector `json:"subnetIdSelector,omitempty"`
+	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
 }
 
 // A CacheSubnetGroupSpec defines the desired state of a CacheSubnetGroup.
 type CacheSubnetGroupSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  CacheSubnetGroupParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       CacheSubnetGroupParameters `json:"forProvider"`
 }
 
 // CacheSubnetGroupExternalStatus keeps the state for the external resource
@@ -57,8 +57,8 @@ type CacheSubnetGroupExternalStatus struct {
 
 // A CacheSubnetGroupStatus represents the observed state of a Subnet Group.
 type CacheSubnetGroupStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     CacheSubnetGroupExternalStatus `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          CacheSubnetGroupExternalStatus `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

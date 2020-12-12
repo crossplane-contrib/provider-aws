@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -33,12 +33,12 @@ type SNSSubscriptionParameters struct {
 
 	// TopicArnRef references a SNS Topic and retrieves its TopicArn
 	// +optional
-	TopicARNRef *runtimev1alpha1.Reference `json:"topicArnRef,omitempty"`
+	TopicARNRef *xpv1.Reference `json:"topicArnRef,omitempty"`
 
 	// TopicArnSelector selects a reference to a SNS Topic and retrieves
 	// its TopicArn
 	// +optional
-	TopicARNSelector *runtimev1alpha1.Selector `json:"topicArnSelector,omitempty"`
+	TopicARNSelector *xpv1.Selector `json:"topicArnSelector,omitempty"`
 
 	// The subscription's protocol.
 	// +immutable
@@ -78,8 +78,8 @@ type SNSSubscriptionParameters struct {
 
 // SNSSubscriptionSpec defined the desired state of a AWS SNS Topic
 type SNSSubscriptionSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  SNSSubscriptionParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       SNSSubscriptionParameters `json:"forProvider"`
 }
 
 // ConfirmationStatus represents Status of SNS Subscription Confirmation
@@ -111,8 +111,8 @@ type SNSSubscriptionObservation struct {
 
 // SNSSubscriptionStatus is the status of AWS SNS Topic
 type SNSSubscriptionStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     SNSSubscriptionObservation `json:"atProvider,omitempty"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          SNSSubscriptionObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -15,7 +15,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -45,7 +45,7 @@ func withExternalName(name string) natModifier {
 	return func(r *v1alpha1.NATGateway) { meta.SetExternalName(r, name) }
 }
 
-func withConditions(c ...runtimev1alpha1.Condition) natModifier {
+func withConditions(c ...xpv1.Condition) natModifier {
 	return func(r *v1alpha1.NATGateway) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -277,7 +277,7 @@ func TestObserve(t *testing.T) {
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
 					withStatus(specNatStatus(v1alpha1.NatGatewayStatusPending, time, nil, nil, false)),
-					withConditions(runtimev1alpha1.Unavailable()),
+					withConditions(xpv1.Unavailable()),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -307,7 +307,7 @@ func TestObserve(t *testing.T) {
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
 					withStatus(specNatStatus(v1alpha1.NatGatewayStatusFailed, time, &natFailureCode, &natFailureMessage, true)),
-					withConditions(runtimev1alpha1.Unavailable().WithMessage(natFailureMessage)),
+					withConditions(xpv1.Unavailable().WithMessage(natFailureMessage)),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -337,7 +337,7 @@ func TestObserve(t *testing.T) {
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
 					withStatus(specNatStatus(v1alpha1.NatGatewayStatusAvailable, time, nil, nil, false)),
-					withConditions(runtimev1alpha1.Available()),
+					withConditions(xpv1.Available()),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -367,7 +367,7 @@ func TestObserve(t *testing.T) {
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
 					withStatus(specNatStatus(v1alpha1.NatGatewayStatusDeleting, time, nil, nil, true)),
-					withConditions(runtimev1alpha1.Deleting()),
+					withConditions(xpv1.Deleting()),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -657,7 +657,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
-					withConditions(runtimev1alpha1.Deleting()),
+					withConditions(xpv1.Deleting()),
 					withSpec(specNatSpec()),
 				),
 				err: nil,
@@ -673,7 +673,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
-					withConditions(runtimev1alpha1.Deleting()),
+					withConditions(xpv1.Deleting()),
 					withSpec(specNatSpec()),
 					withStatus(specNatStatus(v1alpha1.NatGatewayStatusDeleting, time, nil, nil, true)),
 				),
@@ -690,7 +690,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
-					withConditions(runtimev1alpha1.Deleting()),
+					withConditions(xpv1.Deleting()),
 					withSpec(specNatSpec()),
 					withStatus(specNatStatus(v1alpha1.NatGatewayStatusDeleted, time, nil, nil, true)),
 				),
@@ -710,7 +710,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: nat(withExternalName(natGatewayID),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},

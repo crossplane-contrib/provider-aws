@@ -18,20 +18,20 @@ limitations under the License.
 
 package v1beta1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this Queue.
-func (mg *Queue) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *Queue) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this Queue.
-func (mg *Queue) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *Queue) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this Queue.
-func (mg *Queue) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *Queue) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -39,27 +39,27 @@ func (mg *Queue) GetProviderConfigReference() *runtimev1alpha1.Reference {
 GetProviderReference of this Queue.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *Queue) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *Queue) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this Queue.
-func (mg *Queue) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *Queue) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this Queue.
-func (mg *Queue) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *Queue) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this Queue.
-func (mg *Queue) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *Queue) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this Queue.
-func (mg *Queue) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *Queue) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -67,11 +67,11 @@ func (mg *Queue) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
 SetProviderReference of this Queue.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *Queue) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *Queue) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this Queue.
-func (mg *Queue) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *Queue) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

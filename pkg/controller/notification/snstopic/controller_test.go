@@ -28,7 +28,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -96,7 +96,7 @@ func withTopicName(s *string) topicModifier {
 	}
 }
 
-func withConditions(c ...corev1alpha1.Condition) topicModifier {
+func withConditions(c ...xpv1.Condition) topicModifier {
 	return func(r *v1alpha1.SNSTopic) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -235,7 +235,7 @@ func TestObserve(t *testing.T) {
 					withPolicy(&empty),
 					withDeliveryPolicy(&empty),
 					withKmsMasterKeyID(&empty),
-					withConditions(corev1alpha1.Available()),
+					withConditions(xpv1.Available()),
 					withObservationOwner(&empty),
 				),
 				result: managed.ExternalObservation{
@@ -531,7 +531,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: topic(
 					withTopicName(&topicName),
-					withConditions(corev1alpha1.Deleting()),
+					withConditions(xpv1.Deleting()),
 				),
 			},
 		},
@@ -560,7 +560,7 @@ func TestDelete(t *testing.T) {
 				cr: topic(),
 			},
 			want: want{
-				cr:  topic(withConditions(corev1alpha1.Deleting())),
+				cr:  topic(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},
@@ -581,7 +581,7 @@ func TestDelete(t *testing.T) {
 				cr: topic(),
 			},
 			want: want{
-				cr: topic(withConditions(corev1alpha1.Deleting())),
+				cr: topic(withConditions(xpv1.Deleting())),
 			},
 		},
 	}

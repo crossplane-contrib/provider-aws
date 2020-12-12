@@ -18,20 +18,20 @@ limitations under the License.
 
 package v1alpha1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this SNSSubscription.
-func (mg *SNSSubscription) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *SNSSubscription) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this SNSSubscription.
-func (mg *SNSSubscription) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *SNSSubscription) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this SNSSubscription.
-func (mg *SNSSubscription) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *SNSSubscription) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -39,27 +39,27 @@ func (mg *SNSSubscription) GetProviderConfigReference() *runtimev1alpha1.Referen
 GetProviderReference of this SNSSubscription.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *SNSSubscription) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *SNSSubscription) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this SNSSubscription.
-func (mg *SNSSubscription) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *SNSSubscription) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this SNSSubscription.
-func (mg *SNSSubscription) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *SNSSubscription) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this SNSSubscription.
-func (mg *SNSSubscription) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *SNSSubscription) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this SNSSubscription.
-func (mg *SNSSubscription) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *SNSSubscription) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -67,27 +67,27 @@ func (mg *SNSSubscription) SetProviderConfigReference(r *runtimev1alpha1.Referen
 SetProviderReference of this SNSSubscription.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *SNSSubscription) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *SNSSubscription) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this SNSSubscription.
-func (mg *SNSSubscription) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *SNSSubscription) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this SNSTopic.
-func (mg *SNSTopic) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *SNSTopic) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this SNSTopic.
-func (mg *SNSTopic) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *SNSTopic) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this SNSTopic.
-func (mg *SNSTopic) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *SNSTopic) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -95,27 +95,27 @@ func (mg *SNSTopic) GetProviderConfigReference() *runtimev1alpha1.Reference {
 GetProviderReference of this SNSTopic.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *SNSTopic) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *SNSTopic) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this SNSTopic.
-func (mg *SNSTopic) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *SNSTopic) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this SNSTopic.
-func (mg *SNSTopic) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *SNSTopic) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this SNSTopic.
-func (mg *SNSTopic) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *SNSTopic) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this SNSTopic.
-func (mg *SNSTopic) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *SNSTopic) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -123,11 +123,11 @@ func (mg *SNSTopic) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
 SetProviderReference of this SNSTopic.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *SNSTopic) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *SNSTopic) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this SNSTopic.
-func (mg *SNSTopic) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *SNSTopic) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

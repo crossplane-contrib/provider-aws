@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // AWS returns 'available` hence ec2.AttachmentStatusAttached doesn't work
@@ -49,11 +49,11 @@ type InternetGatewayParameters struct {
 
 	// VPCIDRef references a VPC to and retrieves its vpcId
 	// +optional
-	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
+	VPCIDRef *xpv1.Reference `json:"vpcIdRef,omitempty"`
 
 	// VPCIDSelector selects a reference to a VPC to and retrieves its vpcId
 	// +optional
-	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
+	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
 
 	// Tags represents to current ec2 tags.
 	// +optional
@@ -62,8 +62,8 @@ type InternetGatewayParameters struct {
 
 // An InternetGatewaySpec defines the desired state of an InternetGateway.
 type InternetGatewaySpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  InternetGatewayParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       InternetGatewayParameters `json:"forProvider"`
 }
 
 // InternetGatewayAttachment describes the attachment of a VPC to an internet
@@ -93,8 +93,8 @@ type InternetGatewayObservation struct {
 
 // An InternetGatewayStatus represents the observed state of an InternetGateway.
 type InternetGatewayStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     InternetGatewayObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          InternetGatewayObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

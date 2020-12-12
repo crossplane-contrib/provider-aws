@@ -26,7 +26,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -117,13 +117,13 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr.Status.AtProvider = redshift.GenerateObservation(rsp.Clusters[0])
 	switch cr.Status.AtProvider.ClusterStatus {
 	case v1alpha1.StateAvailable:
-		cr.Status.SetConditions(runtimev1alpha1.Available())
+		cr.Status.SetConditions(xpv1.Available())
 	case v1alpha1.StateCreating:
-		cr.Status.SetConditions(runtimev1alpha1.Creating())
+		cr.Status.SetConditions(xpv1.Creating())
 	case v1alpha1.StateDeleting:
-		cr.Status.SetConditions(runtimev1alpha1.Deleting())
+		cr.Status.SetConditions(xpv1.Deleting())
 	default:
-		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
+		cr.Status.SetConditions(xpv1.Unavailable())
 	}
 
 	updated, err := redshift.IsUpToDate(cr.Spec.ForProvider, instance)
@@ -143,7 +143,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	cr.SetConditions(runtimev1alpha1.Creating())
+	cr.SetConditions(xpv1.Creating())
 	if cr.Status.AtProvider.ClusterStatus == v1alpha1.StateCreating {
 		return managed.ExternalCreation{}, nil
 	}
@@ -158,8 +158,8 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	conn := managed.ConnectionDetails{
-		runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(aws.StringValue(input.MasterUserPassword)),
-		runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(input.MasterUsername)),
+		xpv1.ResourceCredentialsSecretPasswordKey: []byte(aws.StringValue(input.MasterUserPassword)),
+		xpv1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(input.MasterUsername)),
 	}
 
 	return managed.ExternalCreation{ConnectionDetails: conn}, nil
@@ -200,7 +200,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
-	cr.SetConditions(runtimev1alpha1.Deleting())
+	cr.SetConditions(xpv1.Deleting())
 	if cr.Status.AtProvider.ClusterStatus == v1alpha1.StateDeleting {
 		return nil
 	}

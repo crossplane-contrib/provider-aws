@@ -19,7 +19,7 @@ package v1alpha2
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // BucketPolicyParameters define the desired state of an AWS BucketPolicy.
@@ -46,11 +46,11 @@ type BucketPolicyParameters struct {
 
 	// BucketNameRef references to an S3Bucket to retrieve its bucketName
 	// +optional
-	BucketNameRef *runtimev1alpha1.Reference `json:"bucketNameRef,omitempty"`
+	BucketNameRef *xpv1.Reference `json:"bucketNameRef,omitempty"`
 
 	// BucketNameSelector selects a reference to an S3Bucket to retrieve its bucketName
 	// +optional
-	BucketNameSelector *runtimev1alpha1.Selector `json:"bucketNameSelector,omitempty"`
+	BucketNameSelector *xpv1.Selector `json:"bucketNameSelector,omitempty"`
 }
 
 // BucketPolicyStatement defines an individual statement within the
@@ -136,11 +136,11 @@ type AWSPrincipal struct {
 
 	// IAMUserARNRef contains the reference to an IAMUser
 	// +optional
-	IAMUserARNRef *runtimev1alpha1.Reference `json:"iamUserArnRef,omitempty"`
+	IAMUserARNRef *xpv1.Reference `json:"iamUserArnRef,omitempty"`
 
 	// IAMUserARNSelector queries for an IAMUser to retrieve its userName
 	// +optional
-	IAMUserARNSelector *runtimev1alpha1.Selector `json:"iamUserArnSelector,omitempty"`
+	IAMUserARNSelector *xpv1.Selector `json:"iamUserArnSelector,omitempty"`
 
 	// AWSAccountID identifies an AWS account as the principal
 	// +optional
@@ -154,11 +154,11 @@ type AWSPrincipal struct {
 
 	// IAMRoleARNRef contains the reference to an IAMRole
 	// +optional
-	IAMRoleARNRef *runtimev1alpha1.Reference `json:"iamRoleArnRef,omitempty"`
+	IAMRoleARNRef *xpv1.Reference `json:"iamRoleArnRef,omitempty"`
 
 	// IAMRoleARNSelector queries for an IAM role to retrieve its userName
 	// +optional
-	IAMRoleARNSelector *runtimev1alpha1.Selector `json:"iamRoleArnSelector,omitempty"`
+	IAMRoleARNSelector *xpv1.Selector `json:"iamRoleArnSelector,omitempty"`
 }
 
 // Condition represents one condition inside of the set of conditions for
@@ -188,14 +188,14 @@ type Condition struct {
 // An BucketPolicySpec defines the desired state of an
 // BucketPolicy.
 type BucketPolicySpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	PolicyBody                   BucketPolicyParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	PolicyBody        BucketPolicyParameters `json:"forProvider"`
 }
 
 // An BucketPolicyStatus represents the observed state of an
 // BucketPolicy.
 type BucketPolicyStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
+	xpv1.ResourceStatus `json:",inline"`
 }
 
 // +kubebuilder:object:root=true

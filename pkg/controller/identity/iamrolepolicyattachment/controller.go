@@ -26,7 +26,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -116,7 +116,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}
 	}
 
-	cr.SetConditions(runtimev1alpha1.Available())
+	cr.SetConditions(xpv1.Available())
 
 	cr.Status.AtProvider = iam.GenerateRolePolicyObservation(*attachedPolicyObject)
 
@@ -132,7 +132,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	cr.SetConditions(runtimev1alpha1.Creating())
+	cr.SetConditions(xpv1.Creating())
 
 	_, err := e.client.AttachRolePolicyRequest(&awsiam.AttachRolePolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
@@ -153,7 +153,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Deleting())
+	cr.Status.SetConditions(xpv1.Deleting())
 
 	_, err := e.client.DetachRolePolicyRequest(&awsiam.DetachRolePolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),

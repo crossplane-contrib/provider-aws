@@ -30,7 +30,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
@@ -80,7 +80,7 @@ func withExternalName(name string) repositoryModifier {
 	return func(r *v1alpha1.Repository) { meta.SetExternalName(r, name) }
 }
 
-func withConditions(c ...runtimev1alpha1.Condition) repositoryModifier {
+func withConditions(c ...xpv1.Condition) repositoryModifier {
 	return func(r *v1alpha1.Repository) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -151,7 +151,7 @@ func TestObserve(t *testing.T) {
 					RepositoryName: repoName,
 					RepositoryArn:  testARN,
 				}), withExternalName(repoName),
-					withConditions(runtimev1alpha1.Available())),
+					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -287,7 +287,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: repository(
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 			},
 		},
 		"CreateFail": {
@@ -306,7 +306,7 @@ func TestCreate(t *testing.T) {
 				cr: repository(),
 			},
 			want: want{
-				cr:  repository(withConditions(runtimev1alpha1.Creating())),
+				cr:  repository(withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
@@ -616,7 +616,7 @@ func TestDelete(t *testing.T) {
 				cr: repository(),
 			},
 			want: want{
-				cr: repository(withConditions(runtimev1alpha1.Deleting())),
+				cr: repository(withConditions(xpv1.Deleting())),
 			},
 		},
 		"DeleteFailed": {
@@ -631,7 +631,7 @@ func TestDelete(t *testing.T) {
 				cr: repository(),
 			},
 			want: want{
-				cr:  repository(withConditions(runtimev1alpha1.Deleting())),
+				cr:  repository(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},

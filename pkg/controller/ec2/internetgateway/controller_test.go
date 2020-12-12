@@ -27,7 +27,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -57,7 +57,7 @@ func withExternalName(name string) igModifier {
 	return func(r *v1beta1.InternetGateway) { meta.SetExternalName(r, name) }
 }
 
-func withConditions(c ...runtimev1alpha1.Condition) igModifier {
+func withConditions(c ...xpv1.Condition) igModifier {
 	return func(r *v1beta1.InternetGateway) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -141,7 +141,7 @@ func TestObserve(t *testing.T) {
 						Attachments: specAttachments(),
 					}),
 					withExternalName(igID),
-					withConditions(runtimev1alpha1.Available())),
+					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -260,7 +260,7 @@ func TestCreate(t *testing.T) {
 					VPCID: aws.String(vpcID),
 				}),
 					withExternalName(igID),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
@@ -279,7 +279,7 @@ func TestCreate(t *testing.T) {
 				cr: ig(),
 			},
 			want: want{
-				cr:  ig(withConditions(runtimev1alpha1.Creating())),
+				cr:  ig(withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
@@ -482,7 +482,7 @@ func TestDelete(t *testing.T) {
 					InternetGatewayID: igID,
 					Attachments:       specAttachments(),
 				}), withExternalName(igID),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"NotAvailable": {
@@ -502,7 +502,7 @@ func TestDelete(t *testing.T) {
 				cr: ig(),
 			},
 			want: want{
-				cr: ig(withConditions(runtimev1alpha1.Deleting())),
+				cr: ig(withConditions(xpv1.Deleting())),
 			},
 		},
 		"DetachFail": {
@@ -529,7 +529,7 @@ func TestDelete(t *testing.T) {
 					InternetGatewayID: igID,
 					Attachments:       specAttachments(),
 				}), withExternalName(igID),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDetach),
 			},
 		},
@@ -557,7 +557,7 @@ func TestDelete(t *testing.T) {
 					InternetGatewayID: igID,
 					Attachments:       specAttachments(),
 				}), withExternalName(igID),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},

@@ -31,7 +31,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -76,7 +76,7 @@ type testCase struct {
 
 type replicationGroupModifier func(*v1beta1.ReplicationGroup)
 
-func withConditions(c ...runtimev1alpha1.Condition) replicationGroupModifier {
+func withConditions(c ...xpv1.Condition) replicationGroupModifier {
 	return func(r *v1beta1.ReplicationGroup) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -160,7 +160,7 @@ func TestCreate(t *testing.T) {
 			r: replicationGroup(withAuthEnabled(true)),
 			want: replicationGroup(
 				withAuthEnabled(true),
-				withConditions(runtimev1alpha1.Creating()),
+				withConditions(xpv1.Creating()),
 				withReplicationGroupID(name),
 			),
 			tokenCreated: true,
@@ -176,7 +176,7 @@ func TestCreate(t *testing.T) {
 			}},
 			r: replicationGroup(),
 			want: replicationGroup(
-				withConditions(runtimev1alpha1.Creating()),
+				withConditions(xpv1.Creating()),
 				withReplicationGroupID(name),
 			),
 			returnsErr: true,
@@ -190,7 +190,7 @@ func TestCreate(t *testing.T) {
 				t.Errorf("tc.e.Create(...) error: want: %t got: %t", tc.returnsErr, err != nil)
 			}
 
-			if tc.tokenCreated != (len(creation.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPasswordKey]) != 0) {
+			if tc.tokenCreated != (len(creation.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey]) != 0) {
 				t.Errorf("tc.e.Create(...) token creation: want: %t got: %t", tc.tokenCreated, len(creation.ConnectionDetails) != 0)
 			}
 			if diff := cmp.Diff(tc.want, tc.r, test.EquateConditions()); diff != "" {
@@ -221,7 +221,7 @@ func TestObserve(t *testing.T) {
 			want: replicationGroup(
 				withProviderStatus(v1beta1.StatusCreating),
 				withReplicationGroupID(name),
-				withConditions(runtimev1alpha1.Creating()),
+				withConditions(xpv1.Creating()),
 			),
 		},
 		{
@@ -245,7 +245,7 @@ func TestObserve(t *testing.T) {
 			want: replicationGroup(
 				withReplicationGroupID(name),
 				withProviderStatus(v1beta1.StatusDeleting),
-				withConditions(runtimev1alpha1.Deleting()),
+				withConditions(xpv1.Deleting()),
 			),
 		},
 		{
@@ -269,7 +269,7 @@ func TestObserve(t *testing.T) {
 			want: replicationGroup(
 				withProviderStatus(v1beta1.StatusModifying),
 				withReplicationGroupID(name),
-				withConditions(runtimev1alpha1.Unavailable()),
+				withConditions(xpv1.Unavailable()),
 			),
 		},
 		{
@@ -293,13 +293,13 @@ func TestObserve(t *testing.T) {
 			}},
 			r: replicationGroup(
 				withReplicationGroupID(name),
-				withConditions(runtimev1alpha1.Creating()),
+				withConditions(xpv1.Creating()),
 				withClusterEnabled(true),
 			),
 			want: replicationGroup(
 				withReplicationGroupID(name),
 				withProviderStatus(v1beta1.StatusAvailable),
-				withConditions(runtimev1alpha1.Available()),
+				withConditions(xpv1.Available()),
 				withEndpoint(host),
 				withPort(port),
 				withClusterEnabled(true),
@@ -336,7 +336,7 @@ func TestObserve(t *testing.T) {
 				withProviderStatus(v1beta1.StatusCreating),
 				withReplicationGroupID(name),
 				withAuthEnabled(true),
-				withConditions(runtimev1alpha1.Creating()),
+				withConditions(xpv1.Creating()),
 			),
 		},
 		{
@@ -381,11 +381,11 @@ func TestObserve(t *testing.T) {
 			}},
 			r: replicationGroup(
 				withReplicationGroupID(name),
-				withConditions(runtimev1alpha1.Available()),
+				withConditions(xpv1.Available()),
 			),
 			want: replicationGroup(
 				withReplicationGroupID(name),
-				withConditions(runtimev1alpha1.Available()),
+				withConditions(xpv1.Available()),
 			),
 			returnsErr: true,
 		},
@@ -440,7 +440,7 @@ func TestObserve(t *testing.T) {
 				t.Errorf("tc.e.Observe(...) error: want: %t got: %t", tc.returnsErr, err != nil)
 			}
 
-			if tc.tokenCreated != (len(observation.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretEndpointKey]) != 0) {
+			if tc.tokenCreated != (len(observation.ConnectionDetails[xpv1.ResourceCredentialsSecretEndpointKey]) != 0) {
 				t.Errorf("tc.e.Observe(...) token creation: want: %t got: %t", tc.tokenCreated, len(observation.ConnectionDetails) != 0)
 			}
 
@@ -506,13 +506,13 @@ func TestUpdate(t *testing.T) {
 			r: replicationGroup(
 				withReplicationGroupID(name),
 				withProviderStatus(v1beta1.StatusAvailable),
-				withConditions(runtimev1alpha1.Available()),
+				withConditions(xpv1.Available()),
 				withMemberClusters([]string{cacheClusterID}),
 			),
 			want: replicationGroup(
 				withReplicationGroupID(name),
 				withProviderStatus(v1beta1.StatusAvailable),
-				withConditions(runtimev1alpha1.Available()),
+				withConditions(xpv1.Available()),
 				withMemberClusters([]string{cacheClusterID}),
 			),
 			returnsErr: true,
@@ -526,7 +526,7 @@ func TestUpdate(t *testing.T) {
 				t.Errorf("tc.e.Update(...) error: want: %t got: %t", tc.returnsErr, err != nil)
 			}
 
-			if tc.tokenCreated != (len(update.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPasswordKey]) != 0) {
+			if tc.tokenCreated != (len(update.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey]) != 0) {
 				t.Errorf("tc.e.Update(...) token creation: want: %t got: %t", tc.tokenCreated, len(update.ConnectionDetails) != 0)
 			}
 
@@ -550,7 +550,7 @@ func TestDelete(t *testing.T) {
 			}},
 			r: replicationGroup(),
 			want: replicationGroup(
-				withConditions(runtimev1alpha1.Deleting()),
+				withConditions(xpv1.Deleting()),
 			),
 			returnsErr: false,
 		},
@@ -569,7 +569,7 @@ func TestDelete(t *testing.T) {
 				},
 			}},
 			r:          replicationGroup(),
-			want:       replicationGroup(withConditions(runtimev1alpha1.Deleting())),
+			want:       replicationGroup(withConditions(xpv1.Deleting())),
 			returnsErr: false,
 		},
 		{
@@ -578,7 +578,7 @@ func TestDelete(t *testing.T) {
 			r:    replicationGroup(withProviderStatus(v1beta1.StatusDeleting)),
 			want: replicationGroup(
 				withProviderStatus(v1beta1.StatusDeleting),
-				withConditions(runtimev1alpha1.Deleting())),
+				withConditions(xpv1.Deleting())),
 			returnsErr: false,
 		},
 		{
@@ -592,7 +592,7 @@ func TestDelete(t *testing.T) {
 			}},
 			r: replicationGroup(),
 			want: replicationGroup(
-				withConditions(runtimev1alpha1.Deleting()),
+				withConditions(xpv1.Deleting()),
 			),
 			returnsErr: true,
 		},

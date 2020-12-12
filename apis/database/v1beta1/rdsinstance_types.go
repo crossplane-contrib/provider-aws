@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // SQL database engines.
@@ -280,13 +280,13 @@ type RDSInstanceParameters struct {
 	// DBSubnetGroupName.
 	// +immutable
 	// +optional
-	DBSubnetGroupNameRef *runtimev1alpha1.Reference `json:"dbSubnetGroupNameRef,omitempty"`
+	DBSubnetGroupNameRef *xpv1.Reference `json:"dbSubnetGroupNameRef,omitempty"`
 
 	// DBSubnetGroupNameSelector selects a reference to a DBSubnetGroup used to
 	// set DBSubnetGroupName.
 	// +immutable
 	// +optional
-	DBSubnetGroupNameSelector *runtimev1alpha1.Selector `json:"dbSubnetGroupNameSelector,omitempty"`
+	DBSubnetGroupNameSelector *xpv1.Selector `json:"dbSubnetGroupNameSelector,omitempty"`
 
 	// DeletionProtection indicates if the DB instance should have deletion protection enabled. The
 	// database can't be deleted when this value is set to true. The default is
@@ -443,7 +443,7 @@ type RDSInstanceParameters struct {
 	// will be auto-generated.
 	// +optional
 	// +immutable
-	MasterPasswordSecretRef *runtimev1alpha1.SecretKeySelector `json:"masterPasswordSecretRef,omitempty"`
+	MasterPasswordSecretRef *xpv1.SecretKeySelector `json:"masterPasswordSecretRef,omitempty"`
 
 	// MonitoringInterval is the interval, in seconds, between points when Enhanced Monitoring metrics
 	// are collected for the DB instance. To disable collecting Enhanced Monitoring
@@ -468,13 +468,13 @@ type RDSInstanceParameters struct {
 	// MonitoringRoleARN.
 	// +optional
 	// +immutable
-	MonitoringRoleARNRef *runtimev1alpha1.Reference `json:"monitoringRoleArnRef,omitempty"`
+	MonitoringRoleARNRef *xpv1.Reference `json:"monitoringRoleArnRef,omitempty"`
 
 	// MonitoringRoleARNSelector selects a reference to an IAMRole used to set
 	// MonitoringRoleARN.
 	// +optional
 	// +immutable
-	MonitoringRoleARNSelector *runtimev1alpha1.Selector `json:"monitoringRoleArnSelector,omitempty"`
+	MonitoringRoleARNSelector *xpv1.Selector `json:"monitoringRoleArnSelector,omitempty"`
 
 	// MultiAZ specifies if the DB instance is a Multi-AZ deployment. You can't set the
 	// AvailabilityZone parameter if the MultiAZ parameter is set to true.
@@ -642,13 +642,13 @@ type RDSInstanceParameters struct {
 	// the VPCSecurityGroupIDs.
 	// +immutable
 	// +optional
-	VPCSecurityGroupIDRefs []runtimev1alpha1.Reference `json:"vpcSecurityGroupIDRefs,omitempty"`
+	VPCSecurityGroupIDRefs []xpv1.Reference `json:"vpcSecurityGroupIDRefs,omitempty"`
 
 	// VPCSecurityGroupIDSelector selects references to VPCSecurityGroups used
 	// to set the VPCSecurityGroupIDs.
 	// +immutable
 	// +optional
-	VPCSecurityGroupIDSelector *runtimev1alpha1.Selector `json:"vpcSecurityGroupIDSelector,omitempty"`
+	VPCSecurityGroupIDSelector *xpv1.Selector `json:"vpcSecurityGroupIDSelector,omitempty"`
 
 	// Fields whose value cannot be retrieved from rds.DBInstance object.
 
@@ -705,13 +705,13 @@ type RDSInstanceParameters struct {
 	// DomainIAMRoleName.
 	// +optional
 	// +immutable
-	DomainIAMRoleNameRef *runtimev1alpha1.Reference `json:"domainIAMRoleNameRef,omitempty"`
+	DomainIAMRoleNameRef *xpv1.Reference `json:"domainIAMRoleNameRef,omitempty"`
 
 	// DomainIAMRoleNameSelector selects a reference to an IAMRole used to set
 	// DomainIAMRoleName.
 	// +optional
 	// +immutable
-	DomainIAMRoleNameSelector *runtimev1alpha1.Selector `json:"domainIAMRoleNameSelector,omitempty"`
+	DomainIAMRoleNameSelector *xpv1.Selector `json:"domainIAMRoleNameSelector,omitempty"`
 
 	// OptionGroupName indicates that the DB instance should be associated with the specified option
 	// group.
@@ -751,8 +751,8 @@ type RDSInstanceParameters struct {
 
 // An RDSInstanceSpec defines the desired state of an RDSInstance.
 type RDSInstanceSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  RDSInstanceParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       RDSInstanceParameters `json:"forProvider"`
 }
 
 // RDSInstanceState represents the state of an RDS instance.
@@ -1082,8 +1082,8 @@ type RDSInstanceObservation struct {
 
 // An RDSInstanceStatus represents the observed state of an RDSInstance.
 type RDSInstanceStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     RDSInstanceObservation `json:"atProvider,omitempty"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          RDSInstanceObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

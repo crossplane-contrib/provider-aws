@@ -26,7 +26,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -114,13 +114,13 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr.Status.AtProvider = eks.GenerateObservation(rsp.Cluster)
 	switch cr.Status.AtProvider.Status { //nolint:exhaustive
 	case v1beta1.ClusterStatusActive:
-		cr.Status.SetConditions(runtimev1alpha1.Available())
+		cr.Status.SetConditions(xpv1.Available())
 	case v1beta1.ClusterStatusCreating:
-		cr.Status.SetConditions(runtimev1alpha1.Creating())
+		cr.Status.SetConditions(xpv1.Creating())
 	case v1beta1.ClusterStatusDeleting:
-		cr.Status.SetConditions(runtimev1alpha1.Deleting())
+		cr.Status.SetConditions(xpv1.Deleting())
 	default:
-		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
+		cr.Status.SetConditions(xpv1.Unavailable())
 	}
 	upToDate, err := eks.IsUpToDate(&cr.Spec.ForProvider, rsp.Cluster)
 	if err != nil {
@@ -139,7 +139,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotEKSCluster)
 	}
-	cr.SetConditions(runtimev1alpha1.Creating())
+	cr.SetConditions(xpv1.Creating())
 	if cr.Status.AtProvider.Status == v1beta1.ClusterStatusCreating {
 		return managed.ExternalCreation{}, nil
 	}
@@ -191,7 +191,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if !ok {
 		return errors.New(errNotEKSCluster)
 	}
-	cr.SetConditions(runtimev1alpha1.Deleting())
+	cr.SetConditions(xpv1.Deleting())
 	if cr.Status.AtProvider.Status == v1beta1.ClusterStatusDeleting {
 		return nil
 	}

@@ -16,7 +16,7 @@ limitations under the License.
 
 package v1alpha1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // CustomActivityParameters includes custom additional fields for ActivityParameters.
 type CustomActivityParameters struct{}
@@ -32,12 +32,12 @@ type CustomStateMachineParameters struct {
 	// RoleARNRef is a reference to an IAMRole used to set
 	// the RoleARN.
 	// +optional
-	RoleARNRef *runtimev1alpha1.Reference `json:"roleArnRef,omitempty"`
+	RoleARNRef *xpv1.Reference `json:"roleArnRef,omitempty"`
 
 	// RoleARNSelector selects references to IAMRole used
 	// to set the RoleARN.
 	// +optional
-	RoleARNSelector *runtimev1alpha1.Selector `json:"roleArnSelector,omitempty"`
+	RoleARNSelector *xpv1.Selector `json:"roleArnSelector,omitempty"`
 
 	// Determines whether a Standard or Express state machine is created.
 	// You cannot update the type of a state machine once it has been created.
