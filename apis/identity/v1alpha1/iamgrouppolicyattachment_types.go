@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // IAMGroupPolicyAttachmentParameters define the desired state of an AWS IAMGroupPolicyAttachment.
@@ -32,12 +32,12 @@ type IAMGroupPolicyAttachmentParameters struct {
 
 	// PolicyARNRef references an IAMPolicy to retrieve its Policy ARN.
 	// +optional
-	PolicyARNRef *runtimev1alpha1.Reference `json:"policyArnRef,omitempty"`
+	PolicyARNRef *xpv1.Reference `json:"policyArnRef,omitempty"`
 
 	// PolicyARNSelector selects a reference to an IAMPolicy to retrieve its
 	// Policy ARN
 	// +optional
-	PolicyARNSelector *runtimev1alpha1.Selector `json:"policyArnSelector,omitempty"`
+	PolicyARNSelector *xpv1.Selector `json:"policyArnSelector,omitempty"`
 
 	// GroupName presents the name of the IAMGroup.
 	// +immutable
@@ -45,18 +45,18 @@ type IAMGroupPolicyAttachmentParameters struct {
 
 	// GroupNameRef references to an IAMGroup to retrieve its groupName
 	// +optional
-	GroupNameRef *runtimev1alpha1.Reference `json:"groupNameRef,omitempty"`
+	GroupNameRef *xpv1.Reference `json:"groupNameRef,omitempty"`
 
 	// GroupNameSelector selects a reference to an IAMGroup to retrieve its groupName
 	// +optional
-	GroupNameSelector *runtimev1alpha1.Selector `json:"groupNameSelector,omitempty"`
+	GroupNameSelector *xpv1.Selector `json:"groupNameSelector,omitempty"`
 }
 
 // An IAMGroupPolicyAttachmentSpec defines the desired state of an
 // IAMGroupPolicyAttachment.
 type IAMGroupPolicyAttachmentSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  IAMGroupPolicyAttachmentParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       IAMGroupPolicyAttachmentParameters `json:"forProvider"`
 }
 
 // IAMGroupPolicyAttachmentObservation keeps the state for the external resource
@@ -69,8 +69,8 @@ type IAMGroupPolicyAttachmentObservation struct {
 // An IAMGroupPolicyAttachmentStatus represents the observed state of an
 // IAMGroupPolicyAttachment.
 type IAMGroupPolicyAttachmentStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     IAMGroupPolicyAttachmentObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          IAMGroupPolicyAttachmentObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

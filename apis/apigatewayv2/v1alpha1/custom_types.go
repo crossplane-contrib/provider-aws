@@ -16,7 +16,7 @@ limitations under the License.
 
 package v1alpha1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // CustomAPIParameters includes the custom fields.
 type CustomAPIParameters struct{}
@@ -30,12 +30,12 @@ type CustomAPIMappingParameters struct {
 	// APIIDRef is a reference to an API used to set
 	// the APIID.
 	// +optional
-	APIIDRef *runtimev1alpha1.Reference `json:"apiIdRef,omitempty"`
+	APIIDRef *xpv1.Reference `json:"apiIdRef,omitempty"`
 
 	// APIIDSelector selects references to API used
 	// to set the APIID.
 	// +optional
-	APIIDSelector *runtimev1alpha1.Selector `json:"apiIdSelector,omitempty"`
+	APIIDSelector *xpv1.Selector `json:"apiIdSelector,omitempty"`
 
 	// Stage is the name for the Stage.
 	// +immutable
@@ -44,12 +44,12 @@ type CustomAPIMappingParameters struct {
 	// StageDRef is a reference to an Stage used to set
 	// the Stage.
 	// +optional
-	StageRef *runtimev1alpha1.Reference `json:"stageRef,omitempty"`
+	StageRef *xpv1.Reference `json:"stageRef,omitempty"`
 
 	// StageSelector selects references to Stage used
 	// to set the Stage.
 	// +optional
-	StageSelector *runtimev1alpha1.Selector `json:"stageSelector,omitempty"`
+	StageSelector *xpv1.Selector `json:"stageSelector,omitempty"`
 
 	// DomainName is the DomainName for the DomainName.
 	// +immutable
@@ -58,12 +58,12 @@ type CustomAPIMappingParameters struct {
 	// DomainNameRef is a reference to a DomainName used to set
 	// the DomainName.
 	// +optional
-	DomainNameRef *runtimev1alpha1.Reference `json:"domainNameRef,omitempty"`
+	DomainNameRef *xpv1.Reference `json:"domainNameRef,omitempty"`
 
 	// DomainNameSelector selects references to DomainName used
 	// to set the DomainName.
 	// +optional
-	DomainNameSelector *runtimev1alpha1.Selector `json:"domainNameSelector,omitempty"`
+	DomainNameSelector *xpv1.Selector `json:"domainNameSelector,omitempty"`
 }
 
 // CustomAuthorizerParameters includes the custom fields.
@@ -75,12 +75,12 @@ type CustomAuthorizerParameters struct {
 	// APIIDRef is a reference to an API used to set
 	// the APIID.
 	// +optional
-	APIIDRef *runtimev1alpha1.Reference `json:"apiIdRef,omitempty"`
+	APIIDRef *xpv1.Reference `json:"apiIdRef,omitempty"`
 
 	// APIIDSelector selects references to API used
 	// to set the APIID.
 	// +optional
-	APIIDSelector *runtimev1alpha1.Selector `json:"apiIdSelector,omitempty"`
+	APIIDSelector *xpv1.Selector `json:"apiIdSelector,omitempty"`
 }
 
 // CustomDeploymentParameters includes the custom fields.
@@ -92,22 +92,22 @@ type CustomDeploymentParameters struct {
 	// APIIDRef is a reference to an API used to set
 	// the APIID.
 	// +optional
-	APIIDRef *runtimev1alpha1.Reference `json:"apiIdRef,omitempty"`
+	APIIDRef *xpv1.Reference `json:"apiIdRef,omitempty"`
 
 	// APIIDSelector selects references to API used
 	// to set the APIID.
 	// +optional
-	APIIDSelector *runtimev1alpha1.Selector `json:"apiIdSelector,omitempty"`
+	APIIDSelector *xpv1.Selector `json:"apiIdSelector,omitempty"`
 
 	// StageNameRef is a reference to an Stage used to set
 	// the StageName.
 	// +optional
-	StageNameRef *runtimev1alpha1.Reference `json:"stageNameRef,omitempty"`
+	StageNameRef *xpv1.Reference `json:"stageNameRef,omitempty"`
 
 	// StageNameSelector selects references to Stage used
 	// to set the StageName.
 	// +optional
-	StageNameSelector *runtimev1alpha1.Selector `json:"stageNameSelector,omitempty"`
+	StageNameSelector *xpv1.Selector `json:"stageNameSelector,omitempty"`
 }
 
 // CustomDomainNameParameters includes the custom fields.
@@ -122,12 +122,12 @@ type CustomIntegrationParameters struct {
 	// APIIDRef is a reference to an API used to set
 	// the APIID.
 	// +optional
-	APIIDRef *runtimev1alpha1.Reference `json:"apiIdRef,omitempty"`
+	APIIDRef *xpv1.Reference `json:"apiIdRef,omitempty"`
 
 	// APIIDSelector selects references to API used
 	// to set the APIID.
 	// +optional
-	APIIDSelector *runtimev1alpha1.Selector `json:"apiIdSelector,omitempty"`
+	APIIDSelector *xpv1.Selector `json:"apiIdSelector,omitempty"`
 }
 
 // CustomIntegrationResponseParameters includes the custom fields.
@@ -139,12 +139,12 @@ type CustomIntegrationResponseParameters struct {
 	// APIIDRef is a reference to an API used to set
 	// the APIID.
 	// +optional
-	APIIDRef *runtimev1alpha1.Reference `json:"apiIdRef,omitempty"`
+	APIIDRef *xpv1.Reference `json:"apiIdRef,omitempty"`
 
 	// APIIDSelector selects references to API used
 	// to set the APIID.
 	// +optional
-	APIIDSelector *runtimev1alpha1.Selector `json:"apiIdSelector,omitempty"`
+	APIIDSelector *xpv1.Selector `json:"apiIdSelector,omitempty"`
 
 	// IntegrationID is the ID for the Integration.
 	// +immutable
@@ -153,12 +153,12 @@ type CustomIntegrationResponseParameters struct {
 	// IntegrationIDRef is a reference to an Integration used to set
 	// the IntegrationID.
 	// +optional
-	IntegrationIDRef *runtimev1alpha1.Reference `json:"integrationIdRef,omitempty"`
+	IntegrationIDRef *xpv1.Reference `json:"integrationIdRef,omitempty"`
 
 	// IntegrationIDSelector selects references to Integration used
 	// to set the IntegrationID.
 	// +optional
-	IntegrationIDSelector *runtimev1alpha1.Selector `json:"integrationIdSelector,omitempty"`
+	IntegrationIDSelector *xpv1.Selector `json:"integrationIdSelector,omitempty"`
 }
 
 // CustomModelParameters includes the custom fields.
@@ -170,12 +170,12 @@ type CustomModelParameters struct {
 	// APIIDRef is a reference to an API used to set
 	// the APIID.
 	// +optional
-	APIIDRef *runtimev1alpha1.Reference `json:"apiIdRef,omitempty"`
+	APIIDRef *xpv1.Reference `json:"apiIdRef,omitempty"`
 
 	// APIIDSelector selects references to API used
 	// to set the APIID.
 	// +optional
-	APIIDSelector *runtimev1alpha1.Selector `json:"apiIdSelector,omitempty"`
+	APIIDSelector *xpv1.Selector `json:"apiIdSelector,omitempty"`
 }
 
 // CustomRouteParameters includes the custom fields.
@@ -187,22 +187,22 @@ type CustomRouteParameters struct {
 	// APIIDRef is a reference to an API used to set
 	// the APIID.
 	// +optional
-	APIIDRef *runtimev1alpha1.Reference `json:"apiIdRef,omitempty"`
+	APIIDRef *xpv1.Reference `json:"apiIdRef,omitempty"`
 
 	// APIIDSelector selects references to API used
 	// to set the APIID.
 	// +optional
-	APIIDSelector *runtimev1alpha1.Selector `json:"apiIdSelector,omitempty"`
+	APIIDSelector *xpv1.Selector `json:"apiIdSelector,omitempty"`
 
 	// AuthorizerIDRef is a reference to an Authorizer used to set
 	// the AuthorizerID.
 	// +optional
-	AuthorizerIDRef *runtimev1alpha1.Reference `json:"authorizerIDRef,omitempty"`
+	AuthorizerIDRef *xpv1.Reference `json:"authorizerIDRef,omitempty"`
 
 	// AuthorizerIDSelector selects references to Authorizer used
 	// to set the AuthorizerID.
 	// +optional
-	AuthorizerIDSelector *runtimev1alpha1.Selector `json:"authorizerIDSelector,omitempty"`
+	AuthorizerIDSelector *xpv1.Selector `json:"authorizerIDSelector,omitempty"`
 }
 
 // CustomRouteResponseParameters includes the custom fields.
@@ -214,12 +214,12 @@ type CustomRouteResponseParameters struct {
 	// APIIDRef is a reference to an API used to set
 	// the APIID.
 	// +optional
-	APIIDRef *runtimev1alpha1.Reference `json:"apiIdRef,omitempty"`
+	APIIDRef *xpv1.Reference `json:"apiIdRef,omitempty"`
 
 	// APIIDSelector selects references to API used
 	// to set the APIID.
 	// +optional
-	APIIDSelector *runtimev1alpha1.Selector `json:"apiIdSelector,omitempty"`
+	APIIDSelector *xpv1.Selector `json:"apiIdSelector,omitempty"`
 
 	// RouteID is the ID for the Route.
 	// +immutable
@@ -228,12 +228,12 @@ type CustomRouteResponseParameters struct {
 	// RouteIDRef is a reference to an Route used to set
 	// the RouteID.
 	// +optional
-	RouteIDRef *runtimev1alpha1.Reference `json:"routeIdRef,omitempty"`
+	RouteIDRef *xpv1.Reference `json:"routeIdRef,omitempty"`
 
 	// RouteIDSelector selects references to Route used
 	// to set the RouteID.
 	// +optional
-	RouteIDSelector *runtimev1alpha1.Selector `json:"routeIdSelector,omitempty"`
+	RouteIDSelector *xpv1.Selector `json:"routeIdSelector,omitempty"`
 }
 
 // CustomVPCLinkParameters includes the custom fields.
@@ -244,12 +244,12 @@ type CustomVPCLinkParameters struct {
 	// SecurityGroupIDRefs is a list of references to SecurityGroups used to set
 	// the SecurityGroupIDs.
 	// +optional
-	SecurityGroupIDRefs []runtimev1alpha1.Reference `json:"securityGroupIdRefs,omitempty"`
+	SecurityGroupIDRefs []xpv1.Reference `json:"securityGroupIdRefs,omitempty"`
 
 	// SecurityGroupIDsSelector selects references to SecurityGroupID used
 	// to set the SecurityGroupIDs.
 	// +optional
-	SecurityGroupIDSelector *runtimev1alpha1.Selector `json:"securityGroupIdSelector,omitempty"`
+	SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIdSelector,omitempty"`
 
 	// SecurityGroupIDs is the list of IDs for the SecurityGroups.
 	SubnetIDs []string `json:"subnetIds,omitempty"`
@@ -257,12 +257,12 @@ type CustomVPCLinkParameters struct {
 	// SubnetIDRefs is a list of references to Subnets used to set
 	// the SubnetIDs.
 	// +optional
-	SubnetIDRefs []runtimev1alpha1.Reference `json:"subnetIdRefs,omitempty"`
+	SubnetIDRefs []xpv1.Reference `json:"subnetIdRefs,omitempty"`
 
 	// SubnetIDsSelector selects references to Subnets used
 	// to set the SubnetIDs.
 	// +optional
-	SubnetIDSelector *runtimev1alpha1.Selector `json:"subnetIdSelector,omitempty"`
+	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
 }
 
 // CustomStageParameters includes the custom fields.
@@ -274,10 +274,10 @@ type CustomStageParameters struct {
 	// APIIDRef is a reference to an API used to set
 	// the APIID.
 	// +optional
-	APIIDRef *runtimev1alpha1.Reference `json:"apiIdRef,omitempty"`
+	APIIDRef *xpv1.Reference `json:"apiIdRef,omitempty"`
 
 	// APIIDSelector selects references to API used
 	// to set the APIID.
 	// +optional
-	APIIDSelector *runtimev1alpha1.Selector `json:"apiIdSelector,omitempty"`
+	APIIDSelector *xpv1.Selector `json:"apiIdSelector,omitempty"`
 }

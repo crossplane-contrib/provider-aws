@@ -18,20 +18,20 @@ limitations under the License.
 
 package v1alpha1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this ELB.
-func (mg *ELB) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *ELB) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this ELB.
-func (mg *ELB) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *ELB) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this ELB.
-func (mg *ELB) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *ELB) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -39,27 +39,27 @@ func (mg *ELB) GetProviderConfigReference() *runtimev1alpha1.Reference {
 GetProviderReference of this ELB.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *ELB) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *ELB) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this ELB.
-func (mg *ELB) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *ELB) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this ELB.
-func (mg *ELB) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *ELB) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this ELB.
-func (mg *ELB) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *ELB) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this ELB.
-func (mg *ELB) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *ELB) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -67,27 +67,27 @@ func (mg *ELB) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
 SetProviderReference of this ELB.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *ELB) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *ELB) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this ELB.
-func (mg *ELB) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *ELB) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this ELBAttachment.
-func (mg *ELBAttachment) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *ELBAttachment) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this ELBAttachment.
-func (mg *ELBAttachment) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *ELBAttachment) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this ELBAttachment.
-func (mg *ELBAttachment) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *ELBAttachment) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -95,27 +95,27 @@ func (mg *ELBAttachment) GetProviderConfigReference() *runtimev1alpha1.Reference
 GetProviderReference of this ELBAttachment.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *ELBAttachment) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *ELBAttachment) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this ELBAttachment.
-func (mg *ELBAttachment) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *ELBAttachment) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this ELBAttachment.
-func (mg *ELBAttachment) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *ELBAttachment) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this ELBAttachment.
-func (mg *ELBAttachment) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *ELBAttachment) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this ELBAttachment.
-func (mg *ELBAttachment) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *ELBAttachment) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -123,11 +123,11 @@ func (mg *ELBAttachment) SetProviderConfigReference(r *runtimev1alpha1.Reference
 SetProviderReference of this ELBAttachment.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *ELBAttachment) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *ELBAttachment) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this ELBAttachment.
-func (mg *ELBAttachment) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *ELBAttachment) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

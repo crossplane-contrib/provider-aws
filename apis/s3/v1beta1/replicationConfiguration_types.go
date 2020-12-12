@@ -17,7 +17,7 @@ limitations under the License.
 package v1beta1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // ReplicationConfiguration contains replication rules. You can add up to 1,000 rules. The maximum
@@ -34,11 +34,11 @@ type ReplicationConfiguration struct {
 
 	// RoleRef references an IAMRole to retrieve its Name
 	// +optional
-	RoleRef *runtimev1alpha1.Reference `json:"roleRef,omitempty"`
+	RoleRef *xpv1.Reference `json:"roleRef,omitempty"`
 
 	// RoleSelector selects a reference to an IAMRole to retrieve its Name
 	// +optional
-	RoleSelector *runtimev1alpha1.Selector `json:"roleSelector,omitempty"`
+	RoleSelector *xpv1.Selector `json:"roleSelector,omitempty"`
 
 	// A container for one or more replication rules. A replication configuration
 	// must have at least one rule and can contain a maximum of 1,000 rules.
@@ -156,11 +156,11 @@ type Destination struct {
 
 	// BucketRef references a Bucket to retrieve its Name
 	// +optional
-	BucketRef *runtimev1alpha1.Reference `json:"bucketRef,omitempty"`
+	BucketRef *xpv1.Reference `json:"bucketRef,omitempty"`
 
 	// BucketSelector selects a reference to a Bucket to retrieve its Name
 	// +optional
-	BucketSelector *runtimev1alpha1.Selector `json:"bucketSelector,omitempty"`
+	BucketSelector *xpv1.Selector `json:"bucketSelector,omitempty"`
 
 	// A container that provides information about encryption. If SourceSelectionCriteria
 	// is specified, you must specify this element.

@@ -29,7 +29,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -70,13 +70,13 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Table, resp *svc
 	}
 	switch aws.StringValue(resp.Table.TableStatus) {
 	case string(svcapitypes.TableStatus_SDK_CREATING):
-		cr.SetConditions(v1alpha1.Creating())
+		cr.SetConditions(xpv1.Creating())
 	case string(svcapitypes.TableStatus_SDK_DELETING):
-		cr.SetConditions(v1alpha1.Deleting())
+		cr.SetConditions(xpv1.Deleting())
 	case string(svcapitypes.TableStatus_SDK_ACTIVE):
-		cr.SetConditions(v1alpha1.Available())
+		cr.SetConditions(xpv1.Available())
 	case string(svcapitypes.TableStatus_SDK_ARCHIVED), string(svcapitypes.TableStatus_SDK_INACCESSIBLE_ENCRYPTION_CREDENTIALS), string(svcapitypes.TableStatus_SDK_ARCHIVING):
-		cr.SetConditions(v1alpha1.Unavailable())
+		cr.SetConditions(xpv1.Unavailable())
 	}
 	return obs, nil
 }
@@ -286,7 +286,7 @@ func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) bool {
 		return false
 	}
 	return cmp.Equal(&svcapitypes.TableParameters{}, patch,
-		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{}, []v1alpha1.Reference{}),
+		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
 		cmpopts.IgnoreFields(svcapitypes.TableParameters{}, "Region", "Tags", "GlobalSecondaryIndexes", "KeySchema", "LocalSecondaryIndexes", "CustomTableParameters"))
 }
 

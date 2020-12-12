@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -43,8 +43,8 @@ type RouteResponseParameters struct {
 
 // RouteResponseSpec defines the desired state of RouteResponse
 type RouteResponseSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  RouteResponseParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       RouteResponseParameters `json:"forProvider"`
 }
 
 // RouteResponseObservation defines the observed state of RouteResponse
@@ -54,8 +54,8 @@ type RouteResponseObservation struct {
 
 // RouteResponseStatus defines the observed state of RouteResponse.
 type RouteResponseStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     RouteResponseObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          RouteResponseObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

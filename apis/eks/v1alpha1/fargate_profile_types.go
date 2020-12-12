@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // FargateProfileStatusType is a type of FargateProfile status.
@@ -77,12 +77,12 @@ type FargateProfileParameters struct {
 	// the ClusterName.
 	// +immutable
 	// +optional
-	ClusterNameRef *runtimev1alpha1.Reference `json:"clusterNameRef,omitempty"`
+	ClusterNameRef *xpv1.Reference `json:"clusterNameRef,omitempty"`
 
 	// ClusterNameSelector selects references to a Cluster used
 	// to set the ClusterName.
 	// +optional
-	ClusterNameSelector *runtimev1alpha1.Selector `json:"clusterNameSelector,omitempty"`
+	ClusterNameSelector *xpv1.Selector `json:"clusterNameSelector,omitempty"`
 
 	// The Amazon Resource Name (ARN) of the pod execution role to use for pods
 	// that match the selectors in the Fargate profile. The pod execution role allows
@@ -101,13 +101,13 @@ type FargateProfileParameters struct {
 	// At least one of podExecutionRoleArn, podExecutionRoleArnRef or podExecutionRoleArnSelector has to be given
 	// +immutable
 	// +optional
-	PodExecutionRoleArnRef *runtimev1alpha1.Reference `json:"podExecutionRoleArnRef,omitempty"`
+	PodExecutionRoleArnRef *xpv1.Reference `json:"podExecutionRoleArnRef,omitempty"`
 
 	// PodExecutionRoleArnSelector selects references to IAMRole used
 	// to set the PodExecutionRoleArn.
 	// At least one of podExecutionRoleArn, podExecutionRoleArnRef or podExecutionRoleArnSelector has to be given
 	// +optional
-	PodExecutionRoleArnSelector *runtimev1alpha1.Selector `json:"podExecutionRoleArnSelector,omitempty"`
+	PodExecutionRoleArnSelector *xpv1.Selector `json:"podExecutionRoleArnSelector,omitempty"`
 
 	// The selectors to match for pods to use this Fargate profile. Each selector
 	// must have an associated namespace. Optionally, you can also specify labels
@@ -125,11 +125,11 @@ type FargateProfileParameters struct {
 	// SubnetRefs are references to Subnets used to set the Subnets.
 	// +immutable
 	// +optional
-	SubnetRefs []runtimev1alpha1.Reference `json:"subnetRefs,omitempty"`
+	SubnetRefs []xpv1.Reference `json:"subnetRefs,omitempty"`
 
 	// SubnetSelector selects references to Subnets used to set the Subnets.
 	// +optional
-	SubnetSelector *runtimev1alpha1.Selector `json:"subnetSelector,omitempty"`
+	SubnetSelector *xpv1.Selector `json:"subnetSelector,omitempty"`
 
 	// The metadata to apply to the Fargate profile to assist with categorization
 	// and organization. Each tag consists of a key and an optional value, both
@@ -142,14 +142,14 @@ type FargateProfileParameters struct {
 
 // A FargateProfileSpec defines the desired state of an EKS FargateProfile.
 type FargateProfileSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  FargateProfileParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       FargateProfileParameters `json:"forProvider"`
 }
 
 // A FargateProfileStatus represents the observed state of an EKS FargateProfile.
 type FargateProfileStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     FargateProfileObservation `json:"atProvider,omitempty"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          FargateProfileObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

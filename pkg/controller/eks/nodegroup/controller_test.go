@@ -27,7 +27,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -52,7 +52,7 @@ type args struct {
 
 type nodeGroupModifier func(*v1alpha1.NodeGroup)
 
-func withConditions(c ...runtimev1alpha1.Condition) nodeGroupModifier {
+func withConditions(c ...xpv1.Condition) nodeGroupModifier {
 	return func(r *v1alpha1.NodeGroup) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -117,7 +117,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: nodeGroup(
-					withConditions(runtimev1alpha1.Available()),
+					withConditions(xpv1.Available()),
 					withStatus(v1alpha1.NodeGroupStatusActive)),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -142,7 +142,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: nodeGroup(
-					withConditions(runtimev1alpha1.Deleting()),
+					withConditions(xpv1.Deleting()),
 					withStatus(v1alpha1.NodeGroupStatusDeleting)),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -167,7 +167,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: nodeGroup(
-					withConditions(runtimev1alpha1.Unavailable()),
+					withConditions(xpv1.Unavailable()),
 					withStatus(v1alpha1.NodeGroupStatusDegraded)),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -228,7 +228,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: nodeGroup(
 					withStatus(v1alpha1.NodeGroupStatusCreating),
-					withConditions(runtimev1alpha1.Creating()),
+					withConditions(xpv1.Creating()),
 					withVersion(&version),
 				),
 				result: managed.ExternalObservation{
@@ -304,7 +304,7 @@ func TestCreate(t *testing.T) {
 				cr: nodeGroup(),
 			},
 			want: want{
-				cr:     nodeGroup(withConditions(runtimev1alpha1.Creating())),
+				cr:     nodeGroup(withConditions(xpv1.Creating())),
 				result: managed.ExternalCreation{},
 			},
 		},
@@ -315,7 +315,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: nodeGroup(
 					withStatus(v1alpha1.NodeGroupStatusCreating),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 			},
 		},
 		"FailedRequest": {
@@ -330,7 +330,7 @@ func TestCreate(t *testing.T) {
 				cr: nodeGroup(),
 			},
 			want: want{
-				cr:  nodeGroup(withConditions(runtimev1alpha1.Creating())),
+				cr:  nodeGroup(withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreateFailed),
 			},
 		},
@@ -625,7 +625,7 @@ func TestDelete(t *testing.T) {
 				cr: nodeGroup(),
 			},
 			want: want{
-				cr: nodeGroup(withConditions(runtimev1alpha1.Deleting())),
+				cr: nodeGroup(withConditions(xpv1.Deleting())),
 			},
 		},
 		"AlreadyDeleting": {
@@ -634,7 +634,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: nodeGroup(withStatus(v1alpha1.NodeGroupStatusDeleting),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"AlreadyDeleted": {
@@ -649,7 +649,7 @@ func TestDelete(t *testing.T) {
 				cr: nodeGroup(),
 			},
 			want: want{
-				cr: nodeGroup(withConditions(runtimev1alpha1.Deleting())),
+				cr: nodeGroup(withConditions(xpv1.Deleting())),
 			},
 		},
 		"Failed": {
@@ -664,7 +664,7 @@ func TestDelete(t *testing.T) {
 				cr: nodeGroup(),
 			},
 			want: want{
-				cr:  nodeGroup(withConditions(runtimev1alpha1.Deleting())),
+				cr:  nodeGroup(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDeleteFailed),
 			},
 		},

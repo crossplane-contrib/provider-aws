@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // VPCCIDRBlockState represents the state of a CIDR Block
@@ -100,8 +100,8 @@ type VPCParameters struct {
 
 // A VPCSpec defines the desired state of a VPC.
 type VPCSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  VPCParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       VPCParameters `json:"forProvider"`
 }
 
 // VPCObservation keeps the state for the external resource
@@ -127,8 +127,8 @@ type VPCObservation struct {
 
 // A VPCStatus represents the observed state of a VPC.
 type VPCStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     VPCObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          VPCObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

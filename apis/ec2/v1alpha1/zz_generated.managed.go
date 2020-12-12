@@ -18,20 +18,20 @@ limitations under the License.
 
 package v1alpha1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this ElasticIP.
-func (mg *ElasticIP) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *ElasticIP) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this ElasticIP.
-func (mg *ElasticIP) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *ElasticIP) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this ElasticIP.
-func (mg *ElasticIP) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *ElasticIP) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -39,27 +39,27 @@ func (mg *ElasticIP) GetProviderConfigReference() *runtimev1alpha1.Reference {
 GetProviderReference of this ElasticIP.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *ElasticIP) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *ElasticIP) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this ElasticIP.
-func (mg *ElasticIP) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *ElasticIP) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this ElasticIP.
-func (mg *ElasticIP) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *ElasticIP) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this ElasticIP.
-func (mg *ElasticIP) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *ElasticIP) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this ElasticIP.
-func (mg *ElasticIP) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *ElasticIP) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -67,27 +67,27 @@ func (mg *ElasticIP) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
 SetProviderReference of this ElasticIP.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *ElasticIP) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *ElasticIP) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this ElasticIP.
-func (mg *ElasticIP) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *ElasticIP) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this NATGateway.
-func (mg *NATGateway) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *NATGateway) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this NATGateway.
-func (mg *NATGateway) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *NATGateway) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this NATGateway.
-func (mg *NATGateway) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *NATGateway) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -95,27 +95,27 @@ func (mg *NATGateway) GetProviderConfigReference() *runtimev1alpha1.Reference {
 GetProviderReference of this NATGateway.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *NATGateway) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *NATGateway) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this NATGateway.
-func (mg *NATGateway) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *NATGateway) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this NATGateway.
-func (mg *NATGateway) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *NATGateway) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this NATGateway.
-func (mg *NATGateway) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *NATGateway) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this NATGateway.
-func (mg *NATGateway) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *NATGateway) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -123,11 +123,11 @@ func (mg *NATGateway) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
 SetProviderReference of this NATGateway.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *NATGateway) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *NATGateway) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this NATGateway.
-func (mg *NATGateway) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *NATGateway) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

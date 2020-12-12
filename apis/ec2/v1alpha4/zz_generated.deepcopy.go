@@ -21,7 +21,7 @@ limitations under the License.
 package v1alpha4
 
 import (
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -36,12 +36,12 @@ func (in *Association) DeepCopyInto(out *Association) {
 	}
 	if in.SubnetIDRef != nil {
 		in, out := &in.SubnetIDRef, &out.SubnetIDRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -86,12 +86,12 @@ func (in *Route) DeepCopyInto(out *Route) {
 	}
 	if in.GatewayIDRef != nil {
 		in, out := &in.GatewayIDRef, &out.GatewayIDRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.GatewayIDSelector != nil {
 		in, out := &in.GatewayIDSelector, &out.GatewayIDSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -234,12 +234,12 @@ func (in *RouteTableParameters) DeepCopyInto(out *RouteTableParameters) {
 	}
 	if in.VPCIDRef != nil {
 		in, out := &in.VPCIDRef, &out.VPCIDRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.VPCIDSelector != nil {
 		in, out := &in.VPCIDSelector, &out.VPCIDSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }

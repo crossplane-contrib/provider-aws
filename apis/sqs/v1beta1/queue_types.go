@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // Enum values for Queue attribute names
@@ -52,11 +52,11 @@ type RedrivePolicy struct {
 
 	// DeadLetterTargetARNRef reference a Queue to retrieve its ARN.
 	// +optional
-	DeadLetterTargetARNRef *runtimev1alpha1.Reference `json:"deadLetterTargetArnRef,omitempty"`
+	DeadLetterTargetARNRef *xpv1.Reference `json:"deadLetterTargetArnRef,omitempty"`
 
 	// DeadLetterTargetARNSelector selects reference to a Queue to retrieve its ARN
 	// +optional
-	DeadLetterTargetARNSelector *runtimev1alpha1.Selector `json:"deadLetterTargetArnSelector,omitempty"`
+	DeadLetterTargetARNSelector *xpv1.Selector `json:"deadLetterTargetArnSelector,omitempty"`
 
 	// The number of times a message is delivered to the source queue before
 	// being moved to the dead-letter queue.
@@ -175,8 +175,8 @@ type QueueParameters struct {
 
 // QueueSpec defines the desired state of a Queue.
 type QueueSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  QueueParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       QueueParameters `json:"forProvider"`
 }
 
 // QueueObservation is the representation of the current state that is observed
@@ -212,8 +212,8 @@ type QueueObservation struct {
 
 // QueueStatus represents the observed state of a Queue.
 type QueueStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     QueueObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          QueueObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

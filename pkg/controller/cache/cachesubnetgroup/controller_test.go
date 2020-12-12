@@ -25,7 +25,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
@@ -49,7 +49,7 @@ type args struct {
 
 type csgModifier func(*v1alpha1.CacheSubnetGroup)
 
-func withConditions(c ...runtimev1alpha1.Condition) csgModifier {
+func withConditions(c ...xpv1.Condition) csgModifier {
 	return func(r *v1alpha1.CacheSubnetGroup) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -93,7 +93,7 @@ func TestObserve(t *testing.T) {
 				cr: csg(),
 			},
 			want: want{
-				cr: csg(withConditions(runtimev1alpha1.Available())),
+				cr: csg(withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -127,7 +127,7 @@ func TestObserve(t *testing.T) {
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
 					Description: sgDescription,
 					SubnetIDs:   []string{subnetID},
-				}), withConditions(runtimev1alpha1.Available())),
+				}), withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -199,7 +199,7 @@ func TestCreate(t *testing.T) {
 				cr: csg((withSpec(v1alpha1.CacheSubnetGroupParameters{
 					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
-				})), withConditions(runtimev1alpha1.Creating())),
+				})), withConditions(xpv1.Creating())),
 			},
 		},
 		"CreateFail": {
@@ -220,7 +220,7 @@ func TestCreate(t *testing.T) {
 				cr: csg((withSpec(v1alpha1.CacheSubnetGroupParameters{
 					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
-				})), withConditions(runtimev1alpha1.Creating())),
+				})), withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreateSubnetGroup),
 			},
 		},
@@ -340,13 +340,13 @@ func TestDelete(t *testing.T) {
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
 					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
-				}), withConditions(runtimev1alpha1.Deleting())),
+				}), withConditions(xpv1.Deleting())),
 			},
 			want: want{
 				cr: csg((withSpec(v1alpha1.CacheSubnetGroupParameters{
 					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
-				})), withConditions(runtimev1alpha1.Deleting())),
+				})), withConditions(xpv1.Deleting())),
 			},
 		},
 		"DeleteFailed": {
@@ -367,7 +367,7 @@ func TestDelete(t *testing.T) {
 				cr: csg((withSpec(v1alpha1.CacheSubnetGroupParameters{
 					SubnetIDs:   []string{subnetID},
 					Description: sgDescription,
-				})), withConditions(runtimev1alpha1.Deleting())),
+				})), withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDeleteSubnetGroup),
 			},
 		},

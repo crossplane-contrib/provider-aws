@@ -21,7 +21,7 @@ limitations under the License.
 package v1beta1
 
 import (
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -224,12 +224,12 @@ func (in *DBSubnetGroupParameters) DeepCopyInto(out *DBSubnetGroupParameters) {
 	}
 	if in.SubnetIDRefs != nil {
 		in, out := &in.SubnetIDRefs, &out.SubnetIDRefs
-		*out = make([]v1alpha1.Reference, len(*in))
+		*out = make([]v1.Reference, len(*in))
 		copy(*out, *in)
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Tags != nil {
@@ -579,12 +579,12 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 	}
 	if in.DBSubnetGroupNameRef != nil {
 		in, out := &in.DBSubnetGroupNameRef, &out.DBSubnetGroupNameRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.DBSubnetGroupNameSelector != nil {
 		in, out := &in.DBSubnetGroupNameSelector, &out.DBSubnetGroupNameSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.DeletionProtection != nil {
@@ -634,7 +634,7 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 	}
 	if in.MasterPasswordSecretRef != nil {
 		in, out := &in.MasterPasswordSecretRef, &out.MasterPasswordSecretRef
-		*out = new(v1alpha1.SecretKeySelector)
+		*out = new(v1.SecretKeySelector)
 		**out = **in
 	}
 	if in.MonitoringInterval != nil {
@@ -649,12 +649,12 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 	}
 	if in.MonitoringRoleARNRef != nil {
 		in, out := &in.MonitoringRoleARNRef, &out.MonitoringRoleARNRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.MonitoringRoleARNSelector != nil {
 		in, out := &in.MonitoringRoleARNSelector, &out.MonitoringRoleARNSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.MultiAZ != nil {
@@ -734,12 +734,12 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 	}
 	if in.VPCSecurityGroupIDRefs != nil {
 		in, out := &in.VPCSecurityGroupIDRefs, &out.VPCSecurityGroupIDRefs
-		*out = make([]v1alpha1.Reference, len(*in))
+		*out = make([]v1.Reference, len(*in))
 		copy(*out, *in)
 	}
 	if in.VPCSecurityGroupIDSelector != nil {
 		in, out := &in.VPCSecurityGroupIDSelector, &out.VPCSecurityGroupIDSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.AllowMajorVersionUpgrade != nil {
@@ -774,12 +774,12 @@ func (in *RDSInstanceParameters) DeepCopyInto(out *RDSInstanceParameters) {
 	}
 	if in.DomainIAMRoleNameRef != nil {
 		in, out := &in.DomainIAMRoleNameRef, &out.DomainIAMRoleNameRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.DomainIAMRoleNameSelector != nil {
 		in, out := &in.DomainIAMRoleNameSelector, &out.DomainIAMRoleNameSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.OptionGroupName != nil {

@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // +kubebuilder:object:root=true
@@ -42,14 +42,14 @@ type HostedZone struct {
 
 // HostedZoneSpec defines the desired state of an AWS Route53 Hosted HostedZone.
 type HostedZoneSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  HostedZoneParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       HostedZoneParameters `json:"forProvider"`
 }
 
 // HostedZoneStatus represents the observed state of a HostedZone.
 type HostedZoneStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     HostedZoneObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          HostedZoneObservation `json:"atProvider"`
 }
 
 // HostedZoneParameters define the desired state of an AWS Route53 Hosted HostedZone.
@@ -116,11 +116,11 @@ type VPC struct {
 	// (Private hosted Hostedzones only) VPCIDRef references a VPC to retrieves its VPC Id.
 	// +immutable
 	// +optional
-	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
+	VPCIDRef *xpv1.Reference `json:"vpcIdRef,omitempty"`
 
 	// VPCIDSelector selects a reference to a VPC.
 	// +optional
-	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
+	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
 }
 
 // HostedZoneObservation keeps the state for the external resource.

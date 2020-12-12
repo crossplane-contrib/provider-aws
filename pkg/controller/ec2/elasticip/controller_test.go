@@ -31,7 +31,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
@@ -71,7 +71,7 @@ func withExternalName(name string) elasticIPModifier {
 	return func(r *v1alpha1.ElasticIP) { meta.SetExternalName(r, name) }
 }
 
-func withConditions(c ...runtimev1alpha1.Condition) elasticIPModifier {
+func withConditions(c ...xpv1.Condition) elasticIPModifier {
 	return func(r *v1alpha1.ElasticIP) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -131,7 +131,7 @@ func TestObserve(t *testing.T) {
 				}), withStatus(v1alpha1.ElasticIPObservation{
 					AllocationID: allocationID,
 				}), withExternalName(allocationID),
-					withConditions(runtimev1alpha1.Available())),
+					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -236,7 +236,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: elasticIP(withExternalName(allocationID),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
@@ -261,7 +261,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: elasticIP(withExternalName(publicIP),
-					withConditions(runtimev1alpha1.Creating()),
+					withConditions(xpv1.Creating()),
 					withSpec(v1alpha1.ElasticIPParameters{
 						Domain: &domainStandard,
 					})),
@@ -284,7 +284,7 @@ func TestCreate(t *testing.T) {
 				cr: elasticIP(),
 			},
 			want: want{
-				cr:  elasticIP(withConditions(runtimev1alpha1.Creating())),
+				cr:  elasticIP(withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
@@ -401,7 +401,7 @@ func TestRelease(t *testing.T) {
 				cr: elasticIP(),
 			},
 			want: want{
-				cr: elasticIP(withConditions(runtimev1alpha1.Deleting())),
+				cr: elasticIP(withConditions(xpv1.Deleting())),
 			},
 		},
 		"SuccessfulStandard": {
@@ -418,7 +418,7 @@ func TestRelease(t *testing.T) {
 				})),
 			},
 			want: want{
-				cr: elasticIP(withConditions(runtimev1alpha1.Deleting()),
+				cr: elasticIP(withConditions(xpv1.Deleting()),
 					withSpec(v1alpha1.ElasticIPParameters{
 						Domain: &domainStandard,
 					}),
@@ -437,7 +437,7 @@ func TestRelease(t *testing.T) {
 				cr: elasticIP(),
 			},
 			want: want{
-				cr:  elasticIP(withConditions(runtimev1alpha1.Deleting())),
+				cr:  elasticIP(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},

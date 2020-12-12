@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // IAMGroupUserMembershipParameters define the desired state of an AWS IAMGroupUserMembership.
@@ -33,11 +33,11 @@ type IAMGroupUserMembershipParameters struct {
 	// GroupNameRef references to an IAMGroup to retrieve its groupName
 	// +optional
 	// +immutable
-	GroupNameRef *runtimev1alpha1.Reference `json:"groupNameRef,omitempty"`
+	GroupNameRef *xpv1.Reference `json:"groupNameRef,omitempty"`
 
 	// GroupNameSelector selects a reference to an IAMGroup to retrieve its groupName
 	// +optional
-	GroupNameSelector *runtimev1alpha1.Selector `json:"groupNameSelector,omitempty"`
+	GroupNameSelector *xpv1.Selector `json:"groupNameSelector,omitempty"`
 
 	// UserName presents the name of the IAMUser.
 	// +immutable
@@ -46,18 +46,18 @@ type IAMGroupUserMembershipParameters struct {
 	// UserNameRef references to an IAMUser to retrieve its userName
 	// +optional
 	// +immutable
-	UserNameRef *runtimev1alpha1.Reference `json:"userNameRef,omitempty"`
+	UserNameRef *xpv1.Reference `json:"userNameRef,omitempty"`
 
 	// UserNameSelector selects a reference to an IAMUser to retrieve its userName
 	// +optional
-	UserNameSelector *runtimev1alpha1.Selector `json:"userNameSelector,omitempty"`
+	UserNameSelector *xpv1.Selector `json:"userNameSelector,omitempty"`
 }
 
 // An IAMGroupUserMembershipSpec defines the desired state of an
 // IAMGroupUserMembership.
 type IAMGroupUserMembershipSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  IAMGroupUserMembershipParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       IAMGroupUserMembershipParameters `json:"forProvider"`
 }
 
 // IAMGroupUserMembershipObservation keeps the state for the external resource
@@ -70,8 +70,8 @@ type IAMGroupUserMembershipObservation struct {
 // An IAMGroupUserMembershipStatus represents the observed state of an
 // IAMGroupUserMembership.
 type IAMGroupUserMembershipStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     IAMGroupUserMembershipObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          IAMGroupUserMembershipObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

@@ -21,7 +21,7 @@ limitations under the License.
 package v1alpha2
 
 import (
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -35,12 +35,12 @@ func (in *AWSPrincipal) DeepCopyInto(out *AWSPrincipal) {
 	}
 	if in.IAMUserARNRef != nil {
 		in, out := &in.IAMUserARNRef, &out.IAMUserARNRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.IAMUserARNSelector != nil {
 		in, out := &in.IAMUserARNSelector, &out.IAMUserARNSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.AWSAccountID != nil {
@@ -55,12 +55,12 @@ func (in *AWSPrincipal) DeepCopyInto(out *AWSPrincipal) {
 	}
 	if in.IAMRoleARNRef != nil {
 		in, out := &in.IAMRoleARNRef, &out.IAMRoleARNRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.IAMRoleARNSelector != nil {
 		in, out := &in.IAMRoleARNSelector, &out.IAMRoleARNSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -151,12 +151,12 @@ func (in *BucketPolicyParameters) DeepCopyInto(out *BucketPolicyParameters) {
 	}
 	if in.BucketNameRef != nil {
 		in, out := &in.BucketNameRef, &out.BucketNameRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.BucketNameSelector != nil {
 		in, out := &in.BucketNameSelector, &out.BucketNameSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }

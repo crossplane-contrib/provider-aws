@@ -32,7 +32,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
@@ -66,7 +66,7 @@ func withMasterUsername(s *string) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.MasterUsername = s }
 }
 
-func withConditions(c ...runtimev1alpha1.Condition) rdsModifier {
+func withConditions(c ...xpv1.Condition) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -88,7 +88,7 @@ func withDBInstanceStatus(s string) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Status.AtProvider.DBInstanceStatus = s }
 }
 
-func withPasswordSecretRef(s runtimev1alpha1.SecretKeySelector) rdsModifier {
+func withPasswordSecretRef(s xpv1.SecretKeySelector) rdsModifier {
 	return func(r *v1beta1.RDSInstance) { r.Spec.ForProvider.MasterPasswordSecretRef = &s }
 }
 
@@ -133,7 +133,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: instance(
-					withConditions(runtimev1alpha1.Available()),
+					withConditions(xpv1.Available()),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateAvailable))),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -161,7 +161,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: instance(
-					withConditions(runtimev1alpha1.Deleting()),
+					withConditions(xpv1.Deleting()),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateDeleting))),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -189,7 +189,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: instance(
-					withConditions(runtimev1alpha1.Unavailable()),
+					withConditions(xpv1.Unavailable()),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateFailed))),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -254,7 +254,7 @@ func TestObserve(t *testing.T) {
 				cr: instance(
 					withEngineVersion(&engineVersion),
 					withDBInstanceStatus(string(v1beta1.RDSInstanceStateCreating)),
-					withConditions(runtimev1alpha1.Creating()),
+					withConditions(xpv1.Creating()),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -336,11 +336,11 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: instance(
 					withMasterUsername(&masterUsername),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{
-						runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
-						runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
+						xpv1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
+						xpv1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
 					},
 				},
 			},
@@ -352,7 +352,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: instance(
 					withDBInstanceStatus(v1beta1.RDSInstanceStateCreating),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 			},
 		},
 		"SuccessfulNoUsername": {
@@ -369,10 +369,10 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: instance(
 					withMasterUsername(nil),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{
-						runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
+						xpv1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
 					},
 				},
 			},
@@ -396,17 +396,17 @@ func TestCreate(t *testing.T) {
 						return nil
 					},
 				},
-				cr: instance(withMasterUsername(&masterUsername), withPasswordSecretRef(runtimev1alpha1.SecretKeySelector{Key: secretKey})),
+				cr: instance(withMasterUsername(&masterUsername), withPasswordSecretRef(xpv1.SecretKeySelector{Key: secretKey})),
 			},
 			want: want{
 				cr: instance(
 					withMasterUsername(&masterUsername),
-					withPasswordSecretRef(runtimev1alpha1.SecretKeySelector{Key: secretKey}),
-					withConditions(runtimev1alpha1.Creating())),
+					withPasswordSecretRef(xpv1.SecretKeySelector{Key: secretKey}),
+					withConditions(xpv1.Creating())),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{
-						runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(credData),
-						runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
+						xpv1.ResourceCredentialsSecretPasswordKey: []byte(credData),
+						xpv1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
 					},
 				},
 			},
@@ -416,13 +416,13 @@ func TestCreate(t *testing.T) {
 				kube: &test.MockClient{
 					MockGet: test.NewMockGetFn(errBoom),
 				},
-				cr: instance(withMasterUsername(&masterUsername), withPasswordSecretRef(runtimev1alpha1.SecretKeySelector{})),
+				cr: instance(withMasterUsername(&masterUsername), withPasswordSecretRef(xpv1.SecretKeySelector{})),
 			},
 			want: want{
 				cr: instance(
 					withMasterUsername(&masterUsername),
-					withPasswordSecretRef(runtimev1alpha1.SecretKeySelector{}),
-					withConditions(runtimev1alpha1.Creating())),
+					withPasswordSecretRef(xpv1.SecretKeySelector{}),
+					withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errGetPasswordSecretFailed),
 			},
 		},
@@ -438,7 +438,7 @@ func TestCreate(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr:  instance(withConditions(runtimev1alpha1.Creating())),
+				cr:  instance(withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreateFailed),
 			},
 		},
@@ -455,9 +455,9 @@ func TestCreate(t *testing.T) {
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if string(tc.want.result.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPasswordKey]) == replaceMe {
-				tc.want.result.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPasswordKey] =
-					o.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPasswordKey]
+			if string(tc.want.result.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey]) == replaceMe {
+				tc.want.result.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] =
+					o.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey]
 			}
 			if diff := cmp.Diff(tc.want.result, o); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
@@ -633,7 +633,7 @@ func TestDelete(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr: instance(withConditions(runtimev1alpha1.Deleting())),
+				cr: instance(withConditions(xpv1.Deleting())),
 			},
 		},
 		"AlreadyDeleting": {
@@ -642,7 +642,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: instance(withDBInstanceStatus(v1beta1.RDSInstanceStateDeleting),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"AlreadyDeleted": {
@@ -657,7 +657,7 @@ func TestDelete(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr: instance(withConditions(runtimev1alpha1.Deleting())),
+				cr: instance(withConditions(xpv1.Deleting())),
 			},
 		},
 		"Failed": {
@@ -684,7 +684,7 @@ func TestDelete(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr:  instance(withConditions(runtimev1alpha1.Deleting())),
+				cr:  instance(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDeleteFailed),
 			},
 		},

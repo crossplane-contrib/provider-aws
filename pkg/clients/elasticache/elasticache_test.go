@@ -20,13 +20,13 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
 	cachev1alpha1 "github.com/crossplane/provider-aws/apis/cache/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
@@ -848,8 +848,8 @@ func TestConnectionEndpoint(t *testing.T) {
 				},
 			},
 			want: managed.ConnectionDetails{
-				v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(host),
-				v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(port)),
+				xpv1.ResourceCredentialsSecretEndpointKey: []byte(host),
+				xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(port)),
 			},
 		},
 		{
@@ -870,8 +870,8 @@ func TestConnectionEndpoint(t *testing.T) {
 				},
 			},
 			want: managed.ConnectionDetails{
-				v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(host),
-				v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(port)),
+				xpv1.ResourceCredentialsSecretEndpointKey: []byte(host),
+				xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(port)),
 			},
 		},
 		{

@@ -21,7 +21,7 @@ limitations under the License.
 package v1beta1
 
 import (
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -228,12 +228,12 @@ func (in *RedrivePolicy) DeepCopyInto(out *RedrivePolicy) {
 	}
 	if in.DeadLetterTargetARNRef != nil {
 		in, out := &in.DeadLetterTargetARNRef, &out.DeadLetterTargetARNRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.DeadLetterTargetARNSelector != nil {
 		in, out := &in.DeadLetterTargetARNSelector, &out.DeadLetterTargetARNSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }

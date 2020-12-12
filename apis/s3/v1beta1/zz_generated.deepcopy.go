@@ -21,7 +21,7 @@ limitations under the License.
 package v1beta1
 
 import (
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -427,12 +427,12 @@ func (in *Destination) DeepCopyInto(out *Destination) {
 	}
 	if in.BucketRef != nil {
 		in, out := &in.BucketRef, &out.BucketRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.BucketSelector != nil {
 		in, out := &in.BucketSelector, &out.BucketSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.EncryptionConfiguration != nil {
@@ -725,12 +725,12 @@ func (in *LoggingConfiguration) DeepCopyInto(out *LoggingConfiguration) {
 	}
 	if in.TargetBucketRef != nil {
 		in, out := &in.TargetBucketRef, &out.TargetBucketRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.TargetBucketSelector != nil {
 		in, out := &in.TargetBucketSelector, &out.TargetBucketSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.TargetGrants != nil {
@@ -969,12 +969,12 @@ func (in *ReplicationConfiguration) DeepCopyInto(out *ReplicationConfiguration) 
 	}
 	if in.RoleRef != nil {
 		in, out := &in.RoleRef, &out.RoleRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.RoleSelector != nil {
 		in, out := &in.RoleSelector, &out.RoleSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Rules != nil {
@@ -1371,12 +1371,12 @@ func (in *TopicConfiguration) DeepCopyInto(out *TopicConfiguration) {
 	}
 	if in.TopicArnRef != nil {
 		in, out := &in.TopicArnRef, &out.TopicArnRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.TopicArnSelector != nil {
 		in, out := &in.TopicArnSelector, &out.TopicArnSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }

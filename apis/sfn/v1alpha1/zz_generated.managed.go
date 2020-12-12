@@ -18,20 +18,20 @@ limitations under the License.
 
 package v1alpha1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this Activity.
-func (mg *Activity) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *Activity) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this Activity.
-func (mg *Activity) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *Activity) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this Activity.
-func (mg *Activity) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *Activity) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -39,27 +39,27 @@ func (mg *Activity) GetProviderConfigReference() *runtimev1alpha1.Reference {
 GetProviderReference of this Activity.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *Activity) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *Activity) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this Activity.
-func (mg *Activity) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *Activity) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this Activity.
-func (mg *Activity) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *Activity) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this Activity.
-func (mg *Activity) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *Activity) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this Activity.
-func (mg *Activity) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *Activity) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -67,27 +67,27 @@ func (mg *Activity) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
 SetProviderReference of this Activity.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *Activity) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *Activity) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this Activity.
-func (mg *Activity) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *Activity) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this StateMachine.
-func (mg *StateMachine) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *StateMachine) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this StateMachine.
-func (mg *StateMachine) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *StateMachine) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this StateMachine.
-func (mg *StateMachine) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *StateMachine) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -95,27 +95,27 @@ func (mg *StateMachine) GetProviderConfigReference() *runtimev1alpha1.Reference 
 GetProviderReference of this StateMachine.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *StateMachine) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *StateMachine) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this StateMachine.
-func (mg *StateMachine) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *StateMachine) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this StateMachine.
-func (mg *StateMachine) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *StateMachine) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this StateMachine.
-func (mg *StateMachine) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *StateMachine) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this StateMachine.
-func (mg *StateMachine) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *StateMachine) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -123,11 +123,11 @@ func (mg *StateMachine) SetProviderConfigReference(r *runtimev1alpha1.Reference)
 SetProviderReference of this StateMachine.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *StateMachine) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *StateMachine) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this StateMachine.
-func (mg *StateMachine) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *StateMachine) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

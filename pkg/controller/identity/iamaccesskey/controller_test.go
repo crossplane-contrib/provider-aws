@@ -28,7 +28,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -59,7 +59,7 @@ type args struct {
 
 type accessModifier func(*v1alpha1.IAMAccessKey)
 
-func withConditions(c ...corev1alpha1.Condition) accessModifier {
+func withConditions(c ...xpv1.Condition) accessModifier {
 	return func(r *v1alpha1.IAMAccessKey) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -121,7 +121,7 @@ func TestObserve(t *testing.T) {
 				cr: accesskey(withUsername(userName),
 					withAccessKey(accessKeyID),
 					withStatus(string(activeStatus)),
-					withConditions(corev1alpha1.Available())),
+					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -149,7 +149,7 @@ func TestObserve(t *testing.T) {
 				cr: accesskey(withUsername(userName),
 					withAccessKey(accessKeyID),
 					withStatus(string(activeStatus)),
-					withConditions(corev1alpha1.Unavailable())),
+					withConditions(xpv1.Unavailable())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: false,
@@ -264,8 +264,8 @@ func TestCreate(t *testing.T) {
 				result: managed.ExternalCreation{
 					ExternalNameAssigned: true,
 					ConnectionDetails: map[string][]byte{
-						corev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(secretKeyID),
-						corev1alpha1.ResourceCredentialsSecretUserKey:     []byte(accessKeyID),
+						xpv1.ResourceCredentialsSecretPasswordKey: []byte(secretKeyID),
+						xpv1.ResourceCredentialsSecretUserKey:     []byte(accessKeyID),
 					}},
 			},
 		},
@@ -338,7 +338,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: accesskey(withAccessKey(accessKeyID), withUsername(userName),
-					withConditions(corev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"InValidInput": {
@@ -362,7 +362,7 @@ func TestDelete(t *testing.T) {
 				cr: accesskey(),
 			},
 			want: want{
-				cr:  accesskey(withConditions(corev1alpha1.Deleting())),
+				cr:  accesskey(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},
@@ -378,7 +378,7 @@ func TestDelete(t *testing.T) {
 				cr: accesskey(),
 			},
 			want: want{
-				cr: accesskey(withConditions(corev1alpha1.Deleting())),
+				cr: accesskey(withConditions(xpv1.Deleting())),
 			},
 		},
 	}

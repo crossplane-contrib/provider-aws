@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // IAMUserParameters define the desired state of an AWS IAM User.
@@ -40,8 +40,8 @@ type IAMUserParameters struct {
 
 // An IAMUserSpec defines the desired state of an IAM User.
 type IAMUserSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  IAMUserParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       IAMUserParameters `json:"forProvider"`
 }
 
 // IAMUserObservation keeps the state for the external resource
@@ -55,8 +55,8 @@ type IAMUserObservation struct {
 
 // An IAMUserStatus represents the observed state of an IAM User.
 type IAMUserStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     IAMUserObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          IAMUserObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
@@ -80,8 +80,8 @@ type ElasticIPParameters struct {
 
 // A ElasticIPSpec defines the desired state of a ElasticIP.
 type ElasticIPSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  ElasticIPParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       ElasticIPParameters `json:"forProvider"`
 }
 
 // ElasticIPObservation keeps the state for the external resource
@@ -127,8 +127,8 @@ type ElasticIPObservation struct {
 
 // A ElasticIPStatus represents the observed state of a ElasticIP.
 type ElasticIPStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     ElasticIPObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          ElasticIPObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

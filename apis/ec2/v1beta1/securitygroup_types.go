@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // SecurityGroupParameters define the desired state of an AWS VPC Security
@@ -61,11 +61,11 @@ type SecurityGroupParameters struct {
 	// VPCIDRef references a VPC to and retrieves its vpcId
 	// +optional
 	// +immutable
-	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
+	VPCIDRef *xpv1.Reference `json:"vpcIdRef,omitempty"`
 
 	// VPCIDSelector selects a reference to a VPC to and retrieves its vpcId
 	// +optional
-	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
+	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
 }
 
 // IPRange describes an IPv4 range.
@@ -153,11 +153,11 @@ type UserIDGroupPair struct {
 	// VPCIDRef reference a VPC to retrieve its vpcId
 	// +optional
 	// +immutable
-	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
+	VPCIDRef *xpv1.Reference `json:"vpcIdRef,omitempty"`
 
 	// VPCIDSelector selects reference to a VPC to retrieve its vpcId
 	// +optional
-	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
+	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
 
 	// The ID of the VPC peering connection, if applicable.
 	// +optional
@@ -216,8 +216,8 @@ type IPPermission struct {
 
 // A SecurityGroupSpec defines the desired state of a SecurityGroup.
 type SecurityGroupSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  SecurityGroupParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       SecurityGroupParameters `json:"forProvider"`
 }
 
 // SecurityGroupObservation keeps the state for the external resource
@@ -231,8 +231,8 @@ type SecurityGroupObservation struct {
 
 // A SecurityGroupStatus represents the observed state of a SecurityGroup.
 type SecurityGroupStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     SecurityGroupObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          SecurityGroupObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

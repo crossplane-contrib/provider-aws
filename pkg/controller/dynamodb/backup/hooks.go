@@ -22,7 +22,7 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -56,11 +56,11 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Backup, resp *sv
 	}
 	switch aws.StringValue(resp.BackupDescription.BackupDetails.BackupStatus) {
 	case string(svcapitypes.BackupStatus_SDK_AVAILABLE):
-		cr.SetConditions(v1alpha1.Available())
+		cr.SetConditions(xpv1.Available())
 	case string(svcapitypes.BackupStatus_SDK_CREATING):
-		cr.SetConditions(v1alpha1.Creating())
+		cr.SetConditions(xpv1.Creating())
 	case string(svcapitypes.BackupStatus_SDK_DELETED):
-		cr.SetConditions(v1alpha1.Unavailable())
+		cr.SetConditions(xpv1.Unavailable())
 	}
 	return obs, nil
 }

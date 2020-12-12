@@ -19,8 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // ReplicationGroup states.
@@ -328,12 +327,12 @@ type ReplicationGroupParameters struct {
 	// the CacheSecurityGroupNames.
 	// +immutable
 	// +optional
-	CacheSecurityGroupNameRefs []runtimev1alpha1.Reference `json:"cacheSecurityGroupNameRefs,omitempty"`
+	CacheSecurityGroupNameRefs []xpv1.Reference `json:"cacheSecurityGroupNameRefs,omitempty"`
 
 	// CacheSecurityGroupNameSelector selects references to SecurityGroups.
 	// +immutable
 	// +optional
-	CacheSecurityGroupNameSelector *runtimev1alpha1.Selector `json:"cacheSecurityGroupNameSelector,omitempty"`
+	CacheSecurityGroupNameSelector *xpv1.Selector `json:"cacheSecurityGroupNameSelector,omitempty"`
 
 	// TODO(muvaf): Implement SubnetGroup as managed resource so that we can
 	// refer to it here.
@@ -351,12 +350,12 @@ type ReplicationGroupParameters struct {
 	// the CacheSubnetGroupName.
 	// +immutable
 	// +optional
-	CacheSubnetGroupNameRef *runtimev1alpha1.Reference `json:"cacheSubnetGroupNameRefs,omitempty"`
+	CacheSubnetGroupNameRef *xpv1.Reference `json:"cacheSubnetGroupNameRefs,omitempty"`
 
 	// CacheSubnetGroupNameSelector selects a reference to a CacheSubnetGroup.
 	// +immutable
 	// +optional
-	CacheSubnetGroupNameSelector *runtimev1alpha1.Selector `json:"cacheSubnetGroupNameSelector,omitempty"`
+	CacheSubnetGroupNameSelector *xpv1.Selector `json:"cacheSubnetGroupNameSelector,omitempty"`
 
 	// Engine is the name of the cache engine (memcached or redis) to be used
 	// for the clusters in this replication group.
@@ -488,13 +487,13 @@ type ReplicationGroupParameters struct {
 	// the SecurityGroupIDs.
 	// +immutable
 	// +optional
-	SecurityGroupIDRefs []v1alpha1.Reference `json:"securityGroupIdRefs,omitempty"`
+	SecurityGroupIDRefs []xpv1.Reference `json:"securityGroupIdRefs,omitempty"`
 
 	// SecurityGroupIDSelector selects references to SecurityGroups used to set
 	// the SecurityGroupIDs.
 	// +immutable
 	// +optional
-	SecurityGroupIDSelector *v1alpha1.Selector `json:"securityGroupIdSelector,omitempty"`
+	SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIdSelector,omitempty"`
 
 	// SnapshotARNs specifies a list of Amazon Resource Names (ARN) that
 	// uniquely identify the Redis RDB snapshot files stored in Amazon S3. The
@@ -570,14 +569,14 @@ type ReplicationGroupParameters struct {
 
 // A ReplicationGroupSpec defines the desired state of a ReplicationGroup.
 type ReplicationGroupSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  ReplicationGroupParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       ReplicationGroupParameters `json:"forProvider"`
 }
 
 // A ReplicationGroupStatus defines the observed state of a ReplicationGroup.
 type ReplicationGroupStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     ReplicationGroupObservation `json:"atProvider,omitempty"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          ReplicationGroupObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -30,7 +30,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -63,7 +63,7 @@ func withExternalName(s string) zoneModifier {
 	return func(r *v1alpha1.HostedZone) { meta.SetExternalName(r, s) }
 }
 
-func withConditions(c ...runtimev1alpha1.Condition) zoneModifier {
+func withConditions(c ...xpv1.Condition) zoneModifier {
 	return func(r *v1alpha1.HostedZone) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -164,7 +164,7 @@ func TestObserve(t *testing.T) {
 				cr: instance(
 					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
 					withStatus(id, rrCount),
-					withConditions(runtimev1alpha1.Available())),
+					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -410,7 +410,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: instance(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"InValidInput": {
@@ -434,7 +434,7 @@ func TestDelete(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr:  instance(withConditions(runtimev1alpha1.Deleting())),
+				cr:  instance(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},
@@ -450,7 +450,7 @@ func TestDelete(t *testing.T) {
 				cr: instance(),
 			},
 			want: want{
-				cr: instance(withConditions(runtimev1alpha1.Deleting())),
+				cr: instance(withConditions(xpv1.Deleting())),
 			},
 		},
 	}

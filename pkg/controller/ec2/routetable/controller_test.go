@@ -27,7 +27,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -66,7 +66,7 @@ func withStatus(s v1alpha4.RouteTableObservation) rtModifier {
 	return func(r *v1alpha4.RouteTable) { r.Status.AtProvider = s }
 }
 
-func withConditions(c ...runtimev1alpha1.Condition) rtModifier {
+func withConditions(c ...xpv1.Condition) rtModifier {
 	return func(r *v1alpha4.RouteTable) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -112,7 +112,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: rt(withSpec(v1alpha4.RouteTableParameters{
 					VPCID: aws.String(vpcID),
-				}), withExternalName(rtID), withConditions(runtimev1alpha1.Available())),
+				}), withExternalName(rtID), withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -395,7 +395,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: rt(withStatus(v1alpha4.RouteTableObservation{
 					RouteTableID: rtID,
-				}), withConditions(runtimev1alpha1.Deleting())),
+				}), withConditions(xpv1.Deleting())),
 			},
 		},
 		"DeleteFail": {
@@ -414,7 +414,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: rt(withStatus(v1alpha4.RouteTableObservation{
 					RouteTableID: rtID,
-				}), withConditions(runtimev1alpha1.Deleting())),
+				}), withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},

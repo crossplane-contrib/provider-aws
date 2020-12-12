@@ -18,20 +18,20 @@ limitations under the License.
 
 package v1beta1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this IAMRole.
-func (mg *IAMRole) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *IAMRole) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this IAMRole.
-func (mg *IAMRole) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *IAMRole) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this IAMRole.
-func (mg *IAMRole) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *IAMRole) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -39,27 +39,27 @@ func (mg *IAMRole) GetProviderConfigReference() *runtimev1alpha1.Reference {
 GetProviderReference of this IAMRole.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *IAMRole) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *IAMRole) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this IAMRole.
-func (mg *IAMRole) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *IAMRole) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this IAMRole.
-func (mg *IAMRole) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *IAMRole) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this IAMRole.
-func (mg *IAMRole) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *IAMRole) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this IAMRole.
-func (mg *IAMRole) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *IAMRole) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -67,27 +67,27 @@ func (mg *IAMRole) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
 SetProviderReference of this IAMRole.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *IAMRole) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *IAMRole) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this IAMRole.
-func (mg *IAMRole) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *IAMRole) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *IAMRolePolicyAttachment) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *IAMRolePolicyAttachment) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *IAMRolePolicyAttachment) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -95,27 +95,27 @@ func (mg *IAMRolePolicyAttachment) GetProviderConfigReference() *runtimev1alpha1
 GetProviderReference of this IAMRolePolicyAttachment.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *IAMRolePolicyAttachment) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *IAMRolePolicyAttachment) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *IAMRolePolicyAttachment) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *IAMRolePolicyAttachment) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *IAMRolePolicyAttachment) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *IAMRolePolicyAttachment) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -123,11 +123,11 @@ func (mg *IAMRolePolicyAttachment) SetProviderConfigReference(r *runtimev1alpha1
 SetProviderReference of this IAMRolePolicyAttachment.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *IAMRolePolicyAttachment) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *IAMRolePolicyAttachment) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this IAMRolePolicyAttachment.
-func (mg *IAMRolePolicyAttachment) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *IAMRolePolicyAttachment) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

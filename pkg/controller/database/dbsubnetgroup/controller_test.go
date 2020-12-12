@@ -27,7 +27,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
@@ -53,7 +53,7 @@ type args struct {
 
 type dbSubnetGroupModifier func(*v1beta1.DBSubnetGroup)
 
-func withConditions(c ...runtimev1alpha1.Condition) dbSubnetGroupModifier {
+func withConditions(c ...xpv1.Condition) dbSubnetGroupModifier {
 	return func(sg *v1beta1.DBSubnetGroup) { sg.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -80,8 +80,8 @@ func mockListTagsForResourceRequest(input *awsrds.ListTagsForResourceInput) awsr
 func dbSubnetGroup(m ...dbSubnetGroupModifier) *v1beta1.DBSubnetGroup {
 	cr := &v1beta1.DBSubnetGroup{
 		Spec: v1beta1.DBSubnetGroupSpec{
-			ResourceSpec: runtimev1alpha1.ResourceSpec{
-				ProviderReference: &runtimev1alpha1.Reference{Name: providerName},
+			ResourceSpec: xpv1.ResourceSpec{
+				ProviderReference: &xpv1.Reference{Name: providerName},
 			},
 		},
 	}
@@ -125,7 +125,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: dbSubnetGroup(
-					withConditions(runtimev1alpha1.Available()),
+					withConditions(xpv1.Available()),
 					withDBSubnetGroupStatus(v1beta1.DBSubnetGroupStateAvailable),
 				),
 				result: managed.ExternalObservation{
@@ -150,7 +150,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: dbSubnetGroup(
-					withConditions(runtimev1alpha1.Unavailable())),
+					withConditions(xpv1.Unavailable())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -173,7 +173,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: dbSubnetGroup(
-					withConditions(runtimev1alpha1.Unavailable())),
+					withConditions(xpv1.Unavailable())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -237,7 +237,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: dbSubnetGroup(
 					withDBSubnetGroupDescription(dbSubnetGroupDescription),
-					withConditions(runtimev1alpha1.Unavailable())),
+					withConditions(xpv1.Unavailable())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -317,7 +317,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: dbSubnetGroup(
 					withDBSubnetGroupDescription(dbSubnetGroupDescription),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 			},
 		},
 		"FailedRequest": {
@@ -332,7 +332,7 @@ func TestCreate(t *testing.T) {
 				cr: dbSubnetGroup(),
 			},
 			want: want{
-				cr:  dbSubnetGroup(withConditions(runtimev1alpha1.Creating())),
+				cr:  dbSubnetGroup(withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
@@ -493,7 +493,7 @@ func TestDelete(t *testing.T) {
 				cr: dbSubnetGroup(),
 			},
 			want: want{
-				cr: dbSubnetGroup(withConditions(runtimev1alpha1.Deleting())),
+				cr: dbSubnetGroup(withConditions(xpv1.Deleting())),
 			},
 		},
 		"AlreadyDeleted": {
@@ -508,7 +508,7 @@ func TestDelete(t *testing.T) {
 				cr: dbSubnetGroup(),
 			},
 			want: want{
-				cr: dbSubnetGroup(withConditions(runtimev1alpha1.Deleting())),
+				cr: dbSubnetGroup(withConditions(xpv1.Deleting())),
 			},
 		},
 		"Failed": {
@@ -535,7 +535,7 @@ func TestDelete(t *testing.T) {
 				cr: dbSubnetGroup(),
 			},
 			want: want{
-				cr:  dbSubnetGroup(withConditions(runtimev1alpha1.Deleting())),
+				cr:  dbSubnetGroup(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},

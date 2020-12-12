@@ -21,7 +21,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -151,12 +151,12 @@ func (in *ELBAttachmentParameters) DeepCopyInto(out *ELBAttachmentParameters) {
 	*out = *in
 	if in.ELBNameRef != nil {
 		in, out := &in.ELBNameRef, &out.ELBNameRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.ELBNameSelector != nil {
 		in, out := &in.ELBNameSelector, &out.ELBNameSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -291,12 +291,12 @@ func (in *ELBParameters) DeepCopyInto(out *ELBParameters) {
 	}
 	if in.SecurityGroupIDRefs != nil {
 		in, out := &in.SecurityGroupIDRefs, &out.SecurityGroupIDRefs
-		*out = make([]corev1alpha1.Reference, len(*in))
+		*out = make([]v1.Reference, len(*in))
 		copy(*out, *in)
 	}
 	if in.SecurityGroupIDSelector != nil {
 		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.SubnetIDs != nil {
@@ -306,12 +306,12 @@ func (in *ELBParameters) DeepCopyInto(out *ELBParameters) {
 	}
 	if in.SubnetIDRefs != nil {
 		in, out := &in.SubnetIDRefs, &out.SubnetIDRefs
-		*out = make([]corev1alpha1.Reference, len(*in))
+		*out = make([]v1.Reference, len(*in))
 		copy(*out, *in)
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Tags != nil {

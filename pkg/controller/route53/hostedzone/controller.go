@@ -28,7 +28,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -107,7 +107,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	hostedzone.LateInitialize(&cr.Spec.ForProvider, res)
 
 	cr.Status.AtProvider = hostedzone.GenerateObservation(res)
-	cr.Status.SetConditions(runtimev1alpha1.Available())
+	cr.Status.SetConditions(xpv1.Available())
 	return managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        hostedzone.IsUpToDate(cr.Spec.ForProvider, *res.HostedZone),
@@ -152,7 +152,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Deleting())
+	cr.Status.SetConditions(xpv1.Deleting())
 
 	_, err := e.client.DeleteHostedZoneRequest(&route53.DeleteHostedZoneInput{
 		Id: aws.String(fmt.Sprintf("%s%s", hostedzone.IDPrefix, meta.GetExternalName(cr))),

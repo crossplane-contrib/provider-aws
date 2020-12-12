@@ -21,7 +21,7 @@ limitations under the License.
 package v1beta1
 
 import (
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -218,22 +218,22 @@ func (in *IAMRolePolicyAttachmentParameters) DeepCopyInto(out *IAMRolePolicyAtta
 	*out = *in
 	if in.PolicyARNRef != nil {
 		in, out := &in.PolicyARNRef, &out.PolicyARNRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.PolicyARNSelector != nil {
 		in, out := &in.PolicyARNSelector, &out.PolicyARNSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.RoleNameRef != nil {
 		in, out := &in.RoleNameRef, &out.RoleNameRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.RoleNameSelector != nil {
 		in, out := &in.RoleNameSelector, &out.RoleNameSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
