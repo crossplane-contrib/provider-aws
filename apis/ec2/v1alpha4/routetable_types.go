@@ -19,7 +19,7 @@ package v1alpha4
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
@@ -37,10 +37,10 @@ type Route struct {
 	GatewayID *string `json:"gatewayId,omitempty"`
 
 	// A referencer to retrieve the ID of a gateway
-	GatewayIDRef *runtimev1alpha1.Reference `json:"gatewayIdRef,omitempty"`
+	GatewayIDRef *xpv1.Reference `json:"gatewayIdRef,omitempty"`
 
 	// A selector to select a referencer to retrieve the ID of a gateway
-	GatewayIDSelector *runtimev1alpha1.Selector `json:"gatewayIdSelector,omitempty"`
+	GatewayIDSelector *xpv1.Selector `json:"gatewayIdSelector,omitempty"`
 }
 
 // RouteState describes a route state in the route table.
@@ -68,11 +68,11 @@ type Association struct {
 
 	// A referencer to retrieve the ID of a subnet
 	// +optional
-	SubnetIDRef *runtimev1alpha1.Reference `json:"subnetIdRef,omitempty"`
+	SubnetIDRef *xpv1.Reference `json:"subnetIdRef,omitempty"`
 
 	// A selector to select a referencer to retrieve the ID of a subnet
 	// +optional
-	SubnetIDSelector *runtimev1alpha1.Selector `json:"subnetIdSelector,omitempty"`
+	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
 }
 
 // AssociationState describes an association state in the route table.
@@ -114,17 +114,17 @@ type RouteTableParameters struct {
 	// VPCIDRef references a VPC to retrieve its vpcId
 	// +optional
 	// +immutable
-	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
+	VPCIDRef *xpv1.Reference `json:"vpcIdRef,omitempty"`
 
 	// VPCIDSelector selects a reference to a VPC to retrieve its vpcId
 	// +optional
-	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
+	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
 }
 
 // A RouteTableSpec defines the desired state of a RouteTable.
 type RouteTableSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  RouteTableParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       RouteTableParameters `json:"forProvider"`
 }
 
 // RouteTableObservation keeps the state for the external resource
@@ -144,8 +144,8 @@ type RouteTableObservation struct {
 
 // A RouteTableStatus represents the observed state of a RouteTable.
 type RouteTableStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     RouteTableObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          RouteTableObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

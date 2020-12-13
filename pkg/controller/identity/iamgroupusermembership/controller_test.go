@@ -26,7 +26,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -51,7 +51,7 @@ type args struct {
 
 type userGroupModifier func(*v1alpha1.IAMGroupUserMembership)
 
-func withConditions(c ...runtimev1alpha1.Condition) userGroupModifier {
+func withConditions(c ...xpv1.Condition) userGroupModifier {
 	return func(r *v1alpha1.IAMGroupUserMembership) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -109,7 +109,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: userGroup(withGroupName(groupName),
 					withSpecUserName(userName),
-					withConditions(runtimev1alpha1.Available()),
+					withConditions(xpv1.Available()),
 					withStatusGroupArn(groupArn)),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -205,7 +205,7 @@ func TestCreate(t *testing.T) {
 				cr: userGroup(
 					withGroupName(groupName),
 					withSpecUserName(userName),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 			},
 		},
 		"InValidInput": {
@@ -232,7 +232,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: userGroup(withGroupName(groupName),
 					withSpecUserName(userName),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errAdd),
 			},
 		},
@@ -283,7 +283,7 @@ func TestDelete(t *testing.T) {
 				cr: userGroup(
 					withGroupName(groupName),
 					withSpecUserName(userName),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"InValidInput": {
@@ -310,7 +310,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: userGroup(withGroupName(userName),
 					withSpecUserName(userName),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errRemove),
 			},
 		},
@@ -326,7 +326,7 @@ func TestDelete(t *testing.T) {
 				cr: userGroup(),
 			},
 			want: want{
-				cr:  userGroup(withConditions(runtimev1alpha1.Deleting())),
+				cr:  userGroup(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errors.New(errRemove), errRemove),
 			},
 		},

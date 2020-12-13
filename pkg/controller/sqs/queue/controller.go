@@ -23,7 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	awssqs "github.com/aws/aws-sdk-go-v2/service/sqs"
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -121,7 +121,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Available())
+	cr.Status.SetConditions(xpv1.Available())
 
 	cr.Status.AtProvider = sqs.GenerateQueueObservation(*getURLResponse.QueueUrl, resAttributes.Attributes)
 
@@ -137,7 +137,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errNotQueue)
 	}
 
-	cr.SetConditions(runtimev1alpha1.Creating())
+	cr.SetConditions(xpv1.Creating())
 
 	_, err := e.client.CreateQueueRequest(&awssqs.CreateQueueInput{
 		Attributes: sqs.GenerateCreateAttributes(&cr.Spec.ForProvider),
@@ -207,7 +207,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errNotQueue)
 	}
 
-	cr.SetConditions(runtimev1alpha1.Deleting())
+	cr.SetConditions(xpv1.Deleting())
 
 	_, err := e.client.DeleteQueueRequest(&awssqs.DeleteQueueInput{
 		QueueUrl: aws.String(cr.Status.AtProvider.URL),

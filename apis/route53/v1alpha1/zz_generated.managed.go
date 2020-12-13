@@ -18,20 +18,20 @@ limitations under the License.
 
 package v1alpha1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this HostedZone.
-func (mg *HostedZone) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *HostedZone) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this HostedZone.
-func (mg *HostedZone) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *HostedZone) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this HostedZone.
-func (mg *HostedZone) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *HostedZone) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -39,27 +39,27 @@ func (mg *HostedZone) GetProviderConfigReference() *runtimev1alpha1.Reference {
 GetProviderReference of this HostedZone.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *HostedZone) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *HostedZone) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this HostedZone.
-func (mg *HostedZone) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *HostedZone) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this HostedZone.
-func (mg *HostedZone) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *HostedZone) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this HostedZone.
-func (mg *HostedZone) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *HostedZone) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this HostedZone.
-func (mg *HostedZone) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *HostedZone) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -67,27 +67,27 @@ func (mg *HostedZone) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
 SetProviderReference of this HostedZone.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *HostedZone) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *HostedZone) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this HostedZone.
-func (mg *HostedZone) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *HostedZone) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this ResourceRecordSet.
-func (mg *ResourceRecordSet) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *ResourceRecordSet) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this ResourceRecordSet.
-func (mg *ResourceRecordSet) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *ResourceRecordSet) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this ResourceRecordSet.
-func (mg *ResourceRecordSet) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *ResourceRecordSet) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -95,27 +95,27 @@ func (mg *ResourceRecordSet) GetProviderConfigReference() *runtimev1alpha1.Refer
 GetProviderReference of this ResourceRecordSet.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *ResourceRecordSet) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *ResourceRecordSet) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this ResourceRecordSet.
-func (mg *ResourceRecordSet) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *ResourceRecordSet) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this ResourceRecordSet.
-func (mg *ResourceRecordSet) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *ResourceRecordSet) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this ResourceRecordSet.
-func (mg *ResourceRecordSet) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *ResourceRecordSet) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this ResourceRecordSet.
-func (mg *ResourceRecordSet) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *ResourceRecordSet) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -123,11 +123,11 @@ func (mg *ResourceRecordSet) SetProviderConfigReference(r *runtimev1alpha1.Refer
 SetProviderReference of this ResourceRecordSet.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *ResourceRecordSet) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *ResourceRecordSet) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this ResourceRecordSet.
-func (mg *ResourceRecordSet) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *ResourceRecordSet) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

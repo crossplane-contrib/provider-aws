@@ -27,7 +27,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -52,7 +52,7 @@ type args struct {
 
 type userPolicyModifier func(*v1alpha1.IAMUserPolicyAttachment)
 
-func withConditions(c ...runtimev1alpha1.Condition) userPolicyModifier {
+func withConditions(c ...xpv1.Condition) userPolicyModifier {
 	return func(r *v1alpha1.IAMUserPolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -109,7 +109,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: userPolicy(withUserName(userName),
 					withSpecPolicyArn(policyArn),
-					withConditions(runtimev1alpha1.Available()),
+					withConditions(xpv1.Available()),
 					withStatusPolicyArn(policyArn)),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -205,7 +205,7 @@ func TestCreate(t *testing.T) {
 				cr: userPolicy(
 					withUserName(userName),
 					withSpecPolicyArn(policyArn),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 			},
 		},
 		"InValidInput": {
@@ -232,7 +232,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: userPolicy(withUserName(userName),
 					withSpecPolicyArn(policyArn),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errAttach),
 			},
 		},
@@ -283,7 +283,7 @@ func TestDelete(t *testing.T) {
 				cr: userPolicy(
 					withUserName(userName),
 					withSpecPolicyArn(policyArn),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"InValidInput": {
@@ -310,7 +310,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: userPolicy(withUserName(userName),
 					withSpecPolicyArn(policyArn),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDetach),
 			},
 		},
@@ -326,7 +326,7 @@ func TestDelete(t *testing.T) {
 				cr: userPolicy(),
 			},
 			want: want{
-				cr: userPolicy(withConditions(runtimev1alpha1.Deleting())),
+				cr: userPolicy(withConditions(xpv1.Deleting())),
 			},
 		},
 	}

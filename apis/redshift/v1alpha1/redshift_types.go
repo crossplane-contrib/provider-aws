@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // Redshift cluster states.
@@ -101,13 +101,13 @@ type ClusterParameters struct {
 	// the ClusterSecurityGroups.
 	// +immutable
 	// +optional
-	ClusterSecurityGroupRefs []runtimev1alpha1.Reference `json:"clusterSecurityGroupRefs,omitempty"`
+	ClusterSecurityGroupRefs []xpv1.Reference `json:"clusterSecurityGroupRefs,omitempty"`
 
 	// ClusterSecurityGroupSelector selects references to ClusterSecurityGroups used
 	// to set the ClusterSecurityGroups.
 	// +immutable
 	// +optional
-	ClusterSecurityGroupSelector *runtimev1alpha1.Selector `json:"clusterSecurityGroupSelector,omitempty"`
+	ClusterSecurityGroupSelector *xpv1.Selector `json:"clusterSecurityGroupSelector,omitempty"`
 
 	// ClusterSubnetGroupName is the name of a cluster subnet group to be associated with this cluster.
 	// If this parameter is not provided the resulting cluster will be deployed
@@ -210,13 +210,13 @@ type ClusterParameters struct {
 	// the IAMRoles.
 	// +immutable
 	// +optional
-	IAMRoleRefs []runtimev1alpha1.Reference `json:"iamRoleRefs,omitempty"`
+	IAMRoleRefs []xpv1.Reference `json:"iamRoleRefs,omitempty"`
 
 	// IAMRoleSelector selects references to IAMRoles used
 	// to set the IAMRoles.
 	// +immutable
 	// +optional
-	IAMRoleSelector *runtimev1alpha1.Selector `json:"iamRoleSelector,omitempty"`
+	IAMRoleSelector *xpv1.Selector `json:"iamRoleSelector,omitempty"`
 
 	// KMSKeyID is the Amazon Resource Name (ARN) for the KMS encryption
 	// key. If you are creating a cluster with the same AWS account that owns
@@ -319,13 +319,13 @@ type ClusterParameters struct {
 	// the VPCSecurityGroupIDs.
 	// +immutable
 	// +optional
-	VPCSecurityGroupIDRefs []runtimev1alpha1.Reference `json:"vpcSecurityGroupIDRefs,omitempty"`
+	VPCSecurityGroupIDRefs []xpv1.Reference `json:"vpcSecurityGroupIDRefs,omitempty"`
 
 	// VPCSecurityGroupIDSelector selects references to VPCSecurityGroups used
 	// to set the VPCSecurityGroupIDs.
 	// +immutable
 	// +optional
-	VPCSecurityGroupIDSelector *runtimev1alpha1.Selector `json:"vpcSecurityGroupIDSelector,omitempty"`
+	VPCSecurityGroupIDSelector *xpv1.Selector `json:"vpcSecurityGroupIDSelector,omitempty"`
 }
 
 // ClusterObservation is the representation of the current state that is observed.
@@ -639,14 +639,14 @@ type Tag struct {
 
 // ClusterSpec defines the desired state of an AWS Redshift Cluster.
 type ClusterSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  ClusterParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       ClusterParameters `json:"forProvider"`
 }
 
 // ClusterStatus represents the observed state of an AWS Redshift Cluster.
 type ClusterStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     ClusterObservation `json:"atProvider,omitempty"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          ClusterObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

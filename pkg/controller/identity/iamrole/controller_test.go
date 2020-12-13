@@ -27,7 +27,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -67,7 +67,7 @@ type args struct {
 
 type roleModifier func(*v1beta1.IAMRole)
 
-func withConditions(c ...corev1alpha1.Condition) roleModifier {
+func withConditions(c ...xpv1.Condition) roleModifier {
 	return func(r *v1beta1.IAMRole) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -127,7 +127,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: role(
 					withRoleName(&roleName),
-					withConditions(corev1alpha1.Available())),
+					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -220,7 +220,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: role(
 					withRoleName(&roleName),
-					withConditions(corev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 			},
 		},
 		"InValidInput": {
@@ -244,7 +244,7 @@ func TestCreate(t *testing.T) {
 				cr: role(),
 			},
 			want: want{
-				cr:  role(withConditions(corev1alpha1.Creating())),
+				cr:  role(withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
@@ -406,7 +406,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: role(withRoleName(&roleName),
-					withConditions(corev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"InValidInput": {
@@ -430,7 +430,7 @@ func TestDelete(t *testing.T) {
 				cr: role(),
 			},
 			want: want{
-				cr:  role(withConditions(corev1alpha1.Deleting())),
+				cr:  role(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},
@@ -446,7 +446,7 @@ func TestDelete(t *testing.T) {
 				cr: role(),
 			},
 			want: want{
-				cr: role(withConditions(corev1alpha1.Deleting())),
+				cr: role(withConditions(xpv1.Deleting())),
 			},
 		},
 	}

@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -159,8 +159,8 @@ type TableParameters struct {
 
 // TableSpec defines the desired state of Table
 type TableSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  TableParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       TableParameters `json:"forProvider"`
 }
 
 // TableObservation defines the observed state of Table
@@ -235,8 +235,8 @@ type TableObservation struct {
 
 // TableStatus defines the observed state of Table.
 type TableStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     TableObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          TableObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

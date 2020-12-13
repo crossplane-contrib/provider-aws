@@ -22,7 +22,7 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -53,7 +53,7 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.DomainName, _ *s
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
-	cr.SetConditions(v1alpha1.Available())
+	cr.SetConditions(xpv1.Available())
 	return obs, nil
 }
 

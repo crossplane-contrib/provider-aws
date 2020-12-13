@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // NodeGroupStatusType is a type of NodeGroup status.
@@ -60,12 +60,12 @@ type NodeGroupParameters struct {
 	// the ClusterName.
 	// +immutable
 	// +optional
-	ClusterNameRef *runtimev1alpha1.Reference `json:"clusterNameRef,omitempty"`
+	ClusterNameRef *xpv1.Reference `json:"clusterNameRef,omitempty"`
 
 	// ClusterNameSelector selects references to a Cluster used
 	// to set the ClusterName.
 	// +optional
-	ClusterNameSelector *runtimev1alpha1.Selector `json:"clusterNameSelector,omitempty"`
+	ClusterNameSelector *xpv1.Selector `json:"clusterNameSelector,omitempty"`
 
 	// The root device disk size (in GiB) for your node group instances. The default
 	// disk size is 20 GiB.
@@ -102,12 +102,12 @@ type NodeGroupParameters struct {
 	// NodeRoleRef is a reference to a Cluster used to set the NodeRole.
 	// +immutable
 	// +optional
-	NodeRoleRef *runtimev1alpha1.Reference `json:"nodeRoleRef,omitempty"`
+	NodeRoleRef *xpv1.Reference `json:"nodeRoleRef,omitempty"`
 
 	// NodeRoleSelector selects references to a Cluster used
 	// to set the NodeRole.
 	// +optional
-	NodeRoleSelector *runtimev1alpha1.Selector `json:"nodeRoleSelector,omitempty"`
+	NodeRoleSelector *xpv1.Selector `json:"nodeRoleSelector,omitempty"`
 
 	// The AMI version of the Amazon EKS-optimized AMI to use with your node group.
 	// By default, the latest available AMI version for the node group's current
@@ -140,11 +140,11 @@ type NodeGroupParameters struct {
 	// SubnetRefs are references to Subnets used to set the Subnets.
 	// +immutable
 	// +optional
-	SubnetRefs []runtimev1alpha1.Reference `json:"subnetRefs,omitempty"`
+	SubnetRefs []xpv1.Reference `json:"subnetRefs,omitempty"`
 
 	// SubnetSelector selects references to Subnets used to set the Subnets.
 	// +optional
-	SubnetSelector *runtimev1alpha1.Selector `json:"subnetSelector,omitempty"`
+	SubnetSelector *xpv1.Selector `json:"subnetSelector,omitempty"`
 
 	// The metadata to apply to the node group to assist with categorization and
 	// organization. Each tag consists of a key and an optional value, both of which
@@ -179,12 +179,12 @@ type RemoteAccessConfig struct {
 	// SourceSecurityGroupRefs are references to SecurityGroups used to set
 	// the SourceSecurityGroups.
 	// +optional
-	SourceSecurityGroupRefs []runtimev1alpha1.Reference `json:"sourceSecurityGroupRefs,omitempty"`
+	SourceSecurityGroupRefs []xpv1.Reference `json:"sourceSecurityGroupRefs,omitempty"`
 
 	// SourceSecurityGroupSelector selects references to SecurityGroups used
 	// to set the SourceSecurityGroups.
 	// +optional
-	SourceSecurityGroupSelector *runtimev1alpha1.Selector `json:"sourceSecurityGroupSelector,omitempty"`
+	SourceSecurityGroupSelector *xpv1.Selector `json:"sourceSecurityGroupSelector,omitempty"`
 }
 
 // NodeGroupScalingConfig is the configuration for scaling a node group.
@@ -316,14 +316,14 @@ type AutoScalingGroup struct {
 
 // A NodeGroupSpec defines the desired state of an EKS NodeGroup.
 type NodeGroupSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  NodeGroupParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       NodeGroupParameters `json:"forProvider"`
 }
 
 // A NodeGroupStatus represents the observed state of an EKS NodeGroup.
 type NodeGroupStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     NodeGroupObservation `json:"atProvider,omitempty"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          NodeGroupObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

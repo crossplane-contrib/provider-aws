@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -74,8 +74,8 @@ type StateMachineParameters struct {
 
 // StateMachineSpec defines the desired state of StateMachine
 type StateMachineSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  StateMachineParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       StateMachineParameters `json:"forProvider"`
 }
 
 // StateMachineObservation defines the observed state of StateMachine
@@ -88,8 +88,8 @@ type StateMachineObservation struct {
 
 // StateMachineStatus defines the observed state of StateMachine.
 type StateMachineStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     StateMachineObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          StateMachineObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

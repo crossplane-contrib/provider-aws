@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // ResourceRecordSetParameters define the desired state of an AWS Route53 Resource Record.
@@ -426,11 +426,11 @@ type ResourceRecordSetParameters struct {
 
 	// ZoneIDRef references a Zone to retrieves its ZoneId
 	// +optional
-	ZoneIDRef *runtimev1alpha1.Reference `json:"zoneIdRef,omitempty"`
+	ZoneIDRef *xpv1.Reference `json:"zoneIdRef,omitempty"`
 
 	// ZoneIDSelector selects a reference to a Zone to retrieves its ZoneID
 	// +optional
-	ZoneIDSelector *runtimev1alpha1.Selector `json:"zoneIdSelector,omitempty"`
+	ZoneIDSelector *xpv1.Selector `json:"zoneIdSelector,omitempty"`
 }
 
 // AliasTarget : Alias resource record sets only. Information about the AWS
@@ -797,13 +797,13 @@ type ResourceRecordSet struct {
 
 // ResourceRecordSetSpec defines the desired state of an AWS Route53 Resource Record.
 type ResourceRecordSetSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  ResourceRecordSetParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       ResourceRecordSetParameters `json:"forProvider"`
 }
 
 // ResourceRecordSetStatus represents the observed state of a ResourceRecordSet.
 type ResourceRecordSetStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
+	xpv1.ResourceStatus `json:",inline"`
 }
 
 // +kubebuilder:object:root=true

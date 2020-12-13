@@ -25,7 +25,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -100,7 +100,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			ResourceExists: false,
 		}, nil
 	}
-	cr.SetConditions(runtimev1alpha1.Available())
+	cr.SetConditions(xpv1.Available())
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: true,
@@ -112,7 +112,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
+	cr.Status.SetConditions(xpv1.Creating())
 	_, err := e.client.CreatePermissionRequest(&awsacmpca.CreatePermissionInput{
 		Actions:                 []awsacmpca.ActionType{awsacmpca.ActionTypeIssueCertificate, awsacmpca.ActionTypeGetCertificate, awsacmpca.ActionTypeListPermissions},
 		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
@@ -132,7 +132,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Deleting())
+	cr.Status.SetConditions(xpv1.Deleting())
 
 	_, err := e.client.DeletePermissionRequest(&awsacmpca.DeletePermissionInput{
 		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,

@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // IAMPolicyParameters define the desired state of an AWS IAM Policy.
@@ -41,8 +41,8 @@ type IAMPolicyParameters struct {
 
 // An IAMPolicySpec defines the desired state of an IAMPolicy.
 type IAMPolicySpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  IAMPolicyParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       IAMPolicyParameters `json:"forProvider"`
 }
 
 // IAMPolicyObservation keeps the state for the external resource
@@ -70,8 +70,8 @@ type IAMPolicyObservation struct {
 
 // An IAMPolicyStatus represents the observed state of an IAMPolicy.
 type IAMPolicyStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     IAMPolicyObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          IAMPolicyObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

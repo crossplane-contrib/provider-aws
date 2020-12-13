@@ -28,7 +28,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 	"github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
 	clients "github.com/crossplane/provider-aws/pkg/clients"
@@ -173,7 +173,7 @@ func IsUpToDate(p v1alpha1.ELBParameters, elb elb.LoadBalancerDescription, elbTa
 		return false, err
 	}
 	return cmp.Equal(&v1alpha1.ELBParameters{}, patch,
-		cmpopts.IgnoreTypes([]corev1alpha1.Reference{}, []corev1alpha1.Selector{}),
+		cmpopts.IgnoreTypes([]xpv1.Reference{}, []xpv1.Selector{}),
 		cmpopts.IgnoreFields(v1alpha1.ELBParameters{}, "Region")), nil
 }
 

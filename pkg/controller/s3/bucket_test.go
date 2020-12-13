@@ -26,13 +26,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
@@ -111,15 +112,15 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(corev1alpha1.Available()),
+					s3Testing.WithConditions(xpv1.Available()),
 					s3Testing.WithArn(fmt.Sprintf("arn:aws:s3:::%s", s3Testing.BucketName)),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
 					ConnectionDetails: map[string][]byte{
-						corev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(s3Testing.BucketName),
-						ResourceCredentialsSecretRegionKey:                []byte(s3Testing.Region),
+						xpv1.ResourceCredentialsSecretEndpointKey: []byte(s3Testing.BucketName),
+						ResourceCredentialsSecretRegionKey:        []byte(s3Testing.Region),
 					},
 				},
 			},
@@ -160,7 +161,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(corev1alpha1.Available()),
+					s3Testing.WithConditions(xpv1.Available()),
 					s3Testing.WithArn(fmt.Sprintf("arn:aws:s3:::%s", s3Testing.BucketName)),
 					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
 				),
@@ -168,8 +169,8 @@ func TestObserve(t *testing.T) {
 					ResourceExists:   true,
 					ResourceUpToDate: true,
 					ConnectionDetails: map[string][]byte{
-						corev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(s3Testing.BucketName),
-						ResourceCredentialsSecretRegionKey:                []byte(s3Testing.Region),
+						xpv1.ResourceCredentialsSecretEndpointKey: []byte(s3Testing.BucketName),
+						ResourceCredentialsSecretRegionKey:        []byte(s3Testing.Region),
 					},
 				},
 			},
@@ -244,7 +245,7 @@ func TestCreate(t *testing.T) {
 				cr: s3Testing.Bucket(),
 			},
 			want: want{
-				cr: s3Testing.Bucket(s3Testing.WithConditions(corev1alpha1.Creating())),
+				cr: s3Testing.Bucket(s3Testing.WithConditions(xpv1.Creating())),
 			},
 		},
 		"InValidInput": {
@@ -268,7 +269,7 @@ func TestCreate(t *testing.T) {
 				cr: s3Testing.Bucket(),
 			},
 			want: want{
-				cr:  s3Testing.Bucket(s3Testing.WithConditions(corev1alpha1.Creating())),
+				cr:  s3Testing.Bucket(s3Testing.WithConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
@@ -319,7 +320,7 @@ func TestUpdate(t *testing.T) {
 				cr: s3Testing.Bucket(),
 			},
 			want: want{
-				cr:     s3Testing.Bucket(s3Testing.WithConditions(corev1alpha1.ReconcileSuccess())),
+				cr:     s3Testing.Bucket(s3Testing.WithConditions(xpv1.ReconcileSuccess())),
 				result: managed.ExternalUpdate{},
 			},
 		},
@@ -341,7 +342,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(corev1alpha1.ReconcileSuccess()),
+					s3Testing.WithConditions(xpv1.ReconcileSuccess()),
 					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
 				),
 				result: managed.ExternalUpdate{},
@@ -389,7 +390,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(corev1alpha1.ReconcileError(errors.Wrap(errBoom, "cannot get request payment configuration"))),
+					s3Testing.WithConditions(xpv1.ReconcileError(errors.Wrap(errBoom, "cannot get request payment configuration"))),
 					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
 				),
 				err:    errors.Wrap(errBoom, "cannot get request payment configuration"),
@@ -425,7 +426,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(corev1alpha1.ReconcileSuccess()),
+					s3Testing.WithConditions(xpv1.ReconcileSuccess()),
 					s3Testing.WithSSEConfig(nil),
 				),
 				result: managed.ExternalUpdate{},
@@ -495,7 +496,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(corev1alpha1.ReconcileError(errors.Wrap(errBoom, "cannot get Bucket encryption configuration"))),
+					s3Testing.WithConditions(xpv1.ReconcileError(errors.Wrap(errBoom, "cannot get Bucket encryption configuration"))),
 					s3Testing.WithSSEConfig(nil),
 				),
 				err:    errors.Wrap(errBoom, "cannot get Bucket encryption configuration"),
@@ -545,7 +546,7 @@ func TestDelete(t *testing.T) {
 				cr: s3Testing.Bucket(),
 			},
 			want: want{
-				cr: s3Testing.Bucket(s3Testing.WithConditions(corev1alpha1.Deleting())),
+				cr: s3Testing.Bucket(s3Testing.WithConditions(xpv1.Deleting())),
 			},
 		},
 		"InValidInput": {
@@ -569,7 +570,7 @@ func TestDelete(t *testing.T) {
 				cr: s3Testing.Bucket(),
 			},
 			want: want{
-				cr:  s3Testing.Bucket(s3Testing.WithConditions(corev1alpha1.Deleting())),
+				cr:  s3Testing.Bucket(s3Testing.WithConditions(xpv1.Deleting())),
 				err: errBoom,
 			},
 		},
@@ -585,7 +586,7 @@ func TestDelete(t *testing.T) {
 				cr: s3Testing.Bucket(),
 			},
 			want: want{
-				cr: s3Testing.Bucket(s3Testing.WithConditions(corev1alpha1.Deleting())),
+				cr: s3Testing.Bucket(s3Testing.WithConditions(xpv1.Deleting())),
 			},
 		},
 	}

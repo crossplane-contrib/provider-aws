@@ -17,7 +17,7 @@ limitations under the License.
 package v1beta1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -137,8 +137,8 @@ type BucketParameters struct {
 
 // BucketSpec represents the desired state of the Bucket.
 type BucketSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  BucketParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       BucketParameters `json:"forProvider"`
 }
 
 // BucketExternalStatus keeps the state for the external resource
@@ -151,8 +151,8 @@ type BucketExternalStatus struct {
 
 // BucketStatus represents the observed state of the Bucket.
 type BucketStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     BucketExternalStatus `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          BucketExternalStatus `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

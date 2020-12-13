@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -52,8 +52,8 @@ type StageParameters struct {
 
 // StageSpec defines the desired state of Stage
 type StageSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  StageParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       StageParameters `json:"forProvider"`
 }
 
 // StageObservation defines the observed state of Stage
@@ -71,8 +71,8 @@ type StageObservation struct {
 
 // StageStatus defines the observed state of Stage.
 type StageStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     StageObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          StageObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

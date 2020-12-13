@@ -22,7 +22,7 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/sfn"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -56,9 +56,9 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.StateMachine, re
 	}
 	switch aws.StringValue(resp.Status) {
 	case string(svcapitypes.StateMachineStatus_SDK_ACTIVE):
-		cr.SetConditions(v1alpha1.Available())
+		cr.SetConditions(xpv1.Available())
 	case string(svcapitypes.StateMachineStatus_SDK_DELETING):
-		cr.SetConditions(v1alpha1.Deleting())
+		cr.SetConditions(xpv1.Deleting())
 	}
 	return obs, nil
 }

@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // ClusterStatusType is the status of an EKS cluster.
@@ -98,12 +98,12 @@ type ClusterParameters struct {
 	// the RoleArn.
 	// +immutable
 	// +optional
-	RoleArnRef *runtimev1alpha1.Reference `json:"roleArnRef,omitempty"`
+	RoleArnRef *xpv1.Reference `json:"roleArnRef,omitempty"`
 
 	// RoleArnSelector selects references to IAMRole used
 	// to set the RoleArn.
 	// +optional
-	RoleArnSelector *runtimev1alpha1.Selector `json:"roleArnSelector,omitempty"`
+	RoleArnSelector *xpv1.Selector `json:"roleArnSelector,omitempty"`
 
 	// The metadata to apply to the cluster to assist with categorization and organization.
 	// Each tag consists of a key and an optional value, both of which you define.
@@ -203,12 +203,12 @@ type VpcConfigRequest struct {
 	// SecurityGroupIDRefs are references to SecurityGroups used to set
 	// the SecurityGroupIDs.
 	// +optional
-	SecurityGroupIDRefs []runtimev1alpha1.Reference `json:"securityGroupIdRefs,omitempty"`
+	SecurityGroupIDRefs []xpv1.Reference `json:"securityGroupIdRefs,omitempty"`
 
 	// SecurityGroupIDSelector selects references to SecurityGroups used
 	// to set the SecurityGroupIDs.
 	// +optional
-	SecurityGroupIDSelector *runtimev1alpha1.Selector `json:"securityGroupIdSelector,omitempty"`
+	SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIdSelector,omitempty"`
 
 	// Specify subnets for your Amazon EKS worker nodes. Amazon EKS creates cross-account
 	// elastic network interfaces in these subnets to allow communication between
@@ -220,12 +220,12 @@ type VpcConfigRequest struct {
 	// SubnetIDRefs are references to Subnets used to set
 	// the SubnetIDs.
 	// +optional
-	SubnetIDRefs []runtimev1alpha1.Reference `json:"subnetIdRefs,omitempty"`
+	SubnetIDRefs []xpv1.Reference `json:"subnetIdRefs,omitempty"`
 
 	// SubnetIDSelector selects references to Subnets used
 	// to set the SubnetIDs.
 	// +optional
-	SubnetIDSelector *runtimev1alpha1.Selector `json:"subnetIdSelector,omitempty"`
+	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
 }
 
 // ClusterObservation is the observed state of a cluster.
@@ -285,14 +285,14 @@ type VpcConfigResponse struct {
 
 // A ClusterSpec defines the desired state of an EKS Cluster.
 type ClusterSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  ClusterParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       ClusterParameters `json:"forProvider"`
 }
 
 // A ClusterStatus represents the observed state of an EKS Cluster.
 type ClusterStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     ClusterObservation `json:"atProvider,omitempty"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          ClusterObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -30,11 +30,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/crossplane/provider-aws/apis/database/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
@@ -209,7 +209,7 @@ func TestIsUpToDate(t *testing.T) {
 						ForProvider: v1beta1.RDSInstanceParameters{
 							DBName:               &dbName,
 							DBSubnetGroupName:    &dbSubnetGroupName,
-							DBSubnetGroupNameRef: &v1alpha1.Reference{Name: "coolgroup"},
+							DBSubnetGroupNameRef: &xpv1.Reference{Name: "coolgroup"},
 						},
 					},
 				},
@@ -225,16 +225,16 @@ func TestIsUpToDate(t *testing.T) {
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
 							DBName: &dbName,
-							MasterPasswordSecretRef: &v1alpha1.SecretKeySelector{
-								SecretReference: v1alpha1.SecretReference{
+							MasterPasswordSecretRef: &xpv1.SecretKeySelector{
+								SecretReference: xpv1.SecretReference{
 									Name:      connectionSecretName,
 									Namespace: secretNamespace,
 								},
 								Key: connectionSecretKey,
 							},
 						},
-						ResourceSpec: v1alpha1.ResourceSpec{
-							WriteConnectionSecretToReference: &v1alpha1.SecretReference{
+						ResourceSpec: xpv1.ResourceSpec{
+							WriteConnectionSecretToReference: &xpv1.SecretReference{
 								Name:      outputSecretName,
 								Namespace: secretNamespace,
 							},
@@ -255,7 +255,7 @@ func TestIsUpToDate(t *testing.T) {
 							secret := corev1.Secret{
 								Data: map[string][]byte{},
 							}
-							secret.Data[v1alpha1.ResourceCredentialsSecretPasswordKey] = []byte(connectionCredData)
+							secret.Data[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(connectionCredData)
 							secret.DeepCopyInto(obj.(*corev1.Secret))
 							return nil
 						default:
@@ -275,16 +275,16 @@ func TestIsUpToDate(t *testing.T) {
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
 							DBName: &dbName,
-							MasterPasswordSecretRef: &v1alpha1.SecretKeySelector{
-								SecretReference: v1alpha1.SecretReference{
+							MasterPasswordSecretRef: &xpv1.SecretKeySelector{
+								SecretReference: xpv1.SecretReference{
 									Name:      connectionSecretName,
 									Namespace: secretNamespace,
 								},
 								Key: connectionSecretKey,
 							},
 						},
-						ResourceSpec: v1alpha1.ResourceSpec{
-							WriteConnectionSecretToReference: &v1alpha1.SecretReference{
+						ResourceSpec: xpv1.ResourceSpec{
+							WriteConnectionSecretToReference: &xpv1.SecretReference{
 								Name:      outputSecretName,
 								Namespace: secretNamespace,
 							},
@@ -305,7 +305,7 @@ func TestIsUpToDate(t *testing.T) {
 							secret := corev1.Secret{
 								Data: map[string][]byte{},
 							}
-							secret.Data[v1alpha1.ResourceCredentialsSecretPasswordKey] = []byte("not" + connectionCredData)
+							secret.Data[xpv1.ResourceCredentialsSecretPasswordKey] = []byte("not" + connectionCredData)
 							secret.DeepCopyInto(obj.(*corev1.Secret))
 							return nil
 						default:
@@ -350,16 +350,16 @@ func TestGetPassword(t *testing.T) {
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
 							DBName: &dbName,
-							MasterPasswordSecretRef: &v1alpha1.SecretKeySelector{
-								SecretReference: v1alpha1.SecretReference{
+							MasterPasswordSecretRef: &xpv1.SecretKeySelector{
+								SecretReference: xpv1.SecretReference{
 									Name:      connectionSecretName,
 									Namespace: secretNamespace,
 								},
 								Key: connectionSecretKey,
 							},
 						},
-						ResourceSpec: v1alpha1.ResourceSpec{
-							WriteConnectionSecretToReference: &v1alpha1.SecretReference{
+						ResourceSpec: xpv1.ResourceSpec{
+							WriteConnectionSecretToReference: &xpv1.SecretReference{
 								Name:      outputSecretName,
 								Namespace: secretNamespace,
 							},
@@ -380,7 +380,7 @@ func TestGetPassword(t *testing.T) {
 							secret := corev1.Secret{
 								Data: map[string][]byte{},
 							}
-							secret.Data[v1alpha1.ResourceCredentialsSecretPasswordKey] = []byte(connectionCredData)
+							secret.Data[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(connectionCredData)
 							secret.DeepCopyInto(obj.(*corev1.Secret))
 							return nil
 						default:
@@ -401,16 +401,16 @@ func TestGetPassword(t *testing.T) {
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
 							DBName: &dbName,
-							MasterPasswordSecretRef: &v1alpha1.SecretKeySelector{
-								SecretReference: v1alpha1.SecretReference{
+							MasterPasswordSecretRef: &xpv1.SecretKeySelector{
+								SecretReference: xpv1.SecretReference{
 									Name:      connectionSecretName,
 									Namespace: secretNamespace,
 								},
 								Key: connectionSecretKey,
 							},
 						},
-						ResourceSpec: v1alpha1.ResourceSpec{
-							WriteConnectionSecretToReference: &v1alpha1.SecretReference{
+						ResourceSpec: xpv1.ResourceSpec{
+							WriteConnectionSecretToReference: &xpv1.SecretReference{
 								Name:      outputSecretName,
 								Namespace: secretNamespace,
 							},
@@ -431,7 +431,7 @@ func TestGetPassword(t *testing.T) {
 							secret := corev1.Secret{
 								Data: map[string][]byte{},
 							}
-							secret.Data[v1alpha1.ResourceCredentialsSecretPasswordKey] = []byte("not" + connectionCredData)
+							secret.Data[xpv1.ResourceCredentialsSecretPasswordKey] = []byte("not" + connectionCredData)
 							secret.DeepCopyInto(obj.(*corev1.Secret))
 							return nil
 						default:
@@ -452,8 +452,8 @@ func TestGetPassword(t *testing.T) {
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
 							DBName: &dbName,
-							MasterPasswordSecretRef: &v1alpha1.SecretKeySelector{
-								SecretReference: v1alpha1.SecretReference{
+							MasterPasswordSecretRef: &xpv1.SecretKeySelector{
+								SecretReference: xpv1.SecretReference{
 									Name:      connectionSecretName,
 									Namespace: secretNamespace,
 								},
@@ -480,16 +480,16 @@ func TestGetPassword(t *testing.T) {
 					Spec: v1beta1.RDSInstanceSpec{
 						ForProvider: v1beta1.RDSInstanceParameters{
 							DBName: &dbName,
-							MasterPasswordSecretRef: &v1alpha1.SecretKeySelector{
-								SecretReference: v1alpha1.SecretReference{
+							MasterPasswordSecretRef: &xpv1.SecretKeySelector{
+								SecretReference: xpv1.SecretReference{
 									Name:      connectionSecretName,
 									Namespace: secretNamespace,
 								},
 								Key: connectionSecretKey,
 							},
 						},
-						ResourceSpec: v1alpha1.ResourceSpec{
-							WriteConnectionSecretToReference: &v1alpha1.SecretReference{
+						ResourceSpec: xpv1.ResourceSpec{
+							WriteConnectionSecretToReference: &xpv1.SecretReference{
 								Name:      outputSecretName,
 								Namespace: secretNamespace,
 							},
@@ -529,8 +529,8 @@ func TestGetPassword(t *testing.T) {
 						ForProvider: v1beta1.RDSInstanceParameters{
 							DBName: &dbName,
 						},
-						ResourceSpec: v1alpha1.ResourceSpec{
-							WriteConnectionSecretToReference: &v1alpha1.SecretReference{
+						ResourceSpec: xpv1.ResourceSpec{
+							WriteConnectionSecretToReference: &xpv1.SecretReference{
 								Name:      outputSecretName,
 								Namespace: secretNamespace,
 							},
@@ -542,7 +542,7 @@ func TestGetPassword(t *testing.T) {
 						secret := corev1.Secret{
 							Data: map[string][]byte{},
 						}
-						secret.Data[v1alpha1.ResourceCredentialsSecretPasswordKey] = []byte("not" + connectionCredData)
+						secret.Data[xpv1.ResourceCredentialsSecretPasswordKey] = []byte("not" + connectionCredData)
 						secret.DeepCopyInto(obj.(*corev1.Secret))
 						return nil
 					},
@@ -816,8 +816,8 @@ func TestGetConnectionDetails(t *testing.T) {
 				},
 			},
 			want: managed.ConnectionDetails{
-				v1alpha1.ResourceCredentialsSecretEndpointKey: []byte(address),
-				v1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(port)),
+				xpv1.ResourceCredentialsSecretEndpointKey: []byte(address),
+				xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(port)),
 			},
 		},
 		"NilInstance": {

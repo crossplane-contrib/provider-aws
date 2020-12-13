@@ -18,7 +18,7 @@ package v1alpha1
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/acmpca"
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -179,14 +179,14 @@ type CertificateAuthorityExternalStatus struct {
 
 // CertificateAuthoritySpec defines the desired state of CertificateAuthority
 type CertificateAuthoritySpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  CertificateAuthorityParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       CertificateAuthorityParameters `json:"forProvider"`
 }
 
 // An CertificateAuthorityStatus represents the observed state of an CertificateAuthority manager.
 type CertificateAuthorityStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     CertificateAuthorityExternalStatus `json:"atProvider,omitempty"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          CertificateAuthorityExternalStatus `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

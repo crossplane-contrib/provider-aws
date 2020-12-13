@@ -21,7 +21,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -420,12 +420,12 @@ func (in *ResourceRecordSetParameters) DeepCopyInto(out *ResourceRecordSetParame
 	}
 	if in.ZoneIDRef != nil {
 		in, out := &in.ZoneIDRef, &out.ZoneIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.ZoneIDSelector != nil {
 		in, out := &in.ZoneIDSelector, &out.ZoneIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -488,12 +488,12 @@ func (in *VPC) DeepCopyInto(out *VPC) {
 	}
 	if in.VPCIDRef != nil {
 		in, out := &in.VPCIDRef, &out.VPCIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.VPCIDSelector != nil {
 		in, out := &in.VPCIDSelector, &out.VPCIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }

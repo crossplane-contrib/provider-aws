@@ -23,7 +23,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -51,7 +51,7 @@ func withExternalName() clusterModifier {
 	return func(c *v1alpha1.CacheCluster) { meta.SetExternalName(c, externalName) }
 }
 
-func withConditions(c ...runtimev1alpha1.Condition) clusterModifier {
+func withConditions(c ...xpv1.Condition) clusterModifier {
 	return func(r *v1alpha1.CacheCluster) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -105,7 +105,7 @@ func TestObserve(t *testing.T) {
 					})),
 			},
 			want: want{
-				cr: cluster(withConditions(runtimev1alpha1.Creating()),
+				cr: cluster(withConditions(xpv1.Creating()),
 					withExternalName(),
 					withSpec(v1alpha1.CacheClusterParameters{
 						CacheNodeType: nodeType,
@@ -143,7 +143,7 @@ func TestObserve(t *testing.T) {
 					})),
 			},
 			want: want{
-				cr: cluster(withConditions(runtimev1alpha1.Available()),
+				cr: cluster(withConditions(xpv1.Available()),
 					withExternalName(),
 					withSpec(v1alpha1.CacheClusterParameters{
 						CacheNodeType: nodeType,
@@ -225,7 +225,7 @@ func TestCreate(t *testing.T) {
 					withSpec(v1alpha1.CacheClusterParameters{
 						CacheNodeType: nodeType,
 						NumCacheNodes: 2,
-					}), withConditions(runtimev1alpha1.Creating())),
+					}), withConditions(xpv1.Creating())),
 			},
 		},
 		"CreateFail": {
@@ -246,7 +246,7 @@ func TestCreate(t *testing.T) {
 				cr: cluster(withSpec(v1alpha1.CacheClusterParameters{
 					CacheNodeType: nodeType,
 					NumCacheNodes: 2,
-				}), withConditions(runtimev1alpha1.Creating())),
+				}), withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreateCacheCluster),
 			},
 		},
@@ -396,11 +396,11 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: cluster(withExternalName(), withConditions(runtimev1alpha1.Deleting())),
+				cr: cluster(withExternalName(), withConditions(xpv1.Deleting())),
 			},
 			want: want{
 				cr: cluster(withExternalName(),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"DeleteFailed": {
@@ -416,7 +416,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: cluster(withExternalName(),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDeleteCacheCluster),
 			},
 		},

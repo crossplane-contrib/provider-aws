@@ -18,24 +18,24 @@ limitations under the License.
 
 package v1beta1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetProviderConfigReference of this ProviderConfigUsage.
-func (p *ProviderConfigUsage) GetProviderConfigReference() runtimev1alpha1.Reference {
+func (p *ProviderConfigUsage) GetProviderConfigReference() xpv1.Reference {
 	return p.ProviderConfigReference
 }
 
 // GetResourceReference of this ProviderConfigUsage.
-func (p *ProviderConfigUsage) GetResourceReference() runtimev1alpha1.TypedReference {
+func (p *ProviderConfigUsage) GetResourceReference() xpv1.TypedReference {
 	return p.ResourceReference
 }
 
 // SetProviderConfigReference of this ProviderConfigUsage.
-func (p *ProviderConfigUsage) SetProviderConfigReference(r runtimev1alpha1.Reference) {
+func (p *ProviderConfigUsage) SetProviderConfigReference(r xpv1.Reference) {
 	p.ProviderConfigReference = r
 }
 
 // SetResourceReference of this ProviderConfigUsage.
-func (p *ProviderConfigUsage) SetResourceReference(r runtimev1alpha1.TypedReference) {
+func (p *ProviderConfigUsage) SetResourceReference(r xpv1.TypedReference) {
 	p.ResourceReference = r
 }

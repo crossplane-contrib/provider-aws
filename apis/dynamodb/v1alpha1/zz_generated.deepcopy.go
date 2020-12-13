@@ -21,7 +21,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -628,12 +628,12 @@ func (in *CustomBackupParameters) DeepCopyInto(out *CustomBackupParameters) {
 	*out = *in
 	if in.TableNameRef != nil {
 		in, out := &in.TableNameRef, &out.TableNameRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.TableNameSelector != nil {
 		in, out := &in.TableNameSelector, &out.TableNameSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }

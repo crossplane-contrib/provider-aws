@@ -23,14 +23,15 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
@@ -70,7 +71,7 @@ func withExterName(s string) policyModifier {
 	return func(r *v1alpha1.IAMPolicy) { meta.SetExternalName(r, s) }
 }
 
-func withConditions(c ...corev1alpha1.Condition) policyModifier {
+func withConditions(c ...xpv1.Condition) policyModifier {
 	return func(r *v1alpha1.IAMPolicy) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -130,7 +131,7 @@ func TestObserve(t *testing.T) {
 					Document: document,
 					Name:     name,
 				}), withExterName(arn),
-					withConditions(corev1alpha1.Available())),
+					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -186,7 +187,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: policy(withExterName(arn),
-					withConditions(corev1alpha1.Available())),
+					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists: true,
 				},
@@ -442,7 +443,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: policy(withExterName(arn),
-					withConditions(corev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"InValidInput": {
@@ -504,7 +505,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: policy(withExterName(arn),
-					withConditions(corev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},

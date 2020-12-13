@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // Tag represent a user-provided metadata that can be associated with a
@@ -87,8 +87,8 @@ type SNSTopicParameters struct {
 
 // SNSTopicSpec defined the desired state of a AWS SNS Topic
 type SNSTopicSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  SNSTopicParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       SNSTopicParameters `json:"forProvider"`
 }
 
 // SNSTopicObservation represents the observed state of a AWS SNS Topic
@@ -115,8 +115,8 @@ type SNSTopicObservation struct {
 
 // SNSTopicStatus is the status of AWS SNS Topic
 type SNSTopicStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     SNSTopicObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          SNSTopicObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

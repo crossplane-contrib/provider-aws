@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -67,8 +67,8 @@ type IntegrationParameters struct {
 
 // IntegrationSpec defines the desired state of Integration
 type IntegrationSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  IntegrationParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       IntegrationParameters `json:"forProvider"`
 }
 
 // IntegrationObservation defines the observed state of Integration
@@ -82,8 +82,8 @@ type IntegrationObservation struct {
 
 // IntegrationStatus defines the observed state of Integration.
 type IntegrationStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     IntegrationObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          IntegrationObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

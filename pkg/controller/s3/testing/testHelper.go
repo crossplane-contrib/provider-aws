@@ -20,7 +20,7 @@ import (
 	"net/http"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
@@ -52,7 +52,7 @@ func WithArn(arn string) BucketModifier {
 }
 
 // WithConditions sets the Conditions for an S3 Bucket
-func WithConditions(c ...corev1alpha1.Condition) BucketModifier { //nolint
+func WithConditions(c ...xpv1.Condition) BucketModifier { //nolint
 	return func(r *v1beta1.Bucket) { r.Status.ConditionedStatus.Conditions = c }
 }
 

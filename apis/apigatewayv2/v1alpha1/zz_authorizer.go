@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -57,8 +57,8 @@ type AuthorizerParameters struct {
 
 // AuthorizerSpec defines the desired state of Authorizer
 type AuthorizerSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  AuthorizerParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       AuthorizerParameters `json:"forProvider"`
 }
 
 // AuthorizerObservation defines the observed state of Authorizer
@@ -68,8 +68,8 @@ type AuthorizerObservation struct {
 
 // AuthorizerStatus defines the observed state of Authorizer.
 type AuthorizerStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     AuthorizerObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          AuthorizerObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

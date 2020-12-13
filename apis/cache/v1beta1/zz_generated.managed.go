@@ -18,20 +18,20 @@ limitations under the License.
 
 package v1beta1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this ReplicationGroup.
-func (mg *ReplicationGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *ReplicationGroup) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this ReplicationGroup.
-func (mg *ReplicationGroup) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *ReplicationGroup) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this ReplicationGroup.
-func (mg *ReplicationGroup) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *ReplicationGroup) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -39,27 +39,27 @@ func (mg *ReplicationGroup) GetProviderConfigReference() *runtimev1alpha1.Refere
 GetProviderReference of this ReplicationGroup.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *ReplicationGroup) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *ReplicationGroup) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this ReplicationGroup.
-func (mg *ReplicationGroup) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *ReplicationGroup) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this ReplicationGroup.
-func (mg *ReplicationGroup) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *ReplicationGroup) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this ReplicationGroup.
-func (mg *ReplicationGroup) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *ReplicationGroup) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this ReplicationGroup.
-func (mg *ReplicationGroup) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *ReplicationGroup) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -67,11 +67,11 @@ func (mg *ReplicationGroup) SetProviderConfigReference(r *runtimev1alpha1.Refere
 SetProviderReference of this ReplicationGroup.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *ReplicationGroup) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *ReplicationGroup) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this ReplicationGroup.
-func (mg *ReplicationGroup) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *ReplicationGroup) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

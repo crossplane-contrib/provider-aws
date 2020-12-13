@@ -18,20 +18,20 @@ limitations under the License.
 
 package v1alpha1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this CertificateAuthority.
-func (mg *CertificateAuthority) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *CertificateAuthority) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this CertificateAuthority.
-func (mg *CertificateAuthority) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *CertificateAuthority) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this CertificateAuthority.
-func (mg *CertificateAuthority) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *CertificateAuthority) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -39,27 +39,27 @@ func (mg *CertificateAuthority) GetProviderConfigReference() *runtimev1alpha1.Re
 GetProviderReference of this CertificateAuthority.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *CertificateAuthority) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *CertificateAuthority) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this CertificateAuthority.
-func (mg *CertificateAuthority) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *CertificateAuthority) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this CertificateAuthority.
-func (mg *CertificateAuthority) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *CertificateAuthority) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this CertificateAuthority.
-func (mg *CertificateAuthority) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *CertificateAuthority) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this CertificateAuthority.
-func (mg *CertificateAuthority) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *CertificateAuthority) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -67,27 +67,27 @@ func (mg *CertificateAuthority) SetProviderConfigReference(r *runtimev1alpha1.Re
 SetProviderReference of this CertificateAuthority.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *CertificateAuthority) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *CertificateAuthority) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this CertificateAuthority.
-func (mg *CertificateAuthority) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *CertificateAuthority) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this CertificateAuthorityPermission.
-func (mg *CertificateAuthorityPermission) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *CertificateAuthorityPermission) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this CertificateAuthorityPermission.
-func (mg *CertificateAuthorityPermission) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *CertificateAuthorityPermission) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this CertificateAuthorityPermission.
-func (mg *CertificateAuthorityPermission) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *CertificateAuthorityPermission) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -95,27 +95,27 @@ func (mg *CertificateAuthorityPermission) GetProviderConfigReference() *runtimev
 GetProviderReference of this CertificateAuthorityPermission.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *CertificateAuthorityPermission) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *CertificateAuthorityPermission) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this CertificateAuthorityPermission.
-func (mg *CertificateAuthorityPermission) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *CertificateAuthorityPermission) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this CertificateAuthorityPermission.
-func (mg *CertificateAuthorityPermission) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *CertificateAuthorityPermission) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this CertificateAuthorityPermission.
-func (mg *CertificateAuthorityPermission) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *CertificateAuthorityPermission) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this CertificateAuthorityPermission.
-func (mg *CertificateAuthorityPermission) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *CertificateAuthorityPermission) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -123,11 +123,11 @@ func (mg *CertificateAuthorityPermission) SetProviderConfigReference(r *runtimev
 SetProviderReference of this CertificateAuthorityPermission.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *CertificateAuthorityPermission) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *CertificateAuthorityPermission) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this CertificateAuthorityPermission.
-func (mg *CertificateAuthorityPermission) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *CertificateAuthorityPermission) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

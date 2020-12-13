@@ -25,7 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/redshift"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
@@ -146,7 +146,7 @@ func IsUpToDate(p v1alpha1.ClusterParameters, cl redshift.Cluster) (bool, error)
 		return false, err
 	}
 	updated := cmp.Equal(&v1alpha1.ClusterParameters{}, patch,
-		cmpopts.IgnoreTypes(&runtimev1alpha1.Reference{}, &runtimev1alpha1.Selector{}),
+		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}),
 		cmpopts.IgnoreFields(v1alpha1.ClusterParameters{}, "Region"))
 	return updated && found, nil
 }
@@ -451,8 +451,8 @@ func GetConnectionDetails(in v1alpha1.Cluster) managed.ConnectionDetails {
 		return nil
 	}
 	return managed.ConnectionDetails{
-		runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(in.Status.AtProvider.Endpoint.Address),
-		runtimev1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(in.Status.AtProvider.Endpoint.Port))),
+		xpv1.ResourceCredentialsSecretEndpointKey: []byte(in.Status.AtProvider.Endpoint.Address),
+		xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(in.Status.AtProvider.Endpoint.Port))),
 	}
 }
 

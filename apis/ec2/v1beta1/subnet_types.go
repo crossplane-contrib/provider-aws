@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // SubnetParameters define the desired state of an AWS VPC Subnet.
@@ -77,17 +77,17 @@ type SubnetParameters struct {
 	// VPCIDRef reference a VPC to retrieve its vpcId
 	// +optional
 	// +immutable
-	VPCIDRef *runtimev1alpha1.Reference `json:"vpcIdRef,omitempty"`
+	VPCIDRef *xpv1.Reference `json:"vpcIdRef,omitempty"`
 
 	// VPCIDSelector selects reference to a VPC to retrieve its vpcId
 	// +optional
-	VPCIDSelector *runtimev1alpha1.Selector `json:"vpcIdSelector,omitempty"`
+	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
 }
 
 // A SubnetSpec defines the desired state of a Subnet.
 type SubnetSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  SubnetParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       SubnetParameters `json:"forProvider"`
 }
 
 // SubnetObservation keeps the state for the external resource
@@ -108,8 +108,8 @@ type SubnetObservation struct {
 
 // A SubnetStatus represents the observed state of a Subnet.
 type SubnetStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     SubnetObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          SubnetObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

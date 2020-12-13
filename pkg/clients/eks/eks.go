@@ -35,7 +35,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
 	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
@@ -313,7 +313,7 @@ func IsUpToDate(p *v1beta1.ClusterParameters, cluster *eks.Cluster) (bool, error
 		}
 	}
 	res := cmp.Equal(&v1beta1.ClusterParameters{}, patch, cmpopts.EquateEmpty(),
-		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{}, []v1alpha1.Reference{}),
+		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{}),
 		cmpopts.IgnoreFields(v1beta1.ClusterParameters{}, "Region"),
 		cmpopts.IgnoreFields(v1beta1.VpcConfigRequest{}, "PublicAccessCidrs", "SubnetIDs", "SecurityGroupIDs"))
 	return res, nil
@@ -373,8 +373,8 @@ func GetConnectionDetails(cluster *eks.Cluster, stsClient STSClient) managed.Con
 		return managed.ConnectionDetails{}
 	}
 	return managed.ConnectionDetails{
-		v1alpha1.ResourceCredentialsSecretEndpointKey:   []byte(*cluster.Endpoint),
-		v1alpha1.ResourceCredentialsSecretKubeconfigKey: rawConfig,
-		v1alpha1.ResourceCredentialsSecretCAKey:         caData,
+		xpv1.ResourceCredentialsSecretEndpointKey:   []byte(*cluster.Endpoint),
+		xpv1.ResourceCredentialsSecretKubeconfigKey: rawConfig,
+		xpv1.ResourceCredentialsSecretCAKey:         caData,
 	}
 }

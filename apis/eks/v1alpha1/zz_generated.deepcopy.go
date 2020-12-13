@@ -21,7 +21,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -123,22 +123,22 @@ func (in *FargateProfileParameters) DeepCopyInto(out *FargateProfileParameters) 
 	*out = *in
 	if in.ClusterNameRef != nil {
 		in, out := &in.ClusterNameRef, &out.ClusterNameRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.ClusterNameSelector != nil {
 		in, out := &in.ClusterNameSelector, &out.ClusterNameSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.PodExecutionRoleArnRef != nil {
 		in, out := &in.PodExecutionRoleArnRef, &out.PodExecutionRoleArnRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.PodExecutionRoleArnSelector != nil {
 		in, out := &in.PodExecutionRoleArnSelector, &out.PodExecutionRoleArnSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Selectors != nil {
@@ -155,12 +155,12 @@ func (in *FargateProfileParameters) DeepCopyInto(out *FargateProfileParameters) 
 	}
 	if in.SubnetRefs != nil {
 		in, out := &in.SubnetRefs, &out.SubnetRefs
-		*out = make([]corev1alpha1.Reference, len(*in))
+		*out = make([]v1.Reference, len(*in))
 		copy(*out, *in)
 	}
 	if in.SubnetSelector != nil {
 		in, out := &in.SubnetSelector, &out.SubnetSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Tags != nil {
@@ -379,12 +379,12 @@ func (in *NodeGroupParameters) DeepCopyInto(out *NodeGroupParameters) {
 	}
 	if in.ClusterNameRef != nil {
 		in, out := &in.ClusterNameRef, &out.ClusterNameRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.ClusterNameSelector != nil {
 		in, out := &in.ClusterNameSelector, &out.ClusterNameSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.DiskSize != nil {
@@ -406,12 +406,12 @@ func (in *NodeGroupParameters) DeepCopyInto(out *NodeGroupParameters) {
 	}
 	if in.NodeRoleRef != nil {
 		in, out := &in.NodeRoleRef, &out.NodeRoleRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.NodeRoleSelector != nil {
 		in, out := &in.NodeRoleSelector, &out.NodeRoleSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.ReleaseVersion != nil {
@@ -436,12 +436,12 @@ func (in *NodeGroupParameters) DeepCopyInto(out *NodeGroupParameters) {
 	}
 	if in.SubnetRefs != nil {
 		in, out := &in.SubnetRefs, &out.SubnetRefs
-		*out = make([]corev1alpha1.Reference, len(*in))
+		*out = make([]v1.Reference, len(*in))
 		copy(*out, *in)
 	}
 	if in.SubnetSelector != nil {
 		in, out := &in.SubnetSelector, &out.SubnetSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Tags != nil {
@@ -567,12 +567,12 @@ func (in *RemoteAccessConfig) DeepCopyInto(out *RemoteAccessConfig) {
 	}
 	if in.SourceSecurityGroupRefs != nil {
 		in, out := &in.SourceSecurityGroupRefs, &out.SourceSecurityGroupRefs
-		*out = make([]corev1alpha1.Reference, len(*in))
+		*out = make([]v1.Reference, len(*in))
 		copy(*out, *in)
 	}
 	if in.SourceSecurityGroupSelector != nil {
 		in, out := &in.SourceSecurityGroupSelector, &out.SourceSecurityGroupSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
