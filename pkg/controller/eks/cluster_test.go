@@ -28,7 +28,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -52,7 +52,7 @@ type args struct {
 
 type clusterModifier func(*v1beta1.Cluster)
 
-func withConditions(c ...runtimev1alpha1.Condition) clusterModifier {
+func withConditions(c ...xpv1.Condition) clusterModifier {
 	return func(r *v1beta1.Cluster) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -117,7 +117,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: cluster(
-					withConditions(runtimev1alpha1.Available()),
+					withConditions(xpv1.Available()),
 					withStatus(v1beta1.ClusterStatusActive)),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -143,7 +143,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: cluster(
-					withConditions(runtimev1alpha1.Deleting()),
+					withConditions(xpv1.Deleting()),
 					withStatus(v1beta1.ClusterStatusDeleting)),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -169,7 +169,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: cluster(
-					withConditions(runtimev1alpha1.Unavailable()),
+					withConditions(xpv1.Unavailable()),
 					withStatus(v1beta1.ClusterStatusFailed)),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -231,7 +231,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: cluster(
 					withStatus(v1beta1.ClusterStatusCreating),
-					withConditions(runtimev1alpha1.Creating()),
+					withConditions(xpv1.Creating()),
 					withVersion(&version),
 				),
 				result: managed.ExternalObservation{
@@ -308,7 +308,7 @@ func TestCreate(t *testing.T) {
 				cr: cluster(),
 			},
 			want: want{
-				cr:     cluster(withConditions(runtimev1alpha1.Creating())),
+				cr:     cluster(withConditions(xpv1.Creating())),
 				result: managed.ExternalCreation{},
 			},
 		},
@@ -319,7 +319,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: cluster(
 					withStatus(v1beta1.ClusterStatusCreating),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 			},
 		},
 		"FailedRequest": {
@@ -334,7 +334,7 @@ func TestCreate(t *testing.T) {
 				cr: cluster(),
 			},
 			want: want{
-				cr:  cluster(withConditions(runtimev1alpha1.Creating())),
+				cr:  cluster(withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreateFailed),
 			},
 		},
@@ -631,7 +631,7 @@ func TestDelete(t *testing.T) {
 				cr: cluster(),
 			},
 			want: want{
-				cr: cluster(withConditions(runtimev1alpha1.Deleting())),
+				cr: cluster(withConditions(xpv1.Deleting())),
 			},
 		},
 		"AlreadyDeleting": {
@@ -640,7 +640,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: cluster(withStatus(v1beta1.ClusterStatusDeleting),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"AlreadyDeleted": {
@@ -655,7 +655,7 @@ func TestDelete(t *testing.T) {
 				cr: cluster(),
 			},
 			want: want{
-				cr: cluster(withConditions(runtimev1alpha1.Deleting())),
+				cr: cluster(withConditions(xpv1.Deleting())),
 			},
 		},
 		"Failed": {
@@ -670,7 +670,7 @@ func TestDelete(t *testing.T) {
 				cr: cluster(),
 			},
 			want: want{
-				cr:  cluster(withConditions(runtimev1alpha1.Deleting())),
+				cr:  cluster(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDeleteFailed),
 			},
 		},

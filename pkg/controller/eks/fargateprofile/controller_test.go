@@ -28,7 +28,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -51,7 +51,7 @@ type args struct {
 
 type fargateProfileModifier func(*v1alpha1.FargateProfile)
 
-func withConditions(c ...runtimev1alpha1.Condition) fargateProfileModifier {
+func withConditions(c ...xpv1.Condition) fargateProfileModifier {
 	return func(r *v1alpha1.FargateProfile) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -112,7 +112,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: fargateProfile(
-					withConditions(runtimev1alpha1.Available()),
+					withConditions(xpv1.Available()),
 					withStatus(v1alpha1.FargateProfileStatusActive)),
 				result: managed.ExternalObservation{
 					ResourceExists:          true,
@@ -138,7 +138,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: fargateProfile(
-					withConditions(runtimev1alpha1.Deleting()),
+					withConditions(xpv1.Deleting()),
 					withStatus(v1alpha1.FargateProfileStatusDeleting)),
 				result: managed.ExternalObservation{
 					ResourceExists:          true,
@@ -200,7 +200,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: fargateProfile(
 					withStatus(v1alpha1.FargateProfileStatusCreating),
-					withConditions(runtimev1alpha1.Creating()),
+					withConditions(xpv1.Creating()),
 					withSubnets(subnets),
 				),
 				result: managed.ExternalObservation{
@@ -253,7 +253,7 @@ func TestCreate(t *testing.T) {
 				cr: fargateProfile(),
 			},
 			want: want{
-				cr:     fargateProfile(withConditions(runtimev1alpha1.Creating())),
+				cr:     fargateProfile(withConditions(xpv1.Creating())),
 				result: managed.ExternalCreation{},
 			},
 		},
@@ -264,7 +264,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: fargateProfile(
 					withStatus(v1alpha1.FargateProfileStatusCreating),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 			},
 		},
 		"FailedRequest": {
@@ -279,7 +279,7 @@ func TestCreate(t *testing.T) {
 				cr: fargateProfile(),
 			},
 			want: want{
-				cr:  fargateProfile(withConditions(runtimev1alpha1.Creating())),
+				cr:  fargateProfile(withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreateFailed),
 			},
 		},
@@ -450,7 +450,7 @@ func TestDelete(t *testing.T) {
 				cr: fargateProfile(),
 			},
 			want: want{
-				cr: fargateProfile(withConditions(runtimev1alpha1.Deleting())),
+				cr: fargateProfile(withConditions(xpv1.Deleting())),
 			},
 		},
 		"AlreadyDeleting": {
@@ -459,7 +459,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: fargateProfile(withStatus(v1alpha1.FargateProfileStatusDeleting),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"AlreadyDeleted": {
@@ -474,7 +474,7 @@ func TestDelete(t *testing.T) {
 				cr: fargateProfile(),
 			},
 			want: want{
-				cr: fargateProfile(withConditions(runtimev1alpha1.Deleting())),
+				cr: fargateProfile(withConditions(xpv1.Deleting())),
 			},
 		},
 		"Failed": {
@@ -489,7 +489,7 @@ func TestDelete(t *testing.T) {
 				cr: fargateProfile(),
 			},
 			want: want{
-				cr:  fargateProfile(withConditions(runtimev1alpha1.Deleting())),
+				cr:  fargateProfile(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDeleteFailed),
 			},
 		},

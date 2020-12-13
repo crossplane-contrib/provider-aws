@@ -18,20 +18,20 @@ limitations under the License.
 
 package v1alpha1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this Backup.
-func (mg *Backup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *Backup) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this Backup.
-func (mg *Backup) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *Backup) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this Backup.
-func (mg *Backup) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *Backup) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -39,27 +39,27 @@ func (mg *Backup) GetProviderConfigReference() *runtimev1alpha1.Reference {
 GetProviderReference of this Backup.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *Backup) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *Backup) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this Backup.
-func (mg *Backup) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *Backup) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this Backup.
-func (mg *Backup) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *Backup) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this Backup.
-func (mg *Backup) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *Backup) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this Backup.
-func (mg *Backup) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *Backup) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -67,27 +67,27 @@ func (mg *Backup) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
 SetProviderReference of this Backup.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *Backup) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *Backup) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this Backup.
-func (mg *Backup) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *Backup) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this GlobalTable.
-func (mg *GlobalTable) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *GlobalTable) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this GlobalTable.
-func (mg *GlobalTable) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *GlobalTable) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this GlobalTable.
-func (mg *GlobalTable) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *GlobalTable) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -95,27 +95,27 @@ func (mg *GlobalTable) GetProviderConfigReference() *runtimev1alpha1.Reference {
 GetProviderReference of this GlobalTable.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *GlobalTable) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *GlobalTable) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this GlobalTable.
-func (mg *GlobalTable) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *GlobalTable) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this GlobalTable.
-func (mg *GlobalTable) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *GlobalTable) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this GlobalTable.
-func (mg *GlobalTable) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *GlobalTable) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this GlobalTable.
-func (mg *GlobalTable) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *GlobalTable) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -123,27 +123,27 @@ func (mg *GlobalTable) SetProviderConfigReference(r *runtimev1alpha1.Reference) 
 SetProviderReference of this GlobalTable.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *GlobalTable) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *GlobalTable) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this GlobalTable.
-func (mg *GlobalTable) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *GlobalTable) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this Table.
-func (mg *Table) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *Table) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this Table.
-func (mg *Table) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *Table) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this Table.
-func (mg *Table) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *Table) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -151,27 +151,27 @@ func (mg *Table) GetProviderConfigReference() *runtimev1alpha1.Reference {
 GetProviderReference of this Table.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *Table) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *Table) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this Table.
-func (mg *Table) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *Table) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this Table.
-func (mg *Table) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *Table) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this Table.
-func (mg *Table) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *Table) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this Table.
-func (mg *Table) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *Table) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -179,11 +179,11 @@ func (mg *Table) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
 SetProviderReference of this Table.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *Table) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *Table) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this Table.
-func (mg *Table) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *Table) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

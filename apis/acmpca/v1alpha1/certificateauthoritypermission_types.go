@@ -17,19 +17,19 @@ limitations under the License.
 package v1alpha1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // CertificateAuthorityPermissionSpec defines the desired state of CertificateAuthorityPermission
 type CertificateAuthorityPermissionSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  CertificateAuthorityPermissionParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       CertificateAuthorityPermissionParameters `json:"forProvider"`
 }
 
 // An CertificateAuthorityPermissionStatus represents the observed state of an Certificate Authority Permission manager.
 type CertificateAuthorityPermissionStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
+	xpv1.ResourceStatus `json:",inline"`
 }
 
 // CertificateAuthorityPermissionParameters defines the desired state of an AWS CertificateAuthority.
@@ -45,12 +45,12 @@ type CertificateAuthorityPermissionParameters struct {
 	// CertificateAuthorityARNRef references an CertificateAuthority to retrieve its Arn
 	// +optional
 	// +immutable
-	CertificateAuthorityARNRef *runtimev1alpha1.Reference `json:"certificateAuthorityARNRef,omitempty"`
+	CertificateAuthorityARNRef *xpv1.Reference `json:"certificateAuthorityARNRef,omitempty"`
 
 	// CertificateAuthorityARNSelector selects a reference to an CertificateAuthority to retrieve its Arn
 	// +optional
 	// +immutable
-	CertificateAuthorityARNSelector *runtimev1alpha1.Selector `json:"certificateAuthorityARNSelector,omitempty"`
+	CertificateAuthorityARNSelector *xpv1.Selector `json:"certificateAuthorityARNSelector,omitempty"`
 
 	// The actions that the specified AWS service principal can use.
 	// +optional

@@ -31,7 +31,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -130,14 +130,14 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Available())
+	cr.Status.SetConditions(xpv1.Available())
 
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: true,
 		ConnectionDetails: map[string][]byte{
-			runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(meta.GetExternalName(cr)),
-			ResourceCredentialsSecretRegionKey:                   []byte(cr.Spec.ForProvider.LocationConstraint),
+			xpv1.ResourceCredentialsSecretEndpointKey: []byte(meta.GetExternalName(cr)),
+			ResourceCredentialsSecretRegionKey:        []byte(cr.Spec.ForProvider.LocationConstraint),
 		},
 	}, nil
 }
@@ -147,7 +147,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
+	cr.Status.SetConditions(xpv1.Creating())
 	_, err := e.s3client.CreateBucketRequest(s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx)
 	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 }
@@ -161,7 +161,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	for _, awsClient := range e.subresourceClients {
 		status, err := awsClient.Observe(ctx, cr)
 		if err != nil {
-			cr.Status.SetConditions(runtimev1alpha1.ReconcileError(err))
+			cr.Status.SetConditions(xpv1.ReconcileError(err))
 			return managed.ExternalUpdate{}, err
 		}
 		switch status { //nolint:exhaustive
@@ -176,7 +176,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 			}
 		}
 	}
-	cr.Status.SetConditions(runtimev1alpha1.ReconcileSuccess())
+	cr.Status.SetConditions(xpv1.ReconcileSuccess())
 	return managed.ExternalUpdate{}, nil
 }
 
@@ -186,7 +186,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Deleting())
+	cr.Status.SetConditions(xpv1.Deleting())
 	_, err := e.s3client.DeleteBucketRequest(&awss3.DeleteBucketInput{Bucket: aws.String(meta.GetExternalName(cr))}).Send(ctx)
 	return resource.Ignore(s3.IsNotFound, err)
 }

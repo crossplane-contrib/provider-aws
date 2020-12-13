@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // Tag defines a key value pair that can be attached to an ELB
@@ -115,11 +115,11 @@ type ELBParameters struct {
 
 	// SecurityGroupIDRefs references to a SecurityGroup and retrieves its SecurityGroupID
 	// +optional
-	SecurityGroupIDRefs []runtimev1alpha1.Reference `json:"securityGroupIdRefs,omitempty"`
+	SecurityGroupIDRefs []xpv1.Reference `json:"securityGroupIdRefs,omitempty"`
 
 	// SecurityGroupIDSelector selects a set of references that each retrieve the SecurityGroupID from the referenced SecurityGroup
 	// +optional
-	SecurityGroupIDSelector *runtimev1alpha1.Selector `json:"securityGroupIdSelector,omitempty"`
+	SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIdSelector,omitempty"`
 
 	// The IDs of the subnets in your VPC to attach to the load balancer. Specify
 	// one subnet per Availability Zone specified in AvailabilityZones.
@@ -128,11 +128,11 @@ type ELBParameters struct {
 
 	// SubnetRefs references to a Subnet to and retrieves its SubnetID
 	// +optional
-	SubnetIDRefs []runtimev1alpha1.Reference `json:"subnetIdRefs,omitempty"`
+	SubnetIDRefs []xpv1.Reference `json:"subnetIdRefs,omitempty"`
 
 	// SubnetSelector selects a set of references that each retrieve the subnetID from the referenced Subnet
 	// +optional
-	SubnetIDSelector *runtimev1alpha1.Selector `json:"subnetIdSelector,omitempty"`
+	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
 
 	// A list of tags to assign to the load balancer.
 	// +optional
@@ -141,8 +141,8 @@ type ELBParameters struct {
 
 // An ELBSpec defines the desired state of an ELB.
 type ELBSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  ELBParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       ELBParameters `json:"forProvider"`
 }
 
 // ELBObservation keeps the state for the external resource
@@ -165,8 +165,8 @@ type ELBObservation struct {
 
 // An ELBStatus represents the observed state of an ELB.
 type ELBStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     ELBObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          ELBObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

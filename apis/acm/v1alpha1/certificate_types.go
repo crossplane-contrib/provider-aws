@@ -18,7 +18,7 @@ package v1alpha1
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/acm"
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -45,8 +45,8 @@ type DomainValidationOption struct {
 
 // CertificateSpec defines the desired state of Certificate
 type CertificateSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  CertificateParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       CertificateParameters `json:"forProvider"`
 }
 
 // CertificateExternalStatus keeps the state of external resource
@@ -69,8 +69,8 @@ type CertificateExternalStatus struct {
 
 // An CertificateStatus represents the observed state of an Certificate manager.
 type CertificateStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     CertificateExternalStatus `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          CertificateExternalStatus `json:"atProvider"`
 }
 
 // CertificateParameters defines the desired state of an AWS Certificate.
@@ -85,11 +85,11 @@ type CertificateParameters struct {
 
 	// CertificateAuthorityARNRef references an AWS ACMPCA CertificateAuthority to retrieve its Arn
 	// +optional
-	CertificateAuthorityARNRef *runtimev1alpha1.Reference `json:"certificateAuthorityARNRef,omitempty"`
+	CertificateAuthorityARNRef *xpv1.Reference `json:"certificateAuthorityARNRef,omitempty"`
 
 	// CertificateAuthorityARNSelector selects a reference to an AWS ACMPCA CertificateAuthority to retrieve its Arn
 	// +optional
-	CertificateAuthorityARNSelector *runtimev1alpha1.Selector `json:"certificateAuthorityARNSelector,omitempty"`
+	CertificateAuthorityARNSelector *xpv1.Selector `json:"certificateAuthorityARNSelector,omitempty"`
 
 	// Fully qualified domain name (FQDN),that to secure with an ACM certificate.
 	// +immutable

@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // IAMAccessKeyParameters define the desired state of an AWS IAM Access Key.
@@ -31,11 +31,11 @@ type IAMAccessKeyParameters struct {
 
 	// IAMUsernameRef references to an IAMUser to retrieve its userName
 	// +optional
-	IAMUsernameRef *runtimev1alpha1.Reference `json:"userNameRef,omitempty"`
+	IAMUsernameRef *xpv1.Reference `json:"userNameRef,omitempty"`
 
 	// IAMUsernameSelector selects a reference to an IAMUser to retrieve its userName
 	// +optional
-	IAMUsernameSelector *runtimev1alpha1.Selector `json:"userNameSelector,omitempty"`
+	IAMUsernameSelector *xpv1.Selector `json:"userNameSelector,omitempty"`
 
 	// The current status of this IAMAccessKey on the AWS
 	// Must be either Active or Inactive.
@@ -45,13 +45,13 @@ type IAMAccessKeyParameters struct {
 
 // An IAMAccessKeySpec defines the desired state of an IAM Access Key.
 type IAMAccessKeySpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  IAMAccessKeyParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       IAMAccessKeyParameters `json:"forProvider"`
 }
 
 // IAMAccessKeyStatus represents the observed state of an IAM Access Key.
 type IAMAccessKeyStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
+	xpv1.ResourceStatus `json:",inline"`
 }
 
 // +kubebuilder:object:root=true

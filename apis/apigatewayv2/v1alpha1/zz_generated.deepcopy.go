@@ -21,7 +21,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -925,12 +925,12 @@ func (in *CustomAPIMappingParameters) DeepCopyInto(out *CustomAPIMappingParamete
 	}
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Stage != nil {
@@ -940,12 +940,12 @@ func (in *CustomAPIMappingParameters) DeepCopyInto(out *CustomAPIMappingParamete
 	}
 	if in.StageRef != nil {
 		in, out := &in.StageRef, &out.StageRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.StageSelector != nil {
 		in, out := &in.StageSelector, &out.StageSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.DomainName != nil {
@@ -955,12 +955,12 @@ func (in *CustomAPIMappingParameters) DeepCopyInto(out *CustomAPIMappingParamete
 	}
 	if in.DomainNameRef != nil {
 		in, out := &in.DomainNameRef, &out.DomainNameRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.DomainNameSelector != nil {
 		in, out := &in.DomainNameSelector, &out.DomainNameSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -1000,12 +1000,12 @@ func (in *CustomAuthorizerParameters) DeepCopyInto(out *CustomAuthorizerParamete
 	}
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -1030,22 +1030,22 @@ func (in *CustomDeploymentParameters) DeepCopyInto(out *CustomDeploymentParamete
 	}
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.StageNameRef != nil {
 		in, out := &in.StageNameRef, &out.StageNameRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.StageNameSelector != nil {
 		in, out := &in.StageNameSelector, &out.StageNameSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -1085,12 +1085,12 @@ func (in *CustomIntegrationParameters) DeepCopyInto(out *CustomIntegrationParame
 	}
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -1115,12 +1115,12 @@ func (in *CustomIntegrationResponseParameters) DeepCopyInto(out *CustomIntegrati
 	}
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.IntegrationID != nil {
@@ -1130,12 +1130,12 @@ func (in *CustomIntegrationResponseParameters) DeepCopyInto(out *CustomIntegrati
 	}
 	if in.IntegrationIDRef != nil {
 		in, out := &in.IntegrationIDRef, &out.IntegrationIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.IntegrationIDSelector != nil {
 		in, out := &in.IntegrationIDSelector, &out.IntegrationIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -1160,12 +1160,12 @@ func (in *CustomModelParameters) DeepCopyInto(out *CustomModelParameters) {
 	}
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -1190,22 +1190,22 @@ func (in *CustomRouteParameters) DeepCopyInto(out *CustomRouteParameters) {
 	}
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.AuthorizerIDRef != nil {
 		in, out := &in.AuthorizerIDRef, &out.AuthorizerIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.AuthorizerIDSelector != nil {
 		in, out := &in.AuthorizerIDSelector, &out.AuthorizerIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -1230,12 +1230,12 @@ func (in *CustomRouteResponseParameters) DeepCopyInto(out *CustomRouteResponsePa
 	}
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.RouteID != nil {
@@ -1245,12 +1245,12 @@ func (in *CustomRouteResponseParameters) DeepCopyInto(out *CustomRouteResponsePa
 	}
 	if in.RouteIDRef != nil {
 		in, out := &in.RouteIDRef, &out.RouteIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.RouteIDSelector != nil {
 		in, out := &in.RouteIDSelector, &out.RouteIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -1275,12 +1275,12 @@ func (in *CustomStageParameters) DeepCopyInto(out *CustomStageParameters) {
 	}
 	if in.APIIDRef != nil {
 		in, out := &in.APIIDRef, &out.APIIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.APIIDSelector != nil {
 		in, out := &in.APIIDSelector, &out.APIIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -1305,12 +1305,12 @@ func (in *CustomVPCLinkParameters) DeepCopyInto(out *CustomVPCLinkParameters) {
 	}
 	if in.SecurityGroupIDRefs != nil {
 		in, out := &in.SecurityGroupIDRefs, &out.SecurityGroupIDRefs
-		*out = make([]corev1alpha1.Reference, len(*in))
+		*out = make([]v1.Reference, len(*in))
 		copy(*out, *in)
 	}
 	if in.SecurityGroupIDSelector != nil {
 		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.SubnetIDs != nil {
@@ -1320,12 +1320,12 @@ func (in *CustomVPCLinkParameters) DeepCopyInto(out *CustomVPCLinkParameters) {
 	}
 	if in.SubnetIDRefs != nil {
 		in, out := &in.SubnetIDRefs, &out.SubnetIDRefs
-		*out = make([]corev1alpha1.Reference, len(*in))
+		*out = make([]v1.Reference, len(*in))
 		copy(*out, *in)
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }

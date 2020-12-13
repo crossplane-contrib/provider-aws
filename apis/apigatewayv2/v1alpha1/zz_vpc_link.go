@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -39,8 +39,8 @@ type VPCLinkParameters struct {
 
 // VPCLinkSpec defines the desired state of VPCLink
 type VPCLinkSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  VPCLinkParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       VPCLinkParameters `json:"forProvider"`
 }
 
 // VPCLinkObservation defines the observed state of VPCLink
@@ -62,8 +62,8 @@ type VPCLinkObservation struct {
 
 // VPCLinkStatus defines the observed state of VPCLink.
 type VPCLinkStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     VPCLinkObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          VPCLinkObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

@@ -19,7 +19,7 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // DBSubnetGroupStateAvailable states that a DBSubnet Group is healthy and available
@@ -52,10 +52,10 @@ type DBSubnetGroupParameters struct {
 	SubnetIDs []string `json:"subnetIds,omitempty"`
 
 	// SubnetIDRefs is a set of references that each retrieve the subnetID from the referenced Subnet
-	SubnetIDRefs []runtimev1alpha1.Reference `json:"subnetIdRefs,omitempty"`
+	SubnetIDRefs []xpv1.Reference `json:"subnetIdRefs,omitempty"`
 
 	// SubnetIDSelector selects a set of references that each retrieve the subnetID from the referenced Subnet
-	SubnetIDSelector *runtimev1alpha1.Selector `json:"subnetIdSelector,omitempty"`
+	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
 
 	// A list of tags. For more information, see Tagging Amazon RDS Resources (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
 	// in the Amazon RDS User Guide.
@@ -65,8 +65,8 @@ type DBSubnetGroupParameters struct {
 
 // A DBSubnetGroupSpec defines the desired state of a DBSubnetGroup.
 type DBSubnetGroupSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  DBSubnetGroupParameters `json:"forProvider,omitempty"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       DBSubnetGroupParameters `json:"forProvider,omitempty"`
 }
 
 // DBSubnetGroupObservation is the representation of the current state that is observed
@@ -86,8 +86,8 @@ type DBSubnetGroupObservation struct {
 
 // A DBSubnetGroupStatus represents the observed state of a DBSubnetGroup.
 type DBSubnetGroupStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     DBSubnetGroupObservation `json:"atProvider,omitempty"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          DBSubnetGroupObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

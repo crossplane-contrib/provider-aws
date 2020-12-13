@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // IAMGroupParameters define the desired state of an AWS IAM Group.
@@ -31,8 +31,8 @@ type IAMGroupParameters struct {
 
 // An IAMGroupSpec defines the desired state of an IAM Group.
 type IAMGroupSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  IAMGroupParameters `json:"forProvider,omitempty"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       IAMGroupParameters `json:"forProvider,omitempty"`
 }
 
 // IAMGroupObservation keeps the state for the external resource
@@ -46,8 +46,8 @@ type IAMGroupObservation struct {
 
 // An IAMGroupStatus represents the observed state of an IAM Group.
 type IAMGroupStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     IAMGroupObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          IAMGroupObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

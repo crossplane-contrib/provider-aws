@@ -20,7 +20,7 @@ import (
 	"reflect"
 	"strconv"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -355,8 +355,8 @@ func ConnectionEndpoint(rg elasticache.ReplicationGroup) managed.ConnectionDetai
 		rg.ConfigurationEndpoint != nil &&
 		rg.ConfigurationEndpoint.Address != nil {
 		return managed.ConnectionDetails{
-			runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(rg.ConfigurationEndpoint.Address)),
-			runtimev1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(aws.Int64Value(rg.ConfigurationEndpoint.Port)))),
+			xpv1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(rg.ConfigurationEndpoint.Address)),
+			xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(aws.Int64Value(rg.ConfigurationEndpoint.Port)))),
 		}
 	}
 
@@ -368,8 +368,8 @@ func ConnectionEndpoint(rg elasticache.ReplicationGroup) managed.ConnectionDetai
 		rg.NodeGroups[0].PrimaryEndpoint != nil &&
 		rg.NodeGroups[0].PrimaryEndpoint.Address != nil {
 		return managed.ConnectionDetails{
-			runtimev1alpha1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(rg.NodeGroups[0].PrimaryEndpoint.Address)),
-			runtimev1alpha1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(aws.Int64Value(rg.NodeGroups[0].PrimaryEndpoint.Port)))),
+			xpv1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(rg.NodeGroups[0].PrimaryEndpoint.Address)),
+			xpv1.ResourceCredentialsSecretPortKey:     []byte(strconv.Itoa(int(aws.Int64Value(rg.NodeGroups[0].PrimaryEndpoint.Port)))),
 		}
 	}
 

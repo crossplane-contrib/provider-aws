@@ -27,7 +27,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -66,7 +66,7 @@ type args struct {
 
 type bucketPolicyModifier func(policy *v1alpha2.BucketPolicy)
 
-func withConditions(c ...corev1alpha1.Condition) bucketPolicyModifier {
+func withConditions(c ...xpv1.Condition) bucketPolicyModifier {
 	return func(r *v1alpha2.BucketPolicy) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -116,7 +116,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: bucketPolicy(withPolicy(&params),
-					withConditions(corev1alpha1.Available())),
+					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -209,7 +209,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: bucketPolicy(
 					withPolicy(&params),
-					withConditions(corev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 			},
 		},
 		"InValidInput": {
@@ -235,7 +235,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: bucketPolicy(
 					withPolicy(&params),
-					withConditions(corev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errAttach),
 			},
 		},
@@ -330,7 +330,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: bucketPolicy(withPolicy(&params),
-					withConditions(corev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"InValidInput": {
@@ -355,7 +355,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: bucketPolicy(withPolicy(&params),
-					withConditions(corev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},
@@ -371,7 +371,7 @@ func TestDelete(t *testing.T) {
 				cr: bucketPolicy(withPolicy(&params)),
 			},
 			want: want{
-				cr: bucketPolicy(withPolicy(&params), withConditions(corev1alpha1.Deleting())),
+				cr: bucketPolicy(withPolicy(&params), withConditions(xpv1.Deleting())),
 			},
 		},
 	}

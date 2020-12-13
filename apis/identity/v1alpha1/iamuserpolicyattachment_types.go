@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // IAMUserPolicyAttachmentParameters define the desired state of an AWS IAMUserPolicyAttachment.
@@ -32,12 +32,12 @@ type IAMUserPolicyAttachmentParameters struct {
 
 	// PolicyARNRef references an IAMPolicy to retrieve its Policy ARN.
 	// +optional
-	PolicyARNRef *runtimev1alpha1.Reference `json:"policyArnRef,omitempty"`
+	PolicyARNRef *xpv1.Reference `json:"policyArnRef,omitempty"`
 
 	// PolicyARNSelector selects a reference to an IAMPolicy to retrieve its
 	// Policy ARN
 	// +optional
-	PolicyARNSelector *runtimev1alpha1.Selector `json:"policyArnSelector,omitempty"`
+	PolicyARNSelector *xpv1.Selector `json:"policyArnSelector,omitempty"`
 
 	// UserName presents the name of the IAMUser.
 	// +immutable
@@ -45,18 +45,18 @@ type IAMUserPolicyAttachmentParameters struct {
 
 	// UserNameRef references to an IAMUser to retrieve its userName
 	// +optional
-	UserNameRef *runtimev1alpha1.Reference `json:"userNameRef,omitempty"`
+	UserNameRef *xpv1.Reference `json:"userNameRef,omitempty"`
 
 	// UserNameSelector selects a reference to an IAMUser to retrieve its userName
 	// +optional
-	UserNameSelector *runtimev1alpha1.Selector `json:"userNameSelector,omitempty"`
+	UserNameSelector *xpv1.Selector `json:"userNameSelector,omitempty"`
 }
 
 // An IAMUserPolicyAttachmentSpec defines the desired state of an
 // IAMUserPolicyAttachment.
 type IAMUserPolicyAttachmentSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  IAMUserPolicyAttachmentParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       IAMUserPolicyAttachmentParameters `json:"forProvider"`
 }
 
 // IAMUserPolicyAttachmentObservation keeps the state for the external resource
@@ -69,8 +69,8 @@ type IAMUserPolicyAttachmentObservation struct {
 // An IAMUserPolicyAttachmentStatus represents the observed state of an
 // IAMUserPolicyAttachment.
 type IAMUserPolicyAttachmentStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     IAMUserPolicyAttachmentObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          IAMUserPolicyAttachmentObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

@@ -18,20 +18,20 @@ limitations under the License.
 
 package v1beta1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this DBSubnetGroup.
-func (mg *DBSubnetGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *DBSubnetGroup) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this DBSubnetGroup.
-func (mg *DBSubnetGroup) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *DBSubnetGroup) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this DBSubnetGroup.
-func (mg *DBSubnetGroup) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *DBSubnetGroup) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -39,27 +39,27 @@ func (mg *DBSubnetGroup) GetProviderConfigReference() *runtimev1alpha1.Reference
 GetProviderReference of this DBSubnetGroup.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *DBSubnetGroup) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *DBSubnetGroup) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this DBSubnetGroup.
-func (mg *DBSubnetGroup) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *DBSubnetGroup) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this DBSubnetGroup.
-func (mg *DBSubnetGroup) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *DBSubnetGroup) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this DBSubnetGroup.
-func (mg *DBSubnetGroup) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *DBSubnetGroup) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this DBSubnetGroup.
-func (mg *DBSubnetGroup) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *DBSubnetGroup) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -67,27 +67,27 @@ func (mg *DBSubnetGroup) SetProviderConfigReference(r *runtimev1alpha1.Reference
 SetProviderReference of this DBSubnetGroup.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *DBSubnetGroup) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *DBSubnetGroup) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this DBSubnetGroup.
-func (mg *DBSubnetGroup) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *DBSubnetGroup) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this RDSInstance.
-func (mg *RDSInstance) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *RDSInstance) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this RDSInstance.
-func (mg *RDSInstance) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *RDSInstance) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this RDSInstance.
-func (mg *RDSInstance) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *RDSInstance) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -95,27 +95,27 @@ func (mg *RDSInstance) GetProviderConfigReference() *runtimev1alpha1.Reference {
 GetProviderReference of this RDSInstance.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *RDSInstance) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *RDSInstance) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this RDSInstance.
-func (mg *RDSInstance) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *RDSInstance) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this RDSInstance.
-func (mg *RDSInstance) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *RDSInstance) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this RDSInstance.
-func (mg *RDSInstance) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *RDSInstance) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this RDSInstance.
-func (mg *RDSInstance) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *RDSInstance) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -123,11 +123,11 @@ func (mg *RDSInstance) SetProviderConfigReference(r *runtimev1alpha1.Reference) 
 SetProviderReference of this RDSInstance.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *RDSInstance) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *RDSInstance) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this RDSInstance.
-func (mg *RDSInstance) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *RDSInstance) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

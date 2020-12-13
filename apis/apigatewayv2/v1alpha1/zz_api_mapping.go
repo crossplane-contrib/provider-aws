@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -36,8 +36,8 @@ type APIMappingParameters struct {
 
 // APIMappingSpec defines the desired state of APIMapping
 type APIMappingSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  APIMappingParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       APIMappingParameters `json:"forProvider"`
 }
 
 // APIMappingObservation defines the observed state of APIMapping
@@ -51,8 +51,8 @@ type APIMappingObservation struct {
 
 // APIMappingStatus defines the observed state of APIMapping.
 type APIMappingStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     APIMappingObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          APIMappingObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

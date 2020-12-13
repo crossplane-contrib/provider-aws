@@ -21,7 +21,7 @@ limitations under the License.
 package v1beta1
 
 import (
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -235,12 +235,12 @@ func (in *ReplicationGroupParameters) DeepCopyInto(out *ReplicationGroupParamete
 	}
 	if in.CacheSecurityGroupNameRefs != nil {
 		in, out := &in.CacheSecurityGroupNameRefs, &out.CacheSecurityGroupNameRefs
-		*out = make([]v1alpha1.Reference, len(*in))
+		*out = make([]v1.Reference, len(*in))
 		copy(*out, *in)
 	}
 	if in.CacheSecurityGroupNameSelector != nil {
 		in, out := &in.CacheSecurityGroupNameSelector, &out.CacheSecurityGroupNameSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.CacheSubnetGroupName != nil {
@@ -250,12 +250,12 @@ func (in *ReplicationGroupParameters) DeepCopyInto(out *ReplicationGroupParamete
 	}
 	if in.CacheSubnetGroupNameRef != nil {
 		in, out := &in.CacheSubnetGroupNameRef, &out.CacheSubnetGroupNameRef
-		*out = new(v1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.CacheSubnetGroupNameSelector != nil {
 		in, out := &in.CacheSubnetGroupNameSelector, &out.CacheSubnetGroupNameSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.EngineVersion != nil {
@@ -322,12 +322,12 @@ func (in *ReplicationGroupParameters) DeepCopyInto(out *ReplicationGroupParamete
 	}
 	if in.SecurityGroupIDRefs != nil {
 		in, out := &in.SecurityGroupIDRefs, &out.SecurityGroupIDRefs
-		*out = make([]v1alpha1.Reference, len(*in))
+		*out = make([]v1.Reference, len(*in))
 		copy(*out, *in)
 	}
 	if in.SecurityGroupIDSelector != nil {
 		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector
-		*out = new(v1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.SnapshotARNs != nil {

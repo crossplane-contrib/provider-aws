@@ -27,7 +27,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -67,7 +67,7 @@ type args struct {
 
 type certificateAuthorityModifier func(*v1alpha1.CertificateAuthority)
 
-func withConditions(c ...corev1alpha1.Condition) certificateAuthorityModifier {
+func withConditions(c ...xpv1.Condition) certificateAuthorityModifier {
 	return func(r *v1alpha1.CertificateAuthority) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -166,7 +166,7 @@ func TestObserve(t *testing.T) {
 				cr: certificateAuthority(),
 			},
 			want: want{
-				cr: certificateAuthority(withCertificateAuthorityType(), withConditions(corev1alpha1.Available())),
+				cr: certificateAuthority(withCertificateAuthorityType(), withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists: true,
 				},
@@ -501,7 +501,7 @@ func TestDelete(t *testing.T) {
 				cr: certificateAuthority(withCertificateAuthorityArn()),
 			},
 			want: want{
-				cr: certificateAuthority(withCertificateAuthorityArn(), withConditions(corev1alpha1.Deleting())),
+				cr: certificateAuthority(withCertificateAuthorityArn(), withConditions(xpv1.Deleting())),
 			},
 		},
 		"InValidInput": {
@@ -540,7 +540,7 @@ func TestDelete(t *testing.T) {
 				cr: certificateAuthority(),
 			},
 			want: want{
-				cr:  certificateAuthority(withConditions(corev1alpha1.Deleting())),
+				cr:  certificateAuthority(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},
@@ -566,7 +566,7 @@ func TestDelete(t *testing.T) {
 				cr: certificateAuthority(),
 			},
 			want: want{
-				cr:  certificateAuthority(withConditions(corev1alpha1.Deleting())),
+				cr:  certificateAuthority(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(awserr.New(awsacmpca.ErrCodeResourceNotFoundException, "", nil), errDelete),
 			},
 		},

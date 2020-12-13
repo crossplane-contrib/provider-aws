@@ -19,13 +19,14 @@ package bucket
 import (
 	"context"
 
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
@@ -122,7 +123,7 @@ func (in *LoggingConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 		return NeedsUpdate, errors.Wrap(err, loggingGetFailed)
 	}
 	if !cmp.Equal(GenerateAWSLogging(bucket.Spec.ForProvider.LoggingConfiguration), external.LoggingEnabled,
-		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{})) {
+		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{})) {
 		return NeedsUpdate, nil
 	}
 	return Updated, nil

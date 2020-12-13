@@ -23,13 +23,14 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
@@ -51,7 +52,7 @@ type args struct {
 
 type userModifier func(*v1alpha1.IAMUser)
 
-func withConditions(c ...corev1alpha1.Condition) userModifier {
+func withConditions(c ...xpv1.Condition) userModifier {
 	return func(r *v1alpha1.IAMUser) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -94,7 +95,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: user(withExternalName(userName),
-					withConditions(corev1alpha1.Available())),
+					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -172,7 +173,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: user(
 					withExternalName(userName),
-					withConditions(corev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 			},
 		},
 		"InValidInput": {
@@ -196,7 +197,7 @@ func TestCreate(t *testing.T) {
 				cr: user(),
 			},
 			want: want{
-				cr:  user(withConditions(corev1alpha1.Creating())),
+				cr:  user(withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
@@ -300,7 +301,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: user(withExternalName(userName),
-					withConditions(corev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"InValidInput": {
@@ -325,7 +326,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: user(withExternalName(userName),
-					withConditions(corev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},

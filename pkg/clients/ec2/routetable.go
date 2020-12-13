@@ -6,9 +6,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
@@ -181,7 +182,7 @@ func IsRtUpToDate(p v1alpha4.RouteTableParameters, rt ec2.RouteTable) (bool, err
 	}
 	return cmp.Equal(&v1alpha4.RouteTableParameters{}, patch,
 		cmpopts.EquateEmpty(),
-		cmpopts.IgnoreTypes(&v1alpha1.Reference{}, &v1alpha1.Selector{}),
+		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}),
 		cmpopts.IgnoreFields(v1alpha4.RouteTableParameters{}, "Region"),
 	), nil
 }

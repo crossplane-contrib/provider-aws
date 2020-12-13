@@ -31,7 +31,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
@@ -70,7 +70,7 @@ func withExternalName(name string) vpcModifier {
 	return func(r *v1beta1.VPC) { meta.SetExternalName(r, name) }
 }
 
-func withConditions(c ...runtimev1alpha1.Condition) vpcModifier {
+func withConditions(c ...xpv1.Condition) vpcModifier {
 	return func(r *v1beta1.VPC) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -141,7 +141,7 @@ func TestObserve(t *testing.T) {
 				}), withStatus(v1beta1.VPCObservation{
 					VPCState: "available",
 				}), withExternalName(vpcID),
-					withConditions(runtimev1alpha1.Available())),
+					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -405,7 +405,7 @@ func TestDelete(t *testing.T) {
 				cr: vpc(),
 			},
 			want: want{
-				cr: vpc(withConditions(runtimev1alpha1.Deleting())),
+				cr: vpc(withConditions(xpv1.Deleting())),
 			},
 		},
 		"DeleteFailed": {
@@ -420,7 +420,7 @@ func TestDelete(t *testing.T) {
 				cr: vpc(),
 			},
 			want: want{
-				cr:  vpc(withConditions(runtimev1alpha1.Deleting())),
+				cr:  vpc(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},

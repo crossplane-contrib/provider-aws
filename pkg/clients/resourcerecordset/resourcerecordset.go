@@ -27,7 +27,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -144,7 +144,7 @@ func IsUpToDate(p v1alpha1.ResourceRecordSetParameters, rrset route53.ResourceRe
 		return false, err
 	}
 	return cmp.Equal(&v1alpha1.ResourceRecordSetParameters{}, patch,
-		cmpopts.IgnoreTypes(&runtimev1alpha1.Reference{}, &runtimev1alpha1.Selector{}),
+		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}),
 		cmpopts.IgnoreFields(v1alpha1.ResourceRecordSetParameters{}, "Region")), nil
 }
 

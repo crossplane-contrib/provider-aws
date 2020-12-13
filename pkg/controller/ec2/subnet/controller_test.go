@@ -27,7 +27,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -55,7 +55,7 @@ func withExternalName(name string) subnetModifier {
 	return func(r *v1beta1.Subnet) { meta.SetExternalName(r, name) }
 }
 
-func withConditions(c ...runtimev1alpha1.Condition) subnetModifier {
+func withConditions(c ...xpv1.Condition) subnetModifier {
 	return func(r *v1beta1.Subnet) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -110,7 +110,7 @@ func TestObserve(t *testing.T) {
 				cr: subnet(withStatus(v1beta1.SubnetObservation{
 					SubnetState: "available",
 				}), withExternalName(subnetID),
-					withConditions(runtimev1alpha1.Available())),
+					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -162,7 +162,7 @@ func TestObserve(t *testing.T) {
 				}), withStatus(v1beta1.SubnetObservation{
 					SubnetState: string(awsec2.SubnetStateAvailable),
 				}), withExternalName(subnetID),
-					withConditions(runtimev1alpha1.Available())),
+					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: false,
@@ -399,7 +399,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: subnet(withStatus(v1beta1.SubnetObservation{
 					SubnetID: subnetID,
-				}), withConditions(runtimev1alpha1.Deleting())),
+				}), withConditions(xpv1.Deleting())),
 			},
 		},
 		"DeleteFailed": {
@@ -418,7 +418,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: subnet(withStatus(v1beta1.SubnetObservation{
 					SubnetID: subnetID,
-				}), withConditions(runtimev1alpha1.Deleting())),
+				}), withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},

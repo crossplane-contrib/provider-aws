@@ -18,20 +18,20 @@ limitations under the License.
 
 package v1alpha1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this FargateProfile.
-func (mg *FargateProfile) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *FargateProfile) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this FargateProfile.
-func (mg *FargateProfile) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *FargateProfile) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this FargateProfile.
-func (mg *FargateProfile) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *FargateProfile) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -39,27 +39,27 @@ func (mg *FargateProfile) GetProviderConfigReference() *runtimev1alpha1.Referenc
 GetProviderReference of this FargateProfile.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *FargateProfile) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *FargateProfile) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this FargateProfile.
-func (mg *FargateProfile) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *FargateProfile) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this FargateProfile.
-func (mg *FargateProfile) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *FargateProfile) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this FargateProfile.
-func (mg *FargateProfile) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *FargateProfile) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this FargateProfile.
-func (mg *FargateProfile) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *FargateProfile) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -67,27 +67,27 @@ func (mg *FargateProfile) SetProviderConfigReference(r *runtimev1alpha1.Referenc
 SetProviderReference of this FargateProfile.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *FargateProfile) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *FargateProfile) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this FargateProfile.
-func (mg *FargateProfile) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *FargateProfile) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this NodeGroup.
-func (mg *NodeGroup) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *NodeGroup) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this NodeGroup.
-func (mg *NodeGroup) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *NodeGroup) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this NodeGroup.
-func (mg *NodeGroup) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *NodeGroup) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -95,27 +95,27 @@ func (mg *NodeGroup) GetProviderConfigReference() *runtimev1alpha1.Reference {
 GetProviderReference of this NodeGroup.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *NodeGroup) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *NodeGroup) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this NodeGroup.
-func (mg *NodeGroup) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *NodeGroup) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this NodeGroup.
-func (mg *NodeGroup) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *NodeGroup) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this NodeGroup.
-func (mg *NodeGroup) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *NodeGroup) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this NodeGroup.
-func (mg *NodeGroup) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *NodeGroup) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -123,11 +123,11 @@ func (mg *NodeGroup) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
 SetProviderReference of this NodeGroup.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *NodeGroup) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *NodeGroup) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this NodeGroup.
-func (mg *NodeGroup) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *NodeGroup) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

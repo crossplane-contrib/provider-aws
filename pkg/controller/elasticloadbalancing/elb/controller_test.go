@@ -23,14 +23,15 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awselb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
@@ -67,7 +68,7 @@ type args struct {
 
 type elbModifier func(*v1alpha1.ELB)
 
-func withConditions(c ...corev1alpha1.Condition) elbModifier {
+func withConditions(c ...xpv1.Condition) elbModifier {
 	return func(r *v1alpha1.ELB) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -129,7 +130,7 @@ func TestObserve(t *testing.T) {
 					AvailabilityZones: availabilityZones,
 				}),
 					withExternalName(elbName),
-					withConditions(corev1alpha1.Available())),
+					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
@@ -241,7 +242,7 @@ func TestObserve(t *testing.T) {
 						AvailabilityZones: availabilityZones,
 						SecurityGroupIDs:  securityGroups,
 					}),
-					withConditions(corev1alpha1.Available())),
+					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: false,
@@ -299,7 +300,7 @@ func TestCreate(t *testing.T) {
 					withSpec(v1alpha1.ELBParameters{
 						AvailabilityZones: availabilityZones,
 					}),
-					withConditions(corev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 			},
 		},
 		"CreateError": {
@@ -321,7 +322,7 @@ func TestCreate(t *testing.T) {
 					withSpec(v1alpha1.ELBParameters{
 						AvailabilityZones: availabilityZones,
 					}),
-					withConditions(corev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreate),
 			},
 		},
@@ -594,7 +595,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: elbResource(withExternalName(elbName),
-					withConditions(corev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"DeleteError": {
@@ -610,7 +611,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: elbResource(withExternalName(elbName),
-					withConditions(corev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDelete),
 			},
 		},

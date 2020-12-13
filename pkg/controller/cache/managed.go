@@ -27,7 +27,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -127,13 +127,13 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	switch cr.Status.AtProvider.Status {
 	case v1beta1.StatusAvailable:
-		cr.Status.SetConditions(runtimev1alpha1.Available())
+		cr.Status.SetConditions(xpv1.Available())
 	case v1beta1.StatusCreating:
-		cr.Status.SetConditions(runtimev1alpha1.Creating())
+		cr.Status.SetConditions(xpv1.Creating())
 	case v1beta1.StatusDeleting:
-		cr.Status.SetConditions(runtimev1alpha1.Deleting())
+		cr.Status.SetConditions(xpv1.Deleting())
 	default:
-		cr.Status.SetConditions(runtimev1alpha1.Unavailable())
+		cr.Status.SetConditions(xpv1.Unavailable())
 	}
 
 	return managed.ExternalObservation{
@@ -149,7 +149,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errNotReplicationGroup)
 	}
 
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
+	cr.Status.SetConditions(xpv1.Creating())
 	// Our create request will fail if auth is enabled but transit encryption is
 	// not. We don't check for the latter here because it's less surprising to
 	// submit the request as the operator intended and let the reconcile fail
@@ -170,7 +170,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if token != nil {
 		return managed.ExternalCreation{
 			ConnectionDetails: managed.ConnectionDetails{
-				runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(*token),
+				xpv1.ResourceCredentialsSecretPasswordKey: []byte(*token),
 			},
 		}, nil
 	}
@@ -197,7 +197,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if !ok {
 		return errors.New(errNotReplicationGroup)
 	}
-	mg.SetConditions(runtimev1alpha1.Deleting())
+	mg.SetConditions(xpv1.Deleting())
 	if cr.Status.AtProvider.Status == v1beta1.StatusDeleting {
 		return nil
 	}

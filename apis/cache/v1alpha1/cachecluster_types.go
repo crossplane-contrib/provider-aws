@@ -16,7 +16,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // CacheCluster states.
@@ -214,12 +214,12 @@ type CacheClusterParameters struct {
 
 	// A referencer to retrieve the name of a CacheSubnetGroup
 	// +optional
-	CacheSubnetGroupNameRef *runtimev1alpha1.Reference `json:"cacheSubnetGroupNameRef,omitempty"`
+	CacheSubnetGroupNameRef *xpv1.Reference `json:"cacheSubnetGroupNameRef,omitempty"`
 
 	// A selector to select a referencer to retrieve the name of a CacheSubnetGroup
 	// +optional
 	// +immutable
-	CacheSubnetGroupNameSelector *runtimev1alpha1.Selector `json:"cacheSubnetGroupNameSelector,omitempty"`
+	CacheSubnetGroupNameSelector *xpv1.Selector `json:"cacheSubnetGroupNameSelector,omitempty"`
 
 	// The name of the cache engine to be used for this cluster.
 	// +optional
@@ -268,11 +268,11 @@ type CacheClusterParameters struct {
 
 	// A referencer to retrieve the ID of a Security group
 	// +optional
-	SecurityGroupIDRefs []runtimev1alpha1.Reference `json:"securityGroupIDRefs,omitempty"`
+	SecurityGroupIDRefs []xpv1.Reference `json:"securityGroupIDRefs,omitempty"`
 
 	// A selector to select a referencer to retrieve the ID of a Security Group
 	// +optional
-	SecurityGroupIDSelector *runtimev1alpha1.Selector `json:"securityGroupIDSelector,omitempty"`
+	SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIDSelector,omitempty"`
 
 	// A single-element string list containing an Amazon Resource Name (ARN) that
 	// uniquely identifies a Redis RDB snapshot file stored in Amazon S3.
@@ -304,14 +304,14 @@ type CacheClusterParameters struct {
 
 // A CacheClusterSpec defines the desired state of a CacheCluster.
 type CacheClusterSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  CacheClusterParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       CacheClusterParameters `json:"forProvider"`
 }
 
 // A CacheClusterStatus defines the observed state of a CacheCluster.
 type CacheClusterStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     CacheClusterObservation `json:"atProvider,omitempty"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          CacheClusterObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

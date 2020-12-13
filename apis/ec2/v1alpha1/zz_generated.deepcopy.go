@@ -21,7 +21,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -291,12 +291,12 @@ func (in *NATGatewayParameters) DeepCopyInto(out *NATGatewayParameters) {
 	}
 	if in.AllocationIDRef != nil {
 		in, out := &in.AllocationIDRef, &out.AllocationIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.AllocationIDSelector != nil {
 		in, out := &in.AllocationIDSelector, &out.AllocationIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.SubnetID != nil {
@@ -306,12 +306,12 @@ func (in *NATGatewayParameters) DeepCopyInto(out *NATGatewayParameters) {
 	}
 	if in.SubnetIDRef != nil {
 		in, out := &in.SubnetIDRef, &out.SubnetIDRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.SubnetIDSelector != nil {
 		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Tags != nil {

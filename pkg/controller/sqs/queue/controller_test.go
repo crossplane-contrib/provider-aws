@@ -26,7 +26,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -57,7 +57,7 @@ func withExternalName(s string) sqsModifier {
 	return func(r *v1beta1.Queue) { meta.SetExternalName(r, s) }
 }
 
-func withConditions(c ...runtimev1alpha1.Condition) sqsModifier {
+func withConditions(c ...xpv1.Condition) sqsModifier {
 	return func(r *v1beta1.Queue) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -120,7 +120,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: queue(withExternalName(queueName),
-					withConditions(runtimev1alpha1.Available()),
+					withConditions(xpv1.Available()),
 					withStatus(v1beta1.QueueObservation{
 						URL: queueURL,
 					})),
@@ -232,7 +232,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: queue(withExternalName(queueURL),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 			},
 		},
 		"CreateFail": {
@@ -249,7 +249,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: queue(withExternalName(queueURL),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreateFailed),
 			},
 		},
@@ -416,13 +416,13 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: queue(withConditions(runtimev1alpha1.Deleting()),
+				cr: queue(withConditions(xpv1.Deleting()),
 					withStatus(v1beta1.QueueObservation{
 						URL: queueURL,
 					})),
 			},
 			want: want{
-				cr: queue(withConditions(runtimev1alpha1.Deleting()),
+				cr: queue(withConditions(xpv1.Deleting()),
 					withStatus(v1beta1.QueueObservation{
 						URL: queueURL,
 					})),
@@ -437,13 +437,13 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: queue(withConditions(runtimev1alpha1.Deleting()),
+				cr: queue(withConditions(xpv1.Deleting()),
 					withStatus(v1beta1.QueueObservation{
 						URL: queueURL,
 					})),
 			},
 			want: want{
-				cr: queue(withConditions(runtimev1alpha1.Deleting()),
+				cr: queue(withConditions(xpv1.Deleting()),
 					withStatus(v1beta1.QueueObservation{
 						URL: queueURL,
 					})),

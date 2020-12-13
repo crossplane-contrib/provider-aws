@@ -26,7 +26,7 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -57,7 +57,7 @@ func withMasterUsername(s string) redshiftModifier {
 	return func(r *v1alpha1.Cluster) { r.Spec.ForProvider.MasterUsername = s }
 }
 
-func withConditions(c ...runtimev1alpha1.Condition) redshiftModifier {
+func withConditions(c ...xpv1.Condition) redshiftModifier {
 	return func(r *v1alpha1.Cluster) { r.Status.ConditionedStatus.Conditions = c }
 }
 
@@ -127,7 +127,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: cluster(
-					withConditions(runtimev1alpha1.Available()),
+					withConditions(xpv1.Available()),
 					withClusterStatus(string(v1alpha1.StateAvailable))),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -159,7 +159,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: cluster(
-					withConditions(runtimev1alpha1.Deleting()),
+					withConditions(xpv1.Deleting()),
 					withClusterStatus(string(v1alpha1.StateDeleting))),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -191,7 +191,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: cluster(
-					withConditions(runtimev1alpha1.Unavailable()),
+					withConditions(xpv1.Unavailable()),
 					withClusterStatus(string(v1alpha1.StateFailed))),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -258,7 +258,7 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: cluster(
 					withClusterStatus(string(v1alpha1.StateCreating)),
-					withConditions(runtimev1alpha1.Creating()),
+					withConditions(xpv1.Creating()),
 				),
 				result: managed.ExternalObservation{
 					ResourceExists:    true,
@@ -312,11 +312,11 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: cluster(
 					withMasterUsername(masterUsername),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 				result: managed.ExternalCreation{
 					ConnectionDetails: managed.ConnectionDetails{
-						runtimev1alpha1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
-						runtimev1alpha1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
+						xpv1.ResourceCredentialsSecretUserKey:     []byte(masterUsername),
+						xpv1.ResourceCredentialsSecretPasswordKey: []byte(replaceMe),
 					},
 				},
 			},
@@ -328,7 +328,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: cluster(
 					withClusterStatus(v1alpha1.StateCreating),
-					withConditions(runtimev1alpha1.Creating())),
+					withConditions(xpv1.Creating())),
 			},
 		},
 		"FailedRequest": {
@@ -343,7 +343,7 @@ func TestCreate(t *testing.T) {
 				cr: cluster(),
 			},
 			want: want{
-				cr:  cluster(withConditions(runtimev1alpha1.Creating())),
+				cr:  cluster(withConditions(xpv1.Creating())),
 				err: errors.Wrap(errBoom, errCreateFailed),
 			},
 		},
@@ -360,9 +360,9 @@ func TestCreate(t *testing.T) {
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if string(tc.want.result.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPasswordKey]) == replaceMe {
-				tc.want.result.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPasswordKey] =
-					o.ConnectionDetails[runtimev1alpha1.ResourceCredentialsSecretPasswordKey]
+			if string(tc.want.result.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey]) == replaceMe {
+				tc.want.result.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey] =
+					o.ConnectionDetails[xpv1.ResourceCredentialsSecretPasswordKey]
 			}
 			if diff := cmp.Diff(tc.want.result, o); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
@@ -511,7 +511,7 @@ func TestDelete(t *testing.T) {
 				cr: cluster(),
 			},
 			want: want{
-				cr: cluster(withConditions(runtimev1alpha1.Deleting())),
+				cr: cluster(withConditions(xpv1.Deleting())),
 			},
 		},
 		"AlreadyDeleting": {
@@ -520,7 +520,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr: cluster(withClusterStatus(v1alpha1.StateDeleting),
-					withConditions(runtimev1alpha1.Deleting())),
+					withConditions(xpv1.Deleting())),
 			},
 		},
 		"AlreadyDeleted": {
@@ -544,7 +544,7 @@ func TestDelete(t *testing.T) {
 				cr: cluster(),
 			},
 			want: want{
-				cr: cluster(withConditions(runtimev1alpha1.Deleting())),
+				cr: cluster(withConditions(xpv1.Deleting())),
 			},
 		},
 		"Failed": {
@@ -571,7 +571,7 @@ func TestDelete(t *testing.T) {
 				cr: cluster(),
 			},
 			want: want{
-				cr:  cluster(withConditions(runtimev1alpha1.Deleting())),
+				cr:  cluster(withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDeleteFailed),
 			},
 		},

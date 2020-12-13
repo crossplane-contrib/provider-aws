@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -34,12 +34,12 @@ type ELBAttachmentParameters struct {
 	// ELBNameRef references an ELB to and retrieves its external-name.
 	// +immutable
 	// +optional
-	ELBNameRef *runtimev1alpha1.Reference `json:"elbNameRef,omitempty"`
+	ELBNameRef *xpv1.Reference `json:"elbNameRef,omitempty"`
 
 	// ELBNameSelector selects a reference to a ELB to and retrieves its external-name.
 	// +immutable
 	// +optional
-	ELBNameSelector *runtimev1alpha1.Selector `json:"elbNameSelector,omitempty"`
+	ELBNameSelector *xpv1.Selector `json:"elbNameSelector,omitempty"`
 
 	// List of identities of the instances to be attached.
 	// +immutable
@@ -48,8 +48,8 @@ type ELBAttachmentParameters struct {
 
 // An ELBAttachmentSpec defines the desired state of an ELBAttachment.
 type ELBAttachmentSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  ELBAttachmentParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       ELBAttachmentParameters `json:"forProvider"`
 }
 
 // ELBAttachmentObservation keeps the state for the external resource
@@ -58,8 +58,8 @@ type ELBAttachmentObservation struct {
 
 // An ELBAttachmentStatus represents the observed state of an ELBAttachmentAttachment.
 type ELBAttachmentStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     ELBAttachmentObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          ELBAttachmentObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true
