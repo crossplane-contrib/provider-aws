@@ -28,7 +28,18 @@ large node pool.
 aws eks --region <region> update-kubeconfig --name <cluster-name>
 ```
 
-2. Install Crossplane and provider-aws
+2. Get AWS account information
+
+Get AWS account information and pick an IAM role name. These will be used to
+setup an OIDC provider and inject credentials into the provider-aws controller
+pod.
+
+```
+export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+export IAM_ROLE_NAME=provider-aws # name for IAM role, can be anything you want
+```
+
+3. Install Crossplane
 
 Install Crossplane from `alpha` channel:
 
@@ -39,14 +50,37 @@ helm repo add crossplane-alpha https://charts.crossplane.io/alpha
 helm install crossplane --namespace crossplane-system crossplane-alpha/crossplane
 ```
 
-Install `provider-aws` (assumes you have [installed the Crossplane
-CLI](https://crossplane.io/docs/v0.13/getting-started/install-configure.html#install-crossplane-cli)):
+`provider-aws` can be installed with the [Crossplane
+CLI](https://crossplane.io/docs/v0.13/getting-started/install-configure.html#install-crossplane-cli),
+but we will do so manually so that we can also create and reference a
+`ControllerConfig`:
 
 ```
-kubectl crossplane install provider crossplane/provider-aws:master
+cat > provider-config.yaml <<EOF
+apiVersion: pkg.crossplane.io/v1alpha1
+kind: ControllerConfig
+metadata:
+  name: aws-config
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::$AWS_ACCOUNT_ID\:role/$IAM_ROLE_NAME
+spec:
+  podSecurityContext:
+    fsGroup: 2000
+---
+apiVersion: pkg.crossplane.io/v1alpha1
+kind: Provider
+metadata:
+  name: provider-aws
+spec:
+  package: crossplane/provider-aws:alpha
+  controllerConfigRef:
+    name: aws-config
+EOF
+
+kubectl apply -f provider-config.yaml
 ```
 
-3. Identify provider-aws service account
+4. Identify provider-aws service account
 
 Make sure that the appropriate `ServiceAccount` exists:
 
@@ -65,7 +99,7 @@ SERVICE_ACCOUNT_NAMESPACE=crossplane-system
 SERVICE_ACCOUNT_NAME=provider-aws-<YOUR-SERVICE-ACCOUNT-EXTENSION>
 ```
 
-4. Create OIDC provider for cluster
+5. Create OIDC provider for cluster
 
 *If you do not have `eksctl` installed you may use the [AWS
 Console](https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html)*
@@ -74,14 +108,12 @@ Console](https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-s
 eksctl utils associate-iam-oidc-provider --cluster <cluster-name> --region <region> --approve
 ```
 
-5. Create IAM Role that provider-aws will use
+6. Create IAM Role that provider-aws will use
 
 Set environment variables that will be used in subsequent commands:
 
 ```
-AWS_ACCOUNT_ID=$(aws2 sts get-caller-identity --query "Account" --output text)
-OIDC_PROVIDER=$(aws2 eks describe-cluster --name <cluster-name> --region <region> --query "cluster.identity.oidc.issuer" --output text | sed -e "s/^https:\/\///")
-IAM_ROLE_NAME=provider-aws # name for IAM role, can be anything you want
+OIDC_PROVIDER=$(aws eks describe-cluster --name <cluster-name> --region <region> --query "cluster.identity.oidc.issuer" --output text | sed -e "s/^https:\/\///")
 ```
 
 Create trust relationship for IAM role:
@@ -122,25 +154,6 @@ provision your resources.
 ```
 aws iam attach-role-policy --role-name $IAM_ROLE_NAME --policy-arn=arn:aws:iam::aws:policy/AdministratorAccess
 ```
-
-6. Inject credentials into provider-aws Pod
-
-To inject the credential information into the `provider-aws` controller `Pod`,
-we must annotate its `ServiceAccount` with the desired IAM role:
-
-```
-kubectl annotate serviceaccount -n $SERVICE_ACCOUNT_NAMESPACE $SERVICE_ACCOUNT_NAME \
-eks.amazonaws.com/role-arn=arn:aws:iam::$AWS_ACCOUNT_ID\:role/$IAM_ROLE_NAME
-```
-
-Because the credentials are injected when the `Pod` starts, we need to restart
-it. However, before doing so, we must set the `fsGroup` on the `Deployment` to
-accommodate for how Kubernetes [mounts a projected service account
-volume](https://github.com/aws/amazon-eks-pod-identity-webhook/issues/8#issuecomment-636888074).
-You can set the `fsGroup` to any sensible value. This will automatically kill
-the existing `Pod` and you should immediately see another one created for the
-`provider-aws` controller. It will have access to credentials used to assume the
-IAM role.
 
 7. Create `ProviderConfig`
 
