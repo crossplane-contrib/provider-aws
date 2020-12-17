@@ -39,8 +39,17 @@ type AppParameters struct {
 	AppType *string `json:"appType"`
 
 	// The domain ID.
-	// +kubebuilder:validation:Required
-	DomainID *string `json:"domainID"`
+	DomainID *string `json:"domainID,omitempty"`
+
+	// DomainIDRef is a reference to an sagemaker/v1alpha1/Domain used
+	// to set the DomainID field.
+	// +optional
+	DomainIDRef *xpv1.Reference `json:"domainIDRef,omitempty"`
+
+	// DomainIDSelector selects references to sagemaker/v1alpha1/Domain
+	// used to set the DomainID.
+	// +optional
+	DomainIDSelector *xpv1.Selector `json:"domainIDSelector,omitempty"`
 
 	// The instance type and the Amazon Resource Name (ARN) of the SageMaker image
 	// created on the instance.
@@ -51,8 +60,17 @@ type AppParameters struct {
 	Tags []*Tag `json:"tags,omitempty"`
 
 	// The user profile name.
-	// +kubebuilder:validation:Required
-	UserProfileName *string `json:"userProfileName"`
+	UserProfileName *string `json:"userProfileName,omitempty"`
+
+	// UserProfileNameRef is a reference to an sagemaker/v1alpha1/UserProfile used
+	// to set the UserProfileName field.
+	// +optional
+	UserProfileNameRef *xpv1.Reference `json:"userProfileNameRef,omitempty"`
+
+	// UserProfileNameSelector selects references to sagemaker/v1alpha1/UserProfile
+	// used to set the UserProfileName.
+	// +optional
+	UserProfileNameSelector *xpv1.Selector `json:"userProfileNameSelector,omitempty"`
 }
 
 // AppSpec defines the desired state of App

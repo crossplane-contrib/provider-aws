@@ -19,11 +19,22 @@ limitations under the License.
 package v1alpha1
 
 import (
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type AlgorithmSpecification struct {
 	AlgorithmName *string `json:"algorithmName,omitempty"`
+
+	// AlgorithmNameRef is a reference to an sagemaker/v1alpha1/Algorithm used
+	// to set the AlgorithmName field.
+	// +optional
+	AlgorithmNameRef *xpv1.Reference `json:"algorithmNameRef,omitempty"`
+
+	// AlgorithmNameSelector selects references to sagemaker/v1alpha1/Algorithm
+	// used to set the AlgorithmName.
+	// +optional
+	AlgorithmNameSelector *xpv1.Selector `json:"algorithmNameSelector,omitempty"`
 
 	EnableSageMakerMetricsTimeSeries *bool `json:"enableSageMakerMetricsTimeSeries,omitempty"`
 
@@ -500,6 +511,16 @@ type EndpointConfigSummary struct {
 type EndpointInput struct {
 	EndpointName *string `json:"endpointName,omitempty"`
 
+	// EndpointNameRef is a reference to an sagemaker/v1alpha1/Endpoint used
+	// to set the EndpointName field.
+	// +optional
+	EndpointNameRef *xpv1.Reference `json:"endpointNameRef,omitempty"`
+
+	// EndpointNameSelector selects references to sagemaker/v1alpha1/Endpoint
+	// used to set the EndpointName.
+	// +optional
+	EndpointNameSelector *xpv1.Selector `json:"endpointNameSelector,omitempty"`
+
 	LocalPath *string `json:"localPath,omitempty"`
 
 	S3DataDistributionType *string `json:"s3DataDistributionType,omitempty"`
@@ -522,9 +543,29 @@ type EndpointSummary struct {
 type ExperimentConfig struct {
 	ExperimentName *string `json:"experimentName,omitempty"`
 
+	// ExperimentNameRef is a reference to an sagemaker/v1alpha1/Experiment used
+	// to set the ExperimentName field.
+	// +optional
+	ExperimentNameRef *xpv1.Reference `json:"experimentNameRef,omitempty"`
+
+	// ExperimentNameSelector selects references to sagemaker/v1alpha1/Experiment
+	// used to set the ExperimentName.
+	// +optional
+	ExperimentNameSelector *xpv1.Selector `json:"experimentNameSelector,omitempty"`
+
 	TrialComponentDisplayName *string `json:"trialComponentDisplayName,omitempty"`
 
 	TrialName *string `json:"trialName,omitempty"`
+
+	// TrialNameRef is a reference to an sagemaker/v1alpha1/Trial used
+	// to set the TrialName field.
+	// +optional
+	TrialNameRef *xpv1.Reference `json:"trialNameRef,omitempty"`
+
+	// TrialNameSelector selects references to sagemaker/v1alpha1/Trial
+	// used to set the TrialName.
+	// +optional
+	TrialNameSelector *xpv1.Selector `json:"trialNameSelector,omitempty"`
 }
 
 type ExperimentSource struct {
@@ -1064,6 +1105,16 @@ type HumanTaskConfig struct {
 	UiConfig *UiConfig `json:"uiConfig,omitempty"`
 
 	WorkteamARN *string `json:"workteamARN,omitempty"`
+
+	// WorkteamARNRef is a reference to an sagemaker/v1alpha1/Workteam used
+	// to set the WorkteamARN field.
+	// +optional
+	WorkteamARNRef *xpv1.Reference `json:"workteamARNRef,omitempty"`
+
+	// WorkteamARNSelector selects references to sagemaker/v1alpha1/Workteam
+	// used to set the WorkteamARN.
+	// +optional
+	WorkteamARNSelector *xpv1.Selector `json:"workteamARNSelector,omitempty"`
 }
 
 type HumanTaskUiSummary struct {
@@ -1076,6 +1127,16 @@ type HumanTaskUiSummary struct {
 
 type HyperParameterAlgorithmSpecification struct {
 	AlgorithmName *string `json:"algorithmName,omitempty"`
+
+	// AlgorithmNameRef is a reference to an sagemaker/v1alpha1/Algorithm used
+	// to set the AlgorithmName field.
+	// +optional
+	AlgorithmNameRef *xpv1.Reference `json:"algorithmNameRef,omitempty"`
+
+	// AlgorithmNameSelector selects references to sagemaker/v1alpha1/Algorithm
+	// used to set the AlgorithmName.
+	// +optional
+	AlgorithmNameSelector *xpv1.Selector `json:"algorithmNameSelector,omitempty"`
 
 	MetricDefinitions []*MetricDefinition `json:"metricDefinitions,omitempty"`
 
@@ -1136,6 +1197,16 @@ type HyperParameterTrainingJobDefinition struct {
 	ResourceConfig *ResourceConfig `json:"resourceConfig,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
+
+	// RoleARNRef is a reference to an identity/v1beta1/IAMRole used
+	// to set the RoleARN field.
+	// +optional
+	RoleARNRef *xpv1.Reference `json:"roleARNRef,omitempty"`
+
+	// RoleARNSelector selects references to identity/v1beta1/IAMRole
+	// used to set the RoleARN.
+	// +optional
+	RoleARNSelector *xpv1.Selector `json:"roleARNSelector,omitempty"`
 
 	StaticHyperParameters map[string]*string `json:"staticHyperParameters,omitempty"`
 	// Specifies a limit to how long a model training or compilation job can run.
@@ -1402,6 +1473,16 @@ type LabelingJobOutputConfig struct {
 	S3OutputPath *string `json:"s3OutputPath,omitempty"`
 
 	SnsTopicARN *string `json:"snsTopicARN,omitempty"`
+
+	// SnsTopicARNRef is a reference to an sns/v1alpha1/Topic used
+	// to set the SnsTopicARN field.
+	// +optional
+	SnsTopicARNRef *xpv1.Reference `json:"snsTopicARNRef,omitempty"`
+
+	// SnsTopicARNSelector selects references to sns/v1alpha1/Topic
+	// used to set the SnsTopicARN.
+	// +optional
+	SnsTopicARNSelector *xpv1.Selector `json:"snsTopicARNSelector,omitempty"`
 }
 
 type LabelingJobResourceConfig struct {
@@ -1414,6 +1495,16 @@ type LabelingJobS3DataSource struct {
 
 type LabelingJobSnsDataSource struct {
 	SnsTopicARN *string `json:"snsTopicARN,omitempty"`
+
+	// SnsTopicARNRef is a reference to an sns/v1alpha1/Topic used
+	// to set the SnsTopicARN field.
+	// +optional
+	SnsTopicARNRef *xpv1.Reference `json:"snsTopicARNRef,omitempty"`
+
+	// SnsTopicARNSelector selects references to sns/v1alpha1/Topic
+	// used to set the SnsTopicARN.
+	// +optional
+	SnsTopicARNSelector *xpv1.Selector `json:"snsTopicARNSelector,omitempty"`
 }
 
 type LabelingJobStoppingConditions struct {
@@ -1621,6 +1712,17 @@ type MonitoringJobDefinition struct {
 	NetworkConfig *NetworkConfig `json:"networkConfig,omitempty"`
 
 	RoleARN *string `json:"roleARN,omitempty"`
+
+	// RoleARNRef is a reference to an identity/v1beta1/IAMRole used
+	// to set the RoleARN field.
+	// +optional
+	RoleARNRef *xpv1.Reference `json:"roleARNRef,omitempty"`
+
+	// RoleARNSelector selects references to identity/v1beta1/IAMRole
+	// used to set the RoleARN.
+	// +optional
+	RoleARNSelector *xpv1.Selector `json:"roleARNSelector,omitempty"`
+
 	// A time limit for how long the monitoring job is allowed to run before stopping.
 	StoppingCondition *MonitoringStoppingCondition `json:"stoppingCondition,omitempty"`
 }
@@ -1729,6 +1831,16 @@ type NotebookInstanceSummary struct {
 
 type NotificationConfiguration struct {
 	NotificationTopicARN *string `json:"notificationTopicARN,omitempty"`
+
+	// NotificationTopicARNRef is a reference to an sns/v1alpha1/Topic used
+	// to set the NotificationTopicARN field.
+	// +optional
+	NotificationTopicARNRef *xpv1.Reference `json:"notificationTopicARNRef,omitempty"`
+
+	// NotificationTopicARNSelector selects references to sns/v1alpha1/Topic
+	// used to set the NotificationTopicARN.
+	// +optional
+	NotificationTopicARNSelector *xpv1.Selector `json:"notificationTopicARNSelector,omitempty"`
 }
 
 type ObjectiveStatusCounters struct {
@@ -2073,6 +2185,16 @@ type ShuffleConfig struct {
 
 type SourceAlgorithm struct {
 	AlgorithmName *string `json:"algorithmName,omitempty"`
+
+	// AlgorithmNameRef is a reference to an sagemaker/v1alpha1/Algorithm used
+	// to set the AlgorithmName field.
+	// +optional
+	AlgorithmNameRef *xpv1.Reference `json:"algorithmNameRef,omitempty"`
+
+	// AlgorithmNameSelector selects references to sagemaker/v1alpha1/Algorithm
+	// used to set the AlgorithmName.
+	// +optional
+	AlgorithmNameSelector *xpv1.Selector `json:"algorithmNameSelector,omitempty"`
 
 	ModelDataURL *string `json:"modelDataURL,omitempty"`
 }
@@ -2641,6 +2763,16 @@ type USD struct {
 type UiConfig struct {
 	HumanTaskUiARN *string `json:"humanTaskUiARN,omitempty"`
 
+	// HumanTaskUiARNRef is a reference to an sagemaker/v1alpha1/HumanTaskUi used
+	// to set the HumanTaskUiARN field.
+	// +optional
+	HumanTaskUiARNRef *xpv1.Reference `json:"humanTaskUiARNRef,omitempty"`
+
+	// HumanTaskUiARNSelector selects references to sagemaker/v1alpha1/HumanTaskUi
+	// used to set the HumanTaskUiARN.
+	// +optional
+	HumanTaskUiARNSelector *xpv1.Selector `json:"humanTaskUiARNSelector,omitempty"`
+
 	UiTemplateS3URI *string `json:"uiTemplateS3URI,omitempty"`
 }
 
@@ -2676,12 +2808,34 @@ type UserProfileDetails struct {
 
 type UserSettings struct {
 	ExecutionRole *string `json:"executionRole,omitempty"`
+
+	// ExecutionRoleRef is a reference to an identity/v1beta1/IAMRole used
+	// to set the ExecutionRole field.
+	// +optional
+	ExecutionRoleRef *xpv1.Reference `json:"executionRoleRef,omitempty"`
+
+	// ExecutionRoleSelector selects references to identity/v1beta1/IAMRole
+	// used to set the ExecutionRole.
+	// +optional
+	ExecutionRoleSelector *xpv1.Selector `json:"executionRoleSelector,omitempty"`
+
 	// Jupyter server's app settings.
 	JupyterServerAppSettings *JupyterServerAppSettings `json:"jupyterServerAppSettings,omitempty"`
 	// The kernel gateway app settings.
 	KernelGatewayAppSettings *KernelGatewayAppSettings `json:"kernelGatewayAppSettings,omitempty"`
 
 	SecurityGroups []*string `json:"securityGroups,omitempty"`
+
+	// SecurityGroupsRef is a reference to an ec2/v1beta1/SecurityGroup used
+	// to set the SecurityGroups field.
+	// +optional
+	SecurityGroupsRef []xpv1.Reference `json:"securityGroupsRef,omitempty"`
+
+	// SecurityGroupsSelector selects references to ec2/v1beta1/SecurityGroup
+	// used to set the SecurityGroups.
+	// +optional
+	SecurityGroupsSelector *xpv1.Selector `json:"securityGroupsSelector,omitempty"`
+
 	// Specifies options when sharing an Amazon SageMaker Studio notebook. These
 	// settings are specified as part of DefaultUserSettings when the CreateDomain
 	// API is called, and as part of UserSettings when the CreateUserProfile API
@@ -2694,7 +2848,27 @@ type UserSettings struct {
 type VPCConfig struct {
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 
+	// SecurityGroupIDsRef is a reference to an ec2/v1beta1/SecurityGroup used
+	// to set the SecurityGroupIDs field.
+	// +optional
+	SecurityGroupIDsRef []xpv1.Reference `json:"securityGroupIDsRef,omitempty"`
+
+	// SecurityGroupIDsSelector selects references to ec2/v1beta1/SecurityGroup
+	// used to set the SecurityGroupIDs.
+	// +optional
+	SecurityGroupIDsSelector *xpv1.Selector `json:"securityGroupIDsSelector,omitempty"`
+
 	Subnets []*string `json:"subnets,omitempty"`
+
+	// SubnetsRef is a reference to an ec2/v1beta1/Subnet used
+	// to set the Subnets field.
+	// +optional
+	SubnetsRef []xpv1.Reference `json:"subnetsRef,omitempty"`
+
+	// SubnetsSelector selects references to ec2/v1beta1/Subnet
+	// used to set the Subnets.
+	// +optional
+	SubnetsSelector *xpv1.Selector `json:"subnetsSelector,omitempty"`
 }
 
 type VariantProperty struct {

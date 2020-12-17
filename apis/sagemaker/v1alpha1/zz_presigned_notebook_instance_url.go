@@ -31,8 +31,17 @@ type PresignedNotebookInstanceURLParameters struct {
 	Region string `json:"region"`
 
 	// The name of the notebook instance.
-	// +kubebuilder:validation:Required
-	NotebookInstanceName *string `json:"notebookInstanceName"`
+	NotebookInstanceName *string `json:"notebookInstanceName,omitempty"`
+
+	// NotebookInstanceNameRef is a reference to an sagemaker/v1alpha1/NotebookInstance used
+	// to set the NotebookInstanceName field.
+	// +optional
+	NotebookInstanceNameRef *xpv1.Reference `json:"notebookInstanceNameRef,omitempty"`
+
+	// NotebookInstanceNameSelector selects references to sagemaker/v1alpha1/NotebookInstance
+	// used to set the NotebookInstanceName.
+	// +optional
+	NotebookInstanceNameSelector *xpv1.Selector `json:"notebookInstanceNameSelector,omitempty"`
 
 	// The duration of the session, in seconds. The default is 12 hours.
 	SessionExpirationDurationInSeconds *int64 `json:"sessionExpirationDurationInSeconds,omitempty"`

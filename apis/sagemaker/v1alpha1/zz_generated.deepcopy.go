@@ -21,6 +21,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -172,6 +173,16 @@ func (in *AlgorithmSpecification) DeepCopyInto(out *AlgorithmSpecification) {
 		in, out := &in.AlgorithmName, &out.AlgorithmName
 		*out = new(string)
 		**out = **in
+	}
+	if in.AlgorithmNameRef != nil {
+		in, out := &in.AlgorithmNameRef, &out.AlgorithmNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.AlgorithmNameSelector != nil {
+		in, out := &in.AlgorithmNameSelector, &out.AlgorithmNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.EnableSageMakerMetricsTimeSeries != nil {
 		in, out := &in.EnableSageMakerMetricsTimeSeries, &out.EnableSageMakerMetricsTimeSeries
@@ -556,6 +567,16 @@ func (in *AppParameters) DeepCopyInto(out *AppParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.DomainIDRef != nil {
+		in, out := &in.DomainIDRef, &out.DomainIDRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.DomainIDSelector != nil {
+		in, out := &in.DomainIDSelector, &out.DomainIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.ResourceSpec != nil {
 		in, out := &in.ResourceSpec, &out.ResourceSpec
 		*out = new(ResourceSpec)
@@ -576,6 +597,16 @@ func (in *AppParameters) DeepCopyInto(out *AppParameters) {
 		in, out := &in.UserProfileName, &out.UserProfileName
 		*out = new(string)
 		**out = **in
+	}
+	if in.UserProfileNameRef != nil {
+		in, out := &in.UserProfileNameRef, &out.UserProfileNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.UserProfileNameSelector != nil {
+		in, out := &in.UserProfileNameSelector, &out.UserProfileNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 }
 
@@ -1086,6 +1117,16 @@ func (in *AutoMLJobParameters) DeepCopyInto(out *AutoMLJobParameters) {
 		in, out := &in.RoleARN, &out.RoleARN
 		*out = new(string)
 		**out = **in
+	}
+	if in.RoleARNRef != nil {
+		in, out := &in.RoleARNRef, &out.RoleARNRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.RoleARNSelector != nil {
+		in, out := &in.RoleARNSelector, &out.RoleARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.Tags != nil {
 		in, out := &in.Tags, &out.Tags
@@ -1896,6 +1937,16 @@ func (in *CompilationJobParameters) DeepCopyInto(out *CompilationJobParameters) 
 		*out = new(string)
 		**out = **in
 	}
+	if in.RoleARNRef != nil {
+		in, out := &in.RoleARNRef, &out.RoleARNRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.RoleARNSelector != nil {
+		in, out := &in.RoleARNSelector, &out.RoleARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.StoppingCondition != nil {
 		in, out := &in.StoppingCondition, &out.StoppingCondition
 		*out = new(StoppingCondition)
@@ -2654,6 +2705,16 @@ func (in *DomainParameters) DeepCopyInto(out *DomainParameters) {
 			}
 		}
 	}
+	if in.SubnetIDsRef != nil {
+		in, out := &in.SubnetIDsRef, &out.SubnetIDsRef
+		*out = make([]v1.Reference, len(*in))
+		copy(*out, *in)
+	}
+	if in.SubnetIDsSelector != nil {
+		in, out := &in.SubnetIDsSelector, &out.SubnetIDsSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Tags != nil {
 		in, out := &in.Tags, &out.Tags
 		*out = make([]*Tag, len(*in))
@@ -2669,6 +2730,16 @@ func (in *DomainParameters) DeepCopyInto(out *DomainParameters) {
 		in, out := &in.VPCID, &out.VPCID
 		*out = new(string)
 		**out = **in
+	}
+	if in.VPCIDRef != nil {
+		in, out := &in.VPCIDRef, &out.VPCIDRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.VPCIDSelector != nil {
+		in, out := &in.VPCIDSelector, &out.VPCIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 }
 
@@ -2945,6 +3016,16 @@ func (in *EndpointInput) DeepCopyInto(out *EndpointInput) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.EndpointNameRef != nil {
+		in, out := &in.EndpointNameRef, &out.EndpointNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.EndpointNameSelector != nil {
+		in, out := &in.EndpointNameSelector, &out.EndpointNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.LocalPath != nil {
 		in, out := &in.LocalPath, &out.LocalPath
 		*out = new(string)
@@ -3167,6 +3248,16 @@ func (in *ExperimentConfig) DeepCopyInto(out *ExperimentConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ExperimentNameRef != nil {
+		in, out := &in.ExperimentNameRef, &out.ExperimentNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.ExperimentNameSelector != nil {
+		in, out := &in.ExperimentNameSelector, &out.ExperimentNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.TrialComponentDisplayName != nil {
 		in, out := &in.TrialComponentDisplayName, &out.TrialComponentDisplayName
 		*out = new(string)
@@ -3176,6 +3267,16 @@ func (in *ExperimentConfig) DeepCopyInto(out *ExperimentConfig) {
 		in, out := &in.TrialName, &out.TrialName
 		*out = new(string)
 		**out = **in
+	}
+	if in.TrialNameRef != nil {
+		in, out := &in.TrialNameRef, &out.TrialNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.TrialNameSelector != nil {
+		in, out := &in.TrialNameSelector, &out.TrialNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 }
 
@@ -3746,6 +3847,16 @@ func (in *HumanTaskConfig) DeepCopyInto(out *HumanTaskConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.WorkteamARNRef != nil {
+		in, out := &in.WorkteamARNRef, &out.WorkteamARNRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.WorkteamARNSelector != nil {
+		in, out := &in.WorkteamARNSelector, &out.WorkteamARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 }
 
 // DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new HumanTaskConfig.
@@ -3944,6 +4055,16 @@ func (in *HyperParameterAlgorithmSpecification) DeepCopyInto(out *HyperParameter
 		*out = new(string)
 		**out = **in
 	}
+	if in.AlgorithmNameRef != nil {
+		in, out := &in.AlgorithmNameRef, &out.AlgorithmNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.AlgorithmNameSelector != nil {
+		in, out := &in.AlgorithmNameSelector, &out.AlgorithmNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.MetricDefinitions != nil {
 		in, out := &in.MetricDefinitions, &out.MetricDefinitions
 		*out = make([]*MetricDefinition, len(*in))
@@ -4090,6 +4211,16 @@ func (in *HyperParameterTrainingJobDefinition) DeepCopyInto(out *HyperParameterT
 		in, out := &in.RoleARN, &out.RoleARN
 		*out = new(string)
 		**out = **in
+	}
+	if in.RoleARNRef != nil {
+		in, out := &in.RoleARNRef, &out.RoleARNRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.RoleARNSelector != nil {
+		in, out := &in.RoleARNSelector, &out.RoleARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.StaticHyperParameters != nil {
 		in, out := &in.StaticHyperParameters, &out.StaticHyperParameters
@@ -5100,6 +5231,16 @@ func (in *LabelingJobOutputConfig) DeepCopyInto(out *LabelingJobOutputConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.SnsTopicARNRef != nil {
+		in, out := &in.SnsTopicARNRef, &out.SnsTopicARNRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.SnsTopicARNSelector != nil {
+		in, out := &in.SnsTopicARNSelector, &out.SnsTopicARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 }
 
 // DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new LabelingJobOutputConfig.
@@ -5154,6 +5295,16 @@ func (in *LabelingJobParameters) DeepCopyInto(out *LabelingJobParameters) {
 		in, out := &in.RoleARN, &out.RoleARN
 		*out = new(string)
 		**out = **in
+	}
+	if in.RoleARNRef != nil {
+		in, out := &in.RoleARNRef, &out.RoleARNRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.RoleARNSelector != nil {
+		in, out := &in.RoleARNSelector, &out.RoleARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.StoppingConditions != nil {
 		in, out := &in.StoppingConditions, &out.StoppingConditions
@@ -5230,6 +5381,16 @@ func (in *LabelingJobSnsDataSource) DeepCopyInto(out *LabelingJobSnsDataSource) 
 		in, out := &in.SnsTopicARN, &out.SnsTopicARN
 		*out = new(string)
 		**out = **in
+	}
+	if in.SnsTopicARNRef != nil {
+		in, out := &in.SnsTopicARNRef, &out.SnsTopicARNRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.SnsTopicARNSelector != nil {
+		in, out := &in.SnsTopicARNSelector, &out.SnsTopicARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 }
 
@@ -5962,6 +6123,16 @@ func (in *ModelParameters) DeepCopyInto(out *ModelParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ExecutionRoleARNRef != nil {
+		in, out := &in.ExecutionRoleARNRef, &out.ExecutionRoleARNRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.ExecutionRoleARNSelector != nil {
+		in, out := &in.ExecutionRoleARNSelector, &out.ExecutionRoleARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.ModelName != nil {
 		in, out := &in.ModelName, &out.ModelName
 		*out = new(string)
@@ -6325,6 +6496,16 @@ func (in *MonitoringJobDefinition) DeepCopyInto(out *MonitoringJobDefinition) {
 		in, out := &in.RoleARN, &out.RoleARN
 		*out = new(string)
 		**out = **in
+	}
+	if in.RoleARNRef != nil {
+		in, out := &in.RoleARNRef, &out.RoleARNRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.RoleARNSelector != nil {
+		in, out := &in.RoleARNSelector, &out.RoleARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.StoppingCondition != nil {
 		in, out := &in.StoppingCondition, &out.StoppingCondition
@@ -7068,6 +7249,16 @@ func (in *NotebookInstanceParameters) DeepCopyInto(out *NotebookInstanceParamete
 		*out = new(string)
 		**out = **in
 	}
+	if in.LifecycleConfigNameRef != nil {
+		in, out := &in.LifecycleConfigNameRef, &out.LifecycleConfigNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.LifecycleConfigNameSelector != nil {
+		in, out := &in.LifecycleConfigNameSelector, &out.LifecycleConfigNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.NotebookInstanceName != nil {
 		in, out := &in.NotebookInstanceName, &out.NotebookInstanceName
 		*out = new(string)
@@ -7077,6 +7268,16 @@ func (in *NotebookInstanceParameters) DeepCopyInto(out *NotebookInstanceParamete
 		in, out := &in.RoleARN, &out.RoleARN
 		*out = new(string)
 		**out = **in
+	}
+	if in.RoleARNRef != nil {
+		in, out := &in.RoleARNRef, &out.RoleARNRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.RoleARNSelector != nil {
+		in, out := &in.RoleARNSelector, &out.RoleARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.RootAccess != nil {
 		in, out := &in.RootAccess, &out.RootAccess
@@ -7094,10 +7295,30 @@ func (in *NotebookInstanceParameters) DeepCopyInto(out *NotebookInstanceParamete
 			}
 		}
 	}
+	if in.SecurityGroupIDsRef != nil {
+		in, out := &in.SecurityGroupIDsRef, &out.SecurityGroupIDsRef
+		*out = make([]v1.Reference, len(*in))
+		copy(*out, *in)
+	}
+	if in.SecurityGroupIDsSelector != nil {
+		in, out := &in.SecurityGroupIDsSelector, &out.SecurityGroupIDsSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.SubnetID != nil {
 		in, out := &in.SubnetID, &out.SubnetID
 		*out = new(string)
 		**out = **in
+	}
+	if in.SubnetIDRef != nil {
+		in, out := &in.SubnetIDRef, &out.SubnetIDRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.SubnetIDSelector != nil {
+		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.Tags != nil {
 		in, out := &in.Tags, &out.Tags
@@ -7237,6 +7458,16 @@ func (in *NotificationConfiguration) DeepCopyInto(out *NotificationConfiguration
 		in, out := &in.NotificationTopicARN, &out.NotificationTopicARN
 		*out = new(string)
 		**out = **in
+	}
+	if in.NotificationTopicARNRef != nil {
+		in, out := &in.NotificationTopicARNRef, &out.NotificationTopicARNRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.NotificationTopicARNSelector != nil {
+		in, out := &in.NotificationTopicARNSelector, &out.NotificationTopicARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 }
 
@@ -7681,6 +7912,16 @@ func (in *PresignedDomainURLParameters) DeepCopyInto(out *PresignedDomainURLPara
 		*out = new(string)
 		**out = **in
 	}
+	if in.DomainIDRef != nil {
+		in, out := &in.DomainIDRef, &out.DomainIDRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.DomainIDSelector != nil {
+		in, out := &in.DomainIDSelector, &out.DomainIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.SessionExpirationDurationInSeconds != nil {
 		in, out := &in.SessionExpirationDurationInSeconds, &out.SessionExpirationDurationInSeconds
 		*out = new(int64)
@@ -7690,6 +7931,16 @@ func (in *PresignedDomainURLParameters) DeepCopyInto(out *PresignedDomainURLPara
 		in, out := &in.UserProfileName, &out.UserProfileName
 		*out = new(string)
 		**out = **in
+	}
+	if in.UserProfileNameRef != nil {
+		in, out := &in.UserProfileNameRef, &out.UserProfileNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.UserProfileNameSelector != nil {
+		in, out := &in.UserProfileNameSelector, &out.UserProfileNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 }
 
@@ -7823,6 +8074,16 @@ func (in *PresignedNotebookInstanceURLParameters) DeepCopyInto(out *PresignedNot
 		in, out := &in.NotebookInstanceName, &out.NotebookInstanceName
 		*out = new(string)
 		**out = **in
+	}
+	if in.NotebookInstanceNameRef != nil {
+		in, out := &in.NotebookInstanceNameRef, &out.NotebookInstanceNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.NotebookInstanceNameSelector != nil {
+		in, out := &in.NotebookInstanceNameSelector, &out.NotebookInstanceNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.SessionExpirationDurationInSeconds != nil {
 		in, out := &in.SessionExpirationDurationInSeconds, &out.SessionExpirationDurationInSeconds
@@ -8077,6 +8338,16 @@ func (in *ProcessingJobParameters) DeepCopyInto(out *ProcessingJobParameters) {
 		in, out := &in.RoleARN, &out.RoleARN
 		*out = new(string)
 		**out = **in
+	}
+	if in.RoleARNRef != nil {
+		in, out := &in.RoleARNRef, &out.RoleARNRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.RoleARNSelector != nil {
+		in, out := &in.RoleARNSelector, &out.RoleARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.StoppingCondition != nil {
 		in, out := &in.StoppingCondition, &out.StoppingCondition
@@ -8934,6 +9205,16 @@ func (in *SourceAlgorithm) DeepCopyInto(out *SourceAlgorithm) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.AlgorithmNameRef != nil {
+		in, out := &in.AlgorithmNameRef, &out.AlgorithmNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.AlgorithmNameSelector != nil {
+		in, out := &in.AlgorithmNameSelector, &out.AlgorithmNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.ModelDataURL != nil {
 		in, out := &in.ModelDataURL, &out.ModelDataURL
 		*out = new(string)
@@ -9397,6 +9678,16 @@ func (in *TrainingJobParameters) DeepCopyInto(out *TrainingJobParameters) {
 		in, out := &in.RoleARN, &out.RoleARN
 		*out = new(string)
 		**out = **in
+	}
+	if in.RoleARNRef != nil {
+		in, out := &in.RoleARNRef, &out.RoleARNRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.RoleARNSelector != nil {
+		in, out := &in.RoleARNSelector, &out.RoleARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.StoppingCondition != nil {
 		in, out := &in.StoppingCondition, &out.StoppingCondition
@@ -10120,6 +10411,16 @@ func (in *TransformJobParameters) DeepCopyInto(out *TransformJobParameters) {
 		in, out := &in.ModelName, &out.ModelName
 		*out = new(string)
 		**out = **in
+	}
+	if in.ModelNameRef != nil {
+		in, out := &in.ModelNameRef, &out.ModelNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.ModelNameSelector != nil {
+		in, out := &in.ModelNameSelector, &out.ModelNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.Tags != nil {
 		in, out := &in.Tags, &out.Tags
@@ -11202,6 +11503,16 @@ func (in *TrialParameters) DeepCopyInto(out *TrialParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ExperimentNameRef != nil {
+		in, out := &in.ExperimentNameRef, &out.ExperimentNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.ExperimentNameSelector != nil {
+		in, out := &in.ExperimentNameSelector, &out.ExperimentNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Tags != nil {
 		in, out := &in.Tags, &out.Tags
 		*out = make([]*Tag, len(*in))
@@ -11459,6 +11770,16 @@ func (in *UiConfig) DeepCopyInto(out *UiConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.HumanTaskUiARNRef != nil {
+		in, out := &in.HumanTaskUiARNRef, &out.HumanTaskUiARNRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.HumanTaskUiARNSelector != nil {
+		in, out := &in.HumanTaskUiARNSelector, &out.HumanTaskUiARNSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.UiTemplateS3URI != nil {
 		in, out := &in.UiTemplateS3URI, &out.UiTemplateS3URI
 		*out = new(string)
@@ -11676,6 +11997,16 @@ func (in *UserProfileParameters) DeepCopyInto(out *UserProfileParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.DomainIDRef != nil {
+		in, out := &in.DomainIDRef, &out.DomainIDRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.DomainIDSelector != nil {
+		in, out := &in.DomainIDSelector, &out.DomainIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.SingleSignOnUserIdentifier != nil {
 		in, out := &in.SingleSignOnUserIdentifier, &out.SingleSignOnUserIdentifier
 		*out = new(string)
@@ -11761,6 +12092,16 @@ func (in *UserSettings) DeepCopyInto(out *UserSettings) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.ExecutionRoleRef != nil {
+		in, out := &in.ExecutionRoleRef, &out.ExecutionRoleRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.ExecutionRoleSelector != nil {
+		in, out := &in.ExecutionRoleSelector, &out.ExecutionRoleSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.JupyterServerAppSettings != nil {
 		in, out := &in.JupyterServerAppSettings, &out.JupyterServerAppSettings
 		*out = new(JupyterServerAppSettings)
@@ -11781,6 +12122,16 @@ func (in *UserSettings) DeepCopyInto(out *UserSettings) {
 				**out = **in
 			}
 		}
+	}
+	if in.SecurityGroupsRef != nil {
+		in, out := &in.SecurityGroupsRef, &out.SecurityGroupsRef
+		*out = make([]v1.Reference, len(*in))
+		copy(*out, *in)
+	}
+	if in.SecurityGroupsSelector != nil {
+		in, out := &in.SecurityGroupsSelector, &out.SecurityGroupsSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.SharingSettings != nil {
 		in, out := &in.SharingSettings, &out.SharingSettings
@@ -11818,6 +12169,16 @@ func (in *VPCConfig) DeepCopyInto(out *VPCConfig) {
 			}
 		}
 	}
+	if in.SecurityGroupIDsRef != nil {
+		in, out := &in.SecurityGroupIDsRef, &out.SecurityGroupIDsRef
+		*out = make([]v1.Reference, len(*in))
+		copy(*out, *in)
+	}
+	if in.SecurityGroupIDsSelector != nil {
+		in, out := &in.SecurityGroupIDsSelector, &out.SecurityGroupIDsSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.Subnets != nil {
 		in, out := &in.Subnets, &out.Subnets
 		*out = make([]*string, len(*in))
@@ -11828,6 +12189,16 @@ func (in *VPCConfig) DeepCopyInto(out *VPCConfig) {
 				**out = **in
 			}
 		}
+	}
+	if in.SubnetsRef != nil {
+		in, out := &in.SubnetsRef, &out.SubnetsRef
+		*out = make([]v1.Reference, len(*in))
+		copy(*out, *in)
+	}
+	if in.SubnetsSelector != nil {
+		in, out := &in.SubnetsSelector, &out.SubnetsSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 }
 
@@ -12191,6 +12562,16 @@ func (in *WorkteamParameters) DeepCopyInto(out *WorkteamParameters) {
 		in, out := &in.WorkforceName, &out.WorkforceName
 		*out = new(string)
 		**out = **in
+	}
+	if in.WorkforceNameRef != nil {
+		in, out := &in.WorkforceNameRef, &out.WorkforceNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.WorkforceNameSelector != nil {
+		in, out := &in.WorkforceNameSelector, &out.WorkforceNameSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.WorkteamName != nil {
 		in, out := &in.WorkteamName, &out.WorkteamName

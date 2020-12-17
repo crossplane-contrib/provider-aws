@@ -58,6 +58,27 @@ spec:
                     properties:
                       algorithmName:
                         type: string
+                      algorithmNameRef:
+                        description: AlgorithmNameRef is a reference to an sagemaker/v1alpha1/Algorithm used to set the AlgorithmName field.
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      algorithmNameSelector:
+                        description: AlgorithmNameSelector selects references to sagemaker/v1alpha1/Algorithm used to set the AlgorithmName.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching labels is selected.
+                            type: object
+                        type: object
                       enableSageMakerMetricsTimeSeries:
                         type: boolean
                       metricDefinitions:
@@ -140,10 +161,52 @@ spec:
                     properties:
                       experimentName:
                         type: string
+                      experimentNameRef:
+                        description: ExperimentNameRef is a reference to an sagemaker/v1alpha1/Experiment used to set the ExperimentName field.
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      experimentNameSelector:
+                        description: ExperimentNameSelector selects references to sagemaker/v1alpha1/Experiment used to set the ExperimentName.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching labels is selected.
+                            type: object
+                        type: object
                       trialComponentDisplayName:
                         type: string
                       trialName:
                         type: string
+                      trialNameRef:
+                        description: TrialNameRef is a reference to an sagemaker/v1alpha1/Trial used to set the TrialName field.
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      trialNameSelector:
+                        description: TrialNameSelector selects references to sagemaker/v1alpha1/Trial used to set the TrialName.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching labels is selected.
+                            type: object
+                        type: object
                     type: object
                   hyperParameters:
                     additionalProperties:
@@ -231,6 +294,27 @@ spec:
                   roleARN:
                     description: "The Amazon Resource Name (ARN) of an IAM role that Amazon SageMaker can assume to perform tasks on your behalf. \n During model training, Amazon SageMaker needs your permission to read input data from an S3 bucket, download a Docker image that contains training code, write model artifacts to an S3 bucket, write logs to Amazon CloudWatch Logs, and publish metrics to Amazon CloudWatch. You grant permissions for all of these tasks to an IAM role. For more information, see Amazon SageMaker Roles (https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-roles.html). \n To be able to pass this role to Amazon SageMaker, the caller of this API must have the iam:PassRole permission."
                     type: string
+                  roleARNRef:
+                    description: RoleARNRef is a reference to an identity/v1beta1/IAMRole used to set the RoleARN field.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  roleARNSelector:
+                    description: RoleARNSelector selects references to identity/v1beta1/IAMRole used to set the RoleARN.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   stoppingCondition:
                     description: "Specifies a limit to how long a model training job can run. When the job reaches the time limit, Amazon SageMaker ends the training job. Use this API to cap model training costs. \n To stop a job, Amazon SageMaker sends the algorithm the SIGTERM signal, which delays job termination for 120 seconds. Algorithms can use this 120-second window to save the model artifacts, so the results of training are not lost."
                     properties:
@@ -268,17 +352,64 @@ spec:
                         items:
                           type: string
                         type: array
+                      securityGroupIDsRef:
+                        description: SecurityGroupIDsRef is a reference to an ec2/v1beta1/SecurityGroup used to set the SecurityGroupIDs field.
+                        items:
+                          description: A Reference to a named object.
+                          properties:
+                            name:
+                              description: Name of the referenced object.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                      securityGroupIDsSelector:
+                        description: SecurityGroupIDsSelector selects references to ec2/v1beta1/SecurityGroup used to set the SecurityGroupIDs.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching labels is selected.
+                            type: object
+                        type: object
                       subnets:
                         items:
                           type: string
                         type: array
+                      subnetsRef:
+                        description: SubnetsRef is a reference to an ec2/v1beta1/Subnet used to set the Subnets field.
+                        items:
+                          description: A Reference to a named object.
+                          properties:
+                            name:
+                              description: Name of the referenced object.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                      subnetsSelector:
+                        description: SubnetsSelector selects references to ec2/v1beta1/Subnet used to set the Subnets.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching labels is selected.
+                            type: object
+                        type: object
                     type: object
                 required:
                 - algorithmSpecification
                 - outputDataConfig
                 - region
                 - resourceConfig
-                - roleARN
                 - stoppingCondition
                 - trainingJobName
                 type: object

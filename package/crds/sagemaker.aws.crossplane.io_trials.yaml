@@ -59,6 +59,27 @@ spec:
                   experimentName:
                     description: The name of the experiment to associate the trial with.
                     type: string
+                  experimentNameRef:
+                    description: ExperimentNameRef is a reference to an sagemaker/v1alpha1/Experiment used to set the ExperimentName field.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  experimentNameSelector:
+                    description: ExperimentNameSelector selects references to sagemaker/v1alpha1/Experiment used to set the ExperimentName.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   region:
                     description: Region is which region the Trial will be created.
                     type: string
@@ -76,7 +97,6 @@ spec:
                     description: The name of the trial. The name must be unique in your AWS account and is not case-sensitive.
                     type: string
                 required:
-                - experimentName
                 - region
                 - trialName
                 type: object

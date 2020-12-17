@@ -47,8 +47,17 @@ type DomainParameters struct {
 	HomeEFSFileSystemKMSKeyID *string `json:"homeEFSFileSystemKMSKeyID,omitempty"`
 
 	// The VPC subnets to use for communication with the EFS volume.
-	// +kubebuilder:validation:Required
-	SubnetIDs []*string `json:"subnetIDs"`
+	SubnetIDs []*string `json:"subnetIDs,omitempty"`
+
+	// SubnetIDsRef is a reference to an ec2/v1beta1/Subnet used
+	// to set the SubnetIDs field.
+	// +optional
+	SubnetIDsRef []xpv1.Reference `json:"subnetIDsRef,omitempty"`
+
+	// SubnetIDsSelector selects references to ec2/v1beta1/Subnet
+	// used to set the SubnetIDs.
+	// +optional
+	SubnetIDsSelector *xpv1.Selector `json:"subnetIDsSelector,omitempty"`
 
 	// Tags to associated with the Domain. Each tag consists of a key and an optional
 	// value. Tag keys must be unique per resource. Tags are searchable using the
@@ -57,8 +66,17 @@ type DomainParameters struct {
 
 	// The ID of the Amazon Virtual Private Cloud (VPC) to use for communication
 	// with the EFS volume.
-	// +kubebuilder:validation:Required
-	VPCID *string `json:"vpcID"`
+	VPCID *string `json:"vpcID,omitempty"`
+
+	// VPCIDRef is a reference to an ec2/v1beta1/VPC used
+	// to set the VPCID field.
+	// +optional
+	VPCIDRef *xpv1.Reference `json:"vpcIDRef,omitempty"`
+
+	// VPCIDSelector selects references to ec2/v1beta1/VPC
+	// used to set the VPCID.
+	// +optional
+	VPCIDSelector *xpv1.Selector `json:"vpcIDSelector,omitempty"`
 }
 
 // DomainSpec defines the desired state of Domain

@@ -81,6 +81,16 @@ type NotebookInstanceParameters struct {
 	// Customize a Notebook Instance (https://docs.aws.amazon.com/sagemaker/latest/dg/notebook-lifecycle-config.html).
 	LifecycleConfigName *string `json:"lifecycleConfigName,omitempty"`
 
+	// LifecycleConfigNameRef is a reference to an sagemaker/v1alpha1/NotebookInstanceLifecycleConfig used
+	// to set the LifecycleConfigName field.
+	// +optional
+	LifecycleConfigNameRef *xpv1.Reference `json:"lifecycleConfigNameRef,omitempty"`
+
+	// LifecycleConfigNameSelector selects references to sagemaker/v1alpha1/NotebookInstanceLifecycleConfig
+	// used to set the LifecycleConfigName.
+	// +optional
+	LifecycleConfigNameSelector *xpv1.Selector `json:"lifecycleConfigNameSelector,omitempty"`
+
 	// The name of the new notebook instance.
 	// +kubebuilder:validation:Required
 	NotebookInstanceName *string `json:"notebookInstanceName"`
@@ -94,8 +104,17 @@ type NotebookInstanceParameters struct {
 	//
 	// To be able to pass this role to Amazon SageMaker, the caller of this API
 	// must have the iam:PassRole permission.
-	// +kubebuilder:validation:Required
-	RoleARN *string `json:"roleARN"`
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	// RoleARNRef is a reference to an identity/v1beta1/IAMRole used
+	// to set the RoleARN field.
+	// +optional
+	RoleARNRef *xpv1.Reference `json:"roleARNRef,omitempty"`
+
+	// RoleARNSelector selects references to identity/v1beta1/IAMRole
+	// used to set the RoleARN.
+	// +optional
+	RoleARNSelector *xpv1.Selector `json:"roleARNSelector,omitempty"`
 
 	// Whether root access is enabled or disabled for users of the notebook instance.
 	// The default value is Enabled.
@@ -110,9 +129,29 @@ type NotebookInstanceParameters struct {
 	// must be for the same VPC as specified in the subnet.
 	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 
+	// SecurityGroupIDsRef is a reference to an ec2/v1beta1/SecurityGroup used
+	// to set the SecurityGroupIDs field.
+	// +optional
+	SecurityGroupIDsRef []xpv1.Reference `json:"securityGroupIDsRef,omitempty"`
+
+	// SecurityGroupIDsSelector selects references to ec2/v1beta1/SecurityGroup
+	// used to set the SecurityGroupIDs.
+	// +optional
+	SecurityGroupIDsSelector *xpv1.Selector `json:"securityGroupIDsSelector,omitempty"`
+
 	// The ID of the subnet in a VPC to which you would like to have a connectivity
 	// from your ML compute instance.
 	SubnetID *string `json:"subnetID,omitempty"`
+
+	// SubnetIDRef is a reference to an ec2/v1beta1/Subnet used
+	// to set the SubnetID field.
+	// +optional
+	SubnetIDRef *xpv1.Reference `json:"subnetIDRef,omitempty"`
+
+	// SubnetIDSelector selects references to ec2/v1beta1/Subnet
+	// used to set the SubnetID.
+	// +optional
+	SubnetIDSelector *xpv1.Selector `json:"subnetIDSelector,omitempty"`
 
 	// A list of tags to associate with the notebook instance. You can add tags
 	// later by using the CreateTags API.

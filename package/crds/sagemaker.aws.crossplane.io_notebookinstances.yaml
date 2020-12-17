@@ -78,6 +78,27 @@ spec:
                   lifecycleConfigName:
                     description: 'The name of a lifecycle configuration to associate with the notebook instance. For information about lifestyle configurations, see Step 2.1: (Optional) Customize a Notebook Instance (https://docs.aws.amazon.com/sagemaker/latest/dg/notebook-lifecycle-config.html).'
                     type: string
+                  lifecycleConfigNameRef:
+                    description: LifecycleConfigNameRef is a reference to an sagemaker/v1alpha1/NotebookInstanceLifecycleConfig used to set the LifecycleConfigName field.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  lifecycleConfigNameSelector:
+                    description: LifecycleConfigNameSelector selects references to sagemaker/v1alpha1/NotebookInstanceLifecycleConfig used to set the LifecycleConfigName.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   notebookInstanceName:
                     description: The name of the new notebook instance.
                     type: string
@@ -87,6 +108,27 @@ spec:
                   roleARN:
                     description: "When you send any requests to AWS resources from the notebook instance, Amazon SageMaker assumes this role to perform tasks on your behalf. You must grant this role necessary permissions so Amazon SageMaker can perform these tasks. The policy must allow the Amazon SageMaker service principal (sagemaker.amazonaws.com) permissions to assume this role. For more information, see Amazon SageMaker Roles (https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-roles.html). \n To be able to pass this role to Amazon SageMaker, the caller of this API must have the iam:PassRole permission."
                     type: string
+                  roleARNRef:
+                    description: RoleARNRef is a reference to an identity/v1beta1/IAMRole used to set the RoleARN field.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  roleARNSelector:
+                    description: RoleARNSelector selects references to identity/v1beta1/IAMRole used to set the RoleARN.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   rootAccess:
                     description: "Whether root access is enabled or disabled for users of the notebook instance. The default value is Enabled. \n Lifecycle configurations need root access to be able to set up a notebook instance. Because of this, lifecycle configurations associated with a notebook instance always run with root access even if you disable root access for users."
                     type: string
@@ -95,9 +137,54 @@ spec:
                     items:
                       type: string
                     type: array
+                  securityGroupIDsRef:
+                    description: SecurityGroupIDsRef is a reference to an ec2/v1beta1/SecurityGroup used to set the SecurityGroupIDs field.
+                    items:
+                      description: A Reference to a named object.
+                      properties:
+                        name:
+                          description: Name of the referenced object.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                  securityGroupIDsSelector:
+                    description: SecurityGroupIDsSelector selects references to ec2/v1beta1/SecurityGroup used to set the SecurityGroupIDs.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   subnetID:
                     description: The ID of the subnet in a VPC to which you would like to have a connectivity from your ML compute instance.
                     type: string
+                  subnetIDRef:
+                    description: SubnetIDRef is a reference to an ec2/v1beta1/Subnet used to set the SubnetID field.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  subnetIDSelector:
+                    description: SubnetIDSelector selects references to ec2/v1beta1/Subnet used to set the SubnetID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   tags:
                     description: A list of tags to associate with the notebook instance. You can add tags later by using the CreateTags API.
                     items:
@@ -116,7 +203,6 @@ spec:
                 - instanceType
                 - notebookInstanceName
                 - region
-                - roleARN
                 type: object
               providerConfigRef:
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.

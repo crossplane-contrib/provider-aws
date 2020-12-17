@@ -8,3 +8,170 @@ resources:
 ignore:
   resource_names:
     - FlowDefinition
+# AutoMLS3DataSource.S3URI targets a folder in a Bucket but we can only refer to Bucket.
+# AutoMLOutputDataConfig.S3OutputPath targets a folder in a Bucket but we can only refer to Bucket.
+# AutoMLOutputDataConfig.KMSKeyID: we don't have KMS as resource yet.
+# AutoMLSecurityConfig.VolumeKMSKeyID: we don't have KMS as resource yet.
+# GitConfig.SecretARN: we don't have Secret resource yet.
+# InputConfig.S3URI targets a folder in a Bucket but we can only refer to Bucket.
+# OutputConfig.S3OutputLocation targets a folder in a Bucket but we can only refer to Bucket.
+# ResourceSpec.SageMakerImageARN: we don't have Image yet.
+# SharingSettings.S3KMSKeyID: we don't have KMS yet.
+# SharingSettings.S3OutputPath targets a folder in a Bucket but we can only refer to Bucket.
+# Domain.HomeEFSFileSystemKMSKeyID: we don't have KMS yet.
+# DataCaptureConfig.DestinationS3URI targets a folder in a Bucket but we can only refer to Bucket.
+# DataCaptureConfig.KMSKeyID: we don't have KMS yet.
+# EndpointConfig.KMSKeyID: we don't have KMS yet.
+# HyperParameterAlgorithmSpecification.TrainingImage: we don't have Image yet
+# CheckpointConfig.S3URI targets a folder in a Bucket but we can only refer to Bucket.
+# S3DataSource.S3URI targets a folder in a Bucket but we can only refer to Bucket.
+# OutputDataConfig.S3OutputPath targets a folder in a Bucket but we can only refer to Bucket.
+# OutputDataConfig.KMSKeyID: we don't have KMS as resource yet.
+# ResourceConfig.VolumeKMSKeyID: we don't have KMS as resource yet.
+# AnnotationConsolidationConfig.AnnotationConsolidationLambdaARN: we don't have Lambda as resource yet.
+# HumanTaskConfig.PreHumanTaskLambdaARN: we don't have Lambda as resource yet.
+# UiConfig.UiTemplateS3URI targets a folder in a Bucket but we can only refer to Bucket.
+# LabelingJobS3DataSource.ManifestS3URI targets a folder in a Bucket but we can only refer to Bucket.
+# LabelingJob.LabelCategoryConfigS3URI targets a folder in a Bucket but we can only refer to Bucket.
+# LabelingJobAlgorithmsConfig.InitialActiveLearningModelARN
+# LabelingJobAlgorithmsConfig.LabelingJobAlgorithmSpecificationARN
+# LabelingJobResourceConfig.VolumeKMSKeyID
+# LabelingJobOutputConfig.KMSKeyID
+# LabelingJobOutputConfig.S3OutputPath
+# TransformS3DataSource.S3URI
+# TransformOutput.S3OutputPath
+# TransformOutput.KMSKeyID
+# TransformResources.VolumeKMSKeyID
+# MonitoringConstraintsResource.S3URI
+# MonitoringStatisticsResource.S3URI
+# MonitoringOutputConfig.KMSKeyID
+# MonitoringS3Output.S3URI
+# MonitoringClusterConfig.VolumeKMSKeyID
+# NotebookInstance.KMSKeyID
+# ProcessingS3Input.S3URI
+# ProcessingOutputConfig.KMSKeyID
+# ProcessingS3Output.S3URI
+# ProcessingClusterConfig.VolumeKMSKeyID
+# CheckpointConfig.S3URI
+# DebugHookConfig.S3OutputPath
+# DebugRuleConfiguration.S3OutputPath
+# TensorBoardOutputConfig.S3OutputPath
+# TransformS3DataSource.S3URI
+# TransformOutput.KMSKeyID
+# TransformOutput.S3OutputPath
+# TransformResources.VolumeKMSKeyID
+referencers:
+  - typeName: App
+    fieldName: DomainID
+    referencedType: sagemaker/v1alpha1/Domain
+  - typeName: App
+    fieldName: UserProfileName
+    referencedType: sagemaker/v1alpha1/UserProfile
+  - typeName: VPCConfig
+    fieldName: SecurityGroupIDs
+    referencedType: ec2/v1beta1/SecurityGroup
+  - typeName: VPCConfig
+    fieldName: Subnets
+    referencedType: ec2/v1beta1/Subnet
+  - typeName: AutoMLJob
+    fieldName: RoleARN
+    referencedType: identity/v1beta1/IAMRole
+  - typeName: CompilationJob
+    fieldName: RoleARN
+    referencedType: identity/v1beta1/IAMRole
+  - typeName: UserSettings
+    fieldName: SecurityGroups
+    referencedType: ec2/v1beta1/SecurityGroup
+  - typeName: Domain
+    fieldName: SubnetIDs
+    referencedType: ec2/v1beta1/Subnet
+  - typeName: Domain
+    fieldName: VPCID
+    referencedType: ec2/v1beta1/VPC
+  - typeName: HyperParameterAlgorithmSpecification
+    fieldName: AlgorithmName
+    referencedType: sagemaker/v1alpha1/Algorithm
+  - typeName: HyperParameterTrainingJobDefinition
+    fieldName: RoleARN
+    referencedType: identity/v1beta1/IAMRole
+  - typeName: UiConfig
+    fieldName: HumanTaskUiARN
+    referencedType: sagemaker/v1alpha1/HumanTaskUi
+  - typeName: HumanTaskConfig
+    fieldName: WorkteamARN
+    referencedType: sagemaker/v1alpha1/Workteam
+  - typeName: LabelingJobSnsDataSource
+    fieldName: SnsTopicARN
+    referencedType: sns/v1alpha1/Topic
+  - typeName: LabelingJobOutputConfig
+    fieldName: SnsTopicARN
+    referencedType: sns/v1alpha1/Topic
+  - typeName: LabelingJob
+    fieldName: RoleARN
+    referencedType: identity/v1beta1/IAMRole
+  - typeName: Model
+    fieldName: ExecutionRoleARN
+    referencedType: identity/v1beta1/IAMRole
+  - typeName: SourceAlgorithm
+    fieldName: AlgorithmName
+    referencedType: sagemaker/v1alpha1/Algorithm
+  - typeName: EndpointInput
+    fieldName: EndpointName
+    referencedType: sagemaker/v1alpha1/Endpoint
+  - typeName: MonitoringJobDefinition
+    fieldName: RoleARN
+    referencedType: identity/v1beta1/IAMRole
+  - typeName: NotebookInstance
+    fieldName: RoleARN
+    referencedType: identity/v1beta1/IAMRole
+  - typeName: NotebookInstance
+    fieldName: SecurityGroupIDs
+    referencedType: ec2/v1beta1/SecurityGroup
+  - typeName: NotebookInstance
+    fieldName: SubnetID
+    referencedType: ec2/v1beta1/Subnet
+  - typeName: NotebookInstance
+    fieldName: LifecycleConfigName
+    referencedType: sagemaker/v1alpha1/NotebookInstanceLifecycleConfig
+  - typeName: PresignedDomainURL
+    fieldName: DomainID
+    referencedType: sagemaker/v1alpha1/Domain
+  - typeName: PresignedDomainURL
+    fieldName: UserProfileName
+    referencedType: sagemaker/v1alpha1/UserProfile
+  - typeName: PresignedNotebookInstanceURL
+    fieldName: NotebookInstanceName
+    referencedType: sagemaker/v1alpha1/NotebookInstance
+  - typeName: ExperimentConfig
+    fieldName: ExperimentName
+    referencedType: sagemaker/v1alpha1/Experiment
+  - typeName: ExperimentConfig
+    fieldName: TrialName
+    referencedType: sagemaker/v1alpha1/Trial
+  - typeName: ProcessingJob
+    fieldName: RoleARN
+    referencedType: identity/v1beta1/IAMRole
+  - typeName: AlgorithmSpecification
+    fieldName: AlgorithmName
+    referencedType: sagemaker/v1alpha1/Algorithm
+  - typeName: TrainingJob
+    fieldName: RoleARN
+    referencedType: identity/v1beta1/IAMRole
+  - typeName: TransformJob
+    fieldName: ModelName
+    referencedType: sagemaker/v1alpha1/Model
+  - typeName: Trial
+    fieldName: ExperimentName
+    referencedType: sagemaker/v1alpha1/Experiment
+  - typeName: UserProfile
+    fieldName: DomainID
+    referencedType: sagemaker/v1alpha1/Domain
+  - typeName: UserSettings
+    fieldName: ExecutionRole
+    referencedType: identity/v1beta1/IAMRole
+  - typeName: NotificationConfiguration
+    fieldName: NotificationTopicARN
+    referencedType: sns/v1alpha1/Topic
+  - typeName: Workteam
+    fieldName: WorkforceName
+    referencedType: sagemaker/v1alpha1/Workforce

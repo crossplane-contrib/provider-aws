@@ -31,15 +31,33 @@ type PresignedDomainURLParameters struct {
 	Region string `json:"region"`
 
 	// The domain ID.
-	// +kubebuilder:validation:Required
-	DomainID *string `json:"domainID"`
+	DomainID *string `json:"domainID,omitempty"`
+
+	// DomainIDRef is a reference to an sagemaker/v1alpha1/Domain used
+	// to set the DomainID field.
+	// +optional
+	DomainIDRef *xpv1.Reference `json:"domainIDRef,omitempty"`
+
+	// DomainIDSelector selects references to sagemaker/v1alpha1/Domain
+	// used to set the DomainID.
+	// +optional
+	DomainIDSelector *xpv1.Selector `json:"domainIDSelector,omitempty"`
 
 	// The session expiration duration in seconds.
 	SessionExpirationDurationInSeconds *int64 `json:"sessionExpirationDurationInSeconds,omitempty"`
 
 	// The name of the UserProfile to sign-in as.
-	// +kubebuilder:validation:Required
-	UserProfileName *string `json:"userProfileName"`
+	UserProfileName *string `json:"userProfileName,omitempty"`
+
+	// UserProfileNameRef is a reference to an sagemaker/v1alpha1/UserProfile used
+	// to set the UserProfileName field.
+	// +optional
+	UserProfileNameRef *xpv1.Reference `json:"userProfileNameRef,omitempty"`
+
+	// UserProfileNameSelector selects references to sagemaker/v1alpha1/UserProfile
+	// used to set the UserProfileName.
+	// +optional
+	UserProfileNameSelector *xpv1.Selector `json:"userProfileNameSelector,omitempty"`
 }
 
 // PresignedDomainURLSpec defines the desired state of PresignedDomainURL

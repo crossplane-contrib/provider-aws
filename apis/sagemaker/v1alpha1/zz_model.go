@@ -45,8 +45,17 @@ type ModelParameters struct {
 	//
 	// To be able to pass this role to Amazon SageMaker, the caller of this API
 	// must have the iam:PassRole permission.
-	// +kubebuilder:validation:Required
-	ExecutionRoleARN *string `json:"executionRoleARN"`
+	ExecutionRoleARN *string `json:"executionRoleARN,omitempty"`
+
+	// ExecutionRoleARNRef is a reference to an identity/v1beta1/IAMRole used
+	// to set the ExecutionRoleARN field.
+	// +optional
+	ExecutionRoleARNRef *xpv1.Reference `json:"executionRoleARNRef,omitempty"`
+
+	// ExecutionRoleARNSelector selects references to identity/v1beta1/IAMRole
+	// used to set the ExecutionRoleARN.
+	// +optional
+	ExecutionRoleARNSelector *xpv1.Selector `json:"executionRoleARNSelector,omitempty"`
 
 	// The name of the new model.
 	// +kubebuilder:validation:Required

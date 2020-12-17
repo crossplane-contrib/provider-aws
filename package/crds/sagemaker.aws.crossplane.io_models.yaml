@@ -85,6 +85,27 @@ spec:
                   executionRoleARN:
                     description: "The Amazon Resource Name (ARN) of the IAM role that Amazon SageMaker can assume to access model artifacts and docker image for deployment on ML compute instances or for batch transform jobs. Deploying on ML compute instances is part of model hosting. For more information, see Amazon SageMaker Roles (https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-roles.html). \n To be able to pass this role to Amazon SageMaker, the caller of this API must have the iam:PassRole permission."
                     type: string
+                  executionRoleARNRef:
+                    description: ExecutionRoleARNRef is a reference to an identity/v1beta1/IAMRole used to set the ExecutionRoleARN field.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  executionRoleARNSelector:
+                    description: ExecutionRoleARNSelector selects references to identity/v1beta1/IAMRole used to set the ExecutionRoleARN.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   modelName:
                     description: The name of the new model.
                     type: string
@@ -132,13 +153,60 @@ spec:
                         items:
                           type: string
                         type: array
+                      securityGroupIDsRef:
+                        description: SecurityGroupIDsRef is a reference to an ec2/v1beta1/SecurityGroup used to set the SecurityGroupIDs field.
+                        items:
+                          description: A Reference to a named object.
+                          properties:
+                            name:
+                              description: Name of the referenced object.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                      securityGroupIDsSelector:
+                        description: SecurityGroupIDsSelector selects references to ec2/v1beta1/SecurityGroup used to set the SecurityGroupIDs.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching labels is selected.
+                            type: object
+                        type: object
                       subnets:
                         items:
                           type: string
                         type: array
+                      subnetsRef:
+                        description: SubnetsRef is a reference to an ec2/v1beta1/Subnet used to set the Subnets field.
+                        items:
+                          description: A Reference to a named object.
+                          properties:
+                            name:
+                              description: Name of the referenced object.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                      subnetsSelector:
+                        description: SubnetsSelector selects references to ec2/v1beta1/Subnet used to set the Subnets.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching labels is selected.
+                            type: object
+                        type: object
                     type: object
                 required:
-                - executionRoleARN
                 - modelName
                 - region
                 type: object

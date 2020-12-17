@@ -56,6 +56,27 @@ spec:
                   domainID:
                     description: The ID of the associated Domain.
                     type: string
+                  domainIDRef:
+                    description: DomainIDRef is a reference to an sagemaker/v1alpha1/Domain used to set the DomainID field.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  domainIDSelector:
+                    description: DomainIDSelector selects references to sagemaker/v1alpha1/Domain used to set the DomainID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   region:
                     description: Region is which region the UserProfile will be created.
                     type: string
@@ -83,6 +104,27 @@ spec:
                     properties:
                       executionRole:
                         type: string
+                      executionRoleRef:
+                        description: ExecutionRoleRef is a reference to an identity/v1beta1/IAMRole used to set the ExecutionRole field.
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      executionRoleSelector:
+                        description: ExecutionRoleSelector selects references to identity/v1beta1/IAMRole used to set the ExecutionRole.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching labels is selected.
+                            type: object
+                        type: object
                       jupyterServerAppSettings:
                         description: Jupyter server's app settings.
                         properties:
@@ -111,6 +153,30 @@ spec:
                         items:
                           type: string
                         type: array
+                      securityGroupsRef:
+                        description: SecurityGroupsRef is a reference to an ec2/v1beta1/SecurityGroup used to set the SecurityGroups field.
+                        items:
+                          description: A Reference to a named object.
+                          properties:
+                            name:
+                              description: Name of the referenced object.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        type: array
+                      securityGroupsSelector:
+                        description: SecurityGroupsSelector selects references to ec2/v1beta1/SecurityGroup used to set the SecurityGroups.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching labels is selected.
+                            type: object
+                        type: object
                       sharingSettings:
                         description: Specifies options when sharing an Amazon SageMaker Studio notebook. These settings are specified as part of DefaultUserSettings when the CreateDomain API is called, and as part of UserSettings when the CreateUserProfile API is called.
                         properties:
@@ -135,7 +201,6 @@ spec:
                         type: object
                     type: object
                 required:
-                - domainID
                 - region
                 - userProfileName
                 type: object

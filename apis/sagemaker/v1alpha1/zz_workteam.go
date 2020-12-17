@@ -68,6 +68,16 @@ type WorkteamParameters struct {
 	// The name of the workforce.
 	WorkforceName *string `json:"workforceName,omitempty"`
 
+	// WorkforceNameRef is a reference to an sagemaker/v1alpha1/Workforce used
+	// to set the WorkforceName field.
+	// +optional
+	WorkforceNameRef *xpv1.Reference `json:"workforceNameRef,omitempty"`
+
+	// WorkforceNameSelector selects references to sagemaker/v1alpha1/Workforce
+	// used to set the WorkforceName.
+	// +optional
+	WorkforceNameSelector *xpv1.Selector `json:"workforceNameSelector,omitempty"`
+
 	// The name of the work team. Use this name to identify the work team.
 	// +kubebuilder:validation:Required
 	WorkteamName *string `json:"workteamName"`

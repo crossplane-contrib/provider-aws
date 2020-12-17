@@ -35,8 +35,17 @@ type TrialParameters struct {
 	DisplayName *string `json:"displayName,omitempty"`
 
 	// The name of the experiment to associate the trial with.
-	// +kubebuilder:validation:Required
-	ExperimentName *string `json:"experimentName"`
+	ExperimentName *string `json:"experimentName,omitempty"`
+
+	// ExperimentNameRef is a reference to an sagemaker/v1alpha1/Experiment used
+	// to set the ExperimentName field.
+	// +optional
+	ExperimentNameRef *xpv1.Reference `json:"experimentNameRef,omitempty"`
+
+	// ExperimentNameSelector selects references to sagemaker/v1alpha1/Experiment
+	// used to set the ExperimentName.
+	// +optional
+	ExperimentNameSelector *xpv1.Selector `json:"experimentNameSelector,omitempty"`
 
 	// A list of tags to associate with the trial. You can use Search API to search
 	// on the tags.

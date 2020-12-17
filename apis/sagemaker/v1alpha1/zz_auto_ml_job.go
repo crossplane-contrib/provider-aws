@@ -61,8 +61,17 @@ type AutoMLJobParameters struct {
 	ProblemType *string `json:"problemType,omitempty"`
 
 	// The ARN of the role that is used to access the data.
-	// +kubebuilder:validation:Required
-	RoleARN *string `json:"roleARN"`
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	// RoleARNRef is a reference to an identity/v1beta1/IAMRole used
+	// to set the RoleARN field.
+	// +optional
+	RoleARNRef *xpv1.Reference `json:"roleARNRef,omitempty"`
+
+	// RoleARNSelector selects references to identity/v1beta1/IAMRole
+	// used to set the RoleARN.
+	// +optional
+	RoleARNSelector *xpv1.Selector `json:"roleARNSelector,omitempty"`
 
 	// Each tag consists of a key and an optional value. Tag keys must be unique
 	// per resource.

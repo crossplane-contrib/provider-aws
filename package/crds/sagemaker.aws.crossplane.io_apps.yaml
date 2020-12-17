@@ -62,6 +62,27 @@ spec:
                   domainID:
                     description: The domain ID.
                     type: string
+                  domainIDRef:
+                    description: DomainIDRef is a reference to an sagemaker/v1alpha1/Domain used to set the DomainID field.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  domainIDSelector:
+                    description: DomainIDSelector selects references to sagemaker/v1alpha1/Domain used to set the DomainID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   region:
                     description: Region is which region the App will be created.
                     type: string
@@ -86,12 +107,31 @@ spec:
                   userProfileName:
                     description: The user profile name.
                     type: string
+                  userProfileNameRef:
+                    description: UserProfileNameRef is a reference to an sagemaker/v1alpha1/UserProfile used to set the UserProfileName field.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  userProfileNameSelector:
+                    description: UserProfileNameSelector selects references to sagemaker/v1alpha1/UserProfile used to set the UserProfileName.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                 required:
                 - appName
                 - appType
-                - domainID
                 - region
-                - userProfileName
                 type: object
               providerConfigRef:
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.

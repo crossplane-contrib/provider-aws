@@ -106,11 +106,53 @@ spec:
                         properties:
                           humanTaskUiARN:
                             type: string
+                          humanTaskUiARNRef:
+                            description: HumanTaskUiARNRef is a reference to an sagemaker/v1alpha1/HumanTaskUi used to set the HumanTaskUiARN field.
+                            properties:
+                              name:
+                                description: Name of the referenced object.
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          humanTaskUiARNSelector:
+                            description: HumanTaskUiARNSelector selects references to sagemaker/v1alpha1/HumanTaskUi used to set the HumanTaskUiARN.
+                            properties:
+                              matchControllerRef:
+                                description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                                type: boolean
+                              matchLabels:
+                                additionalProperties:
+                                  type: string
+                                description: MatchLabels ensures an object with matching labels is selected.
+                                type: object
+                            type: object
                           uiTemplateS3URI:
                             type: string
                         type: object
                       workteamARN:
                         type: string
+                      workteamARNRef:
+                        description: WorkteamARNRef is a reference to an sagemaker/v1alpha1/Workteam used to set the WorkteamARN field.
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      workteamARNSelector:
+                        description: WorkteamARNSelector selects references to sagemaker/v1alpha1/Workteam used to set the WorkteamARN.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching labels is selected.
+                            type: object
+                        type: object
                     type: object
                   inputConfig:
                     description: Input data for the labeling job, such as the Amazon S3 location of the data objects and the location of the manifest file that describes the data objects.
@@ -137,6 +179,27 @@ spec:
                             properties:
                               snsTopicARN:
                                 type: string
+                              snsTopicARNRef:
+                                description: SnsTopicARNRef is a reference to an sns/v1alpha1/Topic used to set the SnsTopicARN field.
+                                properties:
+                                  name:
+                                    description: Name of the referenced object.
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                              snsTopicARNSelector:
+                                description: SnsTopicARNSelector selects references to sns/v1alpha1/Topic used to set the SnsTopicARN.
+                                properties:
+                                  matchControllerRef:
+                                    description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                                    type: boolean
+                                  matchLabels:
+                                    additionalProperties:
+                                      type: string
+                                    description: MatchLabels ensures an object with matching labels is selected.
+                                    type: object
+                                type: object
                             type: object
                         type: object
                     type: object
@@ -172,6 +235,27 @@ spec:
                         type: string
                       snsTopicARN:
                         type: string
+                      snsTopicARNRef:
+                        description: SnsTopicARNRef is a reference to an sns/v1alpha1/Topic used to set the SnsTopicARN field.
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      snsTopicARNSelector:
+                        description: SnsTopicARNSelector selects references to sns/v1alpha1/Topic used to set the SnsTopicARN.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching labels is selected.
+                            type: object
+                        type: object
                     type: object
                   region:
                     description: Region is which region the LabelingJob will be created.
@@ -179,6 +263,27 @@ spec:
                   roleARN:
                     description: The Amazon Resource Number (ARN) that Amazon SageMaker assumes to perform tasks on your behalf during data labeling. You must grant this role the necessary permissions so that Amazon SageMaker can successfully complete data labeling.
                     type: string
+                  roleARNRef:
+                    description: RoleARNRef is a reference to an identity/v1beta1/IAMRole used to set the RoleARN field.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  roleARNSelector:
+                    description: RoleARNSelector selects references to identity/v1beta1/IAMRole used to set the RoleARN.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   stoppingConditions:
                     description: A set of conditions for stopping the labeling job. If any of the conditions are met, the job is automatically stopped. You can use these conditions to control the cost of data labeling.
                     properties:
@@ -206,7 +311,6 @@ spec:
                 - labelingJobName
                 - outputConfig
                 - region
-                - roleARN
                 type: object
               providerConfigRef:
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.

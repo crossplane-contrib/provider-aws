@@ -88,8 +88,17 @@ type TransformJobParameters struct {
 	// The name of the model that you want to use for the transform job. ModelName
 	// must be the name of an existing Amazon SageMaker model within an AWS Region
 	// in an AWS account.
-	// +kubebuilder:validation:Required
-	ModelName *string `json:"modelName"`
+	ModelName *string `json:"modelName,omitempty"`
+
+	// ModelNameRef is a reference to an sagemaker/v1alpha1/Model used
+	// to set the ModelName field.
+	// +optional
+	ModelNameRef *xpv1.Reference `json:"modelNameRef,omitempty"`
+
+	// ModelNameSelector selects references to sagemaker/v1alpha1/Model
+	// used to set the ModelName.
+	// +optional
+	ModelNameSelector *xpv1.Selector `json:"modelNameSelector,omitempty"`
 
 	// (Optional) An array of key-value pairs. For more information, see Using Cost
 	// Allocation Tags (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html#allocation-what)

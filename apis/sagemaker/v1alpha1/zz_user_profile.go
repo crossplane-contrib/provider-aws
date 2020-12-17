@@ -31,8 +31,17 @@ type UserProfileParameters struct {
 	Region string `json:"region"`
 
 	// The ID of the associated Domain.
-	// +kubebuilder:validation:Required
-	DomainID *string `json:"domainID"`
+	DomainID *string `json:"domainID,omitempty"`
+
+	// DomainIDRef is a reference to an sagemaker/v1alpha1/Domain used
+	// to set the DomainID field.
+	// +optional
+	DomainIDRef *xpv1.Reference `json:"domainIDRef,omitempty"`
+
+	// DomainIDSelector selects references to sagemaker/v1alpha1/Domain
+	// used to set the DomainID.
+	// +optional
+	DomainIDSelector *xpv1.Selector `json:"domainIDSelector,omitempty"`
 
 	// A specifier for the type of value specified in SingleSignOnUserValue. Currently,
 	// the only supported value is "UserName". If the Domain's AuthMode is SSO,

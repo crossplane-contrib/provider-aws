@@ -62,8 +62,17 @@ type CompilationJobParameters struct {
 	// You grant permissions for all of these tasks to an IAM role. To pass this
 	// role to Amazon SageMaker, the caller of this API must have the iam:PassRole
 	// permission. For more information, see Amazon SageMaker Roles. (https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-roles.html)
-	// +kubebuilder:validation:Required
-	RoleARN *string `json:"roleARN"`
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	// RoleARNRef is a reference to an identity/v1beta1/IAMRole used
+	// to set the RoleARN field.
+	// +optional
+	RoleARNRef *xpv1.Reference `json:"roleARNRef,omitempty"`
+
+	// RoleARNSelector selects references to identity/v1beta1/IAMRole
+	// used to set the RoleARN.
+	// +optional
+	RoleARNSelector *xpv1.Selector `json:"roleARNSelector,omitempty"`
 
 	// Specifies a limit to how long a model compilation job can run. When the job
 	// reaches the time limit, Amazon SageMaker ends the compilation job. Use this

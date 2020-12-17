@@ -75,10 +75,52 @@ spec:
                     properties:
                       experimentName:
                         type: string
+                      experimentNameRef:
+                        description: ExperimentNameRef is a reference to an sagemaker/v1alpha1/Experiment used to set the ExperimentName field.
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      experimentNameSelector:
+                        description: ExperimentNameSelector selects references to sagemaker/v1alpha1/Experiment used to set the ExperimentName.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching labels is selected.
+                            type: object
+                        type: object
                       trialComponentDisplayName:
                         type: string
                       trialName:
                         type: string
+                      trialNameRef:
+                        description: TrialNameRef is a reference to an sagemaker/v1alpha1/Trial used to set the TrialName field.
+                        properties:
+                          name:
+                            description: Name of the referenced object.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      trialNameSelector:
+                        description: TrialNameSelector selects references to sagemaker/v1alpha1/Trial used to set the TrialName.
+                        properties:
+                          matchControllerRef:
+                            description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                            type: boolean
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            description: MatchLabels ensures an object with matching labels is selected.
+                            type: object
+                        type: object
                     type: object
                   maxConcurrentTransforms:
                     description: The maximum number of parallel requests that can be sent to each instance in a transform job. If MaxConcurrentTransforms is set to 0 or left unset, Amazon SageMaker checks the optional execution-parameters to determine the settings for your chosen algorithm. If the execution-parameters endpoint is not enabled, the default value is 1. For more information on execution-parameters, see How Containers Serve Requests (https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-batch-code.html#your-algorithms-batch-code-how-containe-serves-requests). For built-in algorithms, you don't need to set a value for MaxConcurrentTransforms.
@@ -101,6 +143,27 @@ spec:
                   modelName:
                     description: The name of the model that you want to use for the transform job. ModelName must be the name of an existing Amazon SageMaker model within an AWS Region in an AWS account.
                     type: string
+                  modelNameRef:
+                    description: ModelNameRef is a reference to an sagemaker/v1alpha1/Model used to set the ModelName field.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  modelNameSelector:
+                    description: ModelNameSelector selects references to sagemaker/v1alpha1/Model used to set the ModelName.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   region:
                     description: Region is which region the TransformJob will be created.
                     type: string
@@ -163,7 +226,6 @@ spec:
                         type: string
                     type: object
                 required:
-                - modelName
                 - region
                 - transformInput
                 - transformJobName

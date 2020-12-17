@@ -62,8 +62,17 @@ type ProcessingJobParameters struct {
 
 	// The Amazon Resource Name (ARN) of an IAM role that Amazon SageMaker can assume
 	// to perform tasks on your behalf.
-	// +kubebuilder:validation:Required
-	RoleARN *string `json:"roleARN"`
+	RoleARN *string `json:"roleARN,omitempty"`
+
+	// RoleARNRef is a reference to an identity/v1beta1/IAMRole used
+	// to set the RoleARN field.
+	// +optional
+	RoleARNRef *xpv1.Reference `json:"roleARNRef,omitempty"`
+
+	// RoleARNSelector selects references to identity/v1beta1/IAMRole
+	// used to set the RoleARN.
+	// +optional
+	RoleARNSelector *xpv1.Selector `json:"roleARNSelector,omitempty"`
 
 	// The time limit for how long the processing job is allowed to run.
 	StoppingCondition *ProcessingStoppingCondition `json:"stoppingCondition,omitempty"`
