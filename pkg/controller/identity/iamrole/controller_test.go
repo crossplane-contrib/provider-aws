@@ -34,7 +34,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	v1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
 )
@@ -77,7 +77,7 @@ func withRoleName(s *string) roleModifier {
 
 func withPolicy() roleModifier {
 	return func(r *v1beta1.IAMRole) {
-		p, err := awsclients.CompactAndEscapeJSON(policy)
+		p, err := awsclient.CompactAndEscapeJSON(policy)
 		if err != nil {
 			return
 		}
@@ -156,7 +156,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  role(withRoleName(&roleName)),
-				err: errors.Wrap(errBoom, errGet),
+				err: awsclient.Wrap(errBoom, errGet),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -245,7 +245,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  role(withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -331,7 +331,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  role(withDescription()),
-				err: errors.Wrap(errBoom, errUpdate),
+				err: awsclient.Wrap(errBoom, errUpdate),
 			},
 		},
 		"ClientUpdatePolicyError": {
@@ -359,7 +359,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  role(withPolicy()),
-				err: errors.Wrap(errBoom, errUpdate),
+				err: awsclient.Wrap(errBoom, errUpdate),
 			},
 		},
 	}
@@ -431,7 +431,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  role(withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 		"ResourceDoesNotExist": {

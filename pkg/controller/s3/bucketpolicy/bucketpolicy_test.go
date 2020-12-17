@@ -33,6 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1alpha3"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 )
@@ -145,7 +146,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  bucketPolicy(withPolicy(&params)),
-				err: errors.Wrap(errBoom, errGet),
+				err: awsclient.Wrap(errBoom, errGet),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -236,7 +237,7 @@ func TestCreate(t *testing.T) {
 				cr: bucketPolicy(
 					withPolicy(&params),
 					withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errAttach),
+				err: awsclient.Wrap(errBoom, errAttach),
 			},
 		},
 	}
@@ -356,7 +357,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: bucketPolicy(withPolicy(&params),
 					withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 		"ResourceDoesNotExist": {

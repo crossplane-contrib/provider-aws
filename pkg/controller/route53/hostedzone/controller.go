@@ -36,7 +36,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/hostedzone"
 )
 
@@ -72,7 +72,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, awscommon.GlobalRegion)
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, awsclient.GlobalRegion)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		Id: aws.String(fmt.Sprintf("%s%s", hostedzone.IDPrefix, meta.GetExternalName(cr))),
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errGet)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errGet)
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -123,7 +123,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	res, err := e.client.CreateHostedZoneRequest(hostedzone.GenerateCreateHostedZoneInput(cr)).Send(ctx)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 	id := strings.SplitAfter(aws.StringValue(res.CreateHostedZoneOutput.HostedZone.Id), hostedzone.IDPrefix)
 	if len(id) < 2 {
@@ -143,7 +143,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		hostedzone.GenerateUpdateHostedZoneCommentInput(cr.Spec.ForProvider, fmt.Sprintf("%s%s", hostedzone.IDPrefix, meta.GetExternalName(cr))),
 	).Send(ctx)
 
-	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -158,5 +158,5 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		Id: aws.String(fmt.Sprintf("%s%s", hostedzone.IDPrefix, meta.GetExternalName(cr))),
 	}).Send(ctx)
 
-	return errors.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errDelete)
 }

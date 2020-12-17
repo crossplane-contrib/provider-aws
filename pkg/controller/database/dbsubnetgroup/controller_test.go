@@ -32,6 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	v1beta1 "github.com/crossplane/provider-aws/apis/database/v1beta1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	dbsg "github.com/crossplane/provider-aws/pkg/clients/dbsubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/clients/dbsubnetgroup/fake"
 )
@@ -194,7 +195,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  dbSubnetGroup(),
-				err: errors.Wrap(errBoom, errDescribe),
+				err: awsclient.Wrap(errBoom, errDescribe),
 			},
 		},
 		"NotFound": {
@@ -269,7 +270,7 @@ func TestObserve(t *testing.T) {
 				cr: dbSubnetGroup(
 					withDBSubnetGroupDescription(dbSubnetGroupDescription),
 				),
-				err: errors.Wrap(errBoom, errLateInit),
+				err: awsclient.Wrap(errBoom, errLateInit),
 			},
 		},
 	}
@@ -333,7 +334,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  dbSubnetGroup(withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -409,7 +410,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  dbSubnetGroup(),
-				err: errors.Wrap(errBoom, errUpdate),
+				err: awsclient.Wrap(errBoom, errUpdate),
 			},
 		},
 		"SuccessfulWithTags": {
@@ -536,7 +537,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  dbSubnetGroup(withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 	}

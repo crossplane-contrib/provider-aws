@@ -33,7 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 )
 
@@ -69,7 +69,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awsclients.GetConfig(ctx, c.kube, mg, awsclients.GlobalRegion)
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, awsclient.GlobalRegion)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	if observed.Group == nil {
@@ -102,7 +102,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	group := *observed.Group
 
 	current := cr.Spec.ForProvider.DeepCopy()
-	cr.Spec.ForProvider.Path = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.Path, group.Path)
+	cr.Spec.ForProvider.Path = awsclient.LateInitializeStringPtr(cr.Spec.ForProvider.Path, group.Path)
 
 	if aws.StringValue(current.Path) != aws.StringValue(cr.Spec.ForProvider.Path) {
 		if err := e.kube.Update(ctx, cr); err != nil {
@@ -135,7 +135,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		GroupName: aws.String(meta.GetExternalName(cr)),
 		Path:      cr.Spec.ForProvider.Path,
 	}).Send(ctx)
-	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -149,7 +149,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		NewGroupName: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
-	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -164,5 +164,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		GroupName: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
-	return errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }

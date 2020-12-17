@@ -32,6 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/redshift/v1alpha1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/redshift"
 	"github.com/crossplane/provider-aws/pkg/clients/redshift/fake"
 )
@@ -213,7 +214,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  cluster(),
-				err: errors.Wrap(errBoom, errDescribeFailed),
+				err: awsclient.Wrap(errBoom, errDescribeFailed),
 			},
 		},
 		"NotFound": {
@@ -344,7 +345,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  cluster(withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errCreateFailed),
+				err: awsclient.Wrap(errBoom, errCreateFailed),
 			},
 		},
 	}
@@ -428,7 +429,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  cluster(),
-				err: errors.Wrap(errBoom, errDescribeFailed),
+				err: awsclient.Wrap(errBoom, errDescribeFailed),
 			},
 		},
 		"FailedModify": {
@@ -451,7 +452,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  cluster(),
-				err: errors.Wrap(errBoom, errModifyFailed),
+				err: awsclient.Wrap(errBoom, errModifyFailed),
 			},
 		},
 	}
@@ -572,7 +573,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  cluster(withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDeleteFailed),
+				err: awsclient.Wrap(errBoom, errDeleteFailed),
 			},
 		},
 	}

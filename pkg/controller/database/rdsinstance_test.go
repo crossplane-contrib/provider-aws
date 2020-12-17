@@ -37,6 +37,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/database/v1beta1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/rds"
 	"github.com/crossplane/provider-aws/pkg/clients/rds/fake"
 )
@@ -211,7 +212,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  instance(),
-				err: errors.Wrap(errBoom, errDescribeFailed),
+				err: awsclient.Wrap(errBoom, errDescribeFailed),
 			},
 		},
 		"NotFound": {
@@ -288,7 +289,7 @@ func TestObserve(t *testing.T) {
 				cr: instance(
 					withEngineVersion(&engineVersion),
 				),
-				err: errors.Wrap(errBoom, errKubeUpdateFailed),
+				err: awsclient.Wrap(errBoom, errKubeUpdateFailed),
 			},
 		},
 	}
@@ -423,7 +424,7 @@ func TestCreate(t *testing.T) {
 					withMasterUsername(&masterUsername),
 					withPasswordSecretRef(xpv1.SecretKeySelector{}),
 					withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errGetPasswordSecretFailed),
+				err: awsclient.Wrap(errBoom, errGetPasswordSecretFailed),
 			},
 		},
 		"FailedRequest": {
@@ -439,7 +440,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  instance(withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errCreateFailed),
+				err: awsclient.Wrap(errBoom, errCreateFailed),
 			},
 		},
 	}
@@ -525,7 +526,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  instance(),
-				err: errors.Wrap(errBoom, errDescribeFailed),
+				err: awsclient.Wrap(errBoom, errDescribeFailed),
 			},
 		},
 		"FailedModify": {
@@ -548,7 +549,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  instance(),
-				err: errors.Wrap(errBoom, errModifyFailed),
+				err: awsclient.Wrap(errBoom, errModifyFailed),
 			},
 		},
 		"FailedAddTags": {
@@ -576,7 +577,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  instance(withTags(map[string]string{"foo": "bar"})),
-				err: errors.Wrap(errBoom, errAddTagsFailed),
+				err: awsclient.Wrap(errBoom, errAddTagsFailed),
 			},
 		},
 	}
@@ -685,7 +686,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  instance(withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDeleteFailed),
+				err: awsclient.Wrap(errBoom, errDeleteFailed),
 			},
 		},
 	}
@@ -730,7 +731,7 @@ func TestInitialize(t *testing.T) {
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
 			},
 			want: want{
-				err: errors.Wrap(errBoom, errKubeUpdateFailed),
+				err: awsclient.Wrap(errBoom, errKubeUpdateFailed),
 			},
 		},
 	}

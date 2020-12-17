@@ -36,7 +36,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/database/v1beta1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/rds"
 )
 
@@ -79,7 +79,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errNotRDSInstance)
 	}
-	cfg, err := awsclients.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	req := e.client.DescribeDBInstancesRequest(&awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
 	rsp, err := req.Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDescribeFailed)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDescribeFailed)
 	}
 
 	// Describe requests can be used with filters, which then returns a list.
@@ -114,7 +114,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	rds.LateInitialize(&cr.Spec.ForProvider, &instance)
 	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
+			return managed.ExternalObservation{}, errors.Wrap(e.kube.Update(ctx, cr), errKubeUpdateFailed)
 		}
 	}
 	cr.Status.AtProvider = rds.GenerateObservation(instance)
@@ -131,7 +131,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 	upToDate, err := rds.IsUpToDate(ctx, e.kube, cr, instance)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
+		return managed.ExternalObservation{}, awsclient.Wrap(err, errUpToDateFailed)
 	}
 
 	return managed.ExternalObservation{
@@ -164,7 +164,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	req := e.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 	_, err = req.Send(ctx)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
 	}
 	conn := managed.ConnectionDetails{
 		xpv1.ResourceCredentialsSecretPasswordKey: []byte(pw),
@@ -192,7 +192,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	describe := e.client.DescribeDBInstancesRequest(&awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
 	rsp, err := describe.Send(ctx)
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errDescribeFailed)
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errDescribeFailed)
 	}
 	patch, err := rds.CreatePatch(&rsp.DBInstances[0], &cr.Spec.ForProvider)
 	if err != nil {
@@ -213,7 +213,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	if _, err = e.client.ModifyDBInstanceRequest(modify).Send(ctx); err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errModifyFailed)
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyFailed)
 	}
 	if len(patch.Tags) > 0 {
 		tags := make([]awsrds.Tag, len(patch.Tags))
@@ -225,7 +225,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 			Tags:         tags,
 		}).Send(ctx)
 		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errAddTagsFailed)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddTagsFailed)
 		}
 	}
 	return managed.ExternalUpdate{ConnectionDetails: conn}, nil
@@ -257,7 +257,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		FinalDBSnapshotIdentifier: cr.Spec.ForProvider.FinalDBSnapshotIdentifier,
 	}
 	_, err = e.client.DeleteDBInstanceRequest(&input).Send(ctx)
-	return errors.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
+	return awsclient.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
 }
 
 type tagger struct {

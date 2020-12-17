@@ -35,6 +35,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
 )
@@ -201,7 +202,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  accesskey(withAccessKey("test")),
-				err: errors.Wrap(errBoom, errList),
+				err: awsclient.Wrap(errBoom, errList),
 			},
 		},
 	}
@@ -291,7 +292,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  accesskey(),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -363,7 +364,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  accesskey(withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -446,7 +447,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  accesskey(withStatus(string(activeStatus))),
-				err: errors.Wrap(errBoom, errUpdate),
+				err: awsclient.Wrap(errBoom, errUpdate),
 			},
 		},
 	}

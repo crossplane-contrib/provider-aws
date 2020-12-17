@@ -34,7 +34,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 )
 
@@ -72,7 +72,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, awscommon.GlobalRegion)
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, awsclient.GlobalRegion)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	if observed.Role == nil {
@@ -149,7 +149,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	if observed.Role == nil {
@@ -166,7 +166,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}).Send(ctx)
 
 		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 		}
 	}
 
@@ -177,7 +177,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}).Send(ctx)
 	}
 
-	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -192,5 +192,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		RoleName: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
-	return errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }

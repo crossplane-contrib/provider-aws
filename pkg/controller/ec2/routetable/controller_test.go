@@ -33,6 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
 )
@@ -150,7 +151,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  rt(withExternalName(rtID)),
-				err: errors.Wrap(errBoom, errDescribe),
+				err: awsclient.Wrap(errBoom, errDescribe),
 			},
 		},
 	}
@@ -231,7 +232,7 @@ func TestCreate(t *testing.T) {
 				cr: rt(withSpec(v1alpha4.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				})),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -346,7 +347,7 @@ func TestUpdate(t *testing.T) {
 					withStatus(v1alpha4.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
-				err: errors.Wrap(errBoom, errCreateRoute),
+				err: awsclient.Wrap(errBoom, errCreateRoute),
 			},
 		},
 	}
@@ -415,7 +416,7 @@ func TestDelete(t *testing.T) {
 				cr: rt(withStatus(v1alpha4.RouteTableObservation{
 					RouteTableID: rtID,
 				}), withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 	}

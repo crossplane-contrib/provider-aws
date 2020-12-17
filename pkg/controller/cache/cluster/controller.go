@@ -32,7 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/cache/v1alpha1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/elasticache"
 )
 
@@ -72,7 +72,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errNotCacheCluster)
 	}
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	resp, err := e.client.DescribeCacheClustersRequest(elasticache.NewDescribeCacheClustersInput(meta.GetExternalName(cr))).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(resource.Ignore(elasticache.IsClusterNotFound, err), errDescribeCacheCluster)
+		return managed.ExternalObservation{ResourceExists: false}, awsclient.Wrap(resource.Ignore(elasticache.IsClusterNotFound, err), errDescribeCacheCluster)
 	}
 
 	cluster := resp.CacheClusters[0]
@@ -100,7 +100,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	elasticache.LateInitializeCluster(&cr.Spec.ForProvider, cluster)
 	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errUpdateCacheClusterCR)
+			return managed.ExternalObservation{}, awsclient.Wrap(err, errUpdateCacheClusterCR)
 		}
 	}
 
@@ -138,7 +138,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	_, err := e.client.CreateCacheClusterRequest(elasticache.GenerateCreateCacheClusterInput(cr.Spec.ForProvider, meta.GetExternalName(cr))).Send(ctx)
 
-	return managed.ExternalCreation{}, errors.Wrap(err, errCreateCacheCluster)
+	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateCacheCluster)
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -153,7 +153,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	_, err := e.client.ModifyCacheClusterRequest(elasticache.GenerateModifyCacheClusterInput(cr.Spec.ForProvider, meta.GetExternalName(cr))).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, errModifyCacheCluster)
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyCacheCluster)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -172,5 +172,5 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 		CacheClusterId: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
-	return errors.Wrap(resource.Ignore(elasticache.IsClusterNotFound, err), errDeleteCacheCluster)
+	return awsclient.Wrap(resource.Ignore(elasticache.IsClusterNotFound, err), errDeleteCacheCluster)
 }

@@ -36,6 +36,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
 )
@@ -197,7 +198,7 @@ func TestObserve(t *testing.T) {
 					InstanceTenancy: aws.String(tenancyDefault),
 					CIDRBlock:       cidr,
 				}), withExternalName(vpcID)),
-				err: errors.Wrap(errBoom, errDescribe),
+				err: awsclient.Wrap(errBoom, errDescribe),
 			},
 		},
 	}
@@ -270,7 +271,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  vpc(),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -360,7 +361,7 @@ func TestUpdate(t *testing.T) {
 				cr: vpc(withSpec(v1beta1.VPCParameters{
 					InstanceTenancy: aws.String(tenancyDefault),
 				})),
-				err: errors.Wrap(errBoom, errUpdate),
+				err: awsclient.Wrap(errBoom, errUpdate),
 			},
 		},
 	}
@@ -421,7 +422,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  vpc(withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 	}

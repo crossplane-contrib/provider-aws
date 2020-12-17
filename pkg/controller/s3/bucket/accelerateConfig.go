@@ -21,10 +21,9 @@ import (
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
@@ -40,13 +39,13 @@ type AccelerateConfigurationClient struct {
 
 // LateInitialize is responsible for initializing the resource based on the external value
 func (in *AccelerateConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketAccelerateConfigurationRequest(&awss3.GetBucketAccelerateConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketAccelerateConfigurationRequest(&awss3.GetBucketAccelerateConfigurationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		// Short stop method for requests in a region without Acceleration Support
 		if s3.MethodNotSupported(err) || s3.ArgumentNotSupported(err) {
 			return nil
 		}
-		return errors.Wrap(err, accelGetFailed)
+		return awsclient.Wrap(err, accelGetFailed)
 	}
 
 	// We need the second check here because by default the accelerateConfig status is not set
@@ -58,9 +57,9 @@ func (in *AccelerateConfigurationClient) LateInitialize(ctx context.Context, buc
 	if bucket.Spec.ForProvider.AccelerateConfiguration == nil {
 		bucket.Spec.ForProvider.AccelerateConfiguration = &v1beta1.AccelerateConfiguration{}
 	}
-	bucket.Spec.ForProvider.AccelerateConfiguration.Status = aws.LateInitializeString(
+	bucket.Spec.ForProvider.AccelerateConfiguration.Status = awsclient.LateInitializeString(
 		bucket.Spec.ForProvider.AccelerateConfiguration.Status,
-		aws.String(string(external.GetBucketAccelerateConfigurationOutput.Status)))
+		awsclient.String(string(external.GetBucketAccelerateConfigurationOutput.Status)))
 	return nil
 }
 
@@ -71,13 +70,13 @@ func NewAccelerateConfigurationClient(client s3.BucketClient) *AccelerateConfigu
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *AccelerateConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetBucketAccelerateConfigurationRequest(&awss3.GetBucketAccelerateConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketAccelerateConfigurationRequest(&awss3.GetBucketAccelerateConfigurationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
 		// Short stop method for requests in a region without Acceleration Support
 		if s3.MethodNotSupported(err) || s3.ArgumentNotSupported(err) {
 			return Updated, nil
 		}
-		return NeedsUpdate, errors.Wrap(err, accelGetFailed)
+		return NeedsUpdate, awsclient.Wrap(err, accelGetFailed)
 	}
 	if bucket.Spec.ForProvider.AccelerateConfiguration != nil &&
 		bucket.Spec.ForProvider.AccelerateConfiguration.Status != string(external.Status) {
@@ -89,7 +88,7 @@ func (in *AccelerateConfigurationClient) Observe(ctx context.Context, bucket *v1
 // GenerateAccelerateConfigurationInput creates the input for the AccelerateConfiguration request for the S3 Client
 func GenerateAccelerateConfigurationInput(name string, config *v1beta1.AccelerateConfiguration) *awss3.PutBucketAccelerateConfigurationInput {
 	return &awss3.PutBucketAccelerateConfigurationInput{
-		Bucket:                  aws.String(name),
+		Bucket:                  awsclient.String(name),
 		AccelerateConfiguration: &awss3.AccelerateConfiguration{Status: awss3.BucketAccelerateStatus(config.Status)},
 	}
 }
@@ -101,7 +100,7 @@ func (in *AccelerateConfigurationClient) CreateOrUpdate(ctx context.Context, buc
 	}
 	input := GenerateAccelerateConfigurationInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.AccelerateConfiguration)
 	_, err := in.client.PutBucketAccelerateConfigurationRequest(input).Send(ctx)
-	return errors.Wrap(err, accelPutFailed)
+	return awsclient.Wrap(err, accelPutFailed)
 }
 
 // Delete does not do anything since AccelerateConfiguration doesn't have Delete call.
