@@ -1,0 +1,299 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.0
+  creationTimestamp: null
+  name: monitoringschedules.sagemaker.aws.crossplane.io
+spec:
+  group: sagemaker.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: MonitoringSchedule
+    listKind: MonitoringScheduleList
+    plural: monitoringschedules
+    singular: monitoringschedule
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: MonitoringSchedule is the Schema for the MonitoringSchedules API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: MonitoringScheduleSpec defines the desired state of MonitoringSchedule
+            properties:
+              deletionPolicy:
+                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: MonitoringScheduleParameters defines the desired state of MonitoringSchedule
+                properties:
+                  monitoringScheduleConfig:
+                    description: The configuration object that specifies the monitoring schedule and defines the monitoring job.
+                    properties:
+                      monitoringJobDefinition:
+                        description: Defines the monitoring job.
+                        properties:
+                          baselineConfig:
+                            description: Configuration for monitoring constraints and monitoring statistics. These baseline resources are compared against the results of the current job from the series of jobs scheduled to collect data periodically.
+                            properties:
+                              constraintsResource:
+                                description: The constraints resource for a monitoring job.
+                                properties:
+                                  s3URI:
+                                    type: string
+                                type: object
+                              statisticsResource:
+                                description: The statistics resource for a monitoring job.
+                                properties:
+                                  s3URI:
+                                    type: string
+                                type: object
+                            type: object
+                          environment:
+                            additionalProperties:
+                              type: string
+                            type: object
+                          monitoringAppSpecification:
+                            description: Container image configuration object for the monitoring job.
+                            properties:
+                              containerArguments:
+                                items:
+                                  type: string
+                                type: array
+                              containerEntrypoint:
+                                items:
+                                  type: string
+                                type: array
+                              imageURI:
+                                type: string
+                              postAnalyticsProcessorSourceURI:
+                                type: string
+                              recordPreprocessorSourceURI:
+                                type: string
+                            type: object
+                          monitoringInputs:
+                            items:
+                              properties:
+                                endpointInput:
+                                  description: Input object for the endpoint
+                                  properties:
+                                    endpointName:
+                                      type: string
+                                    localPath:
+                                      type: string
+                                    s3DataDistributionType:
+                                      type: string
+                                    s3InputMode:
+                                      type: string
+                                  type: object
+                              type: object
+                            type: array
+                          monitoringOutputConfig:
+                            description: The output configuration for monitoring jobs.
+                            properties:
+                              kmsKeyID:
+                                type: string
+                              monitoringOutputs:
+                                items:
+                                  properties:
+                                    s3Output:
+                                      description: Information about where and how you want to store the results of a monitoring job.
+                                      properties:
+                                        localPath:
+                                          type: string
+                                        s3URI:
+                                          type: string
+                                        s3UploadMode:
+                                          type: string
+                                      type: object
+                                  type: object
+                                type: array
+                            type: object
+                          monitoringResources:
+                            description: Identifies the resources to deploy for a monitoring job.
+                            properties:
+                              clusterConfig:
+                                description: Configuration for the cluster used to run model monitoring jobs.
+                                properties:
+                                  instanceCount:
+                                    format: int64
+                                    type: integer
+                                  instanceType:
+                                    type: string
+                                  volumeKMSKeyID:
+                                    type: string
+                                  volumeSizeInGB:
+                                    format: int64
+                                    type: integer
+                                type: object
+                            type: object
+                          networkConfig:
+                            description: Networking options for a job, such as network traffic encryption between containers, whether to allow inbound and outbound network calls to and from containers, and the VPC subnets and security groups to use for VPC-enabled jobs.
+                            properties:
+                              enableInterContainerTrafficEncryption:
+                                type: boolean
+                              enableNetworkIsolation:
+                                type: boolean
+                              vpcConfig:
+                                description: Specifies a VPC that your training jobs and hosted models have access to. Control access to and from your training and model containers by configuring the VPC. For more information, see Protect Endpoints by Using an Amazon Virtual Private Cloud (https://docs.aws.amazon.com/sagemaker/latest/dg/host-vpc.html) and Protect Training Jobs by Using an Amazon Virtual Private Cloud (https://docs.aws.amazon.com/sagemaker/latest/dg/train-vpc.html).
+                                properties:
+                                  securityGroupIDs:
+                                    items:
+                                      type: string
+                                    type: array
+                                  subnets:
+                                    items:
+                                      type: string
+                                    type: array
+                                type: object
+                            type: object
+                          roleARN:
+                            type: string
+                          stoppingCondition:
+                            description: A time limit for how long the monitoring job is allowed to run before stopping.
+                            properties:
+                              maxRuntimeInSeconds:
+                                format: int64
+                                type: integer
+                            type: object
+                        type: object
+                      scheduleConfig:
+                        description: Configuration details about the monitoring schedule.
+                        properties:
+                          scheduleExpression:
+                            type: string
+                        type: object
+                    type: object
+                  monitoringScheduleName:
+                    description: The name of the monitoring schedule. The name must be unique within an AWS Region within an AWS account.
+                    type: string
+                  region:
+                    description: Region is which region the MonitoringSchedule will be created.
+                    type: string
+                  tags:
+                    description: (Optional) An array of key-value pairs. For more information, see Using Cost Allocation Tags (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html#allocation-whatURL) in the AWS Billing and Cost Management User Guide.
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                required:
+                - monitoringScheduleConfig
+                - monitoringScheduleName
+                - region
+                type: object
+              providerConfigRef:
+                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: MonitoringScheduleStatus defines the observed state of MonitoringSchedule.
+            properties:
+              atProvider:
+                description: MonitoringScheduleObservation defines the observed state of MonitoringSchedule
+                properties:
+                  monitoringScheduleARN:
+                    description: The Amazon Resource Name (ARN) of the monitoring schedule.
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True, False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            required:
+            - atProvider
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

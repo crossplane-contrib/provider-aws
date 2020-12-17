@@ -1,0 +1,238 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.0
+  creationTimestamp: null
+  name: domains.sagemaker.aws.crossplane.io
+spec:
+  group: sagemaker.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: Domain
+    listKind: DomainList
+    plural: domains
+    singular: domain
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Domain is the Schema for the Domains API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DomainSpec defines the desired state of Domain
+            properties:
+              deletionPolicy:
+                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: DomainParameters defines the desired state of Domain
+                properties:
+                  authMode:
+                    description: The mode of authentication that members use to access the domain.
+                    type: string
+                  defaultUserSettings:
+                    description: The default user settings.
+                    properties:
+                      executionRole:
+                        type: string
+                      jupyterServerAppSettings:
+                        description: Jupyter server's app settings.
+                        properties:
+                          defaultResourceSpec:
+                            description: The instance type and the Amazon Resource Name (ARN) of the SageMaker image created on the instance. The ARN is stored as metadata in SageMaker Studio notebooks.
+                            properties:
+                              instanceType:
+                                type: string
+                              sageMakerImageARN:
+                                type: string
+                            type: object
+                        type: object
+                      kernelGatewayAppSettings:
+                        description: The kernel gateway app settings.
+                        properties:
+                          defaultResourceSpec:
+                            description: The instance type and the Amazon Resource Name (ARN) of the SageMaker image created on the instance. The ARN is stored as metadata in SageMaker Studio notebooks.
+                            properties:
+                              instanceType:
+                                type: string
+                              sageMakerImageARN:
+                                type: string
+                            type: object
+                        type: object
+                      securityGroups:
+                        items:
+                          type: string
+                        type: array
+                      sharingSettings:
+                        description: Specifies options when sharing an Amazon SageMaker Studio notebook. These settings are specified as part of DefaultUserSettings when the CreateDomain API is called, and as part of UserSettings when the CreateUserProfile API is called.
+                        properties:
+                          notebookOutputOption:
+                            type: string
+                          s3KMSKeyID:
+                            type: string
+                          s3OutputPath:
+                            type: string
+                        type: object
+                      tensorBoardAppSettings:
+                        description: The TensorBoard app settings.
+                        properties:
+                          defaultResourceSpec:
+                            description: The instance type and the Amazon Resource Name (ARN) of the SageMaker image created on the instance. The ARN is stored as metadata in SageMaker Studio notebooks.
+                            properties:
+                              instanceType:
+                                type: string
+                              sageMakerImageARN:
+                                type: string
+                            type: object
+                        type: object
+                    type: object
+                  domainName:
+                    description: A name for the domain.
+                    type: string
+                  homeEFSFileSystemKMSKeyID:
+                    description: The AWS Key Management Service (KMS) encryption key ID. Encryption with a customer master key (CMK) is not supported.
+                    type: string
+                  region:
+                    description: Region is which region the Domain will be created.
+                    type: string
+                  subnetIDs:
+                    description: The VPC subnets to use for communication with the EFS volume.
+                    items:
+                      type: string
+                    type: array
+                  tags:
+                    description: Tags to associated with the Domain. Each tag consists of a key and an optional value. Tag keys must be unique per resource. Tags are searchable using the Search API.
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                  vpcID:
+                    description: The ID of the Amazon Virtual Private Cloud (VPC) to use for communication with the EFS volume.
+                    type: string
+                required:
+                - authMode
+                - defaultUserSettings
+                - domainName
+                - region
+                - subnetIDs
+                - vpcID
+                type: object
+              providerConfigRef:
+                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: DomainStatus defines the observed state of Domain.
+            properties:
+              atProvider:
+                description: DomainObservation defines the observed state of Domain
+                properties:
+                  domainARN:
+                    description: The Amazon Resource Name (ARN) of the created domain.
+                    type: string
+                  url:
+                    description: The URL to the created domain.
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True, False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            required:
+            - atProvider
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

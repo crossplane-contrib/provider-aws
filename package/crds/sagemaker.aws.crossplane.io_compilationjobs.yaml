@@ -1,0 +1,198 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.0
+  creationTimestamp: null
+  name: compilationjobs.sagemaker.aws.crossplane.io
+spec:
+  group: sagemaker.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: CompilationJob
+    listKind: CompilationJobList
+    plural: compilationjobs
+    singular: compilationjob
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: CompilationJob is the Schema for the CompilationJobs API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: CompilationJobSpec defines the desired state of CompilationJob
+            properties:
+              deletionPolicy:
+                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: CompilationJobParameters defines the desired state of CompilationJob
+                properties:
+                  compilationJobName:
+                    description: A name for the model compilation job. The name must be unique within the AWS Region and within your AWS account.
+                    type: string
+                  inputConfig:
+                    description: Provides information about the location of input model artifacts, the name and shape of the expected data inputs, and the framework in which the model was trained.
+                    properties:
+                      dataInputConfig:
+                        type: string
+                      framework:
+                        type: string
+                      s3URI:
+                        type: string
+                    type: object
+                  outputConfig:
+                    description: Provides information about the output location for the compiled model and the target device the model runs on.
+                    properties:
+                      compilerOptions:
+                        type: string
+                      s3OutputLocation:
+                        type: string
+                      targetDevice:
+                        type: string
+                      targetPlatform:
+                        description: Contains information about a target platform that you want your model to run on, such as OS, architecture, and accelerators. It is an alternative of TargetDevice.
+                        properties:
+                          accelerator:
+                            type: string
+                          arch:
+                            type: string
+                          os:
+                            type: string
+                        type: object
+                    type: object
+                  region:
+                    description: Region is which region the CompilationJob will be created.
+                    type: string
+                  roleARN:
+                    description: "The Amazon Resource Name (ARN) of an IAM role that enables Amazon SageMaker to perform tasks on your behalf. \n During model compilation, Amazon SageMaker needs your permission to: \n    * Read input data from an S3 bucket \n    * Write model artifacts to an S3 bucket \n    * Write logs to Amazon CloudWatch Logs \n    * Publish metrics to Amazon CloudWatch \n You grant permissions for all of these tasks to an IAM role. To pass this role to Amazon SageMaker, the caller of this API must have the iam:PassRole permission. For more information, see Amazon SageMaker Roles. (https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-roles.html)"
+                    type: string
+                  stoppingCondition:
+                    description: Specifies a limit to how long a model compilation job can run. When the job reaches the time limit, Amazon SageMaker ends the compilation job. Use this API to cap model training costs.
+                    properties:
+                      maxRuntimeInSeconds:
+                        format: int64
+                        type: integer
+                      maxWaitTimeInSeconds:
+                        format: int64
+                        type: integer
+                    type: object
+                required:
+                - compilationJobName
+                - inputConfig
+                - outputConfig
+                - region
+                - roleARN
+                - stoppingCondition
+                type: object
+              providerConfigRef:
+                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: CompilationJobStatus defines the observed state of CompilationJob.
+            properties:
+              atProvider:
+                description: CompilationJobObservation defines the observed state of CompilationJob
+                properties:
+                  compilationJobARN:
+                    description: "If the action is successful, the service sends back an HTTP 200 response. Amazon SageMaker returns the following data in JSON format: \n    * CompilationJobArn: The Amazon Resource Name (ARN) of the compiled job."
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True, False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            required:
+            - atProvider
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

@@ -1,0 +1,279 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.0
+  creationTimestamp: null
+  name: modelpackages.sagemaker.aws.crossplane.io
+spec:
+  group: sagemaker.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: ModelPackage
+    listKind: ModelPackageList
+    plural: modelpackages
+    singular: modelpackage
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: ModelPackage is the Schema for the ModelPackages API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ModelPackageSpec defines the desired state of ModelPackage
+            properties:
+              deletionPolicy:
+                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: ModelPackageParameters defines the desired state of ModelPackage
+                properties:
+                  certifyForMarketplace:
+                    description: Whether to certify the model package for listing on AWS Marketplace.
+                    type: boolean
+                  inferenceSpecification:
+                    description: "Specifies details about inference jobs that can be run with models based on this model package, including the following: \n    * The Amazon ECR paths of containers that contain the inference code and    model artifacts. \n    * The instance types that the model package supports for transform jobs    and real-time endpoints used for inference. \n    * The input and output content formats that the model package supports    for inference."
+                    properties:
+                      containers:
+                        items:
+                          properties:
+                            containerHostname:
+                              type: string
+                            image:
+                              type: string
+                            imageDigest:
+                              type: string
+                            modelDataURL:
+                              type: string
+                            productID:
+                              type: string
+                          type: object
+                        type: array
+                      supportedContentTypes:
+                        items:
+                          type: string
+                        type: array
+                      supportedRealtimeInferenceInstanceTypes:
+                        items:
+                          type: string
+                        type: array
+                      supportedResponseMIMETypes:
+                        items:
+                          type: string
+                        type: array
+                      supportedTransformInstanceTypes:
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                  modelPackageDescription:
+                    description: A description of the model package.
+                    type: string
+                  modelPackageName:
+                    description: The name of the model package. The name must have 1 to 63 characters. Valid characters are a-z, A-Z, 0-9, and - (hyphen).
+                    type: string
+                  region:
+                    description: Region is which region the ModelPackage will be created.
+                    type: string
+                  sourceAlgorithmSpecification:
+                    description: Details about the algorithm that was used to create the model package.
+                    properties:
+                      sourceAlgorithms:
+                        items:
+                          properties:
+                            algorithmName:
+                              type: string
+                            modelDataURL:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  validationSpecification:
+                    description: Specifies configurations for one or more transform jobs that Amazon SageMaker runs to test the model package.
+                    properties:
+                      validationProfiles:
+                        items:
+                          properties:
+                            profileName:
+                              type: string
+                            transformJobDefinition:
+                              description: Defines the input needed to run a transform job using the inference specification specified in the algorithm.
+                              properties:
+                                batchStrategy:
+                                  type: string
+                                environment:
+                                  additionalProperties:
+                                    type: string
+                                  type: object
+                                maxConcurrentTransforms:
+                                  format: int64
+                                  type: integer
+                                maxPayloadInMB:
+                                  format: int64
+                                  type: integer
+                                transformInput:
+                                  description: Describes the input source of a transform job and the way the transform job consumes it.
+                                  properties:
+                                    compressionType:
+                                      type: string
+                                    contentType:
+                                      type: string
+                                    dataSource:
+                                      description: Describes the location of the channel data.
+                                      properties:
+                                        s3DataSource:
+                                          description: Describes the S3 data source.
+                                          properties:
+                                            s3DataType:
+                                              type: string
+                                            s3URI:
+                                              type: string
+                                          type: object
+                                      type: object
+                                    splitType:
+                                      type: string
+                                  type: object
+                                transformOutput:
+                                  description: Describes the results of a transform job.
+                                  properties:
+                                    accept:
+                                      type: string
+                                    assembleWith:
+                                      type: string
+                                    kmsKeyID:
+                                      type: string
+                                    s3OutputPath:
+                                      type: string
+                                  type: object
+                                transformResources:
+                                  description: Describes the resources, including ML instance types and ML instance count, to use for transform job.
+                                  properties:
+                                    instanceCount:
+                                      format: int64
+                                      type: integer
+                                    instanceType:
+                                      type: string
+                                    volumeKMSKeyID:
+                                      type: string
+                                  type: object
+                              type: object
+                          type: object
+                        type: array
+                      validationRole:
+                        type: string
+                    type: object
+                required:
+                - modelPackageName
+                - region
+                type: object
+              providerConfigRef:
+                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: ModelPackageStatus defines the observed state of ModelPackage.
+            properties:
+              atProvider:
+                description: ModelPackageObservation defines the observed state of ModelPackage
+                properties:
+                  modelPackageARN:
+                    description: The Amazon Resource Name (ARN) of the new model package.
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True, False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            required:
+            - atProvider
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

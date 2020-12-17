@@ -1,0 +1,296 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.0
+  creationTimestamp: null
+  name: labelingjobs.sagemaker.aws.crossplane.io
+spec:
+  group: sagemaker.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: LabelingJob
+    listKind: LabelingJobList
+    plural: labelingjobs
+    singular: labelingjob
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: LabelingJob is the Schema for the LabelingJobs API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: LabelingJobSpec defines the desired state of LabelingJob
+            properties:
+              deletionPolicy:
+                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: LabelingJobParameters defines the desired state of LabelingJob
+                properties:
+                  humanTaskConfig:
+                    description: Configures the labeling task and how it is presented to workers; including, but not limited to price, keywords, and batch size (task count).
+                    properties:
+                      annotationConsolidationConfig:
+                        description: Configures how labels are consolidated across human workers and processes output data.
+                        properties:
+                          annotationConsolidationLambdaARN:
+                            type: string
+                        type: object
+                      maxConcurrentTaskCount:
+                        format: int64
+                        type: integer
+                      numberOfHumanWorkersPerDataObject:
+                        format: int64
+                        type: integer
+                      preHumanTaskLambdaARN:
+                        type: string
+                      publicWorkforceTaskPrice:
+                        description: "Defines the amount of money paid to an Amazon Mechanical Turk worker for each task performed. \n Use one of the following prices for bounding box tasks. Prices are in US dollars and should be based on the complexity of the task; the longer it takes in your initial testing, the more you should offer. \n    * 0.036 \n    * 0.048 \n    * 0.060 \n    * 0.072 \n    * 0.120 \n    * 0.240 \n    * 0.360 \n    * 0.480 \n    * 0.600 \n    * 0.720 \n    * 0.840 \n    * 0.960 \n    * 1.080 \n    * 1.200 \n Use one of the following prices for image classification, text classification, and custom tasks. Prices are in US dollars. \n    * 0.012 \n    * 0.024 \n    * 0.036 \n    * 0.048 \n    * 0.060 \n    * 0.072 \n    * 0.120 \n    * 0.240 \n    * 0.360 \n    * 0.480 \n    * 0.600 \n    * 0.720 \n    * 0.840 \n    * 0.960 \n    * 1.080 \n    * 1.200 \n Use one of the following prices for semantic segmentation tasks. Prices are in US dollars. \n    * 0.840 \n    * 0.960 \n    * 1.080 \n    * 1.200 \n Use one of the following prices for Textract AnalyzeDocument Important Form Key Amazon Augmented AI review tasks. Prices are in US dollars. \n    * 2.400 \n    * 2.280 \n    * 2.160 \n    * 2.040 \n    * 1.920 \n    * 1.800 \n    * 1.680 \n    * 1.560 \n    * 1.440 \n    * 1.320 \n    * 1.200 \n    * 1.080 \n    * 0.960 \n    * 0.840 \n    * 0.720 \n    * 0.600 \n    * 0.480 \n    * 0.360 \n    * 0.240 \n    * 0.120 \n    * 0.072 \n    * 0.060 \n    * 0.048 \n    * 0.036 \n    * 0.024 \n    * 0.012 \n Use one of the following prices for Rekognition DetectModerationLabels Amazon Augmented AI review tasks. Prices are in US dollars. \n    * 1.200 \n    * 1.080 \n    * 0.960 \n    * 0.840 \n    * 0.720 \n    * 0.600 \n    * 0.480 \n    * 0.360 \n    * 0.240 \n    * 0.120 \n    * 0.072 \n    * 0.060 \n    * 0.048 \n    * 0.036 \n    * 0.024 \n    * 0.012 \n Use one of the following prices for Amazon Augmented AI custom human review tasks. Prices are in US dollars. \n    * 1.200 \n    * 1.080 \n    * 0.960 \n    * 0.840 \n    * 0.720 \n    * 0.600 \n    * 0.480 \n    * 0.360 \n    * 0.240 \n    * 0.120 \n    * 0.072 \n    * 0.060 \n    * 0.048 \n    * 0.036 \n    * 0.024 \n    * 0.012"
+                        properties:
+                          amountInUsd:
+                            description: Represents an amount of money in United States dollars/
+                            properties:
+                              cents:
+                                format: int64
+                                type: integer
+                              dollars:
+                                format: int64
+                                type: integer
+                              tenthFractionsOfACent:
+                                format: int64
+                                type: integer
+                            type: object
+                        type: object
+                      taskAvailabilityLifetimeInSeconds:
+                        format: int64
+                        type: integer
+                      taskDescription:
+                        type: string
+                      taskKeywords:
+                        items:
+                          type: string
+                        type: array
+                      taskTimeLimitInSeconds:
+                        format: int64
+                        type: integer
+                      taskTitle:
+                        type: string
+                      uiConfig:
+                        description: Provided configuration information for the worker UI for a labeling job.
+                        properties:
+                          humanTaskUiARN:
+                            type: string
+                          uiTemplateS3URI:
+                            type: string
+                        type: object
+                      workteamARN:
+                        type: string
+                    type: object
+                  inputConfig:
+                    description: Input data for the labeling job, such as the Amazon S3 location of the data objects and the location of the manifest file that describes the data objects.
+                    properties:
+                      dataAttributes:
+                        description: Attributes of the data specified by the customer. Use these to describe the data to be labeled.
+                        properties:
+                          contentClassifiers:
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                      dataSource:
+                        description: "Provides information about the location of input data. \n You must specify at least one of the following: S3DataSource or SnsDataSource. \n Use SnsDataSource to specify an SNS input topic for a streaming labeling job. If you do not specify and SNS input topic ARN, Ground Truth will create a one-time labeling job. \n Use S3DataSource to specify an input manifest file for both streaming and one-time labeling jobs. Adding an S3DataSource is optional if you use SnsDataSource to create a streaming labeling job."
+                        properties:
+                          s3DataSource:
+                            description: The Amazon S3 location of the input data objects.
+                            properties:
+                              manifestS3URI:
+                                type: string
+                            type: object
+                          snsDataSource:
+                            description: An Amazon SNS data source used for streaming labeling jobs.
+                            properties:
+                              snsTopicARN:
+                                type: string
+                            type: object
+                        type: object
+                    type: object
+                  labelAttributeName:
+                    description: The attribute name to use for the label in the output manifest file. This is the key for the key/value pair formed with the label that a worker assigns to the object. The name can't end with "-metadata". If you are running a semantic segmentation labeling job, the attribute name must end with "-ref". If you are running any other kind of labeling job, the attribute name must not end with "-ref".
+                    type: string
+                  labelCategoryConfigS3URI:
+                    description: "The S3 URL of the file that defines the categories used to label the data objects. \n For 3D point cloud task types, see Create a Labeling Category Configuration File for 3D Point Cloud Labeling Jobs (https://docs.aws.amazon.com/sagemaker/latest/dg/sms-point-cloud-label-category-config.html). \n For all other built-in task types (https://docs.aws.amazon.com/sagemaker/latest/dg/sms-task-types.html) and custom tasks (https://docs.aws.amazon.com/sagemaker/latest/dg/sms-custom-templates.html), your label category configuration file must be a JSON file in the following format. Identify the labels you want to use by replacing label_1, label_2,...,label_n with your label categories. \n { \n \"document-version\": \"2018-11-28\" \n \"labels\": [ \n { \n \"label\": \"label_1\" \n }, \n { \n \"label\": \"label_2\" \n }, \n ... \n { \n \"label\": \"label_n\" \n } \n ] \n }"
+                    type: string
+                  labelingJobAlgorithmsConfig:
+                    description: Configures the information required to perform automated data labeling.
+                    properties:
+                      initialActiveLearningModelARN:
+                        type: string
+                      labelingJobAlgorithmSpecificationARN:
+                        type: string
+                      labelingJobResourceConfig:
+                        description: Provides configuration information for labeling jobs.
+                        properties:
+                          volumeKMSKeyID:
+                            type: string
+                        type: object
+                    type: object
+                  labelingJobName:
+                    description: The name of the labeling job. This name is used to identify the job in a list of labeling jobs.
+                    type: string
+                  outputConfig:
+                    description: The location of the output data and the AWS Key Management Service key ID for the key used to encrypt the output data, if any.
+                    properties:
+                      kmsKeyID:
+                        type: string
+                      s3OutputPath:
+                        type: string
+                      snsTopicARN:
+                        type: string
+                    type: object
+                  region:
+                    description: Region is which region the LabelingJob will be created.
+                    type: string
+                  roleARN:
+                    description: The Amazon Resource Number (ARN) that Amazon SageMaker assumes to perform tasks on your behalf during data labeling. You must grant this role the necessary permissions so that Amazon SageMaker can successfully complete data labeling.
+                    type: string
+                  stoppingConditions:
+                    description: A set of conditions for stopping the labeling job. If any of the conditions are met, the job is automatically stopped. You can use these conditions to control the cost of data labeling.
+                    properties:
+                      maxHumanLabeledObjectCount:
+                        format: int64
+                        type: integer
+                      maxPercentageOfInputDatasetLabeled:
+                        format: int64
+                        type: integer
+                    type: object
+                  tags:
+                    description: An array of key/value pairs. For more information, see Using Cost Allocation Tags (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html#allocation-what) in the AWS Billing and Cost Management User Guide.
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                required:
+                - humanTaskConfig
+                - inputConfig
+                - labelAttributeName
+                - labelingJobName
+                - outputConfig
+                - region
+                - roleARN
+                type: object
+              providerConfigRef:
+                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: LabelingJobStatus defines the observed state of LabelingJob.
+            properties:
+              atProvider:
+                description: LabelingJobObservation defines the observed state of LabelingJob
+                properties:
+                  labelingJobARN:
+                    description: The Amazon Resource Name (ARN) of the labeling job. You use this ARN to identify the labeling job.
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True, False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            required:
+            - atProvider
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

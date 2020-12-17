@@ -1,0 +1,461 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.0
+  creationTimestamp: null
+  name: algorithms.sagemaker.aws.crossplane.io
+spec:
+  group: sagemaker.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: Algorithm
+    listKind: AlgorithmList
+    plural: algorithms
+    singular: algorithm
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Algorithm is the Schema for the Algorithms API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: AlgorithmSpec defines the desired state of Algorithm
+            properties:
+              deletionPolicy:
+                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: AlgorithmParameters defines the desired state of Algorithm
+                properties:
+                  algorithmDescription:
+                    description: A description of the algorithm.
+                    type: string
+                  algorithmName:
+                    description: The name of the algorithm.
+                    type: string
+                  certifyForMarketplace:
+                    description: Whether to certify the algorithm so that it can be listed in AWS Marketplace.
+                    type: boolean
+                  inferenceSpecification:
+                    description: "Specifies details about inference jobs that the algorithm runs, including the following: \n    * The Amazon ECR paths of containers that contain the inference code and    model artifacts. \n    * The instance types that the algorithm supports for transform jobs and    real-time endpoints used for inference. \n    * The input and output content formats that the algorithm supports for    inference."
+                    properties:
+                      containers:
+                        items:
+                          properties:
+                            containerHostname:
+                              type: string
+                            image:
+                              type: string
+                            imageDigest:
+                              type: string
+                            modelDataURL:
+                              type: string
+                            productID:
+                              type: string
+                          type: object
+                        type: array
+                      supportedContentTypes:
+                        items:
+                          type: string
+                        type: array
+                      supportedRealtimeInferenceInstanceTypes:
+                        items:
+                          type: string
+                        type: array
+                      supportedResponseMIMETypes:
+                        items:
+                          type: string
+                        type: array
+                      supportedTransformInstanceTypes:
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                  region:
+                    description: Region is which region the Algorithm will be created.
+                    type: string
+                  trainingSpecification:
+                    description: "Specifies details about training jobs run by this algorithm, including the following: \n    * The Amazon ECR path of the container and the version digest of the algorithm. \n    * The hyperparameters that the algorithm supports. \n    * The instance types that the algorithm supports for training. \n    * Whether the algorithm supports distributed training. \n    * The metrics that the algorithm emits to Amazon CloudWatch. \n    * Which metrics that the algorithm emits can be used as the objective    metric for hyperparameter tuning jobs. \n    * The input channels that the algorithm supports for training data. For    example, an algorithm might support train, validation, and test channels."
+                    properties:
+                      metricDefinitions:
+                        items:
+                          properties:
+                            name:
+                              type: string
+                            regex:
+                              type: string
+                          type: object
+                        type: array
+                      supportedHyperParameters:
+                        items:
+                          properties:
+                            defaultValue:
+                              type: string
+                            description:
+                              type: string
+                            isRequired:
+                              type: boolean
+                            isTunable:
+                              type: boolean
+                            name:
+                              type: string
+                            range_:
+                              description: Defines the possible values for categorical, continuous, and integer hyperparameters to be used by an algorithm.
+                              properties:
+                                categoricalParameterRangeSpecification:
+                                  description: Defines the possible values for a categorical hyperparameter.
+                                  properties:
+                                    values:
+                                      items:
+                                        type: string
+                                      type: array
+                                  type: object
+                                continuousParameterRangeSpecification:
+                                  description: Defines the possible values for a continuous hyperparameter.
+                                  properties:
+                                    maxValue:
+                                      type: string
+                                    minValue:
+                                      type: string
+                                  type: object
+                                integerParameterRangeSpecification:
+                                  description: Defines the possible values for an integer hyperparameter.
+                                  properties:
+                                    maxValue:
+                                      type: string
+                                    minValue:
+                                      type: string
+                                  type: object
+                              type: object
+                            type_:
+                              type: string
+                          type: object
+                        type: array
+                      supportedTrainingInstanceTypes:
+                        items:
+                          type: string
+                        type: array
+                      supportedTuningJobObjectiveMetrics:
+                        items:
+                          properties:
+                            metricName:
+                              type: string
+                            type_:
+                              type: string
+                          type: object
+                        type: array
+                      supportsDistributedTraining:
+                        type: boolean
+                      trainingChannels:
+                        items:
+                          properties:
+                            description:
+                              type: string
+                            isRequired:
+                              type: boolean
+                            name:
+                              type: string
+                            supportedCompressionTypes:
+                              items:
+                                type: string
+                              type: array
+                            supportedContentTypes:
+                              items:
+                                type: string
+                              type: array
+                            supportedInputModes:
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        type: array
+                      trainingImage:
+                        type: string
+                      trainingImageDigest:
+                        type: string
+                    type: object
+                  validationSpecification:
+                    description: Specifies configurations for one or more training jobs and that Amazon SageMaker runs to test the algorithm's training code and, optionally, one or more batch transform jobs that Amazon SageMaker runs to test the algorithm's inference code.
+                    properties:
+                      validationProfiles:
+                        items:
+                          properties:
+                            profileName:
+                              type: string
+                            trainingJobDefinition:
+                              description: Defines the input needed to run a training job using the algorithm.
+                              properties:
+                                hyperParameters:
+                                  additionalProperties:
+                                    type: string
+                                  type: object
+                                inputDataConfig:
+                                  items:
+                                    properties:
+                                      channelName:
+                                        type: string
+                                      compressionType:
+                                        type: string
+                                      contentType:
+                                        type: string
+                                      dataSource:
+                                        description: Describes the location of the channel data.
+                                        properties:
+                                          fileSystemDataSource:
+                                            description: Specifies a file system data source for a channel.
+                                            properties:
+                                              directoryPath:
+                                                type: string
+                                              fileSystemAccessMode:
+                                                type: string
+                                              fileSystemID:
+                                                type: string
+                                              fileSystemType:
+                                                type: string
+                                            type: object
+                                          s3DataSource:
+                                            description: Describes the S3 data source.
+                                            properties:
+                                              attributeNames:
+                                                items:
+                                                  type: string
+                                                type: array
+                                              s3DataDistributionType:
+                                                type: string
+                                              s3DataType:
+                                                type: string
+                                              s3URI:
+                                                type: string
+                                            type: object
+                                        type: object
+                                      inputMode:
+                                        type: string
+                                      recordWrapperType:
+                                        type: string
+                                      shuffleConfig:
+                                        description: "A configuration for a shuffle option for input data in a channel. If you use S3Prefix for S3DataType, the results of the S3 key prefix matches are shuffled. If you use ManifestFile, the order of the S3 object references in the ManifestFile is shuffled. If you use AugmentedManifestFile, the order of the JSON lines in the AugmentedManifestFile is shuffled. The shuffling order is determined using the Seed value. \n For Pipe input mode, when ShuffleConfig is specified shuffling is done at the start of every epoch. With large datasets, this ensures that the order of the training data is different for each epoch, and it helps reduce bias and possible overfitting. In a multi-node training job when ShuffleConfig is combined with S3DataDistributionType of ShardedByS3Key, the data is shuffled across nodes so that the content sent to a particular node on the first epoch might be sent to a different node on the second epoch."
+                                        properties:
+                                          seed:
+                                            format: int64
+                                            type: integer
+                                        type: object
+                                    type: object
+                                  type: array
+                                outputDataConfig:
+                                  description: Provides information about how to store model training results (model artifacts).
+                                  properties:
+                                    kmsKeyID:
+                                      type: string
+                                    s3OutputPath:
+                                      type: string
+                                  type: object
+                                resourceConfig:
+                                  description: Describes the resources, including ML compute instances and ML storage volumes, to use for model training.
+                                  properties:
+                                    instanceCount:
+                                      format: int64
+                                      type: integer
+                                    instanceType:
+                                      type: string
+                                    volumeKMSKeyID:
+                                      type: string
+                                    volumeSizeInGB:
+                                      format: int64
+                                      type: integer
+                                  type: object
+                                stoppingCondition:
+                                  description: "Specifies a limit to how long a model training or compilation job can run. It also specifies how long you are willing to wait for a managed spot training job to complete. When the job reaches the time limit, Amazon SageMaker ends the training or compilation job. Use this API to cap model training costs. \n To stop a job, Amazon SageMaker sends the algorithm the SIGTERM signal, which delays job termination for 120 seconds. Algorithms can use this 120-second window to save the model artifacts, so the results of training are not lost. \n The training algorithms provided by Amazon SageMaker automatically save the intermediate results of a model training job when possible. This attempt to save artifacts is only a best effort case as model might not be in a state from which it can be saved. For example, if training has just started, the model might not be ready to save. When saved, this intermediate data is a valid model artifact. You can use it to create a model with CreateModel. \n The Neural Topic Model (NTM) currently does not support saving intermediate model artifacts. When training NTMs, make sure that the maximum runtime is sufficient for the training job to complete."
+                                  properties:
+                                    maxRuntimeInSeconds:
+                                      format: int64
+                                      type: integer
+                                    maxWaitTimeInSeconds:
+                                      format: int64
+                                      type: integer
+                                  type: object
+                                trainingInputMode:
+                                  type: string
+                              type: object
+                            transformJobDefinition:
+                              description: Defines the input needed to run a transform job using the inference specification specified in the algorithm.
+                              properties:
+                                batchStrategy:
+                                  type: string
+                                environment:
+                                  additionalProperties:
+                                    type: string
+                                  type: object
+                                maxConcurrentTransforms:
+                                  format: int64
+                                  type: integer
+                                maxPayloadInMB:
+                                  format: int64
+                                  type: integer
+                                transformInput:
+                                  description: Describes the input source of a transform job and the way the transform job consumes it.
+                                  properties:
+                                    compressionType:
+                                      type: string
+                                    contentType:
+                                      type: string
+                                    dataSource:
+                                      description: Describes the location of the channel data.
+                                      properties:
+                                        s3DataSource:
+                                          description: Describes the S3 data source.
+                                          properties:
+                                            s3DataType:
+                                              type: string
+                                            s3URI:
+                                              type: string
+                                          type: object
+                                      type: object
+                                    splitType:
+                                      type: string
+                                  type: object
+                                transformOutput:
+                                  description: Describes the results of a transform job.
+                                  properties:
+                                    accept:
+                                      type: string
+                                    assembleWith:
+                                      type: string
+                                    kmsKeyID:
+                                      type: string
+                                    s3OutputPath:
+                                      type: string
+                                  type: object
+                                transformResources:
+                                  description: Describes the resources, including ML instance types and ML instance count, to use for transform job.
+                                  properties:
+                                    instanceCount:
+                                      format: int64
+                                      type: integer
+                                    instanceType:
+                                      type: string
+                                    volumeKMSKeyID:
+                                      type: string
+                                  type: object
+                              type: object
+                          type: object
+                        type: array
+                      validationRole:
+                        type: string
+                    type: object
+                required:
+                - algorithmName
+                - region
+                - trainingSpecification
+                type: object
+              providerConfigRef:
+                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: AlgorithmStatus defines the observed state of Algorithm.
+            properties:
+              atProvider:
+                description: AlgorithmObservation defines the observed state of Algorithm
+                properties:
+                  algorithmARN:
+                    description: The Amazon Resource Name (ARN) of the new algorithm.
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True, False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            required:
+            - atProvider
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
