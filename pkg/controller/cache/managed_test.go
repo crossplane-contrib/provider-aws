@@ -38,6 +38,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/elasticache/fake"
 )
 
@@ -642,7 +643,7 @@ func TestInitialize(t *testing.T) {
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errorBoom)},
 			},
 			want: want{
-				err: errors.Wrap(errorBoom, errUpdateReplicationGroupCR),
+				err: awsclient.Wrap(errorBoom, errUpdateReplicationGroupCR),
 			},
 		},
 	}

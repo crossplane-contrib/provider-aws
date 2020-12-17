@@ -34,7 +34,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/sns"
 	snsclient "github.com/crossplane/provider-aws/pkg/clients/sns"
 )
@@ -74,7 +74,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{},
-			errors.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errGetTopicAttr)
+			awsclient.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errGetTopicAttr)
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -129,7 +129,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	resp, err := e.client.CreateTopicRequest(snsclient.GenerateCreateTopicInput(&cr.Spec.ForProvider)).Send(ctx)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
 	meta.SetExternalName(cr, aws.StringValue(resp.CreateTopicOutput.TopicArn))
@@ -147,7 +147,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		TopicArn: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errGetTopicAttr)
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errGetTopicAttr)
 	}
 
 	// Update Topic Attributes
@@ -160,7 +160,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}).Send(ctx)
 
 	}
-	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -175,5 +175,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		TopicArn: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
-	return errors.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errDelete)
 }

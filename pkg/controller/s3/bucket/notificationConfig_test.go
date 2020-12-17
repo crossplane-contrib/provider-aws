@@ -23,9 +23,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
@@ -143,7 +143,7 @@ func TestNotificationObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    errors.Wrap(errBoom, notificationGetFailed),
+				err:    awsclient.Wrap(errBoom, notificationGetFailed),
 			},
 		},
 		"UpdateNeededFull": {
@@ -258,7 +258,7 @@ func TestNotificationCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: errors.Wrap(errBoom, notificationPutFailed),
+				err: awsclient.Wrap(errBoom, notificationPutFailed),
 			},
 		},
 		"InvalidConfig": {

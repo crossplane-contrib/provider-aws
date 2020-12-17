@@ -34,6 +34,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/elasticloadbalancing/elb"
 	"github.com/crossplane/provider-aws/pkg/clients/elasticloadbalancing/elb/fake"
 )
@@ -166,7 +167,7 @@ func TestObserve(t *testing.T) {
 					ELBName:    elbName,
 					InstanceID: instanceID,
 				})),
-				err: errors.Wrap(errBoom, errDescribe),
+				err: awsclient.Wrap(errBoom, errDescribe),
 			},
 		},
 	}
@@ -247,7 +248,7 @@ func TestCreate(t *testing.T) {
 						InstanceID: instanceID,
 					}),
 					withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -311,7 +312,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: elbAttachmentResource(withExternalName(elbName),
 					withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 	}

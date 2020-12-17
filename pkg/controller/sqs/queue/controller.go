@@ -31,7 +31,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/sqs/v1beta1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/sqs"
 )
 
@@ -71,7 +71,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errNotQueue)
 	}
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		QueueName: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 	if err != nil || getURLResponse.GetQueueUrlOutput.QueueUrl == nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(sqs.IsNotFound, err), errGetQueueURLFailed)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(sqs.IsNotFound, err), errGetQueueURLFailed)
 	}
 
 	// Get all the attributes.
@@ -103,14 +103,14 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		AttributeNames: []awssqs.QueueAttributeName{awssqs.QueueAttributeName(v1beta1.AttributeAll)},
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(sqs.IsNotFound, err), errGetQueueAttributesFailed)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(sqs.IsNotFound, err), errGetQueueAttributesFailed)
 	}
 
 	resTags, err := e.client.ListQueueTagsRequest(&awssqs.ListQueueTagsInput{
 		QueueUrl: getURLResponse.QueueUrl,
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, errListQueueTagsFailed)
+		return managed.ExternalObservation{}, awsclient.Wrap(err, errListQueueTagsFailed)
 	}
 
 	sqs.LateInitialize(&cr.Spec.ForProvider, resAttributes.Attributes, resTags.Tags)
@@ -146,7 +146,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
 	}
 	conn := managed.ConnectionDetails{
 		xpv1.ResourceCredentialsSecretEndpointKey: []byte(*resp.QueueUrl),
@@ -169,14 +169,14 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		Attributes: sqs.GenerateQueueAttributes(&cr.Spec.ForProvider),
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdateFailed)
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateFailed)
 	}
 
 	resTags, err := e.client.ListQueueTagsRequest(&awssqs.ListQueueTagsInput{
 		QueueUrl: aws.String(cr.Status.AtProvider.URL),
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errListQueueTagsFailed)
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errListQueueTagsFailed)
 	}
 
 	removedTags, addedTags := sqs.TagsDiff(resTags.Tags, cr.Spec.ForProvider.Tags)
@@ -192,7 +192,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 			TagKeys:  removedKeys,
 		}).Send(ctx)
 		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdateFailed)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateFailed)
 		}
 	}
 
@@ -202,7 +202,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 			Tags:     addedTags,
 		}).Send(ctx)
 		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errTag)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errTag)
 		}
 	}
 	return managed.ExternalUpdate{}, nil
@@ -219,5 +219,5 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	_, err := e.client.DeleteQueueRequest(&awssqs.DeleteQueueInput{
 		QueueUrl: aws.String(cr.Status.AtProvider.URL),
 	}).Send(ctx)
-	return errors.Wrap(resource.Ignore(sqs.IsNotFound, err), errDeleteFailed)
+	return awsclient.Wrap(resource.Ignore(sqs.IsNotFound, err), errDeleteFailed)
 }

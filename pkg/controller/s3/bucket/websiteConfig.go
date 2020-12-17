@@ -23,10 +23,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
@@ -54,13 +53,13 @@ func NewWebsiteConfigurationClient(client s3.BucketClient) *WebsiteConfiguration
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
-	external, err := in.client.GetBucketWebsiteRequest(&awss3.GetBucketWebsiteInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketWebsiteRequest(&awss3.GetBucketWebsiteInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
 	config := bucket.Spec.ForProvider.WebsiteConfiguration
 	if err != nil {
 		if s3.WebsiteConfigurationNotFound(err) && config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, errors.Wrap(resource.Ignore(s3.WebsiteConfigurationNotFound, err), websiteGetFailed)
+		return NeedsUpdate, awsclient.Wrap(resource.Ignore(s3.WebsiteConfigurationNotFound, err), websiteGetFailed)
 	}
 
 	switch {
@@ -89,14 +88,14 @@ func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 func GenerateWebsiteConfiguration(config *v1beta1.WebsiteConfiguration) *awss3.WebsiteConfiguration {
 	wi := &awss3.WebsiteConfiguration{}
 	if config.ErrorDocument != nil {
-		wi.ErrorDocument = &awss3.ErrorDocument{Key: aws.String(config.ErrorDocument.Key)}
+		wi.ErrorDocument = &awss3.ErrorDocument{Key: awsclient.String(config.ErrorDocument.Key)}
 	}
 	if config.IndexDocument != nil {
-		wi.IndexDocument = &awss3.IndexDocument{Suffix: aws.String(config.IndexDocument.Suffix)}
+		wi.IndexDocument = &awss3.IndexDocument{Suffix: awsclient.String(config.IndexDocument.Suffix)}
 	}
 	if config.RedirectAllRequestsTo != nil {
 		wi.RedirectAllRequestsTo = &awss3.RedirectAllRequestsTo{
-			HostName: aws.String(config.RedirectAllRequestsTo.HostName),
+			HostName: awsclient.String(config.RedirectAllRequestsTo.HostName),
 			Protocol: awss3.Protocol(config.RedirectAllRequestsTo.Protocol),
 		}
 	}
@@ -125,28 +124,28 @@ func GenerateWebsiteConfiguration(config *v1beta1.WebsiteConfiguration) *awss3.W
 // GeneratePutBucketWebsiteInput creates the input for the PutBucketWebsite request for the S3 Client
 func GeneratePutBucketWebsiteInput(name string, config *v1beta1.WebsiteConfiguration) *awss3.PutBucketWebsiteInput {
 	wi := &awss3.PutBucketWebsiteInput{
-		Bucket:               aws.String(name),
+		Bucket:               awsclient.String(name),
 		WebsiteConfiguration: GenerateWebsiteConfiguration(config),
 	}
 	return wi
 }
 
-// CreateOrUpdate sends a request to have resource created on AWS.
+// CreateOrUpdate sends a request to have resource created on awsclient.
 func (in *WebsiteConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
 	if bucket.Spec.ForProvider.WebsiteConfiguration == nil {
 		return nil
 	}
 	input := GeneratePutBucketWebsiteInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.WebsiteConfiguration)
 	_, err := in.client.PutBucketWebsiteRequest(input).Send(ctx)
-	return errors.Wrap(err, websitePutFailed)
+	return awsclient.Wrap(err, websitePutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
 func (in *WebsiteConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketWebsiteRequest(
 		&awss3.DeleteBucketWebsiteInput{
-			Bucket: aws.String(meta.GetExternalName(bucket)),
+			Bucket: awsclient.String(meta.GetExternalName(bucket)),
 		},
 	).Send(ctx)
-	return errors.Wrap(err, websiteDeleteFailed)
+	return awsclient.Wrap(err, websiteDeleteFailed)
 }

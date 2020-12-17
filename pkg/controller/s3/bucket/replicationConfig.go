@@ -23,10 +23,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
@@ -54,13 +53,13 @@ func NewReplicationConfigurationClient(client s3.BucketClient) *ReplicationConfi
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
-	external, err := in.client.GetBucketReplicationRequest(&awss3.GetBucketReplicationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketReplicationRequest(&awss3.GetBucketReplicationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
 	config := bucket.Spec.ForProvider.ReplicationConfiguration
 	if err != nil {
 		if s3.ReplicationConfigurationNotFound(err) && config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, errors.Wrap(resource.Ignore(s3.ReplicationConfigurationNotFound, err), replicationGetFailed)
+		return NeedsUpdate, awsclient.Wrap(resource.Ignore(s3.ReplicationConfigurationNotFound, err), replicationGetFailed)
 	}
 
 	switch {
@@ -91,7 +90,7 @@ func copyDestination(input *v1beta1.ReplicationRule, newRule *awss3.ReplicationR
 		EncryptionConfiguration:  nil,
 		Metrics:                  nil,
 		ReplicationTime:          nil,
-		StorageClass:             awss3.StorageClass(aws.StringValue(input.Destination.StorageClass)),
+		StorageClass:             awss3.StorageClass(awsclient.StringValue(input.Destination.StorageClass)),
 	}
 	if input.Destination.AccessControlTranslation != nil {
 		newRule.Destination.AccessControlTranslation = &awss3.AccessControlTranslation{
@@ -100,7 +99,7 @@ func copyDestination(input *v1beta1.ReplicationRule, newRule *awss3.ReplicationR
 	}
 	if input.Destination.EncryptionConfiguration != nil {
 		newRule.Destination.EncryptionConfiguration = &awss3.EncryptionConfiguration{
-			ReplicaKmsKeyID: aws.String(input.Destination.EncryptionConfiguration.ReplicaKmsKeyID),
+			ReplicaKmsKeyID: awsclient.String(input.Destination.EncryptionConfiguration.ReplicaKmsKeyID),
 		}
 	}
 	if input.Destination.Metrics != nil {
@@ -144,7 +143,7 @@ func createRule(input v1beta1.ReplicationRule) awss3.ReplicationRule {
 			}
 		}
 		if Rule.Filter.Tag != nil {
-			newRule.Filter.Tag = &awss3.Tag{Key: aws.String(Rule.Filter.Tag.Key), Value: aws.String(Rule.Filter.Tag.Value)}
+			newRule.Filter.Tag = &awss3.Tag{Key: awsclient.String(Rule.Filter.Tag.Key), Value: awsclient.String(Rule.Filter.Tag.Value)}
 		}
 	}
 	if Rule.SourceSelectionCriteria != nil {
@@ -183,29 +182,29 @@ func GenerateReplicationConfiguration(config *v1beta1.ReplicationConfiguration) 
 // GeneratePutBucketReplicationInput creates the input for the PutBucketReplication request for the S3 Client
 func GeneratePutBucketReplicationInput(name string, config *v1beta1.ReplicationConfiguration) *awss3.PutBucketReplicationInput {
 	return &awss3.PutBucketReplicationInput{
-		Bucket:                   aws.String(name),
+		Bucket:                   awsclient.String(name),
 		ReplicationConfiguration: GenerateReplicationConfiguration(config),
 	}
 }
 
-// CreateOrUpdate sends a request to have resource created on AWS.
+// CreateOrUpdate sends a request to have resource created on awsclient.
 func (in *ReplicationConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
 	if bucket.Spec.ForProvider.ReplicationConfiguration == nil {
 		return nil
 	}
 	input := GeneratePutBucketReplicationInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.ReplicationConfiguration)
 	_, err := in.client.PutBucketReplicationRequest(input).Send(ctx)
-	return errors.Wrap(err, replicationPutFailed)
+	return awsclient.Wrap(err, replicationPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
 func (in *ReplicationConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketReplicationRequest(
 		&awss3.DeleteBucketReplicationInput{
-			Bucket: aws.String(meta.GetExternalName(bucket)),
+			Bucket: awsclient.String(meta.GetExternalName(bucket)),
 		},
 	).Send(ctx)
-	return errors.Wrap(err, replicationDeleteFailed)
+	return awsclient.Wrap(err, replicationDeleteFailed)
 }
 
 func sortReplicationRules(rules []awss3.ReplicationRule) {

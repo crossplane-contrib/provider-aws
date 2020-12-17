@@ -34,6 +34,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
 )
@@ -124,7 +125,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  user(withExternalName(userName)),
-				err: errors.Wrap(errBoom, errGet),
+				err: awsclient.Wrap(errBoom, errGet),
 			},
 		},
 	}
@@ -198,7 +199,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  user(withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -327,7 +328,7 @@ func TestDelete(t *testing.T) {
 			want: want{
 				cr: user(withExternalName(userName),
 					withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 	}

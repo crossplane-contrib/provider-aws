@@ -34,7 +34,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 )
 
@@ -75,7 +75,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -149,7 +149,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
 	meta.SetExternalName(cr, aws.StringValue(result.Subnet.SubnetId))
@@ -168,7 +168,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrapf(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
+		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDescribe)
 	}
 
 	if response.Subnets == nil {
@@ -182,7 +182,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
 		}).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errCreateTags)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
 		}
 	}
 
@@ -194,7 +194,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			SubnetId: aws.String(meta.GetExternalName(cr)),
 		}).Send((ctx))
 		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 		}
 	}
 
@@ -207,7 +207,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}).Send((ctx))
 	}
 
-	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -222,5 +222,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		SubnetId: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
-	return errors.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(ec2.IsSubnetNotFoundErr, err), errDelete)
 }

@@ -36,7 +36,7 @@ import (
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 )
 
@@ -77,7 +77,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclients.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -108,14 +108,14 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			PublicIps: []string{meta.GetExternalName(cr)},
 		}).Send(ctx)
 		if err != nil {
-			return managed.ExternalObservation{}, errors.Wrapf(resource.Ignore(ec2.IsAddressNotFoundErr, err), errDescribe)
+			return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsAddressNotFoundErr, err), errDescribe)
 		}
 	} else {
 		response, err = e.client.DescribeAddressesRequest(&awsec2.DescribeAddressesInput{
 			AllocationIds: []string{meta.GetExternalName(cr)},
 		}).Send(ctx)
 		if err != nil {
-			return managed.ExternalObservation{}, errors.Wrapf(resource.Ignore(ec2.IsAddressNotFoundErr, err), errDescribe)
+			return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsAddressNotFoundErr, err), errDescribe)
 		}
 
 	}
@@ -161,7 +161,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		PublicIpv4Pool:        cr.Spec.ForProvider.PublicIPv4Pool,
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
 	if ec2.IsStandardDomain(cr.Spec.ForProvider) {
@@ -184,7 +184,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		Resources: []string{meta.GetExternalName(cr)},
 		Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
 	}).Send(ctx); err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errCreateTags)
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
 	}
 
 	return managed.ExternalUpdate{}, nil
@@ -209,7 +209,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		}).Send(ctx)
 	}
 
-	return errors.Wrap(resource.Ignore(ec2.IsAddressNotFoundErr, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(ec2.IsAddressNotFoundErr, err), errDelete)
 }
 
 type tagger struct {

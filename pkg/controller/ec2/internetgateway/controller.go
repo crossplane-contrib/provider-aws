@@ -34,7 +34,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 )
 
@@ -78,7 +78,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		InternetGatewayIds: []string{meta.GetExternalName(cr)},
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err), errDescribe)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -143,7 +143,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	ig, err := e.client.CreateInternetGatewayRequest(&awsec2.CreateInternetGatewayInput{}).Send(ctx)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
 	meta.SetExternalName(cr, aws.StringValue(ig.InternetGateway.InternetGatewayId))
@@ -163,7 +163,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
 		}).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errCreateTags)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
 		}
 	}
 
@@ -171,7 +171,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		InternetGatewayIds: []string{meta.GetExternalName(cr)},
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err), errDescribe)
+		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err), errDescribe)
 	}
 
 	if len(response.InternetGateways) != 1 {
@@ -192,7 +192,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			InternetGatewayId: aws.String(meta.GetExternalName(cr)),
 			VpcId:             observed.Attachments[0].VpcId,
 		}).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errDetach)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errDetach)
 		}
 	}
 
@@ -202,7 +202,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		VpcId:             cr.Spec.ForProvider.VPCID,
 	}).Send(ctx)
 
-	return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(ec2.IsInternetGatewayAlreadyAttached, err), errUpdate)
+	return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ec2.IsInternetGatewayAlreadyAttached, err), errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -223,7 +223,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		if resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err) == nil {
 			continue
 		}
-		return errors.Wrap(err, errDetach)
+		return awsclient.Wrap(err, errDetach)
 	}
 
 	// now delete the IG

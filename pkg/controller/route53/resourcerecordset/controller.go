@@ -34,7 +34,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/resourcerecordset"
 )
 
@@ -69,7 +69,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, awscommon.GlobalRegion)
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, awsclient.GlobalRegion)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		// Either there is err and retry. Or Resource does not exist.
 		return managed.ExternalObservation{
 			ResourceExists: false,
-		}, errors.Wrap(resource.Ignore(resourcerecordset.IsNotFound, err), errList)
+		}, awsclient.Wrap(resource.Ignore(resourcerecordset.IsNotFound, err), errList)
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -126,7 +126,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	input := resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53.ChangeActionUpsert)
 	_, err := e.client.ChangeResourceRecordSetsRequest(input).Send(ctx)
 
-	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -136,7 +136,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 	input := resourcerecordset.GenerateChangeResourceRecordSetsInput(meta.GetExternalName(cr), cr.Spec.ForProvider, route53.ChangeActionUpsert)
 	_, err := e.client.ChangeResourceRecordSetsRequest(input).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -152,5 +152,5 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	// There is no way to confirm 404 (from response) when deleting a recordset
 	// which isn't present using ChangeResourceRecordSetRequest.
-	return errors.Wrap(err, errDelete)
+	return awsclient.Wrap(err, errDelete)
 }

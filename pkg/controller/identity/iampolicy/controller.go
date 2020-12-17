@@ -33,7 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 )
 
@@ -71,7 +71,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, awscommon.GlobalRegion)
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, awsclient.GlobalRegion)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	if policyResp.Policy == nil {
@@ -123,12 +123,12 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}).Send(ctx)
 
 	if err != nil || versionRsp.PolicyVersion == nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, errPolicyVersion)
+		return managed.ExternalObservation{}, awsclient.Wrap(err, errPolicyVersion)
 	}
 
 	update, err := iam.IsPolicyUpToDate(cr.Spec.ForProvider, *versionRsp.PolicyVersion)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, errUpToDate)
+		return managed.ExternalObservation{}, awsclient.Wrap(err, errUpToDate)
 	}
 
 	return managed.ExternalObservation{
@@ -151,7 +151,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
 	meta.SetExternalName(cr, aws.StringValue(createResp.CreatePolicyOutput.Policy.Arn))
@@ -171,7 +171,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// The new version is set as default.
 
 	if err := e.deleteOldestVersion(ctx, meta.GetExternalName(cr)); err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 	}
 
 	_, err := e.client.CreatePolicyVersionRequest(&awsiam.CreatePolicyVersionInput{
@@ -180,7 +180,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		SetAsDefault:   aws.Bool(true),
 	}).Send(ctx)
 
-	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -190,7 +190,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	}
 
 	if err := e.deleteNonDefaultVersions(ctx, meta.GetExternalName(cr)); err != nil {
-		return errors.Wrap(err, errDelete)
+		return awsclient.Wrap(err, errDelete)
 	}
 
 	cr.Status.SetConditions(xpv1.Deleting())
@@ -199,7 +199,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		PolicyArn: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
-	return errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }
 
 func (e *external) listPolicyVersions(ctx context.Context, policyArn string) ([]awsiam.PolicyVersion, error) {

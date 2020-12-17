@@ -34,7 +34,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/acmpca"
 )
 
@@ -82,7 +82,7 @@ func (conn *connector) Connect(ctx context.Context, mg resource.Managed) (manage
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awscommon.GetConfig(ctx, conn.client, mg, cr.Spec.ForProvider.Region)
+	cfg, err := awsclient.GetConfig(ctx, conn.client, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errGet)
 	}
 
 	if response.CertificateAuthority == nil {
@@ -136,7 +136,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errListTagsFailed)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errListTagsFailed)
 	}
 
 	return managed.ExternalObservation{
@@ -154,7 +154,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	response, err := e.client.CreateCertificateAuthorityRequest(acmpca.GenerateCreateCertificateAuthorityInput(&cr.Spec.ForProvider)).Send(ctx)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 	meta.SetExternalName(cr, aws.StringValue(response.CreateCertificateAuthorityOutput.CertificateAuthorityArn))
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
@@ -178,7 +178,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
 		}).Send(ctx)
 		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errListTagsFailed)
+			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errListTagsFailed)
 		}
 		if len(tags) != len(currentTags.Tags) {
 			_, err := e.client.UntagCertificateAuthorityRequest(&awsacmpca.UntagCertificateAuthorityInput{
@@ -186,7 +186,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 				Tags:                    currentTags.Tags,
 			}).Send(ctx)
 			if err != nil {
-				return managed.ExternalUpdate{}, errors.Wrap(err, errRemoveTagsFailed)
+				return managed.ExternalUpdate{}, awsclient.Wrap(err, errRemoveTagsFailed)
 			}
 		}
 		_, err = e.client.TagCertificateAuthorityRequest(&awsacmpca.TagCertificateAuthorityInput{
@@ -194,7 +194,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			Tags:                    tags,
 		}).Send(ctx)
 		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errAddTagsFailed)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddTagsFailed)
 		}
 	}
 
@@ -205,7 +205,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		Status:                  awsacmpca.CertificateAuthorityStatus(aws.StringValue(cr.Spec.ForProvider.Status)),
 	}).Send(ctx)
 
-	return managed.ExternalUpdate{}, errors.Wrap(err, errCertificateAuthority)
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, errCertificateAuthority)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -221,7 +221,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	}).Send(ctx)
 
 	if err != nil {
-		return errors.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
+		return awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
 	}
 
 	if response != nil {
@@ -232,7 +232,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 			}).Send(ctx)
 
 			if err != nil {
-				return errors.Wrap(err, errDelete)
+				return awsclient.Wrap(err, errDelete)
 			}
 		}
 	}
@@ -242,5 +242,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		PermanentDeletionTimeInDays: cr.Spec.ForProvider.PermanentDeletionTimeInDays,
 	}).Send(ctx)
 
-	return errors.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
 }
