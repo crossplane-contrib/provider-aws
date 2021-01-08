@@ -43,6 +43,7 @@ const (
 
 	errCreateSession = "cannot create a new session"
 	errCreate        = "cannot create GlobalTable in AWS"
+	errUpdate        = "cannot update GlobalTable in AWS"
 	errDescribe      = "failed to describe GlobalTable"
 	errDelete        = "failed to delete GlobalTable"
 )
@@ -126,8 +127,19 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 }
 
 func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	// TODO(muvaf): resource claims to have update, fix this.
-	return e.update(ctx, mg)
+	cr, ok := mg.(*svcapitypes.GlobalTable)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+	input := GenerateUpdateGlobalTableInput(cr)
+	if err := e.preUpdate(ctx, cr, input); err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
+	}
+	resp, err := e.client.UpdateGlobalTableWithContext(ctx, input)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	}
+	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, err)
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
@@ -136,8 +148,7 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
-	// TODO(muvaf): Resource does not have deletion. Dig deeper..
-	return nil
+	return e.delete(ctx, mg)
 
 }
 
@@ -151,7 +162,9 @@ func newExternal(kube client.Client, client svcsdkapi.DynamoDBAPI, opts []option
 		postObserve:    nopPostObserve,
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
-		update:         nopUpdate,
+		delete:         nopDelete,
+		preUpdate:      nopPreUpdate,
+		postUpdate:     nopPostUpdate,
 		lateInitialize: nopLateInitialize,
 		isUpToDate:     alwaysUpToDate,
 	}
@@ -170,8 +183,9 @@ type external struct {
 	isUpToDate     func(*svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput) bool
 	preCreate      func(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableInput) error
 	postCreate     func(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	// TODO(muvaf): update is not supported in most of the resources. this is temporary.
-	update func(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error)
+	delete         func(ctx context.Context, mg cpresource.Managed) error
+	preUpdate      func(context.Context, *svcapitypes.GlobalTable, *svcsdk.UpdateGlobalTableInput) error
+	postUpdate     func(context.Context, *svcapitypes.GlobalTable, *svcsdk.UpdateGlobalTableOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
 
 func nopPreObserve(context.Context, *svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableInput) error {
@@ -193,6 +207,12 @@ func nopPreCreate(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGloba
 func nopPostCreate(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error) {
 	return managed.ExternalCreation{}, nil
 }
-func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
+func nopDelete(context.Context, cpresource.Managed) error {
+	return nil
+}
+func nopPreUpdate(context.Context, *svcapitypes.GlobalTable, *svcsdk.UpdateGlobalTableInput) error {
+	return nil
+}
+func nopPostUpdate(context.Context, *svcapitypes.GlobalTable, *svcsdk.UpdateGlobalTableOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil
 }

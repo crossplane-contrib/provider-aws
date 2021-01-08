@@ -43,6 +43,7 @@ const (
 
 	errCreateSession = "cannot create a new session"
 	errCreate        = "cannot create Backup in AWS"
+	errUpdate        = "cannot update Backup in AWS"
 	errDescribe      = "failed to describe Backup"
 	errDelete        = "failed to delete Backup"
 )
@@ -181,8 +182,7 @@ type external struct {
 	preCreate      func(context.Context, *svcapitypes.Backup, *svcsdk.CreateBackupInput) error
 	postCreate     func(context.Context, *svcapitypes.Backup, *svcsdk.CreateBackupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Backup, *svcsdk.DeleteBackupInput) error
-	// TODO(muvaf): update is not supported in most of the resources. this is temporary.
-	update func(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error)
+	update         func(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error)
 }
 
 func nopPreObserve(context.Context, *svcapitypes.Backup, *svcsdk.DescribeBackupInput) error {

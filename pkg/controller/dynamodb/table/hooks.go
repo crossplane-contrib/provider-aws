@@ -21,10 +21,9 @@ import (
 	"encoding/json"
 	"sort"
 
-	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-
 	awsgo "github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
+	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
@@ -37,14 +36,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/dynamodb/v1alpha1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
-)
-
-const (
-	errUpdateFailed = "cannot update Table"
 )
 
 // SetupTable adds a controller that reconciles Table.
@@ -58,7 +52,7 @@ func SetupTable(mgr ctrl.Manager, l logging.Logger) error {
 			e.preDelete = preDelete
 			e.lateInitialize = lateInitialize
 			u := &updateClient{client: e.client}
-			e.update = u.update
+			e.preUpdate = u.preUpdate
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
@@ -280,63 +274,29 @@ type updateClient struct {
 	client svcsdkapi.DynamoDBAPI
 }
 
-func (e *updateClient) update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.Table)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
+func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error {
 	switch aws.StringValue(cr.Status.AtProvider.TableStatus) {
 	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING):
-		return managed.ExternalUpdate{}, nil
+		return nil
 	}
 	t, err := e.client.DescribeTable(&svcsdk.DescribeTableInput{TableName: aws.String(meta.GetExternalName(cr))})
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errDescribe)
+		return errors.Wrap(err, errDescribe)
 	}
 
-	u := GenerateUpdateTableInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)
+	newUpdateObj := &svcsdk.UpdateTableInput{}
 	// NOTE(muvaf): AWS API prohibits doing those calls in the same call.
 	// See https://github.com/aws/aws-sdk-go/blob/v1.34.32/service/dynamodb/api.go#L5605
 	switch {
 	case aws.Int64Value(t.Table.ProvisionedThroughput.ReadCapacityUnits) != aws.Int64Value(cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits) ||
 		aws.Int64Value(t.Table.ProvisionedThroughput.WriteCapacityUnits) != aws.Int64Value(cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits):
-		u.ProvisionedThroughput = &svcsdk.ProvisionedThroughput{
-			WriteCapacityUnits: cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits,
-			ReadCapacityUnits:  cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits,
-		}
+		newUpdateObj.ProvisionedThroughput = u.ProvisionedThroughput
 	case awsgo.BoolValue(t.Table.StreamSpecification.StreamEnabled) != awsgo.BoolValue(cr.Spec.ForProvider.StreamSpecification.StreamEnabled):
-		u.StreamSpecification = &svcsdk.StreamSpecification{StreamEnabled: cr.Spec.ForProvider.StreamSpecification.StreamEnabled}
+		newUpdateObj.StreamSpecification = u.StreamSpecification
 	}
 	// TODO(muvaf): ReplicationGroupUpdate and GlobalSecondaryIndexUpdate features
 	// are not implemented yet.
 
-	_, err = e.client.UpdateTableWithContext(ctx, u)
-	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdateFailed)
-}
-
-// GenerateUpdateTableInput from TableParameters.
-func GenerateUpdateTableInput(name string, p *svcapitypes.TableParameters) *svcsdk.UpdateTableInput {
-	u := &svcsdk.UpdateTableInput{
-		TableName: aws.String(name),
-	}
-
-	if len(p.AttributeDefinitions) != 0 {
-		u.AttributeDefinitions = make([]*svcsdk.AttributeDefinition, len(p.AttributeDefinitions))
-		for i, val := range p.AttributeDefinitions {
-			u.AttributeDefinitions[i] = &svcsdk.AttributeDefinition{
-				AttributeName: val.AttributeName,
-				AttributeType: val.AttributeType,
-			}
-		}
-	}
-
-	if p.SSESpecification != nil {
-		u.SSESpecification = &svcsdk.SSESpecification{
-			Enabled:        p.SSESpecification.Enabled,
-			KMSMasterKeyId: p.SSESpecification.KMSMasterKeyID,
-			SSEType:        p.SSESpecification.SSEType,
-		}
-	}
-
-	return u
+	*u = *newUpdateObj
+	return nil
 }

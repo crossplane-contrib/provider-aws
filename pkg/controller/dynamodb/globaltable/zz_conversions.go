@@ -28,8 +28,6 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateDescribeGlobalTableInput returns input for read
 // operation.
@@ -77,6 +75,17 @@ func GenerateCreateGlobalTableInput(cr *svcapitypes.GlobalTable) *svcsdk.CreateG
 			f0 = append(f0, f0elem)
 		}
 		res.SetReplicationGroup(f0)
+	}
+
+	return res
+}
+
+// GenerateUpdateGlobalTableInput returns an update input.
+func GenerateUpdateGlobalTableInput(cr *svcapitypes.GlobalTable) *svcsdk.UpdateGlobalTableInput {
+	res := &svcsdk.UpdateGlobalTableInput{}
+
+	if cr.Status.AtProvider.GlobalTableName != nil {
+		res.SetGlobalTableName(*cr.Status.AtProvider.GlobalTableName)
 	}
 
 	return res

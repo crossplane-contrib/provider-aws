@@ -43,6 +43,7 @@ const (
 
 	errCreateSession = "cannot create a new session"
 	errCreate        = "cannot create Table in AWS"
+	errUpdate        = "cannot update Table in AWS"
 	errDescribe      = "failed to describe Table"
 	errDelete        = "failed to delete Table"
 )
@@ -247,8 +248,19 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 }
 
 func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	// TODO(muvaf): resource claims to have update, fix this.
-	return e.update(ctx, mg)
+	cr, ok := mg.(*svcapitypes.Table)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
+	input := GenerateUpdateTableInput(cr)
+	if err := e.preUpdate(ctx, cr, input); err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
+	}
+	resp, err := e.client.UpdateTableWithContext(ctx, input)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	}
+	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, err)
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
@@ -276,7 +288,8 @@ func newExternal(kube client.Client, client svcsdkapi.DynamoDBAPI, opts []option
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
-		update:         nopUpdate,
+		preUpdate:      nopPreUpdate,
+		postUpdate:     nopPostUpdate,
 		lateInitialize: nopLateInitialize,
 		isUpToDate:     alwaysUpToDate,
 	}
@@ -296,8 +309,8 @@ type external struct {
 	preCreate      func(context.Context, *svcapitypes.Table, *svcsdk.CreateTableInput) error
 	postCreate     func(context.Context, *svcapitypes.Table, *svcsdk.CreateTableOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Table, *svcsdk.DeleteTableInput) error
-	// TODO(muvaf): update is not supported in most of the resources. this is temporary.
-	update func(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error)
+	preUpdate      func(context.Context, *svcapitypes.Table, *svcsdk.UpdateTableInput) error
+	postUpdate     func(context.Context, *svcapitypes.Table, *svcsdk.UpdateTableOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
 
 func nopPreObserve(context.Context, *svcapitypes.Table, *svcsdk.DescribeTableInput) error {
@@ -322,6 +335,9 @@ func nopPostCreate(context.Context, *svcapitypes.Table, *svcsdk.CreateTableOutpu
 func nopPreDelete(context.Context, *svcapitypes.Table, *svcsdk.DeleteTableInput) error {
 	return nil
 }
-func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
+func nopPreUpdate(context.Context, *svcapitypes.Table, *svcsdk.UpdateTableInput) error {
+	return nil
+}
+func nopPostUpdate(context.Context, *svcapitypes.Table, *svcsdk.UpdateTableOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil
 }
