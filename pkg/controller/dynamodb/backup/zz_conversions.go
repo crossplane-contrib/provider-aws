@@ -33,13 +33,13 @@ import (
 // GenerateDescribeBackupInput returns input for read
 // operation.
 func GenerateDescribeBackupInput(cr *svcapitypes.Backup) *svcsdk.DescribeBackupInput {
-	res := preGenerateDescribeBackupInput(cr, &svcsdk.DescribeBackupInput{})
+	res := &svcsdk.DescribeBackupInput{}
 
 	if cr.Status.AtProvider.BackupARN != nil {
 		res.SetBackupArn(*cr.Status.AtProvider.BackupARN)
 	}
 
-	return postGenerateDescribeBackupInput(cr, res)
+	return res
 }
 
 // GenerateBackup returns the current state in the form of *svcapitypes.Backup.
@@ -51,24 +51,24 @@ func GenerateBackup(resp *svcsdk.DescribeBackupOutput) *svcapitypes.Backup {
 
 // GenerateCreateBackupInput returns a create input.
 func GenerateCreateBackupInput(cr *svcapitypes.Backup) *svcsdk.CreateBackupInput {
-	res := preGenerateCreateBackupInput(cr, &svcsdk.CreateBackupInput{})
+	res := &svcsdk.CreateBackupInput{}
 
 	if cr.Spec.ForProvider.BackupName != nil {
 		res.SetBackupName(*cr.Spec.ForProvider.BackupName)
 	}
 
-	return postGenerateCreateBackupInput(cr, res)
+	return res
 }
 
 // GenerateDeleteBackupInput returns a deletion input.
 func GenerateDeleteBackupInput(cr *svcapitypes.Backup) *svcsdk.DeleteBackupInput {
-	res := preGenerateDeleteBackupInput(cr, &svcsdk.DeleteBackupInput{})
+	res := &svcsdk.DeleteBackupInput{}
 
 	if cr.Status.AtProvider.BackupARN != nil {
 		res.SetBackupArn(*cr.Status.AtProvider.BackupARN)
 	}
 
-	return postGenerateDeleteBackupInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.
