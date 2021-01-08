@@ -125,7 +125,7 @@ func TestCreatePatch(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			result, _ := CreatePatch(tc.args.t, tc.args.p)
+			result, _ := createPatch(tc.args.t, tc.args.p)
 			if diff := cmp.Diff(tc.want.patch, result); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}

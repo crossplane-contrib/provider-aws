@@ -36,20 +36,34 @@ import (
 // SetupGlobalTable adds a controller that reconciles GlobalTable.
 func SetupGlobalTable(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(svcapitypes.GlobalTableGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.preCreate = preCreate
+			e.postObserve = postObserve
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&svcapitypes.GlobalTable{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.GlobalTableGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.GlobalTable) error {
+func preObserve(_ context.Context, cr *svcapitypes.GlobalTable, obj *svcsdk.DescribeGlobalTableInput) error {
+	obj.GlobalTableName = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.GlobalTable, resp *svcsdk.DescribeGlobalTableOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+
+func preCreate(_ context.Context, cr *svcapitypes.GlobalTable, obj *svcsdk.CreateGlobalTableInput) error {
+	obj.GlobalTableName = aws.String(meta.GetExternalName(cr))
+	return nil
+}
+
+func postObserve(_ context.Context, cr *svcapitypes.GlobalTable, resp *svcsdk.DescribeGlobalTableOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -62,45 +76,4 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.GlobalTable, res
 		cr.SetConditions(xpv1.Deleting())
 	}
 	return obs, nil
-}
-
-func (*external) preCreate(context.Context, *svcapitypes.GlobalTable) error {
-	return nil
-}
-
-func (*external) postCreate(_ context.Context, _ *svcapitypes.GlobalTable, _ *svcsdk.CreateGlobalTableOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	return cre, err
-}
-
-func (*external) preUpdate(context.Context, *svcapitypes.GlobalTable) error {
-	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.GlobalTable, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-func lateInitialize(*svcapitypes.GlobalTableParameters, *svcsdk.DescribeGlobalTableOutput) error {
-	return nil
-}
-
-func isUpToDate(*svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput) bool {
-	return true
-}
-
-func preGenerateDescribeGlobalTableInput(_ *svcapitypes.GlobalTable, obj *svcsdk.DescribeGlobalTableInput) *svcsdk.DescribeGlobalTableInput {
-	return obj
-}
-
-func postGenerateDescribeGlobalTableInput(cr *svcapitypes.GlobalTable, obj *svcsdk.DescribeGlobalTableInput) *svcsdk.DescribeGlobalTableInput {
-	obj.GlobalTableName = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreateGlobalTableInput(_ *svcapitypes.GlobalTable, obj *svcsdk.CreateGlobalTableInput) *svcsdk.CreateGlobalTableInput {
-	return obj
-}
-
-func postGenerateCreateGlobalTableInput(cr *svcapitypes.GlobalTable, obj *svcsdk.CreateGlobalTableInput) *svcsdk.CreateGlobalTableInput {
-	obj.GlobalTableName = aws.String(meta.GetExternalName(cr))
-	return obj
 }

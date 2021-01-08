@@ -34,13 +34,13 @@ import (
 // GenerateDescribeGlobalTableInput returns input for read
 // operation.
 func GenerateDescribeGlobalTableInput(cr *svcapitypes.GlobalTable) *svcsdk.DescribeGlobalTableInput {
-	res := preGenerateDescribeGlobalTableInput(cr, &svcsdk.DescribeGlobalTableInput{})
+	res := &svcsdk.DescribeGlobalTableInput{}
 
 	if cr.Status.AtProvider.GlobalTableName != nil {
 		res.SetGlobalTableName(*cr.Status.AtProvider.GlobalTableName)
 	}
 
-	return postGenerateDescribeGlobalTableInput(cr, res)
+	return res
 }
 
 // GenerateGlobalTable returns the current state in the form of *svcapitypes.GlobalTable.
@@ -65,7 +65,7 @@ func GenerateGlobalTable(resp *svcsdk.DescribeGlobalTableOutput) *svcapitypes.Gl
 
 // GenerateCreateGlobalTableInput returns a create input.
 func GenerateCreateGlobalTableInput(cr *svcapitypes.GlobalTable) *svcsdk.CreateGlobalTableInput {
-	res := preGenerateCreateGlobalTableInput(cr, &svcsdk.CreateGlobalTableInput{})
+	res := &svcsdk.CreateGlobalTableInput{}
 
 	if cr.Spec.ForProvider.ReplicationGroup != nil {
 		f0 := []*svcsdk.Replica{}
@@ -79,7 +79,7 @@ func GenerateCreateGlobalTableInput(cr *svcapitypes.GlobalTable) *svcsdk.CreateG
 		res.SetReplicationGroup(f0)
 	}
 
-	return postGenerateCreateGlobalTableInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

@@ -34,13 +34,13 @@ import (
 // GenerateDescribeTableInput returns input for read
 // operation.
 func GenerateDescribeTableInput(cr *svcapitypes.Table) *svcsdk.DescribeTableInput {
-	res := preGenerateDescribeTableInput(cr, &svcsdk.DescribeTableInput{})
+	res := &svcsdk.DescribeTableInput{}
 
 	if cr.Status.AtProvider.TableName != nil {
 		res.SetTableName(*cr.Status.AtProvider.TableName)
 	}
 
-	return postGenerateDescribeTableInput(cr, res)
+	return res
 }
 
 // GenerateTable returns the current state in the form of *svcapitypes.Table.
@@ -186,7 +186,7 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 
 // GenerateCreateTableInput returns a create input.
 func GenerateCreateTableInput(cr *svcapitypes.Table) *svcsdk.CreateTableInput {
-	res := preGenerateCreateTableInput(cr, &svcsdk.CreateTableInput{})
+	res := &svcsdk.CreateTableInput{}
 
 	if cr.Spec.ForProvider.AttributeDefinitions != nil {
 		f0 := []*svcsdk.AttributeDefinition{}
@@ -359,14 +359,14 @@ func GenerateCreateTableInput(cr *svcapitypes.Table) *svcsdk.CreateTableInput {
 		res.SetTags(f8)
 	}
 
-	return postGenerateCreateTableInput(cr, res)
+	return res
 }
 
 // GenerateDeleteTableInput returns a deletion input.
 func GenerateDeleteTableInput(cr *svcapitypes.Table) *svcsdk.DeleteTableInput {
-	res := preGenerateDeleteTableInput(cr, &svcsdk.DeleteTableInput{})
+	res := &svcsdk.DeleteTableInput{}
 
-	return postGenerateDeleteTableInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

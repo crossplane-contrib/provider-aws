@@ -22,6 +22,7 @@ import (
 	"context"
 
 	svcapi "github.com/aws/aws-sdk-go/service/dynamodb"
+	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
@@ -48,6 +49,7 @@ const (
 
 type connector struct {
 	kube client.Client
+	opts []option
 }
 
 func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
@@ -57,14 +59,9 @@ func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed
 	}
 	sess, err := awsclient.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, errCreateSession)
 	}
-	return &external{client: svcapi.New(sess), kube: c.kube}, errors.Wrap(err, errCreateSession)
-}
-
-type external struct {
-	kube   client.Client
-	client svcsdkapi.DynamoDBAPI
+	return newExternal(c.kube, svcapi.New(sess), c.opts), nil
 }
 
 func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
@@ -72,25 +69,27 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
-	if err := e.preObserve(ctx, cr); err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, "pre-observe failed")
-	}
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
 	}
 	input := GenerateDescribeGlobalTableInput(cr)
+	if err := e.preObserve(ctx, cr, input); err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, "pre-observe failed")
+	}
 	resp, err := e.client.DescribeGlobalTableWithContext(ctx, input)
 	if err != nil {
 		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
 	}
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
-	lateInitialize(&cr.Spec.ForProvider, resp)
+	if err := e.lateInitialize(&cr.Spec.ForProvider, resp); err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, "late-init failed")
+	}
 	GenerateGlobalTable(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceUpToDate:        isUpToDate(cr, resp),
+		ResourceUpToDate:        e.isUpToDate(cr, resp),
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -101,10 +100,10 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Creating())
-	if err := e.preCreate(ctx, cr); err != nil {
+	input := GenerateCreateGlobalTableInput(cr)
+	if err := e.preCreate(ctx, cr, input); err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, "pre-create failed")
 	}
-	input := GenerateCreateGlobalTableInput(cr)
 	resp, err := e.client.CreateGlobalTableWithContext(ctx, input)
 	if err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
@@ -127,14 +126,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 }
 
 func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.GlobalTable)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
-	if err := e.preUpdate(ctx, cr); err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
-	}
-	return e.postUpdate(ctx, cr, managed.ExternalUpdate{}, nil)
+	// TODO(muvaf): resource claims to have update, fix this.
+	return e.update(ctx, mg)
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
@@ -143,7 +136,63 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
-	// TODO(jaypipes): Figure this out...
+	// TODO(muvaf): Resource does not have deletion. Dig deeper..
 	return nil
 
+}
+
+type option func(*external)
+
+func newExternal(kube client.Client, client svcsdkapi.DynamoDBAPI, opts []option) *external {
+	e := &external{
+		kube:           kube,
+		client:         client,
+		preObserve:     nopPreObserve,
+		postObserve:    nopPostObserve,
+		preCreate:      nopPreCreate,
+		postCreate:     nopPostCreate,
+		update:         nopUpdate,
+		lateInitialize: nopLateInitialize,
+		isUpToDate:     alwaysUpToDate,
+	}
+	for _, f := range opts {
+		f(e)
+	}
+	return e
+}
+
+type external struct {
+	kube           client.Client
+	client         svcsdkapi.DynamoDBAPI
+	preObserve     func(context.Context, *svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableInput) error
+	postObserve    func(context.Context, *svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
+	lateInitialize func(*svcapitypes.GlobalTableParameters, *svcsdk.DescribeGlobalTableOutput) error
+	isUpToDate     func(*svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput) bool
+	preCreate      func(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableInput) error
+	postCreate     func(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
+	// TODO(muvaf): update is not supported in most of the resources. this is temporary.
+	update func(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error)
+}
+
+func nopPreObserve(context.Context, *svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableInput) error {
+	return nil
+}
+func nopPostObserve(context.Context, *svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error) {
+	return managed.ExternalObservation{}, nil
+}
+func nopLateInitialize(*svcapitypes.GlobalTableParameters, *svcsdk.DescribeGlobalTableOutput) error {
+	return nil
+}
+func alwaysUpToDate(*svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput) bool {
+	return true
+}
+
+func nopPreCreate(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableInput) error {
+	return nil
+}
+func nopPostCreate(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error) {
+	return managed.ExternalCreation{}, nil
+}
+func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
+	return managed.ExternalUpdate{}, nil
 }

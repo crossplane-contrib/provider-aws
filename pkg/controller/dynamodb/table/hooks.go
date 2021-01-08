@@ -21,6 +21,8 @@ import (
 	"encoding/json"
 	"sort"
 
+	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+
 	awsgo "github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/google/go-cmp/cmp"
@@ -35,6 +37,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/dynamodb/v1alpha1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
@@ -47,12 +50,23 @@ const (
 // SetupTable adds a controller that reconciles Table.
 func SetupTable(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(svcapitypes.TableGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.preCreate = preCreate
+			e.preDelete = preDelete
+			e.lateInitialize = lateInitialize
+			u := &updateClient{client: e.client}
+			e.update = u.update
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&svcapitypes.Table{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.TableGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(
 				managed.NewNameAsExternalName(mgr.GetClient()),
 				managed.NewDefaultProviderConfig(mgr.GetClient()),
@@ -61,10 +75,20 @@ func SetupTable(mgr ctrl.Manager, l logging.Logger) error {
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.Table) error {
+func preObserve(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.DescribeTableInput) error {
+	obj.TableName = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func preCreate(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.CreateTableInput) error {
+	obj.TableName = aws.String(meta.GetExternalName(cr))
+	return nil
+}
+func preDelete(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.DeleteTableInput) error {
+	obj.TableName = aws.String(meta.GetExternalName(cr))
+	return nil
+}
+
+func postObserve(_ context.Context, cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -79,44 +103,6 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Table, resp *svc
 		cr.SetConditions(xpv1.Unavailable())
 	}
 	return obs, nil
-}
-
-func (*external) preCreate(context.Context, *svcapitypes.Table) error {
-	return nil
-}
-
-func (*external) postCreate(_ context.Context, _ *svcapitypes.Table, _ *svcsdk.CreateTableOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	return cre, err
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.Table, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-
-func preGenerateDescribeTableInput(_ *svcapitypes.Table, obj *svcsdk.DescribeTableInput) *svcsdk.DescribeTableInput {
-	return obj
-}
-
-func postGenerateDescribeTableInput(cr *svcapitypes.Table, obj *svcsdk.DescribeTableInput) *svcsdk.DescribeTableInput {
-	obj.TableName = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreateTableInput(_ *svcapitypes.Table, obj *svcsdk.CreateTableInput) *svcsdk.CreateTableInput {
-	return obj
-}
-
-func postGenerateCreateTableInput(cr *svcapitypes.Table, obj *svcsdk.CreateTableInput) *svcsdk.CreateTableInput {
-	obj.TableName = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-func preGenerateDeleteTableInput(_ *svcapitypes.Table, obj *svcsdk.DeleteTableInput) *svcsdk.DeleteTableInput {
-	return obj
-}
-
-func postGenerateDeleteTableInput(cr *svcapitypes.Table, obj *svcsdk.DeleteTableInput) *svcsdk.DeleteTableInput {
-	obj.TableName = aws.String(meta.GetExternalName(cr))
-	return obj
 }
 
 type tagger struct {
@@ -260,10 +246,10 @@ func buildLocalIndexes(indexes []*svcsdk.LocalSecondaryIndexDescription) []*svca
 	return localSecondaryIndexes
 }
 
-// CreatePatch creates a *svcapitypes.TableParameters that has only the changed
+// createPatch creates a *svcapitypes.TableParameters that has only the changed
 // values between the target *svcapitypes.TableParameters and the current
 // *dynamodb.TableDescription
-func CreatePatch(in *svcsdk.DescribeTableOutput, target *svcapitypes.TableParameters) (*svcapitypes.TableParameters, error) {
+func createPatch(in *svcsdk.DescribeTableOutput, target *svcapitypes.TableParameters) (*svcapitypes.TableParameters, error) {
 	currentParams := &svcapitypes.TableParameters{}
 	if err := lateInitialize(currentParams, in); err != nil {
 		return nil, err
@@ -281,7 +267,7 @@ func CreatePatch(in *svcsdk.DescribeTableOutput, target *svcapitypes.TableParame
 }
 
 func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) bool {
-	patch, err := CreatePatch(resp, &cr.Spec.ForProvider)
+	patch, err := createPatch(resp, &cr.Spec.ForProvider)
 	if err != nil {
 		return false
 	}
@@ -290,14 +276,22 @@ func isUpToDate(cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput) bool {
 		cmpopts.IgnoreFields(svcapitypes.TableParameters{}, "Region", "Tags", "GlobalSecondaryIndexes", "KeySchema", "LocalSecondaryIndexes", "CustomTableParameters"))
 }
 
-func (e *external) preUpdate(ctx context.Context, cr *svcapitypes.Table) error {
+type updateClient struct {
+	client svcsdkapi.DynamoDBAPI
+}
+
+func (e *updateClient) update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mg.(*svcapitypes.Table)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+	}
 	switch aws.StringValue(cr.Status.AtProvider.TableStatus) {
 	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING):
-		return nil
+		return managed.ExternalUpdate{}, nil
 	}
 	t, err := e.client.DescribeTable(&svcsdk.DescribeTableInput{TableName: aws.String(meta.GetExternalName(cr))})
 	if err != nil {
-		return errors.Wrap(err, errDescribe)
+		return managed.ExternalUpdate{}, errors.Wrap(err, errDescribe)
 	}
 
 	u := GenerateUpdateTableInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)
@@ -317,7 +311,7 @@ func (e *external) preUpdate(ctx context.Context, cr *svcapitypes.Table) error {
 	// are not implemented yet.
 
 	_, err = e.client.UpdateTableWithContext(ctx, u)
-	return errors.Wrap(err, errUpdateFailed)
+	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdateFailed)
 }
 
 // GenerateUpdateTableInput from TableParameters.
