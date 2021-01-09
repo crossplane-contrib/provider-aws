@@ -1,41 +1,57 @@
 # Contributing New Resource Using ACK
 
-Provider AWS uses ACK code generation pipeline to generate the boilerplate for
-CRDs and their controllers. Most of the generated code is ready to go but there
-are places where we need Crossplane-specific functionality or some hacks to work
-around non-generic behavior of the AWS API.
+[AWS Controllers for Kubernetes (ACK)](https://aws.github.io/aws-controllers-k8s/)
+is an open source project built by AWS that has Kubernetes controllers for AWS
+services and a code generation pipeline built to generate those controllers from
+AWS Go SDK. We are collaborating with ACK community to get more coverage of AWS
+services in provider-aws by using some parts of the ACK code generation pipeline.
+
+Even though we are able to use the same code generation pipeline, Crossplane and
+ACK differs in terms of how their CRDs look like, what common reconciler they use
+and how the controllers are deployed etc. What we generate apart from generic
+Crossplane boilerplate can be summarized into conversion functions between AWS SDK
+structs and local structs and the CRD fields under `spec.forProvider`/`status.atProvider`
+structs.
+
+Most of the generated code is ready to go but there are places where we need
+Crossplane-specific functionality, or some hacks to work around non-generic
+behavior of the AWS API.
 
 This guide shows how to get a new resource support up and running step by step.
 
 ## Code generation
 
-This is the very first step. You need to clone ACK repository and run the following
+This is the very first step. You need to clone [ACK repository](https://github.com/aws/aws-controllers-k8s/) and run the following
 command in the root directory:
 
 ```console
-go -tags generate run cmd/ack-generate/main.go crossplane <ServiceID> --provider-dir <provider-aws directory>
+go run -tags codegen cmd/ack-generate/main.go crossplane <ServiceID> --provider-dir <provider-aws directory>
 ```
 
-`ServiceID` list is found here: https://github.com/aws/aws-sdk-go/tree/master/models/apis
+`ServiceID` list is found [here](https://github.com/aws/aws-sdk-go/tree/v1.34.32/models/apis).
 For example, in order to generate Lambda resources, you need to use `lambda` as
 Service ID.
 
-Once this is completed, you'll see new folders in `apis` and `pkg/controller` directories.
-By default, it generates every resource it can recognize but that's not what you
-want if you'd like to add support for only a few resource. In order to ignore some
-of the generated resources, you need to create a `apis/<serviceid>/v1alpha1/generator-config.yaml`
+The first run will take a while since it clones AWS SDK. Once it is completed,
+you'll see new folders in `apis` and `pkg/controller` directories. By default,
+it generates every resource it can recognize but that's not what you want if you'd
+like to add support for only a few resources. In order to ignore some of the
+generated resources, you need to create a `apis/<serviceid>/v1alpha1/generator-config.yaml`
 file with the following content:
 ```yaml
 ignore:
   resource_names:
-    - <CRD Name you want to ignore>
+    - DBInstance
+    - DBCluster
+    - <other CRD kinds you want to ignore>
 ```
 
 When you re-run the generation with this configuration, existing files won't be
 deleted. So you may want to delete everything in `apis/<serviceid>/v1alpha1` except
 `generator-config.yaml` and then re-run the command.
 
-If the generation fails for any reason, please open an issue.
+If this step fails for some reason, please raise an issue in [ACK](https://github.com/aws/aws-controllers-k8s/)
+and mention that you're using Crossplane pipeline.
 
 ### Crossplane Code Generation
 
@@ -44,7 +60,8 @@ which includes kubebuilder and crossplane-tools processes. However, currently
 there are some missing structs in `apis/<serviceid>/v1alpha1` folder called
 `Custom<CRDName>Parameters` which we'll use in the next steps. For now, create a
 file called `apis/<serviceid>/v1alpha1/custom_types.go` with empty structs to get
-the code to compile like the following:
+the code to compile. For example, let's say you have a CRD whose kind is `Stage`.
+The empty struct would look like following:
 ```golang
 // CustomStageParameters includes the custom fields of Stage.
 type CustomStageParameters struct{}
@@ -55,6 +72,11 @@ Now the code compiles, run the following:
 make generate
 ```
 
+> This command will first run kubebuilder generation tools which take care of
+`zz_generated.deepcopy.go` files and CRD YAMLs. Then it will run the generators
+in crossplane-tools that will create `zz_generated.managed.go` and `zz_generated.managedlist.go`
+files that help CRD structs satisfy the Go interfaces we use in crossplane-runtime.
+
 ## Mandatory Custom Parts
 
 There are a few things we need to implement manually since there is no support for
@@ -62,9 +84,9 @@ their generation yet.
 
 ### Setup Controller
 
-The generated controller needs to be registered with the main controller manager.
-Create a file called `pkg/controller/<serviceid>/setup.go` and add the setup function
-like the following:
+The generated controller needs to be registered with the main controller manager
+of the provider. Create a file called `pkg/controller/<serviceid>/setup.go` and
+add the setup function like the following:
 ```golang
 // SetupStage adds a controller that reconciles Stage.
 func SetupStage(mgr ctrl.Manager, l logging.Logger) error {
@@ -96,9 +118,9 @@ You'll see that `<CRDName>Parameters` struct has an inline field called `Custom<
 whose struct we left empty earlier. We'll add the additional fields there.
 
 Note that some fields are required and reference-able but we cannot mark them required
-since when a reference is given, their value is resolver after the creation. In
+since when a reference is given, their value is resolved after the creation. In
 such cases, we need to omit that field and put it under `Custom<CRDName>Parameters`
-alongisde with its referencer and selector fields. To ignore, you need to add the
+alongside with its referencer and selector fields. To ignore, you need to add the
 following in `generator-config.yaml` like the following:
 
 ```yaml
@@ -124,10 +146,11 @@ are mostly identical and you can see examples in the existing implementations li
 ### External Name
 
 Crossplane has the notion of external name that we put under annotations. It corresponds
-to the identifier field of the resource. We try to stick with name if available
-and unique enough but sometimes have to fall back to ARN. The requirement for a
-field to be external-name is that it should be sufficient to make all the calls
-we need together with required fields. In `Stage` case, it's `StageName` field.
+to the identifier field of the resource in AWS SDK structs. We try to stick with
+name if available and unique enough but sometimes have to fall back to ARN. The
+requirement for a field to be external-name is that it should be sufficient to
+make all the calls we need together with required fields. In `Stage` case, it's
+`StageName` field.
 
 We need to [ignore `StageName`](https://github.com/crossplane/provider-aws/blob/7273d40/apis/apigatewayv2/v1alpha1/generator-config.yaml#L4)
 in generation and then inject the value of our annotation in its place in the SDK calls.
@@ -226,7 +249,7 @@ some caveats that cannot be made generic. So, we need to implement them manually
 
 ### Late Initialization
 
-Late initialization means that if user doesn't have a desired value for a field
+Late initialization means that if a user doesn't have a desired value for a field
 and provider chooses a default, we need to fetch that value from provider and
 assign it to the corresponding field in `spec`. You can take a look at [`RDSInstance`](https://github.com/crossplane/provider-aws/blob/087f587/pkg/clients/rds/rds.go#L368)
 example to see how it looks like but in most cases, we have much less fields so
@@ -278,11 +301,18 @@ return true
 
 ACK has partial support for update calls. You need to inspect what's generated
 and inject custom code wherever necessary. In a lot of cases, Update calls are tricky
-and may have to be done by several calls. You can see an injected [example here](https://github.com/crossplane/provider-aws/pull/485/files#diff-8a38ae8bcdbb080fbc35feb71701c1ada99de0c36c474d42899d1ce628cf3927R277)
+and may have to be done by several calls. You can see an injected [example here](https://github.com/crossplane/provider-aws/blob/b65c7f9/pkg/controller/dynamodb/table/hooks.go#L278)
 with custom logic to work around an API quirk.
 
 ## Testing
 
+### Unit Tests
+
+For the generated code, you don't need to write any tests. However, we encourage
+you to write tests for all custom code blocks you have written.
+
+### End-to-End Test
+
 You need to thoroughly test the controller by using example YAMLs. Make sure
-every functionality you implement works by checking with AWS console. Once all looks
-good, add the example YAML you used to `examples/<serviceid>/<crd-name>.yaml`
+every functionality you implement works by checking with AWS console. Once all
+looks good, add the example YAML you used to `examples/<serviceid>/<crd-name>.yaml`
