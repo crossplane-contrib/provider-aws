@@ -28,19 +28,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateDescribeGlobalTableInput returns input for read
 // operation.
 func GenerateDescribeGlobalTableInput(cr *svcapitypes.GlobalTable) *svcsdk.DescribeGlobalTableInput {
-	res := preGenerateDescribeGlobalTableInput(cr, &svcsdk.DescribeGlobalTableInput{})
+	res := &svcsdk.DescribeGlobalTableInput{}
 
 	if cr.Status.AtProvider.GlobalTableName != nil {
 		res.SetGlobalTableName(*cr.Status.AtProvider.GlobalTableName)
 	}
 
-	return postGenerateDescribeGlobalTableInput(cr, res)
+	return res
 }
 
 // GenerateGlobalTable returns the current state in the form of *svcapitypes.GlobalTable.
@@ -65,7 +63,7 @@ func GenerateGlobalTable(resp *svcsdk.DescribeGlobalTableOutput) *svcapitypes.Gl
 
 // GenerateCreateGlobalTableInput returns a create input.
 func GenerateCreateGlobalTableInput(cr *svcapitypes.GlobalTable) *svcsdk.CreateGlobalTableInput {
-	res := preGenerateCreateGlobalTableInput(cr, &svcsdk.CreateGlobalTableInput{})
+	res := &svcsdk.CreateGlobalTableInput{}
 
 	if cr.Spec.ForProvider.ReplicationGroup != nil {
 		f0 := []*svcsdk.Replica{}
@@ -79,7 +77,18 @@ func GenerateCreateGlobalTableInput(cr *svcapitypes.GlobalTable) *svcsdk.CreateG
 		res.SetReplicationGroup(f0)
 	}
 
-	return postGenerateCreateGlobalTableInput(cr, res)
+	return res
+}
+
+// GenerateUpdateGlobalTableInput returns an update input.
+func GenerateUpdateGlobalTableInput(cr *svcapitypes.GlobalTable) *svcsdk.UpdateGlobalTableInput {
+	res := &svcsdk.UpdateGlobalTableInput{}
+
+	if cr.Status.AtProvider.GlobalTableName != nil {
+		res.SetGlobalTableName(*cr.Status.AtProvider.GlobalTableName)
+	}
+
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

@@ -28,19 +28,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateDescribeTableInput returns input for read
 // operation.
 func GenerateDescribeTableInput(cr *svcapitypes.Table) *svcsdk.DescribeTableInput {
-	res := preGenerateDescribeTableInput(cr, &svcsdk.DescribeTableInput{})
+	res := &svcsdk.DescribeTableInput{}
 
 	if cr.Status.AtProvider.TableName != nil {
 		res.SetTableName(*cr.Status.AtProvider.TableName)
 	}
 
-	return postGenerateDescribeTableInput(cr, res)
+	return res
 }
 
 // GenerateTable returns the current state in the form of *svcapitypes.Table.
@@ -186,7 +184,7 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 
 // GenerateCreateTableInput returns a create input.
 func GenerateCreateTableInput(cr *svcapitypes.Table) *svcsdk.CreateTableInput {
-	res := preGenerateCreateTableInput(cr, &svcsdk.CreateTableInput{})
+	res := &svcsdk.CreateTableInput{}
 
 	if cr.Spec.ForProvider.AttributeDefinitions != nil {
 		f0 := []*svcsdk.AttributeDefinition{}
@@ -359,14 +357,75 @@ func GenerateCreateTableInput(cr *svcapitypes.Table) *svcsdk.CreateTableInput {
 		res.SetTags(f8)
 	}
 
-	return postGenerateCreateTableInput(cr, res)
+	return res
+}
+
+// GenerateUpdateTableInput returns an update input.
+func GenerateUpdateTableInput(cr *svcapitypes.Table) *svcsdk.UpdateTableInput {
+	res := &svcsdk.UpdateTableInput{}
+
+	if cr.Spec.ForProvider.AttributeDefinitions != nil {
+		f0 := []*svcsdk.AttributeDefinition{}
+		for _, f0iter := range cr.Spec.ForProvider.AttributeDefinitions {
+			f0elem := &svcsdk.AttributeDefinition{}
+			if f0iter.AttributeName != nil {
+				f0elem.SetAttributeName(*f0iter.AttributeName)
+			}
+			if f0iter.AttributeType != nil {
+				f0elem.SetAttributeType(*f0iter.AttributeType)
+			}
+			f0 = append(f0, f0elem)
+		}
+		res.SetAttributeDefinitions(f0)
+	}
+	if cr.Spec.ForProvider.BillingMode != nil {
+		res.SetBillingMode(*cr.Spec.ForProvider.BillingMode)
+	}
+	if cr.Spec.ForProvider.ProvisionedThroughput != nil {
+		f3 := &svcsdk.ProvisionedThroughput{}
+		if cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits != nil {
+			f3.SetReadCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits)
+		}
+		if cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits != nil {
+			f3.SetWriteCapacityUnits(*cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits)
+		}
+		res.SetProvisionedThroughput(f3)
+	}
+	if cr.Spec.ForProvider.SSESpecification != nil {
+		f5 := &svcsdk.SSESpecification{}
+		if cr.Spec.ForProvider.SSESpecification.Enabled != nil {
+			f5.SetEnabled(*cr.Spec.ForProvider.SSESpecification.Enabled)
+		}
+		if cr.Spec.ForProvider.SSESpecification.KMSMasterKeyID != nil {
+			f5.SetKMSMasterKeyId(*cr.Spec.ForProvider.SSESpecification.KMSMasterKeyID)
+		}
+		if cr.Spec.ForProvider.SSESpecification.SSEType != nil {
+			f5.SetSSEType(*cr.Spec.ForProvider.SSESpecification.SSEType)
+		}
+		res.SetSSESpecification(f5)
+	}
+	if cr.Spec.ForProvider.StreamSpecification != nil {
+		f6 := &svcsdk.StreamSpecification{}
+		if cr.Spec.ForProvider.StreamSpecification.StreamEnabled != nil {
+			f6.SetStreamEnabled(*cr.Spec.ForProvider.StreamSpecification.StreamEnabled)
+		}
+		if cr.Spec.ForProvider.StreamSpecification.StreamViewType != nil {
+			f6.SetStreamViewType(*cr.Spec.ForProvider.StreamSpecification.StreamViewType)
+		}
+		res.SetStreamSpecification(f6)
+	}
+	if cr.Status.AtProvider.TableName != nil {
+		res.SetTableName(*cr.Status.AtProvider.TableName)
+	}
+
+	return res
 }
 
 // GenerateDeleteTableInput returns a deletion input.
 func GenerateDeleteTableInput(cr *svcapitypes.Table) *svcsdk.DeleteTableInput {
-	res := preGenerateDeleteTableInput(cr, &svcsdk.DeleteTableInput{})
+	res := &svcsdk.DeleteTableInput{}
 
-	return postGenerateDeleteTableInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

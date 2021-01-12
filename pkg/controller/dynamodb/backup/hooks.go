@@ -36,21 +36,32 @@ import (
 // SetupBackup adds a controller that reconciles Backup.
 func SetupBackup(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(svcapitypes.BackupGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.preCreate = preCreate
+			e.postCreate = postCreate
+			e.preDelete = preDelete
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&svcapitypes.Backup{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.BackupGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.Backup) error {
+func preObserve(_ context.Context, cr *svcapitypes.Backup, obj *svcsdk.DescribeBackupInput) error {
+	obj.BackupArn = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.DescribeBackupOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+
+func postObserve(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.DescribeBackupOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -65,11 +76,12 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Backup, resp *sv
 	return obs, nil
 }
 
-func (*external) preCreate(context.Context, *svcapitypes.Backup) error {
+func preCreate(_ context.Context, cr *svcapitypes.Backup, obj *svcsdk.CreateBackupInput) error {
+	obj.TableName = aws.String(cr.Spec.ForProvider.TableName)
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.CreateBackupOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.CreateBackupOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -78,44 +90,7 @@ func (*external) postCreate(_ context.Context, cr *svcapitypes.Backup, resp *svc
 	return cre, err
 }
 
-func (*external) preUpdate(context.Context, *svcapitypes.Backup) error {
-	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.Backup, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-func lateInitialize(*svcapitypes.BackupParameters, *svcsdk.DescribeBackupOutput) error {
-	return nil
-}
-
-func isUpToDate(*svcapitypes.Backup, *svcsdk.DescribeBackupOutput) bool {
-	return true
-}
-
-func preGenerateDescribeBackupInput(_ *svcapitypes.Backup, obj *svcsdk.DescribeBackupInput) *svcsdk.DescribeBackupInput {
-	return obj
-}
-
-func postGenerateDescribeBackupInput(cr *svcapitypes.Backup, obj *svcsdk.DescribeBackupInput) *svcsdk.DescribeBackupInput {
+func preDelete(_ context.Context, cr *svcapitypes.Backup, obj *svcsdk.DeleteBackupInput) error {
 	obj.BackupArn = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreateBackupInput(_ *svcapitypes.Backup, obj *svcsdk.CreateBackupInput) *svcsdk.CreateBackupInput {
-	return obj
-}
-
-func postGenerateCreateBackupInput(cr *svcapitypes.Backup, obj *svcsdk.CreateBackupInput) *svcsdk.CreateBackupInput {
-	obj.TableName = aws.String(cr.Spec.ForProvider.TableName)
-	return obj
-}
-
-func preGenerateDeleteBackupInput(_ *svcapitypes.Backup, obj *svcsdk.DeleteBackupInput) *svcsdk.DeleteBackupInput {
-	return obj
-}
-
-func postGenerateDeleteBackupInput(cr *svcapitypes.Backup, obj *svcsdk.DeleteBackupInput) *svcsdk.DeleteBackupInput {
-	obj.BackupArn = aws.String(meta.GetExternalName(cr))
-	return obj
+	return nil
 }
