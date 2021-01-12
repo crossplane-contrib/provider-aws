@@ -18,8 +18,12 @@ package globaltable
 
 import (
 	"context"
+	"sort"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
+	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -41,6 +45,11 @@ func SetupGlobalTable(mgr ctrl.Manager, l logging.Logger) error {
 			e.preObserve = preObserve
 			e.preCreate = preCreate
 			e.postObserve = postObserve
+			d := &deleter{client: e.client}
+			e.delete = d.delete
+			u := &updater{client: e.client}
+			e.preUpdate = u.preUpdate
+			e.isUpToDate = isUpToDate
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
@@ -76,4 +85,77 @@ func postObserve(_ context.Context, cr *svcapitypes.GlobalTable, resp *svcsdk.De
 		cr.SetConditions(xpv1.Deleting())
 	}
 	return obs, nil
+}
+
+func isUpToDate(cr *svcapitypes.GlobalTable, obj *svcsdk.DescribeGlobalTableOutput) bool {
+	existing := make([]string, len(obj.GlobalTableDescription.ReplicationGroup))
+	for i, r := range obj.GlobalTableDescription.ReplicationGroup {
+		existing[i] = aws.StringValue(r.RegionName)
+	}
+	sort.Strings(existing)
+	desired := make([]string, len(cr.Spec.ForProvider.ReplicationGroup))
+	for i, r := range cr.Spec.ForProvider.ReplicationGroup {
+		desired[i] = aws.StringValue(r.RegionName)
+	}
+	sort.Strings(desired)
+	return cmp.Equal(existing, desired)
+}
+
+type updater struct {
+	client svcsdkapi.DynamoDBAPI
+}
+
+func (u *updater) preUpdate(ctx context.Context, cr *svcapitypes.GlobalTable, obj *svcsdk.UpdateGlobalTableInput) error {
+	input := GenerateDescribeGlobalTableInput(cr)
+	o, err := u.client.DescribeGlobalTableWithContext(ctx, input)
+	if err != nil {
+		return errors.Wrap(err, errDescribe)
+	}
+	desired := map[string]bool{}
+	for _, r := range cr.Spec.ForProvider.ReplicationGroup {
+		desired[aws.StringValue(r.RegionName)] = true
+	}
+	var del []string
+	var add []string
+	existing := map[string]bool{}
+	for _, r := range o.GlobalTableDescription.ReplicationGroup {
+		if _, ok := desired[aws.StringValue(r.RegionName)]; !ok {
+			del = append(del, aws.StringValue(r.RegionName))
+		}
+		existing[aws.StringValue(r.RegionName)] = true
+	}
+	for regionName := range desired {
+		if _, ok := existing[regionName]; !ok {
+			add = append(add, regionName)
+		}
+	}
+	obj.GlobalTableName = aws.String(meta.GetExternalName(cr))
+	for _, rn := range add {
+		obj.ReplicaUpdates = append(obj.ReplicaUpdates, &svcsdk.ReplicaUpdate{Create: &svcsdk.CreateReplicaAction{RegionName: aws.String(rn)}})
+	}
+	for _, rn := range del {
+		obj.ReplicaUpdates = append(obj.ReplicaUpdates, &svcsdk.ReplicaUpdate{Delete: &svcsdk.DeleteReplicaAction{RegionName: aws.String(rn)}})
+	}
+	return nil
+}
+
+type deleter struct {
+	client svcsdkapi.DynamoDBAPI
+}
+
+func (d *deleter) delete(ctx context.Context, mg resource.Managed) error {
+	cr, ok := mg.(*svcapitypes.GlobalTable)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
+	u := &svcsdk.UpdateGlobalTableInput{
+		GlobalTableName: aws.String(meta.GetExternalName(mg)),
+	}
+	for _, region := range cr.Spec.ForProvider.ReplicationGroup {
+		u.ReplicaUpdates = append(u.ReplicaUpdates, &svcsdk.ReplicaUpdate{Delete: &svcsdk.DeleteReplicaAction{RegionName: region.RegionName}})
+	}
+	if _, err := d.client.UpdateGlobalTableWithContext(ctx, u); err != nil {
+		return errors.Wrap(err, "update call for deletion failed")
+	}
+	return nil
 }
