@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.34.32
 	github.com/aws/aws-sdk-go-v2 v0.23.0
 	github.com/crossplane/crossplane-runtime v0.12.0
-	github.com/crossplane/crossplane-tools v0.0.0-20201007233256-88b291e145bb
+	github.com/crossplane/crossplane-tools v0.0.0-20201201125637-9ddc70edfd0d
 	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/go-ini/ini v1.46.0
 	github.com/go-logr/zapr v0.1.1 // indirect
