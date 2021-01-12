@@ -51,6 +51,7 @@ func SetupTable(mgr ctrl.Manager, l logging.Logger) error {
 			e.preCreate = preCreate
 			e.preDelete = preDelete
 			e.lateInitialize = lateInitialize
+			e.isUpToDate = isUpToDate
 			u := &updateClient{client: e.client}
 			e.preUpdate = u.preUpdate
 		},
@@ -274,7 +275,7 @@ type updateClient struct {
 	client svcsdkapi.DynamoDBAPI
 }
 
-func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error {
+func (e *updateClient) preUpdate(_ context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error {
 	switch aws.StringValue(cr.Status.AtProvider.TableStatus) {
 	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING):
 		return nil
@@ -284,15 +285,23 @@ func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *
 		return errors.Wrap(err, errDescribe)
 	}
 
-	newUpdateObj := &svcsdk.UpdateTableInput{}
+	newUpdateObj := &svcsdk.UpdateTableInput{
+		TableName: aws.String(meta.GetExternalName(cr)),
+	}
 	// NOTE(muvaf): AWS API prohibits doing those calls in the same call.
 	// See https://github.com/aws/aws-sdk-go/blob/v1.34.32/service/dynamodb/api.go#L5605
 	switch {
-	case aws.Int64Value(t.Table.ProvisionedThroughput.ReadCapacityUnits) != aws.Int64Value(cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits) ||
-		aws.Int64Value(t.Table.ProvisionedThroughput.WriteCapacityUnits) != aws.Int64Value(cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits):
+	case cr.Spec.ForProvider.ProvisionedThroughput != nil &&
+		(aws.Int64Value(t.Table.ProvisionedThroughput.ReadCapacityUnits) != aws.Int64Value(cr.Spec.ForProvider.ProvisionedThroughput.ReadCapacityUnits) ||
+			aws.Int64Value(t.Table.ProvisionedThroughput.WriteCapacityUnits) != aws.Int64Value(cr.Spec.ForProvider.ProvisionedThroughput.WriteCapacityUnits)):
 		newUpdateObj.ProvisionedThroughput = u.ProvisionedThroughput
-	case awsgo.BoolValue(t.Table.StreamSpecification.StreamEnabled) != awsgo.BoolValue(cr.Spec.ForProvider.StreamSpecification.StreamEnabled):
+	// NOTE(muvaf): Unless StreamEnabled is changed, updating stream specification
+	// won't work.
+	case cr.Spec.ForProvider.StreamSpecification != nil &&
+		(awsgo.BoolValue(t.Table.StreamSpecification.StreamEnabled) != awsgo.BoolValue(cr.Spec.ForProvider.StreamSpecification.StreamEnabled)):
 		newUpdateObj.StreamSpecification = u.StreamSpecification
+	default:
+		return errors.New("only provisionedThroughput and streamSpecification updates are supported")
 	}
 	// TODO(muvaf): ReplicationGroupUpdate and GlobalSecondaryIndexUpdate features
 	// are not implemented yet.
