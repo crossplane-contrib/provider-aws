@@ -29,9 +29,26 @@ type BackupParameters struct {
 	// Region is which region the Backup will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
+
 	// Specified name for the backup.
 	// +kubebuilder:validation:Required
-	BackupName             *string `json:"backupName"`
+	BackupName *string `json:"backupName"`
+
+	// The name of the table.
+	TableName *string `json:"tableName,omitempty"`
+
+	// TableNameRef is a reference to an dynamodb/v1alpha1.Table used
+	// to set the TableName field.
+	// +optional
+	TableNameRef *xpv1.Reference `json:"tableNameRef,omitempty"`
+
+	// TableNameSelector selects references to dynamodb/v1alpha1.Table
+	// used to set the TableName.
+	// +optional
+	TableNameSelector *xpv1.Selector `json:"tableNameSelector,omitempty"`
+
+	// CustomBackupParameters includes the additional fields on top of
+	// the generated ones.
 	CustomBackupParameters `json:",inline"`
 }
 

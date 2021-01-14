@@ -60,10 +60,10 @@ spec:
                     description: Region is which region the Backup will be created.
                     type: string
                   tableName:
-                    description: TableName is the name of the Table whose backup will be taken.
+                    description: The name of the table.
                     type: string
                   tableNameRef:
-                    description: TableNameRef points to the Table resource whose Name will be used to fill TableName field.
+                    description: TableNameRef is a reference to an dynamodb/v1alpha1.Table used to set the TableName field.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -72,7 +72,7 @@ spec:
                     - name
                     type: object
                   tableNameSelector:
-                    description: TableNameSelector selects a Table resource.
+                    description: TableNameSelector selects references to dynamodb/v1alpha1.Table used to set the TableName.
                     properties:
                       matchControllerRef:
                         description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.

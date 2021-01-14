@@ -29,9 +29,13 @@ type GlobalTableParameters struct {
 	// Region is which region the GlobalTable will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
+
 	// The Regions where the global table needs to be created.
 	// +kubebuilder:validation:Required
-	ReplicationGroup            []*Replica `json:"replicationGroup"`
+	ReplicationGroup []*Replica `json:"replicationGroup"`
+
+	// CustomGlobalTableParameters includes the additional fields on top of
+	// the generated ones.
 	CustomGlobalTableParameters `json:",inline"`
 }
 

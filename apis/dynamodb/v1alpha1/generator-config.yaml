@@ -2,7 +2,6 @@ ignore:
   field_paths:
     - CreateTableInput.TableName
     - DeleteTableInput.TableName
-    - CreateBackupInput.TableName
     - CreateGlobalTableInput.GlobalTableName
 resources:
   Table:
@@ -16,6 +15,9 @@ resources:
         404:
           code: GlobalTableNotFoundException
   Backup:
+    fields:
+      TableName:
+        referenced_type: dynamodb/v1alpha1.Table
     exceptions:
       errors:
         404:

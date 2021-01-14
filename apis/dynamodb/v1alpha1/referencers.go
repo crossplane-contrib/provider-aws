@@ -31,7 +31,7 @@ func (mg *Backup) ResolveReferences(ctx context.Context, c client.Reader) error 
 
 	// Resolve spec.forProvider.tableName
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: mg.Spec.ForProvider.TableName,
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.TableName),
 		Reference:    mg.Spec.ForProvider.TableNameRef,
 		Selector:     mg.Spec.ForProvider.TableNameSelector,
 		To:           reference.To{Managed: &Table{}, List: &TableList{}},
@@ -40,7 +40,7 @@ func (mg *Backup) ResolveReferences(ctx context.Context, c client.Reader) error 
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.tableName")
 	}
-	mg.Spec.ForProvider.TableName = rsp.ResolvedValue
+	mg.Spec.ForProvider.TableName = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.TableNameRef = rsp.ResolvedReference
 	return nil
 }

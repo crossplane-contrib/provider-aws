@@ -43,7 +43,6 @@ func SetupBackup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) e
 		func(e *external) {
 			e.preObserve = preObserve
 			e.postObserve = postObserve
-			e.preCreate = preCreate
 			e.postCreate = postCreate
 			e.preDelete = preDelete
 		},
@@ -80,11 +79,6 @@ func postObserve(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.Describ
 		cr.SetConditions(xpv1.Unavailable())
 	}
 	return obs, nil
-}
-
-func preCreate(_ context.Context, cr *svcapitypes.Backup, obj *svcsdk.CreateBackupInput) error {
-	obj.TableName = aws.String(cr.Spec.ForProvider.TableName)
-	return nil
 }
 
 func postCreate(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.CreateBackupOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {

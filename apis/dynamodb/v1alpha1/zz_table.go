@@ -29,9 +29,11 @@ type TableParameters struct {
 	// Region is which region the Table will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
+
 	// An array of attributes that describe the key schema for the table and indexes.
 	// +kubebuilder:validation:Required
 	AttributeDefinitions []*AttributeDefinition `json:"attributeDefinitions"`
+
 	// Controls how you are charged for read and write throughput and how you manage
 	// capacity. This setting can be changed later.
 	//
@@ -41,6 +43,7 @@ type TableParameters struct {
 	//    * PAY_PER_REQUEST - We recommend using PAY_PER_REQUEST for unpredictable
 	//    workloads. PAY_PER_REQUEST sets the billing mode to On-Demand Mode (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadWriteCapacityMode.html#HowItWorks.OnDemand).
 	BillingMode *string `json:"billingMode,omitempty"`
+
 	// One or more global secondary indexes (the maximum is 20) to be created on
 	// the table. Each global secondary index in the array includes the following:
 	//
@@ -66,6 +69,7 @@ type TableParameters struct {
 	//    * ProvisionedThroughput - The provisioned throughput settings for the
 	//    global secondary index, consisting of read and write capacity units.
 	GlobalSecondaryIndexes []*GlobalSecondaryIndex `json:"globalSecondaryIndexes,omitempty"`
+
 	// Specifies the attributes that make up the primary key for a table or an index.
 	// The attributes in KeySchema must also be defined in the AttributeDefinitions
 	// array. For more information, see Data Model (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DataModel.html)
@@ -98,6 +102,7 @@ type TableParameters struct {
 	// in the Amazon DynamoDB Developer Guide.
 	// +kubebuilder:validation:Required
 	KeySchema []*KeySchemaElement `json:"keySchema"`
+
 	// One or more local secondary indexes (the maximum is 5) to be created on the
 	// table. Each index is scoped to a given partition key value. There is a 10
 	// GB size limit per partition key value; otherwise, the size of a local secondary
@@ -125,6 +130,7 @@ type TableParameters struct {
 	//    the same attribute into two different indexes, this counts as two distinct
 	//    attributes when determining the total.
 	LocalSecondaryIndexes []*LocalSecondaryIndex `json:"localSecondaryIndexes,omitempty"`
+
 	// Represents the provisioned throughput settings for a specified table or index.
 	// The settings can be modified using the UpdateTable operation.
 	//
@@ -135,8 +141,10 @@ type TableParameters struct {
 	// Account, and Table Quotas (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Limits.html)
 	// in the Amazon DynamoDB Developer Guide.
 	ProvisionedThroughput *ProvisionedThroughput `json:"provisionedThroughput,omitempty"`
+
 	// Represents the settings used to enable server-side encryption.
 	SSESpecification *SSESpecification `json:"sseSpecification,omitempty"`
+
 	// The settings for DynamoDB Streams on the table. These settings consist of:
 	//
 	//    * StreamEnabled - Indicates whether DynamoDB Streams is to be enabled
@@ -151,9 +159,13 @@ type TableParameters struct {
 	//    NEW_AND_OLD_IMAGES - Both the new and the old item images of the item
 	//    are written to the stream.
 	StreamSpecification *StreamSpecification `json:"streamSpecification,omitempty"`
+
 	// A list of key-value pairs to label the table. For more information, see Tagging
 	// for DynamoDB (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Tagging.html).
-	Tags                  []*Tag `json:"tags,omitempty"`
+	Tags []*Tag `json:"tags,omitempty"`
+
+	// CustomTableParameters includes the additional fields on top of
+	// the generated ones.
 	CustomTableParameters `json:",inline"`
 }
 

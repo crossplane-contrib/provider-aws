@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,23 +16,12 @@ limitations under the License.
 
 package v1alpha1
 
-import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+// CustomBackupParameters contains the additional custom fields for BackupParameters.
+type CustomBackupParameters struct{}
 
-// CustomBackupParameters are custom parameters for Backup.
-type CustomBackupParameters struct {
-	// TableName is the name of the Table whose backup will be taken.
-	TableName string `json:"tableName,omitempty"`
-
-	// TableNameRef points to the Table resource whose Name will be used to fill
-	// TableName field.
-	TableNameRef *xpv1.Reference `json:"tableNameRef,omitempty"`
-
-	// TableNameSelector selects a Table resource.
-	TableNameSelector *xpv1.Selector `json:"tableNameSelector,omitempty"`
-}
-
-// CustomTableParameters are custom parameters for Table.
-type CustomTableParameters struct{}
-
-// CustomGlobalTableParameters are custom parameters for GlobalTable.
+// CustomGlobalTableParameters contains the additional custom fields for
+// GlobalTableParameters.
 type CustomGlobalTableParameters struct{}
+
+// CustomTableParameters contains the additional custom fields for TableParameters.
+type CustomTableParameters struct{}

@@ -54,6 +54,9 @@ func GenerateCreateBackupInput(cr *svcapitypes.Backup) *svcsdk.CreateBackupInput
 	if cr.Spec.ForProvider.BackupName != nil {
 		res.SetBackupName(*cr.Spec.ForProvider.BackupName)
 	}
+	if cr.Spec.ForProvider.TableName != nil {
+		res.SetTableName(*cr.Spec.ForProvider.TableName)
+	}
 
 	return res
 }
