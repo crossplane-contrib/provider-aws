@@ -27,15 +27,19 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
+const (
+	keyID   = "test-key-id"
+	sseAlgo = "AES256"
+)
+
 var (
-	sseAlgo                   = "AES256"
-	keyID                     = "test-key-id"
-	_       SubresourceClient = &SSEConfigurationClient{}
+	_ SubresourceClient = &SSEConfigurationClient{}
 )
 
 func generateSSEConfig() *v1beta1.ServerSideEncryptionConfiguration {
@@ -43,7 +47,7 @@ func generateSSEConfig() *v1beta1.ServerSideEncryptionConfiguration {
 		Rules: []v1beta1.ServerSideEncryptionRule{
 			{
 				ApplyServerSideEncryptionByDefault: v1beta1.ServerSideEncryptionByDefault{
-					KMSMasterKeyID: &keyID,
+					KMSMasterKeyID: aws.String(keyID),
 					SSEAlgorithm:   sseAlgo,
 				},
 			},
@@ -56,7 +60,7 @@ func generateAWSSSE() *s3.ServerSideEncryptionConfiguration {
 		Rules: []s3.ServerSideEncryptionRule{
 			{
 				ApplyServerSideEncryptionByDefault: &s3.ServerSideEncryptionByDefault{
-					KMSMasterKeyID: &keyID,
+					KMSMasterKeyID: aws.String(keyID),
 					SSEAlgorithm:   s3.ServerSideEncryptionAes256,
 				},
 			},
