@@ -37,6 +37,7 @@ import (
 	identityv1alpha1 "github.com/crossplane/provider-aws/apis/identity/v1alpha1"
 	identityv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	notificationv1alpha3 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
+	rdsv1alpha1 "github.com/crossplane/provider-aws/apis/rds/v1alpha1"
 	redshiftv1alpha1 "github.com/crossplane/provider-aws/apis/redshift/v1alpha1"
 	route53v1alpha1 "github.com/crossplane/provider-aws/apis/route53/v1alpha1"
 	s3v1alpha2 "github.com/crossplane/provider-aws/apis/s3/v1alpha2"
@@ -75,6 +76,7 @@ func init() {
 		apigatewayv2.SchemeBuilder.AddToScheme,
 		sfnv1alpha1.SchemeBuilder.AddToScheme,
 		dynamodbv1alpha1.SchemeBuilder.AddToScheme,
+		rdsv1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 

@@ -1,0 +1,21 @@
+ignore:
+  field_paths:
+    - DescribeDBClustersOutput.DBClusterIdentifier
+    - CreateDBClusterInput..DBClusterIdentifier
+    - ModifyDBClusterInput.DBClusterIdentifier
+    - ModifyDBClusterInput.DBClusterIdentifier
+  resource_names:
+    - DBClusterEndpoint
+    - CustomAvailabilityZone
+    - DBClusterParameterGroup
+    - DBClusterSnapshot
+    - DBInstance
+    - DBInstanceReadReplica
+    - DBParameterGroup
+    - DBProxy
+    - DBSecurityGroup
+    - DBSnapshot
+    - DBSubnetGroup
+    - EventSubscription
+    - GlobalCluster
+    - OptionGroup

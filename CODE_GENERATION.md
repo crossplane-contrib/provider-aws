@@ -47,8 +47,8 @@ ignore:
 ```
 
 When you re-run the generation with this configuration, existing files won't be
-deleted. So you may want to delete everything in `apis/<serviceid>/v1alpha1` except
-`generator-config.yaml` and then re-run the command.
+deleted. So you may want to delete everything in `apis/<serviceid>/v1alpha1` and `pkg/controller/<serviceid>` except
+`generator-config.yaml` and  .... and then re-run the command.
 
 If this step fails for some reason, please raise an issue in [ACK](https://github.com/aws/aws-controllers-k8s/)
 and mention that you're using Crossplane pipeline.
@@ -85,7 +85,7 @@ their generation yet.
 ### Setup Controller
 
 The generated controller needs to be registered with the main controller manager
-of the provider. Create a file called `pkg/controller/<serviceid>/setup.go` and
+of the provider. Create a file called `pkg/controller/<serviceid>/<resourceid>/setup.go` and
 add the setup function like the following:
 ```golang
 // SetupStage adds a controller that reconciles Stage.
@@ -157,11 +157,14 @@ in generation and then inject the value of our annotation in its place in the SD
 
 Likely, we need to do this injection before every SDK call. The following is an
 example for hook functions injected:
+// TODO: we mention to create setup.go in the previous step but all existing examples 
+//  including the eg given below just use the hooks.go for that, update it.
+
 ```golang
 // SetupStage adds a controller that reconciles Stage.
 func SetupStage(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
-	opts := []option{
+	opts := []option {
 		func(e *external) {
 			e.preObserve = preObserve
 			e.preCreate = preCreate
