@@ -45,15 +45,17 @@ var (
 	policy         = `{"Statement":[{"Action":"s3:ListBucket","Effect":"Allow","Principal":"*","Resource":"arn:aws:s3:::test.s3.crossplane.com"}],"Version":"2012-10-17"}`
 
 	params = v1alpha3.BucketPolicyParameters{
-		Version: "2012-10-17",
-		Statements: []v1alpha3.BucketPolicyStatement{
-			{
-				Effect: "Allow",
-				Principal: &v1alpha3.BucketPrincipal{
-					AllowAnon: true,
+		PolicyBody: &v1alpha3.BucketPolicyBody{
+			Version: "2012-10-17",
+			Statements: []v1alpha3.BucketPolicyStatement{
+				{
+					Effect: "Allow",
+					Principal: &v1alpha3.BucketPrincipal{
+						AllowAnon: true,
+					},
+					Action:   []string{"s3:ListBucket"},
+					Resource: []string{"arn:aws:s3:::test.s3.crossplane.com"},
 				},
-				Action:   []string{"s3:ListBucket"},
-				Resource: []string{"arn:aws:s3:::test.s3.crossplane.com"},
 			},
 		},
 	}
@@ -72,15 +74,17 @@ func withConditions(c ...xpv1.Condition) bucketPolicyModifier {
 }
 
 func withPolicy(s *v1alpha3.BucketPolicyParameters) bucketPolicyModifier {
-	return func(r *v1alpha3.BucketPolicy) { r.Spec.PolicyBody = *s }
+	return func(r *v1alpha3.BucketPolicy) { r.Spec.Parameters = *s }
 }
 
 func bucketPolicy(m ...bucketPolicyModifier) *v1alpha3.BucketPolicy {
 	cr := &v1alpha3.BucketPolicy{
 		Spec: v1alpha3.BucketPolicySpec{
-			PolicyBody: v1alpha3.BucketPolicyParameters{
+			Parameters: v1alpha3.BucketPolicyParameters{
 				BucketName: &bucketName,
-				Statements: make([]v1alpha3.BucketPolicyStatement, 0),
+				PolicyBody: &v1alpha3.BucketPolicyBody{
+					Statements: make([]v1alpha3.BucketPolicyStatement, 0),
+				},
 			},
 		},
 	}
