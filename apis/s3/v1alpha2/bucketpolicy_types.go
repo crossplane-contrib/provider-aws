@@ -98,7 +98,7 @@ type BucketPolicyStatement struct {
 	// Condition specifies where conditions for policy are in effect.
 	// https://docs.aws.amazon.com/AmazonS3/latest/dev/amazon-s3-policy-keys.html
 	// +optional
-	Condition map[string]Condition `json:"condition,omitempty"`
+	Condition []Condition `json:"condition,omitempty"`
 }
 
 // BucketPrincipal defines the principal users affected by
@@ -162,7 +162,13 @@ type AWSPrincipal struct {
 }
 
 // Condition represents a set of condition pairs for a bucket policy
-type Condition []ConditionPair
+type Condition struct {
+	// OperatorKey matches the condition key and value in the policy against values in the request context
+	OperatorKey string `json:"operatorKey"`
+
+	// Conditions represents each of the key/value pairs for the operator key
+	Conditions []ConditionPair `json:"conditions"`
+}
 
 // ConditionPair represents one condition inside of the set of conditions for
 // a bucket policy

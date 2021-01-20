@@ -53,7 +53,7 @@ func withResourcePath(s []string) statementModifier {
 	}
 }
 
-func withConditionBlock(m map[string]v1alpha2.Condition) statementModifier {
+func withConditionBlock(m []v1alpha2.Condition) statementModifier {
 	return func(statement *v1alpha2.BucketPolicyStatement) {
 		statement.Condition = m
 	}
@@ -107,15 +107,18 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 				}),
 				withPolicyAction([]string{"s3:ListBucket"}),
 				withResourcePath([]string{"arn:aws:s3:::test.s3.crossplane.com"}),
-				withConditionBlock(map[string]v1alpha2.Condition{
-					"test": {
-						{
-							ConditionKey:         "test",
-							ConditionStringValue: aws.String("testKey"),
-						},
-						{
-							ConditionKey:         "test2",
-							ConditionStringValue: aws.String("testKey2"),
+				withConditionBlock([]v1alpha2.Condition{
+					{
+						OperatorKey: "test",
+						Conditions: []v1alpha2.ConditionPair{
+							{
+								ConditionKey:         "test",
+								ConditionStringValue: aws.String("testKey"),
+							},
+							{
+								ConditionKey:         "test2",
+								ConditionStringValue: aws.String("testKey2"),
+							},
 						},
 					},
 				}),
