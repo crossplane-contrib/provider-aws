@@ -31,22 +31,22 @@ func (mg *BucketPolicy) ResolveReferences(ctx context.Context, c client.Reader) 
 	r := reference.NewAPIResolver(c, mg)
 	// Resolve spec.forProvider.bucketName
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: reference.FromPtrValue(mg.Spec.PolicyBody.BucketName),
-		Reference:    mg.Spec.PolicyBody.BucketNameRef,
-		Selector:     mg.Spec.PolicyBody.BucketNameSelector,
+		CurrentValue: reference.FromPtrValue(mg.Spec.Parameters.BucketName),
+		Reference:    mg.Spec.Parameters.BucketNameRef,
+		Selector:     mg.Spec.Parameters.BucketNameSelector,
 		To:           reference.To{Managed: &v1beta1.Bucket{}, List: &v1beta1.BucketList{}},
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return errors.Wrap(err, "spec.forProvider.bucketName")
 	}
-	mg.Spec.PolicyBody.BucketName = reference.ToPtrValue(rsp.ResolvedValue)
-	mg.Spec.PolicyBody.BucketNameRef = rsp.ResolvedReference
+	mg.Spec.Parameters.BucketName = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.Parameters.BucketNameRef = rsp.ResolvedReference
 
 	// Resolve spec.forProvider.userName
-	if mg.Spec.PolicyBody.Statements != nil {
-		for i := range mg.Spec.PolicyBody.Statements {
-			statement := mg.Spec.PolicyBody.Statements[i]
+	if mg.Spec.Parameters.PolicyBody.Statements != nil {
+		for i := range mg.Spec.Parameters.PolicyBody.Statements {
+			statement := mg.Spec.Parameters.PolicyBody.Statements[i]
 			err = ResolvePrincipal(ctx, r, statement.Principal, i)
 			if err != nil {
 				return err

@@ -55,7 +55,7 @@ func IsErrorBucketNotFound(err error) bool {
 }
 
 // Serialize is the custom marshaller for the BucketPolicyParameters
-func Serialize(p v1alpha3.BucketPolicyParameters) (interface{}, error) {
+func Serialize(p *v1alpha3.BucketPolicyBody) (interface{}, error) {
 	m := make(map[string]interface{})
 	m["Version"] = p.Version
 	if p.ID != "" {
