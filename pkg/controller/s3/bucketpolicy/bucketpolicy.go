@@ -33,7 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/s3/v1alpha2"
+	"github.com/crossplane/provider-aws/apis/s3/v1alpha3"
 	awscommon "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
@@ -49,13 +49,13 @@ const (
 // SetupBucketPolicy adds a controller that reconciles
 // BucketPolicies.
 func SetupBucketPolicy(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha2.BucketPolicyGroupKind)
+	name := managed.ControllerName(v1alpha3.BucketPolicyGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha2.BucketPolicy{}).
+		For(&v1alpha3.BucketPolicy{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha2.BucketPolicyGroupVersionKind),
+			resource.ManagedKind(v1alpha3.BucketPolicyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(),
 				newClientFn: s3.NewBucketPolicyClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
@@ -69,7 +69,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha2.BucketPolicy)
+	cr, ok := mg.(*v1alpha3.BucketPolicy)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -86,7 +86,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mgd.(*v1alpha2.BucketPolicy)
+	cr, ok := mgd.(*v1alpha3.BucketPolicy)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -117,7 +117,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 // formatBucketPolicy parses and formats the bucket.Spec.BucketPolicy struct
-func (e *external) formatBucketPolicy(original *v1alpha2.BucketPolicy) (*string, error) {
+func (e *external) formatBucketPolicy(original *v1alpha3.BucketPolicy) (*string, error) {
 	c := original.DeepCopy()
 	body, err := s3.Serialize(c.Spec.PolicyBody)
 	if err != nil {
@@ -132,7 +132,7 @@ func (e *external) formatBucketPolicy(original *v1alpha2.BucketPolicy) (*string,
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha2.BucketPolicy)
+	cr, ok := mgd.(*v1alpha3.BucketPolicy)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -151,7 +151,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 // Update patches the existing policy for the bucket with the policy in the request body
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1alpha2.BucketPolicy)
+	cr, ok := mgd.(*v1alpha3.BucketPolicy)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -167,7 +167,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 // Delete removes the existing policy for a bucket
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha2.BucketPolicy)
+	cr, ok := mgd.(*v1alpha3.BucketPolicy)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

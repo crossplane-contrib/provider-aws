@@ -1,4 +1,4 @@
-apiVersion: s3.aws.crossplane.io/v1alpha2
+apiVersion: s3.aws.crossplane.io/v1alpha3
 kind: BucketPolicy
 metadata:
   name: bucketpolicy-public
