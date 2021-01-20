@@ -42,7 +42,7 @@ GO111MODULE = on
 # ====================================================================================
 # Setup Images
 
-DOCKER_REGISTRY = crossplane
+DOCKER_REGISTRY ?= crossplane
 IMAGES = provider-aws provider-aws-controller
 -include build/makelib/image.mk
 
