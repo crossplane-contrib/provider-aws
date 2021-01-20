@@ -157,11 +157,11 @@ func SerializeAWSPrincipal(p v1alpha2.AWSPrincipal) *string {
 
 // SerializeBucketCondition converts the string -> Condition map
 // into a serialized version
-func SerializeBucketCondition(p map[string]v1alpha2.Condition) (interface{}, error) {
+func SerializeBucketCondition(p []v1alpha2.Condition) (interface{}, error) {
 	m := make(map[string]interface{})
-	for k, v := range p {
+	for _, v := range p {
 		subMap := make(map[string]interface{})
-		for _, c := range v {
+		for _, c := range v.Conditions {
 			switch {
 			case c.ConditionStringValue != nil:
 				subMap[c.ConditionKey] = *c.ConditionStringValue
@@ -174,10 +174,10 @@ func SerializeBucketCondition(p map[string]v1alpha2.Condition) (interface{}, err
 			case c.ConditionListValue != nil:
 				subMap[c.ConditionKey] = c.ConditionListValue
 			default:
-				return nil, fmt.Errorf("no value provided for key with value %s, condition %s", c.ConditionKey, k)
+				return nil, fmt.Errorf("no value provided for key with value %s, condition %s", c.ConditionKey, v.OperatorKey)
 			}
 		}
-		m[k] = subMap
+		m[v.OperatorKey] = subMap
 	}
 	return m, nil
 }
