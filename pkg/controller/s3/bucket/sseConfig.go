@@ -75,7 +75,7 @@ func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.B
 
 	for i, Rule := range config.Rules {
 		outputRule := external.ServerSideEncryptionConfiguration.Rules[i].ApplyServerSideEncryptionByDefault
-		if outputRule.KMSMasterKeyID != Rule.ApplyServerSideEncryptionByDefault.KMSMasterKeyID {
+		if aws.StringValue(outputRule.KMSMasterKeyID) != aws.StringValue(Rule.ApplyServerSideEncryptionByDefault.KMSMasterKeyID) {
 			return NeedsUpdate, nil
 		}
 		if string(outputRule.SSEAlgorithm) != Rule.ApplyServerSideEncryptionByDefault.SSEAlgorithm {
