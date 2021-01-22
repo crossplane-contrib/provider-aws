@@ -20,6 +20,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/google/go-cmp/cmp"
 
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+
 	"github.com/crossplane/provider-aws/apis/sqs/v1beta1"
 )
 
@@ -29,6 +32,7 @@ var (
 	tagKey                            = "k"
 	tagValue                          = "v"
 	arn                               = "arn"
+	url                               = "url"
 	maxReceiveCount int64             = 5
 	m               map[string]string = make(map[string]string)
 )
@@ -327,6 +331,38 @@ func TestTagsDiff(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.added, added); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGetConnectionDetails(t *testing.T) {
+	cases := map[string]struct {
+		queue v1beta1.Queue
+		want  managed.ConnectionDetails
+	}{
+		"ValidInstance": {
+			queue: v1beta1.Queue{
+				Status: v1beta1.QueueStatus{
+					AtProvider: v1beta1.QueueObservation{
+						URL: url,
+					},
+				},
+			},
+			want: managed.ConnectionDetails{
+				xpv1.ResourceCredentialsSecretEndpointKey: []byte(url),
+			},
+		},
+		"NilInstance": {
+			queue: v1beta1.Queue{},
+			want:  nil,
+		}}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := GetConnectionDetails(tc.queue)
+			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

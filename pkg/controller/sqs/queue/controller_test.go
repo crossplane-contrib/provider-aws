@@ -127,6 +127,9 @@ func TestObserve(t *testing.T) {
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
+					ConnectionDetails: managed.ConnectionDetails{
+						xpv1.ResourceCredentialsSecretEndpointKey: []byte(queueURL),
+					},
 				},
 			},
 		},
@@ -233,6 +236,11 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: queue(withExternalName(queueURL),
 					withConditions(xpv1.Creating())),
+				result: managed.ExternalCreation{
+					ConnectionDetails: managed.ConnectionDetails{
+						xpv1.ResourceCredentialsSecretEndpointKey: []byte(queueURL),
+					},
+				},
 			},
 		},
 		"CreateFail": {
