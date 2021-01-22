@@ -190,6 +190,9 @@ type RemoteAccessConfig struct {
 // NodeGroupScalingConfig is the configuration for scaling a node group.
 type NodeGroupScalingConfig struct {
 	// The current number of worker nodes that the managed node group should maintain.
+	// This value should be left unset if another controller, such as cluster-autoscaler,
+	// is expected to manage the desired size of the node group. If not set, the initial
+	// desired size will be the configured minimum size of the node group.
 	// +optional
 	DesiredSize *int64 `json:"desiredSize,omitempty"`
 
@@ -202,6 +205,12 @@ type NodeGroupScalingConfig struct {
 	// in to. This number must be greater than zero.
 	// +optional
 	MinSize *int64 `json:"minSize,omitempty"`
+}
+
+// NodeGroupScalingConfigStatus is the observed scaling configuration for a node group.
+type NodeGroupScalingConfigStatus struct {
+	// The current number of worker nodes for the managed node group.
+	DesiredSize *int64 `json:"desiredSize,omitempty"`
 }
 
 // NodeGroupObservation is the observed state of a NodeGroup.
@@ -223,6 +232,10 @@ type NodeGroupObservation struct {
 	// The resources associated with the node group, such as Auto Scaling groups
 	// and security groups for remote access.
 	Resources NodeGroupResources `json:"resources,omitempty"`
+
+	// The scaling configuration details for the Auto Scaling group that is created
+	// for your node group.
+	ScalingConfig NodeGroupScalingConfigStatus `json:"scalingConfig,omitempty"`
 
 	// The current status of the managed node group.
 	Status NodeGroupStatusType `json:"status,omitempty"`
