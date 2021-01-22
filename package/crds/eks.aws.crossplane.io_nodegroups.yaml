@@ -167,7 +167,7 @@ spec:
                     description: The scaling configuration details for the Auto Scaling group that is created for your node group.
                     properties:
                       desiredSize:
-                        description: The current number of worker nodes that the managed node group should maintain.
+                        description: The current number of worker nodes that the managed node group should maintain. This value should be left unset if another controller, such as cluster-autoscaler, is expected to manage the desired size of the node group. If not set, the initial desired size will be the configured minimum size of the node group.
                         format: int64
                         type: integer
                       maxSize:
@@ -308,6 +308,14 @@ spec:
                       remoteAccessSecurityGroup:
                         description: The remote access security group associated with the node group. This security group controls SSH access to the worker nodes.
                         type: string
+                    type: object
+                  scalingConfig:
+                    description: The scaling configuration details for the Auto Scaling group that is created for your node group.
+                    properties:
+                      desiredSize:
+                        description: The current number of worker nodes for the managed node group.
+                        format: int64
+                        type: integer
                     type: object
                   status:
                     description: The current status of the managed node group.
