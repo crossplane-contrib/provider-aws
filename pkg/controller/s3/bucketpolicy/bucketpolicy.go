@@ -44,7 +44,7 @@ const (
 	errDelete           = "failed to delete the policy for bucket"
 	errGet              = "failed to get BucketPolicy for bucket with name"
 	errUpdate           = "failed to update the policy for bucket"
-	errNotSpecified     = "failed to format bucketPolicy, no policyBody or jsonBody specified"
+	errNotSpecified     = "failed to format bucketPolicy, no rawPolicy or policy specified"
 )
 
 // SetupBucketPolicy adds a controller that reconciles
@@ -74,7 +74,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.PolicyBody.Region)
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.Parameters.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -118,13 +118,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 // formatBucketPolicy parses and formats the bucket.Spec.BucketPolicy struct
-func (e *external) formatBucketPolicy(original *v1alpha2.BucketPolicy) (*string, error) {
+func (e *external) formatBucketPolicy(original *v1alpha3.BucketPolicy) (*string, error) {
+	if original == nil {
+		return nil, errors.New(errNotSpecified)
+	}
 	switch {
-	case original.Spec.Parameters.JSONBody != nil:
-		return original.Spec.Parameters.JSONBody, nil
-	case original.Spec.Parameters.PolicyBody != nil:
+	case original.Spec.Parameters.RawPolicy != nil:
+		return original.Spec.Parameters.RawPolicy, nil
+	case original.Spec.Parameters.Policy != nil:
 		c := original.DeepCopy()
-		body, err := s3.Serialize(c.Spec.Parameters.PolicyBody)
+		body, err := s3.Serialize(c.Spec.Parameters.Policy)
 		if err != nil {
 			return nil, err
 		}

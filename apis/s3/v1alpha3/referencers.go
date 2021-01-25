@@ -44,9 +44,9 @@ func (mg *BucketPolicy) ResolveReferences(ctx context.Context, c client.Reader) 
 	mg.Spec.Parameters.BucketNameRef = rsp.ResolvedReference
 
 	// Resolve spec.forProvider.userName
-	if mg.Spec.Parameters.PolicyBody.Statements != nil {
-		for i := range mg.Spec.Parameters.PolicyBody.Statements {
-			statement := mg.Spec.Parameters.PolicyBody.Statements[i]
+	if mg.Spec.Parameters.Policy != nil && mg.Spec.Parameters.Policy.Statements != nil {
+		for i := range mg.Spec.Parameters.Policy.Statements {
+			statement := mg.Spec.Parameters.Policy.Statements[i]
 			err = ResolvePrincipal(ctx, r, statement.Principal, i)
 			if err != nil {
 				return err

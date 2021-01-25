@@ -7,20 +7,21 @@ spec:
     region: us-west-1
     bucketNameRef:
       name: test-bucket
-    statements:
-      - action:
-          - s3:ListBucket
-          - s3:GetBucketLocation
-          - s3:ListBucketMultipartUploads
-          - s3:PutBucketCORS
-        effect: Allow
-        principal:
-          awsPrincipals:
-            - iamUserArnSelector:
-                example: "true"
-        resource:
-          - "arn:aws:s3:::test-bucket"
-        condition:
+    policy:
+      statements:
+        - action:
+            - s3:ListBucket
+            - s3:GetBucketLocation
+            - s3:ListBucketMultipartUploads
+            - s3:PutBucketCORS
+          effect: Allow
+          principal:
+            awsPrincipals:
+              - iamUserArnSelector:
+                  example: "true"
+          resource:
+            - "arn:aws:s3:::test-bucket"
+          condition:
           - operatorKey: StringEquals
             conditions:
               - key: "aws:Key1"
