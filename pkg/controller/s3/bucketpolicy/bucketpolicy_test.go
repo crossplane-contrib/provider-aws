@@ -45,7 +45,7 @@ var (
 	policy         = `{"Statement":[{"Action":"s3:ListBucket","Effect":"Allow","Principal":"*","Resource":"arn:aws:s3:::test.s3.crossplane.com"}],"Version":"2012-10-17"}`
 
 	params = v1alpha3.BucketPolicyParameters{
-		PolicyBody: &v1alpha3.BucketPolicyBody{
+		Policy: &v1alpha3.BucketPolicyBody{
 			Version: "2012-10-17",
 			Statements: []v1alpha3.BucketPolicyStatement{
 				{
@@ -82,7 +82,7 @@ func bucketPolicy(m ...bucketPolicyModifier) *v1alpha3.BucketPolicy {
 		Spec: v1alpha3.BucketPolicySpec{
 			Parameters: v1alpha3.BucketPolicyParameters{
 				BucketName: &bucketName,
-				PolicyBody: &v1alpha3.BucketPolicyBody{
+				Policy: &v1alpha3.BucketPolicyBody{
 					Statements: make([]v1alpha3.BucketPolicyStatement, 0),
 				},
 			},
@@ -390,6 +390,70 @@ func TestDelete(t *testing.T) {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestFormat(t *testing.T) {
+	type formatarg struct {
+		cr *v1alpha3.BucketPolicy
+	}
+	type want struct {
+		str string
+		err error
+	}
+
+	cases := map[string]struct {
+		args formatarg
+		want
+	}{
+		"VaildInput": {
+			args: formatarg{
+				cr: bucketPolicy(withPolicy(&params)),
+			},
+			want: want{
+				str: policy,
+			},
+		},
+		"InValidInput": {
+			args: formatarg{
+				cr: nil,
+			},
+			want: want{
+				err: errors.New(errNotSpecified),
+			},
+		},
+		"StringPolicy": {
+			args: formatarg{
+				cr: bucketPolicy(withPolicy(&v1alpha3.BucketPolicyParameters{
+					RawPolicy: &policy,
+				})),
+			},
+			want: want{
+				str: policy,
+			},
+		},
+		"NoPolicy": {
+			args: formatarg{
+				cr: bucketPolicy(withPolicy(&v1alpha3.BucketPolicyParameters{})),
+			},
+			want: want{
+				err: errors.New(errNotSpecified),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{}
+			str, err := e.formatBucketPolicy(tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.str, aws.StringValue(str)); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

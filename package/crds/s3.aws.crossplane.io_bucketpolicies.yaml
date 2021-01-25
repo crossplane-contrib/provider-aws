@@ -80,11 +80,8 @@ spec:
                         description: MatchLabels ensures an object with matching labels is selected.
                         type: object
                     type: object
-                  jsonBody:
-                    description: JSONStatement is a stringified version of the S3 Bucket Policy. either jsonBody or policyBody must be specified in the policy
-                    type: string
-                  policyBody:
-                    description: Statement is a well defined type which can be parsed into an JSON S3 Bucket Policy either jsonBody or policyBody must be specified in the policy
+                  policy:
+                    description: Policy is a well defined type which can be parsed into an JSON S3 Bucket Policy either policy or rawPolicy must be specified in the policy
                     properties:
                       id:
                         description: ID is the policy's optional identifier
@@ -318,11 +315,18 @@ spec:
                           type: object
                         type: array
                       version:
+                        default: "2012-10-17"
                         description: Version is the current IAM policy version
+                        enum:
+                        - "2012-10-17"
+                        - "2008-10-17"
                         type: string
                     required:
                     - version
                     type: object
+                  rawPolicy:
+                    description: RawPolicy is a stringified version of the S3 Bucket Policy. either policy or rawPolicy must be specified in the policy
+                    type: string
                   region:
                     description: Region is where the Bucket referenced by this BucketPolicy resides.
                     type: string
