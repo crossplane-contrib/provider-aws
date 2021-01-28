@@ -1,17 +1,12 @@
-# Contributing New Resource Using ACK
+# Contributing New Resource Using AWS Go Code Generation Pipeline
 
-[AWS Controllers for Kubernetes (ACK)](https://aws.github.io/aws-controllers-k8s/)
-is an open source project built by AWS that has Kubernetes controllers for AWS
-services and a code generation pipeline built to generate those controllers from
-AWS Go SDK. We are collaborating with ACK community to get more coverage of AWS
-services in provider-aws by using some parts of the ACK code generation pipeline.
-
-Even though we are able to use the same code generation pipeline, Crossplane and
-ACK differs in terms of how their CRDs look like, what common reconciler they use
-and how the controllers are deployed etc. What we generate apart from generic
-Crossplane boilerplate can be summarized into conversion functions between AWS SDK
-structs and local structs and the CRD fields under `spec.forProvider`/`status.atProvider`
-structs.
+[AWS Go code generator](https://github.com/aws-controllers-k8s/code-generator) is designed to generate code for Go controllers.
+Working with AWS community, we have added support to generate Crossplane controllers.
+The generated code covers mostly AWS API related parts such as `forProvider` fields
+in CRDs and conversion functions between CRD and AWS Go SDK structs. The rest of
+the controller is very similar to manually implemented ones; they use the same
+Crossplane managed reconciler, CRDs follow the same patterns and all additional
+functionalities of Crossplane are supported.
 
 Most of the generated code is ready to go but there are places where we need
 Crossplane-specific functionality, or some hacks to work around non-generic
@@ -21,16 +16,20 @@ This guide shows how to get a new resource support up and running step by step.
 
 ## Code generation
 
-This is the very first step. You need to clone [ACK repository](https://github.com/aws/aws-controllers-k8s/) and run the following
+This is the very first step. You need to clone [code generator](https://github.com/aws-controllers-k8s/code-generator) from AWS and run the following
 command in the root directory:
 
 ```console
 go run -tags codegen cmd/ack-generate/main.go crossplane <ServiceID> --provider-dir <provider-aws directory>
 ```
 
-`ServiceID` list is found [here](https://github.com/aws/aws-sdk-go/tree/v1.34.32/models/apis).
+Full `ServiceID` list is found [here](https://github.com/aws/aws-sdk-go/tree/v1.34.32/models/apis).
 For example, in order to generate Lambda resources, you need to use `lambda` as
-Service ID.
+Service ID. Here is an example call:
+
+```console
+go run -tags codegen cmd/ack-generate/main.go crossplane dynamodb --provider-dir /Users/username/go/src/github.com/crossplane/provider-aws
+```
 
 The first run will take a while since it clones AWS SDK. Once it is completed,
 you'll see new folders in `apis` and `pkg/controller` directories. By default,
@@ -50,7 +49,7 @@ When you re-run the generation with this configuration, existing files won't be
 deleted. So you may want to delete everything in `apis/<serviceid>/v1alpha1` except
 `generator-config.yaml` and then re-run the command.
 
-If this step fails for some reason, please raise an issue in [ACK](https://github.com/aws/aws-controllers-k8s/)
+If this step fails for some reason, please raise an issue in [code-generator](https://github.com/aws-controllers-k8s/code-generator)
 and mention that you're using Crossplane pipeline.
 
 ### Crossplane Code Generation
