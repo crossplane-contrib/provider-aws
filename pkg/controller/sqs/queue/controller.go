@@ -126,8 +126,9 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr.Status.AtProvider = sqs.GenerateQueueObservation(*getURLResponse.QueueUrl, resAttributes.Attributes)
 
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: sqs.IsUpToDate(cr.Spec.ForProvider, resAttributes.Attributes, resTags.Tags),
+		ResourceExists:    true,
+		ResourceUpToDate:  sqs.IsUpToDate(cr.Spec.ForProvider, resAttributes.Attributes, resTags.Tags),
+		ConnectionDetails: sqs.GetConnectionDetails(*cr),
 	}, nil
 }
 
@@ -138,13 +139,19 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	cr.SetConditions(xpv1.Creating())
-
-	_, err := e.client.CreateQueueRequest(&awssqs.CreateQueueInput{
+	resp, err := e.client.CreateQueueRequest(&awssqs.CreateQueueInput{
 		Attributes: sqs.GenerateCreateAttributes(&cr.Spec.ForProvider),
 		QueueName:  aws.String(meta.GetExternalName(cr)),
 		Tags:       cr.Spec.ForProvider.Tags,
 	}).Send(ctx)
-	return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
+
+	if err != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
+	}
+	conn := managed.ConnectionDetails{
+		xpv1.ResourceCredentialsSecretEndpointKey: []byte(*resp.QueueUrl),
+	}
+	return managed.ExternalCreation{ConnectionDetails: conn}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {

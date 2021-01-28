@@ -26,6 +26,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/google/go-cmp/cmp"
 
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+
 	"github.com/crossplane/provider-aws/apis/sqs/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
@@ -255,4 +258,14 @@ func int64Ptr(s string) *int64 {
 		return nil
 	}
 	return &v
+}
+
+// GetConnectionDetails extracts managed.ConnectionDetails out of v1beta1.Queue.
+func GetConnectionDetails(in v1beta1.Queue) managed.ConnectionDetails {
+	if in.Status.AtProvider.URL == "" {
+		return nil
+	}
+	return managed.ConnectionDetails{
+		xpv1.ResourceCredentialsSecretEndpointKey: []byte(in.Status.AtProvider.URL),
+	}
 }
