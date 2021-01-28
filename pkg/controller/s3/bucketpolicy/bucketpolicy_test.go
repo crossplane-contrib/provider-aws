@@ -32,7 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/s3/v1alpha2"
+	"github.com/crossplane/provider-aws/apis/s3/v1alpha3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 )
@@ -43,12 +43,12 @@ var (
 	bucketName     = "test.s3.crossplane.com"
 	policy         = `{"Statement":[{"Action":"s3:ListBucket","Effect":"Allow","Principal":"*","Resource":"arn:aws:s3:::test.s3.crossplane.com"}],"Version":"2012-10-17"}`
 
-	params = v1alpha2.BucketPolicyParameters{
+	params = v1alpha3.BucketPolicyParameters{
 		Version: "2012-10-17",
-		Statements: []v1alpha2.BucketPolicyStatement{
+		Statements: []v1alpha3.BucketPolicyStatement{
 			{
 				Effect: "Allow",
-				Principal: &v1alpha2.BucketPrincipal{
+				Principal: &v1alpha3.BucketPrincipal{
 					AllowAnon: true,
 				},
 				Action:   []string{"s3:ListBucket"},
@@ -64,22 +64,22 @@ type args struct {
 	cr resource.Managed
 }
 
-type bucketPolicyModifier func(policy *v1alpha2.BucketPolicy)
+type bucketPolicyModifier func(policy *v1alpha3.BucketPolicy)
 
 func withConditions(c ...xpv1.Condition) bucketPolicyModifier {
-	return func(r *v1alpha2.BucketPolicy) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1alpha3.BucketPolicy) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withPolicy(s *v1alpha2.BucketPolicyParameters) bucketPolicyModifier {
-	return func(r *v1alpha2.BucketPolicy) { r.Spec.PolicyBody = *s }
+func withPolicy(s *v1alpha3.BucketPolicyParameters) bucketPolicyModifier {
+	return func(r *v1alpha3.BucketPolicy) { r.Spec.PolicyBody = *s }
 }
 
-func bucketPolicy(m ...bucketPolicyModifier) *v1alpha2.BucketPolicy {
-	cr := &v1alpha2.BucketPolicy{
-		Spec: v1alpha2.BucketPolicySpec{
-			PolicyBody: v1alpha2.BucketPolicyParameters{
+func bucketPolicy(m ...bucketPolicyModifier) *v1alpha3.BucketPolicy {
+	cr := &v1alpha3.BucketPolicy{
+		Spec: v1alpha3.BucketPolicySpec{
+			PolicyBody: v1alpha3.BucketPolicyParameters{
 				BucketName: &bucketName,
-				Statements: make([]v1alpha2.BucketPolicyStatement, 0),
+				Statements: make([]v1alpha3.BucketPolicyStatement, 0),
 			},
 		},
 	}

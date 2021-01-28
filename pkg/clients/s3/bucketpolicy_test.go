@@ -23,7 +23,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/s3/v1alpha2"
+	"github.com/crossplane/provider-aws/apis/s3/v1alpha3"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -33,34 +33,34 @@ var (
 	statementID = aws.String("1")
 )
 
-type statementModifier func(statement *v1alpha2.BucketPolicyStatement)
+type statementModifier func(statement *v1alpha3.BucketPolicyStatement)
 
-func withPrincipal(s *v1alpha2.BucketPrincipal) statementModifier {
-	return func(statement *v1alpha2.BucketPolicyStatement) {
+func withPrincipal(s *v1alpha3.BucketPrincipal) statementModifier {
+	return func(statement *v1alpha3.BucketPolicyStatement) {
 		statement.Principal = s
 	}
 }
 
 func withPolicyAction(s []string) statementModifier {
-	return func(statement *v1alpha2.BucketPolicyStatement) {
+	return func(statement *v1alpha3.BucketPolicyStatement) {
 		statement.Action = s
 	}
 }
 
 func withResourcePath(s []string) statementModifier {
-	return func(statement *v1alpha2.BucketPolicyStatement) {
+	return func(statement *v1alpha3.BucketPolicyStatement) {
 		statement.Resource = s
 	}
 }
 
-func withConditionBlock(m map[string]v1alpha2.Condition) statementModifier {
-	return func(statement *v1alpha2.BucketPolicyStatement) {
+func withConditionBlock(m []v1alpha3.Condition) statementModifier {
+	return func(statement *v1alpha3.BucketPolicyStatement) {
 		statement.Condition = m
 	}
 }
 
-func policyStatement(m ...statementModifier) *v1alpha2.BucketPolicyStatement {
-	cr := &v1alpha2.BucketPolicyStatement{
+func policyStatement(m ...statementModifier) *v1alpha3.BucketPolicyStatement {
+	cr := &v1alpha3.BucketPolicyStatement{
 		SID:    statementID,
 		Effect: effect,
 	}
@@ -72,7 +72,7 @@ func policyStatement(m ...statementModifier) *v1alpha2.BucketPolicyStatement {
 
 func TestSerializeBucketPolicyStatement(t *testing.T) {
 	cases := map[string]struct {
-		in  v1alpha2.BucketPolicyStatement
+		in  v1alpha3.BucketPolicyStatement
 		out string
 		err error
 	}{
@@ -82,7 +82,7 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 		},
 		"ValidInput": {
 			in: *policyStatement(
-				withPrincipal(&v1alpha2.BucketPrincipal{
+				withPrincipal(&v1alpha3.BucketPrincipal{
 					AllowAnon: true,
 				}),
 				withPolicyAction([]string{"s3:ListBucket"}),
@@ -92,8 +92,8 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 		},
 		"ComplexInput": {
 			in: *policyStatement(
-				withPrincipal(&v1alpha2.BucketPrincipal{
-					AWSPrincipals: []v1alpha2.AWSPrincipal{
+				withPrincipal(&v1alpha3.BucketPrincipal{
+					AWSPrincipals: []v1alpha3.AWSPrincipal{
 						{
 							IAMUserARN: aws.String("arn:aws:iam::111122223333:userARN"),
 						},
@@ -107,14 +107,23 @@ func TestSerializeBucketPolicyStatement(t *testing.T) {
 				}),
 				withPolicyAction([]string{"s3:ListBucket"}),
 				withResourcePath([]string{"arn:aws:s3:::test.s3.crossplane.com"}),
-				withConditionBlock(map[string]v1alpha2.Condition{
-					"test": {
-						ConditionKey:         "test",
-						ConditionStringValue: aws.String("testKey"),
+				withConditionBlock([]v1alpha3.Condition{
+					{
+						OperatorKey: "test",
+						Conditions: []v1alpha3.ConditionPair{
+							{
+								ConditionKey:         "test",
+								ConditionStringValue: aws.String("testKey"),
+							},
+							{
+								ConditionKey:         "test2",
+								ConditionStringValue: aws.String("testKey2"),
+							},
+						},
 					},
 				}),
 			),
-			out: `{"Condition":{"test":{"test":"testKey"}},"Action":"s3:ListBucket","Effect":"Allow","Principal":{"AWS":["arn:aws:iam::111122223333:userARN","111122223333","arn:aws:iam::111122223333:roleARN"]},"Resource":"arn:aws:s3:::test.s3.crossplane.com","Sid":"1"}`,
+			out: `{"Condition":{"test":{"test":"testKey","test2":"testKey2"}},"Action":"s3:ListBucket","Effect":"Allow","Principal":{"AWS":["arn:aws:iam::111122223333:userARN","111122223333","arn:aws:iam::111122223333:roleARN"]},"Resource":"arn:aws:s3:::test.s3.crossplane.com","Sid":"1"}`,
 		},
 	}
 
