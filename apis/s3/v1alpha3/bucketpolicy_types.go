@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha2
+package v1alpha3
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -98,7 +98,7 @@ type BucketPolicyStatement struct {
 	// Condition specifies where conditions for policy are in effect.
 	// https://docs.aws.amazon.com/AmazonS3/latest/dev/amazon-s3-policy-keys.html
 	// +optional
-	Condition map[string]Condition `json:"condition,omitempty"`
+	Condition []Condition `json:"condition,omitempty"`
 }
 
 // BucketPrincipal defines the principal users affected by
@@ -161,9 +161,18 @@ type AWSPrincipal struct {
 	IAMRoleARNSelector *xpv1.Selector `json:"iamRoleArnSelector,omitempty"`
 }
 
-// Condition represents one condition inside of the set of conditions for
-// a bucket policy
+// Condition represents a set of condition pairs for a bucket policy
 type Condition struct {
+	// OperatorKey matches the condition key and value in the policy against values in the request context
+	OperatorKey string `json:"operatorKey"`
+
+	// Conditions represents each of the key/value pairs for the operator key
+	Conditions []ConditionPair `json:"conditions"`
+}
+
+// ConditionPair represents one condition inside of the set of conditions for
+// a bucket policy
+type ConditionPair struct {
 	// ConditionKey is the key condition being applied to the parent condition
 	ConditionKey string `json:"key"`
 
@@ -183,6 +192,10 @@ type Condition struct {
 	// ConditionBooleanValue is the expected boolean value of the key from the parent condition
 	// +optional
 	ConditionBooleanValue *bool `json:"booleanValue,omitempty"`
+
+	// ConditionListValue is the list value of the key from the parent condition
+	// +optional
+	ConditionListValue []string `json:"listValue,omitempty"`
 }
 
 // An BucketPolicySpec defines the desired state of an

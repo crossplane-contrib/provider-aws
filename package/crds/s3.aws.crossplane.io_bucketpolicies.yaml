@@ -31,7 +31,7 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: v1alpha2
+    name: v1alpha3
     schema:
       openAPIV3Schema:
         description: An BucketPolicy is a managed resource that represents an AWS Bucket policy.
@@ -97,31 +97,49 @@ spec:
                             type: string
                           type: array
                         condition:
-                          additionalProperties:
-                            description: Condition represents one condition inside of the set of conditions for a bucket policy
+                          description: Condition specifies where conditions for policy are in effect. https://docs.aws.amazon.com/AmazonS3/latest/dev/amazon-s3-policy-keys.html
+                          items:
+                            description: Condition represents a set of condition pairs for a bucket policy
                             properties:
-                              booleanValue:
-                                description: ConditionBooleanValue is the expected boolean value of the key from the parent condition
-                                type: boolean
-                              dateValue:
-                                description: ConditionDateValue is the expected string value of the key from the parent condition. The date value must be in ISO 8601 format. The time is always midnight UTC.
-                                format: date-time
-                                type: string
-                              key:
-                                description: ConditionKey is the key condition being applied to the parent condition
-                                type: string
-                              numericValue:
-                                description: ConditionNumericValue is the expected string value of the key from the parent condition
-                                format: int64
-                                type: integer
-                              stringValue:
-                                description: ConditionStringValue is the expected string value of the key from the parent condition
+                              conditions:
+                                description: Conditions represents each of the key/value pairs for the operator key
+                                items:
+                                  description: ConditionPair represents one condition inside of the set of conditions for a bucket policy
+                                  properties:
+                                    booleanValue:
+                                      description: ConditionBooleanValue is the expected boolean value of the key from the parent condition
+                                      type: boolean
+                                    dateValue:
+                                      description: ConditionDateValue is the expected string value of the key from the parent condition. The date value must be in ISO 8601 format. The time is always midnight UTC.
+                                      format: date-time
+                                      type: string
+                                    key:
+                                      description: ConditionKey is the key condition being applied to the parent condition
+                                      type: string
+                                    listValue:
+                                      description: ConditionListValue is the list value of the key from the parent condition
+                                      items:
+                                        type: string
+                                      type: array
+                                    numericValue:
+                                      description: ConditionNumericValue is the expected string value of the key from the parent condition
+                                      format: int64
+                                      type: integer
+                                    stringValue:
+                                      description: ConditionStringValue is the expected string value of the key from the parent condition
+                                      type: string
+                                  required:
+                                  - key
+                                  type: object
+                                type: array
+                              operatorKey:
+                                description: OperatorKey matches the condition key and value in the policy against values in the request context
                                 type: string
                             required:
-                            - key
+                            - conditions
+                            - operatorKey
                             type: object
-                          description: Condition specifies where conditions for policy are in effect. https://docs.aws.amazon.com/AmazonS3/latest/dev/amazon-s3-policy-keys.html
-                          type: object
+                          type: array
                         effect:
                           description: The effect is required and specifies whether the statement results in an allow or an explicit deny. Valid values for Effect are Allow and Deny.
                           enum:

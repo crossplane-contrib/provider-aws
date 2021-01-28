@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
-	"github.com/crossplane/provider-aws/apis/s3/v1alpha2"
+	"github.com/crossplane/provider-aws/apis/s3/v1alpha3"
 )
 
 // BucketPolicyClient is the external client used for S3BucketPolicy Custom Resource
@@ -55,7 +55,7 @@ func IsErrorBucketNotFound(err error) bool {
 }
 
 // Serialize is the custom marshaller for the BucketPolicyParameters
-func Serialize(p v1alpha2.BucketPolicyParameters) (interface{}, error) {
+func Serialize(p v1alpha3.BucketPolicyParameters) (interface{}, error) {
 	m := make(map[string]interface{})
 	m["Version"] = p.Version
 	if p.ID != "" {
@@ -74,7 +74,7 @@ func Serialize(p v1alpha2.BucketPolicyParameters) (interface{}, error) {
 }
 
 // SerializeBucketPolicyStatement is the custom marshaller for the BucketPolicyStatement
-func SerializeBucketPolicyStatement(p v1alpha2.BucketPolicyStatement) (interface{}, error) { // nolint:gocyclo
+func SerializeBucketPolicyStatement(p v1alpha3.BucketPolicyStatement) (interface{}, error) { // nolint:gocyclo
 	m := make(map[string]interface{})
 	if p.Principal != nil {
 		principal, err := SerializeBucketPrincipal(p.Principal)
@@ -117,7 +117,7 @@ func SerializeBucketPolicyStatement(p v1alpha2.BucketPolicyStatement) (interface
 }
 
 // SerializeBucketPrincipal is the custom serializer for the BucketPrincipal
-func SerializeBucketPrincipal(p *v1alpha2.BucketPrincipal) (interface{}, error) {
+func SerializeBucketPrincipal(p *v1alpha3.BucketPrincipal) (interface{}, error) {
 	all := "*"
 	if p.AllowAnon {
 		return all, nil
@@ -142,7 +142,7 @@ func SerializeBucketPrincipal(p *v1alpha2.BucketPrincipal) (interface{}, error) 
 }
 
 // SerializeAWSPrincipal converts an AWSPrincipal to a string
-func SerializeAWSPrincipal(p v1alpha2.AWSPrincipal) *string {
+func SerializeAWSPrincipal(p v1alpha3.AWSPrincipal) *string {
 	switch {
 	case p.AWSAccountID != nil:
 		return p.AWSAccountID
@@ -157,23 +157,27 @@ func SerializeAWSPrincipal(p v1alpha2.AWSPrincipal) *string {
 
 // SerializeBucketCondition converts the string -> Condition map
 // into a serialized version
-func SerializeBucketCondition(p map[string]v1alpha2.Condition) (interface{}, error) {
+func SerializeBucketCondition(p []v1alpha3.Condition) (interface{}, error) {
 	m := make(map[string]interface{})
-	for k, v := range p {
+	for _, v := range p {
 		subMap := make(map[string]interface{})
-		switch {
-		case v.ConditionStringValue != nil:
-			subMap[v.ConditionKey] = *v.ConditionStringValue
-		case v.ConditionBooleanValue != nil:
-			subMap[v.ConditionKey] = *v.ConditionBooleanValue
-		case v.ConditionNumericValue != nil:
-			subMap[v.ConditionKey] = *v.ConditionNumericValue
-		case v.ConditionDateValue != nil:
-			subMap[v.ConditionKey] = v.ConditionDateValue.Time.Format("2006-01-02T15:04:05-0700")
-		default:
-			return nil, fmt.Errorf("no value provided for key with value %s, condition %s", v.ConditionKey, k)
+		for _, c := range v.Conditions {
+			switch {
+			case c.ConditionStringValue != nil:
+				subMap[c.ConditionKey] = *c.ConditionStringValue
+			case c.ConditionBooleanValue != nil:
+				subMap[c.ConditionKey] = *c.ConditionBooleanValue
+			case c.ConditionNumericValue != nil:
+				subMap[c.ConditionKey] = *c.ConditionNumericValue
+			case c.ConditionDateValue != nil:
+				subMap[c.ConditionKey] = c.ConditionDateValue.Time.Format("2006-01-02T15:04:05-0700")
+			case c.ConditionListValue != nil:
+				subMap[c.ConditionKey] = c.ConditionListValue
+			default:
+				return nil, fmt.Errorf("no value provided for key with value %s, condition %s", c.ConditionKey, v.OperatorKey)
+			}
 		}
-		m[k] = subMap
+		m[v.OperatorKey] = subMap
 	}
 	return m, nil
 }
