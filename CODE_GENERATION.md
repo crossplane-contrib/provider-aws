@@ -1,12 +1,13 @@
-# Contributing New Resource Using AWS Go Code Generation Pipeline
+# Contributing a New Resource Using AWS Go Code Generation Pipeline
 
-[AWS Go code generator](https://github.com/aws-controllers-k8s/code-generator) is designed to generate code for Go controllers.
-Working with AWS community, we have added support to generate Crossplane controllers.
-The generated code covers mostly AWS API related parts such as `forProvider` fields
-in CRDs and conversion functions between CRD and AWS Go SDK structs. The rest of
-the controller is very similar to manually implemented ones; they use the same
-Crossplane managed reconciler, CRDs follow the same patterns and all additional
-functionalities of Crossplane are supported.
+[AWS Go code generator](https://github.com/aws-controllers-k8s/code-generator)
+is designed to generate code for Go controllers. Working with AWS community, we
+have added support to generate Crossplane controllers. The generated code covers
+mostly AWS API related parts such as `forProvider` fields in CRDs and conversion
+functions between CRD and AWS Go SDK structs. The rest of the controller is very
+similar to manually implemented ones; they use the same Crossplane managed
+reconciler, CRDs follow the same patterns and all additional functionalities of
+Crossplane are supported.
 
 Most of the generated code is ready to go but there are places where we need
 Crossplane-specific functionality, or some hacks to work around non-generic
@@ -315,3 +316,151 @@ you to write tests for all custom code blocks you have written.
 You need to thoroughly test the controller by using example YAMLs. Make sure
 every functionality you implement works by checking with AWS console. Once all
 looks good, add the example YAML you used to `examples/<serviceid>/<crd-name>.yaml`
+
+#### Setup
+
+You can use any Kubernetes cluster to deploy provider-aws. We'll use `kind` to
+get a dev cluster:
+
+```console
+kind create cluster --wait 5m
+```
+
+You can test your code either by local setup, which allows better debugging experience,
+or in-cluster setup which is the real world setup.
+
+##### Local
+
+We will deploy the CRDs so that controllers can bind their watchers:
+```console
+kubectl apply -f package/crds
+```
+
+Now you can run the controller from your IDE or terminal and it'll start reconciling:
+```console
+go run cmd/provider/main.go
+```
+
+> You need to set KUBECONFIG environment variable if it is not already set.
+
+##### In-cluster
+
+You can build the images and deploy it into cluster using Crossplane Package Manager
+to test the real-world scenario. There are two Docker images to be built; one has
+the controller image, the other one has package metadata and CRDs. We need to choose a
+controller image before building metadata image. Then we'll start the build process.
+
+Example image URL pair:
+* `username/provider-aws-controller:test`: Controller Image
+  This is the one that will be running in the cluster.
+* `username/provider-aws:test`: Metadata Image
+  This is the one we'll use when we install the provider.
+
+1. Edit `package/crossplane.yaml` and change the `spec.controller.image` with your controller image URL.
+1. Go to `package` folder and build the package using Crossplane CLI: `kubectl crossplane build provider`.
+1. Push the images using: `kubectl crossplane push provider <metadata image URL>`.
+
+Now we got the provider package pushed, and we can install it just like an official provider.
+Run:
+```console
+kubectl crossplane install provider <metadata image URL>`
+```
+
+#### Testing YAML
+
+After either one of [local](#local) or [in-cluster](#in-cluster) is completed, you'll
+get a cluster ready to start reconciling custom resources you create. First, we
+need to create a default `ProviderConfig` so that managed resources can use it to
+authenticate to AWS API. Use the following command to get the current AWS CLI
+user credentials:
+```console
+BASE64ENCODED_AWS_ACCOUNT_CREDS=$(echo -e "[default]\naws_access_key_id = $(aws configure get aws_access_key_id --profile $aws_profile)\naws_secret_access_key = $(aws configure get aws_secret_access_key --profile $aws_profile)" | base64  | tr -d "\n")
+```
+
+Use it to create a `Secret` and `ProviderConfig`:
+```console
+cat > providerconfig.yaml <<EOF
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-account-creds
+  namespace: crossplane-system
+type: Opaque
+data:
+  credentials: ${BASE64ENCODED_AWS_ACCOUNT_CREDS}
+---
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: default
+spec:
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: aws-account-creds
+      key: credentials
+EOF
+
+# apply it to the cluster:
+kubectl apply -f "providerconfig.yaml"
+
+# delete the credentials variable
+unset BASE64ENCODED_AWS_ACCOUNT_CREDS
+```
+
+You can create a managed resource now. Here is an example for a DynamoDB Table:
+```yaml
+apiVersion: dynamodb.aws.crossplane.io/v1alpha1
+kind: Table
+metadata:
+  name: sample-table
+spec:
+  forProvider:
+    region: us-east-1
+    attributeDefinitions:
+      - attributeName: attribute1
+        attributeType: S
+    keySchema:
+      - attributeName: attribute1
+        keyType: HASH
+    provisionedThroughput:
+      readCapacityUnits: 1
+      writeCapacityUnits: 1
+    streamSpecification:
+      streamEnabled: true
+      streamViewType: NEW_AND_OLD_IMAGES
+```
+
+#### Scenarios
+
+[Create and Delete](#create-and-delete) section is sufficient if you aim for alpha
+quality. If you want to aim for beta-level quality, you need to make sure all
+scenarios work.
+
+##### Create and Delete
+
+Once you create the YAML, you should see the corresponding resource in AWS console.
+Make sure you see the resource and properties match.
+
+Then delete the CR in the cluster and check AWS console to see if it's gone.
+
+##### Update
+
+Make a change in the custom resource with `kubectl edit` and see if the resource
+got the update by checking AWS console.
+
+##### Late Initialization
+
+After the creation, some fields are populated by AWS if they are not given. Go to
+AWS console and compare the properties you see there with the custom resource in
+the cluster. You need to see all properties in custom resource as well, especially
+the ones you didn't initially specify.
+
+##### Too Frequent Updates
+
+If `IsUpToDate` check is giving false negatives, controller will make update calls
+repeatedly and this causes problems. You can usually notice this easily but it's good
+to check either via a breakpoint in your IDE or a print statement to see if `Update`
+is run even when there is no change on the custom resource.

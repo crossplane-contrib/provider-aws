@@ -29,7 +29,7 @@ guidelines to get started.
 
 ### Adding New Resource
 
-We use ACK code generation pipeline to generate new controllers. See [Code Generation Guide](CODE_GENERATION.md)
+We use AWS Go code generation pipeline to generate new controllers. See [Code Generation Guide](CODE_GENERATION.md)
 to add a new resource.
 
 ## Report a Bug
