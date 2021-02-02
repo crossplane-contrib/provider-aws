@@ -101,19 +101,13 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 	case xpv1.CredentialsSourceInjectedIdentity:
 		cfg, err := UsePodServiceAccount(ctx, []byte{}, DefaultSection, region)
 		return SetResolver(ctx, mg, cfg), err
-	case xpv1.CredentialsSourceSecret:
-		csr := pc.Spec.Credentials.SecretRef
-		if csr == nil {
-			return nil, errors.New("no credentials secret referenced")
-		}
-		s := &corev1.Secret{}
-		if err := c.Get(ctx, types.NamespacedName{Namespace: csr.Namespace, Name: csr.Name}, s); err != nil {
-			return nil, errors.Wrap(err, "cannot get credentials secret")
-		}
-		cfg, err := UseProviderSecret(ctx, s.Data[csr.Key], DefaultSection, region)
-		return SetResolver(ctx, mg, cfg), err
 	default:
-		return nil, errors.Errorf("credentials source %s is not currently supported", s)
+		data, err := resource.CommonCredentialExtractor(ctx, s, c, pc.Spec.Credentials.CommonCredentialSelectors)
+		if err != nil {
+			return nil, errors.Wrap(err, "cannot get credentials")
+		}
+		cfg, err := UseProviderSecret(ctx, data, DefaultSection, region)
+		return SetResolver(ctx, mg, cfg), err
 	}
 }
 
@@ -294,22 +288,17 @@ func GetConfigV1(ctx context.Context, c client.Client, mg resource.Managed, regi
 			return nil, errors.Wrap(err, "cannot use pod service account")
 		}
 		return session.NewSession(cfg)
-	case xpv1.CredentialsSourceSecret:
-		csr := pc.Spec.Credentials.SecretRef
-		if csr == nil {
-			return nil, errors.New("no credentials secret referenced")
+	default:
+		data, err := resource.CommonCredentialExtractor(ctx, s, c, pc.Spec.Credentials.CommonCredentialSelectors)
+		if err != nil {
+			return nil, errors.Wrap(err, "cannot get credentials")
 		}
-		s := &corev1.Secret{}
-		if err := c.Get(ctx, types.NamespacedName{Namespace: csr.Namespace, Name: csr.Name}, s); err != nil {
-			return nil, errors.Wrap(err, "cannot get credentials secret")
-		}
-		cfg, err := UseProviderSecretV1(ctx, s.Data[csr.Key], mg, DefaultSection, region)
+		cfg, err := UseProviderSecretV1(ctx, data, mg, DefaultSection, region)
 		if err != nil {
 			return nil, errors.Wrap(err, "cannot use secret")
 		}
 		return session.NewSession(cfg)
 	}
-	return nil, errors.Errorf("credentials source %s is not currently supported", pc.Spec.Credentials.Source)
 }
 
 // UseProviderSecretV1 retrieves AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY from
