@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -387,7 +387,7 @@ func TestCreate(t *testing.T) {
 					},
 				},
 				kube: &test.MockClient{
-					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+					MockGet: func(_ context.Context, key types.NamespacedName, obj client.Object) error {
 						secret := corev1.Secret{
 							Data: map[string][]byte{},
 						}
