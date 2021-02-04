@@ -34,7 +34,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/eks"
 )
 
@@ -73,7 +73,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errNotEKSFargateProfile)
 	}
-	cfg, err := awsclients.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	rsp, err := e.client.DescribeFargateProfileRequest(&awseks.DescribeFargateProfileInput{FargateProfileName: aws.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDescribeFailed)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDescribeFailed)
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -130,7 +130,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, nil
 	}
 	_, err := e.client.CreateFargateProfileRequest(eks.GenerateCreateFargateProfileInput(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx)
-	return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
+	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -143,17 +143,17 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	// a fargate profile is actually immutable and can't be updated.
 	rsp, err := e.client.DescribeFargateProfileRequest(&awseks.DescribeFargateProfileInput{FargateProfileName: aws.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName}).Send(ctx)
 	if err != nil || rsp.FargateProfile == nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errDescribeFailed)
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errDescribeFailed)
 	}
-	add, remove := awsclients.DiffTags(cr.Spec.ForProvider.Tags, rsp.FargateProfile.Tags)
+	add, remove := awsclient.DiffTags(cr.Spec.ForProvider.Tags, rsp.FargateProfile.Tags)
 	if len(remove) != 0 {
 		if _, err := e.client.UntagResourceRequest(&awseks.UntagResourceInput{ResourceArn: rsp.FargateProfile.FargateProfileArn, TagKeys: remove}).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
+			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 		}
 	}
 	if len(add) != 0 {
 		if _, err := e.client.TagResourceRequest(&awseks.TagResourceInput{ResourceArn: rsp.FargateProfile.FargateProfileArn, Tags: add}).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
+			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 		}
 	}
 	return managed.ExternalUpdate{}, nil
@@ -168,8 +168,8 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if cr.Status.AtProvider.Status == v1alpha1.FargateProfileStatusDeleting {
 		return nil
 	}
-	_, err := e.client.DeleteFargateProfileRequest(&awseks.DeleteFargateProfileInput{FargateProfileName: awsclients.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName}).Send(ctx)
-	return errors.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
+	_, err := e.client.DeleteFargateProfileRequest(&awseks.DeleteFargateProfileInput{FargateProfileName: awsclient.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName}).Send(ctx)
+	return awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
 }
 
 type tagger struct {

@@ -33,7 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 )
 
@@ -66,7 +66,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, awscommon.GlobalRegion)
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, awsclient.GlobalRegion)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	keys, err := e.client.ListAccessKeysRequest(&awsiam.ListAccessKeysInput{UserName: aws.String(cr.Spec.ForProvider.IAMUsername)}).Send(ctx)
 	if err != nil || len(keys.AccessKeyMetadata) == 0 {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errList)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errList)
 	}
 	found := false
 	var accessKey awsiam.AccessKeyMetadata
@@ -110,7 +110,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		cr.SetConditions(xpv1.Unavailable())
 	}
 	current := cr.Spec.ForProvider.Status
-	cr.Spec.ForProvider.Status = awscommon.LateInitializeString(cr.Spec.ForProvider.Status, aws.String(string(accessKey.Status)))
+	cr.Spec.ForProvider.Status = awsclient.LateInitializeString(cr.Spec.ForProvider.Status, aws.String(string(accessKey.Status)))
 	return managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        string(accessKey.Status) == cr.Spec.ForProvider.Status,
@@ -126,7 +126,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	response, err := e.client.CreateAccessKeyRequest(&awsiam.CreateAccessKeyInput{UserName: aws.String(cr.Spec.ForProvider.IAMUsername)}).Send(ctx)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
 	var conn managed.ConnectionDetails
@@ -152,7 +152,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		UserName:    aws.String(cr.Spec.ForProvider.IAMUsername),
 	}).Send(ctx)
 
-	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
@@ -168,5 +168,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		AccessKeyId: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
-	return errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }

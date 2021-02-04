@@ -32,6 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/sqs/v1beta1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/sqs"
 	"github.com/crossplane/provider-aws/pkg/clients/sqs/fake"
 )
@@ -153,7 +154,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  queue(withExternalName(queueName)),
-				err: errors.Wrap(errBoom, errGetQueueAttributesFailed),
+				err: awsclient.Wrap(errBoom, errGetQueueAttributesFailed),
 			},
 		},
 		"ListTagsFail": {
@@ -183,7 +184,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  queue(withExternalName(queueName)),
-				err: errors.Wrap(errBoom, errListQueueTagsFailed),
+				err: awsclient.Wrap(errBoom, errListQueueTagsFailed),
 			},
 		},
 	}
@@ -258,7 +259,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: queue(withExternalName(queueURL),
 					withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errCreateFailed),
+				err: awsclient.Wrap(errBoom, errCreateFailed),
 			},
 		},
 	}
@@ -382,7 +383,7 @@ func TestUpdate(t *testing.T) {
 				cr: queue(withStatus(v1beta1.QueueObservation{
 					URL: queueURL,
 				})),
-				err: errors.Wrap(errBoom, errUpdateFailed),
+				err: awsclient.Wrap(errBoom, errUpdateFailed),
 			},
 		},
 	}
@@ -455,7 +456,7 @@ func TestDelete(t *testing.T) {
 					withStatus(v1beta1.QueueObservation{
 						URL: queueURL,
 					})),
-				err: errors.Wrap(errBoom, errDeleteFailed),
+				err: awsclient.Wrap(errBoom, errDeleteFailed),
 			},
 		},
 	}

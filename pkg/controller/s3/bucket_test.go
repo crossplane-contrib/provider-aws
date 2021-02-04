@@ -36,6 +36,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
@@ -87,7 +88,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  s3Testing.Bucket(),
-				err: errors.Wrap(errBoom, errHead),
+				err: awsclient.Wrap(errBoom, errHead),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -270,7 +271,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  s3Testing.Bucket(s3Testing.WithConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -368,7 +369,7 @@ func TestUpdate(t *testing.T) {
 				cr: s3Testing.Bucket(
 					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
 				),
-				err:    errors.Wrap(errors.Wrap(errBoom, "cannot put Bucket payment"), errCreateOrUpdate),
+				err:    errors.Wrap(awsclient.Wrap(errBoom, "cannot put Bucket payment"), errCreateOrUpdate),
 				result: managed.ExternalUpdate{},
 			},
 		},
@@ -390,10 +391,10 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(xpv1.ReconcileError(errors.Wrap(errBoom, "cannot get request payment configuration"))),
+					s3Testing.WithConditions(xpv1.ReconcileError(awsclient.Wrap(errBoom, "cannot get request payment configuration"))),
 					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
 				),
-				err:    errors.Wrap(errBoom, "cannot get request payment configuration"),
+				err:    awsclient.Wrap(errBoom, "cannot get request payment configuration"),
 				result: managed.ExternalUpdate{},
 			},
 		},
@@ -463,7 +464,7 @@ func TestUpdate(t *testing.T) {
 				cr: s3Testing.Bucket(
 					s3Testing.WithSSEConfig(nil),
 				),
-				err:    errors.Wrap(errors.Wrap(errBoom, "cannot delete Bucket encryption configuration"), errDelete),
+				err:    errors.Wrap(awsclient.Wrap(errBoom, "cannot delete Bucket encryption configuration"), errDelete),
 				result: managed.ExternalUpdate{},
 			},
 		},
@@ -496,10 +497,10 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(xpv1.ReconcileError(errors.Wrap(errBoom, "cannot get Bucket encryption configuration"))),
+					s3Testing.WithConditions(xpv1.ReconcileError(awsclient.Wrap(errBoom, "cannot get Bucket encryption configuration"))),
 					s3Testing.WithSSEConfig(nil),
 				),
-				err:    errors.Wrap(errBoom, "cannot get Bucket encryption configuration"),
+				err:    awsclient.Wrap(errBoom, "cannot get Bucket encryption configuration"),
 				result: managed.ExternalUpdate{},
 			},
 		},

@@ -34,7 +34,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/acm/v1alpha1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/acm"
 )
 
@@ -82,7 +82,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awscommon.GetConfig(ctx, c.client, mg, cr.Spec.ForProvider.Region)
+	cfg, err := awsclient.GetConfig(ctx, c.client, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errGet)
 	}
 
 	if response.Certificate == nil {
@@ -135,7 +135,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		CertificateArn: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errListTagsFailed)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errListTagsFailed)
 	}
 
 	return managed.ExternalObservation{
@@ -153,7 +153,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	response, err := e.client.RequestCertificateRequest(acm.GenerateCreateCertificateInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)).Send(ctx)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 	meta.SetExternalName(cr, aws.StringValue(response.RequestCertificateOutput.CertificateArn))
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
@@ -180,7 +180,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}).Send(ctx)
 
 		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errListTagsFailed)
+			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errListTagsFailed)
 		}
 
 		if len(desiredTags) != len(currentTags.Tags) {
@@ -189,7 +189,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 				Tags:           currentTags.Tags,
 			}).Send(ctx)
 			if err != nil {
-				return managed.ExternalUpdate{}, errors.Wrap(err, errRemoveTagsFailed)
+				return managed.ExternalUpdate{}, awsclient.Wrap(err, errRemoveTagsFailed)
 			}
 		}
 		_, err = e.client.AddTagsToCertificateRequest(&awsacm.AddTagsToCertificateInput{
@@ -197,7 +197,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			Tags:           desiredTags,
 		}).Send(ctx)
 		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errAddTagsFailed)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddTagsFailed)
 		}
 	}
 
@@ -209,7 +209,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}).Send(ctx)
 
 		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 		}
 	}
 
@@ -222,7 +222,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			}).Send(ctx)
 
 			if err != nil {
-				return managed.ExternalUpdate{}, errors.Wrap(err, errRenewalFailed)
+				return managed.ExternalUpdate{}, awsclient.Wrap(err, errRenewalFailed)
 			}
 		}
 		cr.Spec.ForProvider.RenewCertificate = aws.Bool(false)
@@ -244,5 +244,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		CertificateArn: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
-	return errors.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(acm.IsErrorNotFound, err), errDelete)
 }

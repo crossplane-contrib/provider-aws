@@ -34,7 +34,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/eks"
 )
 
@@ -79,7 +79,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errNotEKSCluster)
 	}
-	cfg, err := awsclients.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	rsp, err := e.client.DescribeClusterRequest(&awseks.DescribeClusterInput{Name: aws.String(meta.GetExternalName(cr))}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDescribeFailed)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDescribeFailed)
 	}
 
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -144,7 +144,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, nil
 	}
 	_, err := e.client.CreateClusterRequest(eks.GenerateCreateClusterInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)).Send(ctx)
-	return managed.ExternalCreation{}, errors.Wrap(err, errCreateFailed)
+	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
@@ -161,29 +161,29 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	// fields require different update methods.
 	rsp, err := e.client.DescribeClusterRequest(&awseks.DescribeClusterInput{Name: aws.String(meta.GetExternalName(cr))}).Send(ctx)
 	if err != nil || rsp.Cluster == nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errDescribeFailed)
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errDescribeFailed)
 	}
-	add, remove := awsclients.DiffTags(cr.Spec.ForProvider.Tags, rsp.Cluster.Tags)
+	add, remove := awsclient.DiffTags(cr.Spec.ForProvider.Tags, rsp.Cluster.Tags)
 	if len(remove) != 0 {
 		if _, err := e.client.UntagResourceRequest(&awseks.UntagResourceInput{ResourceArn: rsp.Cluster.Arn, TagKeys: remove}).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
+			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 		}
 	}
 	if len(add) != 0 {
 		if _, err := e.client.TagResourceRequest(&awseks.TagResourceInput{ResourceArn: rsp.Cluster.Arn, Tags: add}).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
+			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 		}
 	}
 	patch, err := eks.CreatePatch(rsp.Cluster, &cr.Spec.ForProvider)
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errPatchCreationFailed)
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errPatchCreationFailed)
 	}
 	if patch.Version != nil {
-		_, err := e.client.UpdateClusterVersionRequest(&awseks.UpdateClusterVersionInput{Name: awsclients.String(meta.GetExternalName(cr)), Version: patch.Version}).Send(ctx)
-		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
+		_, err := e.client.UpdateClusterVersionRequest(&awseks.UpdateClusterVersionInput{Name: awsclient.String(meta.GetExternalName(cr)), Version: patch.Version}).Send(ctx)
+		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateVersionFailed)
 	}
 	_, err = e.client.UpdateClusterConfigRequest(eks.GenerateUpdateClusterConfigInput(meta.GetExternalName(cr), patch)).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateConfigFailed)
+	return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errUpdateConfigFailed)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -195,8 +195,8 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if cr.Status.AtProvider.Status == v1beta1.ClusterStatusDeleting {
 		return nil
 	}
-	_, err := e.client.DeleteClusterRequest(&awseks.DeleteClusterInput{Name: awsclients.String(meta.GetExternalName(cr))}).Send(ctx)
-	return errors.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
+	_, err := e.client.DeleteClusterRequest(&awseks.DeleteClusterInput{Name: awsclient.String(meta.GetExternalName(cr))}).Send(ctx)
+	return awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
 }
 
 type tagger struct {

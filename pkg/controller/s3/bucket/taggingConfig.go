@@ -23,10 +23,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
@@ -54,13 +53,13 @@ func NewTaggingConfigurationClient(client s3.BucketClient) *TaggingConfiguration
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetBucketTaggingRequest(&awss3.GetBucketTaggingInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketTaggingRequest(&awss3.GetBucketTaggingInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
 	config := bucket.Spec.ForProvider.BucketTagging
 	if err != nil {
 		if s3.TaggingNotFound(err) && config == nil {
 			return Updated, nil
 		}
-		return NeedsUpdate, errors.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
+		return NeedsUpdate, awsclient.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
 	}
 
 	switch {
@@ -87,7 +86,7 @@ func GenerateTagging(config *v1beta1.Tagging) *awss3.Tagging {
 // GeneratePutBucketTagging creates the PutBucketTaggingInput for the aws SDK
 func GeneratePutBucketTagging(name string, config *v1beta1.Tagging) *awss3.PutBucketTaggingInput {
 	return &awss3.PutBucketTaggingInput{
-		Bucket:  aws.String(name),
+		Bucket:  awsclient.String(name),
 		Tagging: GenerateTagging(config),
 	}
 }
@@ -99,15 +98,15 @@ func (in *TaggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 	}
 	input := GeneratePutBucketTagging(meta.GetExternalName(bucket), bucket.Spec.ForProvider.BucketTagging)
 	_, err := in.client.PutBucketTaggingRequest(input).Send(ctx)
-	return errors.Wrap(err, taggingPutFailed)
+	return awsclient.Wrap(err, taggingPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
 func (in *TaggingConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
 	_, err := in.client.DeleteBucketTaggingRequest(
 		&awss3.DeleteBucketTaggingInput{
-			Bucket: aws.String(meta.GetExternalName(bucket)),
+			Bucket: awsclient.String(meta.GetExternalName(bucket)),
 		},
 	).Send(ctx)
-	return errors.Wrap(err, taggingDeleteFailed)
+	return awsclient.Wrap(err, taggingDeleteFailed)
 }

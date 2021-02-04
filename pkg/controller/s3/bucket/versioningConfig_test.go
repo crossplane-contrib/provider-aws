@@ -23,10 +23,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
@@ -39,7 +38,7 @@ var (
 func generateVersioningConfig() *v1beta1.VersioningConfiguration {
 	return &v1beta1.VersioningConfiguration{
 		MFADelete: &mfadelete,
-		Status:    aws.String(enabled),
+		Status:    awsclient.String(enabled),
 	}
 }
 
@@ -78,7 +77,7 @@ func TestVersioningObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    errors.Wrap(errBoom, versioningGetFailed),
+				err:    awsclient.Wrap(errBoom, versioningGetFailed),
 			},
 		},
 		"UpdateNeededFull": {
@@ -173,7 +172,7 @@ func TestVersioningCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: errors.Wrap(errBoom, versioningPutFailed),
+				err: awsclient.Wrap(errBoom, versioningPutFailed),
 			},
 		},
 		"InvalidConfig": {

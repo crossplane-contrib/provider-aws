@@ -35,6 +35,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/resourcerecordset"
 	"github.com/crossplane/provider-aws/pkg/clients/resourcerecordset/fake"
 )
@@ -258,7 +259,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  instance(withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -321,7 +322,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  instance(),
-				err: errors.Wrap(errBoom, errUpdate),
+				err: awsclient.Wrap(errBoom, errUpdate),
 			},
 		},
 	}
@@ -383,7 +384,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  instance(withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 	}

@@ -34,6 +34,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/eks/v1beta1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/eks"
 	"github.com/crossplane/provider-aws/pkg/clients/eks/fake"
 )
@@ -191,7 +192,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  cluster(),
-				err: errors.Wrap(errBoom, errDescribeFailed),
+				err: awsclient.Wrap(errBoom, errDescribeFailed),
 			},
 		},
 		"NotFound": {
@@ -335,7 +336,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  cluster(withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errCreateFailed),
+				err: awsclient.Wrap(errBoom, errCreateFailed),
 			},
 		},
 	}
@@ -492,7 +493,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  cluster(),
-				err: errors.Wrap(errBoom, errDescribeFailed),
+				err: awsclient.Wrap(errBoom, errDescribeFailed),
 			},
 		},
 		"FailedUpdateConfig": {
@@ -515,7 +516,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  cluster(),
-				err: errors.Wrap(errBoom, errUpdateConfigFailed),
+				err: awsclient.Wrap(errBoom, errUpdateConfigFailed),
 			},
 		},
 		"FailedUpdateVersion": {
@@ -538,7 +539,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  cluster(withVersion(&version)),
-				err: errors.Wrap(errBoom, errUpdateVersionFailed),
+				err: awsclient.Wrap(errBoom, errUpdateVersionFailed),
 			},
 		},
 		"FailedRemoveTags": {
@@ -563,7 +564,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  cluster(),
-				err: errors.Wrap(errBoom, errAddTagsFailed),
+				err: awsclient.Wrap(errBoom, errAddTagsFailed),
 			},
 		},
 		"FailedAddTags": {
@@ -586,7 +587,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  cluster(withTags(map[string]string{"foo": "bar"})),
-				err: errors.Wrap(errBoom, errAddTagsFailed),
+				err: awsclient.Wrap(errBoom, errAddTagsFailed),
 			},
 		},
 	}
@@ -671,7 +672,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  cluster(withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDeleteFailed),
+				err: awsclient.Wrap(errBoom, errDeleteFailed),
 			},
 		},
 	}

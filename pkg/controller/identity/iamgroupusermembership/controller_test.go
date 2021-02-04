@@ -32,6 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 	"github.com/crossplane/provider-aws/pkg/clients/iam/fake"
 )
@@ -154,7 +155,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  userGroup(withGroupName(groupName)),
-				err: errors.Wrap(errBoom, errGet),
+				err: awsclient.Wrap(errBoom, errGet),
 			},
 		},
 	}
@@ -233,7 +234,7 @@ func TestCreate(t *testing.T) {
 				cr: userGroup(withGroupName(groupName),
 					withSpecUserName(userName),
 					withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errAdd),
+				err: awsclient.Wrap(errBoom, errAdd),
 			},
 		},
 	}
@@ -311,7 +312,7 @@ func TestDelete(t *testing.T) {
 				cr: userGroup(withGroupName(userName),
 					withSpecUserName(userName),
 					withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errRemove),
+				err: awsclient.Wrap(errBoom, errRemove),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -327,7 +328,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  userGroup(withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errors.New(errRemove), errRemove),
+				err: awsclient.Wrap(errors.New(errRemove), errRemove),
 			},
 		},
 	}

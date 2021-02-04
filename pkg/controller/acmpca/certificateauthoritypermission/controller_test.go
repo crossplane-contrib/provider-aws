@@ -34,6 +34,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	v1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	acmpca "github.com/crossplane/provider-aws/pkg/clients/acmpca"
 	"github.com/crossplane/provider-aws/pkg/clients/acmpca/fake"
 )
@@ -126,7 +127,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  certificateAuthorityPermission(),
-				err: errors.Wrap(errBoom, errGet),
+				err: awsclient.Wrap(errBoom, errGet),
 			},
 		},
 	}
@@ -204,7 +205,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  certificateAuthorityPermission(withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -296,7 +297,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  certificateAuthorityPermission(withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 		"ResourceDoesNotExist": {
@@ -320,7 +321,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  certificateAuthorityPermission(withConditions(xpv1.Deleting())),
-				err: errors.Wrap(awserr.New(awsacmpca.ErrCodeResourceNotFoundException, "", nil), errDelete),
+				err: awsclient.Wrap(awserr.New(awsacmpca.ErrCodeResourceNotFoundException, "", nil), errDelete),
 			},
 		},
 	}

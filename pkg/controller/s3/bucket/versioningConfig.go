@@ -21,10 +21,9 @@ import (
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
@@ -40,9 +39,9 @@ type VersioningConfigurationClient struct {
 
 // LateInitialize is responsible for initializing the resource based on the external value
 func (in *VersioningConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketVersioningRequest(&awss3.GetBucketVersioningInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketVersioningRequest(&awss3.GetBucketVersioningInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		return errors.Wrap(err, versioningGetFailed)
+		return awsclient.Wrap(err, versioningGetFailed)
 	}
 
 	if len(external.Status) == 0 && len(external.MFADelete) == 0 {
@@ -53,8 +52,8 @@ func (in *VersioningConfigurationClient) LateInitialize(ctx context.Context, buc
 		bucket.Spec.ForProvider.VersioningConfiguration = &v1beta1.VersioningConfiguration{}
 		config = bucket.Spec.ForProvider.VersioningConfiguration
 	}
-	config.Status = aws.LateInitializeStringPtr(config.Status, aws.String(string(external.Status)))
-	config.MFADelete = aws.LateInitializeStringPtr(config.MFADelete, aws.String(string(external.MFADelete)))
+	config.Status = awsclient.LateInitializeStringPtr(config.Status, awsclient.String(string(external.Status)))
+	config.MFADelete = awsclient.LateInitializeStringPtr(config.MFADelete, awsclient.String(string(external.MFADelete)))
 	return nil
 }
 
@@ -65,15 +64,15 @@ func NewVersioningConfigurationClient(client s3.BucketClient) *VersioningConfigu
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *VersioningConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
-	external, err := in.client.GetBucketVersioningRequest(&awss3.GetBucketVersioningInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketVersioningRequest(&awss3.GetBucketVersioningInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		return NeedsUpdate, errors.Wrap(err, versioningGetFailed)
+		return NeedsUpdate, awsclient.Wrap(err, versioningGetFailed)
 	}
 	if bucket.Spec.ForProvider.VersioningConfiguration == nil {
 		return Updated, nil
 	}
-	if string(external.Status) != aws.StringValue(bucket.Spec.ForProvider.VersioningConfiguration.Status) ||
-		string(external.MFADelete) != aws.StringValue(bucket.Spec.ForProvider.VersioningConfiguration.MFADelete) {
+	if string(external.Status) != awsclient.StringValue(bucket.Spec.ForProvider.VersioningConfiguration.Status) ||
+		string(external.MFADelete) != awsclient.StringValue(bucket.Spec.ForProvider.VersioningConfiguration.MFADelete) {
 		return NeedsUpdate, nil
 	}
 	return Updated, nil
@@ -82,25 +81,25 @@ func (in *VersioningConfigurationClient) Observe(ctx context.Context, bucket *v1
 // GeneratePutBucketVersioningInput creates the input for the PutBucketVersioning request for the S3 Client
 func GeneratePutBucketVersioningInput(name string, config *v1beta1.VersioningConfiguration) *awss3.PutBucketVersioningInput {
 	return &awss3.PutBucketVersioningInput{
-		Bucket: aws.String(name),
+		Bucket: awsclient.String(name),
 		VersioningConfiguration: &awss3.VersioningConfiguration{
-			MFADelete: awss3.MFADelete(aws.StringValue(config.MFADelete)),
-			Status:    awss3.BucketVersioningStatus(aws.StringValue(config.Status)),
+			MFADelete: awss3.MFADelete(awsclient.StringValue(config.MFADelete)),
+			Status:    awss3.BucketVersioningStatus(awsclient.StringValue(config.Status)),
 		},
 	}
 }
 
-// CreateOrUpdate sends a request to have resource created on AWS.
+// CreateOrUpdate sends a request to have resource created on awsclient.
 func (in *VersioningConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
 	if bucket.Spec.ForProvider.VersioningConfiguration == nil {
 		return nil
 	}
 	input := GeneratePutBucketVersioningInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.VersioningConfiguration)
 	_, err := in.client.PutBucketVersioningRequest(input).Send(ctx)
-	return errors.Wrap(err, versioningPutFailed)
+	return awsclient.Wrap(err, versioningPutFailed)
 }
 
-// Delete does nothing because there is no corresponding deletion call in AWS.
+// Delete does nothing because there is no corresponding deletion call in awsclient.
 func (*VersioningConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
 	return nil
 }

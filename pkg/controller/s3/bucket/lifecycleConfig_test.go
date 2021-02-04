@@ -25,11 +25,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
@@ -55,27 +54,27 @@ func generateLifecycleConfig() *v1beta1.BucketLifecycleConfiguration {
 				AbortIncompleteMultipartUpload: &v1beta1.AbortIncompleteMultipartUpload{DaysAfterInitiation: 1},
 				Expiration: &v1beta1.LifecycleExpiration{
 					Date:                      &date,
-					Days:                      aws.Int64(days),
-					ExpiredObjectDeleteMarker: aws.Bool(marker),
+					Days:                      awsclient.Int64(days),
+					ExpiredObjectDeleteMarker: awsclient.Bool(marker),
 				},
 				Filter: &v1beta1.LifecycleRuleFilter{
 					And: &v1beta1.LifecycleRuleAndOperator{
-						Prefix: aws.String(prefix),
+						Prefix: awsclient.String(prefix),
 						Tags:   tags,
 					},
-					Prefix: aws.String(prefix),
+					Prefix: awsclient.String(prefix),
 					Tag:    &tag,
 				},
-				ID:                          aws.String(id),
-				NoncurrentVersionExpiration: &v1beta1.NoncurrentVersionExpiration{NoncurrentDays: aws.Int64(days)},
+				ID:                          awsclient.String(id),
+				NoncurrentVersionExpiration: &v1beta1.NoncurrentVersionExpiration{NoncurrentDays: awsclient.Int64(days)},
 				NoncurrentVersionTransitions: []v1beta1.NoncurrentVersionTransition{{
-					NoncurrentDays: aws.Int64(days),
+					NoncurrentDays: awsclient.Int64(days),
 					StorageClass:   storage,
 				}},
 				Status: enabled,
 				Transitions: []v1beta1.Transition{{
 					Date:         &date,
-					Days:         aws.Int64(days),
+					Days:         awsclient.Int64(days),
 					StorageClass: storage,
 				}},
 			},
@@ -87,30 +86,30 @@ func generateAWSLifecycle(sortTag bool) *s3.BucketLifecycleConfiguration {
 	conf := &s3.BucketLifecycleConfiguration{
 		Rules: []s3.LifecycleRule{
 			{
-				AbortIncompleteMultipartUpload: &s3.AbortIncompleteMultipartUpload{DaysAfterInitiation: aws.Int64(1)},
+				AbortIncompleteMultipartUpload: &s3.AbortIncompleteMultipartUpload{DaysAfterInitiation: awsclient.Int64(1)},
 				Expiration: &s3.LifecycleExpiration{
 					Date:                      &awsDate,
-					Days:                      aws.Int64(days),
-					ExpiredObjectDeleteMarker: aws.Bool(marker),
+					Days:                      awsclient.Int64(days),
+					ExpiredObjectDeleteMarker: awsclient.Bool(marker),
 				},
 				Filter: &s3.LifecycleRuleFilter{
 					And: &s3.LifecycleRuleAndOperator{
-						Prefix: aws.String(prefix),
+						Prefix: awsclient.String(prefix),
 						Tags:   awsTags,
 					},
-					Prefix: aws.String(prefix),
+					Prefix: awsclient.String(prefix),
 					Tag:    &awsTag,
 				},
-				ID:                          aws.String(id),
-				NoncurrentVersionExpiration: &s3.NoncurrentVersionExpiration{NoncurrentDays: aws.Int64(days)},
+				ID:                          awsclient.String(id),
+				NoncurrentVersionExpiration: &s3.NoncurrentVersionExpiration{NoncurrentDays: awsclient.Int64(days)},
 				NoncurrentVersionTransitions: []s3.NoncurrentVersionTransition{{
-					NoncurrentDays: aws.Int64(days),
+					NoncurrentDays: awsclient.Int64(days),
 					StorageClass:   s3.TransitionStorageClassOnezoneIa,
 				}},
 				Status: s3.ExpirationStatusEnabled,
 				Transitions: []s3.Transition{{
 					Date:         &awsDate,
-					Days:         aws.Int64(days),
+					Days:         awsclient.Int64(days),
 					StorageClass: s3.TransitionStorageClassOnezoneIa,
 				}},
 			},
@@ -183,7 +182,7 @@ func TestLifecycleObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    errors.Wrap(errBoom, lifecycleGetFailed),
+				err:    awsclient.Wrap(errBoom, lifecycleGetFailed),
 			},
 		},
 		"UpdateNeeded": {
@@ -307,7 +306,7 @@ func TestLifecycleCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: errors.Wrap(errBoom, lifecyclePutFailed),
+				err: awsclient.Wrap(errBoom, lifecyclePutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -378,7 +377,7 @@ func TestLifecycleDelete(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: errors.Wrap(errBoom, lifecycleDeleteFailed),
+				err: awsclient.Wrap(errBoom, lifecycleDeleteFailed),
 			},
 		},
 		"SuccessfulDelete": {

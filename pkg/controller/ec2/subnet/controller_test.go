@@ -33,6 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
 )
@@ -182,7 +183,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  subnet(withExternalName(subnetID)),
-				err: errors.Wrap(errBoom, errDescribe),
+				err: awsclient.Wrap(errBoom, errDescribe),
 			},
 		},
 	}
@@ -253,7 +254,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  subnet(),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -419,7 +420,7 @@ func TestDelete(t *testing.T) {
 				cr: subnet(withStatus(v1beta1.SubnetObservation{
 					SubnetID: subnetID,
 				}), withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 	}

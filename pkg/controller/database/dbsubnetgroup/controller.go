@@ -36,7 +36,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/database/v1beta1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	dbsg "github.com/crossplane/provider-aws/pkg/clients/dbsubnetgroup"
 )
 
@@ -78,7 +78,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	})
 	res, err := req.Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(dbsg.IsErrorNotFound, err), errDescribe)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(dbsg.IsErrorNotFound, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -129,7 +129,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		ResourceName: aws.String(cr.Status.AtProvider.ARN),
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, errListTagsFailed)
+		return managed.ExternalObservation{}, awsclient.Wrap(err, errListTagsFailed)
 	}
 
 	return managed.ExternalObservation{
@@ -159,7 +159,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	_, err := e.client.CreateDBSubnetGroupRequest(input).Send(ctx)
-	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -175,7 +175,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 	}
 
 	if len(cr.Spec.ForProvider.Tags) > 0 {
@@ -188,7 +188,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			Tags:         tags,
 		}).Send(ctx)
 		if err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errAddTagsFailed)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddTagsFailed)
 		}
 	}
 	return managed.ExternalUpdate{}, nil
@@ -204,5 +204,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	_, err := e.client.DeleteDBSubnetGroupRequest(&awsrds.DeleteDBSubnetGroupInput{
 		DBSubnetGroupName: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
-	return errors.Wrap(resource.Ignore(dbsg.IsDBSubnetGroupNotFoundErr, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(dbsg.IsDBSubnetGroupNotFoundErr, err), errDelete)
 }

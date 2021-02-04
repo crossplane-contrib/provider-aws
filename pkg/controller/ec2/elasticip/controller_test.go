@@ -37,6 +37,7 @@ import (
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
 )
@@ -183,7 +184,7 @@ func TestObserve(t *testing.T) {
 				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
 					Domain: &domainVpc,
 				}), withExternalName(allocationID)),
-				err: errors.Wrap(errBoom, errDescribe),
+				err: awsclient.Wrap(errBoom, errDescribe),
 			},
 		},
 	}
@@ -285,7 +286,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  elasticIP(withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -356,7 +357,7 @@ func TestUpdate(t *testing.T) {
 				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
 					Domain: &domainVpc,
 				})),
-				err: errors.Wrap(errBoom, errCreateTags),
+				err: awsclient.Wrap(errBoom, errCreateTags),
 			},
 		},
 	}
@@ -438,7 +439,7 @@ func TestRelease(t *testing.T) {
 			},
 			want: want{
 				cr:  elasticIP(withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 	}

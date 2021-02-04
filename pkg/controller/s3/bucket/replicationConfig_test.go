@@ -24,10 +24,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
@@ -73,7 +72,7 @@ func generateReplicationConfig() *v1beta1.ReplicationConfiguration {
 				Tag:    &tag,
 			},
 			ID:                      &id,
-			Priority:                aws.Int64(priority),
+			Priority:                awsclient.Int64(priority),
 			SourceSelectionCriteria: &v1beta1.SourceSelectionCriteria{SseKmsEncryptedObjects: v1beta1.SseKmsEncryptedObjects{Status: enabled}},
 			Status:                  enabled,
 		}},
@@ -91,11 +90,11 @@ func generateAWSReplication() *s3.ReplicationConfiguration {
 				Bucket:                   &bucketName,
 				EncryptionConfiguration:  &s3.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 				Metrics: &s3.Metrics{
-					EventThreshold: &s3.ReplicationTimeValue{Minutes: aws.Int64(replicationTime)},
+					EventThreshold: &s3.ReplicationTimeValue{Minutes: awsclient.Int64(replicationTime)},
 					Status:         s3.MetricsStatusEnabled,
 				},
 				ReplicationTime: &s3.ReplicationTime{
-					Time:   &s3.ReplicationTimeValue{Minutes: aws.Int64(replicationTime)},
+					Time:   &s3.ReplicationTimeValue{Minutes: awsclient.Int64(replicationTime)},
 					Status: s3.ReplicationTimeStatusEnabled,
 				},
 				StorageClass: s3.StorageClassOnezoneIa,
@@ -110,7 +109,7 @@ func generateAWSReplication() *s3.ReplicationConfiguration {
 				Tag:    &awsTag,
 			},
 			ID:                      &id,
-			Priority:                aws.Int64(priority),
+			Priority:                awsclient.Int64(priority),
 			SourceSelectionCriteria: &s3.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3.SseKmsEncryptedObjects{Status: s3.SseKmsEncryptedObjectsStatusEnabled}},
 			Status:                  s3.ReplicationRuleStatusEnabled,
 		}},
@@ -145,7 +144,7 @@ func TestReplicationObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    errors.Wrap(errBoom, replicationGetFailed),
+				err:    awsclient.Wrap(errBoom, replicationGetFailed),
 			},
 		},
 		"UpdateNeeded": {
@@ -269,7 +268,7 @@ func TestReplicationCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: errors.Wrap(errBoom, replicationPutFailed),
+				err: awsclient.Wrap(errBoom, replicationPutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -340,7 +339,7 @@ func TestReplicationDelete(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: errors.Wrap(errBoom, replicationDeleteFailed),
+				err: awsclient.Wrap(errBoom, replicationDeleteFailed),
 			},
 		},
 		"SuccessfulDelete": {
