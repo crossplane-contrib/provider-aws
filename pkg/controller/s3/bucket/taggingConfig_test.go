@@ -26,9 +26,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
@@ -104,7 +104,7 @@ func TestTaggingObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    errors.Wrap(errBoom, taggingGetFailed),
+				err:    awsclient.Wrap(errBoom, taggingGetFailed),
 			},
 		},
 		"UpdateNeeded": {
@@ -244,7 +244,7 @@ func TestTaggingCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: errors.Wrap(errBoom, taggingPutFailed),
+				err: awsclient.Wrap(errBoom, taggingPutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -315,7 +315,7 @@ func TestTaggingDelete(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: errors.Wrap(errBoom, taggingDeleteFailed),
+				err: awsclient.Wrap(errBoom, taggingDeleteFailed),
 			},
 		},
 		"SuccessfulDelete": {

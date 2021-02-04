@@ -27,7 +27,7 @@ import (
 )
 
 var (
-	customCname                    = "soemcustomname"
+	customCname                    = "somecustomname"
 	revocationConfigurationEnabled = true
 	s3BucketName                   = "somes3bucketname"
 	commonName                     = "someCommonName"

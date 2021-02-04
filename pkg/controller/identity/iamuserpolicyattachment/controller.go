@@ -33,7 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/iam"
 )
 
@@ -70,7 +70,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, awscommon.GlobalRegion)
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, awsclient.GlobalRegion)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		UserName: aws.String(cr.Spec.ForProvider.UserName),
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	var attachedPolicyObject *awsiam.AttachedPolicy
@@ -142,7 +142,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		UserName:  aws.String(cr.Spec.ForProvider.UserName),
 	}).Send(ctx)
 
-	return managed.ExternalCreation{}, errors.Wrap(err, errAttach)
+	return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
 }
 
 func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {
@@ -165,5 +165,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		UserName:  aws.String(cr.Spec.ForProvider.UserName),
 	}).Send(ctx)
 
-	return errors.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDetach)
+	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDetach)
 }

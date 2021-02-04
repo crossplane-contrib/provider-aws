@@ -302,7 +302,7 @@ echo_step "uninstalling ${PROJECT_NAME}"
 echo "${INSTALL_YAML}" | "${KUBECTL}" delete -f -
 
 # check pods deleted
-sleep 30
+sleep 60
 echo_step "check only crossplane pods remain"
 echo "--- pods ---"
 "${KUBECTL}" -n "${CROSSPLANE_NAMESPACE}" get pods

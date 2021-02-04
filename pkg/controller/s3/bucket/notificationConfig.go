@@ -22,10 +22,9 @@ import (
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 )
 
@@ -41,9 +40,9 @@ type NotificationConfigurationClient struct {
 
 // LateInitialize is responsible for initializing the resource based on the external value
 func (in *NotificationConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketNotificationConfigurationRequest(&awss3.GetBucketNotificationConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketNotificationConfigurationRequest(&awss3.GetBucketNotificationConfigurationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		return errors.Wrap(err, notificationGetFailed)
+		return awsclient.Wrap(err, notificationGetFailed)
 	}
 	if emptyConfiguration(external) {
 		// There is nothing to initialize from AWS
@@ -128,8 +127,8 @@ func LateInitializeLambda(external []awss3.LambdaFunctionConfiguration, local []
 		local[i] = v1beta1.LambdaFunctionConfiguration{
 			Events:            LateInitializeEvents(local[i].Events, v.Events),
 			Filter:            LateInitializeFilter(local[i].Filter, v.Filter),
-			ID:                aws.LateInitializeStringPtr(local[i].ID, v.Id),
-			LambdaFunctionArn: aws.LateInitializeString(local[i].LambdaFunctionArn, v.LambdaFunctionArn),
+			ID:                awsclient.LateInitializeStringPtr(local[i].ID, v.Id),
+			LambdaFunctionArn: awsclient.LateInitializeString(local[i].LambdaFunctionArn, v.LambdaFunctionArn),
 		}
 	}
 }
@@ -143,8 +142,8 @@ func LateInitializeQueue(external []awss3.QueueConfiguration, local []v1beta1.Qu
 		local[i] = v1beta1.QueueConfiguration{
 			Events:   LateInitializeEvents(local[i].Events, v.Events),
 			Filter:   LateInitializeFilter(local[i].Filter, v.Filter),
-			ID:       aws.LateInitializeStringPtr(local[i].ID, v.Id),
-			QueueArn: aws.LateInitializeString(local[i].QueueArn, v.QueueArn),
+			ID:       awsclient.LateInitializeStringPtr(local[i].ID, v.Id),
+			QueueArn: awsclient.LateInitializeString(local[i].QueueArn, v.QueueArn),
 		}
 	}
 }
@@ -158,8 +157,8 @@ func LateInitializeTopic(external []awss3.TopicConfiguration, local []v1beta1.To
 		local[i] = v1beta1.TopicConfiguration{
 			Events:   LateInitializeEvents(local[i].Events, v.Events),
 			Filter:   LateInitializeFilter(local[i].Filter, v.Filter),
-			ID:       aws.LateInitializeStringPtr(local[i].ID, v.Id),
-			TopicArn: aws.LateInitializeStringPtr(local[i].TopicArn, v.TopicArn),
+			ID:       awsclient.LateInitializeStringPtr(local[i].ID, v.Id),
+			TopicArn: awsclient.LateInitializeStringPtr(local[i].TopicArn, v.TopicArn),
 		}
 	}
 }
@@ -184,9 +183,9 @@ func bucketStatus(config *v1beta1.NotificationConfiguration, external *awss3.Get
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *NotificationConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetBucketNotificationConfigurationRequest(&awss3.GetBucketNotificationConfigurationInput{Bucket: aws.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketNotificationConfigurationRequest(&awss3.GetBucketNotificationConfigurationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
 	if err != nil {
-		return NeedsUpdate, errors.Wrap(err, notificationGetFailed)
+		return NeedsUpdate, awsclient.Wrap(err, notificationGetFailed)
 	}
 
 	config := bucket.Spec.ForProvider.NotificationConfiguration
@@ -246,7 +245,7 @@ func GenerateLambdaConfiguration(config *v1beta1.NotificationConfiguration) []aw
 		conf := awss3.LambdaFunctionConfiguration{
 			Filter:            nil,
 			Id:                v.ID,
-			LambdaFunctionArn: aws.String(v.LambdaFunctionArn),
+			LambdaFunctionArn: awsclient.String(v.LambdaFunctionArn),
 		}
 		if v.Events != nil {
 			conf.Events = copyEvents(v.Events)
@@ -288,7 +287,7 @@ func GenerateQueueConfigurations(config *v1beta1.NotificationConfiguration) []aw
 	for _, v := range config.QueueConfigurations {
 		conf := awss3.QueueConfiguration{
 			Id:       v.ID,
-			QueueArn: aws.String(v.QueueArn),
+			QueueArn: awsclient.String(v.QueueArn),
 		}
 		if v.Events != nil {
 			conf.Events = copyEvents(v.Events)
@@ -313,7 +312,7 @@ func GenerateConfiguration(config *v1beta1.NotificationConfiguration) *awss3.Not
 // GenerateNotificationConfigurationInput creates the input for the LifecycleConfiguration request for the S3 Client
 func GenerateNotificationConfigurationInput(name string, config *v1beta1.NotificationConfiguration) *awss3.PutBucketNotificationConfigurationInput {
 	return &awss3.PutBucketNotificationConfigurationInput{
-		Bucket:                    aws.String(name),
+		Bucket:                    awsclient.String(name),
 		NotificationConfiguration: GenerateConfiguration(config),
 	}
 }
@@ -325,10 +324,10 @@ func (in *NotificationConfigurationClient) CreateOrUpdate(ctx context.Context, b
 	}
 	input := GenerateNotificationConfigurationInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.NotificationConfiguration)
 	_, err := in.client.PutBucketNotificationConfigurationRequest(input).Send(ctx)
-	return errors.Wrap(err, notificationPutFailed)
+	return awsclient.Wrap(err, notificationPutFailed)
 }
 
-// Delete does nothing because there is no corresponding deletion call in AWS.
+// Delete does nothing because there is no corresponding deletion call in awsclient.
 func (*NotificationConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
 	return nil
 }

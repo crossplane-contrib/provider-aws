@@ -28,9 +28,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/session"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/aws/endpoints"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -38,15 +37,15 @@ import (
 	awsv1 "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	endpointsv1 "github.com/aws/aws-sdk-go/aws/endpoints"
+	"github.com/aws/aws-sdk-go/aws/session"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/go-ini/ini"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/v1alpha3"
 	"github.com/crossplane/provider-aws/apis/v1beta1"
@@ -620,4 +619,21 @@ func DiffLabels(local, remote map[string]string) (addOrModify map[string]string,
 		}
 	}
 	return
+}
+
+// CleanError Will remove the requestID from a awserr.Error and return a new awserr.
+// If not awserr it will return the original error
+func CleanError(err error) error {
+	if err == nil {
+		return err
+	}
+	if awsErr, ok := err.(awserr.Error); ok {
+		return awserr.New(awsErr.Code(), awsErr.Message(), nil)
+	}
+	return err
+}
+
+// Wrap Attempts to remove requestID from awserr before calling Wrap
+func Wrap(err error, msg string) error {
+	return errors.Wrap(CleanError(err), msg)
 }

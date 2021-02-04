@@ -33,6 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
 )
@@ -187,7 +188,7 @@ func TestObserve(t *testing.T) {
 					SecurityGroupID: sgID,
 				}),
 					withExternalName(sgID)),
-				err: errors.Wrap(errBoom, errDescribe),
+				err: awsclient.Wrap(errBoom, errDescribe),
 			},
 		},
 	}
@@ -266,7 +267,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  sg(withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 		"RevokeFail": {
@@ -293,7 +294,7 @@ func TestCreate(t *testing.T) {
 				cr: sg(),
 			},
 			want: want{
-				err: errors.Wrap(errBoom, errRevokeEgress),
+				err: awsclient.Wrap(errBoom, errRevokeEgress),
 				cr: sg(withExternalName(sgID),
 					withConditions(xpv1.Creating())),
 			},
@@ -406,7 +407,7 @@ func TestUpdate(t *testing.T) {
 					withStatus(v1beta1.SecurityGroupObservation{
 						SecurityGroupID: sgID,
 					})),
-				err: errors.Wrap(errBoom, errAuthorizeIngress),
+				err: awsclient.Wrap(errBoom, errAuthorizeIngress),
 			},
 		},
 	}
@@ -490,7 +491,7 @@ func TestDelete(t *testing.T) {
 				cr: sg(withStatus(v1beta1.SecurityGroupObservation{
 					SecurityGroupID: sgID,
 				}), withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 	}

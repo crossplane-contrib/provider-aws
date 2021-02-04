@@ -24,10 +24,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
-	"github.com/pkg/errors"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
@@ -42,7 +41,7 @@ func generateCORSConfig() *v1beta1.CORSConfiguration {
 			AllowedMethods: []string{"GET"},
 			AllowedOrigins: []string{"test.origin"},
 			ExposeHeaders:  []string{"test.expose"},
-			MaxAgeSeconds:  aws.Int64(10),
+			MaxAgeSeconds:  awsclient.Int64(10),
 		},
 	},
 	}
@@ -55,7 +54,7 @@ func generateAWSCORS() *s3.CORSConfiguration {
 			AllowedMethods: []string{"GET"},
 			AllowedOrigins: []string{"test.origin"},
 			ExposeHeaders:  []string{"test.expose"},
-			MaxAgeSeconds:  aws.Int64(10),
+			MaxAgeSeconds:  awsclient.Int64(10),
 		},
 	},
 	}
@@ -89,7 +88,7 @@ func TestCORSObserve(t *testing.T) {
 			},
 			want: want{
 				status: NeedsUpdate,
-				err:    errors.Wrap(errBoom, corsGetFailed),
+				err:    awsclient.Wrap(errBoom, corsGetFailed),
 			},
 		},
 		"UpdateNeeded": {
@@ -213,7 +212,7 @@ func TestCORSCreateOrUpdate(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: errors.Wrap(errBoom, corsPutFailed),
+				err: awsclient.Wrap(errBoom, corsPutFailed),
 			},
 		},
 		"InvalidConfig": {
@@ -284,7 +283,7 @@ func TestCORSDelete(t *testing.T) {
 				}),
 			},
 			want: want{
-				err: errors.Wrap(errBoom, corsDeleteFailed),
+				err: awsclient.Wrap(errBoom, corsDeleteFailed),
 			},
 		},
 		"SuccessfulDelete": {

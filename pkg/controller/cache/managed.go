@@ -36,7 +36,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/cache/v1beta1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/elasticache"
 )
 
@@ -79,7 +79,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errNotReplicationGroup)
 	}
-	cfg, err := awsclients.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	dr := e.client.DescribeReplicationGroupsRequest(elasticache.NewDescribeReplicationGroupsInput(meta.GetExternalName(cr)))
 	rsp, err := dr.Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDescribeReplicationGroup)
+		return managed.ExternalObservation{ResourceExists: false}, awsclient.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDescribeReplicationGroup)
 	}
 	// DescribeReplicationGroups can return one or many replication groups. We
 	// ask for one group by name, so we should get either a single element list
@@ -109,7 +109,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	ccList, err := getCacheClusterList(ctx, e.client, rg.MemberClusters)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, errGetCacheClusterList)
+		return managed.ExternalObservation{}, awsclient.Wrap(err, errGetCacheClusterList)
 	}
 	var oneCC elasticacheservice.CacheCluster
 	if len(ccList) > 0 {
@@ -159,13 +159,13 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if aws.BoolValue(cr.Spec.ForProvider.AuthEnabled) {
 		t, err := password.Generate()
 		if err != nil {
-			return managed.ExternalCreation{}, errors.Wrap(err, errGenerateAuthToken)
+			return managed.ExternalCreation{}, awsclient.Wrap(err, errGenerateAuthToken)
 		}
 		token = &t
 	}
 	r := e.client.CreateReplicationGroupRequest(elasticache.NewCreateReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr), token))
 	if _, err := r.Send(ctx); err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(resource.Ignore(elasticache.IsAlreadyExists, err), errCreateReplicationGroup)
+		return managed.ExternalCreation{}, awsclient.Wrap(resource.Ignore(elasticache.IsAlreadyExists, err), errCreateReplicationGroup)
 	}
 	if token != nil {
 		return managed.ExternalCreation{
@@ -189,7 +189,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 	mr := e.client.ModifyReplicationGroupRequest(elasticache.NewModifyReplicationGroupInput(cr.Spec.ForProvider, meta.GetExternalName(cr)))
 	_, err := mr.Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, errModifyReplicationGroup)
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyReplicationGroup)
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
@@ -203,7 +203,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 	req := e.client.DeleteReplicationGroupRequest(elasticache.NewDeleteReplicationGroupInput(meta.GetExternalName(cr)))
 	_, err := req.Send(ctx)
-	return errors.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDeleteReplicationGroup)
+	return awsclient.Wrap(resource.Ignore(elasticache.IsNotFound, err), errDeleteReplicationGroup)
 }
 
 type tagger struct {

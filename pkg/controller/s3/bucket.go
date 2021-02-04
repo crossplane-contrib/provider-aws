@@ -38,7 +38,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/controller/s3/bucket"
 )
 
@@ -77,7 +77,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.LocationConstraint)
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, cr.Spec.ForProvider.LocationConstraint)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	if _, err := e.s3client.HeadBucketRequest(&awss3.HeadBucketInput{Bucket: aws.String(meta.GetExternalName(cr))}).Send(ctx); err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(s3.IsNotFound, err), errHead)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(s3.IsNotFound, err), errHead)
 	}
 
 	cr.Status.AtProvider = s3.GenerateBucketObservation(meta.GetExternalName(cr))
@@ -149,7 +149,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 	cr.Status.SetConditions(xpv1.Creating())
 	_, err := e.s3client.CreateBucketRequest(s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx)
-	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -168,11 +168,11 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		case bucket.NeedsDeletion:
 			err = awsClient.Delete(ctx, cr)
 			if err != nil {
-				return managed.ExternalUpdate{}, errors.Wrap(err, errDelete)
+				return managed.ExternalUpdate{}, awsclient.Wrap(err, errDelete)
 			}
 		case bucket.NeedsUpdate:
 			if err := awsClient.CreateOrUpdate(ctx, cr); err != nil {
-				return managed.ExternalUpdate{}, errors.Wrap(err, errCreateOrUpdate)
+				return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateOrUpdate)
 			}
 		}
 	}

@@ -32,7 +32,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/acmpca"
 )
 
@@ -72,7 +72,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awscommon.GetConfig(ctx, c.client, mg, cr.Spec.ForProvider.Region)
+	cfg, err := awsclient.GetConfig(ctx, c.client, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errGet)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errGet)
 	}
 	if len(response.Permissions) == 0 {
 		return managed.ExternalObservation{
@@ -118,7 +118,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
 		Principal:               aws.String(principal),
 	}).Send(ctx)
-	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 
 }
 
@@ -139,5 +139,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		Principal:               aws.String(principal),
 	}).Send(ctx)
 
-	return errors.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
 }

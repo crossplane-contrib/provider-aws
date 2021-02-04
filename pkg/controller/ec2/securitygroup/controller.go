@@ -36,7 +36,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-	awscommon "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 )
 
@@ -83,7 +83,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awscommon.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		GroupIds: []string{meta.GetExternalName(cr)},
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errDescribe)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -126,7 +126,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	upToDate, err := ec2.IsSGUpToDate(cr.Spec.ForProvider, observed)
 	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, errDescribe)
+		return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribe)
 	}
 
 	// this is to make sure that the security group exists with the specified traffic rules.
@@ -159,7 +159,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		Description: aws.String(cr.Spec.ForProvider.Description),
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 	en := aws.StringValue(result.GroupId)
 	// NOTE(muvaf): We have this code block in managed reconciler but this resource
@@ -188,7 +188,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 			},
 		},
 	}).Send(ctx)
-	return managed.ExternalCreation{}, errors.Wrap(err, errRevokeEgress)
+	return managed.ExternalCreation{}, awsclient.Wrap(err, errRevokeEgress)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
@@ -201,7 +201,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		GroupIds: []string{meta.GetExternalName(cr)},
 	}).Send(ctx)
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errDescribe)
+		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errDescribe)
 	}
 
 	patch, err := ec2.CreateSGPatch(response.SecurityGroups[0], cr.Spec.ForProvider)
@@ -214,7 +214,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
 		}).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errCreateTags)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
 		}
 	}
 
@@ -223,7 +223,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			GroupId:       aws.String(meta.GetExternalName(cr)),
 			IpPermissions: ec2.GenerateEC2Permissions(cr.Spec.ForProvider.Ingress),
 		}).Send(ctx); err != nil && !ec2.IsRuleAlreadyExistsErr(err) {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errAuthorizeIngress)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAuthorizeIngress)
 		}
 	}
 
@@ -232,7 +232,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			GroupId:       aws.String(meta.GetExternalName(cr)),
 			IpPermissions: ec2.GenerateEC2Permissions(cr.Spec.ForProvider.Egress),
 		}).Send(ctx); err != nil && !ec2.IsRuleAlreadyExistsErr(err) {
-			return managed.ExternalUpdate{}, errors.Wrap(err, errAuthorizeEgress)
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAuthorizeEgress)
 		}
 	}
 
@@ -251,5 +251,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		GroupId: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
-	return errors.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(ec2.IsSecurityGroupNotFoundErr, err), errDelete)
 }

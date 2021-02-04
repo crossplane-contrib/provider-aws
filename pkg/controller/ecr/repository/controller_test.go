@@ -35,6 +35,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
 	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	ecr "github.com/crossplane/provider-aws/pkg/clients/ecr"
 	"github.com/crossplane/provider-aws/pkg/clients/ecr/fake"
 )
@@ -202,7 +203,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  repository(withSpec(v1alpha1.RepositoryParameters{}), withExternalName(repoName)),
-				err: errors.Wrap(errBoom, errDescribe),
+				err: awsclient.Wrap(errBoom, errDescribe),
 			},
 		},
 		"ListTagsFail": {
@@ -231,7 +232,7 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr:  repository(withSpec(v1alpha1.RepositoryParameters{}), withExternalName(repoName)),
-				err: errors.Wrap(errBoom, errListTags),
+				err: awsclient.Wrap(errBoom, errListTags),
 			},
 		},
 	}
@@ -307,7 +308,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  repository(withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -429,7 +430,7 @@ func TestUpdate(t *testing.T) {
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
 					Tags: []v1alpha1.Tag{testTag},
 				})),
-				err: errors.Wrap(errBoom, errCreateTags),
+				err: awsclient.Wrap(errBoom, errCreateTags),
 			},
 		},
 		"SuccessfulImageMutate": {
@@ -500,7 +501,7 @@ func TestUpdate(t *testing.T) {
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
 					ImageTagMutability: aws.String(string(awsecr.ImageTagMutabilityMutable)),
 				})),
-				err: errors.Wrap(errBoom, errUpdateMutability),
+				err: awsclient.Wrap(errBoom, errUpdateMutability),
 			},
 		},
 		"SuccessfulScanConfig": {
@@ -571,7 +572,7 @@ func TestUpdate(t *testing.T) {
 				cr: repository(withSpec(v1alpha1.RepositoryParameters{
 					ImageScanningConfiguration: &imageScanConfigTrue,
 				})),
-				err: errors.Wrap(errBoom, errUpdateScan),
+				err: awsclient.Wrap(errBoom, errUpdateScan),
 			},
 		},
 	}
@@ -632,7 +633,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  repository(withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 	}

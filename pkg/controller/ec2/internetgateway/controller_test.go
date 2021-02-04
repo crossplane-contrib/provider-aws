@@ -33,6 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
 )
@@ -199,7 +200,7 @@ func TestObserve(t *testing.T) {
 					Attachments:       specAttachments(),
 				}),
 					withExternalName(igID)),
-				err: errors.Wrap(errBoom, errDescribe),
+				err: awsclient.Wrap(errBoom, errDescribe),
 			},
 		},
 	}
@@ -280,7 +281,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:  ig(withConditions(xpv1.Creating())),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -425,7 +426,7 @@ func TestUpdate(t *testing.T) {
 				cr: ig(withSpec(v1beta1.InternetGatewayParameters{
 					VPCID: aws.String(anotherVpcID),
 				}), withExternalName(igID)),
-				err: errors.Wrap(errBoom, errDetach),
+				err: awsclient.Wrap(errBoom, errDetach),
 			},
 		},
 	}
@@ -530,7 +531,7 @@ func TestDelete(t *testing.T) {
 					Attachments:       specAttachments(),
 				}), withExternalName(igID),
 					withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDetach),
+				err: awsclient.Wrap(errBoom, errDetach),
 			},
 		},
 		"DeleteFail": {
@@ -558,7 +559,7 @@ func TestDelete(t *testing.T) {
 					Attachments:       specAttachments(),
 				}), withExternalName(igID),
 					withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 	}

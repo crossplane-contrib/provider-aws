@@ -35,6 +35,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/sns"
 	"github.com/crossplane/provider-aws/pkg/clients/sns/fake"
 )
@@ -173,7 +174,7 @@ func TestObserve(t *testing.T) {
 					ResourceExists:   false,
 					ResourceUpToDate: false,
 				},
-				err: errors.Wrap(errBoom, errGetTopicAttr),
+				err: awsclient.Wrap(errBoom, errGetTopicAttr),
 			},
 		},
 		"ClientGetTopicAttributesError": {
@@ -200,7 +201,7 @@ func TestObserve(t *testing.T) {
 					ResourceExists:   false,
 					ResourceUpToDate: false,
 				},
-				err: errors.Wrap(errBoom, errGetTopicAttr),
+				err: awsclient.Wrap(errBoom, errGetTopicAttr),
 			},
 		},
 		"ValidInputResourceNotUpToDate": {
@@ -333,7 +334,7 @@ func TestCreate(t *testing.T) {
 				cr: topic(
 					withDisplayName(&topicDisplayName),
 					withTopicName(&topicName)),
-				err: errors.Wrap(errBoom, errCreate),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}
@@ -446,7 +447,7 @@ func TestUpdate(t *testing.T) {
 			},
 			want: want{
 				cr:  topic(withTopicName(&topicName)),
-				err: errors.Wrap(errBoom, errGetTopicAttr),
+				err: awsclient.Wrap(errBoom, errGetTopicAttr),
 			},
 		},
 		"ClientSetTopicAttributeError": {
@@ -481,7 +482,7 @@ func TestUpdate(t *testing.T) {
 					withDisplayName(&topicDisplayName),
 					withTopicName(&topicName),
 				),
-				err: errors.Wrap(errBoom, errUpdate),
+				err: awsclient.Wrap(errBoom, errUpdate),
 			},
 		},
 	}
@@ -561,7 +562,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: want{
 				cr:  topic(withConditions(xpv1.Deleting())),
-				err: errors.Wrap(errBoom, errDelete),
+				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
 		"ResourceDoesNotExist": {
