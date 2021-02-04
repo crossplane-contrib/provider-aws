@@ -62,12 +62,12 @@ kind: ControllerConfig
 metadata:
   name: aws-config
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::$AWS_ACCOUNT_ID\:role/$IAM_ROLE_NAME
+    eks.amazonaws.com/role-arn: arn:aws:iam::$AWS_ACCOUNT_ID:role/$IAM_ROLE_NAME
 spec:
   podSecurityContext:
     fsGroup: 2000
 ---
-apiVersion: pkg.crossplane.io/v1alpha1
+apiVersion: pkg.crossplane.io/v1
 kind: Provider
 metadata:
   name: provider-aws
@@ -156,6 +156,12 @@ aws iam attach-role-policy --role-name $IAM_ROLE_NAME --policy-arn=arn:aws:iam::
 ```
 
 7. Create `ProviderConfig`
+
+Ensure that `ProviderConfig` resource kind was created:
+
+```
+kubectl explain providerconfig --api-version='aws.crossplane.io/v1beta1'
+```
 
 To utilize those credentials to provision new resources, you must create a
 `ProviderConfig` with `source: InjectedIdentity`:
