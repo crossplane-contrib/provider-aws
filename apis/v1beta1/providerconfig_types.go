@@ -24,7 +24,17 @@ import (
 
 // A ProviderConfigSpec defines the desired state of a ProviderConfig.
 type ProviderConfigSpec struct {
-	xpv1.ProviderConfigSpec `json:",inline"`
+	// Credentials required to authenticate to this provider.
+	Credentials ProviderCredentials `json:"credentials"`
+}
+
+// ProviderCredentials required to authenticate.
+type ProviderCredentials struct {
+	// Source of the provider credentials.
+	// +kubebuilder:validation:Enum=None;Secret;InjectedIdentity;Environment;Filesystem
+	Source xpv1.CredentialsSource `json:"source"`
+
+	xpv1.CommonCredentialSelectors `json:",inline"`
 }
 
 // A ProviderConfigStatus represents the status of a ProviderConfig.
