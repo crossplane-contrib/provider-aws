@@ -28,7 +28,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -242,7 +241,7 @@ func TestIsUpToDate(t *testing.T) {
 					},
 				},
 				kube: &test.MockClient{
-					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+					MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
 						switch key.Name {
 						case connectionSecretName:
 							secret := corev1.Secret{
@@ -292,7 +291,7 @@ func TestIsUpToDate(t *testing.T) {
 					},
 				},
 				kube: &test.MockClient{
-					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+					MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
 						switch key.Name {
 						case connectionSecretName:
 							secret := corev1.Secret{
@@ -367,7 +366,7 @@ func TestGetPassword(t *testing.T) {
 					},
 				},
 				kube: &test.MockClient{
-					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+					MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
 						switch key.Name {
 						case connectionSecretName:
 							secret := corev1.Secret{
@@ -418,7 +417,7 @@ func TestGetPassword(t *testing.T) {
 					},
 				},
 				kube: &test.MockClient{
-					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+					MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
 						switch key.Name {
 						case connectionSecretName:
 							secret := corev1.Secret{
@@ -463,7 +462,7 @@ func TestGetPassword(t *testing.T) {
 					},
 				},
 				kube: &test.MockClient{
-					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+					MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
 						return errBoom
 					},
 				},
@@ -497,7 +496,7 @@ func TestGetPassword(t *testing.T) {
 					},
 				},
 				kube: &test.MockClient{
-					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+					MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
 						switch key.Name {
 						case connectionSecretName:
 							secret := corev1.Secret{
@@ -538,7 +537,7 @@ func TestGetPassword(t *testing.T) {
 					},
 				},
 				kube: &test.MockClient{
-					MockGet: func(_ context.Context, key client.ObjectKey, obj runtime.Object) error {
+					MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
 						secret := corev1.Secret{
 							Data: map[string][]byte{},
 						}

@@ -24,7 +24,10 @@ import (
 
 // A ProviderSpec defines the desired state of a Provider.
 type ProviderSpec struct {
-	xpv1.ProviderSpec `json:",inline"`
+	// CredentialsSecretRef references a specific secret's key that contains
+	// the credentials that are used to connect to the provider.
+	// +optional
+	CredentialsSecretRef *xpv1.SecretKeySelector `json:"credentialsSecretRef,omitempty"`
 
 	// Region for managed resources created using this AWS provider.
 	Region string `json:"region"`
