@@ -2,6 +2,7 @@ package ecr
 
 import (
 	"encoding/json"
+	"sort"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -98,7 +99,7 @@ func IsRepositoryUpToDate(e *v1alpha1.RepositoryParameters, tags []ecr.Tag, repo
 		return false
 	}
 	return strings.EqualFold(aws.StringValue(e.ImageTagMutability), string(repo.ImageTagMutability)) &&
-		v1alpha1.CompareTags(e.Tags, tags)
+		CompareTags(e.Tags, tags)
 }
 
 // IsRepoNotFoundErr returns true if the error is because the item doesn't exist
@@ -124,4 +125,55 @@ func GenerateCreateRepositoryInput(name string, params *v1alpha1.RepositoryParam
 		c.ImageScanningConfiguration = &scanConfig
 	}
 	return c
+}
+
+// CompareTags compares arrays of v1alpha1.Tag and ecr.Tag
+func CompareTags(tags []v1alpha1.Tag, ecrTags []ecr.Tag) bool {
+	if len(tags) != len(ecrTags) {
+		return false
+	}
+
+	SortTags(tags, ecrTags)
+
+	for i, t := range tags {
+		if t.Key != aws.StringValue(ecrTags[i].Key) || t.Value != aws.StringValue(ecrTags[i].Value) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// SortTags sorts array of v1alpha1.Tag and ecr.Tag on 'Key'
+func SortTags(tags []v1alpha1.Tag, ecrTags []ecr.Tag) {
+	sort.Slice(tags, func(i, j int) bool {
+		return tags[i].Key < tags[j].Key
+	})
+
+	sort.Slice(ecrTags, func(i, j int) bool {
+		return *ecrTags[i].Key < *ecrTags[j].Key
+	})
+}
+
+// DiffTags returns tags that should be added or removed.
+func DiffTags(spec []v1alpha1.Tag, current []ecr.Tag) (addTags []ecr.Tag, remove []string) {
+	addMap := make(map[string]string, len(spec))
+	for _, t := range spec {
+		addMap[t.Key] = t.Value
+	}
+	removeMap := map[string]struct{}{}
+	for _, t := range current {
+		if addMap[aws.StringValue(t.Key)] == aws.StringValue(t.Value) {
+			delete(addMap, aws.StringValue(t.Key))
+			continue
+		}
+		removeMap[aws.StringValue(t.Key)] = struct{}{}
+	}
+	for k, v := range addMap {
+		addTags = append(addTags, ecr.Tag{Key: aws.String(k), Value: aws.String(v)})
+	}
+	for k := range removeMap {
+		remove = append(remove, k)
+	}
+	return
 }
