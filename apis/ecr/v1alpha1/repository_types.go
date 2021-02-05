@@ -46,6 +46,16 @@ type RepositoryParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 }
 
+// Tag defines a tag
+type Tag struct {
+
+	// Key is the name of the tag.
+	Key string `json:"key"`
+
+	// Value is the value of the tag.
+	Value string `json:"value"`
+}
+
 // A RepositorySpec defines the desired state of a Elastic Container Repository.
 type RepositorySpec struct {
 	xpv1.ResourceSpec `json:",inline"`
