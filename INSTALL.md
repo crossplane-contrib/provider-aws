@@ -44,6 +44,28 @@ Official Crossplane builds are done inside a build container. This ensures that 
 
 The first run of `build/run` will build the container itself and could take a few minutes to complete, but subsequent builds should go much faster.
 
+## Run
+
+To run the provider from source outside a k8s cluster it is necessary to register the CRDs and add a ProviderConfig before.
+
+The necessary CRDs can be found in `package/crds/`. To register them in k8s run
+
+```console
+kubectl apply -f package/crds/
+```
+
+After that apply your custom ProviderConfig
+
+```console
+kubectl apply -f myProviderConfig.yaml
+```
+
+Then the provider can be run with
+
+```console
+make run
+```
+
 ## Install
 
 TBD: Steps to install the AWS provider package into a Crossplane cluster
