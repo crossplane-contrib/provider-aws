@@ -353,11 +353,14 @@ func TestDiffEC2Tags(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
+			tagCmp := cmpopts.SortSlices(func(i, j ec2.Tag) bool {
+				return StringValue(i.Key) < StringValue(j.Key)
+			})
 			add, remove := DiffEC2Tags(tc.args.local, tc.args.remote)
-			if diff := cmp.Diff(tc.want.add, add); diff != "" {
+			if diff := cmp.Diff(tc.want.add, add, tagCmp); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.remove, remove); diff != "" {
+			if diff := cmp.Diff(tc.want.remove, remove, tagCmp); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
