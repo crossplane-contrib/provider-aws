@@ -260,18 +260,26 @@ func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
 }
 
 func (e *external) updateTags(ctx context.Context, repo *v1alpha1.Repository) error {
-	resp, err := e.client.ListTagsForResourceRequest(&awsecr.ListTagsForResourceInput{ResourceArn: &repo.Status.AtProvider.RepositoryArn}).Send(ctx)
+	resp, err := e.client.ListTagsForResourceRequest(&awsecr.ListTagsForResourceInput{
+		ResourceArn: aws.String(repo.Status.AtProvider.RepositoryArn),
+	}).Send(ctx)
 	if err != nil {
 		return awsclient.Wrap(err, errListTags)
 	}
-	add, remove := v1alpha1.DiffTags(repo.Spec.ForProvider.Tags, resp.Tags)
+	add, remove := ecr.DiffTags(repo.Spec.ForProvider.Tags, resp.Tags)
 	if len(remove) != 0 {
-		if _, err := e.client.UntagResourceRequest(&awsecr.UntagResourceInput{ResourceArn: &repo.Status.AtProvider.RepositoryArn, TagKeys: remove}).Send(ctx); err != nil {
+		if _, err := e.client.UntagResourceRequest(&awsecr.UntagResourceInput{
+			ResourceArn: aws.String(repo.Status.AtProvider.RepositoryArn),
+			TagKeys:     remove},
+		).Send(ctx); err != nil {
 			return awsclient.Wrap(err, errRemoveTags)
 		}
 	}
 	if len(add) != 0 {
-		if _, err := e.client.TagResourceRequest(&awsecr.TagResourceInput{ResourceArn: &repo.Status.AtProvider.RepositoryArn, Tags: add}).Send(ctx); err != nil {
+		if _, err := e.client.TagResourceRequest(&awsecr.TagResourceInput{
+			ResourceArn: aws.String(repo.Status.AtProvider.RepositoryArn),
+			Tags:        add,
+		}).Send(ctx); err != nil {
 			return awsclient.Wrap(err, errCreateTags)
 		}
 	}
