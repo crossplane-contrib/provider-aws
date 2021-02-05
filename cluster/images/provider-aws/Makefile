@@ -6,6 +6,7 @@ include ../../../build/makelib/common.mk
 
 # ====================================================================================
 #  Options
+DOCKER_REGISTRY ?= crossplane
 IMAGE = $(BUILD_REGISTRY)/provider-aws-$(ARCH)
 OSBASEIMAGE = scratch
 include ../../../build/makelib/image.mk
@@ -19,6 +20,7 @@ img.build:
 	@cp -R ../../../package $(IMAGE_TEMP_DIR) || $(FAIL)
 	@cd $(IMAGE_TEMP_DIR) && $(SED_CMD) 's|BASEIMAGE|$(OSBASEIMAGE)|g' Dockerfile || $(FAIL)
 	@cd $(IMAGE_TEMP_DIR) && $(SED_CMD) 's|VERSION|$(VERSION)|g' package/crossplane.yaml || $(FAIL)
+	@cd $(IMAGE_TEMP_DIR) && $(SED_CMD) 's|DOCKER_REGISTRY|$(DOCKER_REGISTRY)|g' package/crossplane.yaml || $(FAIL)
 	@cd $(IMAGE_TEMP_DIR) && find package -type f -name '*.yaml' -exec cat {} >> 'package.yaml' \; -exec printf '\n---\n' \; || $(FAIL)
 	@docker build $(BUILD_ARGS) \
 		--build-arg ARCH=$(ARCH) \

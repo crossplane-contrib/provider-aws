@@ -30,4 +30,4 @@ metadata:
 
 spec:
   controller:
-    image: crossplane/provider-aws-controller:VERSION
+    image: DOCKER_REGISTRY/provider-aws-controller:VERSION
