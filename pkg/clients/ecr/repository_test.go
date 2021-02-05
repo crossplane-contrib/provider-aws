@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
@@ -292,13 +293,16 @@ func TestDiffTags(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
+			tagCmp := cmpopts.SortSlices(func(i, j ecr.Tag) bool {
+				return aws.StringValue(i.Key) < aws.StringValue(j.Key)
+			})
 			add, remove := DiffTags(tc.args.local, tc.args.remote)
-			if diff := cmp.Diff(tc.want.add, add); diff != "" {
+			if diff := cmp.Diff(tc.want.add, add, tagCmp); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			sort.Strings(tc.want.remove)
 			sort.Strings(remove)
-			if diff := cmp.Diff(tc.want.remove, remove); diff != "" {
+			if diff := cmp.Diff(tc.want.remove, remove, tagCmp); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

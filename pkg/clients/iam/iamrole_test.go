@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
@@ -366,13 +367,16 @@ func TestDiffIAMTags(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
+			tagCmp := cmpopts.SortSlices(func(i, j iam.Tag) bool {
+				return aws.StringValue(i.Key) < aws.StringValue(j.Key)
+			})
 			add, remove := DiffIAMTags(tc.args.local, tc.args.remote)
-			if diff := cmp.Diff(tc.want.add, add); diff != "" {
+			if diff := cmp.Diff(tc.want.add, add, tagCmp); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			sort.Strings(tc.want.remove)
 			sort.Strings(remove)
-			if diff := cmp.Diff(tc.want.remove, remove); diff != "" {
+			if diff := cmp.Diff(tc.want.remove, remove, tagCmp); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
