@@ -101,6 +101,12 @@ spec:
                         destinationCidrBlock:
                           description: The IPv4 CIDR address block used for the destination match. Routing decisions are based on the most specific match.
                           type: string
+                        destinationIpv6CidrBlock:
+                          description: The IPv6 CIDR address block used for the destination match. Routing decisions are based on the most specific match.
+                          type: string
+                        egressOnlyInternetGatewayId:
+                          description: '[IPv6 traffic only] The ID of an egress-only internet gateway.'
+                          type: string
                         gatewayId:
                           description: The ID of an internet gateway or virtual private gateway attached to your VPC.
                           type: string
@@ -125,6 +131,45 @@ spec:
                               description: MatchLabels ensures an object with matching labels is selected.
                               type: object
                           type: object
+                        instanceId:
+                          description: The ID of a NAT instance in your VPC. The operation fails if you specify an instance ID unless exactly one network interface is attached.
+                          type: string
+                        localGatewayId:
+                          description: The ID of the local gateway.
+                          type: string
+                        natGatewayId:
+                          description: '[IPv4 traffic only] The ID of a NAT gateway.'
+                          type: string
+                        natGatewayIdRef:
+                          description: A referencer to retrieve the ID of a NAT gateway
+                          properties:
+                            name:
+                              description: Name of the referenced object.
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        natGatewayIdSelector:
+                          description: A selector to select a referencer to retrieve the ID of a NAT gateway
+                          properties:
+                            matchControllerRef:
+                              description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                              type: boolean
+                            matchLabels:
+                              additionalProperties:
+                                type: string
+                              description: MatchLabels ensures an object with matching labels is selected.
+                              type: object
+                          type: object
+                        networkInterfaceId:
+                          description: The ID of a network interface.
+                          type: string
+                        transitGatewayId:
+                          description: The ID of a transit gateway.
+                          type: string
+                        vpcPeeringConnectionId:
+                          description: The ID of a VPC peering connection.
+                          type: string
                       type: object
                     type: array
                   tags:
@@ -247,11 +292,32 @@ spec:
                         destinationCidrBlock:
                           description: The IPv4 CIDR address block used for the destination match. Routing decisions are based on the most specific match.
                           type: string
+                        destinationIpv6CidrBlock:
+                          description: The IPv6 CIDR address block used for the destination match. Routing decisions are based on the most specific match.
+                          type: string
                         gatewayId:
                           description: The ID of an internet gateway or virtual private gateway attached to your VPC.
                           type: string
+                        instanceId:
+                          description: The ID of a NAT instance in your VPC. The operation fails if you specify an instance ID unless exactly one network interface is attached.
+                          type: string
+                        localGatewayId:
+                          description: The ID of the local gateway.
+                          type: string
+                        natGatewayId:
+                          description: '[IPv4 traffic only] The ID of a NAT gateway.'
+                          type: string
+                        networkInterfaceId:
+                          description: The ID of a network interface.
+                          type: string
                         state:
                           description: The state of the route. The blackhole state indicates that the route's target isn't available (for example, the specified gateway isn't attached to the VPC, or the specified NAT instance has been terminated).
+                          type: string
+                        transitGatewayId:
+                          description: The ID of a transit gateway.
+                          type: string
+                        vpcPeeringConnectionId:
+                          description: The ID of a VPC peering connection.
                           type: string
                       type: object
                     type: array

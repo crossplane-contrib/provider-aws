@@ -33,18 +33,25 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
+	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
 )
 
 var (
-	rtID     = "some rt"
-	vpcID    = "some vpc"
-	igID     = "some ig"
-	subnetID = "some subnet"
-
-	errBoom = errors.New("boom")
+	rtID           = "some rt"
+	vpcID          = "some vpc"
+	igID           = "some ig"
+	instanceID     = "natID"
+	associationID  = "someAssociation"
+	subnetID       = "some subnet"
+	removeSubnetID = "removeMe"
+	testKey        = "testKey"
+	testValue      = "testValue"
+	CIDR           = "10.0.0.0/8"
+	instanceCIDR   = "10.1.1.1/32"
+	errBoom        = errors.New("boom")
 )
 
 type args struct {
@@ -120,7 +127,7 @@ func TestObserve(t *testing.T) {
 				},
 			},
 		},
-		"MulitpleTables": {
+		"MultipleTables": {
 			args: args{
 				rt: &fake.MockRouteTableClient{
 					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
@@ -281,6 +288,11 @@ func TestUpdate(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.AssociateRouteTableOutput{}},
 						}
 					},
+					MockDeleteRoute: func(input *awsec2.DeleteRouteInput) awsec2.DeleteRouteRequest {
+						return awsec2.DeleteRouteRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteRouteOutput{}},
+						}
+					},
 					MockCreateRoute: func(input *awsec2.CreateRouteInput) awsec2.CreateRouteRequest {
 						return awsec2.CreateRouteRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateRouteOutput{}},
@@ -310,6 +322,403 @@ func TestUpdate(t *testing.T) {
 				}),
 					withStatus(v1alpha4.RouteTableObservation{
 						RouteTableID: rtID,
+					})),
+			},
+		},
+		"SuccessfulAddTags": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{}},
+							}},
+						}
+					},
+					MockCreateTags: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
+						return awsec2.CreateTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
+						}
+					},
+				},
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Tags: []v1beta1.Tag{{
+						Key:   testKey,
+						Value: testValue,
+					}},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+					})),
+			},
+			want: want{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Tags: []v1beta1.Tag{{
+						Key:   testKey,
+						Value: testValue,
+					}},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+					})),
+			},
+		},
+		"SuccessfulRemoveTags": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{
+									Tags: []awsec2.Tag{{Key: aws.String(testKey), Value: aws.String(testValue)}},
+								}},
+							}},
+						}
+					},
+					MockDeleteTags: func(input *awsec2.DeleteTagsInput) awsec2.DeleteTagsRequest {
+						return awsec2.DeleteTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteTagsOutput{}},
+						}
+					},
+				},
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+					})),
+			},
+			want: want{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+					})),
+			},
+		},
+		"SuccessfulAddAssociation": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{}},
+							}},
+						}
+					},
+					MockAssociate: func(input *awsec2.AssociateRouteTableInput) awsec2.AssociateRouteTableRequest {
+						return awsec2.AssociateRouteTableRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.AssociateRouteTableOutput{}},
+						}
+					},
+				},
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Associations: []v1alpha4.Association{{SubnetID: aws.String(subnetID)}},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+					})),
+			},
+			want: want{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Associations: []v1alpha4.Association{{SubnetID: aws.String(subnetID)}},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+					})),
+			},
+		},
+		"FailedAddAssociation": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{}},
+							}},
+						}
+					},
+					MockAssociate: func(input *awsec2.AssociateRouteTableInput) awsec2.AssociateRouteTableRequest {
+						return awsec2.AssociateRouteTableRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Associations: []v1alpha4.Association{{SubnetID: aws.String(subnetID)}},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+					})),
+			},
+			want: want{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Associations: []v1alpha4.Association{{SubnetID: aws.String(subnetID)}},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+					})),
+				err: errors.Wrap(errBoom, errAssociateSubnet),
+			},
+		},
+		"SuccessfulDisassociation": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{
+									Associations: []awsec2.RouteTableAssociation{
+										{
+											RouteTableAssociationId: aws.String(associationID),
+											SubnetId:                aws.String(subnetID),
+										},
+										{
+											RouteTableAssociationId: aws.String(associationID),
+											SubnetId:                aws.String(removeSubnetID),
+										},
+									},
+								}},
+							}},
+						}
+					},
+					MockDisassociate: func(input *awsec2.DisassociateRouteTableInput) awsec2.DisassociateRouteTableRequest {
+						return awsec2.DisassociateRouteTableRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DisassociateRouteTableOutput{}},
+						}
+					},
+				},
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Associations: []v1alpha4.Association{
+						{
+							SubnetID: aws.String(subnetID),
+						},
+					},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+						Associations: []v1alpha4.AssociationState{
+							{
+								AssociationID: associationID,
+								SubnetID:      subnetID,
+							},
+							{
+								AssociationID: associationID,
+								SubnetID:      removeSubnetID,
+							},
+						},
+					})),
+			},
+			want: want{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Associations: []v1alpha4.Association{
+						{
+							SubnetID: aws.String(subnetID),
+						},
+					},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+						Associations: []v1alpha4.AssociationState{
+							{
+								AssociationID: associationID,
+								SubnetID:      subnetID,
+							},
+							{
+								AssociationID: associationID,
+								SubnetID:      removeSubnetID,
+							},
+						},
+					})),
+			},
+		},
+		"FailedDisassociation": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{
+									Associations: []awsec2.RouteTableAssociation{
+										{
+											RouteTableAssociationId: aws.String(associationID),
+											SubnetId:                aws.String(subnetID),
+										},
+										{
+											RouteTableAssociationId: aws.String(associationID),
+											SubnetId:                aws.String(removeSubnetID),
+										},
+									},
+								}},
+							}},
+						}
+					},
+					MockDisassociate: func(input *awsec2.DisassociateRouteTableInput) awsec2.DisassociateRouteTableRequest {
+						return awsec2.DisassociateRouteTableRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Associations: []v1alpha4.Association{
+						{
+							SubnetID: aws.String(subnetID),
+						},
+					},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+						Associations: []v1alpha4.AssociationState{
+							{
+								AssociationID: associationID,
+								SubnetID:      subnetID,
+							},
+							{
+								AssociationID: associationID,
+								SubnetID:      removeSubnetID,
+							},
+						},
+					})),
+			},
+			want: want{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Associations: []v1alpha4.Association{
+						{
+							SubnetID: aws.String(subnetID),
+						},
+					},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+						Associations: []v1alpha4.AssociationState{
+							{
+								AssociationID: associationID,
+								SubnetID:      subnetID,
+							},
+							{
+								AssociationID: associationID,
+								SubnetID:      removeSubnetID,
+							},
+						},
+					})),
+				err: errors.Wrap(errBoom, errDisassociateSubnet),
+			},
+		},
+		"SuccessfulAddRoute": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{
+									Routes: []awsec2.Route{
+										{
+											DestinationCidrBlock: aws.String(CIDR),
+											GatewayId:            aws.String(igID)},
+									},
+								}},
+							}},
+						}
+					},
+					MockCreateRoute: func(input *awsec2.CreateRouteInput) awsec2.CreateRouteRequest {
+						return awsec2.CreateRouteRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateRouteOutput{}},
+						}
+					},
+				},
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Routes: []v1alpha4.Route{{
+						DestinationCIDRBlock: aws.String(CIDR),
+						GatewayID:            aws.String(igID),
+					},
+						{
+							DestinationCIDRBlock: aws.String(instanceCIDR),
+							InstanceID:           aws.String(instanceCIDR),
+						}},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+					})),
+			},
+			want: want{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Routes: []v1alpha4.Route{{
+						DestinationCIDRBlock: aws.String(CIDR),
+						GatewayID:            aws.String(igID),
+					},
+						{
+							DestinationCIDRBlock: aws.String(instanceCIDR),
+							InstanceID:           aws.String(instanceCIDR),
+						}},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+					})),
+			},
+		},
+		"SuccessfulDeleteRoute": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{
+									Routes: []awsec2.Route{
+										{
+											DestinationCidrBlock: aws.String(CIDR),
+											GatewayId:            aws.String(igID),
+										},
+										{
+											DestinationCidrBlock: aws.String(instanceCIDR),
+											GatewayId:            aws.String(instanceID),
+										},
+									},
+								}},
+							}},
+						}
+					},
+					MockDeleteRoute: func(input *awsec2.DeleteRouteInput) awsec2.DeleteRouteRequest {
+						return awsec2.DeleteRouteRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteRouteOutput{}},
+						}
+					},
+				},
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Routes: []v1alpha4.Route{{
+						DestinationCIDRBlock: aws.String(CIDR),
+						GatewayID:            aws.String(igID),
+					}},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: testValue,
+						Routes: []v1alpha4.RouteState{
+							{
+								DestinationCIDRBlock: CIDR,
+								GatewayID:            igID,
+							},
+							{
+								DestinationCIDRBlock: instanceCIDR,
+								InstanceID:           instanceID,
+							},
+						},
+					})),
+			},
+			want: want{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Routes: []v1alpha4.Route{{
+						DestinationCIDRBlock: aws.String(CIDR),
+						GatewayID:            aws.String(igID),
+					}},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: testValue,
+						Routes: []v1alpha4.RouteState{
+							{
+								DestinationCIDRBlock: CIDR,
+								GatewayID:            igID,
+							},
+							{
+								DestinationCIDRBlock: instanceCIDR,
+								InstanceID:           instanceID,
+							},
+						},
 					})),
 			},
 		},
@@ -350,6 +759,76 @@ func TestUpdate(t *testing.T) {
 				err: awsclient.Wrap(errBoom, errCreateRoute),
 			},
 		},
+		"DeleteRouteFail": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{
+									Routes: []awsec2.Route{
+										{
+											DestinationCidrBlock: aws.String(CIDR),
+											GatewayId:            aws.String(igID),
+										},
+										{
+											DestinationCidrBlock: aws.String(instanceCIDR),
+											GatewayId:            aws.String(instanceID),
+										},
+									},
+								}},
+							}},
+						}
+					},
+					MockDeleteRoute: func(input *awsec2.DeleteRouteInput) awsec2.DeleteRouteRequest {
+						return awsec2.DeleteRouteRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Routes: []v1alpha4.Route{{
+						DestinationCIDRBlock: aws.String(CIDR),
+						GatewayID:            aws.String(igID),
+					}},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+						Routes: []v1alpha4.RouteState{
+							{
+								DestinationCIDRBlock: CIDR,
+								GatewayID:            igID,
+							},
+							{
+								DestinationCIDRBlock: instanceCIDR,
+								InstanceID:           instanceID,
+							},
+						},
+					})),
+			},
+			want: want{
+				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+					Routes: []v1alpha4.Route{{
+						DestinationCIDRBlock: aws.String(CIDR),
+						GatewayID:            aws.String(igID),
+					}},
+				}),
+					withStatus(v1alpha4.RouteTableObservation{
+						RouteTableID: rtID,
+						Routes: []v1alpha4.RouteState{
+							{
+								DestinationCIDRBlock: CIDR,
+								GatewayID:            igID,
+							},
+							{
+								DestinationCIDRBlock: instanceCIDR,
+								InstanceID:           instanceID,
+							},
+						},
+					})),
+				err: errors.Wrap(errBoom, errDeleteRoute),
+			},
+		},
 	}
 
 	for name, tc := range cases {
@@ -383,6 +862,13 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{}},
+							}},
+						}
+					},
 					MockDelete: func(input *awsec2.DeleteRouteTableInput) awsec2.DeleteRouteTableRequest {
 						return awsec2.DeleteRouteTableRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteRouteTableOutput{}},
@@ -391,17 +877,53 @@ func TestDelete(t *testing.T) {
 				},
 				cr: rt(withStatus(v1alpha4.RouteTableObservation{
 					RouteTableID: rtID,
-				})),
+				}), withExternalName(rtID)),
 			},
 			want: want{
 				cr: rt(withStatus(v1alpha4.RouteTableObservation{
 					RouteTableID: rtID,
-				}), withConditions(xpv1.Deleting())),
+				}), withExternalName(rtID), withConditions(xpv1.Deleting())),
+			},
+		},
+		"DeleteFailAssociation": {
+			args: args{
+				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{}},
+							}},
+						}
+					},
+					MockDisassociate: func(input *awsec2.DisassociateRouteTableInput) awsec2.DisassociateRouteTableRequest {
+						return awsec2.DisassociateRouteTableRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: rt(withStatus(v1alpha4.RouteTableObservation{
+					RouteTableID: rtID,
+					Associations: []v1alpha4.AssociationState{{AssociationID: associationID}},
+				}), withExternalName(rtID)),
+			},
+			want: want{
+				cr: rt(withStatus(v1alpha4.RouteTableObservation{
+					RouteTableID: rtID,
+					Associations: []v1alpha4.AssociationState{{AssociationID: associationID}},
+				}), withExternalName(rtID), withConditions(xpv1.Deleting())),
+				err: errors.Wrap(errBoom, errDisassociateSubnet),
 			},
 		},
 		"DeleteFail": {
 			args: args{
 				rt: &fake.MockRouteTableClient{
+					MockDescribe: func(input *awsec2.DescribeRouteTablesInput) awsec2.DescribeRouteTablesRequest {
+						return awsec2.DescribeRouteTablesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeRouteTablesOutput{
+								RouteTables: []awsec2.RouteTable{{}},
+							}},
+						}
+					},
 					MockDelete: func(input *awsec2.DeleteRouteTableInput) awsec2.DeleteRouteTableRequest {
 						return awsec2.DeleteRouteTableRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
@@ -410,12 +932,12 @@ func TestDelete(t *testing.T) {
 				},
 				cr: rt(withStatus(v1alpha4.RouteTableObservation{
 					RouteTableID: rtID,
-				})),
+				}), withExternalName(rtID)),
 			},
 			want: want{
 				cr: rt(withStatus(v1alpha4.RouteTableObservation{
 					RouteTableID: rtID,
-				}), withConditions(xpv1.Deleting())),
+				}), withExternalName(rtID), withConditions(xpv1.Deleting())),
 				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},

@@ -24,6 +24,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 
+	ec2v1alpha1 "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
@@ -60,6 +61,22 @@ func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) er
 		}
 		mg.Spec.ForProvider.Routes[i].GatewayID = aws.String(rsp.ResolvedValue)
 		mg.Spec.ForProvider.Routes[i].GatewayIDRef = rsp.ResolvedReference
+	}
+
+	// Resolve spec.forProvider.routes[].natGatewayId
+	for i := range mg.Spec.ForProvider.Routes {
+		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+			CurrentValue: aws.StringValue(mg.Spec.ForProvider.Routes[i].NatGatewayID),
+			Reference:    mg.Spec.ForProvider.Routes[i].NatGatewayIDRef,
+			Selector:     mg.Spec.ForProvider.Routes[i].NatGatewayIDSelector,
+			To:           reference.To{Managed: &ec2v1alpha1.NATGateway{}, List: &ec2v1alpha1.NATGatewayList{}},
+			Extract:      reference.ExternalName(),
+		})
+		if err != nil {
+			return errors.Wrapf(err, "spec.forProvider.routes[%d].natGatewayId", i)
+		}
+		mg.Spec.ForProvider.Routes[i].NatGatewayID = aws.String(rsp.ResolvedValue)
+		mg.Spec.ForProvider.Routes[i].NatGatewayIDRef = rsp.ResolvedReference
 	}
 
 	// Resolve spec.associations[].subnetId

@@ -49,9 +49,11 @@ const (
 	errUpdateNotFound     = "cannot update the RouteTable, since the RouteTableID is not present"
 	errDelete             = "failed to delete the RouteTable resource"
 	errCreateRoute        = "failed to create a route in the RouteTable resource"
-	errAssociateSubnet    = "failed to associate subnet %v to the RouteTable resource"
-	errDisassociateSubnet = "failed to disassociate subnet %v from the RouteTable resource"
+	errDeleteRoute        = "failed to delete a route in the RouteTable resource"
+	errAssociateSubnet    = "failed to associate subnet to the RouteTable resource"
+	errDisassociateSubnet = "failed to disassociate subnet from the RouteTable resource"
 	errCreateTags         = "failed to create tags for the RouteTable resource"
+	errDeleteTags         = "failed to delete tags for the RouteTable resource"
 )
 
 // SetupRouteTable adds a controller that reconciles RouteTables.
@@ -192,24 +194,35 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	if len(patch.Tags) != 0 {
 		// tagging the RouteTable
-		if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
-			Resources: []string{meta.GetExternalName(cr)},
-			Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
-		}).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
+		addTags, removeTags := awsclient.DiffEC2Tags(v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags), table.Tags)
+		if len(addTags) > 0 {
+			if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+				Resources: []string{meta.GetExternalName(cr)},
+				Tags:      addTags,
+			}).Send(ctx); err != nil {
+				return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
+			}
+		}
+		if len(removeTags) > 0 {
+			if _, err := e.client.DeleteTagsRequest(&awsec2.DeleteTagsInput{
+				Resources: []string{meta.GetExternalName(cr)},
+				Tags:      removeTags,
+			}).Send(ctx); err != nil {
+				return managed.ExternalUpdate{}, awsclient.Wrap(err, errDeleteTags)
+			}
 		}
 	}
 
 	if patch.Routes != nil {
 		// Attach the routes in Spec
-		if err := e.createRoutes(ctx, meta.GetExternalName(cr), cr.Spec.ForProvider.Routes, cr.Status.AtProvider.Routes); err != nil {
+		if err := e.reconcileRoutes(ctx, meta.GetExternalName(cr), cr.Spec.ForProvider.Routes, cr.Status.AtProvider.Routes); err != nil {
 			return managed.ExternalUpdate{}, err
 		}
 	}
 
 	if patch.Associations != nil {
 		// Associate route table to subnets in Spec.
-		if err := e.createAssociations(ctx, meta.GetExternalName(cr), cr.Spec.ForProvider.Associations, cr.Status.AtProvider.Associations); err != nil {
+		if err := e.reconcileAssociations(ctx, meta.GetExternalName(cr), cr.Spec.ForProvider.Associations, cr.Status.AtProvider.Associations); err != nil {
 			return managed.ExternalUpdate{}, err
 		}
 	}
@@ -237,11 +250,58 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	return awsclient.Wrap(resource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDelete)
 }
 
-func (e *external) createRoutes(ctx context.Context, tableID string, desired []v1alpha4.Route, observed []v1alpha4.RouteState) error {
+func (e *external) deleteRoutes(ctx context.Context, tableID string, desired []v1alpha4.Route, observed []v1alpha4.RouteState) error { // nolint:gocyclo
+	for _, rt := range observed {
+		found := false
+		for _, ds := range desired {
+			if aws.StringValue(ds.DestinationCIDRBlock) == rt.DestinationCIDRBlock && (aws.StringValue(ds.GatewayID) == rt.GatewayID &&
+				aws.StringValue(ds.InstanceID) == rt.InstanceID &&
+				aws.StringValue(ds.LocalGatewayID) == rt.LocalGatewayID &&
+				aws.StringValue(ds.NatGatewayID) == rt.NatGatewayID &&
+				aws.StringValue(ds.NetworkInterfaceID) == rt.NetworkInterfaceID &&
+				aws.StringValue(ds.TransitGatewayID) == rt.TransitGatewayID &&
+				aws.StringValue(ds.VpcPeeringConnectionID) == rt.VpcPeeringConnectionID) {
+
+				found = true
+				break
+			}
+		}
+		if !found && rt.GatewayID != ec2.DefaultLocalGatewayID {
+			if rt.DestinationCIDRBlock != "" {
+				_, err := e.client.DeleteRouteRequest(&awsec2.DeleteRouteInput{
+					RouteTableId:         aws.String(tableID),
+					DestinationCidrBlock: aws.String(rt.DestinationCIDRBlock),
+				}).Send(ctx)
+
+				if err != nil {
+					return err
+				}
+			} else {
+				_, err := e.client.DeleteRouteRequest(&awsec2.DeleteRouteInput{
+					RouteTableId:             aws.String(tableID),
+					DestinationIpv6CidrBlock: aws.String(rt.DestinationIPV6CIDRBlock),
+				}).Send(ctx)
+
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (e *external) createRoutes(ctx context.Context, tableID string, desired []v1alpha4.Route, observed []v1alpha4.RouteState) error { // nolint:gocyclo
 	for _, rt := range desired {
 		isObserved := false
 		for _, ob := range observed {
-			if ob.GatewayID == aws.StringValue(rt.GatewayID) && ob.DestinationCIDRBlock == aws.StringValue(rt.DestinationCIDRBlock) {
+			if ob.DestinationCIDRBlock == aws.StringValue(rt.DestinationCIDRBlock) && (ob.GatewayID == aws.StringValue(rt.GatewayID) &&
+				ob.InstanceID == aws.StringValue(rt.InstanceID) &&
+				ob.LocalGatewayID == aws.StringValue(rt.LocalGatewayID) &&
+				ob.NatGatewayID == aws.StringValue(rt.NatGatewayID) &&
+				ob.NetworkInterfaceID == aws.StringValue(rt.NetworkInterfaceID) &&
+				ob.TransitGatewayID == aws.StringValue(rt.TransitGatewayID) &&
+				ob.VpcPeeringConnectionID == aws.StringValue(rt.VpcPeeringConnectionID)) {
 				isObserved = true
 				break
 			}
@@ -249,18 +309,54 @@ func (e *external) createRoutes(ctx context.Context, tableID string, desired []v
 		// if the route is already created, skip it
 		if !isObserved {
 			_, err := e.client.CreateRouteRequest(&awsec2.CreateRouteInput{
-				RouteTableId:         aws.String(tableID),
-				DestinationCidrBlock: rt.DestinationCIDRBlock,
-				GatewayId:            rt.GatewayID,
+				RouteTableId:             aws.String(tableID),
+				DestinationCidrBlock:     rt.DestinationCIDRBlock,
+				DestinationIpv6CidrBlock: rt.DestinationIPV6CIDRBlock,
+				GatewayId:                rt.GatewayID,
+				InstanceId:               rt.InstanceID,
+				LocalGatewayId:           rt.LocalGatewayID,
+				NatGatewayId:             rt.NatGatewayID,
+				NetworkInterfaceId:       rt.NetworkInterfaceID,
+				TransitGatewayId:         rt.TransitGatewayID,
+				VpcPeeringConnectionId:   rt.VpcPeeringConnectionID,
 			}).Send(ctx)
 
 			if err != nil {
-				return awsclient.Wrap(err, errCreateRoute)
+				return err
 			}
 		}
 	}
+	return nil
+}
+
+func (e *external) reconcileRoutes(ctx context.Context, tableID string, desired []v1alpha4.Route, observed []v1alpha4.RouteState) error {
+
+	if err := e.deleteRoutes(ctx, tableID, desired, observed); err != nil {
+		return awsclient.Wrap(err, errDeleteRoute)
+	}
+	if err := e.createRoutes(ctx, tableID, desired, observed); err != nil {
+		return awsclient.Wrap(err, errCreateRoute)
+	}
 
 	return nil
+}
+
+func (e *external) removeAssociations(ctx context.Context, desired []v1alpha4.Association, observed []v1alpha4.AssociationState) error {
+	var toDelete []v1alpha4.AssociationState
+	for _, asc := range observed {
+		found := false
+		for _, ds := range desired {
+			if asc.SubnetID == aws.StringValue(ds.SubnetID) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			// No longer needed add to delete list
+			toDelete = append(toDelete, asc)
+		}
+	}
+	return e.deleteAssociations(ctx, toDelete)
 }
 
 func (e *external) createAssociations(ctx context.Context, tableID string, desired []v1alpha4.Association, observed []v1alpha4.AssociationState) error {
@@ -280,11 +376,22 @@ func (e *external) createAssociations(ctx context.Context, tableID string, desir
 			}).Send(ctx)
 
 			if err != nil {
-				return awsclient.Wrap(err, errAssociateSubnet)
+				return err
 			}
 		}
 	}
+	return nil
+}
 
+func (e *external) reconcileAssociations(ctx context.Context, tableID string, desired []v1alpha4.Association, observed []v1alpha4.AssociationState) error {
+	if err := e.removeAssociations(ctx, desired, observed); err != nil {
+		// underlying deleteAssociations already wraps the error
+		return err
+	}
+
+	if err := e.createAssociations(ctx, tableID, desired, observed); err != nil {
+		return awsclient.Wrap(err, errAssociateSubnet)
+	}
 	return nil
 }
 
