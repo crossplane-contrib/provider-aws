@@ -35,6 +35,7 @@ type MockRouteTableClient struct {
 	MockAssociate    func(*ec2.AssociateRouteTableInput) ec2.AssociateRouteTableRequest
 	MockDisassociate func(*ec2.DisassociateRouteTableInput) ec2.DisassociateRouteTableRequest
 	MockCreateTags   func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
+	MockDeleteTags   func(*ec2.DeleteTagsInput) ec2.DeleteTagsRequest
 }
 
 // CreateRouteTableRequest mocks CreateRouteTableRequest method
@@ -75,4 +76,9 @@ func (m *MockRouteTableClient) DeleteRouteRequest(input *ec2.DeleteRouteInput) e
 // CreateTagsRequest mocks CreateTagsInput method
 func (m *MockRouteTableClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
 	return m.MockCreateTags(input)
+}
+
+// DeleteTagsRequest mocks DeleteTagsInput method
+func (m *MockRouteTableClient) DeleteTagsRequest(input *ec2.DeleteTagsInput) ec2.DeleteTagsRequest {
+	return m.MockDeleteTags(input)
 }
