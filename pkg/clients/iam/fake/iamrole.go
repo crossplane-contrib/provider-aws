@@ -32,6 +32,8 @@ type MockRoleClient struct {
 	MockDeleteRoleRequest             func(*iam.DeleteRoleInput) iam.DeleteRoleRequest
 	MockUpdateRoleRequest             func(*iam.UpdateRoleInput) iam.UpdateRoleRequest
 	MockUpdateAssumeRolePolicyRequest func(*iam.UpdateAssumeRolePolicyInput) iam.UpdateAssumeRolePolicyRequest
+	MockTagRoleRequest                func(input *iam.TagRoleInput) iam.TagRoleRequest
+	MockUntagRoleRequest              func(input *iam.UntagRoleInput) iam.UntagRoleRequest
 }
 
 // GetRoleRequest mocks GetRoleRequest method
@@ -57,4 +59,14 @@ func (m *MockRoleClient) UpdateRoleRequest(input *iam.UpdateRoleInput) iam.Updat
 // UpdateAssumeRolePolicyRequest mocks UpdateAssumeRolePolicyRequest method
 func (m *MockRoleClient) UpdateAssumeRolePolicyRequest(input *iam.UpdateAssumeRolePolicyInput) iam.UpdateAssumeRolePolicyRequest {
 	return m.MockUpdateAssumeRolePolicyRequest(input)
+}
+
+// TagRoleRequest mocks TagRoleRequest method
+func (m *MockRoleClient) TagRoleRequest(input *iam.TagRoleInput) iam.TagRoleRequest {
+	return m.MockTagRoleRequest(input)
+}
+
+// UntagRoleRequest mocks UntagRoleRequest method
+func (m *MockRoleClient) UntagRoleRequest(input *iam.UntagRoleInput) iam.UntagRoleRequest {
+	return m.MockUntagRoleRequest(input)
 }

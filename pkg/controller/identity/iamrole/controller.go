@@ -45,6 +45,7 @@ const (
 	errDelete           = "failed to delete the IAMRole resource"
 	errUpdate           = "failed to update the IAMRole resource"
 	errSDK              = "empty IAMRole received from IAM API"
+	errCreatePatch      = "failed to create patch object for comparison"
 
 	errKubeUpdateFailed = "cannot late initialize IAMRole"
 	errUpToDateFailed   = "cannot check whether object is up-to-date"
@@ -138,7 +139,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 }
 
-func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
 	cr, ok := mgd.(*v1beta1.IAMRole)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
@@ -147,16 +148,35 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	observed, err := e.client.GetRoleRequest(&awsiam.GetRoleInput{
 		RoleName: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
-
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
-
 	if observed.Role == nil {
 		return managed.ExternalUpdate{}, errors.New(errSDK)
 	}
 
+	add, remove := iam.DiffIAMTags(cr.Spec.ForProvider.Tags, observed.Role.Tags)
+	if len(remove) != 0 {
+		if _, err := e.client.UntagRoleRequest(&awsiam.UntagRoleInput{
+			RoleName: aws.String(meta.GetExternalName(cr)),
+			TagKeys:  remove,
+		}).Send(ctx); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot untag")
+		}
+	}
+	if len(add) != 0 {
+		if _, err := e.client.TagRoleRequest(&awsiam.TagRoleInput{
+			RoleName: aws.String(meta.GetExternalName(cr)),
+			Tags:     add,
+		}).Send(ctx); err != nil {
+			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot tag")
+		}
+	}
+
 	patch, err := iam.CreatePatch(observed.Role, &cr.Spec.ForProvider)
+	if err != nil {
+		return managed.ExternalUpdate{}, errors.Wrap(err, errCreatePatch)
+	}
 
 	if patch.Description != nil || patch.MaxSessionDuration != nil {
 		_, err = e.client.UpdateRoleRequest(&awsiam.UpdateRoleInput{
@@ -175,9 +195,11 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			PolicyDocument: &cr.Spec.ForProvider.AssumeRolePolicyDocument,
 			RoleName:       aws.String(meta.GetExternalName(cr)),
 		}).Send(ctx)
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+		}
 	}
-
-	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, nil
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {

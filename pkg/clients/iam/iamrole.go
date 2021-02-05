@@ -28,6 +28,8 @@ type RoleClient interface {
 	DeleteRoleRequest(*iam.DeleteRoleInput) iam.DeleteRoleRequest
 	UpdateRoleRequest(*iam.UpdateRoleInput) iam.UpdateRoleRequest
 	UpdateAssumeRolePolicyRequest(*iam.UpdateAssumeRolePolicyInput) iam.UpdateAssumeRolePolicyRequest
+	TagRoleRequest(input *iam.TagRoleInput) iam.TagRoleRequest
+	UntagRoleRequest(input *iam.UntagRoleInput) iam.UntagRoleRequest
 }
 
 // NewRoleClient returns a new client using AWS credentials as JSON encoded data.
@@ -50,8 +52,8 @@ func GenerateCreateRoleInput(name string, p *v1beta1.IAMRoleParameters) *iam.Cre
 		m.Tags = make([]iam.Tag, len(p.Tags))
 		for i := range p.Tags {
 			m.Tags[i] = iam.Tag{
-				Key:   &p.Tags[i].Key,
-				Value: &p.Tags[i].Value,
+				Key:   aws.String(p.Tags[i].Key),
+				Value: aws.String(p.Tags[i].Key),
 			}
 		}
 	}
@@ -86,8 +88,8 @@ func GenerateIAMRole(in v1beta1.IAMRoleParameters, role *iam.Role) error {
 		role.Tags = make([]iam.Tag, len(in.Tags))
 		for i := range in.Tags {
 			role.Tags[i] = iam.Tag{
-				Key:   &in.Tags[i].Key,
-				Value: &in.Tags[i].Value,
+				Key:   aws.String(in.Tags[i].Key),
+				Value: aws.String(in.Tags[i].Value),
 			}
 		}
 	}
@@ -111,7 +113,7 @@ func LateInitializeRole(in *v1beta1.IAMRoleParameters, role *iam.Role) {
 
 	if in.Tags == nil && role.Tags != nil {
 		for _, tag := range role.Tags {
-			in.Tags = append(in.Tags, v1beta1.Tag{Key: *tag.Key, Value: *tag.Value})
+			in.Tags = append(in.Tags, v1beta1.Tag{Key: aws.StringValue(tag.Key), Value: aws.StringValue(tag.Value)})
 		}
 	}
 }
@@ -150,4 +152,28 @@ func IsRoleUpToDate(in v1beta1.IAMRoleParameters, observed iam.Role) (bool, erro
 	}
 
 	return cmp.Equal(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{})), nil
+}
+
+// DiffIAMTags returns the lists of tags that need to be removed and added according
+// to current and desired states.
+func DiffIAMTags(local []v1beta1.Tag, remote []iam.Tag) (add []iam.Tag, remove []string) {
+	addMap := make(map[string]string, len(local))
+	for _, t := range local {
+		addMap[t.Key] = t.Value
+	}
+	removeMap := map[string]struct{}{}
+	for _, t := range remote {
+		if addMap[aws.StringValue(t.Key)] == aws.StringValue(t.Value) {
+			delete(addMap, aws.StringValue(t.Key))
+			continue
+		}
+		removeMap[aws.StringValue(t.Key)] = struct{}{}
+	}
+	for k, v := range addMap {
+		add = append(add, iam.Tag{Key: aws.String(k), Value: aws.String(v)})
+	}
+	for k := range removeMap {
+		remove = append(remove, k)
+	}
+	return add, remove
 }
