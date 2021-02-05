@@ -1,6 +1,7 @@
 package iam
 
 import (
+	"sort"
 	"testing"
 	"time"
 
@@ -280,6 +281,98 @@ func TestIsRoleUpToDate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			got, _ := IsRoleUpToDate(tc.args.p, tc.args.role)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestDiffIAMTags(t *testing.T) {
+	type args struct {
+		local  []v1beta1.Tag
+		remote []iam.Tag
+	}
+	type want struct {
+		add    []iam.Tag
+		remove []string
+	}
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"AllNew": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "val"},
+				},
+			},
+			want: want{
+				add: []iam.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+				},
+			},
+		},
+		"SomeNew": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "val"},
+					{Key: "key1", Value: "val1"},
+					{Key: "key2", Value: "val2"},
+				},
+				remote: []iam.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+				},
+			},
+			want: want{
+				add: []iam.Tag{
+					{Key: aws.String("key1"), Value: aws.String("val1")},
+					{Key: aws.String("key2"), Value: aws.String("val2")},
+				},
+			},
+		},
+		"Update": {
+			args: args{
+				local: []v1beta1.Tag{
+					{Key: "key", Value: "different"},
+					{Key: "key1", Value: "val1"},
+					{Key: "key2", Value: "val2"},
+				},
+				remote: []iam.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+					{Key: aws.String("key1"), Value: aws.String("val1")},
+					{Key: aws.String("key2"), Value: aws.String("val2")},
+				},
+			},
+			want: want{
+				add: []iam.Tag{
+					{Key: aws.String("key"), Value: aws.String("different")},
+				},
+				remove: []string{"key"},
+			},
+		},
+		"RemoveAll": {
+			args: args{
+				remote: []iam.Tag{
+					{Key: aws.String("key"), Value: aws.String("val")},
+					{Key: aws.String("key1"), Value: aws.String("val1")},
+					{Key: aws.String("key2"), Value: aws.String("val2")},
+				},
+			},
+			want: want{
+				remove: []string{"key", "key1", "key2"},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			add, remove := DiffIAMTags(tc.args.local, tc.args.remote)
+			if diff := cmp.Diff(tc.want.add, add); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			sort.Strings(tc.want.remove)
+			sort.Strings(remove)
+			if diff := cmp.Diff(tc.want.remove, remove); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
