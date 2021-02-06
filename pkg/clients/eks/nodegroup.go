@@ -54,6 +54,14 @@ func GenerateCreateNodeGroupInput(name string, p *v1alpha1.NodeGroupParameters) 
 			MinSize:     p.ScalingConfig.MinSize,
 			MaxSize:     p.ScalingConfig.MaxSize,
 		}
+
+		// NOTE(mcavoyk): desizedSize is a required field for AWS, to support node scaling actions
+		// outside of this provider, we allow desiredSize to be nil so the field can be ignored when
+		// checking if the NodeGroup is up-to-date. If the field is nil, we set the desiredSize equal
+		// to the minSize as an initial value.
+		if p.ScalingConfig.DesiredSize == nil {
+			c.ScalingConfig.DesiredSize = p.ScalingConfig.MinSize
+		}
 	}
 	return c
 }
@@ -77,6 +85,20 @@ func GenerateUpdateNodeGroupConfigInput(name string, p *v1alpha1.NodeGroupParame
 			DesiredSize: p.ScalingConfig.DesiredSize,
 			MinSize:     p.ScalingConfig.MinSize,
 			MaxSize:     p.ScalingConfig.MaxSize,
+		}
+
+		// If desiredSize is not set, derive the value from either the
+		// current observed desiredSize, or the min/max if observed is out of bounds.
+		if p.ScalingConfig.DesiredSize == nil {
+			// The min/max size set the floor/ceiling for the desiredSize
+			switch desiredSizeVal := awsclients.Int64Value(ng.ScalingConfig.DesiredSize); {
+			case desiredSizeVal < awsclients.Int64Value(p.ScalingConfig.MinSize):
+				u.ScalingConfig.DesiredSize = p.ScalingConfig.MinSize
+			case desiredSizeVal > awsclients.Int64Value(p.ScalingConfig.MaxSize):
+				u.ScalingConfig.DesiredSize = p.ScalingConfig.MaxSize
+			default:
+				u.ScalingConfig.DesiredSize = ng.ScalingConfig.DesiredSize
+			}
 		}
 	}
 	return u
@@ -120,6 +142,12 @@ func GenerateNodeGroupObservation(ng *eks.Nodegroup) v1alpha1.NodeGroupObservati
 				asg[c] = v1alpha1.AutoScalingGroup{Name: aws.StringValue(a.Name)}
 			}
 			o.Resources.AutoScalingGroups = asg
+		}
+	}
+
+	if ng.ScalingConfig != nil {
+		o.ScalingConfig = v1alpha1.NodeGroupScalingConfigStatus{
+			DesiredSize: ng.ScalingConfig.DesiredSize,
 		}
 	}
 	return o
@@ -177,7 +205,8 @@ func IsNodeGroupUpToDate(p *v1alpha1.NodeGroupParameters, ng *eks.Nodegroup) boo
 		return true
 	}
 	if p.ScalingConfig != nil && ng.ScalingConfig != nil {
-		if !cmp.Equal(p.ScalingConfig.DesiredSize, ng.ScalingConfig.DesiredSize) {
+		if p.ScalingConfig.DesiredSize != nil &&
+			awsclients.Int64Value(p.ScalingConfig.DesiredSize) != awsclients.Int64Value(ng.ScalingConfig.DesiredSize) {
 			return false
 		}
 		if !cmp.Equal(p.ScalingConfig.MaxSize, ng.ScalingConfig.MaxSize) {
