@@ -1,0 +1,9 @@
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: example
+spec:
+  credentials:
+    source: Filesystem
+    fs:
+      path: ./creds.conf
