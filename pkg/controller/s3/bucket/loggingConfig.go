@@ -18,6 +18,9 @@ package bucket
 
 import (
 	"context"
+	"fmt"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"reflect"
 
 	"github.com/google/go-cmp/cmp/cmpopts"
 
@@ -40,6 +43,7 @@ const (
 // LoggingConfigurationClient is the client for API methods and reconciling the LoggingConfiguration
 type LoggingConfigurationClient struct {
 	client s3.BucketClient
+	logger logging.Logger
 }
 
 // LateInitialize is responsible for initializing the resource based on the external value
@@ -53,6 +57,9 @@ func (in *LoggingConfigurationClient) LateInitialize(ctx context.Context, bucket
 		// There is no value send by AWS to initialize
 		return nil
 	}
+
+	in.logger.Debug(fmt.Sprintf("called LateInitialize for %s", reflect.TypeOf(in).Elem().Name()))
+
 	if config == nil {
 		// We need the configuration to exist so we can initialize
 		bucket.Spec.ForProvider.LoggingConfiguration = &v1beta1.LoggingConfiguration{}
@@ -82,8 +89,8 @@ func (in *LoggingConfigurationClient) LateInitialize(ctx context.Context, bucket
 }
 
 // NewLoggingConfigurationClient creates the client for Logging Configuration
-func NewLoggingConfigurationClient(client s3.BucketClient) *LoggingConfigurationClient {
-	return &LoggingConfigurationClient{client: client}
+func NewLoggingConfigurationClient(client s3.BucketClient, l logging.Logger) *LoggingConfigurationClient {
+	return &LoggingConfigurationClient{client: client, logger: l}
 }
 
 // GenerateAWSLogging creates an S3 logging enabled struct from the local logging configuration

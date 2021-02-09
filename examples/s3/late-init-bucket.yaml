@@ -1,8 +1,11 @@
 apiVersion: s3.aws.crossplane.io/v1beta1
 kind: Bucket
 metadata:
-  name: test-bucketbucket9999812311
+  name: test-bucket1236123412367
+  annotations:
+    crossplane.io/external-name: test-bucket1236123412367
 spec:
+  deletionPolicy: Orphan
   forProvider:
     acl: private
     locationConstraint: us-east-2
@@ -19,20 +22,6 @@ spec:
         - key: key3
           value: val3
     objectLockEnabledForBucket: false
-    serverSideEncryptionConfiguration:
-      rules:
-        - applyServerSideEncryptionByDefault:
-            sseAlgorithm: AES256
-    corsConfiguration:
-      corsRules:
-        - allowedMethods:
-            - "GET"
-          allowedOrigins:
-            - "*"
-          allowedHeaders:
-            - "*"
-          exposeHeaders:
-            - "x-amz-server-side-encryption"
     lifecycleConfiguration:
       rules:
         - status: Enabled

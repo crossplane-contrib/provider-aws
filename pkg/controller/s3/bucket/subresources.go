@@ -18,6 +18,7 @@ package bucket
 
 import (
 	"context"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
@@ -32,7 +33,7 @@ type SubresourceClient interface {
 }
 
 // NewSubresourceClients creates the array of all clients for a given BucketProvider
-func NewSubresourceClients(client s3.BucketClient) []SubresourceClient {
+func NewSubresourceClients(client s3.BucketClient, l logging.Logger) []SubresourceClient {
 	return []SubresourceClient{
 		// Note: Moved VersioningClient up, since ReplicationConfiguration may be blocked
 		// by an invalid VersioningConfig, see https://github.com/crossplane/provider-aws/issues/553

@@ -18,6 +18,9 @@ package bucket
 
 import (
 	"context"
+	"fmt"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"reflect"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -36,6 +39,7 @@ const (
 // NotificationConfigurationClient is the client for API methods and reconciling the LifecycleConfiguration
 type NotificationConfigurationClient struct {
 	client s3.BucketClient
+	logger logging.Logger
 }
 
 // LateInitialize is responsible for initializing the resource based on the external value
@@ -48,6 +52,9 @@ func (in *NotificationConfigurationClient) LateInitialize(ctx context.Context, b
 		// There is nothing to initialize from AWS
 		return nil
 	}
+
+	in.logger.Debug(fmt.Sprintf("called LateInitialize for %s", reflect.TypeOf(in).Elem().Name()))
+
 	config := bucket.Spec.ForProvider.NotificationConfiguration
 	if config == nil {
 		// We need the configuration to exist so we can initialize
@@ -164,8 +171,8 @@ func LateInitializeTopic(external []awss3.TopicConfiguration, local []v1beta1.To
 }
 
 // NewNotificationConfigurationClient creates the client for Accelerate Configuration
-func NewNotificationConfigurationClient(client s3.BucketClient) *NotificationConfigurationClient {
-	return &NotificationConfigurationClient{client: client}
+func NewNotificationConfigurationClient(client s3.BucketClient, l logging.Logger) *NotificationConfigurationClient {
+	return &NotificationConfigurationClient{client: client, logger: l}
 }
 
 func emptyConfiguration(external *awss3.GetBucketNotificationConfigurationResponse) bool {

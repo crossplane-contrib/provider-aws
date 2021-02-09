@@ -18,8 +18,6 @@ package s3
 
 import (
 	"context"
-	"reflect"
-
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"k8s.io/client-go/util/workqueue"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -59,6 +57,7 @@ const (
 // SetupBucket adds a controller that reconciles Buckets.
 func SetupBucket(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1beta1.BucketGroupKind)
+	logger := l.WithValues("controller", name)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
@@ -67,15 +66,16 @@ func SetupBucket(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) e
 		For(&v1beta1.Bucket{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.BucketGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: s3.NewClient}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: s3.NewClient, logger: logger}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithLogger(l.WithValues("controller", name)),
+			managed.WithLogger(logger),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
 type connector struct {
 	kube        client.Client
 	newClientFn func(config aws.Config) s3.BucketClient
+	logger      logging.Logger
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
@@ -88,12 +88,13 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, err
 	}
 	s3client := c.newClientFn(*cfg)
-	return &external{s3client: s3client, subresourceClients: bucket.NewSubresourceClients(s3client), kube: c.kube}, nil
+	return &external{s3client: s3client, subresourceClients: bucket.NewSubresourceClients(s3client, c.logger), kube: c.kube, logger: c.logger}, nil
 }
 
 type external struct {
 	kube               client.Client
 	s3client           s3.BucketClient
+	logger             logging.Logger
 	subresourceClients []bucket.SubresourceClient
 }
 
@@ -104,36 +105,39 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	if _, err := e.s3client.HeadBucketRequest(&awss3.HeadBucketInput{Bucket: aws.String(meta.GetExternalName(cr))}).Send(ctx); err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(s3.IsNotFound, err), errHead)
+		return managed.ExternalObservation{}, errors.Wrap(resource.Ignore(s3.IsNotFound, err), errHead)
 	}
 
-	cr.Status.AtProvider = s3.GenerateBucketObservation(meta.GetExternalName(cr))
+	cr.Status.AtProvider = s3.GenerateBucketObservation(cr)
 
-	current := cr.Spec.ForProvider.DeepCopy()
-	for _, awsClient := range e.subresourceClients {
-		err := awsClient.LateInitialize(ctx, cr)
-		if err != nil {
-			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
+	lateInit := false
+
+	if !cr.Status.AtProvider.LateInitialized {
+		for _, awsClient := range e.subresourceClients {
+			err := awsClient.LateInitialize(ctx, cr)
+			if err != nil {
+				return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
+			}
 		}
+		lateInit = true
+	}
+
+	cr.Status.AtProvider.LateInitialized = true
+
+	for _, awsClient := range e.subresourceClients {
 		obs, err := awsClient.Observe(ctx, cr)
 		if err != nil {
-			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
+			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false, ResourceLateInitialized: lateInit}, err
 		}
 		if obs != bucket.Updated {
-			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, nil
-		}
-	}
-
-	if !reflect.DeepEqual(current, &cr.Spec.ForProvider) {
-		if err := e.kube.Update(ctx, cr); err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
+			return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false, ResourceLateInitialized: lateInit}, nil
 		}
 	}
 
 	// TODO: smarter updating for the bucket, we dont need to update the ACL every time
 	err := s3.UpdateBucketACL(ctx, e.s3client, cr)
 	if err != nil {
-		return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false}, err
+		return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false, ResourceLateInitialized: lateInit}, err
 	}
 
 	cr.Status.SetConditions(xpv1.Available())
@@ -141,6 +145,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: true,
+		ResourceLateInitialized: lateInit,
 		ConnectionDetails: map[string][]byte{
 			xpv1.ResourceCredentialsSecretEndpointKey: []byte(meta.GetExternalName(cr)),
 			ResourceCredentialsSecretRegionKey:        []byte(cr.Spec.ForProvider.LocationConstraint),
@@ -155,7 +160,10 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 	cr.Status.SetConditions(xpv1.Creating())
 	_, err := e.s3client.CreateBucketRequest(s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx)
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+	if resource.Ignore(s3.IsAlreadyExists, err) != nil {
+		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+	}
+	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
@@ -172,13 +180,13 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		}
 		switch status { //nolint:exhaustive
 		case bucket.NeedsDeletion:
-			err = awsClient.Delete(ctx, cr)
-			if err != nil {
-				return managed.ExternalUpdate{}, awsclient.Wrap(err, errDelete)
-			}
+			//err = awsClient.Delete(ctx, cr)
+			//if err != nil {
+			//	return managed.ExternalUpdate{}, errors.Wrap(err, errDelete)
+			//}
 		case bucket.NeedsUpdate:
 			if err := awsClient.CreateOrUpdate(ctx, cr); err != nil {
-				return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateOrUpdate)
+				return managed.ExternalUpdate{}, errors.Wrap(err, errCreateOrUpdate)
 			}
 		}
 	}

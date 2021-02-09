@@ -18,6 +18,9 @@ package bucket
 
 import (
 	"context"
+	"fmt"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"reflect"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -35,6 +38,7 @@ const (
 // VersioningConfigurationClient is the client for API methods and reconciling the VersioningConfiguration
 type VersioningConfigurationClient struct {
 	client s3.BucketClient
+	logger logging.Logger
 }
 
 // LateInitialize is responsible for initializing the resource based on the external value
@@ -47,6 +51,9 @@ func (in *VersioningConfigurationClient) LateInitialize(ctx context.Context, buc
 	if len(external.Status) == 0 && len(external.MFADelete) == 0 {
 		return nil
 	}
+
+	in.logger.Debug(fmt.Sprintf("called LateInitialize for %s", reflect.TypeOf(in).Elem().Name()))
+
 	config := bucket.Spec.ForProvider.VersioningConfiguration
 	if config == nil {
 		bucket.Spec.ForProvider.VersioningConfiguration = &v1beta1.VersioningConfiguration{}
@@ -58,8 +65,8 @@ func (in *VersioningConfigurationClient) LateInitialize(ctx context.Context, buc
 }
 
 // NewVersioningConfigurationClient creates the client for Versioning Configuration
-func NewVersioningConfigurationClient(client s3.BucketClient) *VersioningConfigurationClient {
-	return &VersioningConfigurationClient{client: client}
+func NewVersioningConfigurationClient(client s3.BucketClient, l logging.Logger) *VersioningConfigurationClient {
+	return &VersioningConfigurationClient{client: client, logger: l}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration

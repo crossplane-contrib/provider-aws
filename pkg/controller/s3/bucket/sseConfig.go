@@ -18,6 +18,9 @@ package bucket
 
 import (
 	"context"
+	"fmt"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"reflect"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -37,17 +40,40 @@ const (
 // SSEConfigurationClient is the client for API methods and reconciling the ServerSideEncryptionConfiguration
 type SSEConfigurationClient struct {
 	client s3.BucketClient
+	logger logging.Logger
 }
 
 // LateInitialize does nothing because the resource might have been deleted by
 // the user.
-func (*SSEConfigurationClient) LateInitialize(_ context.Context, _ *v1beta1.Bucket) error {
+func (in *SSEConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	external, err := in.client.GetBucketEncryptionRequest(&awss3.GetBucketEncryptionInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
+	if err != nil {
+		// Short stop method for requests without a server side encryption
+		if s3.SSEConfigurationNotFound(err) {
+			return nil
+		}
+		return awsclient.Wrap(err, sseGetFailed)
+	}
+
+	// We need the second check here because by default the SSE is not set
+	if external.GetBucketEncryptionOutput == nil || external.ServerSideEncryptionConfiguration == nil {
+		return nil
+	}
+
+	in.logger.Debug(fmt.Sprintf("called LateInitialize for %s", reflect.TypeOf(in).Elem().Name()))
+
+	if bucket.Spec.ForProvider.ServerSideEncryptionConfiguration == nil {
+		bucket.Spec.ForProvider.ServerSideEncryptionConfiguration = &v1beta1.ServerSideEncryptionConfiguration{}
+	}
+
+	bucket.Spec.ForProvider.ServerSideEncryptionConfiguration.Rules = GenerateLocalBucketEncryption(external.ServerSideEncryptionConfiguration)
+
 	return nil
 }
 
 // NewSSEConfigurationClient creates the client for Server Side Encryption Configuration
-func NewSSEConfigurationClient(client s3.BucketClient) *SSEConfigurationClient {
-	return &SSEConfigurationClient{client: client}
+func NewSSEConfigurationClient(client s3.BucketClient, l logging.Logger) *SSEConfigurationClient {
+	return &SSEConfigurationClient{client: client, logger: l}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
@@ -89,17 +115,34 @@ func (in *SSEConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.B
 func GeneratePutBucketEncryptionInput(name string, config *v1beta1.ServerSideEncryptionConfiguration) *awss3.PutBucketEncryptionInput {
 	bei := &awss3.PutBucketEncryptionInput{
 		Bucket:                            awsclient.String(name),
-		ServerSideEncryptionConfiguration: &awss3.ServerSideEncryptionConfiguration{},
+		ServerSideEncryptionConfiguration: &awss3.ServerSideEncryptionConfiguration{
+			Rules: make([]awss3.ServerSideEncryptionRule, len(config.Rules)),
+		},
 	}
-	for _, rule := range config.Rules {
-		bei.ServerSideEncryptionConfiguration.Rules = append(bei.ServerSideEncryptionConfiguration.Rules, awss3.ServerSideEncryptionRule{
+	for i, rule := range config.Rules {
+		bei.ServerSideEncryptionConfiguration.Rules[i] = awss3.ServerSideEncryptionRule{
 			ApplyServerSideEncryptionByDefault: &awss3.ServerSideEncryptionByDefault{
 				KMSMasterKeyID: rule.ApplyServerSideEncryptionByDefault.KMSMasterKeyID,
 				SSEAlgorithm:   awss3.ServerSideEncryption(rule.ApplyServerSideEncryptionByDefault.SSEAlgorithm),
 			},
-		})
+		}
 	}
 	return bei
+}
+
+
+// GenerateLocalBucketEncryption creates the local ServerSideEncryptionConfiguration from the S3 Client request
+func GenerateLocalBucketEncryption(config *awss3.ServerSideEncryptionConfiguration) []v1beta1.ServerSideEncryptionRule {
+	rules := make([]v1beta1.ServerSideEncryptionRule, len(config.Rules))
+	for i, rule := range config.Rules {
+		rules[i] = v1beta1.ServerSideEncryptionRule{
+			ApplyServerSideEncryptionByDefault: v1beta1.ServerSideEncryptionByDefault{
+				KMSMasterKeyID: rule.ApplyServerSideEncryptionByDefault.KMSMasterKeyID,
+				SSEAlgorithm:   string(rule.ApplyServerSideEncryptionByDefault.SSEAlgorithm),
+			},
+		}
+	}
+	return rules
 }
 
 // CreateOrUpdate sends a request to have resource created on awsclient.

@@ -147,6 +147,8 @@ type BucketExternalStatus struct {
 	// about ARNs and how to use them, see S3 Resources (https://docs.aws.amazon.com/AmazonS3/latest/dev/s3-arn-format.html)
 	// in the Amazon Simple Storage Service guide.
 	ARN string `json:"arn"`
+
+	LateInitialized bool `json:"lateInitialized"`
 }
 
 // BucketStatus represents the observed state of the Bucket.

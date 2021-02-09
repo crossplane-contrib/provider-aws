@@ -18,6 +18,9 @@ package bucket
 
 import (
 	"context"
+	"fmt"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"reflect"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -35,6 +38,7 @@ const (
 // RequestPaymentConfigurationClient is the client for API methods and reconciling the PaymentConfiguration
 type RequestPaymentConfigurationClient struct {
 	client s3.BucketClient
+	logger logging.Logger
 }
 
 // LateInitialize is responsible for initializing the resource based on the external value
@@ -43,10 +47,10 @@ func (in *RequestPaymentConfigurationClient) LateInitialize(ctx context.Context,
 	if err != nil {
 		return awsclient.Wrap(err, paymentGetFailed)
 	}
-
 	if len(external.Payer) == 0 {
 		return nil
 	}
+	in.logger.Debug(fmt.Sprintf("called LateInitialize for %s", reflect.TypeOf(in).Elem().Name()))
 	config := bucket.Spec.ForProvider.PayerConfiguration
 	if config == nil {
 		bucket.Spec.ForProvider.PayerConfiguration = &v1beta1.PaymentConfiguration{}
@@ -57,8 +61,8 @@ func (in *RequestPaymentConfigurationClient) LateInitialize(ctx context.Context,
 }
 
 // NewRequestPaymentConfigurationClient creates the client for Payment Configuration
-func NewRequestPaymentConfigurationClient(client s3.BucketClient) *RequestPaymentConfigurationClient {
-	return &RequestPaymentConfigurationClient{client: client}
+func NewRequestPaymentConfigurationClient(client s3.BucketClient, l logging.Logger) *RequestPaymentConfigurationClient {
+	return &RequestPaymentConfigurationClient{client: client, logger: l}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration

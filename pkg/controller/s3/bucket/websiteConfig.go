@@ -18,6 +18,7 @@ package bucket
 
 import (
 	"context"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -38,6 +39,7 @@ const (
 // WebsiteConfigurationClient is the client for API methods and reconciling the WebsiteConfiguration
 type WebsiteConfigurationClient struct {
 	client s3.BucketClient
+	logger logging.Logger
 }
 
 // LateInitialize does nothing because the resource might have been deleted by
@@ -47,8 +49,8 @@ func (*WebsiteConfigurationClient) LateInitialize(_ context.Context, _ *v1beta1.
 }
 
 // NewWebsiteConfigurationClient creates the client for Website Configuration
-func NewWebsiteConfigurationClient(client s3.BucketClient) *WebsiteConfigurationClient {
-	return &WebsiteConfigurationClient{client: client}
+func NewWebsiteConfigurationClient(client s3.BucketClient, l logging.Logger) *WebsiteConfigurationClient {
+	return &WebsiteConfigurationClient{client: client, logger: l}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration

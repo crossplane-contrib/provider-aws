@@ -18,8 +18,11 @@ package bucket
 
 import (
 	"context"
+	"fmt"
+	"reflect"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
@@ -35,6 +38,7 @@ const (
 // AccelerateConfigurationClient is the client for API methods and reconciling the AccelerateConfiguration
 type AccelerateConfigurationClient struct {
 	client s3.BucketClient
+	logger logging.Logger
 }
 
 // LateInitialize is responsible for initializing the resource based on the external value
@@ -49,10 +53,11 @@ func (in *AccelerateConfigurationClient) LateInitialize(ctx context.Context, buc
 	}
 
 	// We need the second check here because by default the accelerateConfig status is not set
-	// by default
 	if external.GetBucketAccelerateConfigurationOutput == nil || len(external.Status) == 0 {
 		return nil
 	}
+
+	in.logger.Debug(fmt.Sprintf("called LateInitialize for %s", reflect.TypeOf(in).Elem().Name()), "external output", external.GetBucketAccelerateConfigurationOutput)
 
 	if bucket.Spec.ForProvider.AccelerateConfiguration == nil {
 		bucket.Spec.ForProvider.AccelerateConfiguration = &v1beta1.AccelerateConfiguration{}
@@ -64,8 +69,8 @@ func (in *AccelerateConfigurationClient) LateInitialize(ctx context.Context, buc
 }
 
 // NewAccelerateConfigurationClient creates the client for Accelerate Configuration
-func NewAccelerateConfigurationClient(client s3.BucketClient) *AccelerateConfigurationClient {
-	return &AccelerateConfigurationClient{client: client}
+func NewAccelerateConfigurationClient(client s3.BucketClient, l logging.Logger) *AccelerateConfigurationClient {
+	return &AccelerateConfigurationClient{client: client, logger: l}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration

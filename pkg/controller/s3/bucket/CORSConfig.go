@@ -18,6 +18,9 @@ package bucket
 
 import (
 	"context"
+	"fmt"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"reflect"
 
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -39,17 +42,40 @@ const (
 // CORSConfigurationClient is the client for API methods and reconciling the CORSConfiguration
 type CORSConfigurationClient struct {
 	client s3.BucketClient
+	logger logging.Logger
 }
 
 // LateInitialize does nothing because CORSConfiguration might have been deleted
 // by the user.
-func (*CORSConfigurationClient) LateInitialize(_ context.Context, _ *v1beta1.Bucket) error {
+func (in *CORSConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	external, err := in.client.GetBucketCorsRequest(&awss3.GetBucketCorsInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
+	if err != nil {
+		// Short stop method for requests in a region without CORS Support
+		if resource.Ignore(s3.CORSConfigurationNotFound, err) != nil {
+			return awsclient.Wrap(err, corsGetFailed)
+		}
+		return nil
+	}
+
+	// We need the second check here because by default the CORS is not set
+	if external.GetBucketCorsOutput == nil || len(external.CORSRules) == 0 {
+		return nil
+	}
+
+	in.logger.Debug(fmt.Sprintf("called LateInitialize for %s", reflect.TypeOf(in).Elem().Name()), "external output", external.GetBucketCorsOutput)
+
+	if bucket.Spec.ForProvider.CORSConfiguration == nil {
+		bucket.Spec.ForProvider.CORSConfiguration = &v1beta1.CORSConfiguration{}
+	}
+
+	bucket.Spec.ForProvider.CORSConfiguration.CORSRules = GenerateCORSRule(external.CORSRules)
+
 	return nil
 }
 
 // NewCORSConfigurationClient creates the client for CORS Configuration
-func NewCORSConfigurationClient(client s3.BucketClient) *CORSConfigurationClient {
-	return &CORSConfigurationClient{client: client}
+func NewCORSConfigurationClient(client s3.BucketClient, l logging.Logger) *CORSConfigurationClient {
+	return &CORSConfigurationClient{client: client, logger: l}
 }
 
 // CompareCORS compares the external and internal representations for the list of CORSRules
@@ -110,6 +136,21 @@ func GeneratePutBucketCorsInput(name string, config *v1beta1.CORSConfiguration) 
 		})
 	}
 	return bci
+}
+
+// GenerateCORSRule creates the cors rule from a GetBucketCORS request from the S3 Client
+func GenerateCORSRule(config []awss3.CORSRule) []v1beta1.CORSRule {
+	output := make([]v1beta1.CORSRule, len(config))
+	for _, cors := range config {
+		output = append(output, v1beta1.CORSRule{
+			AllowedHeaders: cors.AllowedHeaders,
+			AllowedMethods: cors.AllowedMethods,
+			AllowedOrigins: cors.AllowedOrigins,
+			ExposeHeaders:  cors.ExposeHeaders,
+			MaxAgeSeconds:  cors.MaxAgeSeconds,
+		})
+	}
+	return output
 }
 
 // CreateOrUpdate sends a request to have resource created on AWS

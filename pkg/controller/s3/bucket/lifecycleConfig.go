@@ -18,6 +18,9 @@ package bucket
 
 import (
 	"context"
+	"fmt"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"reflect"
 
 	"github.com/google/go-cmp/cmp/cmpopts"
 
@@ -40,17 +43,151 @@ const (
 // LifecycleConfigurationClient is the client for API methods and reconciling the LifecycleConfiguration
 type LifecycleConfigurationClient struct {
 	client s3.BucketClient
+	logger logging.Logger
 }
 
 // LateInitialize does nothing because LifecycleConfiguration might have been be
 // deleted by the user.
-func (*LifecycleConfigurationClient) LateInitialize(_ context.Context, _ *v1beta1.Bucket) error {
+func (in *LifecycleConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	external, err := in.client.GetBucketLifecycleConfigurationRequest(&awss3.GetBucketLifecycleConfigurationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
+	if err != nil {
+		// Short stop method for requests without a lifecycle configuration
+		if s3.LifecycleConfigurationNotFound(err) {
+			return nil
+		}
+		return awsclient.Wrap(err, lifecycleGetFailed)
+	}
+
+	// We need the second check here because by default the lifecycle is not set
+	if external.GetBucketLifecycleConfigurationOutput == nil || len(external.Rules) == 0 {
+		return nil
+	}
+
+	in.logger.Debug(fmt.Sprintf("called LateInitialize for %s", reflect.TypeOf(in).Elem().Name()))
+
+	if bucket.Spec.ForProvider.LifecycleConfiguration == nil {
+		bucket.Spec.ForProvider.LifecycleConfiguration = &v1beta1.BucketLifecycleConfiguration{}
+	}
+
+	createLifecycleRulesFromExternal(external.Rules, bucket.Spec.ForProvider.LifecycleConfiguration)
+
 	return nil
 }
 
+func createLifecycleRulesFromExternal(external []awss3.LifecycleRule, config *v1beta1.BucketLifecycleConfiguration) {
+	if config.Rules == nil {
+		config.Rules = make([]v1beta1.LifecycleRule, 0)
+	}
+
+	for i, rule := range external {
+		if i == len(config.Rules) {
+			config.Rules = append(config.Rules, v1beta1.LifecycleRule{})
+		}
+		config.Rules[i] = v1beta1.LifecycleRule{
+			ID: awsclient.LateInitializeStringPtr(config.Rules[i].ID, rule.ID),
+			Status: awsclient.LateInitializeString(config.Rules[i].Status, awsclient.String(string(rule.Status))),
+		}
+		if rule.Filter != nil {
+			if config.Rules[i].Filter == nil {
+				config.Rules[i].Filter = &v1beta1.LifecycleRuleFilter{}
+			}
+			config.Rules[i].Filter.Prefix = awsclient.LateInitializeStringPtr(config.Rules[i].Filter.Prefix, rule.Filter.Prefix)
+			if rule.Filter.Tag != nil {
+				if config.Rules[i].Filter.Tag == nil {
+					config.Rules[i].Filter.Tag = &v1beta1.Tag{}
+				}
+				config.Rules[i].Filter.Tag.Key = awsclient.LateInitializeString(config.Rules[i].Filter.Tag.Key, rule.Filter.Tag.Key)
+				config.Rules[i].Filter.Tag.Value = awsclient.LateInitializeString(config.Rules[i].Filter.Tag.Value, rule.Filter.Tag.Value)
+			}
+			if rule.Filter.And != nil {
+				if config.Rules[i].Filter.And == nil {
+					config.Rules[i].Filter.And = &v1beta1.LifecycleRuleAndOperator{}
+				}
+				config.Rules[i].Filter.And.Prefix = awsclient.LateInitializeStringPtr(config.Rules[i].Filter.And.Prefix, rule.Filter.And.Prefix)
+				config.Rules[i].Filter.And.Tags = GenerateLocalTagging(rule.Filter.And.Tags).TagSet
+			}
+
+		}
+		if rule.AbortIncompleteMultipartUpload != nil {
+			if config.Rules[i].AbortIncompleteMultipartUpload == nil {
+				config.Rules[i].AbortIncompleteMultipartUpload = &v1beta1.AbortIncompleteMultipartUpload{}
+			}
+			config.Rules[i].AbortIncompleteMultipartUpload.DaysAfterInitiation = awsclient.LateInitializeInt64(
+				config.Rules[i].AbortIncompleteMultipartUpload.DaysAfterInitiation,
+				awsclient.Int64Value(rule.AbortIncompleteMultipartUpload.DaysAfterInitiation))
+		}
+		if rule.Expiration != nil {
+			if config.Rules[i].Expiration == nil {
+				config.Rules[i].Expiration = &v1beta1.LifecycleExpiration{}
+			}
+			config.Rules[i].Expiration.Date = awsclient.LateInitializeDatePtr(
+				config.Rules[i].Expiration.Date,
+				rule.Expiration.Date,
+			)
+			config.Rules[i].Expiration.Days = awsclient.LateInitializeInt64Ptr(
+				config.Rules[i].Expiration.Days,
+				rule.Expiration.Days,
+			)
+			config.Rules[i].Expiration.ExpiredObjectDeleteMarker = awsclient.LateInitializeBoolPtr(
+				config.Rules[i].Expiration.ExpiredObjectDeleteMarker,
+				rule.Expiration.ExpiredObjectDeleteMarker,
+			)
+		}
+		if rule.NoncurrentVersionExpiration != nil {
+			if config.Rules[i].NoncurrentVersionExpiration == nil {
+				config.Rules[i].NoncurrentVersionExpiration = &v1beta1.NoncurrentVersionExpiration{}
+			}
+			config.Rules[i].NoncurrentVersionExpiration.NoncurrentDays = awsclient.LateInitializeInt64Ptr(
+				config.Rules[i].NoncurrentVersionExpiration.NoncurrentDays,
+				rule.NoncurrentVersionExpiration.NoncurrentDays,
+			)
+		}
+		if rule.NoncurrentVersionTransitions != nil {
+			if config.Rules[i].NoncurrentVersionTransitions == nil {
+				config.Rules[i].NoncurrentVersionTransitions = make([]v1beta1.NoncurrentVersionTransition, 0)
+			}
+			for j, nvt := range rule.NoncurrentVersionTransitions {
+				if j == len(config.Rules[i].NoncurrentVersionTransitions) {
+					config.Rules[i].NoncurrentVersionTransitions = append(config.Rules[i].NoncurrentVersionTransitions, v1beta1.NoncurrentVersionTransition{})
+				}
+				config.Rules[i].NoncurrentVersionTransitions[j].NoncurrentDays = awsclient.LateInitializeInt64Ptr(
+					config.Rules[i].NoncurrentVersionTransitions[j].NoncurrentDays,
+					nvt.NoncurrentDays,
+				)
+				config.Rules[i].NoncurrentVersionTransitions[j].StorageClass = awsclient.LateInitializeString(
+					config.Rules[i].NoncurrentVersionTransitions[j].StorageClass,
+					awsclient.String(string(nvt.StorageClass)),
+				)
+			}
+		}
+		if rule.Transitions != nil {
+			if config.Rules[i].Transitions == nil {
+				config.Rules[i].Transitions = make([]v1beta1.Transition, 0)
+			}
+			for j, transition := range rule.Transitions {
+				if j == len(config.Rules[i].Transitions) {
+					config.Rules[i].Transitions = append(config.Rules[i].Transitions, v1beta1.Transition{})
+				}
+				config.Rules[i].Transitions[j].Days = awsclient.LateInitializeInt64Ptr(
+					config.Rules[i].Transitions[j].Days,
+					transition.Days,
+				)
+				config.Rules[i].Transitions[j].Date = awsclient.LateInitializeDatePtr(
+					config.Rules[i].Transitions[j].Date,
+					transition.Date,
+				)
+				config.Rules[i].Transitions[j].StorageClass = awsclient.LateInitializeString(
+					config.Rules[i].Transitions[j].StorageClass,
+					awsclient.String(string(transition.StorageClass)),
+				)
+			}
+		}
+	}
+}
+
 // NewLifecycleConfigurationClient creates the client for Accelerate Configuration
-func NewLifecycleConfigurationClient(client s3.BucketClient) *LifecycleConfigurationClient {
-	return &LifecycleConfigurationClient{client: client}
+func NewLifecycleConfigurationClient(client s3.BucketClient, l logging.Logger) *LifecycleConfigurationClient {
+	return &LifecycleConfigurationClient{client: client, logger: l}
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
