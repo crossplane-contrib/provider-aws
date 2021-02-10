@@ -67,6 +67,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamrolepolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuser"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuserpolicyattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
 	"github.com/crossplane/provider-aws/pkg/controller/redshift"
@@ -139,6 +140,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		table.SetupTable,
 		backup.SetupBackup,
 		globaltable.SetupGlobalTable,
+		key.SetupKey,
 	} {
 		if err := setup(mgr, l); err != nil {
 			return err
