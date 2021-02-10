@@ -1,0 +1,5 @@
+ignore:
+  resource_names:
+  - CustomKeyStore
+  - Grant
+  - Alias

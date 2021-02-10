@@ -531,6 +531,12 @@ func Bool(v bool, o ...FieldOption) *bool {
 	return aws.Bool(v)
 }
 
+// BoolValue returns the value of the bool pointer passed in or
+// false if the pointer is nil.
+func BoolValue(v *bool) bool {
+	return aws.BoolValue(v)
+}
+
 // LateInitializeBoolPtr returns in if it's non-nil, otherwise returns from
 // which is the backup for the cases in is nil.
 func LateInitializeBoolPtr(in *bool, from *bool) *bool {
