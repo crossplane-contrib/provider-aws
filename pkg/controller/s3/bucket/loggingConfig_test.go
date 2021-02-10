@@ -238,3 +238,97 @@ func TestLoggingCreateOrUpdate(t *testing.T) {
 		})
 	}
 }
+
+func TestLoggingLateInit(t *testing.T) {
+	type args struct {
+		cl SubresourceClient
+		b  *v1beta1.Bucket
+	}
+
+	type want struct {
+		err error
+		cr  *v1beta1.Bucket
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Error": {
+			args: args{
+				b: s3Testing.Bucket(),
+				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
+					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
+						return s3.GetBucketLoggingRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketLoggingOutput{}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: awsclient.Wrap(errBoom, loggingGetFailed),
+				cr:  s3Testing.Bucket(),
+			},
+		},
+		"NoLateInitEmpty": {
+			args: args{
+				b: s3Testing.Bucket(),
+				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
+					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
+						return s3.GetBucketLoggingRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(),
+			},
+		},
+		"SuccessfulLateInit": {
+			args: args{
+				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(nil)),
+				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
+					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
+						return s3.GetBucketLoggingRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLogging()}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
+			},
+		},
+		"NoOpLateInit": {
+			args: args{
+				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
+				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
+					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
+						return s3.GetBucketLoggingRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: &s3.LoggingEnabled{}}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			err := tc.args.cl.LateInitialize(context.Background(), tc.args.b)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.b, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}

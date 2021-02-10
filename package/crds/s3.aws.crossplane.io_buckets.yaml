@@ -974,11 +974,8 @@ spec:
                   arn:
                     description: ARN is the Amazon Resource Name (ARN) specifying the S3 Bucket. For more information about ARNs and how to use them, see S3 Resources (https://docs.aws.amazon.com/AmazonS3/latest/dev/s3-arn-format.html) in the Amazon Simple Storage Service guide.
                     type: string
-                  lateInitialized:
-                    type: boolean
                 required:
                 - arn
-                - lateInitialized
                 type: object
               conditions:
                 description: Conditions of the resource.

@@ -1,11 +1,11 @@
 apiVersion: s3.aws.crossplane.io/v1beta1
 kind: Bucket
 metadata:
-  name: test-bucketbucket9999812311
+  name: test-bucket
 spec:
   forProvider:
     acl: private
-    locationConstraint: us-east-2
+    locationConstraint: us-west-1
     accelerateConfiguration:
       status: Enabled
     versioningConfiguration:

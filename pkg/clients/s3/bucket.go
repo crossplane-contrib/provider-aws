@@ -148,11 +148,9 @@ func GenerateCreateBucketInput(name string, s v1beta1.BucketParameters) *s3.Crea
 }
 
 // GenerateBucketObservation generates the ARN string for the external status
-func GenerateBucketObservation(bkt *v1beta1.Bucket) v1beta1.BucketExternalStatus {
-	name := meta.GetExternalName(bkt)
+func GenerateBucketObservation(name string) v1beta1.BucketExternalStatus {
 	return v1beta1.BucketExternalStatus{
 		ARN: fmt.Sprintf("arn:aws:s3:::%s", name),
-		LateInitialized: bkt.Status.AtProvider.LateInitialized,
 	}
 }
 
@@ -244,11 +242,11 @@ func CopyTags(tags []v1beta1.Tag) []s3.Tag {
 	return out
 }
 
-// CopyTags converts a list of external s3.Tags to local Tags
+// CopyAWSTags converts a list of external s3.Tags to local Tags
 func CopyAWSTags(tags []s3.Tag) []v1beta1.Tag {
-	out := make([]v1beta1.Tag, 0)
-	for _, one := range tags {
-		out = append(out, v1beta1.Tag{Key: aws.StringValue(one.Key), Value: aws.StringValue(one.Value)})
+	out := make([]v1beta1.Tag, len(tags))
+	for i, one := range tags {
+		out[i] = v1beta1.Tag{Key: aws.StringValue(one.Key), Value: aws.StringValue(one.Value)}
 	}
 	return out
 }

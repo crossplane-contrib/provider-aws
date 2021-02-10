@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/url"
 	"os"
 	"strconv"
@@ -45,6 +44,7 @@ import (
 	"github.com/go-ini/ini"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -463,9 +463,9 @@ func LateInitializeString(in string, from *string) string {
 	return in
 }
 
-// LateInitializeDatePtr returns in if it's non-nil, otherwise returns from
+// LateInitializeTimePtr returns in if it's non-nil, otherwise returns from
 // which is the backup for the cases in is nil.
-func LateInitializeDatePtr(in *metav1.Time, from *time.Time) *metav1.Time {
+func LateInitializeTimePtr(in *metav1.Time, from *time.Time) *metav1.Time {
 	if in != nil {
 		return in
 	}

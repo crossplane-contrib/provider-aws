@@ -12,6 +12,11 @@ import (
 // ClientModifiers
 func Client(m ...ClientModifier) *fake.MockBucketClient {
 	client := &fake.MockBucketClient{
+		MockCreateBucketRequest: func(input *awss3.CreateBucketInput) awss3.CreateBucketRequest {
+			return awss3.CreateBucketRequest{
+				Request: CreateRequest(nil, &awss3.CreateBucketOutput{}),
+			}
+		},
 		MockHeadBucketRequest: func(input *awss3.HeadBucketInput) awss3.HeadBucketRequest {
 			return awss3.HeadBucketRequest{
 				Request: CreateRequest(nil, &awss3.HeadBucketOutput{}),
@@ -91,6 +96,13 @@ type ClientModifier func(client *fake.MockBucketClient)
 func WithGetRequestPayment(input func(input *awss3.GetBucketRequestPaymentInput) awss3.GetBucketRequestPaymentRequest) ClientModifier {
 	return func(client *fake.MockBucketClient) {
 		client.MockGetBucketRequestPaymentRequest = input
+	}
+}
+
+// WithCreateBucket sets the MockCreateBucketRequest of the mock S3 Client
+func WithCreateBucket(input func(input *awss3.CreateBucketInput) awss3.CreateBucketRequest) ClientModifier {
+	return func(client *fake.MockBucketClient) {
+		client.MockCreateBucketRequest = input
 	}
 }
 

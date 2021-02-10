@@ -319,3 +319,137 @@ func TestSSEDelete(t *testing.T) {
 		})
 	}
 }
+
+func TestSSELateInit(t *testing.T) {
+	type args struct {
+		cl SubresourceClient
+		b  *v1beta1.Bucket
+	}
+
+	type want struct {
+		err error
+		cr  *v1beta1.Bucket
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Error": {
+			args: args{
+				b: s3Testing.Bucket(),
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
+						return s3.GetBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketEncryptionOutput{}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: awsclient.Wrap(errBoom, sseGetFailed),
+				cr:  s3Testing.Bucket(),
+			},
+		},
+		"ErrorSSEConfigurationNotFound": {
+			args: args{
+				b: s3Testing.Bucket(),
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
+						return s3.GetBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(awserr.New(clients3.SSEErrCode, "error", nil), &s3.GetBucketEncryptionOutput{}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(),
+			},
+		},
+		"NoLateInitNil": {
+			args: args{
+				b: s3Testing.Bucket(),
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
+						return s3.GetBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketEncryptionOutput{ServerSideEncryptionConfiguration: nil}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(),
+			},
+		},
+		"NoLateInitEmpty": {
+			args: args{
+				b: s3Testing.Bucket(),
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
+						return s3.GetBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketEncryptionOutput{
+								ServerSideEncryptionConfiguration: &s3.ServerSideEncryptionConfiguration{Rules: nil},
+							}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(),
+			},
+		},
+		"SuccessfulLateInit": {
+			args: args{
+				b: s3Testing.Bucket(s3Testing.WithSSEConfig(nil)),
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
+						return s3.GetBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketEncryptionOutput{ServerSideEncryptionConfiguration: generateAWSSSE()}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
+			},
+		},
+		"NoOpLateInit": {
+			args: args{
+				b: s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
+				cl: NewSSEConfigurationClient(fake.MockBucketClient{
+					MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
+						return s3.GetBucketEncryptionRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketEncryptionOutput{
+								ServerSideEncryptionConfiguration: &s3.ServerSideEncryptionConfiguration{
+									Rules: []s3.ServerSideEncryptionRule{
+										{},
+									},
+								},
+							}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(s3Testing.WithSSEConfig(generateSSEConfig())),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			err := tc.args.cl.LateInitialize(context.Background(), tc.args.b)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.b, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}

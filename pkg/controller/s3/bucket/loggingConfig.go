@@ -18,17 +18,12 @@ package bucket
 
 import (
 	"context"
-	"fmt"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
-	"reflect"
-
-	"github.com/google/go-cmp/cmp/cmpopts"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/google/go-cmp/cmp"
-
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
@@ -43,7 +38,39 @@ const (
 // LoggingConfigurationClient is the client for API methods and reconciling the LoggingConfiguration
 type LoggingConfigurationClient struct {
 	client s3.BucketClient
-	logger logging.Logger
+}
+
+// NewLoggingConfigurationClient creates the client for Logging Configuration
+func NewLoggingConfigurationClient(client s3.BucketClient) *LoggingConfigurationClient {
+	return &LoggingConfigurationClient{client: client}
+}
+
+// Observe checks if the resource exists and if it matches the local configuration
+func (in *LoggingConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
+	external, err := in.client.GetBucketLoggingRequest(&awss3.GetBucketLoggingInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
+	if err != nil {
+		return NeedsUpdate, awsclient.Wrap(err, loggingGetFailed)
+	}
+	if !cmp.Equal(GenerateAWSLogging(bucket.Spec.ForProvider.LoggingConfiguration), external.LoggingEnabled,
+		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{})) {
+		return NeedsUpdate, nil
+	}
+	return Updated, nil
+}
+
+// CreateOrUpdate sends a request to have resource created on AWS
+func (in *LoggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
+	if bucket.Spec.ForProvider.LoggingConfiguration == nil {
+		return nil
+	}
+	input := GeneratePutBucketLoggingInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.LoggingConfiguration)
+	_, err := in.client.PutBucketLoggingRequest(input).Send(ctx)
+	return awsclient.Wrap(err, loggingPutFailed)
+}
+
+// Delete does nothing because there is no deletion call for logging config.
+func (*LoggingConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
+	return nil
 }
 
 // LateInitialize is responsible for initializing the resource based on the external value
@@ -52,25 +79,24 @@ func (in *LoggingConfigurationClient) LateInitialize(ctx context.Context, bucket
 	if err != nil {
 		return awsclient.Wrap(err, loggingGetFailed)
 	}
-	config := bucket.Spec.ForProvider.LoggingConfiguration
-	if external.LoggingEnabled == nil {
+
+	if external == nil || external.LoggingEnabled == nil {
 		// There is no value send by AWS to initialize
 		return nil
 	}
 
-	in.logger.Debug(fmt.Sprintf("called LateInitialize for %s", reflect.TypeOf(in).Elem().Name()))
-
-	if config == nil {
+	if bucket.Spec.ForProvider.LoggingConfiguration == nil {
 		// We need the configuration to exist so we can initialize
 		bucket.Spec.ForProvider.LoggingConfiguration = &v1beta1.LoggingConfiguration{}
-		config = bucket.Spec.ForProvider.LoggingConfiguration
 	}
+
+	config := bucket.Spec.ForProvider.LoggingConfiguration
 	// Late initialize the target Bucket and target prefix
 	config.TargetBucket = awsclient.LateInitializeStringPtr(config.TargetBucket, external.LoggingEnabled.TargetBucket)
 	config.TargetPrefix = awsclient.LateInitializeString(config.TargetPrefix, external.LoggingEnabled.TargetPrefix)
 	// If the there is an external target grant list, and the local one does not exist
 	// we create the target grant list
-	if external.LoggingEnabled.TargetGrants != nil && len(config.TargetGrants) == 0 {
+	if len(external.LoggingEnabled.TargetGrants) != 0 && config.TargetGrants == nil {
 		config.TargetGrants = make([]v1beta1.TargetGrant, len(external.LoggingEnabled.TargetGrants))
 		for i, v := range external.LoggingEnabled.TargetGrants {
 			config.TargetGrants[i] = v1beta1.TargetGrant{
@@ -88,9 +114,34 @@ func (in *LoggingConfigurationClient) LateInitialize(ctx context.Context, bucket
 	return nil
 }
 
-// NewLoggingConfigurationClient creates the client for Logging Configuration
-func NewLoggingConfigurationClient(client s3.BucketClient, l logging.Logger) *LoggingConfigurationClient {
-	return &LoggingConfigurationClient{client: client, logger: l}
+// SubresourceExists checks if the subresource this controller manages currently exists
+func (in *LoggingConfigurationClient) SubresourceExists(bucket *v1beta1.Bucket) bool {
+	return bucket.Spec.ForProvider.LoggingConfiguration != nil
+}
+
+// GeneratePutBucketLoggingInput creates the input for the PutBucketLogging request for the S3 Client
+func GeneratePutBucketLoggingInput(name string, config *v1beta1.LoggingConfiguration) *awss3.PutBucketLoggingInput {
+	bci := &awss3.PutBucketLoggingInput{
+		Bucket: awsclient.String(name),
+		BucketLoggingStatus: &awss3.BucketLoggingStatus{LoggingEnabled: &awss3.LoggingEnabled{
+			TargetBucket: config.TargetBucket,
+			TargetGrants: make([]awss3.TargetGrant, 0),
+			TargetPrefix: awsclient.String(config.TargetPrefix),
+		}},
+	}
+	for _, grant := range config.TargetGrants {
+		bci.BucketLoggingStatus.LoggingEnabled.TargetGrants = append(bci.BucketLoggingStatus.LoggingEnabled.TargetGrants, awss3.TargetGrant{
+			Grantee: &awss3.Grantee{
+				DisplayName:  grant.Grantee.DisplayName,
+				EmailAddress: grant.Grantee.EmailAddress,
+				ID:           grant.Grantee.ID,
+				Type:         awss3.Type(grant.Grantee.Type),
+				URI:          grant.Grantee.URI,
+			},
+			Permission: awss3.BucketLogsPermission(grant.Permission),
+		})
+	}
+	return bci
 }
 
 // GenerateAWSLogging creates an S3 logging enabled struct from the local logging configuration
@@ -120,57 +171,4 @@ func GenerateAWSLogging(local *v1beta1.LoggingConfiguration) *awss3.LoggingEnabl
 		output.TargetGrants[i] = target
 	}
 	return &output
-}
-
-// Observe checks if the resource exists and if it matches the local configuration
-func (in *LoggingConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetBucketLoggingRequest(&awss3.GetBucketLoggingInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
-	if err != nil {
-		return NeedsUpdate, awsclient.Wrap(err, loggingGetFailed)
-	}
-	if !cmp.Equal(GenerateAWSLogging(bucket.Spec.ForProvider.LoggingConfiguration), external.LoggingEnabled,
-		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{})) {
-		return NeedsUpdate, nil
-	}
-	return Updated, nil
-}
-
-// GeneratePutBucketLoggingInput creates the input for the PutBucketLogging request for the S3 Client
-func GeneratePutBucketLoggingInput(name string, config *v1beta1.LoggingConfiguration) *awss3.PutBucketLoggingInput {
-	bci := &awss3.PutBucketLoggingInput{
-		Bucket: awsclient.String(name),
-		BucketLoggingStatus: &awss3.BucketLoggingStatus{LoggingEnabled: &awss3.LoggingEnabled{
-			TargetBucket: config.TargetBucket,
-			TargetGrants: make([]awss3.TargetGrant, 0),
-			TargetPrefix: awsclient.String(config.TargetPrefix),
-		}},
-	}
-	for _, grant := range config.TargetGrants {
-		bci.BucketLoggingStatus.LoggingEnabled.TargetGrants = append(bci.BucketLoggingStatus.LoggingEnabled.TargetGrants, awss3.TargetGrant{
-			Grantee: &awss3.Grantee{
-				DisplayName:  grant.Grantee.DisplayName,
-				EmailAddress: grant.Grantee.EmailAddress,
-				ID:           grant.Grantee.ID,
-				Type:         awss3.Type(grant.Grantee.Type),
-				URI:          grant.Grantee.URI,
-			},
-			Permission: awss3.BucketLogsPermission(grant.Permission),
-		})
-	}
-	return bci
-}
-
-// CreateOrUpdate sends a request to have resource created on AWS
-func (in *LoggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
-	if bucket.Spec.ForProvider.LoggingConfiguration == nil {
-		return nil
-	}
-	input := GeneratePutBucketLoggingInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.LoggingConfiguration)
-	_, err := in.client.PutBucketLoggingRequest(input).Send(ctx)
-	return awsclient.Wrap(err, loggingPutFailed)
-}
-
-// Delete does nothing because there is no deletion call for logging config.
-func (*LoggingConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
-	return nil
 }

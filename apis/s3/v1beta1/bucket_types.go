@@ -21,6 +21,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	// ResourceCredentialsSecretRegionKey is the key for region that the S3 bucket is located
+	ResourceCredentialsSecretRegionKey = "region"
+)
+
 // BucketParameters are parameters for configuring the calls made to AWS Bucket API.
 type BucketParameters struct {
 	// The canned ACL to apply to the bucket. Note that either canned ACL or specific access
@@ -147,8 +152,6 @@ type BucketExternalStatus struct {
 	// about ARNs and how to use them, see S3 Resources (https://docs.aws.amazon.com/AmazonS3/latest/dev/s3-arn-format.html)
 	// in the Amazon Simple Storage Service guide.
 	ARN string `json:"arn"`
-
-	LateInitialized bool `json:"lateInitialized"`
 }
 
 // BucketStatus represents the observed state of the Bucket.
