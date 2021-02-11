@@ -28,16 +28,15 @@ type BucketPolicyParameters struct {
 	// +immutable
 	Region string `json:"region"`
 
-	// This is the current IAM policy version
-	Version string `json:"version"`
-
-	// This is the policy's optional identifier
-	// +immutable
+	// RawPolicy is a stringified version of the S3 Bucket Policy.
+	// either policy or rawPolicy must be specified in the policy
 	// +optional
-	ID string `json:"id,omitempty"`
+	RawPolicy *string `json:"rawPolicy,omitempty"`
 
-	// This is the list of statement this policy applies
-	Statements []BucketPolicyStatement `json:"statements"`
+	// Policy is a well defined type which can be parsed into an JSON S3 Bucket Policy
+	// either policy or rawPolicy must be specified in the policy
+	// +optional
+	Policy *BucketPolicyBody `json:"policy,omitempty"`
 
 	// BucketName presents the name of the bucket.
 	// +optional
@@ -51,6 +50,24 @@ type BucketPolicyParameters struct {
 	// BucketNameSelector selects a reference to an S3Bucket to retrieve its bucketName
 	// +optional
 	BucketNameSelector *xpv1.Selector `json:"bucketNameSelector,omitempty"`
+}
+
+// BucketPolicyBody represents an S3 bucket policy in the manifest
+type BucketPolicyBody struct {
+	// Version is the current IAM policy version
+	// +kubebuilder:validation:Enum="2012-10-17";"2008-10-17"
+	// +kubebuilder:default:="2012-10-17"
+	Version string `json:"version"`
+
+	// ID is the policy's optional identifier
+	// +immutable
+	// +optional
+	ID string `json:"id,omitempty"`
+
+	// Statements is the list of statement this policy applies
+	// either jsonStatements or statements must be specified in the policy
+	// +optional
+	Statements []BucketPolicyStatement `json:"statements,omitempty"`
 }
 
 // BucketPolicyStatement defines an individual statement within the
@@ -202,7 +219,7 @@ type ConditionPair struct {
 // BucketPolicy.
 type BucketPolicySpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	PolicyBody        BucketPolicyParameters `json:"forProvider"`
+	Parameters        BucketPolicyParameters `json:"forProvider"`
 }
 
 // An BucketPolicyStatus represents the observed state of an

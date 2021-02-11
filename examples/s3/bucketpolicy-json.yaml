@@ -1,0 +1,23 @@
+apiVersion: s3.aws.crossplane.io/v1alpha3
+kind: BucketPolicy
+metadata:
+  name: bucketpolicy-public
+spec:
+  forProvider:
+    region: us-west-1
+    bucketNameRef:
+      name: test-bucket
+    rawPolicy: |
+      {
+        "Statement": [
+          {
+            "Action":"s3:ListBucket",
+            "Effect":"Allow",
+            "Principal":"*",
+            "Resource":"arn:aws:s3:::test-bucket"
+          }
+        ],
+        "Version":"2012-10-17"
+      }
+  providerConfigRef:
+    name: example
