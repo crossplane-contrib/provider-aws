@@ -36,21 +36,32 @@ import (
 // SetupStateMachine adds a controller that reconciles StateMachine.
 func SetupStateMachine(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(svcapitypes.StateMachineGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.preCreate = preCreate
+			e.postCreate = postCreate
+			e.preDelete = preDelete
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&svcapitypes.StateMachine{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.StateMachineGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.StateMachine) error {
+func preObserve(_ context.Context, cr *svcapitypes.StateMachine, obj *svcsdk.DescribeStateMachineInput) error {
+	obj.StateMachineArn = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.StateMachine, resp *svcsdk.DescribeStateMachineOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+
+func postObserve(_ context.Context, cr *svcapitypes.StateMachine, resp *svcsdk.DescribeStateMachineOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -63,11 +74,13 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.StateMachine, re
 	return obs, nil
 }
 
-func (*external) preCreate(context.Context, *svcapitypes.StateMachine) error {
+func preCreate(_ context.Context, cr *svcapitypes.StateMachine, obj *svcsdk.CreateStateMachineInput) error {
+	obj.Type = aws.String(string(cr.Spec.ForProvider.Type))
+	obj.RoleArn = cr.Spec.ForProvider.RoleARN
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, cr *svcapitypes.StateMachine, resp *svcsdk.CreateStateMachineOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *svcapitypes.StateMachine, resp *svcsdk.CreateStateMachineOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -76,45 +89,7 @@ func (*external) postCreate(_ context.Context, cr *svcapitypes.StateMachine, res
 	return cre, nil
 }
 
-func (*external) preUpdate(context.Context, *svcapitypes.StateMachine) error {
-	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.StateMachine, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-func lateInitialize(*svcapitypes.StateMachineParameters, *svcsdk.DescribeStateMachineOutput) error {
-	return nil
-}
-
-func isUpToDate(*svcapitypes.StateMachine, *svcsdk.DescribeStateMachineOutput) bool {
-	return true
-}
-
-func preGenerateDescribeStateMachineInput(_ *svcapitypes.StateMachine, obj *svcsdk.DescribeStateMachineInput) *svcsdk.DescribeStateMachineInput {
-	return obj
-}
-
-func postGenerateDescribeStateMachineInput(cr *svcapitypes.StateMachine, obj *svcsdk.DescribeStateMachineInput) *svcsdk.DescribeStateMachineInput {
+func preDelete(_ context.Context, cr *svcapitypes.StateMachine, obj *svcsdk.DeleteStateMachineInput) error {
 	obj.StateMachineArn = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreateStateMachineInput(_ *svcapitypes.StateMachine, obj *svcsdk.CreateStateMachineInput) *svcsdk.CreateStateMachineInput {
-	return obj
-}
-
-func postGenerateCreateStateMachineInput(cr *svcapitypes.StateMachine, obj *svcsdk.CreateStateMachineInput) *svcsdk.CreateStateMachineInput {
-	obj.Type = aws.String(string(cr.Spec.ForProvider.Type))
-	obj.RoleArn = cr.Spec.ForProvider.RoleARN
-	return obj
-}
-
-func preGenerateDeleteStateMachineInput(_ *svcapitypes.StateMachine, obj *svcsdk.DeleteStateMachineInput) *svcsdk.DeleteStateMachineInput {
-	return obj
-}
-
-func postGenerateDeleteStateMachineInput(cr *svcapitypes.StateMachine, obj *svcsdk.DeleteStateMachineInput) *svcsdk.DeleteStateMachineInput {
-	obj.StateMachineArn = aws.String(meta.GetExternalName(cr))
-	return obj
+	return nil
 }
