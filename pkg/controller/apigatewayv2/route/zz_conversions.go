@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,19 +27,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateGetRouteInput returns input for read
 // operation.
 func GenerateGetRouteInput(cr *svcapitypes.Route) *svcsdk.GetRouteInput {
-	res := preGenerateGetRouteInput(cr, &svcsdk.GetRouteInput{})
+	res := &svcsdk.GetRouteInput{}
 
 	if cr.Status.AtProvider.RouteID != nil {
 		res.SetRouteId(*cr.Status.AtProvider.RouteID)
 	}
 
-	return postGenerateGetRouteInput(cr, res)
+	return res
 }
 
 // GenerateRoute returns the current state in the form of *svcapitypes.Route.
@@ -58,7 +56,7 @@ func GenerateRoute(resp *svcsdk.GetRouteOutput) *svcapitypes.Route {
 
 // GenerateCreateRouteInput returns a create input.
 func GenerateCreateRouteInput(cr *svcapitypes.Route) *svcsdk.CreateRouteInput {
-	res := preGenerateCreateRouteInput(cr, &svcsdk.CreateRouteInput{})
+	res := &svcsdk.CreateRouteInput{}
 
 	if cr.Spec.ForProvider.APIKeyRequired != nil {
 		res.SetApiKeyRequired(*cr.Spec.ForProvider.APIKeyRequired)
@@ -114,18 +112,82 @@ func GenerateCreateRouteInput(cr *svcapitypes.Route) *svcsdk.CreateRouteInput {
 		res.SetTarget(*cr.Spec.ForProvider.Target)
 	}
 
-	return postGenerateCreateRouteInput(cr, res)
+	return res
+}
+
+// GenerateUpdateRouteInput returns an update input.
+func GenerateUpdateRouteInput(cr *svcapitypes.Route) *svcsdk.UpdateRouteInput {
+	res := &svcsdk.UpdateRouteInput{}
+
+	if cr.Spec.ForProvider.APIKeyRequired != nil {
+		res.SetApiKeyRequired(*cr.Spec.ForProvider.APIKeyRequired)
+	}
+	if cr.Spec.ForProvider.AuthorizationScopes != nil {
+		f2 := []*string{}
+		for _, f2iter := range cr.Spec.ForProvider.AuthorizationScopes {
+			var f2elem string
+			f2elem = *f2iter
+			f2 = append(f2, &f2elem)
+		}
+		res.SetAuthorizationScopes(f2)
+	}
+	if cr.Spec.ForProvider.AuthorizationType != nil {
+		res.SetAuthorizationType(*cr.Spec.ForProvider.AuthorizationType)
+	}
+	if cr.Spec.ForProvider.AuthorizerID != nil {
+		res.SetAuthorizerId(*cr.Spec.ForProvider.AuthorizerID)
+	}
+	if cr.Spec.ForProvider.ModelSelectionExpression != nil {
+		res.SetModelSelectionExpression(*cr.Spec.ForProvider.ModelSelectionExpression)
+	}
+	if cr.Spec.ForProvider.OperationName != nil {
+		res.SetOperationName(*cr.Spec.ForProvider.OperationName)
+	}
+	if cr.Spec.ForProvider.RequestModels != nil {
+		f7 := map[string]*string{}
+		for f7key, f7valiter := range cr.Spec.ForProvider.RequestModels {
+			var f7val string
+			f7val = *f7valiter
+			f7[f7key] = &f7val
+		}
+		res.SetRequestModels(f7)
+	}
+	if cr.Spec.ForProvider.RequestParameters != nil {
+		f8 := map[string]*svcsdk.ParameterConstraints{}
+		for f8key, f8valiter := range cr.Spec.ForProvider.RequestParameters {
+			f8val := &svcsdk.ParameterConstraints{}
+			if f8valiter.Required != nil {
+				f8val.SetRequired(*f8valiter.Required)
+			}
+			f8[f8key] = f8val
+		}
+		res.SetRequestParameters(f8)
+	}
+	if cr.Status.AtProvider.RouteID != nil {
+		res.SetRouteId(*cr.Status.AtProvider.RouteID)
+	}
+	if cr.Spec.ForProvider.RouteKey != nil {
+		res.SetRouteKey(*cr.Spec.ForProvider.RouteKey)
+	}
+	if cr.Spec.ForProvider.RouteResponseSelectionExpression != nil {
+		res.SetRouteResponseSelectionExpression(*cr.Spec.ForProvider.RouteResponseSelectionExpression)
+	}
+	if cr.Spec.ForProvider.Target != nil {
+		res.SetTarget(*cr.Spec.ForProvider.Target)
+	}
+
+	return res
 }
 
 // GenerateDeleteRouteInput returns a deletion input.
 func GenerateDeleteRouteInput(cr *svcapitypes.Route) *svcsdk.DeleteRouteInput {
-	res := preGenerateDeleteRouteInput(cr, &svcsdk.DeleteRouteInput{})
+	res := &svcsdk.DeleteRouteInput{}
 
 	if cr.Status.AtProvider.RouteID != nil {
 		res.SetRouteId(*cr.Status.AtProvider.RouteID)
 	}
 
-	return postGenerateDeleteRouteInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,19 +27,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateGetDomainNameInput returns input for read
 // operation.
 func GenerateGetDomainNameInput(cr *svcapitypes.DomainName) *svcsdk.GetDomainNameInput {
-	res := preGenerateGetDomainNameInput(cr, &svcsdk.GetDomainNameInput{})
+	res := &svcsdk.GetDomainNameInput{}
 
 	if cr.Status.AtProvider.DomainName != nil {
 		res.SetDomainName(*cr.Status.AtProvider.DomainName)
 	}
 
-	return postGenerateGetDomainNameInput(cr, res)
+	return res
 }
 
 // GenerateDomainName returns the current state in the form of *svcapitypes.DomainName.
@@ -58,7 +56,7 @@ func GenerateDomainName(resp *svcsdk.GetDomainNameOutput) *svcapitypes.DomainNam
 
 // GenerateCreateDomainNameInput returns a create input.
 func GenerateCreateDomainNameInput(cr *svcapitypes.DomainName) *svcsdk.CreateDomainNameInput {
-	res := preGenerateCreateDomainNameInput(cr, &svcsdk.CreateDomainNameInput{})
+	res := &svcsdk.CreateDomainNameInput{}
 
 	if cr.Spec.ForProvider.DomainNameConfigurations != nil {
 		f0 := []*svcsdk.DomainNameConfiguration{}
@@ -115,14 +113,70 @@ func GenerateCreateDomainNameInput(cr *svcapitypes.DomainName) *svcsdk.CreateDom
 		res.SetTags(f2)
 	}
 
-	return postGenerateCreateDomainNameInput(cr, res)
+	return res
+}
+
+// GenerateUpdateDomainNameInput returns an update input.
+func GenerateUpdateDomainNameInput(cr *svcapitypes.DomainName) *svcsdk.UpdateDomainNameInput {
+	res := &svcsdk.UpdateDomainNameInput{}
+
+	if cr.Status.AtProvider.DomainName != nil {
+		res.SetDomainName(*cr.Status.AtProvider.DomainName)
+	}
+	if cr.Spec.ForProvider.DomainNameConfigurations != nil {
+		f1 := []*svcsdk.DomainNameConfiguration{}
+		for _, f1iter := range cr.Spec.ForProvider.DomainNameConfigurations {
+			f1elem := &svcsdk.DomainNameConfiguration{}
+			if f1iter.APIGatewayDomainName != nil {
+				f1elem.SetApiGatewayDomainName(*f1iter.APIGatewayDomainName)
+			}
+			if f1iter.CertificateARN != nil {
+				f1elem.SetCertificateArn(*f1iter.CertificateARN)
+			}
+			if f1iter.CertificateName != nil {
+				f1elem.SetCertificateName(*f1iter.CertificateName)
+			}
+			if f1iter.CertificateUploadDate != nil {
+				f1elem.SetCertificateUploadDate(f1iter.CertificateUploadDate.Time)
+			}
+			if f1iter.DomainNameStatus != nil {
+				f1elem.SetDomainNameStatus(*f1iter.DomainNameStatus)
+			}
+			if f1iter.DomainNameStatusMessage != nil {
+				f1elem.SetDomainNameStatusMessage(*f1iter.DomainNameStatusMessage)
+			}
+			if f1iter.EndpointType != nil {
+				f1elem.SetEndpointType(*f1iter.EndpointType)
+			}
+			if f1iter.HostedZoneID != nil {
+				f1elem.SetHostedZoneId(*f1iter.HostedZoneID)
+			}
+			if f1iter.SecurityPolicy != nil {
+				f1elem.SetSecurityPolicy(*f1iter.SecurityPolicy)
+			}
+			f1 = append(f1, f1elem)
+		}
+		res.SetDomainNameConfigurations(f1)
+	}
+	if cr.Spec.ForProvider.MutualTLSAuthentication != nil {
+		f2 := &svcsdk.MutualTlsAuthenticationInput{}
+		if cr.Spec.ForProvider.MutualTLSAuthentication.TruststoreURI != nil {
+			f2.SetTruststoreUri(*cr.Spec.ForProvider.MutualTLSAuthentication.TruststoreURI)
+		}
+		if cr.Spec.ForProvider.MutualTLSAuthentication.TruststoreVersion != nil {
+			f2.SetTruststoreVersion(*cr.Spec.ForProvider.MutualTLSAuthentication.TruststoreVersion)
+		}
+		res.SetMutualTlsAuthentication(f2)
+	}
+
+	return res
 }
 
 // GenerateDeleteDomainNameInput returns a deletion input.
 func GenerateDeleteDomainNameInput(cr *svcapitypes.DomainName) *svcsdk.DeleteDomainNameInput {
-	res := preGenerateDeleteDomainNameInput(cr, &svcsdk.DeleteDomainNameInput{})
+	res := &svcsdk.DeleteDomainNameInput{}
 
-	return postGenerateDeleteDomainNameInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

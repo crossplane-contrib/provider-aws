@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,19 +28,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateGetDeploymentInput returns input for read
 // operation.
 func GenerateGetDeploymentInput(cr *svcapitypes.Deployment) *svcsdk.GetDeploymentInput {
-	res := preGenerateGetDeploymentInput(cr, &svcsdk.GetDeploymentInput{})
+	res := &svcsdk.GetDeploymentInput{}
 
 	if cr.Status.AtProvider.DeploymentID != nil {
 		res.SetDeploymentId(*cr.Status.AtProvider.DeploymentID)
 	}
 
-	return postGenerateGetDeploymentInput(cr, res)
+	return res
 }
 
 // GenerateDeployment returns the current state in the form of *svcapitypes.Deployment.
@@ -68,7 +66,7 @@ func GenerateDeployment(resp *svcsdk.GetDeploymentOutput) *svcapitypes.Deploymen
 
 // GenerateCreateDeploymentInput returns a create input.
 func GenerateCreateDeploymentInput(cr *svcapitypes.Deployment) *svcsdk.CreateDeploymentInput {
-	res := preGenerateCreateDeploymentInput(cr, &svcsdk.CreateDeploymentInput{})
+	res := &svcsdk.CreateDeploymentInput{}
 
 	if cr.Spec.ForProvider.Description != nil {
 		res.SetDescription(*cr.Spec.ForProvider.Description)
@@ -77,18 +75,32 @@ func GenerateCreateDeploymentInput(cr *svcapitypes.Deployment) *svcsdk.CreateDep
 		res.SetStageName(*cr.Spec.ForProvider.StageName)
 	}
 
-	return postGenerateCreateDeploymentInput(cr, res)
+	return res
+}
+
+// GenerateUpdateDeploymentInput returns an update input.
+func GenerateUpdateDeploymentInput(cr *svcapitypes.Deployment) *svcsdk.UpdateDeploymentInput {
+	res := &svcsdk.UpdateDeploymentInput{}
+
+	if cr.Status.AtProvider.DeploymentID != nil {
+		res.SetDeploymentId(*cr.Status.AtProvider.DeploymentID)
+	}
+	if cr.Spec.ForProvider.Description != nil {
+		res.SetDescription(*cr.Spec.ForProvider.Description)
+	}
+
+	return res
 }
 
 // GenerateDeleteDeploymentInput returns a deletion input.
 func GenerateDeleteDeploymentInput(cr *svcapitypes.Deployment) *svcsdk.DeleteDeploymentInput {
-	res := preGenerateDeleteDeploymentInput(cr, &svcsdk.DeleteDeploymentInput{})
+	res := &svcsdk.DeleteDeploymentInput{}
 
 	if cr.Status.AtProvider.DeploymentID != nil {
 		res.SetDeploymentId(*cr.Status.AtProvider.DeploymentID)
 	}
 
-	return postGenerateDeleteDeploymentInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,19 +28,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateGetStageInput returns input for read
 // operation.
 func GenerateGetStageInput(cr *svcapitypes.Stage) *svcsdk.GetStageInput {
-	res := preGenerateGetStageInput(cr, &svcsdk.GetStageInput{})
+	res := &svcsdk.GetStageInput{}
 
 	if cr.Status.AtProvider.StageName != nil {
 		res.SetStageName(*cr.Status.AtProvider.StageName)
 	}
 
-	return postGenerateGetStageInput(cr, res)
+	return res
 }
 
 // GenerateStage returns the current state in the form of *svcapitypes.Stage.
@@ -68,7 +66,7 @@ func GenerateStage(resp *svcsdk.GetStageOutput) *svcapitypes.Stage {
 
 // GenerateCreateStageInput returns a create input.
 func GenerateCreateStageInput(cr *svcapitypes.Stage) *svcsdk.CreateStageInput {
-	res := preGenerateCreateStageInput(cr, &svcsdk.CreateStageInput{})
+	res := &svcsdk.CreateStageInput{}
 
 	if cr.Spec.ForProvider.AccessLogSettings != nil {
 		f0 := &svcsdk.AccessLogSettings{}
@@ -153,14 +151,98 @@ func GenerateCreateStageInput(cr *svcapitypes.Stage) *svcsdk.CreateStageInput {
 		res.SetTags(f8)
 	}
 
-	return postGenerateCreateStageInput(cr, res)
+	return res
+}
+
+// GenerateUpdateStageInput returns an update input.
+func GenerateUpdateStageInput(cr *svcapitypes.Stage) *svcsdk.UpdateStageInput {
+	res := &svcsdk.UpdateStageInput{}
+
+	if cr.Spec.ForProvider.AccessLogSettings != nil {
+		f0 := &svcsdk.AccessLogSettings{}
+		if cr.Spec.ForProvider.AccessLogSettings.DestinationARN != nil {
+			f0.SetDestinationArn(*cr.Spec.ForProvider.AccessLogSettings.DestinationARN)
+		}
+		if cr.Spec.ForProvider.AccessLogSettings.Format != nil {
+			f0.SetFormat(*cr.Spec.ForProvider.AccessLogSettings.Format)
+		}
+		res.SetAccessLogSettings(f0)
+	}
+	if cr.Spec.ForProvider.AutoDeploy != nil {
+		res.SetAutoDeploy(*cr.Spec.ForProvider.AutoDeploy)
+	}
+	if cr.Spec.ForProvider.ClientCertificateID != nil {
+		res.SetClientCertificateId(*cr.Spec.ForProvider.ClientCertificateID)
+	}
+	if cr.Spec.ForProvider.DefaultRouteSettings != nil {
+		f4 := &svcsdk.RouteSettings{}
+		if cr.Spec.ForProvider.DefaultRouteSettings.DataTraceEnabled != nil {
+			f4.SetDataTraceEnabled(*cr.Spec.ForProvider.DefaultRouteSettings.DataTraceEnabled)
+		}
+		if cr.Spec.ForProvider.DefaultRouteSettings.DetailedMetricsEnabled != nil {
+			f4.SetDetailedMetricsEnabled(*cr.Spec.ForProvider.DefaultRouteSettings.DetailedMetricsEnabled)
+		}
+		if cr.Spec.ForProvider.DefaultRouteSettings.LoggingLevel != nil {
+			f4.SetLoggingLevel(*cr.Spec.ForProvider.DefaultRouteSettings.LoggingLevel)
+		}
+		if cr.Spec.ForProvider.DefaultRouteSettings.ThrottlingBurstLimit != nil {
+			f4.SetThrottlingBurstLimit(*cr.Spec.ForProvider.DefaultRouteSettings.ThrottlingBurstLimit)
+		}
+		if cr.Spec.ForProvider.DefaultRouteSettings.ThrottlingRateLimit != nil {
+			f4.SetThrottlingRateLimit(*cr.Spec.ForProvider.DefaultRouteSettings.ThrottlingRateLimit)
+		}
+		res.SetDefaultRouteSettings(f4)
+	}
+	if cr.Spec.ForProvider.DeploymentID != nil {
+		res.SetDeploymentId(*cr.Spec.ForProvider.DeploymentID)
+	}
+	if cr.Spec.ForProvider.Description != nil {
+		res.SetDescription(*cr.Spec.ForProvider.Description)
+	}
+	if cr.Spec.ForProvider.RouteSettings != nil {
+		f7 := map[string]*svcsdk.RouteSettings{}
+		for f7key, f7valiter := range cr.Spec.ForProvider.RouteSettings {
+			f7val := &svcsdk.RouteSettings{}
+			if f7valiter.DataTraceEnabled != nil {
+				f7val.SetDataTraceEnabled(*f7valiter.DataTraceEnabled)
+			}
+			if f7valiter.DetailedMetricsEnabled != nil {
+				f7val.SetDetailedMetricsEnabled(*f7valiter.DetailedMetricsEnabled)
+			}
+			if f7valiter.LoggingLevel != nil {
+				f7val.SetLoggingLevel(*f7valiter.LoggingLevel)
+			}
+			if f7valiter.ThrottlingBurstLimit != nil {
+				f7val.SetThrottlingBurstLimit(*f7valiter.ThrottlingBurstLimit)
+			}
+			if f7valiter.ThrottlingRateLimit != nil {
+				f7val.SetThrottlingRateLimit(*f7valiter.ThrottlingRateLimit)
+			}
+			f7[f7key] = f7val
+		}
+		res.SetRouteSettings(f7)
+	}
+	if cr.Status.AtProvider.StageName != nil {
+		res.SetStageName(*cr.Status.AtProvider.StageName)
+	}
+	if cr.Spec.ForProvider.StageVariables != nil {
+		f9 := map[string]*string{}
+		for f9key, f9valiter := range cr.Spec.ForProvider.StageVariables {
+			var f9val string
+			f9val = *f9valiter
+			f9[f9key] = &f9val
+		}
+		res.SetStageVariables(f9)
+	}
+
+	return res
 }
 
 // GenerateDeleteStageInput returns a deletion input.
 func GenerateDeleteStageInput(cr *svcapitypes.Stage) *svcsdk.DeleteStageInput {
-	res := preGenerateDeleteStageInput(cr, &svcsdk.DeleteStageInput{})
+	res := &svcsdk.DeleteStageInput{}
 
-	return postGenerateDeleteStageInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.
