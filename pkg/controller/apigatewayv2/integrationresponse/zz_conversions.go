@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,19 +27,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateGetIntegrationResponseInput returns input for read
 // operation.
 func GenerateGetIntegrationResponseInput(cr *svcapitypes.IntegrationResponse) *svcsdk.GetIntegrationResponseInput {
-	res := preGenerateGetIntegrationResponseInput(cr, &svcsdk.GetIntegrationResponseInput{})
+	res := &svcsdk.GetIntegrationResponseInput{}
 
 	if cr.Status.AtProvider.IntegrationResponseID != nil {
 		res.SetIntegrationResponseId(*cr.Status.AtProvider.IntegrationResponseID)
 	}
 
-	return postGenerateGetIntegrationResponseInput(cr, res)
+	return res
 }
 
 // GenerateIntegrationResponse returns the current state in the form of *svcapitypes.IntegrationResponse.
@@ -55,7 +53,7 @@ func GenerateIntegrationResponse(resp *svcsdk.GetIntegrationResponseOutput) *svc
 
 // GenerateCreateIntegrationResponseInput returns a create input.
 func GenerateCreateIntegrationResponseInput(cr *svcapitypes.IntegrationResponse) *svcsdk.CreateIntegrationResponseInput {
-	res := preGenerateCreateIntegrationResponseInput(cr, &svcsdk.CreateIntegrationResponseInput{})
+	res := &svcsdk.CreateIntegrationResponseInput{}
 
 	if cr.Spec.ForProvider.ContentHandlingStrategy != nil {
 		res.SetContentHandlingStrategy(*cr.Spec.ForProvider.ContentHandlingStrategy)
@@ -85,18 +83,56 @@ func GenerateCreateIntegrationResponseInput(cr *svcapitypes.IntegrationResponse)
 		res.SetTemplateSelectionExpression(*cr.Spec.ForProvider.TemplateSelectionExpression)
 	}
 
-	return postGenerateCreateIntegrationResponseInput(cr, res)
+	return res
+}
+
+// GenerateUpdateIntegrationResponseInput returns an update input.
+func GenerateUpdateIntegrationResponseInput(cr *svcapitypes.IntegrationResponse) *svcsdk.UpdateIntegrationResponseInput {
+	res := &svcsdk.UpdateIntegrationResponseInput{}
+
+	if cr.Spec.ForProvider.ContentHandlingStrategy != nil {
+		res.SetContentHandlingStrategy(*cr.Spec.ForProvider.ContentHandlingStrategy)
+	}
+	if cr.Status.AtProvider.IntegrationResponseID != nil {
+		res.SetIntegrationResponseId(*cr.Status.AtProvider.IntegrationResponseID)
+	}
+	if cr.Spec.ForProvider.IntegrationResponseKey != nil {
+		res.SetIntegrationResponseKey(*cr.Spec.ForProvider.IntegrationResponseKey)
+	}
+	if cr.Spec.ForProvider.ResponseParameters != nil {
+		f5 := map[string]*string{}
+		for f5key, f5valiter := range cr.Spec.ForProvider.ResponseParameters {
+			var f5val string
+			f5val = *f5valiter
+			f5[f5key] = &f5val
+		}
+		res.SetResponseParameters(f5)
+	}
+	if cr.Spec.ForProvider.ResponseTemplates != nil {
+		f6 := map[string]*string{}
+		for f6key, f6valiter := range cr.Spec.ForProvider.ResponseTemplates {
+			var f6val string
+			f6val = *f6valiter
+			f6[f6key] = &f6val
+		}
+		res.SetResponseTemplates(f6)
+	}
+	if cr.Spec.ForProvider.TemplateSelectionExpression != nil {
+		res.SetTemplateSelectionExpression(*cr.Spec.ForProvider.TemplateSelectionExpression)
+	}
+
+	return res
 }
 
 // GenerateDeleteIntegrationResponseInput returns a deletion input.
 func GenerateDeleteIntegrationResponseInput(cr *svcapitypes.IntegrationResponse) *svcsdk.DeleteIntegrationResponseInput {
-	res := preGenerateDeleteIntegrationResponseInput(cr, &svcsdk.DeleteIntegrationResponseInput{})
+	res := &svcsdk.DeleteIntegrationResponseInput{}
 
 	if cr.Status.AtProvider.IntegrationResponseID != nil {
 		res.SetIntegrationResponseId(*cr.Status.AtProvider.IntegrationResponseID)
 	}
 
-	return postGenerateDeleteIntegrationResponseInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

@@ -36,21 +36,33 @@ import (
 // SetupModel adds a controller that reconciles Model.
 func SetupModel(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(svcapitypes.ModelGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.preCreate = preCreate
+			e.postCreate = postCreate
+			e.preDelete = preDelete
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&svcapitypes.Model{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ModelGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.Model) error {
+func preObserve(_ context.Context, cr *svcapitypes.Model, obj *svcsdk.GetModelInput) error {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.ModelId = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.Model, _ *svcsdk.GetModelOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+
+func postObserve(_ context.Context, cr *svcapitypes.Model, _ *svcsdk.GetModelOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -58,11 +70,12 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Model, _ *svcsdk
 	return obs, err
 }
 
-func (*external) preCreate(context.Context, *svcapitypes.Model) error {
+func preCreate(_ context.Context, cr *svcapitypes.Model, obj *svcsdk.CreateModelInput) error {
+	obj.ApiId = cr.Spec.ForProvider.APIID
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, cr *svcapitypes.Model, resp *svcsdk.CreateModelOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *svcapitypes.Model, resp *svcsdk.CreateModelOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -71,42 +84,8 @@ func (*external) postCreate(_ context.Context, cr *svcapitypes.Model, resp *svcs
 	return cre, nil
 }
 
-func (*external) preUpdate(context.Context, *svcapitypes.Model) error {
-	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.Model, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-func lateInitialize(*svcapitypes.ModelParameters, *svcsdk.GetModelOutput) error {
-	return nil
-}
-
-func preGenerateGetModelInput(_ *svcapitypes.Model, obj *svcsdk.GetModelInput) *svcsdk.GetModelInput {
-	return obj
-}
-
-func postGenerateGetModelInput(cr *svcapitypes.Model, obj *svcsdk.GetModelInput) *svcsdk.GetModelInput {
+func preDelete(_ context.Context, cr *svcapitypes.Model, obj *svcsdk.DeleteModelInput) error {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.ModelId = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreateModelInput(_ *svcapitypes.Model, obj *svcsdk.CreateModelInput) *svcsdk.CreateModelInput {
-	return obj
-}
-
-func postGenerateCreateModelInput(cr *svcapitypes.Model, obj *svcsdk.CreateModelInput) *svcsdk.CreateModelInput {
-	obj.ApiId = cr.Spec.ForProvider.APIID
-	return obj
-}
-
-func preGenerateDeleteModelInput(_ *svcapitypes.Model, obj *svcsdk.DeleteModelInput) *svcsdk.DeleteModelInput {
-	return obj
-}
-
-func postGenerateDeleteModelInput(cr *svcapitypes.Model, obj *svcsdk.DeleteModelInput) *svcsdk.DeleteModelInput {
-	obj.ApiId = cr.Spec.ForProvider.APIID
-	obj.ModelId = aws.String(meta.GetExternalName(cr))
-	return obj
+	return nil
 }

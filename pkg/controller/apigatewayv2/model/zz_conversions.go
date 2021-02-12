@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,19 +27,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateGetModelInput returns input for read
 // operation.
 func GenerateGetModelInput(cr *svcapitypes.Model) *svcsdk.GetModelInput {
-	res := preGenerateGetModelInput(cr, &svcsdk.GetModelInput{})
+	res := &svcsdk.GetModelInput{}
 
 	if cr.Status.AtProvider.ModelID != nil {
 		res.SetModelId(*cr.Status.AtProvider.ModelID)
 	}
 
-	return postGenerateGetModelInput(cr, res)
+	return res
 }
 
 // GenerateModel returns the current state in the form of *svcapitypes.Model.
@@ -55,7 +53,7 @@ func GenerateModel(resp *svcsdk.GetModelOutput) *svcapitypes.Model {
 
 // GenerateCreateModelInput returns a create input.
 func GenerateCreateModelInput(cr *svcapitypes.Model) *svcsdk.CreateModelInput {
-	res := preGenerateCreateModelInput(cr, &svcsdk.CreateModelInput{})
+	res := &svcsdk.CreateModelInput{}
 
 	if cr.Spec.ForProvider.ContentType != nil {
 		res.SetContentType(*cr.Spec.ForProvider.ContentType)
@@ -70,18 +68,41 @@ func GenerateCreateModelInput(cr *svcapitypes.Model) *svcsdk.CreateModelInput {
 		res.SetSchema(*cr.Spec.ForProvider.Schema)
 	}
 
-	return postGenerateCreateModelInput(cr, res)
+	return res
+}
+
+// GenerateUpdateModelInput returns an update input.
+func GenerateUpdateModelInput(cr *svcapitypes.Model) *svcsdk.UpdateModelInput {
+	res := &svcsdk.UpdateModelInput{}
+
+	if cr.Spec.ForProvider.ContentType != nil {
+		res.SetContentType(*cr.Spec.ForProvider.ContentType)
+	}
+	if cr.Spec.ForProvider.Description != nil {
+		res.SetDescription(*cr.Spec.ForProvider.Description)
+	}
+	if cr.Status.AtProvider.ModelID != nil {
+		res.SetModelId(*cr.Status.AtProvider.ModelID)
+	}
+	if cr.Spec.ForProvider.Name != nil {
+		res.SetName(*cr.Spec.ForProvider.Name)
+	}
+	if cr.Spec.ForProvider.Schema != nil {
+		res.SetSchema(*cr.Spec.ForProvider.Schema)
+	}
+
+	return res
 }
 
 // GenerateDeleteModelInput returns a deletion input.
 func GenerateDeleteModelInput(cr *svcapitypes.Model) *svcsdk.DeleteModelInput {
-	res := preGenerateDeleteModelInput(cr, &svcsdk.DeleteModelInput{})
+	res := &svcsdk.DeleteModelInput{}
 
 	if cr.Status.AtProvider.ModelID != nil {
 		res.SetModelId(*cr.Status.AtProvider.ModelID)
 	}
 
-	return postGenerateDeleteModelInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

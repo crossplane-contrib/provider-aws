@@ -36,21 +36,33 @@ import (
 // SetupRoute adds a controller that reconciles Route.
 func SetupRoute(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(svcapitypes.RouteGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.preCreate = preCreate
+			e.postCreate = postCreate
+			e.preDelete = preDelete
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&svcapitypes.Route{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.RouteGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.Route) error {
+func preObserve(_ context.Context, cr *svcapitypes.Route, obj *svcsdk.GetRouteInput) error {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.RouteId = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.Route, _ *svcsdk.GetRouteOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+
+func postObserve(_ context.Context, cr *svcapitypes.Route, _ *svcsdk.GetRouteOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -58,11 +70,12 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Route, _ *svcsdk
 	return obs, nil
 }
 
-func (*external) preCreate(context.Context, *svcapitypes.Route) error {
+func preCreate(_ context.Context, cr *svcapitypes.Route, obj *svcsdk.CreateRouteInput) error {
+	obj.ApiId = cr.Spec.ForProvider.APIID
 	return nil
 }
 
-func (e *external) postCreate(_ context.Context, cr *svcapitypes.Route, res *svcsdk.CreateRouteOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *svcapitypes.Route, res *svcsdk.CreateRouteOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -73,42 +86,8 @@ func (e *external) postCreate(_ context.Context, cr *svcapitypes.Route, res *svc
 	return cre, nil
 }
 
-func (*external) preUpdate(context.Context, *svcapitypes.Route) error {
-	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.Route, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-func lateInitialize(*svcapitypes.RouteParameters, *svcsdk.GetRouteOutput) error {
-	return nil
-}
-
-func preGenerateGetRouteInput(_ *svcapitypes.Route, obj *svcsdk.GetRouteInput) *svcsdk.GetRouteInput {
-	return obj
-}
-
-func postGenerateGetRouteInput(cr *svcapitypes.Route, obj *svcsdk.GetRouteInput) *svcsdk.GetRouteInput {
+func preDelete(_ context.Context, cr *svcapitypes.Route, obj *svcsdk.DeleteRouteInput) error {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.RouteId = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreateRouteInput(_ *svcapitypes.Route, obj *svcsdk.CreateRouteInput) *svcsdk.CreateRouteInput {
-	return obj
-}
-
-func postGenerateCreateRouteInput(cr *svcapitypes.Route, obj *svcsdk.CreateRouteInput) *svcsdk.CreateRouteInput {
-	obj.ApiId = cr.Spec.ForProvider.APIID
-	return obj
-}
-
-func preGenerateDeleteRouteInput(_ *svcapitypes.Route, obj *svcsdk.DeleteRouteInput) *svcsdk.DeleteRouteInput {
-	return obj
-}
-
-func postGenerateDeleteRouteInput(cr *svcapitypes.Route, obj *svcsdk.DeleteRouteInput) *svcsdk.DeleteRouteInput {
-	obj.ApiId = cr.Spec.ForProvider.APIID
-	obj.RouteId = aws.String(meta.GetExternalName(cr))
-	return obj
+	return nil
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,19 +28,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateGetApiInput returns input for read
 // operation.
 func GenerateGetApiInput(cr *svcapitypes.API) *svcsdk.GetApiInput {
-	res := preGenerateGetApiInput(cr, &svcsdk.GetApiInput{})
+	res := &svcsdk.GetApiInput{}
 
 	if cr.Status.AtProvider.APIID != nil {
 		res.SetApiId(*cr.Status.AtProvider.APIID)
 	}
 
-	return postGenerateGetApiInput(cr, res)
+	return res
 }
 
 // GenerateAPI returns the current state in the form of *svcapitypes.API.
@@ -83,7 +81,7 @@ func GenerateAPI(resp *svcsdk.GetApiOutput) *svcapitypes.API {
 
 // GenerateCreateApiInput returns a create input.
 func GenerateCreateApiInput(cr *svcapitypes.API) *svcsdk.CreateApiInput {
-	res := preGenerateCreateApiInput(cr, &svcsdk.CreateApiInput{})
+	res := &svcsdk.CreateApiInput{}
 
 	if cr.Spec.ForProvider.APIKeySelectionExpression != nil {
 		res.SetApiKeySelectionExpression(*cr.Spec.ForProvider.APIKeySelectionExpression)
@@ -174,18 +172,105 @@ func GenerateCreateApiInput(cr *svcapitypes.API) *svcsdk.CreateApiInput {
 		res.SetVersion(*cr.Spec.ForProvider.Version)
 	}
 
-	return postGenerateCreateApiInput(cr, res)
+	return res
+}
+
+// GenerateUpdateApiInput returns an update input.
+func GenerateUpdateApiInput(cr *svcapitypes.API) *svcsdk.UpdateApiInput {
+	res := &svcsdk.UpdateApiInput{}
+
+	if cr.Status.AtProvider.APIID != nil {
+		res.SetApiId(*cr.Status.AtProvider.APIID)
+	}
+	if cr.Spec.ForProvider.APIKeySelectionExpression != nil {
+		res.SetApiKeySelectionExpression(*cr.Spec.ForProvider.APIKeySelectionExpression)
+	}
+	if cr.Spec.ForProvider.CorsConfiguration != nil {
+		f2 := &svcsdk.Cors{}
+		if cr.Spec.ForProvider.CorsConfiguration.AllowCredentials != nil {
+			f2.SetAllowCredentials(*cr.Spec.ForProvider.CorsConfiguration.AllowCredentials)
+		}
+		if cr.Spec.ForProvider.CorsConfiguration.AllowHeaders != nil {
+			f2f1 := []*string{}
+			for _, f2f1iter := range cr.Spec.ForProvider.CorsConfiguration.AllowHeaders {
+				var f2f1elem string
+				f2f1elem = *f2f1iter
+				f2f1 = append(f2f1, &f2f1elem)
+			}
+			f2.SetAllowHeaders(f2f1)
+		}
+		if cr.Spec.ForProvider.CorsConfiguration.AllowMethods != nil {
+			f2f2 := []*string{}
+			for _, f2f2iter := range cr.Spec.ForProvider.CorsConfiguration.AllowMethods {
+				var f2f2elem string
+				f2f2elem = *f2f2iter
+				f2f2 = append(f2f2, &f2f2elem)
+			}
+			f2.SetAllowMethods(f2f2)
+		}
+		if cr.Spec.ForProvider.CorsConfiguration.AllowOrigins != nil {
+			f2f3 := []*string{}
+			for _, f2f3iter := range cr.Spec.ForProvider.CorsConfiguration.AllowOrigins {
+				var f2f3elem string
+				f2f3elem = *f2f3iter
+				f2f3 = append(f2f3, &f2f3elem)
+			}
+			f2.SetAllowOrigins(f2f3)
+		}
+		if cr.Spec.ForProvider.CorsConfiguration.ExposeHeaders != nil {
+			f2f4 := []*string{}
+			for _, f2f4iter := range cr.Spec.ForProvider.CorsConfiguration.ExposeHeaders {
+				var f2f4elem string
+				f2f4elem = *f2f4iter
+				f2f4 = append(f2f4, &f2f4elem)
+			}
+			f2.SetExposeHeaders(f2f4)
+		}
+		if cr.Spec.ForProvider.CorsConfiguration.MaxAge != nil {
+			f2.SetMaxAge(*cr.Spec.ForProvider.CorsConfiguration.MaxAge)
+		}
+		res.SetCorsConfiguration(f2)
+	}
+	if cr.Spec.ForProvider.CredentialsARN != nil {
+		res.SetCredentialsArn(*cr.Spec.ForProvider.CredentialsARN)
+	}
+	if cr.Spec.ForProvider.Description != nil {
+		res.SetDescription(*cr.Spec.ForProvider.Description)
+	}
+	if cr.Spec.ForProvider.DisableExecuteAPIEndpoint != nil {
+		res.SetDisableExecuteApiEndpoint(*cr.Spec.ForProvider.DisableExecuteAPIEndpoint)
+	}
+	if cr.Spec.ForProvider.DisableSchemaValidation != nil {
+		res.SetDisableSchemaValidation(*cr.Spec.ForProvider.DisableSchemaValidation)
+	}
+	if cr.Spec.ForProvider.Name != nil {
+		res.SetName(*cr.Spec.ForProvider.Name)
+	}
+	if cr.Spec.ForProvider.RouteKey != nil {
+		res.SetRouteKey(*cr.Spec.ForProvider.RouteKey)
+	}
+	if cr.Spec.ForProvider.RouteSelectionExpression != nil {
+		res.SetRouteSelectionExpression(*cr.Spec.ForProvider.RouteSelectionExpression)
+	}
+	if cr.Spec.ForProvider.Target != nil {
+		res.SetTarget(*cr.Spec.ForProvider.Target)
+	}
+	if cr.Spec.ForProvider.Version != nil {
+		res.SetVersion(*cr.Spec.ForProvider.Version)
+	}
+
+	return res
 }
 
 // GenerateDeleteApiInput returns a deletion input.
 func GenerateDeleteApiInput(cr *svcapitypes.API) *svcsdk.DeleteApiInput {
-	res := preGenerateDeleteApiInput(cr, &svcsdk.DeleteApiInput{})
+	res := &svcsdk.DeleteApiInput{}
 
 	if cr.Status.AtProvider.APIID != nil {
 		res.SetApiId(*cr.Status.AtProvider.APIID)
 	}
 
-	return postGenerateDeleteApiInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

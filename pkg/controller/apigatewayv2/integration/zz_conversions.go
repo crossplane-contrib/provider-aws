@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,19 +27,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateGetIntegrationInput returns input for read
 // operation.
 func GenerateGetIntegrationInput(cr *svcapitypes.Integration) *svcsdk.GetIntegrationInput {
-	res := preGenerateGetIntegrationInput(cr, &svcsdk.GetIntegrationInput{})
+	res := &svcsdk.GetIntegrationInput{}
 
 	if cr.Status.AtProvider.IntegrationID != nil {
 		res.SetIntegrationId(*cr.Status.AtProvider.IntegrationID)
 	}
 
-	return postGenerateGetIntegrationInput(cr, res)
+	return res
 }
 
 // GenerateIntegration returns the current state in the form of *svcapitypes.Integration.
@@ -61,7 +59,7 @@ func GenerateIntegration(resp *svcsdk.GetIntegrationOutput) *svcapitypes.Integra
 
 // GenerateCreateIntegrationInput returns a create input.
 func GenerateCreateIntegrationInput(cr *svcapitypes.Integration) *svcsdk.CreateIntegrationInput {
-	res := preGenerateCreateIntegrationInput(cr, &svcsdk.CreateIntegrationInput{})
+	res := &svcsdk.CreateIntegrationInput{}
 
 	if cr.Spec.ForProvider.ConnectionID != nil {
 		res.SetConnectionId(*cr.Spec.ForProvider.ConnectionID)
@@ -128,18 +126,93 @@ func GenerateCreateIntegrationInput(cr *svcapitypes.Integration) *svcsdk.CreateI
 		res.SetTlsConfig(f15)
 	}
 
-	return postGenerateCreateIntegrationInput(cr, res)
+	return res
+}
+
+// GenerateUpdateIntegrationInput returns an update input.
+func GenerateUpdateIntegrationInput(cr *svcapitypes.Integration) *svcsdk.UpdateIntegrationInput {
+	res := &svcsdk.UpdateIntegrationInput{}
+
+	if cr.Spec.ForProvider.ConnectionID != nil {
+		res.SetConnectionId(*cr.Spec.ForProvider.ConnectionID)
+	}
+	if cr.Spec.ForProvider.ConnectionType != nil {
+		res.SetConnectionType(*cr.Spec.ForProvider.ConnectionType)
+	}
+	if cr.Spec.ForProvider.ContentHandlingStrategy != nil {
+		res.SetContentHandlingStrategy(*cr.Spec.ForProvider.ContentHandlingStrategy)
+	}
+	if cr.Spec.ForProvider.CredentialsARN != nil {
+		res.SetCredentialsArn(*cr.Spec.ForProvider.CredentialsARN)
+	}
+	if cr.Spec.ForProvider.Description != nil {
+		res.SetDescription(*cr.Spec.ForProvider.Description)
+	}
+	if cr.Status.AtProvider.IntegrationID != nil {
+		res.SetIntegrationId(*cr.Status.AtProvider.IntegrationID)
+	}
+	if cr.Spec.ForProvider.IntegrationMethod != nil {
+		res.SetIntegrationMethod(*cr.Spec.ForProvider.IntegrationMethod)
+	}
+	if cr.Spec.ForProvider.IntegrationSubtype != nil {
+		res.SetIntegrationSubtype(*cr.Spec.ForProvider.IntegrationSubtype)
+	}
+	if cr.Spec.ForProvider.IntegrationType != nil {
+		res.SetIntegrationType(*cr.Spec.ForProvider.IntegrationType)
+	}
+	if cr.Spec.ForProvider.IntegrationURI != nil {
+		res.SetIntegrationUri(*cr.Spec.ForProvider.IntegrationURI)
+	}
+	if cr.Spec.ForProvider.PassthroughBehavior != nil {
+		res.SetPassthroughBehavior(*cr.Spec.ForProvider.PassthroughBehavior)
+	}
+	if cr.Spec.ForProvider.PayloadFormatVersion != nil {
+		res.SetPayloadFormatVersion(*cr.Spec.ForProvider.PayloadFormatVersion)
+	}
+	if cr.Spec.ForProvider.RequestParameters != nil {
+		f13 := map[string]*string{}
+		for f13key, f13valiter := range cr.Spec.ForProvider.RequestParameters {
+			var f13val string
+			f13val = *f13valiter
+			f13[f13key] = &f13val
+		}
+		res.SetRequestParameters(f13)
+	}
+	if cr.Spec.ForProvider.RequestTemplates != nil {
+		f14 := map[string]*string{}
+		for f14key, f14valiter := range cr.Spec.ForProvider.RequestTemplates {
+			var f14val string
+			f14val = *f14valiter
+			f14[f14key] = &f14val
+		}
+		res.SetRequestTemplates(f14)
+	}
+	if cr.Spec.ForProvider.TemplateSelectionExpression != nil {
+		res.SetTemplateSelectionExpression(*cr.Spec.ForProvider.TemplateSelectionExpression)
+	}
+	if cr.Spec.ForProvider.TimeoutInMillis != nil {
+		res.SetTimeoutInMillis(*cr.Spec.ForProvider.TimeoutInMillis)
+	}
+	if cr.Spec.ForProvider.TLSConfig != nil {
+		f17 := &svcsdk.TlsConfigInput{}
+		if cr.Spec.ForProvider.TLSConfig.ServerNameToVerify != nil {
+			f17.SetServerNameToVerify(*cr.Spec.ForProvider.TLSConfig.ServerNameToVerify)
+		}
+		res.SetTlsConfig(f17)
+	}
+
+	return res
 }
 
 // GenerateDeleteIntegrationInput returns a deletion input.
 func GenerateDeleteIntegrationInput(cr *svcapitypes.Integration) *svcsdk.DeleteIntegrationInput {
-	res := preGenerateDeleteIntegrationInput(cr, &svcsdk.DeleteIntegrationInput{})
+	res := &svcsdk.DeleteIntegrationInput{}
 
 	if cr.Status.AtProvider.IntegrationID != nil {
 		res.SetIntegrationId(*cr.Status.AtProvider.IntegrationID)
 	}
 
-	return postGenerateDeleteIntegrationInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

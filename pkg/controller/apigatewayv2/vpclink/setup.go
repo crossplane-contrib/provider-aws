@@ -36,21 +36,32 @@ import (
 // SetupVPCLink adds a controller that reconciles VPCLink.
 func SetupVPCLink(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(svcapitypes.VPCLinkGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.preCreate = preCreate
+			e.postCreate = postCreate
+			e.preDelete = preDelete
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&svcapitypes.VPCLink{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.VPCLinkGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.VPCLink) error {
+func preObserve(_ context.Context, cr *svcapitypes.VPCLink, obj *svcsdk.GetVpcLinkInput) error {
+	obj.VpcLinkId = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (e *external) postObserve(_ context.Context, cr *svcapitypes.VPCLink, resp *svcsdk.GetVpcLinkOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+
+func postObserve(_ context.Context, cr *svcapitypes.VPCLink, resp *svcsdk.GetVpcLinkOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -60,11 +71,17 @@ func (e *external) postObserve(_ context.Context, cr *svcapitypes.VPCLink, resp 
 	return obs, nil
 }
 
-func (*external) preCreate(context.Context, *svcapitypes.VPCLink) error {
+func preCreate(_ context.Context, cr *svcapitypes.VPCLink, obj *svcsdk.CreateVpcLinkInput) error {
+	for _, sg := range cr.Spec.ForProvider.SecurityGroupIDs {
+		obj.SecurityGroupIds = append(obj.SecurityGroupIds, aws.String(sg))
+	}
+	for _, s := range cr.Spec.ForProvider.SubnetIDs {
+		obj.SubnetIds = append(obj.SubnetIds, aws.String(s))
+	}
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, cr *svcapitypes.VPCLink, resp *svcsdk.CreateVpcLinkOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *svcapitypes.VPCLink, resp *svcsdk.CreateVpcLinkOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -73,45 +90,7 @@ func (*external) postCreate(_ context.Context, cr *svcapitypes.VPCLink, resp *sv
 	return cre, nil
 }
 
-func (*external) preUpdate(context.Context, *svcapitypes.VPCLink) error {
-	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.VPCLink, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-func lateInitialize(*svcapitypes.VPCLinkParameters, *svcsdk.GetVpcLinkOutput) error {
-	return nil
-}
-
-func preGenerateGetVpcLinkInput(_ *svcapitypes.VPCLink, obj *svcsdk.GetVpcLinkInput) *svcsdk.GetVpcLinkInput {
-	return obj
-}
-
-func postGenerateGetVpcLinkInput(cr *svcapitypes.VPCLink, obj *svcsdk.GetVpcLinkInput) *svcsdk.GetVpcLinkInput {
+func preDelete(_ context.Context, cr *svcapitypes.VPCLink, obj *svcsdk.DeleteVpcLinkInput) error {
 	obj.VpcLinkId = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreateVpcLinkInput(_ *svcapitypes.VPCLink, obj *svcsdk.CreateVpcLinkInput) *svcsdk.CreateVpcLinkInput {
-	return obj
-}
-
-func postGenerateCreateVpcLinkInput(cr *svcapitypes.VPCLink, obj *svcsdk.CreateVpcLinkInput) *svcsdk.CreateVpcLinkInput {
-	for _, sg := range cr.Spec.ForProvider.SecurityGroupIDs {
-		obj.SecurityGroupIds = append(obj.SecurityGroupIds, aws.String(sg))
-	}
-	for _, s := range cr.Spec.ForProvider.SubnetIDs {
-		obj.SubnetIds = append(obj.SubnetIds, aws.String(s))
-	}
-	return obj
-}
-
-func preGenerateDeleteVpcLinkInput(_ *svcapitypes.VPCLink, obj *svcsdk.DeleteVpcLinkInput) *svcsdk.DeleteVpcLinkInput {
-	return obj
-}
-
-func postGenerateDeleteVpcLinkInput(cr *svcapitypes.VPCLink, obj *svcsdk.DeleteVpcLinkInput) *svcsdk.DeleteVpcLinkInput {
-	obj.VpcLinkId = aws.String(meta.GetExternalName(cr))
-	return obj
+	return nil
 }

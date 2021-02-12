@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,19 +27,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateGetRouteResponseInput returns input for read
 // operation.
 func GenerateGetRouteResponseInput(cr *svcapitypes.RouteResponse) *svcsdk.GetRouteResponseInput {
-	res := preGenerateGetRouteResponseInput(cr, &svcsdk.GetRouteResponseInput{})
+	res := &svcsdk.GetRouteResponseInput{}
 
 	if cr.Status.AtProvider.RouteResponseID != nil {
 		res.SetRouteResponseId(*cr.Status.AtProvider.RouteResponseID)
 	}
 
-	return postGenerateGetRouteResponseInput(cr, res)
+	return res
 }
 
 // GenerateRouteResponse returns the current state in the form of *svcapitypes.RouteResponse.
@@ -55,7 +53,7 @@ func GenerateRouteResponse(resp *svcsdk.GetRouteResponseOutput) *svcapitypes.Rou
 
 // GenerateCreateRouteResponseInput returns a create input.
 func GenerateCreateRouteResponseInput(cr *svcapitypes.RouteResponse) *svcsdk.CreateRouteResponseInput {
-	res := preGenerateCreateRouteResponseInput(cr, &svcsdk.CreateRouteResponseInput{})
+	res := &svcsdk.CreateRouteResponseInput{}
 
 	if cr.Spec.ForProvider.ModelSelectionExpression != nil {
 		res.SetModelSelectionExpression(*cr.Spec.ForProvider.ModelSelectionExpression)
@@ -84,18 +82,55 @@ func GenerateCreateRouteResponseInput(cr *svcapitypes.RouteResponse) *svcsdk.Cre
 		res.SetRouteResponseKey(*cr.Spec.ForProvider.RouteResponseKey)
 	}
 
-	return postGenerateCreateRouteResponseInput(cr, res)
+	return res
+}
+
+// GenerateUpdateRouteResponseInput returns an update input.
+func GenerateUpdateRouteResponseInput(cr *svcapitypes.RouteResponse) *svcsdk.UpdateRouteResponseInput {
+	res := &svcsdk.UpdateRouteResponseInput{}
+
+	if cr.Spec.ForProvider.ModelSelectionExpression != nil {
+		res.SetModelSelectionExpression(*cr.Spec.ForProvider.ModelSelectionExpression)
+	}
+	if cr.Spec.ForProvider.ResponseModels != nil {
+		f2 := map[string]*string{}
+		for f2key, f2valiter := range cr.Spec.ForProvider.ResponseModels {
+			var f2val string
+			f2val = *f2valiter
+			f2[f2key] = &f2val
+		}
+		res.SetResponseModels(f2)
+	}
+	if cr.Spec.ForProvider.ResponseParameters != nil {
+		f3 := map[string]*svcsdk.ParameterConstraints{}
+		for f3key, f3valiter := range cr.Spec.ForProvider.ResponseParameters {
+			f3val := &svcsdk.ParameterConstraints{}
+			if f3valiter.Required != nil {
+				f3val.SetRequired(*f3valiter.Required)
+			}
+			f3[f3key] = f3val
+		}
+		res.SetResponseParameters(f3)
+	}
+	if cr.Status.AtProvider.RouteResponseID != nil {
+		res.SetRouteResponseId(*cr.Status.AtProvider.RouteResponseID)
+	}
+	if cr.Spec.ForProvider.RouteResponseKey != nil {
+		res.SetRouteResponseKey(*cr.Spec.ForProvider.RouteResponseKey)
+	}
+
+	return res
 }
 
 // GenerateDeleteRouteResponseInput returns a deletion input.
 func GenerateDeleteRouteResponseInput(cr *svcapitypes.RouteResponse) *svcsdk.DeleteRouteResponseInput {
-	res := preGenerateDeleteRouteResponseInput(cr, &svcsdk.DeleteRouteResponseInput{})
+	res := &svcsdk.DeleteRouteResponseInput{}
 
 	if cr.Status.AtProvider.RouteResponseID != nil {
 		res.SetRouteResponseId(*cr.Status.AtProvider.RouteResponseID)
 	}
 
-	return postGenerateDeleteRouteResponseInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

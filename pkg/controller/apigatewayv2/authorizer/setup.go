@@ -36,21 +36,33 @@ import (
 // SetupAuthorizer adds a controller that reconciles Authorizer.
 func SetupAuthorizer(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(svcapitypes.AuthorizerGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.preCreate = preCreate
+			e.postCreate = postCreate
+			e.preDelete = preDelete
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&svcapitypes.Authorizer{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.AuthorizerGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.Authorizer) error {
+func preObserve(_ context.Context, cr *svcapitypes.Authorizer, obj *svcsdk.GetAuthorizerInput) error {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.AuthorizerId = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.Authorizer, _ *svcsdk.GetAuthorizerOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+
+func postObserve(_ context.Context, cr *svcapitypes.Authorizer, _ *svcsdk.GetAuthorizerOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -58,11 +70,12 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Authorizer, _ *s
 	return obs, nil
 }
 
-func (*external) preCreate(context.Context, *svcapitypes.Authorizer) error {
+func preCreate(_ context.Context, cr *svcapitypes.Authorizer, obj *svcsdk.CreateAuthorizerInput) error {
+	obj.ApiId = cr.Spec.ForProvider.APIID
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, cr *svcapitypes.Authorizer, resp *svcsdk.CreateAuthorizerOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *svcapitypes.Authorizer, resp *svcsdk.CreateAuthorizerOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -71,42 +84,8 @@ func (*external) postCreate(_ context.Context, cr *svcapitypes.Authorizer, resp 
 	return cre, err
 }
 
-func (*external) preUpdate(context.Context, *svcapitypes.Authorizer) error {
-	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.Authorizer, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-func lateInitialize(*svcapitypes.AuthorizerParameters, *svcsdk.GetAuthorizerOutput) error {
-	return nil
-}
-
-func preGenerateGetAuthorizerInput(_ *svcapitypes.Authorizer, obj *svcsdk.GetAuthorizerInput) *svcsdk.GetAuthorizerInput {
-	return obj
-}
-
-func postGenerateGetAuthorizerInput(cr *svcapitypes.Authorizer, obj *svcsdk.GetAuthorizerInput) *svcsdk.GetAuthorizerInput {
+func preDelete(_ context.Context, cr *svcapitypes.Authorizer, obj *svcsdk.DeleteAuthorizerInput) error {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.AuthorizerId = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreateAuthorizerInput(_ *svcapitypes.Authorizer, obj *svcsdk.CreateAuthorizerInput) *svcsdk.CreateAuthorizerInput {
-	return obj
-}
-
-func postGenerateCreateAuthorizerInput(cr *svcapitypes.Authorizer, obj *svcsdk.CreateAuthorizerInput) *svcsdk.CreateAuthorizerInput {
-	obj.ApiId = cr.Spec.ForProvider.APIID
-	return obj
-}
-
-func preGenerateDeleteAuthorizerInput(_ *svcapitypes.Authorizer, obj *svcsdk.DeleteAuthorizerInput) *svcsdk.DeleteAuthorizerInput {
-	return obj
-}
-
-func postGenerateDeleteAuthorizerInput(cr *svcapitypes.Authorizer, obj *svcsdk.DeleteAuthorizerInput) *svcsdk.DeleteAuthorizerInput {
-	obj.ApiId = cr.Spec.ForProvider.APIID
-	obj.AuthorizerId = aws.String(meta.GetExternalName(cr))
-	return obj
+	return nil
 }

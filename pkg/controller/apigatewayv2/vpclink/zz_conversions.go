@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,19 +28,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateGetVpcLinkInput returns input for read
 // operation.
 func GenerateGetVpcLinkInput(cr *svcapitypes.VPCLink) *svcsdk.GetVpcLinkInput {
-	res := preGenerateGetVpcLinkInput(cr, &svcsdk.GetVpcLinkInput{})
+	res := &svcsdk.GetVpcLinkInput{}
 
 	if cr.Status.AtProvider.VPCLinkID != nil {
 		res.SetVpcLinkId(*cr.Status.AtProvider.VPCLinkID)
 	}
 
-	return postGenerateGetVpcLinkInput(cr, res)
+	return res
 }
 
 // GenerateVPCLink returns the current state in the form of *svcapitypes.VPCLink.
@@ -86,7 +84,7 @@ func GenerateVPCLink(resp *svcsdk.GetVpcLinkOutput) *svcapitypes.VPCLink {
 
 // GenerateCreateVpcLinkInput returns a create input.
 func GenerateCreateVpcLinkInput(cr *svcapitypes.VPCLink) *svcsdk.CreateVpcLinkInput {
-	res := preGenerateCreateVpcLinkInput(cr, &svcsdk.CreateVpcLinkInput{})
+	res := &svcsdk.CreateVpcLinkInput{}
 
 	if cr.Spec.ForProvider.Name != nil {
 		res.SetName(*cr.Spec.ForProvider.Name)
@@ -101,18 +99,32 @@ func GenerateCreateVpcLinkInput(cr *svcapitypes.VPCLink) *svcsdk.CreateVpcLinkIn
 		res.SetTags(f1)
 	}
 
-	return postGenerateCreateVpcLinkInput(cr, res)
+	return res
+}
+
+// GenerateUpdateVpcLinkInput returns an update input.
+func GenerateUpdateVpcLinkInput(cr *svcapitypes.VPCLink) *svcsdk.UpdateVpcLinkInput {
+	res := &svcsdk.UpdateVpcLinkInput{}
+
+	if cr.Spec.ForProvider.Name != nil {
+		res.SetName(*cr.Spec.ForProvider.Name)
+	}
+	if cr.Status.AtProvider.VPCLinkID != nil {
+		res.SetVpcLinkId(*cr.Status.AtProvider.VPCLinkID)
+	}
+
+	return res
 }
 
 // GenerateDeleteVpcLinkInput returns a deletion input.
 func GenerateDeleteVpcLinkInput(cr *svcapitypes.VPCLink) *svcsdk.DeleteVpcLinkInput {
-	res := preGenerateDeleteVpcLinkInput(cr, &svcsdk.DeleteVpcLinkInput{})
+	res := &svcsdk.DeleteVpcLinkInput{}
 
 	if cr.Status.AtProvider.VPCLinkID != nil {
 		res.SetVpcLinkId(*cr.Status.AtProvider.VPCLinkID)
 	}
 
-	return postGenerateDeleteVpcLinkInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.
