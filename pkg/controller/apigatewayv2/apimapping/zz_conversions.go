@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,19 +27,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateGetApiMappingInput returns input for read
 // operation.
 func GenerateGetApiMappingInput(cr *svcapitypes.APIMapping) *svcsdk.GetApiMappingInput {
-	res := preGenerateGetApiMappingInput(cr, &svcsdk.GetApiMappingInput{})
+	res := &svcsdk.GetApiMappingInput{}
 
 	if cr.Status.AtProvider.APIMappingID != nil {
 		res.SetApiMappingId(*cr.Status.AtProvider.APIMappingID)
 	}
 
-	return postGenerateGetApiMappingInput(cr, res)
+	return res
 }
 
 // GenerateAPIMapping returns the current state in the form of *svcapitypes.APIMapping.
@@ -61,24 +59,44 @@ func GenerateAPIMapping(resp *svcsdk.GetApiMappingOutput) *svcapitypes.APIMappin
 
 // GenerateCreateApiMappingInput returns a create input.
 func GenerateCreateApiMappingInput(cr *svcapitypes.APIMapping) *svcsdk.CreateApiMappingInput {
-	res := preGenerateCreateApiMappingInput(cr, &svcsdk.CreateApiMappingInput{})
+	res := &svcsdk.CreateApiMappingInput{}
 
 	if cr.Spec.ForProvider.APIMappingKey != nil {
 		res.SetApiMappingKey(*cr.Spec.ForProvider.APIMappingKey)
 	}
 
-	return postGenerateCreateApiMappingInput(cr, res)
+	return res
+}
+
+// GenerateUpdateApiMappingInput returns an update input.
+func GenerateUpdateApiMappingInput(cr *svcapitypes.APIMapping) *svcsdk.UpdateApiMappingInput {
+	res := &svcsdk.UpdateApiMappingInput{}
+
+	if cr.Status.AtProvider.APIID != nil {
+		res.SetApiId(*cr.Status.AtProvider.APIID)
+	}
+	if cr.Status.AtProvider.APIMappingID != nil {
+		res.SetApiMappingId(*cr.Status.AtProvider.APIMappingID)
+	}
+	if cr.Spec.ForProvider.APIMappingKey != nil {
+		res.SetApiMappingKey(*cr.Spec.ForProvider.APIMappingKey)
+	}
+	if cr.Status.AtProvider.Stage != nil {
+		res.SetStage(*cr.Status.AtProvider.Stage)
+	}
+
+	return res
 }
 
 // GenerateDeleteApiMappingInput returns a deletion input.
 func GenerateDeleteApiMappingInput(cr *svcapitypes.APIMapping) *svcsdk.DeleteApiMappingInput {
-	res := preGenerateDeleteApiMappingInput(cr, &svcsdk.DeleteApiMappingInput{})
+	res := &svcsdk.DeleteApiMappingInput{}
 
 	if cr.Status.AtProvider.APIMappingID != nil {
 		res.SetApiMappingId(*cr.Status.AtProvider.APIMappingID)
 	}
 
-	return postGenerateDeleteApiMappingInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

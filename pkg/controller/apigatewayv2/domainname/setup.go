@@ -36,20 +36,30 @@ import (
 // SetupDomainName adds a controller that reconciles DomainName.
 func SetupDomainName(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(svcapitypes.DomainNameGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.preCreate = preCreate
+			e.preDelete = preDelete
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&svcapitypes.DomainName{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.DomainNameGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.DomainName) error {
+func preObserve(_ context.Context, cr *svcapitypes.DomainName, obj *svcsdk.GetDomainNameInput) error {
+	obj.DomainName = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.DomainName, _ *svcsdk.GetDomainNameOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+
+func postObserve(_ context.Context, cr *svcapitypes.DomainName, _ *svcsdk.GetDomainNameOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -57,48 +67,12 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.DomainName, _ *s
 	return obs, nil
 }
 
-func (*external) preCreate(context.Context, *svcapitypes.DomainName) error {
+func preCreate(_ context.Context, cr *svcapitypes.DomainName, obj *svcsdk.CreateDomainNameInput) error {
+	obj.DomainName = aws.String(meta.GetExternalName(cr))
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, _ *svcapitypes.DomainName, _ *svcsdk.CreateDomainNameOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	return cre, err
-}
-
-func (*external) preUpdate(context.Context, *svcapitypes.DomainName) error {
+func preDelete(_ context.Context, cr *svcapitypes.DomainName, obj *svcsdk.DeleteDomainNameInput) error {
+	obj.DomainName = aws.String(meta.GetExternalName(cr))
 	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.DomainName, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-func lateInitialize(*svcapitypes.DomainNameParameters, *svcsdk.GetDomainNameOutput) error {
-	return nil
-}
-
-func preGenerateGetDomainNameInput(_ *svcapitypes.DomainName, obj *svcsdk.GetDomainNameInput) *svcsdk.GetDomainNameInput {
-	return obj
-}
-
-func postGenerateGetDomainNameInput(cr *svcapitypes.DomainName, obj *svcsdk.GetDomainNameInput) *svcsdk.GetDomainNameInput {
-	obj.DomainName = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreateDomainNameInput(_ *svcapitypes.DomainName, obj *svcsdk.CreateDomainNameInput) *svcsdk.CreateDomainNameInput {
-	return obj
-}
-
-func postGenerateCreateDomainNameInput(cr *svcapitypes.DomainName, obj *svcsdk.CreateDomainNameInput) *svcsdk.CreateDomainNameInput {
-	obj.DomainName = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateDeleteDomainNameInput(_ *svcapitypes.DomainName, obj *svcsdk.DeleteDomainNameInput) *svcsdk.DeleteDomainNameInput {
-	return obj
-}
-
-func postGenerateDeleteDomainNameInput(cr *svcapitypes.DomainName, obj *svcsdk.DeleteDomainNameInput) *svcsdk.DeleteDomainNameInput {
-	obj.DomainName = aws.String(meta.GetExternalName(cr))
-	return obj
 }
