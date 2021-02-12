@@ -36,21 +36,33 @@ import (
 // SetupIntegration adds a controller that reconciles Integration.
 func SetupIntegration(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(svcapitypes.IntegrationGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.preCreate = preCreate
+			e.postCreate = postCreate
+			e.preDelete = preDelete
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&svcapitypes.Integration{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.IntegrationGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.Integration) error {
+func preObserve(_ context.Context, cr *svcapitypes.Integration, obj *svcsdk.GetIntegrationInput) error {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.IntegrationId = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.Integration, _ *svcsdk.GetIntegrationOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+
+func postObserve(_ context.Context, cr *svcapitypes.Integration, _ *svcsdk.GetIntegrationOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -58,11 +70,12 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Integration, _ *
 	return obs, nil
 }
 
-func (*external) preCreate(context.Context, *svcapitypes.Integration) error {
+func preCreate(_ context.Context, cr *svcapitypes.Integration, obj *svcsdk.CreateIntegrationInput) error {
+	obj.ApiId = cr.Spec.ForProvider.APIID
 	return nil
 }
 
-func (e *external) postCreate(_ context.Context, cr *svcapitypes.Integration, resp *svcsdk.CreateIntegrationOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *svcapitypes.Integration, resp *svcsdk.CreateIntegrationOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -71,42 +84,8 @@ func (e *external) postCreate(_ context.Context, cr *svcapitypes.Integration, re
 	return cre, nil
 }
 
-func (*external) preUpdate(context.Context, *svcapitypes.Integration) error {
-	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.Integration, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-func lateInitialize(*svcapitypes.IntegrationParameters, *svcsdk.GetIntegrationOutput) error {
-	return nil
-}
-
-func preGenerateGetIntegrationInput(_ *svcapitypes.Integration, obj *svcsdk.GetIntegrationInput) *svcsdk.GetIntegrationInput {
-	return obj
-}
-
-func postGenerateGetIntegrationInput(cr *svcapitypes.Integration, obj *svcsdk.GetIntegrationInput) *svcsdk.GetIntegrationInput {
+func preDelete(_ context.Context, cr *svcapitypes.Integration, obj *svcsdk.DeleteIntegrationInput) error {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.IntegrationId = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreateIntegrationInput(_ *svcapitypes.Integration, obj *svcsdk.CreateIntegrationInput) *svcsdk.CreateIntegrationInput {
-	return obj
-}
-
-func postGenerateCreateIntegrationInput(cr *svcapitypes.Integration, obj *svcsdk.CreateIntegrationInput) *svcsdk.CreateIntegrationInput {
-	obj.ApiId = cr.Spec.ForProvider.APIID
-	return obj
-}
-
-func preGenerateDeleteIntegrationInput(_ *svcapitypes.Integration, obj *svcsdk.DeleteIntegrationInput) *svcsdk.DeleteIntegrationInput {
-	return obj
-}
-
-func postGenerateDeleteIntegrationInput(cr *svcapitypes.Integration, obj *svcsdk.DeleteIntegrationInput) *svcsdk.DeleteIntegrationInput {
-	obj.ApiId = cr.Spec.ForProvider.APIID
-	obj.IntegrationId = aws.String(meta.GetExternalName(cr))
-	return obj
+	return nil
 }
