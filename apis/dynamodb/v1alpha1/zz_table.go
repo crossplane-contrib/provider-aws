@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -131,8 +131,8 @@ type TableParameters struct {
 	// If you set BillingMode as PROVISIONED, you must specify this property. If
 	// you set BillingMode as PAY_PER_REQUEST, you cannot specify this property.
 	//
-	// For current minimum and maximum provisioned throughput values, see Limits
-	// (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Limits.html)
+	// For current minimum and maximum provisioned throughput values, see Service,
+	// Account, and Table Quotas (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Limits.html)
 	// in the Amazon DynamoDB Developer Guide.
 	ProvisionedThroughput *ProvisionedThroughput `json:"provisionedThroughput,omitempty"`
 	// Represents the settings used to enable server-side encryption.
