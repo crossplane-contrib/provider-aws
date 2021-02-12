@@ -36,21 +36,33 @@ import (
 // SetupAPIMapping adds a controller that reconciles APIMapping.
 func SetupAPIMapping(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(svcapitypes.APIMappingGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.preCreate = preCreate
+			e.postCreate = postCreate
+			e.preDelete = preDelete
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&svcapitypes.APIMapping{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.APIMappingGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.APIMapping) error {
+func preObserve(_ context.Context, cr *svcapitypes.APIMapping, obj *svcsdk.GetApiMappingInput) error {
+	obj.DomainName = cr.Spec.ForProvider.DomainName
+	obj.ApiMappingId = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.APIMapping, _ *svcsdk.GetApiMappingOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+
+func postObserve(_ context.Context, cr *svcapitypes.APIMapping, _ *svcsdk.GetApiMappingOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -58,11 +70,14 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.APIMapping, _ *s
 	return obs, nil
 }
 
-func (*external) preCreate(context.Context, *svcapitypes.APIMapping) error {
+func preCreate(_ context.Context, cr *svcapitypes.APIMapping, obj *svcsdk.CreateApiMappingInput) error {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.DomainName = cr.Spec.ForProvider.DomainName
+	obj.Stage = cr.Spec.ForProvider.Stage
 	return nil
 }
 
-func (e *external) postCreate(_ context.Context, cr *svcapitypes.APIMapping, resp *svcsdk.CreateApiMappingOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *svcapitypes.APIMapping, resp *svcsdk.CreateApiMappingOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -71,44 +86,8 @@ func (e *external) postCreate(_ context.Context, cr *svcapitypes.APIMapping, res
 	return cre, nil
 }
 
-func (*external) preUpdate(context.Context, *svcapitypes.APIMapping) error {
-	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.APIMapping, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-func lateInitialize(*svcapitypes.APIMappingParameters, *svcsdk.GetApiMappingOutput) error {
-	return nil
-}
-
-func preGenerateGetApiMappingInput(_ *svcapitypes.APIMapping, obj *svcsdk.GetApiMappingInput) *svcsdk.GetApiMappingInput { // nolint:golint
-	return obj
-}
-
-func postGenerateGetApiMappingInput(cr *svcapitypes.APIMapping, obj *svcsdk.GetApiMappingInput) *svcsdk.GetApiMappingInput { // nolint:golint
-	obj.DomainName = cr.Spec.ForProvider.DomainName
-	obj.ApiMappingId = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreateApiMappingInput(_ *svcapitypes.APIMapping, obj *svcsdk.CreateApiMappingInput) *svcsdk.CreateApiMappingInput { // nolint:golint
-	return obj
-}
-
-func postGenerateCreateApiMappingInput(cr *svcapitypes.APIMapping, obj *svcsdk.CreateApiMappingInput) *svcsdk.CreateApiMappingInput { // nolint:golint
-	obj.ApiId = cr.Spec.ForProvider.APIID
-	obj.DomainName = cr.Spec.ForProvider.DomainName
-	obj.Stage = cr.Spec.ForProvider.Stage
-	return obj
-}
-
-func preGenerateDeleteApiMappingInput(_ *svcapitypes.APIMapping, obj *svcsdk.DeleteApiMappingInput) *svcsdk.DeleteApiMappingInput { // nolint:golint
-	return obj
-}
-
-func postGenerateDeleteApiMappingInput(cr *svcapitypes.APIMapping, obj *svcsdk.DeleteApiMappingInput) *svcsdk.DeleteApiMappingInput { // nolint:golint
+func preDelete(_ context.Context, cr *svcapitypes.APIMapping, obj *svcsdk.DeleteApiMappingInput) error {
 	obj.ApiMappingId = aws.String(meta.GetExternalName(cr))
 	obj.DomainName = cr.Spec.ForProvider.DomainName
-	return obj
+	return nil
 }

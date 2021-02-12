@@ -36,20 +36,31 @@ import (
 // SetupStage adds a controller that reconciles Stage.
 func SetupStage(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.preCreate = preCreate
+			e.preDelete = preDelete
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&svcapitypes.Stage{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.StageGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.Stage) error {
+func preObserve(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.GetStageInput) error {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.StageName = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.Stage, _ *svcsdk.GetStageOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+
+func postObserve(_ context.Context, cr *svcapitypes.Stage, _ *svcsdk.GetStageOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -57,51 +68,14 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Stage, _ *svcsdk
 	return obs, nil
 }
 
-func (*external) preCreate(context.Context, *svcapitypes.Stage) error {
-	return nil
-}
-
-func (*external) postCreate(_ context.Context, _ *svcapitypes.Stage, _ *svcsdk.CreateStageOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	return cre, err
-}
-
-func (*external) preUpdate(context.Context, *svcapitypes.Stage) error {
-	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.Stage, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-func lateInitialize(*svcapitypes.StageParameters, *svcsdk.GetStageOutput) error {
-	return nil
-}
-
-func preGenerateGetStageInput(_ *svcapitypes.Stage, obj *svcsdk.GetStageInput) *svcsdk.GetStageInput {
-	return obj
-}
-
-func postGenerateGetStageInput(cr *svcapitypes.Stage, obj *svcsdk.GetStageInput) *svcsdk.GetStageInput {
+func preCreate(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.CreateStageInput) error {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.StageName = aws.String(meta.GetExternalName(cr))
-	return obj
+	return nil
 }
 
-func preGenerateCreateStageInput(_ *svcapitypes.Stage, obj *svcsdk.CreateStageInput) *svcsdk.CreateStageInput {
-	return obj
-}
-
-func postGenerateCreateStageInput(cr *svcapitypes.Stage, obj *svcsdk.CreateStageInput) *svcsdk.CreateStageInput {
-	obj.ApiId = cr.Spec.ForProvider.APIID
-	obj.StageName = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateDeleteStageInput(_ *svcapitypes.Stage, obj *svcsdk.DeleteStageInput) *svcsdk.DeleteStageInput {
-	return obj
-}
-
-func postGenerateDeleteStageInput(cr *svcapitypes.Stage, obj *svcsdk.DeleteStageInput) *svcsdk.DeleteStageInput {
+func preDelete(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.DeleteStageInput) error {
 	obj.StageName = aws.String(meta.GetExternalName(cr))
 	obj.ApiId = cr.Spec.ForProvider.CustomStageParameters.APIID
-	return obj
+	return nil
 }

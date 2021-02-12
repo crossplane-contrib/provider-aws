@@ -36,21 +36,33 @@ import (
 // SetupDeployment adds a controller that reconciles Deployment.
 func SetupDeployment(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(svcapitypes.DeploymentGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.preCreate = preCreate
+			e.postCreate = postCreate
+			e.preDelete = preDelete
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&svcapitypes.Deployment{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.DeploymentGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.Deployment) error {
+func preObserve(_ context.Context, cr *svcapitypes.Deployment, obj *svcsdk.GetDeploymentInput) error {
+	obj.ApiId = cr.Spec.ForProvider.APIID
+	obj.DeploymentId = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.Deployment, _ *svcsdk.GetDeploymentOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+
+func postObserve(_ context.Context, cr *svcapitypes.Deployment, _ *svcsdk.GetDeploymentOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -58,11 +70,12 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Deployment, _ *s
 	return obs, nil
 }
 
-func (*external) preCreate(context.Context, *svcapitypes.Deployment) error {
+func preCreate(_ context.Context, cr *svcapitypes.Deployment, obj *svcsdk.CreateDeploymentInput) error {
+	obj.ApiId = cr.Spec.ForProvider.APIID
 	return nil
 }
 
-func (e *external) postCreate(_ context.Context, cr *svcapitypes.Deployment, resp *svcsdk.CreateDeploymentOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *svcapitypes.Deployment, resp *svcsdk.CreateDeploymentOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -71,42 +84,8 @@ func (e *external) postCreate(_ context.Context, cr *svcapitypes.Deployment, res
 	return cre, nil
 }
 
-func (*external) preUpdate(context.Context, *svcapitypes.Deployment) error {
-	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.Deployment, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-func lateInitialize(*svcapitypes.DeploymentParameters, *svcsdk.GetDeploymentOutput) error {
-	return nil
-}
-
-func preGenerateGetDeploymentInput(_ *svcapitypes.Deployment, obj *svcsdk.GetDeploymentInput) *svcsdk.GetDeploymentInput {
-	return obj
-}
-
-func postGenerateGetDeploymentInput(cr *svcapitypes.Deployment, obj *svcsdk.GetDeploymentInput) *svcsdk.GetDeploymentInput {
+func preDelete(_ context.Context, cr *svcapitypes.Deployment, obj *svcsdk.DeleteDeploymentInput) error {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.DeploymentId = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreateDeploymentInput(_ *svcapitypes.Deployment, obj *svcsdk.CreateDeploymentInput) *svcsdk.CreateDeploymentInput {
-	return obj
-}
-
-func postGenerateCreateDeploymentInput(cr *svcapitypes.Deployment, obj *svcsdk.CreateDeploymentInput) *svcsdk.CreateDeploymentInput {
-	obj.ApiId = cr.Spec.ForProvider.APIID
-	return obj
-}
-
-func preGenerateDeleteDeploymentInput(_ *svcapitypes.Deployment, obj *svcsdk.DeleteDeploymentInput) *svcsdk.DeleteDeploymentInput {
-	return obj
-}
-
-func postGenerateDeleteDeploymentInput(cr *svcapitypes.Deployment, obj *svcsdk.DeleteDeploymentInput) *svcsdk.DeleteDeploymentInput {
-	obj.ApiId = cr.Spec.ForProvider.APIID
-	obj.DeploymentId = aws.String(meta.GetExternalName(cr))
-	return obj
+	return nil
 }
