@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -81,16 +81,21 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	resp, err := e.client.DescribeGlobalTableWithContext(ctx, input)
 	if err != nil {
-		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
+		return managed.ExternalObservation{ResourceExists: false}, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
 	}
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
 	if err := e.lateInitialize(&cr.Spec.ForProvider, resp); err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "late-init failed")
 	}
 	GenerateGlobalTable(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
+
+	upToDate, err := e.isUpToDate(cr, resp)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
+	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceUpToDate:        e.isUpToDate(cr, resp),
+		ResourceUpToDate:        upToDate,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -107,7 +112,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	}
 	resp, err := e.client.CreateGlobalTableWithContext(ctx, input)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
 	if resp.GlobalTableDescription.CreationDateTime != nil {
@@ -137,7 +142,7 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	}
 	resp, err := e.client.UpdateGlobalTableWithContext(ctx, input)
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 	}
 	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, err)
 }
@@ -160,13 +165,13 @@ func newExternal(kube client.Client, client svcsdkapi.DynamoDBAPI, opts []option
 		client:         client,
 		preObserve:     nopPreObserve,
 		postObserve:    nopPostObserve,
+		lateInitialize: nopLateInitialize,
+		isUpToDate:     alwaysUpToDate,
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		delete:         nopDelete,
 		preUpdate:      nopPreUpdate,
 		postUpdate:     nopPostUpdate,
-		lateInitialize: nopLateInitialize,
-		isUpToDate:     alwaysUpToDate,
 	}
 	for _, f := range opts {
 		f(e)
@@ -180,7 +185,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableInput) error
 	postObserve    func(context.Context, *svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.GlobalTableParameters, *svcsdk.DescribeGlobalTableOutput) error
-	isUpToDate     func(*svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput) bool
+	isUpToDate     func(*svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableInput) error
 	postCreate     func(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	delete         func(ctx context.Context, mg cpresource.Managed) error
@@ -197,8 +202,8 @@ func nopPostObserve(context.Context, *svcapitypes.GlobalTable, *svcsdk.DescribeG
 func nopLateInitialize(*svcapitypes.GlobalTableParameters, *svcsdk.DescribeGlobalTableOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput) bool {
-	return true
+func alwaysUpToDate(*svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput) (bool, error) {
+	return true, nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableInput) error {
