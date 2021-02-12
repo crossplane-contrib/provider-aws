@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,19 +28,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateDescribeStateMachineInput returns input for read
 // operation.
 func GenerateDescribeStateMachineInput(cr *svcapitypes.StateMachine) *svcsdk.DescribeStateMachineInput {
-	res := preGenerateDescribeStateMachineInput(cr, &svcsdk.DescribeStateMachineInput{})
+	res := &svcsdk.DescribeStateMachineInput{}
 
 	if cr.Status.AtProvider.StateMachineARN != nil {
 		res.SetStateMachineArn(*cr.Status.AtProvider.StateMachineARN)
 	}
 
-	return postGenerateDescribeStateMachineInput(cr, res)
+	return res
 }
 
 // GenerateStateMachine returns the current state in the form of *svcapitypes.StateMachine.
@@ -59,7 +57,7 @@ func GenerateStateMachine(resp *svcsdk.DescribeStateMachineOutput) *svcapitypes.
 
 // GenerateCreateStateMachineInput returns a create input.
 func GenerateCreateStateMachineInput(cr *svcapitypes.StateMachine) *svcsdk.CreateStateMachineInput {
-	res := preGenerateCreateStateMachineInput(cr, &svcsdk.CreateStateMachineInput{})
+	res := &svcsdk.CreateStateMachineInput{}
 
 	if cr.Spec.ForProvider.Definition != nil {
 		res.SetDefinition(*cr.Spec.ForProvider.Definition)
@@ -114,22 +112,68 @@ func GenerateCreateStateMachineInput(cr *svcapitypes.StateMachine) *svcsdk.Creat
 		res.SetTracingConfiguration(f4)
 	}
 
-	return postGenerateCreateStateMachineInput(cr, res)
+	return res
+}
+
+// GenerateUpdateStateMachineInput returns an update input.
+func GenerateUpdateStateMachineInput(cr *svcapitypes.StateMachine) *svcsdk.UpdateStateMachineInput {
+	res := &svcsdk.UpdateStateMachineInput{}
+
+	if cr.Spec.ForProvider.Definition != nil {
+		res.SetDefinition(*cr.Spec.ForProvider.Definition)
+	}
+	if cr.Spec.ForProvider.LoggingConfiguration != nil {
+		f1 := &svcsdk.LoggingConfiguration{}
+		if cr.Spec.ForProvider.LoggingConfiguration.Destinations != nil {
+			f1f0 := []*svcsdk.LogDestination{}
+			for _, f1f0iter := range cr.Spec.ForProvider.LoggingConfiguration.Destinations {
+				f1f0elem := &svcsdk.LogDestination{}
+				if f1f0iter.CloudWatchLogsLogGroup != nil {
+					f1f0elemf0 := &svcsdk.CloudWatchLogsLogGroup{}
+					if f1f0iter.CloudWatchLogsLogGroup.LogGroupARN != nil {
+						f1f0elemf0.SetLogGroupArn(*f1f0iter.CloudWatchLogsLogGroup.LogGroupARN)
+					}
+					f1f0elem.SetCloudWatchLogsLogGroup(f1f0elemf0)
+				}
+				f1f0 = append(f1f0, f1f0elem)
+			}
+			f1.SetDestinations(f1f0)
+		}
+		if cr.Spec.ForProvider.LoggingConfiguration.IncludeExecutionData != nil {
+			f1.SetIncludeExecutionData(*cr.Spec.ForProvider.LoggingConfiguration.IncludeExecutionData)
+		}
+		if cr.Spec.ForProvider.LoggingConfiguration.Level != nil {
+			f1.SetLevel(*cr.Spec.ForProvider.LoggingConfiguration.Level)
+		}
+		res.SetLoggingConfiguration(f1)
+	}
+	if cr.Status.AtProvider.StateMachineARN != nil {
+		res.SetStateMachineArn(*cr.Status.AtProvider.StateMachineARN)
+	}
+	if cr.Spec.ForProvider.TracingConfiguration != nil {
+		f4 := &svcsdk.TracingConfiguration{}
+		if cr.Spec.ForProvider.TracingConfiguration.Enabled != nil {
+			f4.SetEnabled(*cr.Spec.ForProvider.TracingConfiguration.Enabled)
+		}
+		res.SetTracingConfiguration(f4)
+	}
+
+	return res
 }
 
 // GenerateDeleteStateMachineInput returns a deletion input.
 func GenerateDeleteStateMachineInput(cr *svcapitypes.StateMachine) *svcsdk.DeleteStateMachineInput {
-	res := preGenerateDeleteStateMachineInput(cr, &svcsdk.DeleteStateMachineInput{})
+	res := &svcsdk.DeleteStateMachineInput{}
 
 	if cr.Status.AtProvider.StateMachineARN != nil {
 		res.SetStateMachineArn(*cr.Status.AtProvider.StateMachineARN)
 	}
 
-	return postGenerateDeleteStateMachineInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.
 func IsNotFound(err error) bool {
 	awsErr, ok := err.(awserr.Error)
-	return ok && awsErr.Code() == "StateMachineDoesNotExist"
+	return ok && awsErr.Code() == "UNKNOWN"
 }

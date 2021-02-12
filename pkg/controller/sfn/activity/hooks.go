@@ -36,21 +36,31 @@ import (
 // SetupActivity adds a controller that reconciles Activity.
 func SetupActivity(mgr ctrl.Manager, l logging.Logger) error {
 	name := managed.ControllerName(svcapitypes.ActivityGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.postCreate = postCreate
+			e.preDelete = preDelete
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&svcapitypes.Activity{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ActivityGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.Activity) error {
+func preObserve(_ context.Context, cr *svcapitypes.Activity, obj *svcsdk.DescribeActivityInput) error {
+	obj.ActivityArn = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.Activity, _ *svcsdk.DescribeActivityOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+
+func postObserve(_ context.Context, cr *svcapitypes.Activity, _ *svcsdk.DescribeActivityOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -58,11 +68,7 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Activity, _ *svc
 	return obs, err
 }
 
-func (*external) preCreate(context.Context, *svcapitypes.Activity) error {
-	return nil
-}
-
-func (*external) postCreate(_ context.Context, cr *svcapitypes.Activity, resp *svcsdk.CreateActivityOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *svcapitypes.Activity, resp *svcsdk.CreateActivityOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -71,42 +77,7 @@ func (*external) postCreate(_ context.Context, cr *svcapitypes.Activity, resp *s
 	return cre, nil
 }
 
-func (*external) preUpdate(context.Context, *svcapitypes.Activity) error {
-	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.Activity, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-func lateInitialize(*svcapitypes.ActivityParameters, *svcsdk.DescribeActivityOutput) error {
-	return nil
-}
-
-func isUpToDate(*svcapitypes.Activity, *svcsdk.DescribeActivityOutput) bool {
-	return true
-}
-
-func preGenerateDescribeActivityInput(_ *svcapitypes.Activity, obj *svcsdk.DescribeActivityInput) *svcsdk.DescribeActivityInput {
-	return obj
-}
-
-func postGenerateDescribeActivityInput(cr *svcapitypes.Activity, obj *svcsdk.DescribeActivityInput) *svcsdk.DescribeActivityInput {
+func preDelete(_ context.Context, cr *svcapitypes.Activity, obj *svcsdk.DeleteActivityInput) error {
 	obj.ActivityArn = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreateActivityInput(_ *svcapitypes.Activity, obj *svcsdk.CreateActivityInput) *svcsdk.CreateActivityInput {
-	return obj
-}
-
-func postGenerateCreateActivityInput(_ *svcapitypes.Activity, obj *svcsdk.CreateActivityInput) *svcsdk.CreateActivityInput {
-	return obj
-}
-func preGenerateDeleteActivityInput(_ *svcapitypes.Activity, obj *svcsdk.DeleteActivityInput) *svcsdk.DeleteActivityInput {
-	return obj
-}
-
-func postGenerateDeleteActivityInput(cr *svcapitypes.Activity, obj *svcsdk.DeleteActivityInput) *svcsdk.DeleteActivityInput {
-	obj.ActivityArn = aws.String(meta.GetExternalName(cr))
-	return obj
+	return nil
 }
