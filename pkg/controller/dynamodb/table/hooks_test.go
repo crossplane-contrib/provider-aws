@@ -139,9 +139,14 @@ func TestIsUpToDate(t *testing.T) {
 		p v1alpha1.Table
 	}
 
+	type want struct {
+		result bool
+		err    error
+	}
+
 	cases := map[string]struct {
 		args args
-		want bool
+		want want
 	}{
 		"SameFields": {
 			args: args{
@@ -164,7 +169,9 @@ func TestIsUpToDate(t *testing.T) {
 					},
 				},
 			},
-			want: true,
+			want: want{
+				result: true,
+			},
 		},
 		"DifferentFields": {
 			args: args{
@@ -187,14 +194,19 @@ func TestIsUpToDate(t *testing.T) {
 					},
 				},
 			},
-			want: false,
+			want: want{
+				result: false,
+			},
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got := isUpToDate(&tc.args.p, &tc.args.t)
-			if diff := cmp.Diff(tc.want, got); diff != "" {
+			got, err := isUpToDate(&tc.args.p, &tc.args.t)
+			if diff := cmp.Diff(tc.want.result, got); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.err, err); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

@@ -87,7 +87,7 @@ func postObserve(_ context.Context, cr *svcapitypes.GlobalTable, resp *svcsdk.De
 	return obs, nil
 }
 
-func isUpToDate(cr *svcapitypes.GlobalTable, obj *svcsdk.DescribeGlobalTableOutput) bool {
+func isUpToDate(cr *svcapitypes.GlobalTable, obj *svcsdk.DescribeGlobalTableOutput) (bool, error) {
 	existing := make([]string, len(obj.GlobalTableDescription.ReplicationGroup))
 	for i, r := range obj.GlobalTableDescription.ReplicationGroup {
 		existing[i] = aws.StringValue(r.RegionName)
@@ -98,7 +98,7 @@ func isUpToDate(cr *svcapitypes.GlobalTable, obj *svcsdk.DescribeGlobalTableOutp
 		desired[i] = aws.StringValue(r.RegionName)
 	}
 	sort.Strings(desired)
-	return cmp.Equal(existing, desired)
+	return cmp.Equal(existing, desired), nil
 }
 
 type updater struct {
@@ -109,7 +109,7 @@ func (u *updater) preUpdate(ctx context.Context, cr *svcapitypes.GlobalTable, ob
 	input := GenerateDescribeGlobalTableInput(cr)
 	o, err := u.client.DescribeGlobalTableWithContext(ctx, input)
 	if err != nil {
-		return errors.Wrap(err, errDescribe)
+		return aws.Wrap(err, errDescribe)
 	}
 	desired := map[string]bool{}
 	for _, r := range cr.Spec.ForProvider.ReplicationGroup {
@@ -155,7 +155,7 @@ func (d *deleter) delete(ctx context.Context, mg resource.Managed) error {
 		u.ReplicaUpdates = append(u.ReplicaUpdates, &svcsdk.ReplicaUpdate{Delete: &svcsdk.DeleteReplicaAction{RegionName: region.RegionName}})
 	}
 	if _, err := d.client.UpdateGlobalTableWithContext(ctx, u); err != nil {
-		return errors.Wrap(err, "update call for deletion failed")
+		return aws.Wrap(err, "update call for deletion failed")
 	}
 	return nil
 }
