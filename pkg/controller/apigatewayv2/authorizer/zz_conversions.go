@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,19 +27,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateGetAuthorizerInput returns input for read
 // operation.
 func GenerateGetAuthorizerInput(cr *svcapitypes.Authorizer) *svcsdk.GetAuthorizerInput {
-	res := preGenerateGetAuthorizerInput(cr, &svcsdk.GetAuthorizerInput{})
+	res := &svcsdk.GetAuthorizerInput{}
 
 	if cr.Status.AtProvider.AuthorizerID != nil {
 		res.SetAuthorizerId(*cr.Status.AtProvider.AuthorizerID)
 	}
 
-	return postGenerateGetAuthorizerInput(cr, res)
+	return res
 }
 
 // GenerateAuthorizer returns the current state in the form of *svcapitypes.Authorizer.
@@ -55,7 +53,7 @@ func GenerateAuthorizer(resp *svcsdk.GetAuthorizerOutput) *svcapitypes.Authorize
 
 // GenerateCreateAuthorizerInput returns a create input.
 func GenerateCreateAuthorizerInput(cr *svcapitypes.Authorizer) *svcsdk.CreateAuthorizerInput {
-	res := preGenerateCreateAuthorizerInput(cr, &svcsdk.CreateAuthorizerInput{})
+	res := &svcsdk.CreateAuthorizerInput{}
 
 	if cr.Spec.ForProvider.AuthorizerCredentialsARN != nil {
 		res.SetAuthorizerCredentialsArn(*cr.Spec.ForProvider.AuthorizerCredentialsARN)
@@ -107,18 +105,78 @@ func GenerateCreateAuthorizerInput(cr *svcapitypes.Authorizer) *svcsdk.CreateAut
 		res.SetName(*cr.Spec.ForProvider.Name)
 	}
 
-	return postGenerateCreateAuthorizerInput(cr, res)
+	return res
+}
+
+// GenerateUpdateAuthorizerInput returns an update input.
+func GenerateUpdateAuthorizerInput(cr *svcapitypes.Authorizer) *svcsdk.UpdateAuthorizerInput {
+	res := &svcsdk.UpdateAuthorizerInput{}
+
+	if cr.Spec.ForProvider.AuthorizerCredentialsARN != nil {
+		res.SetAuthorizerCredentialsArn(*cr.Spec.ForProvider.AuthorizerCredentialsARN)
+	}
+	if cr.Status.AtProvider.AuthorizerID != nil {
+		res.SetAuthorizerId(*cr.Status.AtProvider.AuthorizerID)
+	}
+	if cr.Spec.ForProvider.AuthorizerPayloadFormatVersion != nil {
+		res.SetAuthorizerPayloadFormatVersion(*cr.Spec.ForProvider.AuthorizerPayloadFormatVersion)
+	}
+	if cr.Spec.ForProvider.AuthorizerResultTtlInSeconds != nil {
+		res.SetAuthorizerResultTtlInSeconds(*cr.Spec.ForProvider.AuthorizerResultTtlInSeconds)
+	}
+	if cr.Spec.ForProvider.AuthorizerType != nil {
+		res.SetAuthorizerType(*cr.Spec.ForProvider.AuthorizerType)
+	}
+	if cr.Spec.ForProvider.AuthorizerURI != nil {
+		res.SetAuthorizerUri(*cr.Spec.ForProvider.AuthorizerURI)
+	}
+	if cr.Spec.ForProvider.EnableSimpleResponses != nil {
+		res.SetEnableSimpleResponses(*cr.Spec.ForProvider.EnableSimpleResponses)
+	}
+	if cr.Spec.ForProvider.IDentitySource != nil {
+		f8 := []*string{}
+		for _, f8iter := range cr.Spec.ForProvider.IDentitySource {
+			var f8elem string
+			f8elem = *f8iter
+			f8 = append(f8, &f8elem)
+		}
+		res.SetIdentitySource(f8)
+	}
+	if cr.Spec.ForProvider.IDentityValidationExpression != nil {
+		res.SetIdentityValidationExpression(*cr.Spec.ForProvider.IDentityValidationExpression)
+	}
+	if cr.Spec.ForProvider.JWTConfiguration != nil {
+		f10 := &svcsdk.JWTConfiguration{}
+		if cr.Spec.ForProvider.JWTConfiguration.Audience != nil {
+			f10f0 := []*string{}
+			for _, f10f0iter := range cr.Spec.ForProvider.JWTConfiguration.Audience {
+				var f10f0elem string
+				f10f0elem = *f10f0iter
+				f10f0 = append(f10f0, &f10f0elem)
+			}
+			f10.SetAudience(f10f0)
+		}
+		if cr.Spec.ForProvider.JWTConfiguration.Issuer != nil {
+			f10.SetIssuer(*cr.Spec.ForProvider.JWTConfiguration.Issuer)
+		}
+		res.SetJwtConfiguration(f10)
+	}
+	if cr.Spec.ForProvider.Name != nil {
+		res.SetName(*cr.Spec.ForProvider.Name)
+	}
+
+	return res
 }
 
 // GenerateDeleteAuthorizerInput returns a deletion input.
 func GenerateDeleteAuthorizerInput(cr *svcapitypes.Authorizer) *svcsdk.DeleteAuthorizerInput {
-	res := preGenerateDeleteAuthorizerInput(cr, &svcsdk.DeleteAuthorizerInput{})
+	res := &svcsdk.DeleteAuthorizerInput{}
 
 	if cr.Status.AtProvider.AuthorizerID != nil {
 		res.SetAuthorizerId(*cr.Status.AtProvider.AuthorizerID)
 	}
 
-	return postGenerateDeleteAuthorizerInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.
