@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -81,16 +81,21 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	resp, err := e.client.DescribeBackupWithContext(ctx, input)
 	if err != nil {
-		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
+		return managed.ExternalObservation{ResourceExists: false}, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
 	}
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
 	if err := e.lateInitialize(&cr.Spec.ForProvider, resp); err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "late-init failed")
 	}
 	GenerateBackup(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
+
+	upToDate, err := e.isUpToDate(cr, resp)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
+	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceUpToDate:        e.isUpToDate(cr, resp),
+		ResourceUpToDate:        upToDate,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -107,7 +112,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	}
 	resp, err := e.client.CreateBackupWithContext(ctx, input)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
 	if resp.BackupDetails.BackupArn != nil {
@@ -148,7 +153,7 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 		return errors.Wrap(err, "pre-delete failed")
 	}
 	_, err := e.client.DeleteBackupWithContext(ctx, input)
-	return errors.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
+	return awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
 }
 
 type option func(*external)
@@ -159,12 +164,12 @@ func newExternal(kube client.Client, client svcsdkapi.DynamoDBAPI, opts []option
 		client:         client,
 		preObserve:     nopPreObserve,
 		postObserve:    nopPostObserve,
+		lateInitialize: nopLateInitialize,
+		isUpToDate:     alwaysUpToDate,
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
 		update:         nopUpdate,
-		lateInitialize: nopLateInitialize,
-		isUpToDate:     alwaysUpToDate,
 	}
 	for _, f := range opts {
 		f(e)
@@ -178,7 +183,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Backup, *svcsdk.DescribeBackupInput) error
 	postObserve    func(context.Context, *svcapitypes.Backup, *svcsdk.DescribeBackupOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.BackupParameters, *svcsdk.DescribeBackupOutput) error
-	isUpToDate     func(*svcapitypes.Backup, *svcsdk.DescribeBackupOutput) bool
+	isUpToDate     func(*svcapitypes.Backup, *svcsdk.DescribeBackupOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.Backup, *svcsdk.CreateBackupInput) error
 	postCreate     func(context.Context, *svcapitypes.Backup, *svcsdk.CreateBackupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Backup, *svcsdk.DeleteBackupInput) error
@@ -194,8 +199,8 @@ func nopPostObserve(context.Context, *svcapitypes.Backup, *svcsdk.DescribeBackup
 func nopLateInitialize(*svcapitypes.BackupParameters, *svcsdk.DescribeBackupOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Backup, *svcsdk.DescribeBackupOutput) bool {
-	return true
+func alwaysUpToDate(*svcapitypes.Backup, *svcsdk.DescribeBackupOutput) (bool, error) {
+	return true, nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Backup, *svcsdk.CreateBackupInput) error {

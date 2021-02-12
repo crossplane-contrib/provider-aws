@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -81,16 +81,21 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	resp, err := e.client.DescribeTableWithContext(ctx, input)
 	if err != nil {
-		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
+		return managed.ExternalObservation{ResourceExists: false}, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
 	}
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
 	if err := e.lateInitialize(&cr.Spec.ForProvider, resp); err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "late-init failed")
 	}
 	GenerateTable(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
+
+	upToDate, err := e.isUpToDate(cr, resp)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
+	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceUpToDate:        e.isUpToDate(cr, resp),
+		ResourceUpToDate:        upToDate,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -107,7 +112,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	}
 	resp, err := e.client.CreateTableWithContext(ctx, input)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
 	if resp.TableDescription.ArchivalSummary != nil {
@@ -182,6 +187,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			}
 			if f12iter.RegionName != nil {
 				f12elem.RegionName = f12iter.RegionName
+			}
+			if f12iter.ReplicaInaccessibleDateTime != nil {
+				f12elem.ReplicaInaccessibleDateTime = &metav1.Time{*f12iter.ReplicaInaccessibleDateTime}
 			}
 			if f12iter.ReplicaStatus != nil {
 				f12elem.ReplicaStatus = f12iter.ReplicaStatus
@@ -258,7 +266,7 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	}
 	resp, err := e.client.UpdateTableWithContext(ctx, input)
 	if err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 	}
 	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, err)
 }
@@ -274,7 +282,7 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 		return errors.Wrap(err, "pre-delete failed")
 	}
 	_, err := e.client.DeleteTableWithContext(ctx, input)
-	return errors.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
+	return awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
 }
 
 type option func(*external)
@@ -285,13 +293,13 @@ func newExternal(kube client.Client, client svcsdkapi.DynamoDBAPI, opts []option
 		client:         client,
 		preObserve:     nopPreObserve,
 		postObserve:    nopPostObserve,
+		lateInitialize: nopLateInitialize,
+		isUpToDate:     alwaysUpToDate,
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
 		preUpdate:      nopPreUpdate,
 		postUpdate:     nopPostUpdate,
-		lateInitialize: nopLateInitialize,
-		isUpToDate:     alwaysUpToDate,
 	}
 	for _, f := range opts {
 		f(e)
@@ -305,7 +313,7 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Table, *svcsdk.DescribeTableInput) error
 	postObserve    func(context.Context, *svcapitypes.Table, *svcsdk.DescribeTableOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.TableParameters, *svcsdk.DescribeTableOutput) error
-	isUpToDate     func(*svcapitypes.Table, *svcsdk.DescribeTableOutput) bool
+	isUpToDate     func(*svcapitypes.Table, *svcsdk.DescribeTableOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.Table, *svcsdk.CreateTableInput) error
 	postCreate     func(context.Context, *svcapitypes.Table, *svcsdk.CreateTableOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Table, *svcsdk.DeleteTableInput) error
@@ -322,8 +330,8 @@ func nopPostObserve(context.Context, *svcapitypes.Table, *svcsdk.DescribeTableOu
 func nopLateInitialize(*svcapitypes.TableParameters, *svcsdk.DescribeTableOutput) error {
 	return nil
 }
-func alwaysUpToDate(*svcapitypes.Table, *svcsdk.DescribeTableOutput) bool {
-	return true
+func alwaysUpToDate(*svcapitypes.Table, *svcsdk.DescribeTableOutput) (bool, error) {
+	return true, nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.Table, *svcsdk.CreateTableInput) error {
