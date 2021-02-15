@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,19 +28,17 @@ import (
 
 // NOTE(muvaf): We return pointers in case the function needs to start with an
 // empty object, hence need to return a new pointer.
-// TODO(muvaf): We can generate one-time boilerplate for these hooks but currently
-// ACK doesn't support not generating if file exists.
 
 // GenerateDescribeActivityInput returns input for read
 // operation.
 func GenerateDescribeActivityInput(cr *svcapitypes.Activity) *svcsdk.DescribeActivityInput {
-	res := preGenerateDescribeActivityInput(cr, &svcsdk.DescribeActivityInput{})
+	res := &svcsdk.DescribeActivityInput{}
 
 	if cr.Status.AtProvider.ActivityARN != nil {
 		res.SetActivityArn(*cr.Status.AtProvider.ActivityARN)
 	}
 
-	return postGenerateDescribeActivityInput(cr, res)
+	return res
 }
 
 // GenerateActivity returns the current state in the form of *svcapitypes.Activity.
@@ -59,7 +57,7 @@ func GenerateActivity(resp *svcsdk.DescribeActivityOutput) *svcapitypes.Activity
 
 // GenerateCreateActivityInput returns a create input.
 func GenerateCreateActivityInput(cr *svcapitypes.Activity) *svcsdk.CreateActivityInput {
-	res := preGenerateCreateActivityInput(cr, &svcsdk.CreateActivityInput{})
+	res := &svcsdk.CreateActivityInput{}
 
 	if cr.Spec.ForProvider.Name != nil {
 		res.SetName(*cr.Spec.ForProvider.Name)
@@ -79,22 +77,22 @@ func GenerateCreateActivityInput(cr *svcapitypes.Activity) *svcsdk.CreateActivit
 		res.SetTags(f1)
 	}
 
-	return postGenerateCreateActivityInput(cr, res)
+	return res
 }
 
 // GenerateDeleteActivityInput returns a deletion input.
 func GenerateDeleteActivityInput(cr *svcapitypes.Activity) *svcsdk.DeleteActivityInput {
-	res := preGenerateDeleteActivityInput(cr, &svcsdk.DeleteActivityInput{})
+	res := &svcsdk.DeleteActivityInput{}
 
 	if cr.Status.AtProvider.ActivityARN != nil {
 		res.SetActivityArn(*cr.Status.AtProvider.ActivityARN)
 	}
 
-	return postGenerateDeleteActivityInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.
 func IsNotFound(err error) bool {
 	awsErr, ok := err.(awserr.Error)
-	return ok && awsErr.Code() == "ActivityDoesNotExist"
+	return ok && awsErr.Code() == "UNKNOWN"
 }
