@@ -31,6 +31,14 @@ type Route struct {
 	// +optional
 	DestinationCIDRBlock *string `json:"destinationCidrBlock,omitempty"`
 
+	// The IPv6 CIDR address block used for the destination match. Routing
+	// decisions are based on the most specific match.
+	// +optional
+	DestinationIPV6CIDRBlock *string `json:"destinationIpv6CidrBlock,omitempty"`
+
+	// [IPv6 traffic only] The ID of an egress-only internet gateway.
+	EgressOnlyInternetGatewayID *string `json:"egressOnlyInternetGatewayId,omitempty"`
+
 	// The ID of an internet gateway or virtual private gateway attached to your
 	// VPC.
 	// +optional
@@ -41,6 +49,39 @@ type Route struct {
 
 	// A selector to select a referencer to retrieve the ID of a gateway
 	GatewayIDSelector *xpv1.Selector `json:"gatewayIdSelector,omitempty"`
+
+	// The ID of a NAT instance in your VPC. The operation fails if you specify
+	// an instance ID unless exactly one network interface is attached.
+	InstanceID *string `json:"instanceId,omitempty"`
+
+	// The ID of the local gateway.
+	LocalGatewayID *string `json:"localGatewayId,omitempty"`
+
+	// A referencer to retrieve the ID of a NAT gateway
+	NatGatewayIDRef *xpv1.Reference `json:"natGatewayIdRef,omitempty"`
+
+	// A selector to select a referencer to retrieve the ID of a NAT gateway
+	NatGatewayIDSelector *xpv1.Selector `json:"natGatewayIdSelector,omitempty"`
+
+	// [IPv4 traffic only] The ID of a NAT gateway.
+	NatGatewayID *string `json:"natGatewayId,omitempty"`
+
+	// The ID of a network interface.
+	NetworkInterfaceID *string `json:"networkInterfaceId,omitempty"`
+
+	// The ID of a transit gateway.
+	TransitGatewayID *string `json:"transitGatewayId,omitempty"`
+
+	// The ID of a VPC peering connection.
+	VpcPeeringConnectionID *string `json:"vpcPeeringConnectionId,omitempty"`
+}
+
+// ClearRefSelectors nils out ref and selectors
+func (r *Route) ClearRefSelectors() {
+	r.GatewayIDRef = nil
+	r.GatewayIDSelector = nil
+	r.NatGatewayIDSelector = nil
+	r.NatGatewayIDRef = nil
 }
 
 // RouteState describes a route state in the route table.
@@ -54,9 +95,32 @@ type RouteState struct {
 	// decisions are based on the most specific match.
 	DestinationCIDRBlock string `json:"destinationCidrBlock,omitempty"`
 
+	// The IPv6 CIDR address block used for the destination match. Routing
+	// decisions are based on the most specific match.
+	DestinationIPV6CIDRBlock string `json:"destinationIpv6CidrBlock,omitempty"`
+
 	// The ID of an internet gateway or virtual private gateway attached to your
 	// VPC.
 	GatewayID string `json:"gatewayId,omitempty"`
+
+	// The ID of a NAT instance in your VPC. The operation fails if you specify
+	// an instance ID unless exactly one network interface is attached.
+	InstanceID string `json:"instanceId,omitempty"`
+
+	// The ID of the local gateway.
+	LocalGatewayID string `json:"localGatewayId,omitempty"`
+
+	// [IPv4 traffic only] The ID of a NAT gateway.
+	NatGatewayID string `json:"natGatewayId,omitempty"`
+
+	// The ID of a network interface.
+	NetworkInterfaceID string `json:"networkInterfaceId,omitempty"`
+
+	// The ID of a transit gateway.
+	TransitGatewayID string `json:"transitGatewayId,omitempty"`
+
+	// The ID of a VPC peering connection.
+	VpcPeeringConnectionID string `json:"vpcPeeringConnectionId,omitempty"`
 }
 
 // Association describes an association between a route table and a subnet.
@@ -73,6 +137,12 @@ type Association struct {
 	// A selector to select a referencer to retrieve the ID of a subnet
 	// +optional
 	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
+}
+
+// ClearRefSelectors nils out ref and selectors
+func (a *Association) ClearRefSelectors() {
+	a.SubnetIDRef = nil
+	a.SubnetIDSelector = nil
 }
 
 // AssociationState describes an association state in the route table.
