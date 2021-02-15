@@ -75,6 +75,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/route53/resourcerecordset"
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
 	"github.com/crossplane/provider-aws/pkg/controller/s3/bucketpolicy"
+	"github.com/crossplane/provider-aws/pkg/controller/secretsmanager"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/activity"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/statemachine"
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
@@ -116,6 +117,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 		acm.SetupCertificate,
 		resourcerecordset.SetupResourceRecordSet,
 		hostedzone.SetupHostedZone,
+		secretsmanager.SetupSecret,
 		snstopic.SetupSNSTopic,
 		snssubscription.SetupSubscription,
 		queue.SetupQueue,
