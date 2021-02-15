@@ -79,6 +79,16 @@ func (in *Route) DeepCopyInto(out *Route) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.DestinationIPV6CIDRBlock != nil {
+		in, out := &in.DestinationIPV6CIDRBlock, &out.DestinationIPV6CIDRBlock
+		*out = new(string)
+		**out = **in
+	}
+	if in.EgressOnlyInternetGatewayID != nil {
+		in, out := &in.EgressOnlyInternetGatewayID, &out.EgressOnlyInternetGatewayID
+		*out = new(string)
+		**out = **in
+	}
 	if in.GatewayID != nil {
 		in, out := &in.GatewayID, &out.GatewayID
 		*out = new(string)
@@ -93,6 +103,46 @@ func (in *Route) DeepCopyInto(out *Route) {
 		in, out := &in.GatewayIDSelector, &out.GatewayIDSelector
 		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.InstanceID != nil {
+		in, out := &in.InstanceID, &out.InstanceID
+		*out = new(string)
+		**out = **in
+	}
+	if in.LocalGatewayID != nil {
+		in, out := &in.LocalGatewayID, &out.LocalGatewayID
+		*out = new(string)
+		**out = **in
+	}
+	if in.NatGatewayIDRef != nil {
+		in, out := &in.NatGatewayIDRef, &out.NatGatewayIDRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.NatGatewayIDSelector != nil {
+		in, out := &in.NatGatewayIDSelector, &out.NatGatewayIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.NatGatewayID != nil {
+		in, out := &in.NatGatewayID, &out.NatGatewayID
+		*out = new(string)
+		**out = **in
+	}
+	if in.NetworkInterfaceID != nil {
+		in, out := &in.NetworkInterfaceID, &out.NetworkInterfaceID
+		*out = new(string)
+		**out = **in
+	}
+	if in.TransitGatewayID != nil {
+		in, out := &in.TransitGatewayID, &out.TransitGatewayID
+		*out = new(string)
+		**out = **in
+	}
+	if in.VpcPeeringConnectionID != nil {
+		in, out := &in.VpcPeeringConnectionID, &out.VpcPeeringConnectionID
+		*out = new(string)
+		**out = **in
 	}
 }
 

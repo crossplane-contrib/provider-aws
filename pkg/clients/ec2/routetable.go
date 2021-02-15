@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"encoding/json"
+	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
@@ -17,8 +18,8 @@ import (
 )
 
 const (
-	// LocalGatewayID is the id for local gateway
-	LocalGatewayID = "local"
+	// DefaultLocalGatewayID is the id for local gateway
+	DefaultLocalGatewayID = "local"
 
 	// RouteTableIDNotFound is the code that is returned by ec2 when the given SubnetID is invalid
 	RouteTableIDNotFound = "InvalidRouteTableID.NotFound"
@@ -40,6 +41,7 @@ type RouteTableClient interface {
 	AssociateRouteTableRequest(*ec2.AssociateRouteTableInput) ec2.AssociateRouteTableRequest
 	DisassociateRouteTableRequest(*ec2.DisassociateRouteTableInput) ec2.DisassociateRouteTableRequest
 	CreateTagsRequest(*ec2.CreateTagsInput) ec2.CreateTagsRequest
+	DeleteTagsRequest(*ec2.DeleteTagsInput) ec2.DeleteTagsRequest
 }
 
 // NewRouteTableClient returns a new client using AWS credentials as JSON encoded data.
@@ -89,14 +91,21 @@ func GenerateRTObservation(rt ec2.RouteTable) v1alpha4.RouteTableObservation {
 		o.Routes = make([]v1alpha4.RouteState, len(rt.Routes))
 		for i, rt := range rt.Routes {
 			o.Routes[i] = v1alpha4.RouteState{
-				State:                string(rt.State),
-				DestinationCIDRBlock: aws.StringValue(rt.DestinationCidrBlock),
-				GatewayID:            aws.StringValue(rt.GatewayId),
+				State:                    string(rt.State),
+				DestinationCIDRBlock:     aws.StringValue(rt.DestinationCidrBlock),
+				DestinationIPV6CIDRBlock: aws.StringValue(rt.DestinationIpv6CidrBlock),
+				GatewayID:                aws.StringValue(rt.GatewayId),
+				InstanceID:               aws.StringValue(rt.InstanceId),
+				LocalGatewayID:           aws.StringValue(rt.LocalGatewayId),
+				NatGatewayID:             aws.StringValue(rt.NatGatewayId),
+				NetworkInterfaceID:       aws.StringValue(rt.NetworkInterfaceId),
+				TransitGatewayID:         aws.StringValue(rt.TransitGatewayId),
+				VpcPeeringConnectionID:   aws.StringValue(rt.VpcPeeringConnectionId),
 			}
 		}
 	}
 
-	if len(rt.Routes) > 0 {
+	if len(rt.Associations) > 0 {
 		o.Associations = make([]v1alpha4.AssociationState, len(rt.Associations))
 		for i, asc := range rt.Associations {
 			o.Associations[i] = v1alpha4.AssociationState{
@@ -123,8 +132,14 @@ func LateInitializeRT(in *v1alpha4.RouteTableParameters, rt *ec2.RouteTable) { /
 		in.Routes = make([]v1alpha4.Route, len(rt.Routes))
 		for i, val := range rt.Routes {
 			in.Routes[i] = v1alpha4.Route{
-				DestinationCIDRBlock: val.DestinationCidrBlock,
-				GatewayID:            val.GatewayId,
+				DestinationCIDRBlock:   val.DestinationCidrBlock,
+				GatewayID:              val.GatewayId,
+				InstanceID:             val.InstanceId,
+				LocalGatewayID:         val.LocalGatewayId,
+				NatGatewayID:           val.NatGatewayId,
+				NetworkInterfaceID:     val.NetworkInterfaceId,
+				TransitGatewayID:       val.TransitGatewayId,
+				VpcPeeringConnectionID: val.VpcPeeringConnectionId,
 			}
 		}
 	}
@@ -147,23 +162,32 @@ func LateInitializeRT(in *v1alpha4.RouteTableParameters, rt *ec2.RouteTable) { /
 // values between the target *v1alpha4.RouteTableParameters and the current
 // *ec2.RouteTable
 func CreateRTPatch(in ec2.RouteTable, target v1alpha4.RouteTableParameters) (*v1alpha4.RouteTableParameters, error) {
+	targetCopy := target.DeepCopy()
 	currentParams := &v1alpha4.RouteTableParameters{}
 
 	v1beta1.SortTags(target.Tags, in.Tags)
 
 	// Add the default route for fair comparison.
 	for _, val := range in.Routes {
-		if *val.GatewayId == LocalGatewayID {
-			target.Routes = append([]v1alpha4.Route{{
+		if val.GatewayId != nil && *val.GatewayId == DefaultLocalGatewayID {
+			targetCopy.Routes = append([]v1alpha4.Route{{
 				GatewayID:            val.GatewayId,
 				DestinationCIDRBlock: val.DestinationCidrBlock,
 			}}, target.Routes...)
 		}
 	}
+	SortRoutes(targetCopy.Routes, in.Routes)
 
 	LateInitializeRT(currentParams, &in)
 
-	jsonPatch, err := awsclients.CreateJSONPatch(*currentParams, target)
+	for i := range targetCopy.Routes {
+		targetCopy.Routes[i].ClearRefSelectors()
+	}
+	for i := range target.Associations {
+		targetCopy.Associations[i].ClearRefSelectors()
+	}
+
+	jsonPatch, err := awsclients.CreateJSONPatch(*currentParams, targetCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -180,9 +204,23 @@ func IsRtUpToDate(p v1alpha4.RouteTableParameters, rt ec2.RouteTable) (bool, err
 	if err != nil {
 		return false, err
 	}
+
 	return cmp.Equal(&v1alpha4.RouteTableParameters{}, patch,
 		cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}),
 		cmpopts.IgnoreFields(v1alpha4.RouteTableParameters{}, "Region"),
 	), nil
+}
+
+// SortRoutes sorts array of Routes on DestinationCIDR
+func SortRoutes(route []v1alpha4.Route, ec2Route []ec2.Route) {
+	sort.Slice(route, func(i, j int) bool {
+		return (route[i].DestinationCIDRBlock != nil && *route[i].DestinationCIDRBlock < *route[j].DestinationCIDRBlock) ||
+			(route[i].DestinationIPV6CIDRBlock != nil && *route[i].DestinationIPV6CIDRBlock < *route[j].DestinationIPV6CIDRBlock)
+	})
+
+	sort.Slice(ec2Route, func(i, j int) bool {
+		return (ec2Route[i].DestinationCidrBlock != nil && *ec2Route[i].DestinationCidrBlock < *ec2Route[j].DestinationCidrBlock) ||
+			(ec2Route[i].DestinationIpv6CidrBlock != nil && *ec2Route[i].DestinationIpv6CidrBlock < *ec2Route[j].DestinationIpv6CidrBlock)
+	})
 }
