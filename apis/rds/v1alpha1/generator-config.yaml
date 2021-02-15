@@ -1,0 +1,23 @@
+ignore:
+  field_paths:
+    - DescribeDBClustersInput.DBClusterIdentifier
+    - CreateDBClusterInput.DBClusterIdentifier
+    - ModifyDBClusterInput.DBClusterIdentifier
+    - DeleteDBClusterInput.DBClusterIdentifier
+    - CreateDBClusterInput.VpcSecurityGroupIds
+    - ModifyDBClusterInput.VpcSecurityGroupIds
+  resource_names:
+    - DBClusterEndpoint
+    - CustomAvailabilityZone
+    - DBClusterParameterGroup
+    - DBClusterSnapshot
+    - DBInstance
+    - DBInstanceReadReplica
+    - DBParameterGroup
+    - DBProxy
+    - DBSecurityGroup
+    - DBSnapshot
+    - DBSubnetGroup
+    - EventSubscription
+    - GlobalCluster
+    - OptionGroup
