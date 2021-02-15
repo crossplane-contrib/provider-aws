@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,8 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha1 contains managed resources for AWS Secrets Manager Service.
-// +kubebuilder:object:generate=true
-// +groupName=secretsmanager.aws.crossplane.io
-// +versionName=v1alpha1
 package v1alpha1
+
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+
+// CustomSecretParameters contains the additional fields for SecretParameters.
+type CustomSecretParameters struct {
+	// SecretRef is used to reference the secret and the key whose value you'd
+	// like to be stored in AWS.
+	// The value is stored as is with no change.
+	SecretRef xpv1.SecretKeySelector `json:"secretRef"`
+}
