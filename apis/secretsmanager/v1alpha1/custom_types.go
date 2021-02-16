@@ -20,10 +20,21 @@ import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // CustomSecretParameters contains the additional fields for SecretParameters.
 type CustomSecretParameters struct {
-	// SecretRef is used to reference the secret and the key whose value you'd
-	// like to be stored in AWS.
-	// The value is stored as is with no change.
-	SecretRef xpv1.SecretKeySelector `json:"secretRef"`
+	// PayloadType lets you choose which part of the input secret should be used.
+	// SingleValue: Only value of the given key.
+	// Map: The whole content of the input secret will be used after converting
+	// it to JSON map.
+	// +kubebuilder:validation:Enum=SingleValue;Map
+	PayloadType string `json:"payloadType"`
+
+	// SingleValueSecretRef should be filled if SingleValue is chosen as payload
+	// type. It references the input secret and the key whose value you would
+	// like to use.
+	SingleValueSecretRef *xpv1.SecretKeySelector `json:"singleValueSecretRef,omitempty"`
+
+	// MapSecretRef should be filled if Map is chosen as payload type. It references
+	// the input secret whose data will be sent to AWS as JSON string map.
+	MapSecretRef *xpv1.SecretReference `json:"mapSecretRef,omitempty"`
 
 	// (Optional) Specifies that the secret is to be deleted without any recovery
 	// window. You can't use both this parameter and the RecoveryWindowInDays parameter
