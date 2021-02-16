@@ -14,27 +14,26 @@ limitations under the License.
 package secret
 
 import (
-	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"sort"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-
+	svcsdk "github.com/aws/aws-sdk-go/service/secretsmanager"
+	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
+	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
-
-	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
-
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
-
-	svcsdk "github.com/aws/aws-sdk-go/service/secretsmanager"
-	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -43,33 +42,36 @@ import (
 )
 
 const (
-	errNotSecret        = "managed resource is not a secret custom resource"
-	errKubeUpdateFailed = "failed to update Secret custom resource"
-	errCreateTags       = "failed to create tags for the secret"
-	errRemoveTags       = "failed to remove tags for the secret"
-	errFmtKeyNotFound   = "key %s is not found in referenced Kubernetes secret"
-	errGetSecretFailed  = "failed to get Kubernetes secret"
-	errGetSecretValue   = "cannot get the value of secret from AWS"
+	errNotSecret                 = "managed resource is not a secret custom resource"
+	errKubeUpdateFailed          = "failed to update Secret custom resource"
+	errCreateTags                = "failed to create tags for the secret"
+	errRemoveTags                = "failed to remove tags for the secret"
+	errFmtKeyNotFound            = "key %s is not found in referenced Kubernetes secret"
+	errFmtUnsupportedPayloadType = "payload type %s is not supported"
+	errGetSecretFailed           = "failed to get Kubernetes secret"
+	errGetSecretValue            = "cannot get the value of secret from AWS"
 )
 
 // SetupSecret adds a controller that reconciles a Secret.
-func SetupSecret(mgr ctrl.Manager, l logging.Logger) error {
+func SetupSecret(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(svcapitypes.SecretGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve
 			e.postObserve = postObserve
-			u := &updater{client: e.client, kube: e.kube}
-			e.isUpToDate = u.isUpToDate
-			e.preUpdate = u.preUpdate
-			c := &creator{client: e.client, kube: e.kube}
-			e.preCreate = c.preCreate
+			h := &hooks{client: e.client, kube: e.kube}
+			e.isUpToDate = h.isUpToDate
+			e.preUpdate = h.preUpdate
+			e.preCreate = h.preCreate
 			e.preDelete = preDelete
 		},
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+		}).
 		For(&svcapitypes.Secret{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.SecretGroupVersionKind),
@@ -99,12 +101,12 @@ func postObserve(_ context.Context, cr *svcapitypes.Secret, resp *svcsdk.Describ
 	return obs, nil
 }
 
-type updater struct {
+type hooks struct {
 	client secretsmanageriface.SecretsManagerAPI
 	kube   client.Client
 }
 
-func (e *updater) isUpToDate(check bool, cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, error) {
+func (e *hooks) isUpToDate(check bool, cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, error) {
 	if !check {
 		return check, nil
 	}
@@ -128,29 +130,60 @@ func (e *updater) isUpToDate(check bool, cr *svcapitypes.Secret, resp *svcsdk.De
 		SecretId: awsclients.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return false, errors.Wrap(err, errGetSecretValue)
+		return false, awsclients.Wrap(err, errGetSecretValue)
 	}
-	nn := types.NamespacedName{
-		Name:      cr.Spec.ForProvider.SecretRef.SecretReference.Name,
-		Namespace: cr.Spec.ForProvider.SecretRef.SecretReference.Namespace,
+	payload, err := e.getPayload(ctx, cr)
+	if err != nil {
+		return false, err
 	}
-	sc := &corev1.Secret{}
-	if err := e.kube.Get(ctx, nn, sc); err != nil {
-		return false, errors.Wrap(err, errGetSecretFailed)
-	}
-	val, ok := sc.Data[cr.Spec.ForProvider.SecretRef.Key]
-	if !ok {
-		return false, errors.New(fmt.Sprintf(errFmtKeyNotFound, cr.Spec.ForProvider.SecretRef.Key))
-	}
-	return bytes.Equal(s.SecretBinary, val), nil
+	return payload == awsclients.StringValue(s.SecretString), nil
 }
 
-func (e *updater) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcsdk.UpdateSecretInput) error {
+func (e *hooks) getPayload(ctx context.Context, cr *svcapitypes.Secret) (string, error) {
+	switch cr.Spec.ForProvider.PayloadType {
+	case "SingleValue":
+		nn := types.NamespacedName{
+			Name:      cr.Spec.ForProvider.SingleValueSecretRef.SecretReference.Name,
+			Namespace: cr.Spec.ForProvider.SingleValueSecretRef.SecretReference.Namespace,
+		}
+		sc := &corev1.Secret{}
+		if err := e.kube.Get(ctx, nn, sc); err != nil {
+			return "", errors.Wrap(err, errGetSecretFailed)
+		}
+		val, ok := sc.Data[cr.Spec.ForProvider.SingleValueSecretRef.Key]
+		if !ok {
+			return "", errors.New(fmt.Sprintf(errFmtKeyNotFound, cr.Spec.ForProvider.SingleValueSecretRef.Key))
+		}
+		return string(val), nil
+	case "Map":
+		nn := types.NamespacedName{
+			Name:      cr.Spec.ForProvider.MapSecretRef.Name,
+			Namespace: cr.Spec.ForProvider.MapSecretRef.Namespace,
+		}
+		sc := &corev1.Secret{}
+		if err := e.kube.Get(ctx, nn, sc); err != nil {
+			return "", errors.Wrap(err, errGetSecretFailed)
+		}
+		d := map[string]string{}
+		for k, v := range sc.Data {
+			d[k] = string(v)
+		}
+		payload, err := json.Marshal(d)
+		if err != nil {
+			return "", err
+		}
+		return string(payload), nil
+	default:
+		return "", errors.Errorf(errFmtUnsupportedPayloadType, cr.Spec.ForProvider.PayloadType)
+	}
+}
+
+func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcsdk.UpdateSecretInput) error {
 	resp, err := e.client.DescribeSecretWithContext(ctx, &svcsdk.DescribeSecretInput{
 		SecretId: awsclients.String(meta.GetExternalName(cr)),
 	})
 	if err != nil {
-		return errors.Wrap(err, errDescribe)
+		return awsclients.Wrap(err, errDescribe)
 	}
 	add, remove := DiffTags(cr.Spec.ForProvider.Tags, resp.Tags)
 	if len(remove) != 0 {
@@ -158,7 +191,7 @@ func (e *updater) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *sv
 			SecretId: awsclients.String(meta.GetExternalName(cr)),
 			TagKeys:  remove,
 		}); err != nil {
-			return errors.Wrap(err, errRemoveTags)
+			return awsclients.Wrap(err, errRemoveTags)
 		}
 	}
 	if len(add) != 0 {
@@ -166,47 +199,26 @@ func (e *updater) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *sv
 			SecretId: awsclients.String(meta.GetExternalName(cr)),
 			Tags:     add,
 		}); err != nil {
-			return errors.Wrap(err, errCreateTags)
+			return awsclients.Wrap(err, errCreateTags)
 		}
 	}
-	nn := types.NamespacedName{
-		Name:      cr.Spec.ForProvider.SecretRef.SecretReference.Name,
-		Namespace: cr.Spec.ForProvider.SecretRef.SecretReference.Namespace,
+	payload, err := e.getPayload(ctx, cr)
+	if err != nil {
+		return err
 	}
-	sc := &corev1.Secret{}
-	if err := e.kube.Get(ctx, nn, sc); err != nil {
-		return errors.Wrap(err, errGetSecretFailed)
-	}
-	val, ok := sc.Data[cr.Spec.ForProvider.SecretRef.Key]
-	if !ok {
-		return errors.New(fmt.Sprintf("key %s is not found in referenced Kubernetes secret", cr.Spec.ForProvider.SecretRef.Key))
-	}
+	obj.SecretString = awsclients.String(payload)
 	obj.SecretId = awsclients.String(meta.GetExternalName(cr))
 	obj.Description = cr.Spec.ForProvider.Description
 	obj.KmsKeyId = cr.Spec.ForProvider.KMSKeyID
-	obj.SecretBinary = val
 	return nil
 }
 
-type creator struct {
-	client secretsmanageriface.SecretsManagerAPI
-	kube   client.Client
-}
-
-func (e *creator) preCreate(ctx context.Context, cr *svcapitypes.Secret, obj *svcsdk.CreateSecretInput) error {
-	nn := types.NamespacedName{
-		Name:      cr.Spec.ForProvider.SecretRef.SecretReference.Name,
-		Namespace: cr.Spec.ForProvider.SecretRef.SecretReference.Namespace,
+func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.Secret, obj *svcsdk.CreateSecretInput) error {
+	payload, err := e.getPayload(ctx, cr)
+	if err != nil {
+		return err
 	}
-	sc := &corev1.Secret{}
-	if err := e.kube.Get(ctx, nn, sc); err != nil {
-		return errors.Wrap(err, errGetSecretFailed)
-	}
-	val, ok := sc.Data[cr.Spec.ForProvider.SecretRef.Key]
-	if !ok {
-		return errors.New(fmt.Sprintf("key %s is not found in referenced Kubernetes secret", cr.Spec.ForProvider.SecretRef.Key))
-	}
-	obj.SecretBinary = val
+	obj.SecretString = awsclients.String(payload)
 	obj.Name = awsclients.String(meta.GetExternalName(cr))
 	return nil
 }
