@@ -26,7 +26,6 @@ import (
 	svcsdkapi "github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -89,7 +88,7 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}
 	GenerateSecret(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, err := e.isUpToDate(basicUpToDateCheck(cr, resp), cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
@@ -135,11 +134,6 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 	}
-
-	if resp.ARN != nil {
-		cr.Status.AtProvider.ARN = resp.ARN
-	}
-
 	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, err)
 }
 
@@ -158,21 +152,7 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 		return nil
 	}
 	resp, err := e.client.DeleteSecretWithContext(ctx, input)
-	if cpresource.Ignore(IsNotFound, err) != nil {
-		return awsclient.Wrap(err, errDelete)
-	}
-
-	if resp.ARN != nil {
-		cr.Status.AtProvider.ARN = resp.ARN
-	}
-	if resp.DeletionDate != nil {
-		cr.Status.AtProvider.DeletionDate = &metav1.Time{*resp.DeletionDate}
-	}
-	if resp.Name != nil {
-		cr.Status.AtProvider.Name = resp.Name
-	}
-
-	return nil
+	return e.postDelete(ctx, cr, resp, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
 }
 
 type option func(*external)
@@ -184,10 +164,11 @@ func newExternal(kube client.Client, client svcsdkapi.SecretsManagerAPI, opts []
 		preObserve:     nopPreObserve,
 		postObserve:    nopPostObserve,
 		lateInitialize: lateInitialize,
-		isUpToDate:     alwaysUpToDate,
+		isUpToDate:     nopIsUpToDate,
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
+		postDelete:     nopPostDelete,
 		preUpdate:      nopPreUpdate,
 		postUpdate:     nopPostUpdate,
 	}
@@ -203,10 +184,11 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.Secret, *svcsdk.DescribeSecretInput) error
 	postObserve    func(context.Context, *svcapitypes.Secret, *svcsdk.DescribeSecretOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	lateInitialize func(*svcapitypes.Secret, *svcsdk.DescribeSecretOutput) error
-	isUpToDate     func(*svcapitypes.Secret, *svcsdk.DescribeSecretOutput) (bool, error)
+	isUpToDate     func(bool, *svcapitypes.Secret, *svcsdk.DescribeSecretOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.Secret, *svcsdk.CreateSecretInput) error
 	postCreate     func(context.Context, *svcapitypes.Secret, *svcsdk.CreateSecretOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Secret, *svcsdk.DeleteSecretInput) (bool, error)
+	postDelete     func(context.Context, *svcapitypes.Secret, *svcsdk.DeleteSecretOutput, error) error
 	preUpdate      func(context.Context, *svcapitypes.Secret, *svcsdk.UpdateSecretInput) error
 	postUpdate     func(context.Context, *svcapitypes.Secret, *svcsdk.UpdateSecretOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -219,10 +201,9 @@ func nopPostObserve(_ context.Context, _ *svcapitypes.Secret, _ *svcsdk.Describe
 	return obs, err
 }
 
-func alwaysUpToDate(*svcapitypes.Secret, *svcsdk.DescribeSecretOutput) (bool, error) {
-	return true, nil
+func nopIsUpToDate(r bool, _ *svcapitypes.Secret, _ *svcsdk.DescribeSecretOutput) (bool, error) {
+	return r, nil
 }
-
 func nopPreCreate(context.Context, *svcapitypes.Secret, *svcsdk.CreateSecretInput) error {
 	return nil
 }
@@ -231,6 +212,9 @@ func nopPostCreate(_ context.Context, _ *svcapitypes.Secret, _ *svcsdk.CreateSec
 }
 func nopPreDelete(context.Context, *svcapitypes.Secret, *svcsdk.DeleteSecretInput) (bool, error) {
 	return false, nil
+}
+func nopPostDelete(_ context.Context, _ *svcapitypes.Secret, _ *svcsdk.DeleteSecretOutput, err error) error {
+	return err
 }
 func nopPreUpdate(context.Context, *svcapitypes.Secret, *svcsdk.UpdateSecretInput) error {
 	return nil

@@ -91,8 +91,9 @@ func postObserve(_ context.Context, cr *svcapitypes.Secret, resp *svcsdk.Describ
 	}
 	// NOTE(muvaf): No operation can be done for secrets that are marked for deletion,
 	// including fetching the content.
-	if cr.Status.AtProvider.DeletedDate != nil {
+	if resp.DeletedDate != nil {
 		obs.ResourceExists = false
+		return obs, nil
 	}
 	cr.SetConditions(xpv1.Available())
 	return obs, nil
@@ -103,9 +104,12 @@ type updater struct {
 	kube   client.Client
 }
 
-func (e *updater) isUpToDate(cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, error) {
+func (e *updater) isUpToDate(check bool, cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, error) {
+	if !check {
+		return check, nil
+	}
 	// NOTE(muvaf): No operation can be done on secrets that are marked for deletion.
-	if cr.Status.AtProvider.DeletedDate != nil {
+	if resp.DeletedDate != nil {
 		return true, nil
 	}
 	if awsclients.StringValue(cr.Spec.ForProvider.Description) != awsclients.StringValue(resp.Description) {
@@ -208,10 +212,8 @@ func (e *creator) preCreate(ctx context.Context, cr *svcapitypes.Secret, obj *sv
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Secret, obj *svcsdk.DeleteSecretInput) (bool, error) {
-	// NOTE(muvaf): No operation can be done on secrets that are marked for deletion.
-	if cr.Status.AtProvider.DeletedDate != nil {
-		return true, nil
-	}
+	obj.ForceDeleteWithoutRecovery = cr.Spec.ForProvider.ForceDeleteWithoutRecovery
+	obj.RecoveryWindowInDays = cr.Spec.ForProvider.RecoveryWindowInDays
 	obj.SecretId = awsclients.String(meta.GetExternalName(cr))
 	return false, nil
 }

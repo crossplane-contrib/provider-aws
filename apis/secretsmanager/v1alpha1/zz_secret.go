@@ -31,35 +31,27 @@ type SecretParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 
-	// (Optional) Specifies an updated user-provided description of the secret.
+	// (Optional) Specifies a user-provided description of the secret.
 	Description *string `json:"description,omitempty"`
 
-	// (Optional) Specifies that the secret is to be deleted without any recovery
-	// window. You can't use both this parameter and the RecoveryWindowInDays parameter
-	// in the same API call.
+	// (Optional) Specifies the ARN, Key ID, or alias of the AWS KMS customer master
+	// key (CMK) to be used to encrypt the SecretString or SecretBinary values in
+	// the versions stored in this secret.
 	//
-	// An asynchronous background process performs the actual deletion, so there
-	// can be a short delay before the operation completes. If you write code to
-	// delete and then immediately recreate a secret with the same name, ensure
-	// that your code includes appropriate back off and retry logic.
+	// You can specify any of the supported ways to identify a AWS KMS key ID. If
+	// you need to reference a CMK in a different account, you can use only the
+	// key ARN or the alias ARN.
 	//
-	// Use this parameter with caution. This parameter causes the operation to skip
-	// the normal waiting period before the permanent deletion that AWS would normally
-	// impose with the RecoveryWindowInDays parameter. If you delete a secret with
-	// the ForceDeleteWithouRecovery parameter, then you have no opportunity to
-	// recover the secret. It is permanently lost.
-	ForceDeleteWithoutRecovery *bool `json:"forceDeleteWithoutRecovery,omitempty"`
-
-	// (Optional) Specifies an updated ARN or alias of the AWS KMS customer master
-	// key (CMK) to be used to encrypt the protected text in new versions of this
-	// secret.
+	// If you don't specify this value, then Secrets Manager defaults to using the
+	// AWS account's default CMK (the one named aws/secretsmanager). If a AWS KMS
+	// CMK with that name doesn't yet exist, then Secrets Manager creates it for
+	// you automatically the first time it needs to encrypt a version's SecretString
+	// or SecretBinary fields.
 	//
-	// You can only use the account's default CMK to encrypt and decrypt if you
-	// call this operation using credentials from the same account that owns the
-	// secret. If the secret is in a different account, then you must create a custom
-	// CMK and provide the ARN of that CMK in this field. The user making the call
-	// must have permissions to both the secret and the CMK in their respective
-	// accounts.
+	// You can use the account default CMK to encrypt and decrypt only if you call
+	// this operation using credentials from the same account that owns the secret.
+	// If the secret resides in a different account, then you must create a custom
+	// CMK and specify the ARN in this field.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 
 	// KMSKeyIDRef is a reference to an kms/v1alpha1.Key used
@@ -71,13 +63,6 @@ type SecretParameters struct {
 	// used to set the KMSKeyID.
 	// +optional
 	KMSKeyIDSelector *xpv1.Selector `json:"kmsKeyIDSelector,omitempty"`
-
-	// (Optional) Specifies the number of days that Secrets Manager waits before
-	// it can delete the secret. You can't use both this parameter and the ForceDeleteWithoutRecovery
-	// parameter in the same API call.
-	//
-	// This value can range from 7 to 30 days. The default value is 30.
-	RecoveryWindowInDays *int64 `json:"recoveryWindowInDays,omitempty"`
 
 	// (Optional) Specifies a list of user-defined tags that are attached to the
 	// secret. Each tag is a "Key" and "Value" pair of strings. This operation only
@@ -137,52 +122,15 @@ type SecretSpec struct {
 
 // SecretObservation defines the observed state of Secret
 type SecretObservation struct {
-	// The ARN of the secret that is now scheduled for deletion.
+	// The Amazon Resource Name (ARN) of the secret that you just created.
+	//
+	// Secrets Manager automatically adds several random characters to the name
+	// at the end of the ARN when you initially create a secret. This affects only
+	// the ARN and not the actual friendly name. This ensures that if you create
+	// a new secret with the same name as an old secret that you previously deleted,
+	// then users with access to the old secret don't automatically get access to
+	// the new secret because the ARNs are different.
 	ARN *string `json:"arn,omitempty"`
-	// The date that the secret was created.
-	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
-	// This value exists if the secret is scheduled for deletion. Some time after
-	// the specified date and time, Secrets Manager deletes the secret and all of
-	// its versions.
-	//
-	// If a secret is scheduled for deletion, then its details, including the encrypted
-	// secret information, is not accessible. To cancel a scheduled deletion and
-	// restore access, use RestoreSecret.
-	DeletedDate *metav1.Time `json:"deletedDate,omitempty"`
-	// The date and time after which this secret can be deleted by Secrets Manager
-	// and can no longer be restored. This value is the date and time of the delete
-	// request plus the number of days specified in RecoveryWindowInDays.
-	DeletionDate *metav1.Time `json:"deletionDate,omitempty"`
-	// The last date that this secret was accessed. This value is truncated to midnight
-	// of the date and therefore shows only the date, not the time.
-	LastAccessedDate *metav1.Time `json:"lastAccessedDate,omitempty"`
-	// The last date and time that this secret was modified in any way.
-	LastChangedDate *metav1.Time `json:"lastChangedDate,omitempty"`
-	// The most recent date and time that the Secrets Manager rotation process was
-	// successfully completed. This value is null if the secret has never rotated.
-	LastRotatedDate *metav1.Time `json:"lastRotatedDate,omitempty"`
-	// The friendly name of the secret that is now scheduled for deletion.
-	Name *string `json:"name,omitempty"`
-	// Returns the name of the service that created this secret.
-	OwningService *string `json:"owningService,omitempty"`
-	// Specifies whether automatic rotation is enabled for this secret.
-	//
-	// To enable rotation, use RotateSecret with AutomaticallyRotateAfterDays set
-	// to a value greater than 0. To disable rotation, use CancelRotateSecret.
-	RotationEnabled *bool `json:"rotationEnabled,omitempty"`
-	// The ARN of a Lambda function that's invoked by Secrets Manager to rotate
-	// the secret either automatically per the schedule or manually by a call to
-	// RotateSecret.
-	RotationLambdaARN *string `json:"rotationLambdaARN,omitempty"`
-	// A structure that contains the rotation configuration for this secret.
-	RotationRules *RotationRulesType `json:"rotationRules,omitempty"`
-	// A list of all of the currently assigned VersionStage staging labels and the
-	// VersionId that each is attached to. Staging labels are used to keep track
-	// of the different versions during the rotation process.
-	//
-	// A version that does not have any staging labels attached is considered deprecated
-	// and subject to deletion. Such versions are not included in this list.
-	VersionIDsToStages map[string][]*string `json:"versionIDsToStages,omitempty"`
 }
 
 // SecretStatus defines the observed state of Secret.
