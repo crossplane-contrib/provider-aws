@@ -21,7 +21,6 @@ package secret
 import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/secretsmanager"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/secretsmanager/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -41,50 +40,6 @@ func GenerateSecret(resp *svcsdk.DescribeSecretOutput) *svcapitypes.Secret {
 
 	if resp.ARN != nil {
 		cr.Status.AtProvider.ARN = resp.ARN
-	}
-	if resp.CreatedDate != nil {
-		cr.Status.AtProvider.CreatedDate = &metav1.Time{*resp.CreatedDate}
-	}
-	if resp.DeletedDate != nil {
-		cr.Status.AtProvider.DeletedDate = &metav1.Time{*resp.DeletedDate}
-	}
-	if resp.LastAccessedDate != nil {
-		cr.Status.AtProvider.LastAccessedDate = &metav1.Time{*resp.LastAccessedDate}
-	}
-	if resp.LastChangedDate != nil {
-		cr.Status.AtProvider.LastChangedDate = &metav1.Time{*resp.LastChangedDate}
-	}
-	if resp.LastRotatedDate != nil {
-		cr.Status.AtProvider.LastRotatedDate = &metav1.Time{*resp.LastRotatedDate}
-	}
-	if resp.OwningService != nil {
-		cr.Status.AtProvider.OwningService = resp.OwningService
-	}
-	if resp.RotationEnabled != nil {
-		cr.Status.AtProvider.RotationEnabled = resp.RotationEnabled
-	}
-	if resp.RotationLambdaARN != nil {
-		cr.Status.AtProvider.RotationLambdaARN = resp.RotationLambdaARN
-	}
-	if resp.RotationRules != nil {
-		f11 := &svcapitypes.RotationRulesType{}
-		if resp.RotationRules.AutomaticallyAfterDays != nil {
-			f11.AutomaticallyAfterDays = resp.RotationRules.AutomaticallyAfterDays
-		}
-		cr.Status.AtProvider.RotationRules = f11
-	}
-	if resp.VersionIdsToStages != nil {
-		f13 := map[string][]*string{}
-		for f13key, f13valiter := range resp.VersionIdsToStages {
-			f13val := []*string{}
-			for _, f13valiter := range f13valiter {
-				var f13valelem string
-				f13valelem = *f13valiter
-				f13val = append(f13val, &f13valelem)
-			}
-			f13[f13key] = f13val
-		}
-		cr.Status.AtProvider.VersionIDsToStages = f13
 	}
 
 	return cr
@@ -106,6 +61,16 @@ func lateInitialize(cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) e
 		}
 	}
 	return nil
+}
+
+func basicUpToDateCheck(cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) bool {
+	if awsclients.StringValue(cr.Spec.ForProvider.Description) != awsclients.StringValue(resp.Description) {
+		return false
+	}
+	if awsclients.StringValue(cr.Spec.ForProvider.KMSKeyID) != awsclients.StringValue(resp.KmsKeyId) {
+		return false
+	}
+	return true
 }
 
 // GenerateCreateSecretInput returns a create input.
@@ -150,26 +115,9 @@ func GenerateUpdateSecretInput(cr *svcapitypes.Secret) *svcsdk.UpdateSecretInput
 	return res
 }
 
-func isUpToDate(cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, error) {
-	if awsclients.StringValue(cr.Spec.ForProvider.Description) != awsclients.StringValue(resp.Description) {
-		return false, nil
-	}
-	if awsclients.StringValue(cr.Spec.ForProvider.KMSKeyID) != awsclients.StringValue(resp.KmsKeyId) {
-		return false, nil
-	}
-	return true, nil
-}
-
 // GenerateDeleteSecretInput returns a deletion input.
 func GenerateDeleteSecretInput(cr *svcapitypes.Secret) *svcsdk.DeleteSecretInput {
 	res := &svcsdk.DeleteSecretInput{}
-
-	if cr.Spec.ForProvider.ForceDeleteWithoutRecovery != nil {
-		res.SetForceDeleteWithoutRecovery(*cr.Spec.ForProvider.ForceDeleteWithoutRecovery)
-	}
-	if cr.Spec.ForProvider.RecoveryWindowInDays != nil {
-		res.SetRecoveryWindowInDays(*cr.Spec.ForProvider.RecoveryWindowInDays)
-	}
 
 	return res
 }
