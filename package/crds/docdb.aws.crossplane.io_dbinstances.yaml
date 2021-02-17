@@ -1,0 +1,345 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.0
+  creationTimestamp: null
+  name: dbinstances.docdb.aws.crossplane.io
+spec:
+  group: docdb.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: DBInstance
+    listKind: DBInstanceList
+    plural: dbinstances
+    singular: dbinstance
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: DBInstance is the Schema for the DBInstances API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DBInstanceSpec defines the desired state of DBInstance
+            properties:
+              deletionPolicy:
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: DBInstanceParameters defines the desired state of DBInstance
+                properties:
+                  applyImmediately:
+                    description: "Specifies whether the modifications in this request and any pending modifications are asynchronously applied as soon as possible, regardless of the PreferredMaintenanceWindow setting for the instance. \n If this parameter is set to false, changes to the instance are applied during the next maintenance window. Some parameter changes can cause an outage and are applied on the next reboot. \n Default: false"
+                    type: boolean
+                  autoMinorVersionUpgrade:
+                    description: "Indicates that minor engine upgrades are applied automatically to the instance during the maintenance window. \n Default: true"
+                    type: boolean
+                  availabilityZone:
+                    description: "The Amazon EC2 Availability Zone that the instance is created in. \n Default: A random, system-chosen Availability Zone in the endpoint's AWS Region. \n Example: us-east-1d"
+                    type: string
+                  caCertificateIdentifier:
+                    description: The identifier of the CA certificate for this DB instance.
+                    type: string
+                  dbClusterIdentifier:
+                    description: The identifier of the cluster that the instance will belong to.
+                    type: string
+                  dbInstanceClass:
+                    description: The compute and memory capacity of the instance; for example, db.r5.large.
+                    type: string
+                  engine:
+                    description: "The name of the database engine to be used for this instance. \n Valid value: docdb"
+                    type: string
+                  preferredMaintenanceWindow:
+                    description: "The time range each week during which system maintenance can occur, in Universal Coordinated Time (UTC). \n Format: ddd:hh24:mi-ddd:hh24:mi \n The default is a 30-minute window selected at random from an 8-hour block of time for each AWS Region, occurring on a random day of the week. \n Valid days: Mon, Tue, Wed, Thu, Fri, Sat, Sun \n Constraints: Minimum 30-minute window."
+                    type: string
+                  promotionTier:
+                    description: "A value that specifies the order in which an Amazon DocumentDB replica is promoted to the primary instance after a failure of the existing primary instance. \n Default: 1 \n Valid values: 0-15"
+                    format: int64
+                    type: integer
+                  region:
+                    description: Region is which region the DBInstance will be created.
+                    type: string
+                  tags:
+                    description: The tags to be assigned to the instance. You can assign up to 10 tags to an instance.
+                    items:
+                      properties:
+                        key:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    type: array
+                required:
+                - dbClusterIdentifier
+                - dbInstanceClass
+                - engine
+                - region
+                type: object
+              providerConfigRef:
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: DBInstanceStatus defines the observed state of DBInstance.
+            properties:
+              atProvider:
+                description: DBInstanceObservation defines the observed state of DBInstance
+                properties:
+                  backupRetentionPeriod:
+                    description: Specifies the number of days for which automatic snapshots are retained.
+                    format: int64
+                    type: integer
+                  caCertificateIdentifier:
+                    description: The identifier of the CA certificate for this DB instance.
+                    type: string
+                  dbInstanceARN:
+                    description: The Amazon Resource Name (ARN) for the instance.
+                    type: string
+                  dbInstanceIdentifier:
+                    description: Contains a user-provided database identifier. This identifier is the unique key that identifies an instance.
+                    type: string
+                  dbInstanceStatus:
+                    description: Specifies the current state of this database.
+                    type: string
+                  dbSubnetGroup:
+                    description: Specifies information on the subnet group that is associated with the instance, including the name, description, and subnets in the subnet group.
+                    properties:
+                      dbSubnetGroupARN:
+                        type: string
+                      dbSubnetGroupDescription:
+                        type: string
+                      dbSubnetGroupName:
+                        type: string
+                      subnetGroupStatus:
+                        type: string
+                      subnets:
+                        items:
+                          properties:
+                            subnetAvailabilityZone:
+                              description: Information about an Availability Zone.
+                              properties:
+                                name:
+                                  type: string
+                              type: object
+                            subnetIdentifier:
+                              type: string
+                            subnetStatus:
+                              type: string
+                          type: object
+                        type: array
+                      vpcID:
+                        type: string
+                    type: object
+                  dbiResourceID:
+                    description: The AWS Region-unique, immutable identifier for the instance. This identifier is found in AWS CloudTrail log entries whenever the AWS KMS key for the instance is accessed.
+                    type: string
+                  enabledCloudwatchLogsExports:
+                    description: A list of log types that this instance is configured to export to Amazon CloudWatch Logs.
+                    items:
+                      type: string
+                    type: array
+                  endpoint:
+                    description: Specifies the connection endpoint.
+                    properties:
+                      address:
+                        type: string
+                      hostedZoneID:
+                        type: string
+                      port:
+                        format: int64
+                        type: integer
+                    type: object
+                  engineVersion:
+                    description: Indicates the database engine version.
+                    type: string
+                  instanceCreateTime:
+                    description: Provides the date and time that the instance was created.
+                    format: date-time
+                    type: string
+                  kmsKeyID:
+                    description: If StorageEncrypted is true, the AWS KMS key identifier for the encrypted instance.
+                    type: string
+                  latestRestorableTime:
+                    description: Specifies the latest time to which a database can be restored with point-in-time restore.
+                    format: date-time
+                    type: string
+                  pendingModifiedValues:
+                    description: Specifies that changes to the instance are pending. This element is included only when changes are pending. Specific changes are identified by subelements.
+                    properties:
+                      allocatedStorage:
+                        format: int64
+                        type: integer
+                      backupRetentionPeriod:
+                        format: int64
+                        type: integer
+                      caCertificateIdentifier:
+                        type: string
+                      dbInstanceClass:
+                        type: string
+                      dbInstanceIdentifier:
+                        type: string
+                      dbSubnetGroupName:
+                        type: string
+                      engineVersion:
+                        type: string
+                      iops:
+                        format: int64
+                        type: integer
+                      licenseModel:
+                        type: string
+                      masterUserPassword:
+                        type: string
+                      multiAZ:
+                        type: boolean
+                      pendingCloudwatchLogsExports:
+                        description: A list of the log types whose configuration is still pending. These log types are in the process of being activated or deactivated.
+                        properties:
+                          logTypesToDisable:
+                            items:
+                              type: string
+                            type: array
+                          logTypesToEnable:
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                      port:
+                        format: int64
+                        type: integer
+                      storageType:
+                        type: string
+                    type: object
+                  preferredBackupWindow:
+                    description: Specifies the daily time range during which automated backups are created if automated backups are enabled, as determined by the BackupRetentionPeriod.
+                    type: string
+                  publiclyAccessible:
+                    description: Not supported. Amazon DocumentDB does not currently support public endpoints. The value of PubliclyAccessible is always false.
+                    type: boolean
+                  statusInfos:
+                    description: The status of a read replica. If the instance is not a read replica, this is blank.
+                    items:
+                      properties:
+                        message:
+                          type: string
+                        normal:
+                          type: boolean
+                        status:
+                          type: string
+                        statusType:
+                          type: string
+                      type: object
+                    type: array
+                  storageEncrypted:
+                    description: Specifies whether or not the instance is encrypted.
+                    type: boolean
+                  vpcSecurityGroups:
+                    description: Provides a list of VPC security group elements that the instance belongs to.
+                    items:
+                      properties:
+                        status:
+                          type: string
+                        vpcSecurityGroupID:
+                          type: string
+                      type: object
+                    type: array
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True, False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            required:
+            - atProvider
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

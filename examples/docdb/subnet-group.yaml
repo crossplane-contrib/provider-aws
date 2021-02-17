@@ -1,0 +1,16 @@
+apiVersion: docdb.aws.crossplane.io/v1alpha1
+kind: DBSubnetGroup
+metadata:
+  name: example-subnet-group
+spec:
+  forProvider:
+    region: eu-central-1
+    dbSubnetGroupDescription: "Example subnet group"
+    subnetIDs:
+      - sample-subnet1
+      - sample-subnet2
+    tags:
+      - key: cluster
+        value: "my-cluster"
+  providerConfigRef:
+    name: example
