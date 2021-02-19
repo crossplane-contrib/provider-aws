@@ -20,12 +20,15 @@ import (
 	"context"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -34,7 +37,7 @@ import (
 )
 
 // SetupStage adds a controller that reconciles Stage.
-func SetupStage(mgr ctrl.Manager, l logging.Logger) error {
+func SetupStage(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -46,6 +49,9 @@ func SetupStage(mgr ctrl.Manager, l logging.Logger) error {
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+		}).
 		For(&svcapitypes.Stage{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.StageGroupVersionKind),
