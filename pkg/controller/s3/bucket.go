@@ -21,8 +21,11 @@ import (
 	"reflect"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
 
@@ -54,10 +57,13 @@ const (
 )
 
 // SetupBucket adds a controller that reconciles Buckets.
-func SetupBucket(mgr ctrl.Manager, l logging.Logger) error {
+func SetupBucket(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1beta1.BucketGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+		}).
 		For(&v1beta1.Bucket{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.BucketGroupVersionKind),
