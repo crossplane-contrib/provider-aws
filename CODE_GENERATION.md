@@ -89,7 +89,7 @@ of the provider. Create a file called `pkg/controller/<serviceid>/setup.go` and
 add the setup function like the following:
 ```golang
 // SetupStage adds a controller that reconciles Stage.
-func SetupStage(mgr ctrl.Manager, l logging.Logger) error {
+func SetupStage(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -159,7 +159,7 @@ Likely, we need to do this injection before every SDK call. The following is an
 example for hook functions injected:
 ```golang
 // SetupStage adds a controller that reconciles Stage.
-func SetupStage(mgr ctrl.Manager, l logging.Logger) error {
+func SetupStage(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -258,7 +258,7 @@ it's not that long.
 In order to override default no-op late initialization code, we'll use the same
 mechanism as others:
 ```golang
-func SetupStage(mgr ctrl.Manager, l logging.Logger) error {
+func SetupStage(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -283,7 +283,7 @@ and our `spec`. Here is an [example](https://github.com/crossplane/provider-aws/
 After writing the function, you can use it instead of the default `alwaysUpToDate`
 similar to others:
 ```golang
-func SetupStage(mgr ctrl.Manager, l logging.Logger) error {
+func SetupStage(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
 	opts := []option{
 		func(e *external) {

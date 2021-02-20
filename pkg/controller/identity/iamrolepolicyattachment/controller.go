@@ -23,12 +23,15 @@ import (
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -48,11 +51,14 @@ const (
 
 // SetupIAMRolePolicyAttachment adds a controller that reconciles
 // IAMRolePolicyAttachments.
-func SetupIAMRolePolicyAttachment(mgr ctrl.Manager, l logging.Logger) error {
+func SetupIAMRolePolicyAttachment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1beta1.IAMRolePolicyAttachmentGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+		}).
 		For(&v1beta1.IAMRolePolicyAttachment{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.IAMRolePolicyAttachmentGroupVersionKind),
