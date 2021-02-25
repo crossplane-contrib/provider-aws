@@ -200,7 +200,7 @@ func LateInitializeIPPermissions(spec []v1beta1.IPPermission, o []ec2.IpPermissi
 	}
 	for i := range o {
 		spec[i].FromPort = awsclients.LateInitializeInt64Ptr(spec[i].FromPort, o[i].FromPort)
-		spec[i].ToPort = awsclients.LateInitializeInt64Ptr(spec[i].FromPort, o[i].ToPort)
+		spec[i].ToPort = awsclients.LateInitializeInt64Ptr(spec[i].ToPort, o[i].ToPort)
 		spec[i].IPProtocol = awsclients.LateInitializeString(spec[i].IPProtocol, o[i].IpProtocol)
 
 		for j := range o[i].IpRanges {
