@@ -31,6 +31,7 @@ import (
 	ec2v1alpha4 "github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
 	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	ecrv1alpha1 "github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
+	efsv1alpha1 "github.com/crossplane/provider-aws/apis/efs/v1alpha1"
 	eksv1alpha1 "github.com/crossplane/provider-aws/apis/eks/v1alpha1"
 	eksv1beta1 "github.com/crossplane/provider-aws/apis/eks/v1beta1"
 	elasticloadbalancingv1alpha1 "github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
@@ -79,6 +80,7 @@ func init() {
 		sfnv1alpha1.SchemeBuilder.AddToScheme,
 		dynamodbv1alpha1.SchemeBuilder.AddToScheme,
 		kmsv1alpha1.SchemeBuilder.AddToScheme,
+		efsv1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 
