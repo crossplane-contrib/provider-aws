@@ -54,6 +54,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpc"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
+	"github.com/crossplane/provider-aws/pkg/controller/efs/filesystem"
 	"github.com/crossplane/provider-aws/pkg/controller/eks"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/fargateprofile"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
@@ -144,6 +145,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		backup.SetupBackup,
 		globaltable.SetupGlobalTable,
 		key.SetupKey,
+		filesystem.SetupFileSystem,
 	} {
 		if err := setup(mgr, l, rl); err != nil {
 			return err

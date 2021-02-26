@@ -1,0 +1,4 @@
+ignore:
+  resource_names:
+    - AccessPoint
+    - MountTarget
