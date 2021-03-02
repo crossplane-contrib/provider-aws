@@ -89,10 +89,13 @@ of the provider. Create a file called `pkg/controller/<serviceid>/setup.go` and
 add the setup function like the following:
 ```golang
 // SetupStage adds a controller that reconciles Stage.
-func SetupStage(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter) error {
+func SetupStage(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+		}).
 		For(&svcapitypes.Stage{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.StageGroupVersionKind),
@@ -159,7 +162,7 @@ Likely, we need to do this injection before every SDK call. The following is an
 example for hook functions injected:
 ```golang
 // SetupStage adds a controller that reconciles Stage.
-func SetupStage(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter) error {
+func SetupStage(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -171,6 +174,9 @@ func SetupStage(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimite
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
+		WithOptions(controller.Options{
+			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+		}).
 		For(&svcapitypes.Stage{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.StageGroupVersionKind),
