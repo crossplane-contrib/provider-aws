@@ -1,0 +1,27 @@
+ignore:
+  field_paths:
+    - CreateSecretInput.ClientRequestToken
+    - UpdateSecretInput.ClientRequestToken
+    - CreateSecretInput.SecretBinary
+    - CreateSecretInput.SecretString
+    - UpdateSecretInput.SecretBinary
+    - UpdateSecretInput.SecretString
+    - DescribeSecretInput.SecretId
+    - UpdateSecretInput.SecretId
+    - DeleteSecretInput.SecretId
+    - CreateSecretInput.Name
+    - UpdateSecretInput.Name
+    - CreateSecretOutput.Name
+    - UpdateSecretOutput.Name
+    - DescribeSecretOutput.Name
+    - CreateSecretOutput.VersionId
+    - UpdateSecretOutput.VersionId
+resources:
+  Secret:
+    fields:
+      KmsKeyId:
+        referenced_type: "kms/v1alpha1.Key"
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
