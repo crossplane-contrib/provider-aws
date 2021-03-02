@@ -48,15 +48,6 @@ var (
 	ElasticIPGroupVersionKind = SchemeGroupVersion.WithKind(ElasticIPKind)
 )
 
-// NatGateway type metadata.
-var (
-	NATGatewayKind             = reflect.TypeOf(NATGateway{}).Name()
-	NATGatewayGroupKind        = schema.GroupKind{Group: Group, Kind: NATGatewayKind}.String()
-	NATGatewayKindAPIVersion   = NATGatewayKind + "." + SchemeGroupVersion.String()
-	NATGatewayGroupVersionKind = SchemeGroupVersion.WithKind(NATGatewayKind)
-)
-
 func init() {
 	SchemeBuilder.Register(&ElasticIP{}, &ElasticIPList{})
-	SchemeBuilder.Register(&NATGateway{}, &NATGatewayList{})
 }

@@ -26,6 +26,8 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+
+	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 )
 
 // SecurityGroupName returns the spec.groupName of a SecurityGroup.
@@ -155,20 +157,20 @@ func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) er
 	}
 
 	// Resolve spec.forProvider.routes[].natGatewayId
-	// for i := range mg.Spec.ForProvider.Routes {
-	//	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-	//		CurrentValue: aws.StringValue(mg.Spec.ForProvider.Routes[i].NatGatewayID),
-	//		Reference:    mg.Spec.ForProvider.Routes[i].NatGatewayIDRef,
-	//		Selector:     mg.Spec.ForProvider.Routes[i].NatGatewayIDSelector,
-	//		To:           reference.To{Managed: &ec2v1alpha1.NATGateway{}, List: &ec2v1alpha1.NATGatewayList{}},
-	//		Extract:      reference.ExternalName(),
-	//	})
-	//	if err != nil {
-	//		return errors.Wrapf(err, "spec.forProvider.routes[%d].natGatewayId", i)
-	//	}
-	//	mg.Spec.ForProvider.Routes[i].NatGatewayID = aws.String(rsp.ResolvedValue)
-	//	mg.Spec.ForProvider.Routes[i].NatGatewayIDRef = rsp.ResolvedReference
-	// }
+	for i := range mg.Spec.ForProvider.Routes {
+		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+			CurrentValue: aws.StringValue(mg.Spec.ForProvider.Routes[i].NatGatewayID),
+			Reference:    mg.Spec.ForProvider.Routes[i].NatGatewayIDRef,
+			Selector:     mg.Spec.ForProvider.Routes[i].NatGatewayIDSelector,
+			To:           reference.To{Managed: &NATGateway{}, List: &NATGatewayList{}},
+			Extract:      reference.ExternalName(),
+		})
+		if err != nil {
+			return errors.Wrapf(err, "spec.forProvider.routes[%d].natGatewayId", i)
+		}
+		mg.Spec.ForProvider.Routes[i].NatGatewayID = aws.String(rsp.ResolvedValue)
+		mg.Spec.ForProvider.Routes[i].NatGatewayIDRef = rsp.ResolvedReference
+	}
 
 	// Resolve spec.associations[].subnetId
 	for i := range mg.Spec.ForProvider.Associations {
@@ -185,6 +187,41 @@ func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) er
 		mg.Spec.ForProvider.Associations[i].SubnetID = aws.String(rsp.ResolvedValue)
 		mg.Spec.ForProvider.Associations[i].SubnetIDRef = rsp.ResolvedReference
 	}
+
+	return nil
+}
+
+// ResolveReferences of this NatGateway
+func (mg *NATGateway) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// // Resolve spec.subnetId
+	subnetIDResponse, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: aws.StringValue(mg.Spec.ForProvider.SubnetID),
+		Reference:    mg.Spec.ForProvider.SubnetIDRef,
+		Selector:     mg.Spec.ForProvider.SubnetIDSelector,
+		To:           reference.To{Managed: &Subnet{}, List: &SubnetList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return err
+	}
+	mg.Spec.ForProvider.SubnetID = aws.String(subnetIDResponse.ResolvedValue)
+	mg.Spec.ForProvider.SubnetIDRef = subnetIDResponse.ResolvedReference
+
+	// // Resolve spec.elasticIp
+	AllocationIDRespone, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: aws.StringValue(mg.Spec.ForProvider.AllocationID),
+		Reference:    mg.Spec.ForProvider.AllocationIDRef,
+		Selector:     mg.Spec.ForProvider.AllocationIDSelector,
+		To:           reference.To{Managed: &v1alpha1.ElasticIP{}, List: &v1alpha1.ElasticIPList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return err
+	}
+	mg.Spec.ForProvider.AllocationID = aws.String(AllocationIDRespone.ResolvedValue)
+	mg.Spec.ForProvider.AllocationIDRef = AllocationIDRespone.ResolvedReference
 
 	return nil
 }
