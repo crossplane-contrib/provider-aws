@@ -1,12 +1,13 @@
 package ec2
 
 import (
+	"sort"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -66,16 +67,66 @@ func LateInitializeElasticIP(in *v1alpha1.ElasticIPParameters, a *ec2.Address) {
 	in.NetworkBorderGroup = awsclients.LateInitializeStringPtr(in.NetworkBorderGroup, a.NetworkBorderGroup)
 	in.PublicIPv4Pool = awsclients.LateInitializeStringPtr(in.PublicIPv4Pool, a.PublicIpv4Pool)
 	if len(in.Tags) == 0 && len(a.Tags) != 0 {
-		in.Tags = v1beta1.BuildFromEC2Tags(a.Tags)
+		in.Tags = BuildFromEC2Tags(a.Tags)
 	}
 }
 
 // IsElasticIPUpToDate checks whether there is a change in any of the modifiable fields.
 func IsElasticIPUpToDate(e v1alpha1.ElasticIPParameters, a ec2.Address) bool {
-	return v1beta1.CompareTags(e.Tags, a.Tags)
+	return CompareTags(e.Tags, a.Tags)
 }
 
 // IsStandardDomain checks whether it is set for standard domain
 func IsStandardDomain(e v1alpha1.ElasticIPParameters) bool {
 	return e.Domain != nil && *e.Domain == *aws.String(string(ec2.DomainTypeStandard))
+}
+
+// GenerateEC2Tags generates a tag array with type that EC2 client expects.
+func GenerateEC2Tags(tags []v1alpha1.Tag) []ec2.Tag {
+	res := make([]ec2.Tag, len(tags))
+	for i, t := range tags {
+		res[i] = ec2.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
+	}
+	return res
+}
+
+// BuildFromEC2Tags returns a list of tags, off of the given ec2 tags
+func BuildFromEC2Tags(tags []ec2.Tag) []v1alpha1.Tag {
+	if len(tags) < 1 {
+		return nil
+	}
+	res := make([]v1alpha1.Tag, len(tags))
+	for i, t := range tags {
+		res[i] = v1alpha1.Tag{Key: aws.StringValue(t.Key), Value: aws.StringValue(t.Value)}
+	}
+
+	return res
+}
+
+// CompareTags compares arrays of v1beta1.Tag and ec2.Tag
+func CompareTags(tags []v1alpha1.Tag, ec2Tags []ec2.Tag) bool {
+	if len(tags) != len(ec2Tags) {
+		return false
+	}
+
+	SortTags(tags, ec2Tags)
+
+	for i, t := range tags {
+		if t.Key != *ec2Tags[i].Key || t.Value != *ec2Tags[i].Value {
+			return false
+		}
+	}
+
+	return true
+}
+
+// SortTags sorts array of v1beta1.Tag and ec2.Tag on 'Key'
+func SortTags(tags []v1alpha1.Tag, ec2Tags []ec2.Tag) {
+	sort.Slice(tags, func(i, j int) bool {
+		return tags[i].Key < tags[j].Key
+	})
+
+	sort.Slice(ec2Tags, func(i, j int) bool {
+		return *ec2Tags[i].Key < *ec2Tags[j].Key
+	})
 }

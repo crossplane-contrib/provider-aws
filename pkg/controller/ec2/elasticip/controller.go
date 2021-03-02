@@ -38,7 +38,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 )
@@ -188,7 +187,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// is idempotent.
 	if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
 		Resources: []string{meta.GetExternalName(cr)},
-		Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+		Tags:      ec2.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
 	}).Send(ctx); err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
 	}
@@ -234,10 +233,10 @@ func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
 	for k, v := range resource.GetExternalTags(mgd) {
 		tagMap[k] = v
 	}
-	cr.Spec.ForProvider.Tags = make([]v1beta1.Tag, len(tagMap))
+	cr.Spec.ForProvider.Tags = make([]v1alpha1.Tag, len(tagMap))
 	i := 0
 	for k, v := range tagMap {
-		cr.Spec.ForProvider.Tags[i] = v1beta1.Tag{Key: k, Value: v}
+		cr.Spec.ForProvider.Tags[i] = v1alpha1.Tag{Key: k, Value: v}
 		i++
 	}
 	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
