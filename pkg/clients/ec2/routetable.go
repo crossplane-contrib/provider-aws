@@ -12,7 +12,6 @@ import (
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
@@ -79,18 +78,18 @@ func IsAssociationIDNotFoundErr(err error) bool {
 	return false
 }
 
-// GenerateRTObservation is used to produce v1alpha4.RouteTableExternalStatus from
+// GenerateRTObservation is used to produce v1beta1.RouteTableExternalStatus from
 // ec2.RouteTable.
-func GenerateRTObservation(rt ec2.RouteTable) v1alpha4.RouteTableObservation {
-	o := v1alpha4.RouteTableObservation{
+func GenerateRTObservation(rt ec2.RouteTable) v1beta1.RouteTableObservation {
+	o := v1beta1.RouteTableObservation{
 		OwnerID:      aws.StringValue(rt.OwnerId),
 		RouteTableID: aws.StringValue(rt.RouteTableId),
 	}
 
 	if len(rt.Routes) > 0 {
-		o.Routes = make([]v1alpha4.RouteState, len(rt.Routes))
+		o.Routes = make([]v1beta1.RouteState, len(rt.Routes))
 		for i, rt := range rt.Routes {
-			o.Routes[i] = v1alpha4.RouteState{
+			o.Routes[i] = v1beta1.RouteState{
 				State:                    string(rt.State),
 				DestinationCIDRBlock:     aws.StringValue(rt.DestinationCidrBlock),
 				DestinationIPV6CIDRBlock: aws.StringValue(rt.DestinationIpv6CidrBlock),
@@ -106,9 +105,9 @@ func GenerateRTObservation(rt ec2.RouteTable) v1alpha4.RouteTableObservation {
 	}
 
 	if len(rt.Associations) > 0 {
-		o.Associations = make([]v1alpha4.AssociationState, len(rt.Associations))
+		o.Associations = make([]v1beta1.AssociationState, len(rt.Associations))
 		for i, asc := range rt.Associations {
-			o.Associations[i] = v1alpha4.AssociationState{
+			o.Associations[i] = v1beta1.AssociationState{
 				Main:          aws.BoolValue(asc.Main),
 				AssociationID: aws.StringValue(asc.RouteTableAssociationId),
 				State:         asc.AssociationState.String(),
@@ -120,18 +119,18 @@ func GenerateRTObservation(rt ec2.RouteTable) v1alpha4.RouteTableObservation {
 	return o
 }
 
-// LateInitializeRT fills the empty fields in *v1alpha4.RouteTableParameters with
+// LateInitializeRT fills the empty fields in *v1beta1.RouteTableParameters with
 // the values seen in ec2.RouteTable.
-func LateInitializeRT(in *v1alpha4.RouteTableParameters, rt *ec2.RouteTable) { // nolint:gocyclo
+func LateInitializeRT(in *v1beta1.RouteTableParameters, rt *ec2.RouteTable) { // nolint:gocyclo
 	if rt == nil {
 		return
 	}
 	in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, rt.VpcId)
 
 	if len(in.Routes) == 0 && len(rt.Routes) != 0 {
-		in.Routes = make([]v1alpha4.Route, len(rt.Routes))
+		in.Routes = make([]v1beta1.Route, len(rt.Routes))
 		for i, val := range rt.Routes {
-			in.Routes[i] = v1alpha4.Route{
+			in.Routes[i] = v1beta1.Route{
 				DestinationCIDRBlock:   val.DestinationCidrBlock,
 				GatewayID:              val.GatewayId,
 				InstanceID:             val.InstanceId,
@@ -145,9 +144,9 @@ func LateInitializeRT(in *v1alpha4.RouteTableParameters, rt *ec2.RouteTable) { /
 	}
 
 	if len(in.Associations) == 0 && len(rt.Associations) != 0 {
-		in.Associations = make([]v1alpha4.Association, len(rt.Associations))
+		in.Associations = make([]v1beta1.Association, len(rt.Associations))
 		for i, val := range rt.Associations {
-			in.Associations[i] = v1alpha4.Association{
+			in.Associations[i] = v1beta1.Association{
 				SubnetID: val.SubnetId,
 			}
 		}
@@ -158,19 +157,19 @@ func LateInitializeRT(in *v1alpha4.RouteTableParameters, rt *ec2.RouteTable) { /
 	}
 }
 
-// CreateRTPatch creates a *v1alpha4.RouteTableParameters that has only the changed
-// values between the target *v1alpha4.RouteTableParameters and the current
+// CreateRTPatch creates a *v1beta1.RouteTableParameters that has only the changed
+// values between the target *v1beta1.RouteTableParameters and the current
 // *ec2.RouteTable
-func CreateRTPatch(in ec2.RouteTable, target v1alpha4.RouteTableParameters) (*v1alpha4.RouteTableParameters, error) {
+func CreateRTPatch(in ec2.RouteTable, target v1beta1.RouteTableParameters) (*v1beta1.RouteTableParameters, error) {
 	targetCopy := target.DeepCopy()
-	currentParams := &v1alpha4.RouteTableParameters{}
+	currentParams := &v1beta1.RouteTableParameters{}
 
 	v1beta1.SortTags(target.Tags, in.Tags)
 
 	// Add the default route for fair comparison.
 	for _, val := range in.Routes {
 		if val.GatewayId != nil && *val.GatewayId == DefaultLocalGatewayID {
-			targetCopy.Routes = append([]v1alpha4.Route{{
+			targetCopy.Routes = append([]v1beta1.Route{{
 				GatewayID:            val.GatewayId,
 				DestinationCIDRBlock: val.DestinationCidrBlock,
 			}}, target.Routes...)
@@ -191,7 +190,7 @@ func CreateRTPatch(in ec2.RouteTable, target v1alpha4.RouteTableParameters) (*v1
 	if err != nil {
 		return nil, err
 	}
-	patch := &v1alpha4.RouteTableParameters{}
+	patch := &v1beta1.RouteTableParameters{}
 	if err := json.Unmarshal(jsonPatch, patch); err != nil {
 		return nil, err
 	}
@@ -199,21 +198,21 @@ func CreateRTPatch(in ec2.RouteTable, target v1alpha4.RouteTableParameters) (*v1
 }
 
 // IsRtUpToDate checks whether there is a change in any of the modifiable fields.
-func IsRtUpToDate(p v1alpha4.RouteTableParameters, rt ec2.RouteTable) (bool, error) {
+func IsRtUpToDate(p v1beta1.RouteTableParameters, rt ec2.RouteTable) (bool, error) {
 	patch, err := CreateRTPatch(rt, p)
 	if err != nil {
 		return false, err
 	}
 
-	return cmp.Equal(&v1alpha4.RouteTableParameters{}, patch,
+	return cmp.Equal(&v1beta1.RouteTableParameters{}, patch,
 		cmpopts.EquateEmpty(),
 		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}),
-		cmpopts.IgnoreFields(v1alpha4.RouteTableParameters{}, "Region"),
+		cmpopts.IgnoreFields(v1beta1.RouteTableParameters{}, "Region"),
 	), nil
 }
 
 // SortRoutes sorts array of Routes on DestinationCIDR
-func SortRoutes(route []v1alpha4.Route, ec2Route []ec2.Route) {
+func SortRoutes(route []v1beta1.Route, ec2Route []ec2.Route) {
 	sort.Slice(route, func(i, j int) bool {
 		return (route[i].DestinationCIDRBlock != nil && *route[i].DestinationCIDRBlock < *route[j].DestinationCIDRBlock) ||
 			(route[i].DestinationIPV6CIDRBlock != nil && *route[i].DestinationIPV6CIDRBlock < *route[j].DestinationIPV6CIDRBlock)

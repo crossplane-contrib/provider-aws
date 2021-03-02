@@ -32,7 +32,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -57,29 +56,29 @@ var (
 type args struct {
 	rt   ec2.RouteTableClient
 	kube client.Client
-	cr   *v1alpha4.RouteTable
+	cr   *v1beta1.RouteTable
 }
 
-type rtModifier func(*v1alpha4.RouteTable)
+type rtModifier func(*v1beta1.RouteTable)
 
 func withExternalName(name string) rtModifier {
-	return func(r *v1alpha4.RouteTable) { meta.SetExternalName(r, name) }
+	return func(r *v1beta1.RouteTable) { meta.SetExternalName(r, name) }
 }
 
-func withSpec(p v1alpha4.RouteTableParameters) rtModifier {
-	return func(r *v1alpha4.RouteTable) { r.Spec.ForProvider = p }
+func withSpec(p v1beta1.RouteTableParameters) rtModifier {
+	return func(r *v1beta1.RouteTable) { r.Spec.ForProvider = p }
 }
 
-func withStatus(s v1alpha4.RouteTableObservation) rtModifier {
-	return func(r *v1alpha4.RouteTable) { r.Status.AtProvider = s }
+func withStatus(s v1beta1.RouteTableObservation) rtModifier {
+	return func(r *v1beta1.RouteTable) { r.Status.AtProvider = s }
 }
 
 func withConditions(c ...xpv1.Condition) rtModifier {
-	return func(r *v1alpha4.RouteTable) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *v1beta1.RouteTable) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func rt(m ...rtModifier) *v1alpha4.RouteTable {
-	cr := &v1alpha4.RouteTable{}
+func rt(m ...rtModifier) *v1beta1.RouteTable {
+	cr := &v1beta1.RouteTable{}
 	for _, f := range m {
 		f(cr)
 	}
@@ -91,7 +90,7 @@ var _ managed.ExternalConnecter = &connector{}
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1alpha4.RouteTable
+		cr     *v1beta1.RouteTable
 		result managed.ExternalObservation
 		err    error
 	}
@@ -113,12 +112,12 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				}), withExternalName(rtID)),
 			},
 			want: want{
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				}), withExternalName(rtID), withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
@@ -183,7 +182,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha4.RouteTable
+		cr     *v1beta1.RouteTable
 		result managed.ExternalCreation
 		err    error
 	}
@@ -207,12 +206,12 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				})),
 			},
 			want: want{
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				}), withExternalName(rtID)),
 				result: managed.ExternalCreation{ExternalNameAssigned: true},
@@ -231,12 +230,12 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				})),
 			},
 			want: want{
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				})),
 				err: awsclient.Wrap(errBoom, errCreate),
@@ -264,7 +263,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha4.RouteTable
+		cr     *v1beta1.RouteTable
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -299,28 +298,28 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Routes: []v1alpha4.Route{{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Routes: []v1beta1.Route{{
 						GatewayID: aws.String(igID),
 					}},
-					Associations: []v1alpha4.Association{{
+					Associations: []v1beta1.Association{{
 						SubnetID: aws.String(subnetID),
 					}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
 			want: want{
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Routes: []v1alpha4.Route{{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Routes: []v1beta1.Route{{
 						GatewayID: aws.String(igID),
 					}},
-					Associations: []v1alpha4.Association{{
+					Associations: []v1beta1.Association{{
 						SubnetID: aws.String(subnetID),
 					}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
@@ -341,24 +340,24 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					Tags: []v1beta1.Tag{{
 						Key:   testKey,
 						Value: testValue,
 					}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
 			want: want{
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					Tags: []v1beta1.Tag{{
 						Key:   testKey,
 						Value: testValue,
 					}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
@@ -381,14 +380,14 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{}),
-					withStatus(v1alpha4.RouteTableObservation{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{}),
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
 			want: want{
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{}),
-					withStatus(v1alpha4.RouteTableObservation{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{}),
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
@@ -409,18 +408,18 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Associations: []v1alpha4.Association{{SubnetID: aws.String(subnetID)}},
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Associations: []v1beta1.Association{{SubnetID: aws.String(subnetID)}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
 			want: want{
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Associations: []v1alpha4.Association{{SubnetID: aws.String(subnetID)}},
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Associations: []v1beta1.Association{{SubnetID: aws.String(subnetID)}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
@@ -441,18 +440,18 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Associations: []v1alpha4.Association{{SubnetID: aws.String(subnetID)}},
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Associations: []v1beta1.Association{{SubnetID: aws.String(subnetID)}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
 			want: want{
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Associations: []v1alpha4.Association{{SubnetID: aws.String(subnetID)}},
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Associations: []v1beta1.Association{{SubnetID: aws.String(subnetID)}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 				err: errors.Wrap(errBoom, errAssociateSubnet),
@@ -485,16 +484,16 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Associations: []v1alpha4.Association{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Associations: []v1beta1.Association{
 						{
 							SubnetID: aws.String(subnetID),
 						},
 					},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
-						Associations: []v1alpha4.AssociationState{
+						Associations: []v1beta1.AssociationState{
 							{
 								AssociationID: associationID,
 								SubnetID:      subnetID,
@@ -507,16 +506,16 @@ func TestUpdate(t *testing.T) {
 					})),
 			},
 			want: want{
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Associations: []v1alpha4.Association{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Associations: []v1beta1.Association{
 						{
 							SubnetID: aws.String(subnetID),
 						},
 					},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
-						Associations: []v1alpha4.AssociationState{
+						Associations: []v1beta1.AssociationState{
 							{
 								AssociationID: associationID,
 								SubnetID:      subnetID,
@@ -556,16 +555,16 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Associations: []v1alpha4.Association{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Associations: []v1beta1.Association{
 						{
 							SubnetID: aws.String(subnetID),
 						},
 					},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
-						Associations: []v1alpha4.AssociationState{
+						Associations: []v1beta1.AssociationState{
 							{
 								AssociationID: associationID,
 								SubnetID:      subnetID,
@@ -578,16 +577,16 @@ func TestUpdate(t *testing.T) {
 					})),
 			},
 			want: want{
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Associations: []v1alpha4.Association{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Associations: []v1beta1.Association{
 						{
 							SubnetID: aws.String(subnetID),
 						},
 					},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
-						Associations: []v1alpha4.AssociationState{
+						Associations: []v1beta1.AssociationState{
 							{
 								AssociationID: associationID,
 								SubnetID:      subnetID,
@@ -623,8 +622,8 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Routes: []v1alpha4.Route{{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Routes: []v1beta1.Route{{
 						DestinationCIDRBlock: aws.String(CIDR),
 						GatewayID:            aws.String(igID),
 					},
@@ -633,13 +632,13 @@ func TestUpdate(t *testing.T) {
 							InstanceID:           aws.String(instanceCIDR),
 						}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
 			want: want{
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Routes: []v1alpha4.Route{{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Routes: []v1beta1.Route{{
 						DestinationCIDRBlock: aws.String(CIDR),
 						GatewayID:            aws.String(igID),
 					},
@@ -648,7 +647,7 @@ func TestUpdate(t *testing.T) {
 							InstanceID:           aws.String(instanceCIDR),
 						}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
@@ -680,15 +679,15 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Routes: []v1alpha4.Route{{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Routes: []v1beta1.Route{{
 						DestinationCIDRBlock: aws.String(CIDR),
 						GatewayID:            aws.String(igID),
 					}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: testValue,
-						Routes: []v1alpha4.RouteState{
+						Routes: []v1beta1.RouteState{
 							{
 								DestinationCIDRBlock: CIDR,
 								GatewayID:            igID,
@@ -701,15 +700,15 @@ func TestUpdate(t *testing.T) {
 					})),
 			},
 			want: want{
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Routes: []v1alpha4.Route{{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Routes: []v1beta1.Route{{
 						DestinationCIDRBlock: aws.String(CIDR),
 						GatewayID:            aws.String(igID),
 					}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: testValue,
-						Routes: []v1alpha4.RouteState{
+						Routes: []v1beta1.RouteState{
 							{
 								DestinationCIDRBlock: CIDR,
 								GatewayID:            igID,
@@ -738,22 +737,22 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Routes: []v1alpha4.Route{{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Routes: []v1beta1.Route{{
 						GatewayID: aws.String(igID),
 					}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 			},
 			want: want{
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Routes: []v1alpha4.Route{{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Routes: []v1beta1.Route{{
 						GatewayID: aws.String(igID),
 					}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
 					})),
 				err: awsclient.Wrap(errBoom, errCreateRoute),
@@ -786,15 +785,15 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Routes: []v1alpha4.Route{{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Routes: []v1beta1.Route{{
 						DestinationCIDRBlock: aws.String(CIDR),
 						GatewayID:            aws.String(igID),
 					}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
-						Routes: []v1alpha4.RouteState{
+						Routes: []v1beta1.RouteState{
 							{
 								DestinationCIDRBlock: CIDR,
 								GatewayID:            igID,
@@ -807,15 +806,15 @@ func TestUpdate(t *testing.T) {
 					})),
 			},
 			want: want{
-				cr: rt(withSpec(v1alpha4.RouteTableParameters{
-					Routes: []v1alpha4.Route{{
+				cr: rt(withSpec(v1beta1.RouteTableParameters{
+					Routes: []v1beta1.Route{{
 						DestinationCIDRBlock: aws.String(CIDR),
 						GatewayID:            aws.String(igID),
 					}},
 				}),
-					withStatus(v1alpha4.RouteTableObservation{
+					withStatus(v1beta1.RouteTableObservation{
 						RouteTableID: rtID,
-						Routes: []v1alpha4.RouteState{
+						Routes: []v1beta1.RouteState{
 							{
 								DestinationCIDRBlock: CIDR,
 								GatewayID:            igID,
@@ -851,7 +850,7 @@ func TestUpdate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *v1alpha4.RouteTable
+		cr  *v1beta1.RouteTable
 		err error
 	}
 
@@ -875,12 +874,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withStatus(v1alpha4.RouteTableObservation{
+				cr: rt(withStatus(v1beta1.RouteTableObservation{
 					RouteTableID: rtID,
 				}), withExternalName(rtID)),
 			},
 			want: want{
-				cr: rt(withStatus(v1alpha4.RouteTableObservation{
+				cr: rt(withStatus(v1beta1.RouteTableObservation{
 					RouteTableID: rtID,
 				}), withExternalName(rtID), withConditions(xpv1.Deleting())),
 			},
@@ -901,15 +900,15 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withStatus(v1alpha4.RouteTableObservation{
+				cr: rt(withStatus(v1beta1.RouteTableObservation{
 					RouteTableID: rtID,
-					Associations: []v1alpha4.AssociationState{{AssociationID: associationID}},
+					Associations: []v1beta1.AssociationState{{AssociationID: associationID}},
 				}), withExternalName(rtID)),
 			},
 			want: want{
-				cr: rt(withStatus(v1alpha4.RouteTableObservation{
+				cr: rt(withStatus(v1beta1.RouteTableObservation{
 					RouteTableID: rtID,
-					Associations: []v1alpha4.AssociationState{{AssociationID: associationID}},
+					Associations: []v1beta1.AssociationState{{AssociationID: associationID}},
 				}), withExternalName(rtID), withConditions(xpv1.Deleting())),
 				err: errors.Wrap(errBoom, errDisassociateSubnet),
 			},
@@ -930,12 +929,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: rt(withStatus(v1alpha4.RouteTableObservation{
+				cr: rt(withStatus(v1beta1.RouteTableObservation{
 					RouteTableID: rtID,
 				}), withExternalName(rtID)),
 			},
 			want: want{
-				cr: rt(withStatus(v1alpha4.RouteTableObservation{
+				cr: rt(withStatus(v1beta1.RouteTableObservation{
 					RouteTableID: rtID,
 				}), withExternalName(rtID), withConditions(xpv1.Deleting())),
 				err: awsclient.Wrap(errBoom, errDelete),

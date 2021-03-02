@@ -36,7 +36,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1alpha4"
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -61,16 +60,16 @@ const (
 
 // SetupRouteTable adds a controller that reconciles RouteTables.
 func SetupRouteTable(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
-	name := managed.ControllerName(v1alpha4.RouteTableGroupKind)
+	name := managed.ControllerName(v1beta1.RouteTableGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
 		}).
-		For(&v1alpha4.RouteTable{}).
+		For(&v1beta1.RouteTable{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha4.RouteTableGroupVersionKind),
+			resource.ManagedKind(v1beta1.RouteTableGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewRouteTableClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
@@ -85,7 +84,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha4.RouteTable)
+	cr, ok := mg.(*v1beta1.RouteTable)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -102,7 +101,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
-	cr, ok := mgd.(*v1alpha4.RouteTable)
+	cr, ok := mgd.(*v1beta1.RouteTable)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -159,7 +158,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) { // nolint:gocyclo
-	cr, ok := mgd.(*v1alpha4.RouteTable)
+	cr, ok := mgd.(*v1beta1.RouteTable)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -174,7 +173,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
-	cr, ok := mgd.(*v1alpha4.RouteTable)
+	cr, ok := mgd.(*v1beta1.RouteTable)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
@@ -237,7 +236,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha4.RouteTable)
+	cr, ok := mgd.(*v1beta1.RouteTable)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
@@ -256,7 +255,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	return awsclient.Wrap(resource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDelete)
 }
 
-func (e *external) deleteRoutes(ctx context.Context, tableID string, desired []v1alpha4.Route, observed []v1alpha4.RouteState) error { // nolint:gocyclo
+func (e *external) deleteRoutes(ctx context.Context, tableID string, desired []v1beta1.Route, observed []v1beta1.RouteState) error { // nolint:gocyclo
 	for _, rt := range observed {
 		found := false
 		for _, ds := range desired {
@@ -297,7 +296,7 @@ func (e *external) deleteRoutes(ctx context.Context, tableID string, desired []v
 	return nil
 }
 
-func (e *external) createRoutes(ctx context.Context, tableID string, desired []v1alpha4.Route, observed []v1alpha4.RouteState) error { // nolint:gocyclo
+func (e *external) createRoutes(ctx context.Context, tableID string, desired []v1beta1.Route, observed []v1beta1.RouteState) error { // nolint:gocyclo
 	for _, rt := range desired {
 		isObserved := false
 		for _, ob := range observed {
@@ -335,7 +334,7 @@ func (e *external) createRoutes(ctx context.Context, tableID string, desired []v
 	return nil
 }
 
-func (e *external) reconcileRoutes(ctx context.Context, tableID string, desired []v1alpha4.Route, observed []v1alpha4.RouteState) error {
+func (e *external) reconcileRoutes(ctx context.Context, tableID string, desired []v1beta1.Route, observed []v1beta1.RouteState) error {
 
 	if err := e.deleteRoutes(ctx, tableID, desired, observed); err != nil {
 		return awsclient.Wrap(err, errDeleteRoute)
@@ -347,8 +346,8 @@ func (e *external) reconcileRoutes(ctx context.Context, tableID string, desired 
 	return nil
 }
 
-func (e *external) removeAssociations(ctx context.Context, desired []v1alpha4.Association, observed []v1alpha4.AssociationState) error {
-	var toDelete []v1alpha4.AssociationState
+func (e *external) removeAssociations(ctx context.Context, desired []v1beta1.Association, observed []v1beta1.AssociationState) error {
+	var toDelete []v1beta1.AssociationState
 	for _, asc := range observed {
 		found := false
 		for _, ds := range desired {
@@ -365,7 +364,7 @@ func (e *external) removeAssociations(ctx context.Context, desired []v1alpha4.As
 	return e.deleteAssociations(ctx, toDelete)
 }
 
-func (e *external) createAssociations(ctx context.Context, tableID string, desired []v1alpha4.Association, observed []v1alpha4.AssociationState) error {
+func (e *external) createAssociations(ctx context.Context, tableID string, desired []v1beta1.Association, observed []v1beta1.AssociationState) error {
 	for _, asc := range desired {
 		isObserved := false
 		for _, ob := range observed {
@@ -389,7 +388,7 @@ func (e *external) createAssociations(ctx context.Context, tableID string, desir
 	return nil
 }
 
-func (e *external) reconcileAssociations(ctx context.Context, tableID string, desired []v1alpha4.Association, observed []v1alpha4.AssociationState) error {
+func (e *external) reconcileAssociations(ctx context.Context, tableID string, desired []v1beta1.Association, observed []v1beta1.AssociationState) error {
 	if err := e.removeAssociations(ctx, desired, observed); err != nil {
 		// underlying deleteAssociations already wraps the error
 		return err
@@ -401,7 +400,7 @@ func (e *external) reconcileAssociations(ctx context.Context, tableID string, de
 	return nil
 }
 
-func (e *external) deleteAssociations(ctx context.Context, observed []v1alpha4.AssociationState) error {
+func (e *external) deleteAssociations(ctx context.Context, observed []v1beta1.AssociationState) error {
 	for _, asc := range observed {
 		req := e.client.DisassociateRouteTableRequest(&awsec2.DisassociateRouteTableInput{
 			AssociationId: aws.String(asc.AssociationID),
