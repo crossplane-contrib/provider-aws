@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	kms "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
-
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
+
+	kms "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 )
 
 // ResolveReferences of this Secret
@@ -33,9 +33,9 @@ func (mg *Secret) ResolveReferences(ctx context.Context, c client.Reader) error 
 
 	// Resolve spec.forProvider.kmsKeyId
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.KmsKeyID),
-		Reference:    mg.Spec.ForProvider.KmsKeyRef,
-		Selector:     mg.Spec.ForProvider.KmsKeySelector,
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.KMSKeyID),
+		Reference:    mg.Spec.ForProvider.KMSKeyIDRef,
+		Selector:     mg.Spec.ForProvider.KMSKeyIDSelector,
 		To:           reference.To{Managed: &kms.Key{}, List: &kms.KeyList{}},
 		Extract:      reference.ExternalName(),
 	})
@@ -43,8 +43,7 @@ func (mg *Secret) ResolveReferences(ctx context.Context, c client.Reader) error 
 		return errors.Wrap(err, "spec.forProvider.kmsKeyId")
 	}
 
-	mg.Spec.ForProvider.KmsKeyID = reference.ToPtrValue(rsp.ResolvedValue)
-	mg.Spec.ForProvider.KmsKeyRef = rsp.ResolvedReference
-
+	mg.Spec.ForProvider.KMSKeyID = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.KMSKeyIDRef = rsp.ResolvedReference
 	return nil
 }
