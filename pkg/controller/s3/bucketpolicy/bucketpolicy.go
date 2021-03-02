@@ -162,7 +162,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	policyString := *policyData
 	_, err = e.client.PutBucketPolicyRequest(&awss3.PutBucketPolicyInput{Bucket: cr.Spec.Parameters.BucketName, Policy: aws.String(policyString)}).Send(ctx)
-	return managed.ExternalCreation{}, errors.Wrap(err, errAttach)
+	return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
 }
 
 // Update patches the existing policy for the bucket with the policy in the request body
@@ -178,7 +178,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	_, err = e.client.PutBucketPolicyRequest(&awss3.PutBucketPolicyInput{Bucket: cr.Spec.Parameters.BucketName, Policy: aws.String(*policyData)}).Send(ctx)
-	return managed.ExternalUpdate{}, errors.Wrap(err, errUpdate)
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
 
 // Delete removes the existing policy for a bucket
