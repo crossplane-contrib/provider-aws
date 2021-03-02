@@ -14,6 +14,7 @@ limitations under the License.
 package secret
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -42,14 +43,13 @@ import (
 )
 
 const (
-	errNotSecret                 = "managed resource is not a secret custom resource"
-	errKubeUpdateFailed          = "failed to update Secret custom resource"
-	errCreateTags                = "failed to create tags for the secret"
-	errRemoveTags                = "failed to remove tags for the secret"
-	errFmtKeyNotFound            = "key %s is not found in referenced Kubernetes secret"
-	errFmtUnsupportedPayloadType = "payload type %s is not supported"
-	errGetSecretFailed           = "failed to get Kubernetes secret"
-	errGetSecretValue            = "cannot get the value of secret from AWS"
+	errNotSecret        = "managed resource is not a secret custom resource"
+	errKubeUpdateFailed = "failed to update Secret custom resource"
+	errCreateTags       = "failed to create tags for the secret"
+	errRemoveTags       = "failed to remove tags for the secret"
+	errFmtKeyNotFound   = "key %s is not found in referenced Kubernetes secret"
+	errGetSecretFailed  = "failed to get Kubernetes secret"
+	errGetSecretValue   = "cannot get the value of secret from AWS"
 )
 
 // SetupSecret adds a controller that reconciles a Secret.
@@ -106,7 +106,7 @@ type hooks struct {
 	kube   client.Client
 }
 
-func (e *hooks) isUpToDate(check bool, cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, error) {
+func (e *hooks) isUpToDate(check bool, cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, error) { // nolint:gocyclo
 	if !check {
 		return check, nil
 	}
@@ -136,46 +136,49 @@ func (e *hooks) isUpToDate(check bool, cr *svcapitypes.Secret, resp *svcsdk.Desc
 	if err != nil {
 		return false, err
 	}
-	return payload == awsclients.StringValue(s.SecretString), nil
+	switch {
+	case awsclients.StringValue(s.SecretString) != "":
+		return string(payload) == awsclients.StringValue(s.SecretString), nil
+	case len(s.SecretBinary) != 0:
+		return bytes.Equal(payload, s.SecretBinary), nil
+	}
+	return false, errors.New("neither SecretString nor SecretBinary field is filled in the returned object")
 }
 
-func (e *hooks) getPayload(ctx context.Context, cr *svcapitypes.Secret) (string, error) {
-	switch cr.Spec.ForProvider.PayloadType {
-	case "SingleValue":
-		nn := types.NamespacedName{
-			Name:      cr.Spec.ForProvider.SingleValueSecretRef.SecretReference.Name,
-			Namespace: cr.Spec.ForProvider.SingleValueSecretRef.SecretReference.Namespace,
-		}
-		sc := &corev1.Secret{}
-		if err := e.kube.Get(ctx, nn, sc); err != nil {
-			return "", errors.Wrap(err, errGetSecretFailed)
-		}
-		val, ok := sc.Data[cr.Spec.ForProvider.SingleValueSecretRef.Key]
-		if !ok {
-			return "", errors.New(fmt.Sprintf(errFmtKeyNotFound, cr.Spec.ForProvider.SingleValueSecretRef.Key))
-		}
-		return string(val), nil
-	case "Map":
-		nn := types.NamespacedName{
-			Name:      cr.Spec.ForProvider.MapSecretRef.Name,
-			Namespace: cr.Spec.ForProvider.MapSecretRef.Namespace,
-		}
-		sc := &corev1.Secret{}
-		if err := e.kube.Get(ctx, nn, sc); err != nil {
-			return "", errors.Wrap(err, errGetSecretFailed)
-		}
-		d := map[string]string{}
-		for k, v := range sc.Data {
-			d[k] = string(v)
-		}
-		payload, err := json.Marshal(d)
-		if err != nil {
-			return "", err
-		}
-		return string(payload), nil
+func (e *hooks) getPayload(ctx context.Context, cr *svcapitypes.Secret) ([]byte, error) {
+	var ref *svcapitypes.SecretReference
+	switch {
+	case cr.Spec.ForProvider.StringSecretRef != nil:
+		ref = cr.Spec.ForProvider.StringSecretRef
+	case cr.Spec.ForProvider.BinarySecretRef != nil:
+		ref = cr.Spec.ForProvider.BinarySecretRef
 	default:
-		return "", errors.Errorf(errFmtUnsupportedPayloadType, cr.Spec.ForProvider.PayloadType)
+		return nil, errors.New("neither binarySecretRef nor stringSecretRef is given")
 	}
+	nn := types.NamespacedName{
+		Name:      ref.Name,
+		Namespace: ref.Namespace,
+	}
+	sc := &corev1.Secret{}
+	if err := e.kube.Get(ctx, nn, sc); err != nil {
+		return nil, errors.Wrap(err, errGetSecretFailed)
+	}
+	if ref.Key != nil {
+		val, ok := sc.Data[awsclients.StringValue(ref.Key)]
+		if !ok {
+			return nil, errors.New(fmt.Sprintf(errFmtKeyNotFound, awsclients.StringValue(ref.Key)))
+		}
+		return val, nil
+	}
+	d := map[string]string{}
+	for k, v := range sc.Data {
+		d[k] = string(v)
+	}
+	payload, err := json.Marshal(d)
+	if err != nil {
+		return nil, err
+	}
+	return payload, nil
 }
 
 func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcsdk.UpdateSecretInput) error {
@@ -206,7 +209,12 @@ func (e *hooks) preUpdate(ctx context.Context, cr *svcapitypes.Secret, obj *svcs
 	if err != nil {
 		return err
 	}
-	obj.SecretString = awsclients.String(payload)
+	switch {
+	case cr.Spec.ForProvider.StringSecretRef != nil:
+		obj.SecretString = awsclients.String(string(payload))
+	case cr.Spec.ForProvider.BinarySecretRef != nil:
+		obj.SecretBinary = payload
+	}
 	obj.SecretId = awsclients.String(meta.GetExternalName(cr))
 	obj.Description = cr.Spec.ForProvider.Description
 	obj.KmsKeyId = cr.Spec.ForProvider.KMSKeyID
@@ -218,7 +226,12 @@ func (e *hooks) preCreate(ctx context.Context, cr *svcapitypes.Secret, obj *svcs
 	if err != nil {
 		return err
 	}
-	obj.SecretString = awsclients.String(payload)
+	switch {
+	case cr.Spec.ForProvider.StringSecretRef != nil:
+		obj.SecretString = awsclients.String(string(payload))
+	case cr.Spec.ForProvider.BinarySecretRef != nil:
+		obj.SecretBinary = payload
+	}
 	obj.Name = awsclients.String(meta.GetExternalName(cr))
 	return nil
 }

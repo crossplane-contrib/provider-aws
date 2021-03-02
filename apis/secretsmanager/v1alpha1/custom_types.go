@@ -16,25 +16,19 @@ limitations under the License.
 
 package v1alpha1
 
-import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-
 // CustomSecretParameters contains the additional fields for SecretParameters.
 type CustomSecretParameters struct {
-	// PayloadType lets you choose which part of the input secret should be used.
-	// SingleValue: Only value of the given key.
-	// Map: The whole content of the input secret will be used after converting
-	// it to JSON map.
-	// +kubebuilder:validation:Enum=SingleValue;Map
-	PayloadType string `json:"payloadType"`
+	// StringSecretRef points to the Kubernetes Secret whose data will be sent
+	// as string to AWS. If key parameter is given, only the value of that key
+	// will be used. Otherwise, all data in the Secret will be marshalled into
+	// JSON and sent to AWS.
+	StringSecretRef *SecretReference `json:"stringSecretRef,omitempty"`
 
-	// SingleValueSecretRef should be filled if SingleValue is chosen as payload
-	// type. It references the input secret and the key whose value you would
-	// like to use.
-	SingleValueSecretRef *xpv1.SecretKeySelector `json:"singleValueSecretRef,omitempty"`
-
-	// MapSecretRef should be filled if Map is chosen as payload type. It references
-	// the input secret whose data will be sent to AWS as JSON string map.
-	MapSecretRef *xpv1.SecretReference `json:"mapSecretRef,omitempty"`
+	// BinarySecretRef points to the Kubernetes Secret whose data will be encoded
+	// as binary data to AWS. If key parameter is given, only the value of that
+	// key will be used. Otherwise, all data in the Secret will be marshalled
+	// into JSON and sent to AWS.
+	BinarySecretRef *SecretReference `json:"binarySecretRef,omitempty"`
 
 	// (Optional) Specifies that the secret is to be deleted without any recovery
 	// window. You can't use both this parameter and the RecoveryWindowInDays parameter
@@ -58,4 +52,17 @@ type CustomSecretParameters struct {
 	//
 	// This value can range from 7 to 30 days. The default value is 30.
 	RecoveryWindowInDays *int64 `json:"recoveryWindowInDays,omitempty"`
+}
+
+// A SecretReference is a reference to a secret in an arbitrary namespace.
+type SecretReference struct {
+	// Name of the secret.
+	Name string `json:"name"`
+
+	// Namespace of the secret.
+	Namespace string `json:"namespace"`
+
+	// Key whose value will be used. If not given, the whole map in the Secret
+	// data will be used.
+	Key *string `json:"key,omitempty"`
 }
