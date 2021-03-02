@@ -142,7 +142,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	cr.Status.SetConditions(xpv1.Creating())
 
 	_, err := e.client.CreateRoleRequest(iam.GenerateCreateRoleInput(meta.GetExternalName(cr), &cr.Spec.ForProvider)).Send(ctx)
-	return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
@@ -167,7 +167,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			RoleName: aws.String(meta.GetExternalName(cr)),
 			TagKeys:  remove,
 		}).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot untag")
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, "cannot untag")
 		}
 	}
 	if len(add) != 0 {
@@ -175,7 +175,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 			RoleName: aws.String(meta.GetExternalName(cr)),
 			Tags:     add,
 		}).Send(ctx); err != nil {
-			return managed.ExternalUpdate{}, errors.Wrap(err, "cannot tag")
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, "cannot tag")
 		}
 	}
 
