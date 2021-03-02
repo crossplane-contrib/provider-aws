@@ -7,7 +7,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
@@ -24,7 +23,7 @@ var (
 	testKey                 = "key"
 	testValue               = "value"
 	ec2tag                  = ec2.Tag{Key: &testKey, Value: &testValue}
-	beta1tag                = v1beta1.Tag{Key: testKey, Value: testValue}
+	alpha1tag               = v1alpha1.Tag{Key: testKey, Value: testValue}
 )
 
 func TestGenerateElasticIPObservation(t *testing.T) {
@@ -90,7 +89,7 @@ func TestIsEIPUpToDate(t *testing.T) {
 					Tags: []ec2.Tag{ec2tag},
 				},
 				e: v1alpha1.ElasticIPParameters{
-					Tags: []v1beta1.Tag{beta1tag},
+					Tags: []v1alpha1.Tag{alpha1tag},
 				},
 			},
 			want: true,
@@ -101,7 +100,7 @@ func TestIsEIPUpToDate(t *testing.T) {
 					Tags: []ec2.Tag{},
 				},
 				e: v1alpha1.ElasticIPParameters{
-					Tags: []v1beta1.Tag{beta1tag},
+					Tags: []v1alpha1.Tag{alpha1tag},
 				},
 			},
 			want: false,
