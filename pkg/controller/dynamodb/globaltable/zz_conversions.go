@@ -24,10 +24,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/dynamodb/v1alpha1"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
-
-// NOTE(muvaf): We return pointers in case the function needs to start with an
-// empty object, hence need to return a new pointer.
 
 // GenerateDescribeGlobalTableInput returns input for read
 // operation.
@@ -59,6 +57,26 @@ func GenerateGlobalTable(resp *svcsdk.DescribeGlobalTableOutput) *svcapitypes.Gl
 	}
 
 	return cr
+}
+
+func lateInitialize(cr *svcapitypes.GlobalTable, resp *svcsdk.DescribeGlobalTableOutput) error {
+	if len(resp.GlobalTableDescription.ReplicationGroup) != 0 && len(cr.Spec.ForProvider.ReplicationGroup) == 0 {
+		cr.Spec.ForProvider.ReplicationGroup = make([]*svcapitypes.Replica, len(resp.GlobalTableDescription.ReplicationGroup))
+		for i0 := range resp.GlobalTableDescription.ReplicationGroup {
+			if resp.GlobalTableDescription.ReplicationGroup[i0] != nil {
+				if cr.Spec.ForProvider.ReplicationGroup[i0] == nil {
+					cr.Spec.ForProvider.ReplicationGroup[i0] = &svcapitypes.Replica{}
+				}
+				cr.Spec.ForProvider.ReplicationGroup[i0].RegionName = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.ReplicationGroup[i0].RegionName, resp.GlobalTableDescription.ReplicationGroup[i0].RegionName)
+			}
+		}
+	}
+	return nil
+}
+
+func basicUpToDateCheck(cr *svcapitypes.GlobalTable, resp *svcsdk.DescribeGlobalTableOutput) bool {
+
+	return true
 }
 
 // GenerateCreateGlobalTableInput returns a create input.

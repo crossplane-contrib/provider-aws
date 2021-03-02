@@ -84,12 +84,12 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 		return managed.ExternalObservation{ResourceExists: false}, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
 	}
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
-	if err := e.lateInitialize(&cr.Spec.ForProvider, resp); err != nil {
+	if err := e.lateInitialize(cr, resp); err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "late-init failed")
 	}
 	GenerateTable(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, err := e.isUpToDate(basicUpToDateCheck(cr, resp), cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
@@ -278,11 +278,15 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteTableInput(cr)
-	if err := e.preDelete(ctx, cr, input); err != nil {
+	ignore, err := e.preDelete(ctx, cr, input)
+	if err != nil {
 		return errors.Wrap(err, "pre-delete failed")
 	}
-	_, err := e.client.DeleteTableWithContext(ctx, input)
-	return awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
+	if ignore {
+		return nil
+	}
+	resp, err := e.client.DeleteTableWithContext(ctx, input)
+	return e.postDelete(ctx, cr, resp, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
 }
 
 type option func(*external)
@@ -293,11 +297,12 @@ func newExternal(kube client.Client, client svcsdkapi.DynamoDBAPI, opts []option
 		client:         client,
 		preObserve:     nopPreObserve,
 		postObserve:    nopPostObserve,
-		lateInitialize: nopLateInitialize,
-		isUpToDate:     alwaysUpToDate,
+		lateInitialize: lateInitialize,
+		isUpToDate:     nopIsUpToDate,
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
+		postDelete:     nopPostDelete,
 		preUpdate:      nopPreUpdate,
 		postUpdate:     nopPostUpdate,
 	}
@@ -312,11 +317,12 @@ type external struct {
 	client         svcsdkapi.DynamoDBAPI
 	preObserve     func(context.Context, *svcapitypes.Table, *svcsdk.DescribeTableInput) error
 	postObserve    func(context.Context, *svcapitypes.Table, *svcsdk.DescribeTableOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
-	lateInitialize func(*svcapitypes.TableParameters, *svcsdk.DescribeTableOutput) error
-	isUpToDate     func(*svcapitypes.Table, *svcsdk.DescribeTableOutput) (bool, error)
+	lateInitialize func(*svcapitypes.Table, *svcsdk.DescribeTableOutput) error
+	isUpToDate     func(bool, *svcapitypes.Table, *svcsdk.DescribeTableOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.Table, *svcsdk.CreateTableInput) error
 	postCreate     func(context.Context, *svcapitypes.Table, *svcsdk.CreateTableOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	preDelete      func(context.Context, *svcapitypes.Table, *svcsdk.DeleteTableInput) error
+	preDelete      func(context.Context, *svcapitypes.Table, *svcsdk.DeleteTableInput) (bool, error)
+	postDelete     func(context.Context, *svcapitypes.Table, *svcsdk.DeleteTableOutput, error) error
 	preUpdate      func(context.Context, *svcapitypes.Table, *svcsdk.UpdateTableInput) error
 	postUpdate     func(context.Context, *svcapitypes.Table, *svcsdk.UpdateTableOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -324,28 +330,29 @@ type external struct {
 func nopPreObserve(context.Context, *svcapitypes.Table, *svcsdk.DescribeTableInput) error {
 	return nil
 }
-func nopPostObserve(context.Context, *svcapitypes.Table, *svcsdk.DescribeTableOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error) {
-	return managed.ExternalObservation{}, nil
-}
-func nopLateInitialize(*svcapitypes.TableParameters, *svcsdk.DescribeTableOutput) error {
-	return nil
-}
-func alwaysUpToDate(*svcapitypes.Table, *svcsdk.DescribeTableOutput) (bool, error) {
-	return true, nil
+
+func nopPostObserve(_ context.Context, _ *svcapitypes.Table, _ *svcsdk.DescribeTableOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	return obs, err
 }
 
+func nopIsUpToDate(r bool, _ *svcapitypes.Table, _ *svcsdk.DescribeTableOutput) (bool, error) {
+	return r, nil
+}
 func nopPreCreate(context.Context, *svcapitypes.Table, *svcsdk.CreateTableInput) error {
 	return nil
 }
-func nopPostCreate(context.Context, *svcapitypes.Table, *svcsdk.CreateTableOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error) {
-	return managed.ExternalCreation{}, nil
+func nopPostCreate(_ context.Context, _ *svcapitypes.Table, _ *svcsdk.CreateTableOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	return cre, err
 }
-func nopPreDelete(context.Context, *svcapitypes.Table, *svcsdk.DeleteTableInput) error {
-	return nil
+func nopPreDelete(context.Context, *svcapitypes.Table, *svcsdk.DeleteTableInput) (bool, error) {
+	return false, nil
+}
+func nopPostDelete(_ context.Context, _ *svcapitypes.Table, _ *svcsdk.DeleteTableOutput, err error) error {
+	return err
 }
 func nopPreUpdate(context.Context, *svcapitypes.Table, *svcsdk.UpdateTableInput) error {
 	return nil
 }
-func nopPostUpdate(context.Context, *svcapitypes.Table, *svcsdk.UpdateTableOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error) {
-	return managed.ExternalUpdate{}, nil
+func nopPostUpdate(_ context.Context, _ *svcapitypes.Table, _ *svcsdk.UpdateTableOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	return upd, err
 }

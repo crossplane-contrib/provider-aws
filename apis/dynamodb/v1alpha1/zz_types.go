@@ -98,6 +98,14 @@ type BackupSummary struct {
 	TableName *string `json:"tableName,omitempty"`
 }
 
+type BatchStatementError struct {
+	Message *string `json:"message,omitempty"`
+}
+
+type BatchStatementResponse struct {
+	TableName *string `json:"tableName,omitempty"`
+}
+
 type BillingModeSummary struct {
 	BillingMode *string `json:"billingMode,omitempty"`
 
@@ -170,6 +178,14 @@ type Endpoint struct {
 	Address *string `json:"address,omitempty"`
 
 	CachePeriodInMinutes *int64 `json:"cachePeriodInMinutes,omitempty"`
+}
+
+type ExportDescription struct {
+	ItemCount *int64 `json:"itemCount,omitempty"`
+
+	TableARN *string `json:"tableARN,omitempty"`
+
+	TableID *string `json:"tableID,omitempty"`
 }
 
 type Get struct {
@@ -275,6 +291,12 @@ type KeySchemaElement struct {
 	AttributeName *string `json:"attributeName,omitempty"`
 
 	KeyType *string `json:"keyType,omitempty"`
+}
+
+type KinesisDataStreamDestination struct {
+	DestinationStatusDescription *string `json:"destinationStatusDescription,omitempty"`
+
+	StreamARN *string `json:"streamARN,omitempty"`
 }
 
 type LocalSecondaryIndex struct {
