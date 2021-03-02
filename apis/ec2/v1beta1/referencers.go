@@ -119,3 +119,72 @@ func (mg *Subnet) ResolveReferences(ctx context.Context, c client.Reader) error 
 
 	return nil
 }
+
+// ResolveReferences of this RouteTable
+func (mg *RouteTable) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.forProvider.vpcId
+	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: aws.StringValue(mg.Spec.ForProvider.VPCID),
+		Reference:    mg.Spec.ForProvider.VPCIDRef,
+		Selector:     mg.Spec.ForProvider.VPCIDSelector,
+		To:           reference.To{Managed: &VPC{}, List: &VPCList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.vpcId")
+	}
+	mg.Spec.ForProvider.VPCID = aws.String(rsp.ResolvedValue)
+	mg.Spec.ForProvider.VPCIDRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.routes[].gatewayId
+	for i := range mg.Spec.ForProvider.Routes {
+		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+			CurrentValue: aws.StringValue(mg.Spec.ForProvider.Routes[i].GatewayID),
+			Reference:    mg.Spec.ForProvider.Routes[i].GatewayIDRef,
+			Selector:     mg.Spec.ForProvider.Routes[i].GatewayIDSelector,
+			To:           reference.To{Managed: &InternetGateway{}, List: &InternetGatewayList{}},
+			Extract:      reference.ExternalName(),
+		})
+		if err != nil {
+			return errors.Wrapf(err, "spec.forProvider.routes[%d].gatewayId", i)
+		}
+		mg.Spec.ForProvider.Routes[i].GatewayID = aws.String(rsp.ResolvedValue)
+		mg.Spec.ForProvider.Routes[i].GatewayIDRef = rsp.ResolvedReference
+	}
+
+	// Resolve spec.forProvider.routes[].natGatewayId
+	// for i := range mg.Spec.ForProvider.Routes {
+	//	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+	//		CurrentValue: aws.StringValue(mg.Spec.ForProvider.Routes[i].NatGatewayID),
+	//		Reference:    mg.Spec.ForProvider.Routes[i].NatGatewayIDRef,
+	//		Selector:     mg.Spec.ForProvider.Routes[i].NatGatewayIDSelector,
+	//		To:           reference.To{Managed: &ec2v1alpha1.NATGateway{}, List: &ec2v1alpha1.NATGatewayList{}},
+	//		Extract:      reference.ExternalName(),
+	//	})
+	//	if err != nil {
+	//		return errors.Wrapf(err, "spec.forProvider.routes[%d].natGatewayId", i)
+	//	}
+	//	mg.Spec.ForProvider.Routes[i].NatGatewayID = aws.String(rsp.ResolvedValue)
+	//	mg.Spec.ForProvider.Routes[i].NatGatewayIDRef = rsp.ResolvedReference
+	// }
+
+	// Resolve spec.associations[].subnetId
+	for i := range mg.Spec.ForProvider.Associations {
+		rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+			CurrentValue: aws.StringValue(mg.Spec.ForProvider.Associations[i].SubnetID),
+			Reference:    mg.Spec.ForProvider.Associations[i].SubnetIDRef,
+			Selector:     mg.Spec.ForProvider.Associations[i].SubnetIDSelector,
+			To:           reference.To{Managed: &Subnet{}, List: &SubnetList{}},
+			Extract:      reference.ExternalName(),
+		})
+		if err != nil {
+			return errors.Wrapf(err, "spec.forProvider.associations[%d].subnetId", i)
+		}
+		mg.Spec.ForProvider.Associations[i].SubnetID = aws.String(rsp.ResolvedValue)
+		mg.Spec.ForProvider.Associations[i].SubnetIDRef = rsp.ResolvedReference
+	}
+
+	return nil
+}
