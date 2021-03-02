@@ -72,9 +72,27 @@ var (
 	InternetGatewayGroupVersionKind = SchemeGroupVersion.WithKind(InternetGatewayKind)
 )
 
+// RouteTable type metadata.
+var (
+	RouteTableKind             = reflect.TypeOf(RouteTable{}).Name()
+	RouteTableGroupKind        = schema.GroupKind{Group: Group, Kind: RouteTableKind}.String()
+	RouteTableKindAPIVersion   = RouteTableKind + "." + SchemeGroupVersion.String()
+	RouteTableGroupVersionKind = SchemeGroupVersion.WithKind(RouteTableKind)
+)
+
+// NatGateway type metadata.
+var (
+	NATGatewayKind             = reflect.TypeOf(NATGateway{}).Name()
+	NATGatewayGroupKind        = schema.GroupKind{Group: Group, Kind: NATGatewayKind}.String()
+	NATGatewayKindAPIVersion   = NATGatewayKind + "." + SchemeGroupVersion.String()
+	NATGatewayGroupVersionKind = SchemeGroupVersion.WithKind(NATGatewayKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&VPC{}, &VPCList{})
 	SchemeBuilder.Register(&Subnet{}, &SubnetList{})
 	SchemeBuilder.Register(&SecurityGroup{}, &SecurityGroupList{})
 	SchemeBuilder.Register(&InternetGateway{}, &InternetGatewayList{})
+	SchemeBuilder.Register(&RouteTable{}, &RouteTableList{})
+	SchemeBuilder.Register(&NATGateway{}, &NATGatewayList{})
 }

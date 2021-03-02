@@ -1,11 +1,9 @@
-package v1alpha1
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-
-	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
 
 // Defines the states of NatGateway
@@ -60,7 +58,7 @@ type NATGatewayParameters struct {
 
 	// Tags represents to current ec2 tags.
 	// +optional
-	Tags []ec2v1beta1.Tag `json:"tags,omitempty"`
+	Tags []Tag `json:"tags,omitempty"`
 }
 
 // NATGatewaySpec defines the desired state of a NAT Gateway

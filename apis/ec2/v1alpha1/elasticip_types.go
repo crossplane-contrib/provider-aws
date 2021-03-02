@@ -20,8 +20,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-
-	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
 
 // ElasticIPParameters define the desired state of an AWS Elastic IP
@@ -75,7 +73,17 @@ type ElasticIPParameters struct {
 
 	// Tags represents to current ec2 tags.
 	// +optional
-	Tags []ec2v1beta1.Tag `json:"tags,omitempty"`
+	Tags []Tag `json:"tags,omitempty"`
+}
+
+// Tag defines a tag
+type Tag struct {
+
+	// Key is the name of the tag.
+	Key string `json:"key"`
+
+	// Value is the value of the tag.
+	Value string `json:"value"`
 }
 
 // A ElasticIPSpec defines the desired state of a ElasticIP.

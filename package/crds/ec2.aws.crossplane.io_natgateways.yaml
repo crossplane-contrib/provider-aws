@@ -40,7 +40,7 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: v1alpha1
+    name: v1beta1
     schema:
       openAPIV3Schema:
         description: A NATGateway is a managed resource that represents an AWS VPC NAT Gateway.

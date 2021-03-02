@@ -36,7 +36,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
@@ -59,10 +58,10 @@ type args struct {
 type elasticIPModifier func(*v1alpha1.ElasticIP)
 
 func withTags(tagMaps ...map[string]string) elasticIPModifier {
-	var tagList []v1beta1.Tag
+	var tagList []v1alpha1.Tag
 	for _, tagMap := range tagMaps {
 		for k, v := range tagMap {
-			tagList = append(tagList, v1beta1.Tag{Key: k, Value: v})
+			tagList = append(tagList, v1alpha1.Tag{Key: k, Value: v})
 		}
 	}
 	return func(r *v1alpha1.ElasticIP) { r.Spec.ForProvider.Tags = tagList }
@@ -501,7 +500,7 @@ func TestInitialize(t *testing.T) {
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1beta1.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1alpha1.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
