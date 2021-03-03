@@ -237,5 +237,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		InternetGatewayId: aws.String(meta.GetExternalName(cr)),
 	}).Send(ctx)
 
-	return errors.Wrap(resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err), errDelete)
 }
