@@ -8,6 +8,7 @@ ignore:
     - ModifyDBClusterInput.MasterUserPassword
     - CreateDBClusterInput.VpcSecurityGroupIds
     - ModifyDBClusterInput.VpcSecurityGroupIds
+    - DBCluster.PendingModifiedValues
   resource_names:
     - DBClusterEndpoint
     - CustomAvailabilityZone

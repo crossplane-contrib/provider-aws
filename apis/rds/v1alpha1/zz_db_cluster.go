@@ -433,10 +433,6 @@ type DBClusterObservation struct {
 	LatestRestorableTime *metav1.Time `json:"latestRestorableTime,omitempty"`
 	// Specifies whether the DB cluster has instances in multiple Availability Zones.
 	MultiAZ *bool `json:"multiAZ,omitempty"`
-	// A value that specifies that changes to the DB cluster are pending. This element
-	// is only included when changes are pending. Specific changes are identified
-	// by subelements.
-	PendingModifiedValues *ClusterPendingModifiedValues `json:"pendingModifiedValues,omitempty"`
 	// Specifies the progress of the operation as a percentage.
 	PercentProgress *string `json:"percentProgress,omitempty"`
 	// Contains one or more identifiers of the read replicas associated with this

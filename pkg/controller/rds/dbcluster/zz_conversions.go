@@ -249,44 +249,6 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 		if elem.MultiAZ != nil {
 			cr.Status.AtProvider.MultiAZ = elem.MultiAZ
 		}
-		if elem.PendingModifiedValues != nil {
-			f43 := &svcapitypes.ClusterPendingModifiedValues{}
-			if elem.PendingModifiedValues.DBClusterIdentifier != nil {
-				f43.DBClusterIdentifier = elem.PendingModifiedValues.DBClusterIdentifier
-			}
-			if elem.PendingModifiedValues.EngineVersion != nil {
-				f43.EngineVersion = elem.PendingModifiedValues.EngineVersion
-			}
-			if elem.PendingModifiedValues.IAMDatabaseAuthenticationEnabled != nil {
-				f43.IAMDatabaseAuthenticationEnabled = elem.PendingModifiedValues.IAMDatabaseAuthenticationEnabled
-			}
-			if elem.PendingModifiedValues.MasterUserPassword != nil {
-				f43.MasterUserPassword = elem.PendingModifiedValues.MasterUserPassword
-			}
-			if elem.PendingModifiedValues.PendingCloudwatchLogsExports != nil {
-				f43f4 := &svcapitypes.PendingCloudwatchLogsExports{}
-				if elem.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToDisable != nil {
-					f43f4f0 := []*string{}
-					for _, f43f4f0iter := range elem.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToDisable {
-						var f43f4f0elem string
-						f43f4f0elem = *f43f4f0iter
-						f43f4f0 = append(f43f4f0, &f43f4f0elem)
-					}
-					f43f4.LogTypesToDisable = f43f4f0
-				}
-				if elem.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToEnable != nil {
-					f43f4f1 := []*string{}
-					for _, f43f4f1iter := range elem.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToEnable {
-						var f43f4f1elem string
-						f43f4f1elem = *f43f4f1iter
-						f43f4f1 = append(f43f4f1, &f43f4f1elem)
-					}
-					f43f4.LogTypesToEnable = f43f4f1
-				}
-				f43.PendingCloudwatchLogsExports = f43f4
-			}
-			cr.Status.AtProvider.PendingModifiedValues = f43
-		}
 		if elem.PercentProgress != nil {
 			cr.Status.AtProvider.PercentProgress = elem.PercentProgress
 		}
@@ -300,13 +262,13 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 			cr.Spec.ForProvider.PreferredMaintenanceWindow = elem.PreferredMaintenanceWindow
 		}
 		if elem.ReadReplicaIdentifiers != nil {
-			f48 := []*string{}
-			for _, f48iter := range elem.ReadReplicaIdentifiers {
-				var f48elem string
-				f48elem = *f48iter
-				f48 = append(f48, &f48elem)
+			f47 := []*string{}
+			for _, f47iter := range elem.ReadReplicaIdentifiers {
+				var f47elem string
+				f47elem = *f47iter
+				f47 = append(f47, &f47elem)
 			}
-			cr.Status.AtProvider.ReadReplicaIdentifiers = f48
+			cr.Status.AtProvider.ReadReplicaIdentifiers = f47
 		}
 		if elem.ReaderEndpoint != nil {
 			cr.Status.AtProvider.ReaderEndpoint = elem.ReaderEndpoint
@@ -315,23 +277,23 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 			cr.Spec.ForProvider.ReplicationSourceIdentifier = elem.ReplicationSourceIdentifier
 		}
 		if elem.ScalingConfigurationInfo != nil {
-			f51 := &svcapitypes.ScalingConfigurationInfo{}
+			f50 := &svcapitypes.ScalingConfigurationInfo{}
 			if elem.ScalingConfigurationInfo.AutoPause != nil {
-				f51.AutoPause = elem.ScalingConfigurationInfo.AutoPause
+				f50.AutoPause = elem.ScalingConfigurationInfo.AutoPause
 			}
 			if elem.ScalingConfigurationInfo.MaxCapacity != nil {
-				f51.MaxCapacity = elem.ScalingConfigurationInfo.MaxCapacity
+				f50.MaxCapacity = elem.ScalingConfigurationInfo.MaxCapacity
 			}
 			if elem.ScalingConfigurationInfo.MinCapacity != nil {
-				f51.MinCapacity = elem.ScalingConfigurationInfo.MinCapacity
+				f50.MinCapacity = elem.ScalingConfigurationInfo.MinCapacity
 			}
 			if elem.ScalingConfigurationInfo.SecondsUntilAutoPause != nil {
-				f51.SecondsUntilAutoPause = elem.ScalingConfigurationInfo.SecondsUntilAutoPause
+				f50.SecondsUntilAutoPause = elem.ScalingConfigurationInfo.SecondsUntilAutoPause
 			}
 			if elem.ScalingConfigurationInfo.TimeoutAction != nil {
-				f51.TimeoutAction = elem.ScalingConfigurationInfo.TimeoutAction
+				f50.TimeoutAction = elem.ScalingConfigurationInfo.TimeoutAction
 			}
-			cr.Status.AtProvider.ScalingConfigurationInfo = f51
+			cr.Status.AtProvider.ScalingConfigurationInfo = f50
 		}
 		if elem.Status != nil {
 			cr.Status.AtProvider.Status = elem.Status
@@ -340,32 +302,32 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 			cr.Spec.ForProvider.StorageEncrypted = elem.StorageEncrypted
 		}
 		if elem.TagList != nil {
-			f54 := []*svcapitypes.Tag{}
-			for _, f54iter := range elem.TagList {
-				f54elem := &svcapitypes.Tag{}
-				if f54iter.Key != nil {
-					f54elem.Key = f54iter.Key
+			f53 := []*svcapitypes.Tag{}
+			for _, f53iter := range elem.TagList {
+				f53elem := &svcapitypes.Tag{}
+				if f53iter.Key != nil {
+					f53elem.Key = f53iter.Key
 				}
-				if f54iter.Value != nil {
-					f54elem.Value = f54iter.Value
+				if f53iter.Value != nil {
+					f53elem.Value = f53iter.Value
+				}
+				f53 = append(f53, f53elem)
+			}
+			cr.Status.AtProvider.TagList = f53
+		}
+		if elem.VpcSecurityGroups != nil {
+			f54 := []*svcapitypes.VPCSecurityGroupMembership{}
+			for _, f54iter := range elem.VpcSecurityGroups {
+				f54elem := &svcapitypes.VPCSecurityGroupMembership{}
+				if f54iter.Status != nil {
+					f54elem.Status = f54iter.Status
+				}
+				if f54iter.VpcSecurityGroupId != nil {
+					f54elem.VPCSecurityGroupID = f54iter.VpcSecurityGroupId
 				}
 				f54 = append(f54, f54elem)
 			}
-			cr.Status.AtProvider.TagList = f54
-		}
-		if elem.VpcSecurityGroups != nil {
-			f55 := []*svcapitypes.VPCSecurityGroupMembership{}
-			for _, f55iter := range elem.VpcSecurityGroups {
-				f55elem := &svcapitypes.VPCSecurityGroupMembership{}
-				if f55iter.Status != nil {
-					f55elem.Status = f55iter.Status
-				}
-				if f55iter.VpcSecurityGroupId != nil {
-					f55elem.VPCSecurityGroupID = f55iter.VpcSecurityGroupId
-				}
-				f55 = append(f55, f55elem)
-			}
-			cr.Status.AtProvider.VPCSecurityGroups = f55
+			cr.Status.AtProvider.VPCSecurityGroups = f54
 		}
 		found = true
 		break
