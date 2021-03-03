@@ -53,9 +53,6 @@ spec:
               forProvider:
                 description: FileSystemParameters defines the desired state of FileSystem
                 properties:
-                  creationToken:
-                    description: A string of up to 64 ASCII characters. Amazon EFS uses this to ensure idempotent creation.
-                    type: string
                   encrypted:
                     description: A Boolean value that, if true, creates an encrypted file system. When creating an encrypted file system, you have the option of specifying CreateFileSystemRequest$KmsKeyId for an existing AWS Key Management Service (AWS KMS) customer master key (CMK). If you don't specify a CMK, then the default CMK for Amazon EFS, /aws/elasticfilesystem, is used to protect the encrypted file system.
                     type: boolean
@@ -107,7 +104,6 @@ spec:
                     description: 'The throughput mode for the file system to be created. There are two throughput modes to choose from for your file system: bursting and provisioned. If you set ThroughputMode to provisioned, you must also set a value for ProvisionedThroughPutInMibps. You can decrease your file system''s throughput in Provisioned Throughput mode or change between the throughput modes as long as it’s been more than 24 hours since the last decrease or throughput mode change. For more, see Specifying Throughput with Provisioned Mode (https://docs.aws.amazon.com/efs/latest/ug/performance.html#provisioned-throughput) in the Amazon EFS User Guide.'
                     type: string
                 required:
-                - creationToken
                 - region
                 type: object
               providerConfigRef:
@@ -153,6 +149,9 @@ spec:
                   creationTime:
                     description: The time that the file system was created, in seconds (since 1970-01-01T00:00:00Z).
                     format: date-time
+                    type: string
+                  creationToken:
+                    description: The opaque string specified in the request.
                     type: string
                   fileSystemARN:
                     description: 'The Amazon Resource Name (ARN) for the EFS file system, in the format arn:aws:elasticfilesystem:region:account-id:file-system/file-system-id . Example with sample data: arn:aws:elasticfilesystem:us-west-2:1111333322228888:file-system/fs-01234567'

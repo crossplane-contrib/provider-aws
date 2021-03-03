@@ -32,8 +32,8 @@ import (
 func GenerateDescribeFileSystemsInput(cr *svcapitypes.FileSystem) *svcsdk.DescribeFileSystemsInput {
 	res := &svcsdk.DescribeFileSystemsInput{}
 
-	if cr.Spec.ForProvider.CreationToken != nil {
-		res.SetCreationToken(*cr.Spec.ForProvider.CreationToken)
+	if cr.Status.AtProvider.CreationToken != nil {
+		res.SetCreationToken(*cr.Status.AtProvider.CreationToken)
 	}
 	if cr.Status.AtProvider.FileSystemID != nil {
 		res.SetFileSystemId(*cr.Status.AtProvider.FileSystemID)
@@ -52,7 +52,7 @@ func GenerateFileSystem(resp *svcsdk.DescribeFileSystemsOutput) *svcapitypes.Fil
 			cr.Status.AtProvider.CreationTime = &metav1.Time{*elem.CreationTime}
 		}
 		if elem.CreationToken != nil {
-			cr.Spec.ForProvider.CreationToken = elem.CreationToken
+			cr.Status.AtProvider.CreationToken = elem.CreationToken
 		}
 		if elem.Encrypted != nil {
 			cr.Spec.ForProvider.Encrypted = elem.Encrypted
@@ -126,7 +126,6 @@ func GenerateFileSystem(resp *svcsdk.DescribeFileSystemsOutput) *svcapitypes.Fil
 
 func lateInitialize(cr *svcapitypes.FileSystem, resp *svcsdk.DescribeFileSystemsOutput) error {
 	for _, resource := range resp.FileSystems {
-		cr.Spec.ForProvider.CreationToken = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.CreationToken, resource.CreationToken)
 		cr.Spec.ForProvider.Encrypted = awsclients.LateInitializeBoolPtr(cr.Spec.ForProvider.Encrypted, resource.Encrypted)
 		cr.Spec.ForProvider.KMSKeyID = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.KMSKeyID, resource.KmsKeyId)
 		cr.Spec.ForProvider.PerformanceMode = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.PerformanceMode, resource.PerformanceMode)
@@ -160,9 +159,6 @@ func basicUpToDateCheck(cr *svcapitypes.FileSystem, resp *svcsdk.DescribeFileSys
 func GenerateCreateFileSystemInput(cr *svcapitypes.FileSystem) *svcsdk.CreateFileSystemInput {
 	res := &svcsdk.CreateFileSystemInput{}
 
-	if cr.Spec.ForProvider.CreationToken != nil {
-		res.SetCreationToken(*cr.Spec.ForProvider.CreationToken)
-	}
 	if cr.Spec.ForProvider.Encrypted != nil {
 		res.SetEncrypted(*cr.Spec.ForProvider.Encrypted)
 	}
@@ -173,18 +169,18 @@ func GenerateCreateFileSystemInput(cr *svcapitypes.FileSystem) *svcsdk.CreateFil
 		res.SetPerformanceMode(*cr.Spec.ForProvider.PerformanceMode)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f4 := []*svcsdk.Tag{}
-		for _, f4iter := range cr.Spec.ForProvider.Tags {
-			f4elem := &svcsdk.Tag{}
-			if f4iter.Key != nil {
-				f4elem.SetKey(*f4iter.Key)
+		f3 := []*svcsdk.Tag{}
+		for _, f3iter := range cr.Spec.ForProvider.Tags {
+			f3elem := &svcsdk.Tag{}
+			if f3iter.Key != nil {
+				f3elem.SetKey(*f3iter.Key)
 			}
-			if f4iter.Value != nil {
-				f4elem.SetValue(*f4iter.Value)
+			if f3iter.Value != nil {
+				f3elem.SetValue(*f3iter.Value)
 			}
-			f4 = append(f4, f4elem)
+			f3 = append(f3, f3elem)
 		}
-		res.SetTags(f4)
+		res.SetTags(f3)
 	}
 	if cr.Spec.ForProvider.ThroughputMode != nil {
 		res.SetThroughputMode(*cr.Spec.ForProvider.ThroughputMode)

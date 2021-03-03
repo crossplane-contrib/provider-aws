@@ -3,6 +3,7 @@ ignore:
     - AccessPoint
     - MountTarget
   field_paths:
+    - CreateFileSystemInput.CreationToken
     - CreateFileSystemInput.ProvisionedThroughputInMibps
     - UpdateFileSystemInput.ProvisionedThroughputInMibps
     - FileSystemDescription.ProvisionedThroughputInMibps
