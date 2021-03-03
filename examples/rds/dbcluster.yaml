@@ -1,0 +1,20 @@
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBCluster
+metadata:
+  name: example-dbcluster
+spec:
+  forProvider:
+    engine: aurora-postgresql
+    masterUsername: cpadmin
+    masterUserPassword: adminadmin
+    dbSubnetGroupNameRef:
+      name: sample-subnet-group
+    vpcSecurityGroupIDRefs:
+      - name: sample-cluster-sg
+    skipFinalSnapshot: true
+    region: us-east-1
+  providerConfigRef:
+    name: default
+  writeConnectionSecretToRef:
+    name: psqlserver-conn
+    namespace: crossplane-system
