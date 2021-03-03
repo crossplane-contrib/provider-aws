@@ -330,7 +330,8 @@ func TestIsUpToDate(t *testing.T) {
 
 func TestGetPassword(t *testing.T) {
 	type args struct {
-		r    v1beta1.RDSInstance
+		in   *xpv1.SecretKeySelector
+		out  *xpv1.SecretReference
 		kube client.Client
 	}
 	type want struct {
@@ -345,25 +346,16 @@ func TestGetPassword(t *testing.T) {
 	}{
 		"SamePassword": {
 			args: args{
-				r: v1beta1.RDSInstance{
-					Spec: v1beta1.RDSInstanceSpec{
-						ForProvider: v1beta1.RDSInstanceParameters{
-							DBName: &dbName,
-							MasterPasswordSecretRef: &xpv1.SecretKeySelector{
-								SecretReference: xpv1.SecretReference{
-									Name:      connectionSecretName,
-									Namespace: secretNamespace,
-								},
-								Key: connectionSecretKey,
-							},
-						},
-						ResourceSpec: xpv1.ResourceSpec{
-							WriteConnectionSecretToReference: &xpv1.SecretReference{
-								Name:      outputSecretName,
-								Namespace: secretNamespace,
-							},
-						},
+				in: &xpv1.SecretKeySelector{
+					SecretReference: xpv1.SecretReference{
+						Name:      connectionSecretName,
+						Namespace: secretNamespace,
 					},
+					Key: connectionSecretKey,
+				},
+				out: &xpv1.SecretReference{
+					Name:      outputSecretName,
+					Namespace: secretNamespace,
 				},
 				kube: &test.MockClient{
 					MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
@@ -396,25 +388,16 @@ func TestGetPassword(t *testing.T) {
 		},
 		"DifferentPassword": {
 			args: args{
-				r: v1beta1.RDSInstance{
-					Spec: v1beta1.RDSInstanceSpec{
-						ForProvider: v1beta1.RDSInstanceParameters{
-							DBName: &dbName,
-							MasterPasswordSecretRef: &xpv1.SecretKeySelector{
-								SecretReference: xpv1.SecretReference{
-									Name:      connectionSecretName,
-									Namespace: secretNamespace,
-								},
-								Key: connectionSecretKey,
-							},
-						},
-						ResourceSpec: xpv1.ResourceSpec{
-							WriteConnectionSecretToReference: &xpv1.SecretReference{
-								Name:      outputSecretName,
-								Namespace: secretNamespace,
-							},
-						},
+				in: &xpv1.SecretKeySelector{
+					SecretReference: xpv1.SecretReference{
+						Name:      connectionSecretName,
+						Namespace: secretNamespace,
 					},
+					Key: connectionSecretKey,
+				},
+				out: &xpv1.SecretReference{
+					Name:      outputSecretName,
+					Namespace: secretNamespace,
 				},
 				kube: &test.MockClient{
 					MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
@@ -447,19 +430,12 @@ func TestGetPassword(t *testing.T) {
 		},
 		"ErrorOnInput": {
 			args: args{
-				r: v1beta1.RDSInstance{
-					Spec: v1beta1.RDSInstanceSpec{
-						ForProvider: v1beta1.RDSInstanceParameters{
-							DBName: &dbName,
-							MasterPasswordSecretRef: &xpv1.SecretKeySelector{
-								SecretReference: xpv1.SecretReference{
-									Name:      connectionSecretName,
-									Namespace: secretNamespace,
-								},
-								Key: connectionSecretKey,
-							},
-						},
+				in: &xpv1.SecretKeySelector{
+					SecretReference: xpv1.SecretReference{
+						Name:      connectionSecretName,
+						Namespace: secretNamespace,
 					},
+					Key: connectionSecretKey,
 				},
 				kube: &test.MockClient{
 					MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
@@ -475,25 +451,16 @@ func TestGetPassword(t *testing.T) {
 		},
 		"OutputDoesNotExistYet": {
 			args: args{
-				r: v1beta1.RDSInstance{
-					Spec: v1beta1.RDSInstanceSpec{
-						ForProvider: v1beta1.RDSInstanceParameters{
-							DBName: &dbName,
-							MasterPasswordSecretRef: &xpv1.SecretKeySelector{
-								SecretReference: xpv1.SecretReference{
-									Name:      connectionSecretName,
-									Namespace: secretNamespace,
-								},
-								Key: connectionSecretKey,
-							},
-						},
-						ResourceSpec: xpv1.ResourceSpec{
-							WriteConnectionSecretToReference: &xpv1.SecretReference{
-								Name:      outputSecretName,
-								Namespace: secretNamespace,
-							},
-						},
+				in: &xpv1.SecretKeySelector{
+					SecretReference: xpv1.SecretReference{
+						Name:      connectionSecretName,
+						Namespace: secretNamespace,
 					},
+					Key: connectionSecretKey,
+				},
+				out: &xpv1.SecretReference{
+					Name:      outputSecretName,
+					Namespace: secretNamespace,
 				},
 				kube: &test.MockClient{
 					MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
@@ -523,18 +490,9 @@ func TestGetPassword(t *testing.T) {
 		},
 		"NoInputPassword": {
 			args: args{
-				r: v1beta1.RDSInstance{
-					Spec: v1beta1.RDSInstanceSpec{
-						ForProvider: v1beta1.RDSInstanceParameters{
-							DBName: &dbName,
-						},
-						ResourceSpec: xpv1.ResourceSpec{
-							WriteConnectionSecretToReference: &xpv1.SecretReference{
-								Name:      outputSecretName,
-								Namespace: secretNamespace,
-							},
-						},
-					},
+				out: &xpv1.SecretReference{
+					Name:      outputSecretName,
+					Namespace: secretNamespace,
 				},
 				kube: &test.MockClient{
 					MockGet: func(_ context.Context, key client.ObjectKey, obj client.Object) error {
@@ -557,7 +515,7 @@ func TestGetPassword(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.Background()
-			pwd, changed, err := GetPassword(ctx, tc.args.kube, &tc.args.r)
+			pwd, changed, err := GetPassword(ctx, tc.args.kube, tc.args.in, tc.args.out)
 			if diff := cmp.Diff(tc.want, want{
 				Pwd:     pwd,
 				Changed: changed,

@@ -188,11 +188,8 @@ spec:
                         description: MatchLabels ensures an object with matching labels is selected.
                         type: object
                     type: object
-                  masterUserPassword:
-                    description: "The password for the master database user. This password can contain any printable ASCII character except \"/\", \"\"\", or \"@\". \n Constraints: Must contain from 8 to 41 characters."
-                    type: string
                   masterUserPasswordSecretRef:
-                    description: "The password for the master database user. This password can contain any printable ASCII character except \"/\", \"\"\", or \"@\". \n Constraints: Must contain from 8 to 41 characters."
+                    description: "The password for the master database user. This password can contain any printable ASCII character except \"/\", \"\"\", or \"@\". \n Constraints: Must contain from 8 to 41 characters. Required."
                     properties:
                       key:
                         description: The key to select.
@@ -300,6 +297,7 @@ spec:
                     type: array
                 required:
                 - engine
+                - masterUserPasswordSecretRef
                 - region
                 type: object
               providerConfigRef:
