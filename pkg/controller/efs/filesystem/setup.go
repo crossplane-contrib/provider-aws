@@ -3,7 +3,6 @@ package filesystem
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/efs"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -54,7 +53,7 @@ func isUpToDate(r bool, cr *svcapitypes.FileSystem, obj *svcsdk.DescribeFileSyst
 		return r, nil
 	}
 	for _, res := range obj.FileSystems {
-		if awsclients.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps) != int64(aws.Float64Value(res.ProvisionedThroughputInMibps)) {
+		if awsclients.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps) != int64(awsclients.Float64Value(res.ProvisionedThroughputInMibps)) {
 			return false, nil
 		}
 	}
@@ -81,9 +80,7 @@ func postObserve(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.Desc
 func preUpdate(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.UpdateFileSystemInput) error {
 	obj.FileSystemId = awsclients.String(meta.GetExternalName(cr))
 	// Type of this field is *float64 but in practice, only integer values are allowed.
-	if cr.Spec.ForProvider.ProvisionedThroughputInMibps != nil {
-		obj.ProvisionedThroughputInMibps = aws.Float64(float64(awsclients.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps)))
-	}
+	obj.ProvisionedThroughputInMibps = awsclients.Int64Float64(cr.Spec.ForProvider.ProvisionedThroughputInMibps)
 	return nil
 }
 
@@ -95,9 +92,7 @@ func preDelete(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.Delete
 func preCreate(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.CreateFileSystemInput) error {
 	obj.CreationToken = awsclients.String(string(cr.UID))
 	// Type of this field is *float64 but in practice, only integer values are allowed.
-	if cr.Spec.ForProvider.ProvisionedThroughputInMibps != nil {
-		obj.ProvisionedThroughputInMibps = aws.Float64(float64(awsclients.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps)))
-	}
+	obj.ProvisionedThroughputInMibps = awsclients.Int64Float64(cr.Spec.ForProvider.ProvisionedThroughputInMibps)
 	return nil
 }
 

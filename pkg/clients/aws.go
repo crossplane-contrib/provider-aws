@@ -413,37 +413,6 @@ func CreateJSONPatch(source, destination interface{}) ([]byte, error) {
 	return patchJSON, nil
 }
 
-// String converts the supplied string for use with the AWS Go SDK.
-func String(v string, o ...FieldOption) *string {
-	for _, fo := range o {
-		if fo == FieldRequired && v == "" {
-			return &v
-		}
-	}
-	if v == "" {
-		return nil
-	}
-	return &v
-}
-
-// StringValue converts the supplied string pointer to a string, returning the
-// empty string if the pointer is nil.
-func StringValue(v *string) string {
-	if v == nil {
-		return ""
-	}
-	return *v
-}
-
-// Int64Value converts the supplied int64 pointer to a int64, returning
-// 0 if the pointer is nil.
-func Int64Value(v *int64) int64 {
-	if v != nil {
-		return *v
-	}
-	return 0
-}
-
 // LateInitializeStringPtr returns in if it's non-nil, otherwise returns from
 // which is the backup for the cases in is nil.
 func LateInitializeStringPtr(in *string, from *string) *string {
@@ -462,6 +431,50 @@ func LateInitializeString(in string, from *string) string {
 	return in
 }
 
+// LateInitializeIntPtr returns in if it's non-nil, otherwise returns from
+// which is the backup for the cases in is nil.
+func LateInitializeIntPtr(in *int, from *int64) *int {
+	if in != nil {
+		return in
+	}
+	if from != nil {
+		i := int(*from)
+		return &i
+	}
+	return nil
+}
+
+// LateInitializeInt64Ptr returns in if it's non-nil, otherwise returns from
+// which is the backup for the cases in is nil.
+func LateInitializeInt64Ptr(in *int64, from *int64) *int64 {
+	if in != nil {
+		return in
+	}
+	return from
+}
+
+// LateInitializeBoolPtr returns in if it's non-nil, otherwise returns from
+// which is the backup for the cases in is nil.
+func LateInitializeBoolPtr(in *bool, from *bool) *bool {
+	if in != nil {
+		return in
+	}
+	return from
+}
+
+// String converts the supplied string for use with the AWS Go SDK.
+func String(v string, o ...FieldOption) *string {
+	for _, fo := range o {
+		if fo == FieldRequired && v == "" {
+			return &v
+		}
+	}
+	if v == "" {
+		return nil
+	}
+	return &v
+}
+
 // Int64 converts the supplied int for use with the AWS Go SDK.
 func Int64(v int, o ...FieldOption) *int64 {
 	for _, fo := range o {
@@ -474,6 +487,21 @@ func Int64(v int, o ...FieldOption) *int64 {
 		return nil
 	}
 	r := int64(v)
+	return &r
+}
+
+// Int64Float64 converts the supplied *int64 to *float64 for use with the AWS Go SDK.
+func Int64Float64(v *int64, o ...FieldOption) *float64 {
+	for _, fo := range o {
+		if fo == FieldRequired && v == nil {
+			r := float64(0)
+			return &r
+		}
+	}
+	if v == nil {
+		return nil
+	}
+	r := float64(*v)
 	return &r
 }
 
@@ -508,28 +536,6 @@ func IntAddress(i *int64, o ...FieldOption) *int {
 	return &r
 }
 
-// LateInitializeIntPtr returns in if it's non-nil, otherwise returns from
-// which is the backup for the cases in is nil.
-func LateInitializeIntPtr(in *int, from *int64) *int {
-	if in != nil {
-		return in
-	}
-	if from != nil {
-		i := int(*from)
-		return &i
-	}
-	return nil
-}
-
-// LateInitializeInt64Ptr returns in if it's non-nil, otherwise returns from
-// which is the backup for the cases in is nil.
-func LateInitializeInt64Ptr(in *int64, from *int64) *int64 {
-	if in != nil {
-		return in
-	}
-	return from
-}
-
 // Bool converts the supplied bool for use with the AWS Go SDK.
 func Bool(v bool, o ...FieldOption) *bool {
 	for _, fo := range o {
@@ -544,6 +550,33 @@ func Bool(v bool, o ...FieldOption) *bool {
 	return &v
 }
 
+// StringValue converts the supplied string pointer to a string, returning the
+// empty string if the pointer is nil.
+func StringValue(v *string) string {
+	if v == nil {
+		return ""
+	}
+	return *v
+}
+
+// Int64Value converts the supplied int64 pointer to a int64, returning
+// 0 if the pointer is nil.
+func Int64Value(v *int64) int64 {
+	if v != nil {
+		return *v
+	}
+	return 0
+}
+
+// Float64Value converts the supplied float64 pointer to a float64, returning
+// 0.0 if the pointer is nil.
+func Float64Value(v *float64) float64 {
+	if v != nil {
+		return *v
+	}
+	return 0
+}
+
 // BoolValue returns the value of the bool pointer passed in or
 // false if the pointer is nil.
 func BoolValue(v *bool) bool {
@@ -551,15 +584,6 @@ func BoolValue(v *bool) bool {
 		return false
 	}
 	return *v
-}
-
-// LateInitializeBoolPtr returns in if it's non-nil, otherwise returns from
-// which is the backup for the cases in is nil.
-func LateInitializeBoolPtr(in *bool, from *bool) *bool {
-	if in != nil {
-		return in
-	}
-	return from
 }
 
 // CompactAndEscapeJSON removes space characters and URL-encodes the JSON string.
