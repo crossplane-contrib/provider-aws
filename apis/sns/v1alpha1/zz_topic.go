@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,39 +19,51 @@ limitations under the License.
 package v1alpha1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // TopicParameters defines the desired state of Topic
 type TopicParameters struct {
 	// Region is which region the Topic will be created.
 	// +kubebuilder:validation:Required
-	Region         string  `json:"region"`
+	Region string `json:"region"`
+
 	DeliveryPolicy *string `json:"deliveryPolicy,omitempty"`
-	DisplayName    *string `json:"displayName,omitempty"`
+
+	DisplayName *string `json:"displayName,omitempty"`
+
 	KMSMasterKeyID *string `json:"kmsMasterKeyID,omitempty"`
+
 	// The name of the topic you want to create.
 	//
 	// Constraints: Topic names must be made up of only uppercase and lowercase
 	// ASCII letters, numbers, underscores, and hyphens, and must be between 1 and
 	// 256 characters long.
+	//
+	// For a FIFO (first-in-first-out) topic, the name must end with the .fifo suffix.
 	// +kubebuilder:validation:Required
-	Name   *string `json:"name"`
+	Name *string `json:"name"`
+
 	Policy *string `json:"policy,omitempty"`
+
 	// The list of tags to add to a new topic.
 	//
 	// To be able to tag a topic on creation, you must have the sns:CreateTopic
 	// and sns:TagResource permissions.
-	Tags                  []*Tag `json:"tags,omitempty"`
+	Tags []*Tag `json:"tags,omitempty"`
+
+	// CustomTopicParameters includes the additional fields on top of
+	// the generated ones.
 	CustomTopicParameters `json:",inline"`
 }
 
 // TopicSpec defines the desired state of Topic
 type TopicSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  TopicParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       TopicParameters `json:"forProvider"`
 }
 
 // TopicObservation defines the observed state of Topic
@@ -64,8 +76,8 @@ type TopicObservation struct {
 
 // TopicStatus defines the observed state of Topic.
 type TopicStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     TopicObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          TopicObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

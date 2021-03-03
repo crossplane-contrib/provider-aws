@@ -18,20 +18,20 @@ limitations under the License.
 
 package v1alpha1
 
-import runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this PlatformApplication.
-func (mg *PlatformApplication) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *PlatformApplication) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this PlatformApplication.
-func (mg *PlatformApplication) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *PlatformApplication) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this PlatformApplication.
-func (mg *PlatformApplication) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *PlatformApplication) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -39,27 +39,27 @@ func (mg *PlatformApplication) GetProviderConfigReference() *runtimev1alpha1.Ref
 GetProviderReference of this PlatformApplication.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *PlatformApplication) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *PlatformApplication) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this PlatformApplication.
-func (mg *PlatformApplication) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *PlatformApplication) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this PlatformApplication.
-func (mg *PlatformApplication) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *PlatformApplication) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this PlatformApplication.
-func (mg *PlatformApplication) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *PlatformApplication) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this PlatformApplication.
-func (mg *PlatformApplication) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *PlatformApplication) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -67,27 +67,27 @@ func (mg *PlatformApplication) SetProviderConfigReference(r *runtimev1alpha1.Ref
 SetProviderReference of this PlatformApplication.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *PlatformApplication) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *PlatformApplication) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this PlatformApplication.
-func (mg *PlatformApplication) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *PlatformApplication) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this PlatformEndpoint.
-func (mg *PlatformEndpoint) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *PlatformEndpoint) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this PlatformEndpoint.
-func (mg *PlatformEndpoint) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *PlatformEndpoint) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this PlatformEndpoint.
-func (mg *PlatformEndpoint) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *PlatformEndpoint) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -95,27 +95,27 @@ func (mg *PlatformEndpoint) GetProviderConfigReference() *runtimev1alpha1.Refere
 GetProviderReference of this PlatformEndpoint.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *PlatformEndpoint) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *PlatformEndpoint) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this PlatformEndpoint.
-func (mg *PlatformEndpoint) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *PlatformEndpoint) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this PlatformEndpoint.
-func (mg *PlatformEndpoint) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *PlatformEndpoint) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this PlatformEndpoint.
-func (mg *PlatformEndpoint) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *PlatformEndpoint) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this PlatformEndpoint.
-func (mg *PlatformEndpoint) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *PlatformEndpoint) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -123,27 +123,27 @@ func (mg *PlatformEndpoint) SetProviderConfigReference(r *runtimev1alpha1.Refere
 SetProviderReference of this PlatformEndpoint.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *PlatformEndpoint) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *PlatformEndpoint) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this PlatformEndpoint.
-func (mg *PlatformEndpoint) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *PlatformEndpoint) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
 // GetCondition of this Topic.
-func (mg *Topic) GetCondition(ct runtimev1alpha1.ConditionType) runtimev1alpha1.Condition {
+func (mg *Topic) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this Topic.
-func (mg *Topic) GetDeletionPolicy() runtimev1alpha1.DeletionPolicy {
+func (mg *Topic) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this Topic.
-func (mg *Topic) GetProviderConfigReference() *runtimev1alpha1.Reference {
+func (mg *Topic) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -151,27 +151,27 @@ func (mg *Topic) GetProviderConfigReference() *runtimev1alpha1.Reference {
 GetProviderReference of this Topic.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *Topic) GetProviderReference() *runtimev1alpha1.Reference {
+func (mg *Topic) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this Topic.
-func (mg *Topic) GetWriteConnectionSecretToReference() *runtimev1alpha1.SecretReference {
+func (mg *Topic) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this Topic.
-func (mg *Topic) SetConditions(c ...runtimev1alpha1.Condition) {
+func (mg *Topic) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this Topic.
-func (mg *Topic) SetDeletionPolicy(r runtimev1alpha1.DeletionPolicy) {
+func (mg *Topic) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this Topic.
-func (mg *Topic) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
+func (mg *Topic) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -179,11 +179,11 @@ func (mg *Topic) SetProviderConfigReference(r *runtimev1alpha1.Reference) {
 SetProviderReference of this Topic.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *Topic) SetProviderReference(r *runtimev1alpha1.Reference) {
+func (mg *Topic) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this Topic.
-func (mg *Topic) SetWriteConnectionSecretToReference(r *runtimev1alpha1.SecretReference) {
+func (mg *Topic) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

@@ -21,7 +21,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	"github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -30,62 +30,62 @@ func (in *CustomPlatformApplicationParameters) DeepCopyInto(out *CustomPlatformA
 	*out = *in
 	if in.FailureFeedbackRoleARNRef != nil {
 		in, out := &in.FailureFeedbackRoleARNRef, &out.FailureFeedbackRoleARNRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.FailureFeedbackRoleARNSelector != nil {
 		in, out := &in.FailureFeedbackRoleARNSelector, &out.FailureFeedbackRoleARNSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.SuccessFeedbackRoleARNRef != nil {
 		in, out := &in.SuccessFeedbackRoleARNRef, &out.SuccessFeedbackRoleARNRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.SuccessFeedbackRoleARNSelector != nil {
 		in, out := &in.SuccessFeedbackRoleARNSelector, &out.SuccessFeedbackRoleARNSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.EventDeliveryFailureRef != nil {
 		in, out := &in.EventDeliveryFailureRef, &out.EventDeliveryFailureRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.EventDeliveryFailureSelector != nil {
 		in, out := &in.EventDeliveryFailureSelector, &out.EventDeliveryFailureSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.EventEndpointCreatedRef != nil {
 		in, out := &in.EventEndpointCreatedRef, &out.EventEndpointCreatedRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.EventEndpointCreatedSelector != nil {
 		in, out := &in.EventEndpointCreatedSelector, &out.EventEndpointCreatedSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.EventEndpointDeletedRef != nil {
 		in, out := &in.EventEndpointDeletedRef, &out.EventEndpointDeletedRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.EventEndpointDeletedSelector != nil {
 		in, out := &in.EventEndpointDeletedSelector, &out.EventEndpointDeletedSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.EventEndpointUpdatedRef != nil {
 		in, out := &in.EventEndpointUpdatedRef, &out.EventEndpointUpdatedRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.EventEndpointUpdatedSelector != nil {
 		in, out := &in.EventEndpointUpdatedSelector, &out.EventEndpointUpdatedSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }
@@ -110,12 +110,12 @@ func (in *CustomPlatformEndpointParameters) DeepCopyInto(out *CustomPlatformEndp
 	}
 	if in.PlatformApplicationARNRef != nil {
 		in, out := &in.PlatformApplicationARNRef, &out.PlatformApplicationARNRef
-		*out = new(corev1alpha1.Reference)
+		*out = new(v1.Reference)
 		**out = **in
 	}
 	if in.PlatformApplicationARNSelector != nil {
 		in, out := &in.PlatformApplicationARNSelector, &out.PlatformApplicationARNSelector
-		*out = new(corev1alpha1.Selector)
+		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
 }

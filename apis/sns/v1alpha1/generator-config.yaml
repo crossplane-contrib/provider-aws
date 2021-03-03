@@ -3,41 +3,58 @@ ignore:
     - CreatePlatformEndpointInput.PlatformApplicationArn
 resources:
   # For resources whose API is based on map keys instead of Go types, ACK requires
-  # the full list of fields. The following list is taken from https://github.com/aws/aws-controllers-k8s/blob/22b1c93/services/sns/generator.yaml
+  # the full list of fields. The following list is taken from https://github.com/aws-controllers-k8s/sns-controller/blob/99302eb/generator.yaml
   # SuccessFeedbackRoleArn and FailureFeedbackRoleArn are removed since they can
   # be referenced.
   Topic:
     unpack_attributes_map:
       set_attributes_single_attribute: true
-      fields:
-        DeliveryPolicy:
-        DisplayName:
-        Policy:
-        KmsMasterKeyId:
-        Owner:
-          is_read_only: true
-          # Commented out contains_owner_account_id since it causes ACK-specific
-          # logic to be generated.
-          # contains_owner_account_id: true
-        EffectiveDeliveryPolicy:
-          is_read_only: true
-        TopicArn:
-          is_read_only: true
+    fields:
+      DeliveryPolicy:
+        is_attribute: true
+      DisplayName:
+        is_attribute: true
+      Policy:
+        is_attribute: true
+      KmsMasterKeyId:
+        is_attribute: true
+      Owner:
+        is_attribute: true
+        is_read_only: true
+        # Commented out contains_owner_account_id since it causes ACK-specific
+        # logic to be generated.
+        # contains_owner_account_id: true
+      EffectiveDeliveryPolicy:
+        is_attribute: true
+        is_read_only: true
+      TopicArn:
+        is_attribute: true
+        is_read_only: true
   PlatformApplication:
-    unpack_attributes_map:
-      fields:
-        PlatformCredential:
-        PlatformPrincipal:
-        EventEndpointCreated:
-        EventEndpointDeleted:
-        EventEndpointUpdated:
-        EventDeliveryFailure:
-        SuccessFeedbackRoleArn:
-        FailureFeedbackRoleArn:
-        SuccessFeedbackSampleRate:
+    fields:
+      PlatformCredential:
+        is_attribute: true
+      PlatformPrincipal:
+        is_attribute: true
+      EventEndpointCreated:
+        is_attribute: true
+      EventEndpointDeleted:
+        is_attribute: true
+      EventEndpointUpdated:
+        is_attribute: true
+      EventDeliveryFailure:
+        is_attribute: true
+      SuccessFeedbackRoleArn:
+        is_attribute: true
+      FailureFeedbackRoleArn:
+        is_attribute: true
+      SuccessFeedbackSampleRate:
+        is_attribute: true
   Endpoint:
-    unpack_attributes_map:
-      fields:
-        CustomUserData:
-        Enabled:
-        Token:
+    fields:
+      CustomUserData:
+        is_attribute: true
+      Enabled:
+        is_attribute: true
+      Token:
+        is_attribute: true

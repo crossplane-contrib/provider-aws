@@ -60,7 +60,7 @@ spec:
                   kmsMasterKeyID:
                     type: string
                   name:
-                    description: "The name of the topic you want to create. \n Constraints: Topic names must be made up of only uppercase and lowercase ASCII letters, numbers, underscores, and hyphens, and must be between 1 and 256 characters long."
+                    description: "The name of the topic you want to create. \n Constraints: Topic names must be made up of only uppercase and lowercase ASCII letters, numbers, underscores, and hyphens, and must be between 1 and 256 characters long. \n For a FIFO (first-in-first-out) topic, the name must end with the .fifo suffix."
                     type: string
                   policy:
                     type: string

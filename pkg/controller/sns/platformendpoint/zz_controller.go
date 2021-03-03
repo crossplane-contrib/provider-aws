@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,11 +22,12 @@ import (
 	"context"
 
 	svcapi "github.com/aws/aws-sdk-go/service/sns"
+	svcsdk "github.com/aws/aws-sdk-go/service/sns"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -39,12 +40,14 @@ const (
 
 	errCreateSession = "cannot create a new session"
 	errCreate        = "cannot create PlatformEndpoint in AWS"
+	errUpdate        = "cannot update PlatformEndpoint in AWS"
 	errDescribe      = "failed to describe PlatformEndpoint"
 	errDelete        = "failed to delete PlatformEndpoint"
 )
 
 type connector struct {
 	kube client.Client
+	opts []option
 }
 
 func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
@@ -54,32 +57,28 @@ func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed
 	}
 	sess, err := awsclient.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, errCreateSession)
 	}
-	return &external{client: svcapi.New(sess), kube: c.kube}, errors.Wrap(err, errCreateSession)
+	return newExternal(c.kube, svcapi.New(sess), c.opts), nil
 }
 
-type external struct {
-	kube   client.Client
-	client svcsdkapi.SNSAPI
+func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
+	return e.observe(ctx, mg)
 }
-
-// PlatformEndpoint API does not natively implement a Get call. It should
-// be handled with custom code.
 
 func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.ExternalCreation, error) {
 	cr, ok := mg.(*svcapitypes.PlatformEndpoint)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-	if err := e.preCreate(ctx, cr); err != nil {
+	cr.Status.SetConditions(xpv1.Creating())
+	input := GenerateCreatePlatformEndpointInput(cr)
+	if err := e.preCreate(ctx, cr, input); err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, "pre-create failed")
 	}
-	input := GenerateCreatePlatformEndpointInput(cr)
 	resp, err := e.client.CreatePlatformEndpointWithContext(ctx, input)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
 	if resp.EndpointArn != nil {
@@ -90,12 +89,61 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 }
 
 func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
+	return e.update(ctx, mg)
+
+}
+
+func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 	cr, ok := mg.(*svcapitypes.PlatformEndpoint)
 	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
+		return errors.New(errUnexpectedObject)
 	}
-	if err := e.preUpdate(ctx, cr); err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
+	cr.Status.SetConditions(xpv1.Deleting())
+	return e.delete(ctx, mg)
+
+}
+
+type option func(*external)
+
+func newExternal(kube client.Client, client svcsdkapi.SNSAPI, opts []option) *external {
+	e := &external{
+		kube:       kube,
+		client:     client,
+		observe:    nopObserve,
+		preCreate:  nopPreCreate,
+		postCreate: nopPostCreate,
+		delete:     nopDelete,
+		update:     nopUpdate,
 	}
-	return e.postUpdate(ctx, cr, managed.ExternalUpdate{}, nil)
+	for _, f := range opts {
+		f(e)
+	}
+	return e
+}
+
+type external struct {
+	kube       client.Client
+	client     svcsdkapi.SNSAPI
+	observe    func(context.Context, cpresource.Managed) (managed.ExternalObservation, error)
+	preCreate  func(context.Context, *svcapitypes.PlatformEndpoint, *svcsdk.CreatePlatformEndpointInput) error
+	postCreate func(context.Context, *svcapitypes.PlatformEndpoint, *svcsdk.CreatePlatformEndpointOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
+	delete     func(context.Context, cpresource.Managed) error
+	update     func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
+}
+
+func nopObserve(context.Context, cpresource.Managed) (managed.ExternalObservation, error) {
+	return managed.ExternalObservation{}, nil
+}
+
+func nopPreCreate(context.Context, *svcapitypes.PlatformEndpoint, *svcsdk.CreatePlatformEndpointInput) error {
+	return nil
+}
+func nopPostCreate(_ context.Context, _ *svcapitypes.PlatformEndpoint, _ *svcsdk.CreatePlatformEndpointOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	return cre, err
+}
+func nopDelete(context.Context, cpresource.Managed) error {
+	return nil
+}
+func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
+	return managed.ExternalUpdate{}, nil
 }

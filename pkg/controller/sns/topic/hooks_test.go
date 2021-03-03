@@ -138,7 +138,7 @@ func TestIsSNSTopicUpToDate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got := isUpToDate(tc.args.p, &svcsdk.GetTopicAttributesOutput{Attributes: tc.args.attr})
+			got, _ := isUpToDate(false, tc.args.p, &svcsdk.GetTopicAttributesOutput{Attributes: tc.args.attr})
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("Topic : -want, +got:\n%s", diff)
 			}

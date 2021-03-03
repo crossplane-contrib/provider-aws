@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,12 +22,13 @@ import (
 	"context"
 
 	svcapi "github.com/aws/aws-sdk-go/service/sns"
+	svcsdk "github.com/aws/aws-sdk-go/service/sns"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -41,12 +42,14 @@ const (
 
 	errCreateSession = "cannot create a new session"
 	errCreate        = "cannot create Topic in AWS"
+	errUpdate        = "cannot update Topic in AWS"
 	errDescribe      = "failed to describe Topic"
 	errDelete        = "failed to delete Topic"
 )
 
 type connector struct {
 	kube client.Client
+	opts []option
 }
 
 func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
@@ -56,14 +59,9 @@ func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed
 	}
 	sess, err := awsclient.GetConfigV1(ctx, c.kube, mg, cr.Spec.ForProvider.Region)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, errCreateSession)
 	}
-	return &external{client: svcapi.New(sess), kube: c.kube}, errors.Wrap(err, errCreateSession)
-}
-
-type external struct {
-	kube   client.Client
-	client svcsdkapi.SNSAPI
+	return newExternal(c.kube, svcapi.New(sess), c.opts), nil
 }
 
 func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
@@ -71,25 +69,32 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
-	if err := e.preObserve(ctx, cr); err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, "pre-observe failed")
-	}
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
 	}
 	input := GenerateGetTopicAttributesInput(cr)
+	if err := e.preObserve(ctx, cr, input); err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, "pre-observe failed")
+	}
 	resp, err := e.client.GetTopicAttributesWithContext(ctx, input)
 	if err != nil {
-		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
+		return managed.ExternalObservation{ResourceExists: false}, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
 	}
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
-	lateInitialize(&cr.Spec.ForProvider, resp)
+	if err := e.lateInitialize(cr, resp); err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, "late-init failed")
+	}
 	GenerateTopic(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
+
+	upToDate, err := e.isUpToDate(basicUpToDateCheck(cr, resp), cr, resp)
+	if err != nil {
+		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
+	}
 	return e.postObserve(ctx, cr, resp, managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceUpToDate:        isUpToDate(cr, resp),
+		ResourceUpToDate:        upToDate,
 		ResourceLateInitialized: !cmp.Equal(&cr.Spec.ForProvider, currentSpec),
 	}, nil)
 }
@@ -99,14 +104,14 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	cr.Status.SetConditions(runtimev1alpha1.Creating())
-	if err := e.preCreate(ctx, cr); err != nil {
+	cr.Status.SetConditions(xpv1.Creating())
+	input := GenerateCreateTopicInput(cr)
+	if err := e.preCreate(ctx, cr, input); err != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, "pre-create failed")
 	}
-	input := GenerateCreateTopicInput(cr)
 	resp, err := e.client.CreateTopicWithContext(ctx, input)
 	if err != nil {
-		return managed.ExternalCreation{}, errors.Wrap(err, errCreate)
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
 	if resp.TopicArn != nil {
@@ -117,22 +122,87 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 }
 
 func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*svcapitypes.Topic)
-	if !ok {
-		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
-	}
-	if err := e.preUpdate(ctx, cr); err != nil {
-		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
-	}
-	return e.postUpdate(ctx, cr, managed.ExternalUpdate{}, nil)
+	return e.update(ctx, mg)
+
 }
+
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 	cr, ok := mg.(*svcapitypes.Topic)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
-	cr.Status.SetConditions(runtimev1alpha1.Deleting())
+	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteTopicInput(cr)
-	_, err := e.client.DeleteTopicWithContext(ctx, input)
-	return errors.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
+	ignore, err := e.preDelete(ctx, cr, input)
+	if err != nil {
+		return errors.Wrap(err, "pre-delete failed")
+	}
+	if ignore {
+		return nil
+	}
+	resp, err := e.client.DeleteTopicWithContext(ctx, input)
+	return e.postDelete(ctx, cr, resp, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
+}
+
+type option func(*external)
+
+func newExternal(kube client.Client, client svcsdkapi.SNSAPI, opts []option) *external {
+	e := &external{
+		kube:           kube,
+		client:         client,
+		preObserve:     nopPreObserve,
+		postObserve:    nopPostObserve,
+		lateInitialize: lateInitialize,
+		isUpToDate:     nopIsUpToDate,
+		preCreate:      nopPreCreate,
+		postCreate:     nopPostCreate,
+		preDelete:      nopPreDelete,
+		postDelete:     nopPostDelete,
+		update:         nopUpdate,
+	}
+	for _, f := range opts {
+		f(e)
+	}
+	return e
+}
+
+type external struct {
+	kube           client.Client
+	client         svcsdkapi.SNSAPI
+	preObserve     func(context.Context, *svcapitypes.Topic, *svcsdk.GetTopicAttributesInput) error
+	postObserve    func(context.Context, *svcapitypes.Topic, *svcsdk.GetTopicAttributesOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
+	lateInitialize func(*svcapitypes.Topic, *svcsdk.GetTopicAttributesOutput) error
+	isUpToDate     func(bool, *svcapitypes.Topic, *svcsdk.GetTopicAttributesOutput) (bool, error)
+	preCreate      func(context.Context, *svcapitypes.Topic, *svcsdk.CreateTopicInput) error
+	postCreate     func(context.Context, *svcapitypes.Topic, *svcsdk.CreateTopicOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
+	preDelete      func(context.Context, *svcapitypes.Topic, *svcsdk.DeleteTopicInput) (bool, error)
+	postDelete     func(context.Context, *svcapitypes.Topic, *svcsdk.DeleteTopicOutput, error) error
+	update         func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
+}
+
+func nopPreObserve(context.Context, *svcapitypes.Topic, *svcsdk.GetTopicAttributesInput) error {
+	return nil
+}
+
+func nopPostObserve(_ context.Context, _ *svcapitypes.Topic, _ *svcsdk.GetTopicAttributesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	return obs, err
+}
+
+func nopIsUpToDate(r bool, _ *svcapitypes.Topic, _ *svcsdk.GetTopicAttributesOutput) (bool, error) {
+	return r, nil
+}
+func nopPreCreate(context.Context, *svcapitypes.Topic, *svcsdk.CreateTopicInput) error {
+	return nil
+}
+func nopPostCreate(_ context.Context, _ *svcapitypes.Topic, _ *svcsdk.CreateTopicOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	return cre, err
+}
+func nopPreDelete(context.Context, *svcapitypes.Topic, *svcsdk.DeleteTopicInput) (bool, error) {
+	return false, nil
+}
+func nopPostDelete(_ context.Context, _ *svcapitypes.Topic, _ *svcsdk.DeleteTopicOutput, err error) error {
+	return err
+}
+func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
+	return managed.ExternalUpdate{}, nil
 }

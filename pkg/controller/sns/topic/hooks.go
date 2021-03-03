@@ -20,6 +20,7 @@ import (
 	"context"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/sns"
+	svcsdkapi "github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -32,18 +33,24 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/sns/v1alpha1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
-const (
-	errUpdate = "failed to update Topic"
-)
-
 // SetupTopic adds a controller that reconciles Topic.
 func SetupTopic(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(svcapitypes.TopicGroupKind)
+	opts := []option{
+		func(e *external) {
+			e.postObserve = postObserve
+			e.postCreate = postCreate
+			u := &updater{client: e.client}
+			e.update = u.update
+			e.isUpToDate = isUpToDate
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
@@ -52,16 +59,13 @@ func SetupTopic(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) er
 		For(&svcapitypes.Topic{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.TopicGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.Topic) error {
-	return nil
-}
-func (*external) postObserve(_ context.Context, cr *svcapitypes.Topic, _ *svcsdk.GetTopicAttributesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func postObserve(_ context.Context, cr *svcapitypes.Topic, _ *svcsdk.GetTopicAttributesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -69,11 +73,7 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.Topic, _ *svcsdk
 	return obs, nil
 }
 
-func (*external) preCreate(context.Context, *svcapitypes.Topic) error {
-	return nil
-}
-
-func (*external) postCreate(_ context.Context, cr *svcapitypes.Topic, resp *svcsdk.CreateTopicOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *svcapitypes.Topic, resp *svcsdk.CreateTopicOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -82,40 +82,16 @@ func (*external) postCreate(_ context.Context, cr *svcapitypes.Topic, resp *svcs
 	return cre, nil
 }
 
-func (*external) preUpdate(context.Context, *svcapitypes.Topic) error {
-	return nil
-}
-
-func preGenerateGetTopicAttributesInput(_ *svcapitypes.Topic, obj *svcsdk.GetTopicAttributesInput) *svcsdk.GetTopicAttributesInput {
-	return obj
-}
-
-func postGenerateGetTopicAttributesInput(cr *svcapitypes.Topic, obj *svcsdk.GetTopicAttributesInput) *svcsdk.GetTopicAttributesInput {
-	obj.TopicArn = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreateTopicInput(_ *svcapitypes.Topic, obj *svcsdk.CreateTopicInput) *svcsdk.CreateTopicInput {
-	return obj
-}
-
-func postGenerateCreateTopicInput(_ *svcapitypes.Topic, obj *svcsdk.CreateTopicInput) *svcsdk.CreateTopicInput {
-	return obj
-}
-func preGenerateDeleteTopicInput(_ *svcapitypes.Topic, obj *svcsdk.DeleteTopicInput) *svcsdk.DeleteTopicInput {
-	return obj
-}
-
-func postGenerateDeleteTopicInput(cr *svcapitypes.Topic, obj *svcsdk.DeleteTopicInput) *svcsdk.DeleteTopicInput {
-	obj.TopicArn = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
 // NOTE(muvaf): The rest is adopted from old SNSTopic implementation
 
-func (e *external) postUpdate(ctx context.Context, cr *svcapitypes.Topic, _ managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	if err != nil {
-		return managed.ExternalUpdate{}, err
+type updater struct {
+	client svcsdkapi.SNSAPI
+}
+
+func (e *updater) update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
+	cr, ok := mg.(*svcapitypes.Topic)
+	if !ok {
+		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 	// Fetch Topic Attributes again
 	resp, err := e.client.GetTopicAttributesWithContext(ctx, &svcsdk.GetTopicAttributesInput{
@@ -162,16 +138,12 @@ func GetChangedAttributes(p svcapitypes.TopicParameters, attrs map[string]*strin
 	return changed
 }
 
-func lateInitialize(spec *svcapitypes.TopicParameters, resp *svcsdk.GetTopicAttributesOutput) {
-	spec.DisplayName = aws.LateInitializeStringPtr(spec.DisplayName, resp.Attributes[string(svcapitypes.TopicDeliveryPolicy)])
-	spec.DeliveryPolicy = aws.LateInitializeStringPtr(spec.DeliveryPolicy, resp.Attributes[string(svcapitypes.TopicDisplayName)])
-	spec.KMSMasterKeyID = aws.LateInitializeStringPtr(spec.KMSMasterKeyID, resp.Attributes[string(svcapitypes.TopicKmsMasterKeyID)])
-	spec.Policy = aws.LateInitializeStringPtr(spec.Policy, resp.Attributes[string(svcapitypes.TopicPolicy)])
-}
-
-func isUpToDate(cr *svcapitypes.Topic, resp *svcsdk.GetTopicAttributesOutput) bool {
+func isUpToDate(r bool, cr *svcapitypes.Topic, resp *svcsdk.GetTopicAttributesOutput) (bool, error) {
+	if !r {
+		return r, nil
+	}
 	return aws.StringValue(cr.Spec.ForProvider.DeliveryPolicy) == aws.StringValue(resp.Attributes[string(svcapitypes.TopicDeliveryPolicy)]) &&
 		aws.StringValue(cr.Spec.ForProvider.DisplayName) == aws.StringValue(resp.Attributes[string(svcapitypes.TopicDisplayName)]) &&
 		aws.StringValue(cr.Spec.ForProvider.KMSMasterKeyID) == aws.StringValue(resp.Attributes[string(svcapitypes.TopicKmsMasterKeyID)]) &&
-		aws.StringValue(cr.Spec.ForProvider.Policy) == aws.StringValue(resp.Attributes[string(svcapitypes.TopicPolicy)])
+		aws.StringValue(cr.Spec.ForProvider.Policy) == aws.StringValue(resp.Attributes[string(svcapitypes.TopicPolicy)]), nil
 }

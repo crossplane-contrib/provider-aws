@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,21 +23,19 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/sns"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/sns/v1alpha1"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
-
-// NOTE(muvaf): We return pointers in case the function needs to start with an
-// empty object, hence need to return a new pointer.
 
 // GenerateGetPlatformApplicationAttributesInput returns input for read
 // operation.
 func GenerateGetPlatformApplicationAttributesInput(cr *svcapitypes.PlatformApplication) *svcsdk.GetPlatformApplicationAttributesInput {
-	res := preGenerateGetPlatformApplicationAttributesInput(cr, &svcsdk.GetPlatformApplicationAttributesInput{})
+	res := &svcsdk.GetPlatformApplicationAttributesInput{}
 
 	if cr.Status.AtProvider.PlatformApplicationARN != nil {
 		res.SetPlatformApplicationArn(*cr.Status.AtProvider.PlatformApplicationARN)
 	}
 
-	return postGenerateGetPlatformApplicationAttributesInput(cr, res)
+	return res
 }
 
 // GeneratePlatformApplication returns the current state in the form of *svcapitypes.PlatformApplication.
@@ -47,9 +45,27 @@ func GeneratePlatformApplication(resp *svcsdk.GetPlatformApplicationAttributesOu
 	return cr
 }
 
+func lateInitialize(cr *svcapitypes.PlatformApplication, resp *svcsdk.GetPlatformApplicationAttributesOutput) error {
+	cr.Spec.ForProvider.EventDeliveryFailure = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.EventDeliveryFailure, resp.Attributes["EventDeliveryFailure"])
+	cr.Spec.ForProvider.EventEndpointCreated = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.EventEndpointCreated, resp.Attributes["EventEndpointCreated"])
+	cr.Spec.ForProvider.EventEndpointDeleted = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.EventEndpointDeleted, resp.Attributes["EventEndpointDeleted"])
+	cr.Spec.ForProvider.EventEndpointUpdated = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.EventEndpointUpdated, resp.Attributes["EventEndpointUpdated"])
+	cr.Spec.ForProvider.FailureFeedbackRoleARN = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.FailureFeedbackRoleARN, resp.Attributes["FailureFeedbackRoleArn"])
+	cr.Spec.ForProvider.PlatformCredential = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.PlatformCredential, resp.Attributes["PlatformCredential"])
+	cr.Spec.ForProvider.PlatformPrincipal = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.PlatformPrincipal, resp.Attributes["PlatformPrincipal"])
+	cr.Spec.ForProvider.SuccessFeedbackRoleARN = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.SuccessFeedbackRoleARN, resp.Attributes["SuccessFeedbackRoleArn"])
+	cr.Spec.ForProvider.SuccessFeedbackSampleRate = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.SuccessFeedbackSampleRate, resp.Attributes["SuccessFeedbackSampleRate"])
+	return nil
+}
+
+func basicUpToDateCheck(cr *svcapitypes.PlatformApplication, resp *svcsdk.GetPlatformApplicationAttributesOutput) bool {
+	// Not implemented for Attributes-based APIs.
+	return true
+}
+
 // GenerateCreatePlatformApplicationInput returns a create input.
 func GenerateCreatePlatformApplicationInput(cr *svcapitypes.PlatformApplication) *svcsdk.CreatePlatformApplicationInput {
-	res := preGenerateCreatePlatformApplicationInput(cr, &svcsdk.CreatePlatformApplicationInput{})
+	res := &svcsdk.CreatePlatformApplicationInput{}
 
 	attrMap := map[string]*string{}
 	if cr.Spec.ForProvider.EventDeliveryFailure != nil {
@@ -87,18 +103,18 @@ func GenerateCreatePlatformApplicationInput(cr *svcapitypes.PlatformApplication)
 		res.SetPlatform(*cr.Spec.ForProvider.Platform)
 	}
 
-	return postGenerateCreatePlatformApplicationInput(cr, res)
+	return res
 }
 
 // GenerateDeletePlatformApplicationInput returns a deletion input.
 func GenerateDeletePlatformApplicationInput(cr *svcapitypes.PlatformApplication) *svcsdk.DeletePlatformApplicationInput {
-	res := preGenerateDeletePlatformApplicationInput(cr, &svcsdk.DeletePlatformApplicationInput{})
+	res := &svcsdk.DeletePlatformApplicationInput{}
 
 	if cr.Status.AtProvider.PlatformApplicationARN != nil {
 		res.SetPlatformApplicationArn(*cr.Status.AtProvider.PlatformApplicationARN)
 	}
 
-	return postGenerateDeletePlatformApplicationInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

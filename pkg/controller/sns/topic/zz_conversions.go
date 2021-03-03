@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,21 +23,19 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/sns"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/sns/v1alpha1"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
-
-// NOTE(muvaf): We return pointers in case the function needs to start with an
-// empty object, hence need to return a new pointer.
 
 // GenerateGetTopicAttributesInput returns input for read
 // operation.
 func GenerateGetTopicAttributesInput(cr *svcapitypes.Topic) *svcsdk.GetTopicAttributesInput {
-	res := preGenerateGetTopicAttributesInput(cr, &svcsdk.GetTopicAttributesInput{})
+	res := &svcsdk.GetTopicAttributesInput{}
 
 	if cr.Status.AtProvider.TopicARN != nil {
 		res.SetTopicArn(*cr.Status.AtProvider.TopicARN)
 	}
 
-	return postGenerateGetTopicAttributesInput(cr, res)
+	return res
 }
 
 // GenerateTopic returns the current state in the form of *svcapitypes.Topic.
@@ -51,9 +49,22 @@ func GenerateTopic(resp *svcsdk.GetTopicAttributesOutput) *svcapitypes.Topic {
 	return cr
 }
 
+func lateInitialize(cr *svcapitypes.Topic, resp *svcsdk.GetTopicAttributesOutput) error {
+	cr.Spec.ForProvider.DeliveryPolicy = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.DeliveryPolicy, resp.Attributes["DeliveryPolicy"])
+	cr.Spec.ForProvider.DisplayName = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.DisplayName, resp.Attributes["DisplayName"])
+	cr.Spec.ForProvider.KMSMasterKeyID = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.KMSMasterKeyID, resp.Attributes["KmsMasterKeyId"])
+	cr.Spec.ForProvider.Policy = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.Policy, resp.Attributes["Policy"])
+	return nil
+}
+
+func basicUpToDateCheck(cr *svcapitypes.Topic, resp *svcsdk.GetTopicAttributesOutput) bool {
+	// Not implemented for Attributes-based APIs.
+	return true
+}
+
 // GenerateCreateTopicInput returns a create input.
 func GenerateCreateTopicInput(cr *svcapitypes.Topic) *svcsdk.CreateTopicInput {
-	res := preGenerateCreateTopicInput(cr, &svcsdk.CreateTopicInput{})
+	res := &svcsdk.CreateTopicInput{}
 
 	attrMap := map[string]*string{}
 	if cr.Spec.ForProvider.DeliveryPolicy != nil {
@@ -87,18 +98,18 @@ func GenerateCreateTopicInput(cr *svcapitypes.Topic) *svcsdk.CreateTopicInput {
 		res.SetTags(f2)
 	}
 
-	return postGenerateCreateTopicInput(cr, res)
+	return res
 }
 
 // GenerateDeleteTopicInput returns a deletion input.
 func GenerateDeleteTopicInput(cr *svcapitypes.Topic) *svcsdk.DeleteTopicInput {
-	res := preGenerateDeleteTopicInput(cr, &svcsdk.DeleteTopicInput{})
+	res := &svcsdk.DeleteTopicInput{}
 
 	if cr.Status.AtProvider.TopicARN != nil {
 		res.SetTopicArn(*cr.Status.AtProvider.TopicARN)
 	}
 
-	return postGenerateDeleteTopicInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

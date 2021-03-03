@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,12 +25,9 @@ import (
 	svcapitypes "github.com/crossplane/provider-aws/apis/sns/v1alpha1"
 )
 
-// NOTE(muvaf): We return pointers in case the function needs to start with an
-// empty object, hence need to return a new pointer.
-
 // GenerateCreatePlatformEndpointInput returns a create input.
 func GenerateCreatePlatformEndpointInput(cr *svcapitypes.PlatformEndpoint) *svcsdk.CreatePlatformEndpointInput {
-	res := preGenerateCreatePlatformEndpointInput(cr, &svcsdk.CreatePlatformEndpointInput{})
+	res := &svcsdk.CreatePlatformEndpointInput{}
 
 	if cr.Spec.ForProvider.Attributes != nil {
 		f0 := map[string]*string{}
@@ -48,7 +45,7 @@ func GenerateCreatePlatformEndpointInput(cr *svcapitypes.PlatformEndpoint) *svcs
 		res.SetToken(*cr.Spec.ForProvider.Token)
 	}
 
-	return postGenerateCreatePlatformEndpointInput(cr, res)
+	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.

@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,9 +19,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	runtimev1alpha1 "github.com/crossplane/crossplane-runtime/apis/core/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // PlatformEndpointParameters defines the desired state of PlatformEndpoint
@@ -29,11 +30,14 @@ type PlatformEndpointParameters struct {
 	// Region is which region the PlatformEndpoint will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
+
 	// For a list of attributes, see SetEndpointAttributes (https://docs.aws.amazon.com/sns/latest/api/API_SetEndpointAttributes.html).
 	Attributes map[string]*string `json:"attributes,omitempty"`
+
 	// Arbitrary user data to associate with the endpoint. Amazon SNS does not use
 	// this data. The data must be in UTF-8 format and less than 2KB.
 	CustomUserData *string `json:"customUserData,omitempty"`
+
 	// Unique identifier created by the notification service for an app on a device.
 	// The specific name for Token will vary, depending on which notification service
 	// is being used. For example, when using APNS as the notification service,
@@ -41,14 +45,17 @@ type PlatformEndpointParameters struct {
 	// Messaging) or ADM, the device token equivalent is called the registration
 	// ID.
 	// +kubebuilder:validation:Required
-	Token                            *string `json:"token"`
+	Token *string `json:"token"`
+
+	// CustomPlatformEndpointParameters includes the additional fields on top of
+	// the generated ones.
 	CustomPlatformEndpointParameters `json:",inline"`
 }
 
 // PlatformEndpointSpec defines the desired state of PlatformEndpoint
 type PlatformEndpointSpec struct {
-	runtimev1alpha1.ResourceSpec `json:",inline"`
-	ForProvider                  PlatformEndpointParameters `json:"forProvider"`
+	xpv1.ResourceSpec `json:",inline"`
+	ForProvider       PlatformEndpointParameters `json:"forProvider"`
 }
 
 // PlatformEndpointObservation defines the observed state of PlatformEndpoint
@@ -59,8 +66,8 @@ type PlatformEndpointObservation struct {
 
 // PlatformEndpointStatus defines the observed state of PlatformEndpoint.
 type PlatformEndpointStatus struct {
-	runtimev1alpha1.ResourceStatus `json:",inline"`
-	AtProvider                     PlatformEndpointObservation `json:"atProvider"`
+	xpv1.ResourceStatus `json:",inline"`
+	AtProvider          PlatformEndpointObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true

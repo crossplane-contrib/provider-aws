@@ -38,6 +38,14 @@ import (
 
 // SetupPlatformApplication adds a controller that reconciles PlatformApplication.
 func SetupPlatformApplication(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+	opts := []option{
+		func(e *external) {
+			e.preObserve = preObserve
+			e.postObserve = postObserve
+			e.postCreate = postCreate
+			e.preDelete = preDelete
+		},
+	}
 	name := managed.ControllerName(svcapitypes.PlatformApplicationGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -47,16 +55,18 @@ func SetupPlatformApplication(mgr ctrl.Manager, l logging.Logger, rl workqueue.R
 		For(&svcapitypes.PlatformApplication{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.PlatformApplicationGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (*external) preObserve(context.Context, *svcapitypes.PlatformApplication) error {
+func preObserve(_ context.Context, cr *svcapitypes.PlatformApplication, obj *svcsdk.GetPlatformApplicationAttributesInput) error {
+	obj.PlatformApplicationArn = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func (*external) postObserve(_ context.Context, cr *svcapitypes.PlatformApplication, _ *svcsdk.GetPlatformApplicationAttributesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+
+func postObserve(_ context.Context, cr *svcapitypes.PlatformApplication, _ *svcsdk.GetPlatformApplicationAttributesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -64,11 +74,7 @@ func (*external) postObserve(_ context.Context, cr *svcapitypes.PlatformApplicat
 	return obs, nil
 }
 
-func (*external) preCreate(context.Context, *svcapitypes.PlatformApplication) error {
-	return nil
-}
-
-func (*external) postCreate(_ context.Context, cr *svcapitypes.PlatformApplication, resp *svcsdk.CreatePlatformApplicationOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *svcapitypes.PlatformApplication, resp *svcsdk.CreatePlatformApplicationOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -77,42 +83,7 @@ func (*external) postCreate(_ context.Context, cr *svcapitypes.PlatformApplicati
 	return cre, nil
 }
 
-func (*external) preUpdate(context.Context, *svcapitypes.PlatformApplication) error {
-	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.PlatformApplication, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-func lateInitialize(*svcapitypes.PlatformApplicationParameters, *svcsdk.GetPlatformApplicationAttributesOutput) error {
-	return nil
-}
-
-func isUpToDate(*svcapitypes.PlatformApplication, *svcsdk.GetPlatformApplicationAttributesOutput) bool {
-	return true
-}
-
-func preGenerateGetPlatformApplicationAttributesInput(_ *svcapitypes.PlatformApplication, obj *svcsdk.GetPlatformApplicationAttributesInput) *svcsdk.GetPlatformApplicationAttributesInput {
-	return obj
-}
-
-func postGenerateGetPlatformApplicationAttributesInput(cr *svcapitypes.PlatformApplication, obj *svcsdk.GetPlatformApplicationAttributesInput) *svcsdk.GetPlatformApplicationAttributesInput {
+func preDelete(_ context.Context, cr *svcapitypes.PlatformApplication, obj *svcsdk.DeletePlatformApplicationInput) (bool, error) {
 	obj.PlatformApplicationArn = aws.String(meta.GetExternalName(cr))
-	return obj
-}
-
-func preGenerateCreatePlatformApplicationInput(_ *svcapitypes.PlatformApplication, obj *svcsdk.CreatePlatformApplicationInput) *svcsdk.CreatePlatformApplicationInput {
-	return obj
-}
-
-func postGenerateCreatePlatformApplicationInput(_ *svcapitypes.PlatformApplication, obj *svcsdk.CreatePlatformApplicationInput) *svcsdk.CreatePlatformApplicationInput {
-	return obj
-}
-func preGenerateDeletePlatformApplicationInput(_ *svcapitypes.PlatformApplication, obj *svcsdk.DeletePlatformApplicationInput) *svcsdk.DeletePlatformApplicationInput {
-	return obj
-}
-
-func postGenerateDeletePlatformApplicationInput(cr *svcapitypes.PlatformApplication, obj *svcsdk.DeletePlatformApplicationInput) *svcsdk.DeletePlatformApplicationInput {
-	obj.PlatformApplicationArn = aws.String(meta.GetExternalName(cr))
-	return obj
+	return false, nil
 }

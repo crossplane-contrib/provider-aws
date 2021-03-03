@@ -20,10 +20,12 @@ import (
 	"context"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/sns"
+	svcsdkapi "github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -46,6 +48,15 @@ import (
 // SetupPlatformEndpoint adds a controller that reconciles PlatformEndpoint.
 func SetupPlatformEndpoint(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(svcapitypes.PlatformEndpointGroupKind)
+	opts := []option{
+		func(e *external) {
+			c := &custom{kube: e.kube, client: e.client}
+			e.delete = c.delete
+			e.observe = c.observe
+			e.preCreate = preCreate
+			e.postCreate = postCreate
+		},
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
@@ -54,12 +65,17 @@ func SetupPlatformEndpoint(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rate
 		For(&svcapitypes.PlatformEndpoint{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.PlatformEndpointGroupVersionKind),
-			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
+type custom struct {
+	kube   client.Client
+	client svcsdkapi.SNSAPI
+}
+
+func (e *custom) observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mg.(*svcapitypes.PlatformEndpoint)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
@@ -69,14 +85,14 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 			ResourceExists: false,
 		}, nil
 	}
-	input := GenerateGetEndpointAttributesInput(cr)
+	input := &svcsdk.GetEndpointAttributesInput{EndpointArn: aws.String(meta.GetExternalName(cr))}
 	resp, err := e.client.GetEndpointAttributesWithContext(ctx, input)
 	if err != nil {
 		return managed.ExternalObservation{ResourceExists: false}, errors.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
 	}
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
 	lateInitialize(&cr.Spec.ForProvider, resp)
-	cr.SetConditions(runtimev1alpha1.Available())
+	cr.SetConditions(xpv1.Available())
 	return managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceUpToDate:        isUpToDate(cr, resp),
@@ -84,7 +100,7 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (e *custom) delete(ctx context.Context, mg cpresource.Managed) error {
 	cr, ok := mg.(*svcapitypes.PlatformEndpoint)
 	if !ok {
 		return errors.New(errUnexpectedObject)
@@ -102,33 +118,16 @@ func isUpToDate(_ *svcapitypes.PlatformEndpoint, _ *svcsdk.GetEndpointAttributes
 	return true
 }
 
-// GenerateGetEndpointAttributesInput converts parameters in PlatformEndpoint
-// into GetEndpointAttributesInput to be used in the API requests.
-func GenerateGetEndpointAttributesInput(cr *svcapitypes.PlatformEndpoint) *svcsdk.GetEndpointAttributesInput {
-	return &svcsdk.GetEndpointAttributesInput{EndpointArn: aws.String(meta.GetExternalName(cr))}
-}
-
-func (*external) preCreate(context.Context, *svcapitypes.PlatformEndpoint) error {
+func preCreate(_ context.Context, cr *svcapitypes.PlatformEndpoint, obj *svcsdk.CreatePlatformEndpointInput) error {
+	obj.PlatformApplicationArn = cr.Spec.ForProvider.PlatformApplicationARN
 	return nil
 }
 
-func (*external) postCreate(_ context.Context, _ *svcapitypes.PlatformEndpoint, _ *svcsdk.CreatePlatformEndpointOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	return cre, err
-}
-
-func (*external) preUpdate(context.Context, *svcapitypes.PlatformEndpoint) error {
-	return nil
-}
-
-func (*external) postUpdate(_ context.Context, _ *svcapitypes.PlatformEndpoint, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
-	return upd, err
-}
-
-func preGenerateCreatePlatformEndpointInput(_ *svcapitypes.PlatformEndpoint, obj *svcsdk.CreatePlatformEndpointInput) *svcsdk.CreatePlatformEndpointInput {
-	return obj
-}
-
-func postGenerateCreatePlatformEndpointInput(cr *svcapitypes.PlatformEndpoint, obj *svcsdk.CreatePlatformEndpointInput) *svcsdk.CreatePlatformEndpointInput {
-	obj.SetPlatformApplicationArn(aws.StringValue(cr.Spec.ForProvider.PlatformApplicationARN))
-	return obj
+func postCreate(_ context.Context, cr *svcapitypes.PlatformEndpoint, obj *svcsdk.CreatePlatformEndpointOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+	meta.SetExternalName(cr, aws.StringValue(obj.EndpointArn))
+	cre.ExternalNameAssigned = true
+	return cre, nil
 }
