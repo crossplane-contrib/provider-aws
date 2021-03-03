@@ -3,9 +3,7 @@ kind: FileSystem
 metadata:
   name: example
 spec:
-  deletionPolicy: Orphan
   forProvider:
     region: us-east-1
-    creationToken: unique-token
   providerConfigRef:
     name: default
