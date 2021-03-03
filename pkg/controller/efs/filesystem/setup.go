@@ -81,7 +81,9 @@ func postObserve(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.Desc
 func preUpdate(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.UpdateFileSystemInput) error {
 	obj.FileSystemId = awsclients.String(meta.GetExternalName(cr))
 	// Type of this field is *float64 but in practice, only integer values are allowed.
-	obj.ProvisionedThroughputInMibps = aws.Float64(float64(awsclients.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps)))
+	if cr.Spec.ForProvider.ProvisionedThroughputInMibps != nil {
+		obj.ProvisionedThroughputInMibps = aws.Float64(float64(awsclients.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps)))
+	}
 	return nil
 }
 
@@ -93,7 +95,9 @@ func preDelete(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.Delete
 func preCreate(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.CreateFileSystemInput) error {
 	obj.CreationToken = awsclients.String(string(cr.UID))
 	// Type of this field is *float64 but in practice, only integer values are allowed.
-	obj.ProvisionedThroughputInMibps = aws.Float64(float64(awsclients.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps)))
+	if cr.Spec.ForProvider.ProvisionedThroughputInMibps != nil {
+		obj.ProvisionedThroughputInMibps = aws.Float64(float64(awsclients.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps)))
+	}
 	return nil
 }
 
