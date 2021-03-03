@@ -122,6 +122,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	if resp.CreationTime != nil {
 		cr.Status.AtProvider.CreationTime = &metav1.Time{*resp.CreationTime}
 	}
+	if resp.CreationToken != nil {
+		cr.Status.AtProvider.CreationToken = resp.CreationToken
+	}
 	if resp.FileSystemArn != nil {
 		cr.Status.AtProvider.FileSystemARN = resp.FileSystemArn
 	}

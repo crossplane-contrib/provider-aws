@@ -62,6 +62,7 @@ func isUpToDate(r bool, cr *svcapitypes.FileSystem, obj *svcsdk.DescribeFileSyst
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.DescribeFileSystemsInput) error {
+	// Describe query doesn't allow both CreationToken and FileSystemId to be given.
 	obj.CreationToken = nil
 	obj.FileSystemId = awsclients.String(meta.GetExternalName(cr))
 	return nil
@@ -90,6 +91,7 @@ func preDelete(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.Delete
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.CreateFileSystemInput) error {
+	obj.CreationToken = awsclients.String(string(cr.UID))
 	// Type of this field is *float64 but in practice, only integer values are allowed.
 	obj.ProvisionedThroughputInMibps = aws.Float64(float64(awsclients.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps)))
 	return nil

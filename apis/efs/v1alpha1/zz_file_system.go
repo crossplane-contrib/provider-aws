@@ -31,11 +31,6 @@ type FileSystemParameters struct {
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
 
-	// A string of up to 64 ASCII characters. Amazon EFS uses this to ensure idempotent
-	// creation.
-	// +kubebuilder:validation:Required
-	CreationToken *string `json:"creationToken"`
-
 	// A Boolean value that, if true, creates an encrypted file system. When creating
 	// an encrypted file system, you have the option of specifying CreateFileSystemRequest$KmsKeyId
 	// for an existing AWS Key Management Service (AWS KMS) customer master key
@@ -101,6 +96,8 @@ type FileSystemSpec struct {
 type FileSystemObservation struct {
 	// The time that the file system was created, in seconds (since 1970-01-01T00:00:00Z).
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+	// The opaque string specified in the request.
+	CreationToken *string `json:"creationToken,omitempty"`
 	// The Amazon Resource Name (ARN) for the EFS file system, in the format arn:aws:elasticfilesystem:region:account-id:file-system/file-system-id
 	// . Example with sample data: arn:aws:elasticfilesystem:us-west-2:1111333322228888:file-system/fs-01234567
 	FileSystemARN *string `json:"fileSystemARN,omitempty"`
