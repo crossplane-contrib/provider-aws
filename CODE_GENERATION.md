@@ -109,7 +109,7 @@ Now you need to make sure this function is called in setup phase [here](https://
 
 #### Register CRD
 
-If the group didn't exist before, we need to register its schema [here](https://github.com/crossplane/provider-aws/blob/483058c/apis/aws.go#L77).
+If the group didn't exist before, we need to register its schema [here](https://github.com/crossplane/provider-aws/blob/cd5856e337aca072f2fac1157183920ab94eea2c/pkg/controller/apigatewayv2/api/setup.go#L77).
 
 ### Referencer Fields
 
@@ -207,10 +207,9 @@ func preDelete(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.DeleteStage
 }
 ```
 
-If the external-name is decided by AWS after the creation, like in VPC, then you
-need to inject `postCreate` and make sure to `meta.SetExternalName(cr, id)` there
-and return `managed.ExternalCreation{ExternalNameAssigned: true}`.
-
+If the external-name is decided by AWS after the creation, then you
+need to inject `postCreate` to set the crossplane resource external-name to 
+the unique identifier of the resource, for eg see [`apigatewayv2`](https://github.com/crossplane/provider-aws/blob/master/pkg/controller/apigatewayv2/api/setup.go#L77)
 You can discover what you can inject by inspecting `zz_controller.go` file.
 
 ### Readiness Check
