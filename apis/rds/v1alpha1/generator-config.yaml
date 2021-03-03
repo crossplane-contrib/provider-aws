@@ -4,6 +4,8 @@ ignore:
     - CreateDBClusterInput.DBClusterIdentifier
     - ModifyDBClusterInput.DBClusterIdentifier
     - DeleteDBClusterInput.DBClusterIdentifier
+    - CreateDBClusterInput.MasterUserPassword
+    - ModifyDBClusterInput.MasterUserPassword
     - CreateDBClusterInput.VpcSecurityGroupIds
     - ModifyDBClusterInput.VpcSecurityGroupIds
   resource_names:

@@ -33,7 +33,7 @@ import (
 func (mg *DBCluster) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.forProvider.DomainIAMRoleName
+	// Resolve spec.forProvider.domainIAMRoleName
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.DomainIAMRoleName),
 		Reference:    mg.Spec.ForProvider.DomainIAMRoleNameRef,
@@ -47,7 +47,7 @@ func (mg *DBCluster) ResolveReferences(ctx context.Context, c client.Reader) err
 	mg.Spec.ForProvider.DomainIAMRoleName = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.DomainIAMRoleNameRef = rsp.ResolvedReference
 
-	// Resolve spec.forProvider.KMSKeyID
+	// Resolve spec.forProvider.kmsKeyID
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.KMSKeyID),
 		Reference:    mg.Spec.ForProvider.KMSKeyIDRef,

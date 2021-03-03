@@ -6,7 +6,10 @@ spec:
   forProvider:
     engine: aurora-postgresql
     masterUsername: cpadmin
-    masterUserPassword: adminadmin
+    masterUserPasswordSecretRef:
+      name: dbcluster-pwd
+      namespace: crossplane-system
+      key: password
     dbSubnetGroupNameRef:
       name: sample-subnet-group
     vpcSecurityGroupIDRefs:
@@ -18,3 +21,12 @@ spec:
   writeConnectionSecretToRef:
     name: psqlserver-conn
     namespace: crossplane-system
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dbcluster-pwd
+  namespace: crossplane-system
+type: Opaque
+data:
+  password: dGVzdFBhc3N3b3JkITEyMw== # testPassword!123

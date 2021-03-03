@@ -213,11 +213,6 @@ type DBClusterParameters struct {
 	// you must set KmsKeyId to a AWS KMS key identifier that is valid in the destination
 	// AWS Region. This CMK is used to encrypt the read replica in that AWS Region.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
-	// The password for the master database user. This password can contain any
-	// printable ASCII character except "/", """, or "@".
-	//
-	// Constraints: Must contain from 8 to 41 characters.
-	MasterUserPassword *string `json:"masterUserPassword,omitempty"`
 	// The name of the master user for the DB cluster.
 	//
 	// Constraints:

@@ -8,5 +8,6 @@ spec:
     description: "sample group"
     subnetIdRefs:
       - name: sample-subnet1
+      - name: sample-subnet2
   providerConfigRef:
     name: example

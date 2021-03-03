@@ -379,11 +379,7 @@ func (in *CustomDBClusterParameters) DeepCopyInto(out *CustomDBClusterParameters
 		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.MasterUserPasswordSecretRef != nil {
-		in, out := &in.MasterUserPasswordSecretRef, &out.MasterUserPasswordSecretRef
-		*out = new(v1.SecretKeySelector)
-		**out = **in
-	}
+	out.MasterUserPasswordSecretRef = in.MasterUserPasswordSecretRef
 	if in.VPCSecurityGroupIDs != nil {
 		in, out := &in.VPCSecurityGroupIDs, &out.VPCSecurityGroupIDs
 		*out = make([]string, len(*in))
@@ -1029,11 +1025,6 @@ func (in *DBClusterParameters) DeepCopyInto(out *DBClusterParameters) {
 	}
 	if in.KMSKeyID != nil {
 		in, out := &in.KMSKeyID, &out.KMSKeyID
-		*out = new(string)
-		**out = **in
-	}
-	if in.MasterUserPassword != nil {
-		in, out := &in.MasterUserPassword, &out.MasterUserPassword
 		*out = new(string)
 		**out = **in
 	}
