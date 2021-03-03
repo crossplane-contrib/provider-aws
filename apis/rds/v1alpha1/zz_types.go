@@ -68,6 +68,19 @@ type CloudwatchLogsExportConfiguration struct {
 	EnableLogTypes []*string `json:"enableLogTypes,omitempty"`
 }
 
+type ClusterPendingModifiedValues struct {
+	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
+
+	EngineVersion *string `json:"engineVersion,omitempty"`
+
+	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
+
+	MasterUserPassword *string `json:"masterUserPassword,omitempty"`
+	// A list of the log types whose configuration is still pending. In other words,
+	// these log types are in the process of being activated or deactivated.
+	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `json:"pendingCloudwatchLogsExports,omitempty"`
+}
+
 type ConnectionPoolConfiguration struct {
 	ConnectionBorrowTimeout *int64 `json:"connectionBorrowTimeout,omitempty"`
 
@@ -182,6 +195,9 @@ type DBClusterSnapshot struct {
 	Status *string `json:"status,omitempty"`
 
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
+	// in the Amazon RDS User Guide.
+	TagList []*Tag `json:"tagList,omitempty"`
 
 	VPCID *string `json:"vpcID,omitempty"`
 }
@@ -281,6 +297,9 @@ type DBCluster_SDK struct {
 	MasterUsername *string `json:"masterUsername,omitempty"`
 
 	MultiAZ *bool `json:"multiAZ,omitempty"`
+	// This data type is used as a response element in the ModifyDBCluster operation
+	// and contains changes that will be applied during the next maintenance window.
+	PendingModifiedValues *ClusterPendingModifiedValues `json:"pendingModifiedValues,omitempty"`
 
 	PercentProgress *string `json:"percentProgress,omitempty"`
 
@@ -305,6 +324,9 @@ type DBCluster_SDK struct {
 	Status *string `json:"status,omitempty"`
 
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
+	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
+	// in the Amazon RDS User Guide.
+	TagList []*Tag `json:"tagList,omitempty"`
 
 	VPCSecurityGroups []*VPCSecurityGroupMembership `json:"vpcSecurityGroups,omitempty"`
 }
@@ -343,6 +365,8 @@ type DBInstance struct {
 	CharacterSetName *string `json:"characterSetName,omitempty"`
 
 	CopyTagsToSnapshot *bool `json:"copyTagsToSnapshot,omitempty"`
+
+	CustomerOwnedIPEnabled *bool `json:"customerOwnedIPEnabled,omitempty"`
 
 	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
 
@@ -416,6 +440,9 @@ type DBInstance struct {
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
 
 	StorageType *string `json:"storageType,omitempty"`
+	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
+	// in the Amazon RDS User Guide.
+	TagList []*Tag `json:"tagList,omitempty"`
 
 	TDECredentialARN *string `json:"tdeCredentialARN,omitempty"`
 
@@ -427,7 +454,11 @@ type DBInstance struct {
 type DBInstanceAutomatedBackup struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
+	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
+
 	DBInstanceARN *string `json:"dbInstanceARN,omitempty"`
+
+	DBInstanceAutomatedBackupsARN *string `json:"dbInstanceAutomatedBackupsARN,omitempty"`
 
 	DBInstanceIdentifier *string `json:"dbInstanceIdentifier,omitempty"`
 
@@ -464,6 +495,10 @@ type DBInstanceAutomatedBackup struct {
 	Timezone *string `json:"timezone,omitempty"`
 
 	VPCID *string `json:"vpcID,omitempty"`
+}
+
+type DBInstanceAutomatedBackupsReplication struct {
+	DBInstanceAutomatedBackupsARN *string `json:"dbInstanceAutomatedBackupsARN,omitempty"`
 }
 
 type DBInstanceRole struct {
@@ -610,6 +645,9 @@ type DBSnapshot struct {
 	Status *string `json:"status,omitempty"`
 
 	StorageType *string `json:"storageType,omitempty"`
+	// A list of tags. For more information, see Tagging Amazon RDS Resources (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html)
+	// in the Amazon RDS User Guide.
+	TagList []*Tag `json:"tagList,omitempty"`
 
 	TDECredentialARN *string `json:"tdeCredentialARN,omitempty"`
 
@@ -1019,6 +1057,8 @@ type PendingModifiedValues struct {
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
+	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
+
 	IOPS *int64 `json:"iops,omitempty"`
 
 	LicenseModel *string `json:"licenseModel,omitempty"`
@@ -1026,6 +1066,9 @@ type PendingModifiedValues struct {
 	MasterUserPassword *string `json:"masterUserPassword,omitempty"`
 
 	MultiAZ *bool `json:"multiAZ,omitempty"`
+	// A list of the log types whose configuration is still pending. In other words,
+	// these log types are in the process of being activated or deactivated.
+	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `json:"pendingCloudwatchLogsExports,omitempty"`
 
 	Port *int64 `json:"port,omitempty"`
 
@@ -1124,6 +1167,8 @@ type SourceRegion struct {
 	RegionName *string `json:"regionName,omitempty"`
 
 	Status *string `json:"status,omitempty"`
+
+	SupportsDBInstanceAutomatedBackupsReplication *bool `json:"supportsDBInstanceAutomatedBackupsReplication,omitempty"`
 }
 
 type Subnet struct {

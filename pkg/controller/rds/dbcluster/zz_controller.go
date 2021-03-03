@@ -283,56 +283,108 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	if resp.DBCluster.MultiAZ != nil {
 		cr.Status.AtProvider.MultiAZ = resp.DBCluster.MultiAZ
 	}
+	if resp.DBCluster.PendingModifiedValues != nil {
+		f43 := &svcapitypes.ClusterPendingModifiedValues{}
+		if resp.DBCluster.PendingModifiedValues.DBClusterIdentifier != nil {
+			f43.DBClusterIdentifier = resp.DBCluster.PendingModifiedValues.DBClusterIdentifier
+		}
+		if resp.DBCluster.PendingModifiedValues.EngineVersion != nil {
+			f43.EngineVersion = resp.DBCluster.PendingModifiedValues.EngineVersion
+		}
+		if resp.DBCluster.PendingModifiedValues.IAMDatabaseAuthenticationEnabled != nil {
+			f43.IAMDatabaseAuthenticationEnabled = resp.DBCluster.PendingModifiedValues.IAMDatabaseAuthenticationEnabled
+		}
+		if resp.DBCluster.PendingModifiedValues.MasterUserPassword != nil {
+			f43.MasterUserPassword = resp.DBCluster.PendingModifiedValues.MasterUserPassword
+		}
+		if resp.DBCluster.PendingModifiedValues.PendingCloudwatchLogsExports != nil {
+			f43f4 := &svcapitypes.PendingCloudwatchLogsExports{}
+			if resp.DBCluster.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToDisable != nil {
+				f43f4f0 := []*string{}
+				for _, f43f4f0iter := range resp.DBCluster.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToDisable {
+					var f43f4f0elem string
+					f43f4f0elem = *f43f4f0iter
+					f43f4f0 = append(f43f4f0, &f43f4f0elem)
+				}
+				f43f4.LogTypesToDisable = f43f4f0
+			}
+			if resp.DBCluster.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToEnable != nil {
+				f43f4f1 := []*string{}
+				for _, f43f4f1iter := range resp.DBCluster.PendingModifiedValues.PendingCloudwatchLogsExports.LogTypesToEnable {
+					var f43f4f1elem string
+					f43f4f1elem = *f43f4f1iter
+					f43f4f1 = append(f43f4f1, &f43f4f1elem)
+				}
+				f43f4.LogTypesToEnable = f43f4f1
+			}
+			f43.PendingCloudwatchLogsExports = f43f4
+		}
+		cr.Status.AtProvider.PendingModifiedValues = f43
+	}
 	if resp.DBCluster.PercentProgress != nil {
 		cr.Status.AtProvider.PercentProgress = resp.DBCluster.PercentProgress
 	}
 	if resp.DBCluster.ReadReplicaIdentifiers != nil {
-		f47 := []*string{}
-		for _, f47iter := range resp.DBCluster.ReadReplicaIdentifiers {
-			var f47elem string
-			f47elem = *f47iter
-			f47 = append(f47, &f47elem)
+		f48 := []*string{}
+		for _, f48iter := range resp.DBCluster.ReadReplicaIdentifiers {
+			var f48elem string
+			f48elem = *f48iter
+			f48 = append(f48, &f48elem)
 		}
-		cr.Status.AtProvider.ReadReplicaIdentifiers = f47
+		cr.Status.AtProvider.ReadReplicaIdentifiers = f48
 	}
 	if resp.DBCluster.ReaderEndpoint != nil {
 		cr.Status.AtProvider.ReaderEndpoint = resp.DBCluster.ReaderEndpoint
 	}
 	if resp.DBCluster.ScalingConfigurationInfo != nil {
-		f50 := &svcapitypes.ScalingConfigurationInfo{}
+		f51 := &svcapitypes.ScalingConfigurationInfo{}
 		if resp.DBCluster.ScalingConfigurationInfo.AutoPause != nil {
-			f50.AutoPause = resp.DBCluster.ScalingConfigurationInfo.AutoPause
+			f51.AutoPause = resp.DBCluster.ScalingConfigurationInfo.AutoPause
 		}
 		if resp.DBCluster.ScalingConfigurationInfo.MaxCapacity != nil {
-			f50.MaxCapacity = resp.DBCluster.ScalingConfigurationInfo.MaxCapacity
+			f51.MaxCapacity = resp.DBCluster.ScalingConfigurationInfo.MaxCapacity
 		}
 		if resp.DBCluster.ScalingConfigurationInfo.MinCapacity != nil {
-			f50.MinCapacity = resp.DBCluster.ScalingConfigurationInfo.MinCapacity
+			f51.MinCapacity = resp.DBCluster.ScalingConfigurationInfo.MinCapacity
 		}
 		if resp.DBCluster.ScalingConfigurationInfo.SecondsUntilAutoPause != nil {
-			f50.SecondsUntilAutoPause = resp.DBCluster.ScalingConfigurationInfo.SecondsUntilAutoPause
+			f51.SecondsUntilAutoPause = resp.DBCluster.ScalingConfigurationInfo.SecondsUntilAutoPause
 		}
 		if resp.DBCluster.ScalingConfigurationInfo.TimeoutAction != nil {
-			f50.TimeoutAction = resp.DBCluster.ScalingConfigurationInfo.TimeoutAction
+			f51.TimeoutAction = resp.DBCluster.ScalingConfigurationInfo.TimeoutAction
 		}
-		cr.Status.AtProvider.ScalingConfigurationInfo = f50
+		cr.Status.AtProvider.ScalingConfigurationInfo = f51
 	}
 	if resp.DBCluster.Status != nil {
 		cr.Status.AtProvider.Status = resp.DBCluster.Status
 	}
-	if resp.DBCluster.VpcSecurityGroups != nil {
-		f53 := []*svcapitypes.VPCSecurityGroupMembership{}
-		for _, f53iter := range resp.DBCluster.VpcSecurityGroups {
-			f53elem := &svcapitypes.VPCSecurityGroupMembership{}
-			if f53iter.Status != nil {
-				f53elem.Status = f53iter.Status
+	if resp.DBCluster.TagList != nil {
+		f54 := []*svcapitypes.Tag{}
+		for _, f54iter := range resp.DBCluster.TagList {
+			f54elem := &svcapitypes.Tag{}
+			if f54iter.Key != nil {
+				f54elem.Key = f54iter.Key
 			}
-			if f53iter.VpcSecurityGroupId != nil {
-				f53elem.VPCSecurityGroupID = f53iter.VpcSecurityGroupId
+			if f54iter.Value != nil {
+				f54elem.Value = f54iter.Value
 			}
-			f53 = append(f53, f53elem)
+			f54 = append(f54, f54elem)
 		}
-		cr.Status.AtProvider.VPCSecurityGroups = f53
+		cr.Status.AtProvider.TagList = f54
+	}
+	if resp.DBCluster.VpcSecurityGroups != nil {
+		f55 := []*svcapitypes.VPCSecurityGroupMembership{}
+		for _, f55iter := range resp.DBCluster.VpcSecurityGroups {
+			f55elem := &svcapitypes.VPCSecurityGroupMembership{}
+			if f55iter.Status != nil {
+				f55elem.Status = f55iter.Status
+			}
+			if f55iter.VpcSecurityGroupId != nil {
+				f55elem.VPCSecurityGroupID = f55iter.VpcSecurityGroupId
+			}
+			f55 = append(f55, f55elem)
+		}
+		cr.Status.AtProvider.VPCSecurityGroups = f55
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -382,6 +434,7 @@ func newExternal(kube client.Client, client svcsdkapi.RDSAPI, opts []option) *ex
 		postObserve:    nopPostObserve,
 		lateInitialize: nopLateInitialize,
 		isUpToDate:     alwaysUpToDate,
+		filterList:     nopFilterList,
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
