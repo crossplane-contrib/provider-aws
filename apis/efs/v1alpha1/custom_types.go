@@ -16,10 +16,22 @@ limitations under the License.
 
 package v1alpha1
 
-import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+import (
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+)
 
 // CustomFileSystemParameters contains the additional fields for FileSystemParameters.
 type CustomFileSystemParameters struct {
+
+	// The throughput, measured in MiB/s, that you want to provision for a file
+	// system that you're creating. Valid values are 1-1024. Required if ThroughputMode
+	// is set to provisioned. The upper limit for throughput is 1024 MiB/s. You
+	// can get this limit increased by contacting AWS Support. For more information,
+	// see Amazon EFS Limits That You Can Increase (https://docs.aws.amazon.com/efs/latest/ug/limits.html#soft-limits)
+	// in the Amazon EFS User Guide.
+	// +optional
+	ProvisionedThroughputInMibps *int64 `json:"provisionedThroughputInMibps,omitempty"`
+
 	// KMSKeyIDRef is a reference to an Key used to set
 	// the KMSKeyID.
 	// +optional

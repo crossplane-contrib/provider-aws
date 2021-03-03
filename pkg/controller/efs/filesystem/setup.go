@@ -3,6 +3,7 @@ package filesystem
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/efs"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -25,6 +26,8 @@ func SetupFileSystem(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateL
 	name := managed.ControllerName(svcapitypes.FileSystemGroupKind)
 	opts := []option{
 		func(e *external) {
+			e.isUpToDate = isUpToDate
+			e.preCreate = preCreate
 			e.postCreate = postCreate
 			e.preObserve = preObserve
 			e.preUpdate = preUpdate
@@ -46,6 +49,18 @@ func SetupFileSystem(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateL
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
+func isUpToDate(r bool, cr *svcapitypes.FileSystem, obj *svcsdk.DescribeFileSystemsOutput) (bool, error) {
+	if !r {
+		return r, nil
+	}
+	for _, res := range obj.FileSystems {
+		if awsclients.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps) != int64(aws.Float64Value(res.ProvisionedThroughputInMibps)) {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
 func preObserve(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.DescribeFileSystemsInput) error {
 	obj.CreationToken = nil
 	obj.FileSystemId = awsclients.String(meta.GetExternalName(cr))
@@ -64,12 +79,20 @@ func postObserve(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.Desc
 
 func preUpdate(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.UpdateFileSystemInput) error {
 	obj.FileSystemId = awsclients.String(meta.GetExternalName(cr))
+	// Type of this field is *float64 but in practice, only integer values are allowed.
+	obj.ProvisionedThroughputInMibps = aws.Float64(float64(awsclients.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps)))
 	return nil
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.DeleteFileSystemInput) (bool, error) {
 	obj.FileSystemId = awsclients.String(meta.GetExternalName(cr))
 	return false, nil
+}
+
+func preCreate(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.CreateFileSystemInput) error {
+	// Type of this field is *float64 but in practice, only integer values are allowed.
+	obj.ProvisionedThroughputInMibps = aws.Float64(float64(awsclients.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps)))
+	return nil
 }
 
 func postCreate(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.FileSystemDescription, _ managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
