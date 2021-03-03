@@ -76,9 +76,6 @@ type ClusterPendingModifiedValues struct {
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
 
 	MasterUserPassword *string `json:"masterUserPassword,omitempty"`
-	// A list of the log types whose configuration is still pending. In other words,
-	// these log types are in the process of being activated or deactivated.
-	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `json:"pendingCloudwatchLogsExports,omitempty"`
 }
 
 type ConnectionPoolConfiguration struct {
@@ -297,9 +294,6 @@ type DBCluster_SDK struct {
 	MasterUsername *string `json:"masterUsername,omitempty"`
 
 	MultiAZ *bool `json:"multiAZ,omitempty"`
-	// This data type is used as a response element in the ModifyDBCluster operation
-	// and contains changes that will be applied during the next maintenance window.
-	PendingModifiedValues *ClusterPendingModifiedValues `json:"pendingModifiedValues,omitempty"`
 
 	PercentProgress *string `json:"percentProgress,omitempty"`
 
@@ -1066,9 +1060,6 @@ type PendingModifiedValues struct {
 	MasterUserPassword *string `json:"masterUserPassword,omitempty"`
 
 	MultiAZ *bool `json:"multiAZ,omitempty"`
-	// A list of the log types whose configuration is still pending. In other words,
-	// these log types are in the process of being activated or deactivated.
-	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `json:"pendingCloudwatchLogsExports,omitempty"`
 
 	Port *int64 `json:"port,omitempty"`
 

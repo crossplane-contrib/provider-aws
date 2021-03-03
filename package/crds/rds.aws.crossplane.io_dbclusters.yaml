@@ -483,30 +483,6 @@ spec:
                   multiAZ:
                     description: Specifies whether the DB cluster has instances in multiple Availability Zones.
                     type: boolean
-                  pendingModifiedValues:
-                    description: A value that specifies that changes to the DB cluster are pending. This element is only included when changes are pending. Specific changes are identified by subelements.
-                    properties:
-                      dbClusterIdentifier:
-                        type: string
-                      engineVersion:
-                        type: string
-                      iamDatabaseAuthenticationEnabled:
-                        type: boolean
-                      masterUserPassword:
-                        type: string
-                      pendingCloudwatchLogsExports:
-                        description: A list of the log types whose configuration is still pending. In other words, these log types are in the process of being activated or deactivated.
-                        properties:
-                          logTypesToDisable:
-                            items:
-                              type: string
-                            type: array
-                          logTypesToEnable:
-                            items:
-                              type: string
-                            type: array
-                        type: object
-                    type: object
                   percentProgress:
                     description: Specifies the progress of the operation as a percentage.
                     type: string
