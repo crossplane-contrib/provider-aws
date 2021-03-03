@@ -48,6 +48,15 @@ var (
 	RepositoryGroupVersionKind = SchemeGroupVersion.WithKind(RepositoryKind)
 )
 
+// RepositoryPolicy type metadata.
+var (
+	RepositoryPolicyKind             = reflect.TypeOf(RepositoryPolicy{}).Name()
+	RepositoryPolicyGroupKind        = schema.GroupKind{Group: Group, Kind: RepositoryPolicyKind}.String()
+	RepositoryPolicyKindAPIVersion   = RepositoryPolicyKind + "." + SchemeGroupVersion.String()
+	RepositoryPolicyGroupVersionKind = SchemeGroupVersion.WithKind(RepositoryPolicyKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&Repository{}, &RepositoryList{})
+	SchemeBuilder.Register(&RepositoryPolicy{}, &RepositoryPolicyList{})
 }

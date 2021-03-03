@@ -1,0 +1,24 @@
+apiVersion: ecr.aws.crossplane.io/v1alpha1
+kind: RepositoryPolicy
+metadata:
+  name: example
+  labels:
+    region: us-east-1
+spec:
+  forProvider:
+    region: us-east-1
+    repositoryNameRef: 
+      name: example
+    policy:
+      statements:
+        - action:
+            - "ecr:DescribeRepositories"
+            - "ecr:DescribeImages"
+          effect: Allow
+          principal:
+            awsPrincipals:
+              - iamUserArnSelector:
+                  example: "true"
+      version: '2012-10-17'
+  providerConfigRef:
+    name: example
