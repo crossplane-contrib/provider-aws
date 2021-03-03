@@ -88,12 +88,12 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
-	if err := e.lateInitialize(&cr.Spec.ForProvider, resp); err != nil {
+	if err := e.lateInitialize(cr, resp); err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "late-init failed")
 	}
 	GenerateFileSystem(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(cr, resp)
+	upToDate, err := e.isUpToDate(basicUpToDateCheck(cr, resp), cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
@@ -141,20 +141,20 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.OwnerID = resp.OwnerId
 	}
 	if resp.SizeInBytes != nil {
-		f12 := &svcapitypes.FileSystemSize{}
+		f11 := &svcapitypes.FileSystemSize{}
 		if resp.SizeInBytes.Timestamp != nil {
-			f12.Timestamp = &metav1.Time{*resp.SizeInBytes.Timestamp}
+			f11.Timestamp = &metav1.Time{*resp.SizeInBytes.Timestamp}
 		}
 		if resp.SizeInBytes.Value != nil {
-			f12.Value = resp.SizeInBytes.Value
+			f11.Value = resp.SizeInBytes.Value
 		}
 		if resp.SizeInBytes.ValueInIA != nil {
-			f12.ValueInIA = resp.SizeInBytes.ValueInIA
+			f11.ValueInIA = resp.SizeInBytes.ValueInIA
 		}
 		if resp.SizeInBytes.ValueInStandard != nil {
-			f12.ValueInStandard = resp.SizeInBytes.ValueInStandard
+			f11.ValueInStandard = resp.SizeInBytes.ValueInStandard
 		}
-		cr.Status.AtProvider.SizeInBytes = f12
+		cr.Status.AtProvider.SizeInBytes = f11
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -202,8 +202,8 @@ func newExternal(kube client.Client, client svcsdkapi.EFSAPI, opts []option) *ex
 		client:         client,
 		preObserve:     nopPreObserve,
 		postObserve:    nopPostObserve,
-		lateInitialize: nopLateInitialize,
-		isUpToDate:     alwaysUpToDate,
+		lateInitialize: lateInitialize,
+		isUpToDate:     nopIsUpToDate,
 		filterList:     nopFilterList,
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
@@ -224,8 +224,8 @@ type external struct {
 	preObserve     func(context.Context, *svcapitypes.FileSystem, *svcsdk.DescribeFileSystemsInput) error
 	postObserve    func(context.Context, *svcapitypes.FileSystem, *svcsdk.DescribeFileSystemsOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
 	filterList     func(*svcapitypes.FileSystem, *svcsdk.DescribeFileSystemsOutput) *svcsdk.DescribeFileSystemsOutput
-	lateInitialize func(*svcapitypes.FileSystemParameters, *svcsdk.DescribeFileSystemsOutput) error
-	isUpToDate     func(*svcapitypes.FileSystem, *svcsdk.DescribeFileSystemsOutput) (bool, error)
+	lateInitialize func(*svcapitypes.FileSystem, *svcsdk.DescribeFileSystemsOutput) error
+	isUpToDate     func(bool, *svcapitypes.FileSystem, *svcsdk.DescribeFileSystemsOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.FileSystem, *svcsdk.CreateFileSystemInput) error
 	postCreate     func(context.Context, *svcapitypes.FileSystem, *svcsdk.FileSystemDescription, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.FileSystem, *svcsdk.DeleteFileSystemInput) (bool, error)
@@ -244,11 +244,8 @@ func nopFilterList(_ *svcapitypes.FileSystem, list *svcsdk.DescribeFileSystemsOu
 	return list
 }
 
-func nopLateInitialize(*svcapitypes.FileSystemParameters, *svcsdk.DescribeFileSystemsOutput) error {
-	return nil
-}
-func alwaysUpToDate(*svcapitypes.FileSystem, *svcsdk.DescribeFileSystemsOutput) (bool, error) {
-	return true, nil
+func nopIsUpToDate(r bool, _ *svcapitypes.FileSystem, _ *svcsdk.DescribeFileSystemsOutput) (bool, error) {
+	return r, nil
 }
 
 func nopPreCreate(context.Context, *svcapitypes.FileSystem, *svcsdk.CreateFileSystemInput) error {

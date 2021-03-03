@@ -24,10 +24,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/efs/v1alpha1"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
-
-// NOTE(muvaf): We return pointers in case the function needs to start with an
-// empty object, hence need to return a new pointer.
 
 // GenerateDescribeFileSystemsInput returns input for read
 // operation.
@@ -83,38 +81,35 @@ func GenerateFileSystem(resp *svcsdk.DescribeFileSystemsOutput) *svcapitypes.Fil
 		if elem.PerformanceMode != nil {
 			cr.Spec.ForProvider.PerformanceMode = elem.PerformanceMode
 		}
-		if elem.ProvisionedThroughputInMibps != nil {
-			cr.Spec.ForProvider.ProvisionedThroughputInMibps = elem.ProvisionedThroughputInMibps
-		}
 		if elem.SizeInBytes != nil {
-			f12 := &svcapitypes.FileSystemSize{}
+			f11 := &svcapitypes.FileSystemSize{}
 			if elem.SizeInBytes.Timestamp != nil {
-				f12.Timestamp = &metav1.Time{*elem.SizeInBytes.Timestamp}
+				f11.Timestamp = &metav1.Time{*elem.SizeInBytes.Timestamp}
 			}
 			if elem.SizeInBytes.Value != nil {
-				f12.Value = elem.SizeInBytes.Value
+				f11.Value = elem.SizeInBytes.Value
 			}
 			if elem.SizeInBytes.ValueInIA != nil {
-				f12.ValueInIA = elem.SizeInBytes.ValueInIA
+				f11.ValueInIA = elem.SizeInBytes.ValueInIA
 			}
 			if elem.SizeInBytes.ValueInStandard != nil {
-				f12.ValueInStandard = elem.SizeInBytes.ValueInStandard
+				f11.ValueInStandard = elem.SizeInBytes.ValueInStandard
 			}
-			cr.Status.AtProvider.SizeInBytes = f12
+			cr.Status.AtProvider.SizeInBytes = f11
 		}
 		if elem.Tags != nil {
-			f13 := []*svcapitypes.Tag{}
-			for _, f13iter := range elem.Tags {
-				f13elem := &svcapitypes.Tag{}
-				if f13iter.Key != nil {
-					f13elem.Key = f13iter.Key
+			f12 := []*svcapitypes.Tag{}
+			for _, f12iter := range elem.Tags {
+				f12elem := &svcapitypes.Tag{}
+				if f12iter.Key != nil {
+					f12elem.Key = f12iter.Key
 				}
-				if f13iter.Value != nil {
-					f13elem.Value = f13iter.Value
+				if f12iter.Value != nil {
+					f12elem.Value = f12iter.Value
 				}
-				f13 = append(f13, f13elem)
+				f12 = append(f12, f12elem)
 			}
-			cr.Spec.ForProvider.Tags = f13
+			cr.Spec.ForProvider.Tags = f12
 		}
 		if elem.ThroughputMode != nil {
 			cr.Spec.ForProvider.ThroughputMode = elem.ThroughputMode
@@ -127,6 +122,38 @@ func GenerateFileSystem(resp *svcsdk.DescribeFileSystemsOutput) *svcapitypes.Fil
 	}
 
 	return cr
+}
+
+func lateInitialize(cr *svcapitypes.FileSystem, resp *svcsdk.DescribeFileSystemsOutput) error {
+	for _, resource := range resp.FileSystems {
+		cr.Spec.ForProvider.CreationToken = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.CreationToken, resource.CreationToken)
+		cr.Spec.ForProvider.Encrypted = awsclients.LateInitializeBoolPtr(cr.Spec.ForProvider.Encrypted, resource.Encrypted)
+		cr.Spec.ForProvider.KMSKeyID = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.KMSKeyID, resource.KmsKeyId)
+		cr.Spec.ForProvider.PerformanceMode = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.PerformanceMode, resource.PerformanceMode)
+		if len(resource.Tags) != 0 && len(cr.Spec.ForProvider.Tags) == 0 {
+			cr.Spec.ForProvider.Tags = make([]*svcapitypes.Tag, len(resource.Tags))
+			for i0 := range resource.Tags {
+				if resource.Tags[i0] != nil {
+					if cr.Spec.ForProvider.Tags[i0] == nil {
+						cr.Spec.ForProvider.Tags[i0] = &svcapitypes.Tag{}
+					}
+					cr.Spec.ForProvider.Tags[i0].Key = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.Tags[i0].Key, resource.Tags[i0].Key)
+					cr.Spec.ForProvider.Tags[i0].Value = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.Tags[i0].Value, resource.Tags[i0].Value)
+				}
+			}
+		}
+		cr.Spec.ForProvider.ThroughputMode = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.ThroughputMode, resource.ThroughputMode)
+	}
+	return nil
+}
+
+func basicUpToDateCheck(cr *svcapitypes.FileSystem, resp *svcsdk.DescribeFileSystemsOutput) bool {
+	for _, resource := range resp.FileSystems {
+		if awsclients.StringValue(cr.Spec.ForProvider.ThroughputMode) != awsclients.StringValue(resource.ThroughputMode) {
+			return false
+		}
+	}
+	return true
 }
 
 // GenerateCreateFileSystemInput returns a create input.
@@ -145,22 +172,19 @@ func GenerateCreateFileSystemInput(cr *svcapitypes.FileSystem) *svcsdk.CreateFil
 	if cr.Spec.ForProvider.PerformanceMode != nil {
 		res.SetPerformanceMode(*cr.Spec.ForProvider.PerformanceMode)
 	}
-	if cr.Spec.ForProvider.ProvisionedThroughputInMibps != nil {
-		res.SetProvisionedThroughputInMibps(*cr.Spec.ForProvider.ProvisionedThroughputInMibps)
-	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f5 := []*svcsdk.Tag{}
-		for _, f5iter := range cr.Spec.ForProvider.Tags {
-			f5elem := &svcsdk.Tag{}
-			if f5iter.Key != nil {
-				f5elem.SetKey(*f5iter.Key)
+		f4 := []*svcsdk.Tag{}
+		for _, f4iter := range cr.Spec.ForProvider.Tags {
+			f4elem := &svcsdk.Tag{}
+			if f4iter.Key != nil {
+				f4elem.SetKey(*f4iter.Key)
 			}
-			if f5iter.Value != nil {
-				f5elem.SetValue(*f5iter.Value)
+			if f4iter.Value != nil {
+				f4elem.SetValue(*f4iter.Value)
 			}
-			f5 = append(f5, f5elem)
+			f4 = append(f4, f4elem)
 		}
-		res.SetTags(f5)
+		res.SetTags(f4)
 	}
 	if cr.Spec.ForProvider.ThroughputMode != nil {
 		res.SetThroughputMode(*cr.Spec.ForProvider.ThroughputMode)
@@ -175,9 +199,6 @@ func GenerateUpdateFileSystemInput(cr *svcapitypes.FileSystem) *svcsdk.UpdateFil
 
 	if cr.Status.AtProvider.FileSystemID != nil {
 		res.SetFileSystemId(*cr.Status.AtProvider.FileSystemID)
-	}
-	if cr.Spec.ForProvider.ProvisionedThroughputInMibps != nil {
-		res.SetProvisionedThroughputInMibps(*cr.Spec.ForProvider.ProvisionedThroughputInMibps)
 	}
 	if cr.Spec.ForProvider.ThroughputMode != nil {
 		res.SetThroughputMode(*cr.Spec.ForProvider.ThroughputMode)
