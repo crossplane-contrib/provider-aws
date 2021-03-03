@@ -417,22 +417,22 @@ func CreateJSONPatch(source, destination interface{}) ([]byte, error) {
 func String(v string, o ...FieldOption) *string {
 	for _, fo := range o {
 		if fo == FieldRequired && v == "" {
-			return aws.String(v)
+			return &v
 		}
 	}
-
 	if v == "" {
 		return nil
 	}
-
-	return aws.String(v)
+	return &v
 }
 
 // StringValue converts the supplied string pointer to a string, returning the
 // empty string if the pointer is nil.
-// TODO(muvaf): is this really meaningful? why not implement it?
 func StringValue(v *string) string {
-	return aws.StringValue(v)
+	if v == nil {
+		return ""
+	}
+	return *v
 }
 
 // Int64Value converts the supplied int64 pointer to a int64, returning
@@ -466,28 +466,41 @@ func LateInitializeString(in string, from *string) string {
 func Int64(v int, o ...FieldOption) *int64 {
 	for _, fo := range o {
 		if fo == FieldRequired && v == 0 {
-			return aws.Int64(int64(v))
+			r := int64(0)
+			return &r
 		}
 	}
-
 	if v == 0 {
 		return nil
 	}
-
-	return aws.Int64(int64(v))
+	r := int64(v)
+	return &r
 }
 
 // Int64Address returns the given *int in the form of *int64.
-func Int64Address(i *int) *int64 {
+func Int64Address(i *int, o ...FieldOption) *int64 {
+	for _, fo := range o {
+		if fo == FieldRequired && i == nil {
+			r := int64(0)
+			return &r
+		}
+	}
 	if i == nil {
 		return nil
 	}
-	return aws.Int64(int64(*i))
+	r := int64(*i)
+	return &r
 }
 
 // IntAddress converts the supplied int64 pointer to an int pointer, returning nil if
 // the pointer is nil.
-func IntAddress(i *int64) *int {
+func IntAddress(i *int64, o ...FieldOption) *int {
+	for _, fo := range o {
+		if fo == FieldRequired && i == nil {
+			r := 0
+			return &r
+		}
+	}
 	if i == nil {
 		return nil
 	}
@@ -520,21 +533,24 @@ func LateInitializeInt64Ptr(in *int64, from *int64) *int64 {
 // Bool converts the supplied bool for use with the AWS Go SDK.
 func Bool(v bool, o ...FieldOption) *bool {
 	for _, fo := range o {
-		if fo == FieldRequired && !v {
-			return aws.Bool(v)
+		if fo == FieldRequired {
+			return &v
 		}
 	}
 
 	if !v {
 		return nil
 	}
-	return aws.Bool(v)
+	return &v
 }
 
 // BoolValue returns the value of the bool pointer passed in or
 // false if the pointer is nil.
 func BoolValue(v *bool) bool {
-	return aws.BoolValue(v)
+	if v == nil {
+		return false
+	}
+	return *v
 }
 
 // LateInitializeBoolPtr returns in if it's non-nil, otherwise returns from
