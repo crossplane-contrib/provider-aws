@@ -156,7 +156,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if cr.Status.AtProvider.DBInstanceStatus == v1beta1.RDSInstanceStateCreating {
 		return managed.ExternalCreation{}, nil
 	}
-	pw, _, err := rds.GetPassword(ctx, e.kube, cr)
+	pw, _, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -207,7 +207,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	modify := rds.GenerateModifyDBInstanceInput(meta.GetExternalName(cr), patch)
 	var conn managed.ConnectionDetails
 
-	pwd, changed, err := rds.GetPassword(ctx, e.kube, cr)
+	pwd, changed, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
 		return managed.ExternalUpdate{}, err
 	}

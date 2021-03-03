@@ -140,9 +140,17 @@ type DBClusterParameters struct {
 	// The DB engine mode of the DB cluster, either provisioned, serverless, parallelquery,
 	// global, or multimaster.
 	//
-	// global engine mode only applies for global database clusters created with
-	// Aurora MySQL version 5.6.10a. For higher Aurora MySQL versions, the clusters
-	// in a global database use provisioned engine mode.
+	// The parallelquery engine mode isn't required for Aurora MySQL version 1.23
+	// and higher 1.x versions, and version 2.09 and higher 2.x versions.
+	//
+	// The global engine mode isn't required for Aurora MySQL version 1.22 and higher
+	// 1.x versions, and global engine mode isn't required for any 2.x versions.
+	//
+	// The multimaster engine mode only applies for DB clusters created with Aurora
+	// MySQL version 5.6.10a.
+	//
+	// For Aurora PostgreSQL, the global engine mode isn't required, and both the
+	// parallelquery and the multimaster engine modes currently aren't supported.
 	//
 	// Limitations and requirements apply to some DB engine modes. For more information,
 	// see the following sections in the Amazon Aurora User Guide:
@@ -151,7 +159,7 @@ type DBClusterParameters struct {
 	//
 	//    * Limitations of Parallel Query (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-mysql-parallel-query.html#aurora-mysql-parallel-query-limitations)
 	//
-	//    * Requirements for Aurora Global Databases (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html#aurora-global-database.limitations)
+	//    * Limitations of Aurora Global Databases (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html#aurora-global-database.limitations)
 	//
 	//    * Limitations of Multi-Master Clusters (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-multi-master.html#aurora-multi-master-limitations)
 	EngineMode *string `json:"engineMode,omitempty"`
@@ -185,32 +193,26 @@ type DBClusterParameters struct {
 	GlobalClusterIdentifier *string `json:"globalClusterIdentifier,omitempty"`
 	// The AWS KMS key identifier for an encrypted DB cluster.
 	//
-	// The KMS key identifier is the Amazon Resource Name (ARN) for the KMS encryption
-	// key. If you are creating a DB cluster with the same AWS account that owns
-	// the KMS encryption key used to encrypt the new DB cluster, then you can use
-	// the KMS key alias instead of the ARN for the KMS encryption key.
+	// The AWS KMS key identifier is the key ARN, key ID, alias ARN, or alias name
+	// for the AWS KMS customer master key (CMK). To use a CMK in a different AWS
+	// account, specify the key ARN or alias ARN.
 	//
-	// If an encryption key isn't specified in KmsKeyId:
+	// When a CMK isn't specified in KmsKeyId:
 	//
 	//    * If ReplicationSourceIdentifier identifies an encrypted source, then
-	//    Amazon RDS will use the encryption key used to encrypt the source. Otherwise,
-	//    Amazon RDS will use your default encryption key.
+	//    Amazon RDS will use the CMK used to encrypt the source. Otherwise, Amazon
+	//    RDS will use your default CMK.
 	//
 	//    * If the StorageEncrypted parameter is enabled and ReplicationSourceIdentifier
-	//    isn't specified, then Amazon RDS will use your default encryption key.
+	//    isn't specified, then Amazon RDS will use your default CMK.
 	//
-	// AWS KMS creates the default encryption key for your AWS account. Your AWS
-	// account has a different default encryption key for each AWS Region.
+	// There is a default CMK for your AWS account. Your AWS account has a different
+	// default CMK for each AWS Region.
 	//
 	// If you create a read replica of an encrypted DB cluster in another AWS Region,
-	// you must set KmsKeyId to a KMS key ID that is valid in the destination AWS
-	// Region. This key is used to encrypt the read replica in that AWS Region.
+	// you must set KmsKeyId to a AWS KMS key identifier that is valid in the destination
+	// AWS Region. This CMK is used to encrypt the read replica in that AWS Region.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
-	// The password for the master database user. This password can contain any
-	// printable ASCII character except "/", """, or "@".
-	//
-	// Constraints: Must contain from 8 to 41 characters.
-	MasterUserPassword *string `json:"masterUserPassword,omitempty"`
 	// The name of the master user for the DB cluster.
 	//
 	// Constraints:
@@ -244,8 +246,8 @@ type DBClusterParameters struct {
 	//
 	//    * KmsKeyId - The AWS KMS key identifier for the key to use to encrypt
 	//    the copy of the DB cluster in the destination AWS Region. This should
-	//    refer to the same KMS key for both the CreateDBCluster action that is
-	//    called in the destination AWS Region, and the action contained in the
+	//    refer to the same AWS KMS CMK for both the CreateDBCluster action that
+	//    is called in the destination AWS Region, and the action contained in the
 	//    pre-signed URL.
 	//
 	//    * DestinationRegion - The name of the AWS Region that Aurora read replica
@@ -329,6 +331,9 @@ type DBClusterObservation struct {
 	ActivityStreamKinesisStreamName *string `json:"activityStreamKinesisStreamName,omitempty"`
 	// The AWS KMS key identifier used for encrypting messages in the database activity
 	// stream.
+	//
+	// The AWS KMS key identifier is the key ARN, key ID, alias ARN, or alias name
+	// for the AWS KMS customer master key (CMK).
 	ActivityStreamKMSKeyID *string `json:"activityStreamKMSKeyID,omitempty"`
 	// The mode of the database activity stream. Database events such as a change
 	// or access generate an activity stream event. The database session can handle
@@ -380,7 +385,7 @@ type DBClusterObservation struct {
 	// including the name, description, and subnets in the subnet group.
 	DBSubnetGroup *string `json:"dbSubnetGroup,omitempty"`
 	// The AWS Region-unique, immutable identifier for the DB cluster. This identifier
-	// is found in AWS CloudTrail log entries whenever the AWS KMS key for the DB
+	// is found in AWS CloudTrail log entries whenever the AWS KMS CMK for the DB
 	// cluster is accessed.
 	DBClusterResourceID *string `json:"dbClusterResourceID,omitempty"`
 	// The Active Directory Domain membership records associated with the DB cluster.
@@ -449,6 +454,8 @@ type DBClusterObservation struct {
 	ScalingConfigurationInfo *ScalingConfigurationInfo `json:"scalingConfigurationInfo,omitempty"`
 	// Specifies the current state of this DB cluster.
 	Status *string `json:"status,omitempty"`
+
+	TagList []*Tag `json:"tagList,omitempty"`
 	// Provides a list of VPC security groups that the DB cluster belongs to.
 	VPCSecurityGroups []*VPCSecurityGroupMembership `json:"vpcSecurityGroups,omitempty"`
 }

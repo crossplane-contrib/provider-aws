@@ -320,19 +320,33 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	if resp.DBCluster.Status != nil {
 		cr.Status.AtProvider.Status = resp.DBCluster.Status
 	}
-	if resp.DBCluster.VpcSecurityGroups != nil {
-		f53 := []*svcapitypes.VPCSecurityGroupMembership{}
-		for _, f53iter := range resp.DBCluster.VpcSecurityGroups {
-			f53elem := &svcapitypes.VPCSecurityGroupMembership{}
-			if f53iter.Status != nil {
-				f53elem.Status = f53iter.Status
+	if resp.DBCluster.TagList != nil {
+		f53 := []*svcapitypes.Tag{}
+		for _, f53iter := range resp.DBCluster.TagList {
+			f53elem := &svcapitypes.Tag{}
+			if f53iter.Key != nil {
+				f53elem.Key = f53iter.Key
 			}
-			if f53iter.VpcSecurityGroupId != nil {
-				f53elem.VPCSecurityGroupID = f53iter.VpcSecurityGroupId
+			if f53iter.Value != nil {
+				f53elem.Value = f53iter.Value
 			}
 			f53 = append(f53, f53elem)
 		}
-		cr.Status.AtProvider.VPCSecurityGroups = f53
+		cr.Status.AtProvider.TagList = f53
+	}
+	if resp.DBCluster.VpcSecurityGroups != nil {
+		f54 := []*svcapitypes.VPCSecurityGroupMembership{}
+		for _, f54iter := range resp.DBCluster.VpcSecurityGroups {
+			f54elem := &svcapitypes.VPCSecurityGroupMembership{}
+			if f54iter.Status != nil {
+				f54elem.Status = f54iter.Status
+			}
+			if f54iter.VpcSecurityGroupId != nil {
+				f54elem.VPCSecurityGroupID = f54iter.VpcSecurityGroupId
+			}
+			f54 = append(f54, f54elem)
+		}
+		cr.Status.AtProvider.VPCSecurityGroups = f54
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -382,6 +396,7 @@ func newExternal(kube client.Client, client svcsdkapi.RDSAPI, opts []option) *ex
 		postObserve:    nopPostObserve,
 		lateInitialize: nopLateInitialize,
 		isUpToDate:     alwaysUpToDate,
+		filterList:     nopFilterList,
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,

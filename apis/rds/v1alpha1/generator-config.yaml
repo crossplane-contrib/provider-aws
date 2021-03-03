@@ -4,8 +4,11 @@ ignore:
     - CreateDBClusterInput.DBClusterIdentifier
     - ModifyDBClusterInput.DBClusterIdentifier
     - DeleteDBClusterInput.DBClusterIdentifier
+    - CreateDBClusterInput.MasterUserPassword
+    - ModifyDBClusterInput.MasterUserPassword
     - CreateDBClusterInput.VpcSecurityGroupIds
     - ModifyDBClusterInput.VpcSecurityGroupIds
+    - DBCluster.PendingModifiedValues
   resource_names:
     - DBClusterEndpoint
     - CustomAvailabilityZone

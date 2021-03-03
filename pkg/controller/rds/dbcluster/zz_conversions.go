@@ -301,19 +301,33 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 		if elem.StorageEncrypted != nil {
 			cr.Spec.ForProvider.StorageEncrypted = elem.StorageEncrypted
 		}
-		if elem.VpcSecurityGroups != nil {
-			f53 := []*svcapitypes.VPCSecurityGroupMembership{}
-			for _, f53iter := range elem.VpcSecurityGroups {
-				f53elem := &svcapitypes.VPCSecurityGroupMembership{}
-				if f53iter.Status != nil {
-					f53elem.Status = f53iter.Status
+		if elem.TagList != nil {
+			f53 := []*svcapitypes.Tag{}
+			for _, f53iter := range elem.TagList {
+				f53elem := &svcapitypes.Tag{}
+				if f53iter.Key != nil {
+					f53elem.Key = f53iter.Key
 				}
-				if f53iter.VpcSecurityGroupId != nil {
-					f53elem.VPCSecurityGroupID = f53iter.VpcSecurityGroupId
+				if f53iter.Value != nil {
+					f53elem.Value = f53iter.Value
 				}
 				f53 = append(f53, f53elem)
 			}
-			cr.Status.AtProvider.VPCSecurityGroups = f53
+			cr.Status.AtProvider.TagList = f53
+		}
+		if elem.VpcSecurityGroups != nil {
+			f54 := []*svcapitypes.VPCSecurityGroupMembership{}
+			for _, f54iter := range elem.VpcSecurityGroups {
+				f54elem := &svcapitypes.VPCSecurityGroupMembership{}
+				if f54iter.Status != nil {
+					f54elem.Status = f54iter.Status
+				}
+				if f54iter.VpcSecurityGroupId != nil {
+					f54elem.VPCSecurityGroupID = f54iter.VpcSecurityGroupId
+				}
+				f54 = append(f54, f54elem)
+			}
+			cr.Status.AtProvider.VPCSecurityGroups = f54
 		}
 		found = true
 		break
@@ -404,9 +418,6 @@ func GenerateCreateDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.CreateDBClu
 	if cr.Spec.ForProvider.KMSKeyID != nil {
 		res.SetKmsKeyId(*cr.Spec.ForProvider.KMSKeyID)
 	}
-	if cr.Spec.ForProvider.MasterUserPassword != nil {
-		res.SetMasterUserPassword(*cr.Spec.ForProvider.MasterUserPassword)
-	}
 	if cr.Spec.ForProvider.MasterUsername != nil {
 		res.SetMasterUsername(*cr.Spec.ForProvider.MasterUsername)
 	}
@@ -429,23 +440,23 @@ func GenerateCreateDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.CreateDBClu
 		res.SetReplicationSourceIdentifier(*cr.Spec.ForProvider.ReplicationSourceIdentifier)
 	}
 	if cr.Spec.ForProvider.ScalingConfiguration != nil {
-		f29 := &svcsdk.ScalingConfiguration{}
+		f28 := &svcsdk.ScalingConfiguration{}
 		if cr.Spec.ForProvider.ScalingConfiguration.AutoPause != nil {
-			f29.SetAutoPause(*cr.Spec.ForProvider.ScalingConfiguration.AutoPause)
+			f28.SetAutoPause(*cr.Spec.ForProvider.ScalingConfiguration.AutoPause)
 		}
 		if cr.Spec.ForProvider.ScalingConfiguration.MaxCapacity != nil {
-			f29.SetMaxCapacity(*cr.Spec.ForProvider.ScalingConfiguration.MaxCapacity)
+			f28.SetMaxCapacity(*cr.Spec.ForProvider.ScalingConfiguration.MaxCapacity)
 		}
 		if cr.Spec.ForProvider.ScalingConfiguration.MinCapacity != nil {
-			f29.SetMinCapacity(*cr.Spec.ForProvider.ScalingConfiguration.MinCapacity)
+			f28.SetMinCapacity(*cr.Spec.ForProvider.ScalingConfiguration.MinCapacity)
 		}
 		if cr.Spec.ForProvider.ScalingConfiguration.SecondsUntilAutoPause != nil {
-			f29.SetSecondsUntilAutoPause(*cr.Spec.ForProvider.ScalingConfiguration.SecondsUntilAutoPause)
+			f28.SetSecondsUntilAutoPause(*cr.Spec.ForProvider.ScalingConfiguration.SecondsUntilAutoPause)
 		}
 		if cr.Spec.ForProvider.ScalingConfiguration.TimeoutAction != nil {
-			f29.SetTimeoutAction(*cr.Spec.ForProvider.ScalingConfiguration.TimeoutAction)
+			f28.SetTimeoutAction(*cr.Spec.ForProvider.ScalingConfiguration.TimeoutAction)
 		}
-		res.SetScalingConfiguration(f29)
+		res.SetScalingConfiguration(f28)
 	}
 	if cr.Spec.ForProvider.SourceRegion != nil {
 		res.SetSourceRegion(*cr.Spec.ForProvider.SourceRegion)
@@ -454,18 +465,18 @@ func GenerateCreateDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.CreateDBClu
 		res.SetStorageEncrypted(*cr.Spec.ForProvider.StorageEncrypted)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f32 := []*svcsdk.Tag{}
-		for _, f32iter := range cr.Spec.ForProvider.Tags {
-			f32elem := &svcsdk.Tag{}
-			if f32iter.Key != nil {
-				f32elem.SetKey(*f32iter.Key)
+		f31 := []*svcsdk.Tag{}
+		for _, f31iter := range cr.Spec.ForProvider.Tags {
+			f31elem := &svcsdk.Tag{}
+			if f31iter.Key != nil {
+				f31elem.SetKey(*f31iter.Key)
 			}
-			if f32iter.Value != nil {
-				f32elem.SetValue(*f32iter.Value)
+			if f31iter.Value != nil {
+				f31elem.SetValue(*f31iter.Value)
 			}
-			f32 = append(f32, f32elem)
+			f31 = append(f31, f31elem)
 		}
-		res.SetTags(f32)
+		res.SetTags(f31)
 	}
 
 	return res
@@ -508,9 +519,6 @@ func GenerateModifyDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.ModifyDBClu
 	if cr.Spec.ForProvider.EngineVersion != nil {
 		res.SetEngineVersion(*cr.Spec.ForProvider.EngineVersion)
 	}
-	if cr.Spec.ForProvider.MasterUserPassword != nil {
-		res.SetMasterUserPassword(*cr.Spec.ForProvider.MasterUserPassword)
-	}
 	if cr.Spec.ForProvider.OptionGroupName != nil {
 		res.SetOptionGroupName(*cr.Spec.ForProvider.OptionGroupName)
 	}
@@ -524,23 +532,23 @@ func GenerateModifyDBClusterInput(cr *svcapitypes.DBCluster) *svcsdk.ModifyDBClu
 		res.SetPreferredMaintenanceWindow(*cr.Spec.ForProvider.PreferredMaintenanceWindow)
 	}
 	if cr.Spec.ForProvider.ScalingConfiguration != nil {
-		f21 := &svcsdk.ScalingConfiguration{}
+		f20 := &svcsdk.ScalingConfiguration{}
 		if cr.Spec.ForProvider.ScalingConfiguration.AutoPause != nil {
-			f21.SetAutoPause(*cr.Spec.ForProvider.ScalingConfiguration.AutoPause)
+			f20.SetAutoPause(*cr.Spec.ForProvider.ScalingConfiguration.AutoPause)
 		}
 		if cr.Spec.ForProvider.ScalingConfiguration.MaxCapacity != nil {
-			f21.SetMaxCapacity(*cr.Spec.ForProvider.ScalingConfiguration.MaxCapacity)
+			f20.SetMaxCapacity(*cr.Spec.ForProvider.ScalingConfiguration.MaxCapacity)
 		}
 		if cr.Spec.ForProvider.ScalingConfiguration.MinCapacity != nil {
-			f21.SetMinCapacity(*cr.Spec.ForProvider.ScalingConfiguration.MinCapacity)
+			f20.SetMinCapacity(*cr.Spec.ForProvider.ScalingConfiguration.MinCapacity)
 		}
 		if cr.Spec.ForProvider.ScalingConfiguration.SecondsUntilAutoPause != nil {
-			f21.SetSecondsUntilAutoPause(*cr.Spec.ForProvider.ScalingConfiguration.SecondsUntilAutoPause)
+			f20.SetSecondsUntilAutoPause(*cr.Spec.ForProvider.ScalingConfiguration.SecondsUntilAutoPause)
 		}
 		if cr.Spec.ForProvider.ScalingConfiguration.TimeoutAction != nil {
-			f21.SetTimeoutAction(*cr.Spec.ForProvider.ScalingConfiguration.TimeoutAction)
+			f20.SetTimeoutAction(*cr.Spec.ForProvider.ScalingConfiguration.TimeoutAction)
 		}
-		res.SetScalingConfiguration(f21)
+		res.SetScalingConfiguration(f20)
 	}
 
 	return res
