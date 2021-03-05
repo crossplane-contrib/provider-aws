@@ -442,6 +442,14 @@ func LateInitialize(in *v1beta1.RDSInstanceParameters, db *rds.DBInstance) { // 
 	if strings.HasPrefix(aws.StringValue(db.EngineVersion), aws.StringValue(in.EngineVersion)) {
 		in.EngineVersion = db.EngineVersion
 	}
+	if in.DBParameterGroupName == nil {
+		for i := range db.DBParameterGroups {
+			if db.DBParameterGroups[i].DBParameterGroupName != nil {
+				in.DBParameterGroupName = db.DBParameterGroups[i].DBParameterGroupName
+				break
+			}
+		}
+	}
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
