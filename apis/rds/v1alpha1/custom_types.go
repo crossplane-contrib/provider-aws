@@ -18,6 +18,8 @@ package v1alpha1
 
 import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
+type CustomDBParameterGroupParameters struct{}
+
 // CustomDBClusterParameters are custom parameters for DBCluster
 type CustomDBClusterParameters struct {
 

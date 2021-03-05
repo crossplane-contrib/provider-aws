@@ -16,7 +16,6 @@ ignore:
     - DBClusterSnapshot
     - DBInstance
     - DBInstanceReadReplica
-    - DBParameterGroup
     - DBProxy
     - DBSecurityGroup
     - DBSnapshot
