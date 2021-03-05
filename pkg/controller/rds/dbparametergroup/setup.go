@@ -14,6 +14,7 @@ import (
 	svcapitypes "github.com/crossplane/provider-aws/apis/rds/v1alpha1"
 )
 
+// SetupDBParameterGroup adds a controller that reconciles DBParametergroup.
 func SetupDBParameterGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(svcapitypes.DBParameterGroupGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
