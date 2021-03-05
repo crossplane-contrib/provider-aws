@@ -1,11 +1,11 @@
 apiVersion: rds.aws.crossplane.io/v1alpha1
 kind: DBParameterGroup
 metadata:
-  name: example-dbparametergroup-01
+  name: example-dbparametergroup
 spec:
   forProvider:
     region: eu-central-1
-    dbParameterGroupName: createdViaApi
+    dbParameterGroupName: example-dbparametergroup
     dbParameterGroupFamily: postgres9.6
     description: test
   providerConfigRef:
