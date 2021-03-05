@@ -41,17 +41,17 @@ export IAM_ROLE_NAME=provider-aws # name for IAM role, can be anything you want
 
 3. Install Crossplane
 
-Install Crossplane from `alpha` channel:
+Install Crossplane from `stable` channel:
 
 ```
 kubectl create namespace crossplane-system
-helm repo add crossplane-alpha https://charts.crossplane.io/alpha
+helm repo add crossplane-stable https://charts.crossplane.io/stable
 
-helm install crossplane --namespace crossplane-system crossplane-alpha/crossplane
+helm install crossplane --namespace crossplane-system crossplane-stable/crossplane
 ```
 
 `provider-aws` can be installed with the [Crossplane
-CLI](https://crossplane.io/docs/v0.13/getting-started/install-configure.html#install-crossplane-cli),
+CLI](https://crossplane.io/docs/v1.0/getting-started/install-configure.html#install-crossplane-cli),
 but we will do so manually so that we can also create and reference a
 `ControllerConfig`:
 
