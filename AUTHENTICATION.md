@@ -130,8 +130,8 @@ read -r -d '' TRUST_RELATIONSHIP <<EOF
       },
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
-        "StringEquals": {
-          "${OIDC_PROVIDER}:sub": "system:serviceaccount:${SERVICE_ACCOUNT_NAMESPACE}:${SERVICE_ACCOUNT_NAME}"
+        "StringLike": {
+          "${OIDC_PROVIDER}:sub": "system:serviceaccount:${SERVICE_ACCOUNT_NAMESPACE}:provider-aws-*"
         }
       }
     }
@@ -140,6 +140,9 @@ read -r -d '' TRUST_RELATIONSHIP <<EOF
 EOF
 echo "${TRUST_RELATIONSHIP}" > trust.json
 ```
+
+> The default service account name is the provider-aws revision and changes with every provider release. The conditional above wildcard matches the default service account name in order to keep the role consistent across provider releases.
+The above policy assumes a service account name of `provider-aws-*` 
 
 Create IAM role:
 
