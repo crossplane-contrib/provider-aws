@@ -27,7 +27,7 @@ func SetupDBParameterGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rate
 	name := managed.ControllerName(svcapitypes.DBParameterGroupGroupKind)
 	opts := []option{
 		func(e *external) {
-			e.postCreate = postCreate
+			e.preCreate = preCreate
 			e.preObserve = preObserve
 			e.preUpdate = preUpdate
 			e.preDelete = preDelete
@@ -60,12 +60,17 @@ func postObserve(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsd
 	return obs, err
 }
 
-func postCreate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.CreateDBParameterGroupOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	if err != nil {
-		return managed.ExternalCreation{}, err
-	}
-	meta.SetExternalName(cr, awsclients.StringValue(obj.DBParameterGroup.DBParameterGroupName))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+// func postCreate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.CreateDBParameterGroupOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+// 	if err != nil {
+// 		return managed.ExternalCreation{}, err
+// 	}
+// 	meta.SetExternalName(cr, awsclients.StringValue(obj.DBParameterGroup.DBParameterGroupName))
+// 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+// }
+
+func preCreate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.CreateDBParameterGroupInput) error {
+	obj.DBParameterGroupName = awsclients.String(meta.GetExternalName(cr))
+	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.ModifyDBParameterGroupInput) error {
