@@ -16,7 +16,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+
 	svcapitypes "github.com/crossplane/provider-aws/apis/rds/v1alpha1"
+
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
