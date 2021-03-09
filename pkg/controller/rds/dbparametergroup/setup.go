@@ -7,6 +7,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
+	"github.com/aws/aws-sdk-go/service/rds"
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
@@ -70,11 +71,18 @@ func postObserve(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsd
 
 func preCreate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.CreateDBParameterGroupInput) error {
 	obj.DBParameterGroupName = awsclients.String(meta.GetExternalName(cr))
+
 	return nil
 }
 
 func preUpdate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.ModifyDBParameterGroupInput) error {
 	obj.DBParameterGroupName = awsclients.String(meta.GetExternalName(cr))
+
+	obj.Parameters = make([]*rds.Parameter, len(cr.Spec.ForProvider.Parameters))
+
+	for i, v := range cr.Spec.ForProvider.Parameters {
+		obj.Parameters[i] = &rds.Parameter{ApplyMethod: awsclients.String(*v.ApplyMethod), ParameterName: awsclients.String(*v.ParameterName), ParameterValue: awsclients.String(*v.ParameterValue)}
+	}
 	return nil
 }
 
