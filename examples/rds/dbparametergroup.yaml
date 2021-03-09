@@ -8,6 +8,13 @@ spec:
     dbParameterGroupName: example-dbparametergroup
     dbParameterGroupFamily: postgres9.6
     description: test
+    parameters:
+      - parameterName: pgaudit.role
+        parameterValue: rds_pgaudit
+        applyMethod: immediate
+      - parameterName: application_name
+        parameterValue: example
+        applyMethod: immediate
   providerConfigRef:
     name: aws-provider-config
 
