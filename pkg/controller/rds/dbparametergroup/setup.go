@@ -81,7 +81,17 @@ func preUpdate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.
 	obj.Parameters = make([]*rds.Parameter, len(cr.Spec.ForProvider.Parameters))
 
 	for i, v := range cr.Spec.ForProvider.Parameters {
-		obj.Parameters[i] = &rds.Parameter{ApplyMethod: awsclients.String(*v.ApplyMethod), ParameterName: awsclients.String(*v.ParameterName), ParameterValue: awsclients.String(*v.ParameterValue)}
+		obj.Parameters[i] = &rds.Parameter{
+			AllowedValues:        awsclients.String(*v.AllowedValues),
+			ApplyMethod:          awsclients.String(*v.ApplyMethod),
+			ApplyType:            awsclients.String(*v.ApplyType),
+			DataType:             awsclients.String(*v.DataType),
+			Description:          awsclients.String(*v.Description),
+			MinimumEngineVersion: awsclients.String(*v.MinimumEngineVersion),
+			ParameterName:        awsclients.String(*v.ParameterName),
+			ParameterValue:       awsclients.String(*v.ParameterValue),
+			Source:               awsclients.String(*v.Source),
+		}
 	}
 	return nil
 }
