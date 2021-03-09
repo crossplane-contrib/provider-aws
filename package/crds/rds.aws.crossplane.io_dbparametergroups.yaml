@@ -62,6 +62,36 @@ spec:
                   description:
                     description: The description for the DB parameter group.
                     type: string
+                  parameters:
+                    description: A list of parameters to associate with this DB parameter group
+                    items:
+                      properties:
+                        allowedValues:
+                          type: string
+                        applyMethod:
+                          type: string
+                        applyType:
+                          type: string
+                        dataType:
+                          type: string
+                        description:
+                          type: string
+                        isModifiable:
+                          type: boolean
+                        minimumEngineVersion:
+                          type: string
+                        parameterName:
+                          type: string
+                        parameterValue:
+                          type: string
+                        source:
+                          type: string
+                        supportedEngineModes:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    type: array
                   region:
                     description: Region is which region the DBParameterGroup will be created.
                     type: string
