@@ -63,6 +63,7 @@ const (
 	ChangeType_requires_reboot ChangeType = "requires-reboot"
 )
 
+<<<<<<< HEAD
 type DestinationType string
 
 const (
@@ -93,6 +94,8 @@ const (
 	LogType_slow_log LogType = "slow-log"
 )
 
+=======
+>>>>>>> a47f48ee (Add CRD and example for elasticache user.)
 type MultiAZStatus string
 
 const (

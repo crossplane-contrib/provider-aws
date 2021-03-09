@@ -1,0 +1,14 @@
+apiVersion: elasticache.aws.crossplane.io/v1alpha1
+kind: User
+metadata:
+  name: userelasticache
+spec:
+  forProvider:
+    region: eu-central-1
+    accessString: "on"
+    engine: redis
+    userID: "exampleID"
+    userName: exampleUser
+    noPasswordRequired: true
+  providerConfigRef:
+    name: default
