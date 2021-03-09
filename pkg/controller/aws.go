@@ -58,6 +58,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/eks"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/fargateprofile"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
+	"github.com/crossplane/provider-aws/pkg/controller/elasticache/user"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elb"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elbattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamaccesskey"
@@ -148,6 +149,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		key.SetupKey,
 		filesystem.SetupFileSystem,
 		dbcluster.SetupDBCluster,
+		user.SetupUser,
 	} {
 		if err := setup(mgr, l, rl); err != nil {
 			return err

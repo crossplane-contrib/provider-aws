@@ -1,0 +1,10 @@
+ignore:
+  resource_names:
+    - CacheCluster
+    - CacheParameterGroup
+    - CacheSecurityGroup
+    - CacheSubnetGroup
+    - GlobalReplicationGroup
+    - ReplicationGroup
+    - Snapshot
+    - UserGroup
