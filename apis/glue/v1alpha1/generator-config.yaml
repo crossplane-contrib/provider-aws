@@ -1,0 +1,24 @@
+ignore:
+  resource_names:
+    - Classifier
+    - Connection
+    - Crawler
+    - Database
+    - DevEndpoint
+    - MLTransform
+    - PartitionIndex
+    - Registry
+    - Schema
+    - Script
+    - SecurityConfiguration
+    - Table
+    - Trigger
+    - UserDefinedFunction
+    - Workflow
+    - Partition
+resources:
+  Job:
+    exceptions:
+      errors:
+        404:
+          code: EntityNotFoundException

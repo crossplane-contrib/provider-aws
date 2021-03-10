@@ -82,6 +82,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/activity"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/statemachine"
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
+	"github.com/crossplane/provider-aws/pkg/controller/glue/job"
 )
 
 // Setup creates all AWS controllers with the supplied logger and adds them to
@@ -148,6 +149,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		key.SetupKey,
 		filesystem.SetupFileSystem,
 		dbcluster.SetupDBCluster,
+		job.SetupJob,
 	} {
 		if err := setup(mgr, l, rl); err != nil {
 			return err
