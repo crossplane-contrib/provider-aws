@@ -5,16 +5,19 @@ import (
 
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	"github.com/aws/aws-sdk-go/service/rds"
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
+	svcsdkapi "github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/pkg/errors"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
@@ -33,6 +36,8 @@ func SetupDBParameterGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rate
 			e.preUpdate = preUpdate
 			e.preDelete = preDelete
 			e.postObserve = postObserve
+			c := &custom{client: e.client, kube: e.kube}
+			e.isUpToDate = c.isUpToDate
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
@@ -46,6 +51,11 @@ func SetupDBParameterGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rate
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+}
+
+type custom struct {
+	kube   client.Client
+	client svcsdkapi.RDSAPI
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.DescribeDBParameterGroupsInput) error {
@@ -77,20 +87,18 @@ func preCreate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.
 
 func preUpdate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.ModifyDBParameterGroupInput) error {
 	obj.DBParameterGroupName = awsclients.String(meta.GetExternalName(cr))
-
 	obj.Parameters = make([]*rds.Parameter, len(cr.Spec.ForProvider.Parameters))
 
 	for i, v := range cr.Spec.ForProvider.Parameters {
-		obj.Parameters[i] = &rds.Parameter{
-			AllowedValues:        awsclients.String(*v.AllowedValues),
-			ApplyMethod:          awsclients.String(*v.ApplyMethod),
-			ApplyType:            awsclients.String(*v.ApplyType),
-			DataType:             awsclients.String(*v.DataType),
-			Description:          awsclients.String(*v.Description),
-			MinimumEngineVersion: awsclients.String(*v.MinimumEngineVersion),
-			ParameterName:        awsclients.String(*v.ParameterName),
-			ParameterValue:       awsclients.String(*v.ParameterValue),
-			Source:               awsclients.String(*v.Source),
+		// check if mandatory parameters are set (ApplyMethod, ParameterName, ParameterValue)
+		if (v.ApplyMethod == nil) || (v.ParameterName == nil) || (v.ParameterValue == nil) {
+			return errors.New("ApplyMethod, ParameterName and ParameterValue are mandatory fields and can not be nil")
+		} else {
+			obj.Parameters[i] = &rds.Parameter{
+				ApplyMethod:    awsclients.String(*v.ApplyMethod),
+				ParameterName:  awsclients.String(*v.ParameterName),
+				ParameterValue: awsclients.String(*v.ParameterValue),
+			}
 		}
 	}
 	return nil
@@ -99,4 +107,46 @@ func preUpdate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.
 func preDelete(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.DeleteDBParameterGroupInput) (bool, error) {
 	obj.DBParameterGroupName = awsclients.String(meta.GetExternalName(cr))
 	return false, nil
+}
+
+func (e *custom) isUpToDate(co context.TODO(), cr *svcapitypes.DBParameterGroup, obj *svcsdk.DescribeDBParameterGroupsOutput) (bool, error) {
+	// define input for DescribeDBParameters
+	input := &rds.DescribeDBParametersInput{
+		DBParameterGroupName: awsclients.String(meta.GetExternalName(cr)),
+		MaxRecords:           awsclients.Int64(20),
+	}
+
+	// get DBParameters currently set for the DBParameterGroup
+	pageNum := 0
+	var results []*svcsdk.Parameter
+	err := e.client.DescribeDBParametersPagesWithContext(co, input, func(page *rds.DescribeDBParametersOutput, lastPage bool) bool {
+		pageNum++
+		results = append(results, page.Parameters...)
+		return pageNum <= 50
+	})
+
+	// compare CR with currently set Parameters
+	for _, v := range cr.Spec.ForProvider.Parameters {
+		for _, w := range results {
+			if *v.ParameterName == *w.ParameterName {
+				if (v.ParameterValue != nil) && (w.ParameterValue != nil) {
+					if (!(*v.ParameterValue == *w.ParameterValue)) || (!(*v.ApplyMethod == *w.ApplyMethod)) {
+						return false, nil
+					}
+				} else if (v.ParameterValue == nil) && (w.ParameterValue != nil) {
+					return false, nil
+				} else if (v.ParameterValue != nil) && (w.ParameterValue == nil) {
+					return false, nil
+				} else {
+					return true, nil
+				}
+			}
+		}
+	}
+
+	if err != nil {
+		return true, err
+	}
+
+	return true, nil
 }
