@@ -93,12 +93,11 @@ func preUpdate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.
 		// check if mandatory parameters are set (ApplyMethod, ParameterName, ParameterValue)
 		if (v.ApplyMethod == nil) || (v.ParameterName == nil) || (v.ParameterValue == nil) {
 			return errors.New("ApplyMethod, ParameterName and ParameterValue are mandatory fields and can not be nil")
-		} else {
-			obj.Parameters[i] = &rds.Parameter{
-				ApplyMethod:    awsclients.String(*v.ApplyMethod),
-				ParameterName:  awsclients.String(*v.ParameterName),
-				ParameterValue: awsclients.String(*v.ParameterValue),
-			}
+		}
+		obj.Parameters[i] = &rds.Parameter{
+			ApplyMethod:    awsclients.String(*v.ApplyMethod),
+			ParameterName:  awsclients.String(*v.ParameterName),
+			ParameterValue: awsclients.String(*v.ParameterValue),
 		}
 	}
 	return nil
@@ -109,44 +108,43 @@ func preDelete(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.
 	return false, nil
 }
 
-func (e *custom) isUpToDate(co context.TODO(), cr *svcapitypes.DBParameterGroup, obj *svcsdk.DescribeDBParameterGroupsOutput) (bool, error) {
-	// define input for DescribeDBParameters
-	input := &rds.DescribeDBParametersInput{
-		DBParameterGroupName: awsclients.String(meta.GetExternalName(cr)),
-		MaxRecords:           awsclients.Int64(20),
-	}
-
-	// get DBParameters currently set for the DBParameterGroup
-	pageNum := 0
-	var results []*svcsdk.Parameter
-	err := e.client.DescribeDBParametersPagesWithContext(co, input, func(page *rds.DescribeDBParametersOutput, lastPage bool) bool {
-		pageNum++
-		results = append(results, page.Parameters...)
-		return pageNum <= 50
-	})
+func (e *custom) isUpToDate(cr *svcapitypes.DBParameterGroup, obj *svcsdk.DescribeDBParameterGroupsOutput) (bool, error) {
+	// TODO(Dkaykay): We need isUpToDate to have context.
+	ctx := context.TODO()
+	results, err := e.getCurrentDBParameters(ctx, cr)
 
 	// compare CR with currently set Parameters
 	for _, v := range cr.Spec.ForProvider.Parameters {
 		for _, w := range results {
 			if *v.ParameterName == *w.ParameterName {
-				if (v.ParameterValue != nil) && (w.ParameterValue != nil) {
-					if (!(*v.ParameterValue == *w.ParameterValue)) || (!(*v.ApplyMethod == *w.ApplyMethod)) {
-						return false, nil
-					}
-				} else if (v.ParameterValue == nil) && (w.ParameterValue != nil) {
+				switch {
+				case (v.ParameterValue == nil) || (w.ParameterValue == nil):
 					return false, nil
-				} else if (v.ParameterValue != nil) && (w.ParameterValue == nil) {
-					return false, nil
-				} else {
+				case (v.ParameterValue == nil) && (w.ParameterValue == nil):
 					return true, nil
+				case (*v.ParameterValue != *w.ParameterValue) || (*v.ApplyMethod != *w.ApplyMethod):
+					return false, nil
 				}
 			}
 		}
 	}
+	return true, err
+}
 
-	if err != nil {
-		return true, err
+func (e *custom) getCurrentDBParameters(ctx context.Context, cr *svcapitypes.DBParameterGroup) ([]*svcsdk.Parameter, error) {
+	input := &rds.DescribeDBParametersInput{
+		DBParameterGroupName: awsclients.String(meta.GetExternalName(cr)),
+		MaxRecords:           awsclients.Int64(20),
 	}
-
-	return true, nil
+	pageNum := 0
+	var results []*svcsdk.Parameter
+	err := e.client.DescribeDBParametersPagesWithContext(ctx, input, func(page *rds.DescribeDBParametersOutput, lastPage bool) bool {
+		pageNum++
+		results = append(results, page.Parameters...)
+		return pageNum <= 20
+	})
+	if err != nil {
+		return results, err
+	}
+	return results, nil
 }
