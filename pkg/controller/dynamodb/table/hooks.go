@@ -173,6 +173,12 @@ func lateInitialize(in *svcapitypes.TableParameters, t *svcsdk.DescribeTableOutp
 	return nil
 }
 
+func (e *updateClient) describeContinuousBackups(ctx context.Context, t *svcsdk.DescribeTableOutput)(*svcsdk.DescribeContinuousBackupsOutput, error){
+	return e.client.DescribeContinuousBackupsWithContext(ctx, &svcsdk.DescribeContinuousBackupsInput {
+		TableName: t.Table.TableName,
+	})
+}
+
 func buildAlphaKeyElements(keys []*svcsdk.KeySchemaElement) []*svcapitypes.KeySchemaElement {
 	if len(keys) == 0 {
 		return nil
@@ -275,11 +281,38 @@ type updateClient struct {
 	client svcsdkapi.DynamoDBAPI
 }
 
-func (e *updateClient) preUpdate(_ context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error {
+func (e *updateClient) updateContinuousBackups(ctx context.Context, cr *svcapitypes.Table) error {
+	if cr.Spec.ForProvider.CustomTableParameters.ContinuousBackupsDescription.PointInTimeRecoveryDescription.PointInTimeRecoveryStatus != nil &&
+		*cr.Spec.ForProvider.CustomTableParameters.ContinuousBackupsDescription.PointInTimeRecoveryDescription.PointInTimeRecoveryStatus != "ENABLING" {
+
+		var pointInTimeRecovery *svcsdk.PointInTimeRecoverySpecification
+		switch aws.StringValue(cr.Spec.ForProvider.CustomTableParameters.ContinuousBackupsDescription.PointInTimeRecoveryDescription.PointInTimeRecoveryStatus) {
+		case string(svcapitypes.PointInTimeRecoveryStatus_ENABLED):
+			pointInTimeRecovery.SetPointInTimeRecoveryEnabled(true)
+		case string(svcapitypes.PointInTimeRecoveryStatus_DISABLED):
+			pointInTimeRecovery.SetPointInTimeRecoveryEnabled(false)
+		}
+
+		_, err := e.client.UpdateContinuousBackupsWithContext(ctx, &svcsdk.UpdateContinuousBackupsInput{PointInTimeRecoverySpecification: pointInTimeRecovery,
+			TableName: aws.String(meta.GetExternalName(cr))})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (e *updateClient) preUpdate(ctx context.Context, cr *svcapitypes.Table, u *svcsdk.UpdateTableInput) error {
 	switch aws.StringValue(cr.Status.AtProvider.TableStatus) {
 	case string(svcapitypes.TableStatus_SDK_UPDATING), string(svcapitypes.TableStatus_SDK_CREATING):
 		return nil
 	}
+
+	err := e.updateContinuousBackups(ctx, cr)
+	if err != nil {
+		return aws.Wrap(err, errUpdate)
+	}
+
 	t, err := e.client.DescribeTable(&svcsdk.DescribeTableInput{TableName: aws.String(meta.GetExternalName(cr))})
 	if err != nil {
 		return aws.Wrap(err, errDescribe)

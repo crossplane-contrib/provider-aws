@@ -32,7 +32,35 @@ type CustomBackupParameters struct {
 }
 
 // CustomTableParameters are custom parameters for Table.
-type CustomTableParameters struct{}
+type CustomTableParameters struct {
+
+	// Represents the continuous backups and point in time recovery settings on
+	// the table.
+	// https://docs.aws.amazon.com/sdk-for-go/api/service/dynamodb/#DescribeContinuousBackupsOutput
+	ContinuousBackupsDescription *ContinuousBackupsDescription `type:"structure,omitempty"`
+}
+
+// ContinuousBackupsDescription are custom parameters for CustomTableParameters.
+// https://docs.aws.amazon.com/sdk-for-go/api/service/dynamodb/#ContinuousBackupsDescription
+type ContinuousBackupsDescription struct {
+
+	// The description of the point in time recovery settings applied to the table.
+	PointInTimeRecoveryDescription *CustomPointInTimeRecoveryDescription `type:"structure,omitempty"`
+}
+
+// PointInTimeRecoveryDescription are custom parameters for ContinuousBackupsDescription.
+// https://docs.aws.amazon.com/sdk-for-go/api/service/dynamodb/#PointInTimeRecoveryDescription
+type CustomPointInTimeRecoveryDescription struct {
+
+	// The current state of point in time recovery:
+	//
+	//    * ENABLING - Point in time recovery is being enabled.
+	//
+	//    * ENABLED - Point in time recovery is enabled.
+	//
+	//    * DISABLED - Point in time recovery is disabled.
+	PointInTimeRecoveryStatus *string `type:"string,omitempty"`
+}
 
 // CustomGlobalTableParameters are custom parameters for GlobalTable.
 type CustomGlobalTableParameters struct{}
