@@ -60,6 +60,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elb"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elbattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/glue/job"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamaccesskey"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgrouppolicyattachment"
@@ -82,7 +83,6 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/activity"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/statemachine"
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
-	"github.com/crossplane/provider-aws/pkg/controller/glue/job"
 )
 
 // Setup creates all AWS controllers with the supplied logger and adds them to
