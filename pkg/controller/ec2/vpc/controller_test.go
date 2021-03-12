@@ -45,6 +45,7 @@ var (
 	vpcID          = "some Id"
 	cidr           = "192.168.0.0/32"
 	tenancyDefault = "default"
+	enableDNS      = true
 
 	errBoom = errors.New("boom")
 )
@@ -245,16 +246,42 @@ func TestCreate(t *testing.T) {
 							}},
 						}
 					},
+				},
+				cr: vpc(),
+			},
+			want: want{
+				cr:     vpc(withExternalName(vpcID)),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
+			},
+		},
+		"SuccessfulWithAttributes": {
+			args: args{
+				vpc: &fake.MockVPCClient{
+					MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
+						return awsec2.CreateVpcRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateVpcOutput{
+								Vpc: &awsec2.Vpc{
+									VpcId:     aws.String(vpcID),
+									CidrBlock: aws.String(cidr),
+								},
+							}},
+						}
+					},
 					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
 						return awsec2.ModifyVpcAttributeRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
 						}
 					},
 				},
-				cr: vpc(),
+				cr: vpc(withSpec(v1beta1.VPCParameters{
+					EnableDNSSupport: &enableDNS,
+				})),
 			},
 			want: want{
-				cr:     vpc(withExternalName(vpcID)),
+				cr: vpc(withExternalName(vpcID),
+					withSpec(v1beta1.VPCParameters{
+						EnableDNSSupport: &enableDNS,
+					})),
 				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
