@@ -124,16 +124,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	// update the CRD spec for any new values from provider
 	current := cr.Spec.ForProvider.DeepCopy()
-	ec2.LateInitializeVPC(&cr.Spec.ForProvider, &observed)
-
-	switch observed.State {
-	case awsec2.VpcStateAvailable:
-		cr.SetConditions(xpv1.Available())
-	case awsec2.VpcStatePending:
-		cr.SetConditions(xpv1.Creating())
-	}
-
-	cr.Status.AtProvider = ec2.GenerateVpcObservation(observed)
 
 	o := awsec2.DescribeVpcAttributeOutput{}
 
@@ -158,6 +148,17 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			o.EnableDnsSupport = r.EnableDnsSupport
 		}
 	}
+
+	ec2.LateInitializeVPC(&cr.Spec.ForProvider, &observed, &o)
+
+	switch observed.State {
+	case awsec2.VpcStateAvailable:
+		cr.SetConditions(xpv1.Available())
+	case awsec2.VpcStatePending:
+		cr.SetConditions(xpv1.Creating())
+	}
+
+	cr.Status.AtProvider = ec2.GenerateVpcObservation(observed)
 
 	return managed.ExternalObservation{
 		ResourceExists:          true,
@@ -191,17 +192,22 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	for _, input := range []*awsec2.ModifyVpcAttributeInput{
-		{
+	if cr.Spec.ForProvider.EnableDNSSupport != nil {
+		modifyInput := &awsec2.ModifyVpcAttributeInput{
 			VpcId:            aws.String(meta.GetExternalName(cr)),
 			EnableDnsSupport: &awsec2.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableDNSSupport},
-		},
-		{
+		}
+		if _, err := e.client.ModifyVpcAttributeRequest(modifyInput).Send(ctx); err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyVPCAttributes)
+		}
+	}
+
+	if cr.Spec.ForProvider.EnableDNSHostNames != nil {
+		modifyInput := &awsec2.ModifyVpcAttributeInput{
 			VpcId:              aws.String(meta.GetExternalName(cr)),
 			EnableDnsHostnames: &awsec2.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableDNSHostNames},
-		},
-	} {
-		if _, err := e.client.ModifyVpcAttributeRequest(input).Send(ctx); err != nil {
+		}
+		if _, err := e.client.ModifyVpcAttributeRequest(modifyInput).Send(ctx); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyVPCAttributes)
 		}
 	}
