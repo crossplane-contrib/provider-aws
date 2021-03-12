@@ -6,10 +6,10 @@ spec:
   forProvider:
     region: eu-central-1
     name: glue-job
-    role: "arn:aws:iam::id:role/aws-glue"
+    role: "arn:aws:iam::<aws-id>:role/<iam-role-name>"
     command: 
       name: "test.py"
       pythonVersion: "3"
-      scriptLocation: "s3://s3-bucket-example-eu-central-1/scripts"
+      scriptLocation: "s3://<s3-bucket>-eu-central-1/scripts"
   providerConfigRef:
     name: default

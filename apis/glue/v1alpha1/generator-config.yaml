@@ -1,6 +1,6 @@
 ignore:
   resource_names:
-    - Classifier
+    - Classifier 
     - Connection
     - Crawler
     - Database
@@ -10,7 +10,6 @@ ignore:
     - Registry
     - Schema
     - Script
-    - SecurityConfiguration
     - Table
     - Trigger
     - UserDefinedFunction
@@ -18,6 +17,11 @@ ignore:
     - Partition
 resources:
   Job:
+    exceptions:
+      errors:
+        404:
+          code: EntityNotFoundException
+  SecurityConfiguration:
     exceptions:
       errors:
         404:

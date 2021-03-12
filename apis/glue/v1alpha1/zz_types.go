@@ -58,6 +58,12 @@ type CatalogTarget struct {
 	DatabaseName *string `json:"databaseName,omitempty"`
 }
 
+type CloudWatchEncryption struct {
+	CloudWatchEncryptionMode *string `json:"cloudWatchEncryptionMode,omitempty"`
+
+	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
+}
+
 type Column struct {
 	Name *string `json:"name,omitempty"`
 }
@@ -220,6 +226,15 @@ type EncryptionAtRest struct {
 	SSEAWSKMSKeyID *string `json:"sseAWSKMSKeyID,omitempty"`
 }
 
+type EncryptionConfiguration struct {
+	// Specifies how Amazon CloudWatch data should be encrypted.
+	CloudWatchEncryption *CloudWatchEncryption `json:"cloudWatchEncryption,omitempty"`
+	// Specifies how job bookmark data should be encrypted.
+	JobBookmarksEncryption *JobBookmarksEncryption `json:"jobBookmarksEncryption,omitempty"`
+
+	S3Encryption []*S3Encryption `json:"s3Encryption,omitempty"`
+}
+
 type ErrorDetail struct {
 	ErrorCode *string `json:"errorCode,omitempty"`
 
@@ -256,6 +271,12 @@ type JobBookmarkEntry struct {
 	Run *int64 `json:"run,omitempty"`
 
 	Version *int64 `json:"version,omitempty"`
+}
+
+type JobBookmarksEncryption struct {
+	JobBookmarksEncryptionMode *string `json:"jobBookmarksEncryptionMode,omitempty"`
+
+	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
 }
 
 type JobCommand struct {
@@ -454,12 +475,20 @@ type RegistryListItem struct {
 	Description *string `json:"description,omitempty"`
 }
 
+type S3Encryption struct {
+	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
+
+	S3EncryptionMode *string `json:"s3EncryptionMode,omitempty"`
+}
+
 type SchemaListItem struct {
 	Description *string `json:"description,omitempty"`
 }
 
-type SecurityConfiguration struct {
+type SecurityConfiguration_SDK struct {
 	CreatedTimeStamp *metav1.Time `json:"createdTimeStamp,omitempty"`
+	// Specifies an encryption configuration.
+	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 }

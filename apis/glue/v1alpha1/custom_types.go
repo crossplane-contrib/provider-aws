@@ -17,5 +17,7 @@ limitations under the License.
 package v1alpha1
 
 // CustomJobParameters contains the additional fields for JobParameters.
-type CustomJobParameters struct {
-}
+type CustomJobParameters struct{}
+
+// CustomSecurityConfigurationParameters contains the additional fields for SecurityConfigurationParameters
+type CustomSecurityConfigurationParameters struct{}

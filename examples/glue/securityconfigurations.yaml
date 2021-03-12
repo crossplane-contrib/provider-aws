@@ -1,0 +1,19 @@
+apiVersion: glue.aws.crossplane.io/v1alpha1
+kind: SecurityConfiguration
+metadata:
+  name: glue-securityconfiguration
+spec:
+  forProvider:
+    name: glue-securityconfiguration
+    region: eu-central-1
+    encryptionConfiguration:
+      cloudWatchEncryption:
+        cloudWatchEncryptionMode: SSE-KMS
+        kmsKeyARN: arn:aws:kms:eu-central-1:<aws-id>:key/<kms-key-name>
+      jobBookmarksEncryption:
+        jobBookmarksEncryptionMode: DISABLED
+      s3Encryption:
+      - kmsKeyARN: arn:aws:kms:eu-central-1:<aws-id>:key/<kms-key-name>
+        s3EncryptionMode: SSE-KMS
+  providerConfigRef:
+    name: default
