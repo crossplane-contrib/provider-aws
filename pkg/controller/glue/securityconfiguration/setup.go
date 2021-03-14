@@ -18,6 +18,7 @@ import (
 
 	svcsdk "github.com/aws/aws-sdk-go/service/glue"
 
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -41,6 +42,7 @@ func SetupSecurityConfiguration(mgr ctrl.Manager, l logging.Logger, limiter work
 			e.postCreate = postCreate
 			e.preDelete = preDelete
 			e.preObserve = preObserve
+			e.postObserve = postObserve
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
@@ -65,6 +67,14 @@ func preDelete(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *sv
 func preObserve(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *svcsdk.GetSecurityConfigurationInput) error {
 	obj.Name = awsclients.String(meta.GetExternalName(cr))
 	return nil
+}
+
+func postObserve(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *svcsdk.GetSecurityConfigurationOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	if err != nil {
+		return managed.ExternalObservation{}, err
+	}
+	cr.SetConditions(xpv1.Available())
+	return obs, nil
 }
 
 func postCreate(_ context.Context, cr *svcapitypes.SecurityConfiguration, obj *svcsdk.CreateSecurityConfigurationOutput, _ managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
