@@ -207,7 +207,7 @@ func (mg *NATGateway) ResolveReferences(ctx context.Context, c client.Reader) er
 	mg.Spec.ForProvider.SubnetID = aws.String(subnetIDResponse.ResolvedValue)
 	mg.Spec.ForProvider.SubnetIDRef = subnetIDResponse.ResolvedReference
 
-	/*// // Resolve spec.elasticIp
+	// // Resolve spec.allocationID
 	AllocationIDResponse, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: aws.StringValue(mg.Spec.ForProvider.AllocationID),
 		Reference:    mg.Spec.ForProvider.AllocationIDRef,
@@ -220,6 +220,6 @@ func (mg *NATGateway) ResolveReferences(ctx context.Context, c client.Reader) er
 	}
 	mg.Spec.ForProvider.AllocationID = aws.String(AllocationIDResponse.ResolvedValue)
 	mg.Spec.ForProvider.AllocationIDRef = AllocationIDResponse.ResolvedReference
-	*/
+
 	return nil
 }
