@@ -1,7 +1,6 @@
 ignore:
   resource_names:
     - Classifier 
-    - Connection
     - Crawler
     - Database
     - DevEndpoint
@@ -22,6 +21,11 @@ resources:
         404:
           code: EntityNotFoundException
   SecurityConfiguration:
+    exceptions:
+      errors:
+        404:
+          code: EntityNotFoundException
+  Connection:
     exceptions:
       errors:
         404:

@@ -60,6 +60,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elb"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elbattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/glue/connection"
 	"github.com/crossplane/provider-aws/pkg/controller/glue/job"
 	"github.com/crossplane/provider-aws/pkg/controller/glue/securityconfiguration"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamaccesskey"
@@ -152,6 +153,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		dbcluster.SetupDBCluster,
 		job.SetupJob,
 		securityconfiguration.SetupSecurityConfiguration,
+		connection.SetupConnection,
 	} {
 		if err := setup(mgr, l, rl); err != nil {
 			return err

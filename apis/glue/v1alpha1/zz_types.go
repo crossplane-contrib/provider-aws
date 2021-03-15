@@ -51,6 +51,10 @@ type CatalogEntry struct {
 }
 
 type CatalogImportStatus struct {
+	ImportCompleted *bool `json:"importCompleted,omitempty"`
+
+	ImportTime *metav1.Time `json:"importTime,omitempty"`
+
 	ImportedBy *string `json:"importedBy,omitempty"`
 }
 
@@ -62,6 +66,10 @@ type CloudWatchEncryption struct {
 	CloudWatchEncryptionMode *string `json:"cloudWatchEncryptionMode,omitempty"`
 
 	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
+}
+
+type CodeGenNodeArg struct {
+	Param *bool `json:"param,omitempty"`
 }
 
 type Column struct {
@@ -77,6 +85,8 @@ type ColumnImportance struct {
 }
 
 type ColumnStatistics struct {
+	AnalyzedTime *metav1.Time `json:"analyzedTime,omitempty"`
+
 	ColumnName *string `json:"columnName,omitempty"`
 }
 
@@ -86,22 +96,44 @@ type Condition struct {
 	JobName *string `json:"jobName,omitempty"`
 }
 
-type Connection struct {
-	Description *string `json:"description,omitempty"`
-
-	LastUpdatedBy *string `json:"lastUpdatedBy,omitempty"`
-
-	Name *string `json:"name,omitempty"`
-}
-
 type ConnectionInput struct {
+	ConnectionProperties map[string]*string `json:"connectionProperties,omitempty"`
+
+	ConnectionType *string `json:"connectionType,omitempty"`
+
 	Description *string `json:"description,omitempty"`
 
+	MatchCriteria []*string `json:"matchCriteria,omitempty"`
+
 	Name *string `json:"name,omitempty"`
+	// Specifies the physical requirements for a connection.
+	PhysicalConnectionRequirements *PhysicalConnectionRequirements `json:"physicalConnectionRequirements,omitempty"`
 }
 
 type ConnectionPasswordEncryption struct {
 	AWSKMSKeyID *string `json:"awsKMSKeyID,omitempty"`
+
+	ReturnConnectionPasswordEncrypted *bool `json:"returnConnectionPasswordEncrypted,omitempty"`
+}
+
+type Connection_SDK struct {
+	ConnectionProperties map[string]*string `json:"connectionProperties,omitempty"`
+
+	ConnectionType *string `json:"connectionType,omitempty"`
+
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	LastUpdatedBy *string `json:"lastUpdatedBy,omitempty"`
+
+	LastUpdatedTime *metav1.Time `json:"lastUpdatedTime,omitempty"`
+
+	MatchCriteria []*string `json:"matchCriteria,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+	// Specifies the physical requirements for a connection.
+	PhysicalConnectionRequirements *PhysicalConnectionRequirements `json:"physicalConnectionRequirements,omitempty"`
 }
 
 type ConnectionsList struct {
@@ -117,13 +149,19 @@ type Crawl struct {
 }
 
 type Crawler struct {
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
 	Description *string `json:"description,omitempty"`
+
+	LastUpdated *metav1.Time `json:"lastUpdated,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 }
 
 type CrawlerMetrics struct {
 	CrawlerName *string `json:"crawlerName,omitempty"`
+
+	StillEstimating *bool `json:"stillEstimating,omitempty"`
 }
 
 type CreateCsvClassifierRequest struct {
@@ -143,16 +181,26 @@ type CreateXMLClassifierRequest struct {
 }
 
 type CsvClassifier struct {
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	LastUpdated *metav1.Time `json:"lastUpdated,omitempty"`
+
 	Name *string `json:"name,omitempty"`
 }
 
 type Database struct {
+	CatalogID *string `json:"catalogID,omitempty"`
+
+	CreateTime *metav1.Time `json:"createTime,omitempty"`
+
 	Description *string `json:"description,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 }
 
 type DatabaseIdentifier struct {
+	CatalogID *string `json:"catalogID,omitempty"`
+
 	DatabaseName *string `json:"databaseName,omitempty"`
 }
 
@@ -160,6 +208,12 @@ type DatabaseInput struct {
 	Description *string `json:"description,omitempty"`
 
 	Name *string `json:"name,omitempty"`
+}
+
+type DateColumnStatisticsData struct {
+	MaximumValue *metav1.Time `json:"maximumValue,omitempty"`
+
+	MinimumValue *metav1.Time `json:"minimumValue,omitempty"`
 }
 
 type DevEndpoint struct {
@@ -253,7 +307,23 @@ type FindMatchesTaskRunProperties struct {
 	JobName *string `json:"jobName,omitempty"`
 }
 
+type GetConnectionsFilter struct {
+	ConnectionType *string `json:"connectionType,omitempty"`
+
+	MatchCriteria []*string `json:"matchCriteria,omitempty"`
+}
+
+type GluePolicy struct {
+	CreateTime *metav1.Time `json:"createTime,omitempty"`
+
+	UpdateTime *metav1.Time `json:"updateTime,omitempty"`
+}
+
 type GrokClassifier struct {
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	LastUpdated *metav1.Time `json:"lastUpdated,omitempty"`
+
 	Name *string `json:"name,omitempty"`
 }
 
@@ -262,6 +332,10 @@ type ImportLabelsTaskRunProperties struct {
 }
 
 type JSONClassifier struct {
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	LastUpdated *metav1.Time `json:"lastUpdated,omitempty"`
+
 	Name *string `json:"name,omitempty"`
 }
 
@@ -407,12 +481,18 @@ type LabelingSetGenerationTaskRunProperties struct {
 
 type LastCrawlInfo struct {
 	ErrorMessage *string `json:"errorMessage,omitempty"`
+
+	StartTime *metav1.Time `json:"startTime,omitempty"`
 }
 
 type MLTransform struct {
+	CreatedOn *metav1.Time `json:"createdOn,omitempty"`
+
 	Description *string `json:"description,omitempty"`
 
 	GlueVersion *string `json:"glueVersion,omitempty"`
+
+	LastModifiedOn *metav1.Time `json:"lastModifiedOn,omitempty"`
 
 	MaxCapacity *float64 `json:"maxCapacity,omitempty"`
 
@@ -448,7 +528,15 @@ type Order struct {
 }
 
 type Partition struct {
+	CatalogID *string `json:"catalogID,omitempty"`
+
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
 	DatabaseName *string `json:"databaseName,omitempty"`
+
+	LastAccessTime *metav1.Time `json:"lastAccessTime,omitempty"`
+
+	LastAnalyzedTime *metav1.Time `json:"lastAnalyzedTime,omitempty"`
 
 	TableName *string `json:"tableName,omitempty"`
 }
@@ -461,14 +549,28 @@ type PartitionIndexDescriptor struct {
 	IndexName *string `json:"indexName,omitempty"`
 }
 
+type PartitionInput struct {
+	LastAccessTime *metav1.Time `json:"lastAccessTime,omitempty"`
+
+	LastAnalyzedTime *metav1.Time `json:"lastAnalyzedTime,omitempty"`
+}
+
 type PhysicalConnectionRequirements struct {
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
+
+	SecurityGroupIDList []*string `json:"securityGroupIDList,omitempty"`
 
 	SubnetID *string `json:"subnetID,omitempty"`
 }
 
 type Predecessor struct {
 	JobName *string `json:"jobName,omitempty"`
+}
+
+type PropertyPredicate struct {
+	Key *string `json:"key,omitempty"`
+
+	Value *string `json:"value,omitempty"`
 }
 
 type RegistryListItem struct {
@@ -499,6 +601,16 @@ type SerDeInfo struct {
 	SerializationLibrary *string `json:"serializationLibrary,omitempty"`
 }
 
+type SortCriterion struct {
+	FieldName *string `json:"fieldName,omitempty"`
+}
+
+type StorageDescriptor struct {
+	Compressed *bool `json:"compressed,omitempty"`
+
+	StoredAsSubDirectories *bool `json:"storedAsSubDirectories,omitempty"`
+}
+
 type Table struct {
 	CatalogID *string `json:"catalogID,omitempty"`
 
@@ -510,15 +622,27 @@ type Table struct {
 }
 
 type TableData struct {
+	CatalogID *string `json:"catalogID,omitempty"`
+
+	CreateTime *metav1.Time `json:"createTime,omitempty"`
+
 	CreatedBy *string `json:"createdBy,omitempty"`
 
 	DatabaseName *string `json:"databaseName,omitempty"`
 
 	Description *string `json:"description,omitempty"`
 
+	IsRegisteredWithLakeFormation *bool `json:"isRegisteredWithLakeFormation,omitempty"`
+
+	LastAccessTime *metav1.Time `json:"lastAccessTime,omitempty"`
+
+	LastAnalyzedTime *metav1.Time `json:"lastAnalyzedTime,omitempty"`
+
 	Name *string `json:"name,omitempty"`
 
 	Owner *string `json:"owner,omitempty"`
+
+	UpdateTime *metav1.Time `json:"updateTime,omitempty"`
 }
 
 type TableError struct {
@@ -526,6 +650,8 @@ type TableError struct {
 }
 
 type TableIdentifier struct {
+	CatalogID *string `json:"catalogID,omitempty"`
+
 	DatabaseName *string `json:"databaseName,omitempty"`
 
 	Name *string `json:"name,omitempty"`
@@ -533,6 +659,10 @@ type TableIdentifier struct {
 
 type TableInput struct {
 	Description *string `json:"description,omitempty"`
+
+	LastAccessTime *metav1.Time `json:"lastAccessTime,omitempty"`
+
+	LastAnalyzedTime *metav1.Time `json:"lastAnalyzedTime,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 
@@ -544,9 +674,21 @@ type TableVersionError struct {
 }
 
 type TaskRun struct {
+	CompletedOn *metav1.Time `json:"completedOn,omitempty"`
+
 	ErrorString *string `json:"errorString,omitempty"`
 
+	LastModifiedOn *metav1.Time `json:"lastModifiedOn,omitempty"`
+
 	LogGroupName *string `json:"logGroupName,omitempty"`
+
+	StartedOn *metav1.Time `json:"startedOn,omitempty"`
+}
+
+type TaskRunFilterCriteria struct {
+	StartedAfter *metav1.Time `json:"startedAfter,omitempty"`
+
+	StartedBefore *metav1.Time `json:"startedBefore,omitempty"`
 }
 
 type TransformEncryption struct {
@@ -554,7 +696,15 @@ type TransformEncryption struct {
 }
 
 type TransformFilterCriteria struct {
+	CreatedAfter *metav1.Time `json:"createdAfter,omitempty"`
+
+	CreatedBefore *metav1.Time `json:"createdBefore,omitempty"`
+
 	GlueVersion *string `json:"glueVersion,omitempty"`
+
+	LastModifiedAfter *metav1.Time `json:"lastModifiedAfter,omitempty"`
+
+	LastModifiedBefore *metav1.Time `json:"lastModifiedBefore,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 }
@@ -594,7 +744,11 @@ type UpdateXMLClassifierRequest struct {
 }
 
 type UserDefinedFunction struct {
+	CatalogID *string `json:"catalogID,omitempty"`
+
 	ClassName *string `json:"className,omitempty"`
+
+	CreateTime *metav1.Time `json:"createTime,omitempty"`
 
 	DatabaseName *string `json:"databaseName,omitempty"`
 
@@ -646,5 +800,9 @@ type WorkflowRunStatistics struct {
 }
 
 type XMLClassifier struct {
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	LastUpdated *metav1.Time `json:"lastUpdated,omitempty"`
+
 	Name *string `json:"name,omitempty"`
 }

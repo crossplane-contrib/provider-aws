@@ -21,3 +21,6 @@ type CustomJobParameters struct{}
 
 // CustomSecurityConfigurationParameters contains the additional fields for SecurityConfigurationParameters
 type CustomSecurityConfigurationParameters struct{}
+
+// CustomConnectionParameters contains the additional fields for ConnectionParameters
+type CustomConnectionParameters struct{}
