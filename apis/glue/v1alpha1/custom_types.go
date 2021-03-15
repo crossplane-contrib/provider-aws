@@ -24,3 +24,6 @@ type CustomSecurityConfigurationParameters struct{}
 
 // CustomConnectionParameters contains the additional fields for ConnectionParameters
 type CustomConnectionParameters struct{}
+
+// CustomDatabaseParameters contains the additional fields for DatabaseParameters
+type CustomDatabaseParameters struct{}

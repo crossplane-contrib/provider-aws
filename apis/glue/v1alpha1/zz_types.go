@@ -74,6 +74,8 @@ type CodeGenNodeArg struct {
 
 type Column struct {
 	Name *string `json:"name,omitempty"`
+
+	Parameters map[string]*string `json:"parameters,omitempty"`
 }
 
 type ColumnError struct {
@@ -188,14 +190,8 @@ type CsvClassifier struct {
 	Name *string `json:"name,omitempty"`
 }
 
-type Database struct {
-	CatalogID *string `json:"catalogID,omitempty"`
-
-	CreateTime *metav1.Time `json:"createTime,omitempty"`
-
-	Description *string `json:"description,omitempty"`
-
-	Name *string `json:"name,omitempty"`
+type DataLakePrincipal struct {
+	DataLakePrincipalIdentifier *string `json:"dataLakePrincipalIdentifier,omitempty"`
 }
 
 type DatabaseIdentifier struct {
@@ -205,9 +201,35 @@ type DatabaseIdentifier struct {
 }
 
 type DatabaseInput struct {
+	CreateTableDefaultPermissions []*PrincipalPermissions `json:"createTableDefaultPermissions,omitempty"`
+
 	Description *string `json:"description,omitempty"`
 
+	LocationURI *string `json:"locationURI,omitempty"`
+
 	Name *string `json:"name,omitempty"`
+
+	Parameters map[string]*string `json:"parameters,omitempty"`
+	// A structure that describes a target database for resource linking.
+	TargetDatabase *DatabaseIdentifier `json:"targetDatabase,omitempty"`
+}
+
+type Database_SDK struct {
+	CatalogID *string `json:"catalogID,omitempty"`
+
+	CreateTableDefaultPermissions []*PrincipalPermissions `json:"createTableDefaultPermissions,omitempty"`
+
+	CreateTime *metav1.Time `json:"createTime,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+
+	LocationURI *string `json:"locationURI,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	Parameters map[string]*string `json:"parameters,omitempty"`
+	// A structure that describes a target database for resource linking.
+	TargetDatabase *DatabaseIdentifier `json:"targetDatabase,omitempty"`
 }
 
 type DateColumnStatisticsData struct {
@@ -538,6 +560,8 @@ type Partition struct {
 
 	LastAnalyzedTime *metav1.Time `json:"lastAnalyzedTime,omitempty"`
 
+	Parameters map[string]*string `json:"parameters,omitempty"`
+
 	TableName *string `json:"tableName,omitempty"`
 }
 
@@ -553,6 +577,8 @@ type PartitionInput struct {
 	LastAccessTime *metav1.Time `json:"lastAccessTime,omitempty"`
 
 	LastAnalyzedTime *metav1.Time `json:"lastAnalyzedTime,omitempty"`
+
+	Parameters map[string]*string `json:"parameters,omitempty"`
 }
 
 type PhysicalConnectionRequirements struct {
@@ -567,6 +593,12 @@ type Predecessor struct {
 	JobName *string `json:"jobName,omitempty"`
 }
 
+type PrincipalPermissions struct {
+	Permissions []*string `json:"permissions,omitempty"`
+	// The AWS Lake Formation principal.
+	Principal *DataLakePrincipal `json:"principal,omitempty"`
+}
+
 type PropertyPredicate struct {
 	Key *string `json:"key,omitempty"`
 
@@ -575,6 +607,10 @@ type PropertyPredicate struct {
 
 type RegistryListItem struct {
 	Description *string `json:"description,omitempty"`
+}
+
+type ResourceURI struct {
+	URI *string `json:"uri,omitempty"`
 }
 
 type S3Encryption struct {
@@ -598,6 +634,8 @@ type SecurityConfiguration_SDK struct {
 type SerDeInfo struct {
 	Name *string `json:"name,omitempty"`
 
+	Parameters map[string]*string `json:"parameters,omitempty"`
+
 	SerializationLibrary *string `json:"serializationLibrary,omitempty"`
 }
 
@@ -607,6 +645,8 @@ type SortCriterion struct {
 
 type StorageDescriptor struct {
 	Compressed *bool `json:"compressed,omitempty"`
+
+	Parameters map[string]*string `json:"parameters,omitempty"`
 
 	StoredAsSubDirectories *bool `json:"storedAsSubDirectories,omitempty"`
 }
@@ -642,6 +682,8 @@ type TableData struct {
 
 	Owner *string `json:"owner,omitempty"`
 
+	Parameters map[string]*string `json:"parameters,omitempty"`
+
 	UpdateTime *metav1.Time `json:"updateTime,omitempty"`
 }
 
@@ -667,6 +709,8 @@ type TableInput struct {
 	Name *string `json:"name,omitempty"`
 
 	Owner *string `json:"owner,omitempty"`
+
+	Parameters map[string]*string `json:"parameters,omitempty"`
 }
 
 type TableVersionError struct {

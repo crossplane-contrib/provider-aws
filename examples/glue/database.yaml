@@ -1,0 +1,11 @@
+apiVersion: glue.aws.crossplane.io/v1alpha1
+kind: Database
+metadata:
+  name: glue-database
+spec:
+  forProvider:
+    region: eu-central-1
+    databaseInput: 
+      name: "glue-database"
+  providerConfigRef:
+    name: default

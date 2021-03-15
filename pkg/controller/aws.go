@@ -60,9 +60,6 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elb"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elbattachment"
-	"github.com/crossplane/provider-aws/pkg/controller/glue/connection"
-	"github.com/crossplane/provider-aws/pkg/controller/glue/job"
-	"github.com/crossplane/provider-aws/pkg/controller/glue/securityconfiguration"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamaccesskey"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgrouppolicyattachment"
@@ -85,6 +82,11 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/activity"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/statemachine"
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
+
+	glueconnection "github.com/crossplane/provider-aws/pkg/controller/glue/connection"
+	glueDatabase "github.com/crossplane/provider-aws/pkg/controller/glue/database"
+	gluejob "github.com/crossplane/provider-aws/pkg/controller/glue/job"
+	gluesecurityconfiguration "github.com/crossplane/provider-aws/pkg/controller/glue/securityconfiguration"
 )
 
 // Setup creates all AWS controllers with the supplied logger and adds them to
@@ -151,9 +153,10 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		key.SetupKey,
 		filesystem.SetupFileSystem,
 		dbcluster.SetupDBCluster,
-		job.SetupJob,
-		securityconfiguration.SetupSecurityConfiguration,
-		connection.SetupConnection,
+		gluejob.SetupJob,
+		gluesecurityconfiguration.SetupSecurityConfiguration,
+		glueconnection.SetupConnection,
+		glueDatabase.SetupDatabase,
 	} {
 		if err := setup(mgr, l, rl); err != nil {
 			return err

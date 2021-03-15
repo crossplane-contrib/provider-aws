@@ -5,7 +5,6 @@ metadata:
 spec:
   forProvider:
     region: eu-central-1
-    catalogID: "<aws-id>"
     connectionInput: 
       name: "glue-connection-2"
       connectionType: "JDBC"

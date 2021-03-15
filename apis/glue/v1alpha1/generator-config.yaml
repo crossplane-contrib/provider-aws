@@ -2,7 +2,6 @@ ignore:
   resource_names:
     - Classifier 
     - Crawler
-    - Database
     - DevEndpoint
     - MLTransform
     - PartitionIndex
@@ -26,6 +25,11 @@ resources:
         404:
           code: EntityNotFoundException
   Connection:
+    exceptions:
+      errors:
+        404:
+          code: EntityNotFoundException
+  Database:
     exceptions:
       errors:
         404:
