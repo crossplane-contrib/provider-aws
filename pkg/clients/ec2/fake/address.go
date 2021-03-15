@@ -23,10 +23,10 @@ import (
 )
 
 // this ensures that the mock implements the client interface
-var _ clientset.ElasticIPClient = (*MockElasticIPClient)(nil)
+var _ clientset.AddressClient = (*MockAddressClient)(nil)
 
-// MockElasticIPClient is a type that implements all the methods for ElasticIPClient interface
-type MockElasticIPClient struct {
+// MockAddressClient is a type that implements all the methods for AddressClient interface
+type MockAddressClient struct {
 	MockAllocate          func(*ec2.AllocateAddressInput) ec2.AllocateAddressRequest
 	MockRelease           func(*ec2.ReleaseAddressInput) ec2.ReleaseAddressRequest
 	MockDescribe          func(*ec2.DescribeAddressesInput) ec2.DescribeAddressesRequest
@@ -34,21 +34,21 @@ type MockElasticIPClient struct {
 }
 
 // AllocateAddressRequest mocks AllocateAddressRequest method
-func (m *MockElasticIPClient) AllocateAddressRequest(input *ec2.AllocateAddressInput) ec2.AllocateAddressRequest {
+func (m *MockAddressClient) AllocateAddressRequest(input *ec2.AllocateAddressInput) ec2.AllocateAddressRequest {
 	return m.MockAllocate(input)
 }
 
 // ReleaseAddressRequest mocks ReleaseAddressRequest method
-func (m *MockElasticIPClient) ReleaseAddressRequest(input *ec2.ReleaseAddressInput) ec2.ReleaseAddressRequest {
+func (m *MockAddressClient) ReleaseAddressRequest(input *ec2.ReleaseAddressInput) ec2.ReleaseAddressRequest {
 	return m.MockRelease(input)
 }
 
 // DescribeAddressesRequest mocks DescribeAddressesRequest method
-func (m *MockElasticIPClient) DescribeAddressesRequest(input *ec2.DescribeAddressesInput) ec2.DescribeAddressesRequest {
+func (m *MockAddressClient) DescribeAddressesRequest(input *ec2.DescribeAddressesInput) ec2.DescribeAddressesRequest {
 	return m.MockDescribe(input)
 }
 
 // CreateTagsRequest mocks CreateTagsRequest method
-func (m *MockElasticIPClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
+func (m *MockAddressClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
 	return m.MockCreateTagsRequest(input)
 }

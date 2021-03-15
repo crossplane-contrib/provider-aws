@@ -46,7 +46,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/backup"
 	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/globaltable"
 	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/table"
-	"github.com/crossplane/provider-aws/pkg/controller/ec2/elasticip"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/address"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/internetgateway"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/natgateway"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/routetable"
@@ -125,7 +125,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		snssubscription.SetupSubscription,
 		queue.SetupQueue,
 		redshift.SetupCluster,
-		elasticip.SetupElasticIP,
+		address.SetupAddress,
 		repository.SetupRepository,
 		api.SetupAPI,
 		stage.SetupStage,

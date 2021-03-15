@@ -26,8 +26,6 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-
-	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 )
 
 // SecurityGroupName returns the spec.groupName of a SecurityGroup.
@@ -209,19 +207,19 @@ func (mg *NATGateway) ResolveReferences(ctx context.Context, c client.Reader) er
 	mg.Spec.ForProvider.SubnetID = aws.String(subnetIDResponse.ResolvedValue)
 	mg.Spec.ForProvider.SubnetIDRef = subnetIDResponse.ResolvedReference
 
-	// // Resolve spec.elasticIp
-	AllocationIDRespone, err := r.Resolve(ctx, reference.ResolutionRequest{
+	/*// // Resolve spec.elasticIp
+	AllocationIDResponse, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: aws.StringValue(mg.Spec.ForProvider.AllocationID),
 		Reference:    mg.Spec.ForProvider.AllocationIDRef,
 		Selector:     mg.Spec.ForProvider.AllocationIDSelector,
-		To:           reference.To{Managed: &v1alpha1.ElasticIP{}, List: &v1alpha1.ElasticIPList{}},
+		To:           reference.To{Managed: &Address{}, List: &AddressList{}},
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
 		return err
 	}
-	mg.Spec.ForProvider.AllocationID = aws.String(AllocationIDRespone.ResolvedValue)
-	mg.Spec.ForProvider.AllocationIDRef = AllocationIDRespone.ResolvedReference
-
+	mg.Spec.ForProvider.AllocationID = aws.String(AllocationIDResponse.ResolvedValue)
+	mg.Spec.ForProvider.AllocationIDRef = AllocationIDResponse.ResolvedReference
+	*/
 	return nil
 }
