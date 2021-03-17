@@ -10,7 +10,7 @@ spec:
       quoteSymbol: "\""
       name: "glue-classifier"
       containsHeader: "PRESENT"
-      disableValueTrimming: false 
-      allowSingleColumn: true
+      disableValueTrimming: true 
+      allowSingleColumn: false
   providerConfigRef:
     name: default
