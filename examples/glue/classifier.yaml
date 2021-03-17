@@ -1,0 +1,16 @@
+apiVersion: glue.aws.crossplane.io/v1alpha1
+kind: Classifier
+metadata:
+  name: glue-classifier
+spec:
+  forProvider:
+    region: eu-central-1
+    csvClassifier:
+      delimiter: ","
+      quoteSymbol: "\""
+      name: "glue-classifier"
+      containsHeader: "PRESENT"
+      disableValueTrimming: false 
+      allowSingleColumn: true
+  providerConfigRef:
+    name: default

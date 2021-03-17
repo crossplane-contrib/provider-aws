@@ -60,6 +60,19 @@ type CatalogImportStatus struct {
 
 type CatalogTarget struct {
 	DatabaseName *string `json:"databaseName,omitempty"`
+
+	Tables []*string `json:"tables,omitempty"`
+}
+
+type Classifier_SDK struct {
+	// A classifier for custom CSV content.
+	CsvClassifier *CsvClassifier `json:"csvClassifier,omitempty"`
+	// A classifier that uses grok patterns.
+	GrokClassifier *GrokClassifier `json:"grokClassifier,omitempty"`
+	// A classifier for JSON content.
+	JSONClassifier *JSONClassifier `json:"jsonClassifier,omitempty"`
+	// A classifier for XML content.
+	XMLClassifier *XMLClassifier `json:"xmlClassifier,omitempty"`
 }
 
 type CloudWatchEncryption struct {
@@ -147,17 +160,11 @@ type Crawl struct {
 
 	ErrorMessage *string `json:"errorMessage,omitempty"`
 
+	LogGroup *string `json:"logGroup,omitempty"`
+
+	LogStream *string `json:"logStream,omitempty"`
+
 	StartedOn *metav1.Time `json:"startedOn,omitempty"`
-}
-
-type Crawler struct {
-	CreationTime *metav1.Time `json:"creationTime,omitempty"`
-
-	Description *string `json:"description,omitempty"`
-
-	LastUpdated *metav1.Time `json:"lastUpdated,omitempty"`
-
-	Name *string `json:"name,omitempty"`
 }
 
 type CrawlerMetrics struct {
@@ -166,28 +173,122 @@ type CrawlerMetrics struct {
 	StillEstimating *bool `json:"stillEstimating,omitempty"`
 }
 
-type CreateCsvClassifierRequest struct {
+type CrawlerTargets struct {
+	CatalogTargets []*CatalogTarget `json:"catalogTargets,omitempty"`
+
+	DynamoDBTargets []*DynamoDBTarget `json:"dynamoDBTargets,omitempty"`
+
+	JdbcTargets []*JdbcTarget `json:"jdbcTargets,omitempty"`
+
+	MongoDBTargets []*MongoDBTarget `json:"mongoDBTargets,omitempty"`
+
+	S3Targets []*S3Target `json:"s3Targets,omitempty"`
+}
+
+type Crawler_SDK struct {
+	Classifiers []*string `json:"classifiers,omitempty"`
+
+	Configuration *string `json:"configuration,omitempty"`
+
+	CrawlElapsedTime *int64 `json:"crawlElapsedTime,omitempty"`
+
+	CrawlerSecurityConfiguration *string `json:"crawlerSecurityConfiguration,omitempty"`
+
+	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	DatabaseName *string `json:"databaseName,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+	// Status and error information about the most recent crawl.
+	LastCrawl *LastCrawlInfo `json:"lastCrawl,omitempty"`
+
+	LastUpdated *metav1.Time `json:"lastUpdated,omitempty"`
+	// Specifies data lineage configuration settings for the crawler.
+	LineageConfiguration *LineageConfiguration `json:"lineageConfiguration,omitempty"`
+
 	Name *string `json:"name,omitempty"`
+	// When crawling an Amazon S3 data source after the first crawl is complete,
+	// specifies whether to crawl the entire dataset again or to crawl only folders
+	// that were added since the last crawler run. For more information, see Incremental
+	// Crawls in AWS Glue (https://docs.aws.amazon.com/glue/latest/dg/incremental-crawls.html)
+	// in the developer guide.
+	RecrawlPolicy *RecrawlPolicy `json:"recrawlPolicy,omitempty"`
+
+	Role *string `json:"role,omitempty"`
+	// A scheduling object using a cron statement to schedule an event.
+	Schedule *Schedule `json:"schedule,omitempty"`
+	// A policy that specifies update and deletion behaviors for the crawler.
+	SchemaChangePolicy *SchemaChangePolicy `json:"schemaChangePolicy,omitempty"`
+
+	State *string `json:"state,omitempty"`
+
+	TablePrefix *string `json:"tablePrefix,omitempty"`
+	// Specifies data stores to crawl.
+	Targets *CrawlerTargets `json:"targets,omitempty"`
+
+	Version *int64 `json:"version,omitempty"`
+}
+
+type CreateCsvClassifierRequest struct {
+	AllowSingleColumn *bool `json:"allowSingleColumn,omitempty"`
+
+	ContainsHeader *string `json:"containsHeader,omitempty"`
+
+	Delimiter *string `json:"delimiter,omitempty"`
+
+	DisableValueTrimming *bool `json:"disableValueTrimming,omitempty"`
+
+	Header []*string `json:"header,omitempty"`
+
+	Name *string `json:"name,omitempty"`
+
+	QuoteSymbol *string `json:"quoteSymbol,omitempty"`
 }
 
 type CreateGrokClassifierRequest struct {
+	Classification *string `json:"classification,omitempty"`
+
+	CustomPatterns *string `json:"customPatterns,omitempty"`
+
+	GrokPattern *string `json:"grokPattern,omitempty"`
+
 	Name *string `json:"name,omitempty"`
 }
 
 type CreateJSONClassifierRequest struct {
+	JSONPath *string `json:"jsonPath,omitempty"`
+
 	Name *string `json:"name,omitempty"`
 }
 
 type CreateXMLClassifierRequest struct {
+	Classification *string `json:"classification,omitempty"`
+
 	Name *string `json:"name,omitempty"`
+
+	RowTag *string `json:"rowTag,omitempty"`
 }
 
 type CsvClassifier struct {
+	AllowSingleColumn *bool `json:"allowSingleColumn,omitempty"`
+
+	ContainsHeader *string `json:"containsHeader,omitempty"`
+
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	Delimiter *string `json:"delimiter,omitempty"`
+
+	DisableValueTrimming *bool `json:"disableValueTrimming,omitempty"`
+
+	Header []*string `json:"header,omitempty"`
 
 	LastUpdated *metav1.Time `json:"lastUpdated,omitempty"`
 
 	Name *string `json:"name,omitempty"`
+
+	QuoteSymbol *string `json:"quoteSymbol,omitempty"`
+
+	Version *int64 `json:"version,omitempty"`
 }
 
 type DataLakePrincipal struct {
@@ -289,6 +390,10 @@ type DevEndpointCustomLibraries struct {
 }
 
 type DynamoDBTarget struct {
+	Path *string `json:"path,omitempty"`
+
+	ScanAll *bool `json:"scanAll,omitempty"`
+
 	ScanRate *float64 `json:"scanRate,omitempty"`
 }
 
@@ -325,6 +430,10 @@ type ExportLabelsTaskRunProperties struct {
 	OutputS3Path *string `json:"outputS3Path,omitempty"`
 }
 
+type FindMatchesParameters struct {
+	EnforceProvidedLabels *bool `json:"enforceProvidedLabels,omitempty"`
+}
+
 type FindMatchesTaskRunProperties struct {
 	JobName *string `json:"jobName,omitempty"`
 }
@@ -342,11 +451,19 @@ type GluePolicy struct {
 }
 
 type GrokClassifier struct {
+	Classification *string `json:"classification,omitempty"`
+
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
+
+	CustomPatterns *string `json:"customPatterns,omitempty"`
+
+	GrokPattern *string `json:"grokPattern,omitempty"`
 
 	LastUpdated *metav1.Time `json:"lastUpdated,omitempty"`
 
 	Name *string `json:"name,omitempty"`
+
+	Version *int64 `json:"version,omitempty"`
 }
 
 type ImportLabelsTaskRunProperties struct {
@@ -356,9 +473,21 @@ type ImportLabelsTaskRunProperties struct {
 type JSONClassifier struct {
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
+	JSONPath *string `json:"jsonPath,omitempty"`
+
 	LastUpdated *metav1.Time `json:"lastUpdated,omitempty"`
 
 	Name *string `json:"name,omitempty"`
+
+	Version *int64 `json:"version,omitempty"`
+}
+
+type JdbcTarget struct {
+	ConnectionName *string `json:"connectionName,omitempty"`
+
+	Exclusions []*string `json:"exclusions,omitempty"`
+
+	Path *string `json:"path,omitempty"`
 }
 
 type JobBookmarkEntry struct {
@@ -504,7 +633,19 @@ type LabelingSetGenerationTaskRunProperties struct {
 type LastCrawlInfo struct {
 	ErrorMessage *string `json:"errorMessage,omitempty"`
 
+	LogGroup *string `json:"logGroup,omitempty"`
+
+	LogStream *string `json:"logStream,omitempty"`
+
+	MessagePrefix *string `json:"messagePrefix,omitempty"`
+
 	StartTime *metav1.Time `json:"startTime,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+}
+
+type LineageConfiguration struct {
+	CrawlerLineageSettings *string `json:"crawlerLineageSettings,omitempty"`
 }
 
 type MLTransform struct {
@@ -533,6 +674,14 @@ type MLTransform struct {
 
 type MLUserDataEncryption struct {
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
+}
+
+type MongoDBTarget struct {
+	ConnectionName *string `json:"connectionName,omitempty"`
+
+	Path *string `json:"path,omitempty"`
+
+	ScanAll *bool `json:"scanAll,omitempty"`
 }
 
 type Node struct {
@@ -605,6 +754,10 @@ type PropertyPredicate struct {
 	Value *string `json:"value,omitempty"`
 }
 
+type RecrawlPolicy struct {
+	RecrawlBehavior *string `json:"recrawlBehavior,omitempty"`
+}
+
 type RegistryListItem struct {
 	Description *string `json:"description,omitempty"`
 }
@@ -617,6 +770,26 @@ type S3Encryption struct {
 	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
 
 	S3EncryptionMode *string `json:"s3EncryptionMode,omitempty"`
+}
+
+type S3Target struct {
+	ConnectionName *string `json:"connectionName,omitempty"`
+
+	Exclusions []*string `json:"exclusions,omitempty"`
+
+	Path *string `json:"path,omitempty"`
+}
+
+type Schedule struct {
+	ScheduleExpression *string `json:"scheduleExpression,omitempty"`
+
+	State *string `json:"state,omitempty"`
+}
+
+type SchemaChangePolicy struct {
+	DeleteBehavior *string `json:"deleteBehavior,omitempty"`
+
+	UpdateBehavior *string `json:"updateBehavior,omitempty"`
 }
 
 type SchemaListItem struct {
@@ -772,19 +945,43 @@ type TriggerUpdate struct {
 }
 
 type UpdateCsvClassifierRequest struct {
+	AllowSingleColumn *bool `json:"allowSingleColumn,omitempty"`
+
+	ContainsHeader *string `json:"containsHeader,omitempty"`
+
+	Delimiter *string `json:"delimiter,omitempty"`
+
+	DisableValueTrimming *bool `json:"disableValueTrimming,omitempty"`
+
+	Header []*string `json:"header,omitempty"`
+
 	Name *string `json:"name,omitempty"`
+
+	QuoteSymbol *string `json:"quoteSymbol,omitempty"`
 }
 
 type UpdateGrokClassifierRequest struct {
+	Classification *string `json:"classification,omitempty"`
+
+	CustomPatterns *string `json:"customPatterns,omitempty"`
+
+	GrokPattern *string `json:"grokPattern,omitempty"`
+
 	Name *string `json:"name,omitempty"`
 }
 
 type UpdateJSONClassifierRequest struct {
+	JSONPath *string `json:"jsonPath,omitempty"`
+
 	Name *string `json:"name,omitempty"`
 }
 
 type UpdateXMLClassifierRequest struct {
+	Classification *string `json:"classification,omitempty"`
+
 	Name *string `json:"name,omitempty"`
+
+	RowTag *string `json:"rowTag,omitempty"`
 }
 
 type UserDefinedFunction struct {
@@ -844,9 +1041,15 @@ type WorkflowRunStatistics struct {
 }
 
 type XMLClassifier struct {
+	Classification *string `json:"classification,omitempty"`
+
 	CreationTime *metav1.Time `json:"creationTime,omitempty"`
 
 	LastUpdated *metav1.Time `json:"lastUpdated,omitempty"`
 
 	Name *string `json:"name,omitempty"`
+
+	RowTag *string `json:"rowTag,omitempty"`
+
+	Version *int64 `json:"version,omitempty"`
 }

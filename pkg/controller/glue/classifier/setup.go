@@ -11,17 +11,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package connection
+package classifier
 
 import (
 	"context"
 
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/glue"
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -33,9 +33,9 @@ import (
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
-// SetupConnection adds a controller that reconciles Connection.
-func SetupConnection(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter) error {
-	name := managed.ControllerName(svcapitypes.ConnectionGroupKind)
+// SetupClassifier adds a controller that reconciles Classifier.
+func SetupClassifier(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter) error {
+	name := managed.ControllerName(svcapitypes.ClassifierGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.preObserve = preObserve
@@ -49,26 +49,26 @@ func SetupConnection(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateL
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(limiter),
 		}).
-		For(&svcapitypes.Connection{}).
+		For(&svcapitypes.Classifier{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(svcapitypes.ConnectionGroupVersionKind),
+			resource.ManagedKind(svcapitypes.ClassifierGroupVersionKind),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.DeleteConnectionInput) (bool, error) {
-	obj.ConnectionName = awsclients.String(meta.GetExternalName(cr))
+func preDelete(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.DeleteClassifierInput) (bool, error) {
+	obj.Name = awsclients.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
-func preObserve(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.GetConnectionInput) error {
+func preObserve(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.GetClassifierInput) error {
 	obj.Name = awsclients.String(meta.GetExternalName(cr))
 	return nil
 }
 
-func postObserve(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.GetConnectionOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+func postObserve(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.GetClassifierOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
@@ -76,7 +76,7 @@ func postObserve(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.GetC
 	return obs, nil
 }
 
-func postCreate(_ context.Context, cr *svcapitypes.Connection, obj *svcsdk.CreateConnectionOutput, _ managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func postCreate(_ context.Context, cr *svcapitypes.Classifier, obj *svcsdk.CreateClassifierOutput, _ managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}

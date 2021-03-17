@@ -59,22 +59,12 @@ func SetupDatabase(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLim
 }
 
 func preDelete(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.DeleteDatabaseInput) (bool, error) {
-	if cr.Spec.ForProvider.CatalogID != nil {
-		obj.CatalogId = cr.Spec.ForProvider.CatalogID
-	}
-	if cr.Spec.ForProvider.DatabaseInput.Name != nil {
-		obj.Name = cr.Spec.ForProvider.DatabaseInput.Name
-	}
+	obj.Name = awsclients.String(meta.GetExternalName(cr))
 	return false, nil
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.GetDatabaseInput) error {
-	if cr.Spec.ForProvider.CatalogID != nil {
-		obj.CatalogId = cr.Spec.ForProvider.CatalogID
-	}
-	if cr.Spec.ForProvider.DatabaseInput.Name != nil {
-		obj.Name = cr.Spec.ForProvider.DatabaseInput.Name
-	}
+	obj.Name = awsclients.String(meta.GetExternalName(cr))
 	return nil
 }
 
@@ -90,6 +80,6 @@ func postCreate(_ context.Context, cr *svcapitypes.Database, obj *svcsdk.CreateD
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
-	meta.SetExternalName(cr, awsclients.StringValue(cr.Spec.ForProvider.DatabaseInput.Name))
+	meta.SetExternalName(cr, cr.Name)
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }

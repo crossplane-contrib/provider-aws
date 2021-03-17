@@ -1,0 +1,263 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.0
+  creationTimestamp: null
+  name: crawlers.glue.aws.crossplane.io
+spec:
+  group: glue.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: Crawler
+    listKind: CrawlerList
+    plural: crawlers
+    singular: crawler
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Crawler is the Schema for the Crawlers API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: CrawlerSpec defines the desired state of Crawler
+            properties:
+              deletionPolicy:
+                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: CrawlerParameters defines the desired state of Crawler
+                properties:
+                  classifiers:
+                    description: A list of custom classifiers that the user has registered. By default, all built-in classifiers are included in a crawl, but these custom classifiers always override the default classifiers for a given classification.
+                    items:
+                      type: string
+                    type: array
+                  configuration:
+                    description: Crawler configuration information. This versioned JSON string allows users to specify aspects of a crawler's behavior. For more information, see Configuring a Crawler (https://docs.aws.amazon.com/glue/latest/dg/crawler-configuration.html).
+                    type: string
+                  crawlerSecurityConfiguration:
+                    description: The name of the SecurityConfiguration structure to be used by this crawler.
+                    type: string
+                  databaseName:
+                    description: 'The AWS Glue database where results are written, such as: arn:aws:daylight:us-east-1::database/sometable/*.'
+                    type: string
+                  description:
+                    description: A description of the new crawler.
+                    type: string
+                  lineageConfiguration:
+                    description: Specifies data lineage configuration settings for the crawler.
+                    properties:
+                      crawlerLineageSettings:
+                        type: string
+                    type: object
+                  name:
+                    description: Name of the new crawler.
+                    type: string
+                  recrawlPolicy:
+                    description: A policy that specifies whether to crawl the entire dataset again, or to crawl only folders that were added since the last crawler run.
+                    properties:
+                      recrawlBehavior:
+                        type: string
+                    type: object
+                  region:
+                    description: Region is which region the Crawler will be created.
+                    type: string
+                  role:
+                    description: The IAM role or Amazon Resource Name (ARN) of an IAM role used by the new crawler to access customer resources.
+                    type: string
+                  schedule:
+                    description: 'A cron expression used to specify the schedule (see Time-Based Schedules for Jobs and Crawlers (https://docs.aws.amazon.com/glue/latest/dg/monitor-data-warehouse-schedule.html). For example, to run something every day at 12:15 UTC, you would specify: cron(15 12 * * ? *).'
+                    type: string
+                  schemaChangePolicy:
+                    description: The policy for the crawler's update and deletion behavior.
+                    properties:
+                      deleteBehavior:
+                        type: string
+                      updateBehavior:
+                        type: string
+                    type: object
+                  tablePrefix:
+                    description: The table prefix used for catalog tables that are created.
+                    type: string
+                  tags:
+                    additionalProperties:
+                      type: string
+                    description: The tags to use with this crawler request. You may use tags to limit access to the crawler. For more information about tags in AWS Glue, see AWS Tags in AWS Glue (https://docs.aws.amazon.com/glue/latest/dg/monitor-tags.html) in the developer guide.
+                    type: object
+                  targets:
+                    description: A list of collection of targets to crawl.
+                    properties:
+                      catalogTargets:
+                        items:
+                          properties:
+                            databaseName:
+                              type: string
+                            tables:
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        type: array
+                      dynamoDBTargets:
+                        items:
+                          properties:
+                            path:
+                              type: string
+                            scanAll:
+                              type: boolean
+                            scanRate:
+                              type: number
+                          type: object
+                        type: array
+                      jdbcTargets:
+                        items:
+                          properties:
+                            connectionName:
+                              type: string
+                            exclusions:
+                              items:
+                                type: string
+                              type: array
+                            path:
+                              type: string
+                          type: object
+                        type: array
+                      mongoDBTargets:
+                        items:
+                          properties:
+                            connectionName:
+                              type: string
+                            path:
+                              type: string
+                            scanAll:
+                              type: boolean
+                          type: object
+                        type: array
+                      s3Targets:
+                        items:
+                          properties:
+                            connectionName:
+                              type: string
+                            exclusions:
+                              items:
+                                type: string
+                              type: array
+                            path:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                required:
+                - name
+                - region
+                - role
+                - targets
+                type: object
+              providerConfigRef:
+                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: CrawlerStatus defines the observed state of Crawler.
+            properties:
+              atProvider:
+                description: CrawlerObservation defines the observed state of Crawler
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True, False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            required:
+            - atProvider
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

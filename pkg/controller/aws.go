@@ -83,7 +83,9 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/statemachine"
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
 
+	glueclassifier "github.com/crossplane/provider-aws/pkg/controller/glue/classifier"
 	glueconnection "github.com/crossplane/provider-aws/pkg/controller/glue/connection"
+	gluecrawler "github.com/crossplane/provider-aws/pkg/controller/glue/crawler"
 	glueDatabase "github.com/crossplane/provider-aws/pkg/controller/glue/database"
 	gluejob "github.com/crossplane/provider-aws/pkg/controller/glue/job"
 	gluesecurityconfiguration "github.com/crossplane/provider-aws/pkg/controller/glue/securityconfiguration"
@@ -157,6 +159,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		gluesecurityconfiguration.SetupSecurityConfiguration,
 		glueconnection.SetupConnection,
 		glueDatabase.SetupDatabase,
+		gluecrawler.SetupCrawler,
+		glueclassifier.SetupClassifier,
 	} {
 		if err := setup(mgr, l, rl); err != nil {
 			return err

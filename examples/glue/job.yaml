@@ -1,11 +1,11 @@
 apiVersion: glue.aws.crossplane.io/v1alpha1
 kind: Job
 metadata:
-  name: glue-job
+  name: glue-job-1
 spec:
   forProvider:
     region: eu-central-1
-    name: glue-job
+    name: glue-job-1
     role: "arn:aws:iam::<aws-id>:role/aws-glue"
     command: 
       name: "test.py"

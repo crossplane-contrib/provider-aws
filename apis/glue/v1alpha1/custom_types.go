@@ -27,3 +27,9 @@ type CustomConnectionParameters struct{}
 
 // CustomDatabaseParameters contains the additional fields for DatabaseParameters
 type CustomDatabaseParameters struct{}
+
+// CustomCrawlerParameters contains the additional fields for CrawlerParameters
+type CustomCrawlerParameters struct{}
+
+// CustomClassifierParameters contains the additional fields for ClassifierParameters
+type CustomClassifierParameters struct{}
