@@ -1,0 +1,12 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCCIDRBlock
+metadata:
+  name: sample-vpc-cidr-block
+spec:
+  forProvider:
+    region: us-east-1
+    cidrBlock: 100.64.0.0/16
+    vpcIdRef: 
+      name:  sample-vpc
+  providerConfigRef:
+    name: example
