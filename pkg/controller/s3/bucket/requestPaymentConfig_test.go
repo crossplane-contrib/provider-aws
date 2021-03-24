@@ -195,3 +195,97 @@ func TestRequestPaymentCreateOrUpdate(t *testing.T) {
 		})
 	}
 }
+
+func TestReqPaymentLateInit(t *testing.T) {
+	type args struct {
+		cl SubresourceClient
+		b  *v1beta1.Bucket
+	}
+
+	type want struct {
+		err error
+		cr  *v1beta1.Bucket
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Error": {
+			args: args{
+				b: s3Testing.Bucket(),
+				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
+					MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
+						return s3.GetBucketRequestPaymentRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketRequestPaymentOutput{}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: awsclient.Wrap(errBoom, paymentGetFailed),
+				cr:  s3Testing.Bucket(),
+			},
+		},
+		"NoLateInitEmpty": {
+			args: args{
+				b: s3Testing.Bucket(),
+				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
+					MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
+						return s3.GetBucketRequestPaymentRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketRequestPaymentOutput{Payer: ""}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(),
+			},
+		},
+		"SuccessfulLateInit": {
+			args: args{
+				b: s3Testing.Bucket(s3Testing.WithPayerConfig(nil)),
+				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
+					MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
+						return s3.GetBucketRequestPaymentRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketRequestPaymentOutput{Payer: s3.PayerRequester}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
+			},
+		},
+		"NoOpLateInit": {
+			args: args{
+				b: s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
+				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
+					MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
+						return s3.GetBucketRequestPaymentRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketRequestPaymentOutput{Payer: s3.PayerBucketOwner}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			err := tc.args.cl.LateInitialize(context.Background(), tc.args.b)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.b, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}

@@ -44,6 +44,7 @@ import (
 	"github.com/go-ini/ini"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -462,6 +463,19 @@ func LateInitializeString(in string, from *string) string {
 	return in
 }
 
+// LateInitializeTimePtr returns in if it's non-nil, otherwise returns from
+// which is the backup for the cases in is nil.
+func LateInitializeTimePtr(in *metav1.Time, from *time.Time) *metav1.Time {
+	if in != nil {
+		return in
+	}
+	if from != nil {
+		t := metav1.NewTime(*from)
+		return &t
+	}
+	return nil
+}
+
 // Int64 converts the supplied int for use with the AWS Go SDK.
 func Int64(v int, o ...FieldOption) *int64 {
 	for _, fo := range o {
@@ -512,6 +526,15 @@ func LateInitializeIntPtr(in *int, from *int64) *int {
 // which is the backup for the cases in is nil.
 func LateInitializeInt64Ptr(in *int64, from *int64) *int64 {
 	if in != nil {
+		return in
+	}
+	return from
+}
+
+// LateInitializeInt64 returns in if it's non-zero, otherwise returns from
+// which is the backup for the cases in is zero.
+func LateInitializeInt64(in int64, from int64) int64 {
+	if in != 0 {
 		return in
 	}
 	return from

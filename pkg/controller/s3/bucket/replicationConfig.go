@@ -40,12 +40,6 @@ type ReplicationConfigurationClient struct {
 	client s3.BucketClient
 }
 
-// LateInitialize does nothing because the resource might have been deleted by
-// the user.
-func (*ReplicationConfigurationClient) LateInitialize(_ context.Context, _ *v1beta1.Bucket) error {
-	return nil
-}
-
 // NewReplicationConfigurationClient creates the client for Replication Configuration
 func NewReplicationConfigurationClient(client s3.BucketClient) *ReplicationConfigurationClient {
 	return &ReplicationConfigurationClient{client: client}
@@ -80,6 +74,160 @@ func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v
 	}
 
 	return NeedsUpdate, nil
+}
+
+// CreateOrUpdate sends a request to have resource created on awsclient.
+func (in *ReplicationConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
+	if bucket.Spec.ForProvider.ReplicationConfiguration == nil {
+		return nil
+	}
+	input := GeneratePutBucketReplicationInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.ReplicationConfiguration)
+	_, err := in.client.PutBucketReplicationRequest(input).Send(ctx)
+	return awsclient.Wrap(err, replicationPutFailed)
+}
+
+// Delete creates the request to delete the resource on AWS or set it to the default value.
+func (in *ReplicationConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
+	_, err := in.client.DeleteBucketReplicationRequest(
+		&awss3.DeleteBucketReplicationInput{
+			Bucket: awsclient.String(meta.GetExternalName(bucket)),
+		},
+	).Send(ctx)
+	return awsclient.Wrap(err, replicationDeleteFailed)
+}
+
+// LateInitialize does nothing because the resource might have been deleted by
+// the user.
+func (in *ReplicationConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	external, err := in.client.GetBucketReplicationRequest(&awss3.GetBucketReplicationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
+	if err != nil {
+		return awsclient.Wrap(resource.Ignore(s3.ReplicationConfigurationNotFound, err), replicationGetFailed)
+	}
+
+	if external.GetBucketReplicationOutput == nil || external.ReplicationConfiguration == nil || len(external.ReplicationConfiguration.Rules) == 0 {
+		return nil
+	}
+
+	fp := &bucket.Spec.ForProvider
+	if fp.ReplicationConfiguration == nil {
+		// We need the configuration to exist so we can initialize
+		fp.ReplicationConfiguration = &v1beta1.ReplicationConfiguration{}
+	}
+	fp.ReplicationConfiguration.Role = awsclient.LateInitializeStringPtr(fp.ReplicationConfiguration.Role, external.ReplicationConfiguration.Role)
+	if fp.ReplicationConfiguration.Rules == nil {
+		createReplicationRulesFromExternal(external.ReplicationConfiguration, fp.ReplicationConfiguration)
+	}
+	return nil
+}
+
+// SubresourceExists checks if the subresource this controller manages currently exists
+func (in *ReplicationConfigurationClient) SubresourceExists(bucket *v1beta1.Bucket) bool {
+	return bucket.Spec.ForProvider.ReplicationConfiguration != nil
+}
+
+func createReplicationRulesFromExternal(external *awss3.ReplicationConfiguration, config *v1beta1.ReplicationConfiguration) { // nolint:gocyclo
+	if config.Rules != nil {
+		return
+	}
+	config.Rules = make([]v1beta1.ReplicationRule, len(external.Rules))
+
+	for i, rule := range external.Rules {
+		config.Rules[i] = v1beta1.ReplicationRule{
+			ID:       awsclient.LateInitializeStringPtr(config.Rules[i].ID, rule.ID),
+			Priority: awsclient.LateInitializeInt64Ptr(config.Rules[i].Priority, rule.Priority),
+			Status:   awsclient.LateInitializeString(config.Rules[i].Status, awsclient.String(string(rule.Status))),
+		}
+		if rule.Filter != nil {
+			config.Rules[i].Filter = &v1beta1.ReplicationRuleFilter{}
+			config.Rules[i].Filter.Prefix = awsclient.LateInitializeStringPtr(config.Rules[i].Filter.Prefix, rule.Filter.Prefix)
+			if rule.Filter.Tag != nil {
+				config.Rules[i].Filter.Tag = &v1beta1.Tag{}
+				config.Rules[i].Filter.Tag.Key = awsclient.LateInitializeString(config.Rules[i].Filter.Tag.Key, rule.Filter.Tag.Key)
+				config.Rules[i].Filter.Tag.Value = awsclient.LateInitializeString(config.Rules[i].Filter.Tag.Value, rule.Filter.Tag.Value)
+			}
+			if rule.Filter.And != nil {
+				config.Rules[i].Filter.And = &v1beta1.ReplicationRuleAndOperator{}
+				config.Rules[i].Filter.And.Prefix = awsclient.LateInitializeStringPtr(config.Rules[i].Filter.And.Prefix, rule.Filter.And.Prefix)
+				config.Rules[i].Filter.And.Tags = GenerateLocalTagging(rule.Filter.And.Tags).TagSet
+			}
+
+		}
+		if rule.DeleteMarkerReplication != nil {
+			config.Rules[i].DeleteMarkerReplication = &v1beta1.DeleteMarkerReplication{}
+			config.Rules[i].DeleteMarkerReplication.Status = awsclient.LateInitializeString(
+				config.Rules[i].DeleteMarkerReplication.Status,
+				awsclient.String(string(rule.DeleteMarkerReplication.Status)),
+			)
+		}
+		if rule.Destination != nil {
+			config.Rules[i].Destination.Account = awsclient.LateInitializeStringPtr(config.Rules[i].Destination.Account, rule.Destination.Account)
+			config.Rules[i].Destination.Bucket = awsclient.LateInitializeStringPtr(config.Rules[i].Destination.Bucket, rule.Destination.Bucket)
+			config.Rules[i].Destination.StorageClass = awsclient.LateInitializeStringPtr(
+				config.Rules[i].Destination.StorageClass,
+				awsclient.String(string(rule.Destination.StorageClass)),
+			)
+			if rule.Destination.AccessControlTranslation != nil {
+				config.Rules[i].Destination.AccessControlTranslation = &v1beta1.AccessControlTranslation{}
+				config.Rules[i].Destination.AccessControlTranslation.Owner = awsclient.LateInitializeString(
+					config.Rules[i].Destination.AccessControlTranslation.Owner,
+					awsclient.String(string(rule.Destination.AccessControlTranslation.Owner)),
+				)
+			}
+			if rule.Destination.EncryptionConfiguration != nil {
+				config.Rules[i].Destination.EncryptionConfiguration = &v1beta1.EncryptionConfiguration{}
+				config.Rules[i].Destination.EncryptionConfiguration.ReplicaKmsKeyID = awsclient.LateInitializeString(
+					config.Rules[i].Destination.EncryptionConfiguration.ReplicaKmsKeyID,
+					rule.Destination.EncryptionConfiguration.ReplicaKmsKeyID,
+				)
+			}
+			if rule.Destination.Metrics != nil {
+				config.Rules[i].Destination.Metrics = &v1beta1.Metrics{}
+				if rule.Destination.Metrics.EventThreshold != nil {
+					config.Rules[i].Destination.Metrics.EventThreshold.Minutes = awsclient.LateInitializeInt64(
+						config.Rules[i].Destination.Metrics.EventThreshold.Minutes,
+						awsclient.Int64Value(rule.Destination.Metrics.EventThreshold.Minutes))
+				}
+				config.Rules[i].Destination.Metrics.Status = awsclient.LateInitializeString(
+					config.Rules[i].Destination.Metrics.Status,
+					awsclient.String(string(rule.Destination.Metrics.Status)),
+				)
+			}
+			if rule.Destination.ReplicationTime != nil {
+				config.Rules[i].Destination.ReplicationTime = &v1beta1.ReplicationTime{}
+				config.Rules[i].Destination.ReplicationTime.Status = awsclient.LateInitializeString(
+					config.Rules[i].Destination.ReplicationTime.Status,
+					awsclient.String(string(rule.Destination.ReplicationTime.Status)),
+				)
+				if rule.Destination.ReplicationTime.Time != nil {
+					config.Rules[i].Destination.ReplicationTime.Time.Minutes = awsclient.LateInitializeInt64(
+						config.Rules[i].Destination.ReplicationTime.Time.Minutes,
+						awsclient.Int64Value(rule.Destination.ReplicationTime.Time.Minutes))
+				}
+			}
+		}
+		if rule.ExistingObjectReplication != nil {
+			config.Rules[i].ExistingObjectReplication = &v1beta1.ExistingObjectReplication{}
+			config.Rules[i].ExistingObjectReplication.Status = awsclient.LateInitializeString(
+				config.Rules[i].ExistingObjectReplication.Status,
+				awsclient.String(string(rule.ExistingObjectReplication.Status)),
+			)
+		}
+		if rule.SourceSelectionCriteria != nil && rule.SourceSelectionCriteria.SseKmsEncryptedObjects != nil {
+			config.Rules[i].SourceSelectionCriteria = &v1beta1.SourceSelectionCriteria{}
+			config.Rules[i].SourceSelectionCriteria.SseKmsEncryptedObjects.Status = awsclient.LateInitializeString(
+				config.Rules[i].SourceSelectionCriteria.SseKmsEncryptedObjects.Status,
+				awsclient.String(string(rule.SourceSelectionCriteria.SseKmsEncryptedObjects.Status)),
+			)
+		}
+	}
+}
+
+func sortReplicationRules(rules []awss3.ReplicationRule) {
+	for i := range rules {
+		if rules[i].Filter != nil && rules[i].Filter.And != nil {
+			rules[i].Filter.And.Tags = s3.SortS3TagSet(rules[i].Filter.And.Tags)
+		}
+	}
 }
 
 func copyDestination(input *v1beta1.ReplicationRule, newRule *awss3.ReplicationRule) {
@@ -184,33 +332,5 @@ func GeneratePutBucketReplicationInput(name string, config *v1beta1.ReplicationC
 	return &awss3.PutBucketReplicationInput{
 		Bucket:                   awsclient.String(name),
 		ReplicationConfiguration: GenerateReplicationConfiguration(config),
-	}
-}
-
-// CreateOrUpdate sends a request to have resource created on awsclient.
-func (in *ReplicationConfigurationClient) CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error {
-	if bucket.Spec.ForProvider.ReplicationConfiguration == nil {
-		return nil
-	}
-	input := GeneratePutBucketReplicationInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.ReplicationConfiguration)
-	_, err := in.client.PutBucketReplicationRequest(input).Send(ctx)
-	return awsclient.Wrap(err, replicationPutFailed)
-}
-
-// Delete creates the request to delete the resource on AWS or set it to the default value.
-func (in *ReplicationConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
-	_, err := in.client.DeleteBucketReplicationRequest(
-		&awss3.DeleteBucketReplicationInput{
-			Bucket: awsclient.String(meta.GetExternalName(bucket)),
-		},
-	).Send(ctx)
-	return awsclient.Wrap(err, replicationDeleteFailed)
-}
-
-func sortReplicationRules(rules []awss3.ReplicationRule) {
-	for i := range rules {
-		if rules[i].Filter != nil && rules[i].Filter.And != nil {
-			rules[i].Filter.And.Tags = s3.SortS3TagSet(rules[i].Filter.And.Tags)
-		}
 	}
 }
