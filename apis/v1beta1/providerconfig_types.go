@@ -36,7 +36,7 @@ type ProviderCredentials struct {
 
 	// Region the provider credentials should be used in.
 	// This applies to all clients and resources - iam, sts, anywhere a region is used
-	Region string `json:"region",omitempty`
+	Region string `json:"region,omitempty"`
 
 	xpv1.CommonCredentialSelectors `json:",inline"`
 }
