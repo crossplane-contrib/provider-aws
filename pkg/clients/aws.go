@@ -96,6 +96,11 @@ func UseProviderConfig(ctx context.Context, c client.Client, mg resource.Managed
 		return nil, errors.Wrap(err, "cannot track ProviderConfig usage")
 	}
 
+	// Use the region set in the provider config, if set
+	if pc.Spec.Credentials.Region != "" {
+		region = pc.Spec.Credentials.Region
+	}
+
 	switch s := pc.Spec.Credentials.Source; s { //nolint:exhaustive
 	case xpv1.CredentialsSourceInjectedIdentity:
 		cfg, err := UsePodServiceAccount(ctx, []byte{}, DefaultSection, region)

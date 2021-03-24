@@ -34,6 +34,10 @@ type ProviderCredentials struct {
 	// +kubebuilder:validation:Enum=None;Secret;InjectedIdentity;Environment;Filesystem
 	Source xpv1.CredentialsSource `json:"source"`
 
+	// Region the provider credentials should be used in.
+	// This applies to all clients and resources - iam, sts, anywhere a region is used
+	Region string `json:"region",omitempty`
+
 	xpv1.CommonCredentialSelectors `json:",inline"`
 }
 

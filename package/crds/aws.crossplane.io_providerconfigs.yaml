@@ -63,6 +63,9 @@ spec:
                     required:
                     - path
                     type: object
+                  region:
+                    description: Region the provider credentials should be used in. This applies to all clients and resources - iam, sts, anywhere a region is used
+                    type: string
                   secretRef:
                     description: A SecretRef is a reference to a secret key that contains the credentials that must be used to connect to the provider.
                     properties:
@@ -90,6 +93,7 @@ spec:
                     - Filesystem
                     type: string
                 required:
+                - region
                 - source
                 type: object
             required:
