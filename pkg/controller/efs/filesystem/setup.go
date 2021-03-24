@@ -75,6 +75,9 @@ func postObserve(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.Desc
 	if awsclients.StringValue(obj.FileSystems[0].LifeCycleState) == string(svcapitypes.LifeCycleState_available) {
 		cr.SetConditions(xpv1.Available())
 	}
+	obs.ConnectionDetails = managed.ConnectionDetails{
+		svcapitypes.ResourceCredentialsSecretIDKey: []byte(meta.GetExternalName(cr)),
+	}
 	return obs, nil
 }
 
