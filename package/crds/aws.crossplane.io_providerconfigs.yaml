@@ -93,7 +93,6 @@ spec:
                     - Filesystem
                     type: string
                 required:
-                - region
                 - source
                 type: object
             required:
