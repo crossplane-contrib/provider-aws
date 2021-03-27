@@ -37,6 +37,12 @@ type IAMAccessKeyParameters struct {
 	// +optional
 	IAMUsernameSelector *xpv1.Selector `json:"userNameSelector,omitempty"`
 
+	// Region can be used to supply an optional region.
+	// If no region is defined, aws-global region will be used
+	// which is the default region for IAM resources in the aws partition
+	// +optional
+	Region string `json:"region,omitempty"`
+
 	// The current status of this IAMAccessKey on the AWS
 	// Must be either Active or Inactive.
 	// +kubebuilder:validation:Enum=Active;Inactive

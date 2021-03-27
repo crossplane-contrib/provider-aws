@@ -75,7 +75,15 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, awsclient.GlobalRegion)
+	cr, ok := mg.(*v1beta1.IAMRolePolicyAttachment)
+	region := awsclient.GlobalRegion
+	if cr.Spec.ForProvider.Region != "" {
+		region = cr.Spec.ForProvider.Region
+	}
+	if !ok {
+		return nil, errors.New(errUnexpectedObject)
+	}
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, region)
 	if err != nil {
 		return nil, err
 	}

@@ -65,6 +65,9 @@ spec:
                   permissionsBoundary:
                     description: The ARN of the policy that is used to set the permissions boundary for the user.
                     type: string
+                  region:
+                    description: Region can be used to supply an optional region. If no region is defined, aws-global region will be used which is the default region for IAM resources in the aws partition
+                    type: string
                   tags:
                     description: A list of tags that you want to attach to the newly created user.
                     items:

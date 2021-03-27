@@ -50,6 +50,12 @@ type IAMGroupPolicyAttachmentParameters struct {
 	// GroupNameSelector selects a reference to an IAMGroup to retrieve its groupName
 	// +optional
 	GroupNameSelector *xpv1.Selector `json:"groupNameSelector,omitempty"`
+
+	// Region can be used to supply an optional region.
+	// If no region is defined, aws-global region will be used
+	// which is the default region for IAM resources in the aws partition
+	// +optional
+	Region string `json:"region,omitempty"`
 }
 
 // An IAMGroupPolicyAttachmentSpec defines the desired state of an

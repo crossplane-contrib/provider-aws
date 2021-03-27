@@ -51,6 +51,12 @@ type IAMRolePolicyAttachmentParameters struct {
 	// RoleNameSelector selects a reference to an IAMRole to retrieve its Name
 	// +optional
 	RoleNameSelector *xpv1.Selector `json:"roleNameSelector,omitempty"`
+
+	// Region can be used to supply an optional region.
+	// If no region is defined, aws-global region will be used
+	// which is the default region for IAM resources in the aws partition
+	// +optional
+	Region string `json:"region,omitempty"`
 }
 
 // An IAMRolePolicyAttachmentSpec defines the desired state of an

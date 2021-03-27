@@ -62,6 +62,9 @@ spec:
                   path:
                     description: The path for the group name.
                     type: string
+                  region:
+                    description: Region can be used to supply an optional region. If no region is defined, aws-global region will be used which is the default region for IAM resources in the aws partition
+                    type: string
                 type: object
               providerConfigRef:
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.

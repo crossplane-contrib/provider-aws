@@ -37,6 +37,12 @@ type IAMPolicyParameters struct {
 
 	// The name of the policy.
 	Name string `json:"name"`
+
+	// Region can be used to supply an optional region.
+	// If no region is defined, aws-global region will be used
+	// which is the default region for IAM resources in the aws partition
+	// +optional
+	Region string `json:"region,omitempty"`
 }
 
 // An IAMPolicySpec defines the desired state of an IAMPolicy.

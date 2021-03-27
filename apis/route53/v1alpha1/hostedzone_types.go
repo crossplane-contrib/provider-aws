@@ -89,6 +89,12 @@ type HostedZoneParameters struct {
 	// +immutable
 	// +optional
 	VPC *VPC `json:"vpc,omitempty"`
+
+	// Region can be used to supply an optional region.
+	// If no region is defined, aws-global region will be used
+	// which is the default region for IAM resources in the aws partition
+	// +optional
+	Region string `json:"region,omitempty"`
 }
 
 // Config represents the configuration of a Hosted Zone.
