@@ -9,6 +9,7 @@ require (
 	github.com/crossplane/crossplane-tools v0.0.0-20201201125637-9ddc70edfd0d
 	github.com/evanphx/json-patch v4.9.0+incompatible
 	github.com/go-ini/ini v1.46.0
+	github.com/golang/mock v1.4.1 // indirect
 	github.com/google/go-cmp v0.5.2
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mitchellh/copystructure v1.0.0
