@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package elasticip
+package address
 
 import (
 	"context"
@@ -35,7 +35,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
@@ -50,41 +50,41 @@ var (
 )
 
 type args struct {
-	elasticIP ec2.ElasticIPClient
-	kube      client.Client
-	cr        *v1alpha1.ElasticIP
+	address ec2.AddressClient
+	kube    client.Client
+	cr      *v1beta1.Address
 }
 
-type elasticIPModifier func(*v1alpha1.ElasticIP)
+type addressModifier func(*v1beta1.Address)
 
-func withTags(tagMaps ...map[string]string) elasticIPModifier {
-	var tagList []v1alpha1.Tag
+func withTags(tagMaps ...map[string]string) addressModifier {
+	var tagList []v1beta1.Tag
 	for _, tagMap := range tagMaps {
 		for k, v := range tagMap {
-			tagList = append(tagList, v1alpha1.Tag{Key: k, Value: v})
+			tagList = append(tagList, v1beta1.Tag{Key: k, Value: v})
 		}
 	}
-	return func(r *v1alpha1.ElasticIP) { r.Spec.ForProvider.Tags = tagList }
+	return func(r *v1beta1.Address) { r.Spec.ForProvider.Tags = tagList }
 }
 
-func withExternalName(name string) elasticIPModifier {
-	return func(r *v1alpha1.ElasticIP) { meta.SetExternalName(r, name) }
+func withExternalName(name string) addressModifier {
+	return func(r *v1beta1.Address) { meta.SetExternalName(r, name) }
 }
 
-func withConditions(c ...xpv1.Condition) elasticIPModifier {
-	return func(r *v1alpha1.ElasticIP) { r.Status.ConditionedStatus.Conditions = c }
+func withConditions(c ...xpv1.Condition) addressModifier {
+	return func(r *v1beta1.Address) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withSpec(p v1alpha1.ElasticIPParameters) elasticIPModifier {
-	return func(r *v1alpha1.ElasticIP) { r.Spec.ForProvider = p }
+func withSpec(p v1beta1.AddressParameters) addressModifier {
+	return func(r *v1beta1.Address) { r.Spec.ForProvider = p }
 }
 
-func withStatus(s v1alpha1.ElasticIPObservation) elasticIPModifier {
-	return func(r *v1alpha1.ElasticIP) { r.Status.AtProvider = s }
+func withStatus(s v1beta1.AddressObservation) addressModifier {
+	return func(r *v1beta1.Address) { r.Status.AtProvider = s }
 }
 
-func elasticIP(m ...elasticIPModifier) *v1alpha1.ElasticIP {
-	cr := &v1alpha1.ElasticIP{}
+func address(m ...addressModifier) *v1beta1.Address {
+	cr := &v1beta1.Address{}
 	for _, f := range m {
 		f(cr)
 	}
@@ -96,7 +96,7 @@ var _ managed.ExternalConnecter = &connector{}
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.ElasticIP
+		cr     *v1beta1.Address
 		result managed.ExternalObservation
 		err    error
 	}
@@ -110,7 +110,7 @@ func TestObserve(t *testing.T) {
 				kube: &test.MockClient{
 					MockUpdate: test.NewMockClient().Update,
 				},
-				elasticIP: &fake.MockElasticIPClient{
+				address: &fake.MockAddressClient{
 					MockDescribe: func(input *awsec2.DescribeAddressesInput) awsec2.DescribeAddressesRequest {
 						return awsec2.DescribeAddressesRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeAddressesOutput{
@@ -121,14 +121,14 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
+				cr: address(withSpec(v1beta1.AddressParameters{
 					Domain: &domainVpc,
 				}), withExternalName(allocationID)),
 			},
 			want: want{
-				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
+				cr: address(withSpec(v1beta1.AddressParameters{
 					Domain: &domainVpc,
-				}), withStatus(v1alpha1.ElasticIPObservation{
+				}), withStatus(v1beta1.AddressObservation{
 					AllocationID: allocationID,
 				}), withExternalName(allocationID),
 					withConditions(xpv1.Available())),
@@ -143,7 +143,7 @@ func TestObserve(t *testing.T) {
 				kube: &test.MockClient{
 					MockUpdate: test.NewMockClient().Update,
 				},
-				elasticIP: &fake.MockElasticIPClient{
+				address: &fake.MockAddressClient{
 					MockDescribe: func(input *awsec2.DescribeAddressesInput) awsec2.DescribeAddressesRequest {
 						return awsec2.DescribeAddressesRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeAddressesOutput{
@@ -152,12 +152,12 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
+				cr: address(withSpec(v1beta1.AddressParameters{
 					Domain: &domainVpc,
 				}), withExternalName(allocationID)),
 			},
 			want: want{
-				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
+				cr: address(withSpec(v1beta1.AddressParameters{
 					Domain: &domainVpc,
 				}), withExternalName(allocationID)),
 				err: errors.New(errMultipleItems),
@@ -168,19 +168,19 @@ func TestObserve(t *testing.T) {
 				kube: &test.MockClient{
 					MockUpdate: test.NewMockClient().Update,
 				},
-				elasticIP: &fake.MockElasticIPClient{
+				address: &fake.MockAddressClient{
 					MockDescribe: func(input *awsec2.DescribeAddressesInput) awsec2.DescribeAddressesRequest {
 						return awsec2.DescribeAddressesRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
+				cr: address(withSpec(v1beta1.AddressParameters{
 					Domain: &domainVpc,
 				}), withExternalName(allocationID)),
 			},
 			want: want{
-				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
+				cr: address(withSpec(v1beta1.AddressParameters{
 					Domain: &domainVpc,
 				}), withExternalName(allocationID)),
 				err: awsclient.Wrap(errBoom, errDescribe),
@@ -190,7 +190,7 @@ func TestObserve(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.elasticIP}
+			e := &external{kube: tc.kube, client: tc.address}
 			o, err := e.Observe(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -208,7 +208,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.ElasticIP
+		cr     *v1beta1.Address
 		result managed.ExternalCreation
 		err    error
 	}
@@ -223,7 +223,7 @@ func TestCreate(t *testing.T) {
 					MockUpdate:       test.NewMockClient().Update,
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
-				elasticIP: &fake.MockElasticIPClient{
+				address: &fake.MockAddressClient{
 					MockAllocate: func(input *awsec2.AllocateAddressInput) awsec2.AllocateAddressRequest {
 						return awsec2.AllocateAddressRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.AllocateAddressOutput{
@@ -232,10 +232,10 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: elasticIP(),
+				cr: address(),
 			},
 			want: want{
-				cr: elasticIP(withExternalName(allocationID),
+				cr: address(withExternalName(allocationID),
 					withConditions(xpv1.Creating())),
 				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
@@ -246,7 +246,7 @@ func TestCreate(t *testing.T) {
 					MockUpdate:       test.NewMockClient().Update,
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
-				elasticIP: &fake.MockElasticIPClient{
+				address: &fake.MockAddressClient{
 					MockAllocate: func(input *awsec2.AllocateAddressInput) awsec2.AllocateAddressRequest {
 						return awsec2.AllocateAddressRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.AllocateAddressOutput{
@@ -255,14 +255,14 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
+				cr: address(withSpec(v1beta1.AddressParameters{
 					Domain: &domainStandard,
 				})),
 			},
 			want: want{
-				cr: elasticIP(withExternalName(publicIP),
+				cr: address(withExternalName(publicIP),
 					withConditions(xpv1.Creating()),
-					withSpec(v1alpha1.ElasticIPParameters{
+					withSpec(v1beta1.AddressParameters{
 						Domain: &domainStandard,
 					})),
 				result: managed.ExternalCreation{ExternalNameAssigned: true},
@@ -274,17 +274,17 @@ func TestCreate(t *testing.T) {
 					MockUpdate:       test.NewMockClient().Update,
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
-				elasticIP: &fake.MockElasticIPClient{
+				address: &fake.MockAddressClient{
 					MockAllocate: func(input *awsec2.AllocateAddressInput) awsec2.AllocateAddressRequest {
 						return awsec2.AllocateAddressRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: elasticIP(),
+				cr: address(),
 			},
 			want: want{
-				cr:  elasticIP(withConditions(xpv1.Creating())),
+				cr:  address(withConditions(xpv1.Creating())),
 				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
@@ -292,7 +292,7 @@ func TestCreate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.elasticIP}
+			e := &external{kube: tc.kube, client: tc.address}
 			o, err := e.Create(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -310,7 +310,7 @@ func TestCreate(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.ElasticIP
+		cr     *v1beta1.Address
 		result managed.ExternalUpdate
 		err    error
 	}
@@ -321,7 +321,7 @@ func TestUpdate(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				elasticIP: &fake.MockElasticIPClient{
+				address: &fake.MockAddressClient{
 
 					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
 						return awsec2.CreateTagsRequest{
@@ -329,31 +329,31 @@ func TestUpdate(t *testing.T) {
 						}
 					},
 				},
-				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
+				cr: address(withSpec(v1beta1.AddressParameters{
 					Domain: &domainVpc,
 				})),
 			},
 			want: want{
-				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
+				cr: address(withSpec(v1beta1.AddressParameters{
 					Domain: &domainVpc,
 				})),
 			},
 		},
 		"ModifyFailed": {
 			args: args{
-				elasticIP: &fake.MockElasticIPClient{
+				address: &fake.MockAddressClient{
 					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
 						return awsec2.CreateTagsRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
+				cr: address(withSpec(v1beta1.AddressParameters{
 					Domain: &domainVpc,
 				})),
 			},
 			want: want{
-				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
+				cr: address(withSpec(v1beta1.AddressParameters{
 					Domain: &domainVpc,
 				})),
 				err: awsclient.Wrap(errBoom, errCreateTags),
@@ -363,7 +363,7 @@ func TestUpdate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.elasticIP}
+			e := &external{kube: tc.kube, client: tc.address}
 			u, err := e.Update(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -381,7 +381,7 @@ func TestUpdate(t *testing.T) {
 
 func TestRelease(t *testing.T) {
 	type want struct {
-		cr  *v1alpha1.ElasticIP
+		cr  *v1beta1.Address
 		err error
 	}
 
@@ -391,35 +391,35 @@ func TestRelease(t *testing.T) {
 	}{
 		"SuccessfulVPC": {
 			args: args{
-				elasticIP: &fake.MockElasticIPClient{
+				address: &fake.MockAddressClient{
 					MockRelease: func(input *awsec2.ReleaseAddressInput) awsec2.ReleaseAddressRequest {
 						return awsec2.ReleaseAddressRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ReleaseAddressOutput{}},
 						}
 					},
 				},
-				cr: elasticIP(),
+				cr: address(),
 			},
 			want: want{
-				cr: elasticIP(withConditions(xpv1.Deleting())),
+				cr: address(withConditions(xpv1.Deleting())),
 			},
 		},
 		"SuccessfulStandard": {
 			args: args{
-				elasticIP: &fake.MockElasticIPClient{
+				address: &fake.MockAddressClient{
 					MockRelease: func(input *awsec2.ReleaseAddressInput) awsec2.ReleaseAddressRequest {
 						return awsec2.ReleaseAddressRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ReleaseAddressOutput{}},
 						}
 					},
 				},
-				cr: elasticIP(withSpec(v1alpha1.ElasticIPParameters{
+				cr: address(withSpec(v1beta1.AddressParameters{
 					Domain: &domainStandard,
 				})),
 			},
 			want: want{
-				cr: elasticIP(withConditions(xpv1.Deleting()),
-					withSpec(v1alpha1.ElasticIPParameters{
+				cr: address(withConditions(xpv1.Deleting()),
+					withSpec(v1beta1.AddressParameters{
 						Domain: &domainStandard,
 					}),
 				),
@@ -427,17 +427,17 @@ func TestRelease(t *testing.T) {
 		},
 		"DeleteFailed": {
 			args: args{
-				elasticIP: &fake.MockElasticIPClient{
+				address: &fake.MockAddressClient{
 					MockRelease: func(input *awsec2.ReleaseAddressInput) awsec2.ReleaseAddressRequest {
 						return awsec2.ReleaseAddressRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
 						}
 					},
 				},
-				cr: elasticIP(),
+				cr: address(),
 			},
 			want: want{
-				cr:  elasticIP(withConditions(xpv1.Deleting())),
+				cr:  address(withConditions(xpv1.Deleting())),
 				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
@@ -445,7 +445,7 @@ func TestRelease(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.elasticIP}
+			e := &external{kube: tc.kube, client: tc.address}
 			err := e.Delete(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -460,11 +460,11 @@ func TestRelease(t *testing.T) {
 
 func TestInitialize(t *testing.T) {
 	type args struct {
-		cr   *v1alpha1.ElasticIP
+		cr   *v1beta1.Address
 		kube client.Client
 	}
 	type want struct {
-		cr  *v1alpha1.ElasticIP
+		cr  *v1beta1.Address
 		err error
 	}
 
@@ -474,16 +474,16 @@ func TestInitialize(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				cr:   elasticIP(withTags(map[string]string{"foo": "bar"})),
+				cr:   address(withTags(map[string]string{"foo": "bar"})),
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(nil)},
 			},
 			want: want{
-				cr: elasticIP(withTags(resource.GetExternalTags(elasticIP()), map[string]string{"foo": "bar"})),
+				cr: address(withTags(resource.GetExternalTags(address()), map[string]string{"foo": "bar"})),
 			},
 		},
 		"UpdateFailed": {
 			args: args{
-				cr:   elasticIP(),
+				cr:   address(),
 				kube: &test.MockClient{MockUpdate: test.NewMockUpdateFn(errBoom)},
 			},
 			want: want{
@@ -500,7 +500,7 @@ func TestInitialize(t *testing.T) {
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1alpha1.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1beta1.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

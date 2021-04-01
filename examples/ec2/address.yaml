@@ -1,5 +1,5 @@
-apiVersion: ec2.aws.crossplane.io/v1alpha1
-kind: ElasticIP
+apiVersion: ec2.aws.crossplane.io/v1beta1
+kind: Address
 metadata:
   name: sample-eip
 spec:

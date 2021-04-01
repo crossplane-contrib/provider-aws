@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,8 +22,8 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// ElasticIPParameters define the desired state of an AWS Elastic IP
-type ElasticIPParameters struct {
+// AddressParameters define the desired state of an AWS Elastic IP
+type AddressParameters struct {
 	// Region is the region you'd like your VPC to be created in.
 	Region string `json:"region"`
 
@@ -76,24 +76,14 @@ type ElasticIPParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 }
 
-// Tag defines a tag
-type Tag struct {
-
-	// Key is the name of the tag.
-	Key string `json:"key"`
-
-	// Value is the value of the tag.
-	Value string `json:"value"`
-}
-
-// A ElasticIPSpec defines the desired state of a ElasticIP.
-type ElasticIPSpec struct {
+// A AddressSpec defines the desired state of a Address.
+type AddressSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       ElasticIPParameters `json:"forProvider"`
+	ForProvider       AddressParameters `json:"forProvider"`
 }
 
-// ElasticIPObservation keeps the state for the external resource
-type ElasticIPObservation struct {
+// AddressObservation keeps the state for the external resource
+type AddressObservation struct {
 	// The ID representing the allocation of the address for use with EC2-VPC.
 	AllocationID string `json:"allocationId,omitempty"`
 
@@ -133,15 +123,15 @@ type ElasticIPObservation struct {
 	PublicIPv4Pool string `json:"publicIpv4Pool,omitempty"`
 }
 
-// A ElasticIPStatus represents the observed state of a ElasticIP.
-type ElasticIPStatus struct {
+// A AddressStatus represents the observed state of a Address.
+type AddressStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          ElasticIPObservation `json:"atProvider"`
+	AtProvider          AddressObservation `json:"atProvider"`
 }
 
 // +kubebuilder:object:root=true
 
-// A ElasticIP is a managed resource that represents an AWS VPC Security
+// A Address is a managed resource that represents an AWS VPC Security
 // Group.
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
@@ -150,19 +140,19 @@ type ElasticIPStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-type ElasticIP struct {
+type Address struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ElasticIPSpec   `json:"spec"`
-	Status ElasticIPStatus `json:"status,omitempty"`
+	Spec   AddressSpec   `json:"spec"`
+	Status AddressStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// ElasticIPList contains a list of ElasticIPs
-type ElasticIPList struct {
+// AddressList contains a list of Addresss
+type AddressList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []ElasticIP `json:"items"`
+	Items           []Address `json:"items"`
 }
