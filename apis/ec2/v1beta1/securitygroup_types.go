@@ -126,6 +126,15 @@ type UserIDGroupPair struct {
 	// +optional
 	GroupID *string `json:"groupId,omitempty"`
 
+	// GroupIDRef reference a security group to retrieve its GroupID
+	// +optional
+	// +immutable
+	GroupIDRef *xpv1.Reference `json:"groupIdRef,omitempty"`
+
+	// GroupIDSelector selects reference to a security group to retrieve its GroupID
+	// +optional
+	GroupIDSelector *xpv1.Selector `json:"groupIdSelector,omitempty"`
+
 	// The name of the security group. In a request, use this parameter for a security
 	// group in EC2-Classic or a default VPC only. For a security group in a nondefault
 	// VPC, use the security group ID.

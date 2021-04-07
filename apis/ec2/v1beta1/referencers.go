@@ -89,10 +89,54 @@ func (mg *SecurityGroup) ResolveReferences(ctx context.Context, c client.Reader)
 				Extract:      reference.ExternalName(),
 			})
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("spec.forProvider.ingress[%d].userIdGroupPairs[%d]", i, j))
+				return errors.Wrap(err, fmt.Sprintf("spec.forProvider.ingress[%d].userIdGroupPairs[%d].vpcId", i, j))
 			}
 			mg.Spec.ForProvider.Ingress[i].UserIDGroupPairs[j].VPCID = reference.ToPtrValue(rsp.ResolvedValue)
 			mg.Spec.ForProvider.Ingress[i].UserIDGroupPairs[j].VPCIDRef = rsp.ResolvedReference
+
+			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(pair.GroupID),
+				Reference:    pair.GroupIDRef,
+				Selector:     pair.GroupIDSelector,
+				To:           reference.To{Managed: &SecurityGroup{}, List: &SecurityGroupList{}},
+				Extract:      reference.ExternalName(),
+			})
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("spec.forProvider.ingress[%d].userIdGroupPairs[%d].groupId", i, j))
+			}
+			mg.Spec.ForProvider.Ingress[i].UserIDGroupPairs[j].GroupID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.ForProvider.Ingress[i].UserIDGroupPairs[j].GroupIDRef = rsp.ResolvedReference
+		}
+	}
+
+	for i, egr := range mg.Spec.ForProvider.Egress {
+		for j, pair := range egr.UserIDGroupPairs {
+			// Resolve spec.forProvider.egress[*].userIdGroupPairs[*]
+			rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(pair.VPCID),
+				Reference:    pair.VPCIDRef,
+				Selector:     pair.VPCIDSelector,
+				To:           reference.To{Managed: &VPC{}, List: &VPCList{}},
+				Extract:      reference.ExternalName(),
+			})
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("spec.forProvider.egress[%d].userIdGroupPairs[%d].vpcId", i, j))
+			}
+			mg.Spec.ForProvider.Egress[i].UserIDGroupPairs[j].VPCID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.ForProvider.Egress[i].UserIDGroupPairs[j].VPCIDRef = rsp.ResolvedReference
+
+			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+				CurrentValue: reference.FromPtrValue(pair.GroupID),
+				Reference:    pair.GroupIDRef,
+				Selector:     pair.GroupIDSelector,
+				To:           reference.To{Managed: &SecurityGroup{}, List: &SecurityGroupList{}},
+				Extract:      reference.ExternalName(),
+			})
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("spec.forProvider.egress[%d].userIdGroupPairs[%d].groupId", i, j))
+			}
+			mg.Spec.ForProvider.Egress[i].UserIDGroupPairs[j].GroupID = reference.ToPtrValue(rsp.ResolvedValue)
+			mg.Spec.ForProvider.Egress[i].UserIDGroupPairs[j].GroupIDRef = rsp.ResolvedReference
 		}
 	}
 
