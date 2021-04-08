@@ -134,12 +134,10 @@ func (e *custom) getCurrentDBParameters(ctx context.Context, cr *svcapitypes.DBP
 		DBParameterGroupName: awsclients.String(meta.GetExternalName(cr)),
 		MaxRecords:           awsclients.Int64(20),
 	}
-	pageNum := 0
 	var results []*svcsdk.Parameter
 	err := e.client.DescribeDBParametersPagesWithContext(ctx, input, func(page *svcsdk.DescribeDBParametersOutput, lastPage bool) bool {
-		pageNum++
 		results = append(results, page.Parameters...)
-		return pageNum <= 20
+		return !lastPage
 	})
 	if err != nil {
 		return results, err
