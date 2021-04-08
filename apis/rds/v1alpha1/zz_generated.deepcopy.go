@@ -417,13 +417,9 @@ func (in *CustomDBParameterGroupParameters) DeepCopyInto(out *CustomDBParameterG
 	*out = *in
 	if in.Parameters != nil {
 		in, out := &in.Parameters, &out.Parameters
-		*out = make([]*Parameter, len(*in))
+		*out = make([]Parameter, len(*in))
 		for i := range *in {
-			if (*in)[i] != nil {
-				in, out := &(*in)[i], &(*out)[i]
-				*out = new(Parameter)
-				(*in).DeepCopyInto(*out)
-			}
+			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
 }
