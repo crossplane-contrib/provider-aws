@@ -8,7 +8,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	"github.com/aws/aws-sdk-go/service/rds"
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -78,14 +77,14 @@ func preCreate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.
 
 func preUpdate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.ModifyDBParameterGroupInput) error {
 	obj.DBParameterGroupName = awsclients.String(meta.GetExternalName(cr))
-	obj.Parameters = make([]*rds.Parameter, len(cr.Spec.ForProvider.Parameters))
+	obj.Parameters = make([]*svcsdk.Parameter, len(cr.Spec.ForProvider.Parameters))
 
 	for i, v := range cr.Spec.ForProvider.Parameters {
 		// check if mandatory parameters are set (ApplyMethod, ParameterName, ParameterValue)
 		if (v.ApplyMethod == nil) || (v.ParameterName == nil) || (v.ParameterValue == nil) {
 			return errors.New("ApplyMethod, ParameterName and ParameterValue are mandatory fields and can not be nil")
 		}
-		obj.Parameters[i] = &rds.Parameter{
+		obj.Parameters[i] = &svcsdk.Parameter{
 			AllowedValues:        awsclients.String(*v.AllowedValues),
 			ApplyMethod:          awsclients.String(*v.ApplyMethod),
 			ApplyType:            awsclients.String(*v.ApplyType),
@@ -131,13 +130,13 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBParameterGroup, obj *svcsdk.Descri
 }
 
 func (e *custom) getCurrentDBParameters(ctx context.Context, cr *svcapitypes.DBParameterGroup) ([]*svcsdk.Parameter, error) {
-	input := &rds.DescribeDBParametersInput{
+	input := &svcsdk.DescribeDBParametersInput{
 		DBParameterGroupName: awsclients.String(meta.GetExternalName(cr)),
 		MaxRecords:           awsclients.Int64(20),
 	}
 	pageNum := 0
 	var results []*svcsdk.Parameter
-	err := e.client.DescribeDBParametersPagesWithContext(ctx, input, func(page *rds.DescribeDBParametersOutput, lastPage bool) bool {
+	err := e.client.DescribeDBParametersPagesWithContext(ctx, input, func(page *svcsdk.DescribeDBParametersOutput, lastPage bool) bool {
 		pageNum++
 		results = append(results, page.Parameters...)
 		return pageNum <= 20
