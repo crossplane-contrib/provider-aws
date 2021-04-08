@@ -20,9 +20,9 @@ var (
 	sgOwner    = "some owner"
 )
 
-func specIPPermsision(port int) []v1beta1.IPPermission {
-	return []v1beta1.IPPermission{
-		{
+func specIPPermsision(ports ...int) (ret []v1beta1.IPPermission) {
+	for _, port := range ports {
+		ret = append(ret, v1beta1.IPPermission{
 			FromPort:   aws.Int64(int64(port)),
 			ToPort:     aws.Int64(int64(port)),
 			IPProtocol: "tcp",
@@ -31,13 +31,14 @@ func specIPPermsision(port int) []v1beta1.IPPermission {
 					CIDRIP: sgCidr,
 				},
 			},
-		},
+		})
 	}
+	return ret
 }
 
-func sgIPPermission(port int) []ec2.IpPermission {
-	return []ec2.IpPermission{
-		{
+func sgIPPermission(ports ...int) (ret []ec2.IpPermission) {
+	for _, port := range ports {
+		ret = append(ret, ec2.IpPermission{
 			FromPort:   aws.Int64(int64(port)),
 			ToPort:     aws.Int64(int64(port)),
 			IpProtocol: aws.String(sgProtocol),
@@ -46,8 +47,9 @@ func sgIPPermission(port int) []ec2.IpPermission {
 					CidrIp: aws.String(sgCidr),
 				},
 			},
-		},
+		})
 	}
+	return ret
 }
 
 func TestIsSGUpToDate(t *testing.T) {
@@ -73,6 +75,23 @@ func TestIsSGUpToDate(t *testing.T) {
 					GroupName:   sgName,
 					VPCID:       aws.String(sgVpc),
 					Ingress:     specIPPermsision(80),
+				},
+			},
+			want: true,
+		},
+		"SameFieldsUnsorted": {
+			args: args{
+				sg: ec2.SecurityGroup{
+					Description:   aws.String(sgDesc),
+					GroupName:     aws.String(sgName),
+					VpcId:         aws.String(sgVpc),
+					IpPermissions: sgIPPermission(80, 100, 90),
+				},
+				p: v1beta1.SecurityGroupParameters{
+					Description: sgDesc,
+					GroupName:   sgName,
+					VPCID:       aws.String(sgVpc),
+					Ingress:     specIPPermsision(100, 90, 80),
 				},
 			},
 			want: true,
@@ -169,6 +188,27 @@ func TestCreateSGPatch(t *testing.T) {
 					GroupName:   sgName,
 					Egress:      specIPPermsision(80),
 					Ingress:     specIPPermsision(80),
+					VPCID:       aws.String(sgVpc),
+				},
+			},
+			want: want{
+				patch: &v1beta1.SecurityGroupParameters{},
+			},
+		},
+		"SameFieldsNilPort": {
+			args: args{
+				sg: ec2.SecurityGroup{
+					Description:         aws.String(sgDesc),
+					GroupName:           aws.String(sgName),
+					IpPermissions:       nil,
+					IpPermissionsEgress: append(sgIPPermission(80), ec2.IpPermission{IpProtocol: aws.String("-1")}),
+					VpcId:               aws.String(sgVpc),
+				},
+				p: &v1beta1.SecurityGroupParameters{
+					Description: sgDesc,
+					GroupName:   sgName,
+					Egress:      append(specIPPermsision(80), v1beta1.IPPermission{IPProtocol: "-1"}),
+					Ingress:     nil,
 					VPCID:       aws.String(sgVpc),
 				},
 			},
