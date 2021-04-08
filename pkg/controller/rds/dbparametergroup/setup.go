@@ -85,16 +85,16 @@ func preUpdate(_ context.Context, cr *svcapitypes.DBParameterGroup, obj *svcsdk.
 			return errors.New("ApplyMethod, ParameterName and ParameterValue are mandatory fields and can not be nil")
 		}
 		obj.Parameters[i] = &svcsdk.Parameter{
-			AllowedValues:        awsclients.String(*v.AllowedValues),
-			ApplyMethod:          awsclients.String(*v.ApplyMethod),
-			ApplyType:            awsclients.String(*v.ApplyType),
-			DataType:             awsclients.String(*v.DataType),
-			Description:          awsclients.String(*v.Description),
-			IsModifiable:         awsclients.Bool(*v.IsModifiable),
-			MinimumEngineVersion: awsclients.String(*v.MinimumEngineVersion),
-			ParameterName:        awsclients.String(*v.ParameterName),
-			ParameterValue:       awsclients.String(*v.ParameterValue),
-			Source:               awsclients.String(*v.Source),
+			AllowedValues:        v.AllowedValues,
+			ApplyMethod:          v.ApplyMethod,
+			ApplyType:            v.ApplyType,
+			DataType:             v.DataType,
+			Description:          v.Description,
+			IsModifiable:         v.IsModifiable,
+			MinimumEngineVersion: v.MinimumEngineVersion,
+			ParameterName:        v.ParameterName,
+			ParameterValue:       v.ParameterValue,
+			Source:               v.Source,
 			SupportedEngineModes: v.SupportedEngineModes,
 		}
 	}
