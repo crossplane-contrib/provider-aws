@@ -114,13 +114,11 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBParameterGroup, obj *svcsdk.Descri
 	// compare CR with currently set Parameters
 	for _, v := range cr.Spec.ForProvider.Parameters {
 		for _, w := range results {
-			if *v.ParameterName == *w.ParameterName {
-				switch {
-				case (v.ParameterValue == nil) || (w.ParameterValue == nil):
+			if awsclients.StringValue(v.ParameterName) == awsclients.StringValue(w.ParameterName) {
+				if awsclients.StringValue(v.ParameterValue) != awsclients.StringValue(w.ParameterValue) {
 					return false, nil
-				case (v.ParameterValue == nil) && (w.ParameterValue == nil):
-					return true, nil
-				case (*v.ParameterValue != *w.ParameterValue) || (*v.ApplyMethod != *w.ApplyMethod):
+				}
+				if awsclients.StringValue(v.ApplyMethod) != awsclients.StringValue(w.ApplyMethod) {
 					return false, nil
 				}
 			}
