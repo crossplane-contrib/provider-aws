@@ -150,7 +150,7 @@ func GenerateIPPermissions(objectPerms []ec2.IpPermission) []v1beta1.IPPermissio
 		permissions[i] = ipPerm
 	}
 	sort.Slice(permissions, func(i, j int) bool {
-		return *permissions[i].FromPort < *permissions[j].FromPort
+		return aws.Int64Value(permissions[i].FromPort) < aws.Int64Value(permissions[j].FromPort)
 	})
 	return permissions
 }
@@ -304,10 +304,10 @@ func CreateSGPatch(in ec2.SecurityGroup, target v1beta1.SecurityGroupParameters)
 	}
 
 	sort.Slice(target.Egress, func(i, j int) bool {
-		return *target.Egress[i].FromPort < *target.Egress[j].FromPort
+		return aws.Int64Value(target.Egress[i].FromPort) < aws.Int64Value(target.Egress[j].FromPort)
 	})
 	sort.Slice(target.Ingress, func(i, j int) bool {
-		return *target.Ingress[i].FromPort < *target.Ingress[j].FromPort
+		return aws.Int64Value(target.Ingress[i].FromPort) < aws.Int64Value(target.Ingress[j].FromPort)
 	})
 
 	jsonPatch, err := awsclients.CreateJSONPatch(*currentParams, target)
