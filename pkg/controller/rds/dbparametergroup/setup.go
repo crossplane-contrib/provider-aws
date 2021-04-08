@@ -110,20 +110,39 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBParameterGroup, obj *svcsdk.Descri
 	// TODO(Dkaykay): We need isUpToDate to have context.
 	ctx := context.TODO()
 	results, err := e.getCurrentDBParameters(ctx, cr)
-
+	if err != nil {
+		return false, err
+	}
+	observed := make(map[string]svcsdk.Parameter, len(results))
+	for _, p := range results {
+		observed[awsclients.StringValue(p.ParameterName)] = *p
+	}
 	// compare CR with currently set Parameters
 	for _, v := range cr.Spec.ForProvider.Parameters {
-		for _, w := range results {
-			if awsclients.StringValue(v.ParameterName) == awsclients.StringValue(w.ParameterName) {
-				if awsclients.StringValue(v.ParameterValue) != awsclients.StringValue(w.ParameterValue) {
-					return false, nil
-				}
-				if awsclients.StringValue(v.ApplyMethod) != awsclients.StringValue(w.ApplyMethod) {
-					return false, nil
-				}
-			}
+		existing, ok := observed[awsclients.StringValue(v.ParameterName)]
+		if !ok {
+			return false, nil
+		}
+		switch {
+		case awsclients.StringValue(existing.ParameterValue) != awsclients.StringValue(v.ParameterValue):
+			return false, nil
+		case awsclients.StringValue(existing.ApplyMethod) != awsclients.StringValue(v.ApplyMethod):
+			return false, nil
 		}
 	}
+	// compare CR with currently set Parameters
+	// for _, v := range cr.Spec.ForProvider.Parameters {
+	// 	for _, w := range results {
+	// 		if awsclients.StringValue(v.ParameterName) == awsclients.StringValue(w.ParameterName) {
+	// 			if awsclients.StringValue(v.ParameterValue) != awsclients.StringValue(w.ParameterValue) {
+	// 				return false, nil
+	// 			}
+	// 			if awsclients.StringValue(v.ApplyMethod) != awsclients.StringValue(w.ApplyMethod) {
+	// 				return false, nil
+	// 			}
+	// 		}
+	// 	}
+	// }
 	return true, err
 }
 
