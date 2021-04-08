@@ -14,5 +14,4 @@ spec:
         applyMethod: immediate
 
   providerConfigRef:
-    name: aws-provider-config
-
+    name: example
