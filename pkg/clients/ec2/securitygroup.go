@@ -267,7 +267,8 @@ func LateInitializeIPPermissions(spec []v1beta1.IPPermission, o []ec2.IpPermissi
 // values between the target *v1beta1.SecurityGroupParameters and the current
 // *ec2.SecurityGroup
 func CreateSGPatch(in ec2.SecurityGroup, target v1beta1.SecurityGroupParameters) (*v1beta1.SecurityGroupParameters, error) { // nolint:gocyclo
-	v1beta1.SortTags(target.Tags, in.Tags)
+	targetCopy := *target.DeepCopy()
+	v1beta1.SortTags(targetCopy.Tags, in.Tags)
 	currentParams := &v1beta1.SecurityGroupParameters{
 		Description: awsclients.StringValue(in.Description),
 		GroupName:   awsclients.StringValue(in.GroupName),
@@ -282,7 +283,7 @@ func CreateSGPatch(in ec2.SecurityGroup, target v1beta1.SecurityGroupParameters)
 	// See the following about usage of -1
 	// https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-security-group-egress.html
 	mOne := int64(-1)
-	for i, spec := range target.Egress {
+	for i, spec := range targetCopy.Egress {
 		if len(currentParams.Egress) <= i {
 			break
 		}
@@ -297,20 +298,32 @@ func CreateSGPatch(in ec2.SecurityGroup, target v1beta1.SecurityGroupParameters)
 	// field is not returned from AWS.
 	for i, ingress := range currentParams.Ingress {
 		for j, pair := range ingress.UserIDGroupPairs {
-			if awsclients.StringValue(pair.VPCID) == "" && len(target.Ingress) > i && len(target.Ingress[i].UserIDGroupPairs) > j {
-				currentParams.Ingress[i].UserIDGroupPairs[j].VPCID = target.Ingress[i].UserIDGroupPairs[j].VPCID
+			if awsclients.StringValue(pair.VPCID) == "" && len(targetCopy.Ingress) > i && len(targetCopy.Ingress[i].UserIDGroupPairs) > j {
+				currentParams.Ingress[i].UserIDGroupPairs[j].VPCID = targetCopy.Ingress[i].UserIDGroupPairs[j].VPCID
 			}
 		}
 	}
 
-	sort.Slice(target.Egress, func(i, j int) bool {
-		return aws.Int64Value(target.Egress[i].FromPort) < aws.Int64Value(target.Egress[j].FromPort)
+	for i, spec := range targetCopy.Egress {
+		for j := range spec.UserIDGroupPairs {
+			targetCopy.Egress[i].UserIDGroupPairs[j].ClearRefSelectors()
+		}
+	}
+
+	for i, spec := range targetCopy.Ingress {
+		for j := range spec.UserIDGroupPairs {
+			targetCopy.Ingress[i].UserIDGroupPairs[j].ClearRefSelectors()
+		}
+	}
+
+	sort.Slice(targetCopy.Egress, func(i, j int) bool {
+		return aws.Int64Value(targetCopy.Egress[i].FromPort) < aws.Int64Value(targetCopy.Egress[j].FromPort)
 	})
-	sort.Slice(target.Ingress, func(i, j int) bool {
-		return aws.Int64Value(target.Ingress[i].FromPort) < aws.Int64Value(target.Ingress[j].FromPort)
+	sort.Slice(targetCopy.Ingress, func(i, j int) bool {
+		return aws.Int64Value(targetCopy.Ingress[i].FromPort) < aws.Int64Value(targetCopy.Ingress[j].FromPort)
 	})
 
-	jsonPatch, err := awsclients.CreateJSONPatch(*currentParams, target)
+	jsonPatch, err := awsclients.CreateJSONPatch(*currentParams, targetCopy)
 	if err != nil {
 		return nil, err
 	}

@@ -173,6 +173,14 @@ type UserIDGroupPair struct {
 	VPCPeeringConnectionID *string `json:"vpcPeeringConnectionId,omitempty"`
 }
 
+// ClearRefSelectors nils out ref and selectors
+func (u *UserIDGroupPair) ClearRefSelectors() {
+	u.VPCIDRef = nil
+	u.VPCIDSelector = nil
+	u.GroupIDRef = nil
+	u.GroupIDSelector = nil
+}
+
 // IPPermission Describes a set of permissions for a security group rule.
 type IPPermission struct {
 	// The start of port range for the TCP and UDP protocols, or an ICMP/ICMPv6
