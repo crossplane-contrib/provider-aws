@@ -54,6 +54,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpc"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
+	"github.com/crossplane/provider-aws/pkg/controller/ecr/repositorypolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/efs/filesystem"
 	"github.com/crossplane/provider-aws/pkg/controller/eks"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/fargateprofile"
@@ -127,6 +128,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		redshift.SetupCluster,
 		address.SetupAddress,
 		repository.SetupRepository,
+		repositorypolicy.SetupRepositoryPolicy,
 		api.SetupAPI,
 		stage.SetupStage,
 		route.SetupRoute,
