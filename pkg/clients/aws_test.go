@@ -19,6 +19,12 @@ package aws
 import (
 	"context"
 	"fmt"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/resource/fake"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
+	"github.com/crossplane/provider-aws/apis/v1beta1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -74,6 +80,135 @@ func TestUseProviderSecret(t *testing.T) {
 	config, err := UseProviderSecret(context.TODO(), credentials, testProfile, testRegion)
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(config).NotTo(BeNil())
+}
+
+func TestGetGlobalRegion(t *testing.T) {
+	type args struct {
+		partition string
+	}
+
+	type want struct {
+		region string
+	}
+
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"EmptyPartition": {
+			args: args{
+				partition: "",
+			},
+			want: want{
+				region: "aws-global",
+			},
+		},
+		"AwsPartition": {
+			args: args{
+				partition: "aws",
+			},
+			want: want{
+				region: "aws-global",
+			},
+		},
+		"GovPartition": {
+			args: args{
+				partition: "aws-gov",
+			},
+			want: want{
+				region: "aws-gov-global",
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			actual := GetGlobalRegion(tc.args.partition)
+			if diff := cmp.Diff(tc.want.region, actual); diff != "" {
+				t.Errorf("add: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGetGlobalRegionForProviderConfig(t *testing.T) {
+	providerConfigReferenceName := "ProviderConfigReference"
+
+	type args struct {
+		providerConfigPartition string
+	}
+
+	type want struct {
+		configRegion string
+	}
+
+	cases := map[string]struct {
+		args args
+		want want
+	}{
+		"ProviderConfigPartitionNotSet": {
+			args: args{
+				providerConfigPartition: "",
+			},
+			want: want{
+				configRegion: "aws-global",
+			},
+		},
+		"ProviderConfigPartitionDefault": {
+			args: args{
+				providerConfigPartition: "aws",
+			},
+			want: want{
+				configRegion: "aws-global",
+			},
+		},
+		"ProviderConfigPartitionGov": {
+			args: args{
+				providerConfigPartition: "aws-gov",
+			},
+			want: want{
+				configRegion: "aws-gov-global",
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			g := NewGomegaWithT(t)
+
+			mg := fake.Managed{
+				ProviderConfigReferencer: fake.ProviderConfigReferencer{
+					Ref: &xpv1.Reference{Name: providerConfigReferenceName},
+				},
+			}
+			providerCredentials := v1beta1.ProviderCredentials{Source: xpv1.CredentialsSourceNone,
+				Partition: tc.args.providerConfigPartition}
+
+			kubeClient := &test.MockClient{
+				MockGet: test.NewMockGetFn(nil, func(obj client.Object) error {
+					switch fake.GVK(obj).Kind {
+					case "ProviderConfig":
+						*obj.(*v1beta1.ProviderConfig) = v1beta1.ProviderConfig{
+							ObjectMeta: v1.ObjectMeta{Name: providerConfigReferenceName},
+							Spec:       v1beta1.ProviderConfigSpec{Credentials: providerCredentials},
+							Status:     v1beta1.ProviderConfigStatus{}}
+					case "ProviderConfigUsage":
+						*obj.(*v1beta1.ProviderConfigUsage) = v1beta1.ProviderConfigUsage{
+							ProviderConfigUsage: xpv1.ProviderConfigUsage{ProviderConfigReference: xpv1.Reference{Name: providerConfigReferenceName}},
+						}
+					}
+					return nil
+				}),
+			}
+
+			actual, err := GetGlobalRegionForProviderConfig(context.TODO(), kubeClient, &mg)
+			g.Expect(err).NotTo(HaveOccurred())
+
+			if diff := cmp.Diff(tc.want.configRegion, actual); diff != "" {
+				t.Errorf("add: -want, +got:\n%s", diff)
+			}
+		})
+	}
 }
 
 func TestDiffTags(t *testing.T) {

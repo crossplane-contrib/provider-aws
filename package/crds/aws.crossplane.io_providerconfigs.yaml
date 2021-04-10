@@ -63,6 +63,9 @@ spec:
                     required:
                     - path
                     type: object
+                  partition:
+                    description: Partition the provider credentials should be used in. This applies to clients and resources where a global region is used (iam, sts, route53, etc)
+                    type: string
                   secretRef:
                     description: A SecretRef is a reference to a secret key that contains the credentials that must be used to connect to the provider.
                     properties:
