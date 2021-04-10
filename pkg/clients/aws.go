@@ -104,6 +104,7 @@ func GetConfig(ctx context.Context, c client.Client, mg resource.Managed, region
 	}
 }
 
+// GetProviderConfig retrieves the providerConfig from kubernetes associated with a managed resource
 func GetProviderConfig(ctx context.Context, c client.Client, mg resource.Managed) (*v1beta1.ProviderConfig, error) {
 	pc := &v1beta1.ProviderConfig{}
 	if err := c.Get(ctx, types.NamespacedName{Name: mg.GetProviderConfigReference().Name}, pc); err != nil {
