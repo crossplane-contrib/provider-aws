@@ -112,6 +112,14 @@ run: go.build
 
 .PHONY: cobertura reviewable manifests submodules fallthrough test-integration run crds.clean
 
+service: 
+	@if [ ! -d "./code-generator" ]; then \
+	 git clone "https://github.com/aws-controllers-k8s/code-generator.git"; \
+	 cd ./code-generator && $(MAKE) ; \
+	fi
+	@cd code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $(SERVICE_ID) --provider-dir ../
+	
+
 # ====================================================================================
 # Special Targets
 
