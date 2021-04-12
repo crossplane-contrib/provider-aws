@@ -35,6 +35,7 @@ type SecurityGroupClient interface {
 	AuthorizeSecurityGroupEgressRequest(input *ec2.AuthorizeSecurityGroupEgressInput) ec2.AuthorizeSecurityGroupEgressRequest
 	RevokeSecurityGroupEgressRequest(input *ec2.RevokeSecurityGroupEgressInput) ec2.RevokeSecurityGroupEgressRequest
 	CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest
+	DeleteTagsRequest(input *ec2.DeleteTagsInput) ec2.DeleteTagsRequest
 }
 
 // NewSecurityGroupClient generates client for AWS Security Group API
