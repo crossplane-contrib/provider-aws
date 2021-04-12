@@ -2,6 +2,7 @@ package ec2
 
 import (
 	"encoding/json"
+	"log"
 	"sort"
 	"strings"
 
@@ -198,42 +199,55 @@ func LateInitializeIPPermissions(spec []v1beta1.IPPermission, o []ec2.IpPermissi
 	if len(spec) < len(o) {
 		return spec
 	}
+	unsafe := false
+	for i := range o {
+		if spec[i].FromPort != o[i].FromPort && spec[i].FromPort != nil {
+			unsafe = true
+			break
+		}
+
+		if spec[i].ToPort != o[i].ToPort && spec[i].ToPort != nil {
+			unsafe = true
+			break
+		}
+
+		if spec[i].IPProtocol != aws.StringValue(o[i].IpProtocol) && spec[i].IPProtocol != "" {
+			unsafe = true
+			break
+		}
+
+		if len(spec[i].IPRanges) != len(o[i].IpRanges) {
+			unsafe = true
+			break
+		}
+
+		if len(spec[i].IPv6Ranges) != len(o[i].Ipv6Ranges) {
+			unsafe = true
+			break
+		}
+
+		if len(spec[i].PrefixListIDs) != len(o[i].PrefixListIds) {
+			unsafe = true
+			break
+		}
+
+		if len(spec[i].UserIDGroupPairs) != len(o[i].UserIdGroupPairs) {
+			unsafe = true
+			break
+		}
+	}
+
+	if unsafe {
+		log.Println("unsafe to do late init - structure is different")
+		return spec
+	}
+
 	for i := range o {
 		spec[i].FromPort = awsclients.LateInitializeInt64Ptr(spec[i].FromPort, o[i].FromPort)
 		spec[i].ToPort = awsclients.LateInitializeInt64Ptr(spec[i].ToPort, o[i].ToPort)
 		spec[i].IPProtocol = awsclients.LateInitializeString(spec[i].IPProtocol, o[i].IpProtocol)
 
-		for j := range o[i].IpRanges {
-			if len(spec[i].IPRanges) == j {
-				spec[i].IPRanges = append(spec[i].IPRanges, v1beta1.IPRange{})
-			}
-			spec[i].IPRanges[j].Description = awsclients.LateInitializeStringPtr(
-				spec[i].IPRanges[j].Description,
-				o[i].IpRanges[j].Description,
-			)
-		}
-		for j := range o[i].Ipv6Ranges {
-			if len(spec[i].IPv6Ranges) == j {
-				spec[i].IPv6Ranges = append(spec[i].IPv6Ranges, v1beta1.IPv6Range{})
-			}
-			spec[i].IPv6Ranges[j].Description = awsclients.LateInitializeStringPtr(
-				spec[i].IPv6Ranges[j].Description,
-				o[i].Ipv6Ranges[j].Description,
-			)
-		}
-		for j := range o[i].PrefixListIds {
-			if len(spec[i].PrefixListIDs) == j {
-				spec[i].PrefixListIDs = append(spec[i].PrefixListIDs, v1beta1.PrefixListID{})
-			}
-			spec[i].PrefixListIDs[j].Description = awsclients.LateInitializeStringPtr(
-				spec[i].PrefixListIDs[j].Description,
-				o[i].PrefixListIds[j].Description,
-			)
-		}
 		for j := range o[i].UserIdGroupPairs {
-			if len(spec[i].UserIDGroupPairs) == j {
-				spec[i].UserIDGroupPairs = append(spec[i].UserIDGroupPairs, v1beta1.UserIDGroupPair{})
-			}
 			spec[i].UserIDGroupPairs[j].Description = awsclients.LateInitializeStringPtr(
 				spec[i].UserIDGroupPairs[j].Description,
 				o[i].UserIdGroupPairs[j].Description,
