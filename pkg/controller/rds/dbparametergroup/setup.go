@@ -3,25 +3,23 @@ package dbparametergroup
 import (
 	"context"
 
+	svcsdk "github.com/aws/aws-sdk-go/service/rds"
+	svcsdkapi "github.com/aws/aws-sdk-go/service/rds/rdsiface"
+	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	svcsdk "github.com/aws/aws-sdk-go/service/rds"
-	svcsdkapi "github.com/aws/aws-sdk-go/service/rds/rdsiface"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	"github.com/pkg/errors"
-
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/rds/v1alpha1"
-
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
