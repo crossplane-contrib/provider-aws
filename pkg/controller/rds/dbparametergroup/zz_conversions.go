@@ -33,10 +33,6 @@ import (
 func GenerateDescribeDBParameterGroupsInput(cr *svcapitypes.DBParameterGroup) *svcsdk.DescribeDBParameterGroupsInput {
 	res := &svcsdk.DescribeDBParameterGroupsInput{}
 
-	if cr.Spec.ForProvider.DBParameterGroupName != nil {
-		res.SetDBParameterGroupName(*cr.Spec.ForProvider.DBParameterGroupName)
-	}
-
 	return res
 }
 
@@ -53,7 +49,7 @@ func GenerateDBParameterGroup(resp *svcsdk.DescribeDBParameterGroupsOutput) *svc
 			cr.Spec.ForProvider.DBParameterGroupFamily = elem.DBParameterGroupFamily
 		}
 		if elem.DBParameterGroupName != nil {
-			cr.Spec.ForProvider.DBParameterGroupName = elem.DBParameterGroupName
+			cr.Status.AtProvider.DBParameterGroupName = elem.DBParameterGroupName
 		}
 		if elem.Description != nil {
 			cr.Spec.ForProvider.Description = elem.Description
@@ -75,25 +71,22 @@ func GenerateCreateDBParameterGroupInput(cr *svcapitypes.DBParameterGroup) *svcs
 	if cr.Spec.ForProvider.DBParameterGroupFamily != nil {
 		res.SetDBParameterGroupFamily(*cr.Spec.ForProvider.DBParameterGroupFamily)
 	}
-	if cr.Spec.ForProvider.DBParameterGroupName != nil {
-		res.SetDBParameterGroupName(*cr.Spec.ForProvider.DBParameterGroupName)
-	}
 	if cr.Spec.ForProvider.Description != nil {
 		res.SetDescription(*cr.Spec.ForProvider.Description)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f3 := []*svcsdk.Tag{}
-		for _, f3iter := range cr.Spec.ForProvider.Tags {
-			f3elem := &svcsdk.Tag{}
-			if f3iter.Key != nil {
-				f3elem.SetKey(*f3iter.Key)
+		f2 := []*svcsdk.Tag{}
+		for _, f2iter := range cr.Spec.ForProvider.Tags {
+			f2elem := &svcsdk.Tag{}
+			if f2iter.Key != nil {
+				f2elem.SetKey(*f2iter.Key)
 			}
-			if f3iter.Value != nil {
-				f3elem.SetValue(*f3iter.Value)
+			if f2iter.Value != nil {
+				f2elem.SetValue(*f2iter.Value)
 			}
-			f3 = append(f3, f3elem)
+			f2 = append(f2, f2elem)
 		}
-		res.SetTags(f3)
+		res.SetTags(f2)
 	}
 
 	return res
@@ -103,20 +96,12 @@ func GenerateCreateDBParameterGroupInput(cr *svcapitypes.DBParameterGroup) *svcs
 func GenerateModifyDBParameterGroupInput(cr *svcapitypes.DBParameterGroup) *svcsdk.ModifyDBParameterGroupInput {
 	res := &svcsdk.ModifyDBParameterGroupInput{}
 
-	if cr.Spec.ForProvider.DBParameterGroupName != nil {
-		res.SetDBParameterGroupName(*cr.Spec.ForProvider.DBParameterGroupName)
-	}
-
 	return res
 }
 
 // GenerateDeleteDBParameterGroupInput returns a deletion input.
 func GenerateDeleteDBParameterGroupInput(cr *svcapitypes.DBParameterGroup) *svcsdk.DeleteDBParameterGroupInput {
 	res := &svcsdk.DeleteDBParameterGroupInput{}
-
-	if cr.Spec.ForProvider.DBParameterGroupName != nil {
-		res.SetDBParameterGroupName(*cr.Spec.ForProvider.DBParameterGroupName)
-	}
 
 	return res
 }

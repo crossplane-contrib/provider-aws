@@ -42,19 +42,6 @@ type DBParameterGroupParameters struct {
 	// The output contains duplicates.
 	// +kubebuilder:validation:Required
 	DBParameterGroupFamily *string `json:"dbParameterGroupFamily"`
-	// The name of the DB parameter group.
-	//
-	// Constraints:
-	//
-	//    * Must be 1 to 255 letters, numbers, or hyphens.
-	//
-	//    * First character must be a letter
-	//
-	//    * Can't end with a hyphen or contain two consecutive hyphens
-	//
-	// This value is stored as a lowercase string.
-	// +kubebuilder:validation:Required
-	DBParameterGroupName *string `json:"dbParameterGroupName"`
 	// The description for the DB parameter group.
 	// +kubebuilder:validation:Required
 	Description *string `json:"description"`
@@ -73,6 +60,8 @@ type DBParameterGroupSpec struct {
 type DBParameterGroupObservation struct {
 	// The Amazon Resource Name (ARN) for the DB parameter group.
 	DBParameterGroupARN *string `json:"dbParameterGroupARN,omitempty"`
+	// The name of the DB parameter group.
+	DBParameterGroupName *string `json:"dbParameterGroupName,omitempty"`
 }
 
 // DBParameterGroupStatus defines the observed state of DBParameterGroup.
