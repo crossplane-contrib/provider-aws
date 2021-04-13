@@ -20,6 +20,12 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
+const (
+	// ResourceCredentialsSecretIDKey is the name of the key in the connection
+	// secret for FileSystem ID.
+	ResourceCredentialsSecretIDKey = "id"
+)
+
 // CustomFileSystemParameters contains the additional fields for FileSystemParameters.
 type CustomFileSystemParameters struct {
 

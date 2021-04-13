@@ -28,7 +28,11 @@ spec:
         - allowedMethods:
             - "GET"
           allowedOrigins:
-            - "ola"
+            - "*"
+          allowedHeaders:
+            - "*"
+          exposeHeaders:
+            - "x-amz-server-side-encryption"
     lifecycleConfiguration:
       rules:
         - status: Enabled

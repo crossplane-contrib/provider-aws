@@ -377,3 +377,121 @@ func TestWebsiteDelete(t *testing.T) {
 		})
 	}
 }
+
+func TestWebsiteLateInit(t *testing.T) {
+	type args struct {
+		cl SubresourceClient
+		b  *v1beta1.Bucket
+	}
+
+	type want struct {
+		err error
+		cr  *v1beta1.Bucket
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Error": {
+			args: args{
+				b: s3Testing.Bucket(),
+				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
+					MockGetBucketWebsiteRequest: func(input *s3.GetBucketWebsiteInput) s3.GetBucketWebsiteRequest {
+						return s3.GetBucketWebsiteRequest{
+							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketWebsiteOutput{}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: awsclient.Wrap(errBoom, websiteGetFailed),
+				cr:  s3Testing.Bucket(),
+			},
+		},
+		"ErrorWebsiteConfigurationNotFound": {
+			args: args{
+				b: s3Testing.Bucket(),
+				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
+					MockGetBucketWebsiteRequest: func(input *s3.GetBucketWebsiteInput) s3.GetBucketWebsiteRequest {
+						return s3.GetBucketWebsiteRequest{
+							Request: s3Testing.CreateRequest(awserr.New(clients3.WebsiteErrCode, "error", nil), &s3.GetBucketWebsiteOutput{}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(),
+			},
+		},
+		"NoLateInitNil": {
+			args: args{
+				b: s3Testing.Bucket(),
+				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
+					MockGetBucketWebsiteRequest: func(input *s3.GetBucketWebsiteInput) s3.GetBucketWebsiteRequest {
+						return s3.GetBucketWebsiteRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketWebsiteOutput{}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(),
+			},
+		},
+		"SuccessfulLateInit": {
+			args: args{
+				b: s3Testing.Bucket(s3Testing.WithWebConfig(nil)),
+				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
+					MockGetBucketWebsiteRequest: func(input *s3.GetBucketWebsiteInput) s3.GetBucketWebsiteRequest {
+						return s3.GetBucketWebsiteRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketWebsiteOutput{
+								ErrorDocument:         generateAWSWebsite().ErrorDocument,
+								IndexDocument:         generateAWSWebsite().IndexDocument,
+								RedirectAllRequestsTo: generateAWSWebsite().RedirectAllRequestsTo,
+								RoutingRules:          generateAWSWebsite().RoutingRules,
+							}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(s3Testing.WithWebConfig(generateWebsiteConfig())),
+			},
+		},
+		"NoOpLateInit": {
+			args: args{
+				b: s3Testing.Bucket(s3Testing.WithWebConfig(generateWebsiteConfig())),
+				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
+					MockGetBucketWebsiteRequest: func(input *s3.GetBucketWebsiteInput) s3.GetBucketWebsiteRequest {
+						return s3.GetBucketWebsiteRequest{
+							Request: s3Testing.CreateRequest(nil, &s3.GetBucketWebsiteOutput{
+								RedirectAllRequestsTo: generateAWSWebsite().RedirectAllRequestsTo,
+								RoutingRules:          generateAWSWebsite().RoutingRules,
+							}),
+						}
+					},
+				}),
+			},
+			want: want{
+				err: nil,
+				cr:  s3Testing.Bucket(s3Testing.WithWebConfig(generateWebsiteConfig())),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			err := tc.args.cl.LateInitialize(context.Background(), tc.args.b)
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.b, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}

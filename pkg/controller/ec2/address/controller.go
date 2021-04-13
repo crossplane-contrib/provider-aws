@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package elasticip
+package address
 
 import (
 	"context"
@@ -37,34 +37,34 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 )
 
 const (
-	errUnexpectedObject = "The managed resource is not an ElasticIP resource"
-	errKubeUpdateFailed = "cannot update ElasticIP custom resource"
+	errUnexpectedObject = "The managed resource is not an Address resource"
+	errKubeUpdateFailed = "cannot update Address custom resource"
 
-	errDescribe      = "failed to describe ElasticIP with id"
-	errMultipleItems = "retrieved multiple ElasticIPs for the given ElasticIPId"
-	errCreate        = "failed to create the ElasticIP resource"
-	errCreateTags    = "failed to create tags for the ElasticIP resource"
-	errDelete        = "failed to delete the ElasticIP resource"
-	errStatusUpdate  = "cannot update status of ElasticIP custom resource"
+	errDescribe      = "failed to describe Address with id"
+	errMultipleItems = "retrieved multiple Addresss for the given AddressId"
+	errCreate        = "failed to create the Address resource"
+	errCreateTags    = "failed to create tags for the Address resource"
+	errDelete        = "failed to delete the Address resource"
+	errStatusUpdate  = "cannot update status of Address custom resource"
 )
 
-// SetupElasticIP adds a controller that reconciles ElasticIP.
-func SetupElasticIP(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
-	name := managed.ControllerName(v1alpha1.ElasticIPGroupKind)
+// SetupAddress adds a controller that reconciles Address.
+func SetupAddress(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+	name := managed.ControllerName(v1beta1.AddressGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
 		}).
-		For(&v1alpha1.ElasticIP{}).
+		For(&v1beta1.Address{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.ElasticIPGroupVersionKind),
+			resource.ManagedKind(v1beta1.AddressGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
@@ -78,7 +78,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.ElasticIP)
+	cr, ok := mg.(*v1beta1.Address)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -91,11 +91,11 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 
 type external struct {
 	kube   client.Client
-	client ec2.ElasticIPClient
+	client ec2.AddressClient
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
-	cr, ok := mgd.(*v1alpha1.ElasticIP)
+	cr, ok := mgd.(*v1beta1.Address)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -134,21 +134,21 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	// update the CRD spec for any new values from provider
 	current := cr.Spec.ForProvider.DeepCopy()
-	ec2.LateInitializeElasticIP(&cr.Spec.ForProvider, &observed)
+	ec2.LateInitializeAddress(&cr.Spec.ForProvider, &observed)
 
 	cr.SetConditions(xpv1.Available())
 
-	cr.Status.AtProvider = ec2.GenerateElasticIPObservation(observed)
+	cr.Status.AtProvider = ec2.GenerateAddressObservation(observed)
 
 	return managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceUpToDate:        ec2.IsElasticIPUpToDate(cr.Spec.ForProvider, observed),
+		ResourceUpToDate:        ec2.IsAddressUpToDate(cr.Spec.ForProvider, observed),
 		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.ElasticIP)
+	cr, ok := mgd.(*v1beta1.Address)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -178,12 +178,12 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mgd.(*v1alpha1.ElasticIP)
+	cr, ok := mgd.(*v1beta1.Address)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	// NOTE: ElasticIPs can only be tagged after the creation and this request
+	// NOTE: Addresss can only be tagged after the creation and this request
 	// is idempotent.
 	if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
 		Resources: []string{meta.GetExternalName(cr)},
@@ -196,7 +196,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.ElasticIP)
+	cr, ok := mgd.(*v1beta1.Address)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
@@ -222,7 +222,7 @@ type tagger struct {
 }
 
 func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.ElasticIP)
+	cr, ok := mgd.(*v1beta1.Address)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
@@ -233,10 +233,10 @@ func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
 	for k, v := range resource.GetExternalTags(mgd) {
 		tagMap[k] = v
 	}
-	cr.Spec.ForProvider.Tags = make([]v1alpha1.Tag, len(tagMap))
+	cr.Spec.ForProvider.Tags = make([]v1beta1.Tag, len(tagMap))
 	i := 0
 	for k, v := range tagMap {
-		cr.Spec.ForProvider.Tags[i] = v1alpha1.Tag{Key: k, Value: v}
+		cr.Spec.ForProvider.Tags[i] = v1beta1.Tag{Key: k, Value: v}
 		i++
 	}
 	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {

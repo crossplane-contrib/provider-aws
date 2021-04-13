@@ -242,6 +242,15 @@ func CopyTags(tags []v1beta1.Tag) []s3.Tag {
 	return out
 }
 
+// CopyAWSTags converts a list of external s3.Tags to local Tags
+func CopyAWSTags(tags []s3.Tag) []v1beta1.Tag {
+	out := make([]v1beta1.Tag, len(tags))
+	for i, one := range tags {
+		out[i] = v1beta1.Tag{Key: aws.StringValue(one.Key), Value: aws.StringValue(one.Value)}
+	}
+	return out
+}
+
 // SortS3TagSet stable sorts an external s3 tag list by the key and value.
 func SortS3TagSet(tags []s3.Tag) []s3.Tag {
 	outTags := make([]s3.Tag, len(tags))

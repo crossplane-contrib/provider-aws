@@ -41,17 +41,17 @@ export IAM_ROLE_NAME=provider-aws # name for IAM role, can be anything you want
 
 3. Install Crossplane
 
-Install Crossplane from `alpha` channel:
+Install Crossplane from `stable` channel:
 
 ```
 kubectl create namespace crossplane-system
-helm repo add crossplane-alpha https://charts.crossplane.io/alpha
+helm repo add crossplane-stable https://charts.crossplane.io/stable
 
-helm install crossplane --namespace crossplane-system crossplane-alpha/crossplane
+helm install crossplane --namespace crossplane-system crossplane-stable/crossplane
 ```
 
 `provider-aws` can be installed with the [Crossplane
-CLI](https://crossplane.io/docs/v0.13/getting-started/install-configure.html#install-crossplane-cli),
+CLI](https://crossplane.io/docs/v1.0/getting-started/install-configure.html#install-crossplane-cli),
 but we will do so manually so that we can also create and reference a
 `ControllerConfig`:
 
@@ -130,8 +130,8 @@ read -r -d '' TRUST_RELATIONSHIP <<EOF
       },
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
-        "StringEquals": {
-          "${OIDC_PROVIDER}:sub": "system:serviceaccount:${SERVICE_ACCOUNT_NAMESPACE}:${SERVICE_ACCOUNT_NAME}"
+        "StringLike": {
+          "${OIDC_PROVIDER}:sub": "system:serviceaccount:${SERVICE_ACCOUNT_NAMESPACE}:provider-aws-*"
         }
       }
     }
@@ -140,6 +140,9 @@ read -r -d '' TRUST_RELATIONSHIP <<EOF
 EOF
 echo "${TRUST_RELATIONSHIP}" > trust.json
 ```
+
+> The default service account name is the provider-aws revision and changes with every provider release. The conditional above wildcard matches the default service account name in order to keep the role consistent across provider releases.
+The above policy assumes a service account name of `provider-aws-*` 
 
 Create IAM role:
 

@@ -38,147 +38,9 @@ type NotificationConfigurationClient struct {
 	client s3.BucketClient
 }
 
-// LateInitialize is responsible for initializing the resource based on the external value
-func (in *NotificationConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketNotificationConfigurationRequest(&awss3.GetBucketNotificationConfigurationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
-	if err != nil {
-		return awsclient.Wrap(err, notificationGetFailed)
-	}
-	if emptyConfiguration(external) {
-		// There is nothing to initialize from AWS
-		return nil
-	}
-	config := bucket.Spec.ForProvider.NotificationConfiguration
-	if config == nil {
-		// We need the configuration to exist so we can initialize
-		bucket.Spec.ForProvider.NotificationConfiguration = &v1beta1.NotificationConfiguration{}
-		config = bucket.Spec.ForProvider.NotificationConfiguration
-	}
-
-	// A list is provided by AWS
-	if external.LambdaFunctionConfigurations != nil {
-		if config.LambdaFunctionConfigurations == nil {
-			config.LambdaFunctionConfigurations = make([]v1beta1.LambdaFunctionConfiguration, len(external.LambdaFunctionConfigurations))
-		}
-		LateInitializeLambda(external.LambdaFunctionConfigurations, config.LambdaFunctionConfigurations)
-	}
-
-	// A list is provided by AWS
-	if external.QueueConfigurations != nil {
-		if config.QueueConfigurations == nil {
-			config.QueueConfigurations = make([]v1beta1.QueueConfiguration, len(external.QueueConfigurations))
-		}
-		LateInitializeQueue(external.QueueConfigurations, config.QueueConfigurations)
-	}
-
-	// A list is provided by AWS
-	if external.TopicConfigurations != nil {
-		if config.TopicConfigurations == nil {
-			config.TopicConfigurations = make([]v1beta1.TopicConfiguration, len(external.TopicConfigurations))
-		}
-		LateInitializeTopic(external.TopicConfigurations, config.TopicConfigurations)
-	}
-	return nil
-}
-
-// LateInitializeFilter initializes the external awss3.NotificationConfigurationFilter to a local v1beta.NotificationConfigurationFilter
-func LateInitializeFilter(local *v1beta1.NotificationConfigurationFilter, external *awss3.NotificationConfigurationFilter) *v1beta1.NotificationConfigurationFilter {
-	if local != nil {
-		return local
-	}
-	if external == nil {
-		return nil
-	}
-	local = &v1beta1.NotificationConfigurationFilter{}
-	if external.Key == nil {
-		return local
-	}
-	local.Key = &v1beta1.S3KeyFilter{}
-	if external.Key.FilterRules != nil {
-		local.Key.FilterRules = make([]v1beta1.FilterRule, len(external.Key.FilterRules))
-		for i, v := range external.Key.FilterRules {
-			local.Key.FilterRules[i] = v1beta1.FilterRule{
-				Name:  string(v.Name),
-				Value: v.Value,
-			}
-		}
-	}
-	return local
-}
-
-// LateInitializeEvents initializes the external []awss3.Event to a local []string
-func LateInitializeEvents(local []string, external []awss3.Event) []string {
-	if local != nil {
-		return local
-	}
-	newLocal := make([]string, len(external))
-	for i, v := range external {
-		newLocal[i] = string(v)
-	}
-	return newLocal
-}
-
-// LateInitializeLambda initializes the external awss3.LambdaFunctionConfiguration to a local v1beta.LambdaFunctionConfiguration
-func LateInitializeLambda(external []awss3.LambdaFunctionConfiguration, local []v1beta1.LambdaFunctionConfiguration) {
-	for i, v := range external {
-		if i >= len(local) {
-			break
-		}
-		local[i] = v1beta1.LambdaFunctionConfiguration{
-			Events:            LateInitializeEvents(local[i].Events, v.Events),
-			Filter:            LateInitializeFilter(local[i].Filter, v.Filter),
-			ID:                awsclient.LateInitializeStringPtr(local[i].ID, v.Id),
-			LambdaFunctionArn: awsclient.LateInitializeString(local[i].LambdaFunctionArn, v.LambdaFunctionArn),
-		}
-	}
-}
-
-// LateInitializeQueue initializes the external awss3.QueueConfiguration to a local v1beta.QueueConfiguration
-func LateInitializeQueue(external []awss3.QueueConfiguration, local []v1beta1.QueueConfiguration) {
-	for i, v := range external {
-		if i >= len(local) {
-			break
-		}
-		local[i] = v1beta1.QueueConfiguration{
-			Events:   LateInitializeEvents(local[i].Events, v.Events),
-			Filter:   LateInitializeFilter(local[i].Filter, v.Filter),
-			ID:       awsclient.LateInitializeStringPtr(local[i].ID, v.Id),
-			QueueArn: awsclient.LateInitializeString(local[i].QueueArn, v.QueueArn),
-		}
-	}
-}
-
-// LateInitializeTopic initializes the external awss3.TopicConfiguration to a local v1beta.TopicConfiguration
-func LateInitializeTopic(external []awss3.TopicConfiguration, local []v1beta1.TopicConfiguration) {
-	for i, v := range external {
-		if i >= len(local) {
-			break
-		}
-		local[i] = v1beta1.TopicConfiguration{
-			Events:   LateInitializeEvents(local[i].Events, v.Events),
-			Filter:   LateInitializeFilter(local[i].Filter, v.Filter),
-			ID:       awsclient.LateInitializeStringPtr(local[i].ID, v.Id),
-			TopicArn: awsclient.LateInitializeStringPtr(local[i].TopicArn, v.TopicArn),
-		}
-	}
-}
-
 // NewNotificationConfigurationClient creates the client for Accelerate Configuration
 func NewNotificationConfigurationClient(client s3.BucketClient) *NotificationConfigurationClient {
 	return &NotificationConfigurationClient{client: client}
-}
-
-func emptyConfiguration(external *awss3.GetBucketNotificationConfigurationResponse) bool {
-	return external == nil || len(external.TopicConfigurations) == 0 || len(external.QueueConfigurations) == 0 || len(external.LambdaFunctionConfigurations) == 0
-}
-
-func bucketStatus(config *v1beta1.NotificationConfiguration, external *awss3.GetBucketNotificationConfigurationResponse) ResourceStatus { // nolint:gocyclo
-	if config == nil && len(external.QueueConfigurations) == 0 && len(external.LambdaFunctionConfigurations) == 0 && len(external.TopicConfigurations) == 0 {
-		return Updated
-	} else if config == nil && (len(external.QueueConfigurations) != 0 || len(external.LambdaFunctionConfigurations) != 0 || len(external.TopicConfigurations) != 0) {
-		return NeedsDeletion
-	}
-	return NeedsUpdate
 }
 
 // Observe checks if the resource exists and if it matches the local configuration
@@ -204,36 +66,6 @@ func (in *NotificationConfigurationClient) Observe(ctx context.Context, bucket *
 	}
 
 	return NeedsUpdate, nil
-}
-
-func copyEvents(src []string) []awss3.Event {
-	if len(src) == 0 {
-		return nil
-	}
-	out := make([]awss3.Event, len(src))
-	for i, v := range src {
-		cast := awss3.Event(v)
-		out[i] = cast
-	}
-	return out
-}
-
-func generateFilter(src *v1beta1.NotificationConfigurationFilter) *awss3.NotificationConfigurationFilter {
-	if src == nil || src.Key == nil {
-		return nil
-	}
-	out := &awss3.NotificationConfigurationFilter{Key: &awss3.S3KeyFilter{}}
-	if src.Key.FilterRules == nil {
-		return out
-	}
-	out.Key.FilterRules = make([]awss3.FilterRule, len(src.Key.FilterRules))
-	for i, v := range src.Key.FilterRules {
-		out.Key.FilterRules[i] = awss3.FilterRule{
-			Name:  awss3.FilterRuleName(v.Name),
-			Value: v.Value,
-		}
-	}
-	return out
 }
 
 // GenerateLambdaConfiguration creates []awss3.LambdaFunctionConfiguration from the local NotificationConfiguration
@@ -300,6 +132,36 @@ func GenerateQueueConfigurations(config *v1beta1.NotificationConfiguration) []aw
 	return configurations
 }
 
+func copyEvents(src []string) []awss3.Event {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make([]awss3.Event, len(src))
+	for i, v := range src {
+		cast := awss3.Event(v)
+		out[i] = cast
+	}
+	return out
+}
+
+func generateFilter(src *v1beta1.NotificationConfigurationFilter) *awss3.NotificationConfigurationFilter {
+	if src == nil || src.Key == nil {
+		return nil
+	}
+	out := &awss3.NotificationConfigurationFilter{Key: &awss3.S3KeyFilter{}}
+	if src.Key.FilterRules == nil {
+		return out
+	}
+	out.Key.FilterRules = make([]awss3.FilterRule, len(src.Key.FilterRules))
+	for i, v := range src.Key.FilterRules {
+		out.Key.FilterRules[i] = awss3.FilterRule{
+			Name:  awss3.FilterRuleName(v.Name),
+			Value: v.Value,
+		}
+	}
+	return out
+}
+
 // GenerateConfiguration creates the external aws NotificationConfiguration from the local representation
 func GenerateConfiguration(config *v1beta1.NotificationConfiguration) *awss3.NotificationConfiguration {
 	return &awss3.NotificationConfiguration{
@@ -330,4 +192,144 @@ func (in *NotificationConfigurationClient) CreateOrUpdate(ctx context.Context, b
 // Delete does nothing because there is no corresponding deletion call in awsclient.
 func (*NotificationConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucket) error {
 	return nil
+}
+
+// LateInitialize is responsible for initializing the resource based on the external value
+func (in *NotificationConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
+	external, err := in.client.GetBucketNotificationConfigurationRequest(&awss3.GetBucketNotificationConfigurationInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
+	if err != nil {
+		return awsclient.Wrap(err, notificationGetFailed)
+	}
+	if emptyConfiguration(external) {
+		// There is nothing to initialize from AWS
+		return nil
+	}
+
+	if bucket.Spec.ForProvider.NotificationConfiguration == nil {
+		// We need the configuration to exist so we can initialize
+		bucket.Spec.ForProvider.NotificationConfiguration = &v1beta1.NotificationConfiguration{}
+	}
+	config := bucket.Spec.ForProvider.NotificationConfiguration
+
+	// A list is provided by AWS
+	if len(external.LambdaFunctionConfigurations) != 0 {
+		config.LambdaFunctionConfigurations = LateInitializeLambda(external.LambdaFunctionConfigurations, config.LambdaFunctionConfigurations)
+	}
+
+	// A list is provided by AWS
+	if len(external.QueueConfigurations) != 0 {
+		config.QueueConfigurations = LateInitializeQueue(external.QueueConfigurations, config.QueueConfigurations)
+	}
+
+	// A list is provided by AWS
+	if len(external.TopicConfigurations) != 0 {
+		config.TopicConfigurations = LateInitializeTopic(external.TopicConfigurations, config.TopicConfigurations)
+	}
+	return nil
+}
+
+// SubresourceExists checks if the subresource this controller manages currently exists
+func (in *NotificationConfigurationClient) SubresourceExists(bucket *v1beta1.Bucket) bool {
+	return bucket.Spec.ForProvider.NotificationConfiguration != nil
+}
+
+// LateInitializeFilter initializes the external awss3.NotificationConfigurationFilter to a local v1beta.NotificationConfigurationFilter
+func LateInitializeFilter(local *v1beta1.NotificationConfigurationFilter, external *awss3.NotificationConfigurationFilter) *v1beta1.NotificationConfigurationFilter {
+	if local != nil {
+		return local
+	}
+	if external == nil {
+		return nil
+	}
+	local = &v1beta1.NotificationConfigurationFilter{}
+	if external.Key == nil {
+		return local
+	}
+	local.Key = &v1beta1.S3KeyFilter{}
+	if external.Key.FilterRules != nil {
+		local.Key.FilterRules = make([]v1beta1.FilterRule, len(external.Key.FilterRules))
+		for i, v := range external.Key.FilterRules {
+			local.Key.FilterRules[i] = v1beta1.FilterRule{
+				Name:  string(v.Name),
+				Value: v.Value,
+			}
+		}
+	}
+	return local
+}
+
+// LateInitializeEvents initializes the external []awss3.Event to a local []string
+func LateInitializeEvents(local []string, external []awss3.Event) []string {
+	if local != nil {
+		return local
+	}
+	newLocal := make([]string, len(external))
+	for i, v := range external {
+		newLocal[i] = string(v)
+	}
+	return newLocal
+}
+
+// LateInitializeLambda initializes the external awss3.LambdaFunctionConfiguration to a local v1beta.LambdaFunctionConfiguration
+func LateInitializeLambda(external []awss3.LambdaFunctionConfiguration, local []v1beta1.LambdaFunctionConfiguration) []v1beta1.LambdaFunctionConfiguration {
+	if len(local) != 0 {
+		return local
+	}
+	local = make([]v1beta1.LambdaFunctionConfiguration, len(external))
+	for i, v := range external {
+		local[i] = v1beta1.LambdaFunctionConfiguration{
+			Events:            LateInitializeEvents(local[i].Events, v.Events),
+			Filter:            LateInitializeFilter(local[i].Filter, v.Filter),
+			ID:                awsclient.LateInitializeStringPtr(local[i].ID, v.Id),
+			LambdaFunctionArn: awsclient.LateInitializeString(local[i].LambdaFunctionArn, v.LambdaFunctionArn),
+		}
+	}
+	return local
+}
+
+// LateInitializeQueue initializes the external awss3.QueueConfiguration to a local v1beta.QueueConfiguration
+func LateInitializeQueue(external []awss3.QueueConfiguration, local []v1beta1.QueueConfiguration) []v1beta1.QueueConfiguration {
+	if len(local) != 0 {
+		return local
+	}
+	local = make([]v1beta1.QueueConfiguration, len(external))
+	for i, v := range external {
+		local[i] = v1beta1.QueueConfiguration{
+			Events:   LateInitializeEvents(local[i].Events, v.Events),
+			Filter:   LateInitializeFilter(local[i].Filter, v.Filter),
+			ID:       awsclient.LateInitializeStringPtr(local[i].ID, v.Id),
+			QueueArn: awsclient.LateInitializeString(local[i].QueueArn, v.QueueArn),
+		}
+	}
+	return local
+}
+
+// LateInitializeTopic initializes the external awss3.TopicConfiguration to a local v1beta.TopicConfiguration
+func LateInitializeTopic(external []awss3.TopicConfiguration, local []v1beta1.TopicConfiguration) []v1beta1.TopicConfiguration {
+	if len(local) != 0 {
+		return local
+	}
+	local = make([]v1beta1.TopicConfiguration, len(external))
+	for i, v := range external {
+		local[i] = v1beta1.TopicConfiguration{
+			Events:   LateInitializeEvents(local[i].Events, v.Events),
+			Filter:   LateInitializeFilter(local[i].Filter, v.Filter),
+			ID:       awsclient.LateInitializeStringPtr(local[i].ID, v.Id),
+			TopicArn: awsclient.LateInitializeStringPtr(local[i].TopicArn, v.TopicArn),
+		}
+	}
+	return local
+}
+
+func emptyConfiguration(external *awss3.GetBucketNotificationConfigurationResponse) bool {
+	return (external == nil) || (len(external.TopicConfigurations) == 0 && len(external.QueueConfigurations) == 0 && len(external.LambdaFunctionConfigurations) == 0)
+}
+
+func bucketStatus(config *v1beta1.NotificationConfiguration, external *awss3.GetBucketNotificationConfigurationResponse) ResourceStatus { // nolint:gocyclo
+	if config == nil && len(external.QueueConfigurations) == 0 && len(external.LambdaFunctionConfigurations) == 0 && len(external.TopicConfigurations) == 0 {
+		return Updated
+	} else if config == nil && (len(external.QueueConfigurations) != 0 || len(external.LambdaFunctionConfigurations) != 0 || len(external.TopicConfigurations) != 0) {
+		return NeedsDeletion
+	}
+	return NeedsUpdate
 }

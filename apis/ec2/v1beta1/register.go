@@ -88,6 +88,14 @@ var (
 	NATGatewayGroupVersionKind = SchemeGroupVersion.WithKind(NATGatewayKind)
 )
 
+// Address type metadata.
+var (
+	AddressKind             = reflect.TypeOf(Address{}).Name()
+	AddressGroupKind        = schema.GroupKind{Group: Group, Kind: AddressKind}.String()
+	AddressKindAPIVersion   = AddressKind + "." + SchemeGroupVersion.String()
+	AddressGroupVersionKind = SchemeGroupVersion.WithKind(AddressKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&VPC{}, &VPCList{})
 	SchemeBuilder.Register(&Subnet{}, &SubnetList{})
@@ -95,4 +103,5 @@ func init() {
 	SchemeBuilder.Register(&InternetGateway{}, &InternetGatewayList{})
 	SchemeBuilder.Register(&RouteTable{}, &RouteTableList{})
 	SchemeBuilder.Register(&NATGateway{}, &NATGatewayList{})
+	SchemeBuilder.Register(&Address{}, &AddressList{})
 }

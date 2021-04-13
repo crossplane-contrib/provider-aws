@@ -29,6 +29,7 @@ type SubresourceClient interface {
 	CreateOrUpdate(ctx context.Context, bucket *v1beta1.Bucket) error
 	Delete(ctx context.Context, bucket *v1beta1.Bucket) error
 	LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error
+	SubresourceExists(bucket *v1beta1.Bucket) bool
 }
 
 // NewSubresourceClients creates the array of all clients for a given BucketProvider
