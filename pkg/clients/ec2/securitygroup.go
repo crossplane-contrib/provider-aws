@@ -2,7 +2,7 @@ package ec2
 
 import (
 	"encoding/json"
-	"log"
+	"reflect"
 	"sort"
 	"strings"
 
@@ -190,6 +190,43 @@ func LateInitializeSG(in *v1beta1.SecurityGroupParameters, sg *ec2.SecurityGroup
 	}
 }
 
+// canLateInitIPPermissions returns true if the structure of IP
+// permissions is the same as in the spec. If the structure is
+// different it is not safe to do late init because we might mix
+// information between two rules, because the objects do not have keys
+func canLateInitIPPermissions(spec []v1beta1.IPPermission, o []ec2.IpPermission) bool { // nolint:gocyclo
+	for i := range o {
+		if !reflect.DeepEqual(spec[i].FromPort, o[i].FromPort) && spec[i].FromPort != nil {
+			return false
+		}
+
+		if !reflect.DeepEqual(spec[i].ToPort, o[i].ToPort) && spec[i].ToPort != nil {
+			return false
+		}
+
+		if spec[i].IPProtocol != aws.StringValue(o[i].IpProtocol) && spec[i].IPProtocol != "" {
+			return false
+		}
+
+		if len(spec[i].IPRanges) != len(o[i].IpRanges) {
+			return false
+		}
+
+		if len(spec[i].IPv6Ranges) != len(o[i].Ipv6Ranges) {
+			return false
+		}
+
+		if len(spec[i].PrefixListIDs) != len(o[i].PrefixListIds) {
+			return false
+		}
+
+		if len(spec[i].UserIDGroupPairs) != len(o[i].UserIdGroupPairs) {
+			return false
+		}
+	}
+	return true
+}
+
 // LateInitializeIPPermissions returns an array of []v1beta1.IPPermission whose
 // empty optional fields are filled with what's observed in []ec2.IpPermission.
 //
@@ -199,46 +236,8 @@ func LateInitializeIPPermissions(spec []v1beta1.IPPermission, o []ec2.IpPermissi
 	if len(spec) < len(o) {
 		return spec
 	}
-	unsafe := false
-	for i := range o {
-		if spec[i].FromPort != o[i].FromPort && spec[i].FromPort != nil {
-			unsafe = true
-			break
-		}
 
-		if spec[i].ToPort != o[i].ToPort && spec[i].ToPort != nil {
-			unsafe = true
-			break
-		}
-
-		if spec[i].IPProtocol != aws.StringValue(o[i].IpProtocol) && spec[i].IPProtocol != "" {
-			unsafe = true
-			break
-		}
-
-		if len(spec[i].IPRanges) != len(o[i].IpRanges) {
-			unsafe = true
-			break
-		}
-
-		if len(spec[i].IPv6Ranges) != len(o[i].Ipv6Ranges) {
-			unsafe = true
-			break
-		}
-
-		if len(spec[i].PrefixListIDs) != len(o[i].PrefixListIds) {
-			unsafe = true
-			break
-		}
-
-		if len(spec[i].UserIDGroupPairs) != len(o[i].UserIdGroupPairs) {
-			unsafe = true
-			break
-		}
-	}
-
-	if unsafe {
-		log.Println("unsafe to do late init - structure is different")
+	if !canLateInitIPPermissions(spec, o) {
 		return spec
 	}
 
