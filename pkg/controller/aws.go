@@ -53,6 +53,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/securitygroup"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpc"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcpeeringconnection"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repositorypolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/efs/filesystem"
@@ -150,6 +151,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		key.SetupKey,
 		filesystem.SetupFileSystem,
 		dbcluster.SetupDBCluster,
+		vpcpeeringconnection.SetupVPCPeeringConnection,
 	} {
 		if err := setup(mgr, l, rl); err != nil {
 			return err
