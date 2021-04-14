@@ -9,6 +9,10 @@ ignore:
     - CreateDBClusterInput.VpcSecurityGroupIds
     - ModifyDBClusterInput.VpcSecurityGroupIds
     - DBCluster.PendingModifiedValues
+    - CreateDBParameterGroupInput.DBParameterGroupName
+    - DeleteDBParameterGroupInput.DBParameterGroupName
+    - ModifyDBParameterGroupInput.DBParameterGroupName
+    - DescribeDBParameterGroupsInput.DBParameterGroupName
   resource_names:
     - DBClusterEndpoint
     - CustomAvailabilityZone
@@ -16,7 +20,6 @@ ignore:
     - DBClusterSnapshot
     - DBInstance
     - DBInstanceReadReplica
-    - DBParameterGroup
     - DBProxy
     - DBSecurityGroup
     - DBSnapshot

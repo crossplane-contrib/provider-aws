@@ -340,6 +340,8 @@ type DBEngineVersion struct {
 
 	Status *string `json:"status,omitempty"`
 
+	SupportedEngineModes []*string `json:"supportedEngineModes,omitempty"`
+
 	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
 
 	SupportsLogExportsToCloudwatchLogs *bool `json:"supportsLogExportsToCloudwatchLogs,omitempty"`
@@ -513,7 +515,13 @@ type DBInstanceStatusInfo struct {
 	StatusType *string `json:"statusType,omitempty"`
 }
 
-type DBParameterGroup struct {
+type DBParameterGroupStatus_SDK struct {
+	DBParameterGroupName *string `json:"dbParameterGroupName,omitempty"`
+
+	ParameterApplyStatus *string `json:"parameterApplyStatus,omitempty"`
+}
+
+type DBParameterGroup_SDK struct {
 	DBParameterGroupARN *string `json:"dbParameterGroupARN,omitempty"`
 
 	DBParameterGroupFamily *string `json:"dbParameterGroupFamily,omitempty"`
@@ -521,12 +529,6 @@ type DBParameterGroup struct {
 	DBParameterGroupName *string `json:"dbParameterGroupName,omitempty"`
 
 	Description *string `json:"description,omitempty"`
-}
-
-type DBParameterGroupStatus struct {
-	DBParameterGroupName *string `json:"dbParameterGroupName,omitempty"`
-
-	ParameterApplyStatus *string `json:"parameterApplyStatus,omitempty"`
 }
 
 type DBProxy struct {
@@ -704,6 +706,8 @@ type EngineDefaults struct {
 	DBParameterGroupFamily *string `json:"dbParameterGroupFamily,omitempty"`
 
 	Marker *string `json:"marker,omitempty"`
+
+	Parameters []*Parameter `json:"parameters,omitempty"`
 }
 
 type Event struct {
@@ -973,6 +977,8 @@ type OrderableDBInstanceOption struct {
 
 	StorageType *string `json:"storageType,omitempty"`
 
+	SupportedEngineModes []*string `json:"supportedEngineModes,omitempty"`
+
 	SupportsEnhancedMonitoring *bool `json:"supportsEnhancedMonitoring,omitempty"`
 
 	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
@@ -999,6 +1005,8 @@ type Outpost struct {
 type Parameter struct {
 	AllowedValues *string `json:"allowedValues,omitempty"`
 
+	ApplyMethod *string `json:"applyMethod,omitempty"`
+
 	ApplyType *string `json:"applyType,omitempty"`
 
 	DataType *string `json:"dataType,omitempty"`
@@ -1014,6 +1022,8 @@ type Parameter struct {
 	ParameterValue *string `json:"parameterValue,omitempty"`
 
 	Source *string `json:"source,omitempty"`
+
+	SupportedEngineModes []*string `json:"supportedEngineModes,omitempty"`
 }
 
 type PendingCloudwatchLogsExports struct {
