@@ -11,6 +11,5 @@ spec:
       - parameterName: application_name
         parameterValue: "example"
         applyMethod: immediate
-
   providerConfigRef:
     name: example
