@@ -12,9 +12,7 @@ ignore:
     - CreateDBParameterGroupInput.DBParameterGroupName
     - DeleteDBParameterGroupInput.DBParameterGroupName
     - ModifyDBParameterGroupInput.DBParameterGroupName
-    - DescribeDBParameterGroupInput.DBParameterGroupName
     - DescribeDBParameterGroupsInput.DBParameterGroupName
-    - ResetDBParameterGroupInput.DBParameterGroupName
   resource_names:
     - DBClusterEndpoint
     - CustomAvailabilityZone
