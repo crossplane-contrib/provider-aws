@@ -6,7 +6,7 @@ spec:
   forProvider:
     region: eu-central-1
     dbParameterGroupFamily: postgres9.6
-    description: test
+    description: example
     parameters:
       - parameterName: application_name
         parameterValue: "example"
