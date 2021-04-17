@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -408,6 +409,228 @@ func TestUpdate(t *testing.T) {
 						SecurityGroupID: sgID,
 					})),
 				err: awsclient.Wrap(errBoom, errAuthorizeIngress),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, sg: tc.sg}
+			o, err := e.Update(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func compareTags(a awsec2.Tag, b awsec2.Tag) bool {
+	return aws.StringValue(a.Key) < aws.StringValue(b.Key)
+}
+
+func TestUpdateTags(t *testing.T) {
+	type want struct {
+		cr     *v1beta1.SecurityGroup
+		result managed.ExternalUpdate
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Same": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
+						return awsec2.DescribeSecurityGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSecurityGroupsOutput{
+								SecurityGroups: []awsec2.SecurityGroup{{
+									Tags: []awsec2.Tag{
+										{
+											Key:   aws.String("k1"),
+											Value: aws.String("v1"),
+										}, {
+											Key:   aws.String("k2"),
+											Value: aws.String("v2"),
+										},
+									},
+								}},
+							}},
+						}
+					},
+				},
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Tags: []v1beta1.Tag{
+						{
+							Key:   "k1",
+							Value: "v1",
+						}, {
+							Key:   "k2",
+							Value: "v2",
+						},
+					},
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+			},
+			want: want{
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Tags: []v1beta1.Tag{
+						{
+							Key:   "k1",
+							Value: "v1",
+						}, {
+							Key:   "k2",
+							Value: "v2",
+						},
+					}}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+			},
+		},
+		"Change": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
+						return awsec2.DescribeSecurityGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSecurityGroupsOutput{
+								SecurityGroups: []awsec2.SecurityGroup{{
+									Tags: []awsec2.Tag{
+										{
+											Key:   aws.String("k1"),
+											Value: aws.String("v1"),
+										},
+										{
+											Key:   aws.String("k2"),
+											Value: aws.String("vx"),
+										},
+										{
+											Key:   aws.String("k4"),
+											Value: aws.String("v4"),
+										},
+									},
+								}},
+							}},
+						}
+					},
+
+					MockCreateTags: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
+						if diff := cmp.Diff(input.Tags, []awsec2.Tag{
+							{
+								Key:   aws.String("k2"),
+								Value: aws.String("v2"),
+							}, {
+								Key:   aws.String("k3"),
+								Value: aws.String("v3"),
+							},
+						}, cmpopts.SortSlices(compareTags)); diff != "" {
+							t.Errorf("r: -want, +got:\n%s", diff)
+						}
+						return awsec2.CreateTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
+						}
+					},
+					MockDeleteTags: func(input *awsec2.DeleteTagsInput) awsec2.DeleteTagsRequest {
+						if diff := cmp.Diff(input.Tags, []awsec2.Tag{{Key: aws.String("k4")}}); diff != "" {
+							t.Errorf("r: -want, +got:\n%s", diff)
+						}
+						return awsec2.DeleteTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteTagsOutput{}},
+						}
+					},
+				},
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Tags: []v1beta1.Tag{
+						{
+							Key:   "k1",
+							Value: "v1",
+						}, {
+							Key:   "k2",
+							Value: "v2",
+						},
+						{
+							Key:   "k3",
+							Value: "v3",
+						},
+					},
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+			},
+			want: want{
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Tags: []v1beta1.Tag{
+						{
+							Key:   "k1",
+							Value: "v1",
+						}, {
+							Key:   "k2",
+							Value: "v2",
+						},
+						{
+							Key:   "k3",
+							Value: "v3",
+						},
+					}}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+			},
+		},
+		"TagsFail": {
+			args: args{
+				sg: &fake.MockSecurityGroupClient{
+					MockDescribe: func(input *awsec2.DescribeSecurityGroupsInput) awsec2.DescribeSecurityGroupsRequest {
+						return awsec2.DescribeSecurityGroupsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeSecurityGroupsOutput{
+								SecurityGroups: []awsec2.SecurityGroup{{
+									Tags: []awsec2.Tag{},
+								}},
+							}},
+						}
+					},
+					MockCreateTags: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
+						return awsec2.CreateTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Tags: []v1beta1.Tag{
+						{
+							Key:   "k1",
+							Value: "v1",
+						},
+					},
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+			},
+			want: want{
+				cr: sg(withSpec(v1beta1.SecurityGroupParameters{
+					Tags: []v1beta1.Tag{
+						{
+							Key:   "k1",
+							Value: "v1",
+						},
+					},
+				}),
+					withStatus(v1beta1.SecurityGroupObservation{
+						SecurityGroupID: sgID,
+					})),
+				err: awsclient.Wrap(errBoom, errCreateTags),
 			},
 		},
 	}
