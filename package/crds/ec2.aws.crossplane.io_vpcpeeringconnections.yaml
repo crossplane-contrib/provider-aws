@@ -53,6 +53,9 @@ spec:
               forProvider:
                 description: VPCPeeringConnectionParameters defines the desired state of VPCPeeringConnection
                 properties:
+                  acceptRequest:
+                    description: Automatically accepts the peering connection. If this is not set, the peering connection will be created, but will be in pending-acceptance state. This will only lead to an active connection if both VPCs are in the same tenant.
+                    type: boolean
                   dryRun:
                     description: Checks whether you have the required permissions for the action, without actually making the request, and provides an error response. If you have the required permissions, the error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
                     type: boolean

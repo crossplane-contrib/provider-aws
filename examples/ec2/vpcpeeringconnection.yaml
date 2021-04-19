@@ -1,0 +1,13 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: VPCPeeringConnection
+metadata:
+  name: conn1
+spec:
+  forProvider:
+    vpcID: vpc-023f015c15d1c5ca6 # i541517-cluster vpc
+    region: eu-central-1
+    peerVPCID: vpc-0dd0ad5ba6b254b39
+    acceptRequest: true
+
+  providerConfigRef:
+    name: aws-provider-config 
