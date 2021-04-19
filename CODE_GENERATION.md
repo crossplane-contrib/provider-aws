@@ -350,25 +350,36 @@ go run cmd/provider/main.go
 
 ##### In-cluster
 
-You can build the images and deploy it into cluster using Crossplane Package Manager
+You can build the images and deploy it into the cluster using Crossplane Package Manager
 to test the real-world scenario. There are two Docker images to be built; one has
 the controller image, the other one has package metadata and CRDs. We need to choose a
 controller image before building metadata image. Then we'll start the build process.
 
-Example image URL pair:
-* `username/provider-aws-controller:test`: Controller Image
-  This is the one that will be running in the cluster.
-* `username/provider-aws:test`: Metadata Image
-  This is the one we'll use when we install the provider.
+Pre-requisites: 
+* Install Crossplane on the kind cluster following the steps [here](https://crossplane.io/docs/v1.1/reference/install.html).
+* Install Crossplane CLI following the steps [here](https://crossplane.io/docs/v1.1/getting-started/install-configure.html#install-crossplane-cli). 
+* Docker hub account with your own public repository.
 
-1. Edit `package/crossplane.yaml` and change the `spec.controller.image` with your controller image URL.
-1. Go to `package` folder and build the package using Crossplane CLI: `kubectl crossplane build provider`.
-1. Push the images using: `kubectl crossplane push provider <metadata image URL>`.
+Follow the steps below to get set-up for in-cluster testing:
+* Run `make build DOCKER_REGISTRY=<username> VERSION=test-version` in `provider-aws`. This will create two images mentioned above:
+  * `build-<short-sha>/provider-aws-amd64:latest //Controller Image This is the one that will be running in the cluster.` 
+  * `build-<short-sha>/provider-aws-controller-amd64:latest //Metadata Image This is the one we'll use when we install the provider.`
+  
 
-Now we got the provider package pushed, and we can install it just like an official provider.
-Run:
+* Tag and push both the images to your personal docker repository.
+
 ```console
-kubectl crossplane install provider <metadata image URL>`
+docker image tag build-<short-sha>/provider-aws-controller-amd64:latest <username>/provider-aws-controller:test-version
+docker push <username>/provider-aws-controller:test-version
+
+docker image tag build-<short-sha>/provider-aws-amd64:latest <username>/provider-aws:test-version
+docker push <username>/provider-aws:test-version
+```
+
+* Now we got the provider package pushed, and we can install it just like an official provider.
+  Run:
+```console
+kubectl crossplane install provider <username>/provider-aws:test-version
 ```
 
 #### Testing YAML
