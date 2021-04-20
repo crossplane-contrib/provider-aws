@@ -956,3 +956,70 @@ func TestIsSubnetGroupUpToDate(t *testing.T) {
 		})
 	}
 }
+
+func TestVersionMatches(t *testing.T) {
+	cases := []struct {
+		name        string
+		kubeVersion *string
+		awsVersion  *string
+		want        bool
+	}{
+		{
+			name:        "Same value",
+			kubeVersion: aws.String("5.0.8"),
+			awsVersion:  aws.String("5.0.8"),
+			want:        true,
+		},
+		{
+			name:        "Same pattern", // currently this will never happen, but if it does it should match..
+			kubeVersion: aws.String("6.x"),
+			awsVersion:  aws.String("6.x"),
+			want:        true,
+		},
+		{
+			name:        "Same with nil",
+			kubeVersion: nil,
+			awsVersion:  nil,
+			want:        true,
+		},
+		{
+			name:        "nil in kubernetes",
+			kubeVersion: nil,
+			awsVersion:  aws.String("5.0.8"),
+			want:        false,
+		},
+		{
+			name:        "nil from aws",
+			kubeVersion: aws.String("5.0.8"),
+			awsVersion:  nil,
+			want:        false,
+		},
+		{
+			name:        "mismatch",
+			kubeVersion: aws.String("5.0.8"),
+			awsVersion:  aws.String("5.0.9"),
+			want:        false,
+		},
+		{
+			name:        "pattern match",
+			kubeVersion: aws.String("6.x"),
+			awsVersion:  aws.String("6.0.5"),
+			want:        true,
+		},
+		{
+			name:        "pattern mismatch",
+			kubeVersion: aws.String("6.x"),
+			awsVersion:  aws.String("5.0.8"),
+			want:        false,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := versionMatches(tc.kubeVersion, tc.awsVersion)
+			if got != tc.want {
+				t.Errorf("versionMatches(%+v) - got %v", tc, got)
+			}
+		})
+	}
+}

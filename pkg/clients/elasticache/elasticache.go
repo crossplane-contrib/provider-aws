@@ -19,6 +19,7 @@ package elasticache
 import (
 	"reflect"
 	"strconv"
+	"strings"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -219,9 +220,22 @@ func automaticFailoverEnabled(af elasticache.AutomaticFailoverStatus) *bool {
 	return &r
 }
 
+func versionMatches(kubeVersion *string, awsVersion *string) bool {
+	switch {
+	case clients.StringValue(kubeVersion) == clients.StringValue(awsVersion):
+		return true
+
+	case kubeVersion == nil || awsVersion == nil:
+		return false
+
+	default:
+		return strings.HasSuffix(*kubeVersion, ".x") && strings.HasPrefix(*awsVersion, strings.TrimSuffix(*kubeVersion, "x"))
+	}
+}
+
 func cacheClusterNeedsUpdate(kube v1beta1.ReplicationGroupParameters, cc elasticache.CacheCluster) bool { // nolint:gocyclo
 	// AWS will set and return a default version if we don't specify one.
-	if !reflect.DeepEqual(kube.EngineVersion, cc.EngineVersion) {
+	if !versionMatches(kube.EngineVersion, cc.EngineVersion) {
 		return true
 	}
 	if pg, name := cc.CacheParameterGroup, kube.CacheParameterGroupName; pg != nil && !reflect.DeepEqual(name, pg.CacheParameterGroupName) {
