@@ -82,6 +82,9 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
 	"github.com/crossplane/provider-aws/pkg/controller/s3/bucketpolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/secretsmanager/secret"
+	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/httpnamespace"
+	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/privatednsnamespace"
+	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/publicdnsnamespace"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/activity"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/statemachine"
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
@@ -154,6 +157,9 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		dbcluster.SetupDBCluster,
 		dbparametergroup.SetupDBParameterGroup,
 		vpccidrblock.SetupVPCCIDRBlock,
+		privatednsnamespace.SetupPrivateDNSNamespace,
+		publicdnsnamespace.SetupPublicDNSNamespace,
+		httpnamespace.SetupHTTPNamespace,
 	} {
 		if err := setup(mgr, l, rl); err != nil {
 			return err

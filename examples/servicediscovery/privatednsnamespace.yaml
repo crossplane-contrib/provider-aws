@@ -1,0 +1,13 @@
+apiVersion: servicediscovery.aws.crossplane.io/v1alpha1
+kind: PrivateDNSNamespace
+metadata:
+  name: example-privatednsnamespace
+spec:
+  forProvider:
+    region: eu-central-1
+    description: "test"
+    name: "test"
+    vpc: default
+    tags:
+      - key: cluster
+        value: "my-cluster"
