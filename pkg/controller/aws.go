@@ -40,6 +40,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cluster"
+	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/distribution"
 	"github.com/crossplane/provider-aws/pkg/controller/config"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
@@ -166,6 +167,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		httpnamespace.SetupHTTPNamespace,
 		function.SetupFunction,
 		openidconnectprovider.SetupOpenIDConnectProvider,
+		distribution.SetupDistribution,
 	} {
 		if err := setup(mgr, l, rl); err != nil {
 			return err
