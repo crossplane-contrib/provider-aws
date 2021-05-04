@@ -49,9 +49,11 @@ func NewPublicAccessBlockClient(client s3.BucketClient) *PublicAccessBlockClient
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *PublicAccessBlockClient) Observe(ctx context.Context, cr *v1beta1.Bucket) (ResourceStatus, error) {
 	external, err := in.client.GetPublicAccessBlockRequest(&awss3.GetPublicAccessBlockInput{Bucket: awsclient.String(meta.GetExternalName(cr))}).Send(ctx)
-	// todo: not found should be specific to public access
+	if s3.PublicAccessBlockConfigurationNotFound(err) && cr.Spec.ForProvider.PublicAccessBlockConfiguration == nil {
+		return Updated, nil
+	}
 	if err != nil {
-		return NeedsUpdate, awsclient.Wrap(err, publicAccessBlockGetFailed)
+		return NeedsUpdate, awsclient.Wrap(resource.Ignore(s3.PublicAccessBlockConfigurationNotFound, err), publicAccessBlockGetFailed)
 	}
 	if cr.Spec.ForProvider.PublicAccessBlockConfiguration != nil {
 		switch {
@@ -92,14 +94,14 @@ func (in *PublicAccessBlockClient) Delete(ctx context.Context, cr *v1beta1.Bucke
 		Bucket: awsclient.String(meta.GetExternalName(cr)),
 	}
 	_, err := in.client.DeletePublicAccessBlockRequest(input).Send(ctx)
-	return errors.Wrap(resource.Ignore(s3.IsNotFound, err), publicAccessBlockDeleteFailed)
+	return errors.Wrap(resource.Ignore(s3.PublicAccessBlockConfigurationNotFound, err), publicAccessBlockDeleteFailed)
 }
 
 // LateInitialize is responsible for initializing the resource based on the external value
 func (in *PublicAccessBlockClient) LateInitialize(ctx context.Context, cr *v1beta1.Bucket) error {
 	external, err := in.client.GetPublicAccessBlockRequest(&awss3.GetPublicAccessBlockInput{Bucket: awsclient.String(meta.GetExternalName(cr))}).Send(ctx)
 	if err != nil {
-		return awsclient.Wrap(err, publicAccessBlockGetFailed)
+		return awsclient.Wrap(resource.Ignore(s3.PublicAccessBlockConfigurationNotFound, err), publicAccessBlockGetFailed)
 	}
 
 	if cr.Spec.ForProvider.PublicAccessBlockConfiguration == nil {
