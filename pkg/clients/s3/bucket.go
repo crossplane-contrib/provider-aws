@@ -100,6 +100,10 @@ type BucketClient interface {
 
 	GetBucketAclRequest(*s3.GetBucketAclInput) s3.GetBucketAclRequest
 	PutBucketAclRequest(*s3.PutBucketAclInput) s3.PutBucketAclRequest
+
+	GetPublicAccessBlockRequest(input *s3.GetPublicAccessBlockInput) s3.GetPublicAccessBlockRequest
+	PutPublicAccessBlockRequest(input *s3.PutPublicAccessBlockInput) s3.PutPublicAccessBlockRequest
+	DeletePublicAccessBlockRequest(input *s3.DeletePublicAccessBlockInput) s3.DeletePublicAccessBlockRequest
 }
 
 // NewClient returns a new client using AWS credentials as JSON encoded data.
