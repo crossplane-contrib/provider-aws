@@ -82,6 +82,21 @@ func Client(m ...ClientModifier) *fake.MockBucketClient {
 				Request: CreateRequest(nil, &awss3.PutBucketAclOutput{}),
 			}
 		},
+		MockGetPublicAccessBlockRequest: func(input *awss3.GetPublicAccessBlockInput) awss3.GetPublicAccessBlockRequest {
+			return awss3.GetPublicAccessBlockRequest{
+				Request: CreateRequest(awserr.New(s3.PublicAccessBlockNotFoundErrCode, "error", nil), &awss3.GetPublicAccessBlockOutput{}),
+			}
+		},
+		MockPutPublicAccessBlockRequest: func(input *awss3.PutPublicAccessBlockInput) awss3.PutPublicAccessBlockRequest {
+			return awss3.PutPublicAccessBlockRequest{
+				Request: CreateRequest(nil, &awss3.PutPublicAccessBlockOutput{}),
+			}
+		},
+		MockDeletePublicAccessBlockRequest: func(input *awss3.DeletePublicAccessBlockInput) awss3.DeletePublicAccessBlockRequest {
+			return awss3.DeletePublicAccessBlockRequest{
+				Request: CreateRequest(awserr.New(s3.PublicAccessBlockNotFoundErrCode, "error", nil), &awss3.DeletePublicAccessBlockOutput{}),
+			}
+		},
 	}
 	for _, v := range m {
 		v(client)
