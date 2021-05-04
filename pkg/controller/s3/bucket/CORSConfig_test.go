@@ -129,7 +129,7 @@ func TestCORSObserve(t *testing.T) {
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockGetBucketCorsRequest: func(input *s3.GetBucketCorsInput) s3.GetBucketCorsRequest {
 						return s3.GetBucketCorsRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.CORSErrCode, "", nil), &s3.GetBucketCorsOutput{CORSRules: nil}),
+							Request: s3Testing.CreateRequest(awserr.New(clients3.CORSNotFoundErrCode, "", nil), &s3.GetBucketCorsOutput{CORSRules: nil}),
 						}
 					},
 				}),
@@ -350,7 +350,7 @@ func TestCORSLateInit(t *testing.T) {
 				cl: NewCORSConfigurationClient(fake.MockBucketClient{
 					MockGetBucketCorsRequest: func(input *s3.GetBucketCorsInput) s3.GetBucketCorsRequest {
 						return s3.GetBucketCorsRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.CORSErrCode, "error", nil), &s3.GetBucketCorsOutput{}),
+							Request: s3Testing.CreateRequest(awserr.New(clients3.CORSNotFoundErrCode, "error", nil), &s3.GetBucketCorsOutput{}),
 						}
 					},
 				}),

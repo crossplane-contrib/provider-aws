@@ -144,7 +144,7 @@ func TestTaggingObserve(t *testing.T) {
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketTaggingRequest: func(input *s3.GetBucketTaggingInput) s3.GetBucketTaggingRequest {
 						return s3.GetBucketTaggingRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.TaggingErrCode, "", nil), &s3.GetBucketTaggingOutput{}),
+							Request: s3Testing.CreateRequest(awserr.New(clients3.TaggingNotFoundErrCode, "", nil), &s3.GetBucketTaggingOutput{}),
 						}
 					},
 				}),
@@ -381,7 +381,7 @@ func TestTaggingLateInit(t *testing.T) {
 				cl: NewTaggingConfigurationClient(fake.MockBucketClient{
 					MockGetBucketTaggingRequest: func(input *s3.GetBucketTaggingInput) s3.GetBucketTaggingRequest {
 						return s3.GetBucketTaggingRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.TaggingErrCode, "error", nil), &s3.GetBucketTaggingOutput{}),
+							Request: s3Testing.CreateRequest(awserr.New(clients3.TaggingNotFoundErrCode, "error", nil), &s3.GetBucketTaggingOutput{}),
 						}
 					},
 				}),
