@@ -137,9 +137,9 @@ eval $(make --no-print-directory -C ${projectdir} build.vars)
 
 # ------------------------------
 
-HOSTARCH="${HOSTARCH:-amd64}"
-BUILD_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-${HOSTARCH}"
-CONTROLLER_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-controller-${HOSTARCH}"
+SAFEHOSTARCH="${SAFEHOSTARCH:-amd64}"
+BUILD_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-${SAFEHOSTARCH}"
+CONTROLLER_IMAGE="${BUILD_REGISTRY}/${PROJECT_NAME}-controller-${SAFEHOSTARCH}"
 
 version_tag="$(cat ${projectdir}/_output/version)"
 # tag as latest version to load into kind cluster

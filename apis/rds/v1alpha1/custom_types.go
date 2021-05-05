@@ -18,6 +18,13 @@ package v1alpha1
 
 import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
+// CustomDBParameterGroupParameters are custom parameters for DBParameterGroup
+type CustomDBParameterGroupParameters struct {
+	// A list of parameters to associate with this DB parameter group
+	// +optional
+	Parameters []Parameter `json:"parameters,omitempty"`
+}
+
 // CustomDBClusterParameters are custom parameters for DBCluster
 type CustomDBClusterParameters struct {
 

@@ -27,6 +27,7 @@ import (
 	cachev1beta1 "github.com/crossplane/provider-aws/apis/cache/v1beta1"
 	databasev1beta1 "github.com/crossplane/provider-aws/apis/database/v1beta1"
 	dynamodbv1alpha1 "github.com/crossplane/provider-aws/apis/dynamodb/v1alpha1"
+	ec2v1alpha1 "github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
 	ec2v1beta1 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	ecrv1alpha1 "github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
 	efsv1alpha1 "github.com/crossplane/provider-aws/apis/efs/v1alpha1"
@@ -79,6 +80,7 @@ func init() {
 		kmsv1alpha1.SchemeBuilder.AddToScheme,
 		efsv1alpha1.SchemeBuilder.AddToScheme,
 		rdsv1alpha1.SchemeBuilder.AddToScheme,
+		ec2v1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 
