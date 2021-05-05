@@ -885,7 +885,6 @@ spec:
                             type: string
                         required:
                         - hostName
-                        - protocol
                         type: object
                       routingRules:
                         description: Rules that define when a redirect is applied and the redirect behavior.
@@ -920,8 +919,6 @@ spec:
                                 replaceKeyWith:
                                   description: The specific object key to use in the redirect request. For example, redirect request to error.html. Not required if one of the siblings is present. Can be present only if ReplaceKeyPrefixWith is not provided.
                                   type: string
-                              required:
-                              - protocol
                               type: object
                           required:
                           - redirect

@@ -139,28 +139,35 @@ func GenerateWebsiteConfiguration(config *v1beta1.WebsiteConfiguration) *awss3.W
 	if config.RedirectAllRequestsTo != nil {
 		wi.RedirectAllRequestsTo = &awss3.RedirectAllRequestsTo{
 			HostName: awsclient.String(config.RedirectAllRequestsTo.HostName),
-			Protocol: awss3.Protocol(config.RedirectAllRequestsTo.Protocol),
+		}
+		if config.RedirectAllRequestsTo.Protocol != "" {
+			wi.RedirectAllRequestsTo.Protocol = awss3.Protocol(config.RedirectAllRequestsTo.Protocol)
 		}
 	}
-	wi.RoutingRules = make([]awss3.RoutingRule, len(config.RoutingRules))
-	for i, rule := range config.RoutingRules {
-		rr := awss3.RoutingRule{
-			Redirect: &awss3.Redirect{
-				HostName:             rule.Redirect.HostName,
-				HttpRedirectCode:     rule.Redirect.HTTPRedirectCode,
-				Protocol:             awss3.Protocol(rule.Redirect.Protocol),
-				ReplaceKeyPrefixWith: rule.Redirect.ReplaceKeyPrefixWith,
-				ReplaceKeyWith:       rule.Redirect.ReplaceKeyWith,
-			},
-		}
-		if rule.Condition != nil {
-			rr.Condition = &awss3.Condition{
-				HttpErrorCodeReturnedEquals: rule.Condition.HTTPErrorCodeReturnedEquals,
-				KeyPrefixEquals:             rule.Condition.KeyPrefixEquals,
+	if len(config.RoutingRules) != 0 {
+		wi.RoutingRules = make([]awss3.RoutingRule, len(config.RoutingRules))
+		for i, rule := range config.RoutingRules {
+			rr := awss3.RoutingRule{
+				Redirect: &awss3.Redirect{
+					HostName:             rule.Redirect.HostName,
+					HttpRedirectCode:     rule.Redirect.HTTPRedirectCode,
+					ReplaceKeyPrefixWith: rule.Redirect.ReplaceKeyPrefixWith,
+					ReplaceKeyWith:       rule.Redirect.ReplaceKeyWith,
+				},
 			}
+			if rule.Redirect.Protocol != "" {
+				rr.Redirect.Protocol = awss3.Protocol(rule.Redirect.Protocol)
+			}
+			if rule.Condition != nil {
+				rr.Condition = &awss3.Condition{
+					HttpErrorCodeReturnedEquals: rule.Condition.HTTPErrorCodeReturnedEquals,
+					KeyPrefixEquals:             rule.Condition.KeyPrefixEquals,
+				}
+			}
+			wi.RoutingRules[i] = rr
 		}
-		wi.RoutingRules[i] = rr
 	}
+
 	return wi
 }
 
@@ -190,10 +197,12 @@ func createWebsiteConfigFromExternal(external *awss3.GetBucketWebsiteOutput, con
 		if config.RedirectAllRequestsTo == nil {
 			config.RedirectAllRequestsTo = &v1beta1.RedirectAllRequestsTo{}
 		}
-		config.RedirectAllRequestsTo.Protocol = awsclient.LateInitializeString(
-			config.RedirectAllRequestsTo.Protocol,
-			awsclient.String(string(external.RedirectAllRequestsTo.Protocol)),
-		)
+		if external.RedirectAllRequestsTo.Protocol != "" {
+			config.RedirectAllRequestsTo.Protocol = awsclient.LateInitializeString(
+				config.RedirectAllRequestsTo.Protocol,
+				awsclient.String(string(external.RedirectAllRequestsTo.Protocol)),
+			)
+		}
 		config.RedirectAllRequestsTo.HostName = awsclient.LateInitializeString(
 			config.RedirectAllRequestsTo.HostName,
 			external.RedirectAllRequestsTo.HostName,
@@ -219,10 +228,12 @@ func createWebsiteConfigFromExternal(external *awss3.GetBucketWebsiteOutput, con
 					config.RoutingRules[i].Redirect.ReplaceKeyWith,
 					rr.Redirect.ReplaceKeyWith,
 				)
-				config.RoutingRules[i].Redirect.Protocol = awsclient.LateInitializeString(
-					config.RoutingRules[i].Redirect.Protocol,
-					awsclient.String(string(rr.Redirect.Protocol)),
-				)
+				if rr.Redirect.Protocol != "" {
+					config.RoutingRules[i].Redirect.Protocol = awsclient.LateInitializeString(
+						config.RoutingRules[i].Redirect.Protocol,
+						awsclient.String(string(rr.Redirect.Protocol)),
+					)
+				}
 			}
 			if rr.Condition != nil {
 				if config.RoutingRules[i].Condition == nil {
