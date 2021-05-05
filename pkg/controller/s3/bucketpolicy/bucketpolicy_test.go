@@ -188,6 +188,58 @@ func TestObserve(t *testing.T) {
 	}
 }
 
+func TestIsBucketPolicyUpToDate(t *testing.T) {
+
+	type want struct {
+		local    string
+		remote   string
+		uptodate bool
+	}
+
+	cases := map[string]struct {
+		want
+	}{
+		"Equal": {
+			want: want{
+				local:    policy,
+				remote:   policy,
+				uptodate: true,
+			},
+		},
+		"EqualWhiteSpace": {
+			want: want{
+				local:    policy,
+				remote:   policy + "  ",
+				uptodate: true,
+			},
+		},
+		"Differs": {
+			want: want{
+				local:    `{"Statement":[{"Action":"s3:ListBucket","Effect":"Allow","Principal":"*","Resource":"arn:aws:s3:::test.s3.crossplane.com"}],"Version":"2012-10-17"}`,
+				remote:   `{"Statement":[{"Action":"s3:ListBucket","Effect":"Allow","Principal":"*","Resource":"arn:aws:s3:::test2.s3.crossplane.com"}],"Version":"2012-10-17"}`,
+				uptodate: false,
+			},
+		},
+		"EqualUnordered": {
+			want: want{
+				local:    `{"Statement":[{"Action":"s3:GetObject","Effect":"Allow","Principal":"*","Resource":"arn:aws:s3:::test.s3.crossplane.com/*"},{"Action":"s3:ListBucket","Effect":"Allow","Principal":"*","Resource":"arn:aws:s3:::test.s3.crossplane.com"}],"Version":"2012-10-17"}`,
+				remote:   `{"Version":"2012-10-17","Statement":[{"Action":"s3:ListBucket","Effect":"Allow","Principal":"*","Resource":"arn:aws:s3:::test.s3.crossplane.com"},{"Action":"s3:GetObject","Effect":"Allow","Principal":"*","Resource":"arn:aws:s3:::test.s3.crossplane.com/*"}]}`,
+				uptodate: false,
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := IsBucketPolicyUpToDate(&tc.local, &tc.remote)
+
+			if got != tc.want.uptodate {
+				t.Errorf("r: want %v, got %v", tc.want.uptodate, got)
+			}
+		})
+	}
+}
+
 func TestCreate(t *testing.T) {
 
 	type want struct {

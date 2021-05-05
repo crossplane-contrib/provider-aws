@@ -119,8 +119,26 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	// If our version and the external version are the same, we return ResourceUpToDate: true
 	return managed.ExternalObservation{
 		ResourceExists:   true,
-		ResourceUpToDate: cmp.Equal(*policyData, *resp.Policy),
+		ResourceUpToDate: IsBucketPolicyUpToDate(policyData, resp.Policy),
 	}, nil
+}
+
+// IsBucketPolicyUpToDate Marshall policies to json for a compare to get around string ordering
+func IsBucketPolicyUpToDate(local, remote *string) bool {
+	var localUnmarshalled interface{}
+	var remoteUnmarshalled interface{}
+
+	var err error
+	err = json.Unmarshal([]byte(*local), &localUnmarshalled)
+	if err != nil {
+		return false
+	}
+	err = json.Unmarshal([]byte(*remote), &remoteUnmarshalled)
+	if err != nil {
+		return false
+	}
+
+	return cmp.Equal(localUnmarshalled, remoteUnmarshalled)
 }
 
 // formatBucketPolicy parses and formats the bucket.Spec.BucketPolicy struct
