@@ -189,7 +189,7 @@ func TestWebsiteObserve(t *testing.T) {
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockGetBucketWebsiteRequest: func(input *s3.GetBucketWebsiteInput) s3.GetBucketWebsiteRequest {
 						return s3.GetBucketWebsiteRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.WebsiteErrCode, "", nil), &s3.GetBucketWebsiteOutput{}),
+							Request: s3Testing.CreateRequest(awserr.New(clients3.WebsiteNotFoundErrCode, "", nil), &s3.GetBucketWebsiteOutput{}),
 						}
 					},
 				}),
@@ -415,7 +415,7 @@ func TestWebsiteLateInit(t *testing.T) {
 				cl: NewWebsiteConfigurationClient(fake.MockBucketClient{
 					MockGetBucketWebsiteRequest: func(input *s3.GetBucketWebsiteInput) s3.GetBucketWebsiteRequest {
 						return s3.GetBucketWebsiteRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.WebsiteErrCode, "error", nil), &s3.GetBucketWebsiteOutput{}),
+							Request: s3Testing.CreateRequest(awserr.New(clients3.WebsiteNotFoundErrCode, "error", nil), &s3.GetBucketWebsiteOutput{}),
 						}
 					},
 				}),

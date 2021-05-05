@@ -136,7 +136,7 @@ func TestSSEObserve(t *testing.T) {
 				cl: NewSSEConfigurationClient(fake.MockBucketClient{
 					MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
 						return s3.GetBucketEncryptionRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.SSEErrCode, "", nil), &s3.GetBucketEncryptionOutput{}),
+							Request: s3Testing.CreateRequest(awserr.New(clients3.SSENotFoundErrCode, "", nil), &s3.GetBucketEncryptionOutput{}),
 						}
 					},
 				}),
@@ -357,7 +357,7 @@ func TestSSELateInit(t *testing.T) {
 				cl: NewSSEConfigurationClient(fake.MockBucketClient{
 					MockGetBucketEncryptionRequest: func(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest {
 						return s3.GetBucketEncryptionRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.SSEErrCode, "error", nil), &s3.GetBucketEncryptionOutput{}),
+							Request: s3Testing.CreateRequest(awserr.New(clients3.SSENotFoundErrCode, "error", nil), &s3.GetBucketEncryptionOutput{}),
 						}
 					},
 				}),

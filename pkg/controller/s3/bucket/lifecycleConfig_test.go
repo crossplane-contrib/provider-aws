@@ -223,7 +223,7 @@ func TestLifecycleObserve(t *testing.T) {
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
 					MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
 						return s3.GetBucketLifecycleConfigurationRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.LifecycleErrCode, "", nil), &s3.GetBucketLifecycleConfigurationOutput{Rules: nil}),
+							Request: s3Testing.CreateRequest(awserr.New(clients3.LifecycleNotFoundErrCode, "", nil), &s3.GetBucketLifecycleConfigurationOutput{Rules: nil}),
 						}
 					},
 				}),
@@ -444,7 +444,7 @@ func TestLifecycleLateInit(t *testing.T) {
 				cl: NewLifecycleConfigurationClient(fake.MockBucketClient{
 					MockGetBucketLifecycleConfigurationRequest: func(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest {
 						return s3.GetBucketLifecycleConfigurationRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.LifecycleErrCode, "error", nil), &s3.GetBucketLifecycleConfigurationOutput{}),
+							Request: s3Testing.CreateRequest(awserr.New(clients3.LifecycleNotFoundErrCode, "error", nil), &s3.GetBucketLifecycleConfigurationOutput{}),
 						}
 					},
 				}),
