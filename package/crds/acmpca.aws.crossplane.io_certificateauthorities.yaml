@@ -190,7 +190,7 @@ spec:
                     description: Type of the certificate authority
                     enum:
                     - ROOT
-                    - SUBORINATE
+                    - SUBORDINATE
                     type: string
                 required:
                 - certificateAuthorityConfiguration
