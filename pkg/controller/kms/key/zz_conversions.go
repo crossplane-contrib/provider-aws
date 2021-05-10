@@ -47,21 +47,33 @@ func GenerateKey(resp *svcsdk.DescribeKeyOutput) *svcapitypes.Key {
 
 	if resp.KeyMetadata.AWSAccountId != nil {
 		cr.Status.AtProvider.AWSAccountID = resp.KeyMetadata.AWSAccountId
+	} else {
+		cr.Status.AtProvider.AWSAccountID = nil
 	}
 	if resp.KeyMetadata.Arn != nil {
 		cr.Status.AtProvider.ARN = resp.KeyMetadata.Arn
+	} else {
+		cr.Status.AtProvider.ARN = nil
 	}
 	if resp.KeyMetadata.CloudHsmClusterId != nil {
 		cr.Status.AtProvider.CloudHsmClusterID = resp.KeyMetadata.CloudHsmClusterId
+	} else {
+		cr.Status.AtProvider.CloudHsmClusterID = nil
 	}
 	if resp.KeyMetadata.CreationDate != nil {
 		cr.Status.AtProvider.CreationDate = &metav1.Time{*resp.KeyMetadata.CreationDate}
+	} else {
+		cr.Status.AtProvider.CreationDate = nil
 	}
 	if resp.KeyMetadata.DeletionDate != nil {
 		cr.Status.AtProvider.DeletionDate = &metav1.Time{*resp.KeyMetadata.DeletionDate}
+	} else {
+		cr.Status.AtProvider.DeletionDate = nil
 	}
 	if resp.KeyMetadata.Enabled != nil {
 		cr.Status.AtProvider.Enabled = resp.KeyMetadata.Enabled
+	} else {
+		cr.Status.AtProvider.Enabled = nil
 	}
 	if resp.KeyMetadata.EncryptionAlgorithms != nil {
 		f9 := []*string{}
@@ -71,18 +83,28 @@ func GenerateKey(resp *svcsdk.DescribeKeyOutput) *svcapitypes.Key {
 			f9 = append(f9, &f9elem)
 		}
 		cr.Status.AtProvider.EncryptionAlgorithms = f9
+	} else {
+		cr.Status.AtProvider.EncryptionAlgorithms = nil
 	}
 	if resp.KeyMetadata.ExpirationModel != nil {
 		cr.Status.AtProvider.ExpirationModel = resp.KeyMetadata.ExpirationModel
+	} else {
+		cr.Status.AtProvider.ExpirationModel = nil
 	}
 	if resp.KeyMetadata.KeyId != nil {
 		cr.Status.AtProvider.KeyID = resp.KeyMetadata.KeyId
+	} else {
+		cr.Status.AtProvider.KeyID = nil
 	}
 	if resp.KeyMetadata.KeyManager != nil {
 		cr.Status.AtProvider.KeyManager = resp.KeyMetadata.KeyManager
+	} else {
+		cr.Status.AtProvider.KeyManager = nil
 	}
 	if resp.KeyMetadata.KeyState != nil {
 		cr.Status.AtProvider.KeyState = resp.KeyMetadata.KeyState
+	} else {
+		cr.Status.AtProvider.KeyState = nil
 	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
 		f16 := []*string{}
@@ -92,9 +114,13 @@ func GenerateKey(resp *svcsdk.DescribeKeyOutput) *svcapitypes.Key {
 			f16 = append(f16, &f16elem)
 		}
 		cr.Status.AtProvider.SigningAlgorithms = f16
+	} else {
+		cr.Status.AtProvider.SigningAlgorithms = nil
 	}
 	if resp.KeyMetadata.ValidTo != nil {
 		cr.Status.AtProvider.ValidTo = &metav1.Time{*resp.KeyMetadata.ValidTo}
+	} else {
+		cr.Status.AtProvider.ValidTo = nil
 	}
 
 	return cr
@@ -146,5 +172,5 @@ func GenerateCreateKeyInput(cr *svcapitypes.Key) *svcsdk.CreateKeyInput {
 // IsNotFound returns whether the given error is of type NotFound or not.
 func IsNotFound(err error) bool {
 	awsErr, ok := err.(awserr.Error)
-	return ok && awsErr.Code() == "UNKNOWN"
+	return ok && awsErr.Code() == "NotFoundException"
 }
