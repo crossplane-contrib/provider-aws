@@ -138,6 +138,10 @@ type BucketParameters struct {
 	// (https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html).
 	// +optional
 	NotificationConfiguration *NotificationConfiguration `json:"notificationConfiguration,omitempty"`
+
+	// PublicAccessBlockConfiguration that you want to apply to this Amazon
+	// S3 bucket.
+	PublicAccessBlockConfiguration *PublicAccessBlockConfiguration `json:"publicAccessBlockConfiguration,omitempty"`
 }
 
 // BucketSpec represents the desired state of the Bucket.

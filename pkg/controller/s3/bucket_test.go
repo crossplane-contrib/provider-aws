@@ -97,7 +97,7 @@ func TestObserve(t *testing.T) {
 				s3: &fake.MockBucketClient{
 					MockHeadBucketRequest: func(input *awss3.HeadBucketInput) awss3.HeadBucketRequest {
 						return awss3.HeadBucketRequest{
-							Request: s3Testing.CreateRequest(awserr.New(s3.BucketErrCode, "", nil), nil),
+							Request: s3Testing.CreateRequest(awserr.New(s3.BucketNotFoundErrCode, "", nil), nil),
 						}
 					},
 				},
@@ -777,7 +777,7 @@ func TestDelete(t *testing.T) {
 				s3: &fake.MockBucketClient{
 					MockDeleteBucketRequest: func(input *awss3.DeleteBucketInput) awss3.DeleteBucketRequest {
 						return awss3.DeleteBucketRequest{
-							Request: s3Testing.CreateRequest(awserr.New(s3.BucketErrCode, "", nil), &awss3.DeleteBucketOutput{}),
+							Request: s3Testing.CreateRequest(awserr.New(s3.BucketNotFoundErrCode, "", nil), &awss3.DeleteBucketOutput{}),
 						}
 					},
 				},

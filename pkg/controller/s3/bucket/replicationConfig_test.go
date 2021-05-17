@@ -185,7 +185,7 @@ func TestReplicationObserve(t *testing.T) {
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplicationRequest: func(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest {
 						return s3.GetBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.ReplicationErrCode, "", nil), &s3.GetBucketReplicationOutput{}),
+							Request: s3Testing.CreateRequest(awserr.New(clients3.ReplicationNotFoundErrCode, "", nil), &s3.GetBucketReplicationOutput{}),
 						}
 					},
 				}),
@@ -406,7 +406,7 @@ func TestReplicationLateInit(t *testing.T) {
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
 					MockGetBucketReplicationRequest: func(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest {
 						return s3.GetBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.ReplicationErrCode, "error", nil), &s3.GetBucketReplicationOutput{}),
+							Request: s3Testing.CreateRequest(awserr.New(clients3.ReplicationNotFoundErrCode, "error", nil), &s3.GetBucketReplicationOutput{}),
 						}
 					},
 				}),

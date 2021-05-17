@@ -28,7 +28,7 @@ type CertificateAuthorityParameters struct {
 	Region string `json:"region"`
 
 	// Type of the certificate authority
-	// +kubebuilder:validation:Enum=ROOT;SUBORINATE
+	// +kubebuilder:validation:Enum=ROOT;SUBORDINATE
 	Type acmpca.CertificateAuthorityType `json:"type"`
 
 	// RevocationConfiguration to associate with the certificateAuthority.
