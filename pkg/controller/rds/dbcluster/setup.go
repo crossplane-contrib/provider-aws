@@ -6,6 +6,9 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/pkg/errors"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -15,6 +18,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/password"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -22,6 +26,12 @@ import (
 	svcapitypes "github.com/crossplane/provider-aws/apis/rds/v1alpha1"
 	aws "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/rds"
+)
+
+const (
+	errGetSecretFailed    = "failed to get Kubernetes secret"
+	errUpdateSecretFailed = "failed to update Kubernetes secret"
+	errSaveSecretFailed   = "failed to save generated password to Kubernetes secret"
 )
 
 // SetupDBCluster adds a controller that reconciles DbCluster.
@@ -81,9 +91,18 @@ type custom struct {
 }
 
 func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *svcsdk.CreateDBClusterInput) error {
-	pw, _, err := rds.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
-	if err != nil {
+	pw, _, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+	if resource.IgnoreNotFound(err) != nil {
 		return errors.Wrap(err, "cannot get password from the given secret")
+	}
+	if pw == "" && cr.Spec.ForProvider.AutogeneratePassword != nil && *cr.Spec.ForProvider.AutogeneratePassword {
+		pw, err = password.Generate()
+		if err != nil {
+			return errors.Wrap(err, "unable to generate a password")
+		}
+		if err := e.savePasswordSecret(ctx, cr, pw); err != nil {
+			return errors.Wrap(err, errSaveSecretFailed)
+		}
 	}
 	obj.MasterUserPassword = aws.String(pw)
 	obj.DBClusterIdentifier = aws.String(meta.GetExternalName(cr))
@@ -94,19 +113,21 @@ func (e *custom) preCreate(ctx context.Context, cr *svcapitypes.DBCluster, obj *
 	return nil
 }
 
-func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.DBCluster, _ *svcsdk.CreateDBClusterOutput, _ managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.DBCluster, out *svcsdk.CreateDBClusterOutput, ec managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
 	conn := managed.ConnectionDetails{
 		xpv1.ResourceCredentialsSecretUserKey: []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername)),
 	}
-	pw, _, err := rds.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
-	if err != nil {
+	pw, _, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
+	if resource.IgnoreNotFound(err) != nil {
 		return managed.ExternalCreation{}, errors.Wrap(err, "cannot get password from the given secret")
 	}
 	if pw != "" {
 		conn[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(pw)
+	} else {
+		conn[xpv1.ResourceCredentialsSecretPasswordKey] = []byte(*out.DBCluster.PendingModifiedValues.MasterUserPassword)
 	}
 	return managed.ExternalCreation{
 		ConnectionDetails: conn,
@@ -130,4 +151,43 @@ func filterList(cr *svcapitypes.DBCluster, obj *svcsdk.DescribeDBClustersOutput)
 		}
 	}
 	return resp
+}
+
+func (e *custom) savePasswordSecret(ctx context.Context, cr *svcapitypes.DBCluster, pw string) error {
+	if cr.Spec.ForProvider.MasterUserPasswordSecretRef == nil {
+		return errors.New("no MasterUserPasswordSecretRef given, unable to save password")
+	}
+	ref := cr.Spec.ForProvider.MasterUserPasswordSecretRef
+	nn := types.NamespacedName{
+		Name:      ref.Name,
+		Namespace: ref.Namespace,
+	}
+	sc := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      nn.Name,
+			Namespace: nn.Namespace,
+		},
+	}
+	err := e.kube.Get(ctx, nn, sc)
+	var create bool
+	// if there was an error not related to the output secret not existing we should exit
+	if resource.IgnoreNotFound(err) != nil {
+		return errors.Wrap(err, errGetSecretFailed)
+	}
+	// but if it didn't exist, we should create instead of update
+	if err != nil {
+		create = true
+	}
+	sc.StringData = map[string]string{
+		ref.Key: pw,
+	}
+	if create {
+		err = e.kube.Create(ctx, sc, &client.CreateOptions{})
+	} else {
+		err = e.kube.Update(ctx, sc, &client.UpdateOptions{})
+	}
+	if err != nil {
+		return errors.Wrap(err, errUpdateSecretFailed)
+	}
+	return nil
 }
