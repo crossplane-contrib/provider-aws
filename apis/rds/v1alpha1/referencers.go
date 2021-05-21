@@ -25,6 +25,7 @@ import (
 	kmsv1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -90,4 +91,39 @@ func (mg *DBCluster) ResolveReferences(ctx context.Context, c client.Reader) err
 	mg.Spec.ForProvider.DBSubnetGroupNameRef = rsp.ResolvedReference
 
 	return nil
+}
+
+// ResolveReferences of this GlobalCluster
+func (mg *GlobalCluster) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.forProvider.sourceDBClusterIdentifier
+	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.SourceDBClusterIdentifier),
+		Reference:    mg.Spec.ForProvider.SourceDBClusterIDRef,
+		Selector:     mg.Spec.ForProvider.SourceDBClusterIDSelector,
+		To:           reference.To{Managed: &DBCluster{}, List: &DBClusterList{}},
+		Extract:      DBClusterARN(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.sourceDBClusterIdentifier")
+	}
+	mg.Spec.ForProvider.SourceDBClusterIdentifier = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.SourceDBClusterIDRef = rsp.ResolvedReference
+
+	return nil
+}
+
+// DBClusterARN returns the status.atProvider.ARN of an IAMRole.
+func DBClusterARN() reference.ExtractValueFn {
+	return func(mg resource.Managed) string {
+		r, ok := mg.(*DBCluster)
+		if !ok {
+			return ""
+		}
+		if r.Status.AtProvider.DBClusterARN == nil {
+			return ""
+		}
+		return *r.Status.AtProvider.DBClusterARN
+	}
 }
