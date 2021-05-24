@@ -5,6 +5,9 @@ PROJECT_NAME := provider-aws
 PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
 
 PLATFORMS ?= linux_amd64 linux_arm64
+
+CODE_GENERATOR_COMMIT ?= v0.1.0
+
 # -include will silently skip missing files, which allows us
 # to load those files with a target in the Makefile. If only
 # "include" was used, the make command would fail and refuse
@@ -113,12 +116,17 @@ run: go.build
 .PHONY: cobertura reviewable manifests submodules fallthrough test-integration run crds.clean
 
 service: 
-	@if [ ! -d "./code-generator" ]; then \
-	 git clone "https://github.com/aws-controllers-k8s/code-generator.git"; \
-	 cd ./code-generator && $(MAKE) ; \
+	@if [ "$(ServiceID)" = "" ]; then \
+		echo "Error: Please specify value of 'ServiceID'."; \
+		echo "For more info: https://github.com/crossplane/provider-aws/blob/master/CODE_GENERATION.md#code-generation"; \
+		exit 1; \
 	fi
-	@cd code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $(SERVICE_ID) --provider-dir ../
-	
+	@if [ ! -d "$(WORK_DIR)/code-generator" ]; then \
+		cd $(WORK_DIR) && git clone "https://github.com/aws-controllers-k8s/code-generator.git"; \
+		cd $(WORK_DIR)/code-generator && git checkout $(CODE_GENERATOR_COMMIT); \
+	fi
+	@cd $(WORK_DIR)/code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $(ServiceID) --provider-dir ../../
+
 
 # ====================================================================================
 # Special Targets

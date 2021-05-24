@@ -15,4 +15,3 @@ cover.out
 # ignore asdf local versions
 /.tool-versions
 
-/code-generator
