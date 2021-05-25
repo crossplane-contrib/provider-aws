@@ -82,23 +82,16 @@ func (e *custom) postObserve(_ context.Context, cr *svcapitypes.VPCPeeringConnec
 					req := svcsdk.AcceptVpcPeeringConnectionInput{
 						VpcPeeringConnectionId: awsclients.String(*v.VpcPeeringConnectionId),
 					}
-
 					request, _ := e.client.AcceptVpcPeeringConnectionRequest(&req)
 					err := request.Send()
 					if err != nil {
 						return obs, err
 					}
 				}
-
 				if awsclients.StringValue(tag.Value) == cr.ObjectMeta.Name {
-					switch aws.StringValue(v.Status.Code) {
-					case string(svcapitypes.VPCPeeringConnectionStateReasonCode_pending_acceptance):
-						cr.SetConditions(xpv1.Creating())
-					case string(svcapitypes.VPCPeeringConnectionStateReasonCode_deleted):
-						cr.SetConditions(xpv1.Unavailable())
+					available := setCondition(v.Status, cr)
+					if !available {
 						return managed.ExternalObservation{ResourceExists: false}, nil
-					case string(svcapitypes.VPCPeeringConnectionStateReasonCode_active):
-						cr.SetConditions(xpv1.Available())
 					}
 				}
 
@@ -107,6 +100,21 @@ func (e *custom) postObserve(_ context.Context, cr *svcapitypes.VPCPeeringConnec
 	}
 	cr.SetConditions(xpv1.Available())
 	return obs, nil
+}
+
+func setCondition(code *svcsdk.VpcPeeringConnectionStateReason, cr *svcapitypes.VPCPeeringConnection) bool {
+	switch aws.StringValue(code.Code) {
+	case string(svcapitypes.VPCPeeringConnectionStateReasonCode_pending_acceptance):
+		cr.SetConditions(xpv1.Creating())
+		return true
+	case string(svcapitypes.VPCPeeringConnectionStateReasonCode_deleted):
+		cr.SetConditions(xpv1.Unavailable())
+		return false
+	case string(svcapitypes.VPCPeeringConnectionStateReasonCode_active):
+		cr.SetConditions(xpv1.Available())
+		return true
+	}
+	return false
 }
 
 func (e *custom) isUpToDate(cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.DescribeVpcPeeringConnectionsOutput) (bool, error) {
