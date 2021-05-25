@@ -22,6 +22,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Hack to avoid import errors during build...
+var (
+	_ = &metav1.Time{}
+)
+
 type AccountQuota struct {
 	AccountQuotaName *string `json:"accountQuotaName,omitempty"`
 }
@@ -776,7 +781,17 @@ type Filter struct {
 	Values []*string `json:"values,omitempty"`
 }
 
-type GlobalCluster struct {
+type GlobalClusterMember struct {
+	DBClusterARN *string `json:"dbClusterARN,omitempty"`
+
+	GlobalWriteForwardingStatus *string `json:"globalWriteForwardingStatus,omitempty"`
+
+	IsWriter *bool `json:"isWriter,omitempty"`
+
+	Readers []*string `json:"readers,omitempty"`
+}
+
+type GlobalCluster_SDK struct {
 	DatabaseName *string `json:"databaseName,omitempty"`
 
 	DeletionProtection *bool `json:"deletionProtection,omitempty"`
@@ -789,19 +804,13 @@ type GlobalCluster struct {
 
 	GlobalClusterIdentifier *string `json:"globalClusterIdentifier,omitempty"`
 
+	GlobalClusterMembers []*GlobalClusterMember `json:"globalClusterMembers,omitempty"`
+
 	GlobalClusterResourceID *string `json:"globalClusterResourceID,omitempty"`
 
 	Status *string `json:"status,omitempty"`
 
 	StorageEncrypted *bool `json:"storageEncrypted,omitempty"`
-}
-
-type GlobalClusterMember struct {
-	DBClusterARN *string `json:"dbClusterARN,omitempty"`
-
-	GlobalWriteForwardingStatus *string `json:"globalWriteForwardingStatus,omitempty"`
-
-	IsWriter *bool `json:"isWriter,omitempty"`
 }
 
 type IPRange struct {

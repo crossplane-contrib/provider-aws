@@ -22,8 +22,17 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Hack to avoid import errors during build...
+var (
+	_ = &metav1.Time{}
+)
+
 type AliasListEntry struct {
 	AliasARN *string `json:"aliasARN,omitempty"`
+
+	CreationDate *metav1.Time `json:"creationDate,omitempty"`
+
+	LastUpdatedDate *metav1.Time `json:"lastUpdatedDate,omitempty"`
 
 	TargetKeyID *string `json:"targetKeyID,omitempty"`
 }

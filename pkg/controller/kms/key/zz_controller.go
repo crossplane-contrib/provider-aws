@@ -117,21 +117,33 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	if resp.KeyMetadata.AWSAccountId != nil {
 		cr.Status.AtProvider.AWSAccountID = resp.KeyMetadata.AWSAccountId
+	} else {
+		cr.Status.AtProvider.AWSAccountID = nil
 	}
 	if resp.KeyMetadata.Arn != nil {
 		cr.Status.AtProvider.ARN = resp.KeyMetadata.Arn
+	} else {
+		cr.Status.AtProvider.ARN = nil
 	}
 	if resp.KeyMetadata.CloudHsmClusterId != nil {
 		cr.Status.AtProvider.CloudHsmClusterID = resp.KeyMetadata.CloudHsmClusterId
+	} else {
+		cr.Status.AtProvider.CloudHsmClusterID = nil
 	}
 	if resp.KeyMetadata.CreationDate != nil {
 		cr.Status.AtProvider.CreationDate = &metav1.Time{*resp.KeyMetadata.CreationDate}
+	} else {
+		cr.Status.AtProvider.CreationDate = nil
 	}
 	if resp.KeyMetadata.DeletionDate != nil {
 		cr.Status.AtProvider.DeletionDate = &metav1.Time{*resp.KeyMetadata.DeletionDate}
+	} else {
+		cr.Status.AtProvider.DeletionDate = nil
 	}
 	if resp.KeyMetadata.Enabled != nil {
 		cr.Status.AtProvider.Enabled = resp.KeyMetadata.Enabled
+	} else {
+		cr.Status.AtProvider.Enabled = nil
 	}
 	if resp.KeyMetadata.EncryptionAlgorithms != nil {
 		f9 := []*string{}
@@ -141,18 +153,28 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f9 = append(f9, &f9elem)
 		}
 		cr.Status.AtProvider.EncryptionAlgorithms = f9
+	} else {
+		cr.Status.AtProvider.EncryptionAlgorithms = nil
 	}
 	if resp.KeyMetadata.ExpirationModel != nil {
 		cr.Status.AtProvider.ExpirationModel = resp.KeyMetadata.ExpirationModel
+	} else {
+		cr.Status.AtProvider.ExpirationModel = nil
 	}
 	if resp.KeyMetadata.KeyId != nil {
 		cr.Status.AtProvider.KeyID = resp.KeyMetadata.KeyId
+	} else {
+		cr.Status.AtProvider.KeyID = nil
 	}
 	if resp.KeyMetadata.KeyManager != nil {
 		cr.Status.AtProvider.KeyManager = resp.KeyMetadata.KeyManager
+	} else {
+		cr.Status.AtProvider.KeyManager = nil
 	}
 	if resp.KeyMetadata.KeyState != nil {
 		cr.Status.AtProvider.KeyState = resp.KeyMetadata.KeyState
+	} else {
+		cr.Status.AtProvider.KeyState = nil
 	}
 	if resp.KeyMetadata.SigningAlgorithms != nil {
 		f16 := []*string{}
@@ -162,9 +184,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f16 = append(f16, &f16elem)
 		}
 		cr.Status.AtProvider.SigningAlgorithms = f16
+	} else {
+		cr.Status.AtProvider.SigningAlgorithms = nil
 	}
 	if resp.KeyMetadata.ValidTo != nil {
 		cr.Status.AtProvider.ValidTo = &metav1.Time{*resp.KeyMetadata.ValidTo}
+	} else {
+		cr.Status.AtProvider.ValidTo = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -215,15 +241,16 @@ type external struct {
 	isUpToDate     func(*svcapitypes.Key, *svcsdk.DescribeKeyOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.Key, *svcsdk.CreateKeyInput) error
 	postCreate     func(context.Context, *svcapitypes.Key, *svcsdk.CreateKeyOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	delete         func(ctx context.Context, mg cpresource.Managed) error
-	update         func(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error)
+	delete         func(context.Context, cpresource.Managed) error
+	update         func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
 }
 
 func nopPreObserve(context.Context, *svcapitypes.Key, *svcsdk.DescribeKeyInput) error {
 	return nil
 }
-func nopPostObserve(context.Context, *svcapitypes.Key, *svcsdk.DescribeKeyOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error) {
-	return managed.ExternalObservation{}, nil
+
+func nopPostObserve(_ context.Context, _ *svcapitypes.Key, _ *svcsdk.DescribeKeyOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	return obs, err
 }
 func nopLateInitialize(*svcapitypes.KeyParameters, *svcsdk.DescribeKeyOutput) error {
 	return nil
@@ -235,8 +262,8 @@ func alwaysUpToDate(*svcapitypes.Key, *svcsdk.DescribeKeyOutput) (bool, error) {
 func nopPreCreate(context.Context, *svcapitypes.Key, *svcsdk.CreateKeyInput) error {
 	return nil
 }
-func nopPostCreate(context.Context, *svcapitypes.Key, *svcsdk.CreateKeyOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error) {
-	return managed.ExternalCreation{}, nil
+func nopPostCreate(_ context.Context, _ *svcapitypes.Key, _ *svcsdk.CreateKeyOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	return cre, err
 }
 func nopDelete(context.Context, cpresource.Managed) error {
 	return nil
