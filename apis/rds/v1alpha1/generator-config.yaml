@@ -13,6 +13,10 @@ ignore:
     - DeleteDBParameterGroupInput.DBParameterGroupName
     - ModifyDBParameterGroupInput.DBParameterGroupName
     - DescribeDBParameterGroupsInput.DBParameterGroupName
+    - DescribeGlobalClustersInput.GlobalClusterIdentifier
+    - ModifyGlobalClusterInput.GlobalClusterIdentifier
+    - CreateGlobalClusterInput.GlobalClusterIdentifier
+    - DeleteGlobalClusterInput.GlobalClusterIdentifier
   resource_names:
     - DBClusterEndpoint
     - CustomAvailabilityZone
@@ -25,5 +29,4 @@ ignore:
     - DBSnapshot
     - DBSubnetGroup
     - EventSubscription
-    - GlobalCluster
     - OptionGroup

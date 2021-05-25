@@ -77,6 +77,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbcluster"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbparametergroup"
+	"github.com/crossplane/provider-aws/pkg/controller/rds/globalcluster"
 	"github.com/crossplane/provider-aws/pkg/controller/redshift"
 	"github.com/crossplane/provider-aws/pkg/controller/route53/hostedzone"
 	"github.com/crossplane/provider-aws/pkg/controller/route53/resourcerecordset"
@@ -157,6 +158,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		filesystem.SetupFileSystem,
 		dbcluster.SetupDBCluster,
 		dbparametergroup.SetupDBParameterGroup,
+		globalcluster.SetupGlobalCluster,
 		vpccidrblock.SetupVPCCIDRBlock,
 		privatednsnamespace.SetupPrivateDNSNamespace,
 		publicdnsnamespace.SetupPublicDNSNamespace,
