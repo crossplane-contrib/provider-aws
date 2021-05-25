@@ -6,8 +6,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
 	"github.com/aws/aws-sdk-go/service/servicediscovery/servicediscoveryiface"
-	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -27,9 +28,7 @@ func useHooks(e *external) {
 	h := &hooks{client: e.client, kube: e.kube}
 	e.observe = h.observe
 	e.preCreate = preCreate
-	e.postCreate = nopPostCreate
 	e.delete = h.delete
-	e.update = nopUpdate
 }
 
 type hooks struct {
@@ -110,54 +109,35 @@ func (h *hooks) observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 			awsclient.Wrap(cpresource.IgnoreAny(err, ActualIsNotFound, IsDuplicateRequest), errGetNamespace)
 	}
 
-	resourceLateInitialized := false
-	cr.Status.SetConditions(xpv1.Available())
-	namespaceIDStr := awsclient.StringValue(namespaceID)
-	externalName := meta.GetExternalName(cr)
-	if externalName != namespaceIDStr {
-		meta.SetExternalName(cr, namespaceIDStr)
-		resourceLateInitialized = true
+	if meta.GetExternalName(cr) != awsclient.StringValue(namespaceID) {
+		// We need to make sure external name makes it to api-server no matter what.
+		err := retry.OnError(retry.DefaultRetry, cpresource.IsAPIError, func() error {
+			nn := types.NamespacedName{Name: cr.GetName()}
+			if err := h.kube.Get(ctx, nn, cr); err != nil {
+				return err
+			}
+			meta.SetExternalName(cr, awsclient.StringValue(namespaceID))
+			return h.kube.Update(ctx, cr)
+		})
+		if err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, "cannot update with external name")
+		}
 	}
-
-	currentSpec := cr.Spec.ForProvider.DeepCopy()
-	lateInitialize(&cr.Spec.ForProvider, nsReqResp)
-	resourceLateInitialized = resourceLateInitialized || !cmp.Equal(&cr.Spec.ForProvider, currentSpec)
-
+	cr.Status.SetConditions(xpv1.Available())
+	lateInited := false
+	if cr.Spec.ForProvider.Description == nil {
+		cr.Spec.ForProvider.Description = nsReqResp.Namespace.Description
+		lateInited = true
+	}
 	return managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceLateInitialized: resourceLateInitialized,
-		ResourceUpToDate:        isUpToDate(cr, nsReqResp),
+		ResourceLateInitialized: lateInited,
+		ResourceUpToDate:        true, // Namespaces cannot be updated.
 	}, nil
 }
 
-func isUpToDate(cr *svcapitypes.HTTPNamespace, resp *svcsdk.GetNamespaceOutput) bool {
-	if meta.GetExternalName(cr) != awsclient.StringValue(resp.Namespace.Id) {
-		return false
-	}
-
-	if cr.Spec.ForProvider.CreatorRequestID != resp.Namespace.CreatorRequestId {
-		return false
-	}
-	if cr.Spec.ForProvider.Description != resp.Namespace.Description {
-		return false
-	}
-
-	// if cr.Spec.ForProvider.VPC
-	// VPC information is not available through servicediscovery API. Instead
-	// one could use the HostedZone information to verify the VPC configuration
-	// through Route53 HostedZone records
-
-	// tags := map[string]string
-	// if cmp.Equal(cr.Spec.ForProvider.Tags, tags) {
-	// Where does the servicediscovery API provide Tag information?
-
-	// if cr.Spec.ForProvider.Region
-	// Region information is not available through servicediscovery API
-	return true
-}
-
-func preCreate(ctx context.Context, cr *svcapitypes.HTTPNamespace, input *svcsdk.CreateHttpNamespaceInput) error {
-	input.Name = awsclient.String(meta.GetExternalName(cr))
+func preCreate(_ context.Context, cr *svcapitypes.HTTPNamespace, obj *svcsdk.CreateHttpNamespaceInput) error {
+	obj.CreatorRequestId = awsclient.String(string(cr.UID))
 	return nil
 }
 
@@ -171,18 +151,4 @@ func (h *hooks) delete(ctx context.Context, mg cpresource.Managed) error {
 	}
 	_, err := h.client.DeleteNamespaceWithContext(ctx, input)
 	return awsclient.Wrap(cpresource.IgnoreAny(err, ActualIsNotFound, IsDuplicateRequest), errDelete)
-}
-
-func lateInitialize(forProvider *svcapitypes.HTTPNamespaceParameters, nsReqResp *svcsdk.GetNamespaceOutput) {
-	if nsReqResp == nil {
-		return
-	}
-
-	if forProvider.Description == nil {
-		forProvider.Description = nsReqResp.Namespace.Description
-	}
-
-	if forProvider.CreatorRequestID == nil {
-		forProvider.CreatorRequestID = nsReqResp.Namespace.CreatorRequestId
-	}
 }

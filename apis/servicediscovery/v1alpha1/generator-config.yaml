@@ -3,5 +3,8 @@
 ignore:
   field_paths:
     - CreatePrivateDnsNamespaceInput.Vpc
+    - CreateHttpNamespaceInput.CreatorRequestId
+    - CreatePrivateDnsNamespaceInput.CreatorRequestId
+    - CreatePublicDnsNamespaceInput.CreatorRequestId
   resource_names:
     - Service

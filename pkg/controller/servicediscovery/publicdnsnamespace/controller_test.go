@@ -24,11 +24,10 @@ import (
 )
 
 const (
-	validOpID             string = "123"
-	validNSID             string = "ns-id"
-	validDescription      string = "valid description"
-	validCreatorRequestID string = "valid:creator:request:id"
-	validArn              string = "arn:string"
+	validOpID        string = "123"
+	validNSID        string = "ns-id"
+	validDescription string = "valid description"
+	validArn         string = "arn:string"
 )
 
 type args struct {
@@ -364,10 +363,9 @@ func TestObserve(t *testing.T) {
 						}
 						return &svcsdk.GetNamespaceOutput{
 							Namespace: &svcsdk.Namespace{
-								Arn:              aws.String(validArn),
-								Name:             aws.String(validNSID),
-								Description:      aws.String(validDescription),
-								CreatorRequestId: aws.String(validCreatorRequestID),
+								Arn:         aws.String(validArn),
+								Name:        aws.String(validNSID),
+								Description: aws.String(validDescription),
 							},
 						}, nil
 					},
@@ -395,10 +393,9 @@ func TestObserve(t *testing.T) {
 					},
 					Spec: svcapitypes.PublicDNSNamespaceSpec{
 						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
-							Region:           "eu-central-1",
-							Name:             aws.String("test"),
-							Description:      aws.String(validDescription),
-							CreatorRequestID: aws.String(validCreatorRequestID),
+							Region:      "eu-central-1",
+							Name:        aws.String("test"),
+							Description: aws.String(validDescription),
 						},
 					},
 					Status: svcapitypes.PublicDNSNamespaceStatus{
@@ -415,6 +412,7 @@ func TestObserve(t *testing.T) {
 				result: managed.ExternalObservation{
 					ResourceExists:          true,
 					ResourceLateInitialized: true,
+					ResourceUpToDate:        true,
 				},
 			},
 		},
@@ -438,10 +436,9 @@ func TestObserve(t *testing.T) {
 						}
 						return &svcsdk.GetNamespaceOutput{
 							Namespace: &svcsdk.Namespace{
-								Arn:              aws.String(validArn),
-								Name:             aws.String(validNSID),
-								Description:      aws.String(validDescription),
-								CreatorRequestId: aws.String(validCreatorRequestID),
+								Arn:         aws.String(validArn),
+								Name:        aws.String(validNSID),
+								Description: aws.String(validDescription),
 							},
 						}, nil
 					},
@@ -471,10 +468,9 @@ func TestObserve(t *testing.T) {
 					},
 					Spec: svcapitypes.PublicDNSNamespaceSpec{
 						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
-							Region:           "eu-central-1",
-							Name:             aws.String("test"),
-							Description:      aws.String(validDescription),
-							CreatorRequestID: aws.String(validCreatorRequestID),
+							Region:      "eu-central-1",
+							Name:        aws.String("test"),
+							Description: aws.String(validDescription),
 						},
 					},
 					Status: svcapitypes.PublicDNSNamespaceStatus{
@@ -490,6 +486,7 @@ func TestObserve(t *testing.T) {
 				},
 				result: managed.ExternalObservation{
 					ResourceExists:          true,
+					ResourceUpToDate:        true,
 					ResourceLateInitialized: true,
 				},
 			},
@@ -498,8 +495,7 @@ func TestObserve(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.client}
-			useHooks(e)
+			e := newExternal(tc.kube, tc.client, []option{useHooks})
 
 			o, err := e.Observe(context.Background(), tc.args.cr)
 
@@ -576,8 +572,7 @@ func TestCreate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.client}
-			useHooks(e)
+			e := newExternal(tc.kube, tc.client, []option{useHooks})
 
 			o, err := e.Create(context.Background(), tc.args.cr)
 
@@ -655,8 +650,7 @@ func TestDelete(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.kube, client: tc.client}
-			useHooks(e)
+			e := newExternal(tc.kube, tc.client, []option{useHooks})
 
 			err := e.Delete(context.Background(), tc.args.cr)
 

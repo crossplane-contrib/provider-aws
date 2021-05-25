@@ -126,39 +126,14 @@ func (h *hooks) observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 	return managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceLateInitialized: resourceLateInitialized,
-		ResourceUpToDate:        isUpToDate(cr, nsReqResp),
+		ResourceUpToDate:        true,
 	}, nil
-}
-
-func isUpToDate(cr *svcapitypes.PrivateDNSNamespace, resp *svcsdk.GetNamespaceOutput) bool {
-	if meta.GetExternalName(cr) != awsclient.StringValue(resp.Namespace.Id) {
-		return false
-	}
-
-	if cr.Spec.ForProvider.CreatorRequestID != resp.Namespace.CreatorRequestId {
-		return false
-	}
-	if cr.Spec.ForProvider.Description != resp.Namespace.Description {
-		return false
-	}
-
-	// if cr.Spec.ForProvider.VPC
-	// VPC information is not available through servicediscovery API. Instead
-	// one could use the HostedZone information to verify the VPC configuration
-	// through Route53 HostedZone records
-
-	// tags := map[string]string
-	// if cmp.Equal(cr.Spec.ForProvider.Tags, tags) {
-	// Where does the servicediscovery API provide Tag information?
-
-	// if cr.Spec.ForProvider.Region
-	// Region information is not available through servicediscovery API
-	return true
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.PrivateDNSNamespace, input *svcsdk.CreatePrivateDnsNamespaceInput) error {
 	input.Name = awsclient.String(meta.GetExternalName(cr))
 	input.Vpc = cr.Spec.ForProvider.VPC
+	input.CreatorRequestId = awsclient.String(string(cr.UID))
 	return nil
 }
 
@@ -181,9 +156,5 @@ func lateInitialize(forProvider *svcapitypes.PrivateDNSNamespaceParameters, nsRe
 
 	if forProvider.Description == nil {
 		forProvider.Description = nsReqResp.Namespace.Description
-	}
-
-	if forProvider.CreatorRequestID == nil {
-		forProvider.CreatorRequestID = nsReqResp.Namespace.CreatorRequestId
 	}
 }
