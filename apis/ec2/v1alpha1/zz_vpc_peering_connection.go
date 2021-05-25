@@ -28,32 +28,22 @@ import (
 type VPCPeeringConnectionParameters struct {
 	// Region is which region the VPCPeeringConnection will be created.
 	// +kubebuilder:validation:Required
-	// +immutable
 	Region string `json:"region"`
-	// Checks whether you have the required permissions for the action, without
-	// actually making the request, and provides an error response. If you have
-	// the required permissions, the error response is DryRunOperation. Otherwise,
-	// it is UnauthorizedOperation.
-	DryRun *bool `json:"dryRun,omitempty"`
 	// The AWS account ID of the owner of the accepter VPC.
 	//
 	// Default: Your AWS account ID
-	// +immutable
 	PeerOwnerID *string `json:"peerOwnerID,omitempty"`
 	// The Region code for the accepter VPC, if the accepter VPC is located in a
 	// Region other than the Region in which you make the request.
 	//
 	// Default: The Region in which you make the request.
-	// +immutable
 	PeerRegion *string `json:"peerRegion,omitempty"`
 	// The ID of the VPC with which you are creating the VPC peering connection.
 	// You must specify this parameter in the request.
-	// +immutable
 	PeerVPCID *string `json:"peerVPCID,omitempty"`
 	// The tags to assign to the peering connection.
 	TagSpecifications []*TagSpecification `json:"tagSpecifications,omitempty"`
 	// The ID of the requester VPC. You must specify this parameter in the request.
-	// +immutable
 	VPCID                                *string `json:"vpcID,omitempty"`
 	CustomVPCPeeringConnectionParameters `json:",inline"`
 }

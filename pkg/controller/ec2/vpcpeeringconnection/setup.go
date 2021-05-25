@@ -31,7 +31,6 @@ func SetupVPCPeeringConnection(mgr ctrl.Manager, l logging.Logger, rl workqueue.
 			c := &custom{client: e.client, kube: e.kube}
 			e.postObserve = c.postObserve
 			e.preObserve = preObserve
-			e.preDelete = c.preDelete
 			e.postCreate = c.postCreate
 			e.preCreate = preCreate
 			e.isUpToDate = c.isUpToDate
@@ -56,7 +55,7 @@ type custom struct {
 }
 
 func preObserve(ctx context.Context, cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.DescribeVpcPeeringConnectionsInput) error {
-	filterName := "tag:Name"
+	filterName := "tag:crossplane-external-name"
 	externalName := meta.GetExternalName(cr)
 	filterValue := []*string{&externalName}
 	filter := svcsdk.Filter{
@@ -77,18 +76,32 @@ func (e *custom) postObserve(_ context.Context, cr *svcapitypes.VPCPeeringConnec
 	for _, v := range obj.VpcPeeringConnections {
 		connectionCounter++
 		for _, tag := range v.Tags {
-			if *tag.Key == "Name" {
-				if *tag.Value == cr.ObjectMeta.Labels["peering-connection-id"] {
+			if awsclients.StringValue(tag.Key) == "crossplane-external-name" {
+				if *v.Status.Code == "pending-acceptance" && cr.Spec.ForProvider.AcceptRequest {
+					// if acceptRequest is true, we automatically accept the request on AWS
+					req := svcsdk.AcceptVpcPeeringConnectionInput{
+						VpcPeeringConnectionId: awsclients.String(*v.VpcPeeringConnectionId),
+					}
+
+					request, _ := e.client.AcceptVpcPeeringConnectionRequest(&req)
+					err := request.Send()
+					if err != nil {
+						return obs, err
+					}
+				}
+
+				if awsclients.StringValue(tag.Value) == cr.ObjectMeta.Name {
 					switch aws.StringValue(v.Status.Code) {
 					case string(svcapitypes.VPCPeeringConnectionStateReasonCode_pending_acceptance):
 						cr.SetConditions(xpv1.Creating())
 					case string(svcapitypes.VPCPeeringConnectionStateReasonCode_deleted):
 						cr.SetConditions(xpv1.Unavailable())
-						return managed.ExternalObservation{}, nil
+						return managed.ExternalObservation{ResourceExists: false}, nil
 					case string(svcapitypes.VPCPeeringConnectionStateReasonCode_active):
 						cr.SetConditions(xpv1.Available())
 					}
 				}
+
 			}
 		}
 	}
@@ -103,27 +116,13 @@ func (e *custom) isUpToDate(cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.De
 		connectionCounter++
 
 		for _, tag := range v.Tags {
-			if *tag.Key == "Name" {
-				if *tag.Value == cr.ObjectMeta.Name {
+			if awsclients.StringValue(tag.Key) == "crossplane-external-name" {
+				if awsclients.StringValue(tag.Value) == cr.ObjectMeta.Name {
 					switch *v.Status.Code {
 					case "active":
 						return true, nil
 					case "deleted":
 						return false, nil
-					}
-
-					if *v.Status.Code == "pending-acceptance" && cr.Spec.ForProvider.AcceptRequest {
-						// if acceptRequest is true, we automatically accept the request on AWS
-						req := svcsdk.AcceptVpcPeeringConnectionInput{
-							VpcPeeringConnectionId: awsclients.String(*v.VpcPeeringConnectionId),
-						}
-
-						request, _ := e.client.AcceptVpcPeeringConnectionRequest(&req)
-						err := request.Send()
-						if err != nil {
-							return false, err
-						}
-						return true, nil
 					}
 				}
 			}
@@ -135,7 +134,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.De
 func preCreate(ctx context.Context, cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.CreateVpcPeeringConnectionInput) error {
 	// set external name as tag on the vpc peering connection
 	resType := "vpc-peering-connection"
-	key := "Name"
+	key := "crossplane-external-name"
 	value := meta.GetExternalName(cr)
 
 	spec := svcsdk.TagSpecification{
@@ -154,15 +153,8 @@ func preCreate(ctx context.Context, cr *svcapitypes.VPCPeeringConnection, obj *s
 
 func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.CreateVpcPeeringConnectionOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	// set peering connection id as label on the k8s object after creation
-	key := "Name"
 	value := obj.VpcPeeringConnection.VpcPeeringConnectionId
-	tags := []*svcsdk.Tag{
-		{
-			Key:   &key,
-			Value: value,
-		},
-	}
-	obj.VpcPeeringConnection.SetTags(tags)
+
 	labels := make(map[string]string)
 	labels["peering-connection-id"] = *value
 	cr.SetLabels(labels)
@@ -172,18 +164,4 @@ func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.VPCPeeringConne
 	}
 
 	return cre, err
-}
-
-func (e *custom) preDelete(ctx context.Context, cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.DeleteVpcPeeringConnectionInput) (bool, error) {
-
-	// VPC Peering Connections remain for several hours in deleted state after deletion
-	// kubectl delete would be stuck for that time frame if we wouldnt set finalizers to nil
-	// TODO (Dkaykay): Is there a better solution to this?
-	cr.Finalizers = nil
-	err := e.kube.Update(ctx, cr)
-	if err != nil {
-		return false, err
-	}
-
-	return false, nil
 }

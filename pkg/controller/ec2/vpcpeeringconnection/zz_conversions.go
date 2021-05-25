@@ -34,10 +34,6 @@ import (
 func GenerateDescribeVpcPeeringConnectionsInput(cr *svcapitypes.VPCPeeringConnection) *svcsdk.DescribeVpcPeeringConnectionsInput {
 	res := &svcsdk.DescribeVpcPeeringConnectionsInput{}
 
-	if cr.Spec.ForProvider.DryRun != nil {
-		res.SetDryRun(*cr.Spec.ForProvider.DryRun)
-	}
-
 	return res
 }
 
@@ -193,9 +189,6 @@ func GenerateVPCPeeringConnection(resp *svcsdk.DescribeVpcPeeringConnectionsOutp
 func GenerateCreateVpcPeeringConnectionInput(cr *svcapitypes.VPCPeeringConnection) *svcsdk.CreateVpcPeeringConnectionInput {
 	res := &svcsdk.CreateVpcPeeringConnectionInput{}
 
-	if cr.Spec.ForProvider.DryRun != nil {
-		res.SetDryRun(*cr.Spec.ForProvider.DryRun)
-	}
 	if cr.Spec.ForProvider.PeerOwnerID != nil {
 		res.SetPeerOwnerId(*cr.Spec.ForProvider.PeerOwnerID)
 	}
@@ -206,29 +199,29 @@ func GenerateCreateVpcPeeringConnectionInput(cr *svcapitypes.VPCPeeringConnectio
 		res.SetPeerVpcId(*cr.Spec.ForProvider.PeerVPCID)
 	}
 	if cr.Spec.ForProvider.TagSpecifications != nil {
-		f4 := []*svcsdk.TagSpecification{}
-		for _, f4iter := range cr.Spec.ForProvider.TagSpecifications {
-			f4elem := &svcsdk.TagSpecification{}
-			if f4iter.ResourceType != nil {
-				f4elem.SetResourceType(*f4iter.ResourceType)
+		f3 := []*svcsdk.TagSpecification{}
+		for _, f3iter := range cr.Spec.ForProvider.TagSpecifications {
+			f3elem := &svcsdk.TagSpecification{}
+			if f3iter.ResourceType != nil {
+				f3elem.SetResourceType(*f3iter.ResourceType)
 			}
-			if f4iter.Tags != nil {
-				f4elemf1 := []*svcsdk.Tag{}
-				for _, f4elemf1iter := range f4iter.Tags {
-					f4elemf1elem := &svcsdk.Tag{}
-					if f4elemf1iter.Key != nil {
-						f4elemf1elem.SetKey(*f4elemf1iter.Key)
+			if f3iter.Tags != nil {
+				f3elemf1 := []*svcsdk.Tag{}
+				for _, f3elemf1iter := range f3iter.Tags {
+					f3elemf1elem := &svcsdk.Tag{}
+					if f3elemf1iter.Key != nil {
+						f3elemf1elem.SetKey(*f3elemf1iter.Key)
 					}
-					if f4elemf1iter.Value != nil {
-						f4elemf1elem.SetValue(*f4elemf1iter.Value)
+					if f3elemf1iter.Value != nil {
+						f3elemf1elem.SetValue(*f3elemf1iter.Value)
 					}
-					f4elemf1 = append(f4elemf1, f4elemf1elem)
+					f3elemf1 = append(f3elemf1, f3elemf1elem)
 				}
-				f4elem.SetTags(f4elemf1)
+				f3elem.SetTags(f3elemf1)
 			}
-			f4 = append(f4, f4elem)
+			f3 = append(f3, f3elem)
 		}
-		res.SetTagSpecifications(f4)
+		res.SetTagSpecifications(f3)
 	}
 	if cr.Spec.ForProvider.VPCID != nil {
 		res.SetVpcId(*cr.Spec.ForProvider.VPCID)
@@ -241,9 +234,6 @@ func GenerateCreateVpcPeeringConnectionInput(cr *svcapitypes.VPCPeeringConnectio
 func GenerateDeleteVpcPeeringConnectionInput(cr *svcapitypes.VPCPeeringConnection) *svcsdk.DeleteVpcPeeringConnectionInput {
 	res := &svcsdk.DeleteVpcPeeringConnectionInput{}
 
-	if cr.Spec.ForProvider.DryRun != nil {
-		res.SetDryRun(*cr.Spec.ForProvider.DryRun)
-	}
 	if cr.Status.AtProvider.VPCPeeringConnectionID != nil {
 		res.SetVpcPeeringConnectionId(*cr.Status.AtProvider.VPCPeeringConnectionID)
 	}
