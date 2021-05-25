@@ -54,3 +54,8 @@ ignore:
     - VpnConnection
     - VpnGateway
     - Volume
+  field_paths:
+    - CreateVpcPeeringConnectionInput.DryRun
+    - DeleteVpcPeeringConnectionInput.DryRun
+    - RejectVpcPeeringConnectionInput.DryRun
+    - AcceptVpcPeeringConnectionInput.DryRun
