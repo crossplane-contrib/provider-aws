@@ -106,3 +106,18 @@ type CustomDBClusterParameters struct {
 	// +optional
 	SkipFinalSnapshot bool `json:"skipFinalSnapshot,omitempty"`
 }
+
+// CustomGlobalClusterParameters are custom parameters for a GlobalCluster
+type CustomGlobalClusterParameters struct {
+	// SourceDBClusterIdentifierRef is a reference to a DBCluster used to set
+	// SourceDBClusterIdentifier.
+	// +immutable
+	// +optional
+	SourceDBClusterIdentifierRef *xpv1.Reference `json:"sourceDBClusterIdentifierRef,omitempty"`
+
+	// SourceDBClusterIdentifierSelector selects a reference to a DBCluster used to
+	// set SourceDBClusterIdentifier.
+	// +immutable
+	// +optional
+	SourceDBClusterIdentifierSelector *xpv1.Selector `json:"sourceDBClusterIdentifierSelector,omitempty"`
+}
