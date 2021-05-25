@@ -3,7 +3,6 @@ module github.com/crossplane/provider-aws
 go 1.13
 
 require (
-	github.com/aws-controllers-k8s/runtime v0.1.1
 	github.com/aws/aws-sdk-go v1.37.4
 	github.com/aws/aws-sdk-go-v2 v0.23.0
 	github.com/crossplane/crossplane-runtime v0.13.0
