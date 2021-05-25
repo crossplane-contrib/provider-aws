@@ -544,6 +544,22 @@ spec:
                     required:
                     - payer
                     type: object
+                  publicAccessBlockConfiguration:
+                    description: PublicAccessBlockConfiguration that you want to apply to this Amazon S3 bucket.
+                    properties:
+                      blockPublicAcls:
+                        description: "Specifies whether Amazon S3 should block public access control lists (ACLs) for this bucket and objects in this bucket. Setting this element to TRUE causes the following behavior: \n    * PUT Bucket acl and PUT Object acl calls fail if the specified ACL is    public. \n    * PUT Object calls fail if the request includes a public ACL. \n    * PUT Bucket calls fail if the request includes a public ACL. \n Enabling this setting doesn't affect existing policies or ACLs."
+                        type: boolean
+                      blockPublicPolicy:
+                        description: "Specifies whether Amazon S3 should block public bucket policies for this bucket. Setting this element to TRUE causes Amazon S3 to reject calls to PUT Bucket policy if the specified bucket policy allows public access. \n Enabling this setting doesn't affect existing bucket policies."
+                        type: boolean
+                      ignorePublicAcls:
+                        description: "Specifies whether Amazon S3 should ignore public ACLs for this bucket and objects in this bucket. Setting this element to TRUE causes Amazon S3 to ignore all public ACLs on this bucket and objects in this bucket. \n Enabling this setting doesn't affect the persistence of any existing ACLs and doesn't prevent new public ACLs from being set."
+                        type: boolean
+                      restrictPublicBuckets:
+                        description: "Specifies whether Amazon S3 should restrict public bucket policies for this bucket. Setting this element to TRUE restricts access to this bucket to only AWS services and authorized users within this account if the bucket has a public policy. \n Enabling this setting doesn't affect previously stored bucket policies, except that public and cross-account access within any public bucket policy, including non-public delegation to specific accounts, is blocked."
+                        type: boolean
+                    type: object
                   replicationConfiguration:
                     description: Creates a replication configuration or replaces an existing one. For more information, see Replication (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication.html) in the Amazon S3 Developer Guide.
                     properties:
@@ -885,7 +901,6 @@ spec:
                             type: string
                         required:
                         - hostName
-                        - protocol
                         type: object
                       routingRules:
                         description: Rules that define when a redirect is applied and the redirect behavior.
@@ -920,8 +935,6 @@ spec:
                                 replaceKeyWith:
                                   description: The specific object key to use in the redirect request. For example, redirect request to error.html. Not required if one of the siblings is present. Can be present only if ReplaceKeyPrefixWith is not provided.
                                   type: string
-                              required:
-                              - protocol
                               type: object
                           required:
                           - redirect

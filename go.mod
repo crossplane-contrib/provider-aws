@@ -3,6 +3,7 @@ module github.com/crossplane/provider-aws
 go 1.13
 
 require (
+	github.com/aws-controllers-k8s/runtime v0.1.1
 	github.com/aws/aws-sdk-go v1.37.4
 	github.com/aws/aws-sdk-go-v2 v0.23.0
 	github.com/crossplane/crossplane-runtime v0.13.0
@@ -16,7 +17,7 @@ require (
 	github.com/onsi/gomega v1.10.2
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.6.1
-	golang.org/x/tools v0.0.0-20200916195026-c9a70fc28ce3 // indirect
+	golang.org/x/tools v0.1.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	k8s.io/api v0.20.1

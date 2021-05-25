@@ -6,6 +6,8 @@ spec:
   forProvider:
     acl: private
     locationConstraint: us-west-1
+    publicAccessBlockConfiguration:
+      blockPublicPolicy: true
     accelerateConfiguration:
       status: Enabled
     versioningConfiguration:

@@ -75,6 +75,10 @@ type MockBucketClient struct {
 
 	MockGetBucketAclRequest func(*s3.GetBucketAclInput) s3.GetBucketAclRequest //nolint
 	MockPutBucketAclRequest func(*s3.PutBucketAclInput) s3.PutBucketAclRequest //nolint
+
+	MockGetPublicAccessBlockRequest    func(*s3.GetPublicAccessBlockInput) s3.GetPublicAccessBlockRequest
+	MockPutPublicAccessBlockRequest    func(*s3.PutPublicAccessBlockInput) s3.PutPublicAccessBlockRequest
+	MockDeletePublicAccessBlockRequest func(*s3.DeletePublicAccessBlockInput) s3.DeletePublicAccessBlockRequest
 }
 
 // HeadBucketRequest is the fake method call to invoke the internal mock method
@@ -250,4 +254,19 @@ func (m MockBucketClient) GetBucketAclRequest(input *s3.GetBucketAclInput) s3.Ge
 // PutBucketAclRequest is the fake method call to invoke the internal mock method
 func (m MockBucketClient) PutBucketAclRequest(input *s3.PutBucketAclInput) s3.PutBucketAclRequest { //nolint
 	return m.MockPutBucketAclRequest(input)
+}
+
+// GetPublicAccessBlockRequest is the fake method call to invoke the internal mock method
+func (m MockBucketClient) GetPublicAccessBlockRequest(input *s3.GetPublicAccessBlockInput) s3.GetPublicAccessBlockRequest {
+	return m.MockGetPublicAccessBlockRequest(input)
+}
+
+// PutPublicAccessBlockRequest is the fake method call to invoke the internal mock method
+func (m MockBucketClient) PutPublicAccessBlockRequest(input *s3.PutPublicAccessBlockInput) s3.PutPublicAccessBlockRequest {
+	return m.MockPutPublicAccessBlockRequest(input)
+}
+
+// DeletePublicAccessBlockRequest is the fake method call to invoke the internal mock method
+func (m MockBucketClient) DeletePublicAccessBlockRequest(input *s3.DeletePublicAccessBlockInput) s3.DeletePublicAccessBlockRequest {
+	return m.MockDeletePublicAccessBlockRequest(input)
 }

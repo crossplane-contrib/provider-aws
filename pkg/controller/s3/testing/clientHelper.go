@@ -29,12 +29,12 @@ func Client(m ...ClientModifier) *fake.MockBucketClient {
 		},
 		MockGetBucketCorsRequest: func(input *awss3.GetBucketCorsInput) awss3.GetBucketCorsRequest {
 			return awss3.GetBucketCorsRequest{
-				Request: CreateRequest(awserr.New(s3.CORSErrCode, "", nil), &awss3.GetBucketCorsOutput{}),
+				Request: CreateRequest(awserr.New(s3.CORSNotFoundErrCode, "", nil), &awss3.GetBucketCorsOutput{}),
 			}
 		},
 		MockGetBucketLifecycleConfigurationRequest: func(input *awss3.GetBucketLifecycleConfigurationInput) awss3.GetBucketLifecycleConfigurationRequest {
 			return awss3.GetBucketLifecycleConfigurationRequest{
-				Request: CreateRequest(awserr.New(s3.LifecycleErrCode, "", nil), &awss3.GetBucketLifecycleConfigurationOutput{}),
+				Request: CreateRequest(awserr.New(s3.LifecycleNotFoundErrCode, "", nil), &awss3.GetBucketLifecycleConfigurationOutput{}),
 			}
 		},
 		MockGetBucketLoggingRequest: func(input *awss3.GetBucketLoggingInput) awss3.GetBucketLoggingRequest {
@@ -49,7 +49,7 @@ func Client(m ...ClientModifier) *fake.MockBucketClient {
 		},
 		MockGetBucketReplicationRequest: func(input *awss3.GetBucketReplicationInput) awss3.GetBucketReplicationRequest {
 			return awss3.GetBucketReplicationRequest{
-				Request: CreateRequest(awserr.New(s3.ReplicationErrCode, "", nil), &awss3.GetBucketReplicationOutput{}),
+				Request: CreateRequest(awserr.New(s3.ReplicationNotFoundErrCode, "", nil), &awss3.GetBucketReplicationOutput{}),
 			}
 		},
 		MockGetBucketRequestPaymentRequest: func(input *awss3.GetBucketRequestPaymentInput) awss3.GetBucketRequestPaymentRequest {
@@ -59,12 +59,12 @@ func Client(m ...ClientModifier) *fake.MockBucketClient {
 		},
 		MockGetBucketEncryptionRequest: func(input *awss3.GetBucketEncryptionInput) awss3.GetBucketEncryptionRequest {
 			return awss3.GetBucketEncryptionRequest{
-				Request: CreateRequest(awserr.New(s3.SSEErrCode, "", nil), &awss3.GetBucketEncryptionOutput{}),
+				Request: CreateRequest(awserr.New(s3.SSENotFoundErrCode, "", nil), &awss3.GetBucketEncryptionOutput{}),
 			}
 		},
 		MockGetBucketTaggingRequest: func(input *awss3.GetBucketTaggingInput) awss3.GetBucketTaggingRequest {
 			return awss3.GetBucketTaggingRequest{
-				Request: CreateRequest(awserr.New(s3.TaggingErrCode, "", nil), &awss3.GetBucketTaggingOutput{}),
+				Request: CreateRequest(awserr.New(s3.TaggingNotFoundErrCode, "", nil), &awss3.GetBucketTaggingOutput{}),
 			}
 		},
 		MockGetBucketVersioningRequest: func(input *awss3.GetBucketVersioningInput) awss3.GetBucketVersioningRequest {
@@ -74,12 +74,27 @@ func Client(m ...ClientModifier) *fake.MockBucketClient {
 		},
 		MockGetBucketWebsiteRequest: func(input *awss3.GetBucketWebsiteInput) awss3.GetBucketWebsiteRequest {
 			return awss3.GetBucketWebsiteRequest{
-				Request: CreateRequest(awserr.New(s3.WebsiteErrCode, "", nil), &awss3.GetBucketWebsiteOutput{}),
+				Request: CreateRequest(awserr.New(s3.WebsiteNotFoundErrCode, "", nil), &awss3.GetBucketWebsiteOutput{}),
 			}
 		},
 		MockPutBucketAclRequest: func(input *awss3.PutBucketAclInput) awss3.PutBucketAclRequest {
 			return awss3.PutBucketAclRequest{
 				Request: CreateRequest(nil, &awss3.PutBucketAclOutput{}),
+			}
+		},
+		MockGetPublicAccessBlockRequest: func(input *awss3.GetPublicAccessBlockInput) awss3.GetPublicAccessBlockRequest {
+			return awss3.GetPublicAccessBlockRequest{
+				Request: CreateRequest(awserr.New(s3.PublicAccessBlockNotFoundErrCode, "error", nil), &awss3.GetPublicAccessBlockOutput{}),
+			}
+		},
+		MockPutPublicAccessBlockRequest: func(input *awss3.PutPublicAccessBlockInput) awss3.PutPublicAccessBlockRequest {
+			return awss3.PutPublicAccessBlockRequest{
+				Request: CreateRequest(nil, &awss3.PutPublicAccessBlockOutput{}),
+			}
+		},
+		MockDeletePublicAccessBlockRequest: func(input *awss3.DeletePublicAccessBlockInput) awss3.DeletePublicAccessBlockRequest {
+			return awss3.DeletePublicAccessBlockRequest{
+				Request: CreateRequest(awserr.New(s3.PublicAccessBlockNotFoundErrCode, "error", nil), &awss3.DeletePublicAccessBlockOutput{}),
 			}
 		},
 	}

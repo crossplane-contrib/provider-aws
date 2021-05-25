@@ -72,6 +72,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuser"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuserpolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
+	"github.com/crossplane/provider-aws/pkg/controller/lambda/function"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbcluster"
@@ -82,6 +83,9 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
 	"github.com/crossplane/provider-aws/pkg/controller/s3/bucketpolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/secretsmanager/secret"
+	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/httpnamespace"
+	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/privatednsnamespace"
+	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/publicdnsnamespace"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/activity"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/statemachine"
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
@@ -154,6 +158,10 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		dbcluster.SetupDBCluster,
 		dbparametergroup.SetupDBParameterGroup,
 		vpccidrblock.SetupVPCCIDRBlock,
+		privatednsnamespace.SetupPrivateDNSNamespace,
+		publicdnsnamespace.SetupPublicDNSNamespace,
+		httpnamespace.SetupHTTPNamespace,
+		function.SetupFunction,
 	} {
 		if err := setup(mgr, l, rl); err != nil {
 			return err

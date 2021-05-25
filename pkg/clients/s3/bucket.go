@@ -30,20 +30,22 @@ import (
 )
 
 var (
-	// BucketErrCode is the error code sent by AWS when a bucket does not exist
-	BucketErrCode = "NotFound"
-	// CORSErrCode is the error code sent by AWS when the CORS configuration does not exist
-	CORSErrCode = "NoSuchCORSConfiguration"
-	// ReplicationErrCode is the error code sent by AWS when the replication config does not exist
-	ReplicationErrCode = "ReplicationConfigurationNotFoundError"
-	// LifecycleErrCode is the error code sent by AWS when the lifecycle config does not exist
-	LifecycleErrCode = "NoSuchLifecycleConfiguration"
-	// SSEErrCode is the error code sent by AWS when the SSE config does not exist
-	SSEErrCode = "ServerSideEncryptionConfigurationNotFoundError"
-	// TaggingErrCode is the error code sent by AWS when the tagging does not exist
-	TaggingErrCode = "NoSuchTagSet"
-	// WebsiteErrCode is the error code sent by AWS when the website config does not exist
-	WebsiteErrCode = "NoSuchWebsiteConfiguration"
+	// BucketNotFoundErrCode is the error code sent by AWS when a bucket does not exist
+	BucketNotFoundErrCode = "NotFound"
+	// CORSNotFoundErrCode is the error code sent by AWS when the CORS configuration does not exist
+	CORSNotFoundErrCode = "NoSuchCORSConfiguration"
+	// PublicAccessBlockNotFoundErrCode is NotFound error for PublicAccessBlock
+	PublicAccessBlockNotFoundErrCode = "NoSuchPublicAccessBlockConfiguration"
+	// ReplicationNotFoundErrCode is the error code sent by AWS when the replication config does not exist
+	ReplicationNotFoundErrCode = "ReplicationConfigurationNotFoundError"
+	// LifecycleNotFoundErrCode is the error code sent by AWS when the lifecycle config does not exist
+	LifecycleNotFoundErrCode = "NoSuchLifecycleConfiguration"
+	// SSENotFoundErrCode is the error code sent by AWS when the SSE config does not exist
+	SSENotFoundErrCode = "ServerSideEncryptionConfigurationNotFoundError"
+	// TaggingNotFoundErrCode is the error code sent by AWS when the tagging does not exist
+	TaggingNotFoundErrCode = "NoSuchTagSet"
+	// WebsiteNotFoundErrCode is the error code sent by AWS when the website config does not exist
+	WebsiteNotFoundErrCode = "NoSuchWebsiteConfiguration"
 	// MethodNotAllowed is the error code sent by AWS when the request method for an object is not allowed
 	MethodNotAllowed = "MethodNotAllowed"
 	// UnsupportedArgument is the error code sent by AWS when the request fields contain an argument that is not supported
@@ -100,6 +102,10 @@ type BucketClient interface {
 
 	GetBucketAclRequest(*s3.GetBucketAclInput) s3.GetBucketAclRequest
 	PutBucketAclRequest(*s3.PutBucketAclInput) s3.PutBucketAclRequest
+
+	GetPublicAccessBlockRequest(input *s3.GetPublicAccessBlockInput) s3.GetPublicAccessBlockRequest
+	PutPublicAccessBlockRequest(input *s3.PutPublicAccessBlockInput) s3.PutPublicAccessBlockRequest
+	DeletePublicAccessBlockRequest(input *s3.DeletePublicAccessBlockInput) s3.DeletePublicAccessBlockRequest
 }
 
 // NewClient returns a new client using AWS credentials as JSON encoded data.
@@ -112,7 +118,7 @@ func IsNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
-	if bucketErr, ok := err.(awserr.Error); ok && bucketErr.Code() == BucketErrCode {
+	if bucketErr, ok := err.(awserr.Error); ok && bucketErr.Code() == BucketNotFoundErrCode {
 		return true
 	}
 	return false
@@ -156,66 +162,56 @@ func GenerateBucketObservation(name string) v1beta1.BucketExternalStatus {
 
 // CORSConfigurationNotFound is parses the aws Error and validates if the cors configuration does not exist
 func CORSConfigurationNotFound(err error) bool {
-	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == CORSErrCode {
-		return true
-	}
-	return false
+	s3Err, ok := err.(awserr.Error)
+	return ok && s3Err.Code() == CORSNotFoundErrCode
 }
 
 // ReplicationConfigurationNotFound is parses the aws Error and validates if the replication configuration does not exist
 func ReplicationConfigurationNotFound(err error) bool {
-	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == ReplicationErrCode {
-		return true
-	}
-	return false
+	s3Err, ok := err.(awserr.Error)
+	return ok && s3Err.Code() == ReplicationNotFoundErrCode
+}
+
+// PublicAccessBlockConfigurationNotFound is parses the aws Error and validates if the public access block does not exist
+func PublicAccessBlockConfigurationNotFound(err error) bool {
+	s3Err, ok := err.(awserr.Error)
+	return ok && s3Err.Code() == PublicAccessBlockNotFoundErrCode
 }
 
 // LifecycleConfigurationNotFound is parses the aws Error and validates if the lifecycle configuration does not exist
 func LifecycleConfigurationNotFound(err error) bool {
-	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == LifecycleErrCode {
-		return true
-	}
-	return false
+	s3Err, ok := err.(awserr.Error)
+	return ok && s3Err.Code() == LifecycleNotFoundErrCode
 }
 
 // SSEConfigurationNotFound is parses the aws Error and validates if the SSE configuration does not exist
 func SSEConfigurationNotFound(err error) bool {
-	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == SSEErrCode {
-		return true
-	}
-	return false
+	s3Err, ok := err.(awserr.Error)
+	return ok && s3Err.Code() == SSENotFoundErrCode
 }
 
 // TaggingNotFound is parses the aws Error and validates if the tagging configuration does not exist
 func TaggingNotFound(err error) bool {
-	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == TaggingErrCode {
-		return true
-	}
-	return false
+	s3Err, ok := err.(awserr.Error)
+	return ok && s3Err.Code() == TaggingNotFoundErrCode
 }
 
 // WebsiteConfigurationNotFound is parses the aws Error and validates if the website configuration does not exist
 func WebsiteConfigurationNotFound(err error) bool {
-	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == WebsiteErrCode {
-		return true
-	}
-	return false
+	s3Err, ok := err.(awserr.Error)
+	return ok && s3Err.Code() == WebsiteNotFoundErrCode
 }
 
 // MethodNotSupported is parses the aws Error and validates if the method is allowed for a request
 func MethodNotSupported(err error) bool {
-	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == MethodNotAllowed {
-		return true
-	}
-	return false
+	s3Err, ok := err.(awserr.Error)
+	return ok && s3Err.Code() == MethodNotAllowed
 }
 
 // ArgumentNotSupported is parses the aws Error and validates if parameters are now allowed for a request
 func ArgumentNotSupported(err error) bool {
-	if s3Err, ok := err.(awserr.Error); ok && s3Err.Code() == UnsupportedArgument {
-		return true
-	}
-	return false
+	s3Err, ok := err.(awserr.Error)
+	return ok && s3Err.Code() == UnsupportedArgument
 }
 
 // UpdateBucketACL creates the ACLInput, sends the request to put an ACL based on the bucket
