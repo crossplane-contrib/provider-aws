@@ -3,8 +3,6 @@ kind: HTTPNamespace
 metadata:
   name: example-httpnamespace
 spec:
-  providerConfigRef:
-    name: example
   forProvider:
     region: us-east-1
     description: "test"
@@ -12,3 +10,5 @@ spec:
     tags:
       - key: cluster
         value: "my-cluster"
+    providerConfigRef:
+      name: example

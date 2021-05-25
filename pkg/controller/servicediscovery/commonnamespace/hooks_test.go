@@ -18,11 +18,9 @@ package commonnamespace
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -239,7 +237,7 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				result: managed.ExternalObservation{
-					ResourceExists: true,
+					ResourceExists: false,
 				},
 			},
 		},
@@ -274,63 +272,6 @@ func TestObserve(t *testing.T) {
 							ConditionedStatus: xpv1.ConditionedStatus{
 								Conditions: []xpv1.Condition{xpv1.Deleting()},
 							},
-						},
-					},
-				},
-			},
-			want: want{
-				cr: &svcapitypes.HTTPNamespace{
-					Spec: svcapitypes.HTTPNamespaceSpec{
-						ForProvider: svcapitypes.HTTPNamespaceParameters{
-							Region: "eu-central-1",
-							Name:   aws.String("test"),
-						},
-					},
-					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
-						},
-						ResourceStatus: xpv1.ResourceStatus{
-							ConditionedStatus: xpv1.ConditionedStatus{
-								Conditions: []xpv1.Condition{xpv1.Unavailable()},
-							},
-						},
-					},
-				},
-				result: managed.ExternalObservation{
-					ResourceExists: false,
-				},
-			},
-		},
-		"NewOpDoneNSNotFound": {
-			args: args{
-				client: &fake.MockServicediscoveryClient{
-					MockGetOperation: func(input *svcsdk.GetOperationInput) (*svcsdk.GetOperationOutput, error) {
-						if awsclient.StringValue(input.OperationId) != validOpID {
-							return &svcsdk.GetOperationOutput{}, nil
-						}
-						return &svcsdk.GetOperationOutput{
-							Operation: &svcsdk.Operation{
-								Status:  aws.String("SUCCESS"),
-								Targets: map[string]*string{"NAMESPACE": aws.String(validNSID)},
-							},
-						}, nil
-					},
-					MockGetNamespace: func(input *svcsdk.GetNamespaceInput) (*svcsdk.GetNamespaceOutput, error) {
-						return &svcsdk.GetNamespaceOutput{}, awserr.New(svcsdk.ErrCodeNamespaceNotFound, "namespace not found", fmt.Errorf("err"))
-					},
-				},
-				kube: nil,
-				cr: &svcapitypes.HTTPNamespace{
-					Spec: svcapitypes.HTTPNamespaceSpec{
-						ForProvider: svcapitypes.HTTPNamespaceParameters{
-							Region: "eu-central-1",
-							Name:   aws.String("test"),
-						},
-					},
-					Status: svcapitypes.HTTPNamespaceStatus{
-						AtProvider: svcapitypes.HTTPNamespaceObservation{
-							OperationID: aws.String(validOpID),
 						},
 					},
 				},

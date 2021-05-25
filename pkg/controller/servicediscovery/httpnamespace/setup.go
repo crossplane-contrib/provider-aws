@@ -55,6 +55,7 @@ func SetupHTTPNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLim
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.HTTPNamespaceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

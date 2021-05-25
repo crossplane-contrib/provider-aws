@@ -30,6 +30,11 @@ func (in *HTTPNamespace) GetOperationID() *string {
 	return in.Status.AtProvider.OperationID
 }
 
+// SetOperationID sets the last operation id.
+func (in *HTTPNamespace) SetOperationID(id *string) {
+	in.Status.AtProvider.OperationID = id
+}
+
 // GetDescription returns the description.
 func (in *HTTPNamespace) GetDescription() *string {
 	return in.Spec.ForProvider.Description
@@ -45,6 +50,11 @@ func (in *PrivateDNSNamespace) GetOperationID() *string {
 	return in.Status.AtProvider.OperationID
 }
 
+// SetOperationID sets the last operation id.
+func (in *PrivateDNSNamespace) SetOperationID(id *string) {
+	in.Status.AtProvider.OperationID = id
+}
+
 // GetDescription returns the description.
 func (in *PrivateDNSNamespace) GetDescription() *string {
 	return in.Spec.ForProvider.Description
@@ -58,6 +68,11 @@ func (in *PrivateDNSNamespace) SetDescription(d *string) {
 // GetOperationID returns the last operation id.
 func (in *PublicDNSNamespace) GetOperationID() *string {
 	return in.Status.AtProvider.OperationID
+}
+
+// SetOperationID sets the last operation id.
+func (in *PublicDNSNamespace) SetOperationID(id *string) {
+	in.Status.AtProvider.OperationID = id
 }
 
 // GetDescription returns the description.

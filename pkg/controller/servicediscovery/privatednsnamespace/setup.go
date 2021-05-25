@@ -56,11 +56,13 @@ func SetupPrivateDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.R
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.PrivateDNSNamespaceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithInitializers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.PrivateDNSNamespace, obj *svcsdk.CreatePrivateDnsNamespaceInput) error {
 	obj.CreatorRequestId = awsclient.String(string(cr.UID))
+	obj.Vpc = cr.Spec.ForProvider.VPC
 	return nil
 }

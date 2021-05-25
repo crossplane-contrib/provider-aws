@@ -37,14 +37,16 @@ import (
 )
 
 const (
-	errUnexpectedObject = "managed resource is not a namespace resource"
-	errGetNamespace     = "get-namespace failed"
-	errDeleteNamespace  = "delete-namespace failed"
+	errUnexpectedObject           = "managed resource is not a namespace resource"
+	errGetNamespace               = "get-namespace failed"
+	errDeleteNamespace            = "delete-namespace failed"
+	errOperationResponseMalformed = "get-operation result malformed"
 )
 
 type namespace interface {
 	cpresource.Managed
 	GetOperationID() *string
+	SetOperationID(*string)
 	GetDescription() *string
 	SetDescription(*string)
 }
@@ -76,72 +78,56 @@ func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 	default:
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
-	if awsclient.StringValue(cr.GetOperationID()) == "" {
-		return managed.ExternalObservation{}, nil
-	}
-	opInput := &svcsdk.GetOperationInput{
-		OperationId: cr.GetOperationID(),
-	}
-
-	opResp, err := h.client.GetOperationWithContext(ctx, opInput)
-	if err != nil {
-		return managed.ExternalObservation{}, errors.Wrap(err, "get-operation failed")
-	}
-
-	opStatus := awsclient.StringValue(opResp.Operation.Status)
-	if opStatus == "PENDING" || opStatus == "SUBMITTED" {
-		return managed.ExternalObservation{
-			ResourceExists: true,
-		}, nil
-	}
-
-	if opStatus == "FAIL" {
-		errMsg := ""
-		if opResp.Operation.ErrorMessage != nil {
-			errMsg = *opResp.Operation.ErrorMessage
+	// Creation is still on-going.
+	if meta.GetExternalName(cr) == "" {
+		if awsclient.StringValue(cr.GetOperationID()) == "" {
+			return managed.ExternalObservation{}, nil
 		}
-		isDeleting := cr.GetCondition(xpv1.TypeReady).Reason == xpv1.ReasonDeleting
-		cr.SetConditions(xpv1.Unavailable().WithMessage(errMsg))
-		if !isDeleting {
-			return managed.ExternalObservation{
-				ResourceExists: true,
-			}, nil
+		opInput := &svcsdk.GetOperationInput{
+			OperationId: cr.GetOperationID(),
 		}
-		return managed.ExternalObservation{}, nil
-	}
-
-	namespaceID, ok := opResp.Operation.Targets["NAMESPACE"]
-	if !ok {
-		return managed.ExternalObservation{
-			ResourceExists: true,
-		}, errors.New(errGetNamespace)
+		opResp, err := h.client.GetOperationWithContext(ctx, opInput)
+		if err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, "get-operation failed")
+		}
+		if opResp.Operation == nil || len(opResp.Operation.Targets) == 0 {
+			return managed.ExternalObservation{}, errors.New(errOperationResponseMalformed)
+		}
+		switch awsclient.StringValue(opResp.Operation.Status) {
+		case "PENDING", "SUBMITTED":
+			return managed.ExternalObservation{ResourceExists: true}, nil
+		case "FAIL":
+			cr.SetConditions(xpv1.Unavailable().WithMessage(awsclient.StringValue(opResp.Operation.ErrorMessage)))
+			return managed.ExternalObservation{}, nil
+		}
+		namespaceID, ok := opResp.Operation.Targets["NAMESPACE"]
+		if !ok {
+			return managed.ExternalObservation{}, errors.New(errOperationResponseMalformed)
+		}
+		if meta.GetExternalName(mg) != awsclient.StringValue(namespaceID) {
+			// We need to make sure external name makes it to api-server no matter what.
+			err := retry.OnError(retry.DefaultRetry, cpresource.IsAPIError, func() error {
+				nn := types.NamespacedName{Name: cr.GetName()}
+				if err := h.kube.Get(ctx, nn, mg); err != nil {
+					return err
+				}
+				meta.SetExternalName(mg, awsclient.StringValue(namespaceID))
+				return h.kube.Update(ctx, mg)
+			})
+			if err != nil {
+				return managed.ExternalObservation{}, errors.Wrap(err, "cannot update with external name")
+			}
+		}
 	}
 
 	nsInput := &svcsdk.GetNamespaceInput{
-		Id: namespaceID,
+		Id: awsclient.String(meta.GetExternalName(cr)),
 	}
 	nsReqResp, err := h.client.GetNamespaceWithContext(ctx, nsInput)
 	if err != nil {
-		if ActualIsNotFound(err) || IsDuplicateRequest(err) {
-			cr.SetConditions(xpv1.Unavailable())
-		}
+		cr.SetConditions(xpv1.Unavailable())
 		return managed.ExternalObservation{},
-			awsclient.Wrap(cpresource.IgnoreAny(err, ActualIsNotFound, IsDuplicateRequest), errGetNamespace)
-	}
-
-	if meta.GetExternalName(mg) != awsclient.StringValue(namespaceID) {
-		// We need to make sure external name makes it to api-server no matter what.
-		err := retry.OnError(retry.DefaultRetry, cpresource.IsAPIError, func() error {
-			nn := types.NamespacedName{Name: cr.GetName()}
-			if err := h.kube.Get(ctx, nn, mg); err != nil {
-				return err
-			}
-			meta.SetExternalName(mg, awsclient.StringValue(namespaceID))
-			return h.kube.Update(ctx, mg)
-		})
-		if err != nil {
-			return managed.ExternalObservation{}, errors.Wrap(err, "cannot update with external name")
-		}
+			awsclient.Wrap(cpresource.Ignore(ActualIsNotFound, err), errGetNamespace)
 	}
 	cr.SetConditions(xpv1.Available())
 	lateInited := false
@@ -158,11 +144,26 @@ func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 
 // Delete deletes any of HTTPNamespace, PrivateDNSNamespace or PublicDNSNamespace types.
 func (h *Hooks) Delete(ctx context.Context, mg cpresource.Managed) error {
-	input := &svcsdk.DeleteNamespaceInput{
-		Id: awsclient.String(meta.GetExternalName(mg)),
+	var cr namespace
+	switch i := mg.(type) {
+	case *v1alpha1.HTTPNamespace:
+		cr = i
+	case *v1alpha1.PrivateDNSNamespace:
+		cr = i
+	case *v1alpha1.PublicDNSNamespace:
+		cr = i
+	default:
+		return errors.New(errUnexpectedObject)
 	}
-	_, err := h.client.DeleteNamespaceWithContext(ctx, input)
-	return awsclient.Wrap(cpresource.IgnoreAny(err, ActualIsNotFound, IsDuplicateRequest), errDeleteNamespace)
+	input := &svcsdk.DeleteNamespaceInput{
+		Id: awsclient.String(meta.GetExternalName(cr)),
+	}
+	op, err := h.client.DeleteNamespaceWithContext(ctx, input)
+	if cpresource.IgnoreAny(err, ActualIsNotFound, IsDuplicateRequest) != nil {
+		return awsclient.Wrap(err, errDeleteNamespace)
+	}
+	cr.SetOperationID(op.OperationId)
+	return nil
 }
 
 // ActualIsNotFound reimplements IsNotFound which doesn't do it's job
