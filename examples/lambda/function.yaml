@@ -1,0 +1,26 @@
+apiVersion: lambda.aws.crossplane.io/v1alpha1
+kind: Function
+metadata:
+  name: test-function
+spec:
+  forProvider:
+    code:
+      s3Bucket: "my-s3-bucket"
+      s3Key: "prefix/path_to_s3_key.zip"
+    environment:
+      variables:
+        envKey: envValue
+    handler: "index.handler"
+    roleRef:
+      name: somerole
+    runtime: nodejs12.x
+    region: us-east-1
+    vpcConfig:
+      securityGroupIDRefs:
+        - name: sample-cluster-sg
+      subnetIDRefs:
+        - name: sample-subnet1
+    tags:
+      myKey: myValue
+  providerConfigRef:
+    name: example

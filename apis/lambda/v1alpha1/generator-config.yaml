@@ -1,0 +1,9 @@
+ignore:
+  field_paths:
+    - CreateFunctionInput.FunctionName
+    - GetFunctionInput.FunctionName
+    - DeleteFunctionInput.FunctionName
+  resource_names:
+    - Alias
+    - CodeSigningConfig
+    - EventSourceMapping
