@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package publicdnsnamespace
+package commonnamespace
 
 import (
 	"context"
@@ -49,12 +49,12 @@ const (
 type args struct {
 	client svcclient.Client
 	kube   client.Client
-	cr     *svcapitypes.PublicDNSNamespace
+	cr     *svcapitypes.HTTPNamespace
 }
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *svcapitypes.PublicDNSNamespace
+		cr     *svcapitypes.HTTPNamespace
 		result managed.ExternalObservation
 		err    error
 	}
@@ -67,9 +67,9 @@ func TestObserve(t *testing.T) {
 			args: args{
 				client: &fake.MockServicediscoveryClient{},
 				kube:   nil,
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+				cr: &svcapitypes.HTTPNamespace{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
 						},
@@ -77,14 +77,14 @@ func TestObserve(t *testing.T) {
 				},
 			},
 			want: want{
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+				cr: &svcapitypes.HTTPNamespace{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{},
+					Status: svcapitypes.HTTPNamespaceStatus{},
 				},
 				result: managed.ExternalObservation{
 					ResourceExists: false,
@@ -107,30 +107,30 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				kube: nil,
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+				cr: &svcapitypes.HTTPNamespace{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
 						},
 					},
 				},
 			},
 			want: want{
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+				cr: &svcapitypes.HTTPNamespace{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
 						},
 					},
@@ -156,30 +156,30 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				kube: nil,
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+				cr: &svcapitypes.HTTPNamespace{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
 						},
 					},
 				},
 			},
 			want: want{
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+				cr: &svcapitypes.HTTPNamespace{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
 						},
 					},
@@ -205,30 +205,30 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				kube: nil,
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+				cr: &svcapitypes.HTTPNamespace{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
 						},
 					},
 				},
 			},
 			want: want{
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+				cr: &svcapitypes.HTTPNamespace{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
 						},
 						ResourceStatus: xpv1.ResourceStatus{
@@ -259,15 +259,15 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				kube: nil,
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+				cr: &svcapitypes.HTTPNamespace{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
 						},
 						ResourceStatus: xpv1.ResourceStatus{
@@ -279,15 +279,15 @@ func TestObserve(t *testing.T) {
 				},
 			},
 			want: want{
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+				cr: &svcapitypes.HTTPNamespace{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
 						},
 						ResourceStatus: xpv1.ResourceStatus{
@@ -321,30 +321,30 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				kube: nil,
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+				cr: &svcapitypes.HTTPNamespace{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
 						},
 					},
 				},
 			},
 			want: want{
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+				cr: &svcapitypes.HTTPNamespace{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
 						},
 						ResourceStatus: xpv1.ResourceStatus{
@@ -386,36 +386,39 @@ func TestObserve(t *testing.T) {
 						}, nil
 					},
 				},
-				kube: nil,
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+				kube: &test.MockClient{
+					MockGet:    test.NewMockGetFn(nil),
+					MockUpdate: test.NewMockUpdateFn(nil),
+				},
+				cr: &svcapitypes.HTTPNamespace{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region:      "eu-central-1",
 							Name:        aws.String("test"),
 							Description: aws.String(validDescription),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
 						},
 					},
 				},
 			},
 			want: want{
-				cr: &svcapitypes.PublicDNSNamespace{
+				cr: &svcapitypes.HTTPNamespace{
 					ObjectMeta: v1.ObjectMeta{
 						Annotations: map[string]string{"crossplane.io/external-name": validNSID},
 					},
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region:      "eu-central-1",
 							Name:        aws.String("test"),
 							Description: aws.String(validDescription),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
 						},
 						ResourceStatus: xpv1.ResourceStatus{
@@ -427,7 +430,7 @@ func TestObserve(t *testing.T) {
 				},
 				result: managed.ExternalObservation{
 					ResourceExists:          true,
-					ResourceLateInitialized: true,
+					ResourceLateInitialized: false,
 					ResourceUpToDate:        true,
 				},
 			},
@@ -460,37 +463,37 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				kube: nil,
-				cr: &svcapitypes.PublicDNSNamespace{
+				cr: &svcapitypes.HTTPNamespace{
 					ObjectMeta: v1.ObjectMeta{
 						Annotations: map[string]string{"crossplane.io/external-name": validNSID},
 					},
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
 						},
 					},
 				},
 			},
 			want: want{
-				cr: &svcapitypes.PublicDNSNamespace{
+				cr: &svcapitypes.HTTPNamespace{
 					ObjectMeta: v1.ObjectMeta{
 						Annotations: map[string]string{"crossplane.io/external-name": validNSID},
 					},
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region:      "eu-central-1",
 							Name:        aws.String("test"),
 							Description: aws.String(validDescription),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
 						},
 						ResourceStatus: xpv1.ResourceStatus{
@@ -502,8 +505,8 @@ func TestObserve(t *testing.T) {
 				},
 				result: managed.ExternalObservation{
 					ResourceExists:          true,
-					ResourceUpToDate:        true,
 					ResourceLateInitialized: true,
+					ResourceUpToDate:        true,
 				},
 			},
 		},
@@ -511,7 +514,7 @@ func TestObserve(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := newExternal(tc.kube, tc.client, []option{useHooks})
+			e := NewHooks(tc.kube, tc.client)
 
 			o, err := e.Observe(context.Background(), tc.args.cr)
 
@@ -530,86 +533,9 @@ func TestObserve(t *testing.T) {
 	}
 }
 
-func TestCreate(t *testing.T) {
-	type want struct {
-		cr     *svcapitypes.PublicDNSNamespace
-		result managed.ExternalCreation
-		err    error
-	}
-
-	cases := map[string]struct {
-		args
-		want
-	}{
-		"NewPublicDNSNamespace": {
-			args: args{
-				client: &fake.MockServicediscoveryClient{
-					MockCreatePublicDNSNamespace: func(input *svcsdk.CreatePublicDnsNamespaceInput) (*svcsdk.CreatePublicDnsNamespaceOutput, error) {
-						return &svcsdk.CreatePublicDnsNamespaceOutput{
-							OperationId: aws.String(validOpID),
-						}, nil
-					},
-				},
-				kube: nil,
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
-							Region: "eu-central-1",
-							Name:   aws.String("test"),
-							Tags:   []*svcapitypes.Tag{{Key: aws.String("key"), Value: aws.String("value")}},
-						},
-					},
-				},
-			},
-			want: want{
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
-							Region: "eu-central-1",
-							Name:   aws.String("test"),
-							Tags:   []*svcapitypes.Tag{{Key: aws.String("key"), Value: aws.String("value")}},
-						},
-					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
-							OperationID: aws.String(validOpID),
-						},
-						ResourceStatus: xpv1.ResourceStatus{
-							ConditionedStatus: xpv1.ConditionedStatus{
-								Conditions: []xpv1.Condition{xpv1.Creating()},
-							},
-						},
-					},
-				},
-				result: managed.ExternalCreation{},
-			},
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			e := newExternal(tc.kube, tc.client, []option{useHooks})
-
-			o, err := e.Create(context.Background(), tc.args.cr)
-
-			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions(),
-				cmpopts.IgnoreFields(v1.Condition{}, "LastTransitionTime"),
-			); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.want.result, o); diff != "" {
-				t.Errorf("r: -want, +got:\n%s", diff)
-			}
-		})
-	}
-}
-
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *svcapitypes.PublicDNSNamespace
+		cr  *svcapitypes.HTTPNamespace
 		err error
 	}
 
@@ -617,7 +543,7 @@ func TestDelete(t *testing.T) {
 		args
 		want
 	}{
-		"NewPublicDNSNamespace": {
+		"NewHTTPNamespace": {
 			args: args{
 				client: &fake.MockServicediscoveryClient{
 					MockDeleteNamespace: func(input *svcsdk.DeleteNamespaceInput) (*svcsdk.DeleteNamespaceOutput, error) {
@@ -627,36 +553,31 @@ func TestDelete(t *testing.T) {
 					},
 				},
 				kube: nil,
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+				cr: &svcapitypes.HTTPNamespace{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
 						},
 					},
 				},
 			},
 			want: want{
-				cr: &svcapitypes.PublicDNSNamespace{
-					Spec: svcapitypes.PublicDNSNamespaceSpec{
-						ForProvider: svcapitypes.PublicDNSNamespaceParameters{
+				cr: &svcapitypes.HTTPNamespace{
+					Spec: svcapitypes.HTTPNamespaceSpec{
+						ForProvider: svcapitypes.HTTPNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
 						},
 					},
-					Status: svcapitypes.PublicDNSNamespaceStatus{
-						AtProvider: svcapitypes.PublicDNSNamespaceObservation{
+					Status: svcapitypes.HTTPNamespaceStatus{
+						AtProvider: svcapitypes.HTTPNamespaceObservation{
 							OperationID: aws.String(validOpID),
-						},
-						ResourceStatus: xpv1.ResourceStatus{
-							ConditionedStatus: xpv1.ConditionedStatus{
-								Conditions: []xpv1.Condition{xpv1.Deleting()},
-							},
 						},
 					},
 				},
@@ -666,7 +587,7 @@ func TestDelete(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := newExternal(tc.kube, tc.client, []option{useHooks})
+			e := NewHooks(tc.kube, tc.client)
 
 			err := e.Delete(context.Background(), tc.args.cr)
 

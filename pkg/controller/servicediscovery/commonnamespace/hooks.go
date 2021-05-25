@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package httpnamespace
+package commonnamespace
 
 import (
 	"context"
@@ -32,51 +32,55 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/servicediscovery/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/servicediscovery/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 const (
-	errGetNamespace = "get-namespace failed"
+	errUnexpectedObject = "managed resource is not a namespace resource"
+	errGetNamespace     = "get-namespace failed"
+	errDeleteNamespace  = "delete-namespace failed"
 )
 
-func useHooks(e *external) {
-	h := &hooks{client: e.client, kube: e.kube}
-	e.observe = h.observe
-	e.preCreate = preCreate
-	e.delete = h.delete
+type namespace interface {
+	cpresource.Managed
+	GetOperationID() *string
+	GetDescription() *string
+	SetDescription(*string)
 }
 
-type hooks struct {
+// NewHooks returns a new Hooks object.
+func NewHooks(kube client.Client, client servicediscoveryiface.ServiceDiscoveryAPI) *Hooks {
+	return &Hooks{
+		client: client,
+		kube:   kube,
+	}
+}
+
+// Hooks implements common hooks so that all ServiceDiscovery Namespace resources can use.
+type Hooks struct {
 	client servicediscoveryiface.ServiceDiscoveryAPI
 	kube   client.Client
 }
 
-// ActualIsNotFound reimplements IsNotFound which doesn't do it's job
-// IsNotFound test for error code UNKNOWN
-func ActualIsNotFound(err error) bool {
-	awsErr, ok := err.(awserr.Error)
-	return ok && (awsErr.Code() == svcsdk.ErrCodeNamespaceNotFound ||
-		awsErr.Code() == svcsdk.ErrCodeOperationNotFound)
-}
-
-// IsDuplicateRequest checks if an error is DuplicateRequest
-func IsDuplicateRequest(err error) bool {
-	awsErr, ok := err.(awserr.Error)
-	return ok && (awsErr.Code() == svcsdk.ErrCodeDuplicateRequest)
-}
-
-func (h *hooks) observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
-	cr, ok := mg.(*svcapitypes.HTTPNamespace)
-	if !ok {
+// Observe observes any of HTTPNamespace, PrivateDNSNamespace or PublicDNSNamespace types.
+func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
+	var cr namespace
+	switch i := mg.(type) {
+	case *v1alpha1.HTTPNamespace:
+		cr = i
+	case *v1alpha1.PrivateDNSNamespace:
+		cr = i
+	case *v1alpha1.PublicDNSNamespace:
+		cr = i
+	default:
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
-
-	if awsclient.StringValue(cr.Status.AtProvider.OperationID) == "" {
+	if awsclient.StringValue(cr.GetOperationID()) == "" {
 		return managed.ExternalObservation{}, nil
 	}
 	opInput := &svcsdk.GetOperationInput{
-		OperationId: cr.Status.AtProvider.OperationID,
+		OperationId: cr.GetOperationID(),
 	}
 
 	opResp, err := h.client.GetOperationWithContext(ctx, opInput)
@@ -97,7 +101,7 @@ func (h *hooks) observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 			errMsg = *opResp.Operation.ErrorMessage
 		}
 		isDeleting := cr.GetCondition(xpv1.TypeReady).Reason == xpv1.ReasonDeleting
-		cr.Status.SetConditions(xpv1.Unavailable().WithMessage(errMsg))
+		cr.SetConditions(xpv1.Unavailable().WithMessage(errMsg))
 		if !isDeleting {
 			return managed.ExternalObservation{
 				ResourceExists: true,
@@ -110,7 +114,7 @@ func (h *hooks) observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalObservation{
 			ResourceExists: true,
-		}, errors.New(errDescribe)
+		}, errors.New(errGetNamespace)
 	}
 
 	nsInput := &svcsdk.GetNamespaceInput{
@@ -119,30 +123,30 @@ func (h *hooks) observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 	nsReqResp, err := h.client.GetNamespaceWithContext(ctx, nsInput)
 	if err != nil {
 		if ActualIsNotFound(err) || IsDuplicateRequest(err) {
-			cr.Status.SetConditions(xpv1.Unavailable())
+			cr.SetConditions(xpv1.Unavailable())
 		}
 		return managed.ExternalObservation{},
 			awsclient.Wrap(cpresource.IgnoreAny(err, ActualIsNotFound, IsDuplicateRequest), errGetNamespace)
 	}
 
-	if meta.GetExternalName(cr) != awsclient.StringValue(namespaceID) {
+	if meta.GetExternalName(mg) != awsclient.StringValue(namespaceID) {
 		// We need to make sure external name makes it to api-server no matter what.
 		err := retry.OnError(retry.DefaultRetry, cpresource.IsAPIError, func() error {
 			nn := types.NamespacedName{Name: cr.GetName()}
-			if err := h.kube.Get(ctx, nn, cr); err != nil {
+			if err := h.kube.Get(ctx, nn, mg); err != nil {
 				return err
 			}
-			meta.SetExternalName(cr, awsclient.StringValue(namespaceID))
-			return h.kube.Update(ctx, cr)
+			meta.SetExternalName(mg, awsclient.StringValue(namespaceID))
+			return h.kube.Update(ctx, mg)
 		})
 		if err != nil {
 			return managed.ExternalObservation{}, errors.Wrap(err, "cannot update with external name")
 		}
 	}
-	cr.Status.SetConditions(xpv1.Available())
+	cr.SetConditions(xpv1.Available())
 	lateInited := false
-	if cr.Spec.ForProvider.Description == nil {
-		cr.Spec.ForProvider.Description = nsReqResp.Namespace.Description
+	if awsclient.StringValue(cr.GetDescription()) == "" {
+		cr.SetDescription(nsReqResp.Namespace.Description)
 		lateInited = true
 	}
 	return managed.ExternalObservation{
@@ -152,19 +156,25 @@ func (h *hooks) observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 	}, nil
 }
 
-func preCreate(_ context.Context, cr *svcapitypes.HTTPNamespace, obj *svcsdk.CreateHttpNamespaceInput) error {
-	obj.CreatorRequestId = awsclient.String(string(cr.UID))
-	return nil
-}
-
-func (h *hooks) delete(ctx context.Context, mg cpresource.Managed) error {
-	cr, ok := mg.(*svcapitypes.HTTPNamespace)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
+// Delete deletes any of HTTPNamespace, PrivateDNSNamespace or PublicDNSNamespace types.
+func (h *Hooks) Delete(ctx context.Context, mg cpresource.Managed) error {
 	input := &svcsdk.DeleteNamespaceInput{
-		Id: awsclient.String(meta.GetExternalName(cr)),
+		Id: awsclient.String(meta.GetExternalName(mg)),
 	}
 	_, err := h.client.DeleteNamespaceWithContext(ctx, input)
-	return awsclient.Wrap(cpresource.IgnoreAny(err, ActualIsNotFound, IsDuplicateRequest), errDelete)
+	return awsclient.Wrap(cpresource.IgnoreAny(err, ActualIsNotFound, IsDuplicateRequest), errDeleteNamespace)
+}
+
+// ActualIsNotFound reimplements IsNotFound which doesn't do it's job
+// IsNotFound test for error code UNKNOWN
+func ActualIsNotFound(err error) bool {
+	awsErr, ok := err.(awserr.Error)
+	return ok && (awsErr.Code() == svcsdk.ErrCodeNamespaceNotFound ||
+		awsErr.Code() == svcsdk.ErrCodeOperationNotFound)
+}
+
+// IsDuplicateRequest checks if an error is DuplicateRequest
+func IsDuplicateRequest(err error) bool {
+	awsErr, ok := err.(awserr.Error)
+	return ok && (awsErr.Code() == svcsdk.ErrCodeDuplicateRequest)
 }

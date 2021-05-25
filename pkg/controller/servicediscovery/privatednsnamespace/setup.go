@@ -17,6 +17,9 @@ limitations under the License.
 package privatednsnamespace
 
 import (
+	"context"
+
+	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -28,13 +31,20 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/servicediscovery/v1alpha1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/commonnamespace"
 )
 
 // SetupPrivateDNSNamespace adds a controller that reconciles PrivateDNSNamespaces.
 func SetupPrivateDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(svcapitypes.PrivateDNSNamespaceGroupKind)
 	opts := []option{
-		useHooks,
+		func(e *external) {
+			h := commonnamespace.NewHooks(e.kube, e.client)
+			e.preCreate = preCreate
+			e.delete = h.Delete
+			e.observe = h.Observe
+		},
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -48,4 +58,9 @@ func SetupPrivateDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.R
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+}
+
+func preCreate(_ context.Context, cr *svcapitypes.PrivateDNSNamespace, obj *svcsdk.CreatePrivateDnsNamespaceInput) error {
+	obj.CreatorRequestId = awsclient.String(string(cr.UID))
+	return nil
 }
