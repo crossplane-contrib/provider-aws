@@ -109,15 +109,15 @@ type CustomDBClusterParameters struct {
 
 // CustomGlobalClusterParameters are custom parameters for a GlobalCluster
 type CustomGlobalClusterParameters struct {
-	// SourceDBClusterIDRef is a reference to a DBCluster used to set
+	// SourceDBClusterIdentifierRef is a reference to a DBCluster used to set
 	// SourceDBClusterIdentifier.
 	// +immutable
 	// +optional
-	SourceDBClusterIDRef *xpv1.Reference `json:"sourceDBClusterIDRef,omitempty"`
+	SourceDBClusterIdentifierRef *xpv1.Reference `json:"sourceDBClusterIdentifierRef,omitempty"`
 
-	// SourceDBClusterIDSelector selects a reference to a DBCluster used to
+	// SourceDBClusterIdentifierSelector selects a reference to a DBCluster used to
 	// set SourceDBClusterIdentifier.
 	// +immutable
 	// +optional
-	SourceDBClusterIDSelector *xpv1.Selector `json:"sourceDBClusterIDSelector,omitempty"`
+	SourceDBClusterIdentifierSelector *xpv1.Selector `json:"sourceDBClusterIdentifierSelector,omitempty"`
 }

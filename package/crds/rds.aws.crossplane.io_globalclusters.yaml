@@ -68,8 +68,11 @@ spec:
                   region:
                     description: Region is which region the GlobalCluster will be created.
                     type: string
-                  sourceDBClusterIDRef:
-                    description: SourceDBClusterIDRef is a reference to a DBCluster used to set SourceDBClusterIdentifier.
+                  sourceDBClusterIdentifier:
+                    description: The Amazon Resource Name (ARN) to use as the primary cluster of the global database. This parameter is optional.
+                    type: string
+                  sourceDBClusterIdentifierRef:
+                    description: SourceDBClusterIdentifierRef is a reference to a DBCluster used to set SourceDBClusterIdentifier.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -77,8 +80,8 @@ spec:
                     required:
                     - name
                     type: object
-                  sourceDBClusterIDSelector:
-                    description: SourceDBClusterIDSelector selects a reference to a DBCluster used to set SourceDBClusterIdentifier.
+                  sourceDBClusterIdentifierSelector:
+                    description: SourceDBClusterIdentifierSelector selects a reference to a DBCluster used to set SourceDBClusterIdentifier.
                     properties:
                       matchControllerRef:
                         description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
@@ -89,9 +92,6 @@ spec:
                         description: MatchLabels ensures an object with matching labels is selected.
                         type: object
                     type: object
-                  sourceDBClusterIdentifier:
-                    description: The Amazon Resource Name (ARN) to use as the primary cluster of the global database. This parameter is optional.
-                    type: string
                   storageEncrypted:
                     description: The storage encryption setting for the new global database cluster.
                     type: boolean

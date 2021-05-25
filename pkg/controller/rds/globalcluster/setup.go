@@ -76,10 +76,9 @@ func postObserve(_ context.Context, cr *svcapitypes.GlobalCluster, resp *svcsdk.
 }
 
 func filterList(cr *svcapitypes.GlobalCluster, obj *svcsdk.DescribeGlobalClustersOutput) *svcsdk.DescribeGlobalClustersOutput {
-	clusterIdentifier := aws.String(meta.GetExternalName(cr))
 	resp := &svcsdk.DescribeGlobalClustersOutput{}
 	for _, dbCluster := range obj.GlobalClusters {
-		if aws.StringValue(dbCluster.GlobalClusterIdentifier) == aws.StringValue(clusterIdentifier) {
+		if aws.StringValue(dbCluster.GlobalClusterIdentifier) == meta.GetExternalName(cr) {
 			resp.GlobalClusters = append(resp.GlobalClusters, dbCluster)
 			break
 		}

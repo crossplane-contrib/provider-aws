@@ -100,8 +100,8 @@ func (mg *GlobalCluster) ResolveReferences(ctx context.Context, c client.Reader)
 	// Resolve spec.forProvider.sourceDBClusterIdentifier
 	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.SourceDBClusterIdentifier),
-		Reference:    mg.Spec.ForProvider.SourceDBClusterIDRef,
-		Selector:     mg.Spec.ForProvider.SourceDBClusterIDSelector,
+		Reference:    mg.Spec.ForProvider.SourceDBClusterIdentifierRef,
+		Selector:     mg.Spec.ForProvider.SourceDBClusterIdentifierSelector,
 		To:           reference.To{Managed: &DBCluster{}, List: &DBClusterList{}},
 		Extract:      DBClusterARN(),
 	})
@@ -109,7 +109,7 @@ func (mg *GlobalCluster) ResolveReferences(ctx context.Context, c client.Reader)
 		return errors.Wrap(err, "spec.forProvider.sourceDBClusterIdentifier")
 	}
 	mg.Spec.ForProvider.SourceDBClusterIdentifier = reference.ToPtrValue(rsp.ResolvedValue)
-	mg.Spec.ForProvider.SourceDBClusterIDRef = rsp.ResolvedReference
+	mg.Spec.ForProvider.SourceDBClusterIdentifierRef = rsp.ResolvedReference
 
 	return nil
 }
