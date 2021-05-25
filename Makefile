@@ -123,8 +123,10 @@ service:
 	fi
 	@if [ ! -d "$(WORK_DIR)/code-generator" ]; then \
 		cd $(WORK_DIR) && git clone "https://github.com/aws-controllers-k8s/code-generator.git"; \
-		cd $(WORK_DIR)/code-generator && git checkout $(CODE_GENERATOR_COMMIT); \
 	fi
+
+	cd $(WORK_DIR)/code-generator && git fetch origin && git checkout $(CODE_GENERATOR_COMMIT); 
+	
 	@cd $(WORK_DIR)/code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $(ServiceID) --provider-dir ../../
 
 
