@@ -49,9 +49,6 @@ func SetupFunction(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter)
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.FunctionGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithInitializers(
-				managed.NewNameAsExternalName(mgr.GetClient()),
-				managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -68,11 +65,7 @@ func LateInitialize(cr *svcapitypes.FunctionParameters, resp *svcsdk.GetFunction
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Function, obj *svcsdk.CreateFunctionInput) error {
-	if aws.String(meta.GetExternalName(cr)) == nil {
-		meta.SetExternalName(cr, cr.Name)
-	}
 	obj.FunctionName = aws.String(meta.GetExternalName(cr))
-
 	return nil
 }
 
