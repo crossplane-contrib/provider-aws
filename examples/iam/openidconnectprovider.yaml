@@ -1,0 +1,14 @@
+---
+apiVersion: identity.aws.crossplane.io/v1alpha1
+kind: OpenIDConnectProvider
+metadata:
+  name: some-provider
+spec:
+  forProvider:
+    clientIDList:
+      - sts.amazonaws.com
+    thumbprintList:
+      - "9e99a48a9960b14926bb7f3b02e22da2b0ab7280"
+    url: https://example.com
+  providerConfigRef:
+    name: example
