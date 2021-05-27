@@ -48,6 +48,15 @@ var (
 	VPCCIDRBlockGroupVersionKind = SchemeGroupVersion.WithKind(VPCCIDRBlockKind)
 )
 
+// Repository type metadata.
+var (
+	VPCPeeringConnectionKind             = "VPCPeeringConnection"
+	VPCPeeringConnectionGroupKind        = schema.GroupKind{Group: Group, Kind: VPCPeeringConnectionKind}.String()
+	VPCPeeringConnectionKindAPIVersion   = VPCPeeringConnectionKind + "." + SchemeGroupVersion.String()
+	VPCPeeringConnectionGroupVersionKind = SchemeGroupVersion.WithKind(VPCPeeringConnectionKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&VPCCIDRBlock{}, &VPCCIDRBlockList{})
+	SchemeBuilder.Register(&VPCPeeringConnection{}, &VPCPeeringConnectionList{})
 }

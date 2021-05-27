@@ -75,3 +75,59 @@ func (mg *VPCCIDRBlock) SetProviderReference(r *xpv1.Reference) {
 func (mg *VPCCIDRBlock) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
+
+// GetCondition of this VPCPeeringConnection.
+func (mg *VPCPeeringConnection) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this VPCPeeringConnection.
+func (mg *VPCPeeringConnection) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this VPCPeeringConnection.
+func (mg *VPCPeeringConnection) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this VPCPeeringConnection.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *VPCPeeringConnection) GetProviderReference() *xpv1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetWriteConnectionSecretToReference of this VPCPeeringConnection.
+func (mg *VPCPeeringConnection) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this VPCPeeringConnection.
+func (mg *VPCPeeringConnection) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this VPCPeeringConnection.
+func (mg *VPCPeeringConnection) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this VPCPeeringConnection.
+func (mg *VPCPeeringConnection) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this VPCPeeringConnection.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *VPCPeeringConnection) SetProviderReference(r *xpv1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetWriteConnectionSecretToReference of this VPCPeeringConnection.
+func (mg *VPCPeeringConnection) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
