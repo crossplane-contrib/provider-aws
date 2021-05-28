@@ -55,9 +55,9 @@ type custom struct {
 }
 
 func preObserve(ctx context.Context, cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.DescribeVpcPeeringConnectionsInput) error {
-	filterName := "tag:crossplane-external-name"
-	externalName := meta.GetExternalName(cr)
-	filterValue := []*string{&externalName}
+	filterName := "tag:crossplane-claim-name"
+	objectName := cr.ObjectMeta.Name
+	filterValue := []*string{&objectName}
 	filter := svcsdk.Filter{
 		Name:   &filterName,
 		Values: filterValue,
@@ -76,7 +76,7 @@ func (e *custom) postObserve(_ context.Context, cr *svcapitypes.VPCPeeringConnec
 	for _, v := range obj.VpcPeeringConnections {
 		connectionCounter++
 		for _, tag := range v.Tags {
-			if awsclients.StringValue(tag.Key) == "crossplane-external-name" {
+			if awsclients.StringValue(tag.Key) == "crossplane-claim-name" {
 				if *v.Status.Code == "pending-acceptance" && cr.Spec.ForProvider.AcceptRequest {
 					// if acceptRequest is true, we automatically accept the request on AWS
 					req := svcsdk.AcceptVpcPeeringConnectionInput{
@@ -118,32 +118,32 @@ func setCondition(code *svcsdk.VpcPeeringConnectionStateReason, cr *svcapitypes.
 }
 
 func (e *custom) isUpToDate(cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.DescribeVpcPeeringConnectionsOutput) (bool, error) {
-	connectionCounter := -1
+	// connectionCounter := -1
 
-	for _, v := range obj.VpcPeeringConnections {
-		connectionCounter++
+	// for _, v := range obj.VpcPeeringConnections {
+	// 	connectionCounter++
 
-		for _, tag := range v.Tags {
-			if awsclients.StringValue(tag.Key) == "crossplane-external-name" {
-				if awsclients.StringValue(tag.Value) == cr.ObjectMeta.Name {
-					switch *v.Status.Code {
-					case "active":
-						return true, nil
-					case "deleted":
-						return false, nil
-					}
-				}
-			}
-		}
-	}
-	return false, nil
+	// 	for _, tag := range v.Tags {
+	// 		if awsclients.StringValue(tag.Key) == "crossplane-claim-name" {
+	// 			if awsclients.StringValue(tag.Value) == cr.ObjectMeta.Name {
+	// 				switch *v.Status.Code {
+	// 				case "active":
+	// 					return true, nil
+	// 				case "deleted":
+	// 					return false, nil
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
+	return true, nil
 }
 
 func preCreate(ctx context.Context, cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.CreateVpcPeeringConnectionInput) error {
 	// set external name as tag on the vpc peering connection
 	resType := "vpc-peering-connection"
-	key := "crossplane-external-name"
-	value := meta.GetExternalName(cr)
+	key := "crossplane-claim-name"
+	value := cr.ObjectMeta.Name
 
 	spec := svcsdk.TagSpecification{
 		ResourceType: &resType,
@@ -160,16 +160,12 @@ func preCreate(ctx context.Context, cr *svcapitypes.VPCPeeringConnection, obj *s
 }
 
 func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.CreateVpcPeeringConnectionOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
-	// set peering connection id as label on the k8s object after creation
-	value := obj.VpcPeeringConnection.VpcPeeringConnectionId
-
-	labels := make(map[string]string)
-	labels["peering-connection-id"] = *value
-	cr.SetLabels(labels)
-	updateError := e.kube.Update(ctx, cr)
-	if updateError != nil {
-		return cre, updateError
+	if err != nil {
+		return managed.ExternalCreation{}, err
 	}
+	// set peering connection id as external name annotation on k8s object after creation
 
-	return cre, err
+	meta.SetExternalName(cr, aws.StringValue(obj.VpcPeeringConnection.VpcPeeringConnectionId))
+	cre.ExternalNameAssigned = true
+	return cre, nil
 }
