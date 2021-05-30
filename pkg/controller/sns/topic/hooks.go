@@ -44,6 +44,7 @@ func SetupTopic(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) er
 	name := managed.ControllerName(svcapitypes.TopicGroupKind)
 	opts := []option{
 		func(e *external) {
+			e.preObserve = preObserve
 			e.postObserve = postObserve
 			e.postCreate = postCreate
 			u := &updater{client: e.client}
@@ -63,6 +64,11 @@ func SetupTopic(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) er
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+}
+
+func preObserve(_ context.Context, cr *svcapitypes.Topic, obj *svcsdk.GetTopicAttributesInput) error {
+	obj.TopicArn = aws.String(meta.GetExternalName(cr))
+	return nil
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.Topic, _ *svcsdk.GetTopicAttributesOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
@@ -138,9 +144,9 @@ func GetChangedAttributes(p svcapitypes.TopicParameters, attrs map[string]*strin
 	return changed
 }
 
-func isUpToDate(r bool, cr *svcapitypes.Topic, resp *svcsdk.GetTopicAttributesOutput) (bool, error) {
-	if !r {
-		return r, nil
+func isUpToDate(isUpToDate bool, cr *svcapitypes.Topic, resp *svcsdk.GetTopicAttributesOutput) (bool, error) {
+	if !isUpToDate {
+		return false, nil
 	}
 	return aws.StringValue(cr.Spec.ForProvider.DeliveryPolicy) == aws.StringValue(resp.Attributes[string(svcapitypes.TopicDeliveryPolicy)]) &&
 		aws.StringValue(cr.Spec.ForProvider.DisplayName) == aws.StringValue(resp.Attributes[string(svcapitypes.TopicDisplayName)]) &&
