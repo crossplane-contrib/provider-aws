@@ -104,6 +104,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	res, err := e.client.GetHostedZoneRequest(&route53.GetHostedZoneInput{
 		Id: aws.String(fmt.Sprintf("%s%s", hostedzone.IDPrefix, meta.GetExternalName(cr))),
+		CompatId: aws.String(meta.GetExternalName(cr))
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(hostedzone.IsNotFound, err), errGet)
