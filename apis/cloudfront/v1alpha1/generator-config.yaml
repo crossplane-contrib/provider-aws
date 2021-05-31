@@ -1,0 +1,16 @@
+ignore:
+  resource_names:
+    - CachePolicy
+    - FieldLevelEncryptionProfile
+    - Invalidation
+    - KeyGroup
+    - OriginRequestPolicy
+    - PublicKey
+    - StreamingDistribution
+    - RealtimeLogConfig
+    - MonitoringSubscription
+    - FieldLevelEncryptionConfig
+    - CloudFrontOriginAccessIdentity
+  field_paths:
+    - DistributionConfig.CallerReference
+    - Origins.Quantity
