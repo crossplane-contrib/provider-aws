@@ -6,7 +6,8 @@ PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
 
 PLATFORMS ?= linux_amd64 linux_arm64
 
-CODE_GENERATOR_COMMIT ?= v0.1.0
+CODE_GENERATOR_COMMIT ?= v0.2.1
+GENERATED_SERVICES="apigatewayv2,cloudfront,dynamodb,efs,kms,lambda,rds,secretsmanager,servicediscovery,sfn"
 
 # -include will silently skip missing files, which allows us
 # to load those files with a target in the Makefile. If only
@@ -115,20 +116,26 @@ run: go.build
 
 .PHONY: cobertura reviewable manifests submodules fallthrough test-integration run crds.clean
 
-service: 
-	@if [ "$(ServiceID)" = "" ]; then \
-		echo "Error: Please specify value of 'ServiceID'."; \
+# NOTE(muvaf): ACK Code Generator is a separate Go module, hence we need to
+# be in its root directory to call "go run" properly.
+services:
+	@if [ "$(SERVICES)" = "" ]; then \
+		echo "Error: Please specify the comma-seperated list of services via 'SERVICES' variable."; \
 		echo "For more info: https://github.com/crossplane/provider-aws/blob/master/CODE_GENERATION.md#code-generation"; \
 		exit 1; \
 	fi
 	@if [ ! -d "$(WORK_DIR)/code-generator" ]; then \
 		cd $(WORK_DIR) && git clone "https://github.com/aws-controllers-k8s/code-generator.git"; \
 	fi
+	@cd $(WORK_DIR)/code-generator && git fetch origin && git checkout $(CODE_GENERATOR_COMMIT);
+	@for svc in $$(echo "$(SERVICES)" | tr ',' ' '); do \
+		$(INFO) Generating $$svc controllers and CRDs; \
+		cd $(WORK_DIR)/code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $$svc --provider-dir ../../; \
+		$(OK) Generating $$svc controllers and CRDs; \
+	done
 
-	cd $(WORK_DIR)/code-generator && git fetch origin && git checkout $(CODE_GENERATOR_COMMIT); 
-	
-	@cd $(WORK_DIR)/code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $(ServiceID) --provider-dir ../../
-
+services.all:
+	@$(MAKE) services SERVICES=$(GENERATED_SERVICES)
 
 # ====================================================================================
 # Special Targets
