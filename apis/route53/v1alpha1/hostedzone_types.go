@@ -147,6 +147,9 @@ type HostedZoneResponse struct {
 	// it.
 	ID string `json:"id,omitempty"`
 
+	// CompatibiltyID with zone ID only for other resources like for example IAM.
+	CompatID string `json:"compatId,omitempty"`
+
 	// LinkedService is the service that created the hosted zone.
 	LinkedService LinkedService `json:"linkedService,omitempty"`
 
