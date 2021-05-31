@@ -30,10 +30,10 @@ func SetupVPCPeeringConnection(mgr ctrl.Manager, l logging.Logger, rl workqueue.
 		func(e *external) {
 			c := &custom{client: e.client, kube: e.kube}
 			e.postObserve = c.postObserve
-			e.preObserve = preObserve
 			e.postCreate = c.postCreate
 			e.preCreate = preCreate
 			e.isUpToDate = c.isUpToDate
+			e.filterList = filterList
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
@@ -54,17 +54,16 @@ type custom struct {
 	client svcsdkapi.EC2API
 }
 
-func preObserve(ctx context.Context, cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.DescribeVpcPeeringConnectionsInput) error {
-	filterName := "tag:crossplane-claim-name"
-	objectName := cr.ObjectMeta.Name
-	filterValue := []*string{&objectName}
-	filter := svcsdk.Filter{
-		Name:   &filterName,
-		Values: filterValue,
+func filterList(cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.DescribeVpcPeeringConnectionsOutput) *svcsdk.DescribeVpcPeeringConnectionsOutput {
+	connectionIdentifier := aws.String(meta.GetExternalName(cr))
+	resp := &svcsdk.DescribeVpcPeeringConnectionsOutput{}
+	for _, vpcPeeringConnection := range obj.VpcPeeringConnections {
+		if aws.StringValue(vpcPeeringConnection.VpcPeeringConnectionId) == aws.StringValue(connectionIdentifier) {
+			resp.VpcPeeringConnections = append(resp.VpcPeeringConnections, vpcPeeringConnection)
+			break
+		}
 	}
-	filters := []*svcsdk.Filter{&filter}
-	obj.SetFilters(filters)
-	return nil
+	return resp
 }
 
 func (e *custom) postObserve(_ context.Context, cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.DescribeVpcPeeringConnectionsOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
@@ -72,33 +71,22 @@ func (e *custom) postObserve(_ context.Context, cr *svcapitypes.VPCPeeringConnec
 		return managed.ExternalObservation{}, err
 	}
 
-	connectionCounter := -1
-	for _, v := range obj.VpcPeeringConnections {
-		connectionCounter++
-		for _, tag := range v.Tags {
-			if awsclients.StringValue(tag.Key) == "crossplane-claim-name" {
-				if *v.Status.Code == "pending-acceptance" && cr.Spec.ForProvider.AcceptRequest {
-					// if acceptRequest is true, we automatically accept the request on AWS
-					req := svcsdk.AcceptVpcPeeringConnectionInput{
-						VpcPeeringConnectionId: awsclients.String(*v.VpcPeeringConnectionId),
-					}
-					request, _ := e.client.AcceptVpcPeeringConnectionRequest(&req)
-					err := request.Send()
-					if err != nil {
-						return obs, err
-					}
-				}
-				if awsclients.StringValue(tag.Value) == cr.ObjectMeta.Name {
-					available := setCondition(v.Status, cr)
-					if !available {
-						return managed.ExternalObservation{ResourceExists: false}, nil
-					}
-				}
-
-			}
+	if *obj.VpcPeeringConnections[0].Status.Code == "pending-acceptance" && cr.Spec.ForProvider.AcceptRequest {
+		req := svcsdk.AcceptVpcPeeringConnectionInput{
+			VpcPeeringConnectionId: awsclients.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
+		}
+		request, _ := e.client.AcceptVpcPeeringConnectionRequest(&req)
+		err := request.Send()
+		if err != nil {
+			return obs, err
 		}
 	}
-	cr.SetConditions(xpv1.Available())
+
+	available := setCondition(obj.VpcPeeringConnections[0].Status, cr)
+	if !available {
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
+
 	return obs, nil
 }
 
@@ -118,24 +106,6 @@ func setCondition(code *svcsdk.VpcPeeringConnectionStateReason, cr *svcapitypes.
 }
 
 func (e *custom) isUpToDate(cr *svcapitypes.VPCPeeringConnection, obj *svcsdk.DescribeVpcPeeringConnectionsOutput) (bool, error) {
-	// connectionCounter := -1
-
-	// for _, v := range obj.VpcPeeringConnections {
-	// 	connectionCounter++
-
-	// 	for _, tag := range v.Tags {
-	// 		if awsclients.StringValue(tag.Key) == "crossplane-claim-name" {
-	// 			if awsclients.StringValue(tag.Value) == cr.ObjectMeta.Name {
-	// 				switch *v.Status.Code {
-	// 				case "active":
-	// 					return true, nil
-	// 				case "deleted":
-	// 					return false, nil
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
 	return true, nil
 }
 
