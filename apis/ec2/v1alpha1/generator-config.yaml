@@ -61,5 +61,3 @@ ignore:
     - DeleteVpcPeeringConnectionInput.DryRun
     - RejectVpcPeeringConnectionInput.DryRun
     - AcceptVpcPeeringConnectionInput.DryRun
-
-    
