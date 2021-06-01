@@ -18,6 +18,28 @@ spec:
     singular: routetable
   scope: Cluster
   versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          ownerID:
+            type: string
+          routeTableID:
+            type: string
+          tags:
+            items:
+              properties:
+                key:
+                  type: string
+                value:
+                  type: string
+              type: object
+            type: array
+          vpcID:
+            type: string
+        type: object
+    served: true
+    storage: false
   - additionalPrinterColumns:
     - jsonPath: .status.conditions[?(@.type=='Ready')].status
       name: READY

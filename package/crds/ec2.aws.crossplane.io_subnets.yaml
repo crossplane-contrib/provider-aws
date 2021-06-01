@@ -18,6 +18,46 @@ spec:
     singular: subnet
   scope: Cluster
   versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          assignIPv6AddressOnCreation:
+            type: boolean
+          availabilityZone:
+            type: string
+          availabilityZoneID:
+            type: string
+          cidrBlock:
+            type: string
+          defaultForAZ:
+            type: boolean
+          mapCustomerOwnedIPOnLaunch:
+            type: boolean
+          mapPublicIPOnLaunch:
+            type: boolean
+          outpostARN:
+            type: string
+          ownerID:
+            type: string
+          subnetARN:
+            type: string
+          subnetID:
+            type: string
+          tags:
+            items:
+              properties:
+                key:
+                  type: string
+                value:
+                  type: string
+              type: object
+            type: array
+          vpcID:
+            type: string
+        type: object
+    served: true
+    storage: false
   - additionalPrinterColumns:
     - jsonPath: .status.conditions[?(@.type=='Ready')].status
       name: READY
