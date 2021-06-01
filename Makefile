@@ -73,14 +73,14 @@ cobertura:
 
 crds.clean:
 	@$(INFO) cleaning generated CRDs
-	@find package/crds -name *.yaml -exec sed -i.sed -e '1,2d' {} \; || $(FAIL)
-	@find package/crds -name *.yaml.sed -delete || $(FAIL)
+	@find package/crds -name '*.yaml' -exec sed -i.sed -e '1,2d' {} \; || $(FAIL)
+	@find package/crds -name '*.yaml.sed' -delete || $(FAIL)
 	@$(OK) cleaned generated CRDs
 
-generate: crds.clean
+generate.run: go.generate crds.clean
 
 # Ensure a PR is ready for review.
-reviewable: generate lint
+reviewable: services.all generate lint
 	@go mod tidy
 
 # Ensure branch is clean.
@@ -118,7 +118,7 @@ run: go.build
 
 # NOTE(muvaf): ACK Code Generator is a separate Go module, hence we need to
 # be in its root directory to call "go run" properly.
-services:
+services: $(GOIMPORTS)
 	@if [ "$(SERVICES)" = "" ]; then \
 		echo "Error: Please specify the comma-seperated list of services via 'SERVICES' variable."; \
 		echo "For more info: https://github.com/crossplane/provider-aws/blob/master/CODE_GENERATION.md#code-generation"; \
@@ -127,10 +127,11 @@ services:
 	@if [ ! -d "$(WORK_DIR)/code-generator" ]; then \
 		cd $(WORK_DIR) && git clone "https://github.com/aws-controllers-k8s/code-generator.git"; \
 	fi
-	@cd $(WORK_DIR)/code-generator && git fetch origin && git checkout $(CODE_GENERATOR_COMMIT);
+	@cd $(WORK_DIR)/code-generator && git fetch origin && git checkout $(CODE_GENERATOR_COMMIT)
 	@for svc in $$(echo "$(SERVICES)" | tr ',' ' '); do \
 		$(INFO) Generating $$svc controllers and CRDs; \
-		cd $(WORK_DIR)/code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $$svc --provider-dir ../../; \
+		PATH="${PATH}:$(TOOLS_HOST_DIR)"; \
+		cd $(WORK_DIR)/code-generator && go run -tags codegen cmd/ack-generate/main.go crossplane $$svc --provider-dir ../../ || exit 1; \
 		$(OK) Generating $$svc controllers and CRDs; \
 	done
 

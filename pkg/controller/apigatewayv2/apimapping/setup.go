@@ -92,8 +92,8 @@ func postCreate(_ context.Context, cr *svcapitypes.APIMapping, resp *svcsdk.Crea
 	return cre, nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.APIMapping, obj *svcsdk.DeleteApiMappingInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.APIMapping, obj *svcsdk.DeleteApiMappingInput) (bool, error) {
 	obj.ApiMappingId = aws.String(meta.GetExternalName(cr))
 	obj.DomainName = cr.Spec.ForProvider.DomainName
-	return nil
+	return false, nil
 }

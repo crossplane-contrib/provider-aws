@@ -90,8 +90,8 @@ func postCreate(_ context.Context, cr *svcapitypes.Deployment, resp *svcsdk.Crea
 	return cre, nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.Deployment, obj *svcsdk.DeleteDeploymentInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.Deployment, obj *svcsdk.DeleteDeploymentInput) (bool, error) {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.DeploymentId = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }

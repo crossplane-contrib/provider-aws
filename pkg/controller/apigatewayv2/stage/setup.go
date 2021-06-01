@@ -80,8 +80,8 @@ func preCreate(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.CreateStage
 	return nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.DeleteStageInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.Stage, obj *svcsdk.DeleteStageInput) (bool, error) {
 	obj.StageName = aws.String(meta.GetExternalName(cr))
 	obj.ApiId = cr.Spec.ForProvider.CustomStageParameters.APIID
-	return nil
+	return false, nil
 }

@@ -49,10 +49,7 @@ func SetupFileSystem(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateL
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
 
-func isUpToDate(r bool, cr *svcapitypes.FileSystem, obj *svcsdk.DescribeFileSystemsOutput) (bool, error) {
-	if !r {
-		return r, nil
-	}
+func isUpToDate(cr *svcapitypes.FileSystem, obj *svcsdk.DescribeFileSystemsOutput) (bool, error) {
 	for _, res := range obj.FileSystems {
 		if awsclients.Int64Value(cr.Spec.ForProvider.ProvisionedThroughputInMibps) != int64(aws.Float64Value(res.ProvisionedThroughputInMibps)) {
 			return false, nil

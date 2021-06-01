@@ -90,8 +90,8 @@ func postCreate(_ context.Context, cr *svcapitypes.Model, resp *svcsdk.CreateMod
 	return cre, nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.Model, obj *svcsdk.DeleteModelInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.Model, obj *svcsdk.DeleteModelInput) (bool, error) {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.ModelId = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }
