@@ -17,27 +17,27 @@ This guide shows how to get a new resource support up and running step by step.
 
 ## Code generation
 
-This is the very first step. You need to clone [code generator](https://github.com/aws-controllers-k8s/code-generator) from AWS and run the following
-command in the root directory:
+AWS groups their resources under _services_ and the code generator works on
+per-service basis. For example, `rds` is a service that contains `DBInstance`,
+`DBCluster` and many other related resources. The first thing to do is to figure
+out which service the resource we'd like to generate belongs to.
+
+Take a look at the full list [here](https://github.com/aws/aws-sdk-go/tree/v1.37.4/models/apis)
+and make note of the service name. For example, in order to generate Lambda
+resources, you need to use `lambda` as service name. Once you figure that out,
+the following is the command you need to run to generate CRDs and controllers:
 
 ```console
-go run -tags codegen cmd/ack-generate/main.go crossplane <ServiceID> --provider-dir <provider-aws directory>
+make services SERVICES=<service id>
 ```
 
-Full `ServiceID` list is found [here](https://github.com/aws/aws-sdk-go/tree/v1.34.32/models/apis).
-For example, in order to generate Lambda resources, you need to use `lambda` as
-Service ID. Here is an example call:
+The first run will take a while since it clones the code generator and AWS SDK.
+Once it is completed, you'll see new folders in `apis` and `pkg/controller`
+directories. By default, it generates every resource it can recognize but that's
+not what you want if you'd like to add support for only a few resources. In order
+to ignore some of the generated resources, you need to create a
+`apis/<serviceid>/v1alpha1/generator-config.yaml` file with the following content:
 
-```console
-go run -tags codegen cmd/ack-generate/main.go crossplane dynamodb --provider-dir /Users/username/go/src/github.com/crossplane/provider-aws
-```
-
-The first run will take a while since it clones AWS SDK. Once it is completed,
-you'll see new folders in `apis` and `pkg/controller` directories. By default,
-it generates every resource it can recognize but that's not what you want if you'd
-like to add support for only a few resources. In order to ignore some of the
-generated resources, you need to create a `apis/<serviceid>/v1alpha1/generator-config.yaml`
-file with the following content:
 ```yaml
 ignore:
   resource_names:
@@ -49,6 +49,9 @@ ignore:
 When you re-run the generation with this configuration, existing files won't be
 deleted. So you may want to delete everything in `apis/<serviceid>/v1alpha1` except
 `generator-config.yaml` and then re-run the command.
+
+> If `apis/<serviceid>` is created from scratch, please add the new service name
+> to the list called GENERATED_SERVICES in Makefile.
 
 If this step fails for some reason, please raise an issue in [code-generator](https://github.com/aws-controllers-k8s/code-generator)
 and mention that you're using Crossplane pipeline.
