@@ -71,7 +71,7 @@ func (e *custom) postObserve(_ context.Context, cr *svcapitypes.VPCPeeringConnec
 		return managed.ExternalObservation{}, err
 	}
 
-	if *obj.VpcPeeringConnections[0].Status.Code == "pending-acceptance" && cr.Spec.ForProvider.AcceptRequest {
+	if awsclients.StringValue(obj.VpcPeeringConnections[0].Status.Code) == "pending-acceptance" && cr.Spec.ForProvider.AcceptRequest {
 		req := svcsdk.AcceptVpcPeeringConnectionInput{
 			VpcPeeringConnectionId: awsclients.String(*obj.VpcPeeringConnections[0].VpcPeeringConnectionId),
 		}
