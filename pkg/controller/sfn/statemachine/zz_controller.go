@@ -117,9 +117,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	if resp.CreationDate != nil {
 		cr.Status.AtProvider.CreationDate = &metav1.Time{*resp.CreationDate}
+	} else {
+		cr.Status.AtProvider.CreationDate = nil
 	}
 	if resp.StateMachineArn != nil {
 		cr.Status.AtProvider.StateMachineARN = resp.StateMachineArn
+	} else {
+		cr.Status.AtProvider.StateMachineARN = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -148,11 +152,15 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteStateMachineInput(cr)
-	if err := e.preDelete(ctx, cr, input); err != nil {
+	ignore, err := e.preDelete(ctx, cr, input)
+	if err != nil {
 		return errors.Wrap(err, "pre-delete failed")
 	}
-	_, err := e.client.DeleteStateMachineWithContext(ctx, input)
-	return awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
+	if ignore {
+		return nil
+	}
+	resp, err := e.client.DeleteStateMachineWithContext(ctx, input)
+	return e.postDelete(ctx, cr, resp, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
 }
 
 type option func(*external)
@@ -168,6 +176,7 @@ func newExternal(kube client.Client, client svcsdkapi.SFNAPI, opts []option) *ex
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
+		postDelete:     nopPostDelete,
 		preUpdate:      nopPreUpdate,
 		postUpdate:     nopPostUpdate,
 	}
@@ -186,7 +195,8 @@ type external struct {
 	isUpToDate     func(*svcapitypes.StateMachine, *svcsdk.DescribeStateMachineOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.StateMachine, *svcsdk.CreateStateMachineInput) error
 	postCreate     func(context.Context, *svcapitypes.StateMachine, *svcsdk.CreateStateMachineOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	preDelete      func(context.Context, *svcapitypes.StateMachine, *svcsdk.DeleteStateMachineInput) error
+	preDelete      func(context.Context, *svcapitypes.StateMachine, *svcsdk.DeleteStateMachineInput) (bool, error)
+	postDelete     func(context.Context, *svcapitypes.StateMachine, *svcsdk.DeleteStateMachineOutput, error) error
 	preUpdate      func(context.Context, *svcapitypes.StateMachine, *svcsdk.UpdateStateMachineInput) error
 	postUpdate     func(context.Context, *svcapitypes.StateMachine, *svcsdk.UpdateStateMachineOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -194,8 +204,9 @@ type external struct {
 func nopPreObserve(context.Context, *svcapitypes.StateMachine, *svcsdk.DescribeStateMachineInput) error {
 	return nil
 }
-func nopPostObserve(context.Context, *svcapitypes.StateMachine, *svcsdk.DescribeStateMachineOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error) {
-	return managed.ExternalObservation{}, nil
+
+func nopPostObserve(_ context.Context, _ *svcapitypes.StateMachine, _ *svcsdk.DescribeStateMachineOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	return obs, err
 }
 func nopLateInitialize(*svcapitypes.StateMachineParameters, *svcsdk.DescribeStateMachineOutput) error {
 	return nil
@@ -207,15 +218,18 @@ func alwaysUpToDate(*svcapitypes.StateMachine, *svcsdk.DescribeStateMachineOutpu
 func nopPreCreate(context.Context, *svcapitypes.StateMachine, *svcsdk.CreateStateMachineInput) error {
 	return nil
 }
-func nopPostCreate(context.Context, *svcapitypes.StateMachine, *svcsdk.CreateStateMachineOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error) {
-	return managed.ExternalCreation{}, nil
+func nopPostCreate(_ context.Context, _ *svcapitypes.StateMachine, _ *svcsdk.CreateStateMachineOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	return cre, err
 }
-func nopPreDelete(context.Context, *svcapitypes.StateMachine, *svcsdk.DeleteStateMachineInput) error {
-	return nil
+func nopPreDelete(context.Context, *svcapitypes.StateMachine, *svcsdk.DeleteStateMachineInput) (bool, error) {
+	return false, nil
+}
+func nopPostDelete(_ context.Context, _ *svcapitypes.StateMachine, _ *svcsdk.DeleteStateMachineOutput, err error) error {
+	return err
 }
 func nopPreUpdate(context.Context, *svcapitypes.StateMachine, *svcsdk.UpdateStateMachineInput) error {
 	return nil
 }
-func nopPostUpdate(context.Context, *svcapitypes.StateMachine, *svcsdk.UpdateStateMachineOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error) {
-	return managed.ExternalUpdate{}, nil
+func nopPostUpdate(_ context.Context, _ *svcapitypes.StateMachine, _ *svcsdk.UpdateStateMachineOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	return upd, err
 }

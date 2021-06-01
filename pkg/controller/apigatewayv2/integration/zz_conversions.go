@@ -46,12 +46,18 @@ func GenerateIntegration(resp *svcsdk.GetIntegrationOutput) *svcapitypes.Integra
 
 	if resp.ApiGatewayManaged != nil {
 		cr.Status.AtProvider.APIGatewayManaged = resp.ApiGatewayManaged
+	} else {
+		cr.Status.AtProvider.APIGatewayManaged = nil
 	}
 	if resp.IntegrationId != nil {
 		cr.Status.AtProvider.IntegrationID = resp.IntegrationId
+	} else {
+		cr.Status.AtProvider.IntegrationID = nil
 	}
 	if resp.IntegrationResponseSelectionExpression != nil {
 		cr.Status.AtProvider.IntegrationResponseSelectionExpression = resp.IntegrationResponseSelectionExpression
+	} else {
+		cr.Status.AtProvider.IntegrationResponseSelectionExpression = nil
 	}
 
 	return cr
@@ -194,11 +200,11 @@ func GenerateUpdateIntegrationInput(cr *svcapitypes.Integration) *svcsdk.UpdateI
 		res.SetTimeoutInMillis(*cr.Spec.ForProvider.TimeoutInMillis)
 	}
 	if cr.Spec.ForProvider.TLSConfig != nil {
-		f17 := &svcsdk.TlsConfigInput{}
+		f18 := &svcsdk.TlsConfigInput{}
 		if cr.Spec.ForProvider.TLSConfig.ServerNameToVerify != nil {
-			f17.SetServerNameToVerify(*cr.Spec.ForProvider.TLSConfig.ServerNameToVerify)
+			f18.SetServerNameToVerify(*cr.Spec.ForProvider.TLSConfig.ServerNameToVerify)
 		}
-		res.SetTlsConfig(f17)
+		res.SetTlsConfig(f18)
 	}
 
 	return res

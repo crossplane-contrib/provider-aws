@@ -47,15 +47,23 @@ func GenerateGlobalTable(resp *svcsdk.DescribeGlobalTableOutput) *svcapitypes.Gl
 
 	if resp.GlobalTableDescription.CreationDateTime != nil {
 		cr.Status.AtProvider.CreationDateTime = &metav1.Time{*resp.GlobalTableDescription.CreationDateTime}
+	} else {
+		cr.Status.AtProvider.CreationDateTime = nil
 	}
 	if resp.GlobalTableDescription.GlobalTableArn != nil {
 		cr.Status.AtProvider.GlobalTableARN = resp.GlobalTableDescription.GlobalTableArn
+	} else {
+		cr.Status.AtProvider.GlobalTableARN = nil
 	}
 	if resp.GlobalTableDescription.GlobalTableName != nil {
 		cr.Status.AtProvider.GlobalTableName = resp.GlobalTableDescription.GlobalTableName
+	} else {
+		cr.Status.AtProvider.GlobalTableName = nil
 	}
 	if resp.GlobalTableDescription.GlobalTableStatus != nil {
 		cr.Status.AtProvider.GlobalTableStatus = resp.GlobalTableDescription.GlobalTableStatus
+	} else {
+		cr.Status.AtProvider.GlobalTableStatus = nil
 	}
 
 	return cr

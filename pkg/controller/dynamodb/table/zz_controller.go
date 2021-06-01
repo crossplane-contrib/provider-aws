@@ -127,6 +127,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f0.ArchivalReason = resp.TableDescription.ArchivalSummary.ArchivalReason
 		}
 		cr.Status.AtProvider.ArchivalSummary = f0
+	} else {
+		cr.Status.AtProvider.ArchivalSummary = nil
 	}
 	if resp.TableDescription.BillingModeSummary != nil {
 		f2 := &svcapitypes.BillingModeSummary{}
@@ -137,21 +139,33 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f2.LastUpdateToPayPerRequestDateTime = &metav1.Time{*resp.TableDescription.BillingModeSummary.LastUpdateToPayPerRequestDateTime}
 		}
 		cr.Status.AtProvider.BillingModeSummary = f2
+	} else {
+		cr.Status.AtProvider.BillingModeSummary = nil
 	}
 	if resp.TableDescription.CreationDateTime != nil {
 		cr.Status.AtProvider.CreationDateTime = &metav1.Time{*resp.TableDescription.CreationDateTime}
+	} else {
+		cr.Status.AtProvider.CreationDateTime = nil
 	}
 	if resp.TableDescription.GlobalTableVersion != nil {
 		cr.Status.AtProvider.GlobalTableVersion = resp.TableDescription.GlobalTableVersion
+	} else {
+		cr.Status.AtProvider.GlobalTableVersion = nil
 	}
 	if resp.TableDescription.ItemCount != nil {
 		cr.Status.AtProvider.ItemCount = resp.TableDescription.ItemCount
+	} else {
+		cr.Status.AtProvider.ItemCount = nil
 	}
 	if resp.TableDescription.LatestStreamArn != nil {
 		cr.Status.AtProvider.LatestStreamARN = resp.TableDescription.LatestStreamArn
+	} else {
+		cr.Status.AtProvider.LatestStreamARN = nil
 	}
 	if resp.TableDescription.LatestStreamLabel != nil {
 		cr.Status.AtProvider.LatestStreamLabel = resp.TableDescription.LatestStreamLabel
+	} else {
+		cr.Status.AtProvider.LatestStreamLabel = nil
 	}
 	if resp.TableDescription.Replicas != nil {
 		f12 := []*svcapitypes.ReplicaDescription{}
@@ -203,6 +217,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f12 = append(f12, f12elem)
 		}
 		cr.Status.AtProvider.Replicas = f12
+	} else {
+		cr.Status.AtProvider.Replicas = nil
 	}
 	if resp.TableDescription.RestoreSummary != nil {
 		f13 := &svcapitypes.RestoreSummary{}
@@ -219,6 +235,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f13.SourceTableARN = resp.TableDescription.RestoreSummary.SourceTableArn
 		}
 		cr.Status.AtProvider.RestoreSummary = f13
+	} else {
+		cr.Status.AtProvider.RestoreSummary = nil
 	}
 	if resp.TableDescription.SSEDescription != nil {
 		f14 := &svcapitypes.SSEDescription{}
@@ -235,21 +253,33 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f14.Status = resp.TableDescription.SSEDescription.Status
 		}
 		cr.Status.AtProvider.SSEDescription = f14
+	} else {
+		cr.Status.AtProvider.SSEDescription = nil
 	}
 	if resp.TableDescription.TableArn != nil {
 		cr.Status.AtProvider.TableARN = resp.TableDescription.TableArn
+	} else {
+		cr.Status.AtProvider.TableARN = nil
 	}
 	if resp.TableDescription.TableId != nil {
 		cr.Status.AtProvider.TableID = resp.TableDescription.TableId
+	} else {
+		cr.Status.AtProvider.TableID = nil
 	}
 	if resp.TableDescription.TableName != nil {
 		cr.Status.AtProvider.TableName = resp.TableDescription.TableName
+	} else {
+		cr.Status.AtProvider.TableName = nil
 	}
 	if resp.TableDescription.TableSizeBytes != nil {
 		cr.Status.AtProvider.TableSizeBytes = resp.TableDescription.TableSizeBytes
+	} else {
+		cr.Status.AtProvider.TableSizeBytes = nil
 	}
 	if resp.TableDescription.TableStatus != nil {
 		cr.Status.AtProvider.TableStatus = resp.TableDescription.TableStatus
+	} else {
+		cr.Status.AtProvider.TableStatus = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -278,11 +308,15 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteTableInput(cr)
-	if err := e.preDelete(ctx, cr, input); err != nil {
+	ignore, err := e.preDelete(ctx, cr, input)
+	if err != nil {
 		return errors.Wrap(err, "pre-delete failed")
 	}
-	_, err := e.client.DeleteTableWithContext(ctx, input)
-	return awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
+	if ignore {
+		return nil
+	}
+	resp, err := e.client.DeleteTableWithContext(ctx, input)
+	return e.postDelete(ctx, cr, resp, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
 }
 
 type option func(*external)
@@ -298,6 +332,7 @@ func newExternal(kube client.Client, client svcsdkapi.DynamoDBAPI, opts []option
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
+		postDelete:     nopPostDelete,
 		preUpdate:      nopPreUpdate,
 		postUpdate:     nopPostUpdate,
 	}
@@ -316,7 +351,8 @@ type external struct {
 	isUpToDate     func(*svcapitypes.Table, *svcsdk.DescribeTableOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.Table, *svcsdk.CreateTableInput) error
 	postCreate     func(context.Context, *svcapitypes.Table, *svcsdk.CreateTableOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	preDelete      func(context.Context, *svcapitypes.Table, *svcsdk.DeleteTableInput) error
+	preDelete      func(context.Context, *svcapitypes.Table, *svcsdk.DeleteTableInput) (bool, error)
+	postDelete     func(context.Context, *svcapitypes.Table, *svcsdk.DeleteTableOutput, error) error
 	preUpdate      func(context.Context, *svcapitypes.Table, *svcsdk.UpdateTableInput) error
 	postUpdate     func(context.Context, *svcapitypes.Table, *svcsdk.UpdateTableOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -324,8 +360,9 @@ type external struct {
 func nopPreObserve(context.Context, *svcapitypes.Table, *svcsdk.DescribeTableInput) error {
 	return nil
 }
-func nopPostObserve(context.Context, *svcapitypes.Table, *svcsdk.DescribeTableOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error) {
-	return managed.ExternalObservation{}, nil
+
+func nopPostObserve(_ context.Context, _ *svcapitypes.Table, _ *svcsdk.DescribeTableOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	return obs, err
 }
 func nopLateInitialize(*svcapitypes.TableParameters, *svcsdk.DescribeTableOutput) error {
 	return nil
@@ -337,15 +374,18 @@ func alwaysUpToDate(*svcapitypes.Table, *svcsdk.DescribeTableOutput) (bool, erro
 func nopPreCreate(context.Context, *svcapitypes.Table, *svcsdk.CreateTableInput) error {
 	return nil
 }
-func nopPostCreate(context.Context, *svcapitypes.Table, *svcsdk.CreateTableOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error) {
-	return managed.ExternalCreation{}, nil
+func nopPostCreate(_ context.Context, _ *svcapitypes.Table, _ *svcsdk.CreateTableOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	return cre, err
 }
-func nopPreDelete(context.Context, *svcapitypes.Table, *svcsdk.DeleteTableInput) error {
-	return nil
+func nopPreDelete(context.Context, *svcapitypes.Table, *svcsdk.DeleteTableInput) (bool, error) {
+	return false, nil
+}
+func nopPostDelete(_ context.Context, _ *svcapitypes.Table, _ *svcsdk.DeleteTableOutput, err error) error {
+	return err
 }
 func nopPreUpdate(context.Context, *svcapitypes.Table, *svcsdk.UpdateTableInput) error {
 	return nil
 }
-func nopPostUpdate(context.Context, *svcapitypes.Table, *svcsdk.UpdateTableOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error) {
-	return managed.ExternalUpdate{}, nil
+func nopPostUpdate(_ context.Context, _ *svcapitypes.Table, _ *svcsdk.UpdateTableOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	return upd, err
 }

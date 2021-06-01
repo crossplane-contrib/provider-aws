@@ -46,6 +46,8 @@ func GenerateModel(resp *svcsdk.GetModelOutput) *svcapitypes.Model {
 
 	if resp.ModelId != nil {
 		cr.Status.AtProvider.ModelID = resp.ModelId
+	} else {
+		cr.Status.AtProvider.ModelID = nil
 	}
 
 	return cr

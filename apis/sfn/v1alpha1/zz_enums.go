@@ -110,3 +110,11 @@ const (
 	StateMachineType_STANDARD StateMachineType = "STANDARD"
 	StateMachineType_EXPRESS  StateMachineType = "EXPRESS"
 )
+
+type SyncExecutionStatus string
+
+const (
+	SyncExecutionStatus_SUCCEEDED SyncExecutionStatus = "SUCCEEDED"
+	SyncExecutionStatus_FAILED    SyncExecutionStatus = "FAILED"
+	SyncExecutionStatus_TIMED_OUT SyncExecutionStatus = "TIMED_OUT"
+)
