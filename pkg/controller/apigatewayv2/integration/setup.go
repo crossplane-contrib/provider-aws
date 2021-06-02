@@ -18,6 +18,7 @@ package integration
 
 import (
 	"context"
+	"fmt"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
 	"k8s.io/client-go/util/workqueue"
@@ -78,6 +79,17 @@ func postObserve(_ context.Context, cr *svcapitypes.Integration, _ *svcsdk.GetIn
 
 func preCreate(_ context.Context, cr *svcapitypes.Integration, obj *svcsdk.CreateIntegrationInput) error {
 	obj.ApiId = cr.Spec.ForProvider.APIID
+	if len(cr.Spec.ForProvider.ResponseParameters) != 0 {
+		obj.ResponseParameters = make(map[string]map[string]*string, len(cr.Spec.ForProvider.ResponseParameters))
+	}
+	for k, m := range cr.Spec.ForProvider.ResponseParameters {
+		if m.OverwriteStatusCode != nil {
+			obj.ResponseParameters[k]["overwrite:statuscode"] = m.OverwriteStatusCode
+		}
+		for _, h := range m.HeaderEntries {
+			obj.ResponseParameters[k][fmt.Sprintf("%s:header.%s", h.Operation, h.Name)] = aws.String(h.Value)
+		}
+	}
 	return nil
 }
 
@@ -90,8 +102,8 @@ func postCreate(_ context.Context, cr *svcapitypes.Integration, resp *svcsdk.Cre
 	return cre, nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.Integration, obj *svcsdk.DeleteIntegrationInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.Integration, obj *svcsdk.DeleteIntegrationInput) (bool, error) {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.IntegrationId = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }

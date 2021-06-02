@@ -117,18 +117,28 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	if resp.ApiGatewayManaged != nil {
 		cr.Status.AtProvider.APIGatewayManaged = resp.ApiGatewayManaged
+	} else {
+		cr.Status.AtProvider.APIGatewayManaged = nil
 	}
 	if resp.CreatedDate != nil {
 		cr.Status.AtProvider.CreatedDate = &metav1.Time{*resp.CreatedDate}
+	} else {
+		cr.Status.AtProvider.CreatedDate = nil
 	}
 	if resp.LastDeploymentStatusMessage != nil {
 		cr.Status.AtProvider.LastDeploymentStatusMessage = resp.LastDeploymentStatusMessage
+	} else {
+		cr.Status.AtProvider.LastDeploymentStatusMessage = nil
 	}
 	if resp.LastUpdatedDate != nil {
 		cr.Status.AtProvider.LastUpdatedDate = &metav1.Time{*resp.LastUpdatedDate}
+	} else {
+		cr.Status.AtProvider.LastUpdatedDate = nil
 	}
 	if resp.StageName != nil {
 		cr.Status.AtProvider.StageName = resp.StageName
+	} else {
+		cr.Status.AtProvider.StageName = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -157,11 +167,15 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteStageInput(cr)
-	if err := e.preDelete(ctx, cr, input); err != nil {
+	ignore, err := e.preDelete(ctx, cr, input)
+	if err != nil {
 		return errors.Wrap(err, "pre-delete failed")
 	}
-	_, err := e.client.DeleteStageWithContext(ctx, input)
-	return awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
+	if ignore {
+		return nil
+	}
+	resp, err := e.client.DeleteStageWithContext(ctx, input)
+	return e.postDelete(ctx, cr, resp, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
 }
 
 type option func(*external)
@@ -177,6 +191,7 @@ func newExternal(kube client.Client, client svcsdkapi.ApiGatewayV2API, opts []op
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
+		postDelete:     nopPostDelete,
 		preUpdate:      nopPreUpdate,
 		postUpdate:     nopPostUpdate,
 	}
@@ -195,7 +210,8 @@ type external struct {
 	isUpToDate     func(*svcapitypes.Stage, *svcsdk.GetStageOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.Stage, *svcsdk.CreateStageInput) error
 	postCreate     func(context.Context, *svcapitypes.Stage, *svcsdk.CreateStageOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	preDelete      func(context.Context, *svcapitypes.Stage, *svcsdk.DeleteStageInput) error
+	preDelete      func(context.Context, *svcapitypes.Stage, *svcsdk.DeleteStageInput) (bool, error)
+	postDelete     func(context.Context, *svcapitypes.Stage, *svcsdk.DeleteStageOutput, error) error
 	preUpdate      func(context.Context, *svcapitypes.Stage, *svcsdk.UpdateStageInput) error
 	postUpdate     func(context.Context, *svcapitypes.Stage, *svcsdk.UpdateStageOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -203,8 +219,9 @@ type external struct {
 func nopPreObserve(context.Context, *svcapitypes.Stage, *svcsdk.GetStageInput) error {
 	return nil
 }
-func nopPostObserve(context.Context, *svcapitypes.Stage, *svcsdk.GetStageOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error) {
-	return managed.ExternalObservation{}, nil
+
+func nopPostObserve(_ context.Context, _ *svcapitypes.Stage, _ *svcsdk.GetStageOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	return obs, err
 }
 func nopLateInitialize(*svcapitypes.StageParameters, *svcsdk.GetStageOutput) error {
 	return nil
@@ -216,15 +233,18 @@ func alwaysUpToDate(*svcapitypes.Stage, *svcsdk.GetStageOutput) (bool, error) {
 func nopPreCreate(context.Context, *svcapitypes.Stage, *svcsdk.CreateStageInput) error {
 	return nil
 }
-func nopPostCreate(context.Context, *svcapitypes.Stage, *svcsdk.CreateStageOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error) {
-	return managed.ExternalCreation{}, nil
+func nopPostCreate(_ context.Context, _ *svcapitypes.Stage, _ *svcsdk.CreateStageOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	return cre, err
 }
-func nopPreDelete(context.Context, *svcapitypes.Stage, *svcsdk.DeleteStageInput) error {
-	return nil
+func nopPreDelete(context.Context, *svcapitypes.Stage, *svcsdk.DeleteStageInput) (bool, error) {
+	return false, nil
+}
+func nopPostDelete(_ context.Context, _ *svcapitypes.Stage, _ *svcsdk.DeleteStageOutput, err error) error {
+	return err
 }
 func nopPreUpdate(context.Context, *svcapitypes.Stage, *svcsdk.UpdateStageInput) error {
 	return nil
 }
-func nopPostUpdate(context.Context, *svcapitypes.Stage, *svcsdk.UpdateStageOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error) {
-	return managed.ExternalUpdate{}, nil
+func nopPostUpdate(_ context.Context, _ *svcapitypes.Stage, _ *svcsdk.UpdateStageOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	return upd, err
 }

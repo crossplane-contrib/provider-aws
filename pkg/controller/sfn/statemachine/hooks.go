@@ -95,7 +95,7 @@ func postCreate(_ context.Context, cr *svcapitypes.StateMachine, resp *svcsdk.Cr
 	return cre, nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.StateMachine, obj *svcsdk.DeleteStateMachineInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.StateMachine, obj *svcsdk.DeleteStateMachineInput) (bool, error) {
 	obj.StateMachineArn = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }

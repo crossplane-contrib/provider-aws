@@ -120,9 +120,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	if resp.DBParameterGroup.DBParameterGroupArn != nil {
 		cr.Status.AtProvider.DBParameterGroupARN = resp.DBParameterGroup.DBParameterGroupArn
+	} else {
+		cr.Status.AtProvider.DBParameterGroupARN = nil
 	}
 	if resp.DBParameterGroup.DBParameterGroupName != nil {
 		cr.Status.AtProvider.DBParameterGroupName = resp.DBParameterGroup.DBParameterGroupName
+	} else {
+		cr.Status.AtProvider.DBParameterGroupName = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

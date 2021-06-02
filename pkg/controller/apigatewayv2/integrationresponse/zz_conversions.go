@@ -46,6 +46,8 @@ func GenerateIntegrationResponse(resp *svcsdk.GetIntegrationResponseOutput) *svc
 
 	if resp.IntegrationResponseId != nil {
 		cr.Status.AtProvider.IntegrationResponseID = resp.IntegrationResponseId
+	} else {
+		cr.Status.AtProvider.IntegrationResponseID = nil
 	}
 
 	return cr

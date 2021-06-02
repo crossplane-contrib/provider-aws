@@ -44,15 +44,23 @@ func GenerateDBParameterGroup(resp *svcsdk.DescribeDBParameterGroupsOutput) *svc
 	for _, elem := range resp.DBParameterGroups {
 		if elem.DBParameterGroupArn != nil {
 			cr.Status.AtProvider.DBParameterGroupARN = elem.DBParameterGroupArn
+		} else {
+			cr.Status.AtProvider.DBParameterGroupARN = nil
 		}
 		if elem.DBParameterGroupFamily != nil {
 			cr.Spec.ForProvider.DBParameterGroupFamily = elem.DBParameterGroupFamily
+		} else {
+			cr.Spec.ForProvider.DBParameterGroupFamily = nil
 		}
 		if elem.DBParameterGroupName != nil {
 			cr.Status.AtProvider.DBParameterGroupName = elem.DBParameterGroupName
+		} else {
+			cr.Status.AtProvider.DBParameterGroupName = nil
 		}
 		if elem.Description != nil {
 			cr.Spec.ForProvider.Description = elem.Description
+		} else {
+			cr.Spec.ForProvider.Description = nil
 		}
 		found = true
 		break

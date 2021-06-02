@@ -121,18 +121,28 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	if resp.DBCluster.ActivityStreamKinesisStreamName != nil {
 		cr.Status.AtProvider.ActivityStreamKinesisStreamName = resp.DBCluster.ActivityStreamKinesisStreamName
+	} else {
+		cr.Status.AtProvider.ActivityStreamKinesisStreamName = nil
 	}
 	if resp.DBCluster.ActivityStreamKmsKeyId != nil {
 		cr.Status.AtProvider.ActivityStreamKMSKeyID = resp.DBCluster.ActivityStreamKmsKeyId
+	} else {
+		cr.Status.AtProvider.ActivityStreamKMSKeyID = nil
 	}
 	if resp.DBCluster.ActivityStreamMode != nil {
 		cr.Status.AtProvider.ActivityStreamMode = resp.DBCluster.ActivityStreamMode
+	} else {
+		cr.Status.AtProvider.ActivityStreamMode = nil
 	}
 	if resp.DBCluster.ActivityStreamStatus != nil {
 		cr.Status.AtProvider.ActivityStreamStatus = resp.DBCluster.ActivityStreamStatus
+	} else {
+		cr.Status.AtProvider.ActivityStreamStatus = nil
 	}
 	if resp.DBCluster.AllocatedStorage != nil {
 		cr.Status.AtProvider.AllocatedStorage = resp.DBCluster.AllocatedStorage
+	} else {
+		cr.Status.AtProvider.AllocatedStorage = nil
 	}
 	if resp.DBCluster.AssociatedRoles != nil {
 		f5 := []*svcapitypes.DBClusterRole{}
@@ -150,21 +160,33 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f5 = append(f5, f5elem)
 		}
 		cr.Status.AtProvider.AssociatedRoles = f5
+	} else {
+		cr.Status.AtProvider.AssociatedRoles = nil
 	}
 	if resp.DBCluster.BacktrackConsumedChangeRecords != nil {
 		cr.Status.AtProvider.BacktrackConsumedChangeRecords = resp.DBCluster.BacktrackConsumedChangeRecords
+	} else {
+		cr.Status.AtProvider.BacktrackConsumedChangeRecords = nil
 	}
 	if resp.DBCluster.Capacity != nil {
 		cr.Status.AtProvider.Capacity = resp.DBCluster.Capacity
+	} else {
+		cr.Status.AtProvider.Capacity = nil
 	}
 	if resp.DBCluster.CloneGroupId != nil {
 		cr.Status.AtProvider.CloneGroupID = resp.DBCluster.CloneGroupId
+	} else {
+		cr.Status.AtProvider.CloneGroupID = nil
 	}
 	if resp.DBCluster.ClusterCreateTime != nil {
 		cr.Status.AtProvider.ClusterCreateTime = &metav1.Time{*resp.DBCluster.ClusterCreateTime}
+	} else {
+		cr.Status.AtProvider.ClusterCreateTime = nil
 	}
 	if resp.DBCluster.CrossAccountClone != nil {
 		cr.Status.AtProvider.CrossAccountClone = resp.DBCluster.CrossAccountClone
+	} else {
+		cr.Status.AtProvider.CrossAccountClone = nil
 	}
 	if resp.DBCluster.CustomEndpoints != nil {
 		f16 := []*string{}
@@ -174,12 +196,18 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f16 = append(f16, &f16elem)
 		}
 		cr.Status.AtProvider.CustomEndpoints = f16
+	} else {
+		cr.Status.AtProvider.CustomEndpoints = nil
 	}
 	if resp.DBCluster.DBClusterArn != nil {
 		cr.Status.AtProvider.DBClusterARN = resp.DBCluster.DBClusterArn
+	} else {
+		cr.Status.AtProvider.DBClusterARN = nil
 	}
 	if resp.DBCluster.DBClusterIdentifier != nil {
 		cr.Status.AtProvider.DBClusterIdentifier = resp.DBCluster.DBClusterIdentifier
+	} else {
+		cr.Status.AtProvider.DBClusterIdentifier = nil
 	}
 	if resp.DBCluster.DBClusterMembers != nil {
 		f19 := []*svcapitypes.DBClusterMember{}
@@ -200,6 +228,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f19 = append(f19, f19elem)
 		}
 		cr.Status.AtProvider.DBClusterMembers = f19
+	} else {
+		cr.Status.AtProvider.DBClusterMembers = nil
 	}
 	if resp.DBCluster.DBClusterOptionGroupMemberships != nil {
 		f20 := []*svcapitypes.DBClusterOptionGroupStatus{}
@@ -214,15 +244,23 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f20 = append(f20, f20elem)
 		}
 		cr.Status.AtProvider.DBClusterOptionGroupMemberships = f20
+	} else {
+		cr.Status.AtProvider.DBClusterOptionGroupMemberships = nil
 	}
 	if resp.DBCluster.DBClusterParameterGroup != nil {
 		cr.Status.AtProvider.DBClusterParameterGroup = resp.DBCluster.DBClusterParameterGroup
+	} else {
+		cr.Status.AtProvider.DBClusterParameterGroup = nil
 	}
 	if resp.DBCluster.DBSubnetGroup != nil {
 		cr.Status.AtProvider.DBSubnetGroup = resp.DBCluster.DBSubnetGroup
+	} else {
+		cr.Status.AtProvider.DBSubnetGroup = nil
 	}
 	if resp.DBCluster.DbClusterResourceId != nil {
 		cr.Status.AtProvider.DBClusterResourceID = resp.DBCluster.DbClusterResourceId
+	} else {
+		cr.Status.AtProvider.DBClusterResourceID = nil
 	}
 	if resp.DBCluster.DomainMemberships != nil {
 		f26 := []*svcapitypes.DomainMembership{}
@@ -243,12 +281,18 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f26 = append(f26, f26elem)
 		}
 		cr.Status.AtProvider.DomainMemberships = f26
+	} else {
+		cr.Status.AtProvider.DomainMemberships = nil
 	}
 	if resp.DBCluster.EarliestBacktrackTime != nil {
 		cr.Status.AtProvider.EarliestBacktrackTime = &metav1.Time{*resp.DBCluster.EarliestBacktrackTime}
+	} else {
+		cr.Status.AtProvider.EarliestBacktrackTime = nil
 	}
 	if resp.DBCluster.EarliestRestorableTime != nil {
 		cr.Status.AtProvider.EarliestRestorableTime = &metav1.Time{*resp.DBCluster.EarliestRestorableTime}
+	} else {
+		cr.Status.AtProvider.EarliestRestorableTime = nil
 	}
 	if resp.DBCluster.EnabledCloudwatchLogsExports != nil {
 		f29 := []*string{}
@@ -258,33 +302,53 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f29 = append(f29, &f29elem)
 		}
 		cr.Status.AtProvider.EnabledCloudwatchLogsExports = f29
+	} else {
+		cr.Status.AtProvider.EnabledCloudwatchLogsExports = nil
 	}
 	if resp.DBCluster.Endpoint != nil {
 		cr.Status.AtProvider.Endpoint = resp.DBCluster.Endpoint
+	} else {
+		cr.Status.AtProvider.Endpoint = nil
 	}
 	if resp.DBCluster.GlobalWriteForwardingRequested != nil {
 		cr.Status.AtProvider.GlobalWriteForwardingRequested = resp.DBCluster.GlobalWriteForwardingRequested
+	} else {
+		cr.Status.AtProvider.GlobalWriteForwardingRequested = nil
 	}
 	if resp.DBCluster.GlobalWriteForwardingStatus != nil {
 		cr.Status.AtProvider.GlobalWriteForwardingStatus = resp.DBCluster.GlobalWriteForwardingStatus
+	} else {
+		cr.Status.AtProvider.GlobalWriteForwardingStatus = nil
 	}
 	if resp.DBCluster.HostedZoneId != nil {
 		cr.Status.AtProvider.HostedZoneID = resp.DBCluster.HostedZoneId
+	} else {
+		cr.Status.AtProvider.HostedZoneID = nil
 	}
 	if resp.DBCluster.HttpEndpointEnabled != nil {
 		cr.Status.AtProvider.HTTPEndpointEnabled = resp.DBCluster.HttpEndpointEnabled
+	} else {
+		cr.Status.AtProvider.HTTPEndpointEnabled = nil
 	}
 	if resp.DBCluster.IAMDatabaseAuthenticationEnabled != nil {
 		cr.Status.AtProvider.IAMDatabaseAuthenticationEnabled = resp.DBCluster.IAMDatabaseAuthenticationEnabled
+	} else {
+		cr.Status.AtProvider.IAMDatabaseAuthenticationEnabled = nil
 	}
 	if resp.DBCluster.LatestRestorableTime != nil {
 		cr.Status.AtProvider.LatestRestorableTime = &metav1.Time{*resp.DBCluster.LatestRestorableTime}
+	} else {
+		cr.Status.AtProvider.LatestRestorableTime = nil
 	}
 	if resp.DBCluster.MultiAZ != nil {
 		cr.Status.AtProvider.MultiAZ = resp.DBCluster.MultiAZ
+	} else {
+		cr.Status.AtProvider.MultiAZ = nil
 	}
 	if resp.DBCluster.PercentProgress != nil {
 		cr.Status.AtProvider.PercentProgress = resp.DBCluster.PercentProgress
+	} else {
+		cr.Status.AtProvider.PercentProgress = nil
 	}
 	if resp.DBCluster.ReadReplicaIdentifiers != nil {
 		f47 := []*string{}
@@ -294,9 +358,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f47 = append(f47, &f47elem)
 		}
 		cr.Status.AtProvider.ReadReplicaIdentifiers = f47
+	} else {
+		cr.Status.AtProvider.ReadReplicaIdentifiers = nil
 	}
 	if resp.DBCluster.ReaderEndpoint != nil {
 		cr.Status.AtProvider.ReaderEndpoint = resp.DBCluster.ReaderEndpoint
+	} else {
+		cr.Status.AtProvider.ReaderEndpoint = nil
 	}
 	if resp.DBCluster.ScalingConfigurationInfo != nil {
 		f50 := &svcapitypes.ScalingConfigurationInfo{}
@@ -316,9 +384,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f50.TimeoutAction = resp.DBCluster.ScalingConfigurationInfo.TimeoutAction
 		}
 		cr.Status.AtProvider.ScalingConfigurationInfo = f50
+	} else {
+		cr.Status.AtProvider.ScalingConfigurationInfo = nil
 	}
 	if resp.DBCluster.Status != nil {
 		cr.Status.AtProvider.Status = resp.DBCluster.Status
+	} else {
+		cr.Status.AtProvider.Status = nil
 	}
 	if resp.DBCluster.TagList != nil {
 		f53 := []*svcapitypes.Tag{}
@@ -333,6 +405,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f53 = append(f53, f53elem)
 		}
 		cr.Status.AtProvider.TagList = f53
+	} else {
+		cr.Status.AtProvider.TagList = nil
 	}
 	if resp.DBCluster.VpcSecurityGroups != nil {
 		f54 := []*svcapitypes.VPCSecurityGroupMembership{}
@@ -347,6 +421,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f54 = append(f54, f54elem)
 		}
 		cr.Status.AtProvider.VPCSecurityGroups = f54
+	} else {
+		cr.Status.AtProvider.VPCSecurityGroups = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

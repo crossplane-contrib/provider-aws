@@ -117,15 +117,23 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	if resp.GlobalTableDescription.CreationDateTime != nil {
 		cr.Status.AtProvider.CreationDateTime = &metav1.Time{*resp.GlobalTableDescription.CreationDateTime}
+	} else {
+		cr.Status.AtProvider.CreationDateTime = nil
 	}
 	if resp.GlobalTableDescription.GlobalTableArn != nil {
 		cr.Status.AtProvider.GlobalTableARN = resp.GlobalTableDescription.GlobalTableArn
+	} else {
+		cr.Status.AtProvider.GlobalTableARN = nil
 	}
 	if resp.GlobalTableDescription.GlobalTableName != nil {
 		cr.Status.AtProvider.GlobalTableName = resp.GlobalTableDescription.GlobalTableName
+	} else {
+		cr.Status.AtProvider.GlobalTableName = nil
 	}
 	if resp.GlobalTableDescription.GlobalTableStatus != nil {
 		cr.Status.AtProvider.GlobalTableStatus = resp.GlobalTableDescription.GlobalTableStatus
+	} else {
+		cr.Status.AtProvider.GlobalTableStatus = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -188,7 +196,7 @@ type external struct {
 	isUpToDate     func(*svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableInput) error
 	postCreate     func(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	delete         func(ctx context.Context, mg cpresource.Managed) error
+	delete         func(context.Context, cpresource.Managed) error
 	preUpdate      func(context.Context, *svcapitypes.GlobalTable, *svcsdk.UpdateGlobalTableInput) error
 	postUpdate     func(context.Context, *svcapitypes.GlobalTable, *svcsdk.UpdateGlobalTableOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -196,8 +204,9 @@ type external struct {
 func nopPreObserve(context.Context, *svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableInput) error {
 	return nil
 }
-func nopPostObserve(context.Context, *svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error) {
-	return managed.ExternalObservation{}, nil
+
+func nopPostObserve(_ context.Context, _ *svcapitypes.GlobalTable, _ *svcsdk.DescribeGlobalTableOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	return obs, err
 }
 func nopLateInitialize(*svcapitypes.GlobalTableParameters, *svcsdk.DescribeGlobalTableOutput) error {
 	return nil
@@ -209,8 +218,8 @@ func alwaysUpToDate(*svcapitypes.GlobalTable, *svcsdk.DescribeGlobalTableOutput)
 func nopPreCreate(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableInput) error {
 	return nil
 }
-func nopPostCreate(context.Context, *svcapitypes.GlobalTable, *svcsdk.CreateGlobalTableOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error) {
-	return managed.ExternalCreation{}, nil
+func nopPostCreate(_ context.Context, _ *svcapitypes.GlobalTable, _ *svcsdk.CreateGlobalTableOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	return cre, err
 }
 func nopDelete(context.Context, cpresource.Managed) error {
 	return nil
@@ -218,6 +227,6 @@ func nopDelete(context.Context, cpresource.Managed) error {
 func nopPreUpdate(context.Context, *svcapitypes.GlobalTable, *svcsdk.UpdateGlobalTableInput) error {
 	return nil
 }
-func nopPostUpdate(context.Context, *svcapitypes.GlobalTable, *svcsdk.UpdateGlobalTableOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error) {
-	return managed.ExternalUpdate{}, nil
+func nopPostUpdate(_ context.Context, _ *svcapitypes.GlobalTable, _ *svcsdk.UpdateGlobalTableOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	return upd, err
 }

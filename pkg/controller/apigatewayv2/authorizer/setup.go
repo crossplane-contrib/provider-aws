@@ -90,8 +90,8 @@ func postCreate(_ context.Context, cr *svcapitypes.Authorizer, resp *svcsdk.Crea
 	return cre, err
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.Authorizer, obj *svcsdk.DeleteAuthorizerInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.Authorizer, obj *svcsdk.DeleteAuthorizerInput) (bool, error) {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.AuthorizerId = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }

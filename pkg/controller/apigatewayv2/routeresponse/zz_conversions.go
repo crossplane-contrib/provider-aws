@@ -46,6 +46,8 @@ func GenerateRouteResponse(resp *svcsdk.GetRouteResponseOutput) *svcapitypes.Rou
 
 	if resp.RouteResponseId != nil {
 		cr.Status.AtProvider.RouteResponseID = resp.RouteResponseId
+	} else {
+		cr.Status.AtProvider.RouteResponseID = nil
 	}
 
 	return cr

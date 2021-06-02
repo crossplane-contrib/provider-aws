@@ -47,18 +47,28 @@ func GenerateDeployment(resp *svcsdk.GetDeploymentOutput) *svcapitypes.Deploymen
 
 	if resp.AutoDeployed != nil {
 		cr.Status.AtProvider.AutoDeployed = resp.AutoDeployed
+	} else {
+		cr.Status.AtProvider.AutoDeployed = nil
 	}
 	if resp.CreatedDate != nil {
 		cr.Status.AtProvider.CreatedDate = &metav1.Time{*resp.CreatedDate}
+	} else {
+		cr.Status.AtProvider.CreatedDate = nil
 	}
 	if resp.DeploymentId != nil {
 		cr.Status.AtProvider.DeploymentID = resp.DeploymentId
+	} else {
+		cr.Status.AtProvider.DeploymentID = nil
 	}
 	if resp.DeploymentStatus != nil {
 		cr.Status.AtProvider.DeploymentStatus = resp.DeploymentStatus
+	} else {
+		cr.Status.AtProvider.DeploymentStatus = nil
 	}
 	if resp.DeploymentStatusMessage != nil {
 		cr.Status.AtProvider.DeploymentStatusMessage = resp.DeploymentStatusMessage
+	} else {
+		cr.Status.AtProvider.DeploymentStatusMessage = nil
 	}
 
 	return cr

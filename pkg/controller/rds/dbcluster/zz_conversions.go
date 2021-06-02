@@ -45,18 +45,28 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 	for _, elem := range resp.DBClusters {
 		if elem.ActivityStreamKinesisStreamName != nil {
 			cr.Status.AtProvider.ActivityStreamKinesisStreamName = elem.ActivityStreamKinesisStreamName
+		} else {
+			cr.Status.AtProvider.ActivityStreamKinesisStreamName = nil
 		}
 		if elem.ActivityStreamKmsKeyId != nil {
 			cr.Status.AtProvider.ActivityStreamKMSKeyID = elem.ActivityStreamKmsKeyId
+		} else {
+			cr.Status.AtProvider.ActivityStreamKMSKeyID = nil
 		}
 		if elem.ActivityStreamMode != nil {
 			cr.Status.AtProvider.ActivityStreamMode = elem.ActivityStreamMode
+		} else {
+			cr.Status.AtProvider.ActivityStreamMode = nil
 		}
 		if elem.ActivityStreamStatus != nil {
 			cr.Status.AtProvider.ActivityStreamStatus = elem.ActivityStreamStatus
+		} else {
+			cr.Status.AtProvider.ActivityStreamStatus = nil
 		}
 		if elem.AllocatedStorage != nil {
 			cr.Status.AtProvider.AllocatedStorage = elem.AllocatedStorage
+		} else {
+			cr.Status.AtProvider.AllocatedStorage = nil
 		}
 		if elem.AssociatedRoles != nil {
 			f5 := []*svcapitypes.DBClusterRole{}
@@ -74,6 +84,8 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 				f5 = append(f5, f5elem)
 			}
 			cr.Status.AtProvider.AssociatedRoles = f5
+		} else {
+			cr.Status.AtProvider.AssociatedRoles = nil
 		}
 		if elem.AvailabilityZones != nil {
 			f6 := []*string{}
@@ -83,33 +95,53 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 				f6 = append(f6, &f6elem)
 			}
 			cr.Spec.ForProvider.AvailabilityZones = f6
+		} else {
+			cr.Spec.ForProvider.AvailabilityZones = nil
 		}
 		if elem.BacktrackConsumedChangeRecords != nil {
 			cr.Status.AtProvider.BacktrackConsumedChangeRecords = elem.BacktrackConsumedChangeRecords
+		} else {
+			cr.Status.AtProvider.BacktrackConsumedChangeRecords = nil
 		}
 		if elem.BacktrackWindow != nil {
 			cr.Spec.ForProvider.BacktrackWindow = elem.BacktrackWindow
+		} else {
+			cr.Spec.ForProvider.BacktrackWindow = nil
 		}
 		if elem.BackupRetentionPeriod != nil {
 			cr.Spec.ForProvider.BackupRetentionPeriod = elem.BackupRetentionPeriod
+		} else {
+			cr.Spec.ForProvider.BackupRetentionPeriod = nil
 		}
 		if elem.Capacity != nil {
 			cr.Status.AtProvider.Capacity = elem.Capacity
+		} else {
+			cr.Status.AtProvider.Capacity = nil
 		}
 		if elem.CharacterSetName != nil {
 			cr.Spec.ForProvider.CharacterSetName = elem.CharacterSetName
+		} else {
+			cr.Spec.ForProvider.CharacterSetName = nil
 		}
 		if elem.CloneGroupId != nil {
 			cr.Status.AtProvider.CloneGroupID = elem.CloneGroupId
+		} else {
+			cr.Status.AtProvider.CloneGroupID = nil
 		}
 		if elem.ClusterCreateTime != nil {
 			cr.Status.AtProvider.ClusterCreateTime = &metav1.Time{*elem.ClusterCreateTime}
+		} else {
+			cr.Status.AtProvider.ClusterCreateTime = nil
 		}
 		if elem.CopyTagsToSnapshot != nil {
 			cr.Spec.ForProvider.CopyTagsToSnapshot = elem.CopyTagsToSnapshot
+		} else {
+			cr.Spec.ForProvider.CopyTagsToSnapshot = nil
 		}
 		if elem.CrossAccountClone != nil {
 			cr.Status.AtProvider.CrossAccountClone = elem.CrossAccountClone
+		} else {
+			cr.Status.AtProvider.CrossAccountClone = nil
 		}
 		if elem.CustomEndpoints != nil {
 			f16 := []*string{}
@@ -119,12 +151,18 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 				f16 = append(f16, &f16elem)
 			}
 			cr.Status.AtProvider.CustomEndpoints = f16
+		} else {
+			cr.Status.AtProvider.CustomEndpoints = nil
 		}
 		if elem.DBClusterArn != nil {
 			cr.Status.AtProvider.DBClusterARN = elem.DBClusterArn
+		} else {
+			cr.Status.AtProvider.DBClusterARN = nil
 		}
 		if elem.DBClusterIdentifier != nil {
 			cr.Status.AtProvider.DBClusterIdentifier = elem.DBClusterIdentifier
+		} else {
+			cr.Status.AtProvider.DBClusterIdentifier = nil
 		}
 		if elem.DBClusterMembers != nil {
 			f19 := []*svcapitypes.DBClusterMember{}
@@ -145,6 +183,8 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 				f19 = append(f19, f19elem)
 			}
 			cr.Status.AtProvider.DBClusterMembers = f19
+		} else {
+			cr.Status.AtProvider.DBClusterMembers = nil
 		}
 		if elem.DBClusterOptionGroupMemberships != nil {
 			f20 := []*svcapitypes.DBClusterOptionGroupStatus{}
@@ -159,21 +199,33 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 				f20 = append(f20, f20elem)
 			}
 			cr.Status.AtProvider.DBClusterOptionGroupMemberships = f20
+		} else {
+			cr.Status.AtProvider.DBClusterOptionGroupMemberships = nil
 		}
 		if elem.DBClusterParameterGroup != nil {
 			cr.Status.AtProvider.DBClusterParameterGroup = elem.DBClusterParameterGroup
+		} else {
+			cr.Status.AtProvider.DBClusterParameterGroup = nil
 		}
 		if elem.DBSubnetGroup != nil {
 			cr.Status.AtProvider.DBSubnetGroup = elem.DBSubnetGroup
+		} else {
+			cr.Status.AtProvider.DBSubnetGroup = nil
 		}
 		if elem.DatabaseName != nil {
 			cr.Spec.ForProvider.DatabaseName = elem.DatabaseName
+		} else {
+			cr.Spec.ForProvider.DatabaseName = nil
 		}
 		if elem.DbClusterResourceId != nil {
 			cr.Status.AtProvider.DBClusterResourceID = elem.DbClusterResourceId
+		} else {
+			cr.Status.AtProvider.DBClusterResourceID = nil
 		}
 		if elem.DeletionProtection != nil {
 			cr.Spec.ForProvider.DeletionProtection = elem.DeletionProtection
+		} else {
+			cr.Spec.ForProvider.DeletionProtection = nil
 		}
 		if elem.DomainMemberships != nil {
 			f26 := []*svcapitypes.DomainMembership{}
@@ -194,12 +246,18 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 				f26 = append(f26, f26elem)
 			}
 			cr.Status.AtProvider.DomainMemberships = f26
+		} else {
+			cr.Status.AtProvider.DomainMemberships = nil
 		}
 		if elem.EarliestBacktrackTime != nil {
 			cr.Status.AtProvider.EarliestBacktrackTime = &metav1.Time{*elem.EarliestBacktrackTime}
+		} else {
+			cr.Status.AtProvider.EarliestBacktrackTime = nil
 		}
 		if elem.EarliestRestorableTime != nil {
 			cr.Status.AtProvider.EarliestRestorableTime = &metav1.Time{*elem.EarliestRestorableTime}
+		} else {
+			cr.Status.AtProvider.EarliestRestorableTime = nil
 		}
 		if elem.EnabledCloudwatchLogsExports != nil {
 			f29 := []*string{}
@@ -209,57 +267,93 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 				f29 = append(f29, &f29elem)
 			}
 			cr.Status.AtProvider.EnabledCloudwatchLogsExports = f29
+		} else {
+			cr.Status.AtProvider.EnabledCloudwatchLogsExports = nil
 		}
 		if elem.Endpoint != nil {
 			cr.Status.AtProvider.Endpoint = elem.Endpoint
+		} else {
+			cr.Status.AtProvider.Endpoint = nil
 		}
 		if elem.Engine != nil {
 			cr.Spec.ForProvider.Engine = elem.Engine
+		} else {
+			cr.Spec.ForProvider.Engine = nil
 		}
 		if elem.EngineMode != nil {
 			cr.Spec.ForProvider.EngineMode = elem.EngineMode
+		} else {
+			cr.Spec.ForProvider.EngineMode = nil
 		}
 		if elem.EngineVersion != nil {
 			cr.Spec.ForProvider.EngineVersion = elem.EngineVersion
+		} else {
+			cr.Spec.ForProvider.EngineVersion = nil
 		}
 		if elem.GlobalWriteForwardingRequested != nil {
 			cr.Status.AtProvider.GlobalWriteForwardingRequested = elem.GlobalWriteForwardingRequested
+		} else {
+			cr.Status.AtProvider.GlobalWriteForwardingRequested = nil
 		}
 		if elem.GlobalWriteForwardingStatus != nil {
 			cr.Status.AtProvider.GlobalWriteForwardingStatus = elem.GlobalWriteForwardingStatus
+		} else {
+			cr.Status.AtProvider.GlobalWriteForwardingStatus = nil
 		}
 		if elem.HostedZoneId != nil {
 			cr.Status.AtProvider.HostedZoneID = elem.HostedZoneId
+		} else {
+			cr.Status.AtProvider.HostedZoneID = nil
 		}
 		if elem.HttpEndpointEnabled != nil {
 			cr.Status.AtProvider.HTTPEndpointEnabled = elem.HttpEndpointEnabled
+		} else {
+			cr.Status.AtProvider.HTTPEndpointEnabled = nil
 		}
 		if elem.IAMDatabaseAuthenticationEnabled != nil {
 			cr.Status.AtProvider.IAMDatabaseAuthenticationEnabled = elem.IAMDatabaseAuthenticationEnabled
+		} else {
+			cr.Status.AtProvider.IAMDatabaseAuthenticationEnabled = nil
 		}
 		if elem.KmsKeyId != nil {
 			cr.Spec.ForProvider.KMSKeyID = elem.KmsKeyId
+		} else {
+			cr.Spec.ForProvider.KMSKeyID = nil
 		}
 		if elem.LatestRestorableTime != nil {
 			cr.Status.AtProvider.LatestRestorableTime = &metav1.Time{*elem.LatestRestorableTime}
+		} else {
+			cr.Status.AtProvider.LatestRestorableTime = nil
 		}
 		if elem.MasterUsername != nil {
 			cr.Spec.ForProvider.MasterUsername = elem.MasterUsername
+		} else {
+			cr.Spec.ForProvider.MasterUsername = nil
 		}
 		if elem.MultiAZ != nil {
 			cr.Status.AtProvider.MultiAZ = elem.MultiAZ
+		} else {
+			cr.Status.AtProvider.MultiAZ = nil
 		}
 		if elem.PercentProgress != nil {
 			cr.Status.AtProvider.PercentProgress = elem.PercentProgress
+		} else {
+			cr.Status.AtProvider.PercentProgress = nil
 		}
 		if elem.Port != nil {
 			cr.Spec.ForProvider.Port = elem.Port
+		} else {
+			cr.Spec.ForProvider.Port = nil
 		}
 		if elem.PreferredBackupWindow != nil {
 			cr.Spec.ForProvider.PreferredBackupWindow = elem.PreferredBackupWindow
+		} else {
+			cr.Spec.ForProvider.PreferredBackupWindow = nil
 		}
 		if elem.PreferredMaintenanceWindow != nil {
 			cr.Spec.ForProvider.PreferredMaintenanceWindow = elem.PreferredMaintenanceWindow
+		} else {
+			cr.Spec.ForProvider.PreferredMaintenanceWindow = nil
 		}
 		if elem.ReadReplicaIdentifiers != nil {
 			f47 := []*string{}
@@ -269,12 +363,18 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 				f47 = append(f47, &f47elem)
 			}
 			cr.Status.AtProvider.ReadReplicaIdentifiers = f47
+		} else {
+			cr.Status.AtProvider.ReadReplicaIdentifiers = nil
 		}
 		if elem.ReaderEndpoint != nil {
 			cr.Status.AtProvider.ReaderEndpoint = elem.ReaderEndpoint
+		} else {
+			cr.Status.AtProvider.ReaderEndpoint = nil
 		}
 		if elem.ReplicationSourceIdentifier != nil {
 			cr.Spec.ForProvider.ReplicationSourceIdentifier = elem.ReplicationSourceIdentifier
+		} else {
+			cr.Spec.ForProvider.ReplicationSourceIdentifier = nil
 		}
 		if elem.ScalingConfigurationInfo != nil {
 			f50 := &svcapitypes.ScalingConfigurationInfo{}
@@ -294,12 +394,18 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 				f50.TimeoutAction = elem.ScalingConfigurationInfo.TimeoutAction
 			}
 			cr.Status.AtProvider.ScalingConfigurationInfo = f50
+		} else {
+			cr.Status.AtProvider.ScalingConfigurationInfo = nil
 		}
 		if elem.Status != nil {
 			cr.Status.AtProvider.Status = elem.Status
+		} else {
+			cr.Status.AtProvider.Status = nil
 		}
 		if elem.StorageEncrypted != nil {
 			cr.Spec.ForProvider.StorageEncrypted = elem.StorageEncrypted
+		} else {
+			cr.Spec.ForProvider.StorageEncrypted = nil
 		}
 		if elem.TagList != nil {
 			f53 := []*svcapitypes.Tag{}
@@ -314,6 +420,8 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 				f53 = append(f53, f53elem)
 			}
 			cr.Status.AtProvider.TagList = f53
+		} else {
+			cr.Status.AtProvider.TagList = nil
 		}
 		if elem.VpcSecurityGroups != nil {
 			f54 := []*svcapitypes.VPCSecurityGroupMembership{}
@@ -328,6 +436,8 @@ func GenerateDBCluster(resp *svcsdk.DescribeDBClustersOutput) *svcapitypes.DBClu
 				f54 = append(f54, f54elem)
 			}
 			cr.Status.AtProvider.VPCSecurityGroups = f54
+		} else {
+			cr.Status.AtProvider.VPCSecurityGroups = nil
 		}
 		found = true
 		break

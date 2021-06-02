@@ -117,21 +117,33 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	if resp.BackupDetails.BackupArn != nil {
 		cr.Status.AtProvider.BackupARN = resp.BackupDetails.BackupArn
+	} else {
+		cr.Status.AtProvider.BackupARN = nil
 	}
 	if resp.BackupDetails.BackupCreationDateTime != nil {
 		cr.Status.AtProvider.BackupCreationDateTime = &metav1.Time{*resp.BackupDetails.BackupCreationDateTime}
+	} else {
+		cr.Status.AtProvider.BackupCreationDateTime = nil
 	}
 	if resp.BackupDetails.BackupExpiryDateTime != nil {
 		cr.Status.AtProvider.BackupExpiryDateTime = &metav1.Time{*resp.BackupDetails.BackupExpiryDateTime}
+	} else {
+		cr.Status.AtProvider.BackupExpiryDateTime = nil
 	}
 	if resp.BackupDetails.BackupSizeBytes != nil {
 		cr.Status.AtProvider.BackupSizeBytes = resp.BackupDetails.BackupSizeBytes
+	} else {
+		cr.Status.AtProvider.BackupSizeBytes = nil
 	}
 	if resp.BackupDetails.BackupStatus != nil {
 		cr.Status.AtProvider.BackupStatus = resp.BackupDetails.BackupStatus
+	} else {
+		cr.Status.AtProvider.BackupStatus = nil
 	}
 	if resp.BackupDetails.BackupType != nil {
 		cr.Status.AtProvider.BackupType = resp.BackupDetails.BackupType
+	} else {
+		cr.Status.AtProvider.BackupType = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -149,11 +161,15 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteBackupInput(cr)
-	if err := e.preDelete(ctx, cr, input); err != nil {
+	ignore, err := e.preDelete(ctx, cr, input)
+	if err != nil {
 		return errors.Wrap(err, "pre-delete failed")
 	}
-	_, err := e.client.DeleteBackupWithContext(ctx, input)
-	return awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
+	if ignore {
+		return nil
+	}
+	resp, err := e.client.DeleteBackupWithContext(ctx, input)
+	return e.postDelete(ctx, cr, resp, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
 }
 
 type option func(*external)
@@ -169,6 +185,7 @@ func newExternal(kube client.Client, client svcsdkapi.DynamoDBAPI, opts []option
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
+		postDelete:     nopPostDelete,
 		update:         nopUpdate,
 	}
 	for _, f := range opts {
@@ -186,15 +203,17 @@ type external struct {
 	isUpToDate     func(*svcapitypes.Backup, *svcsdk.DescribeBackupOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.Backup, *svcsdk.CreateBackupInput) error
 	postCreate     func(context.Context, *svcapitypes.Backup, *svcsdk.CreateBackupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	preDelete      func(context.Context, *svcapitypes.Backup, *svcsdk.DeleteBackupInput) error
-	update         func(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error)
+	preDelete      func(context.Context, *svcapitypes.Backup, *svcsdk.DeleteBackupInput) (bool, error)
+	postDelete     func(context.Context, *svcapitypes.Backup, *svcsdk.DeleteBackupOutput, error) error
+	update         func(context.Context, cpresource.Managed) (managed.ExternalUpdate, error)
 }
 
 func nopPreObserve(context.Context, *svcapitypes.Backup, *svcsdk.DescribeBackupInput) error {
 	return nil
 }
-func nopPostObserve(context.Context, *svcapitypes.Backup, *svcsdk.DescribeBackupOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error) {
-	return managed.ExternalObservation{}, nil
+
+func nopPostObserve(_ context.Context, _ *svcapitypes.Backup, _ *svcsdk.DescribeBackupOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	return obs, err
 }
 func nopLateInitialize(*svcapitypes.BackupParameters, *svcsdk.DescribeBackupOutput) error {
 	return nil
@@ -206,11 +225,14 @@ func alwaysUpToDate(*svcapitypes.Backup, *svcsdk.DescribeBackupOutput) (bool, er
 func nopPreCreate(context.Context, *svcapitypes.Backup, *svcsdk.CreateBackupInput) error {
 	return nil
 }
-func nopPostCreate(context.Context, *svcapitypes.Backup, *svcsdk.CreateBackupOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error) {
-	return managed.ExternalCreation{}, nil
+func nopPostCreate(_ context.Context, _ *svcapitypes.Backup, _ *svcsdk.CreateBackupOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	return cre, err
 }
-func nopPreDelete(context.Context, *svcapitypes.Backup, *svcsdk.DeleteBackupInput) error {
-	return nil
+func nopPreDelete(context.Context, *svcapitypes.Backup, *svcsdk.DeleteBackupInput) (bool, error) {
+	return false, nil
+}
+func nopPostDelete(_ context.Context, _ *svcapitypes.Backup, _ *svcsdk.DeleteBackupOutput, err error) error {
+	return err
 }
 func nopUpdate(context.Context, cpresource.Managed) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil
