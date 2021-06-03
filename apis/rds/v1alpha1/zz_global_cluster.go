@@ -75,7 +75,7 @@ type GlobalClusterObservation struct {
 // GlobalClusterStatus defines the observed state of GlobalCluster.
 type GlobalClusterStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          GlobalClusterObservation `json:"atProvider"`
+	AtProvider          GlobalClusterObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -89,7 +89,7 @@ type GlobalClusterStatus struct {
 type GlobalCluster struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              GlobalClusterSpec   `json:"spec,omitempty"`
+	Spec              GlobalClusterSpec   `json:"spec"`
 	Status            GlobalClusterStatus `json:"status,omitempty"`
 }
 

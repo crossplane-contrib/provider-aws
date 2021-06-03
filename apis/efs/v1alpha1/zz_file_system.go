@@ -121,7 +121,7 @@ type FileSystemObservation struct {
 // FileSystemStatus defines the observed state of FileSystem.
 type FileSystemStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          FileSystemObservation `json:"atProvider"`
+	AtProvider          FileSystemObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -135,7 +135,7 @@ type FileSystemStatus struct {
 type FileSystem struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              FileSystemSpec   `json:"spec,omitempty"`
+	Spec              FileSystemSpec   `json:"spec"`
 	Status            FileSystemStatus `json:"status,omitempty"`
 }
 

@@ -67,7 +67,7 @@ type DBParameterGroupObservation struct {
 // DBParameterGroupStatus defines the observed state of DBParameterGroup.
 type DBParameterGroupStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          DBParameterGroupObservation `json:"atProvider"`
+	AtProvider          DBParameterGroupObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -81,7 +81,7 @@ type DBParameterGroupStatus struct {
 type DBParameterGroup struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              DBParameterGroupSpec   `json:"spec,omitempty"`
+	Spec              DBParameterGroupSpec   `json:"spec"`
 	Status            DBParameterGroupStatus `json:"status,omitempty"`
 }
 

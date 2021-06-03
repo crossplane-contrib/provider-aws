@@ -57,7 +57,7 @@ type IntegrationResponseObservation struct {
 // IntegrationResponseStatus defines the observed state of IntegrationResponse.
 type IntegrationResponseStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IntegrationResponseObservation `json:"atProvider"`
+	AtProvider          IntegrationResponseObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -71,7 +71,7 @@ type IntegrationResponseStatus struct {
 type IntegrationResponse struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              IntegrationResponseSpec   `json:"spec,omitempty"`
+	Spec              IntegrationResponseSpec   `json:"spec"`
 	Status            IntegrationResponseStatus `json:"status,omitempty"`
 }
 

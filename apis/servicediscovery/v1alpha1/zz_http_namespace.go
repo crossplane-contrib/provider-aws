@@ -61,7 +61,7 @@ type HTTPNamespaceObservation struct {
 // HTTPNamespaceStatus defines the observed state of HTTPNamespace.
 type HTTPNamespaceStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          HTTPNamespaceObservation `json:"atProvider"`
+	AtProvider          HTTPNamespaceObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -75,7 +75,7 @@ type HTTPNamespaceStatus struct {
 type HTTPNamespace struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              HTTPNamespaceSpec   `json:"spec,omitempty"`
+	Spec              HTTPNamespaceSpec   `json:"spec"`
 	Status            HTTPNamespaceStatus `json:"status,omitempty"`
 }
 

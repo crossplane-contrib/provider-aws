@@ -89,7 +89,7 @@ type StateMachineObservation struct {
 // StateMachineStatus defines the observed state of StateMachine.
 type StateMachineStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          StateMachineObservation `json:"atProvider"`
+	AtProvider          StateMachineObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -103,7 +103,7 @@ type StateMachineStatus struct {
 type StateMachine struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              StateMachineSpec   `json:"spec,omitempty"`
+	Spec              StateMachineSpec   `json:"spec"`
 	Status            StateMachineStatus `json:"status,omitempty"`
 }
 

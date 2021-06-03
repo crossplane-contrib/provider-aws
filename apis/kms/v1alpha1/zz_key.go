@@ -242,7 +242,7 @@ type KeyObservation struct {
 // KeyStatus defines the observed state of Key.
 type KeyStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          KeyObservation `json:"atProvider"`
+	AtProvider          KeyObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -256,7 +256,7 @@ type KeyStatus struct {
 type Key struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              KeySpec   `json:"spec,omitempty"`
+	Spec              KeySpec   `json:"spec"`
 	Status            KeyStatus `json:"status,omitempty"`
 }
 
