@@ -77,7 +77,8 @@ crds.clean:
 	@find package/crds -name '*.yaml.sed' -delete || $(FAIL)
 	@$(OK) cleaned generated CRDs
 
-generate.run: go.generate crds.clean
+generate.init: services.all
+generate.done: crds.clean
 
 manifests:
 	@$(WARN) Deprecated. Please run make generate instead.
