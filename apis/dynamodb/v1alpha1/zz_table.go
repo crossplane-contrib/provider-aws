@@ -236,7 +236,7 @@ type TableObservation struct {
 // TableStatus defines the observed state of Table.
 type TableStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          TableObservation `json:"atProvider"`
+	AtProvider          TableObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -250,7 +250,7 @@ type TableStatus struct {
 type Table struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              TableSpec   `json:"spec,omitempty"`
+	Spec              TableSpec   `json:"spec"`
 	Status            TableStatus `json:"status,omitempty"`
 }
 

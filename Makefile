@@ -6,7 +6,7 @@ PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
 
 PLATFORMS ?= linux_amd64 linux_arm64
 
-CODE_GENERATOR_COMMIT ?= v0.2.1
+CODE_GENERATOR_COMMIT ?= c4592885b843b2f0a316718a15349ea07b3a50b1
 GENERATED_SERVICES="apigatewayv2,cloudfront,dynamodb,efs,kms,lambda,rds,secretsmanager,servicediscovery,sfn"
 
 # -include will silently skip missing files, which allows us
@@ -77,17 +77,8 @@ crds.clean:
 	@find package/crds -name '*.yaml.sed' -delete || $(FAIL)
 	@$(OK) cleaned generated CRDs
 
-generate.run: go.generate crds.clean
-
-# Ensure a PR is ready for review.
-reviewable: services.all generate lint
-	@go mod tidy
-
-# Ensure branch is clean.
-check-diff: reviewable
-	@$(INFO) checking that branch is clean
-	@test -z "$$(git status --porcelain)" || $(FAIL)
-	@$(OK) branch is clean
+generate.init: services.all
+generate.done: crds.clean
 
 manifests:
 	@$(WARN) Deprecated. Please run make generate instead.
@@ -114,7 +105,7 @@ run: go.build
 	@# To see other arguments that can be provided, run the command with --help instead
 	$(GO_OUT_DIR)/provider --debug
 
-.PHONY: cobertura reviewable manifests submodules fallthrough test-integration run crds.clean
+.PHONY: cobertura manifests submodules fallthrough test-integration run crds.clean
 
 # NOTE(muvaf): ACK Code Generator is a separate Go module, hence we need to
 # be in its root directory to call "go run" properly.
@@ -144,7 +135,6 @@ services.all:
 define CROSSPLANE_MAKE_HELP
 Crossplane Targets:
     cobertura             Generate a coverage report for cobertura applying exclusions on generated files.
-    reviewable            Ensure a PR is ready for review.
     submodules            Update the submodules, such as the common build scripts.
     run                   Run crossplane locally, out-of-cluster. Useful for development.
 

@@ -54,7 +54,7 @@ type DistributionObservation struct {
 // DistributionStatus defines the observed state of Distribution.
 type DistributionStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          DistributionObservation `json:"atProvider"`
+	AtProvider          DistributionObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -68,7 +68,7 @@ type DistributionStatus struct {
 type Distribution struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              DistributionSpec   `json:"spec,omitempty"`
+	Spec              DistributionSpec   `json:"spec"`
 	Status            DistributionStatus `json:"status,omitempty"`
 }
 

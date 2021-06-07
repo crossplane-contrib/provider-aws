@@ -72,7 +72,7 @@ type StageObservation struct {
 // StageStatus defines the observed state of Stage.
 type StageStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          StageObservation `json:"atProvider"`
+	AtProvider          StageObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -86,7 +86,7 @@ type StageStatus struct {
 type Stage struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              StageSpec   `json:"spec,omitempty"`
+	Spec              StageSpec   `json:"spec"`
 	Status            StageStatus `json:"status,omitempty"`
 }
 

@@ -66,7 +66,7 @@ type PrivateDNSNamespaceObservation struct {
 // PrivateDNSNamespaceStatus defines the observed state of PrivateDNSNamespace.
 type PrivateDNSNamespaceStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          PrivateDNSNamespaceObservation `json:"atProvider"`
+	AtProvider          PrivateDNSNamespaceObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -80,7 +80,7 @@ type PrivateDNSNamespaceStatus struct {
 type PrivateDNSNamespace struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              PrivateDNSNamespaceSpec   `json:"spec,omitempty"`
+	Spec              PrivateDNSNamespaceSpec   `json:"spec"`
 	Status            PrivateDNSNamespaceStatus `json:"status,omitempty"`
 }
 

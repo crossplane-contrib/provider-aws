@@ -463,7 +463,7 @@ type DBClusterObservation struct {
 // DBClusterStatus defines the observed state of DBCluster.
 type DBClusterStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          DBClusterObservation `json:"atProvider"`
+	AtProvider          DBClusterObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -477,7 +477,7 @@ type DBClusterStatus struct {
 type DBCluster struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              DBClusterSpec   `json:"spec,omitempty"`
+	Spec              DBClusterSpec   `json:"spec"`
 	Status            DBClusterStatus `json:"status,omitempty"`
 }
 

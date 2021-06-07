@@ -119,7 +119,7 @@ type SecretObservation struct {
 // SecretStatus defines the observed state of Secret.
 type SecretStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          SecretObservation `json:"atProvider"`
+	AtProvider          SecretObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -133,7 +133,7 @@ type SecretStatus struct {
 type Secret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              SecretSpec   `json:"spec,omitempty"`
+	Spec              SecretSpec   `json:"spec"`
 	Status            SecretStatus `json:"status,omitempty"`
 }
 

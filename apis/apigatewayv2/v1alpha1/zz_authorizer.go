@@ -69,7 +69,7 @@ type AuthorizerObservation struct {
 // AuthorizerStatus defines the observed state of Authorizer.
 type AuthorizerStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          AuthorizerObservation `json:"atProvider"`
+	AtProvider          AuthorizerObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -83,7 +83,7 @@ type AuthorizerStatus struct {
 type Authorizer struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              AuthorizerSpec   `json:"spec,omitempty"`
+	Spec              AuthorizerSpec   `json:"spec"`
 	Status            AuthorizerStatus `json:"status,omitempty"`
 }
 

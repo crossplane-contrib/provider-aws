@@ -61,7 +61,7 @@ type PublicDNSNamespaceObservation struct {
 // PublicDNSNamespaceStatus defines the observed state of PublicDNSNamespace.
 type PublicDNSNamespaceStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          PublicDNSNamespaceObservation `json:"atProvider"`
+	AtProvider          PublicDNSNamespaceObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -75,7 +75,7 @@ type PublicDNSNamespaceStatus struct {
 type PublicDNSNamespace struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              PublicDNSNamespaceSpec   `json:"spec,omitempty"`
+	Spec              PublicDNSNamespaceSpec   `json:"spec"`
 	Status            PublicDNSNamespaceStatus `json:"status,omitempty"`
 }
 
