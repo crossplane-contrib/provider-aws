@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
@@ -146,6 +148,15 @@ func SerializeRepositoryPrincipal(p *v1alpha1.RepositoryPrincipal) (interface{},
 func SerializeAWSPrincipal(p v1alpha1.AWSPrincipal) *string {
 	switch {
 	case p.AWSAccountID != nil:
+		// Note: AWS Docs say you can specify the account ID either
+		// raw or as an ARN, but AWS actually converts internally to
+		// the ARN format, which is problematic for checking if we're
+		// up to date. So here we just do the conversion ourselves to
+		// avoid unintended behaviour if user specifies raw account ID.
+		if !strings.HasPrefix(*p.AWSAccountID, "arn:aws:iam::") {
+			s := fmt.Sprintf("arn:aws:iam::%s:root", *p.AWSAccountID)
+			return &s
+		}
 		return p.AWSAccountID
 	case p.IAMRoleARN != nil:
 		return p.IAMRoleARN
@@ -209,7 +220,10 @@ func IsRepositoryPolicyUpToDate(local, remote *string) bool {
 		return false
 	}
 
-	return cmp.Equal(localUnmarshalled, remoteUnmarshalled)
+	sortSlicesOpt := cmpopts.SortSlices(func(x, y interface{}) bool {
+		return x.(string) < y.(string)
+	})
+	return cmp.Equal(localUnmarshalled, remoteUnmarshalled, cmpopts.EquateEmpty(), sortSlicesOpt)
 }
 
 // RawPolicyData parses and formats the RepositoryPolicy struct
