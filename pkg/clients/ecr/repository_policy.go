@@ -221,7 +221,16 @@ func IsRepositoryPolicyUpToDate(local, remote *string) bool {
 	}
 
 	sortSlicesOpt := cmpopts.SortSlices(func(x, y interface{}) bool {
-		return x.(string) < y.(string)
+		if a, ok := x.(string); ok {
+			if b, ok := y.(string); ok {
+				return a < b
+			}
+		}
+		// Note: Unknown types in slices will not cause a panic, but
+		// may not be sorted correctly. Depending on how AWS handles
+		// these, it may cause constant updates - but better this than
+		// panicing.
+		return false
 	})
 	return cmp.Equal(localUnmarshalled, remoteUnmarshalled, cmpopts.EquateEmpty(), sortSlicesOpt)
 }

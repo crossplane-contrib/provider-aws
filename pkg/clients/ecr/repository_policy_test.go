@@ -240,6 +240,15 @@ func TestIsRepositoryPolicyUpToDate(t *testing.T) {
 			},
 			want: true,
 		},
+		"SameFieldsNumericPrincipals": {
+			args: args{
+				// This is to test that our slice sorting does not
+				// panic with unexpected value types.
+				local:  `{"Statement":[{"Effect":"Allow","Action":"ecr:ListImages","Principal":[2,1,"foo","bar"]}],"Version":"2012-10-17"}`,
+				remote: `{"Statement":[{"Effect":"Allow","Action":"ecr:ListImages","Principal":[2,1,"bar","foo"]}],"Version":"2012-10-17"}`,
+			},
+			want: true,
+		},
 	}
 
 	for name, tc := range cases {
