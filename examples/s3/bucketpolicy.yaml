@@ -6,7 +6,7 @@ spec:
   forProvider:
     region: us-west-1
     bucketNameRef:
-      name: conformancetest2
+      name: test-bucket
     policy:
       version: '2012-10-17'
       statements:
@@ -18,12 +18,11 @@ spec:
           effect: Allow
           principal:
             awsPrincipals:
-              - iamUserArn: "arn:aws:iam::609897127049:user/conformance_testuser"
-#             - iamUserArnSelector:
-#                 matchLabels:
-#                   example: "true"
+              - iamUserArnSelector:
+                  matchLabels:
+                    example: "true"
           resource:
-            - "arn:aws:s3:::conformancetest2"
+            - "arn:aws:s3:::test-bucket"
           condition:
           - operatorKey: StringEquals
             conditions:

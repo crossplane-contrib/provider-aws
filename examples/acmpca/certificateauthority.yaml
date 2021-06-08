@@ -10,7 +10,7 @@ spec:
     revocationConfiguration:
       expirationInDays: 7
       enabled: true
-      s3BucketName: conformancetest # bucket must already exist
+      s3BucketName: test-bucket # bucket must already exist
     certificateAuthorityConfiguration:
       keyAlgorithm: RSA_2048
       signingAlgorithm: SHA256WITHRSA

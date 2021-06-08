@@ -5,9 +5,8 @@ metadata:
   name: fake-group-user-membership
 spec:
   forProvider:
-    groupName: conformance_testgroup
-    userName: conformance_testuser
-#   userNameRef:
-#     name: someuser
+    groupName: external-name
+    userNameRef:
+      name: someuser
   providerConfigRef:
     name: example

@@ -1,7 +1,7 @@
 apiVersion: s3.aws.crossplane.io/v1beta1
 kind: Bucket
 metadata:
-  name: conformancetest2
+  name: test-bucket
 spec:
   forProvider:
     acl: private
