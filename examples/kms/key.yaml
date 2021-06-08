@@ -14,7 +14,7 @@ spec:
             "Sid": "Enable IAM User Permissions",
             "Effect": "Allow",
             "Principal": {
-              "AWS": "arn:aws:iam::123456789012:root"
+              "AWS": "arn:aws:iam::123456789012:user/root"
             },
             "Action": "kms:*",
             "Resource": "*"

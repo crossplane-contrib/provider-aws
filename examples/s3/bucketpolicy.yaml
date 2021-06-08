@@ -8,6 +8,7 @@ spec:
     bucketNameRef:
       name: test-bucket
     policy:
+      version: '2012-10-17'
       statements:
         - action:
             - s3:ListBucket
@@ -18,7 +19,8 @@ spec:
           principal:
             awsPrincipals:
               - iamUserArnSelector:
-                  example: "true"
+                  matchLabels:
+                    example: "true"
           resource:
             - "arn:aws:s3:::test-bucket"
           condition:
@@ -36,6 +38,5 @@ spec:
             conditions:
               - key: "aws:SourceIp"
                 stringValue: "192.0.2.188/32"
-    version: '2012-10-17'
   providerConfigRef:
     name: example
