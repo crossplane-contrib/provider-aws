@@ -132,8 +132,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
 		}
 	}
-
-	cr.SetConditions(xpv1.Available())
+	if certificate.Status == awsacm.CertificateStatusIssued {
+		cr.SetConditions(xpv1.Available())
+	}
 
 	cr.Status.AtProvider = acm.GenerateCertificateStatus(certificate)
 

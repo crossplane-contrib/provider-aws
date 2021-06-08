@@ -1,3 +1,6 @@
+---
+# You need to install a CA root certificate manually via console because how to
+# issue a root certificate for a CA with the right CSR is not well documented.
 apiVersion: acmpca.aws.crossplane.io/v1alpha1
 kind: CertificateAuthority
 metadata:
@@ -7,10 +10,7 @@ spec:
     region: us-east-1
     permanentDeletionTimeInDays: 7
     type: ROOT
-    revocationConfiguration:
-      expirationInDays: 7
-      enabled: true
-      s3BucketName: test-bucket # bucket must already exist
+    status: ACTIVE
     certificateAuthorityConfiguration:
       keyAlgorithm: RSA_2048
       signingAlgorithm: SHA256WITHRSA
