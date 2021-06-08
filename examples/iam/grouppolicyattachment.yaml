@@ -6,7 +6,8 @@ metadata:
 spec:
   forProvider:
     policyArn: arn:aws:iam::aws:policy/AmazonEC2FullAccess
-    groupNameRef:
-      name: somegroup
+    groupName: "conformance_testgroup"
+#   groupNameRef:
+#     name: somegroup
   providerConfigRef:
     name: example

@@ -6,8 +6,9 @@ spec:
   forProvider:
     region: us-west-1
     bucketNameRef:
-      name: test-bucket
+      name: conformancetest2
     policy:
+      version: '2012-10-17'
       statements:
         - action:
             - s3:ListBucket
@@ -17,10 +18,12 @@ spec:
           effect: Allow
           principal:
             awsPrincipals:
-              - iamUserArnSelector:
-                  example: "true"
+              - iamUserArn: "arn:aws:iam::609897127049:user/conformance_testuser"
+#             - iamUserArnSelector:
+#                 matchLabels:
+#                   example: "true"
           resource:
-            - "arn:aws:s3:::test-bucket"
+            - "arn:aws:s3:::conformancetest2"
           condition:
           - operatorKey: StringEquals
             conditions:
@@ -36,6 +39,5 @@ spec:
             conditions:
               - key: "aws:SourceIp"
                 stringValue: "192.0.2.188/32"
-    version: '2012-10-17'
   providerConfigRef:
     name: example
