@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
@@ -151,9 +151,10 @@ func SerializeAWSPrincipal(p v1alpha1.AWSPrincipal) *string {
 		// Note: AWS Docs say you can specify the account ID either
 		// raw or as an ARN, but AWS actually converts internally to
 		// the ARN format, which is problematic for checking if we're
-		// up to date. So here we just do the conversion ourselves to
-		// avoid unintended behaviour if user specifies raw account ID.
-		if !strings.HasPrefix(*p.AWSAccountID, "arn:aws:iam::") {
+		// up to date. So here we just do the conversion ourselves if
+		// we were given a string containing a number that looks like an
+		// AWS account ID (looks like a 12-digit integer).
+		if _, err := strconv.ParseInt(*p.AWSAccountID, 10, 64); err == nil {
 			s := fmt.Sprintf("arn:aws:iam::%s:root", *p.AWSAccountID)
 			return &s
 		}
