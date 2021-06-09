@@ -49,7 +49,7 @@ type HostedZoneSpec struct {
 // HostedZoneStatus represents the observed state of a HostedZone.
 type HostedZoneStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          HostedZoneObservation `json:"atProvider"`
+	AtProvider          HostedZoneObservation `json:"atProvider,omitempty"`
 }
 
 // HostedZoneParameters define the desired state of an AWS Route53 Hosted HostedZone.
