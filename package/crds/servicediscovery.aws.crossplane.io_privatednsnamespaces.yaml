@@ -77,12 +77,32 @@ spec:
                       type: object
                     type: array
                   vpc:
-                    description: The ID of the Amazon VPC that you want to associate the namespace with.
+                    description: VPC of the PrivateDNSNamespace. One if vpc, vpcRef or vpcSelector has to be supplied.
                     type: string
+                  vpcRef:
+                    description: A referencer to retrieve the ID of a VPC
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  vpcSelector:
+                    description: A selector to select a referencer to retrieve the ID of a VPC.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                 required:
                 - name
                 - region
-                - vpc
                 type: object
               providerConfigRef:
                 default:

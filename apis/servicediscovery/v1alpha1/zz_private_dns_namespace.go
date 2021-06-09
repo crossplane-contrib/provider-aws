@@ -43,10 +43,7 @@ type PrivateDNSNamespaceParameters struct {
 	// The tags to add to the namespace. Each tag consists of a key and an optional
 	// value, both of which you define. Tag keys can have a maximum character length
 	// of 128 characters, and tag values can have a maximum length of 256 characters.
-	Tags []*Tag `json:"tags,omitempty"`
-	// The ID of the Amazon VPC that you want to associate the namespace with.
-	// +kubebuilder:validation:Required
-	VPC                                 *string `json:"vpc"`
+	Tags                                []*Tag `json:"tags,omitempty"`
 	CustomPrivateDNSNamespaceParameters `json:",inline"`
 }
 

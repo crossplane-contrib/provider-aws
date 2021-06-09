@@ -9,8 +9,8 @@ spec:
     region: us-east-1
     description: "test"
     name: "test"
-    # The ID of the Amazon VPC that you want to associate the namespace with
-    vpc: vpc-02504719d1cb7a9aa
+    vpcRef:
+      name: sample-vpc
     tags:
       - key: cluster
         value: "my-cluster"
