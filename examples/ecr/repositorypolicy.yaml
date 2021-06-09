@@ -17,8 +17,8 @@ spec:
           effect: Allow
           principal:
             awsPrincipals:
-              - iamUserArnSelector:
-                  example: "true"
+              - iamUserArnRef:
+                  name: someuser
       version: '2012-10-17'
   providerConfigRef:
     name: example
