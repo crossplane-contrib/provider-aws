@@ -101,6 +101,9 @@ func setCondition(code *svcsdk.VpcPeeringConnectionStateReason, cr *svcapitypes.
 	case string(svcapitypes.VPCPeeringConnectionStateReasonCode_active):
 		cr.SetConditions(xpv1.Available())
 		return true
+	case string(svcapitypes.VPCPeeringConnectionStateReasonCode_failed):
+		cr.SetConditions(xpv1.Unavailable())
+		return false
 	}
 	return false
 }
