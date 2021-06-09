@@ -66,6 +66,19 @@ func LateInitialize(cr *svcapitypes.FunctionParameters, resp *svcsdk.GetFunction
 
 func preCreate(_ context.Context, cr *svcapitypes.Function, obj *svcsdk.CreateFunctionInput) error {
 	obj.FunctionName = aws.String(meta.GetExternalName(cr))
+	obj.Role = cr.Spec.ForProvider.Role
+	obj.Code = &svcsdk.FunctionCode{
+		ImageUri:        cr.Spec.ForProvider.CustomFunctionCodeParameters.ImageURI,
+		S3Bucket:        cr.Spec.ForProvider.CustomFunctionCodeParameters.S3Bucket,
+		S3Key:           cr.Spec.ForProvider.CustomFunctionCodeParameters.S3Key,
+		S3ObjectVersion: cr.Spec.ForProvider.CustomFunctionCodeParameters.S3ObjectVersion,
+	}
+	if cr.Spec.ForProvider.CustomFunctionVPCConfigParameters != nil {
+		obj.VpcConfig = &svcsdk.VpcConfig{
+			SecurityGroupIds: cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SecurityGroupIDs,
+			SubnetIds:        cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SubnetIDs,
+		}
+	}
 	return nil
 }
 
@@ -230,9 +243,9 @@ func isUpToDateSecurityGroupIDs(cr *svcapitypes.Function, obj *svcsdk.GetFunctio
 	// Handle nil pointer refs
 	var securityGroupIDs []*string
 	var awsSecurityGroupIDs []*string
-	if cr.Spec.ForProvider.VPCConfig != nil &&
-		cr.Spec.ForProvider.VPCConfig.SecurityGroupIDs != nil {
-		securityGroupIDs = cr.Spec.ForProvider.VPCConfig.SecurityGroupIDs
+	if cr.Spec.ForProvider.CustomFunctionVPCConfigParameters != nil &&
+		cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SecurityGroupIDs != nil {
+		securityGroupIDs = cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SecurityGroupIDs
 	}
 	if obj.Configuration.VpcConfig != nil &&
 		obj.Configuration.VpcConfig.SecurityGroupIds != nil {
@@ -337,21 +350,18 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 func GenerateUpdateFunctionCodeInput(cr *svcapitypes.Function) *svcsdk.UpdateFunctionCodeInput {
 	f0 := &svcsdk.UpdateFunctionCodeInput{}
 	f0.SetFunctionName(cr.Name)
-	if cr.Spec.ForProvider.Code != nil {
-		if cr.Spec.ForProvider.Code.ImageURI != nil {
-			f0.SetImageUri(*cr.Spec.ForProvider.Code.ImageURI)
+	if cr.Spec.ForProvider.CustomFunctionCodeParameters != nil {
+		if cr.Spec.ForProvider.CustomFunctionCodeParameters.ImageURI != nil {
+			f0.SetImageUri(*cr.Spec.ForProvider.CustomFunctionCodeParameters.ImageURI)
 		}
-		if cr.Spec.ForProvider.Code.S3Bucket != nil {
-			f0.SetS3Bucket(*cr.Spec.ForProvider.Code.S3Bucket)
+		if cr.Spec.ForProvider.CustomFunctionCodeParameters.S3Bucket != nil {
+			f0.SetS3Bucket(*cr.Spec.ForProvider.CustomFunctionCodeParameters.S3Bucket)
 		}
-		if cr.Spec.ForProvider.Code.S3Key != nil {
-			f0.SetS3Key(*cr.Spec.ForProvider.Code.S3Key)
+		if cr.Spec.ForProvider.CustomFunctionCodeParameters.S3Key != nil {
+			f0.SetS3Key(*cr.Spec.ForProvider.CustomFunctionCodeParameters.S3Key)
 		}
-		if cr.Spec.ForProvider.Code.S3ObjectVersion != nil {
-			f0.SetS3ObjectVersion(*cr.Spec.ForProvider.Code.S3ObjectVersion)
-		}
-		if cr.Spec.ForProvider.Code.ZipFile != nil {
-			f0.SetZipFile(cr.Spec.ForProvider.Code.ZipFile)
+		if cr.Spec.ForProvider.CustomFunctionCodeParameters.S3ObjectVersion != nil {
+			f0.SetS3ObjectVersion(*cr.Spec.ForProvider.CustomFunctionCodeParameters.S3ObjectVersion)
 		}
 	}
 	return f0
@@ -456,19 +466,19 @@ func GenerateUpdateFunctionConfigurationInput(cr *svcapitypes.Function) *svcsdk.
 		}
 		res.SetTracingConfig(f18)
 	}
-	if cr.Spec.ForProvider.VPCConfig != nil {
+	if cr.Spec.ForProvider.CustomFunctionVPCConfigParameters != nil {
 		f19 := &svcsdk.VpcConfig{}
-		if cr.Spec.ForProvider.VPCConfig.SecurityGroupIDs != nil {
+		if cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SecurityGroupIDs != nil {
 			f19f0 := []*string{}
-			for _, f19f0iter := range cr.Spec.ForProvider.VPCConfig.SecurityGroupIDs {
+			for _, f19f0iter := range cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SecurityGroupIDs {
 				var f19f0elem = *f19f0iter
 				f19f0 = append(f19f0, &f19f0elem)
 			}
 			f19.SetSecurityGroupIds(f19f0)
 		}
-		if cr.Spec.ForProvider.VPCConfig.SubnetIDs != nil {
+		if cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SubnetIDs != nil {
 			f19f1 := []*string{}
-			for _, f19f1iter := range cr.Spec.ForProvider.VPCConfig.SubnetIDs {
+			for _, f19f1iter := range cr.Spec.ForProvider.CustomFunctionVPCConfigParameters.SubnetIDs {
 				var f19f1elem = *f19f1iter
 				f19f1 = append(f19f1, &f19f1elem)
 			}

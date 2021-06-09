@@ -19,6 +19,8 @@ package v1alpha1
 import (
 	"context"
 
+	s3v1beta1 "github.com/crossplane/provider-aws/apis/s3/v1beta1"
+
 	ec2 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	iamv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	kms "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
@@ -47,10 +49,10 @@ func (mg *Function) ResolveReferences(ctx context.Context, c client.Reader) erro
 	mg.Spec.ForProvider.RoleRef = rsp.ResolvedReference
 
 	// Resolve spec.forProvider.VPCConfig
-	if mg.Spec.ForProvider.VPCConfig != nil {
+	if mg.Spec.ForProvider.CustomFunctionVPCConfigParameters != nil {
 		// Resolve spec.forProvider.VPCConfig.subnetIds
 		mrsp, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
-			CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.VPCConfig.SubnetIDs),
+			CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.CustomFunctionVPCConfigParameters.SubnetIDs),
 			References:    mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionVPCConfigParameters.SubnetIDRefs,
 			Selector:      mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionVPCConfigParameters.SubnetIDSelector,
 			To:            reference.To{Managed: &ec2.Subnet{}, List: &ec2.SubnetList{}},
@@ -59,12 +61,12 @@ func (mg *Function) ResolveReferences(ctx context.Context, c client.Reader) erro
 		if err != nil {
 			return errors.Wrap(err, "spec.forProvider.vpcConfig.subnetIds")
 		}
-		mg.Spec.ForProvider.VPCConfig.SubnetIDs = reference.ToPtrValues(mrsp.ResolvedValues)
+		mg.Spec.ForProvider.CustomFunctionVPCConfigParameters.SubnetIDs = reference.ToPtrValues(mrsp.ResolvedValues)
 		mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionVPCConfigParameters.SubnetIDRefs = mrsp.ResolvedReferences
 
 		// Resolve spec.forProvider.VPCConfig.securityGroupIds
 		mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
-			CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.VPCConfig.SecurityGroupIDs),
+			CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.CustomFunctionVPCConfigParameters.SecurityGroupIDs),
 			References:    mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionVPCConfigParameters.SecurityGroupIDRefs,
 			Selector:      mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionVPCConfigParameters.SecurityGroupIDSelector,
 			To:            reference.To{Managed: &ec2.SecurityGroup{}, List: &ec2.SecurityGroupList{}},
@@ -73,8 +75,25 @@ func (mg *Function) ResolveReferences(ctx context.Context, c client.Reader) erro
 		if err != nil {
 			return errors.Wrap(err, "spec.forProvider.vpcConfig.securityGroupIds")
 		}
-		mg.Spec.ForProvider.VPCConfig.SecurityGroupIDs = reference.ToPtrValues(mrsp.ResolvedValues)
+		mg.Spec.ForProvider.CustomFunctionVPCConfigParameters.SecurityGroupIDs = reference.ToPtrValues(mrsp.ResolvedValues)
 		mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionVPCConfigParameters.SecurityGroupIDRefs = mrsp.ResolvedReferences
+	}
+
+	// Resolve spec.forProvider.code
+	if mg.Spec.ForProvider.CustomFunctionCodeParameters != nil {
+		// Resolve spec.forProvider.code.s3Bucket
+		rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomFunctionCodeParameters.S3Bucket),
+			Reference:    mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionCodeParameters.S3BucketRef,
+			Selector:     mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionCodeParameters.S3BucketSelector,
+			To:           reference.To{Managed: &s3v1beta1.Bucket{}, List: &s3v1beta1.BucketList{}},
+			Extract:      reference.ExternalName(),
+		})
+		if err != nil {
+			return errors.Wrap(err, "spec.forProvider.code.s3Bucket")
+		}
+		mg.Spec.ForProvider.CustomFunctionCodeParameters.S3Bucket = reference.ToPtrValue(rsp.ResolvedValue)
+		mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionCodeParameters.S3BucketRef = rsp.ResolvedReference
 	}
 
 	// Resolve spec.forProvider.kmsKeyARN
@@ -86,7 +105,7 @@ func (mg *Function) ResolveReferences(ctx context.Context, c client.Reader) erro
 		Extract:      reference.ExternalName(),
 	})
 	if err != nil {
-		return errors.Wrap(err, "spec.forProvider.kmsKeyARN)")
+		return errors.Wrap(err, "spec.forProvider.kmsKeyARN")
 	}
 	mg.Spec.ForProvider.KMSKeyARN = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.KMSKeyARNRef = rsp.ResolvedReference

@@ -205,6 +205,11 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.RevisionID = nil
 	}
+	if resp.Role != nil {
+		cr.Status.AtProvider.Role = resp.Role
+	} else {
+		cr.Status.AtProvider.Role = nil
+	}
 	if resp.SigningJobArn != nil {
 		cr.Status.AtProvider.SigningJobARN = resp.SigningJobArn
 	} else {
@@ -234,6 +239,33 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.Version = resp.Version
 	} else {
 		cr.Status.AtProvider.Version = nil
+	}
+	if resp.VpcConfig != nil {
+		f30 := &svcapitypes.VPCConfigResponse{}
+		if resp.VpcConfig.SecurityGroupIds != nil {
+			f30f0 := []*string{}
+			for _, f30f0iter := range resp.VpcConfig.SecurityGroupIds {
+				var f30f0elem string
+				f30f0elem = *f30f0iter
+				f30f0 = append(f30f0, &f30f0elem)
+			}
+			f30.SecurityGroupIDs = f30f0
+		}
+		if resp.VpcConfig.SubnetIds != nil {
+			f30f1 := []*string{}
+			for _, f30f1iter := range resp.VpcConfig.SubnetIds {
+				var f30f1elem string
+				f30f1elem = *f30f1iter
+				f30f1 = append(f30f1, &f30f1elem)
+			}
+			f30.SubnetIDs = f30f1
+		}
+		if resp.VpcConfig.VpcId != nil {
+			f30.VPCID = resp.VpcConfig.VpcId
+		}
+		cr.Status.AtProvider.VPCConfig = f30
+	} else {
+		cr.Status.AtProvider.VPCConfig = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
