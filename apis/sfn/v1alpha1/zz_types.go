@@ -22,6 +22,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Hack to avoid import errors during build...
+var (
+	_ = &metav1.Time{}
+)
+
 type ActivityListItem struct {
 	ActivityARN *string `json:"activityARN,omitempty"`
 

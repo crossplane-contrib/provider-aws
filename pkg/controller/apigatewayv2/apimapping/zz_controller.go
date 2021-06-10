@@ -116,12 +116,18 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	if resp.ApiId != nil {
 		cr.Status.AtProvider.APIID = resp.ApiId
+	} else {
+		cr.Status.AtProvider.APIID = nil
 	}
 	if resp.ApiMappingId != nil {
 		cr.Status.AtProvider.APIMappingID = resp.ApiMappingId
+	} else {
+		cr.Status.AtProvider.APIMappingID = nil
 	}
 	if resp.Stage != nil {
 		cr.Status.AtProvider.Stage = resp.Stage
+	} else {
+		cr.Status.AtProvider.Stage = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -150,11 +156,15 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteApiMappingInput(cr)
-	if err := e.preDelete(ctx, cr, input); err != nil {
+	ignore, err := e.preDelete(ctx, cr, input)
+	if err != nil {
 		return errors.Wrap(err, "pre-delete failed")
 	}
-	_, err := e.client.DeleteApiMappingWithContext(ctx, input)
-	return awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
+	if ignore {
+		return nil
+	}
+	resp, err := e.client.DeleteApiMappingWithContext(ctx, input)
+	return e.postDelete(ctx, cr, resp, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
 }
 
 type option func(*external)
@@ -170,6 +180,7 @@ func newExternal(kube client.Client, client svcsdkapi.ApiGatewayV2API, opts []op
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
+		postDelete:     nopPostDelete,
 		preUpdate:      nopPreUpdate,
 		postUpdate:     nopPostUpdate,
 	}
@@ -188,7 +199,8 @@ type external struct {
 	isUpToDate     func(*svcapitypes.APIMapping, *svcsdk.GetApiMappingOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.APIMapping, *svcsdk.CreateApiMappingInput) error
 	postCreate     func(context.Context, *svcapitypes.APIMapping, *svcsdk.CreateApiMappingOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	preDelete      func(context.Context, *svcapitypes.APIMapping, *svcsdk.DeleteApiMappingInput) error
+	preDelete      func(context.Context, *svcapitypes.APIMapping, *svcsdk.DeleteApiMappingInput) (bool, error)
+	postDelete     func(context.Context, *svcapitypes.APIMapping, *svcsdk.DeleteApiMappingOutput, error) error
 	preUpdate      func(context.Context, *svcapitypes.APIMapping, *svcsdk.UpdateApiMappingInput) error
 	postUpdate     func(context.Context, *svcapitypes.APIMapping, *svcsdk.UpdateApiMappingOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -196,8 +208,9 @@ type external struct {
 func nopPreObserve(context.Context, *svcapitypes.APIMapping, *svcsdk.GetApiMappingInput) error {
 	return nil
 }
-func nopPostObserve(context.Context, *svcapitypes.APIMapping, *svcsdk.GetApiMappingOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error) {
-	return managed.ExternalObservation{}, nil
+
+func nopPostObserve(_ context.Context, _ *svcapitypes.APIMapping, _ *svcsdk.GetApiMappingOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	return obs, err
 }
 func nopLateInitialize(*svcapitypes.APIMappingParameters, *svcsdk.GetApiMappingOutput) error {
 	return nil
@@ -209,15 +222,18 @@ func alwaysUpToDate(*svcapitypes.APIMapping, *svcsdk.GetApiMappingOutput) (bool,
 func nopPreCreate(context.Context, *svcapitypes.APIMapping, *svcsdk.CreateApiMappingInput) error {
 	return nil
 }
-func nopPostCreate(context.Context, *svcapitypes.APIMapping, *svcsdk.CreateApiMappingOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error) {
-	return managed.ExternalCreation{}, nil
+func nopPostCreate(_ context.Context, _ *svcapitypes.APIMapping, _ *svcsdk.CreateApiMappingOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	return cre, err
 }
-func nopPreDelete(context.Context, *svcapitypes.APIMapping, *svcsdk.DeleteApiMappingInput) error {
-	return nil
+func nopPreDelete(context.Context, *svcapitypes.APIMapping, *svcsdk.DeleteApiMappingInput) (bool, error) {
+	return false, nil
+}
+func nopPostDelete(_ context.Context, _ *svcapitypes.APIMapping, _ *svcsdk.DeleteApiMappingOutput, err error) error {
+	return err
 }
 func nopPreUpdate(context.Context, *svcapitypes.APIMapping, *svcsdk.UpdateApiMappingInput) error {
 	return nil
 }
-func nopPostUpdate(context.Context, *svcapitypes.APIMapping, *svcsdk.UpdateApiMappingOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error) {
-	return managed.ExternalUpdate{}, nil
+func nopPostUpdate(_ context.Context, _ *svcapitypes.APIMapping, _ *svcsdk.UpdateApiMappingOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	return upd, err
 }

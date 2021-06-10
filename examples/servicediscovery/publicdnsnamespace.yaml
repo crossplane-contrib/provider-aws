@@ -1,0 +1,14 @@
+apiVersion: servicediscovery.aws.crossplane.io/v1alpha1
+kind: PublicDNSNamespace
+metadata:
+  name: publicdnsnamespace.com
+spec:
+  providerConfigRef:
+    name: example
+  forProvider:
+    region: us-east-1
+    description: "test"
+    name: "test"
+    tags:
+      - key: cluster
+        value: "my-cluster"

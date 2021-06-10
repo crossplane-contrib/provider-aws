@@ -52,7 +52,7 @@ type APIMappingObservation struct {
 // APIMappingStatus defines the observed state of APIMapping.
 type APIMappingStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          APIMappingObservation `json:"atProvider"`
+	AtProvider          APIMappingObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -66,7 +66,7 @@ type APIMappingStatus struct {
 type APIMapping struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              APIMappingSpec   `json:"spec,omitempty"`
+	Spec              APIMappingSpec   `json:"spec"`
 	Status            APIMappingStatus `json:"status,omitempty"`
 }
 

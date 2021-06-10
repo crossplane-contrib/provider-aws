@@ -92,9 +92,9 @@ func postCreate(_ context.Context, cr *svcapitypes.RouteResponse, resp *svcsdk.C
 	return cre, nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.RouteResponse, obj *svcsdk.DeleteRouteResponseInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.RouteResponse, obj *svcsdk.DeleteRouteResponseInput) (bool, error) {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.RouteId = cr.Spec.ForProvider.RouteID
 	obj.RouteResponseId = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }

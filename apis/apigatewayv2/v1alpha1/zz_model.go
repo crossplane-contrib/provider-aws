@@ -56,7 +56,7 @@ type ModelObservation struct {
 // ModelStatus defines the observed state of Model.
 type ModelStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          ModelObservation `json:"atProvider"`
+	AtProvider          ModelObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -70,7 +70,7 @@ type ModelStatus struct {
 type Model struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              ModelSpec   `json:"spec,omitempty"`
+	Spec              ModelSpec   `json:"spec"`
 	Status            ModelStatus `json:"status,omitempty"`
 }
 

@@ -104,8 +104,11 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	response, err := e.client.DescribeVpcsRequest(&awsec2.DescribeVpcsInput{
 		VpcIds: []string{aws.StringValue(cr.Spec.ForProvider.VPCID)},
 	}).Send(ctx)
-	if err != nil && !ec2.IsCIDRNotFound(err) {
-		return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribe)
+
+	if err != nil {
+		return managed.ExternalObservation{
+			ResourceExists: false,
+		}, awsclient.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object

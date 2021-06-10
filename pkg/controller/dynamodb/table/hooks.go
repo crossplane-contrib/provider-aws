@@ -84,9 +84,9 @@ func preCreate(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.CreateTable
 	obj.TableName = aws.String(meta.GetExternalName(cr))
 	return nil
 }
-func preDelete(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.DeleteTableInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.Table, obj *svcsdk.DeleteTableInput) (bool, error) {
 	obj.TableName = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }
 
 func postObserve(_ context.Context, cr *svcapitypes.Table, resp *svcsdk.DescribeTableOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {

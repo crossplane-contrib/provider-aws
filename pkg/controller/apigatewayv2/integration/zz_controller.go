@@ -116,12 +116,18 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	if resp.ApiGatewayManaged != nil {
 		cr.Status.AtProvider.APIGatewayManaged = resp.ApiGatewayManaged
+	} else {
+		cr.Status.AtProvider.APIGatewayManaged = nil
 	}
 	if resp.IntegrationId != nil {
 		cr.Status.AtProvider.IntegrationID = resp.IntegrationId
+	} else {
+		cr.Status.AtProvider.IntegrationID = nil
 	}
 	if resp.IntegrationResponseSelectionExpression != nil {
 		cr.Status.AtProvider.IntegrationResponseSelectionExpression = resp.IntegrationResponseSelectionExpression
+	} else {
+		cr.Status.AtProvider.IntegrationResponseSelectionExpression = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -150,11 +156,15 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteIntegrationInput(cr)
-	if err := e.preDelete(ctx, cr, input); err != nil {
+	ignore, err := e.preDelete(ctx, cr, input)
+	if err != nil {
 		return errors.Wrap(err, "pre-delete failed")
 	}
-	_, err := e.client.DeleteIntegrationWithContext(ctx, input)
-	return awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
+	if ignore {
+		return nil
+	}
+	resp, err := e.client.DeleteIntegrationWithContext(ctx, input)
+	return e.postDelete(ctx, cr, resp, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
 }
 
 type option func(*external)
@@ -170,6 +180,7 @@ func newExternal(kube client.Client, client svcsdkapi.ApiGatewayV2API, opts []op
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
+		postDelete:     nopPostDelete,
 		preUpdate:      nopPreUpdate,
 		postUpdate:     nopPostUpdate,
 	}
@@ -188,7 +199,8 @@ type external struct {
 	isUpToDate     func(*svcapitypes.Integration, *svcsdk.GetIntegrationOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.Integration, *svcsdk.CreateIntegrationInput) error
 	postCreate     func(context.Context, *svcapitypes.Integration, *svcsdk.CreateIntegrationOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	preDelete      func(context.Context, *svcapitypes.Integration, *svcsdk.DeleteIntegrationInput) error
+	preDelete      func(context.Context, *svcapitypes.Integration, *svcsdk.DeleteIntegrationInput) (bool, error)
+	postDelete     func(context.Context, *svcapitypes.Integration, *svcsdk.DeleteIntegrationOutput, error) error
 	preUpdate      func(context.Context, *svcapitypes.Integration, *svcsdk.UpdateIntegrationInput) error
 	postUpdate     func(context.Context, *svcapitypes.Integration, *svcsdk.UpdateIntegrationOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -196,8 +208,9 @@ type external struct {
 func nopPreObserve(context.Context, *svcapitypes.Integration, *svcsdk.GetIntegrationInput) error {
 	return nil
 }
-func nopPostObserve(context.Context, *svcapitypes.Integration, *svcsdk.GetIntegrationOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error) {
-	return managed.ExternalObservation{}, nil
+
+func nopPostObserve(_ context.Context, _ *svcapitypes.Integration, _ *svcsdk.GetIntegrationOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	return obs, err
 }
 func nopLateInitialize(*svcapitypes.IntegrationParameters, *svcsdk.GetIntegrationOutput) error {
 	return nil
@@ -209,15 +222,18 @@ func alwaysUpToDate(*svcapitypes.Integration, *svcsdk.GetIntegrationOutput) (boo
 func nopPreCreate(context.Context, *svcapitypes.Integration, *svcsdk.CreateIntegrationInput) error {
 	return nil
 }
-func nopPostCreate(context.Context, *svcapitypes.Integration, *svcsdk.CreateIntegrationOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error) {
-	return managed.ExternalCreation{}, nil
+func nopPostCreate(_ context.Context, _ *svcapitypes.Integration, _ *svcsdk.CreateIntegrationOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	return cre, err
 }
-func nopPreDelete(context.Context, *svcapitypes.Integration, *svcsdk.DeleteIntegrationInput) error {
-	return nil
+func nopPreDelete(context.Context, *svcapitypes.Integration, *svcsdk.DeleteIntegrationInput) (bool, error) {
+	return false, nil
+}
+func nopPostDelete(_ context.Context, _ *svcapitypes.Integration, _ *svcsdk.DeleteIntegrationOutput, err error) error {
+	return err
 }
 func nopPreUpdate(context.Context, *svcapitypes.Integration, *svcsdk.UpdateIntegrationInput) error {
 	return nil
 }
-func nopPostUpdate(context.Context, *svcapitypes.Integration, *svcsdk.UpdateIntegrationOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error) {
-	return managed.ExternalUpdate{}, nil
+func nopPostUpdate(_ context.Context, _ *svcapitypes.Integration, _ *svcsdk.UpdateIntegrationOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	return upd, err
 }

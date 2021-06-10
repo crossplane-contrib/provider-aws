@@ -83,7 +83,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Activity, resp *svcsdk.Create
 	return cre, nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.Activity, obj *svcsdk.DeleteActivityInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.Activity, obj *svcsdk.DeleteActivityInput) (bool, error) {
 	obj.ActivityArn = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }

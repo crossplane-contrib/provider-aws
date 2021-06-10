@@ -58,7 +58,7 @@ type DeploymentObservation struct {
 // DeploymentStatus defines the observed state of Deployment.
 type DeploymentStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          DeploymentObservation `json:"atProvider"`
+	AtProvider          DeploymentObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -72,7 +72,7 @@ type DeploymentStatus struct {
 type Deployment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              DeploymentSpec   `json:"spec,omitempty"`
+	Spec              DeploymentSpec   `json:"spec"`
 	Status            DeploymentStatus `json:"status,omitempty"`
 }
 

@@ -23,8 +23,10 @@ import (
 	svcsdk "github.com/aws/aws-sdk-go/service/secretsmanager"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/secretsmanager/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
+
+// NOTE(muvaf): We return pointers in case the function needs to start with an
+// empty object, hence need to return a new pointer.
 
 // GenerateDescribeSecretInput returns input for read
 // operation.
@@ -40,37 +42,11 @@ func GenerateSecret(resp *svcsdk.DescribeSecretOutput) *svcapitypes.Secret {
 
 	if resp.ARN != nil {
 		cr.Status.AtProvider.ARN = resp.ARN
+	} else {
+		cr.Status.AtProvider.ARN = nil
 	}
 
 	return cr
-}
-
-func lateInitialize(cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) error {
-	cr.Spec.ForProvider.Description = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.Description, resp.Description)
-	cr.Spec.ForProvider.KMSKeyID = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.KMSKeyID, resp.KmsKeyId)
-	if len(resp.Tags) != 0 && len(cr.Spec.ForProvider.Tags) == 0 {
-		cr.Spec.ForProvider.Tags = make([]*svcapitypes.Tag, len(resp.Tags))
-		for i0 := range resp.Tags {
-			if resp.Tags[i0] != nil {
-				if cr.Spec.ForProvider.Tags[i0] == nil {
-					cr.Spec.ForProvider.Tags[i0] = &svcapitypes.Tag{}
-				}
-				cr.Spec.ForProvider.Tags[i0].Key = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.Tags[i0].Key, resp.Tags[i0].Key)
-				cr.Spec.ForProvider.Tags[i0].Value = awsclients.LateInitializeStringPtr(cr.Spec.ForProvider.Tags[i0].Value, resp.Tags[i0].Value)
-			}
-		}
-	}
-	return nil
-}
-
-func basicUpToDateCheck(cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) bool {
-	if awsclients.StringValue(cr.Spec.ForProvider.Description) != awsclients.StringValue(resp.Description) {
-		return false
-	}
-	if awsclients.StringValue(cr.Spec.ForProvider.KMSKeyID) != awsclients.StringValue(resp.KmsKeyId) {
-		return false
-	}
-	return true
 }
 
 // GenerateCreateSecretInput returns a create input.

@@ -3,11 +3,14 @@ kind: PrivateDNSNamespace
 metadata:
   name: example-privatednsnamespace
 spec:
+  providerConfigRef:
+    name: example
   forProvider:
-    region: eu-central-1
+    region: us-east-1
     description: "test"
     name: "test"
-    vpc: default
+    # The ID of the Amazon VPC that you want to associate the namespace with
+    vpc: vpc-02504719d1cb7a9aa
     tags:
       - key: cluster
         value: "my-cluster"

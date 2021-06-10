@@ -116,6 +116,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	if resp.ModelId != nil {
 		cr.Status.AtProvider.ModelID = resp.ModelId
+	} else {
+		cr.Status.AtProvider.ModelID = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -144,11 +146,15 @@ func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
 	}
 	cr.Status.SetConditions(xpv1.Deleting())
 	input := GenerateDeleteModelInput(cr)
-	if err := e.preDelete(ctx, cr, input); err != nil {
+	ignore, err := e.preDelete(ctx, cr, input)
+	if err != nil {
 		return errors.Wrap(err, "pre-delete failed")
 	}
-	_, err := e.client.DeleteModelWithContext(ctx, input)
-	return awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete)
+	if ignore {
+		return nil
+	}
+	resp, err := e.client.DeleteModelWithContext(ctx, input)
+	return e.postDelete(ctx, cr, resp, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDelete))
 }
 
 type option func(*external)
@@ -164,6 +170,7 @@ func newExternal(kube client.Client, client svcsdkapi.ApiGatewayV2API, opts []op
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
+		postDelete:     nopPostDelete,
 		preUpdate:      nopPreUpdate,
 		postUpdate:     nopPostUpdate,
 	}
@@ -182,7 +189,8 @@ type external struct {
 	isUpToDate     func(*svcapitypes.Model, *svcsdk.GetModelOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.Model, *svcsdk.CreateModelInput) error
 	postCreate     func(context.Context, *svcapitypes.Model, *svcsdk.CreateModelOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
-	preDelete      func(context.Context, *svcapitypes.Model, *svcsdk.DeleteModelInput) error
+	preDelete      func(context.Context, *svcapitypes.Model, *svcsdk.DeleteModelInput) (bool, error)
+	postDelete     func(context.Context, *svcapitypes.Model, *svcsdk.DeleteModelOutput, error) error
 	preUpdate      func(context.Context, *svcapitypes.Model, *svcsdk.UpdateModelInput) error
 	postUpdate     func(context.Context, *svcapitypes.Model, *svcsdk.UpdateModelOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error)
 }
@@ -190,8 +198,9 @@ type external struct {
 func nopPreObserve(context.Context, *svcapitypes.Model, *svcsdk.GetModelInput) error {
 	return nil
 }
-func nopPostObserve(context.Context, *svcapitypes.Model, *svcsdk.GetModelOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error) {
-	return managed.ExternalObservation{}, nil
+
+func nopPostObserve(_ context.Context, _ *svcapitypes.Model, _ *svcsdk.GetModelOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
+	return obs, err
 }
 func nopLateInitialize(*svcapitypes.ModelParameters, *svcsdk.GetModelOutput) error {
 	return nil
@@ -203,15 +212,18 @@ func alwaysUpToDate(*svcapitypes.Model, *svcsdk.GetModelOutput) (bool, error) {
 func nopPreCreate(context.Context, *svcapitypes.Model, *svcsdk.CreateModelInput) error {
 	return nil
 }
-func nopPostCreate(context.Context, *svcapitypes.Model, *svcsdk.CreateModelOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error) {
-	return managed.ExternalCreation{}, nil
+func nopPostCreate(_ context.Context, _ *svcapitypes.Model, _ *svcsdk.CreateModelOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
+	return cre, err
 }
-func nopPreDelete(context.Context, *svcapitypes.Model, *svcsdk.DeleteModelInput) error {
-	return nil
+func nopPreDelete(context.Context, *svcapitypes.Model, *svcsdk.DeleteModelInput) (bool, error) {
+	return false, nil
+}
+func nopPostDelete(_ context.Context, _ *svcapitypes.Model, _ *svcsdk.DeleteModelOutput, err error) error {
+	return err
 }
 func nopPreUpdate(context.Context, *svcapitypes.Model, *svcsdk.UpdateModelInput) error {
 	return nil
 }
-func nopPostUpdate(context.Context, *svcapitypes.Model, *svcsdk.UpdateModelOutput, managed.ExternalUpdate, error) (managed.ExternalUpdate, error) {
-	return managed.ExternalUpdate{}, nil
+func nopPostUpdate(_ context.Context, _ *svcapitypes.Model, _ *svcsdk.UpdateModelOutput, upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	return upd, err
 }

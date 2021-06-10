@@ -96,7 +96,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.CreateBa
 	return cre, err
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.Backup, obj *svcsdk.DeleteBackupInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.Backup, obj *svcsdk.DeleteBackupInput) (bool, error) {
 	obj.BackupArn = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }

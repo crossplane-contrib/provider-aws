@@ -5,6 +5,7 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
+    permanentDeletionTimeInDays: 7
     type: ROOT
     revocationConfiguration:
       expirationInDays: 7
@@ -19,7 +20,6 @@ spec:
         locality: example
         organization: example
         organizationalUnit: example
-        permanentDeletionTimeInDays: 7
         state: example
     tags:
     - key: Name

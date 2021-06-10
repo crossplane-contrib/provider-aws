@@ -83,7 +83,7 @@ func postCreate(_ context.Context, cr *svcapitypes.API, resp *svcsdk.CreateApiOu
 	return cre, nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.API, obj *svcsdk.DeleteApiInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.API, obj *svcsdk.DeleteApiInput) (bool, error) {
 	obj.ApiId = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }

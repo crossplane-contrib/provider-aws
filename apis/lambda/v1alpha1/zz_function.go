@@ -144,7 +144,7 @@ type FunctionObservation struct {
 // FunctionStatus defines the observed state of Function.
 type FunctionStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          FunctionObservation `json:"atProvider"`
+	AtProvider          FunctionObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -158,7 +158,7 @@ type FunctionStatus struct {
 type Function struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              FunctionSpec   `json:"spec,omitempty"`
+	Spec              FunctionSpec   `json:"spec"`
 	Status            FunctionStatus `json:"status,omitempty"`
 }
 

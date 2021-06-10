@@ -33,7 +33,6 @@ import (
 func GenerateDescribeGlobalClustersInput(cr *svcapitypes.GlobalCluster) *svcsdk.DescribeGlobalClustersInput {
 	res := &svcsdk.DescribeGlobalClustersInput{}
 
-
 	return res
 }
 
@@ -123,7 +122,7 @@ func GenerateGlobalCluster(resp *svcsdk.DescribeGlobalClustersOutput) *svcapityp
 		return cr
 	}
 
-return cr
+	return cr
 }
 
 // GenerateCreateGlobalClusterInput returns a create input.
@@ -151,6 +150,7 @@ func GenerateCreateGlobalClusterInput(cr *svcapitypes.GlobalCluster) *svcsdk.Cre
 
 	return res
 }
+
 // GenerateModifyGlobalClusterInput returns an update input.
 func GenerateModifyGlobalClusterInput(cr *svcapitypes.GlobalCluster) *svcsdk.ModifyGlobalClusterInput {
 	res := &svcsdk.ModifyGlobalClusterInput{}
@@ -169,12 +169,11 @@ func GenerateModifyGlobalClusterInput(cr *svcapitypes.GlobalCluster) *svcsdk.Mod
 func GenerateDeleteGlobalClusterInput(cr *svcapitypes.GlobalCluster) *svcsdk.DeleteGlobalClusterInput {
 	res := &svcsdk.DeleteGlobalClusterInput{}
 
-
 	return res
 }
 
 // IsNotFound returns whether the given error is of type NotFound or not.
 func IsNotFound(err error) bool {
 	awsErr, ok := err.(awserr.Error)
-	return ok && awsErr.Code() == "GlobalClusterNotFoundFault" 
+	return ok && awsErr.Code() == "GlobalClusterNotFoundFault"
 }

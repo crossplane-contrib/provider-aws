@@ -47,9 +47,13 @@ func GenerateStateMachine(resp *svcsdk.DescribeStateMachineOutput) *svcapitypes.
 
 	if resp.CreationDate != nil {
 		cr.Status.AtProvider.CreationDate = &metav1.Time{*resp.CreationDate}
+	} else {
+		cr.Status.AtProvider.CreationDate = nil
 	}
 	if resp.StateMachineArn != nil {
 		cr.Status.AtProvider.StateMachineARN = resp.StateMachineArn
+	} else {
+		cr.Status.AtProvider.StateMachineARN = nil
 	}
 
 	return cr
