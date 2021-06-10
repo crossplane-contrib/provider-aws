@@ -79,22 +79,19 @@ func (mg *Function) ResolveReferences(ctx context.Context, c client.Reader) erro
 		mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionVPCConfigParameters.SecurityGroupIDRefs = mrsp.ResolvedReferences
 	}
 
-	// Resolve spec.forProvider.code
-	if mg.Spec.ForProvider.CustomFunctionCodeParameters != nil {
-		// Resolve spec.forProvider.code.s3Bucket
-		rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
-			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomFunctionCodeParameters.S3Bucket),
-			Reference:    mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionCodeParameters.S3BucketRef,
-			Selector:     mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionCodeParameters.S3BucketSelector,
-			To:           reference.To{Managed: &s3v1beta1.Bucket{}, List: &s3v1beta1.BucketList{}},
-			Extract:      reference.ExternalName(),
-		})
-		if err != nil {
-			return errors.Wrap(err, "spec.forProvider.code.s3Bucket")
-		}
-		mg.Spec.ForProvider.CustomFunctionCodeParameters.S3Bucket = reference.ToPtrValue(rsp.ResolvedValue)
-		mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionCodeParameters.S3BucketRef = rsp.ResolvedReference
+	// Resolve spec.forProvider.code.s3Bucket
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CustomFunctionCodeParameters.S3Bucket),
+		Reference:    mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionCodeParameters.S3BucketRef,
+		Selector:     mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionCodeParameters.S3BucketSelector,
+		To:           reference.To{Managed: &s3v1beta1.Bucket{}, List: &s3v1beta1.BucketList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.code.s3Bucket")
 	}
+	mg.Spec.ForProvider.CustomFunctionCodeParameters.S3Bucket = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.CustomFunctionParameters.CustomFunctionCodeParameters.S3BucketRef = rsp.ResolvedReference
 
 	// Resolve spec.forProvider.kmsKeyARN
 	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{

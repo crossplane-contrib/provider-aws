@@ -350,19 +350,17 @@ func (u *updater) update(ctx context.Context, mg resource.Managed) (managed.Exte
 func GenerateUpdateFunctionCodeInput(cr *svcapitypes.Function) *svcsdk.UpdateFunctionCodeInput {
 	f0 := &svcsdk.UpdateFunctionCodeInput{}
 	f0.SetFunctionName(cr.Name)
-	if cr.Spec.ForProvider.CustomFunctionCodeParameters != nil {
-		if cr.Spec.ForProvider.CustomFunctionCodeParameters.ImageURI != nil {
-			f0.SetImageUri(*cr.Spec.ForProvider.CustomFunctionCodeParameters.ImageURI)
-		}
-		if cr.Spec.ForProvider.CustomFunctionCodeParameters.S3Bucket != nil {
-			f0.SetS3Bucket(*cr.Spec.ForProvider.CustomFunctionCodeParameters.S3Bucket)
-		}
-		if cr.Spec.ForProvider.CustomFunctionCodeParameters.S3Key != nil {
-			f0.SetS3Key(*cr.Spec.ForProvider.CustomFunctionCodeParameters.S3Key)
-		}
-		if cr.Spec.ForProvider.CustomFunctionCodeParameters.S3ObjectVersion != nil {
-			f0.SetS3ObjectVersion(*cr.Spec.ForProvider.CustomFunctionCodeParameters.S3ObjectVersion)
-		}
+	if cr.Spec.ForProvider.CustomFunctionCodeParameters.ImageURI != nil {
+		f0.SetImageUri(*cr.Spec.ForProvider.CustomFunctionCodeParameters.ImageURI)
+	}
+	if cr.Spec.ForProvider.CustomFunctionCodeParameters.S3Bucket != nil {
+		f0.SetS3Bucket(*cr.Spec.ForProvider.CustomFunctionCodeParameters.S3Bucket)
+	}
+	if cr.Spec.ForProvider.CustomFunctionCodeParameters.S3Key != nil {
+		f0.SetS3Key(*cr.Spec.ForProvider.CustomFunctionCodeParameters.S3Key)
+	}
+	if cr.Spec.ForProvider.CustomFunctionCodeParameters.S3ObjectVersion != nil {
+		f0.SetS3ObjectVersion(*cr.Spec.ForProvider.CustomFunctionCodeParameters.S3ObjectVersion)
 	}
 	return f0
 }

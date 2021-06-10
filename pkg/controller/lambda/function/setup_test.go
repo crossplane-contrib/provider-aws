@@ -630,7 +630,7 @@ func TestGenerateUpdateFunctionCodeInput(t *testing.T) {
 			args: args{
 				cr: function(withSpec(v1alpha1.FunctionParameters{
 					CustomFunctionParameters: v1alpha1.CustomFunctionParameters{
-						CustomFunctionCodeParameters: &v1alpha1.CustomFunctionCodeParameters{
+						CustomFunctionCodeParameters: v1alpha1.CustomFunctionCodeParameters{
 							ImageURI: aws.String("test_image"),
 							S3Bucket: aws.String("test_bucket"),
 							S3Key:    aws.String("test_key"),

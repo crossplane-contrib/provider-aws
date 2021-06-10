@@ -55,7 +55,7 @@ type CustomFunctionParameters struct {
 
 	// The code for the function.
 	// +kubebuilder:validation:Required
-	CustomFunctionCodeParameters *CustomFunctionCodeParameters `json:"code"`
+	CustomFunctionCodeParameters CustomFunctionCodeParameters `json:"code"`
 }
 
 // CustomFunctionCodeParameters includes custom fields for FunctionCode struct.
