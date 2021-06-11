@@ -5,7 +5,7 @@ metadata:
 spec:
   forProvider:
     acl: private
-    locationConstraint: us-west-1
+    locationConstraint: us-east-1
     publicAccessBlockConfiguration:
       blockPublicPolicy: true
     accelerateConfiguration:

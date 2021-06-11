@@ -2,8 +2,6 @@ apiVersion: cache.aws.crossplane.io/v1alpha1
 kind: CacheCluster
 metadata:
   name: aws-memcached-standard
-  annotations:
-    crossplane.io/external-name: some-cluster-id
 spec:
   forProvider:
     region: us-east-1
@@ -12,7 +10,7 @@ spec:
     numCacheNodes: 1
     cacheSubnetGroupNameRef:
       name: sample-cache-subnet-group
-    securityGroupIdRefs:
+    securityGroupIDRefs:
     - name: sample-cluster-sg
   providerConfigRef:
     name: example

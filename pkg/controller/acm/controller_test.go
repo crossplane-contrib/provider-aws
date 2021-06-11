@@ -95,6 +95,12 @@ func withCertificateArn() certificateModifier {
 	}
 }
 
+func withStatus(status awsacm.CertificateStatus) certificateModifier {
+	return func(r *v1alpha1.Certificate) {
+		r.Status.AtProvider.Status = status
+	}
+}
+
 func certificate(m ...certificateModifier) *v1alpha1.Certificate {
 	cr := &v1alpha1.Certificate{}
 	meta.SetExternalName(cr, certificateArn)
@@ -125,6 +131,7 @@ func TestObserve(t *testing.T) {
 								Certificate: &awsacm.CertificateDetail{
 									CertificateArn: aws.String(certificateArn),
 									Options:        &awsacm.CertificateOptions{CertificateTransparencyLoggingPreference: awsacm.CertificateTransparencyLoggingPreferenceDisabled},
+									Status:         awsacm.CertificateStatusIssued,
 								},
 							}},
 						}
@@ -140,7 +147,7 @@ func TestObserve(t *testing.T) {
 				cr: certificate(),
 			},
 			want: want{
-				cr: certificate(withCertificateArn(), withConditions(xpv1.Available())),
+				cr: certificate(withCertificateArn(), withStatus(awsacm.CertificateStatusIssued), withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: false,

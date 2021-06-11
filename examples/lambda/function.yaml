@@ -1,25 +1,17 @@
+# You need to pull, tag & push hello-world:latest image to an ECR repository
+# in your account. It doesn't pull from public sources.
 apiVersion: lambda.aws.crossplane.io/v1alpha1
 kind: Function
 metadata:
   name: test-function
 spec:
   forProvider:
+    packageType: Image
     code:
-      s3Bucket: "my-s3-bucket"
-      s3Key: "prefix/path_to_s3_key.zip"
-    environment:
-      variables:
-        envKey: envValue
-    handler: "index.handler"
+      imageURI: 609897127049.dkr.ecr.us-east-1.amazonaws.com/example:latest
     roleRef:
       name: somerole
-    runtime: nodejs12.x
     region: us-east-1
-    vpcConfig:
-      securityGroupIDRefs:
-        - name: sample-cluster-sg
-      subnetIDRefs:
-        - name: sample-subnet1
     tags:
       myKey: myValue
   providerConfigRef:

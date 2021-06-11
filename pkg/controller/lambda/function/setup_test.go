@@ -420,7 +420,11 @@ func TestIsUpToDateSecurityGroupIDs(t *testing.T) {
 		"EmptySourceNoUpdate": {
 			args: args{
 				cr: function(withSpec(v1alpha1.FunctionParameters{
-					VPCConfig: &v1alpha1.VPCConfig{SecurityGroupIDs: []*string{}}})),
+					CustomFunctionParameters: v1alpha1.CustomFunctionParameters{
+						CustomFunctionVPCConfigParameters: &v1alpha1.CustomFunctionVPCConfigParameters{
+							SecurityGroupIDs: []*string{},
+						},
+					}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					VpcConfig: &svcsdk.VpcConfigResponse{SecurityGroupIds: []*string{}}}},
 			},
@@ -443,7 +447,11 @@ func TestIsUpToDateSecurityGroupIDs(t *testing.T) {
 		"NilAwsWithUpdate": {
 			args: args{
 				cr: function(withSpec(v1alpha1.FunctionParameters{
-					VPCConfig: &v1alpha1.VPCConfig{SecurityGroupIDs: []*string{aws.String("id1")}}})),
+					CustomFunctionParameters: v1alpha1.CustomFunctionParameters{
+						CustomFunctionVPCConfigParameters: &v1alpha1.CustomFunctionVPCConfigParameters{
+							SecurityGroupIDs: []*string{aws.String("id1")},
+						},
+					}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{}},
 			},
 			want: want{
@@ -454,7 +462,11 @@ func TestIsUpToDateSecurityGroupIDs(t *testing.T) {
 		"NeedsUpdate": {
 			args: args{
 				cr: function(withSpec(v1alpha1.FunctionParameters{
-					VPCConfig: &v1alpha1.VPCConfig{SecurityGroupIDs: []*string{aws.String("id1")}}})),
+					CustomFunctionParameters: v1alpha1.CustomFunctionParameters{
+						CustomFunctionVPCConfigParameters: &v1alpha1.CustomFunctionVPCConfigParameters{
+							SecurityGroupIDs: []*string{aws.String("id1")},
+						},
+					}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					VpcConfig: &svcsdk.VpcConfigResponse{SecurityGroupIds: []*string{aws.String("id2")}}}},
 			},
@@ -466,7 +478,11 @@ func TestIsUpToDateSecurityGroupIDs(t *testing.T) {
 		"NoUpdateNeededSortOrderIsDifferent": {
 			args: args{
 				cr: function(withSpec(v1alpha1.FunctionParameters{
-					VPCConfig: &v1alpha1.VPCConfig{SecurityGroupIDs: []*string{aws.String("id1"), aws.String("id2")}}})),
+					CustomFunctionParameters: v1alpha1.CustomFunctionParameters{
+						CustomFunctionVPCConfigParameters: &v1alpha1.CustomFunctionVPCConfigParameters{
+							SecurityGroupIDs: []*string{aws.String("id1"), aws.String("id2")},
+						},
+					}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					VpcConfig: &svcsdk.VpcConfigResponse{SecurityGroupIds: []*string{aws.String("id2"), aws.String("id1")}}}},
 			},
@@ -478,7 +494,11 @@ func TestIsUpToDateSecurityGroupIDs(t *testing.T) {
 		"NoUpdateNeeded": {
 			args: args{
 				cr: function(withSpec(v1alpha1.FunctionParameters{
-					VPCConfig: &v1alpha1.VPCConfig{SecurityGroupIDs: []*string{aws.String("id1")}}})),
+					CustomFunctionParameters: v1alpha1.CustomFunctionParameters{
+						CustomFunctionVPCConfigParameters: &v1alpha1.CustomFunctionVPCConfigParameters{
+							SecurityGroupIDs: []*string{aws.String("id1")},
+						},
+					}})),
 				obj: &svcsdk.GetFunctionOutput{Configuration: &svcsdk.FunctionConfiguration{
 					VpcConfig: &svcsdk.VpcConfigResponse{SecurityGroupIds: []*string{aws.String("id1")}}}},
 			},
@@ -608,9 +628,15 @@ func TestGenerateUpdateFunctionCodeInput(t *testing.T) {
 	}{
 		"ConvertS3": {
 			args: args{
-				cr: function(withSpec(v1alpha1.FunctionParameters{Code: &v1alpha1.FunctionCode{ImageURI: aws.String("test_image"),
-					S3Bucket: aws.String("test_bucket"),
-					S3Key:    aws.String("test_key")}}))},
+				cr: function(withSpec(v1alpha1.FunctionParameters{
+					CustomFunctionParameters: v1alpha1.CustomFunctionParameters{
+						CustomFunctionCodeParameters: v1alpha1.CustomFunctionCodeParameters{
+							ImageURI: aws.String("test_image"),
+							S3Bucket: aws.String("test_bucket"),
+							S3Key:    aws.String("test_key"),
+						},
+					},
+				}))},
 			want: want{
 				obj: &svcsdk.UpdateFunctionCodeInput{
 					FunctionName: aws.String("test-function-name"),
@@ -656,11 +682,16 @@ func TestGenerateUpdateFunctionConfigurationInput(t *testing.T) {
 					Handler:           aws.String("test_handler"),
 					KMSKeyARN:         aws.String("test_kms"),
 					MemorySize:        aws.Int64(128),
-					Role:              aws.String("test_role"),
 					Runtime:           aws.String("test_runtime"),
 					Timeout:           aws.Int64(128),
 					TracingConfig:     &v1alpha1.TracingConfig{Mode: aws.String(svcsdk.TracingModeActive)},
-					VPCConfig:         &v1alpha1.VPCConfig{SecurityGroupIDs: []*string{aws.String("id1")}}},
+					CustomFunctionParameters: v1alpha1.CustomFunctionParameters{
+						Role: aws.String("test_role"),
+						CustomFunctionVPCConfigParameters: &v1alpha1.CustomFunctionVPCConfigParameters{
+							SecurityGroupIDs: []*string{aws.String("id1")},
+						},
+					},
+				},
 				))},
 			want: want{
 				obj: &svcsdk.UpdateFunctionConfigurationInput{

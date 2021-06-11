@@ -34,6 +34,10 @@ type CustomFunctionParameters struct {
 	// +optional
 	KMSKeyARNSelector *xpv1.Selector `json:"kmsKeyARNSelector,omitempty"`
 
+	// The Amazon Resource Name (ARN) of the function's execution role.
+	// One of role, roleRef or roleSelector is required.
+	Role *string `json:"role,omitempty"`
+
 	// RoleRef is a reference to an iam role
 	// +optional
 	RoleRef *xpv1.Reference `json:"roleRef,omitempty"`
@@ -43,11 +47,39 @@ type CustomFunctionParameters struct {
 	// +optional
 	RoleSelector *xpv1.Selector `json:"roleSelector,omitempty"`
 
-	CustomFunctionVPCConfigParameters CustomFunctionVPCConfigParameters `json:"vpcConfig,omitempty"`
+	// For network connectivity to AWS resources in a VPC, specify a list of security
+	// groups and subnets in the VPC. When you connect a function to a VPC, it can
+	// only access resources and the internet through that VPC. For more information,
+	// see VPC Settings (https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html).
+	CustomFunctionVPCConfigParameters *CustomFunctionVPCConfigParameters `json:"vpcConfig,omitempty"`
+
+	// The code for the function.
+	// +kubebuilder:validation:Required
+	CustomFunctionCodeParameters CustomFunctionCodeParameters `json:"code"`
+}
+
+// CustomFunctionCodeParameters includes custom fields for FunctionCode struct.
+type CustomFunctionCodeParameters struct {
+	ImageURI *string `json:"imageURI,omitempty"`
+
+	S3Key *string `json:"s3Key,omitempty"`
+
+	S3ObjectVersion *string `json:"s3ObjectVersion,omitempty"`
+
+	S3Bucket *string `json:"s3Bucket,omitempty"`
+
+	// S3BucketRef is a reference to an S3 Bucket.
+	// +optional
+	S3BucketRef *xpv1.Reference `json:"s3BucketRef,omitempty"`
+
+	// S3BucketSelector selects references to an S3 Bucket.
+	// +optional
+	S3BucketSelector *xpv1.Selector `json:"s3BucketSelector,omitempty"`
 }
 
 // CustomFunctionVPCConfigParameters includes custom fields for FunctionVPCConfigParameters.
 type CustomFunctionVPCConfigParameters struct {
+	SecurityGroupIDs []*string `json:"securityGroupIDs,omitempty"`
 
 	// SecurityGroupIDRefs is a list of references to SecurityGroups used to set
 	// the SecurityGroupIDs.
@@ -58,6 +90,8 @@ type CustomFunctionVPCConfigParameters struct {
 	// to set the SecurityGroupIDs.
 	// +optional
 	SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIDSelector,omitempty"`
+
+	SubnetIDs []*string `json:"subnetIDs,omitempty"`
 
 	// SubnetIDRefs is a list of references to Subnets used to set
 	// the SubnetIDs.

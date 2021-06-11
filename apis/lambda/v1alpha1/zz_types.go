@@ -78,14 +78,6 @@ type FileSystemConfig struct {
 
 type FunctionCode struct {
 	ImageURI *string `json:"imageURI,omitempty"`
-
-	S3Bucket *string `json:"s3Bucket,omitempty"`
-
-	S3Key *string `json:"s3Key,omitempty"`
-
-	S3ObjectVersion *string `json:"s3ObjectVersion,omitempty"`
-
-	ZipFile []byte `json:"zipFile,omitempty"`
 }
 
 type FunctionCodeLocation struct {
@@ -132,16 +124,6 @@ type Layer struct {
 	SigningJobARN *string `json:"signingJobARN,omitempty"`
 
 	SigningProfileVersionARN *string `json:"signingProfileVersionARN,omitempty"`
-}
-
-type LayerVersionContentInput struct {
-	S3Bucket *string `json:"s3Bucket,omitempty"`
-
-	S3Key *string `json:"s3Key,omitempty"`
-
-	S3ObjectVersion *string `json:"s3ObjectVersion,omitempty"`
-
-	ZipFile []byte `json:"zipFile,omitempty"`
 }
 
 type LayerVersionContentOutput struct {
