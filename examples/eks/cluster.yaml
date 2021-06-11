@@ -14,8 +14,9 @@ spec:
       publicAccessCidrs:                                                                                                                                                                                    
       - 0.0.0.0/0
       endpointPublicAccess: true
-      subnetIds:
-        - sample-subnet1
+      subnetIdRefs:
+        - name: sample-subnet1
+        - name: sample-subnet2
     version: "1.16"
   writeConnectionSecretToRef:
     name: cluster-conn
