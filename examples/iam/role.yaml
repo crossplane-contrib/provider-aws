@@ -14,6 +14,8 @@ spec:
                 "Principal": {
                     "Service": [
                         "ec2.amazonaws.com",
+                        "eks.amazonaws.com",
+                        "eks-fargate-pods.amazonaws.com",
                         "lambda.amazonaws.com"
                     ]
                 },
@@ -26,3 +28,35 @@ spec:
     tags:
       - key: k1
         value: v1
+  providerConfigRef:
+    name: example
+
+---
+apiVersion: identity.aws.crossplane.io/v1beta1
+kind: IAMRole
+metadata:
+  name: somenoderole
+spec:
+  forProvider:
+    assumeRolePolicyDocument: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": [
+                        "ec2.amazonaws.com"
+                    ]
+                },
+                "Action": [
+                    "sts:AssumeRole"
+                ]
+            }
+        ]
+      }
+    tags:
+      - key: k2
+        value: v2
+  providerConfigRef:
+    name: example

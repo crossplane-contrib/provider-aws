@@ -8,4 +8,11 @@ spec:
   forProvider:
     region: us-east-1
     clusterNameRef:
-      name: do-cluster
+      name: sample-cluster
+    subnetRefs:
+      - name: sample-subnet1
+      - name: sample-subnet2
+    nodeRoleRef:
+      name: somenoderole
+  providerConfigRef:
+    name: example
