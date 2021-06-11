@@ -1,5 +1,7 @@
 # Added +immutable to all Namespace fields (Name, Region, VPC, Tags), because
 # the AWS Servicediscovery API does not provide an update interface
 ignore:
+  field_paths:
+    - CreatePrivateDnsNamespaceInput.Vpc
   resource_names:
     - Service

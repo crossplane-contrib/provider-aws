@@ -57,7 +57,9 @@ func TestObserve(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 						},
 					},
 				},
@@ -68,7 +70,9 @@ func TestObserve(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 						},
 					},
 					Status: svcapitypes.PrivateDNSNamespaceStatus{},
@@ -99,7 +103,9 @@ func TestObserve(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 						},
 					},
 					Status: svcapitypes.PrivateDNSNamespaceStatus{
@@ -115,7 +121,9 @@ func TestObserve(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 						},
 					},
 					Status: svcapitypes.PrivateDNSNamespaceStatus{
@@ -150,7 +158,9 @@ func TestObserve(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 						},
 					},
 					Status: svcapitypes.PrivateDNSNamespaceStatus{
@@ -166,7 +176,9 @@ func TestObserve(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 						},
 					},
 					Status: svcapitypes.PrivateDNSNamespaceStatus{
@@ -201,7 +213,9 @@ func TestObserve(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 						},
 					},
 					Status: svcapitypes.PrivateDNSNamespaceStatus{
@@ -217,7 +231,9 @@ func TestObserve(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 						},
 					},
 					Status: svcapitypes.PrivateDNSNamespaceStatus{
@@ -257,7 +273,9 @@ func TestObserve(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 						},
 					},
 					Status: svcapitypes.PrivateDNSNamespaceStatus{
@@ -278,7 +296,9 @@ func TestObserve(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 						},
 					},
 					Status: svcapitypes.PrivateDNSNamespaceStatus{
@@ -321,7 +341,9 @@ func TestObserve(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 						},
 					},
 					Status: svcapitypes.PrivateDNSNamespaceStatus{
@@ -337,7 +359,9 @@ func TestObserve(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 						},
 					},
 					Status: svcapitypes.PrivateDNSNamespaceStatus{
@@ -388,9 +412,11 @@ func TestObserve(t *testing.T) {
 				cr: &svcapitypes.PrivateDNSNamespace{
 					Spec: svcapitypes.PrivateDNSNamespaceSpec{
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
-							Region:      "eu-central-1",
-							Name:        aws.String("test"),
-							VPC:         aws.String("default"),
+							Region: "eu-central-1",
+							Name:   aws.String("test"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 							Description: aws.String(validDescription),
 						},
 					},
@@ -408,9 +434,11 @@ func TestObserve(t *testing.T) {
 					},
 					Spec: svcapitypes.PrivateDNSNamespaceSpec{
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
-							Region:           "eu-central-1",
-							Name:             aws.String("test"),
-							VPC:              aws.String("default"),
+							Region: "eu-central-1",
+							Name:   aws.String("test"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 							Description:      aws.String(validDescription),
 							CreatorRequestID: aws.String(validCreatorRequestID),
 						},
@@ -469,7 +497,9 @@ func TestObserve(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 						},
 					},
 					Status: svcapitypes.PrivateDNSNamespaceStatus{
@@ -486,9 +516,11 @@ func TestObserve(t *testing.T) {
 					},
 					Spec: svcapitypes.PrivateDNSNamespaceSpec{
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
-							Region:           "eu-central-1",
-							Name:             aws.String("test"),
-							VPC:              aws.String("default"),
+							Region: "eu-central-1",
+							Name:   aws.String("test"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 							Description:      aws.String(validDescription),
 							CreatorRequestID: aws.String(validCreatorRequestID),
 						},
@@ -560,8 +592,10 @@ func TestCreate(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
-							Tags:   []*svcapitypes.Tag{{Key: aws.String("key"), Value: aws.String("value")}},
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
+							Tags: []*svcapitypes.Tag{{Key: aws.String("key"), Value: aws.String("value")}},
 						},
 					},
 				},
@@ -572,8 +606,10 @@ func TestCreate(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
-							Tags:   []*svcapitypes.Tag{{Key: aws.String("key"), Value: aws.String("value")}},
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
+							Tags: []*svcapitypes.Tag{{Key: aws.String("key"), Value: aws.String("value")}},
 						},
 					},
 					Status: svcapitypes.PrivateDNSNamespaceStatus{
@@ -639,7 +675,9 @@ func TestDelete(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 						},
 					},
 					Status: svcapitypes.PrivateDNSNamespaceStatus{
@@ -655,7 +693,9 @@ func TestDelete(t *testing.T) {
 						ForProvider: svcapitypes.PrivateDNSNamespaceParameters{
 							Region: "eu-central-1",
 							Name:   aws.String("test"),
-							VPC:    aws.String("default"),
+							CustomPrivateDNSNamespaceParameters: svcapitypes.CustomPrivateDNSNamespaceParameters{
+								VPC: aws.String("default"),
+							},
 						},
 					},
 					Status: svcapitypes.PrivateDNSNamespaceStatus{

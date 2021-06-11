@@ -156,8 +156,9 @@ func isUpToDate(cr *svcapitypes.PrivateDNSNamespace, resp *svcsdk.GetNamespaceOu
 	return true
 }
 
-func preCreate(ctx context.Context, cr *svcapitypes.PrivateDNSNamespace, input *svcsdk.CreatePrivateDnsNamespaceInput) error {
+func preCreate(_ context.Context, cr *svcapitypes.PrivateDNSNamespace, input *svcsdk.CreatePrivateDnsNamespaceInput) error {
 	input.Name = awsclient.String(meta.GetExternalName(cr))
+	input.Vpc = cr.Spec.ForProvider.VPC
 	return nil
 }
 

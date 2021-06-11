@@ -55,9 +55,6 @@ func GenerateCreatePrivateDnsNamespaceInput(cr *svcapitypes.PrivateDNSNamespace)
 		}
 		res.SetTags(f3)
 	}
-	if cr.Spec.ForProvider.VPC != nil {
-		res.SetVpc(*cr.Spec.ForProvider.VPC)
-	}
 
 	return res
 }
