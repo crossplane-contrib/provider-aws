@@ -116,7 +116,7 @@ type SNSTopicObservation struct {
 // SNSTopicStatus is the status of AWS SNS Topic
 type SNSTopicStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          SNSTopicObservation `json:"atProvider"`
+	AtProvider          SNSTopicObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

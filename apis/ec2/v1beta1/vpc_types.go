@@ -128,7 +128,7 @@ type VPCObservation struct {
 // A VPCStatus represents the observed state of a VPC.
 type VPCStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          VPCObservation `json:"atProvider"`
+	AtProvider          VPCObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -89,7 +89,7 @@ type OpenIDConnectProviderObservation struct {
 // OpenIDConnectProviderStatus defines the observed state of OpenIDConnectProvider.
 type OpenIDConnectProviderStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          OpenIDConnectProviderObservation `json:"atProvider"`
+	AtProvider          OpenIDConnectProviderObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

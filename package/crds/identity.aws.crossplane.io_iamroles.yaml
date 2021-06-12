@@ -168,8 +168,6 @@ spec:
                   - type
                   type: object
                 type: array
-            required:
-            - atProvider
             type: object
         required:
         - spec

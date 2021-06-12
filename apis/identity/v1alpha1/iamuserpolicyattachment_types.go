@@ -70,7 +70,7 @@ type IAMUserPolicyAttachmentObservation struct {
 // IAMUserPolicyAttachment.
 type IAMUserPolicyAttachmentStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMUserPolicyAttachmentObservation `json:"atProvider"`
+	AtProvider          IAMUserPolicyAttachmentObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

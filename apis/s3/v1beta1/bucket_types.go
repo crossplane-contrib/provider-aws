@@ -161,7 +161,7 @@ type BucketExternalStatus struct {
 // BucketStatus represents the observed state of the Bucket.
 type BucketStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          BucketExternalStatus `json:"atProvider"`
+	AtProvider          BucketExternalStatus `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
