@@ -13,13 +13,14 @@ spec:
     engine: "redis"
     engineVersion: "5.0.6"
     port: 6379
-    cacheSubnetGroupNameRef: sample-cache-subnet-group
+    cacheSubnetGroupNameRef:
+      name: sample-cache-subnet-group
     numCacheClusters: 3
     cacheParameterGroupName: default.redis5.0
     cacheNodeType: cache.t3.medium
     automaticFailoverEnabled: true
-  writeConnectionSecretsToRef:
-    name: replic
+  writeConnectionSecretToRef:
+    name: replicationgroup
     namespace: crossplane-system
   providerConfigRef:
     name: example
