@@ -80,7 +80,7 @@ type CertificateAuthorityPermission struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   CertificateAuthorityPermissionSpec   `json:"spec,omitempty"`
+	Spec   CertificateAuthorityPermissionSpec   `json:"spec"`
 	Status CertificateAuthorityPermissionStatus `json:"status,omitempty"`
 }
 

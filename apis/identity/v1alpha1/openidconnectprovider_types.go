@@ -103,7 +103,7 @@ type OpenIDConnectProviderStatus struct {
 type OpenIDConnectProvider struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              OpenIDConnectProviderSpec   `json:"spec,omitempty"`
+	Spec              OpenIDConnectProviderSpec   `json:"spec"`
 	Status            OpenIDConnectProviderStatus `json:"status,omitempty"`
 }
 
