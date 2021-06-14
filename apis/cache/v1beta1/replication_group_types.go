@@ -346,14 +346,14 @@ type ReplicationGroupParameters struct {
 	// +optional
 	CacheSubnetGroupName *string `json:"cacheSubnetGroupName,omitempty"`
 
-	// CacheSubnetGroupNameRef is a reference to a Subnet Group
+	// CacheSubnetGroupNameRef is a reference to a Subnet Group used to set
 	// the CacheSubnetGroupName.
 	// +immutable
 	// +optional
 	CacheSubnetGroupNameRef *xpv1.Reference `json:"cacheSubnetGroupNameRef,omitempty"`
 
 	// DeprecatedCacheSubnetGroupNameRef is a reference to a Subnet Group
-	// the CacheSubnetGroupName.
+	// used to set the CacheSubnetGroupName.
 	//
 	// Deprecated: Use CacheSubnetGroupNameRef. This field exists because we
 	// introduced it with the JSON tag cacheSubnetGroupNameRefs (plural)
