@@ -232,7 +232,7 @@ type SecurityGroupObservation struct {
 // A SecurityGroupStatus represents the observed state of a SecurityGroup.
 type SecurityGroupStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          SecurityGroupObservation `json:"atProvider"`
+	AtProvider          SecurityGroupObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

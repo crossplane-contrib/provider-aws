@@ -47,7 +47,7 @@ type IAMGroupObservation struct {
 // An IAMGroupStatus represents the observed state of an IAM Group.
 type IAMGroupStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMGroupObservation `json:"atProvider"`
+	AtProvider          IAMGroupObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

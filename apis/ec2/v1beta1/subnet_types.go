@@ -109,7 +109,7 @@ type SubnetObservation struct {
 // A SubnetStatus represents the observed state of a Subnet.
 type SubnetStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          SubnetObservation `json:"atProvider"`
+	AtProvider          SubnetObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -166,7 +166,7 @@ type ELBObservation struct {
 // An ELBStatus represents the observed state of an ELB.
 type ELBStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          ELBObservation `json:"atProvider"`
+	AtProvider          ELBObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -243,7 +243,7 @@ type RepositoryPolicyObservation struct {
 // A RepositoryPolicyStatus represents the observed state of a repository policy
 type RepositoryPolicyStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          RepositoryPolicyObservation `json:"atProvider"`
+	AtProvider          RepositoryPolicyObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

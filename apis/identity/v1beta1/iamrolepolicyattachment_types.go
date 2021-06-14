@@ -71,7 +71,7 @@ type IAMRolePolicyAttachmentExternalStatus struct {
 // IAMRolePolicyAttachment.
 type IAMRolePolicyAttachmentStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMRolePolicyAttachmentExternalStatus `json:"atProvider"`
+	AtProvider          IAMRolePolicyAttachmentExternalStatus `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -90,7 +90,7 @@ type NATGatewayAddress struct {
 // NATGatewayStatus describes the observed state
 type NATGatewayStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          NATGatewayObservation `json:"atProvider"`
+	AtProvider          NATGatewayObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

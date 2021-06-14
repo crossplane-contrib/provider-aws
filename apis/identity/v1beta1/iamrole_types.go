@@ -104,7 +104,7 @@ type IAMRoleExternalStatus struct {
 // An IAMRoleStatus represents the observed state of an IAMRole.
 type IAMRoleStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMRoleExternalStatus `json:"atProvider"`
+	AtProvider          IAMRoleExternalStatus `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
