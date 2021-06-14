@@ -4,7 +4,7 @@ metadata:
   name: bucketpolicy-public
 spec:
   forProvider:
-    region: us-west-1
+    region: us-east-1
     bucketNameRef:
       name: test-bucket
     policy:
@@ -22,7 +22,10 @@ spec:
                   matchLabels:
                     example: "true"
           resource:
-            - "arn:aws:s3:::test-bucket"
+            # This is unfortunately not currently able to be inferred from a
+            # reference to test-bucket, and must therefore be set to the ARN of
+            # test-bucket (i.e. its actual external name).
+            - "arn:aws:s3:::crossplane-example-bucket"
           condition:
           - operatorKey: StringEquals
             conditions:
