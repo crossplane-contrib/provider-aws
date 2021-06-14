@@ -24,3 +24,63 @@ type CustomHTTPNamespaceParameters struct{}
 
 // CustomPublicDNSNamespaceParameters are custom parameters for PublicDNSNamespaces.
 type CustomPublicDNSNamespaceParameters struct{}
+
+// GetOperationID returns the last operation id.
+func (in *HTTPNamespace) GetOperationID() *string {
+	return in.Status.AtProvider.OperationID
+}
+
+// SetOperationID sets the last operation id.
+func (in *HTTPNamespace) SetOperationID(id *string) {
+	in.Status.AtProvider.OperationID = id
+}
+
+// GetDescription returns the description.
+func (in *HTTPNamespace) GetDescription() *string {
+	return in.Spec.ForProvider.Description
+}
+
+// SetDescription sets the description.
+func (in *HTTPNamespace) SetDescription(d *string) {
+	in.Spec.ForProvider.Description = d
+}
+
+// GetOperationID returns the last operation id.
+func (in *PrivateDNSNamespace) GetOperationID() *string {
+	return in.Status.AtProvider.OperationID
+}
+
+// SetOperationID sets the last operation id.
+func (in *PrivateDNSNamespace) SetOperationID(id *string) {
+	in.Status.AtProvider.OperationID = id
+}
+
+// GetDescription returns the description.
+func (in *PrivateDNSNamespace) GetDescription() *string {
+	return in.Spec.ForProvider.Description
+}
+
+// SetDescription sets the description.
+func (in *PrivateDNSNamespace) SetDescription(d *string) {
+	in.Spec.ForProvider.Description = d
+}
+
+// GetOperationID returns the last operation id.
+func (in *PublicDNSNamespace) GetOperationID() *string {
+	return in.Status.AtProvider.OperationID
+}
+
+// SetOperationID sets the last operation id.
+func (in *PublicDNSNamespace) SetOperationID(id *string) {
+	in.Status.AtProvider.OperationID = id
+}
+
+// GetDescription returns the description.
+func (in *PublicDNSNamespace) GetDescription() *string {
+	return in.Spec.ForProvider.Description
+}
+
+// SetDescription sets the description.
+func (in *PublicDNSNamespace) SetDescription(d *string) {
+	in.Spec.ForProvider.Description = d
+}

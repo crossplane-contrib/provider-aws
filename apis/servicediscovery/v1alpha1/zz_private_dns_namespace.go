@@ -29,10 +29,6 @@ type PrivateDNSNamespaceParameters struct {
 	// Region is which region the PrivateDNSNamespace will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// A unique string that identifies the request and that allows failed CreatePrivateDnsNamespace
-	// requests to be retried without the risk of executing the operation twice.
-	// CreatorRequestId can be any unique string, for example, a date/time stamp.
-	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
 	// A description for the namespace.
 	Description *string `json:"description,omitempty"`
 	// The name that you want to assign to this namespace. When you create a private

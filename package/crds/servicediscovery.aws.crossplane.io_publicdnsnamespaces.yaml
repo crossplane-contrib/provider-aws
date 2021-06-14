@@ -54,9 +54,6 @@ spec:
               forProvider:
                 description: PublicDNSNamespaceParameters defines the desired state of PublicDNSNamespace
                 properties:
-                  creatorRequestID:
-                    description: A unique string that identifies the request and that allows failed CreatePublicDnsNamespace requests to be retried without the risk of executing the operation twice. CreatorRequestId can be any unique string, for example, a date/time stamp.
-                    type: string
                   description:
                     description: A description for the namespace.
                     type: string
