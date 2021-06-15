@@ -98,7 +98,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}).Send(ctx)
 
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ecr.IsPolicyNotFoundErr, err), errGet)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.IgnoreAny(err, ecr.IsRepoNotFoundErr, ecr.IsPolicyNotFoundErr), errGet)
 	}
 
 	policyData, err := ecr.RawPolicyData(cr)
