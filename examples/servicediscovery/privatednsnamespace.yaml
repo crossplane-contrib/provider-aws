@@ -8,7 +8,7 @@ spec:
   forProvider:
     region: us-east-1
     description: "test"
-    name: "test"
+    name: crossplane-private-dns-namespace-test
     vpcRef:
       name: sample-vpc
     tags:
