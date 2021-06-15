@@ -4,9 +4,11 @@ metadata:
   name: test-routeresponse
 spec:
   forProvider:
-    region: us-west-2
+    region: us-east-1
     apiIdRef:
-      name: test-api
+      name: test-ws-api
     routeIdRef:
       name: test-route
-    routeResponseKey: my-route-resp-key
+    routeResponseKey: $default
+  providerConfigRef:
+    name: example

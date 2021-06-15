@@ -1,3 +1,18 @@
+---
+# We use an HTTP API with our authorizer because we want to use the simpler JWT
+# style of authorizer, which only supports HTTP APIs.
+apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
+kind: API
+metadata:
+  name: test-http-api
+spec:
+  forProvider:
+    region: us-east-1
+    name: test-http-api
+    protocolType: HTTP
+  providerConfigRef:
+    name: example
+---
 apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
 kind: Authorizer
 metadata:
@@ -5,11 +20,14 @@ metadata:
 spec:
   forProvider:
     apiIdRef:
-      name: test-api
-    region: us-west-2
-    name: test-authorizer
-    authorizerType: REQUEST
-    authorizerURI: "arn:aws:apigateway:REGION:lambda:path/2015-03-31/functions/arn:aws:lambda:REGION:ACCOUNT_ID:function:FUNCTION_NAME/invocations"
-    authorizerPayloadFormatVersion: "2.0"
+      name: test-http-api
+    region: us-east-1
+    name: test-http-authorizer
+    authorizerType: JWT
     identitySource:
       - "$request.header.Authorization"
+    jwtConfiguration:
+      issuer: https://accounts.google.com/
+      audience: [cool-folks]
+  providerConfigRef:
+    name: example
