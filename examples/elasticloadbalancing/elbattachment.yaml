@@ -7,6 +7,8 @@ spec:
     region: us-east-1
     elbNameRef: 
       name: sample-elb
-    instanceId: i-0c6df00f98699e3ca
+    # Crossplane does not yet have support for EC2 instances so you'll need to
+    # change this to the ID of an externally managed instance.
+    instanceId: i-example
   providerConfigRef:
     name: example

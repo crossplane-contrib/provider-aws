@@ -15,7 +15,7 @@ spec:
       keyAlgorithm: RSA_2048
       signingAlgorithm: SHA256WITHRSA
       subject:
-        commonName: www.example.com
+        commonName: ca.crossplane.io
         country: IN
         locality: example
         organization: example

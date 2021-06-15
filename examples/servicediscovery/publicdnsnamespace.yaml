@@ -6,9 +6,9 @@ spec:
   forProvider:
     region: us-east-1
     description: "test"
-    name: "test"
+    name: crossplane.example.org
     tags:
       - key: cluster
         value: "my-cluster"
-    providerConfigRef:
-      name: example
+  providerConfigRef:
+    name: example

@@ -9,10 +9,15 @@ spec:
     region: us-east-1
     clusterNameRef:
       name: sample-cluster
+    # Defined in examples/ec2
     subnetRefs:
       - name: sample-subnet1
-      - name: sample-subnet2
+    # Defined in examples/iam
     nodeRoleRef:
       name: somenoderole
+    scalingConfig:
+      desiredSize: 1
+      maxSize: 1
+      minSize: 1 
   providerConfigRef:
     name: example
