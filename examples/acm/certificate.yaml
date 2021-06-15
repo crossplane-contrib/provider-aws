@@ -7,7 +7,7 @@ spec:
     region: us-east-1
     certificateAuthorityARNRef:
       name: example
-    domainName: www.example.com
+    domainName: dev.crossplane.io
     certificateTransparencyLoggingPreference: DISABLED
     tags:
     - key: Name
