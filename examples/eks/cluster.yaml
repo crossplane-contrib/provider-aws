@@ -8,15 +8,18 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
+    # Defined in examples/iam
     roleArnRef:
       name: somerole
     resourcesVpcConfig:
-      publicAccessCidrs:                                                                                                                                                                                    
-      - 0.0.0.0/0
+      endpointPrivateAccess: true
       endpointPublicAccess: true
+      # Defined in examples/ec2
       subnetIdRefs:
         - name: sample-subnet1
         - name: sample-subnet2
+      securityGroupIdRefs:
+        - name: sample-cluster-sg
     version: "1.16"
   writeConnectionSecretToRef:
     name: cluster-conn
