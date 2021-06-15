@@ -5,8 +5,9 @@ metadata:
 spec:
   forProvider:
     apiIdRef:
-      name: test-api
-    region: us-west-2
-    integrationType: AWS_PROXY
-    integrationURI: "arn:aws:apigateway:REGION:lambda:path/2015-03-31/functions/arn:aws:lambda:REGION:ACCOUNT_ID:function:FUNCTIONNAME/invocations"
-    payloadFormatVersion: "2.0"
+      name: test-ws-api
+    region: us-east-1
+    integrationType: MOCK
+    payloadFormatVersion: "1.0"
+  providerConfigRef:
+    name: example

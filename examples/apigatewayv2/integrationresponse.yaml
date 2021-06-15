@@ -5,8 +5,10 @@ metadata:
 spec:
   forProvider:
     apiIdRef:
-      name: test-api
-    region: us-west-2
+      name: test-ws-api
+    region: us-east-1
     integrationIdRef:
       name: test-integration
     integrationResponseKey: "$default"
+  providerConfigRef:
+    name: example

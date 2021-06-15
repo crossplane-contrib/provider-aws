@@ -4,7 +4,12 @@ metadata:
   name: test-route
 spec:
   forProvider:
-    region: us-west-2
+    region: us-east-1
     apiIdRef:
-      name: test-api
+      name: test-ws-api
     routeKey: "GET /newpath"
+    # You'll need to update this to the ID (i.e. external name) of the
+    # integration created by integration.yaml.
+    target: "integrations/5kzavuj"
+  providerConfigRef:
+    name: example

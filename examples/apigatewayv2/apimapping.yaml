@@ -2,14 +2,16 @@
 apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
 kind: APIMapping
 metadata:
-  name: test-apimapping
+  name: test-ws-apimapping
 spec:
   forProvider:
-    region: us-west-2
+    region: us-east-1
     apiIdRef:
-      name: test-api
+      name: test-ws-api
     stageRef:
       name: test-stage
     domainNameRef:
       name: test-domainname
     apiMappingKey: some-key
+  providerConfigRef:
+    name: example

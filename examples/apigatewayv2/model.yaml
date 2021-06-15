@@ -6,8 +6,8 @@ metadata:
 spec:
   forProvider:
     apiIdRef:
-      name: test-api2
-    region: us-west-2
+      name: test-ws-api
+    region: us-east-1
     name: testmodel
     contentType: application/json
     schema: |-
@@ -26,3 +26,5 @@ spec:
           }
         }
       }
+  providerConfigRef:
+    name: example

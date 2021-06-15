@@ -10,7 +10,7 @@ spec:
   forProvider:
     region: us-east-1
     domainNameConfigurations:
-       # Chage this to the ARN of the certificate created by examples/acm.
-    -  certificateARN: arn:aws:acm:us-east-1:609897127049:certificate/6260abcb-f4c1-4fe2-8542-f360aaacf19b
+      # Change this to the ARN of the certificate created by examples/acm.
+    - certificateARN: arn:aws:acm:us-east-1:609897127049:certificate/497c3833-2861-4807-9d8c-5ab825ada3d1
   providerConfigRef:
     name: example
