@@ -6,6 +6,7 @@ spec:
   providerConfigRef:
     name: example
   forProvider:
+    # Note you'll need to update the ARN to refer to a real user.
     policy: |-
       {
         "Version": "2012-10-17",
@@ -21,7 +22,7 @@ spec:
           }
         ]
       }
-    region: eu-central-1
+    region: us-east-1
     tags:
     - tagKey: k1
       tagValue: v1
