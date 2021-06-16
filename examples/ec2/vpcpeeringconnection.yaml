@@ -8,6 +8,5 @@ spec:
     region: eu-central-1
     peerVPCID: vpc-00000000000000002
     acceptRequest: true
-
   providerConfigRef:
     name: example
