@@ -109,6 +109,7 @@ func TestObserve(t *testing.T) {
 					},
 				},
 				cr: groupPolicy(withSpecGroupName(groupName),
+					withExternalName(groupName+"/"+policyArn),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
@@ -119,9 +120,8 @@ func TestObserve(t *testing.T) {
 					withConditions(xpv1.Available()),
 					withStatusPolicyArn(policyArn)),
 				result: managed.ExternalObservation{
-					ResourceExists:          true,
-					ResourceLateInitialized: true,
-					ResourceUpToDate:        true,
+					ResourceExists:   true,
+					ResourceUpToDate: true,
 				},
 			},
 		},
@@ -158,10 +158,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: groupPolicy(withSpecGroupName(groupName)),
+				cr: groupPolicy(withSpecGroupName(groupName), withExternalName(groupName+"/"+policyArn)),
 			},
 			want: want{
-				cr:  groupPolicy(withSpecGroupName(groupName)),
+				cr:  groupPolicy(withSpecGroupName(groupName), withExternalName(groupName+"/"+policyArn)),
 				err: awsclient.Wrap(errBoom, errGet),
 			},
 		},
@@ -213,7 +213,8 @@ func TestCreate(t *testing.T) {
 				cr: groupPolicy(
 					withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn),
-					withConditions(xpv1.Creating())),
+					withExternalName(groupName+"/"+policyArn)),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"InValidInput": {
@@ -239,8 +240,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: groupPolicy(withSpecGroupName(groupName),
-					withSpecPolicyArn(policyArn),
-					withConditions(xpv1.Creating())),
+					withSpecPolicyArn(policyArn)),
 				err: awsclient.Wrap(errBoom, errAttach),
 			},
 		},
