@@ -84,6 +84,7 @@ spec:
                         type: object
                     type: object
                   principal:
+                    default: acm.amazonaws.com
                     description: The AWS service or identity that receives the permission. At this time, the only valid principal is acm.amazonaws.com.
                     type: string
                   region:

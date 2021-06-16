@@ -60,6 +60,7 @@ type CertificateAuthorityPermissionParameters struct {
 	// The AWS service or identity that receives the permission. At this
 	// time, the only valid principal is acm.amazonaws.com.
 	// +immutable
+	// +kubebuilder:default:=acm.amazonaws.com
 	Principal string `json:"principal"`
 
 	// Calling Account ID
