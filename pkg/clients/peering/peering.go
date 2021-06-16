@@ -1,9 +1,11 @@
 package peering
 
 import (
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/route53"
+	"github.com/crossplane/provider-aws/pkg/clients"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	sdkaws "github.com/aws/aws-sdk-go-v2/aws"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/vpcpeering/v1alpha1"
 )
@@ -13,18 +15,30 @@ import (
 
 // GenerateDescribeVpcPeeringConnectionsInput returns input for read
 // operation.
-func GenerateDescribeVpcPeeringConnectionsInput(cr *svcapitypes.VPCPeeringConnection) *svcsdk.DescribeVpcPeeringConnectionsInput {
-	res := &svcsdk.DescribeVpcPeeringConnectionsInput{}
+func GenerateDescribeVpcPeeringConnectionsInput(cr *svcapitypes.VPCPeeringConnection) *ec2.DescribeVpcPeeringConnectionsInput {
+	res := &ec2.DescribeVpcPeeringConnectionsInput{
+		Filters: []ec2.Filter{
+			{
+				Name:   aws.String("tag:Name"),
+				Values: []string{cr.ObjectMeta.Name},
+			},
+		},
+	}
 
 	return res
 }
 
 // GenerateVPCPeeringConnection returns the current state in the form of *svcapitypes.VPCPeeringConnection.
-func GenerateVPCPeeringConnection(resp *svcsdk.DescribeVpcPeeringConnectionsOutput) *svcapitypes.VPCPeeringConnection {
+func GenerateVPCPeeringConnection(resp *ec2.DescribeVpcPeeringConnectionsResponse) *svcapitypes.VPCPeeringConnection {
 	cr := &svcapitypes.VPCPeeringConnection{}
 
+	output := resp.DescribeVpcPeeringConnectionsOutput
+	if output == nil {
+		return cr
+	}
+
 	found := false
-	for _, elem := range resp.VpcPeeringConnections {
+	for _, elem := range output.VpcPeeringConnections {
 		if elem.AccepterVpcInfo != nil {
 			f0 := &svcapitypes.VPCPeeringConnectionVPCInfo{}
 			if elem.AccepterVpcInfo.CidrBlock != nil {
@@ -138,9 +152,7 @@ func GenerateVPCPeeringConnection(resp *svcsdk.DescribeVpcPeeringConnectionsOutp
 		}
 		if elem.Status != nil {
 			f3 := &svcapitypes.VPCPeeringConnectionStateReason{}
-			if elem.Status.Code != nil {
-				f3.Code = elem.Status.Code
-			}
+			f3.Code = aws.String(string(elem.Status.Code))
 			if elem.Status.Message != nil {
 				f3.Message = elem.Status.Message
 			}
@@ -180,63 +192,45 @@ func GenerateVPCPeeringConnection(resp *svcsdk.DescribeVpcPeeringConnectionsOutp
 }
 
 // GenerateCreateVpcPeeringConnectionInput returns a create input.
-func GenerateCreateVpcPeeringConnectionInput(cr *svcapitypes.VPCPeeringConnection) *svcsdk.CreateVpcPeeringConnectionInput {
-	res := &svcsdk.CreateVpcPeeringConnectionInput{}
+func GenerateCreateVpcPeeringConnectionInput(cr *svcapitypes.VPCPeeringConnection) *ec2.CreateVpcPeeringConnectionInput {
+	res := &ec2.CreateVpcPeeringConnectionInput{}
 
 	if cr.Spec.ForProvider.PeerOwnerID != nil {
-		res.SetPeerOwnerId(*cr.Spec.ForProvider.PeerOwnerID)
+		res.PeerOwnerId = cr.Spec.ForProvider.PeerOwnerID
 	}
 	if cr.Spec.ForProvider.PeerRegion != nil {
-		res.SetPeerRegion(*cr.Spec.ForProvider.PeerRegion)
+		res.PeerRegion = cr.Spec.ForProvider.PeerRegion
 	}
 	if cr.Spec.ForProvider.PeerVPCID != nil {
-		res.SetPeerVpcId(*cr.Spec.ForProvider.PeerVPCID)
-	}
-	if cr.Spec.ForProvider.TagSpecifications != nil {
-		f3 := []*svcsdk.TagSpecification{}
-		for _, f3iter := range cr.Spec.ForProvider.TagSpecifications {
-			f3elem := &svcsdk.TagSpecification{}
-			if f3iter.ResourceType != nil {
-				f3elem.SetResourceType(*f3iter.ResourceType)
-			}
-			if f3iter.Tags != nil {
-				f3elemf1 := []*svcsdk.Tag{}
-				for _, f3elemf1iter := range f3iter.Tags {
-					f3elemf1elem := &svcsdk.Tag{}
-					if f3elemf1iter.Key != nil {
-						f3elemf1elem.SetKey(*f3elemf1iter.Key)
-					}
-					if f3elemf1iter.Value != nil {
-						f3elemf1elem.SetValue(*f3elemf1iter.Value)
-					}
-					f3elemf1 = append(f3elemf1, f3elemf1elem)
-				}
-				f3elem.SetTags(f3elemf1)
-			}
-			f3 = append(f3, f3elem)
-		}
-		res.SetTagSpecifications(f3)
+		res.PeerVpcId = cr.Spec.ForProvider.PeerVPCID
 	}
 	if cr.Spec.ForProvider.VPCID != nil {
-		res.SetVpcId(*cr.Spec.ForProvider.VPCID)
+		res.VpcId = cr.Spec.ForProvider.VPCID
 	}
 
 	return res
 }
 
-// GenerateDeleteVpcPeeringConnectionInput returns a deletion input.
-func GenerateDeleteVpcPeeringConnectionInput(cr *svcapitypes.VPCPeeringConnection) *svcsdk.DeleteVpcPeeringConnectionInput {
-	res := &svcsdk.DeleteVpcPeeringConnectionInput{}
-
-	if cr.Status.AtProvider.VPCPeeringConnectionID != nil {
-		res.SetVpcPeeringConnectionId(*cr.Status.AtProvider.VPCPeeringConnectionID)
-	}
-
-	return res
+type EC2Client interface {
+	DescribeVpcPeeringConnectionsRequest(*ec2.DescribeVpcPeeringConnectionsInput) ec2.DescribeVpcPeeringConnectionsRequest
+	CreateVpcPeeringConnectionRequest(*ec2.CreateVpcPeeringConnectionInput) ec2.CreateVpcPeeringConnectionRequest
+	CreateTagsRequest(*ec2.CreateTagsInput) ec2.CreateTagsRequest
+	DescribeRouteTablesRequest(*ec2.DescribeRouteTablesInput) ec2.DescribeRouteTablesRequest
+	CreateRouteRequest(*ec2.CreateRouteInput) ec2.CreateRouteRequest
+	DeleteRouteRequest(*ec2.DeleteRouteInput) ec2.DeleteRouteRequest
+	ModifyVpcPeeringConnectionOptionsRequest(*ec2.ModifyVpcPeeringConnectionOptionsInput) ec2.ModifyVpcPeeringConnectionOptionsRequest
+	DeleteVpcPeeringConnectionRequest(*ec2.DeleteVpcPeeringConnectionInput) ec2.DeleteVpcPeeringConnectionRequest
 }
 
-// IsNotFound returns whether the given error is of type NotFound or not.
-func IsNotFound(err error) bool {
-	awsErr, ok := err.(awserr.Error)
-	return ok && awsErr.Code() == "UNKNOWN"
+func NewEc2Client(cfg sdkaws.Config) EC2Client {
+	return ec2.New(cfg)
+}
+
+func NewRoute53Client(cfg sdkaws.Config) Route53Client {
+	return route53.New(cfg)
+}
+
+type Route53Client interface {
+	CreateVPCAssociationAuthorizationRequest(*route53.CreateVPCAssociationAuthorizationInput) route53.CreateVPCAssociationAuthorizationRequest
+	DeleteVPCAssociationAuthorizationRequest(*route53.DeleteVPCAssociationAuthorizationInput) route53.DeleteVPCAssociationAuthorizationRequest
 }

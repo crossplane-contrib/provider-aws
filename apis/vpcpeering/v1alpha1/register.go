@@ -8,7 +8,7 @@ import (
 // Package type metadata.
 const (
 	Group   = "vpcpeering.aws.crossplane.io"
-	Version = "v1apha1"
+	Version = "v1alpha1"
 )
 
 var (

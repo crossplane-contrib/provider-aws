@@ -19,29 +19,16 @@ type VPCPeeringConnectionParameters struct {
 	//
 	// Default: The Region in which you make the request.
 	PeerRegion *string `json:"peerRegion,omitempty"`
+
+	PeerCIDR *string `json:"peerCidr,omitempty"`
 	// The ID of the VPC with which you are creating the VPC peering connection.
 	// You must specify this parameter in the request.
 	PeerVPCID *string `json:"peerVPCID,omitempty"`
 	// The tags to assign to the peering connection.
-	TagSpecifications []*TagSpecification `json:"tagSpecifications,omitempty"`
+	Tags []*Tag `json:"tags,omitempty"`
 	// The ID of the requester VPC. You must specify this parameter in the request.
 	VPCID                                *string `json:"vpcID,omitempty"`
-	CustomVPCPeeringConnectionParameters `json:",inline"`
-}
-
-// CustomVPCPeeringConnectionParameters are custom parameters for VPCPeeringConnection
-type CustomVPCPeeringConnectionParameters struct {
-
-	// Automatically accepts the peering connection. If this is not set, the peering connection
-	// will be created, but will be in pending-acceptance state. This will only lead to an active
-	// connection if both VPCs are in the same tenant.
-	AcceptRequest bool `json:"acceptRequest,omitempty"`
-}
-
-type TagSpecification struct {
-	ResourceType *string `json:"resourceType,omitempty"`
-
-	Tags []*Tag `json:"tags,omitempty"`
+	HostZoneID *string `json:"hostZoneID,omitempty "`
 }
 
 type Tag struct {
@@ -72,6 +59,8 @@ type VPCPeeringConnectionObservation struct {
 	Tags []*Tag `json:"tags,omitempty"`
 	// The ID of the VPC peering connection.
 	VPCPeeringConnectionID *string `json:"vpcPeeringConnectionID,omitempty"`
+
+	Phase  *string `json:"phase,omitempty"`
 }
 
 type VPCPeeringConnectionStateReason struct {

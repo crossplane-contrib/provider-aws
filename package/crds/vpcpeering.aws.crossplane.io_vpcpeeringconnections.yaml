@@ -53,9 +53,10 @@ spec:
               forProvider:
                 description: VPCPeeringConnectionParameters defines the desired state of VPCPeeringConnection
                 properties:
-                  acceptRequest:
-                    description: Automatically accepts the peering connection. If this is not set, the peering connection will be created, but will be in pending-acceptance state. This will only lead to an active connection if both VPCs are in the same tenant.
-                    type: boolean
+                  hostZoneID:
+                    type: string
+                  peerCidr:
+                    type: string
                   peerOwnerID:
                     description: "The AWS account ID of the owner of the accepter VPC. \n Default: Your AWS account ID"
                     type: string
@@ -68,27 +69,21 @@ spec:
                   region:
                     description: Region is which region the VPCPeeringConnection will be created.
                     type: string
-                  tagSpecifications:
+                  tags:
                     description: The tags to assign to the peering connection.
                     items:
                       properties:
-                        resourceType:
+                        key:
                           type: string
-                        tags:
-                          items:
-                            properties:
-                              key:
-                                type: string
-                              value:
-                                type: string
-                            type: object
-                          type: array
+                        value:
+                          type: string
                       type: object
                     type: array
                   vpcID:
                     description: The ID of the requester VPC. You must specify this parameter in the request.
                     type: string
                 required:
+                - hostZoneID
                 - region
                 type: object
               providerConfigRef:
@@ -170,6 +165,8 @@ spec:
                   expirationTime:
                     description: The time that an unaccepted VPC peering connection will expire.
                     format: date-time
+                    type: string
+                  phase:
                     type: string
                   requesterVPCInfo:
                     description: Information about the requester VPC. CIDR block information is only returned when describing an active VPC peering connection.
