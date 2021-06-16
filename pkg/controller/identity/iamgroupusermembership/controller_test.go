@@ -27,6 +27,7 @@ import (
 	"github.com/pkg/errors"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -52,11 +53,15 @@ type args struct {
 
 type userGroupModifier func(*v1alpha1.IAMGroupUserMembership)
 
+func withExternalName(name string) userGroupModifier {
+	return func(r *v1alpha1.IAMGroupUserMembership) { meta.SetExternalName(r, name) }
+}
+
 func withConditions(c ...xpv1.Condition) userGroupModifier {
 	return func(r *v1alpha1.IAMGroupUserMembership) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withGroupName(s string) userGroupModifier {
+func withSpecGroupName(s string) userGroupModifier {
 	return func(r *v1alpha1.IAMGroupUserMembership) { r.Spec.ForProvider.GroupName = s }
 }
 
@@ -88,7 +93,7 @@ func TestObserve(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				iam: &fake.MockGroupUserMembershipClient{
 					MockListGroupsForUser: func(input *awsiam.ListGroupsForUserInput) awsiam.ListGroupsForUserRequest {
@@ -104,12 +109,11 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: userGroup(withGroupName(groupName),
-					withSpecUserName(userName)),
+				cr: userGroup(withExternalName(groupName + "/" + userName)),
 			},
 			want: want{
-				cr: userGroup(withGroupName(groupName),
-					withSpecUserName(userName),
+				cr: userGroup(
+					withExternalName(groupName+"/"+userName),
 					withConditions(xpv1.Available()),
 					withStatusGroupArn(groupArn)),
 				result: managed.ExternalObservation{
@@ -118,7 +122,7 @@ func TestObserve(t *testing.T) {
 				},
 			},
 		},
-		"InValidInput": {
+		"InvalidInput": {
 			args: args{
 				cr: unexpectedItem,
 			},
@@ -151,10 +155,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: userGroup(withGroupName(groupName)),
+				cr: userGroup(withExternalName(groupName + "/" + userName)),
 			},
 			want: want{
-				cr:  userGroup(withGroupName(groupName)),
+				cr:  userGroup(withExternalName(groupName + "/" + userName)),
 				err: awsclient.Wrap(errBoom, errGet),
 			},
 		},
@@ -199,14 +203,15 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: userGroup(withGroupName(groupName),
+				cr: userGroup(withSpecGroupName(groupName),
 					withSpecUserName(userName)),
 			},
 			want: want{
 				cr: userGroup(
-					withGroupName(groupName),
+					withSpecGroupName(groupName),
 					withSpecUserName(userName),
-					withConditions(xpv1.Creating())),
+					withExternalName(groupName+"/"+userName)),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"InValidInput": {
@@ -227,13 +232,12 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: userGroup(withGroupName(groupName),
+				cr: userGroup(withSpecGroupName(groupName),
 					withSpecUserName(userName)),
 			},
 			want: want{
-				cr: userGroup(withGroupName(groupName),
-					withSpecUserName(userName),
-					withConditions(xpv1.Creating())),
+				cr: userGroup(withSpecGroupName(groupName),
+					withSpecUserName(userName)),
 				err: awsclient.Wrap(errBoom, errAdd),
 			},
 		},
@@ -277,12 +281,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: userGroup(withGroupName(groupName),
+				cr: userGroup(withSpecGroupName(groupName),
 					withSpecUserName(userName)),
 			},
 			want: want{
 				cr: userGroup(
-					withGroupName(groupName),
+					withSpecGroupName(groupName),
 					withSpecUserName(userName),
 					withConditions(xpv1.Deleting())),
 			},
@@ -305,11 +309,11 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: userGroup(withGroupName(userName),
+				cr: userGroup(withSpecGroupName(userName),
 					withSpecUserName(userName)),
 			},
 			want: want{
-				cr: userGroup(withGroupName(userName),
+				cr: userGroup(withSpecGroupName(userName),
 					withSpecUserName(userName),
 					withConditions(xpv1.Deleting())),
 				err: awsclient.Wrap(errBoom, errRemove),

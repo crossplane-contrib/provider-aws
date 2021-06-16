@@ -57,10 +57,11 @@ type CertificateAuthorityPermissionParameters struct {
 	// +immutable
 	Actions []string `json:"actions,omitempty"`
 
-	// The AWS Service or identity
-	// +optional
+	// The AWS service or identity that receives the permission. At this
+	// time, the only valid principal is acm.amazonaws.com.
 	// +immutable
-	Principal *string `json:"principal,omitempty"`
+	// +kubebuilder:default:=acm.amazonaws.com
+	Principal string `json:"principal"`
 
 	// Calling Account ID
 	// +optional

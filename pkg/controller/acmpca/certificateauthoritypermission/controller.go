@@ -18,6 +18,7 @@ package certificateauthoritypermission
 
 import (
 	"context"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacmpca "github.com/aws/aws-sdk-go-v2/service/acmpca"
@@ -30,6 +31,7 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -44,8 +46,6 @@ const (
 	errGet              = "failed to get ACMPCA with name"
 	errCreate           = "failed to create the ACMPCA resource"
 	errDelete           = "failed to delete the ACMPCA resource"
-
-	principal = "acm.amazonaws.com"
 )
 
 // SetupCertificateAuthorityPermission adds a controller that reconciles ACMPCA.
@@ -95,17 +95,39 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
+
+	if meta.GetExternalName(cr) == "" {
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
+	// ARN can have its own slashes, we'll use the first part and assume the rest
+	// is ARN.
+	nn := strings.SplitN(meta.GetExternalName(cr), "/", 2)
+	if len(nn) != 2 {
+		return managed.ExternalObservation{}, errors.New("external name has to be in the following format <principal>/<ca-arn>")
+	}
+	principal, caARN := nn[0], nn[1]
+
 	response, err := e.client.ListPermissionsRequest(&awsacmpca.ListPermissionsInput{
-		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
+		CertificateAuthorityArn: &caARN,
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errGet)
 	}
-	if len(response.Permissions) == 0 {
+
+	var attachedPermission *awsacmpca.Permission
+	for i := range response.Permissions {
+		if awsclient.StringValue(response.Permissions[i].Principal) == principal {
+			attachedPermission = &response.Permissions[i]
+			break
+		}
+	}
+
+	if attachedPermission == nil {
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, nil
 	}
+
 	cr.SetConditions(xpv1.Available())
 	return managed.ExternalObservation{
 		ResourceExists:   true,
@@ -118,13 +140,22 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	cr.Status.SetConditions(xpv1.Creating())
+
 	_, err := e.client.CreatePermissionRequest(&awsacmpca.CreatePermissionInput{
 		Actions:                 []awsacmpca.ActionType{awsacmpca.ActionTypeIssueCertificate, awsacmpca.ActionTypeGetCertificate, awsacmpca.ActionTypeListPermissions},
 		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
-		Principal:               aws.String(principal),
+		Principal:               aws.String(cr.Spec.ForProvider.Principal),
 	}).Send(ctx)
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+	if err != nil {
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+	}
+
+	// This resource is interesting in that it's a binding without its own
+	// external identity. We therefore derive an external name from the
+	// identity of the CA it applies to, and the principal it applies.
+	meta.SetExternalName(cr, cr.Spec.ForProvider.Principal+"/"+awsclient.StringValue(cr.Spec.ForProvider.CertificateAuthorityARN))
+
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 
 }
 
@@ -138,11 +169,9 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return errors.New(errUnexpectedObject)
 	}
 
-	cr.Status.SetConditions(xpv1.Deleting())
-
 	_, err := e.client.DeletePermissionRequest(&awsacmpca.DeletePermissionInput{
 		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
-		Principal:               aws.String(principal),
+		Principal:               aws.String(cr.Spec.ForProvider.Principal),
 	}).Send(ctx)
 
 	return awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)

@@ -5,7 +5,8 @@ metadata:
   name: fake-group-user-membership
 spec:
   forProvider:
-    groupName: external-name
+    groupNameRef:
+      name: somegroup
     userNameRef:
       name: someuser
   providerConfigRef:
