@@ -23,8 +23,6 @@ type args struct {
 	client peering.EC2Client
 	route53Cli peering.Route53Client
 	cr *svcapitypes.VPCPeeringConnection
-	//sqs  sqs.Client
-	//cr   *v1beta1.Queue
 }
 
 func TestObserve(t *testing.T) {
