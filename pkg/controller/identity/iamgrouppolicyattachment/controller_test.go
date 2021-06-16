@@ -27,6 +27,7 @@ import (
 	"github.com/pkg/errors"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -52,11 +53,15 @@ type args struct {
 
 type groupPolicyModifier func(*v1alpha1.IAMGroupPolicyAttachment)
 
+func withExternalName(name string) groupPolicyModifier {
+	return func(r *v1alpha1.IAMGroupPolicyAttachment) { meta.SetExternalName(r, name) }
+}
+
 func withConditions(c ...xpv1.Condition) groupPolicyModifier {
 	return func(r *v1alpha1.IAMGroupPolicyAttachment) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withGroupName(s string) groupPolicyModifier {
+func withSpecGroupName(s string) groupPolicyModifier {
 	return func(r *v1alpha1.IAMGroupPolicyAttachment) { r.Spec.ForProvider.GroupName = s }
 }
 
@@ -88,7 +93,7 @@ func TestObserve(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				iam: &fake.MockGroupPolicyAttachmentClient{
 					MockListAttachedGroupPolicies: func(input *awsiam.ListAttachedGroupPoliciesInput) awsiam.ListAttachedGroupPoliciesRequest {
@@ -103,17 +108,20 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: groupPolicy(withGroupName(groupName),
+				cr: groupPolicy(withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
-				cr: groupPolicy(withGroupName(groupName),
+				cr: groupPolicy(
+					withExternalName(groupName+"/"+policyArn),
+					withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn),
 					withConditions(xpv1.Available()),
 					withStatusPolicyArn(policyArn)),
 				result: managed.ExternalObservation{
-					ResourceExists:   true,
-					ResourceUpToDate: true,
+					ResourceExists:          true,
+					ResourceLateInitialized: true,
+					ResourceUpToDate:        true,
 				},
 			},
 		},
@@ -150,10 +158,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: groupPolicy(withGroupName(groupName)),
+				cr: groupPolicy(withSpecGroupName(groupName)),
 			},
 			want: want{
-				cr:  groupPolicy(withGroupName(groupName)),
+				cr:  groupPolicy(withSpecGroupName(groupName)),
 				err: awsclient.Wrap(errBoom, errGet),
 			},
 		},
@@ -198,12 +206,12 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: groupPolicy(withGroupName(groupName),
+				cr: groupPolicy(withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
 				cr: groupPolicy(
-					withGroupName(groupName),
+					withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn),
 					withConditions(xpv1.Creating())),
 			},
@@ -226,11 +234,11 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: groupPolicy(withGroupName(groupName),
+				cr: groupPolicy(withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
-				cr: groupPolicy(withGroupName(groupName),
+				cr: groupPolicy(withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn),
 					withConditions(xpv1.Creating())),
 				err: awsclient.Wrap(errBoom, errAttach),
@@ -276,12 +284,12 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: groupPolicy(withGroupName(groupName),
+				cr: groupPolicy(withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
 				cr: groupPolicy(
-					withGroupName(groupName),
+					withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn),
 					withConditions(xpv1.Deleting())),
 			},
@@ -304,11 +312,11 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: groupPolicy(withGroupName(groupName),
+				cr: groupPolicy(withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn)),
 			},
 			want: want{
-				cr: groupPolicy(withGroupName(groupName),
+				cr: groupPolicy(withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn),
 					withConditions(xpv1.Deleting())),
 				err: awsclient.Wrap(errBoom, errDetach),
