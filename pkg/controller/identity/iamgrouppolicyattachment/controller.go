@@ -18,6 +18,7 @@ package iamgrouppolicyattachment
 
 import (
 	"context"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
@@ -93,8 +94,19 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
+	if meta.GetExternalName(cr) == "" {
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
+	// ARN can have its own slashes, we'll use the first part and assume the rest
+	// is ARN.
+	nn := strings.SplitN(meta.GetExternalName(cr), "/", 2)
+	if len(nn) != 2 {
+		return managed.ExternalObservation{}, errors.New("external name has to be in the following format <group-name>/<policy-arn>")
+	}
+	groupName, policyARN := nn[0], nn[1]
+
 	observed, err := e.client.ListAttachedGroupPoliciesRequest(&awsiam.ListAttachedGroupPoliciesInput{
-		GroupName: &cr.Spec.ForProvider.GroupName,
+		GroupName: &groupName,
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
@@ -102,7 +114,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	var attachedPolicyObject *awsiam.AttachedPolicy
 	for i, policy := range observed.AttachedPolicies {
-		if cr.Spec.ForProvider.PolicyARN == aws.StringValue(policy.PolicyArn) {
+		if policyARN == aws.StringValue(policy.PolicyArn) {
 			attachedPolicyObject = &observed.AttachedPolicies[i]
 			break
 		}
@@ -114,11 +126,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
-	// This resource is interesting in that it's a binding without its own
-	// external identity. We therefore derive an external name from the
-	// names of the group and user that are bound.
-	meta.SetExternalName(cr, cr.Spec.ForProvider.GroupName+"/"+cr.Spec.ForProvider.PolicyARN)
-
 	cr.SetConditions(xpv1.Available())
 
 	cr.Status.AtProvider = v1alpha1.IAMGroupPolicyAttachmentObservation{
@@ -126,9 +133,8 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	return managed.ExternalObservation{
-		ResourceExists:          true,
-		ResourceLateInitialized: true,
-		ResourceUpToDate:        true,
+		ResourceExists:   true,
+		ResourceUpToDate: true,
 	}, nil
 }
 
@@ -138,14 +144,20 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	cr.SetConditions(xpv1.Creating())
-
 	_, err := e.client.AttachGroupPolicyRequest(&awsiam.AttachGroupPolicyInput{
 		PolicyArn: &cr.Spec.ForProvider.PolicyARN,
 		GroupName: &cr.Spec.ForProvider.GroupName,
 	}).Send(ctx)
+	if err != nil {
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
+	}
 
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
+	// This resource is interesting in that it's a binding without its own
+	// external identity. We therefore derive an external name from the
+	// names of the group and user that are bound.
+	meta.SetExternalName(cr, cr.Spec.ForProvider.GroupName+"/"+cr.Spec.ForProvider.PolicyARN)
+
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
 func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {
@@ -168,9 +180,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		GroupName: &cr.Spec.ForProvider.GroupName,
 	}).Send(ctx)
 
-	if iam.IsErrorNotFound(err) {
-		return nil
-	}
-
-	return awsclient.Wrap(err, errDetach)
+	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDetach)
 }
