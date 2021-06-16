@@ -127,3 +127,66 @@ func DBClusterARN() reference.ExtractValueFn {
 		return *r.Status.AtProvider.DBClusterARN
 	}
 }
+
+// ResolveReferences of this DBInstance
+func (mg *DBInstance) ResolveReferences(ctx context.Context, c client.Reader) error {
+	r := reference.NewAPIResolver(c, mg)
+
+	// Resolve spec.forProvider.dbSubnetGroupName
+	rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.DBSubnetGroupName),
+		Reference:    mg.Spec.ForProvider.DBSubnetGroupNameRef,
+		Selector:     mg.Spec.ForProvider.DBSubnetGroupNameSelector,
+		To:           reference.To{Managed: &database.DBSubnetGroup{}, List: &database.DBSubnetGroupList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.dbSubnetGroupName")
+	}
+	mg.Spec.ForProvider.DBSubnetGroupName = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.DBSubnetGroupNameRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.domainIAMRoleName
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.DomainIAMRoleName),
+		Reference:    mg.Spec.ForProvider.DomainIAMRoleNameRef,
+		Selector:     mg.Spec.ForProvider.DomainIAMRoleNameSelector,
+		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.domainIAMRoleName")
+	}
+	mg.Spec.ForProvider.DomainIAMRoleName = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.DomainIAMRoleNameRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.monitoringRoleArn
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.MonitoringRoleARN),
+		Reference:    mg.Spec.ForProvider.MonitoringRoleARNRef,
+		Selector:     mg.Spec.ForProvider.MonitoringRoleARNSelector,
+		To:           reference.To{Managed: &iamv1beta1.IAMRole{}, List: &iamv1beta1.IAMRoleList{}},
+		Extract:      iamv1beta1.IAMRoleARN(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.monitoringRoleArn")
+	}
+	mg.Spec.ForProvider.MonitoringRoleARN = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.MonitoringRoleARNRef = rsp.ResolvedReference
+
+	// Resolve spec.forProvider.vpcSecurityGroupIDs
+	mrsp, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+		CurrentValues: mg.Spec.ForProvider.VPCSecurityGroupIDs,
+		References:    mg.Spec.ForProvider.VPCSecurityGroupIDRefs,
+		Selector:      mg.Spec.ForProvider.VPCSecurityGroupIDSelector,
+		To:            reference.To{Managed: &network.SecurityGroup{}, List: &network.SecurityGroupList{}},
+		Extract:       reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.vpcSecurityGroupIds")
+	}
+	mg.Spec.ForProvider.VPCSecurityGroupIDs = mrsp.ResolvedValues
+	mg.Spec.ForProvider.VPCSecurityGroupIDRefs = mrsp.ResolvedReferences
+
+	return nil
+}
