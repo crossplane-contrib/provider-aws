@@ -18,9 +18,11 @@ package iamgroupusermembership
 
 import (
 	"context"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -30,7 +32,6 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -93,8 +94,19 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
+	if meta.GetExternalName(cr) == "" {
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
+
+	// We need to use external name if it exists in order to support resource import.
+	nn := strings.Split(meta.GetExternalName(cr), "/")
+	if len(nn) != 2 {
+		return managed.ExternalObservation{}, errors.New("external name has to be in the following format <group-name>/<user-name>")
+	}
+	groupName, userName := nn[0], nn[1]
+
 	observed, err := e.client.ListGroupsForUserRequest(&awsiam.ListGroupsForUserInput{
-		UserName: &cr.Spec.ForProvider.UserName,
+		UserName: &userName,
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(err, errGet)
@@ -102,7 +114,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	var attachedGroupObject *awsiam.Group
 	for i, group := range observed.Groups {
-		if cr.Spec.ForProvider.GroupName == aws.StringValue(group.GroupName) {
+		if groupName == aws.StringValue(group.GroupName) {
 			attachedGroupObject = &observed.Groups[i]
 			break
 		}
@@ -118,17 +130,11 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		AttachedGroupARN: aws.StringValue(attachedGroupObject.Arn),
 	}
 
-	// This resource is interesting in that it's a binding without its own
-	// external identity. We therefore derive an external name from the
-	// names of the group and user that are bound.
-	meta.SetExternalName(cr, cr.Spec.ForProvider.GroupName+"/"+cr.Spec.ForProvider.UserName)
-
 	cr.SetConditions(xpv1.Available())
 
 	return managed.ExternalObservation{
-		ResourceExists:          true,
-		ResourceLateInitialized: true,
-		ResourceUpToDate:        true,
+		ResourceExists:   true,
+		ResourceUpToDate: true,
 	}, nil
 }
 
@@ -138,14 +144,20 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	cr.SetConditions(xpv1.Creating())
-
 	_, err := e.client.AddUserToGroupRequest(&awsiam.AddUserToGroupInput{
 		GroupName: &cr.Spec.ForProvider.GroupName,
 		UserName:  &cr.Spec.ForProvider.UserName,
 	}).Send(ctx)
+	if err != nil {
+		return managed.ExternalCreation{}, awsclient.Wrap(err, errAdd)
+	}
 
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errAdd)
+	// This resource is interesting in that it's a binding without its own
+	// external identity. We therefore derive an external name from the
+	// names of the group and user that are bound.
+	meta.SetExternalName(cr, cr.Spec.ForProvider.GroupName+"/"+cr.Spec.ForProvider.UserName)
+
+	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
 func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {

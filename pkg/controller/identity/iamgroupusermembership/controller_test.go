@@ -109,20 +109,16 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: userGroup(withSpecGroupName(groupName),
-					withSpecUserName(userName)),
+				cr: userGroup(withExternalName(groupName + "/" + userName)),
 			},
 			want: want{
 				cr: userGroup(
 					withExternalName(groupName+"/"+userName),
-					withSpecGroupName(groupName),
-					withSpecUserName(userName),
 					withConditions(xpv1.Available()),
 					withStatusGroupArn(groupArn)),
 				result: managed.ExternalObservation{
-					ResourceExists:          true,
-					ResourceLateInitialized: true,
-					ResourceUpToDate:        true,
+					ResourceExists:   true,
+					ResourceUpToDate: true,
 				},
 			},
 		},
@@ -159,10 +155,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: userGroup(withSpecGroupName(groupName)),
+				cr: userGroup(withExternalName(groupName + "/" + userName)),
 			},
 			want: want{
-				cr:  userGroup(withSpecGroupName(groupName)),
+				cr:  userGroup(withExternalName(groupName + "/" + userName)),
 				err: awsclient.Wrap(errBoom, errGet),
 			},
 		},
@@ -214,7 +210,8 @@ func TestCreate(t *testing.T) {
 				cr: userGroup(
 					withSpecGroupName(groupName),
 					withSpecUserName(userName),
-					withConditions(xpv1.Creating())),
+					withExternalName(groupName+"/"+userName)),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"InValidInput": {
@@ -240,8 +237,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: userGroup(withSpecGroupName(groupName),
-					withSpecUserName(userName),
-					withConditions(xpv1.Creating())),
+					withSpecUserName(userName)),
 				err: awsclient.Wrap(errBoom, errAdd),
 			},
 		},
