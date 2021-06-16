@@ -30,6 +30,7 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -44,8 +45,6 @@ const (
 	errGet              = "failed to get ACMPCA with name"
 	errCreate           = "failed to create the ACMPCA resource"
 	errDelete           = "failed to delete the ACMPCA resource"
-
-	principal = "acm.amazonaws.com"
 )
 
 // SetupCertificateAuthorityPermission adds a controller that reconciles ACMPCA.
@@ -106,10 +105,17 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			ResourceExists: false,
 		}, nil
 	}
+
+	// This resource is interesting in that it's a binding without its own
+	// external identity. We therefore derive an external name from the
+	// identity of the CA it applies to, and the principal it applies.
+	meta.SetExternalName(cr, *cr.Spec.ForProvider.CertificateAuthorityARN+"/"+cr.Spec.ForProvider.Principal)
+
 	cr.SetConditions(xpv1.Available())
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: true,
+		ResourceExists:          true,
+		ResourceLateInitialized: true,
+		ResourceUpToDate:        true,
 	}, nil
 }
 
@@ -122,7 +128,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	_, err := e.client.CreatePermissionRequest(&awsacmpca.CreatePermissionInput{
 		Actions:                 []awsacmpca.ActionType{awsacmpca.ActionTypeIssueCertificate, awsacmpca.ActionTypeGetCertificate, awsacmpca.ActionTypeListPermissions},
 		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
-		Principal:               aws.String(principal),
+		Principal:               aws.String(cr.Spec.ForProvider.Principal),
 	}).Send(ctx)
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 
@@ -142,7 +148,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	_, err := e.client.DeletePermissionRequest(&awsacmpca.DeletePermissionInput{
 		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
-		Principal:               aws.String(principal),
+		Principal:               aws.String(cr.Spec.ForProvider.Principal),
 	}).Send(ctx)
 
 	return awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)

@@ -84,7 +84,7 @@ spec:
                         type: object
                     type: object
                   principal:
-                    description: The AWS Service or identity
+                    description: The AWS service or identity that receives the permission. At this time, the only valid principal is acm.amazonaws.com.
                     type: string
                   region:
                     description: Region is the region of CertificateAuthorityPermission.
@@ -93,6 +93,7 @@ spec:
                     description: Calling Account ID
                     type: string
                 required:
+                - principal
                 - region
                 type: object
               providerConfigRef:
