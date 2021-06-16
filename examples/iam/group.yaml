@@ -3,8 +3,6 @@ apiVersion: identity.aws.crossplane.io/v1alpha1
 kind: IAMGroup
 metadata:
   name: somegroup
-  annotations:
-    crossplane.io/external-name: external-name
 spec:
   providerConfigRef:
     name: example
