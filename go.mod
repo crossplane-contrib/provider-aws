@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/aws/aws-sdk-go v1.37.4
 	github.com/aws/aws-sdk-go-v2 v0.23.0
-	github.com/crossplane/crossplane-runtime v0.13.1-0.20210531122928-ded177829557
+	github.com/crossplane/crossplane-runtime v0.14.0
 	github.com/crossplane/crossplane-tools v0.0.0-20210320162312-1baca298c527
 	github.com/evanphx/json-patch v4.9.0+incompatible
 	github.com/go-ini/ini v1.46.0
