@@ -1320,6 +1320,16 @@ func (in *UserIDGroupPair) DeepCopyInto(out *UserIDGroupPair) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.GroupIDRef != nil {
+		in, out := &in.GroupIDRef, &out.GroupIDRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.GroupIDSelector != nil {
+		in, out := &in.GroupIDSelector, &out.GroupIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.GroupName != nil {
 		in, out := &in.GroupName, &out.GroupName
 		*out = new(string)
