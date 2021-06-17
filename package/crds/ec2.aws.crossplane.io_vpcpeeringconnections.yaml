@@ -65,6 +65,27 @@ spec:
                   peerVPCID:
                     description: The ID of the VPC with which you are creating the VPC peering connection. You must specify this parameter in the request.
                     type: string
+                  peerVPCIDRef:
+                    description: PeerVPCIDRef is a reference to an API used to set the PeerVPCID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  peerVPCIDSelector:
+                    description: PeerVPCIDSelector selects references to API used to set the PeerVPCID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   region:
                     description: Region is which region the VPCPeeringConnection will be created.
                     type: string
@@ -88,6 +109,27 @@ spec:
                   vpcID:
                     description: The ID of the requester VPC. You must specify this parameter in the request.
                     type: string
+                  vpcIDRef:
+                    description: VPCIDRef is a reference to an API used to set the VPCID.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  vpcIDSelector:
+                    description: VPCIDSelector selects references to API used to set the VPCID.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                 required:
                 - region
                 type: object
