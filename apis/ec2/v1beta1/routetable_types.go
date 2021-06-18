@@ -213,7 +213,7 @@ type RouteTableObservation struct {
 // A RouteTableStatus represents the observed state of a RouteTable.
 type RouteTableStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          RouteTableObservation `json:"atProvider"`
+	AtProvider          RouteTableObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

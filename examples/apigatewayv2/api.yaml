@@ -1,9 +1,12 @@
 apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
 kind: API
 metadata:
-  name: test-api
+  name: test-ws-api
 spec:
   forProvider:
-    region: us-west-2
-    name: test-api
-    protocolType: HTTP
+    region: us-east-1
+    name: test-ws-api
+    protocolType: WEBSOCKET
+    routeSelectionExpression: "GET /newroute"
+  providerConfigRef:
+    name: example

@@ -71,7 +71,7 @@ type IAMPolicyObservation struct {
 // An IAMPolicyStatus represents the observed state of an IAMPolicy.
 type IAMPolicyStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMPolicyObservation `json:"atProvider"`
+	AtProvider          IAMPolicyObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -45,7 +45,8 @@ spec:
             description: IntegrationSpec defines the desired state of Integration
             properties:
               deletionPolicy:
-                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource.
                 enum:
                 - Orphan
                 - Delete
@@ -110,6 +111,40 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  responseParameters:
+                    additionalProperties:
+                      description: ResponseParameter represents a single response parameter transform operation.
+                      properties:
+                        headerEntry:
+                          description: HeaderEntries is the array of header changes you'd like to make. For details, see Transforming API responses in https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-parameter-mapping.html
+                          items:
+                            description: HeaderEntry can be used to represent a single header transform.
+                            properties:
+                              name:
+                                description: Name is the name of the header.
+                                type: string
+                              operation:
+                                description: Operation is what you'd like to do with given header. Only append, overwrite and remove values are supported.
+                                enum:
+                                - append
+                                - overwrite
+                                - remove
+                                type: string
+                              value:
+                                description: Value is the new value.
+                                type: string
+                            required:
+                            - name
+                            - operation
+                            - value
+                            type: object
+                          type: array
+                        overwriteStatusCodeEntry:
+                          description: OverwriteStatusCode is the status code you'd like the response to have, overwriting the one in the original response. For details, see Transforming API responses in https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-parameter-mapping.html
+                          type: string
+                      type: object
+                    description: Supported only for HTTP APIs. You use response parameters to transform the HTTP response from a backend integration before returning the response to clients. Specify a key-value map from a selection key to response parameters. The selection key must be a valid HTTP status code within the range of 200-599.
+                    type: object
                   templateSelectionExpression:
                     type: string
                   timeoutInMillis:
@@ -126,6 +161,8 @@ spec:
                 - region
                 type: object
               providerConfigRef:
+                default:
+                  name: default
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
                 properties:
                   name:
@@ -200,9 +237,9 @@ spec:
                   - type
                   type: object
                 type: array
-            required:
-            - atProvider
             type: object
+        required:
+        - spec
         type: object
     served: true
     storage: true

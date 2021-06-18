@@ -47,9 +47,13 @@ func GenerateActivity(resp *svcsdk.DescribeActivityOutput) *svcapitypes.Activity
 
 	if resp.ActivityArn != nil {
 		cr.Status.AtProvider.ActivityARN = resp.ActivityArn
+	} else {
+		cr.Status.AtProvider.ActivityARN = nil
 	}
 	if resp.CreationDate != nil {
 		cr.Status.AtProvider.CreationDate = &metav1.Time{*resp.CreationDate}
+	} else {
+		cr.Status.AtProvider.CreationDate = nil
 	}
 
 	return cr

@@ -1,3 +1,4 @@
+# Models are only compatible with WEBSOCKET APIs
 apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
 kind: Model
 metadata:
@@ -5,8 +6,8 @@ metadata:
 spec:
   forProvider:
     apiIdRef:
-      name: test-api2
-    region: us-west-2
+      name: test-ws-api
+    region: us-east-1
     name: testmodel
     contentType: application/json
     schema: |-
@@ -25,3 +26,5 @@ spec:
           }
         }
       }
+  providerConfigRef:
+    name: example

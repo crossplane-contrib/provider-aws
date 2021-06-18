@@ -6,6 +6,7 @@ spec:
   providerConfigRef:
     name: example
   forProvider:
+    # Note you'll need to update the ARN to refer to a real user.
     policy: |-
       {
         "Version": "2012-10-17",
@@ -14,14 +15,14 @@ spec:
             "Sid": "Enable IAM User Permissions",
             "Effect": "Allow",
             "Principal": {
-              "AWS": "arn:aws:iam::123456789012:root"
+              "AWS": "arn:aws:iam::123456789012:user/root"
             },
             "Action": "kms:*",
             "Resource": "*"
           }
         ]
       }
-    region: eu-central-1
+    region: us-east-1
     tags:
     - tagKey: k1
       tagValue: v1

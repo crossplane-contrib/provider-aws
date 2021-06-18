@@ -55,7 +55,7 @@ type RouteResponseObservation struct {
 // RouteResponseStatus defines the observed state of RouteResponse.
 type RouteResponseStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          RouteResponseObservation `json:"atProvider"`
+	AtProvider          RouteResponseObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -69,7 +69,7 @@ type RouteResponseStatus struct {
 type RouteResponse struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              RouteResponseSpec   `json:"spec,omitempty"`
+	Spec              RouteResponseSpec   `json:"spec"`
 	Status            RouteResponseStatus `json:"status,omitempty"`
 }
 

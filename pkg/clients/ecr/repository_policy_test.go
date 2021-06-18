@@ -20,7 +20,10 @@ var (
 	boolCheck   = true
 	testID      = "id"
 	policy      = `{"Statement":[{"Action":"ecr:ListImages","Effect":"Allow","Principal":"*"}],"Version":"2012-10-17"}`
-	params      = v1alpha1.RepositoryPolicyParameters{
+	cpxPolicy   = `{"Statement":[{"Action":"ecr:ListImages","Effect":"Allow","Principal":{"AWS":["arn:aws:iam::111122223333:userARN","111122223334","arn:aws:iam::111122223333:roleARN"]}}],"Version":"2012-10-17"}`
+	// Note: different sort order of principals than input above
+	cpxRemPolicy = `{"Statement":[{"Action":"ecr:ListImages","Effect":"Allow","Principal":{"AWS":["111122223334","arn:aws:iam::111122223333:userARN","arn:aws:iam::111122223333:roleARN"]}}],"Version":"2012-10-17"}`
+	params       = v1alpha1.RepositoryPolicyParameters{
 		Policy: &v1alpha1.RepositoryPolicyBody{
 			Version: "2012-10-17",
 			Statements: []v1alpha1.RepositoryPolicyStatement{
@@ -117,7 +120,9 @@ func TestSerializeRepositoryPolicyStatement(t *testing.T) {
 							IAMUserARN: aws.String("arn:aws:iam::111122223333:userARN"),
 						},
 						{
-							AWSAccountID: aws.String("111122223333"),
+							// Note: should be converted to full ARN when serialized
+							// to avoid needless updates.
+							AWSAccountID: aws.String("111122223334"),
 						},
 						{
 							IAMRoleARN: aws.String("arn:aws:iam::111122223333:roleARN"),
@@ -141,7 +146,7 @@ func TestSerializeRepositoryPolicyStatement(t *testing.T) {
 					},
 				}),
 			),
-			out: `{"Condition":{"test":{"test":"testKey","test2":"testKey2"}},"Action":"ecr:DescribeRepositories","Effect":"Allow","Principal":{"AWS":["arn:aws:iam::111122223333:userARN","111122223333","arn:aws:iam::111122223333:roleARN"]},"Sid":"1"}`,
+			out: `{"Condition":{"test":{"test":"testKey","test2":"testKey2"}},"Action":"ecr:DescribeRepositories","Effect":"Allow","Principal":{"AWS":["arn:aws:iam::111122223333:userARN","arn:aws:iam::111122223334:root","arn:aws:iam::111122223333:roleARN"]},"Sid":"1"}`,
 		},
 	}
 
@@ -227,6 +232,22 @@ func TestIsRepositoryPolicyUpToDate(t *testing.T) {
 				remote: "{\"testthree\": \"three\", \"testone\": \"one\"}",
 			},
 			want: false,
+		},
+		"SameFieldsPrincipalPolicy": {
+			args: args{
+				local:  cpxPolicy,
+				remote: cpxRemPolicy,
+			},
+			want: true,
+		},
+		"SameFieldsNumericPrincipals": {
+			args: args{
+				// This is to test that our slice sorting does not
+				// panic with unexpected value types.
+				local:  `{"Statement":[{"Effect":"Allow","Action":"ecr:ListImages","Principal":[2,1,"foo","bar"]}],"Version":"2012-10-17"}`,
+				remote: `{"Statement":[{"Effect":"Allow","Action":"ecr:ListImages","Principal":[2,1,"bar","foo"]}],"Version":"2012-10-17"}`,
+			},
+			want: true,
 		},
 	}
 

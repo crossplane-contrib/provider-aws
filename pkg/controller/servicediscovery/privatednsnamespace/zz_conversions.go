@@ -32,9 +32,6 @@ import (
 func GenerateCreatePrivateDnsNamespaceInput(cr *svcapitypes.PrivateDNSNamespace) *svcsdk.CreatePrivateDnsNamespaceInput {
 	res := &svcsdk.CreatePrivateDnsNamespaceInput{}
 
-	if cr.Spec.ForProvider.CreatorRequestID != nil {
-		res.SetCreatorRequestId(*cr.Spec.ForProvider.CreatorRequestID)
-	}
 	if cr.Spec.ForProvider.Description != nil {
 		res.SetDescription(*cr.Spec.ForProvider.Description)
 	}
@@ -42,21 +39,18 @@ func GenerateCreatePrivateDnsNamespaceInput(cr *svcapitypes.PrivateDNSNamespace)
 		res.SetName(*cr.Spec.ForProvider.Name)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f3 := []*svcsdk.Tag{}
-		for _, f3iter := range cr.Spec.ForProvider.Tags {
-			f3elem := &svcsdk.Tag{}
-			if f3iter.Key != nil {
-				f3elem.SetKey(*f3iter.Key)
+		f2 := []*svcsdk.Tag{}
+		for _, f2iter := range cr.Spec.ForProvider.Tags {
+			f2elem := &svcsdk.Tag{}
+			if f2iter.Key != nil {
+				f2elem.SetKey(*f2iter.Key)
 			}
-			if f3iter.Value != nil {
-				f3elem.SetValue(*f3iter.Value)
+			if f2iter.Value != nil {
+				f2elem.SetValue(*f2iter.Value)
 			}
-			f3 = append(f3, f3elem)
+			f2 = append(f2, f2elem)
 		}
-		res.SetTags(f3)
-	}
-	if cr.Spec.ForProvider.VPC != nil {
-		res.SetVpc(*cr.Spec.ForProvider.VPC)
+		res.SetTags(f2)
 	}
 
 	return res

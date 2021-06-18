@@ -71,7 +71,7 @@ type IAMGroupUserMembershipObservation struct {
 // IAMGroupUserMembership.
 type IAMGroupUserMembershipStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMGroupUserMembershipObservation `json:"atProvider"`
+	AtProvider          IAMGroupUserMembershipObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

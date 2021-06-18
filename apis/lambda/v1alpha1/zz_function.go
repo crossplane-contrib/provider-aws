@@ -29,9 +29,6 @@ type FunctionParameters struct {
 	// Region is which region the Function will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-	// The code for the function.
-	// +kubebuilder:validation:Required
-	Code *FunctionCode `json:"code"`
 	// To enable code signing for this function, specify the ARN of a code-signing
 	// configuration. A code-signing configuration includes a set of signing profiles,
 	// which define the trusted publishers for this function.
@@ -71,9 +68,6 @@ type FunctionParameters struct {
 	PackageType *string `json:"packageType,omitempty"`
 	// Set to true to publish the first version of the function during creation.
 	Publish *bool `json:"publish,omitempty"`
-	// The Amazon Resource Name (ARN) of the function's execution role.
-	// +kubebuilder:validation:Required
-	Role *string `json:"role"`
 	// The identifier of the function's runtime (https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
 	Runtime *string `json:"runtime,omitempty"`
 	// A list of tags (https://docs.aws.amazon.com/lambda/latest/dg/tagging.html)
@@ -84,12 +78,7 @@ type FunctionParameters struct {
 	Timeout *int64 `json:"timeout,omitempty"`
 	// Set Mode to Active to sample and trace a subset of incoming requests with
 	// AWS X-Ray.
-	TracingConfig *TracingConfig `json:"tracingConfig,omitempty"`
-	// For network connectivity to AWS resources in a VPC, specify a list of security
-	// groups and subnets in the VPC. When you connect a function to a VPC, it can
-	// only access resources and the internet through that VPC. For more information,
-	// see VPC Settings (https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html).
-	VPCConfig                *VPCConfig `json:"vpcConfig,omitempty"`
+	TracingConfig            *TracingConfig `json:"tracingConfig,omitempty"`
 	CustomFunctionParameters `json:",inline"`
 }
 
@@ -125,6 +114,8 @@ type FunctionObservation struct {
 	MasterARN *string `json:"masterARN,omitempty"`
 	// The latest updated revision of the function or alias.
 	RevisionID *string `json:"revisionID,omitempty"`
+	// The function's execution role.
+	Role *string `json:"role,omitempty"`
 	// The ARN of the signing job.
 	SigningJobARN *string `json:"signingJobARN,omitempty"`
 	// The ARN of the signing profile version.
@@ -139,12 +130,14 @@ type FunctionObservation struct {
 	StateReasonCode *string `json:"stateReasonCode,omitempty"`
 	// The version of the Lambda function.
 	Version *string `json:"version,omitempty"`
+	// The function's networking configuration.
+	VPCConfig *VPCConfigResponse `json:"vpcConfig,omitempty"`
 }
 
 // FunctionStatus defines the observed state of Function.
 type FunctionStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          FunctionObservation `json:"atProvider"`
+	AtProvider          FunctionObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -158,7 +151,7 @@ type FunctionStatus struct {
 type Function struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              FunctionSpec   `json:"spec,omitempty"`
+	Spec              FunctionSpec   `json:"spec"`
 	Status            FunctionStatus `json:"status,omitempty"`
 }
 

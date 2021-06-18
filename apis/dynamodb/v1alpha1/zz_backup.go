@@ -70,7 +70,7 @@ type BackupObservation struct {
 // BackupStatus defines the observed state of Backup.
 type BackupStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          BackupObservation `json:"atProvider"`
+	AtProvider          BackupObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -84,7 +84,7 @@ type BackupStatus struct {
 type Backup struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              BackupSpec   `json:"spec,omitempty"`
+	Spec              BackupSpec   `json:"spec"`
 	Status            BackupStatus `json:"status,omitempty"`
 }
 

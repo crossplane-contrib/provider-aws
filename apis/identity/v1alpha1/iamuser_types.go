@@ -56,7 +56,7 @@ type IAMUserObservation struct {
 // An IAMUserStatus represents the observed state of an IAM User.
 type IAMUserStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          IAMUserObservation `json:"atProvider"`
+	AtProvider          IAMUserObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

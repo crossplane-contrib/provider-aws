@@ -19,10 +19,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // FileSystemParameters defines the desired state of FileSystem
@@ -30,14 +29,12 @@ type FileSystemParameters struct {
 	// Region is which region the FileSystem will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-
 	// A Boolean value that, if true, creates an encrypted file system. When creating
 	// an encrypted file system, you have the option of specifying CreateFileSystemRequest$KmsKeyId
 	// for an existing AWS Key Management Service (AWS KMS) customer master key
 	// (CMK). If you don't specify a CMK, then the default CMK for Amazon EFS, /aws/elasticfilesystem,
 	// is used to protect the encrypted file system.
 	Encrypted *bool `json:"encrypted,omitempty"`
-
 	// The ID of the AWS KMS CMK to be used to protect the encrypted file system.
 	// This parameter is only required if you want to use a nondefault CMK. If this
 	// parameter is not specified, the default CMK for Amazon EFS is used. This
@@ -58,19 +55,16 @@ type FileSystemParameters struct {
 	// EFS accepts only symmetric CMKs. You cannot use asymmetric CMKs with EFS
 	// file systems.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
-
 	// The performance mode of the file system. We recommend generalPurpose performance
 	// mode for most file systems. File systems using the maxIO performance mode
 	// can scale to higher levels of aggregate throughput and operations per second
 	// with a tradeoff of slightly higher latencies for most file operations. The
 	// performance mode can't be changed after the file system has been created.
 	PerformanceMode *string `json:"performanceMode,omitempty"`
-
 	// A value that specifies to create one or more tags associated with the file
 	// system. Each tag is a user-defined key-value pair. Name your file system
 	// on creation by including a "Key":"Name","Value":"{value}" key-value pair.
 	Tags []*Tag `json:"tags,omitempty"`
-
 	// The throughput mode for the file system to be created. There are two throughput
 	// modes to choose from for your file system: bursting and provisioned. If you
 	// set ThroughputMode to provisioned, you must also set a value for ProvisionedThroughPutInMibps.
@@ -79,10 +73,7 @@ type FileSystemParameters struct {
 	// 24 hours since the last decrease or throughput mode change. For more, see
 	// Specifying Throughput with Provisioned Mode (https://docs.aws.amazon.com/efs/latest/ug/performance.html#provisioned-throughput)
 	// in the Amazon EFS User Guide.
-	ThroughputMode *string `json:"throughputMode,omitempty"`
-
-	// CustomFileSystemParameters includes the additional fields on top of
-	// the generated ones.
+	ThroughputMode             *string `json:"throughputMode,omitempty"`
 	CustomFileSystemParameters `json:",inline"`
 }
 
@@ -130,7 +121,7 @@ type FileSystemObservation struct {
 // FileSystemStatus defines the observed state of FileSystem.
 type FileSystemStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          FileSystemObservation `json:"atProvider"`
+	AtProvider          FileSystemObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -144,7 +135,7 @@ type FileSystemStatus struct {
 type FileSystem struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              FileSystemSpec   `json:"spec,omitempty"`
+	Spec              FileSystemSpec   `json:"spec"`
 	Status            FileSystemStatus `json:"status,omitempty"`
 }
 

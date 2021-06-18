@@ -46,9 +46,13 @@ func GenerateDomainName(resp *svcsdk.GetDomainNameOutput) *svcapitypes.DomainNam
 
 	if resp.ApiMappingSelectionExpression != nil {
 		cr.Status.AtProvider.APIMappingSelectionExpression = resp.ApiMappingSelectionExpression
+	} else {
+		cr.Status.AtProvider.APIMappingSelectionExpression = nil
 	}
 	if resp.DomainName != nil {
 		cr.Status.AtProvider.DomainName = resp.DomainName
+	} else {
+		cr.Status.AtProvider.DomainName = nil
 	}
 
 	return cr

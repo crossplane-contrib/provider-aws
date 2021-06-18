@@ -3,11 +3,14 @@ kind: PrivateDNSNamespace
 metadata:
   name: example-privatednsnamespace
 spec:
+  providerConfigRef:
+    name: example
   forProvider:
-    region: eu-central-1
+    region: us-east-1
     description: "test"
-    name: "test"
-    vpc: default
+    name: crossplane-private-dns-namespace-test
+    vpcRef:
+      name: sample-vpc
     tags:
       - key: cluster
         value: "my-cluster"

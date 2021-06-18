@@ -126,7 +126,7 @@ type AddressObservation struct {
 // A AddressStatus represents the observed state of a Address.
 type AddressStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          AddressObservation `json:"atProvider"`
+	AtProvider          AddressObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

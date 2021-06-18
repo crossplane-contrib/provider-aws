@@ -94,7 +94,7 @@ type InternetGatewayObservation struct {
 // An InternetGatewayStatus represents the observed state of an InternetGateway.
 type InternetGatewayStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          InternetGatewayObservation `json:"atProvider"`
+	AtProvider          InternetGatewayObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

@@ -96,7 +96,7 @@ func postCreate(_ context.Context, cr *svcapitypes.VPCLink, resp *svcsdk.CreateV
 	return cre, nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.VPCLink, obj *svcsdk.DeleteVpcLinkInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.VPCLink, obj *svcsdk.DeleteVpcLinkInput) (bool, error) {
 	obj.VpcLinkId = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }

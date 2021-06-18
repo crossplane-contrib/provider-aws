@@ -54,7 +54,7 @@ type DomainNameObservation struct {
 // DomainNameStatus defines the observed state of DomainName.
 type DomainNameStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          DomainNameObservation `json:"atProvider"`
+	AtProvider          DomainNameObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -68,7 +68,7 @@ type DomainNameStatus struct {
 type DomainName struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              DomainNameSpec   `json:"spec,omitempty"`
+	Spec              DomainNameSpec   `json:"spec"`
 	Status            DomainNameStatus `json:"status,omitempty"`
 }
 

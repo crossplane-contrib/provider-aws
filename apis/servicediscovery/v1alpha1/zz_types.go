@@ -18,17 +18,16 @@ limitations under the License.
 
 package v1alpha1
 
-type DNSConfig struct {
-	NamespaceID *string `json:"namespaceID,omitempty"`
-}
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
-type DNSProperties struct {
-	HostedZoneID *string `json:"hostedZoneID,omitempty"`
-}
+// Hack to avoid import errors during build...
+var (
+	_ = &metav1.Time{}
+)
 
 type HTTPInstanceSummary struct {
-	InstanceID *string `json:"instanceID,omitempty"`
-
 	NamespaceName *string `json:"namespaceName,omitempty"`
 }
 
@@ -36,30 +35,14 @@ type HTTPProperties struct {
 	HTTPName *string `json:"httpName,omitempty"`
 }
 
-type Instance struct {
-	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
-
-	ID *string `json:"id,omitempty"`
-}
-
-type InstanceSummary struct {
-	ID *string `json:"id,omitempty"`
-}
-
 type Namespace struct {
-	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
-
 	Description *string `json:"description,omitempty"`
-
-	ID *string `json:"id,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 }
 
 type NamespaceSummary struct {
 	Description *string `json:"description,omitempty"`
-
-	ID *string `json:"id,omitempty"`
 
 	Name *string `json:"name,omitempty"`
 }
@@ -73,13 +56,7 @@ type OperationSummary struct {
 }
 
 type Service struct {
-	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
-
 	Description *string `json:"description,omitempty"`
-
-	ID *string `json:"id,omitempty"`
-
-	NamespaceID *string `json:"namespaceID,omitempty"`
 }
 
 type ServiceChange struct {
@@ -88,8 +65,6 @@ type ServiceChange struct {
 
 type ServiceSummary struct {
 	Description *string `json:"description,omitempty"`
-
-	ID *string `json:"id,omitempty"`
 }
 
 type Tag struct {

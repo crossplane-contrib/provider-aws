@@ -83,12 +83,12 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 		return managed.ExternalObservation{ResourceExists: false}, awsclient.Wrap(cpresource.Ignore(IsNotFound, err), errDescribe)
 	}
 	currentSpec := cr.Spec.ForProvider.DeepCopy()
-	if err := e.lateInitialize(cr, resp); err != nil {
+	if err := e.lateInitialize(&cr.Spec.ForProvider, resp); err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "late-init failed")
 	}
 	GenerateSecret(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 
-	upToDate, err := e.isUpToDate(basicUpToDateCheck(cr, resp), cr, resp)
+	upToDate, err := e.isUpToDate(cr, resp)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, "isUpToDate check failed")
 	}
@@ -116,6 +116,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	if resp.ARN != nil {
 		cr.Status.AtProvider.ARN = resp.ARN
+	} else {
+		cr.Status.AtProvider.ARN = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -131,10 +133,7 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
 	}
 	resp, err := e.client.UpdateSecretWithContext(ctx, input)
-	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
-	}
-	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, err)
+	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate))
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
@@ -163,8 +162,8 @@ func newExternal(kube client.Client, client svcsdkapi.SecretsManagerAPI, opts []
 		client:         client,
 		preObserve:     nopPreObserve,
 		postObserve:    nopPostObserve,
-		lateInitialize: lateInitialize,
-		isUpToDate:     nopIsUpToDate,
+		lateInitialize: nopLateInitialize,
+		isUpToDate:     alwaysUpToDate,
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,
@@ -183,8 +182,8 @@ type external struct {
 	client         svcsdkapi.SecretsManagerAPI
 	preObserve     func(context.Context, *svcapitypes.Secret, *svcsdk.DescribeSecretInput) error
 	postObserve    func(context.Context, *svcapitypes.Secret, *svcsdk.DescribeSecretOutput, managed.ExternalObservation, error) (managed.ExternalObservation, error)
-	lateInitialize func(*svcapitypes.Secret, *svcsdk.DescribeSecretOutput) error
-	isUpToDate     func(bool, *svcapitypes.Secret, *svcsdk.DescribeSecretOutput) (bool, error)
+	lateInitialize func(*svcapitypes.SecretParameters, *svcsdk.DescribeSecretOutput) error
+	isUpToDate     func(*svcapitypes.Secret, *svcsdk.DescribeSecretOutput) (bool, error)
 	preCreate      func(context.Context, *svcapitypes.Secret, *svcsdk.CreateSecretInput) error
 	postCreate     func(context.Context, *svcapitypes.Secret, *svcsdk.CreateSecretOutput, managed.ExternalCreation, error) (managed.ExternalCreation, error)
 	preDelete      func(context.Context, *svcapitypes.Secret, *svcsdk.DeleteSecretInput) (bool, error)
@@ -200,10 +199,13 @@ func nopPreObserve(context.Context, *svcapitypes.Secret, *svcsdk.DescribeSecretI
 func nopPostObserve(_ context.Context, _ *svcapitypes.Secret, _ *svcsdk.DescribeSecretOutput, obs managed.ExternalObservation, err error) (managed.ExternalObservation, error) {
 	return obs, err
 }
-
-func nopIsUpToDate(r bool, _ *svcapitypes.Secret, _ *svcsdk.DescribeSecretOutput) (bool, error) {
-	return r, nil
+func nopLateInitialize(*svcapitypes.SecretParameters, *svcsdk.DescribeSecretOutput) error {
+	return nil
 }
+func alwaysUpToDate(*svcapitypes.Secret, *svcsdk.DescribeSecretOutput) (bool, error) {
+	return true, nil
+}
+
 func nopPreCreate(context.Context, *svcapitypes.Secret, *svcsdk.CreateSecretInput) error {
 	return nil
 }

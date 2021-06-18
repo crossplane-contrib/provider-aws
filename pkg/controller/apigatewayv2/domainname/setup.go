@@ -78,7 +78,7 @@ func preCreate(_ context.Context, cr *svcapitypes.DomainName, obj *svcsdk.Create
 	return nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.DomainName, obj *svcsdk.DeleteDomainNameInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.DomainName, obj *svcsdk.DeleteDomainNameInput) (bool, error) {
 	obj.DomainName = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }

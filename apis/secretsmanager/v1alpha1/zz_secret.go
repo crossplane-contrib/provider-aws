@@ -19,10 +19,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
 // SecretParameters defines the desired state of Secret
@@ -30,10 +29,8 @@ type SecretParameters struct {
 	// Region is which region the Secret will be created.
 	// +kubebuilder:validation:Required
 	Region string `json:"region"`
-
 	// (Optional) Specifies a user-provided description of the secret.
 	Description *string `json:"description,omitempty"`
-
 	// (Optional) Specifies the ARN, Key ID, or alias of the AWS KMS customer master
 	// key (CMK) to be used to encrypt the SecretString or SecretBinary values in
 	// the versions stored in this secret.
@@ -53,17 +50,6 @@ type SecretParameters struct {
 	// If the secret resides in a different account, then you must create a custom
 	// CMK and specify the ARN in this field.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
-
-	// KMSKeyIDRef is a reference to an kms/v1alpha1.Key used
-	// to set the KMSKeyID field.
-	// +optional
-	KMSKeyIDRef *xpv1.Reference `json:"kmsKeyIDRef,omitempty"`
-
-	// KMSKeyIDSelector selects references to kms/v1alpha1.Key
-	// used to set the KMSKeyID.
-	// +optional
-	KMSKeyIDSelector *xpv1.Selector `json:"kmsKeyIDSelector,omitempty"`
-
 	// (Optional) Specifies a list of user-defined tags that are attached to the
 	// secret. Each tag is a "Key" and "Value" pair of strings. This operation only
 	// appends tags to the existing list of tags. To remove tags, you must use UntagResource.
@@ -107,10 +93,7 @@ type SecretParameters struct {
 	//    remember other services might have restrictions on allowed characters.
 	//    Generally allowed characters: letters, spaces, and numbers representable
 	//    in UTF-8, plus the following special characters: + - = . _ : / @.
-	Tags []*Tag `json:"tags,omitempty"`
-
-	// CustomSecretParameters includes the additional fields on top of
-	// the generated ones.
+	Tags                   []*Tag `json:"tags,omitempty"`
 	CustomSecretParameters `json:",inline"`
 }
 
@@ -136,7 +119,7 @@ type SecretObservation struct {
 // SecretStatus defines the observed state of Secret.
 type SecretStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          SecretObservation `json:"atProvider"`
+	AtProvider          SecretObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -150,7 +133,7 @@ type SecretStatus struct {
 type Secret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              SecretSpec   `json:"spec,omitempty"`
+	Spec              SecretSpec   `json:"spec"`
 	Status            SecretStatus `json:"status,omitempty"`
 }
 

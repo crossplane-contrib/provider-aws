@@ -63,7 +63,7 @@ type VPCLinkObservation struct {
 // VPCLinkStatus defines the observed state of VPCLink.
 type VPCLinkStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          VPCLinkObservation `json:"atProvider"`
+	AtProvider          VPCLinkObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -77,7 +77,7 @@ type VPCLinkStatus struct {
 type VPCLink struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              VPCLinkSpec   `json:"spec,omitempty"`
+	Spec              VPCLinkSpec   `json:"spec"`
 	Status            VPCLinkStatus `json:"status,omitempty"`
 }
 

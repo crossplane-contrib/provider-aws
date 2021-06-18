@@ -99,7 +99,8 @@ func (e *custom) postCreate(ctx context.Context, cr *svcapitypes.DBCluster, _ *s
 		return managed.ExternalCreation{}, err
 	}
 	conn := managed.ConnectionDetails{
-		xpv1.ResourceCredentialsSecretUserKey: []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername)),
+		xpv1.ResourceCredentialsSecretEndpointKey: []byte(aws.StringValue(cr.Status.AtProvider.Endpoint)),
+		xpv1.ResourceCredentialsSecretUserKey:     []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername)),
 	}
 	pw, _, err := rds.GetPassword(ctx, e.kube, &cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {

@@ -51,7 +51,8 @@ spec:
             description: HostedZoneSpec defines the desired state of an AWS Route53 Hosted HostedZone.
             properties:
               deletionPolicy:
-                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource.
                 enum:
                 - Orphan
                 - Delete
@@ -110,6 +111,8 @@ spec:
                 - name
                 type: object
               providerConfigRef:
+                default:
+                  name: default
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
                 properties:
                   name:
@@ -230,8 +233,6 @@ spec:
                   - type
                   type: object
                 type: array
-            required:
-            - atProvider
             type: object
         required:
         - spec

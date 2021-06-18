@@ -58,7 +58,7 @@ type CacheSubnetGroupExternalStatus struct {
 // A CacheSubnetGroupStatus represents the observed state of a Subnet Group.
 type CacheSubnetGroupStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          CacheSubnetGroupExternalStatus `json:"atProvider"`
+	AtProvider          CacheSubnetGroupExternalStatus `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

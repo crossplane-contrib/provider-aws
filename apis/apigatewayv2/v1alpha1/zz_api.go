@@ -84,7 +84,7 @@ type APIObservation struct {
 // APIStatus defines the observed state of API.
 type APIStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          APIObservation `json:"atProvider"`
+	AtProvider          APIObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -98,7 +98,7 @@ type APIStatus struct {
 type API struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              APISpec   `json:"spec,omitempty"`
+	Spec              APISpec   `json:"spec"`
 	Status            APIStatus `json:"status,omitempty"`
 }
 

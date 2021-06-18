@@ -57,6 +57,8 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 			f0.ArchivalReason = resp.Table.ArchivalSummary.ArchivalReason
 		}
 		cr.Status.AtProvider.ArchivalSummary = f0
+	} else {
+		cr.Status.AtProvider.ArchivalSummary = nil
 	}
 	if resp.Table.BillingModeSummary != nil {
 		f2 := &svcapitypes.BillingModeSummary{}
@@ -67,21 +69,33 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 			f2.LastUpdateToPayPerRequestDateTime = &metav1.Time{*resp.Table.BillingModeSummary.LastUpdateToPayPerRequestDateTime}
 		}
 		cr.Status.AtProvider.BillingModeSummary = f2
+	} else {
+		cr.Status.AtProvider.BillingModeSummary = nil
 	}
 	if resp.Table.CreationDateTime != nil {
 		cr.Status.AtProvider.CreationDateTime = &metav1.Time{*resp.Table.CreationDateTime}
+	} else {
+		cr.Status.AtProvider.CreationDateTime = nil
 	}
 	if resp.Table.GlobalTableVersion != nil {
 		cr.Status.AtProvider.GlobalTableVersion = resp.Table.GlobalTableVersion
+	} else {
+		cr.Status.AtProvider.GlobalTableVersion = nil
 	}
 	if resp.Table.ItemCount != nil {
 		cr.Status.AtProvider.ItemCount = resp.Table.ItemCount
+	} else {
+		cr.Status.AtProvider.ItemCount = nil
 	}
 	if resp.Table.LatestStreamArn != nil {
 		cr.Status.AtProvider.LatestStreamARN = resp.Table.LatestStreamArn
+	} else {
+		cr.Status.AtProvider.LatestStreamARN = nil
 	}
 	if resp.Table.LatestStreamLabel != nil {
 		cr.Status.AtProvider.LatestStreamLabel = resp.Table.LatestStreamLabel
+	} else {
+		cr.Status.AtProvider.LatestStreamLabel = nil
 	}
 	if resp.Table.Replicas != nil {
 		f12 := []*svcapitypes.ReplicaDescription{}
@@ -133,6 +147,8 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 			f12 = append(f12, f12elem)
 		}
 		cr.Status.AtProvider.Replicas = f12
+	} else {
+		cr.Status.AtProvider.Replicas = nil
 	}
 	if resp.Table.RestoreSummary != nil {
 		f13 := &svcapitypes.RestoreSummary{}
@@ -149,6 +165,8 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 			f13.SourceTableARN = resp.Table.RestoreSummary.SourceTableArn
 		}
 		cr.Status.AtProvider.RestoreSummary = f13
+	} else {
+		cr.Status.AtProvider.RestoreSummary = nil
 	}
 	if resp.Table.SSEDescription != nil {
 		f14 := &svcapitypes.SSEDescription{}
@@ -165,21 +183,33 @@ func GenerateTable(resp *svcsdk.DescribeTableOutput) *svcapitypes.Table {
 			f14.Status = resp.Table.SSEDescription.Status
 		}
 		cr.Status.AtProvider.SSEDescription = f14
+	} else {
+		cr.Status.AtProvider.SSEDescription = nil
 	}
 	if resp.Table.TableArn != nil {
 		cr.Status.AtProvider.TableARN = resp.Table.TableArn
+	} else {
+		cr.Status.AtProvider.TableARN = nil
 	}
 	if resp.Table.TableId != nil {
 		cr.Status.AtProvider.TableID = resp.Table.TableId
+	} else {
+		cr.Status.AtProvider.TableID = nil
 	}
 	if resp.Table.TableName != nil {
 		cr.Status.AtProvider.TableName = resp.Table.TableName
+	} else {
+		cr.Status.AtProvider.TableName = nil
 	}
 	if resp.Table.TableSizeBytes != nil {
 		cr.Status.AtProvider.TableSizeBytes = resp.Table.TableSizeBytes
+	} else {
+		cr.Status.AtProvider.TableSizeBytes = nil
 	}
 	if resp.Table.TableStatus != nil {
 		cr.Status.AtProvider.TableStatus = resp.Table.TableStatus
+	} else {
+		cr.Status.AtProvider.TableStatus = nil
 	}
 
 	return cr

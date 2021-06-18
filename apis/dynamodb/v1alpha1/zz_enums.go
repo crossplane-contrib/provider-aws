@@ -51,6 +51,22 @@ const (
 	BackupTypeFilter_ALL        BackupTypeFilter = "ALL"
 )
 
+type BatchStatementErrorCodeEnum string
+
+const (
+	BatchStatementErrorCodeEnum_ConditionalCheckFailed          BatchStatementErrorCodeEnum = "ConditionalCheckFailed"
+	BatchStatementErrorCodeEnum_ItemCollectionSizeLimitExceeded BatchStatementErrorCodeEnum = "ItemCollectionSizeLimitExceeded"
+	BatchStatementErrorCodeEnum_RequestLimitExceeded            BatchStatementErrorCodeEnum = "RequestLimitExceeded"
+	BatchStatementErrorCodeEnum_ValidationError                 BatchStatementErrorCodeEnum = "ValidationError"
+	BatchStatementErrorCodeEnum_ProvisionedThroughputExceeded   BatchStatementErrorCodeEnum = "ProvisionedThroughputExceeded"
+	BatchStatementErrorCodeEnum_TransactionConflict             BatchStatementErrorCodeEnum = "TransactionConflict"
+	BatchStatementErrorCodeEnum_ThrottlingError                 BatchStatementErrorCodeEnum = "ThrottlingError"
+	BatchStatementErrorCodeEnum_InternalServerError             BatchStatementErrorCodeEnum = "InternalServerError"
+	BatchStatementErrorCodeEnum_ResourceNotFound                BatchStatementErrorCodeEnum = "ResourceNotFound"
+	BatchStatementErrorCodeEnum_AccessDenied                    BatchStatementErrorCodeEnum = "AccessDenied"
+	BatchStatementErrorCodeEnum_DuplicateItem                   BatchStatementErrorCodeEnum = "DuplicateItem"
+)
+
 type BillingMode string
 
 const (
@@ -107,6 +123,31 @@ const (
 	ContributorInsightsStatus_FAILED    ContributorInsightsStatus = "FAILED"
 )
 
+type DestinationStatus string
+
+const (
+	DestinationStatus_ENABLING      DestinationStatus = "ENABLING"
+	DestinationStatus_ACTIVE        DestinationStatus = "ACTIVE"
+	DestinationStatus_DISABLING     DestinationStatus = "DISABLING"
+	DestinationStatus_DISABLED      DestinationStatus = "DISABLED"
+	DestinationStatus_ENABLE_FAILED DestinationStatus = "ENABLE_FAILED"
+)
+
+type ExportFormat string
+
+const (
+	ExportFormat_DYNAMODB_JSON ExportFormat = "DYNAMODB_JSON"
+	ExportFormat_ION           ExportFormat = "ION"
+)
+
+type ExportStatus string
+
+const (
+	ExportStatus_IN_PROGRESS ExportStatus = "IN_PROGRESS"
+	ExportStatus_COMPLETED   ExportStatus = "COMPLETED"
+	ExportStatus_FAILED      ExportStatus = "FAILED"
+)
+
 type GlobalTableStatus_SDK string
 
 const (
@@ -150,12 +191,13 @@ const (
 type ReplicaStatus string
 
 const (
-	ReplicaStatus_CREATING        ReplicaStatus = "CREATING"
-	ReplicaStatus_CREATION_FAILED ReplicaStatus = "CREATION_FAILED"
-	ReplicaStatus_UPDATING        ReplicaStatus = "UPDATING"
-	ReplicaStatus_DELETING        ReplicaStatus = "DELETING"
-	ReplicaStatus_ACTIVE          ReplicaStatus = "ACTIVE"
-	ReplicaStatus_REGION_DISABLED ReplicaStatus = "REGION_DISABLED"
+	ReplicaStatus_CREATING                            ReplicaStatus = "CREATING"
+	ReplicaStatus_CREATION_FAILED                     ReplicaStatus = "CREATION_FAILED"
+	ReplicaStatus_UPDATING                            ReplicaStatus = "UPDATING"
+	ReplicaStatus_DELETING                            ReplicaStatus = "DELETING"
+	ReplicaStatus_ACTIVE                              ReplicaStatus = "ACTIVE"
+	ReplicaStatus_REGION_DISABLED                     ReplicaStatus = "REGION_DISABLED"
+	ReplicaStatus_INACCESSIBLE_ENCRYPTION_CREDENTIALS ReplicaStatus = "INACCESSIBLE_ENCRYPTION_CREDENTIALS"
 )
 
 type ReturnConsumedCapacity string
@@ -188,6 +230,13 @@ type ReturnValuesOnConditionCheckFailure string
 const (
 	ReturnValuesOnConditionCheckFailure_ALL_OLD ReturnValuesOnConditionCheckFailure = "ALL_OLD"
 	ReturnValuesOnConditionCheckFailure_NONE    ReturnValuesOnConditionCheckFailure = "NONE"
+)
+
+type S3SSEAlgorithm string
+
+const (
+	S3SSEAlgorithm_AES256 S3SSEAlgorithm = "AES256"
+	S3SSEAlgorithm_KMS    S3SSEAlgorithm = "KMS"
 )
 
 type SSEStatus string

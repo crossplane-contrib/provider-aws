@@ -45,7 +45,8 @@ spec:
             description: PrivateDNSNamespaceSpec defines the desired state of PrivateDNSNamespace
             properties:
               deletionPolicy:
-                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource.
                 enum:
                 - Orphan
                 - Delete
@@ -53,9 +54,6 @@ spec:
               forProvider:
                 description: PrivateDNSNamespaceParameters defines the desired state of PrivateDNSNamespace
                 properties:
-                  creatorRequestID:
-                    description: A unique string that identifies the request and that allows failed CreatePrivateDnsNamespace requests to be retried without the risk of executing the operation twice. CreatorRequestId can be any unique string, for example, a date/time stamp.
-                    type: string
                   description:
                     description: A description for the namespace.
                     type: string
@@ -76,14 +74,36 @@ spec:
                       type: object
                     type: array
                   vpc:
-                    description: The ID of the Amazon VPC that you want to associate the namespace with.
+                    description: VPC of the PrivateDNSNamespace. One if vpc, vpcRef or vpcSelector has to be supplied.
                     type: string
+                  vpcRef:
+                    description: A referencer to retrieve the ID of a VPC
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  vpcSelector:
+                    description: A selector to select a referencer to retrieve the ID of a VPC.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                 required:
                 - name
                 - region
-                - vpc
                 type: object
               providerConfigRef:
+                default:
+                  name: default
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
                 properties:
                   name:
@@ -155,9 +175,9 @@ spec:
                   - type
                   type: object
                 type: array
-            required:
-            - atProvider
             type: object
+        required:
+        - spec
         type: object
     served: true
     storage: true

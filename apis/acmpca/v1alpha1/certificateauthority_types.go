@@ -203,7 +203,7 @@ type CertificateAuthority struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   CertificateAuthoritySpec   `json:"spec,omitempty"`
+	Spec   CertificateAuthoritySpec   `json:"spec"`
 	Status CertificateAuthorityStatus `json:"status,omitempty"`
 }
 

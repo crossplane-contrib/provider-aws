@@ -253,6 +253,11 @@ func (in *ReplicationGroupParameters) DeepCopyInto(out *ReplicationGroupParamete
 		*out = new(v1.Reference)
 		**out = **in
 	}
+	if in.DeprecatedCacheSubnetGroupNameRef != nil {
+		in, out := &in.DeprecatedCacheSubnetGroupNameRef, &out.DeprecatedCacheSubnetGroupNameRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
 	if in.CacheSubnetGroupNameSelector != nil {
 		in, out := &in.CacheSubnetGroupNameSelector, &out.CacheSubnetGroupNameSelector
 		*out = new(v1.Selector)

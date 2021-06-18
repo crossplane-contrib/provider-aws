@@ -45,7 +45,8 @@ spec:
             description: CertificateAuthorityPermissionSpec defines the desired state of CertificateAuthorityPermission
             properties:
               deletionPolicy:
-                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource. The "Delete" policy is the default when no policy is specified.
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource.
                 enum:
                 - Orphan
                 - Delete
@@ -83,7 +84,8 @@ spec:
                         type: object
                     type: object
                   principal:
-                    description: The AWS Service or identity
+                    default: acm.amazonaws.com
+                    description: The AWS service or identity that receives the permission. At this time, the only valid principal is acm.amazonaws.com.
                     type: string
                   region:
                     description: Region is the region of CertificateAuthorityPermission.
@@ -92,9 +94,12 @@ spec:
                     description: Calling Account ID
                     type: string
                 required:
+                - principal
                 - region
                 type: object
               providerConfigRef:
+                default:
+                  name: default
                 description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
                 properties:
                   name:
@@ -160,6 +165,8 @@ spec:
                   type: object
                 type: array
             type: object
+        required:
+        - spec
         type: object
     served: true
     storage: true

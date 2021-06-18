@@ -28,29 +28,18 @@ import (
 type PrivateDNSNamespaceParameters struct {
 	// Region is which region the PrivateDNSNamespace will be created.
 	// +kubebuilder:validation:Required
-	// +immutable
 	Region string `json:"region"`
-	// A unique string that identifies the request and that allows failed CreatePrivateDnsNamespace
-	// requests to be retried without the risk of executing the operation twice.
-	// CreatorRequestId can be any unique string, for example, a date/time stamp.
-	CreatorRequestID *string `json:"creatorRequestID,omitempty"`
 	// A description for the namespace.
 	Description *string `json:"description,omitempty"`
 	// The name that you want to assign to this namespace. When you create a private
 	// DNS namespace, AWS Cloud Map automatically creates an Amazon Route 53 private
 	// hosted zone that has the same name as the namespace.
 	// +kubebuilder:validation:Required
-	// +immutable
 	Name *string `json:"name"`
 	// The tags to add to the namespace. Each tag consists of a key and an optional
 	// value, both of which you define. Tag keys can have a maximum character length
 	// of 128 characters, and tag values can have a maximum length of 256 characters.
-	// +immutable
-	Tags []*Tag `json:"tags,omitempty"`
-	// The ID of the Amazon VPC that you want to associate the namespace with.
-	// +kubebuilder:validation:Required
-	// +immutable
-	VPC                                 *string `json:"vpc"`
+	Tags                                []*Tag `json:"tags,omitempty"`
 	CustomPrivateDNSNamespaceParameters `json:",inline"`
 }
 
@@ -70,7 +59,7 @@ type PrivateDNSNamespaceObservation struct {
 // PrivateDNSNamespaceStatus defines the observed state of PrivateDNSNamespace.
 type PrivateDNSNamespaceStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          PrivateDNSNamespaceObservation `json:"atProvider"`
+	AtProvider          PrivateDNSNamespaceObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -84,7 +73,7 @@ type PrivateDNSNamespaceStatus struct {
 type PrivateDNSNamespace struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              PrivateDNSNamespaceSpec   `json:"spec,omitempty"`
+	Spec              PrivateDNSNamespaceSpec   `json:"spec"`
 	Status            PrivateDNSNamespaceStatus `json:"status,omitempty"`
 }
 

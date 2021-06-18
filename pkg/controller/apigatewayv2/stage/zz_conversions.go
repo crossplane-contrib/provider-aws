@@ -47,18 +47,28 @@ func GenerateStage(resp *svcsdk.GetStageOutput) *svcapitypes.Stage {
 
 	if resp.ApiGatewayManaged != nil {
 		cr.Status.AtProvider.APIGatewayManaged = resp.ApiGatewayManaged
+	} else {
+		cr.Status.AtProvider.APIGatewayManaged = nil
 	}
 	if resp.CreatedDate != nil {
 		cr.Status.AtProvider.CreatedDate = &metav1.Time{*resp.CreatedDate}
+	} else {
+		cr.Status.AtProvider.CreatedDate = nil
 	}
 	if resp.LastDeploymentStatusMessage != nil {
 		cr.Status.AtProvider.LastDeploymentStatusMessage = resp.LastDeploymentStatusMessage
+	} else {
+		cr.Status.AtProvider.LastDeploymentStatusMessage = nil
 	}
 	if resp.LastUpdatedDate != nil {
 		cr.Status.AtProvider.LastUpdatedDate = &metav1.Time{*resp.LastUpdatedDate}
+	} else {
+		cr.Status.AtProvider.LastUpdatedDate = nil
 	}
 	if resp.StageName != nil {
 		cr.Status.AtProvider.StageName = resp.StageName
+	} else {
+		cr.Status.AtProvider.StageName = nil
 	}
 
 	return cr

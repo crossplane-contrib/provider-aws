@@ -47,6 +47,8 @@ func GenerateVPCLink(resp *svcsdk.GetVpcLinkOutput) *svcapitypes.VPCLink {
 
 	if resp.CreatedDate != nil {
 		cr.Status.AtProvider.CreatedDate = &metav1.Time{*resp.CreatedDate}
+	} else {
+		cr.Status.AtProvider.CreatedDate = nil
 	}
 	if resp.SecurityGroupIds != nil {
 		f2 := []*string{}
@@ -56,6 +58,8 @@ func GenerateVPCLink(resp *svcsdk.GetVpcLinkOutput) *svcapitypes.VPCLink {
 			f2 = append(f2, &f2elem)
 		}
 		cr.Status.AtProvider.SecurityGroupIDs = f2
+	} else {
+		cr.Status.AtProvider.SecurityGroupIDs = nil
 	}
 	if resp.SubnetIds != nil {
 		f3 := []*string{}
@@ -65,18 +69,28 @@ func GenerateVPCLink(resp *svcsdk.GetVpcLinkOutput) *svcapitypes.VPCLink {
 			f3 = append(f3, &f3elem)
 		}
 		cr.Status.AtProvider.SubnetIDs = f3
+	} else {
+		cr.Status.AtProvider.SubnetIDs = nil
 	}
 	if resp.VpcLinkId != nil {
 		cr.Status.AtProvider.VPCLinkID = resp.VpcLinkId
+	} else {
+		cr.Status.AtProvider.VPCLinkID = nil
 	}
 	if resp.VpcLinkStatus != nil {
 		cr.Status.AtProvider.VPCLinkStatus = resp.VpcLinkStatus
+	} else {
+		cr.Status.AtProvider.VPCLinkStatus = nil
 	}
 	if resp.VpcLinkStatusMessage != nil {
 		cr.Status.AtProvider.VPCLinkStatusMessage = resp.VpcLinkStatusMessage
+	} else {
+		cr.Status.AtProvider.VPCLinkStatusMessage = nil
 	}
 	if resp.VpcLinkVersion != nil {
 		cr.Status.AtProvider.VPCLinkVersion = resp.VpcLinkVersion
+	} else {
+		cr.Status.AtProvider.VPCLinkVersion = nil
 	}
 
 	return cr

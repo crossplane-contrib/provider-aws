@@ -46,12 +46,18 @@ func GenerateAPIMapping(resp *svcsdk.GetApiMappingOutput) *svcapitypes.APIMappin
 
 	if resp.ApiId != nil {
 		cr.Status.AtProvider.APIID = resp.ApiId
+	} else {
+		cr.Status.AtProvider.APIID = nil
 	}
 	if resp.ApiMappingId != nil {
 		cr.Status.AtProvider.APIMappingID = resp.ApiMappingId
+	} else {
+		cr.Status.AtProvider.APIMappingID = nil
 	}
 	if resp.Stage != nil {
 		cr.Status.AtProvider.Stage = resp.Stage
+	} else {
+		cr.Status.AtProvider.Stage = nil
 	}
 
 	return cr

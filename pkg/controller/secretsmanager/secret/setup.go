@@ -106,10 +106,7 @@ type hooks struct {
 	kube   client.Client
 }
 
-func (e *hooks) isUpToDate(check bool, cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, error) { // nolint:gocyclo
-	if !check {
-		return check, nil
-	}
+func (e *hooks) isUpToDate(cr *svcapitypes.Secret, resp *svcsdk.DescribeSecretOutput) (bool, error) { // nolint:gocyclo
 	// NOTE(muvaf): No operation can be done on secrets that are marked for deletion.
 	if resp.DeletedDate != nil {
 		return true, nil

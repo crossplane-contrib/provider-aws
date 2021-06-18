@@ -90,9 +90,9 @@ func postCreate(_ context.Context, cr *svcapitypes.IntegrationResponse, resp *sv
 	return cre, nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.IntegrationResponse, obj *svcsdk.DeleteIntegrationResponseInput) error {
+func preDelete(_ context.Context, cr *svcapitypes.IntegrationResponse, obj *svcsdk.DeleteIntegrationResponseInput) (bool, error) {
 	obj.ApiId = cr.Spec.ForProvider.APIID
 	obj.IntegrationId = cr.Spec.ForProvider.IntegrationID
 	obj.IntegrationResponseId = aws.String(meta.GetExternalName(cr))
-	return nil
+	return false, nil
 }

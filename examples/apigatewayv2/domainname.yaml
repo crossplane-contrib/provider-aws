@@ -3,6 +3,14 @@ apiVersion: apigatewayv2.aws.crossplane.io/v1alpha1
 kind: DomainName
 metadata:
   name: test-domainname
+  annotations:
+    # You can use this domain that is created by examples/route53.
+    crossplane.io/external-name: "dev.crossplane.io"
 spec:
   forProvider:
-    region: us-west-2
+    region: us-east-1
+    domainNameConfigurations:
+      # Change this to the ARN of the certificate created by examples/acm.
+    - certificateARN: arn:aws:acm:us-east-1:609897127049:certificate/497c3833-2861-4807-9d8c-5ab825ada3d1
+  providerConfigRef:
+    name: example

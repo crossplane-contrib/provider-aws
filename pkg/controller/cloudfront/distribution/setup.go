@@ -20,6 +20,8 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/pkg/errors"
+
 	svcsdk "github.com/aws/aws-sdk-go/service/cloudfront"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -64,7 +66,9 @@ func SetupDistribution(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 						e.postObserve = postObserve
 						e.isUpToDate = isUpToDate
 						e.preUpdate = preUpdate
-						e.preDelete = preDelete
+						d := &deleter{external: e}
+						e.preDelete = d.preDelete
+						e.postUpdate = postUpdate
 					},
 				},
 			}),
@@ -136,6 +140,16 @@ func postObserve(_ context.Context, cr *svcapitypes.Distribution, gdo *svcsdk.Ge
 	return eo, nil
 }
 
+func postUpdate(_ context.Context, cr *svcapitypes.Distribution, resp *svcsdk.UpdateDistributionOutput,
+	upd managed.ExternalUpdate, err error) (managed.ExternalUpdate, error) {
+	if err != nil {
+		return managed.ExternalUpdate{}, err
+	}
+	// We need etag of update operation for the next operations.
+	cr.Status.AtProvider.ETag = resp.ETag
+	return upd, nil
+}
+
 func preUpdate(_ context.Context, cr *svcapitypes.Distribution, udi *svcsdk.UpdateDistributionInput) error {
 	udi.Id = awsclients.String(meta.GetExternalName(cr))
 	udi.SetIfMatch(awsclients.StringValue(cr.Status.AtProvider.ETag))
@@ -145,7 +159,26 @@ func preUpdate(_ context.Context, cr *svcapitypes.Distribution, udi *svcsdk.Upda
 	return nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.Distribution, ddi *svcsdk.DeleteDistributionInput) (bool, error) {
+type deleter struct {
+	external *external
+}
+
+func (d *deleter) preDelete(ctx context.Context, cr *svcapitypes.Distribution, ddi *svcsdk.DeleteDistributionInput) (bool, error) {
+	// In all cases, it needs to be "Deployed" to issue any update or delete requests.
+	if awsclients.StringValue(cr.Status.AtProvider.Distribution.Status) != stateDeployed {
+		return true, nil
+	}
+	// If the distribution is enabled, it needs to be disabled before deletion.
+	if awsclients.BoolValue(cr.Status.AtProvider.Distribution.DistributionConfig.Enabled) {
+		// We don't make the update call before user disables it because any update
+		// (even no-op) takes ~5min.
+		if awsclients.BoolValue(cr.Spec.ForProvider.DistributionConfig.Enabled) {
+			return false, errors.New("distribution needs to be disabled before deletion")
+		}
+		if _, err := d.external.Update(ctx, cr); err != nil {
+			return false, awsclients.Wrap(err, errUpdate)
+		}
+	}
 	ddi.Id = awsclients.String(meta.GetExternalName(cr))
 	ddi.SetIfMatch(awsclients.StringValue(cr.Status.AtProvider.ETag))
 	return false, nil

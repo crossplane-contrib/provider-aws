@@ -213,7 +213,7 @@ type QueueObservation struct {
 // QueueStatus represents the observed state of a Queue.
 type QueueStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          QueueObservation `json:"atProvider"`
+	AtProvider          QueueObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
