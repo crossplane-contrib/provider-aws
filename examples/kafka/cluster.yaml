@@ -1,0 +1,23 @@
+# It can take approximately 15-25 minutes to create a cluster.
+apiVersion: kafka.aws.crossplane.io/v1alpha1
+kind: Cluster
+metadata:
+  name: kafka-test-server
+spec:
+  forProvider:
+    brokerNodeGroupInfo:
+      clientSubnets:
+        - subnet-f2ccb898
+        - subnet-aac361d6
+      instanceType: kafka.t3.small
+      storageInfo: 
+        ebsStorageInfo:
+          volumeSize: 1
+    clusterName: kafka-test-server
+    kafkaVersion: 2.6.1
+    numberOfBrokerNodes: 2
+    region: eu-central-1
+    tags:
+      myKey: myValue
+  providerConfigRef:
+    name: default
