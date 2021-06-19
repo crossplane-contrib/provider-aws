@@ -43,6 +43,7 @@ import (
 	kafkav1alpha1 "github.com/crossplane/provider-aws/apis/kafka/v1alpha1"
 	kmsv1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 	lambdav1alpha1 "github.com/crossplane/provider-aws/apis/lambda/v1alpha1"
+	mqv1alpha1 "github.com/crossplane/provider-aws/apis/mq/v1alpha1"
 	notificationv1alpha3 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
 	rdsv1alpha1 "github.com/crossplane/provider-aws/apis/rds/v1alpha1"
 	redshiftv1alpha1 "github.com/crossplane/provider-aws/apis/redshift/v1alpha1"
@@ -99,6 +100,7 @@ func init() {
 		kafkav1alpha1.SchemeBuilder.AddToScheme,
 		transferv1alpha1.SchemeBuilder.AddToScheme,
 		gluev1alpha1.SchemeBuilder.AddToScheme,
+		mqv1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 
