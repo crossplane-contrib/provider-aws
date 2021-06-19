@@ -16,5 +16,18 @@ limitations under the License.
 
 package v1alpha1
 
+import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+
 // CustomBrokerParameters contains the additional fields for CustomBrokerParameters
-type CustomBrokerParameters struct{}
+type CustomBrokerParameters struct {
+
+	// SubnetIDRefs is a list of references to Subnets used to set
+	// the SubnetIDs.
+	// +optional
+	SubnetIDRefs []xpv1.Reference `json:"subnetIDRefs,omitempty"`
+
+	// SubnetIDsSelector selects references to Subnets used
+	// to set the SubnetIDs.
+	// +optional
+	SubnetIDSelector *xpv1.Selector `json:"subnetIDSelector,omitempty"`
+}
