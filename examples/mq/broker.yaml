@@ -1,9 +1,0 @@
-apiVersion: mq.aws.crossplane.io/v1beta1
-kind: Broker
-metadata:
-  name: example-mq
-spec:
-  forProvider:
-    region: us-east-1
-  providerConfigRef:
-    name: default

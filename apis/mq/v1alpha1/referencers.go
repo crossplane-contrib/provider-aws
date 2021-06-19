@@ -20,9 +20,11 @@ import (
 	"context"
 
 	"github.com/crossplane/crossplane-runtime/pkg/reference"
-	ec2 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
+
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	ec2 "github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
 
 // ResolveReferences of this Broker
