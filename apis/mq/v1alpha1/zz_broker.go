@@ -94,7 +94,9 @@ type BrokerStatus struct {
 // Broker is the Schema for the Brokers API
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
-// +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
+// +kubebuilder:printcolumn:name="Broker engine",type="string",JSONPath=".spec.forProvider.engineType"
+// +kubebuilder:printcolumn:name="Deployment mode",type="string",JSONPath=".spec.forProvider.deploymentMode"
+// +kubebuilder:printcolumn:name="Instance type",type="string",JSONPath=".spec.forProvider.hostInstanceType"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Broker struct {

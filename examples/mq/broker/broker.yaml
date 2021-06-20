@@ -13,9 +13,9 @@ spec:
     subnetIDs: 
       - subnet-0e53acbc37671445c
     securityGroups:
-      - sg-0308c28d22c7caf8b
+      - sg-0b3eceac4d82213f5 
     users: 
-      - password: ibmgsLab@123456
-        username: praghuge
+      - password: Password@123
+        username: user123
   providerConfigRef:
     name: default

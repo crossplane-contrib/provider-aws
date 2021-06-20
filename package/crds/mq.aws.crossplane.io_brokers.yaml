@@ -25,8 +25,14 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .metadata.annotations.crossplane\.io/external-name
-      name: EXTERNAL-NAME
+    - jsonPath: .spec.forProvider.engineType
+      name: Broker engine
+      type: string
+    - jsonPath: .spec.forProvider.deploymentMode
+      name: Deployment mode
+      type: string
+    - jsonPath: .spec.forProvider.hostInstanceType
+      name: Instance type
       type: string
     name: v1alpha1
     schema:
