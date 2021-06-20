@@ -41,6 +41,7 @@ func SetupBroker(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, p
 		For(&svcapitypes.Broker{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.BrokerGroupVersionKind),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -55,7 +56,16 @@ func postObserve(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.Describe
 	if err != nil {
 		return managed.ExternalObservation{}, err
 	}
-	cr.SetConditions(xpv1.Available())
+	switch awsclients.StringValue(obj.BrokerState) {
+	case string(svcapitypes.BrokerState_RUNNING):
+		cr.SetConditions(xpv1.Available())
+	case string(svcapitypes.BrokerState_CREATION_IN_PROGRESS):
+		cr.SetConditions(xpv1.Creating())
+	case string(svcapitypes.BrokerState_REBOOT_IN_PROGRESS):
+		cr.SetConditions(xpv1.Unavailable())
+	case string(svcapitypes.BrokerState_DELETION_IN_PROGRESS):
+		cr.SetConditions(xpv1.Deleting())
+	}
 	return obs, err
 }
 

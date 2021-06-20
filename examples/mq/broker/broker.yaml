@@ -10,6 +10,12 @@ spec:
     brokerName: example-mq
     hostInstanceType: mq.t3.micro
     deploymentMode: SINGLE_INSTANCE
-    subnetIDs: ["subnet-0ff63790fa036bec9"]
+    subnetIDs: 
+      - subnet-0e53acbc37671445c
+    securityGroups:
+      - sg-0308c28d22c7caf8b
+    users: 
+      - password: ibmgsLab@123456
+        username: praghuge
   providerConfigRef:
     name: default
