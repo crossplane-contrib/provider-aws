@@ -16,8 +16,8 @@ spec:
     clusterName: kafka-test-server
     kafkaVersion: 2.6.1
     numberOfBrokerNodes: 2
-    region: eu-central-1
+    region: us-east-1
     tags:
       myKey: myValue
   providerConfigRef:
-    name: default
+    name: example

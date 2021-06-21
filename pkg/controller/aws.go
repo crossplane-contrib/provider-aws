@@ -73,7 +73,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuser"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuserpolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/openidconnectprovider"
-	kafkaCluster "github.com/crossplane/provider-aws/pkg/controller/kafka/cluster"
+	kafkacluster "github.com/crossplane/provider-aws/pkg/controller/kafka/cluster"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
 	"github.com/crossplane/provider-aws/pkg/controller/lambda/function"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
@@ -173,7 +173,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		distribution.SetupDistribution,
 		resolverendpoint.SetupResolverEndpoint,
 		resolverrule.SetupResolverRule,
-		kafkaCluster.SetupCluster,
+		kafkacluster.SetupCluster,
 	} {
 		if err := setup(mgr, l, rl); err != nil {
 			return err
