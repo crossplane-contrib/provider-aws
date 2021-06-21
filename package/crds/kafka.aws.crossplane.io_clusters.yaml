@@ -205,6 +205,12 @@ spec:
                       type: string
                     description: Create tags when creating the cluster.
                     type: object
+                  zookeeperConnectString:
+                    description: The connection string to use to connect to the Apache ZooKeeper cluster.
+                    type: string
+                  zookeeperConnectStringTLS:
+                    description: The connection string to use to connect to zookeeper cluster on Tls port.
+                    type: string
                 required:
                 - brokerNodeGroupInfo
                 - clusterName

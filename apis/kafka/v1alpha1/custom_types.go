@@ -17,4 +17,13 @@ limitations under the License.
 package v1alpha1
 
 // CustomClusterParameters contains the additional fields for ClusterParameters.
-type CustomClusterParameters struct{}
+type CustomClusterParameters struct {
+
+	// The connection string to use to connect to the Apache ZooKeeper cluster.
+	// +optional
+	ZookeeperConnectString *string `json:"zookeeperConnectString"`
+
+	// The connection string to use to connect to zookeeper cluster on Tls port.
+	// +optional
+	ZookeeperConnectStringTLS *string `json:"zookeeperConnectStringTLS"`
+}

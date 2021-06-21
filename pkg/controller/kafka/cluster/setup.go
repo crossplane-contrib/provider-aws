@@ -96,8 +96,53 @@ func postCreate(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.CreateCl
 
 // LateInitialize fills the empty fields in *svcapitypes.ClusterParameters with
 // the values seen in svcsdk.DescribeClusterOutput.
+// nolint:gocyclo
 func LateInitialize(cr *svcapitypes.ClusterParameters, obj *svcsdk.DescribeClusterOutput) error {
-	cr.EnhancedMonitoring = awsclients.LateInitializeStringPtr(cr.EnhancedMonitoring, obj.ClusterInfo.EnhancedMonitoring)
-	// ToDo more empty fields from *svcapitypes.ClusterParameters
+
+	if cr.EnhancedMonitoring == nil && obj.ClusterInfo.EnhancedMonitoring != nil {
+		cr.EnhancedMonitoring = awsclients.LateInitializeStringPtr(cr.EnhancedMonitoring, obj.ClusterInfo.EnhancedMonitoring)
+	}
+
+	if cr.BrokerNodeGroupInfo.BrokerAZDistribution == nil && obj.ClusterInfo.BrokerNodeGroupInfo.BrokerAZDistribution != nil {
+		cr.BrokerNodeGroupInfo.BrokerAZDistribution = awsclients.LateInitializeStringPtr(cr.BrokerNodeGroupInfo.BrokerAZDistribution, obj.ClusterInfo.BrokerNodeGroupInfo.BrokerAZDistribution)
+	}
+
+	if cr.CustomClusterParameters.ZookeeperConnectString == nil && obj.ClusterInfo.ZookeeperConnectString != nil {
+		cr.CustomClusterParameters.ZookeeperConnectString = awsclients.LateInitializeStringPtr(cr.CustomClusterParameters.ZookeeperConnectString, obj.ClusterInfo.ZookeeperConnectString)
+	}
+
+	if cr.CustomClusterParameters.ZookeeperConnectStringTLS == nil && obj.ClusterInfo.ZookeeperConnectStringTls != nil {
+		cr.CustomClusterParameters.ZookeeperConnectStringTLS = awsclients.LateInitializeStringPtr(cr.CustomClusterParameters.ZookeeperConnectStringTLS, obj.ClusterInfo.ZookeeperConnectStringTls)
+	}
+
+	if cr.BrokerNodeGroupInfo.SecurityGroups == nil && obj.ClusterInfo.BrokerNodeGroupInfo.SecurityGroups != nil {
+		cr.BrokerNodeGroupInfo.SecurityGroups = obj.ClusterInfo.BrokerNodeGroupInfo.SecurityGroups
+	}
+
+	if cr.EncryptionInfo == nil && obj.ClusterInfo.EncryptionInfo != nil {
+		cr.EncryptionInfo = &svcapitypes.EncryptionInfo{
+			EncryptionAtRest: &svcapitypes.EncryptionAtRest{
+				DataVolumeKMSKeyID: obj.ClusterInfo.EncryptionInfo.EncryptionAtRest.DataVolumeKMSKeyId,
+			},
+			EncryptionInTransit: &svcapitypes.EncryptionInTransit{
+				ClientBroker: obj.ClusterInfo.EncryptionInfo.EncryptionInTransit.ClientBroker,
+				InCluster:    obj.ClusterInfo.EncryptionInfo.EncryptionInTransit.InCluster,
+			},
+		}
+	}
+
+	if cr.OpenMonitoring == nil && obj.ClusterInfo.OpenMonitoring != nil {
+		cr.OpenMonitoring = &svcapitypes.OpenMonitoringInfo{
+			Prometheus: &svcapitypes.PrometheusInfo{
+				JmxExporter: &svcapitypes.JmxExporterInfo{
+					EnabledInBroker: obj.ClusterInfo.OpenMonitoring.Prometheus.JmxExporter.EnabledInBroker,
+				},
+				NodeExporter: &svcapitypes.NodeExporterInfo{
+					EnabledInBroker: obj.ClusterInfo.OpenMonitoring.Prometheus.NodeExporter.EnabledInBroker,
+				},
+			},
+		}
+	}
+
 	return nil
 }
