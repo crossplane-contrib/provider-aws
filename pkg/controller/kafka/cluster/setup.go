@@ -15,6 +15,7 @@ package cluster
 
 import (
 	"context"
+	"strings"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"k8s.io/client-go/util/workqueue"
@@ -41,6 +42,7 @@ func SetupCluster(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimi
 			e.preObserve = preObserve
 			e.postObserve = postObserve
 			e.preDelete = preDelete
+			e.postDelete = postDelete
 			e.postCreate = postCreate
 			e.lateInitialize = LateInitialize
 		},
@@ -64,6 +66,17 @@ func preDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteClu
 	return false, nil
 }
 
+func postDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteClusterOutput, err error) error {
+	if err != nil {
+		// skip: err.Error(): failed to delete Cluster: BadRequestException: You can't delete cluster in DELETING state.
+		if strings.Contains(err.Error(), "DELETING") {
+			return nil
+		}
+		return err
+	}
+	return err
+}
+
 func preObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DescribeClusterInput) error {
 	obj.ClusterArn = awsclients.String(meta.GetExternalName(cr))
 	return nil
@@ -83,6 +96,17 @@ func postObserve(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.Describ
 	case string(svcapitypes.ClusterState_DELETING):
 		cr.SetConditions(xpv1.Deleting())
 	}
+
+	obs.ConnectionDetails = managed.ConnectionDetails{
+		// see: https://docs.aws.amazon.com/msk/latest/developerguide/client-access.html
+		// no endpoint informations available in DescribeClusterOutput only endpoints for zookeeperPlain/Tls
+		"zookeeperEndpointPlain": []byte(awsclients.StringValue(cr.Spec.ForProvider.ZookeeperConnectString)),
+		"zookeeperEndpointTls":   []byte(awsclients.StringValue(cr.Spec.ForProvider.ZookeeperConnectStringTLS)),
+		"clusterEndpointPlain":   []byte(strings.ReplaceAll(awsclients.StringValue(cr.Spec.ForProvider.ZookeeperConnectString), "2181", "9092")),
+		"clusterEndpointTls":     []byte(strings.ReplaceAll(awsclients.StringValue(cr.Spec.ForProvider.ZookeeperConnectString), "2181", "9094")),
+		"clusterEndpointIAM":     []byte(strings.ReplaceAll(awsclients.StringValue(cr.Spec.ForProvider.ZookeeperConnectString), "2181", "9098")),
+	}
+
 	return obs, nil
 }
 
