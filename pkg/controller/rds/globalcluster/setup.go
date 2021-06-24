@@ -2,6 +2,7 @@ package globalcluster
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	"k8s.io/client-go/util/workqueue"
@@ -21,7 +22,7 @@ import (
 )
 
 // SetupGlobalCluster adds a controller that reconciles GlobalCluster.
-func SetupGlobalCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupGlobalCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.GlobalClusterGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -41,6 +42,7 @@ func SetupGlobalCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLim
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.GlobalClusterGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

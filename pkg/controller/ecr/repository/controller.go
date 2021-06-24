@@ -19,6 +19,7 @@ package repository
 import (
 	"context"
 	"sort"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsecr "github.com/aws/aws-sdk-go-v2/service/ecr"
@@ -61,7 +62,7 @@ const (
 )
 
 // SetupRepository adds a controller that reconciles ECR.
-func SetupRepository(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupRepository(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.RepositoryGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -75,6 +76,7 @@ func SetupRepository(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

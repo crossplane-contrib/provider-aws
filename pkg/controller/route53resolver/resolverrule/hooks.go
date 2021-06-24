@@ -2,6 +2,7 @@ package resolverrule
 
 import (
 	"context"
+	"time"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 
@@ -22,7 +23,7 @@ import (
 )
 
 // SetupResolverRule adds a controller that reconciles ResolverRule
-func SetupResolverRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupResolverRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.ResolverRuleGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -43,6 +44,7 @@ func SetupResolverRule(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 			cpresource.ManagedKind(v1alpha1.ResolverRuleGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

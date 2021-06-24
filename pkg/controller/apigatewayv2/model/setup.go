@@ -18,6 +18,7 @@ package model
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
 	"k8s.io/client-go/util/workqueue"
@@ -37,7 +38,7 @@ import (
 )
 
 // SetupModel adds a controller that reconciles Model.
-func SetupModel(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupModel(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.ModelGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -58,6 +59,7 @@ func SetupModel(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) er
 			resource.ManagedKind(svcapitypes.ModelGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

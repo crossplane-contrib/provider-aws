@@ -19,6 +19,7 @@ package integration
 import (
 	"context"
 	"fmt"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
 	"k8s.io/client-go/util/workqueue"
@@ -38,7 +39,7 @@ import (
 )
 
 // SetupIntegration adds a controller that reconciles Integration.
-func SetupIntegration(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupIntegration(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.IntegrationGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -59,6 +60,7 @@ func SetupIntegration(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimit
 			resource.ManagedKind(svcapitypes.IntegrationGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

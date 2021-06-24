@@ -18,6 +18,7 @@ package acm
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacm "github.com/aws/aws-sdk-go-v2/service/acm"
@@ -59,7 +60,7 @@ const (
 )
 
 // SetupCertificate adds a controller that reconciles Certificates.
-func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.CertificateGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -72,6 +73,7 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimit
 			resource.ManagedKind(v1alpha1.CertificateGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acm.NewClient}),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),

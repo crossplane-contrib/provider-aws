@@ -2,6 +2,7 @@ package key
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/kms"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/kms/kmsiface"
@@ -23,7 +24,7 @@ import (
 )
 
 // SetupKey adds a controller that reconciles Key.
-func SetupKey(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupKey(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.KeyGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -48,6 +49,7 @@ func SetupKey(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) erro
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.KeyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

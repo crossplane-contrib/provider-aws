@@ -18,6 +18,7 @@ package iamgroup
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
@@ -52,7 +53,7 @@ const (
 )
 
 // SetupIAMGroup adds a controller that reconciles Groups.
-func SetupIAMGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupIAMGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.IAMGroupGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -65,6 +66,7 @@ func SetupIAMGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter)
 			resource.ManagedKind(v1alpha1.IAMGroupGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewGroupClient}),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

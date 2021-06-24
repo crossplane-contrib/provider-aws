@@ -18,6 +18,7 @@ package certificateauthority
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacmpca "github.com/aws/aws-sdk-go-v2/service/acmpca"
@@ -57,7 +58,7 @@ const (
 )
 
 // SetupCertificateAuthority adds a controller that reconciles ACMPCA.
-func SetupCertificateAuthority(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupCertificateAuthority(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.CertificateAuthorityGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -70,6 +71,7 @@ func SetupCertificateAuthority(mgr ctrl.Manager, l logging.Logger, rl workqueue.
 			resource.ManagedKind(v1alpha1.CertificateAuthorityGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acmpca.NewClient}),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 
 			// TODO: implement tag initializer
 

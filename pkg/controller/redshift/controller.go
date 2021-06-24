@@ -19,6 +19,7 @@ package redshift
 import (
 	"context"
 	"reflect"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsredshift "github.com/aws/aws-sdk-go-v2/service/redshift"
@@ -54,7 +55,7 @@ const (
 )
 
 // SetupCluster adds a controller that reconciles Redshift clusters.
-func SetupCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.ClusterGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -66,6 +67,7 @@ func SetupCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) 
 			mgr, resource.ManagedKind(v1alpha1.ClusterGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: redshift.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

@@ -2,6 +2,7 @@ package dbparametergroup
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/rds"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/rds/rdsiface"
@@ -24,7 +25,7 @@ import (
 )
 
 // SetupDBParameterGroup adds a controller that reconciles DBParametergroup.
-func SetupDBParameterGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupDBParameterGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.DBParameterGroupGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -46,6 +47,7 @@ func SetupDBParameterGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rate
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.DBParameterGroupGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

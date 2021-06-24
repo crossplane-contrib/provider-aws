@@ -18,6 +18,7 @@ package resourcerecordset
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
@@ -52,7 +53,7 @@ const (
 )
 
 // SetupResourceRecordSet adds a controller that reconciles ResourceRecordSets.
-func SetupResourceRecordSet(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupResourceRecordSet(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.ResourceRecordSetGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -65,6 +66,7 @@ func SetupResourceRecordSet(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rat
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: resourcerecordset.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

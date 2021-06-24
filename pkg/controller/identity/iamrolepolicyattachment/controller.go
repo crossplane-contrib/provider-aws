@@ -18,6 +18,7 @@ package iamrolepolicyattachment
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
@@ -51,7 +52,7 @@ const (
 
 // SetupIAMRolePolicyAttachment adds a controller that reconciles
 // IAMRolePolicyAttachments.
-func SetupIAMRolePolicyAttachment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupIAMRolePolicyAttachment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.IAMRolePolicyAttachmentGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -65,6 +66,7 @@ func SetupIAMRolePolicyAttachment(mgr ctrl.Manager, l logging.Logger, rl workque
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewRolePolicyAttachmentClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

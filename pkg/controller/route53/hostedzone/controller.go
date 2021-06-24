@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
@@ -53,7 +54,7 @@ const (
 )
 
 // SetupHostedZone adds a controller that reconciles Hosted Zones.
-func SetupHostedZone(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupHostedZone(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.HostedZoneGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -67,6 +68,7 @@ func SetupHostedZone(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))),
 		)
