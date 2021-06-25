@@ -59,7 +59,12 @@ type Tag struct {
 // A RepositorySpec defines the desired state of a Elastic Container Repository.
 type RepositorySpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       RepositoryParameters `json:"forProvider"`
+
+	// If a repository contains images, forces the deletion.
+	// +optional
+	ForceDelete *bool `json:"forceDelete,omitempty"`
+
+	ForProvider RepositoryParameters `json:"forProvider"`
 }
 
 // RepositoryObservation keeps the state for the external resource

@@ -94,6 +94,9 @@ spec:
                 required:
                 - region
                 type: object
+              forceDelete:
+                description: If a repository contains images, forces the deletion.
+                type: boolean
               providerConfigRef:
                 default:
                   name: default

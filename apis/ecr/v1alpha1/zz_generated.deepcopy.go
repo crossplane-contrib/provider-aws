@@ -542,6 +542,11 @@ func (in *RepositoryPrincipal) DeepCopy() *RepositoryPrincipal {
 func (in *RepositorySpec) DeepCopyInto(out *RepositorySpec) {
 	*out = *in
 	in.ResourceSpec.DeepCopyInto(&out.ResourceSpec)
+	if in.ForceDelete != nil {
+		in, out := &in.ForceDelete, &out.ForceDelete
+		*out = new(bool)
+		**out = **in
+	}
 	in.ForProvider.DeepCopyInto(&out.ForProvider)
 }
 
