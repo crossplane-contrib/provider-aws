@@ -68,8 +68,8 @@ func preDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteClu
 
 func postDelete(_ context.Context, cr *svcapitypes.Cluster, obj *svcsdk.DeleteClusterOutput, err error) error {
 	if err != nil {
-		// skip: err.Error(): failed to delete Cluster: BadRequestException: You can't delete cluster in DELETING state.
-		if strings.Contains(err.Error(), "DELETING") {
+		if strings.Contains(err.Error(), svcsdk.ErrCodeBadRequestException) {
+			// skip: failed to delete Cluster: BadRequestException: You can't delete cluster in DELETING state.
 			return nil
 		}
 		return err
