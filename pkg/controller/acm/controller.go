@@ -208,21 +208,23 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	// Update the Certificate Option
-	if cr.Spec.ForProvider.CertificateTransparencyLoggingPreference != nil {
-		_, err := e.client.UpdateCertificateOptionsRequest(&awsacm.UpdateCertificateOptionsInput{
-			CertificateArn: aws.String(meta.GetExternalName(cr)),
-			Options:        &awsacm.CertificateOptions{CertificateTransparencyLoggingPreference: *cr.Spec.ForProvider.CertificateTransparencyLoggingPreference},
-		}).Send(ctx)
+	// the UpdateCertificateOptions command is not permitted for private certificates.
+	if cr.Status.AtProvider.Type != awsacm.CertificateTypePrivate {
+		// Update the Certificate Option
+		if cr.Spec.ForProvider.CertificateTransparencyLoggingPreference != nil {
+			_, err := e.client.UpdateCertificateOptionsRequest(&awsacm.UpdateCertificateOptionsInput{
+				CertificateArn: aws.String(meta.GetExternalName(cr)),
+				Options:        &awsacm.CertificateOptions{CertificateTransparencyLoggingPreference: *cr.Spec.ForProvider.CertificateTransparencyLoggingPreference},
+			}).Send(ctx)
 
-		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			if err != nil {
+				return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			}
 		}
 	}
 
 	// Renew the certificate if request for RenewCertificate and Certificate is eligible
 	if aws.BoolValue(cr.Spec.ForProvider.RenewCertificate) {
-
 		if cr.Status.AtProvider.RenewalEligibility == awsacm.RenewalEligibilityEligible {
 			_, err := e.client.RenewCertificateRequest(&awsacm.RenewCertificateInput{
 				CertificateArn: aws.String(meta.GetExternalName(cr)),
