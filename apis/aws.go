@@ -37,6 +37,7 @@ import (
 	elasticloadbalancingv1alpha1 "github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
 	identityv1alpha1 "github.com/crossplane/provider-aws/apis/identity/v1alpha1"
 	identityv1beta1 "github.com/crossplane/provider-aws/apis/identity/v1beta1"
+	kafkav1alpha1 "github.com/crossplane/provider-aws/apis/kafka/v1alpha1"
 	kmsv1alpha1 "github.com/crossplane/provider-aws/apis/kms/v1alpha1"
 	lambdav1alpha1 "github.com/crossplane/provider-aws/apis/lambda/v1alpha1"
 	notificationv1alpha3 "github.com/crossplane/provider-aws/apis/notification/v1alpha1"
@@ -89,6 +90,7 @@ func init() {
 		lambdav1alpha1.SchemeBuilder.AddToScheme,
 		cloudfrontv1alpha1.SchemeBuilder.AddToScheme,
 		route53resolveralpha1.SchemeBuilder.AddToScheme,
+		kafkav1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 
