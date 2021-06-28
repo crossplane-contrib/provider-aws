@@ -18,6 +18,7 @@ package iamuser
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
@@ -54,7 +55,7 @@ const (
 )
 
 // SetupIAMUser adds a controller that reconciles Users.
-func SetupIAMUser(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupIAMUser(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.IAMUserGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -67,6 +68,7 @@ func SetupIAMUser(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) 
 			resource.ManagedKind(v1alpha1.IAMUserGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewUserClient}),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

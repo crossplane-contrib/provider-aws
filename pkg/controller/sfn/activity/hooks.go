@@ -18,6 +18,7 @@ package activity
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/sfn"
 	"k8s.io/client-go/util/workqueue"
@@ -37,7 +38,7 @@ import (
 )
 
 // SetupActivity adds a controller that reconciles Activity.
-func SetupActivity(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupActivity(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.ActivityGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -57,6 +58,7 @@ func SetupActivity(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter)
 			resource.ManagedKind(svcapitypes.ActivityGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

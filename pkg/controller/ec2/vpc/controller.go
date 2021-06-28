@@ -19,6 +19,7 @@ package vpc
 import (
 	"context"
 	"sort"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -56,7 +57,7 @@ const (
 )
 
 // SetupVPC adds a controller that reconciles VPCs.
-func SetupVPC(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupVPC(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.VPCGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -70,6 +71,7 @@ func SetupVPC(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) erro
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

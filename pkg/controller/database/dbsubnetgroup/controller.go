@@ -18,6 +18,7 @@ package dbsubnetgroup
 
 import (
 	"context"
+	"time"
 
 	"reflect"
 	"strings"
@@ -56,7 +57,7 @@ const (
 )
 
 // SetupDBSubnetGroup adds a controller that reconciles DBSubnetGroups.
-func SetupDBSubnetGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupDBSubnetGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.DBSubnetGroupGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -70,6 +71,7 @@ func SetupDBSubnetGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLim
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: dbsg.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

@@ -18,6 +18,7 @@ package privatednsnamespace
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
 	"k8s.io/client-go/util/workqueue"
@@ -36,7 +37,7 @@ import (
 )
 
 // SetupPrivateDNSNamespace adds a controller that reconciles PrivateDNSNamespaces.
-func SetupPrivateDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupPrivateDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.PrivateDNSNamespaceGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -57,6 +58,7 @@ func SetupPrivateDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.R
 			resource.ManagedKind(svcapitypes.PrivateDNSNamespaceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

@@ -2,6 +2,7 @@ package function
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/lambda"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/lambda/lambdaiface"
@@ -26,7 +27,7 @@ import (
 )
 
 // SetupFunction adds a controller that reconciles Function.
-func SetupFunction(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupFunction(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.FunctionGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -49,6 +50,7 @@ func SetupFunction(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter)
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.FunctionGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

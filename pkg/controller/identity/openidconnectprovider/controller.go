@@ -18,6 +18,7 @@ package openidconnectprovider
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
@@ -56,7 +57,7 @@ const (
 )
 
 // SetupOpenIDConnectProvider adds a controller that reconciles OpenIDConnectProvider.
-func SetupOpenIDConnectProvider(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupOpenIDConnectProvider(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.OpenIDConnectProviderGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -68,6 +69,7 @@ func SetupOpenIDConnectProvider(mgr ctrl.Manager, l logging.Logger, rl workqueue
 			resource.ManagedKind(svcapitypes.OpenIDConnectProviderGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewOpenIDConnectProviderClient}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

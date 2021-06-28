@@ -18,6 +18,7 @@ package repositorypolicy
 
 import (
 	"context"
+	"time"
 
 	awsecr "github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/google/go-cmp/cmp"
@@ -49,7 +50,7 @@ const (
 )
 
 // SetupRepositoryPolicy adds a controller that reconciles ECR.
-func SetupRepositoryPolicy(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupRepositoryPolicy(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.RepositoryPolicyGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -61,6 +62,7 @@ func SetupRepositoryPolicy(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rate
 			resource.ManagedKind(v1alpha1.RepositoryPolicyGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

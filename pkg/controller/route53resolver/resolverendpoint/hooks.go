@@ -2,6 +2,7 @@ package resolverendpoint
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/route53resolver"
@@ -22,7 +23,7 @@ import (
 )
 
 // SetupResolverEndpoint adds a controller that reconciles ResolverEndpoints
-func SetupResolverEndpoint(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupResolverEndpoint(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.ResolverEndpointGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -43,6 +44,7 @@ func SetupResolverEndpoint(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rate
 			cpresource.ManagedKind(v1alpha1.ResolverEndpointGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

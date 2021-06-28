@@ -18,6 +18,7 @@ package deployment
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
 	"k8s.io/client-go/util/workqueue"
@@ -37,7 +38,7 @@ import (
 )
 
 // SetupDeployment adds a controller that reconciles Deployment.
-func SetupDeployment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupDeployment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.DeploymentGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -58,6 +59,7 @@ func SetupDeployment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 			resource.ManagedKind(svcapitypes.DeploymentGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

@@ -18,6 +18,7 @@ package publicdnsnamespace
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
 	"k8s.io/client-go/util/workqueue"
@@ -36,7 +37,7 @@ import (
 )
 
 // SetupPublicDNSNamespace adds a controller that reconciles PublicDNSNamespaces.
-func SetupPublicDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupPublicDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.PublicDNSNamespaceGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -56,6 +57,7 @@ func SetupPublicDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.Ra
 			resource.ManagedKind(svcapitypes.PublicDNSNamespaceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

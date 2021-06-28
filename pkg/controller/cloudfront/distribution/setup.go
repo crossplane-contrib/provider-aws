@@ -19,6 +19,7 @@ package distribution
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -44,7 +45,7 @@ import (
 const stateDeployed = "Deployed"
 
 // SetupDistribution adds a controller that reconciles Distribution.
-func SetupDistribution(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupDistribution(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.DistributionGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -72,6 +73,7 @@ func SetupDistribution(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 					},
 				},
 			}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

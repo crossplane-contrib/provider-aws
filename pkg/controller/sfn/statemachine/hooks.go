@@ -18,6 +18,7 @@ package statemachine
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/sfn"
 	"k8s.io/client-go/util/workqueue"
@@ -37,7 +38,7 @@ import (
 )
 
 // SetupStateMachine adds a controller that reconciles StateMachine.
-func SetupStateMachine(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupStateMachine(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.StateMachineGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -58,6 +59,7 @@ func SetupStateMachine(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 			resource.ManagedKind(svcapitypes.StateMachineGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

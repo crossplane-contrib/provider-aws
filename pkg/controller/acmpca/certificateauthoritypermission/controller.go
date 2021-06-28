@@ -19,6 +19,7 @@ package certificateauthoritypermission
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacmpca "github.com/aws/aws-sdk-go-v2/service/acmpca"
@@ -49,7 +50,7 @@ const (
 )
 
 // SetupCertificateAuthorityPermission adds a controller that reconciles ACMPCA.
-func SetupCertificateAuthorityPermission(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupCertificateAuthorityPermission(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.CertificateAuthorityPermissionGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -62,6 +63,7 @@ func SetupCertificateAuthorityPermission(mgr ctrl.Manager, l logging.Logger, rl 
 			resource.ManagedKind(v1alpha1.CertificateAuthorityPermissionGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acmpca.NewCAPermissionClient}),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),

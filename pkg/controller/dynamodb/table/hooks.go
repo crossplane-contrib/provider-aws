@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"sort"
+	"time"
 
 	awsgo "github.com/aws/aws-sdk-go/aws"
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
@@ -45,7 +46,7 @@ import (
 )
 
 // SetupTable adds a controller that reconciles Table.
-func SetupTable(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupTable(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.TableGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -72,6 +73,7 @@ func SetupTable(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) er
 				managed.NewNameAsExternalName(mgr.GetClient()),
 				managed.NewDefaultProviderConfig(mgr.GetClient()),
 				&tagger{kube: mgr.GetClient()}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

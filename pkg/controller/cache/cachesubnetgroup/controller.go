@@ -18,6 +18,7 @@ package cachesubnetgroup
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awscache "github.com/aws/aws-sdk-go-v2/service/elasticache"
@@ -50,7 +51,7 @@ const (
 )
 
 // SetupCacheSubnetGroup adds a controller that reconciles SubnetGroups.
-func SetupCacheSubnetGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupCacheSubnetGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.CacheSubnetGroupGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -63,6 +64,7 @@ func SetupCacheSubnetGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rate
 			resource.ManagedKind(v1alpha1.CacheSubnetGroupGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elasticache.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		))

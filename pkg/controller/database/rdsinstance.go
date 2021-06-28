@@ -20,6 +20,7 @@ import (
 	"context"
 	"reflect"
 	"sort"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
@@ -57,7 +58,7 @@ const (
 )
 
 // SetupRDSInstance adds a controller that reconciles RDSInstances.
-func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.RDSInstanceGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -71,6 +72,7 @@ func SetupRDSInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimit
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: rds.NewClient}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

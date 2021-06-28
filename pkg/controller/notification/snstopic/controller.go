@@ -19,6 +19,7 @@ package snstopic
 import (
 	"context"
 	"reflect"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awssns "github.com/aws/aws-sdk-go-v2/service/sns"
@@ -51,7 +52,7 @@ const (
 )
 
 // SetupSNSTopic adds a controller that reconciles SNSTopic.
-func SetupSNSTopic(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupSNSTopic(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.SNSTopicGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -66,6 +67,7 @@ func SetupSNSTopic(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter)
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

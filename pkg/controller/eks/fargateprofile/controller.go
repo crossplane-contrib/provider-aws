@@ -18,6 +18,7 @@ package fargateprofile
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awseks "github.com/aws/aws-sdk-go-v2/service/eks"
@@ -51,7 +52,7 @@ const (
 )
 
 // SetupFargateProfile adds a controller that reconciles FargateProfiles.
-func SetupFargateProfile(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupFargateProfile(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.FargateProfileKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -65,6 +66,7 @@ func SetupFargateProfile(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLi
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newEKSClientFn: eks.NewEKSClient}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

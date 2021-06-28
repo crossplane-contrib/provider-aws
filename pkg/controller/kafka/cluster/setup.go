@@ -16,6 +16,7 @@ package cluster
 import (
 	"context"
 	"strings"
+	"time"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"k8s.io/client-go/util/workqueue"
@@ -35,7 +36,7 @@ import (
 )
 
 // SetupCluster adds a controller that reconciles Cluster.
-func SetupCluster(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter) error {
+func SetupCluster(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.ClusterGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -57,6 +58,7 @@ func SetupCluster(mgr ctrl.Manager, l logging.Logger, limiter workqueue.RateLimi
 			resource.ManagedKind(svcapitypes.ClusterGroupVersionKind),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

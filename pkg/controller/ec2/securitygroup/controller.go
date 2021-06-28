@@ -18,6 +18,7 @@ package securitygroup
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -61,7 +62,7 @@ const (
 )
 
 // SetupSecurityGroup adds a controller that reconciles SecurityGroups.
-func SetupSecurityGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupSecurityGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.SecurityGroupGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -76,6 +77,7 @@ func SetupSecurityGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLim
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
