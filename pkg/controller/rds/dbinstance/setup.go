@@ -261,14 +261,26 @@ func lateInitialize(in *svcapitypes.DBInstanceParameters, out *svcsdk.DescribeDB
 }
 
 func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBInstancesOutput) (bool, error) {
+	// (PocketMobsters): Creating a context here is a temporary thing until a future
+	// update drops for aws-controllers-k8s/code-generator
+	ctx := context.Background()
+
 	db := out.DBInstances[0]
 	patch, err := createPatch(out, &cr.Spec.ForProvider)
 	if err != nil {
 		return false, err
 	}
-	// (PocketMobsters): Creating a context here is a temporary thing until a future
-	// update drops for aws-controllers-k8s/code-generator
-	ctx := context.Background()
+	// (PocketMobsters): Certain statuses can cause us to send excessive updates because the
+	// expected state of the kubernetes resource differs from the actual state of the remote
+	// AWS resource temporarily. Once modifications are done, we can begin sending update requests
+	// again.
+	// This could be matured a bit more for specific statuses, such as not allowing storage changes
+	// when the status is "storage-optimization"
+	status := aws.StringValue(resp.DBInstances[0].DBInstanceStatus)
+	if status == "modifying" || status == "upgrading" {
+		return true, nil
+	}
+
 	_, pwChanged, err := rds.GetPassword(ctx, e.kube, cr.Spec.ForProvider.MasterUserPasswordSecretRef, cr.Spec.WriteConnectionSecretToReference)
 	if err != nil {
 		return false, err
