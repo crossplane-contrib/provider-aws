@@ -65,6 +65,8 @@ func postObserve(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.Describe
 		cr.SetConditions(xpv1.Unavailable())
 	case string(svcapitypes.BrokerState_DELETION_IN_PROGRESS):
 		cr.SetConditions(xpv1.Deleting())
+	case string(svcapitypes.BrokerState_CREATION_FAILED):
+		cr.SetConditions(xpv1.Unavailable())
 	}
 	return obs, err
 }
@@ -83,6 +85,8 @@ func postCreate(_ context.Context, cr *svcapitypes.Broker, obj *svcsdk.CreateBro
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
+
 	meta.SetExternalName(cr, awsclients.StringValue(obj.BrokerId))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	cre.ExternalNameAssigned = true
+	return cre, nil
 }

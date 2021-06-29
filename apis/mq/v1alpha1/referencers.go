@@ -40,10 +40,24 @@ func (mg *Broker) ResolveReferences(ctx context.Context, c client.Reader) error 
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
-		return errors.Wrap(err, "spec.forProvider.apiId")
+		return errors.Wrap(err, "spec.forProvider.SubnetIDs")
 	}
 	mg.Spec.ForProvider.SubnetIDs = reference.ToPtrValues(mrsp.ResolvedValues)
 	mg.Spec.ForProvider.SubnetIDRefs = mrsp.ResolvedReferences
+
+	// Resolve spec.forProvider.SecurityGroups
+	mrsp, err = r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
+		CurrentValues: reference.FromPtrValues(mg.Spec.ForProvider.SecurityGroups),
+		References:    mg.Spec.ForProvider.SecurityGroupIDRefs,
+		Selector:      mg.Spec.ForProvider.SecurityGroupIDSelector,
+		To:            reference.To{Managed: &ec2.SecurityGroup{}, List: &ec2.SecurityGroupList{}},
+		Extract:       reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.SecurityGroups")
+	}
+	mg.Spec.ForProvider.SecurityGroups = reference.ToPtrValues(mrsp.ResolvedValues)
+	mg.Spec.ForProvider.SecurityGroupIDRefs = mrsp.ResolvedReferences
 
 	return nil
 }

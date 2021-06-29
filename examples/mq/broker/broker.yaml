@@ -10,12 +10,12 @@ spec:
     brokerName: example-mq
     hostInstanceType: mq.t3.micro
     deploymentMode: SINGLE_INSTANCE
-    subnetIDs: 
-      - subnet-0e53acbc37671445c
-    securityGroups:
-      - sg-0b3eceac4d82213f5 
+    subnetIDRefs:
+      - name: sample-subnet1
+    securityGroupIdRefs:
+      - name: sample-cluster-sg
     users: 
       - password: Password@123
         username: user123
   providerConfigRef:
-    name: default
+    name: example

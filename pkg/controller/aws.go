@@ -203,6 +203,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		resolverendpoint.SetupResolverEndpoint,
 		resolverrule.SetupResolverRule,
 		vpcpeeringconnection.SetupVPCPeeringConnection,
+		broker.SetupBroker,
 		kafkacluster.SetupCluster,
 		efsmounttarget.SetupMountTarget,
 		transferserver.SetupServer,

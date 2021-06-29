@@ -30,4 +30,14 @@ type CustomBrokerParameters struct {
 	// to set the SubnetIDs.
 	// +optional
 	SubnetIDSelector *xpv1.Selector `json:"subnetIDSelector,omitempty"`
+
+	// SecurityGroupIDRefs is a list of references to SecurityGroups used to set
+	// the SecurityGroupsIDs.
+	// +optional
+	SecurityGroupIDRefs []xpv1.Reference `json:"securityGroupIdRefs,omitempty"`
+
+	// SecurityGroupIDsSelector selects references to SecurityGroups used
+	// to set the SecurityGroupsIDs.
+	// +optional
+	SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIdSelector,omitempty"`
 }

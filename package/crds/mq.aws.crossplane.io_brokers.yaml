@@ -34,6 +34,9 @@ spec:
     - jsonPath: .spec.forProvider.hostInstanceType
       name: Instance type
       type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
     name: v1alpha1
     schema:
       openAPIV3Schema:
@@ -139,6 +142,30 @@ spec:
                   region:
                     description: Region is which region the Broker will be created.
                     type: string
+                  securityGroupIdRefs:
+                    description: SecurityGroupIDRefs is a list of references to SecurityGroups used to set the SecurityGroupsIDs.
+                    items:
+                      description: A Reference to a named object.
+                      properties:
+                        name:
+                          description: Name of the referenced object.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                  securityGroupIdSelector:
+                    description: SecurityGroupIDsSelector selects references to SecurityGroups used to set the SecurityGroupsIDs.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   securityGroups:
                     items:
                       type: string

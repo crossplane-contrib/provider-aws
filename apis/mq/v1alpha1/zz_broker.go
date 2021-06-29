@@ -97,6 +97,7 @@ type BrokerStatus struct {
 // +kubebuilder:printcolumn:name="Broker engine",type="string",JSONPath=".spec.forProvider.engineType"
 // +kubebuilder:printcolumn:name="Deployment mode",type="string",JSONPath=".spec.forProvider.deploymentMode"
 // +kubebuilder:printcolumn:name="Instance type",type="string",JSONPath=".spec.forProvider.hostInstanceType"
+// +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Broker struct {
