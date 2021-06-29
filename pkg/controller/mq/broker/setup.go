@@ -21,9 +21,9 @@ import (
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
-// SetupBroker adds a controller that reconciles Stage.
+// SetupBroker adds a controller that reconciles Broker.
 func SetupBroker(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
-	name := managed.ControllerName(svcapitypes.BrokerKind)
+	name := managed.ControllerName(svcapitypes.BrokerGroupKind)
 	opts := []option{
 		func(e *external) {
 			e.postCreate = postCreate
