@@ -50,8 +50,14 @@ When you re-run the generation with this configuration, existing files won't be
 deleted. So you may want to delete everything in `apis/<serviceid>/v1alpha1` except
 `generator-config.yaml` and then re-run the command.
 
-> If `apis/<serviceid>` is created from scratch, please add the new service name
-> to the list called GENERATED_SERVICES in Makefile.
+If `apis/<serviceid>` is created from scratch, please add the new service name to the list called GENERATED_SERVICES in [Makefile](https://github.com/crossplane/provider-aws/blob/master/Makefile#L10).
+
+### Makefile
+
+```bash
+- GENERATED_SERVICES="apigatewayv2"
++ GENERATED_SERVICES="apigatewayv2,<serviceid>"
+```
 
 If this step fails for some reason, please raise an issue in [code-generator](https://github.com/aws-controllers-k8s/code-generator)
 and mention that you're using Crossplane pipeline.
