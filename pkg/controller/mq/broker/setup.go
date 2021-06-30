@@ -43,6 +43,7 @@ func SetupBroker(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, p
 			resource.ManagedKind(svcapitypes.BrokerGroupVersionKind),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
