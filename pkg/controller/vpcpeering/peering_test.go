@@ -2,27 +2,37 @@ package vpcpeering
 
 import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
+
 	"net/http"
+
 	"context"
+
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+
 	"github.com/crossplane/provider-aws/pkg/clients/peering"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"testing"
-	svcapitypes "github.com/crossplane/provider-aws/apis/vpcpeering/v1alpha1"
-	"github.com/crossplane/crossplane-runtime/pkg/test"
-	"github.com/crossplane/provider-aws/pkg/clients/peering/fake"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
+
+	svcapitypes "github.com/crossplane/provider-aws/apis/vpcpeering/v1alpha1"
+
+	"github.com/crossplane/provider-aws/pkg/clients/peering/fake"
+
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type args struct {
-	kube client.Client
-	client peering.EC2Client
+	kube       client.Client
+	client     peering.EC2Client
 	route53Cli peering.Route53Client
-	cr *svcapitypes.VPCPeeringConnection
+	cr         *svcapitypes.VPCPeeringConnection
 }
 
 func TestObserve(t *testing.T) {
@@ -45,12 +55,11 @@ func TestObserve(t *testing.T) {
 				},
 				cr: buildVPCPeerConnection("test"),
 				client: &fake.MockEC2Client{
-					DescribeVpcPeeringConnectionsRequestFun:  func(input *ec2.DescribeVpcPeeringConnectionsInput) ec2.DescribeVpcPeeringConnectionsRequest {
+					DescribeVpcPeeringConnectionsRequestFun: func(input *ec2.DescribeVpcPeeringConnectionsInput) ec2.DescribeVpcPeeringConnectionsRequest {
 						return ec2.DescribeVpcPeeringConnectionsRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &ec2.DescribeVpcPeeringConnectionsOutput{
 								//Attributes: attributes,
-								VpcPeeringConnections: []ec2.VpcPeeringConnection{
-								},
+								VpcPeeringConnections: []ec2.VpcPeeringConnection{},
 							}},
 						}
 					},
@@ -58,13 +67,13 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				result: managed.ExternalObservation{
-					ResourceExists:   false,
-					ResourceUpToDate: false,
+					ResourceExists:          false,
+					ResourceUpToDate:        false,
 					ResourceLateInitialized: false,
 				},
 			},
 		},
-		"UpToDate":{
+		"UpToDate": {
 			args: args{
 				kube: &test.MockClient{
 					MockUpdate: test.NewMockClient().Update,
@@ -72,14 +81,14 @@ func TestObserve(t *testing.T) {
 						return nil
 					},
 				},
-				cr: func()  *svcapitypes.VPCPeeringConnection{
+				cr: func() *svcapitypes.VPCPeeringConnection {
 					cr := buildVPCPeerConnection("test")
 					cr.Status.SetConditions(Approved())
 
 					return cr
 				}(),
 				client: &fake.MockEC2Client{
-					DescribeVpcPeeringConnectionsRequestFun:  func(input *ec2.DescribeVpcPeeringConnectionsInput) ec2.DescribeVpcPeeringConnectionsRequest {
+					DescribeVpcPeeringConnectionsRequestFun: func(input *ec2.DescribeVpcPeeringConnectionsInput) ec2.DescribeVpcPeeringConnectionsRequest {
 						return ec2.DescribeVpcPeeringConnectionsRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &ec2.DescribeVpcPeeringConnectionsOutput{
 								//Attributes: attributes,
@@ -91,7 +100,7 @@ func TestObserve(t *testing.T) {
 
 										Tags: []ec2.Tag{
 											{
-												Key: aws.String("Name"),
+												Key:   aws.String("Name"),
 												Value: aws.String("test"),
 											},
 										},
@@ -105,8 +114,8 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				result: managed.ExternalObservation{
-					ResourceExists:   true,
-					ResourceUpToDate: true,
+					ResourceExists:          true,
+					ResourceUpToDate:        true,
 					ResourceLateInitialized: true,
 				},
 			},
@@ -121,7 +130,7 @@ func TestObserve(t *testing.T) {
 				},
 				cr: buildVPCPeerConnection("test"),
 				client: &fake.MockEC2Client{
-					DescribeVpcPeeringConnectionsRequestFun:  func(input *ec2.DescribeVpcPeeringConnectionsInput) ec2.DescribeVpcPeeringConnectionsRequest {
+					DescribeVpcPeeringConnectionsRequestFun: func(input *ec2.DescribeVpcPeeringConnectionsInput) ec2.DescribeVpcPeeringConnectionsRequest {
 						return ec2.DescribeVpcPeeringConnectionsRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &ec2.DescribeVpcPeeringConnectionsOutput{
 								//Attributes: attributes,
@@ -133,7 +142,7 @@ func TestObserve(t *testing.T) {
 
 										Tags: []ec2.Tag{
 											{
-												Key: aws.String("Name"),
+												Key:   aws.String("Name"),
 												Value: aws.String("test"),
 											},
 										},
@@ -147,8 +156,8 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				result: managed.ExternalObservation{
-					ResourceExists:   true,
-					ResourceUpToDate: false,
+					ResourceExists:          true,
+					ResourceUpToDate:        false,
 					ResourceLateInitialized: true,
 				},
 			},
@@ -158,8 +167,8 @@ func TestObserve(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			e := &external{
-				client: tc.client,
-				kube: tc.kube,
+				client:        tc.client,
+				kube:          tc.kube,
 				route53Client: tc.route53Cli,
 			}
 			o, err := e.Observe(context.Background(), tc.args.cr)
@@ -181,7 +190,7 @@ func TestCreate(t *testing.T) {
 	type want struct {
 		result managed.ExternalCreation
 		err    error
-		vpcID string
+		vpcID  string
 	}
 
 	cases := map[string]struct {
@@ -196,12 +205,10 @@ func TestCreate(t *testing.T) {
 						return nil
 					},
 				},
-				route53Cli: &fake.MockRoute53Client{
-
-				},
-				cr: buildVPCPeerConnection("test"),
+				route53Cli: &fake.MockRoute53Client{},
+				cr:         buildVPCPeerConnection("test"),
 				client: &fake.MockEC2Client{
-					CreateVpcPeeringConnectionRequestFun:  func(input *ec2.CreateVpcPeeringConnectionInput) ec2.CreateVpcPeeringConnectionRequest {
+					CreateVpcPeeringConnectionRequestFun: func(input *ec2.CreateVpcPeeringConnectionInput) ec2.CreateVpcPeeringConnectionRequest {
 						g.Expect(*input.PeerRegion).Should(Equal("peerRegion"))
 						g.Expect(*input.PeerOwnerId).Should(Equal("peerOwner"))
 						g.Expect(*input.PeerVpcId).Should(Equal("peerVpc"))
@@ -221,10 +228,8 @@ func TestCreate(t *testing.T) {
 						g.Expect(len(input.Tags)).Should(Equal(1))
 						g.Expect(*input.Tags[0].Key).Should(Equal("Name"))
 						g.Expect(*input.Tags[0].Value).Should(Equal("test"))
-						return ec2.CreateTagsRequest {
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &ec2.CreateTagsOutput{
-
-							}},
+						return ec2.CreateTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &ec2.CreateTagsOutput{}},
 						}
 					},
 
@@ -238,9 +243,8 @@ func TestCreate(t *testing.T) {
 				},
 			},
 			want: want{
-				result: managed.ExternalCreation{
-				},
-				vpcID: "pcx-xxx",
+				result: managed.ExternalCreation{},
+				vpcID:  "pcx-xxx",
 			},
 		},
 	}
@@ -248,8 +252,8 @@ func TestCreate(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			e := &external{
-				client: tc.client,
-				kube: tc.kube,
+				client:        tc.client,
+				kube:          tc.kube,
 				route53Client: tc.route53Cli,
 			}
 			_, err := e.Create(context.Background(), tc.args.cr)
@@ -265,7 +269,7 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-func buildVPCPeerConnection(name string) *svcapitypes.VPCPeeringConnection{
+func buildVPCPeerConnection(name string) *svcapitypes.VPCPeeringConnection {
 	cr := &svcapitypes.VPCPeeringConnection{
 		ObjectMeta: v1.ObjectMeta{
 			Name: name,
@@ -273,13 +277,13 @@ func buildVPCPeerConnection(name string) *svcapitypes.VPCPeeringConnection{
 
 		Spec: svcapitypes.VPCPeeringConnectionSpec{
 			ForProvider: svcapitypes.VPCPeeringConnectionParameters{
-				VPCID: aws.String("ownerVpc"),
-				Region: "ownerRegion",
-				HostZoneID: aws.String("owner"),
+				VPCID:       aws.String("ownerVpc"),
+				Region:      "ownerRegion",
+				HostZoneID:  aws.String("owner"),
 				PeerOwnerID: aws.String("peerOwner"),
-				PeerVPCID: aws.String("peerVpc"),
-				PeerRegion: aws.String("peerRegion"),
-				PeerCIDR: aws.String("10.0.0.1/32"),
+				PeerVPCID:   aws.String("peerVpc"),
+				PeerRegion:  aws.String("peerRegion"),
+				PeerCIDR:    aws.String("10.0.0.1/32"),
 			},
 		},
 	}

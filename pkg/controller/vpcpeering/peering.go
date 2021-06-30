@@ -2,10 +2,12 @@ package vpcpeering
 
 import (
 	"context"
+	"strings"
+
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
+
 	"github.com/crossplane/provider-aws/pkg/clients/peering"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -16,8 +18,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	svcapitypes "github.com/crossplane/provider-aws/apis/vpcpeering/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+
+	svcapitypes "github.com/crossplane/provider-aws/apis/vpcpeering/v1alpha1"
 
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -29,34 +32,22 @@ import (
 
 	cpresource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 )
 
-type VPCPeeringConnectionStateReasonCode string
-
-const (
-	VPCPeeringConnectionStateReasonCode_initiating_request VPCPeeringConnectionStateReasonCode = "initiating-request"
-	VPCPeeringConnectionStateReasonCode_pending_acceptance VPCPeeringConnectionStateReasonCode = "pending-acceptance"
-	VPCPeeringConnectionStateReasonCode_active             VPCPeeringConnectionStateReasonCode = "active"
-	VPCPeeringConnectionStateReasonCode_deleted            VPCPeeringConnectionStateReasonCode = "deleted"
-	VPCPeeringConnectionStateReasonCode_rejected           VPCPeeringConnectionStateReasonCode = "rejected"
-	VPCPeeringConnectionStateReasonCode_failed             VPCPeeringConnectionStateReasonCode = "failed"
-	VPCPeeringConnectionStateReasonCode_expired            VPCPeeringConnectionStateReasonCode = "expired"
-	VPCPeeringConnectionStateReasonCode_provisioning       VPCPeeringConnectionStateReasonCode = "provisioning"
-	VPCPeeringConnectionStateReasonCode_deleting           VPCPeeringConnectionStateReasonCode = "deleting"
-)
+// ConnectionStateReasonCode vpc connection state code
+type ConnectionStateReasonCode string
 
 const (
 	errUnexpectedObject = "managed resource is not an VPCPeeringConnection resource"
 
-	errCreateSession = "cannot create a new session"
-	errCreate        = "cannot create VPCPeeringConnection in AWS"
-	errDescribe      = "failed to describe VPCPeeringConnection"
-	errDescribeRouteTable = "failed to describe RouteTable"
-	errDelete        = "failed to delete VPCPeeringConnection"
-	errModifyVpcPeering = "failed to motify VPCPeeringConnection"
-	errUpdateManagedStatus  = "cannot update managed resource status"
+	errCreate              = "cannot create VPCPeeringConnection in AWS"
+	errDescribe            = "failed to describe VPCPeeringConnection"
+	errDescribeRouteTable  = "failed to describe RouteTable"
+	errModifyVpcPeering    = "failed to motify VPCPeeringConnection"
+	errUpdateManagedStatus = "cannot update managed resource status"
 )
 
 // SetupVPCPeeringConnection adds a controller that reconciles VPCPeeringConnection.
@@ -76,10 +67,13 @@ func SetupVPCPeeringConnection(mgr ctrl.Manager, l logging.Logger, rl workqueue.
 }
 
 const (
+	// ApprovedCondition resources are believed to be approved.
 	ApprovedCondition xpv1.ConditionType = "Approved"
+	// ApprovedConditionReason customer approved the vpc request.
 	ApprovedConditionReason xpv1.ConditionReason = "CreateRouteInfo"
 )
 
+// Approved return approve condition
 func Approved() xpv1.Condition {
 	return xpv1.Condition{
 		Type:               ApprovedCondition,
@@ -91,7 +85,7 @@ func Approved() xpv1.Condition {
 
 type connector struct {
 	kube client.Client
-	log logging.Logger
+	log  logging.Logger
 }
 
 func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed.ExternalClient, error) {
@@ -105,10 +99,10 @@ func (c *connector) Connect(ctx context.Context, mg cpresource.Managed) (managed
 	}
 
 	return &external{
-		kube: c.kube,
+		kube:          c.kube,
 		route53Client: peering.NewRoute53Client(*cfg),
-		client: peering.NewEc2Client(*cfg),
-		log: c.log,
+		client:        peering.NewEc2Client(*cfg),
+		log:           c.log,
 	}, nil
 }
 
@@ -129,13 +123,13 @@ func isUPToDate(conditions []xpv1.Condition) bool {
 }
 
 type external struct {
-	kube           client.Client
-	client         peering.EC2Client
-	route53Client  peering.Route53Client
-	log logging.Logger
+	kube          client.Client
+	client        peering.EC2Client
+	route53Client peering.Route53Client
+	log           logging.Logger
 }
 
-func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) {
+func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
 	cr, ok := mg.(*svcapitypes.VPCPeeringConnection)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
@@ -145,7 +139,6 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 			ResourceExists: false,
 		}, nil
 	}
-
 
 	input := peering.GenerateDescribeVpcPeeringConnectionsInput(cr)
 	resp, err := e.client.DescribeVpcPeeringConnectionsRequest(input).Send(ctx)
@@ -163,7 +156,7 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 
-	peering.GenerateVPCPeeringConnection(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
+	peering.BuildPeering(resp).Status.AtProvider.DeepCopyInto(&cr.Status.AtProvider)
 	if existedPeer.Status.Code == ec2.VpcPeeringConnectionStateReasonCodeActive && cr.GetCondition(ApprovedCondition).Status == corev1.ConditionTrue {
 		cr.Status.SetConditions(xpv1.Available())
 	}
@@ -175,7 +168,7 @@ func (e *external) Observe(ctx context.Context, mg cpresource.Managed) (managed.
 	}, errors.Wrap(e.kube.Status().Update(ctx, cr), errUpdateManagedStatus)
 }
 
-func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.ExternalCreation, error) {
+func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.ExternalCreation, error) { // nolint:gocyclo
 	cr, ok := mg.(*svcapitypes.VPCPeeringConnection)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
@@ -190,13 +183,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	tags := make([]ec2.Tag, 0)
 	tags = append(tags, ec2.Tag{
-		Key: aws.String("Name"),
+		Key:   aws.String("Name"),
 		Value: aws.String(cr.ObjectMeta.Name),
 	})
 
 	for _, tag := range cr.Spec.ForProvider.Tags {
 		tags = append(tags, ec2.Tag{
-			Key: tag.Key,
+			Key:   tag.Key,
 			Value: tag.Value,
 		})
 	}
@@ -241,7 +234,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 				}
 			}
 		} else {
-			e.log.Info("Create route for route table","RouteTableID", *rt.RouteTableId, "return", *createRouteRes.Return)
+			e.log.Info("Create route for route table", "RouteTableID", *rt.RouteTableId, "return", *createRouteRes.Return)
 		}
 	}
 
@@ -301,7 +294,9 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.AccepterVPCInfo = nil
 	}
 	if resp.VpcPeeringConnection.ExpirationTime != nil {
-		cr.Status.AtProvider.ExpirationTime = &metav1.Time{*resp.VpcPeeringConnection.ExpirationTime}
+		cr.Status.AtProvider.ExpirationTime = &metav1.Time{
+			Time: *resp.VpcPeeringConnection.ExpirationTime,
+		}
 	} else {
 		cr.Status.AtProvider.ExpirationTime = nil
 	}
@@ -393,7 +388,7 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	return managed.ExternalCreation{}, nil
 }
 
-func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) {
+func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
 	cr, ok := mg.(*svcapitypes.VPCPeeringConnection)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
@@ -429,7 +424,7 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 	return managed.ExternalUpdate{}, errors.Wrap(e.kube.Status().Update(ctx, cr), errUpdateManagedStatus)
 }
 
-func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error { // nolint:gocyclo
 	cr, ok := mg.(*svcapitypes.VPCPeeringConnection)
 	if !ok {
 		return errors.New(errUnexpectedObject)

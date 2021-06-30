@@ -27,10 +27,11 @@ type VPCPeeringConnectionParameters struct {
 	// The tags to assign to the peering connection.
 	Tags []*Tag `json:"tags,omitempty"`
 	// The ID of the requester VPC. You must specify this parameter in the request.
-	VPCID                                *string `json:"vpcID,omitempty"`
-	HostZoneID *string `json:"hostZoneID,omitempty "`
+	VPCID      *string `json:"vpcID,omitempty"`
+	HostZoneID *string `json:"hostZoneID,omitempty"`
 }
 
+// Tag represent tag of the resource.
 type Tag struct {
 	Key *string `json:"key,omitempty"`
 
@@ -60,15 +61,17 @@ type VPCPeeringConnectionObservation struct {
 	// The ID of the VPC peering connection.
 	VPCPeeringConnectionID *string `json:"vpcPeeringConnectionID,omitempty"`
 
-	Phase  *string `json:"phase,omitempty"`
+	Phase *string `json:"phase,omitempty"`
 }
 
+// VPCPeeringConnectionStateReason represent state of vpc connection
 type VPCPeeringConnectionStateReason struct {
 	Code *string `json:"code,omitempty"`
 
 	Message *string `json:"message,omitempty"`
 }
 
+// VPCPeeringConnectionVPCInfo represent vpc information
 type VPCPeeringConnectionVPCInfo struct {
 	CIDRBlock *string `json:"cidrBlock,omitempty"`
 
@@ -85,6 +88,7 @@ type VPCPeeringConnectionVPCInfo struct {
 	VPCID *string `json:"vpcID,omitempty"`
 }
 
+// VPCPeeringConnectionOptionsDescription describe vpc peering state
 type VPCPeeringConnectionOptionsDescription struct {
 	AllowDNSResolutionFromRemoteVPC *bool `json:"allowDNSResolutionFromRemoteVPC,omitempty"`
 
@@ -93,10 +97,12 @@ type VPCPeeringConnectionOptionsDescription struct {
 	AllowEgressFromLocalVPCToRemoteClassicLink *bool `json:"allowEgressFromLocalVPCToRemoteClassicLink,omitempty"`
 }
 
+// CIDRBlock vpc peering cidr block.
 type CIDRBlock struct {
 	CIDRBlock *string `json:"cidrBlock,omitempty"`
 }
 
+// IPv6CIDRBlock vpc peering ipv6 cidr block.
 type IPv6CIDRBlock struct {
 	IPv6CIDRBlock *string `json:"ipv6CIDRBlock,omitempty"`
 }

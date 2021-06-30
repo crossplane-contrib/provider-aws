@@ -2,72 +2,35 @@
 
 ## Overview
 
-This `provider-aws` repository is the Crossplane infrastructure provider for
-[Amazon Web Services (AWS)](https://aws.amazon.com). The provider that is built
-from the source code in this repository can be installed into a Crossplane
-control plane and adds the following new functionality:
+This `provider-aws` repository is forked from https://github.com/crossplane/provider-aws.
+We just start some controllers to avoid to apply all CRD.
+Currently, [infra-cd](https://github.com/tidbcloud/infra-cd) apply following crds:
+```antlrv4
+elasticloadbalancing.aws.crossplane.io_elbs.yaml
+elasticloadbalancing.aws.crossplane.io_elbattachments.yaml
+kms.aws.crossplane.io_keys.yaml
+route53.aws.crossplane.io_hostedzones.yaml
+route53.aws.crossplane.io_resourcerecordsets.yaml
+s3.aws.crossplane.io_buckets.yaml
+s3.aws.crossplane.io_bucketpolicies.yaml
+aws.crossplane.io_providerconfigs.yaml
+identity.aws.crossplane.io_iamaccesskeys.yaml
+identity.aws.crossplane.io_iamrolepolicyattachments.yaml
+identity.aws.crossplane.io_iamroles.yaml
+identity.aws.crossplane.io_iampolicies.yaml
+ec2.aws.crossplane.io_vpcs.yaml
+sqs.aws.crossplane.io_queues.yaml
+aws.crossplane.io_providerconfigusages.yaml
+vpcpeering.aws.crossplane.io_vpcpeeringconnections.yaml
+```
 
-* Custom Resource Definitions (CRDs) that model AWS infrastructure and services
-  (e.g. [Amazon Relational Database Service (RDS)](https://aws.amazon.com/rds/),
-  [EKS clusters](https://aws.amazon.com/eks/), etc.)
-* Controllers to provision these resources in AWS based on the users desired
-  state captured in CRDs they create
-* Implementations of Crossplane's portable resource abstractions, enabling AWS
-  resources to fulfill a user's general need for cloud services
-
-## Getting Started and Documentation
-
-For getting started guides, installation, deployment, and administration, see
-our [Documentation](https://crossplane.io/docs/latest).
-
-## Contributing
-
-provider-aws is a community driven project and we welcome contributions. See the
-Crossplane
-[Contributing](https://github.com/crossplane/crossplane/blob/master/CONTRIBUTING.md)
-guidelines to get started.
-
-### Adding New Resource
-
-We use AWS Go code generation pipeline to generate new controllers. See [Code Generation Guide](CODE_GENERATION.md)
-to add a new resource.
-
-## Report a Bug
-
-For filing bugs, suggesting improvements, or requesting new features, please
-open an [issue](https://github.com/crossplane/provider-aws/issues).
-
-## Contact
-
-Please use the following to reach members of the community:
-
-* Slack: Join our [slack channel](https://slack.crossplane.io)
-* Forums:
-  [crossplane-dev](https://groups.google.com/forum/#!forum/crossplane-dev)
-* Twitter: [@crossplane_io](https://twitter.com/crossplane_io)
-* Email: [info@crossplane.io](mailto:info@crossplane.io)
-
-## Roadmap
-
-provider-aws goals and milestones are currently tracked in the Crossplane
-repository. More information can be found in
-[ROADMAP.md](https://github.com/crossplane/crossplane/blob/master/ROADMAP.md).
-
-## Governance and Owners
-
-provider-aws is run according to the same
-[Governance](https://github.com/crossplane/crossplane/blob/master/GOVERNANCE.md)
-and [Ownership](https://github.com/crossplane/crossplane/blob/master/OWNERS.md)
-structure as the core Crossplane project.
-
-## Code of Conduct
-
-provider-aws adheres to the same [Code of
-Conduct](https://github.com/crossplane/crossplane/blob/master/CODE_OF_CONDUCT.md)
-as the core Crossplane project.
-
-## Licensing
-
-provider-aws is under the Apache 2.0 license.
-
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcrossplane%2Fprovider-aws.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcrossplane%2Fprovider-aws?ref=badge_large)
+# Build Docker Image
+## Build binary
+```shell
+GOOS=linux go build -o docker/crossplane-aws-provider cmd/provider/main.go
+```
+## Build image
+```shell
+cd docker
+docker build -t $REGISTRY/provider-aws:v0.19.2-dev .
+```

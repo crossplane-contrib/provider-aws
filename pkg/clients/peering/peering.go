@@ -2,10 +2,12 @@ package peering
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/route53"
-	"github.com/crossplane/provider-aws/pkg/clients"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+
+	aws "github.com/crossplane/provider-aws/pkg/clients"
+
 	sdkaws "github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/vpcpeering/v1alpha1"
 )
@@ -28,8 +30,8 @@ func GenerateDescribeVpcPeeringConnectionsInput(cr *svcapitypes.VPCPeeringConnec
 	return res
 }
 
-// GenerateVPCPeeringConnection returns the current state in the form of *svcapitypes.VPCPeeringConnection.
-func GenerateVPCPeeringConnection(resp *ec2.DescribeVpcPeeringConnectionsResponse) *svcapitypes.VPCPeeringConnection {
+// BuildPeering returns the current state in the form of *svcapitypes.VPCPeeringConnection.
+func BuildPeering(resp *ec2.DescribeVpcPeeringConnectionsResponse) *svcapitypes.VPCPeeringConnection { // nolint:gocyclo
 	cr := &svcapitypes.VPCPeeringConnection{}
 
 	output := resp.DescribeVpcPeeringConnectionsOutput
@@ -37,7 +39,6 @@ func GenerateVPCPeeringConnection(resp *ec2.DescribeVpcPeeringConnectionsRespons
 		return cr
 	}
 
-	found := false
 	for _, elem := range output.VpcPeeringConnections {
 		if elem.AccepterVpcInfo != nil {
 			f0 := &svcapitypes.VPCPeeringConnectionVPCInfo{}
@@ -93,7 +94,9 @@ func GenerateVPCPeeringConnection(resp *ec2.DescribeVpcPeeringConnectionsRespons
 			cr.Status.AtProvider.AccepterVPCInfo = nil
 		}
 		if elem.ExpirationTime != nil {
-			cr.Status.AtProvider.ExpirationTime = &metav1.Time{*elem.ExpirationTime}
+			cr.Status.AtProvider.ExpirationTime = &metav1.Time{
+				Time: *elem.ExpirationTime,
+			}
 		} else {
 			cr.Status.AtProvider.ExpirationTime = nil
 		}
@@ -181,11 +184,6 @@ func GenerateVPCPeeringConnection(resp *ec2.DescribeVpcPeeringConnectionsRespons
 		} else {
 			cr.Status.AtProvider.VPCPeeringConnectionID = nil
 		}
-		found = true
-		break
-	}
-	if !found {
-		return cr
 	}
 
 	return cr
@@ -211,25 +209,37 @@ func GenerateCreateVpcPeeringConnectionInput(cr *svcapitypes.VPCPeeringConnectio
 	return res
 }
 
+// EC2Client ec2 client
 type EC2Client interface {
+	// DescribeVpcPeeringConnectionsRequest describe vpc peering connection
 	DescribeVpcPeeringConnectionsRequest(*ec2.DescribeVpcPeeringConnectionsInput) ec2.DescribeVpcPeeringConnectionsRequest
+	// CreateVpcPeeringConnectionRequest create vpc peering connection
 	CreateVpcPeeringConnectionRequest(*ec2.CreateVpcPeeringConnectionInput) ec2.CreateVpcPeeringConnectionRequest
+	// CreateTagsRequest create tags for vpc peering
 	CreateTagsRequest(*ec2.CreateTagsInput) ec2.CreateTagsRequest
+	// DescribeRouteTablesRequest describe route table
 	DescribeRouteTablesRequest(*ec2.DescribeRouteTablesInput) ec2.DescribeRouteTablesRequest
+	// CreateRouteRequest create route
 	CreateRouteRequest(*ec2.CreateRouteInput) ec2.CreateRouteRequest
+	// DeleteRouteRequest delete route
 	DeleteRouteRequest(*ec2.DeleteRouteInput) ec2.DeleteRouteRequest
+	// ModifyVpcPeeringConnectionOptionsRequest motify vpc peering
 	ModifyVpcPeeringConnectionOptionsRequest(*ec2.ModifyVpcPeeringConnectionOptionsInput) ec2.ModifyVpcPeeringConnectionOptionsRequest
+	// DeleteVpcPeeringConnectionRequest delete vpc peering
 	DeleteVpcPeeringConnectionRequest(*ec2.DeleteVpcPeeringConnectionInput) ec2.DeleteVpcPeeringConnectionRequest
 }
 
+// NewEc2Client create ec2 client
 func NewEc2Client(cfg sdkaws.Config) EC2Client {
 	return ec2.New(cfg)
 }
 
+// NewRoute53Client create route53 client
 func NewRoute53Client(cfg sdkaws.Config) Route53Client {
 	return route53.New(cfg)
 }
 
+// Route53Client route53 client
 type Route53Client interface {
 	CreateVPCAssociationAuthorizationRequest(*route53.CreateVPCAssociationAuthorizationInput) route53.CreateVPCAssociationAuthorizationRequest
 	DeleteVPCAssociationAuthorizationRequest(*route53.DeleteVPCAssociationAuthorizationInput) route53.DeleteVPCAssociationAuthorizationRequest
