@@ -17,6 +17,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -29,10 +30,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	aws "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/google/go-cmp/cmp"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/ses/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // SetupTemplate adds a controller that reconciles Template.
