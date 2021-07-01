@@ -1,0 +1,15 @@
+---
+apiVersion: ses.aws.crossplane.io/v1alpha1
+kind: Template
+metadata:
+    name: example
+spec:
+    forProvider:
+    region: us-east-2
+    template:
+        templateName: example
+        htmlPart: "<h1>sample html part</h1>"
+        subjectPart: "sample subject part"
+        textPart: "sample text part"
+    providerConfigRef:
+    name: example
