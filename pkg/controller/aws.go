@@ -94,6 +94,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/httpnamespace"
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/privatednsnamespace"
 	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/publicdnsnamespace"
+	"github.com/crossplane/provider-aws/pkg/controller/ses/template"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/activity"
 	"github.com/crossplane/provider-aws/pkg/controller/sfn/statemachine"
 	"github.com/crossplane/provider-aws/pkg/controller/sqs/queue"
@@ -175,6 +176,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		resolverendpoint.SetupResolverEndpoint,
 		resolverrule.SetupResolverRule,
 		kafkacluster.SetupCluster,
+		template.SetupTemplate,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
