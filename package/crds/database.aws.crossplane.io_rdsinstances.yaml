@@ -451,6 +451,14 @@ spec:
                       First character must be a letter.    * Cannot be a reserved
                       word for the chosen database engine.'
                     type: string
+                  maxAllocatedStorage:
+                    description: "The upper limit to which Amazon RDS can automatically
+                      scale the storage of the DB instance. \n For more information
+                      about this setting, including limitations that apply to it,
+                      see Managing capacity automatically with Amazon RDS storage
+                      autoscaling (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PIOPS.StorageTypes.html#USER_PIOPS.Autoscaling)
+                      in the Amazon RDS User Guide."
+                    type: integer
                   monitoringInterval:
                     description: 'MonitoringInterval is the interval, in seconds,
                       between points when Enhanced Monitoring metrics are collected
@@ -901,6 +909,10 @@ spec:
                 description: RDSInstanceObservation is the representation of the current
                   state that is observed.
                 properties:
+                  allocatedStorage:
+                    description: AllocatedStorage is the allocated storage size in
+                      gibibytes.
+                    type: integer
                   dbInstanceArn:
                     description: DBInstanceArn is the Amazon Resource Name (ARN) for
                       the DB instance.
