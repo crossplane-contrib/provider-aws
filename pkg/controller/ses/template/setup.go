@@ -65,7 +65,6 @@ func SetupTemplate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter,
 
 func preObserve(_ context.Context, cr *svcapitypes.Template, obj *svcsdk.GetTemplateInput) error {
 	obj.TemplateName = aws.String(meta.GetExternalName(cr))
-	cr.Spec.ForProvider.Template.TemplateName = obj.TemplateName
 	return nil
 }
 
