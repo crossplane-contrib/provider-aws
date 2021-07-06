@@ -45,7 +45,7 @@ const (
 )
 
 // SetupDBInstance adds a controller that reconciles DBInstance
-func SetupDBInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupDBInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.DBInstanceGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -70,6 +70,7 @@ func SetupDBInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.DBInstanceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
