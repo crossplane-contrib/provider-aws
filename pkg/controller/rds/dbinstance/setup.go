@@ -49,14 +49,14 @@ func SetupDBInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 	name := managed.ControllerName(svcapitypes.DBInstanceGroupKind)
 	opts := []option{
 		func(e *external) {
-			c := &custom{client: e.client, kube: e.kube}
+			c := &custom{client: e.client, kube: e.kube, external: e}
 			e.lateInitialize = lateInitialize
 			e.isUpToDate = c.isUpToDate
 			e.preObserve = preObserve
 			e.postObserve = postObserve
 			e.preCreate = c.preCreate
 			e.postCreate = c.postCreate
-			e.preDelete = preDelete
+			e.preDelete = c.preDelete
 			e.filterList = filterList
 			e.preUpdate = c.preUpdate
 		},
@@ -75,8 +75,9 @@ func SetupDBInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 }
 
 type custom struct {
-	kube   client.Client
-	client svcsdkapi.RDSAPI
+	kube     client.Client
+	client   svcsdkapi.RDSAPI
+	external *external
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DescribeDBInstancesInput) error {
@@ -154,10 +155,12 @@ func (e *custom) preUpdate(ctx context.Context, cr *svcapitypes.DBInstance, obj 
 	return nil
 }
 
-func preDelete(_ context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DeleteDBInstanceInput) (bool, error) {
+func (e *custom) preDelete(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.DeleteDBInstanceInput) (bool, error) {
 	obj.DBInstanceIdentifier = aws.String(meta.GetExternalName(cr))
 	obj.FinalDBSnapshotIdentifier = aws.String(cr.Spec.ForProvider.FinalDBSnapshotIdentifier)
 	obj.SkipFinalSnapshot = aws.Bool(cr.Spec.ForProvider.SkipFinalSnapshot)
+
+	_, _ = e.external.Update(ctx, cr)
 	return false, nil
 }
 
@@ -276,7 +279,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBInstance, out *svcsdk.DescribeDBIn
 	// again.
 	// This could be matured a bit more for specific statuses, such as not allowing storage changes
 	// when the status is "storage-optimization"
-	status := aws.StringValue(resp.DBInstances[0].DBInstanceStatus)
+	status := aws.StringValue(out.DBInstances[0].DBInstanceStatus)
 	if status == "modifying" || status == "upgrading" {
 		return true, nil
 	}
