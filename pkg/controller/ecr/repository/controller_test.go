@@ -90,7 +90,7 @@ func withSpec(p v1alpha1.RepositoryParameters) repositoryModifier {
 }
 
 func withForceDelete(forceDelete bool) repositoryModifier {
-	return func(r *v1alpha1.Repository) { r.Spec.ForceDelete = &forceDelete }
+	return func(r *v1alpha1.Repository) { r.Spec.ForProvider.ForceDelete = &forceDelete }
 }
 
 func withStatus(s v1alpha1.RepositoryObservation) repositoryModifier {

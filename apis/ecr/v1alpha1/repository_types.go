@@ -44,6 +44,10 @@ type RepositoryParameters struct {
 	// Metadata tagging key value pairs
 	// +optional
 	Tags []Tag `json:"tags,omitempty"`
+
+	// If a repository contains images, forces the deletion.
+	// +optional
+	ForceDelete *bool `json:"forceDelete,omitempty"`
 }
 
 // Tag defines a tag
@@ -59,10 +63,6 @@ type Tag struct {
 // A RepositorySpec defines the desired state of a Elastic Container Repository.
 type RepositorySpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-
-	// If a repository contains images, forces the deletion.
-	// +optional
-	ForceDelete *bool `json:"forceDelete,omitempty"`
 
 	ForProvider RepositoryParameters `json:"forProvider"`
 }

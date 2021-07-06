@@ -57,6 +57,9 @@ spec:
               forProvider:
                 description: RepositoryParameters define the desired state of an AWS Elastic Container Repository
                 properties:
+                  forceDelete:
+                    description: If a repository contains images, forces the deletion.
+                    type: boolean
                   imageScanningConfiguration:
                     description: The image scanning configuration for the repository. This determines whether images are scanned for known vulnerabilities after being pushed to the repository.
                     properties:
@@ -94,9 +97,6 @@ spec:
                 required:
                 - region
                 type: object
-              forceDelete:
-                description: If a repository contains images, forces the deletion.
-                type: boolean
               providerConfigRef:
                 default:
                   name: default
