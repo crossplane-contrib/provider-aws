@@ -76,7 +76,7 @@ type AddressParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 }
 
-// A AddressSpec defines the desired state of an Address.
+// An AddressSpec defines the desired state of an Address.
 type AddressSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
 	ForProvider       AddressParameters `json:"forProvider"`
@@ -123,7 +123,7 @@ type AddressObservation struct {
 	PublicIPv4Pool string `json:"publicIpv4Pool,omitempty"`
 }
 
-// A AddressStatus represents the observed state of an Address.
+// An AddressStatus represents the observed state of an Address.
 type AddressStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
 	AtProvider          AddressObservation `json:"atProvider,omitempty"`
@@ -131,7 +131,7 @@ type AddressStatus struct {
 
 // +kubebuilder:object:root=true
 
-// A Address is a managed resource that represents an AWS Elastic IP Address.
+// An Address is a managed resource that represents an AWS Elastic IP Address.
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
