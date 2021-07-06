@@ -24,7 +24,7 @@ import (
 
 // AddressParameters define the desired state of an AWS Elastic IP
 type AddressParameters struct {
-	// Region is the region you'd like your VPC to be created in.
+	// Region is the region you'd like your Address to be created in.
 	Region string `json:"region"`
 
 	// [EC2-VPC] The Elastic IP address to recover or an IPv4 address from an address
@@ -76,7 +76,7 @@ type AddressParameters struct {
 	Tags []Tag `json:"tags,omitempty"`
 }
 
-// A AddressSpec defines the desired state of a Address.
+// An AddressSpec defines the desired state of an Address.
 type AddressSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
 	ForProvider       AddressParameters `json:"forProvider"`
@@ -123,7 +123,7 @@ type AddressObservation struct {
 	PublicIPv4Pool string `json:"publicIpv4Pool,omitempty"`
 }
 
-// A AddressStatus represents the observed state of a Address.
+// An AddressStatus represents the observed state of an Address.
 type AddressStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
 	AtProvider          AddressObservation `json:"atProvider,omitempty"`
@@ -131,8 +131,7 @@ type AddressStatus struct {
 
 // +kubebuilder:object:root=true
 
-// A Address is a managed resource that represents an AWS VPC Security
-// Group.
+// An Address is a managed resource that represents an AWS Elastic IP Address.
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
