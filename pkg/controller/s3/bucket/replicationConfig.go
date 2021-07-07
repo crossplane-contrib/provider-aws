@@ -293,6 +293,8 @@ func createRule(input v1beta1.ReplicationRule) awss3.ReplicationRule {
 		if Rule.Filter.Tag != nil {
 			newRule.Filter.Tag = &awss3.Tag{Key: awsclient.String(Rule.Filter.Tag.Key), Value: awsclient.String(Rule.Filter.Tag.Value)}
 		}
+	} else {
+		newRule.Filter = &awss3.ReplicationRuleFilter{}
 	}
 	if Rule.SourceSelectionCriteria != nil {
 		newRule.SourceSelectionCriteria = &awss3.SourceSelectionCriteria{
