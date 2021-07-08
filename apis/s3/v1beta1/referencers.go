@@ -51,17 +51,6 @@ func BucketARN() reference.ExtractValueFn {
 	}
 }
 
-// BucketARN2 Why not like this? :shrug:
-func BucketARN2(mg resource.Managed) string {
-	r, ok := mg.(*Bucket)
-	if !ok {
-		return ""
-	}
-	return r.Status.AtProvider.ARN
-}
-
-var _ reference.ExtractValueFn = BucketARN2
-
 // ResolveReferences of this Bucket
 func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error { // nolint:gocyclo
 	r := reference.NewAPIResolver(c, mg)
@@ -125,7 +114,7 @@ func (mg *Bucket) ResolveReferences(ctx context.Context, c client.Reader) error 
 				Reference:    v.Destination.BucketRef,
 				Selector:     v.Destination.BucketSelector,
 				To:           reference.To{Managed: &Bucket{}, List: &BucketList{}},
-				Extract:      BucketARN2,
+				Extract:      BucketARN(),
 			})
 			if err != nil {
 				return errors.Wrapf(err, "spec.forProvider.replicationConfiguration.rules[%d].bucket", i)
