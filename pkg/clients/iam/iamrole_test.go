@@ -2,6 +2,7 @@ package iam
 
 import (
 	"sort"
+	"strings"
 	"testing"
 	"time"
 
@@ -223,8 +224,9 @@ func TestIsRoleUpToDate(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		args args
-		want bool
+		args                   args
+		want                   bool
+		wantObservationMessage string
 	}{
 		"SameFields": {
 			args: args{
@@ -249,7 +251,8 @@ func TestIsRoleUpToDate(t *testing.T) {
 					}},
 				},
 			},
-			want: true,
+			want:                   true,
+			wantObservationMessage: "",
 		},
 		"DifferentFields": {
 			args: args{
@@ -274,15 +277,27 @@ func TestIsRoleUpToDate(t *testing.T) {
 					}},
 				},
 			},
-			want: false,
+			want:                   false,
+			wantObservationMessage: "Found observed difference in IAM role",
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got, _ := IsRoleUpToDate(tc.args.p, tc.args.role)
+			got, testObservationMessage, _ := IsRoleUpToDate(tc.args.p, tc.args.role)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if tc.wantObservationMessage == "" {
+				if tc.wantObservationMessage != testObservationMessage {
+					t.Errorf("r: -want, +got:\n%s", testObservationMessage)
+				}
+			}
+
+			if tc.wantObservationMessage == "Found observed difference in IAM role" {
+				if !strings.Contains(testObservationMessage, tc.wantObservationMessage) {
+					t.Errorf("r: -want, +got:\n%s", testObservationMessage)
+				}
 			}
 		})
 	}
