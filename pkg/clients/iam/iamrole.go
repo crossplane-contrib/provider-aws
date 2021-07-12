@@ -137,21 +137,37 @@ func CreatePatch(in *iam.Role, target *v1beta1.IAMRoleParameters) (*v1beta1.IAMR
 }
 
 // IsRoleUpToDate checks whether there is a change in any of the modifiable fields in role.
-func IsRoleUpToDate(in v1beta1.IAMRoleParameters, observed iam.Role) (bool, error) {
+func IsRoleUpToDate(in v1beta1.IAMRoleParameters, observed iam.Role) (bool, string, error) {
 	generated, err := copystructure.Copy(&observed)
 	if err != nil {
-		return true, errors.Wrap(err, errCheckUpToDate)
+		return true, "", errors.Wrap(err, errCheckUpToDate)
 	}
 	desired, ok := generated.(*iam.Role)
 	if !ok {
-		return true, errors.New(errCheckUpToDate)
+		return true, "", errors.New(errCheckUpToDate)
 	}
 
 	if err = GenerateIAMRole(in, desired); err != nil {
-		return false, err
+		return false, "", err
 	}
 
-	return cmp.Equal(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{})), nil
+	isRoleUpToDate := cmp.Equal(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}))
+	observationMessage := ""
+
+	if !isRoleUpToDate {
+		observationMessage = "Found observed difference in IAM role\n"
+		observationMessage += cmp.Diff(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}))
+
+		// Add extra logging for AssumeRolePolicyDocument because cmp.Diff doesn't show the full difference
+		if *desired.AssumeRolePolicyDocument != *observed.AssumeRolePolicyDocument {
+			observationMessage += "\ndesired assume role policy: "
+			observationMessage += *desired.AssumeRolePolicyDocument
+			observationMessage += "\nobserved assume role policy: "
+			observationMessage += *observed.AssumeRolePolicyDocument
+		}
+	}
+
+	return isRoleUpToDate, observationMessage, nil
 }
 
 // DiffIAMTags returns the lists of tags that need to be removed and added according
