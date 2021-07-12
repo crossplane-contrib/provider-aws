@@ -273,7 +273,7 @@ func (e *external) deleteRoutes(ctx context.Context, tableID string, desired []v
 				break
 			}
 		}
-		if !found && rt.GatewayID != ec2.DefaultLocalGatewayID {
+		if !found && rt.Origin != string(awsec2.RouteOriginCreateRouteTable) {
 			if rt.DestinationCIDRBlock != "" {
 				_, err := e.client.DeleteRouteRequest(&awsec2.DeleteRouteInput{
 					RouteTableId:         aws.String(tableID),

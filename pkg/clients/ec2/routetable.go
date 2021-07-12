@@ -17,9 +17,6 @@ import (
 )
 
 const (
-	// DefaultLocalGatewayID is the id for local gateway
-	DefaultLocalGatewayID = "local"
-
 	// RouteTableIDNotFound is the code that is returned by ec2 when the given SubnetID is invalid
 	RouteTableIDNotFound = "InvalidRouteTableID.NotFound"
 
@@ -100,6 +97,7 @@ func GenerateRTObservation(rt ec2.RouteTable) v1beta1.RouteTableObservation {
 				NetworkInterfaceID:       aws.StringValue(rt.NetworkInterfaceId),
 				TransitGatewayID:         aws.StringValue(rt.TransitGatewayId),
 				VpcPeeringConnectionID:   aws.StringValue(rt.VpcPeeringConnectionId),
+				Origin:                   string(rt.Origin),
 			}
 		}
 	}
@@ -164,18 +162,18 @@ func CreateRTPatch(in ec2.RouteTable, target v1beta1.RouteTableParameters) (*v1b
 	targetCopy := target.DeepCopy()
 	currentParams := &v1beta1.RouteTableParameters{}
 
-	v1beta1.SortTags(target.Tags, in.Tags)
-
-	// Add the default route for fair comparison.
+	// Add the default routes for fair comparison.
 	for _, val := range in.Routes {
-		if val.GatewayId != nil && *val.GatewayId == DefaultLocalGatewayID {
+		if val.Origin == ec2.RouteOriginCreateRouteTable {
 			targetCopy.Routes = append([]v1beta1.Route{{
 				GatewayID:            val.GatewayId,
 				DestinationCIDRBlock: val.DestinationCidrBlock,
-			}}, target.Routes...)
+			}}, targetCopy.Routes...)
 		}
 	}
+	v1beta1.SortTags(targetCopy.Tags, in.Tags)
 	SortRoutes(targetCopy.Routes, in.Routes)
+	SortAssociations(targetCopy.Associations, in.Associations)
 
 	LateInitializeRT(currentParams, &in)
 
@@ -221,5 +219,16 @@ func SortRoutes(route []v1beta1.Route, ec2Route []ec2.Route) {
 	sort.Slice(ec2Route, func(i, j int) bool {
 		return (ec2Route[i].DestinationCidrBlock != nil && *ec2Route[i].DestinationCidrBlock < *ec2Route[j].DestinationCidrBlock) ||
 			(ec2Route[i].DestinationIpv6CidrBlock != nil && *ec2Route[i].DestinationIpv6CidrBlock < *ec2Route[j].DestinationIpv6CidrBlock)
+	})
+}
+
+// SortAssociations sorts array of Associations on SubnetID
+func SortAssociations(association []v1beta1.Association, ec2Association []ec2.RouteTableAssociation) {
+	sort.Slice(association, func(i, j int) bool {
+		return association[i].SubnetID != nil && association[j].SubnetID != nil && *association[i].SubnetID < *association[j].SubnetID
+	})
+
+	sort.Slice(ec2Association, func(i, j int) bool {
+		return (ec2Association[i].SubnetId != nil && ec2Association[j].SubnetId != nil && *ec2Association[i].SubnetId < *ec2Association[j].SubnetId)
 	})
 }

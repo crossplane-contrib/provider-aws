@@ -119,6 +119,9 @@ type RouteState struct {
 
 	// The ID of a VPC peering connection.
 	VpcPeeringConnectionID string `json:"vpcPeeringConnectionId,omitempty"`
+
+	// Describes how the route was created
+	Origin string `json:"origin,omitempty"`
 }
 
 // Association describes an association between a route table and a subnet.

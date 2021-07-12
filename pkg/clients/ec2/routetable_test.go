@@ -11,11 +11,14 @@ import (
 )
 
 var (
-	rtVPC      = "some vpc"
-	otherRtVPC = "some other vpc"
-	rtID       = "some RT Id"
-	rtSubnetID = "some subnet"
-	rtOwner    = "some owner"
+	rtVPC                  = "some vpc"
+	otherRtVPC             = "some other vpc"
+	rtID                   = "some RT Id"
+	rtSubnetID             = "some subnet"
+	rtOtherSubnetID        = "other subnet"
+	rtOwner                = "some owner"
+	rtDestinationCIDR      = "0.0.0.0/0"
+	rtOtherDestinationCIDR = "1.1.1.1/1"
 )
 
 func specAssociations() []v1beta1.Association {
@@ -51,6 +54,100 @@ func TestIsRTUpToDate(t *testing.T) {
 				},
 				p: v1beta1.RouteTableParameters{
 					VPCID: aws.String(rtVPC),
+				},
+			},
+			want: true,
+		},
+		"SameFieldsDifferentOrders": {
+			args: args{
+				rt: ec2.RouteTable{
+					VpcId: aws.String(rtVPC),
+					Associations: []ec2.RouteTableAssociation{
+						{
+							SubnetId: aws.String(rtSubnetID),
+						},
+						{
+							SubnetId: aws.String(rtOtherSubnetID),
+						},
+					},
+					Routes: []ec2.Route{
+						{
+							DestinationCidrBlock: aws.String(rtDestinationCIDR),
+						},
+						{
+							DestinationCidrBlock: aws.String(rtOtherDestinationCIDR),
+						},
+					},
+				},
+				p: v1beta1.RouteTableParameters{
+					VPCID: aws.String(rtVPC),
+					Associations: []v1beta1.Association{
+						{
+							SubnetID: aws.String(rtOtherSubnetID),
+						},
+						{
+							SubnetID: aws.String(rtSubnetID),
+						},
+					},
+					Routes: []v1beta1.Route{
+						{
+							DestinationCIDRBlock: aws.String(rtOtherDestinationCIDR),
+						},
+						{
+							DestinationCIDRBlock: aws.String(rtDestinationCIDR),
+						},
+					},
+				},
+			},
+			want: true,
+		},
+		"SameFieldsMultipleDefault": {
+			args: args{
+				rt: ec2.RouteTable{
+					VpcId: aws.String(rtVPC),
+					Associations: []ec2.RouteTableAssociation{
+						{
+							SubnetId: aws.String(rtSubnetID),
+						},
+						{
+							SubnetId: aws.String(rtOtherSubnetID),
+						},
+					},
+					Routes: []ec2.Route{
+						{
+							DestinationCidrBlock: aws.String(rtDestinationCIDR),
+						},
+						{
+							DestinationCidrBlock: aws.String(rtOtherDestinationCIDR),
+						},
+						{
+							DestinationCidrBlock: aws.String(rtDestinationCIDR),
+							Origin:               ec2.RouteOriginCreateRouteTable,
+						},
+						{
+							DestinationCidrBlock: aws.String(rtOtherDestinationCIDR),
+							Origin:               ec2.RouteOriginCreateRouteTable,
+						},
+					},
+				},
+				p: v1beta1.RouteTableParameters{
+					VPCID: aws.String(rtVPC),
+					Associations: []v1beta1.Association{
+						{
+							SubnetID: aws.String(rtOtherSubnetID),
+						},
+						{
+							SubnetID: aws.String(rtSubnetID),
+						},
+					},
+					Routes: []v1beta1.Route{
+						{
+							DestinationCIDRBlock: aws.String(rtOtherDestinationCIDR),
+						},
+						{
+							DestinationCIDRBlock: aws.String(rtDestinationCIDR),
+						},
+					},
 				},
 			},
 			want: true,
