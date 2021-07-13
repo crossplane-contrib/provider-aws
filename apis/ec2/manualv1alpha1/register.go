@@ -17,7 +17,7 @@ limitations under the License.
 // +groupName=ec2.aws.crossplane.io
 // +versionName=v1alpha1
 
-package v1alpha1
+package manualv1alpha1
 
 import (
 	"reflect"

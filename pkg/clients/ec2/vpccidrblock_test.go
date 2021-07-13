@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 )
 
 var (
@@ -23,7 +23,7 @@ func TestGenerateVPCCIDRBlockObservation(t *testing.T) {
 	cases := map[string]struct {
 		associationID string
 		in            ec2.Vpc
-		out           v1alpha1.VPCCIDRBlockObservation
+		out           manualv1alpha1.VPCCIDRBlockObservation
 	}{
 		"IPv4": {
 			associationID: matchAssociationID,
@@ -43,10 +43,10 @@ func TestGenerateVPCCIDRBlockObservation(t *testing.T) {
 					},
 				},
 			},
-			out: v1alpha1.VPCCIDRBlockObservation{
+			out: manualv1alpha1.VPCCIDRBlockObservation{
 				AssociationID: &matchAssociationID,
 				CIDRBlock:     &testCidrBlock,
-				CIDRBlockState: &v1alpha1.VPCCIDRBlockState{
+				CIDRBlockState: &manualv1alpha1.VPCCIDRBlockState{
 					State:         &testStateString,
 					StatusMessage: &testStatus,
 				},
@@ -74,10 +74,10 @@ func TestGenerateVPCCIDRBlockObservation(t *testing.T) {
 					},
 				},
 			},
-			out: v1alpha1.VPCCIDRBlockObservation{
+			out: manualv1alpha1.VPCCIDRBlockObservation{
 				AssociationID: &matchAssociationID,
 				IPv6CIDRBlock: &testCidrBlock,
-				IPv6CIDRBlockState: &v1alpha1.VPCCIDRBlockState{
+				IPv6CIDRBlockState: &manualv1alpha1.VPCCIDRBlockState{
 					State:         &testStateString,
 					StatusMessage: &testStatus,
 				},
@@ -163,13 +163,13 @@ func TestFindVPCCIDRBlockStatus(t *testing.T) {
 
 func TestIsVpcCidrDeleting(t *testing.T) {
 	cases := map[string]struct {
-		in  v1alpha1.VPCCIDRBlockObservation
+		in  manualv1alpha1.VPCCIDRBlockObservation
 		out bool
 	}{
 		"IPv4": {
-			in: v1alpha1.VPCCIDRBlockObservation{
+			in: manualv1alpha1.VPCCIDRBlockObservation{
 				CIDRBlock: &testCidrBlock,
-				CIDRBlockState: &v1alpha1.VPCCIDRBlockState{
+				CIDRBlockState: &manualv1alpha1.VPCCIDRBlockState{
 					State:         &testStateString,
 					StatusMessage: &testStatus,
 				},
@@ -177,10 +177,10 @@ func TestIsVpcCidrDeleting(t *testing.T) {
 			out: false,
 		},
 		"IPv6": {
-			in: v1alpha1.VPCCIDRBlockObservation{
+			in: manualv1alpha1.VPCCIDRBlockObservation{
 				AssociationID: &matchAssociationID,
 				IPv6CIDRBlock: &testCidrBlock,
-				IPv6CIDRBlockState: &v1alpha1.VPCCIDRBlockState{
+				IPv6CIDRBlockState: &manualv1alpha1.VPCCIDRBlockState{
 					State:         &testStateString,
 					StatusMessage: &testStatus,
 				},
