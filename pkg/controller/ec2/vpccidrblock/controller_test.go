@@ -33,7 +33,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
@@ -53,29 +53,29 @@ var (
 type args struct {
 	vpc  ec2.VPCCIDRBlockClient
 	kube client.Client
-	cr   *v1alpha1.VPCCIDRBlock
+	cr   *manualv1alpha1.VPCCIDRBlock
 }
 
-type vpcCIDRBlockModifier func(*v1alpha1.VPCCIDRBlock)
+type vpcCIDRBlockModifier func(*manualv1alpha1.VPCCIDRBlock)
 
 func withExternalName(name string) vpcCIDRBlockModifier {
-	return func(r *v1alpha1.VPCCIDRBlock) { meta.SetExternalName(r, name) }
+	return func(r *manualv1alpha1.VPCCIDRBlock) { meta.SetExternalName(r, name) }
 }
 
 func withConditions(c ...xpv1.Condition) vpcCIDRBlockModifier {
-	return func(r *v1alpha1.VPCCIDRBlock) { r.Status.ConditionedStatus.Conditions = c }
+	return func(r *manualv1alpha1.VPCCIDRBlock) { r.Status.ConditionedStatus.Conditions = c }
 }
 
-func withSpec(p v1alpha1.VPCCIDRBlockParameters) vpcCIDRBlockModifier {
-	return func(r *v1alpha1.VPCCIDRBlock) { r.Spec.ForProvider = p }
+func withSpec(p manualv1alpha1.VPCCIDRBlockParameters) vpcCIDRBlockModifier {
+	return func(r *manualv1alpha1.VPCCIDRBlock) { r.Spec.ForProvider = p }
 }
 
-func withStatus(s v1alpha1.VPCCIDRBlockObservation) vpcCIDRBlockModifier {
-	return func(r *v1alpha1.VPCCIDRBlock) { r.Status.AtProvider = s }
+func withStatus(s manualv1alpha1.VPCCIDRBlockObservation) vpcCIDRBlockModifier {
+	return func(r *manualv1alpha1.VPCCIDRBlock) { r.Status.AtProvider = s }
 }
 
-func vpcCIDRBlock(m ...vpcCIDRBlockModifier) *v1alpha1.VPCCIDRBlock {
-	cr := &v1alpha1.VPCCIDRBlock{}
+func vpcCIDRBlock(m ...vpcCIDRBlockModifier) *manualv1alpha1.VPCCIDRBlock {
+	cr := &manualv1alpha1.VPCCIDRBlock{}
 	for _, f := range m {
 		f(cr)
 	}
@@ -87,7 +87,7 @@ var _ managed.ExternalConnecter = &connector{}
 
 func TestObserve(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.VPCCIDRBlock
+		cr     *manualv1alpha1.VPCCIDRBlock
 		result managed.ExternalObservation
 		err    error
 	}
@@ -120,19 +120,19 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: vpcCIDRBlock(withSpec(v1alpha1.VPCCIDRBlockParameters{
+				cr: vpcCIDRBlock(withSpec(manualv1alpha1.VPCCIDRBlockParameters{
 					CIDRBlock: &cidr,
 					VPCID:     &vpcID,
 				}), withExternalName(matchAssociationID)),
 			},
 			want: want{
-				cr: vpcCIDRBlock(withSpec(v1alpha1.VPCCIDRBlockParameters{
+				cr: vpcCIDRBlock(withSpec(manualv1alpha1.VPCCIDRBlockParameters{
 					VPCID:     &vpcID,
 					CIDRBlock: &cidr,
-				}), withStatus(v1alpha1.VPCCIDRBlockObservation{
+				}), withStatus(manualv1alpha1.VPCCIDRBlockObservation{
 					AssociationID: &matchAssociationID,
 					CIDRBlock:     &cidr,
-					CIDRBlockState: &v1alpha1.VPCCIDRBlockState{
+					CIDRBlockState: &manualv1alpha1.VPCCIDRBlockState{
 						State:         &testState,
 						StatusMessage: &testStatus,
 					},
@@ -168,19 +168,19 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: vpcCIDRBlock(withSpec(v1alpha1.VPCCIDRBlockParameters{
+				cr: vpcCIDRBlock(withSpec(manualv1alpha1.VPCCIDRBlockParameters{
 					IPv6CIDRBlock: &ipv6CIDR,
 					VPCID:         &vpcID,
 				}), withExternalName(matchAssociationID)),
 			},
 			want: want{
-				cr: vpcCIDRBlock(withSpec(v1alpha1.VPCCIDRBlockParameters{
+				cr: vpcCIDRBlock(withSpec(manualv1alpha1.VPCCIDRBlockParameters{
 					VPCID:         &vpcID,
 					IPv6CIDRBlock: &ipv6CIDR,
-				}), withStatus(v1alpha1.VPCCIDRBlockObservation{
+				}), withStatus(manualv1alpha1.VPCCIDRBlockObservation{
 					AssociationID: &matchAssociationID,
 					IPv6CIDRBlock: &ipv6CIDR,
-					IPv6CIDRBlockState: &v1alpha1.VPCCIDRBlockState{
+					IPv6CIDRBlockState: &manualv1alpha1.VPCCIDRBlockState{
 						State:         &testState,
 						StatusMessage: &testStatus,
 					},
@@ -204,16 +204,16 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: vpcCIDRBlock(withSpec(v1alpha1.VPCCIDRBlockParameters{
+				cr: vpcCIDRBlock(withSpec(manualv1alpha1.VPCCIDRBlockParameters{
 					CIDRBlock: &cidr,
 					VPCID:     &vpcID,
 				}), withExternalName(matchAssociationID)),
 			},
 			want: want{
-				cr: vpcCIDRBlock(withSpec(v1alpha1.VPCCIDRBlockParameters{
+				cr: vpcCIDRBlock(withSpec(manualv1alpha1.VPCCIDRBlockParameters{
 					VPCID:     &vpcID,
 					CIDRBlock: &cidr,
-				}), withStatus(v1alpha1.VPCCIDRBlockObservation{}), withExternalName(matchAssociationID)),
+				}), withStatus(manualv1alpha1.VPCCIDRBlockObservation{}), withExternalName(matchAssociationID)),
 				err: awsclient.Wrap(errBoom, errDescribe),
 			},
 		},
@@ -239,7 +239,7 @@ func TestObserve(t *testing.T) {
 
 func TestCreate(t *testing.T) {
 	type want struct {
-		cr     *v1alpha1.VPCCIDRBlock
+		cr     *manualv1alpha1.VPCCIDRBlock
 		result managed.ExternalCreation
 		err    error
 	}
@@ -264,13 +264,13 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: vpcCIDRBlock(withSpec(v1alpha1.VPCCIDRBlockParameters{
+				cr: vpcCIDRBlock(withSpec(manualv1alpha1.VPCCIDRBlockParameters{
 					CIDRBlock: &cidr,
 					VPCID:     &vpcID,
 				})),
 			},
 			want: want{
-				cr: vpcCIDRBlock(withSpec(v1alpha1.VPCCIDRBlockParameters{
+				cr: vpcCIDRBlock(withSpec(manualv1alpha1.VPCCIDRBlockParameters{
 					CIDRBlock: &cidr,
 					VPCID:     &vpcID,
 				}), withExternalName(matchAssociationID)),
@@ -293,13 +293,13 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: vpcCIDRBlock(withSpec(v1alpha1.VPCCIDRBlockParameters{
+				cr: vpcCIDRBlock(withSpec(manualv1alpha1.VPCCIDRBlockParameters{
 					IPv6CIDRBlock: &ipv6CIDR,
 					VPCID:         &vpcID,
 				})),
 			},
 			want: want{
-				cr: vpcCIDRBlock(withSpec(v1alpha1.VPCCIDRBlockParameters{
+				cr: vpcCIDRBlock(withSpec(manualv1alpha1.VPCCIDRBlockParameters{
 					IPv6CIDRBlock: &ipv6CIDR,
 					VPCID:         &vpcID,
 				}), withExternalName(matchAssociationID)),
@@ -315,13 +315,13 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: vpcCIDRBlock(withSpec(v1alpha1.VPCCIDRBlockParameters{
+				cr: vpcCIDRBlock(withSpec(manualv1alpha1.VPCCIDRBlockParameters{
 					CIDRBlock: &cidr,
 					VPCID:     &vpcID,
 				})),
 			},
 			want: want{
-				cr: vpcCIDRBlock(withSpec(v1alpha1.VPCCIDRBlockParameters{
+				cr: vpcCIDRBlock(withSpec(manualv1alpha1.VPCCIDRBlockParameters{
 					CIDRBlock: &cidr,
 					VPCID:     &vpcID,
 				})),
@@ -350,7 +350,7 @@ func TestCreate(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	type want struct {
-		cr  *v1alpha1.VPCCIDRBlock
+		cr  *manualv1alpha1.VPCCIDRBlock
 		err error
 	}
 
@@ -367,20 +367,20 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: vpcCIDRBlock(withStatus(v1alpha1.VPCCIDRBlockObservation{
+				cr: vpcCIDRBlock(withStatus(manualv1alpha1.VPCCIDRBlockObservation{
 					AssociationID: &matchAssociationID,
 					CIDRBlock:     &cidr,
-					CIDRBlockState: &v1alpha1.VPCCIDRBlockState{
+					CIDRBlockState: &manualv1alpha1.VPCCIDRBlockState{
 						State:         &testState,
 						StatusMessage: &testStatus,
 					},
 				})),
 			},
 			want: want{
-				cr: vpcCIDRBlock(withStatus(v1alpha1.VPCCIDRBlockObservation{
+				cr: vpcCIDRBlock(withStatus(manualv1alpha1.VPCCIDRBlockObservation{
 					AssociationID: &matchAssociationID,
 					CIDRBlock:     &cidr,
-					CIDRBlockState: &v1alpha1.VPCCIDRBlockState{
+					CIDRBlockState: &manualv1alpha1.VPCCIDRBlockState{
 						State:         &testState,
 						StatusMessage: &testStatus,
 					},
@@ -396,20 +396,20 @@ func TestDelete(t *testing.T) {
 						}
 					},
 				},
-				cr: vpcCIDRBlock(withStatus(v1alpha1.VPCCIDRBlockObservation{
+				cr: vpcCIDRBlock(withStatus(manualv1alpha1.VPCCIDRBlockObservation{
 					AssociationID: &matchAssociationID,
 					CIDRBlock:     &cidr,
-					CIDRBlockState: &v1alpha1.VPCCIDRBlockState{
+					CIDRBlockState: &manualv1alpha1.VPCCIDRBlockState{
 						State:         &testState,
 						StatusMessage: &testStatus,
 					},
 				})),
 			},
 			want: want{
-				cr: vpcCIDRBlock(withStatus(v1alpha1.VPCCIDRBlockObservation{
+				cr: vpcCIDRBlock(withStatus(manualv1alpha1.VPCCIDRBlockObservation{
 					AssociationID: &matchAssociationID,
 					CIDRBlock:     &cidr,
-					CIDRBlockState: &v1alpha1.VPCCIDRBlockState{
+					CIDRBlockState: &manualv1alpha1.VPCCIDRBlockState{
 						State:         &testState,
 						StatusMessage: &testStatus,
 					},
