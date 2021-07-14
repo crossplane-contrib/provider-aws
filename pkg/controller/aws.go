@@ -57,6 +57,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpc"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpccidrblock"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcpeeringconnection"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repositorypolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/efs/filesystem"
@@ -174,6 +175,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		distribution.SetupDistribution,
 		resolverendpoint.SetupResolverEndpoint,
 		resolverrule.SetupResolverRule,
+		vpcpeeringconnection.SetupVPCPeeringConnection,
 		kafkacluster.SetupCluster,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {

@@ -18,6 +18,46 @@ spec:
     singular: address
   scope: Cluster
   versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          allocationID:
+            type: string
+          associationID:
+            type: string
+          carrierIP:
+            type: string
+          customerOwnedIP:
+            type: string
+          customerOwnedIPv4Pool:
+            type: string
+          instanceID:
+            type: string
+          networkBorderGroup:
+            type: string
+          networkInterfaceID:
+            type: string
+          networkInterfaceOwnerID:
+            type: string
+          privateIPAddress:
+            type: string
+          publicIP:
+            type: string
+          publicIPv4Pool:
+            type: string
+          tags:
+            items:
+              properties:
+                key:
+                  type: string
+                value:
+                  type: string
+              type: object
+            type: array
+        type: object
+    served: true
+    storage: false
   - additionalPrinterColumns:
     - jsonPath: .status.conditions[?(@.type=='Ready')].status
       name: READY

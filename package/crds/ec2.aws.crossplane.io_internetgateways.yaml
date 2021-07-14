@@ -18,6 +18,26 @@ spec:
     singular: internetgateway
   scope: Cluster
   versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          internetGatewayID:
+            type: string
+          ownerID:
+            type: string
+          tags:
+            items:
+              properties:
+                key:
+                  type: string
+                value:
+                  type: string
+              type: object
+            type: array
+        type: object
+    served: true
+    storage: false
   - additionalPrinterColumns:
     - jsonPath: .status.conditions[?(@.type=='Ready')].status
       name: READY
