@@ -318,6 +318,7 @@ func GenerateObservation(db rds.DBInstance) v1beta1.RDSInstanceObservation { // 
 			CACertificateIdentifier: aws.StringValue(db.PendingModifiedValues.CACertificateIdentifier),
 			DBInstanceClass:         aws.StringValue(db.PendingModifiedValues.DBInstanceClass),
 			DBSubnetGroupName:       aws.StringValue(db.PendingModifiedValues.DBSubnetGroupName),
+			EngineVersion:           aws.StringValue(db.PendingModifiedValues.EngineVersion),
 			IOPS:                    int(aws.Int64Value(db.PendingModifiedValues.Iops)),
 			LicenseModel:            aws.StringValue(db.PendingModifiedValues.LicenseModel),
 			MultiAZ:                 aws.BoolValue(db.PendingModifiedValues.MultiAZ),

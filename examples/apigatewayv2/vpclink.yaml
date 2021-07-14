@@ -10,3 +10,5 @@ spec:
       - name: sample-cluster-sg
     subnetIdRefs:
       - name: sample-subnet1
+  providerConfigRef:
+    name: example

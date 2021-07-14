@@ -17,6 +17,8 @@ limitations under the License.
 package controller
 
 import (
+	"time"
+
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 
@@ -73,6 +75,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuser"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamuserpolicyattachment"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/openidconnectprovider"
+	kafkacluster "github.com/crossplane/provider-aws/pkg/controller/kafka/cluster"
 	"github.com/crossplane/provider-aws/pkg/controller/kms/key"
 	"github.com/crossplane/provider-aws/pkg/controller/lambda/function"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
@@ -83,6 +86,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/redshift"
 	"github.com/crossplane/provider-aws/pkg/controller/route53/hostedzone"
 	"github.com/crossplane/provider-aws/pkg/controller/route53/resourcerecordset"
+	"github.com/crossplane/provider-aws/pkg/controller/route53resolver/resolverendpoint"
+	"github.com/crossplane/provider-aws/pkg/controller/route53resolver/resolverrule"
 	"github.com/crossplane/provider-aws/pkg/controller/s3"
 	"github.com/crossplane/provider-aws/pkg/controller/s3/bucketpolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/secretsmanager/secret"
@@ -96,9 +101,8 @@ import (
 
 // Setup creates all AWS controllers with the supplied logger and adds them to
 // the supplied manager.
-func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
-	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter) error{
-		config.Setup,
+func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter, time.Duration) error{
 		cache.SetupReplicationGroup,
 		cachesubnetgroup.SetupCacheSubnetGroup,
 		cluster.SetupCacheCluster,
@@ -168,11 +172,14 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		function.SetupFunction,
 		openidconnectprovider.SetupOpenIDConnectProvider,
 		distribution.SetupDistribution,
+		resolverendpoint.SetupResolverEndpoint,
+		resolverrule.SetupResolverRule,
+		kafkacluster.SetupCluster,
 	} {
-		if err := setup(mgr, l, rl); err != nil {
+		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
 		}
 	}
 
-	return nil
+	return config.Setup(mgr, l, rl)
 }

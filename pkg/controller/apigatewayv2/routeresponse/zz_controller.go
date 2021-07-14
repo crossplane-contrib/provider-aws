@@ -133,10 +133,7 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
 	}
 	resp, err := e.client.UpdateRouteResponseWithContext(ctx, input)
-	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
-	}
-	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, err)
+	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate))
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {

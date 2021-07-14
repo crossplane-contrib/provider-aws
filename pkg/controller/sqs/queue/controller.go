@@ -18,6 +18,7 @@ package queue
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/google/go-cmp/cmp"
@@ -54,7 +55,7 @@ const (
 )
 
 // SetupQueue adds a controller that reconciles Queue.
-func SetupQueue(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupQueue(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.QueueGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -66,6 +67,7 @@ func SetupQueue(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) er
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.QueueGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: sqs.NewClient}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

@@ -87,6 +87,12 @@ func withCertificateAuthorityType() certificateAuthorityModifier {
 	}
 }
 
+func withCertificateAuthorityAtProviderStatus(s string) certificateAuthorityModifier {
+	return func(r *v1alpha1.CertificateAuthority) {
+		r.Status.AtProvider.Status = s
+	}
+}
+
 func withCertificateAuthorityStatus() certificateAuthorityModifier {
 	status := "ACTIVE"
 
@@ -125,8 +131,9 @@ func TestObserve(t *testing.T) {
 						return awsacmpca.DescribeCertificateAuthorityRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.DescribeCertificateAuthorityOutput{
 								CertificateAuthority: &awsacmpca.CertificateAuthority{
-									Arn:  aws.String(certificateAuthorityArn),
-									Type: awsacmpca.CertificateAuthorityTypeRoot,
+									Arn:    aws.String(certificateAuthorityArn),
+									Type:   awsacmpca.CertificateAuthorityTypeRoot,
+									Status: awsacmpca.CertificateAuthorityStatusActive,
 									RevocationConfiguration: &awsacmpca.RevocationConfiguration{
 										CrlConfiguration: &awsacmpca.CrlConfiguration{
 											Enabled: aws.Bool(false),
@@ -167,7 +174,7 @@ func TestObserve(t *testing.T) {
 				cr: certificateAuthority(),
 			},
 			want: want{
-				cr: certificateAuthority(withCertificateAuthorityType(), withConditions(xpv1.Available())),
+				cr: certificateAuthority(withCertificateAuthorityType(), withCertificateAuthorityStatus(), withCertificateAuthorityAtProviderStatus("ACTIVE"), withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists: true,
 				},

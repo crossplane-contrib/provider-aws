@@ -5,7 +5,8 @@ metadata:
   name: sample-grouppolicyattachment
 spec:
   forProvider:
-    policyArn: arn:aws:iam::aws:policy/AmazonEC2FullAccess
+    policyArnRef:
+      name: somepolicy
     groupNameRef:
       name: somegroup
   providerConfigRef:

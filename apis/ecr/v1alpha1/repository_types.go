@@ -98,7 +98,7 @@ type ImageScanningConfiguration struct {
 // A RepositoryStatus represents the observed state of a Elastic Container Repository.
 type RepositoryStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          RepositoryObservation `json:"atProvider"`
+	AtProvider          RepositoryObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

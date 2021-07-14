@@ -1,6 +1,26 @@
+/*
+Copyright 2021 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package publicdnsnamespace
 
 import (
+	"context"
+	"time"
+
+	svcsdk "github.com/aws/aws-sdk-go/service/servicediscovery"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -12,19 +32,19 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/servicediscovery/v1alpha1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+	"github.com/crossplane/provider-aws/pkg/controller/servicediscovery/commonnamespace"
 )
 
 // SetupPublicDNSNamespace adds a controller that reconciles PublicDNSNamespaces.
-func SetupPublicDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupPublicDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.PublicDNSNamespaceGroupKind)
 	opts := []option{
 		func(e *external) {
-			h := &hooks{client: e.client, kube: e.kube}
-			e.observe = h.observe
+			h := commonnamespace.NewHooks(e.kube, e.client)
 			e.preCreate = preCreate
-			e.postCreate = nopPostCreate
-			e.delete = h.delete
-			e.update = nopUpdate
+			e.delete = h.Delete
+			e.observe = h.Observe
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).
@@ -36,6 +56,13 @@ func SetupPublicDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.Ra
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.PublicDNSNamespaceGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
+}
+
+func preCreate(_ context.Context, cr *svcapitypes.PublicDNSNamespace, obj *svcsdk.CreatePublicDnsNamespaceInput) error {
+	obj.CreatorRequestId = awsclient.String(string(cr.UID))
+	return nil
 }

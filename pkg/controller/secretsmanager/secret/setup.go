@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/aws/aws-sdk-go/service/secretsmanager/secretsmanageriface"
@@ -53,7 +54,7 @@ const (
 )
 
 // SetupSecret adds a controller that reconciles a Secret.
-func SetupSecret(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupSecret(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.SecretGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -78,6 +79,7 @@ func SetupSecret(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) e
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

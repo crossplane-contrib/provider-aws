@@ -59,7 +59,7 @@ type ELBAttachmentObservation struct {
 // An ELBAttachmentStatus represents the observed state of an ELBAttachmentAttachment.
 type ELBAttachmentStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          ELBAttachmentObservation `json:"atProvider"`
+	AtProvider          ELBAttachmentObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

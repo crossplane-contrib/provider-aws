@@ -18,6 +18,7 @@ package elb
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awselb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
@@ -55,7 +56,7 @@ const (
 )
 
 // SetupELB adds a controller that reconciles ELBs.
-func SetupELB(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupELB(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.ELBGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -68,6 +69,7 @@ func SetupELB(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) erro
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elb.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

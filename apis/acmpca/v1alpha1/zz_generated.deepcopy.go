@@ -233,11 +233,6 @@ func (in *CertificateAuthorityPermissionParameters) DeepCopyInto(out *Certificat
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
-	if in.Principal != nil {
-		in, out := &in.Principal, &out.Principal
-		*out = new(string)
-		**out = **in
-	}
 	if in.SourceAccount != nil {
 		in, out := &in.SourceAccount, &out.SourceAccount
 		*out = new(string)

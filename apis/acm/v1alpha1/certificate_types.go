@@ -70,7 +70,7 @@ type CertificateExternalStatus struct {
 // An CertificateStatus represents the observed state of an Certificate manager.
 type CertificateStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          CertificateExternalStatus `json:"atProvider"`
+	AtProvider          CertificateExternalStatus `json:"atProvider,omitempty"`
 }
 
 // CertificateParameters defines the desired state of an AWS Certificate.
@@ -138,7 +138,7 @@ type Certificate struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   CertificateSpec   `json:"spec,omitempty"`
+	Spec   CertificateSpec   `json:"spec"`
 	Status CertificateStatus `json:"status,omitempty"`
 }
 

@@ -8,4 +8,16 @@ spec:
   forProvider:
     region: us-east-1
     clusterNameRef:
-      name: do-cluster
+      name: sample-cluster
+    # Defined in examples/ec2
+    subnetRefs:
+      - name: sample-subnet1
+    # Defined in examples/iam
+    nodeRoleRef:
+      name: somenoderole
+    scalingConfig:
+      desiredSize: 1
+      maxSize: 1
+      minSize: 1 
+  providerConfigRef:
+    name: example

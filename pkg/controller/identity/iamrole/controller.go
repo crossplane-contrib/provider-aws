@@ -18,6 +18,7 @@ package iamrole
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
@@ -55,7 +56,7 @@ const (
 )
 
 // SetupIAMRole adds a controller that reconciles IAMRoles.
-func SetupIAMRole(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupIAMRole(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.IAMRoleGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -69,6 +70,7 @@ func SetupIAMRole(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) 
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewRoleClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

@@ -19,6 +19,7 @@ package globaltable
 import (
 	"context"
 	"sort"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/dynamodb"
 	svcsdkapi "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
@@ -41,7 +42,7 @@ import (
 )
 
 // SetupGlobalTable adds a controller that reconciles GlobalTable.
-func SetupGlobalTable(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupGlobalTable(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.GlobalTableGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -64,6 +65,7 @@ func SetupGlobalTable(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimit
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.GlobalTableGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

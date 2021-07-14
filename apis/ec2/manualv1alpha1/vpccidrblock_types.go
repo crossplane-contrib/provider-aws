@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package manualv1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -118,7 +118,7 @@ type VPCCIDRBlockState struct {
 // A VPCCIDRBlockStatus represents the observed state of a ElasticIP.
 type VPCCIDRBlockStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          VPCCIDRBlockObservation `json:"atProvider"`
+	AtProvider          VPCCIDRBlockObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

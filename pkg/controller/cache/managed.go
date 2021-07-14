@@ -20,6 +20,7 @@ import (
 	"context"
 	"reflect"
 	"sort"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	elasticacheservice "github.com/aws/aws-sdk-go-v2/service/elasticache"
@@ -56,7 +57,7 @@ const (
 )
 
 // SetupReplicationGroup adds a controller that reconciles ReplicationGroups.
-func SetupReplicationGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupReplicationGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.ReplicationGroupGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -70,6 +71,7 @@ func SetupReplicationGroup(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rate
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elasticache.NewClient}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), managed.NewNameAsExternalName(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		))

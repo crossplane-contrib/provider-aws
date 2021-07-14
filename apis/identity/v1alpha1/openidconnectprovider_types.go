@@ -89,7 +89,7 @@ type OpenIDConnectProviderObservation struct {
 // OpenIDConnectProviderStatus defines the observed state of OpenIDConnectProvider.
 type OpenIDConnectProviderStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          OpenIDConnectProviderObservation `json:"atProvider"`
+	AtProvider          OpenIDConnectProviderObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -103,7 +103,7 @@ type OpenIDConnectProviderStatus struct {
 type OpenIDConnectProvider struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              OpenIDConnectProviderSpec   `json:"spec,omitempty"`
+	Spec              OpenIDConnectProviderSpec   `json:"spec"`
 	Status            OpenIDConnectProviderStatus `json:"status,omitempty"`
 }
 

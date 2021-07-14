@@ -41,7 +41,7 @@ import (
 
 var (
 	// an arbitrary managed resource
-	unexpecedItem           resource.Managed
+	unexpectedItem          resource.Managed
 	certificateAuthorityArn = "someauthorityarn"
 	nextToken               = "someNextToken"
 
@@ -59,9 +59,20 @@ func withConditions(c ...xpv1.Condition) certificateAuthorityPermissionModifier 
 	return func(r *v1alpha1.CertificateAuthorityPermission) { r.Status.ConditionedStatus.Conditions = c }
 }
 
+func withExternalName(name string) func(*v1alpha1.CertificateAuthorityPermission) {
+	return func(r *v1alpha1.CertificateAuthorityPermission) { meta.SetExternalName(r, name) }
+}
+
+func withPrincipal(p string) func(*v1alpha1.CertificateAuthorityPermission) {
+	return func(r *v1alpha1.CertificateAuthorityPermission) { r.Spec.ForProvider.Principal = p }
+}
+
+func withCertificateAuthorityARN(arn string) func(*v1alpha1.CertificateAuthorityPermission) {
+	return func(r *v1alpha1.CertificateAuthorityPermission) { r.Spec.ForProvider.CertificateAuthorityARN = &arn }
+}
+
 func certificateAuthorityPermission(m ...certificateAuthorityPermissionModifier) *v1alpha1.CertificateAuthorityPermission {
 	cr := &v1alpha1.CertificateAuthorityPermission{}
-	meta.SetExternalName(cr, certificateAuthorityArn)
 	for _, f := range m {
 		f(cr)
 	}
@@ -69,6 +80,8 @@ func certificateAuthorityPermission(m ...certificateAuthorityPermissionModifier)
 }
 
 func TestObserve(t *testing.T) {
+	arn := "aws:arn:cool"
+	principal := "excellent"
 
 	type want struct {
 		cr     resource.Managed
@@ -80,7 +93,7 @@ func TestObserve(t *testing.T) {
 		args
 		want
 	}{
-		"VaildInput": {
+		"ValidInput": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
 					MockListPermissionsRequest: func(input *awsacmpca.ListPermissionsInput) awsacmpca.ListPermissionsRequest {
@@ -90,27 +103,37 @@ func TestObserve(t *testing.T) {
 								Permissions: []awsacmpca.Permission{{
 									Actions:                 []awsacmpca.ActionType{awsacmpca.ActionTypeIssueCertificate, awsacmpca.ActionTypeGetCertificate, awsacmpca.ActionTypeListPermissions},
 									CertificateAuthorityArn: aws.String(certificateAuthorityArn),
+									Principal:               &principal,
 								}},
 							}},
 						}
 					},
 				},
-				cr: certificateAuthorityPermission(),
+				cr: certificateAuthorityPermission(
+					withExternalName(principal+"/"+arn),
+					withPrincipal(principal),
+					withCertificateAuthorityARN(arn),
+				),
 			},
 			want: want{
-				cr: certificateAuthorityPermission(withConditions(xpv1.Available())),
+				cr: certificateAuthorityPermission(
+					withExternalName(principal+"/"+arn),
+					withPrincipal(principal),
+					withCertificateAuthorityARN(arn),
+					withConditions(xpv1.Available()),
+				),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: true,
 				},
 			},
 		},
-		"InValidInput": {
+		"InvalidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
@@ -123,10 +146,10 @@ func TestObserve(t *testing.T) {
 						}
 					},
 				},
-				cr: certificateAuthorityPermission(),
+				cr: certificateAuthorityPermission(withExternalName(principal + "/" + arn)),
 			},
 			want: want{
-				cr:  certificateAuthorityPermission(),
+				cr:  certificateAuthorityPermission(withExternalName(principal + "/" + arn)),
 				err: awsclient.Wrap(errBoom, errGet),
 			},
 		},
@@ -157,7 +180,8 @@ func TestObserve(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-
+	arn := "aws:arn:cool"
+	principal := "excellent"
 	type want struct {
 		cr     resource.Managed
 		result managed.ExternalCreation
@@ -177,18 +201,24 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: certificateAuthorityPermission(),
+				cr: certificateAuthorityPermission(
+					withPrincipal(principal),
+					withCertificateAuthorityARN(arn)),
 			},
 			want: want{
-				cr: certificateAuthorityPermission(withConditions(xpv1.Creating())),
+				cr: certificateAuthorityPermission(
+					withPrincipal(principal),
+					withCertificateAuthorityARN(arn),
+					withExternalName(principal+"/"+arn)),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
@@ -204,7 +234,7 @@ func TestCreate(t *testing.T) {
 				cr: certificateAuthorityPermission(),
 			},
 			want: want{
-				cr:  certificateAuthorityPermission(withConditions(xpv1.Creating())),
+				cr:  certificateAuthorityPermission(),
 				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
@@ -264,15 +294,15 @@ func TestDelete(t *testing.T) {
 				cr: certificateAuthorityPermission(),
 			},
 			want: want{
-				cr: certificateAuthorityPermission(withConditions(xpv1.Deleting())),
+				cr: certificateAuthorityPermission(),
 			},
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
@@ -296,7 +326,7 @@ func TestDelete(t *testing.T) {
 				cr: certificateAuthorityPermission(),
 			},
 			want: want{
-				cr:  certificateAuthorityPermission(withConditions(xpv1.Deleting())),
+				cr:  certificateAuthorityPermission(),
 				err: awsclient.Wrap(errBoom, errDelete),
 			},
 		},
@@ -320,7 +350,7 @@ func TestDelete(t *testing.T) {
 				cr: certificateAuthorityPermission(),
 			},
 			want: want{
-				cr:  certificateAuthorityPermission(withConditions(xpv1.Deleting())),
+				cr:  certificateAuthorityPermission(),
 				err: awsclient.Wrap(awserr.New(awsacmpca.ErrCodeResourceNotFoundException, "", nil), errDelete),
 			},
 		},

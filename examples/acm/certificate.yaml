@@ -5,8 +5,9 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
-    certificateAuthorityArn: somearn
-    domainName: www.example.com
+    certificateAuthorityARNRef:
+      name: example
+    domainName: dev.crossplane.io
     certificateTransparencyLoggingPreference: DISABLED
     tags:
     - key: Name

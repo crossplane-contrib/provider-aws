@@ -18,6 +18,7 @@ package api
 
 import (
 	"context"
+	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/apigatewayv2"
 	"k8s.io/client-go/util/workqueue"
@@ -37,7 +38,7 @@ import (
 )
 
 // SetupAPI adds a controller that reconciles API.
-func SetupAPI(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupAPI(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.APIGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -57,6 +58,7 @@ func SetupAPI(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) erro
 			resource.ManagedKind(svcapitypes.APIGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

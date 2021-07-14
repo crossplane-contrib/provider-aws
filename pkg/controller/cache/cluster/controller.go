@@ -18,6 +18,7 @@ package cluster
 
 import (
 	"context"
+	"time"
 
 	"reflect"
 
@@ -53,7 +54,7 @@ const (
 )
 
 // SetupCacheCluster adds a controller that reconciles CacheCluster.
-func SetupCacheCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupCacheCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.CacheClusterGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -66,6 +67,7 @@ func SetupCacheCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 			resource.ManagedKind(v1alpha1.CacheClusterGroupVersionKind),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elasticache.NewClient}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 		))

@@ -18,6 +18,7 @@ package acm
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacm "github.com/aws/aws-sdk-go-v2/service/acm"
@@ -59,7 +60,7 @@ const (
 )
 
 // SetupCertificate adds a controller that reconciles Certificates.
-func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.CertificateGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -72,6 +73,7 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimit
 			resource.ManagedKind(v1alpha1.CertificateGroupVersionKind),
 			managed.WithExternalConnecter(&connector{client: mgr.GetClient(), newClientFn: acm.NewClient}),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -132,8 +134,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
 		}
 	}
-
-	cr.SetConditions(xpv1.Available())
+	if certificate.Status == awsacm.CertificateStatusIssued {
+		cr.SetConditions(xpv1.Available())
+	}
 
 	cr.Status.AtProvider = acm.GenerateCertificateStatus(certificate)
 
@@ -207,21 +210,23 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	// Update the Certificate Option
-	if cr.Spec.ForProvider.CertificateTransparencyLoggingPreference != nil {
-		_, err := e.client.UpdateCertificateOptionsRequest(&awsacm.UpdateCertificateOptionsInput{
-			CertificateArn: aws.String(meta.GetExternalName(cr)),
-			Options:        &awsacm.CertificateOptions{CertificateTransparencyLoggingPreference: *cr.Spec.ForProvider.CertificateTransparencyLoggingPreference},
-		}).Send(ctx)
+	// the UpdateCertificateOptions command is not permitted for private certificates.
+	if cr.Status.AtProvider.Type != awsacm.CertificateTypePrivate {
+		// Update the Certificate Option
+		if cr.Spec.ForProvider.CertificateTransparencyLoggingPreference != nil {
+			_, err := e.client.UpdateCertificateOptionsRequest(&awsacm.UpdateCertificateOptionsInput{
+				CertificateArn: aws.String(meta.GetExternalName(cr)),
+				Options:        &awsacm.CertificateOptions{CertificateTransparencyLoggingPreference: *cr.Spec.ForProvider.CertificateTransparencyLoggingPreference},
+			}).Send(ctx)
 
-		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			if err != nil {
+				return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
+			}
 		}
 	}
 
 	// Renew the certificate if request for RenewCertificate and Certificate is eligible
 	if aws.BoolValue(cr.Spec.ForProvider.RenewCertificate) {
-
 		if cr.Status.AtProvider.RenewalEligibility == awsacm.RenewalEligibilityEligible {
 			_, err := e.client.RenewCertificateRequest(&awsacm.RenewCertificateInput{
 				CertificateArn: aws.String(meta.GetExternalName(cr)),

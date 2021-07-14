@@ -18,6 +18,7 @@ package internetgateway
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -55,7 +56,7 @@ const (
 )
 
 // SetupInternetGateway adds a controller that reconciles InternetGateways.
-func SetupInternetGateway(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupInternetGateway(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.InternetGatewayGroupKind)
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -70,6 +71,7 @@ func SetupInternetGateway(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateL
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

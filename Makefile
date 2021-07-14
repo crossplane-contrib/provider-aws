@@ -6,8 +6,8 @@ PROJECT_REPO := github.com/crossplane/$(PROJECT_NAME)
 
 PLATFORMS ?= linux_amd64 linux_arm64
 
-CODE_GENERATOR_COMMIT ?= c4592885b843b2f0a316718a15349ea07b3a50b1
-GENERATED_SERVICES="apigatewayv2,cloudfront,dynamodb,efs,kms,lambda,rds,secretsmanager,servicediscovery,sfn"
+CODE_GENERATOR_COMMIT ?= cac5654b7bb64c8f754ad9af01799ef70d9541b6
+GENERATED_SERVICES="apigatewayv2,cloudfront,dynamodb,efs,kafka,kms,lambda,rds,secretsmanager,servicediscovery,sfn"
 
 # -include will silently skip missing files, which allows us
 # to load those files with a target in the Makefile. If only

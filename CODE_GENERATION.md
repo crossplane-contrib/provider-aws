@@ -50,8 +50,14 @@ When you re-run the generation with this configuration, existing files won't be
 deleted. So you may want to delete everything in `apis/<serviceid>/v1alpha1` except
 `generator-config.yaml` and then re-run the command.
 
-> If `apis/<serviceid>` is created from scratch, please add the new service name
-> to the list called GENERATED_SERVICES in Makefile.
+If `apis/<serviceid>` is created from scratch, please add the new service name to the list called GENERATED_SERVICES in [Makefile](https://github.com/crossplane/provider-aws/blob/master/Makefile#L10).
+
+### Makefile
+
+```bash
+- GENERATED_SERVICES="apigatewayv2"
++ GENERATED_SERVICES="apigatewayv2,<serviceid>"
+```
 
 If this step fails for some reason, please raise an issue in [code-generator](https://github.com/aws-controllers-k8s/code-generator)
 and mention that you're using Crossplane pipeline.
@@ -92,7 +98,7 @@ of the provider. Create a file called `pkg/controller/<serviceid>/setup.go` and
 add the setup function like the following:
 ```golang
 // SetupStage adds a controller that reconciles Stage.
-func SetupStage(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupStage(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -103,6 +109,7 @@ func SetupStage(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) er
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.StageGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -165,7 +172,7 @@ Likely, we need to do this injection before every SDK call. The following is an
 example for hook functions injected:
 ```golang
 // SetupStage adds a controller that reconciles Stage.
-func SetupStage(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupStage(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(svcapitypes.StageGroupKind)
 	opts := []option{
 		func(e *external) {
@@ -185,6 +192,7 @@ func SetupStage(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) er
 			resource.ManagedKind(svcapitypes.StageGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

@@ -18,6 +18,7 @@ package elbattachment
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awselb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
@@ -50,7 +51,7 @@ const (
 )
 
 // SetupELBAttachment adds a controller that reconciles ELBAttachmets.
-func SetupELBAttachment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
+func SetupELBAttachment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1alpha1.ELBAttachmentGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
@@ -63,6 +64,7 @@ func SetupELBAttachment(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLim
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: elb.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }

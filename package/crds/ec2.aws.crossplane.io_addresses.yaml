@@ -37,7 +37,7 @@ spec:
     name: v1beta1
     schema:
       openAPIV3Schema:
-        description: A Address is a managed resource that represents an AWS VPC Security Group.
+        description: An Address is a managed resource that represents an AWS Elastic IP Address.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -48,7 +48,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: A AddressSpec defines the desired state of a Address.
+            description: An AddressSpec defines the desired state of an Address.
             properties:
               deletionPolicy:
                 default: Delete
@@ -79,7 +79,7 @@ spec:
                     description: The ID of an address pool that you own. Use this parameter to let Amazon EC2 select an address from the address pool. To specify a specific address from the address pool, use the Address parameter instead.
                     type: string
                   region:
-                    description: Region is the region you'd like your VPC to be created in.
+                    description: Region is the region you'd like your Address to be created in.
                     type: string
                   tags:
                     description: Tags represents to current ec2 tags.
@@ -137,7 +137,7 @@ spec:
             - forProvider
             type: object
           status:
-            description: A AddressStatus represents the observed state of a Address.
+            description: An AddressStatus represents the observed state of an Address.
             properties:
               atProvider:
                 description: AddressObservation keeps the state for the external resource
@@ -212,8 +212,6 @@ spec:
                   - type
                   type: object
                 type: array
-            required:
-            - atProvider
             type: object
         required:
         - spec

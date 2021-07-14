@@ -18,6 +18,7 @@ package vpccidrblock
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -35,7 +36,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 )
@@ -49,20 +50,21 @@ const (
 )
 
 // SetupVPCCIDRBlock adds a controller that reconciles VPCCIDRBlocks.
-func SetupVPCCIDRBlock(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
-	name := managed.ControllerName(v1alpha1.VPCCIDRBlockGroupKind)
+func SetupVPCCIDRBlock(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
+	name := managed.ControllerName(manualv1alpha1.VPCCIDRBlockGroupKind)
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
 			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
 		}).
-		For(&v1alpha1.VPCCIDRBlock{}).
+		For(&manualv1alpha1.VPCCIDRBlock{}).
 		Complete(managed.NewReconciler(mgr,
-			resource.ManagedKind(v1alpha1.VPCCIDRBlockGroupVersionKind),
+			resource.ManagedKind(manualv1alpha1.VPCCIDRBlockGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewVPCCIDRBlockClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -73,7 +75,7 @@ type connector struct {
 }
 
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.VPCCIDRBlock)
+	cr, ok := mg.(*manualv1alpha1.VPCCIDRBlock)
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
@@ -90,7 +92,7 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.ExternalObservation, error) { // nolint:gocyclo
-	cr, ok := mgd.(*v1alpha1.VPCCIDRBlock)
+	cr, ok := mgd.(*manualv1alpha1.VPCCIDRBlock)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
@@ -145,7 +147,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1alpha1.VPCCIDRBlock)
+	cr, ok := mgd.(*manualv1alpha1.VPCCIDRBlock)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
@@ -179,7 +181,7 @@ func (e *external) Update(_ context.Context, _ resource.Managed) (managed.Extern
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1alpha1.VPCCIDRBlock)
+	cr, ok := mgd.(*manualv1alpha1.VPCCIDRBlock)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}

@@ -16,4 +16,4 @@ spec:
     tags:
       exampletagkey: "exampletagval"
   providerConfigRef:
-    name: provider
+    name: example
