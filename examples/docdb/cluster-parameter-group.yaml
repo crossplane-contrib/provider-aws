@@ -1,0 +1,24 @@
+apiVersion: docdb.aws.crossplane.io/v1alpha1
+kind: DBClusterParameterGroup
+metadata:
+  name: example-parameter-group
+spec:
+  forProvider:
+    region: eu-central-1
+    dbParameterGroupFamily: docdb4.0
+    description: "Example parameter group"
+    parameters:
+      - parameterName: tls
+        parameterValue: enabled
+        description: "Config to enable/disable TLS"
+        source: system
+        applyType: static
+        dataType: string
+        allowedValues: disabled,enabled
+        isModifiable: true
+        applyMethod: pending-reboot
+    tags:
+      - key: cluster
+        value: "my-cluster"
+  providerConfigRef:
+    name: example
