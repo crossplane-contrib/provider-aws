@@ -31,8 +31,10 @@ type Tag struct {
 	Value string `json:"value"`
 }
 
-// InstancesParameters define the desired state of the Instances
-type InstancesParameters struct {
+// InstanceParameters define the desired state of the Instances
+type InstanceParameters struct {
+	// Region is the region you'd like your VPC CIDR to be created in.
+	Region *string `json:"region"`
 	// // The block device mapping entries.
 	// BlockDeviceMappings []BlockDeviceMapping `locationName:"BlockDeviceMapping" locationNameList:"BlockDeviceMapping" type:"list"`
 
@@ -372,34 +374,34 @@ type InstancesParameters struct {
 // 	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
 // }
 
-// An InstancesSpec defines the desired state of Instances.
-type InstancesSpec struct {
+// An InstanceSpec defines the desired state of Instances.
+type InstanceSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       InstancesParameters `json:"forProvider"`
+	ForProvider       InstanceParameters `json:"forProvider"`
 }
 
-// An InstancesStatus represents the observed state of Instances.
-type InstancesStatus struct {
+// An InstanceStatus represents the observed state of Instances.
+type InstanceStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          InstancesObservation `json:"atProvider,omitempty"`
+	AtProvider          InstanceObservation `json:"atProvider,omitempty"`
 }
 
-// InstancesObservation keeps the state for the external resource
-type InstancesObservation struct{}
+// InstanceObservation keeps the state for the external resource
+type InstanceObservation struct{}
 
 // +kubebuilder:object:root=true
 
-// Instances is a managed resource that represents a specified number of AWS EC2 Instances
+// Instance is a managed resource that represents a specified number of AWS EC2 Instance
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
-type Instances struct {
+type Instance struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   InstancesSpec   `json:"spec"`
-	Status InstancesStatus `json:"status,omitempty"`
+	Spec   InstanceSpec   `json:"spec"`
+	Status InstanceStatus `json:"status,omitempty"`
 }

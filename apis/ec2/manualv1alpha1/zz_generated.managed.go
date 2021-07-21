@@ -21,17 +21,17 @@ package manualv1alpha1
 import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this Instances.
-func (mg *Instances) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+func (mg *Instance) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this Instances.
-func (mg *Instances) GetDeletionPolicy() xpv1.DeletionPolicy {
+func (mg *Instance) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
 // GetProviderConfigReference of this Instances.
-func (mg *Instances) GetProviderConfigReference() *xpv1.Reference {
+func (mg *Instance) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
@@ -39,27 +39,27 @@ func (mg *Instances) GetProviderConfigReference() *xpv1.Reference {
 GetProviderReference of this Instances.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *Instances) GetProviderReference() *xpv1.Reference {
+func (mg *Instance) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
 // GetWriteConnectionSecretToReference of this Instances.
-func (mg *Instances) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+func (mg *Instance) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
 // SetConditions of this Instances.
-func (mg *Instances) SetConditions(c ...xpv1.Condition) {
+func (mg *Instance) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this Instances.
-func (mg *Instances) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+func (mg *Instance) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
 // SetProviderConfigReference of this Instances.
-func (mg *Instances) SetProviderConfigReference(r *xpv1.Reference) {
+func (mg *Instance) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
@@ -67,12 +67,12 @@ func (mg *Instances) SetProviderConfigReference(r *xpv1.Reference) {
 SetProviderReference of this Instances.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *Instances) SetProviderReference(r *xpv1.Reference) {
+func (mg *Instance) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
 // SetWriteConnectionSecretToReference of this Instances.
-func (mg *Instances) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+func (mg *Instance) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 

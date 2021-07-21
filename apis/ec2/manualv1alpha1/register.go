@@ -58,5 +58,5 @@ var (
 
 func init() {
 	SchemeBuilder.Register(&VPCCIDRBlock{}, &VPCCIDRBlockList{})
-	SchemeBuilder.Register(&Instances{})
+	SchemeBuilder.Register(&Instance{})
 }
