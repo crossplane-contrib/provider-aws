@@ -18,7 +18,6 @@ package instance
 
 import (
 	"context"
-	"sort"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -39,7 +38,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
 	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 )
@@ -173,17 +171,33 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 }
 
 func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mgd.(*v1beta1.VPC)
+	cr, ok := mgd.(*svcapitypes.Instance)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
 	result, err := e.client.RunInstancesRequest(&awsec2.RunInstancesInput{
+		ClientToken:           cr.Spec.ForProvider.ClientToken,
+		DisableApiTermination: cr.Spec.ForProvider.DisableAPITermination,
+		DryRun:                cr.Spec.ForProvider.DryRun,
+		EbsOptimized:          cr.Spec.ForProvider.EBSOptimized,
+		ImageId:               cr.Spec.ForProvider.ImageID,
+		InstanceType:          awsec2.InstanceType(*cr.Spec.ForProvider.InstanceType),
+		Ipv6AddressCount:      cr.Spec.ForProvider.Ipv6AddressCount,
+		KernelId:              cr.Spec.ForProvider.KernelID,
+		KeyName:               cr.Spec.ForProvider.KeyName,
+		MaxCount:              cr.Spec.ForProvider.MaxCount,
+		MinCount:              cr.Spec.ForProvider.MinCount,
+		Monitoring:            &awsec2.RunInstancesMonitoringEnabled{Enabled: cr.Spec.ForProvider.Monitoring},
+		PrivateIpAddress:      cr.Spec.ForProvider.PrivateIPAddress,
+		RamdiskId:             cr.Spec.ForProvider.RAMDiskID,
+		SecurityGroupIds:      cr.Spec.ForProvider.SecurityGroupIDs,
+		// TODO fill in refs
 
-		// TODO fill this in
+		SecurityGroups: cr.Spec.ForProvider.SecurityGroups,
+		SubnetId:       cr.Spec.ForProvider.SubnetID,
 
-		// CidrBlock:       aws.String(cr.Spec.ForProvider.CIDRBlock),
-		// InstanceTenancy: awsec2.Tenancy(aws.StringValue(cr.Spec.ForProvider.InstanceTenancy)),
+		UserData: cr.Spec.ForProvider.UserData,
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
@@ -238,7 +252,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.VPC)
+	cr, ok := mgd.(*svcapitypes.Instance)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
@@ -257,25 +271,28 @@ type tagger struct {
 }
 
 func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*v1beta1.VPC)
+	cr, ok := mgd.(*svcapitypes.Instance)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
-	tagMap := map[string]string{}
-	for _, t := range cr.Spec.ForProvider.Tags {
-		tagMap[t.Key] = t.Value
-	}
-	for k, v := range resource.GetExternalTags(mgd) {
-		tagMap[k] = v
-	}
-	cr.Spec.ForProvider.Tags = make([]v1beta1.Tag, len(tagMap))
-	i := 0
-	for k, v := range tagMap {
-		cr.Spec.ForProvider.Tags[i] = v1beta1.Tag{Key: k, Value: v}
-		i++
-	}
-	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
-		return cr.Spec.ForProvider.Tags[i].Key < cr.Spec.ForProvider.Tags[j].Key
-	})
+
+	// TODO figure out what to do with these
+
+	// tagMap := map[string]string{}
+	// for _, t := range cr.Spec.ForProvider.Tags {
+	// 	tagMap[t.Key] = t.Value
+	// }
+	// for k, v := range resource.GetExternalTags(mgd) {
+	// 	tagMap[k] = v
+	// }
+	// cr.Spec.ForProvider.Tags = make([]v1beta1.Tag, len(tagMap))
+	// i := 0
+	// for k, v := range tagMap {
+	// 	cr.Spec.ForProvider.Tags[i] = v1beta1.Tag{Key: k, Value: v}
+	// 	i++
+	// }
+	// sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
+	// 	return cr.Spec.ForProvider.Tags[i].Key < cr.Spec.ForProvider.Tags[j].Key
+	// })
 	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

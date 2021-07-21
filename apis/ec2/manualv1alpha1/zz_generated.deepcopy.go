@@ -80,11 +80,6 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.CreditSpecification != nil {
-		in, out := &in.CreditSpecification, &out.CreditSpecification
-		*out = new(string)
-		**out = **in
-	}
 	if in.DisableAPITermination != nil {
 		in, out := &in.DisableAPITermination, &out.DisableAPITermination
 		*out = new(bool)
@@ -97,11 +92,6 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 	}
 	if in.EBSOptimized != nil {
 		in, out := &in.EBSOptimized, &out.EBSOptimized
-		*out = new(bool)
-		**out = **in
-	}
-	if in.HibernationOptions != nil {
-		in, out := &in.HibernationOptions, &out.HibernationOptions
 		*out = new(bool)
 		**out = **in
 	}

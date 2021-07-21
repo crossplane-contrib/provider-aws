@@ -67,7 +67,7 @@ type InstanceParameters struct {
 	//
 	// Default: standard (T2 instances) or unlimited (T3/T3a instances)
 	// +optional
-	CreditSpecification *string `json:"creditSpecification,omitempty"`
+	// CreditSpecification *string `json:"creditSpecification,omitempty"` TODO
 
 	// If you set this parameter to true, you can't terminate the instance using
 	// the Amazon EC2 console, CLI, or API; otherwise, you can. To change this attribute
@@ -113,7 +113,7 @@ type InstanceParameters struct {
 	// see Hibernate Your Instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
 	// +optional
-	HibernationOptions *bool `json:"hibernationOptions,omitempty"`
+	// HibernationOptions *bool `json:"hibernationOptions,omitempty"` TODO
 
 	// The IAM instance profile.
 	// IamInstanceProfile *IamInstanceProfileSpecification `locationName:"iamInstanceProfile" type:"structure"` TODO
@@ -127,7 +127,7 @@ type InstanceParameters struct {
 	//
 	// Default: stop
 	// +optional
-	InstanceInitiatedShutdownBehavior *string `json:"instanceInitiatedShutdownBehavior,omitempty"`
+	// InstanceInitiatedShutdownBehavior *string `json:"instanceInitiatedShutdownBehavior,omitempty"` TODO
 
 	// The market (purchasing) option for the instances.
 	//
@@ -185,7 +185,7 @@ type InstanceParameters struct {
 
 	// The Amazon Resource Name (ARN) of the license configuration
 	// +optional
-	LicenseConfigurationARN *string `json:"licenseConfigurationArn,omitempty"`
+	// LicenseConfigurationARN *string `json:"licenseConfigurationArn,omitempty"` // TODO
 
 	// The maximum number of instances to launch. If you specify more instances
 	// than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches
@@ -309,7 +309,7 @@ type InstanceParameters struct {
 	// created, see CreateTags (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html).
 	// +immutable
 	// +optional
-	Tags []Tag `json:"tags"`
+	// Tags []Tag `json:"tags"` TODO need specification
 
 	// The user data to make available to the instance. For more information, see
 	// Running Commands on Your Linux Instance at Launch (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html)
