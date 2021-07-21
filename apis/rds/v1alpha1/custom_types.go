@@ -77,6 +77,16 @@ type CustomDBClusterParameters struct {
 	// +optional
 	DBSubnetGroupNameSelector *xpv1.Selector `json:"dbSubnetGroupNameSelector,omitempty"`
 
+	// DBClusterParameterGroupNameRef is a reference to a DBParameterGroup used to
+	// set DBClusterParameterGroupName.
+	// +optional
+	DBClusterParameterGroupNameRef *xpv1.Reference `json:"dbClusterParameterGroupNameRef,omitempty"`
+
+	// DBClusterParameterGroupNameSelector selects a reference to a DBParameterGroup used to
+	// set DBClusterParameterGroupName.
+	// +optional
+	DBClusterParameterGroupNameSelector *xpv1.Selector `json:"dbClusterParameterGroupNameSelector,omitempty"`
+
 	// The DB cluster snapshot identifier of the new DB cluster snapshot created
 	// when SkipFinalSnapshot is disabled.
 	//

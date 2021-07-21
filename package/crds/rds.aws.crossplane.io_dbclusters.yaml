@@ -54,6 +54,18 @@ spec:
               forProvider:
                 description: DBClusterParameters defines the desired state of DBCluster
                 properties:
+                  dbClusterParameterGroupNameSelector:
+                    description: DBClusterParameterGroupNameSelector selects a reference to a DBParameterGroup used to set DBClusterParameterGroupName.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels is selected.
+                        type: object
+                    type: object
                   availabilityZones:
                     description: A list of Availability Zones (AZs) where instances in the DB cluster can be created. For information on AWS Regions and Availability Zones, see Choosing the Regions and Availability Zones (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Concepts.RegionsAndAvailabilityZones.html) in the Amazon Aurora User Guide.
                     items:
@@ -79,6 +91,15 @@ spec:
                   dbClusterParameterGroupName:
                     description: "The name of the DB cluster parameter group to associate with this DB cluster. If you do not specify a value, then the default DB cluster parameter group for the specified DB engine and version is used. \n Constraints: \n    * If supplied, must match the name of an existing DB cluster parameter    group."
                     type: string
+                  dbClusterParameterGroupNameRef:
+                    description: DBClusterParameterGroupNameRef is a reference to a DBParameterGroup used to set DBClusterParameterGroupName.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
                   dbSubnetGroupName:
                     description: "A DB subnet group to associate with this DB cluster. \n Constraints: Must match the name of an existing DBSubnetGroup. Must not be default. \n Example: mySubnetgroup"
                     type: string

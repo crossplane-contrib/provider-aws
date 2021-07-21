@@ -90,6 +90,20 @@ func (mg *DBCluster) ResolveReferences(ctx context.Context, c client.Reader) err
 	mg.Spec.ForProvider.DBSubnetGroupName = reference.ToPtrValue(rsp.ResolvedValue)
 	mg.Spec.ForProvider.DBSubnetGroupNameRef = rsp.ResolvedReference
 
+	// Resolve spec.forProvider.dbClusterParameterGroupName
+	rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
+		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.DBClusterParameterGroupName),
+		Reference:    mg.Spec.ForProvider.DBClusterParameterGroupNameRef,
+		Selector:     mg.Spec.ForProvider.DBClusterParameterGroupNameSelector,
+		To:           reference.To{Managed: &DBParameterGroup{}, List: &DBParameterGroupList{}},
+		Extract:      reference.ExternalName(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "spec.forProvider.dbClusterParameterGroupName")
+	}
+	mg.Spec.ForProvider.DBClusterParameterGroupName = reference.ToPtrValue(rsp.ResolvedValue)
+	mg.Spec.ForProvider.DBClusterParameterGroupNameRef = rsp.ResolvedReference
+
 	return nil
 }
 
