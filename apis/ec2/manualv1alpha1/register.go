@@ -50,7 +50,7 @@ var (
 
 // Instance type metadata.
 var (
-	InstanceKind             = reflect.TypeOf(VPCCIDRBlock{}).Name()
+	InstanceKind             = reflect.TypeOf(Instance{}).Name()
 	InstanceGroupKind        = schema.GroupKind{Group: Group, Kind: InstanceKind}.String()
 	InstanceKindAPIVersion   = InstanceKind + "." + SchemeGroupVersion.String()
 	InstanceGroupVersionKind = SchemeGroupVersion.WithKind(InstanceKind)
@@ -58,5 +58,5 @@ var (
 
 func init() {
 	SchemeBuilder.Register(&VPCCIDRBlock{}, &VPCCIDRBlockList{})
-	SchemeBuilder.Register(&Instance{})
+	SchemeBuilder.Register(&Instance{}, &InstanceList{})
 }

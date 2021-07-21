@@ -152,7 +152,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	ec2.LateInitializeInstance(&cr.Spec.ForProvider, &observed, &o)
 
-	// TODO various states need to be handled
+	// TODO various states need to be handled - deleting has multiple states (terminating/terminated lasts up to an hour)
 
 	// switch observed.State {
 	// case awsec2.InstanceStateAvailable:
@@ -182,22 +182,30 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		DryRun:                cr.Spec.ForProvider.DryRun,
 		EbsOptimized:          cr.Spec.ForProvider.EBSOptimized,
 		ImageId:               cr.Spec.ForProvider.ImageID,
-		InstanceType:          awsec2.InstanceType(*cr.Spec.ForProvider.InstanceType),
-		Ipv6AddressCount:      cr.Spec.ForProvider.Ipv6AddressCount,
-		KernelId:              cr.Spec.ForProvider.KernelID,
-		KeyName:               cr.Spec.ForProvider.KeyName,
-		MaxCount:              cr.Spec.ForProvider.MaxCount,
-		MinCount:              cr.Spec.ForProvider.MinCount,
-		Monitoring:            &awsec2.RunInstancesMonitoringEnabled{Enabled: cr.Spec.ForProvider.Monitoring},
-		PrivateIpAddress:      cr.Spec.ForProvider.PrivateIPAddress,
-		RamdiskId:             cr.Spec.ForProvider.RAMDiskID,
-		SecurityGroupIds:      cr.Spec.ForProvider.SecurityGroupIDs,
+		// InstanceType:          awsec2.InstanceType(*cr.Spec.ForProvider.InstanceType), //optional
+		Ipv6AddressCount: cr.Spec.ForProvider.Ipv6AddressCount,
+		KernelId:         cr.Spec.ForProvider.KernelID,
+		KeyName:          cr.Spec.ForProvider.KeyName,
+		MaxCount:         cr.Spec.ForProvider.MaxCount,
+		MinCount:         cr.Spec.ForProvider.MinCount,
+		// Monitoring:       &awsec2.RunInstancesMonitoringEnabled{Enabled: aws.Bool(*cr.Spec.ForProvider.Monitoring)}, // default is returning an error
+		PrivateIpAddress: cr.Spec.ForProvider.PrivateIPAddress,
+		RamdiskId:        cr.Spec.ForProvider.RAMDiskID,
+		SecurityGroupIds: cr.Spec.ForProvider.SecurityGroupIDs,
 		// TODO fill in refs
 
 		SecurityGroups: cr.Spec.ForProvider.SecurityGroups,
 		SubnetId:       cr.Spec.ForProvider.SubnetID,
 
 		UserData: cr.Spec.ForProvider.UserData,
+		// special type of tag for specifying the instance name. probably want to allow it to be overridden by the spec, but
+		// maybe set it from the metadata.Name if not set in spec?
+		TagSpecifications: []awsec2.TagSpecification{
+			{
+				ResourceType: awsec2.ResourceType("instance"),
+				Tags:         []awsec2.Tag{{Key: aws.String("Name"), Value: aws.String(mgd.GetName())}},
+			},
+		},
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)

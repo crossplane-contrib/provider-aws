@@ -405,3 +405,12 @@ type Instance struct {
 	Spec   InstanceSpec   `json:"spec"`
 	Status InstanceStatus `json:"status,omitempty"`
 }
+
+// +kubebuilder:object:root=true
+
+// InstanceList contains a list of Instances
+type InstanceList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []Instance `json:"items"`
+}
