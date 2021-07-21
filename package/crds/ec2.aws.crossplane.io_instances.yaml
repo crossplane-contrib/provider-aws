@@ -12,10 +12,10 @@ spec:
     - crossplane
     - managed
     - aws
-    kind: Instances
-    listKind: InstancesList
+    kind: Instance
+    listKind: InstanceList
     plural: instances
-    singular: instances
+    singular: instance
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -34,7 +34,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Instances is a managed resource that represents a specified number of AWS EC2 Instances
+        description: Instance is a managed resource that represents a specified number of AWS EC2 Instance
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -45,7 +45,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: An InstancesSpec defines the desired state of Instances.
+            description: An InstanceSpec defines the desired state of Instances.
             properties:
               deletionPolicy:
                 default: Delete
@@ -55,7 +55,7 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: InstancesParameters define the desired state of the Instances
+                description: InstanceParameters define the desired state of the Instances
                 properties:
                   clientToken:
                     description: "Unique, case-sensitive identifier you provide to ensure the idempotency of the request. If you do not specify a client token, a randomly generated token is used for the request to ensure idempotency. \n For more information, see Ensuring Idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html). \n Constraints: Maximum 64 ASCII characters"
@@ -113,6 +113,9 @@ spec:
                     type: string
                   ramDiskId:
                     description: "The ID of the RAM disk to select. Some kernels require additional drivers at launch. Check the kernel requirements for information about whether you need to specify a RAM disk. To find kernel requirements, go to the AWS Resource Center and search for the kernel ID. \n We recommend that you use PV-GRUB instead of kernels and RAM disks. For more information, see PV-GRUB (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedkernels.html) in the Amazon Elastic Compute Cloud User Guide."
+                    type: string
+                  region:
+                    description: Region is the region you'd like your Instance to be created in.
                     type: string
                   securityGroupIDs:
                     description: "The IDs of the security groups. You can create a security group using CreateSecurityGroup (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateSecurityGroup.html). \n If you specify a network interface, you must specify any security groups as part of the network interface."
@@ -221,6 +224,7 @@ spec:
                 required:
                 - imageId
                 - minCount
+                - region
                 type: object
               providerConfigRef:
                 default:
@@ -259,10 +263,10 @@ spec:
             - forProvider
             type: object
           status:
-            description: An InstancesStatus represents the observed state of Instances.
+            description: An InstanceStatus represents the observed state of Instances.
             properties:
               atProvider:
-                description: InstancesObservation keeps the state for the external resource
+                description: InstanceObservation keeps the state for the external resource
                 type: object
               conditions:
                 description: Conditions of the resource.

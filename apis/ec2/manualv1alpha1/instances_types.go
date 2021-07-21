@@ -33,7 +33,7 @@ type Tag struct {
 
 // InstanceParameters define the desired state of the Instances
 type InstanceParameters struct {
-	// Region is the region you'd like your VPC CIDR to be created in.
+	// Region is the region you'd like your Instance to be created in.
 	Region *string `json:"region"`
 	// // The block device mapping entries.
 	// BlockDeviceMappings []BlockDeviceMapping `locationName:"BlockDeviceMapping" locationNameList:"BlockDeviceMapping" type:"list"`
