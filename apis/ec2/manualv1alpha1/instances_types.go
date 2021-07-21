@@ -75,7 +75,7 @@ type InstancesParameters struct {
 	//
 	// Default: false
 	// +optional
-	DisableAPITermination *bool `json:"disableAPITermination,omitempty`
+	DisableAPITermination *bool `json:"disableAPITermination,omitempty"`
 
 	// Checks whether you have the required permissions for the action, without
 	// actually making the request, and provides an error response. If you have
@@ -92,7 +92,7 @@ type InstancesParameters struct {
 	//
 	// Default: false
 	// +optional
-	EBSOptimized *bool `json:ebsOptimized,omitempty"`
+	EBSOptimized *bool `json:"ebsOptimized,omitempty"`
 
 	// An elastic GPU to associate with the instance. An Elastic GPU is a GPU resource
 	// that you can attach to your Windows instance to accelerate the graphics performance
@@ -183,7 +183,7 @@ type InstancesParameters struct {
 
 	// The Amazon Resource Name (ARN) of the license configuration
 	// +optional
-	LicenseConfigurationARN *string `json:"licenseConfigurationArn,omitempty`
+	LicenseConfigurationARN *string `json:"licenseConfigurationArn,omitempty"`
 
 	// The maximum number of instances to launch. If you specify more instances
 	// than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches
