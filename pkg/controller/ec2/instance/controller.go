@@ -70,7 +70,7 @@ func SetupInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter,
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewInstanceClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -113,13 +113,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	response, err := e.client.DescribeInstancesRequest(&awsec2.DescribeInstancesInput{
 		InstanceIds: []string{meta.GetExternalName(cr)},
 	}).Send(ctx)
-	// recently deleted instances return a 200 OK with a nil response.Reservations slice
-	// (i.e. those that have moved from terminated to deleted)
+
+	// deleted instances that have not yet been cleaned up from the cluster return a
+	// 200 OK with a nil response.Reservations slice
 	if err == nil && len(response.Reservations) == 0 {
 		return managed.ExternalObservation{}, nil
 	}
 
-	// TODO need to make sure IsInstanceNotFoundErr is the correct error to examine
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDescribe)
 	}
@@ -130,6 +130,15 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	observed := response.Reservations[0].Instances[0]
+
+	// (tnthornton) Terminated instances remain visible on API calls for a time before
+	// being automatically deleted. Rather than having the delete command hang for that
+	// entire time, return an empty ExternalObservation in this case.
+	//
+	// ref: (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/terminating-instances.html)
+	if observed.State.Name == awsec2.InstanceStateNameTerminated {
+		return managed.ExternalObservation{}, nil
+	}
 
 	// update the CRD spec for any new values from provider
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -166,8 +175,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	case awsec2.InstanceStateNamePending:
 		cr.SetConditions(xpv1.Creating())
 	case awsec2.InstanceStateNameShuttingDown:
-		cr.SetConditions(xpv1.Deleting())
-	case awsec2.InstanceStateNameTerminated:
 		cr.SetConditions(xpv1.Deleting())
 	}
 
@@ -207,7 +214,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		// SecurityGroups: cr.Spec.ForProvider.SecurityGroups,
 		// SubnetId:       cr.Spec.ForProvider.SubnetID,
 
-		// UserData: cr.Spec.ForProvider.UserData,
+		UserData: cr.Spec.ForProvider.UserData,
 		// special type of tag for specifying the instance name. probably want to allow it to be overridden by the spec, but
 		// maybe set it from the metadata.Name if not set in spec?
 		TagSpecifications: []awsec2.TagSpecification{
@@ -282,35 +289,4 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	}).Send(ctx)
 
 	return awsclient.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDelete)
-}
-
-type tagger struct {
-	kube client.Client
-}
-
-func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*svcapitypes.Instance)
-	if !ok {
-		return errors.New(errUnexpectedObject)
-	}
-
-	// TODO figure out what to do with these
-
-	// tagMap := map[string]string{}
-	// for _, t := range cr.Spec.ForProvider.Tags {
-	// 	tagMap[t.Key] = t.Value
-	// }
-	// for k, v := range resource.GetExternalTags(mgd) {
-	// 	tagMap[k] = v
-	// }
-	// cr.Spec.ForProvider.Tags = make([]v1beta1.Tag, len(tagMap))
-	// i := 0
-	// for k, v := range tagMap {
-	// 	cr.Spec.ForProvider.Tags[i] = v1beta1.Tag{Key: k, Value: v}
-	// 	i++
-	// }
-	// sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
-	// 	return cr.Spec.ForProvider.Tags[i].Key < cr.Spec.ForProvider.Tags[j].Key
-	// })
-	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

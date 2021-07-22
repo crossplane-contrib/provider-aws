@@ -321,7 +321,8 @@ type InstanceParameters struct {
 	// for you, and you can load the text from a file. Otherwise, you must provide
 	// base64-encoded text. User data is limited to 16 KB.
 	// +optional
-	// UserData *string `json:"userData,omitempty"`
+	// +kubebuilder:validation:Pattern=`^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$`
+	UserData *string `json:"userData,omitempty"`
 }
 
 // An InstanceSpec defines the desired state of Instances.
