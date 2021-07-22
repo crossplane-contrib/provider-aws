@@ -23,12 +23,52 @@ import (
 
 // Tag defines a tag
 type Tag struct {
-
 	// Key is the name of the tag.
 	Key string `json:"key"`
 
 	// Value is the value of the tag.
 	Value string `json:"value"`
+}
+
+// TagSpecification defines the tags to apply to a resource when the resource is being created.
+type TagSpecification struct {
+	// The type of resource to tag. Currently, the resource types that support tagging
+	// on creation are: capacity-reservation | client-vpn-endpoint | dedicated-host
+	// | fleet | fpga-image | instance | ipv4pool-ec2 | ipv6pool-ec2 | key-pair
+	// | launch-template | natgateway | spot-fleet-request | placement-group | snapshot
+	// | traffic-mirror-filter | traffic-mirror-session | traffic-mirror-target
+	// | transit-gateway | transit-gateway-attachment | transit-gateway-route-table
+	// | vpc-endpoint (for interface VPC endpoints)| vpc-endpoint-service (for gateway
+	// VPC endpoints) | volume | vpc-flow-log.
+	//
+	// To tag a resource after it has been created, see CreateTags
+	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html).
+	ResourceType *string `json:"resourceType"`
+
+	// The tags to apply to the resource
+	Tags []Tag `json:"tags"`
+}
+
+// LicenseConfigurationRequest describes a license configuration
+type LicenseConfigurationRequest struct {
+	// Amazon Resource Name (ARN) of the license configuration
+	LicenseConfigurationARN *string `json:"licenseConfigurationArn"`
+}
+
+// LaunchTemplateSpecification defines the launch template to use.
+// You must specify either the launch template ID or launch template
+// name in the request, but not both.
+type LaunchTemplateSpecification struct {
+	// The ID of the launch template.
+	LaunchTemplateID *string `json:"launchTemplateId"`
+
+	// The name of the launch template.
+	LaunchTemplateName *string `json:"launchTemplateName"`
+
+	// The version number of the launch template.
+	//
+	// Default: The default version for the launch template.
+	Version *string `json:"version"`
 }
 
 // InstanceParameters define the desired state of the Instances
@@ -181,11 +221,12 @@ type InstanceParameters struct {
 	// The launch template to use to launch the instances. Any parameters that you
 	// specify in RunInstances override the same parameters in the launch template.
 	// You can specify either the name or ID of a launch template, but not both.
-	// LaunchTemplate *LaunchTemplateSpecification `type:"structure"` TODO
+	// +optional
+	LaunchTemplate *LaunchTemplateSpecification `json:"launchTemplate,omitempty"`
 
 	// The Amazon Resource Name (ARN) of the license configuration
 	// +optional
-	// LicenseConfigurationARN *string `json:"licenseConfigurationArn,omitempty"` // TODO
+	LicenseSpecifications []LicenseConfigurationRequest `json:"licenseSpecifications,omitempty"`
 
 	// The maximum number of instances to launch. If you specify more instances
 	// than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches
@@ -197,7 +238,7 @@ type InstanceParameters struct {
 	// in the Amazon EC2 FAQ.
 	//
 	// MaxCount is a required field
-	MaxCount *int64 `json:"maxCount,omitempty"`
+	MaxCount *int64 `json:"maxCount"`
 
 	// The metadata options for the instance. For more information, see Instance
 	// Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
@@ -309,7 +350,7 @@ type InstanceParameters struct {
 	// created, see CreateTags (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html).
 	// +immutable
 	// +optional
-	// Tags []Tag `json:"tags"` TODO need specification
+	TagSpecifications []TagSpecification `json:"tagSpecifications,omitempty"`
 
 	// The user data to make available to the instance. For more information, see
 	// Running Commands on Your Linux Instance at Launch (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html)
