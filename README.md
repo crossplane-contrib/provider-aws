@@ -71,24 +71,3 @@ as the core Crossplane project.
 provider-aws is under the Apache 2.0 license.
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcrossplane%2Fprovider-aws.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcrossplane%2Fprovider-aws?ref=badge_large)
-
-
-bug: VPCCIDRBlock - delete doesn't clean up k8s resource
-```
-Events:
-  Type    Reason                   Age                   From                                        Message
-  ----    ------                   ----                  ----                                        -------
-  Normal  CreatedExternalResource  7m11s                 managed/vpccidrblock.ec2.aws.crossplane.io  Successfully requested creation of external resource
-  Normal  DeletedExternalResource  31s (x12 over 6m33s)  managed/vpccidrblock.ec2.aws.crossplane.io  Successfully requested deletion of external resource
-```
-AT:
-- kubectl apply -f examples/ec2/vpc.yaml
-- kubectl apply -f examples/ec2/vpccidrblock.yaml
-- note the new cidrblock is associated with the vpc in the aws console
-- kubectl delete -f examples/ec2/vpccidrblock.yaml
-- note the cidr block is deleted from the aws console
-- note the k8s resource is not deleted but remains in the ready: false state
-```
-NAME                       READY   SYNCED   ID                                 CIDR            IPV6CIDR   AGE
-sample-vpc-cidr-block-tt   False   True     vpc-cidr-assoc-0ecc28e0bc64050ae   100.64.0.0/16              10m
-```
