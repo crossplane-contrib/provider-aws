@@ -1,5 +1,5 @@
 // /*
-// Copyright 2019 The Crossplane Authors.
+// Copyright 2021 The Crossplane Authors.
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,47 +16,42 @@
 
 package instance
 
-// import (
-// 	"context"
-// 	"net/http"
-// 	"testing"
+import (
+	"context"
+	"net/http"
+	"testing"
 
-// 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-// 	"github.com/crossplane/crossplane-runtime/pkg/test"
-// 	"github.com/google/go-cmp/cmp"
-// 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
+	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
+	"github.com/pkg/errors"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
-// 	"github.com/aws/aws-sdk-go-v2/aws"
-// 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
-// 	"github.com/pkg/errors"
-// 	"sigs.k8s.io/controller-runtime/pkg/client"
+	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/crossplane/provider-aws/pkg/clients/ec2"
+	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
+	"github.com/google/go-cmp/cmp"
+)
 
-// 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-// 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-// 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+var (
+	instanceID     = "some Id"
+	cidr           = "192.168.0.0/32"
+	tenancyDefault = "default"
+	enableDNS      = true
 
-// 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
-// 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-// 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
-// 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
-// )
+	errBoom = errors.New("boom")
+)
 
-// var (
-// 	vpcID          = "some Id"
-// 	cidr           = "192.168.0.0/32"
-// 	tenancyDefault = "default"
-// 	enableDNS      = true
+type args struct {
+	vpc  ec2.InstanceClient
+	kube client.Client
+	cr   *manualv1alpha1.Instance
+}
 
-// 	errBoom = errors.New("boom")
-// )
-
-// type args struct {
-// 	vpc  ec2.VPCClient
-// 	kube client.Client
-// 	cr   *v1beta1.VPC
-// }
-
-// type vpcModifier func(*v1beta1.VPC)
+type instanceModifier func(*manualv1alpha1.Instance)
 
 // func withTags(tagMaps ...map[string]string) vpcModifier {
 // 	var tagList []v1beta1.Tag
@@ -68,13 +63,13 @@ package instance
 // 	return func(r *v1beta1.VPC) { r.Spec.ForProvider.Tags = tagList }
 // }
 
-// func withExternalName(name string) vpcModifier {
-// 	return func(r *v1beta1.VPC) { meta.SetExternalName(r, name) }
-// }
+func withExternalName(name string) instanceModifier {
+	return func(r *manualv1alpha1.Instance) { meta.SetExternalName(r, name) }
+}
 
-// func withConditions(c ...xpv1.Condition) vpcModifier {
-// 	return func(r *v1beta1.VPC) { r.Status.ConditionedStatus.Conditions = c }
-// }
+func withConditions(c ...xpv1.Condition) instanceModifier {
+	return func(r *manualv1alpha1.Instance) { r.Status.ConditionedStatus.Conditions = c }
+}
 
 // func withSpec(p v1beta1.VPCParameters) vpcModifier {
 // 	return func(r *v1beta1.VPC) { r.Spec.ForProvider = p }
@@ -84,16 +79,16 @@ package instance
 // 	return func(r *v1beta1.VPC) { r.Status.AtProvider = s }
 // }
 
-// func vpc(m ...vpcModifier) *v1beta1.VPC {
-// 	cr := &v1beta1.VPC{}
-// 	for _, f := range m {
-// 		f(cr)
-// 	}
-// 	return cr
-// }
+func instance(m ...instanceModifier) *manualv1alpha1.Instance {
+	cr := &manualv1alpha1.Instance{}
+	for _, f := range m {
+		f(cr)
+	}
+	return cr
+}
 
-// var _ managed.ExternalClient = &external{}
-// var _ managed.ExternalConnecter = &connector{}
+var _ managed.ExternalClient = &external{}
+var _ managed.ExternalConnecter = &connector{}
 
 // func TestObserve(t *testing.T) {
 // 	type want struct {
@@ -222,104 +217,105 @@ package instance
 // 	}
 // }
 
-// func TestCreate(t *testing.T) {
-// 	type want struct {
-// 		cr     *v1beta1.VPC
-// 		result managed.ExternalCreation
-// 		err    error
-// 	}
+func TestCreate(t *testing.T) {
+	type want struct {
+		cr     *manualv1alpha1.Instance
+		result managed.ExternalCreation
+		err    error
+	}
 
-// 	cases := map[string]struct {
-// 		args
-// 		want
-// 	}{
-// 		"Successful": {
-// 			args: args{
-// 				vpc: &fake.MockVPCClient{
-// 					MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
-// 						return awsec2.CreateVpcRequest{
-// 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateVpcOutput{
-// 								Vpc: &awsec2.Vpc{
-// 									VpcId:     aws.String(vpcID),
-// 									CidrBlock: aws.String(cidr),
-// 								},
-// 							}},
-// 						}
-// 					},
-// 				},
-// 				cr: vpc(),
-// 			},
-// 			want: want{
-// 				cr:     vpc(withExternalName(vpcID)),
-// 				result: managed.ExternalCreation{ExternalNameAssigned: true},
-// 			},
-// 		},
-// 		"SuccessfulWithAttributes": {
-// 			args: args{
-// 				vpc: &fake.MockVPCClient{
-// 					MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
-// 						return awsec2.CreateVpcRequest{
-// 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateVpcOutput{
-// 								Vpc: &awsec2.Vpc{
-// 									VpcId:     aws.String(vpcID),
-// 									CidrBlock: aws.String(cidr),
-// 								},
-// 							}},
-// 						}
-// 					},
-// 					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
-// 						return awsec2.ModifyVpcAttributeRequest{
-// 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
-// 						}
-// 					},
-// 				},
-// 				cr: vpc(withSpec(v1beta1.VPCParameters{
-// 					EnableDNSSupport: &enableDNS,
-// 				})),
-// 			},
-// 			want: want{
-// 				cr: vpc(withExternalName(vpcID),
-// 					withSpec(v1beta1.VPCParameters{
-// 						EnableDNSSupport: &enableDNS,
-// 					})),
-// 				result: managed.ExternalCreation{ExternalNameAssigned: true},
-// 			},
-// 		},
-// 		"CreateFail": {
-// 			args: args{
-// 				vpc: &fake.MockVPCClient{
-// 					MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
-// 						return awsec2.CreateVpcRequest{
-// 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-// 						}
-// 					},
-// 				},
-// 				cr: vpc(),
-// 			},
-// 			want: want{
-// 				cr:  vpc(),
-// 				err: awsclient.Wrap(errBoom, errCreate),
-// 			},
-// 		},
-// 	}
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				vpc: &fake.MockInstanceClient{
+					MockRunInstancesRequest: func(input *awsec2.RunInstancesInput) awsec2.RunInstancesRequest {
+						return awsec2.RunInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.RunInstancesOutput{
+								Instances: []awsec2.Instance{
+									{
+										InstanceId: aws.String(instanceID),
+									},
+								},
+							}},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr:     instance(withExternalName(instanceID)),
+				result: managed.ExternalCreation{ExternalNameAssigned: true},
+			},
+		},
+		// 	"SuccessfulWithAttributes": {
+		// 		args: args{
+		// 			vpc: &fake.MockVPCClient{
+		// 				MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
+		// 					return awsec2.CreateVpcRequest{
+		// 						Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateVpcOutput{
+		// 							Vpc: &awsec2.Vpc{
+		// 								VpcId:     aws.String(vpcID),
+		// 								CidrBlock: aws.String(cidr),
+		// 							},
+		// 						}},
+		// 					}
+		// 				},
+		// 				MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
+		// 					return awsec2.ModifyVpcAttributeRequest{
+		// 						Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
+		// 					}
+		// 				},
+		// 			},
+		// 			cr: vpc(withSpec(v1beta1.VPCParameters{
+		// 				EnableDNSSupport: &enableDNS,
+		// 			})),
+		// 		},
+		// 		want: want{
+		// 			cr: vpc(withExternalName(vpcID),
+		// 				withSpec(v1beta1.VPCParameters{
+		// 					EnableDNSSupport: &enableDNS,
+		// 				})),
+		// 			result: managed.ExternalCreation{ExternalNameAssigned: true},
+		// 		},
+		// 	},
+		// 	"CreateFail": {
+		// 		args: args{
+		// 			vpc: &fake.MockVPCClient{
+		// 				MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
+		// 					return awsec2.CreateVpcRequest{
+		// 						Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+		// 					}
+		// 				},
+		// 			},
+		// 			cr: vpc(),
+		// 		},
+		// 		want: want{
+		// 			cr:  vpc(),
+		// 			err: awsclient.Wrap(errBoom, errCreate),
+		// 		},
+		// 	},
+	}
 
-// 	for name, tc := range cases {
-// 		t.Run(name, func(t *testing.T) {
-// 			e := &external{kube: tc.kube, client: tc.vpc}
-// 			o, err := e.Create(context.Background(), tc.args.cr)
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.vpc}
+			o, err := e.Create(context.Background(), tc.args.cr)
 
-// 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-// 				t.Errorf("r: -want, +got:\n%s", diff)
-// 			}
-// 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
-// 				t.Errorf("r: -want, +got:\n%s", diff)
-// 			}
-// 			if diff := cmp.Diff(tc.want.result, o); diff != "" {
-// 				t.Errorf("r: -want, +got:\n%s", diff)
-// 			}
-// 		})
-// 	}
-// }
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
 
 // func TestUpdate(t *testing.T) {
 // 	type want struct {
@@ -411,63 +407,63 @@ package instance
 // 	}
 // }
 
-// func TestDelete(t *testing.T) {
-// 	type want struct {
-// 		cr  *v1beta1.VPC
-// 		err error
-// 	}
+func TestDelete(t *testing.T) {
+	type want struct {
+		cr  *manualv1alpha1.Instance
+		err error
+	}
 
-// 	cases := map[string]struct {
-// 		args
-// 		want
-// 	}{
-// 		"Successful": {
-// 			args: args{
-// 				vpc: &fake.MockVPCClient{
-// 					MockDelete: func(input *awsec2.DeleteVpcInput) awsec2.DeleteVpcRequest {
-// 						return awsec2.DeleteVpcRequest{
-// 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteVpcOutput{}},
-// 						}
-// 					},
-// 				},
-// 				cr: vpc(),
-// 			},
-// 			want: want{
-// 				cr: vpc(withConditions(xpv1.Deleting())),
-// 			},
-// 		},
-// 		"DeleteFailed": {
-// 			args: args{
-// 				vpc: &fake.MockVPCClient{
-// 					MockDelete: func(input *awsec2.DeleteVpcInput) awsec2.DeleteVpcRequest {
-// 						return awsec2.DeleteVpcRequest{
-// 							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-// 						}
-// 					},
-// 				},
-// 				cr: vpc(),
-// 			},
-// 			want: want{
-// 				cr:  vpc(withConditions(xpv1.Deleting())),
-// 				err: awsclient.Wrap(errBoom, errDelete),
-// 			},
-// 		},
-// 	}
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				vpc: &fake.MockInstanceClient{
+					MockTerminateInstancesRequest: func(input *awsec2.TerminateInstancesInput) awsec2.TerminateInstancesRequest {
+						return awsec2.TerminateInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.TerminateInstancesOutput{}},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr: instance(withConditions(xpv1.Deleting())),
+			},
+		},
+		// "DeleteFailed": {
+		// 	args: args{
+		// 		vpc: &fake.MockVPCClient{
+		// 			MockDelete: func(input *awsec2.DeleteVpcInput) awsec2.DeleteVpcRequest {
+		// 				return awsec2.DeleteVpcRequest{
+		// 					Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+		// 				}
+		// 			},
+		// 		},
+		// 		cr: vpc(),
+		// 	},
+		// 	want: want{
+		// 		cr:  vpc(withConditions(xpv1.Deleting())),
+		// 		err: awsclient.Wrap(errBoom, errDelete),
+		// 	},
+		// },
+	}
 
-// 	for name, tc := range cases {
-// 		t.Run(name, func(t *testing.T) {
-// 			e := &external{kube: tc.kube, client: tc.vpc}
-// 			err := e.Delete(context.Background(), tc.args.cr)
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.vpc}
+			err := e.Delete(context.Background(), tc.args.cr)
 
-// 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
-// 				t.Errorf("r: -want, +got:\n%s", diff)
-// 			}
-// 			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
-// 				t.Errorf("r: -want, +got:\n%s", diff)
-// 			}
-// 		})
-// 	}
-// }
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
 
 // func TestInitialize(t *testing.T) {
 // 	type args struct {
