@@ -21,68 +21,18 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Tag defines a tag
-type Tag struct {
-	// Key is the name of the tag.
-	Key string `json:"key"`
-
-	// Value is the value of the tag.
-	Value string `json:"value"`
-}
-
-// TagSpecification defines the tags to apply to a resource when the resource is being created.
-type TagSpecification struct {
-	// The type of resource to tag. Currently, the resource types that support tagging
-	// on creation are: capacity-reservation | client-vpn-endpoint | dedicated-host
-	// | fleet | fpga-image | instance | ipv4pool-ec2 | ipv6pool-ec2 | key-pair
-	// | launch-template | natgateway | spot-fleet-request | placement-group | snapshot
-	// | traffic-mirror-filter | traffic-mirror-session | traffic-mirror-target
-	// | transit-gateway | transit-gateway-attachment | transit-gateway-route-table
-	// | vpc-endpoint (for interface VPC endpoints)| vpc-endpoint-service (for gateway
-	// VPC endpoints) | volume | vpc-flow-log.
-	//
-	// To tag a resource after it has been created, see CreateTags
-	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html).
-	ResourceType *string `json:"resourceType"`
-
-	// The tags to apply to the resource
-	Tags []Tag `json:"tags"`
-}
-
-// LicenseConfigurationRequest describes a license configuration
-type LicenseConfigurationRequest struct {
-	// Amazon Resource Name (ARN) of the license configuration
-	LicenseConfigurationARN *string `json:"licenseConfigurationArn"`
-}
-
-// LaunchTemplateSpecification defines the launch template to use.
-// You must specify either the launch template ID or launch template
-// name in the request, but not both.
-type LaunchTemplateSpecification struct {
-	// The ID of the launch template.
-	LaunchTemplateID *string `json:"launchTemplateId"`
-
-	// The name of the launch template.
-	LaunchTemplateName *string `json:"launchTemplateName"`
-
-	// The version number of the launch template.
-	//
-	// Default: The default version for the launch template.
-	Version *string `json:"version"`
-}
-
 // InstanceParameters define the desired state of the Instances
 type InstanceParameters struct {
-	// Region is the region you'd like your Instance to be created in.
-	Region *string `json:"region"`
-	// // The block device mapping entries.
-	// BlockDeviceMappings []BlockDeviceMapping `locationName:"BlockDeviceMapping" locationNameList:"BlockDeviceMapping" type:"list"`
+	// The block device mapping entries.
+	// +optional
+	// BlockDeviceMappings []BlockDeviceMapping `json:"blockDeviceMappings,omitempty"`
 
 	// Information about the Capacity Reservation targeting option. If you do not
 	// specify this parameter, the instance's Capacity Reservation preference defaults
 	// to open, which enables it to run in any open Capacity Reservation that has
 	// matching attributes (instance type, platform, Availability Zone).
-	// CapacityReservationSpecification *CapacityReservationSpecification `type:"structure"`
+	// +optional
+	// CapacityReservationSpecification *CapacityReservationSpecification `json:"capacityReservationSpecification,omitempty"`
 
 	// Unique, case-sensitive identifier you provide to ensure the idempotency of
 	// the request. If you do not specify a client token, a randomly generated token
@@ -92,12 +42,13 @@ type InstanceParameters struct {
 	//
 	// Constraints: Maximum 64 ASCII characters
 	// +optional
-	ClientToken *string `json:"clientToken,omitempty"`
+	// ClientToken *string `json:"clientToken,omitempty"`
 
 	// The CPU options for the instance. For more information, see Optimizing CPU
 	// Options (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-optimize-cpu.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
-	// CpuOptions *CpuOptionsRequest `type:"structure"` TODO
+	// +optional
+	// CPUOptions *CPUOptionsRequest `json:"cpuOptions,omitempty"`
 
 	// The credit option for CPU usage of the burstable performance instance. Valid
 	// values are standard and unlimited. To change this attribute after launch,
@@ -107,7 +58,7 @@ type InstanceParameters struct {
 	//
 	// Default: standard (T2 instances) or unlimited (T3/T3a instances)
 	// +optional
-	// CreditSpecification *string `json:"creditSpecification,omitempty"` TODO
+	// CreditSpecification *CreditSpecificationRequest `json:"creditSpecification,omitempty"`
 
 	// If you set this parameter to true, you can't terminate the instance using
 	// the Amazon EC2 console, CLI, or API; otherwise, you can. To change this attribute
@@ -117,14 +68,14 @@ type InstanceParameters struct {
 	//
 	// Default: false
 	// +optional
-	DisableAPITermination *bool `json:"disableAPITermination,omitempty"`
+	// DisableAPITermination *bool `json:"disableAPITermination,omitempty"`
 
 	// Checks whether you have the required permissions for the action, without
 	// actually making the request, and provides an error response. If you have
 	// the required permissions, the error response is DryRunOperation. Otherwise,
 	// it is UnauthorizedOperation.
 	// +optional
-	DryRun *bool `json:"dryRun,omitempty"`
+	// DryRun *bool `json:"dryRun,omitempty"`
 
 	// Indicates whether the instance is optimized for Amazon EBS I/O. This optimization
 	// provides dedicated throughput to Amazon EBS and an optimized configuration
@@ -134,29 +85,32 @@ type InstanceParameters struct {
 	//
 	// Default: false
 	// +optional
-	EBSOptimized *bool `json:"ebsOptimized,omitempty"`
+	// EBSOptimized *bool `json:"ebsOptimized,omitempty"`
 
 	// An elastic GPU to associate with the instance. An Elastic GPU is a GPU resource
 	// that you can attach to your Windows instance to accelerate the graphics performance
 	// of your applications. For more information, see Amazon EC2 Elastic GPUs (https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/elastic-graphics.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
-	// ElasticGpuSpecification []ElasticGpuSpecification `locationNameList:"item" type:"list"` TODO
+	// +optional
+	// ElasticGpuSpecification []ElasticGpuSpecification `json:"ElasticGpuSpecification,omitempty"`
 
 	// An elastic inference accelerator to associate with the instance. Elastic
 	// inference accelerators are a resource you can attach to your Amazon EC2 instances
 	// to accelerate your Deep Learning (DL) inference workloads.
 	//
 	// You cannot specify accelerators from different generations in the same request.
-	// ElasticInferenceAccelerators []ElasticInferenceAccelerator `locationName:"ElasticInferenceAccelerator" locationNameList:"item" type:"list"` TODO
+	// +optional
+	// ElasticInferenceAccelerators []ElasticInferenceAccelerator `json:"elasticInferenceAccelerators,omitempty"`
 
 	// Indicates whether an instance is enabled for hibernation. For more information,
 	// see Hibernate Your Instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
 	// +optional
-	// HibernationOptions *bool `json:"hibernationOptions,omitempty"` TODO
+	// HibernationOptions *HibernationOptionsRequest `json:"hibernationOptions,omitempty"`
 
 	// The IAM instance profile.
-	// IamInstanceProfile *IamInstanceProfileSpecification `locationName:"iamInstanceProfile" type:"structure"` TODO
+	// +optional
+	// IamInstanceProfile *IamInstanceProfileSpecification `json:"iamInstanceProfile,omitempty"`
 
 	// The ID of the AMI. An AMI ID is required to launch an instance and must be
 	// specified here or in a launch template.
@@ -167,20 +121,21 @@ type InstanceParameters struct {
 	//
 	// Default: stop
 	// +optional
-	// InstanceInitiatedShutdownBehavior *string `json:"instanceInitiatedShutdownBehavior,omitempty"` TODO
+	// InstanceInitiatedShutdownBehavior *string `json:"instanceInitiatedShutdownBehavior,omitempty"`
 
 	// The market (purchasing) option for the instances.
 	//
 	// For RunInstances, persistent Spot Instance requests are only supported when
 	// InstanceInterruptionBehavior is set to either hibernate or stop.
-	// InstanceMarketOptions *InstanceMarketOptionsRequest `type:"structure"` TODO
+	// +optional
+	// InstanceMarketOptions *InstanceMarketOptionsRequest `type:"structure"`
 
 	// The instance type. For more information, see Instance Types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
 	//
 	// Default: m1.small
 	// +optional
-	InstanceType *string `json:"instanceType,omitempty"`
+	// InstanceType *string `json:"instanceType,omitempty"`
 
 	// [EC2-VPC] The number of IPv6 addresses to associate with the primary network
 	// interface. Amazon EC2 chooses the IPv6 addresses from the range of your subnet.
@@ -191,7 +146,7 @@ type InstanceParameters struct {
 	// You cannot specify this option and the network interfaces option in the same
 	// request.
 	// +optional
-	Ipv6AddressCount *int64 `json:"ipv6AddressCount,omitempty"`
+	// Ipv6AddressCount *int64 `json:"ipv6AddressCount,omitempty"`
 
 	// [EC2-VPC] The IPv6 addresses from the range of the subnet to associate with
 	// the primary network interface. You cannot specify this option and the option
@@ -200,7 +155,8 @@ type InstanceParameters struct {
 	//
 	// You cannot specify this option and the network interfaces option in the same
 	// request.
-	// Ipv6Addresses []InstanceIpv6Address `locationName:"Ipv6Address" locationNameList:"item" type:"list"` TODO
+	// +optional
+	// IPV6Addresses []InstanceIPV6Address `json:"ipv6Addresses,omitempty"`
 
 	// The ID of the kernel.
 	//
@@ -208,7 +164,7 @@ type InstanceParameters struct {
 	// information, see PV-GRUB (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedkernels.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
 	// +optional
-	KernelID *string `json:"kernelId,omitempty"`
+	// KernelID *string `json:"kernelId,omitempty"`
 
 	// The name of the key pair. You can create a key pair using CreateKeyPair (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateKeyPair.html)
 	// or ImportKeyPair (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ImportKeyPair.html).
@@ -216,17 +172,17 @@ type InstanceParameters struct {
 	// If you do not specify a key pair, you can't connect to the instance unless
 	// you choose an AMI that is configured to allow users another way to log in.
 	// +optional
-	KeyName *string `json:"keyName,omitempty"`
+	// KeyName *string `json:"keyName,omitempty"`
 
 	// The launch template to use to launch the instances. Any parameters that you
 	// specify in RunInstances override the same parameters in the launch template.
 	// You can specify either the name or ID of a launch template, but not both.
 	// +optional
-	LaunchTemplate *LaunchTemplateSpecification `json:"launchTemplate,omitempty"`
+	// LaunchTemplate *LaunchTemplateSpecification `json:"launchTemplate,omitempty"`
 
 	// The Amazon Resource Name (ARN) of the license configuration
 	// +optional
-	LicenseSpecifications []LicenseConfigurationRequest `json:"licenseSpecifications,omitempty"`
+	// LicenseSpecifications []LicenseConfigurationRequest `json:"licenseSpecifications,omitempty"`
 
 	// The maximum number of instances to launch. If you specify more instances
 	// than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches
@@ -238,7 +194,7 @@ type InstanceParameters struct {
 	// in the Amazon EC2 FAQ.
 	//
 	// MaxCount is a required field
-	MaxCount *int64 `json:"maxCount"`
+	MaxCount *int64 `json:"maxCount"` // TODO this is probably updatable
 
 	// The metadata options for the instance. For more information, see Instance
 	// Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
@@ -254,19 +210,21 @@ type InstanceParameters struct {
 	// in the Amazon EC2 General FAQ.
 	//
 	// MinCount is a required field
-	MinCount *int64 `json:"minCount"`
+	MinCount *int64 `json:"minCount"` // TODO this is probably updatable
 
 	// Specifies whether detailed monitoring is enabled for the instance.
 	// +optional
-	Monitoring *bool `json:"monitoring,omitempty"`
+	// Monitoring *bool `json:"monitoring,omitempty"`
 
 	// The network interfaces to associate with the instance. If you specify a network
 	// interface, you must specify any security groups and subnets as part of the
 	// network interface.
-	// NetworkInterfaces []InstanceNetworkInterfaceSpecification `locationName:"networkInterface" locationNameList:"item" type:"list"` TODO
+	// +optional
+	// NetworkInterfaces []InstanceNetworkInterfaceSpecification `json:"networkInterfaces,omitempty"`
 
 	// The placement for the instance.
-	// Placement *Placement `type:"structure"` TODO
+	// +optional
+	// Placement *Placement `json:"placement,omitempty"`
 
 	// [EC2-VPC] The primary IPv4 address. You must specify a value from the IPv4
 	// address range of the subnet.
@@ -279,7 +237,7 @@ type InstanceParameters struct {
 	// You cannot specify this option and the network interfaces option in the same
 	// request.
 	// +optional
-	PrivateIPAddress *string `json:"privateIPAddress,omitempty"`
+	// PrivateIPAddress *string `json:"privateIpAddress,omitempty"`
 
 	// The ID of the RAM disk to select. Some kernels require additional drivers
 	// at launch. Check the kernel requirements for information about whether you
@@ -290,7 +248,10 @@ type InstanceParameters struct {
 	// information, see PV-GRUB (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedkernels.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
 	// +optional
-	RAMDiskID *string `json:"ramDiskId,omitempty"`
+	// RAMDiskID *string `json:"ramDiskId,omitempty"`
+
+	// Region is the region you'd like your Instance to be created in.
+	Region *string `json:"region"`
 
 	// The IDs of the security groups. You can create a security group using CreateSecurityGroup
 	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateSecurityGroup.html).
@@ -298,17 +259,17 @@ type InstanceParameters struct {
 	// If you specify a network interface, you must specify any security groups
 	// as part of the network interface.
 	// +optional
-	SecurityGroupIDs []string `json:"securityGroupIDs,omitempty"`
+	// SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
 
 	// SecurityGroupIDRefs is a list of references to SecurityGroups used to set
 	// the SecurityGroupIDs.
 	// +optional
-	SecurityGroupIDRefs []xpv1.Reference `json:"securityGroupIdRefs,omitempty"`
+	// SecurityGroupIDRefs []xpv1.Reference `json:"securityGroupIdRefs,omitempty"`
 
 	// SecurityGroupIDsSelector selects references to SecurityGroupID used
 	// to set the SecurityGroupIDs.
 	// +optional
-	SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIdSelector,omitempty"`
+	// SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIdSelector,omitempty"`
 
 	// [EC2-Classic, default VPC] The names of the security groups. For a nondefault
 	// VPC, you must use security group IDs instead.
@@ -318,31 +279,32 @@ type InstanceParameters struct {
 	//
 	// Default: Amazon EC2 uses the default security group.
 	// +optional
-	SecurityGroups []string `json:"securityGroups,omitempty"`
+	// SecurityGroups []string `json:"securityGroups,omitempty"`
 
 	// SecurityGroupsRefs is a list of references to SecurityGroups used to set
 	// the SecurityGroupIDs.
 	// +optional
-	SecurityGroupsRefs []xpv1.Reference `json:"securityGroupsRefs,omitempty"`
+	// SecurityGroupsRefs []xpv1.Reference `json:"securityGroupsRefs,omitempty"`
 
 	// SecurityGroupsSelector selects references to SecurityGroups used
 	// to set the SecurityGroupIDs.
 	// +optional
-	SecurityGroupsSelector *xpv1.Selector `json:"securityGroupsSelector,omitempty"`
+	// SecurityGroupsSelector *xpv1.Selector `json:"securityGroupsSelector,omitempty"`
 
 	// [EC2-VPC] The ID of the subnet to launch the instance into.
 	//
 	// If you specify a network interface, you must specify any subnets as part
 	// of the network interface.
-	SubnetID *string `json:"subnetId,omitempty"`
+	// +optional
+	// SubnetID *string `json:"subnetId,omitempty"`
 
 	// SubnetIDRef is a reference to a Subnet used to set the SubnetID.
 	// +optional
-	SubnetIDRef []xpv1.Reference `json:"subnetIdRefs,omitempty"`
+	// SubnetIDRef []xpv1.Reference `json:"subnetIdRefs,omitempty"`
 
 	// SubnetIDSelector selects a reference to a Subnet used to set the SubnetID.
 	// +optional
-	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
+	// SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
 
 	// The tags to apply to the resources during launch. You can only tag instances
 	// and volumes on launch. The specified tags are applied to all instances or
@@ -350,7 +312,7 @@ type InstanceParameters struct {
 	// created, see CreateTags (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html).
 	// +immutable
 	// +optional
-	TagSpecifications []TagSpecification `json:"tagSpecifications,omitempty"`
+	// TagSpecifications []TagSpecification `json:"tagSpecifications,omitempty"`
 
 	// The user data to make available to the instance. For more information, see
 	// Running Commands on Your Linux Instance at Launch (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html)
@@ -359,61 +321,8 @@ type InstanceParameters struct {
 	// for you, and you can load the text from a file. Otherwise, you must provide
 	// base64-encoded text. User data is limited to 16 KB.
 	// +optional
-	UserData *string `json:"userData,omitempty"`
+	// UserData *string `json:"userData,omitempty"`
 }
-
-// // InstancesParameters define the desired state of the Instances
-// type Instances_Parameters struct {
-// 	// Region is the region you'd like your VPC CIDR to be created in.
-// 	Region string `json:"region"`
-
-// 	// Requests an Amazon-provided IPv6 CIDR block with a /56 prefix length for
-// 	// the VPC. You cannot specify the range of IPv6 addresses, or the size of the
-// 	// CIDR block.
-// 	// +immutable
-// 	// +optional
-// 	AmazonProvidedIPv6CIDRBlock *bool `json:"amazonProvidedIpv6CidrBlock,omitempty"`
-
-// 	// An IPv4 CIDR block to associate with the VPC.
-// 	// +immutable
-// 	// +optional
-// 	CIDRBlock *string `json:"cidrBlock,omitempty"`
-
-// 	// An IPv6 CIDR block from the IPv6 address pool. You must also specify Ipv6Pool
-// 	// in the request.
-// 	//
-// 	// To let Amazon choose the IPv6 CIDR block for you, omit this parameter.
-// 	// +immutable
-// 	// +optional
-// 	IPv6CIDRBlock *string `json:"ipv6CdirBlock,omitempty"`
-
-// 	// The name of the location from which we advertise the IPV6 CIDR block. Use
-// 	// this parameter to limit the CiDR block to this location.
-// 	//
-// 	// You must set AmazonProvidedIpv6CIDRBlock to true to use this parameter.
-// 	//
-// 	// You can have one IPv6 CIDR block association per network border group.
-// 	// +immutable
-// 	// +optional
-// 	IPv6CIDRBlockNetworkBorderGroup *string `json:"ipv6CidrBlockNetworkBorderGroup,omitempty"`
-
-// 	// The ID of an IPv6 address pool from which to allocate the IPv6 CIDR block.
-// 	// +immutable
-// 	// +optional
-// 	IPv6Pool *string `json:"ipv6Pool,omitempty"`
-
-// 	// VPCID is the ID of the VPC.
-// 	// +optional
-// 	VPCID *string `json:"vpcId,omitempty"`
-
-// 	// VPCIDRef references a VPC to and retrieves its vpcId
-// 	// +optional
-// 	VPCIDRef *xpv1.Reference `json:"vpcIdRef,omitempty"`
-
-// 	// VPCIDSelector selects a reference to a VPC to and retrieves its vpcId
-// 	// +optional
-// 	VPCIDSelector *xpv1.Selector `json:"vpcIdSelector,omitempty"`
-// }
 
 // An InstanceSpec defines the desired state of Instances.
 type InstanceSpec struct {

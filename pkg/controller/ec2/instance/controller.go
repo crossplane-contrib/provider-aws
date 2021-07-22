@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 )
 
+// TODO update errors
 const (
 	errUnexpectedObject = "The managed resource is not an VPC resource"
 	errKubeUpdateFailed = "cannot update VPC custom resource"
@@ -112,8 +113,15 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	response, err := e.client.DescribeInstancesRequest(&awsec2.DescribeInstancesInput{
 		InstanceIds: []string{meta.GetExternalName(cr)},
 	}).Send(ctx)
+	// recently deleted instances return a 200 OK with a nil response.Reservations slice
+	// (i.e. those that have moved from terminated to deleted)
+	if err == nil && len(response.Reservations) == 0 {
+		return managed.ExternalObservation{}, nil
+	}
+
+	// TODO need to make sure IsInstanceNotFoundErr is the correct error to examine
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDescribe)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -179,27 +187,27 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	result, err := e.client.RunInstancesRequest(&awsec2.RunInstancesInput{
-		ClientToken:           cr.Spec.ForProvider.ClientToken,
-		DisableApiTermination: cr.Spec.ForProvider.DisableAPITermination,
-		DryRun:                cr.Spec.ForProvider.DryRun,
-		EbsOptimized:          cr.Spec.ForProvider.EBSOptimized,
-		ImageId:               cr.Spec.ForProvider.ImageID,
+		// ClientToken:           cr.Spec.ForProvider.ClientToken,
+		// DisableApiTermination: cr.Spec.ForProvider.DisableAPITermination,
+		// DryRun:                cr.Spec.ForProvider.DryRun,
+		// EbsOptimized:          cr.Spec.ForProvider.EBSOptimized,
+		ImageId: cr.Spec.ForProvider.ImageID,
 		// InstanceType:          awsec2.InstanceType(*cr.Spec.ForProvider.InstanceType), //optional
-		Ipv6AddressCount: cr.Spec.ForProvider.Ipv6AddressCount,
-		KernelId:         cr.Spec.ForProvider.KernelID,
-		KeyName:          cr.Spec.ForProvider.KeyName,
-		MaxCount:         cr.Spec.ForProvider.MaxCount,
-		MinCount:         cr.Spec.ForProvider.MinCount,
+		// Ipv6AddressCount: cr.Spec.ForProvider.Ipv6AddressCount,
+		// KernelId: cr.Spec.ForProvider.KernelID,
+		// KeyName:  cr.Spec.ForProvider.KeyName,
+		MaxCount: cr.Spec.ForProvider.MaxCount,
+		MinCount: cr.Spec.ForProvider.MinCount,
 		// Monitoring:       &awsec2.RunInstancesMonitoringEnabled{Enabled: aws.Bool(*cr.Spec.ForProvider.Monitoring)}, // default is returning an error
-		PrivateIpAddress: cr.Spec.ForProvider.PrivateIPAddress,
-		RamdiskId:        cr.Spec.ForProvider.RAMDiskID,
-		SecurityGroupIds: cr.Spec.ForProvider.SecurityGroupIDs,
+		// PrivateIpAddress: cr.Spec.ForProvider.PrivateIPAddress,
+		// RamdiskId:        cr.Spec.ForProvider.RAMDiskID,
+		// SecurityGroupIds: cr.Spec.ForProvider.SecurityGroupIDs,
 		// TODO fill in refs
 
-		SecurityGroups: cr.Spec.ForProvider.SecurityGroups,
-		SubnetId:       cr.Spec.ForProvider.SubnetID,
+		// SecurityGroups: cr.Spec.ForProvider.SecurityGroups,
+		// SubnetId:       cr.Spec.ForProvider.SubnetID,
 
-		UserData: cr.Spec.ForProvider.UserData,
+		// UserData: cr.Spec.ForProvider.UserData,
 		// special type of tag for specifying the instance name. probably want to allow it to be overridden by the spec, but
 		// maybe set it from the metadata.Name if not set in spec?
 		TagSpecifications: []awsec2.TagSpecification{

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	// InstanceNotFound is the code that is returned by ec2 when the given VPCID is not valid
+	// InstanceNotFound is the code that is returned by ec2 when the given InstanceID is not valid
 	InstanceNotFound = "InvalidInstanceID.NotFound"
 )
 
