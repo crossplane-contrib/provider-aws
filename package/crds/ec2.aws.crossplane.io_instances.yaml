@@ -57,6 +57,9 @@ spec:
               forProvider:
                 description: InstanceParameters define the desired state of the Instances
                 properties:
+                  clientToken:
+                    description: "Unique, case-sensitive identifier you provide to ensure the idempotency of the request. If you do not specify a client token, a randomly generated token is used for the request to ensure idempotency. \n For more information, see Ensuring Idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html). \n Constraints: Maximum 64 ASCII characters"
+                    type: string
                   dryRun:
                     description: Checks whether you have the required permissions for the action, without actually making the request, and provides an error response. If you have the required permissions, the error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
                     type: boolean

@@ -1,7 +1,7 @@
 apiVersion: ec2.aws.crossplane.io/v1alpha1
 kind: Instance
 metadata:
-  name: sample-instance2
+  name: sample-instance
 spec:
   forProvider:
     region: us-east-1
