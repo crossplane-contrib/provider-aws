@@ -152,14 +152,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	ec2.LateInitializeInstance(&cr.Spec.ForProvider, &observed, &o)
 
-	// TODO various states need to be handled - deleting has multiple states (terminating/terminated lasts up to an hour)
-
-	// switch observed.State {
-	// case awsec2.InstanceStateAvailable:
-	// 	cr.SetConditions(xpv1.Available())
-	// case awsec2.VpcStatePending:
-	// 	cr.SetConditions(xpv1.Creating())
-	// }
+	switch observed.State.Name {
+	case awsec2.InstanceStateNameRunning:
+		cr.SetConditions(xpv1.Available())
+	case awsec2.InstanceStateNamePending:
+		cr.SetConditions(xpv1.Creating())
+	case awsec2.InstanceStateNameShuttingDown:
+		cr.SetConditions(xpv1.Deleting())
+	case awsec2.InstanceStateNameTerminated:
+		cr.SetConditions(xpv1.Deleting())
+	}
 
 	cr.Status.AtProvider = ec2.GenerateInstanceObservation(observed)
 
