@@ -172,7 +172,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	result, err := e.client.RunInstancesRequest(&awsec2.RunInstancesInput{
 		// ClientToken:           cr.Spec.ForProvider.ClientToken,
 		// DisableApiTermination: cr.Spec.ForProvider.DisableAPITermination,
-		// DryRun:                cr.Spec.ForProvider.DryRun,
+		DryRun: cr.Spec.ForProvider.DryRun,
 		// EbsOptimized:          cr.Spec.ForProvider.EBSOptimized,
 		ImageId:      cr.Spec.ForProvider.ImageID,
 		InstanceType: awsec2.InstanceType(cr.Spec.ForProvider.InstanceType),

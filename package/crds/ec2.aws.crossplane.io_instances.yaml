@@ -57,6 +57,9 @@ spec:
               forProvider:
                 description: InstanceParameters define the desired state of the Instances
                 properties:
+                  dryRun:
+                    description: Checks whether you have the required permissions for the action, without actually making the request, and provides an error response. If you have the required permissions, the error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
+                    type: boolean
                   imageId:
                     description: The ID of the AMI. An AMI ID is required to launch an instance and must be specified here or in a launch template.
                     type: string

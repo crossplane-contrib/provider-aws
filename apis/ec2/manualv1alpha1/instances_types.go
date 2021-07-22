@@ -75,7 +75,7 @@ type InstanceParameters struct {
 	// the required permissions, the error response is DryRunOperation. Otherwise,
 	// it is UnauthorizedOperation.
 	// +optional
-	// DryRun *bool `json:"dryRun,omitempty"`
+	DryRun *bool `json:"dryRun,omitempty"`
 
 	// Indicates whether the instance is optimized for Amazon EBS I/O. This optimization
 	// provides dedicated throughput to Amazon EBS and an optimized configuration

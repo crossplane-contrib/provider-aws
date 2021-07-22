@@ -1,10 +1,9 @@
 apiVersion: ec2.aws.crossplane.io/v1alpha1
 kind: Instance
 metadata:
-  name: sample-instance1
+  name: sample-instance2
 spec:
   forProvider:
-    instanceType: t3.medium
     region: us-east-1
     imageId: ami-0dc2d3e4c0f9ebd18
     maxCount: 1
