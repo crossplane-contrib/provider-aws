@@ -42,18 +42,16 @@ import (
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 )
 
-// TODO update errors
 const (
-	errUnexpectedObject = "The managed resource is not an VPC resource"
-	errKubeUpdateFailed = "cannot update VPC custom resource"
+	errUnexpectedObject = "The managed resource is not an Instance resource"
+	errKubeUpdateFailed = "cannot update Instance custom resource"
 
-	errDescribe            = "failed to describe VPC with id"
-	errMultipleItems       = "retrieved multiple VPCs for the given vpcId"
-	errCreate              = "failed to create the VPC resource"
-	errUpdate              = "failed to update VPC resource"
-	errModifyVPCAttributes = "failed to modify the VPC resource attributes"
-	errCreateTags          = "failed to create tags for the VPC resource"
-	errDelete              = "failed to delete the VPC resource"
+	errDescribe            = "failed to describe Instance with id"
+	errMultipleItems       = "retrieved multiple Instances for the given instanceId"
+	errCreate              = "failed to create the Instance resource"
+	errUpdate              = "failed to update Instance resource"
+	errModifyVPCAttributes = "failed to modify the Instance resource attributes"
+	errDelete              = "failed to delete the Instance resource"
 )
 
 // SetupInstance adds a controller that reconciles Instances.
@@ -145,29 +143,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	o := awsec2.DescribeInstanceAttributeOutput{}
 
-	// for _, input := range []awsec2.InstanceAttributeName{
-	// 	awsec2.VpcAttributeNameEnableDnsSupport,
-	// 	awsec2.VpcAttributeNameEnableDnsHostnames,
-	// } {
-	// 	_, err := e.client.DescribeInstanceAttributeRequest(&awsec2.DescribeInstanceAttributeInput{
-	// 		InstanceId: aws.String(meta.GetExternalName(cr)),
-	// 		Attribute:  input,
-	// 	}).Send(context.Background())
-
-	// 	if err != nil {
-	// 		return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribe)
-	// 	}
-
-	// 	// if r.EnableDnsHostnames != nil {
-	// 	// 	o.EnableDnsHostnames = r.EnableDnsHostnames
-	// 	// }
-
-	// 	// if r.EnableDnsSupport != nil {
-	// 	// 	o.EnableDnsSupport = r.EnableDnsSupport
-	// 	// }
-	// }
-
-	ec2.LateInitializeInstance(&cr.Spec.ForProvider, &observed, &o)
+	// ec2.LateInitializeInstance(&cr.Spec.ForProvider, &observed, &o)
 
 	switch observed.State.Name {
 	case awsec2.InstanceStateNameRunning:
@@ -198,12 +174,12 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		// DisableApiTermination: cr.Spec.ForProvider.DisableAPITermination,
 		// DryRun:                cr.Spec.ForProvider.DryRun,
 		// EbsOptimized:          cr.Spec.ForProvider.EBSOptimized,
-		ImageId: cr.Spec.ForProvider.ImageID,
-		// InstanceType:          awsec2.InstanceType(*cr.Spec.ForProvider.InstanceType), //optional
+		ImageId:      cr.Spec.ForProvider.ImageID,
+		InstanceType: awsec2.InstanceType(cr.Spec.ForProvider.InstanceType),
 		// Ipv6AddressCount: cr.Spec.ForProvider.Ipv6AddressCount,
 		// KernelId: cr.Spec.ForProvider.KernelID,
 		// KeyName:  cr.Spec.ForProvider.KeyName,
-		MaxCount: cr.Spec.ForProvider.MaxCount,
+		MaxCount: cr.Spec.ForProvider.MaxCount, // TODO handle the case when we have more than 1 here. If this is not 1, each instance has a different instanceID
 		MinCount: cr.Spec.ForProvider.MinCount,
 		// Monitoring:       &awsec2.RunInstancesMonitoringEnabled{Enabled: aws.Bool(*cr.Spec.ForProvider.Monitoring)}, // default is returning an error
 		// PrivateIpAddress: cr.Spec.ForProvider.PrivateIPAddress,
@@ -213,21 +189,17 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 		// SecurityGroups: cr.Spec.ForProvider.SecurityGroups,
 		// SubnetId:       cr.Spec.ForProvider.SubnetID,
-
+		TagSpecifications: svcapitypes.TransformTagSpecifications(
+			mgd.GetName(),
+			cr.Spec.ForProvider.TagSpecifications,
+		),
 		UserData: cr.Spec.ForProvider.UserData,
-		// special type of tag for specifying the instance name. probably want to allow it to be overridden by the spec, but
-		// maybe set it from the metadata.Name if not set in spec?
-		TagSpecifications: []awsec2.TagSpecification{
-			{
-				ResourceType: awsec2.ResourceType("instance"),
-				Tags:         []awsec2.Tag{{Key: aws.String("Name"), Value: aws.String(mgd.GetName())}},
-			},
-		},
 	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
+	// when instance count is greater than 1, maybe add comma separated list as the external name?
 	meta.SetExternalName(cr, aws.StringValue(result.Instances[0].InstanceId))
 
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
@@ -238,40 +210,6 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
-
-	// if cr.Spec.ForProvider.EnableDNSSupport != nil {
-	// 	modifyInput := &awsec2.ModifyInstanceAttributeInput{
-	// 		InstanceId:       aws.String(meta.GetExternalName(cr)),
-	// 		EnableDnsSupport: &awsec2.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableDNSSupport},
-	// 	}
-	// 	if _, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx); err != nil {
-	// 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyVPCAttributes)
-	// 	}
-	// }
-
-	// if cr.Spec.ForProvider.EnableDNSHostNames != nil {
-	// 	modifyInput := &awsec2.ModifyVpcAttributeInput{
-	// 		VpcId:              aws.String(meta.GetExternalName(cr)),
-	// 		EnableDnsHostnames: &awsec2.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableDNSHostNames},
-	// 	}
-	// 	if _, err := e.client.ModifyVpcAttributeRequest(modifyInput).Send(ctx); err != nil {
-	// 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyVPCAttributes)
-	// 	}
-	// }
-
-	// // NOTE(muvaf): VPCs can only be tagged after the creation and this request
-	// // is idempotent.
-	// if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
-	// 	Resources: []string{meta.GetExternalName(cr)},
-	// 	Tags:      v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
-	// }).Send(ctx); err != nil {
-	// 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
-	// }
-
-	// _, err := e.client.ModifyVpcTenancyRequest(&awsec2.ModifyVpcTenancyInput{
-	// 	InstanceTenancy: awsec2.VpcTenancy(aws.StringValue(cr.Spec.ForProvider.InstanceTenancy)),
-	// 	VpcId:           aws.String(meta.GetExternalName(cr)),
-	// }).Send(ctx)
 
 	return managed.ExternalUpdate{}, awsclient.Wrap(errors.New("fix this"), errUpdate)
 }

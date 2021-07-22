@@ -60,6 +60,9 @@ spec:
                   imageId:
                     description: The ID of the AMI. An AMI ID is required to launch an instance and must be specified here or in a launch template.
                     type: string
+                  instanceType:
+                    description: "The instance type. For more information, see Instance Types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html) in the Amazon Elastic Compute Cloud User Guide. \n Default: m1.small"
+                    type: string
                   maxCount:
                     description: "The maximum number of instances to launch. If you specify more instances than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches the largest possible number of instances above MinCount. \n Constraints: Between 1 and the maximum number you're allowed for the specified instance type. For more information about the default limits, and how to request an increase, see How many instances can I run in Amazon EC2 (http://aws.amazon.com/ec2/faqs/#How_many_instances_can_I_run_in_Amazon_EC2) in the Amazon EC2 FAQ. \n MaxCount is a required field"
                     format: int64
@@ -71,6 +74,60 @@ spec:
                   region:
                     description: Region is the region you'd like your Instance to be created in.
                     type: string
+                  tagSpecifications:
+                    description: The tags to apply to the resources during launch. You can only tag instances and volumes on launch. The specified tags are applied to all instances or volumes that are created during launch. To tag a resource after it has been created, see CreateTags (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html).
+                    items:
+                      description: TagSpecification defines the tags to apply to a resource when the resource is being created.
+                      properties:
+                        resourceType:
+                          description: "The type of resource to tag. Currently, the resource types that support tagging on creation are: capacity-reservation | client-vpn-endpoint | dedicated-host | fleet | fpga-image | instance | ipv4pool-ec2 | ipv6pool-ec2 | key-pair | launch-template | natgateway | spot-fleet-request | placement-group | snapshot | traffic-mirror-filter | traffic-mirror-session | traffic-mirror-target | transit-gateway | transit-gateway-attachment | transit-gateway-route-table | vpc-endpoint (for interface VPC endpoints)| vpc-endpoint-service (for gateway VPC endpoints) | volume | vpc-flow-log. \n To tag a resource after it has been created, see CreateTags (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html)."
+                          enum:
+                          - capacity-reservation
+                          - client-vpn-endpoint
+                          - dedicated-host
+                          - fleet
+                          - fpga-image
+                          - instance
+                          - ipv4pool-ec2
+                          - ipv6pool-ec2
+                          - key-pair
+                          - launch-template
+                          - natgateway
+                          - spot-fleet-request
+                          - placement-group
+                          - snapshot
+                          - traffic-mirror-filter
+                          - traffic-mirror-session
+                          - traffic-mirror-target
+                          - transit-gateway
+                          - transit-gateway-attachment
+                          - transit-gateway-route-table
+                          - vpc-endpoint
+                          - vpc-endpoint-service
+                          - volume
+                          - vpc-flow-log
+                          type: string
+                        tags:
+                          description: The tags to apply to the resource
+                          items:
+                            description: Tag defines a tag
+                            properties:
+                              key:
+                                description: Key is the name of the tag.
+                                type: string
+                              value:
+                                description: Value is the value of the tag.
+                                type: string
+                            required:
+                            - key
+                            - value
+                            type: object
+                          type: array
+                      required:
+                      - resourceType
+                      - tags
+                      type: object
+                    type: array
                   userData:
                     description: The user data to make available to the instance. For more information, see Running Commands on Your Linux Instance at Launch (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html) (Linux) and Adding User Data (https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-instance-metadata.html#instancedata-add-user-data) (Windows). If you are using a command line tool, base64-encoding is performed for you, and you can load the text from a file. Otherwise, you must provide base64-encoded text. User data is limited to 16 KB.
                     pattern: ^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$

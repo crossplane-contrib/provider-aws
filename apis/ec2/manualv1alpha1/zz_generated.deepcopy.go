@@ -516,6 +516,13 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.TagSpecifications != nil {
+		in, out := &in.TagSpecifications, &out.TagSpecifications
+		*out = make([]TagSpecification, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	if in.UserData != nil {
 		in, out := &in.UserData, &out.UserData
 		*out = new(string)

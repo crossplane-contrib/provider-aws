@@ -135,7 +135,7 @@ type InstanceParameters struct {
 	//
 	// Default: m1.small
 	// +optional
-	// InstanceType *string `json:"instanceType,omitempty"`
+	InstanceType string `json:"instanceType,omitempty"`
 
 	// [EC2-VPC] The number of IPv6 addresses to associate with the primary network
 	// interface. Amazon EC2 chooses the IPv6 addresses from the range of your subnet.
@@ -312,7 +312,7 @@ type InstanceParameters struct {
 	// created, see CreateTags (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html).
 	// +immutable
 	// +optional
-	// TagSpecifications []TagSpecification `json:"tagSpecifications,omitempty"`
+	TagSpecifications []TagSpecification `json:"tagSpecifications,omitempty"`
 
 	// The user data to make available to the instance. For more information, see
 	// Running Commands on Your Linux Instance at Launch (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html)
