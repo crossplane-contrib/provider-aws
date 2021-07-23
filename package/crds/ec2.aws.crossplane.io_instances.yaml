@@ -69,6 +69,9 @@ spec:
                   instanceType:
                     description: "The instance type. For more information, see Instance Types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html) in the Amazon Elastic Compute Cloud User Guide. \n Default: m1.small"
                     type: string
+                  kernelId:
+                    description: "The ID of the kernel. \n AWS recommends that you use PV-GRUB instead of kernels and RAM disks. For more information, see PV-GRUB (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedkernels.html) in the Amazon Elastic Compute Cloud User Guide."
+                    type: string
                   maxCount:
                     description: "The maximum number of instances to launch. If you specify more instances than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches the largest possible number of instances above MinCount. \n Constraints: Between 1 and the maximum number you're allowed for the specified instance type. For more information about the default limits, and how to request an increase, see How many instances can I run in Amazon EC2 (http://aws.amazon.com/ec2/faqs/#How_many_instances_can_I_run_in_Amazon_EC2) in the Amazon EC2 FAQ. \n MaxCount is a required field"
                     format: int64
@@ -86,6 +89,9 @@ spec:
                     required:
                     - enabled
                     type: object
+                  ramDiskId:
+                    description: "The ID of the RAM disk to select. Some kernels require additional drivers at launch. Check the kernel requirements for information about whether you need to specify a RAM disk. To find kernel requirements, go to the AWS Resource Center and search for the kernel ID. \n AWS recommends that you use PV-GRUB instead of kernels and RAM disks. For more information, see PV-GRUB (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedkernels.html) in the Amazon Elastic Compute Cloud User Guide."
+                    type: string
                   region:
                     description: Region is the region you'd like your Instance to be created in.
                     type: string
@@ -149,6 +155,7 @@ spec:
                     type: string
                 required:
                 - minCount
+                - region
                 type: object
               providerConfigRef:
                 default:

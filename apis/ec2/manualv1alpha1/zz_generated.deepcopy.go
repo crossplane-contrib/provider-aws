@@ -511,6 +511,11 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.KernelID != nil {
+		in, out := &in.KernelID, &out.KernelID
+		*out = new(string)
+		**out = **in
+	}
 	if in.MaxCount != nil {
 		in, out := &in.MaxCount, &out.MaxCount
 		*out = new(int64)
@@ -525,6 +530,11 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		in, out := &in.Monitoring, &out.Monitoring
 		*out = new(RunInstancesMonitoringEnabled)
 		(*in).DeepCopyInto(*out)
+	}
+	if in.RAMDiskID != nil {
+		in, out := &in.RAMDiskID, &out.RAMDiskID
+		*out = new(string)
+		**out = **in
 	}
 	if in.Region != nil {
 		in, out := &in.Region, &out.Region

@@ -160,11 +160,11 @@ type InstanceParameters struct {
 
 	// The ID of the kernel.
 	//
-	// We recommend that you use PV-GRUB instead of kernels and RAM disks. For more
+	// AWS recommends that you use PV-GRUB instead of kernels and RAM disks. For more
 	// information, see PV-GRUB (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedkernels.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
 	// +optional
-	// KernelID *string `json:"kernelId,omitempty"`
+	KernelID *string `json:"kernelId,omitempty"`
 
 	// The name of the key pair. You can create a key pair using CreateKeyPair (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateKeyPair.html)
 	// or ImportKeyPair (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ImportKeyPair.html).
@@ -244,11 +244,11 @@ type InstanceParameters struct {
 	// need to specify a RAM disk. To find kernel requirements, go to the AWS Resource
 	// Center and search for the kernel ID.
 	//
-	// We recommend that you use PV-GRUB instead of kernels and RAM disks. For more
+	// AWS recommends that you use PV-GRUB instead of kernels and RAM disks. For more
 	// information, see PV-GRUB (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedkernels.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
 	// +optional
-	// RAMDiskID *string `json:"ramDiskId,omitempty"`
+	RAMDiskID *string `json:"ramDiskId,omitempty"`
 
 	// Region is the region you'd like your Instance to be created in.
 	Region *string `json:"region"`
