@@ -638,6 +638,11 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		*out = new(Placement)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.PrivateIPAddress != nil {
+		in, out := &in.PrivateIPAddress, &out.PrivateIPAddress
+		*out = new(string)
+		**out = **in
+	}
 	if in.RAMDiskID != nil {
 		in, out := &in.RAMDiskID, &out.RAMDiskID
 		*out = new(string)

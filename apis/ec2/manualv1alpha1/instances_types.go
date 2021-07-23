@@ -238,7 +238,7 @@ type InstanceParameters struct {
 	// You cannot specify this option and the network interfaces option in the same
 	// request.
 	// +optional
-	// PrivateIPAddress *string `json:"privateIpAddress,omitempty"`
+	PrivateIPAddress *string `json:"privateIpAddress,omitempty"`
 
 	// The ID of the RAM disk to select. Some kernels require additional drivers
 	// at launch. Check the kernel requirements for information about whether you

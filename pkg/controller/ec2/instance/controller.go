@@ -198,8 +198,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		Monitoring:                        ec2.GenerateEC2Monitoring(cr.Spec.ForProvider.Monitoring),
 		NetworkInterfaces:                 ec2.GenerateEC2InstanceNetworkInterfaceSpecs(cr.Spec.ForProvider.NetworkInterfaces),
 		Placement:                         ec2.GenerateEC2Placement(cr.Spec.ForProvider.Placement),
-		// PrivateIpAddress: cr.Spec.ForProvider.PrivateIPAddress,
-		RamdiskId: cr.Spec.ForProvider.RAMDiskID,
+		PrivateIpAddress:                  cr.Spec.ForProvider.PrivateIPAddress,
+		RamdiskId:                         cr.Spec.ForProvider.RAMDiskID,
 		// SecurityGroupIds: cr.Spec.ForProvider.SecurityGroupIDs,
 		// TODO fill in refs
 

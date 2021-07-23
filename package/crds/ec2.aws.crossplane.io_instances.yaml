@@ -464,6 +464,9 @@ spec:
                     required:
                     - groupName
                     type: object
+                  privateIpAddress:
+                    description: "[EC2-VPC] The primary IPv4 address. You must specify a value from the IPv4 address range of the subnet. \n Only one private IP address can be designated as primary. You can't specify this option if you've specified the option to designate a private IP address as the primary IP address in a network interface specification. You cannot specify this option if you're launching more than one instance in the request. \n You cannot specify this option and the network interfaces option in the same request."
+                    type: string
                   ramDiskId:
                     description: "The ID of the RAM disk to select. Some kernels require additional drivers at launch. Check the kernel requirements for information about whether you need to specify a RAM disk. To find kernel requirements, go to the AWS Resource Center and search for the kernel ID. \n AWS recommends that you use PV-GRUB instead of kernels and RAM disks. For more information, see PV-GRUB (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedkernels.html) in the Amazon Elastic Compute Cloud User Guide."
                     type: string
