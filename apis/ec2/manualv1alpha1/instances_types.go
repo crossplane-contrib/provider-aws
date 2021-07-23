@@ -100,7 +100,7 @@ type InstanceParameters struct {
 	//
 	// You cannot specify accelerators from different generations in the same request.
 	// +optional
-	// ElasticInferenceAccelerators []ElasticInferenceAccelerator `json:"elasticInferenceAccelerators,omitempty"`
+	ElasticInferenceAccelerators []ElasticInferenceAccelerator `json:"elasticInferenceAccelerators,omitempty"`
 
 	// Indicates whether an instance is enabled for hibernation. For more information,
 	// see Hibernate Your Instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html)

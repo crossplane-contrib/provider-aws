@@ -180,6 +180,22 @@ spec:
                   ebsOptimized:
                     description: "Indicates whether the instance is optimized for Amazon EBS I/O. This optimization provides dedicated throughput to Amazon EBS and an optimized configuration stack to provide optimal Amazon EBS I/O performance. This optimization isn't available with all instance types. Additional usage charges apply when using an EBS-optimized instance. \n Default: false"
                     type: boolean
+                  elasticInferenceAccelerators:
+                    description: "An elastic inference accelerator to associate with the instance. Elastic inference accelerators are a resource you can attach to your Amazon EC2 instances to accelerate your Deep Learning (DL) inference workloads. \n You cannot specify accelerators from different generations in the same request."
+                    items:
+                      description: ElasticInferenceAccelerator describes an elastic inference accelerator.
+                      properties:
+                        count:
+                          description: "The number of elastic inference accelerators to attach to the instance. \n Default: 1"
+                          format: int64
+                          type: integer
+                        type:
+                          description: "The type of elastic inference accelerator. The possible values are eia1.medium, eia1.large, and eia1.xlarge. \n Type is a required field"
+                          type: string
+                      required:
+                      - type
+                      type: object
+                    type: array
                   imageId:
                     description: The ID of the AMI. An AMI ID is required to launch an instance and must be specified here or in a launch template.
                     type: string

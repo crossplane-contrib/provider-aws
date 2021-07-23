@@ -530,6 +530,13 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.ElasticInferenceAccelerators != nil {
+		in, out := &in.ElasticInferenceAccelerators, &out.ElasticInferenceAccelerators
+		*out = make([]ElasticInferenceAccelerator, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	if in.ImageID != nil {
 		in, out := &in.ImageID, &out.ImageID
 		*out = new(string)

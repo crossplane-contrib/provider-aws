@@ -179,6 +179,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		DryRun:                            cr.Spec.ForProvider.DryRun,
 		EbsOptimized:                      cr.Spec.ForProvider.EBSOptimized,
 		ElasticGpuSpecification:           ec2.GenerateEC2ElasticGPUSpecs(cr.Spec.ForProvider.ElasticGPUSpecification),
+		ElasticInferenceAccelerators:      ec2.GenerateEC2ElasticInferenceAccelerators(cr.Spec.ForProvider.ElasticInferenceAccelerators),
 		ImageId:                           cr.Spec.ForProvider.ImageID,
 		InstanceInitiatedShutdownBehavior: awsec2.ShutdownBehavior(cr.Spec.ForProvider.InstanceInitiatedShutdownBehavior),
 		InstanceType:                      awsec2.InstanceType(cr.Spec.ForProvider.InstanceType),

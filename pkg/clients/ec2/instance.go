@@ -192,6 +192,22 @@ func GenerateEC2ElasticGPUSpecs(specs []manualv1alpha1.ElasticGPUSpecification) 
 	return nil
 }
 
+// GenerateEC2ElasticInferenceAccelerators coverts an internal slice of ElasticInferenceAccelerator into a slice of ec2.ElasticInferenceAccelerator
+func GenerateEC2ElasticInferenceAccelerators(accs []manualv1alpha1.ElasticInferenceAccelerator) []ec2.ElasticInferenceAccelerator {
+	if accs != nil {
+		res := make([]ec2.ElasticInferenceAccelerator, len(accs))
+		for i, a := range accs {
+			res[i] = ec2.ElasticInferenceAccelerator{
+				Count: a.Count,
+				Type:  a.Type,
+			}
+		}
+
+		return res
+	}
+	return nil
+}
+
 // GenerateEC2Monitoring converts internal RunInstancesMonitoringEnabled into ec2.RunInstancesMonitoringEnabled
 func GenerateEC2Monitoring(m *manualv1alpha1.RunInstancesMonitoringEnabled) *ec2.RunInstancesMonitoringEnabled {
 	if m != nil {
