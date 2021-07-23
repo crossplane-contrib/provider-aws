@@ -260,7 +260,7 @@ type InstanceParameters struct {
 	// If you specify a network interface, you must specify any security groups
 	// as part of the network interface.
 	// +optional
-	// SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
+	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
 
 	// SecurityGroupIDRefs is a list of references to SecurityGroups used to set
 	// the SecurityGroupIDs.
@@ -280,7 +280,7 @@ type InstanceParameters struct {
 	//
 	// Default: Amazon EC2 uses the default security group.
 	// +optional
-	// SecurityGroups []string `json:"securityGroups,omitempty"`
+	SecurityGroups []string `json:"securityGroups,omitempty"`
 
 	// SecurityGroupsRefs is a list of references to SecurityGroups used to set
 	// the SecurityGroupIDs.
@@ -297,7 +297,7 @@ type InstanceParameters struct {
 	// If you specify a network interface, you must specify any subnets as part
 	// of the network interface.
 	// +optional
-	// SubnetID *string `json:"subnetId,omitempty"`
+	SubnetID *string `json:"subnetId,omitempty"`
 
 	// SubnetIDRef is a reference to a Subnet used to set the SubnetID.
 	// +optional

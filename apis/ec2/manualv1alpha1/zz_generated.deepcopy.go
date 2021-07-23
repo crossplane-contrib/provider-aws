@@ -653,6 +653,21 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.SecurityGroupIDs != nil {
+		in, out := &in.SecurityGroupIDs, &out.SecurityGroupIDs
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.SecurityGroups != nil {
+		in, out := &in.SecurityGroups, &out.SecurityGroups
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.SubnetID != nil {
+		in, out := &in.SubnetID, &out.SubnetID
+		*out = new(string)
+		**out = **in
+	}
 	if in.TagSpecifications != nil {
 		in, out := &in.TagSpecifications, &out.TagSpecifications
 		*out = make([]TagSpecification, len(*in))

@@ -473,6 +473,19 @@ spec:
                   region:
                     description: Region is the region you'd like your Instance to be created in.
                     type: string
+                  securityGroupIds:
+                    description: "The IDs of the security groups. You can create a security group using CreateSecurityGroup (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateSecurityGroup.html). \n If you specify a network interface, you must specify any security groups as part of the network interface."
+                    items:
+                      type: string
+                    type: array
+                  securityGroups:
+                    description: "[EC2-Classic, default VPC] The names of the security groups. For a nondefault VPC, you must use security group IDs instead. \n If you specify a network interface, you must specify any security groups as part of the network interface. \n Default: Amazon EC2 uses the default security group."
+                    items:
+                      type: string
+                    type: array
+                  subnetId:
+                    description: "[EC2-VPC] The ID of the subnet to launch the instance into. \n If you specify a network interface, you must specify any subnets as part of the network interface."
+                    type: string
                   tagSpecifications:
                     description: The tags to apply to the resources during launch. You can only tag instances and volumes on launch. The specified tags are applied to all instances or volumes that are created during launch. To tag a resource after it has been created, see CreateTags (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html).
                     items:

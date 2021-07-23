@@ -200,11 +200,10 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		Placement:                         ec2.GenerateEC2Placement(cr.Spec.ForProvider.Placement),
 		PrivateIpAddress:                  cr.Spec.ForProvider.PrivateIPAddress,
 		RamdiskId:                         cr.Spec.ForProvider.RAMDiskID,
-		// SecurityGroupIds: cr.Spec.ForProvider.SecurityGroupIDs,
+		SecurityGroupIds:                  cr.Spec.ForProvider.SecurityGroupIDs,
+		SecurityGroups:                    cr.Spec.ForProvider.SecurityGroups,
+		SubnetId:                          cr.Spec.ForProvider.SubnetID,
 		// TODO fill in refs
-
-		// SecurityGroups: cr.Spec.ForProvider.SecurityGroups,
-		// SubnetId:       cr.Spec.ForProvider.SubnetID,
 		TagSpecifications: ec2.TransformTagSpecifications(
 			mgd.GetName(),
 			cr.Spec.ForProvider.TagSpecifications,
