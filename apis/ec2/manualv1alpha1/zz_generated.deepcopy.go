@@ -658,15 +658,45 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.SecurityGroupIDRefs != nil {
+		in, out := &in.SecurityGroupIDRefs, &out.SecurityGroupIDRefs
+		*out = make([]v1.Reference, len(*in))
+		copy(*out, *in)
+	}
+	if in.SecurityGroupIDSelector != nil {
+		in, out := &in.SecurityGroupIDSelector, &out.SecurityGroupIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.SecurityGroups != nil {
 		in, out := &in.SecurityGroups, &out.SecurityGroups
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.SecurityGroupRefs != nil {
+		in, out := &in.SecurityGroupRefs, &out.SecurityGroupRefs
+		*out = make([]v1.Reference, len(*in))
+		copy(*out, *in)
+	}
+	if in.SecurityGroupSelector != nil {
+		in, out := &in.SecurityGroupSelector, &out.SecurityGroupSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.SubnetID != nil {
 		in, out := &in.SubnetID, &out.SubnetID
 		*out = new(string)
 		**out = **in
+	}
+	if in.SubnetIDRef != nil {
+		in, out := &in.SubnetIDRef, &out.SubnetIDRef
+		*out = new(v1.Reference)
+		**out = **in
+	}
+	if in.SubnetIDSelector != nil {
+		in, out := &in.SubnetIDSelector, &out.SubnetIDSelector
+		*out = new(v1.Selector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.TagSpecifications != nil {
 		in, out := &in.TagSpecifications, &out.TagSpecifications

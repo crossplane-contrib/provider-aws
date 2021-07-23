@@ -175,7 +175,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		ClientToken:                      cr.Spec.ForProvider.ClientToken,
 		CpuOptions:                       ec2.GenerateEC2CPUOptions(cr.Spec.ForProvider.CPUOptions),
 		CreditSpecification:              ec2.GenerateEC2CreditSpec(cr.Spec.ForProvider.CreditSpecification),
-		// DisableApiTermination: cr.Spec.ForProvider.DisableAPITermination,
+		// DisableApiTermination: cr.Spec.ForProvider.DisableAPITermination, // this setting will have some behavior we need to think through
 		DryRun:                            cr.Spec.ForProvider.DryRun,
 		EbsOptimized:                      cr.Spec.ForProvider.EBSOptimized,
 		ElasticGpuSpecification:           ec2.GenerateEC2ElasticGPUSpecs(cr.Spec.ForProvider.ElasticGPUSpecification),

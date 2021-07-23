@@ -265,12 +265,12 @@ type InstanceParameters struct {
 	// SecurityGroupIDRefs is a list of references to SecurityGroups used to set
 	// the SecurityGroupIDs.
 	// +optional
-	// SecurityGroupIDRefs []xpv1.Reference `json:"securityGroupIdRefs,omitempty"`
+	SecurityGroupIDRefs []xpv1.Reference `json:"securityGroupIdRefs,omitempty"`
 
 	// SecurityGroupIDsSelector selects references to SecurityGroupID used
 	// to set the SecurityGroupIDs.
 	// +optional
-	// SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIdSelector,omitempty"`
+	SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIdSelector,omitempty"`
 
 	// [EC2-Classic, default VPC] The names of the security groups. For a nondefault
 	// VPC, you must use security group IDs instead.
@@ -285,12 +285,12 @@ type InstanceParameters struct {
 	// SecurityGroupsRefs is a list of references to SecurityGroups used to set
 	// the SecurityGroupIDs.
 	// +optional
-	// SecurityGroupsRefs []xpv1.Reference `json:"securityGroupsRefs,omitempty"`
+	SecurityGroupRefs []xpv1.Reference `json:"securityGroupRefs,omitempty"`
 
 	// SecurityGroupsSelector selects references to SecurityGroups used
 	// to set the SecurityGroupIDs.
 	// +optional
-	// SecurityGroupsSelector *xpv1.Selector `json:"securityGroupsSelector,omitempty"`
+	SecurityGroupSelector *xpv1.Selector `json:"securityGroupSelector,omitempty"`
 
 	// [EC2-VPC] The ID of the subnet to launch the instance into.
 	//
@@ -301,11 +301,11 @@ type InstanceParameters struct {
 
 	// SubnetIDRef is a reference to a Subnet used to set the SubnetID.
 	// +optional
-	// SubnetIDRef []xpv1.Reference `json:"subnetIdRefs,omitempty"`
+	SubnetIDRef *xpv1.Reference `json:"subnetIdRef,omitempty"`
 
 	// SubnetIDSelector selects a reference to a Subnet used to set the SubnetID.
 	// +optional
-	// SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
+	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
 
 	// The tags to apply to the resources during launch. You can only tag instances
 	// and volumes on launch. The specified tags are applied to all instances or
