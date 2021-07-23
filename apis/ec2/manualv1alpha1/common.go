@@ -149,7 +149,7 @@ type EBSBlockDevice struct {
 	// the Iops parameter.
 	//
 	// Default: gp2
-	VolumeType *string `json:"volumeType"`
+	VolumeType string `json:"volumeType"`
 }
 
 // ElasticGpuSpecification is a specification for an Elastic Graphics accelerator.

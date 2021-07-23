@@ -117,6 +117,32 @@ func LateInitializeInstance(in *manualv1alpha1.InstanceParameters, v *ec2.Instan
 	// }
 }
 
+// GenerateEC2BlockDeviceMappings coverts an internal slice of BlockDeviceMapping into a slice of ec2.BlockDeviceMapping
+func GenerateEC2BlockDeviceMappings(mappings []manualv1alpha1.BlockDeviceMapping) []ec2.BlockDeviceMapping {
+	if mappings != nil {
+		res := make([]ec2.BlockDeviceMapping, len(mappings))
+		for i, bm := range mappings {
+			res[i] = ec2.BlockDeviceMapping{
+				DeviceName: bm.DeviceName,
+				Ebs: &ec2.EbsBlockDevice{
+					DeleteOnTermination: bm.EBS.DeleteOnTermination,
+					Encrypted:           bm.EBS.Encrypted,
+					Iops:                bm.EBS.IOps,
+					KmsKeyId:            bm.EBS.KmsKeyID,
+					SnapshotId:          bm.EBS.SnapshotID,
+					VolumeSize:          bm.EBS.VolumeSize,
+					VolumeType:          ec2.VolumeType(bm.EBS.VolumeType),
+				},
+				NoDevice:    bm.NoDevice,
+				VirtualName: bm.VirtualName,
+			}
+		}
+
+		return res
+	}
+	return nil
+}
+
 // GenerateEC2Monitoring converts internal RunInstancesMonitoringEnabled into ec2.RunInstancesMonitoringEnabled
 func GenerateEC2Monitoring(m *manualv1alpha1.RunInstancesMonitoringEnabled) *ec2.RunInstancesMonitoringEnabled {
 	if m != nil {

@@ -25,7 +25,7 @@ import (
 type InstanceParameters struct {
 	// The block device mapping entries.
 	// +optional
-	// BlockDeviceMappings []BlockDeviceMapping `json:"blockDeviceMappings,omitempty"`
+	BlockDeviceMappings []BlockDeviceMapping `json:"blockDeviceMappings,omitempty"`
 
 	// Information about the Capacity Reservation targeting option. If you do not
 	// specify this parameter, the instance's Capacity Reservation preference defaults

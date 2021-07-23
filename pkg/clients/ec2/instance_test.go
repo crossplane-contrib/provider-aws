@@ -65,7 +65,7 @@ func TestInjectInstanceNameTagSpecification(t *testing.T) {
 					ResourceType: "instance",
 					Tags: []awsec2.Tag{
 						{
-							Key:   aws.String("name"),
+							Key:   aws.String("Name"),
 							Value: aws.String(managedName),
 						},
 					},
@@ -89,7 +89,7 @@ func TestInjectInstanceNameTagSpecification(t *testing.T) {
 						ResourceType: "instance",
 						Tags: []awsec2.Tag{
 							{
-								Key:   aws.String("name"),
+								Key:   aws.String("Name"),
 								Value: aws.String("test"),
 							},
 						},
@@ -110,7 +110,7 @@ func TestInjectInstanceNameTagSpecification(t *testing.T) {
 					ResourceType: "instance",
 					Tags: []awsec2.Tag{
 						{
-							Key:   aws.String("name"),
+							Key:   aws.String("Name"),
 							Value: aws.String("test"),
 						},
 					},
