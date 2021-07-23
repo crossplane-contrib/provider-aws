@@ -77,6 +77,15 @@ spec:
                     description: "The minimum number of instances to launch. If you specify a minimum that is more instances than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches no instances. \n Constraints: Between 1 and the maximum number you're allowed for the specified instance type. For more information about the default limits, and how to request an increase, see How many instances can I run in Amazon EC2 (http://aws.amazon.com/ec2/faqs/#How_many_instances_can_I_run_in_Amazon_EC2) in the Amazon EC2 General FAQ. \n MinCount is a required field"
                     format: int64
                     type: integer
+                  monitoring:
+                    description: Specifies whether detailed monitoring is enabled for the instance.
+                    properties:
+                      enabled:
+                        description: "Indicates whether detailed monitoring is enabled. Otherwise, basic monitoring is enabled. \n Enabled is a required field"
+                        type: boolean
+                    required:
+                    - enabled
+                    type: object
                   region:
                     description: Region is the region you'd like your Instance to be created in.
                     type: string

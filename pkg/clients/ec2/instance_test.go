@@ -1,4 +1,4 @@
-package manualv1alpha1
+package ec2
 
 import (
 	"testing"
@@ -6,6 +6,7 @@ import (
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
+	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -119,7 +120,7 @@ func TestInjectInstanceNameTagSpecification(t *testing.T) {
 func TestGenerateEC2TagSpecifications(t *testing.T) {
 	type args struct {
 		name     string
-		tagSpecs []TagSpecification
+		tagSpecs []manualv1alpha1.TagSpecification
 	}
 	cases := map[string]struct {
 		args args
@@ -127,10 +128,10 @@ func TestGenerateEC2TagSpecifications(t *testing.T) {
 	}{
 		"BasicTagSpecification": {
 			args: args{
-				tagSpecs: []TagSpecification{
+				tagSpecs: []manualv1alpha1.TagSpecification{
 					{
 						ResourceType: aws.String("capacity-reservation"),
-						Tags: []Tag{
+						Tags: []manualv1alpha1.Tag{
 							{
 								Key:   "test",
 								Value: "test",
@@ -153,7 +154,7 @@ func TestGenerateEC2TagSpecifications(t *testing.T) {
 		},
 		"EmptyTagSpecification": {
 			args: args{
-				tagSpecs: []TagSpecification{},
+				tagSpecs: []manualv1alpha1.TagSpecification{},
 			},
 			want: []awsec2.TagSpecification{},
 		},
@@ -173,7 +174,7 @@ func TestGenerateEC2TagSpecifications(t *testing.T) {
 func TestTransformTagSpecifications(t *testing.T) {
 	type args struct {
 		name     string
-		tagSpecs []TagSpecification
+		tagSpecs []manualv1alpha1.TagSpecification
 	}
 	cases := map[string]struct {
 		args args
@@ -182,10 +183,10 @@ func TestTransformTagSpecifications(t *testing.T) {
 		"TransformTagSpecificationWithoutInstanceName": {
 			args: args{
 				name: managedName,
-				tagSpecs: []TagSpecification{
+				tagSpecs: []manualv1alpha1.TagSpecification{
 					{
 						ResourceType: aws.String("capacity-reservation"),
-						Tags: []Tag{
+						Tags: []manualv1alpha1.Tag{
 							{
 								Key:   "test",
 								Value: "test",
@@ -218,10 +219,10 @@ func TestTransformTagSpecifications(t *testing.T) {
 		"TransformTagSpecificationWithInstanceName": {
 			args: args{
 				name: managedName,
-				tagSpecs: []TagSpecification{
+				tagSpecs: []manualv1alpha1.TagSpecification{
 					{
 						ResourceType: aws.String("capacity-reservation"),
-						Tags: []Tag{
+						Tags: []manualv1alpha1.Tag{
 							{
 								Key:   "test",
 								Value: "test",
@@ -230,7 +231,7 @@ func TestTransformTagSpecifications(t *testing.T) {
 					},
 					{
 						ResourceType: aws.String("instance"),
-						Tags: []Tag{
+						Tags: []manualv1alpha1.Tag{
 							{
 								Key:   "name",
 								Value: "test",
@@ -263,7 +264,7 @@ func TestTransformTagSpecifications(t *testing.T) {
 		"EmptyTagSpecification": {
 			args: args{
 				name:     managedName,
-				tagSpecs: []TagSpecification{},
+				tagSpecs: []manualv1alpha1.TagSpecification{},
 			},
 			want: []awsec2.TagSpecification{
 				{

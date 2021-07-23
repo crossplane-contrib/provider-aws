@@ -179,9 +179,9 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		// Ipv6AddressCount: cr.Spec.ForProvider.Ipv6AddressCount,
 		// KernelId: cr.Spec.ForProvider.KernelID,
 		// KeyName:  cr.Spec.ForProvider.KeyName,
-		MaxCount: cr.Spec.ForProvider.MaxCount, // TODO handle the case when we have more than 1 here. If this is not 1, each instance has a different instanceID
-		MinCount: cr.Spec.ForProvider.MinCount,
-		// Monitoring:       &awsec2.RunInstancesMonitoringEnabled{Enabled: aws.Bool(*cr.Spec.ForProvider.Monitoring)}, // default is returning an error
+		MaxCount:   cr.Spec.ForProvider.MaxCount, // TODO handle the case when we have more than 1 here. If this is not 1, each instance has a different instanceID
+		MinCount:   cr.Spec.ForProvider.MinCount,
+		Monitoring: ec2.GenerateEC2Monitoring(cr.Spec.ForProvider.Monitoring),
 		// PrivateIpAddress: cr.Spec.ForProvider.PrivateIPAddress,
 		// RamdiskId:        cr.Spec.ForProvider.RAMDiskID,
 		// SecurityGroupIds: cr.Spec.ForProvider.SecurityGroupIDs,
@@ -189,7 +189,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 		// SecurityGroups: cr.Spec.ForProvider.SecurityGroups,
 		// SubnetId:       cr.Spec.ForProvider.SubnetID,
-		TagSpecifications: svcapitypes.TransformTagSpecifications(
+		TagSpecifications: ec2.TransformTagSpecifications(
 			mgd.GetName(),
 			cr.Spec.ForProvider.TagSpecifications,
 		),

@@ -91,7 +91,7 @@ func GenerateInstanceObservation(vpc ec2.Instance) manualv1alpha1.InstanceObserv
 	// 		}
 	// 		o.IPv6CIDRBlockAssociationSet[i].IPv6CIDRBlockState = v1beta1.VPCCIDRBlockState{
 	// 			State:         string(v.Ipv6CidrBlockState.State),
-	// 			StatusMessage: aws.StringValue(v.Ipv6CidrBlockState.StatusMessage),
+	// 			StatusMessage: raws.StringValue(v.Ipv6CidrBlockState.StatusMessage),
 	// 		}
 	// 	}
 	// }
@@ -114,4 +114,85 @@ func LateInitializeInstance(in *manualv1alpha1.InstanceParameters, v *ec2.Instan
 	// if attributes.EnableDnsHostnames != nil {
 	// 	in.EnableDNSSupport = awsclients.LateInitializeBoolPtr(in.EnableDNSSupport, attributes.EnableDnsSupport.Value)
 	// }
+}
+
+// GenerateEC2Monitoring converts internal RunInstancesMonitoringEnabled into ec2.RunInstancesMonitoringEnabled
+func GenerateEC2Monitoring(m *manualv1alpha1.RunInstancesMonitoringEnabled) *ec2.RunInstancesMonitoringEnabled {
+	if m != nil {
+		var res ec2.RunInstancesMonitoringEnabled
+		res.Enabled = m.Enabled
+		return &res
+	}
+	return nil
+}
+
+// TransformTagSpecifications takes a slice of TagSpecifications, converts it to a slice
+// of ec2.TagSpecification and lastly injects the special instance name awsec2.TagSpecification
+func TransformTagSpecifications(mdgName string, tagSpecs []manualv1alpha1.TagSpecification) []ec2.TagSpecification {
+	ec2Specs := generateEC2TagSpecifications(tagSpecs)
+	return injectInstanceNameTagSpecification(mdgName, ec2Specs)
+}
+
+// generateEC2TagSpecifications takes a slice of TagSpecifications and converts it to a
+// slice of ec2.TagSpecification
+func generateEC2TagSpecifications(tagSpecs []manualv1alpha1.TagSpecification) []ec2.TagSpecification {
+	res := make([]ec2.TagSpecification, len(tagSpecs))
+	for i, ts := range tagSpecs {
+		res[i] = ec2.TagSpecification{
+			ResourceType: ec2.ResourceType(*ts.ResourceType),
+		}
+
+		tags := make([]ec2.Tag, len(ts.Tags))
+		for i, t := range ts.Tags {
+			tags[i] = ec2.Tag{
+				Key:   aws.String(t.Key),
+				Value: aws.String(t.Value),
+			}
+		}
+
+		res[i].Tags = tags
+	}
+	return res
+}
+
+// injectInstanceNameTagSpecification will inject a special TagSpecification of the following
+// shape into the give slice, if it does not yet exist:
+// resourceType: instance,
+// tags:
+//   - key: Name
+//     value: <name>
+// The resulting behavior is that the specified instance name in metadata.Name is reflected
+// in the AWS console.
+// Note: If the a TagSpecification of resourceType `instance` with key `Name` was supplied,
+// this method does not modify the supplied TagSpecification.
+func injectInstanceNameTagSpecification(name string, tagSpecs []ec2.TagSpecification) []ec2.TagSpecification {
+	instanceNameKey := "Name"
+
+	specialTagSpec := ec2.TagSpecification{
+		ResourceType: "instance",
+		Tags: []ec2.Tag{
+			{
+				Key:   aws.String(instanceNameKey), // if the 'N' isn't capitalized AWS treats this as a general tag
+				Value: aws.String(name),
+			},
+		},
+	}
+
+	foundSpecial := false
+	for _, ts := range tagSpecs {
+		if ts.ResourceType == "instance" {
+			for _, tag := range ts.Tags {
+				if *tag.Key == instanceNameKey {
+					foundSpecial = true
+					break
+				}
+			}
+		}
+	}
+
+	if !foundSpecial {
+		tagSpecs = append(tagSpecs, specialTagSpec)
+	}
+
+	return tagSpecs
 }

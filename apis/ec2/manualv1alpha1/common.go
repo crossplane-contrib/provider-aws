@@ -1,10 +1,5 @@
 package manualv1alpha1
 
-import (
-	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/aws/aws-sdk-go/aws"
-)
-
 // BlockDeviceMapping describes a block device mapping.
 type BlockDeviceMapping struct {
 	// The device name (for example, /dev/sdh or xvdh).
@@ -397,6 +392,15 @@ type PrivateIPAddressSpecification struct {
 	PrivateIPAddress *string `json:"privateIPAddress"`
 }
 
+// RunInstancesMonitoringEnabled describes the monitoring of an instance.
+type RunInstancesMonitoringEnabled struct {
+	// Indicates whether detailed monitoring is enabled. Otherwise, basic monitoring
+	// is enabled.
+	//
+	// Enabled is a required field
+	Enabled *bool `json:"enabled"`
+}
+
 // SpotMarketOptions are the options for Spot Instances.
 type SpotMarketOptions struct {
 	// The required duration for the Spot Instances (also known as Spot blocks),
@@ -453,75 +457,4 @@ type TagSpecification struct {
 
 	// The tags to apply to the resource
 	Tags []Tag `json:"tags"`
-}
-
-// TransformTagSpecifications takes a slice of TagSpecifications, converts it to a slice
-// of ec2.TagSpecification and lastly injects the special instance name awsec2.TagSpecification
-func TransformTagSpecifications(mdgName string, tagSpecs []TagSpecification) []awsec2.TagSpecification {
-	ec2Specs := generateEC2TagSpecifications(tagSpecs)
-	return injectInstanceNameTagSpecification(mdgName, ec2Specs)
-}
-
-// generateEC2TagSpecifications takes a slice of TagSpecifications and converts it to a
-// slice of ec2.TagSpecification
-func generateEC2TagSpecifications(tagSpecs []TagSpecification) []awsec2.TagSpecification {
-	res := make([]awsec2.TagSpecification, len(tagSpecs))
-	for i, ts := range tagSpecs {
-		res[i] = awsec2.TagSpecification{
-			ResourceType: awsec2.ResourceType(*ts.ResourceType),
-		}
-
-		tags := make([]awsec2.Tag, len(ts.Tags))
-		for i, t := range ts.Tags {
-			tags[i] = awsec2.Tag{
-				Key:   aws.String(t.Key),
-				Value: aws.String(t.Value),
-			}
-		}
-
-		res[i].Tags = tags
-	}
-	return res
-}
-
-// injectInstanceNameTagSpecification will inject a special TagSpecification of the following
-// shape into the give slice, if it does not yet exist:
-// resourceType: instance,
-// tags:
-//   - key: Name
-//     value: <name>
-// The resulting behavior is that the specified instance name in metadata.Name is reflected
-// in the AWS console.
-// Note: If the a TagSpecification of resourceType `instance` with key `Name` was supplied,
-// this method does not modify the supplied TagSpecification.
-func injectInstanceNameTagSpecification(name string, tagSpecs []awsec2.TagSpecification) []awsec2.TagSpecification {
-	instanceNameKey := "Name"
-
-	specialTagSpec := awsec2.TagSpecification{
-		ResourceType: "instance",
-		Tags: []awsec2.Tag{
-			{
-				Key:   aws.String(instanceNameKey), // if the 'N' isn't capitalized AWS treats this as a general tag
-				Value: aws.String(name),
-			},
-		},
-	}
-
-	foundSpecial := false
-	for _, ts := range tagSpecs {
-		if ts.ResourceType == "instance" {
-			for _, tag := range ts.Tags {
-				if *tag.Key == instanceNameKey {
-					foundSpecial = true
-					break
-				}
-			}
-		}
-	}
-
-	if !foundSpecial {
-		tagSpecs = append(tagSpecs, specialTagSpec)
-	}
-
-	return tagSpecs
 }

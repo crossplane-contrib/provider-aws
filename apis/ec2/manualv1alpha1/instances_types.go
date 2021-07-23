@@ -214,7 +214,7 @@ type InstanceParameters struct {
 
 	// Specifies whether detailed monitoring is enabled for the instance.
 	// +optional
-	// Monitoring *bool `json:"monitoring,omitempty"`
+	Monitoring *RunInstancesMonitoringEnabled `json:"monitoring,omitempty"`
 
 	// The network interfaces to associate with the instance. If you specify a network
 	// interface, you must specify any security groups and subnets as part of the
