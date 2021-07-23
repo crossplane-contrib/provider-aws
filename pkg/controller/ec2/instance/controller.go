@@ -190,6 +190,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		Ipv6Addresses:                     ec2.GenerateEC2InstanceIPV6Addresses(cr.Spec.ForProvider.IPV6Addresses),
 		KernelId:                          cr.Spec.ForProvider.KernelID,
 		KeyName:                           cr.Spec.ForProvider.KeyName,
+		LaunchTemplate:                    ec2.GenerateEC2LaunchTemplateSpec(cr.Spec.ForProvider.LaunchTemplate),
+		LicenseSpecifications:             ec2.GenerateEC2LicenseConfigurationRequest(cr.Spec.ForProvider.LicenseSpecifications),
 		MaxCount:                          cr.Spec.ForProvider.MaxCount, // TODO handle the case when we have more than 1 here. If this is not 1, each instance has a different instanceID
 		MinCount:                          cr.Spec.ForProvider.MinCount,
 		Monitoring:                        ec2.GenerateEC2Monitoring(cr.Spec.ForProvider.Monitoring),

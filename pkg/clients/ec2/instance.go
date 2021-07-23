@@ -261,12 +261,39 @@ func GenerateEC2InstanceIPV6Addresses(addrs []manualv1alpha1.InstanceIPV6Address
 	return nil
 }
 
+// GenerateEC2LaunchTemplateSpec converts internal LaunchTemplateSpecification into ec2.LaunchTemplateSpecification
+func GenerateEC2LaunchTemplateSpec(spec *manualv1alpha1.LaunchTemplateSpecification) *ec2.LaunchTemplateSpecification {
+	if spec != nil {
+		return &ec2.LaunchTemplateSpecification{
+			LaunchTemplateId:   spec.LaunchTemplateID,
+			LaunchTemplateName: spec.LaunchTemplateName,
+			Version:            spec.Version,
+		}
+	}
+	return nil
+}
+
+// GenerateEC2LicenseConfigurationRequest coverts an internal slice of LicenseConfigurationRequest into a slice of ec2.LicenseConfigurationRequest
+func GenerateEC2LicenseConfigurationRequest(reqs []manualv1alpha1.LicenseConfigurationRequest) []ec2.LicenseConfigurationRequest {
+	if reqs != nil {
+		res := make([]ec2.LicenseConfigurationRequest, len(reqs))
+		for i, r := range reqs {
+			res[i] = ec2.LicenseConfigurationRequest{
+				LicenseConfigurationArn: r.LicenseConfigurationARN,
+			}
+		}
+
+		return res
+	}
+	return nil
+}
+
 // GenerateEC2Monitoring converts internal RunInstancesMonitoringEnabled into ec2.RunInstancesMonitoringEnabled
 func GenerateEC2Monitoring(m *manualv1alpha1.RunInstancesMonitoringEnabled) *ec2.RunInstancesMonitoringEnabled {
 	if m != nil {
-		var res ec2.RunInstancesMonitoringEnabled
-		res.Enabled = m.Enabled
-		return &res
+		return &ec2.RunInstancesMonitoringEnabled{
+			Enabled: m.Enabled,
+		}
 	}
 	return nil
 }

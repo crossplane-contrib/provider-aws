@@ -320,6 +320,7 @@ type LaunchTemplateSpecification struct {
 	// The version number of the launch template.
 	//
 	// Default: The default version for the launch template.
+	// +optional
 	Version *string `json:"version"`
 }
 

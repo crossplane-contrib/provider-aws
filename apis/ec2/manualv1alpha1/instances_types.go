@@ -178,11 +178,11 @@ type InstanceParameters struct {
 	// specify in RunInstances override the same parameters in the launch template.
 	// You can specify either the name or ID of a launch template, but not both.
 	// +optional
-	// LaunchTemplate *LaunchTemplateSpecification `json:"launchTemplate,omitempty"`
+	LaunchTemplate *LaunchTemplateSpecification `json:"launchTemplate,omitempty"`
 
 	// The Amazon Resource Name (ARN) of the license configuration
 	// +optional
-	// LicenseSpecifications []LicenseConfigurationRequest `json:"licenseSpecifications,omitempty"`
+	LicenseSpecifications []LicenseConfigurationRequest `json:"licenseSpecifications,omitempty"`
 
 	// The maximum number of instances to launch. If you specify more instances
 	// than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches

@@ -287,6 +287,34 @@ spec:
                   keyName:
                     description: "The name of the key pair. You can create a key pair using CreateKeyPair (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateKeyPair.html) or ImportKeyPair (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ImportKeyPair.html). \n If you do not specify a key pair, you can't connect to the instance unless you choose an AMI that is configured to allow users another way to log in."
                     type: string
+                  launchTemplate:
+                    description: The launch template to use to launch the instances. Any parameters that you specify in RunInstances override the same parameters in the launch template. You can specify either the name or ID of a launch template, but not both.
+                    properties:
+                      launchTemplateId:
+                        description: The ID of the launch template.
+                        type: string
+                      launchTemplateName:
+                        description: The name of the launch template.
+                        type: string
+                      version:
+                        description: "The version number of the launch template. \n Default: The default version for the launch template."
+                        type: string
+                    required:
+                    - launchTemplateId
+                    - launchTemplateName
+                    type: object
+                  licenseSpecifications:
+                    description: The Amazon Resource Name (ARN) of the license configuration
+                    items:
+                      description: LicenseConfigurationRequest describes a license configuration
+                      properties:
+                        licenseConfigurationArn:
+                          description: Amazon Resource Name (ARN) of the license configuration
+                          type: string
+                      required:
+                      - licenseConfigurationArn
+                      type: object
+                    type: array
                   maxCount:
                     description: "The maximum number of instances to launch. If you specify more instances than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches the largest possible number of instances above MinCount. \n Constraints: Between 1 and the maximum number you're allowed for the specified instance type. For more information about the default limits, and how to request an increase, see How many instances can I run in Amazon EC2 (http://aws.amazon.com/ec2/faqs/#How_many_instances_can_I_run_in_Amazon_EC2) in the Amazon EC2 FAQ. \n MaxCount is a required field"
                     format: int64
@@ -370,6 +398,7 @@ spec:
                     type: string
                 required:
                 - imageId
+                - maxCount
                 - minCount
                 - region
                 type: object

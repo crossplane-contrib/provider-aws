@@ -574,6 +574,18 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.LaunchTemplate != nil {
+		in, out := &in.LaunchTemplate, &out.LaunchTemplate
+		*out = new(LaunchTemplateSpecification)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.LicenseSpecifications != nil {
+		in, out := &in.LicenseSpecifications, &out.LicenseSpecifications
+		*out = make([]LicenseConfigurationRequest, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	if in.MaxCount != nil {
 		in, out := &in.MaxCount, &out.MaxCount
 		*out = new(int64)
