@@ -338,6 +338,23 @@ func GenerateEC2Monitoring(m *manualv1alpha1.RunInstancesMonitoringEnabled) *ec2
 	return nil
 }
 
+// GenerateEC2Placement converts internal Placement into ec2.Placement
+func GenerateEC2Placement(p *manualv1alpha1.Placement) *ec2.Placement {
+	if p != nil {
+		return &ec2.Placement{
+			Affinity:             p.Affinity,
+			AvailabilityZone:     p.AvailabilityZone,
+			GroupName:            p.GroupName,
+			HostId:               p.HostID,
+			HostResourceGroupArn: p.HostResourceGroupARN,
+			PartitionNumber:      p.PartitionNumber,
+			SpreadDomain:         p.SpreadDomain,
+			Tenancy:              ec2.Tenancy(p.Tenancy),
+		}
+	}
+	return nil
+}
+
 // GenerateEC2PrivateIPAddressSpecs coverts an internal slice of PrivateIPAddressSpecification into a slice of ec2.PrivateIpAddressSpecification
 func GenerateEC2PrivateIPAddressSpecs(specs []manualv1alpha1.PrivateIPAddressSpecification) []ec2.PrivateIpAddressSpecification {
 	if specs != nil {

@@ -633,6 +633,11 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.Placement != nil {
+		in, out := &in.Placement, &out.Placement
+		*out = new(Placement)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.RAMDiskID != nil {
 		in, out := &in.RAMDiskID, &out.RAMDiskID
 		*out = new(string)
@@ -786,11 +791,6 @@ func (in *Placement) DeepCopyInto(out *Placement) {
 	}
 	if in.SpreadDomain != nil {
 		in, out := &in.SpreadDomain, &out.SpreadDomain
-		*out = new(string)
-		**out = **in
-	}
-	if in.Tenancy != nil {
-		in, out := &in.Tenancy, &out.Tenancy
 		*out = new(string)
 		**out = **in
 	}

@@ -225,7 +225,7 @@ type InstanceParameters struct {
 
 	// The placement for the instance.
 	// +optional
-	// Placement *Placement `json:"placement,omitempty"`
+	Placement *Placement `json:"placement,omitempty"`
 
 	// [EC2-VPC] The primary IPv4 address. You must specify a value from the IPv4
 	// address range of the subnet.

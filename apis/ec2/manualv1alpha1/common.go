@@ -381,7 +381,8 @@ type Placement struct {
 	//
 	// This parameter is not supported by CreateFleet
 	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet).
-	Affinity *string `json:"affinity"`
+	// +optional
+	Affinity *string `json:"affinity,omitempty"`
 
 	// The Availability Zone of the instance.
 	//
@@ -390,7 +391,8 @@ type Placement struct {
 	//
 	// This parameter is not supported by CreateFleet
 	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet).
-	AvailabilityZone *string `json:"availabilityZone"`
+	// +optional
+	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 
 	// The name of the placement group the instance is in.
 	GroupName *string `json:"groupName"`
@@ -402,7 +404,8 @@ type Placement struct {
 	//
 	// This parameter is not supported by CreateFleet
 	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet).
-	HostID *string `json:"hostId"`
+	// +optional
+	HostID *string `json:"hostId,omitempty"`
 
 	// The ARN of the host resource group in which to launch the instances. If you
 	// specify a host resource group ARN, omit the Tenancy parameter or set it to
@@ -410,20 +413,23 @@ type Placement struct {
 	//
 	// This parameter is not supported by CreateFleet
 	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet).
-	HostResourceGroupARN *string `json:"hostResourceGroupArn"`
+	// +optional
+	HostResourceGroupARN *string `json:"hostResourceGroupArn,omitempty"`
 
 	// The number of the partition the instance is in. Valid only if the placement
 	// group strategy is set to partition.
 	//
 	// This parameter is not supported by CreateFleet
 	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet).
-	PartitionNumber *int64 `json:"partitionNumber"`
+	// +optional
+	PartitionNumber *int64 `json:"partitionNumber,omitempty"`
 
 	// Reserved for future use.
 	//
 	// This parameter is not supported by CreateFleet
 	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet).
-	SpreadDomain *string `json:"spreadDomain"`
+	// +optional
+	SpreadDomain *string `json:"spreadDomain,omitempty"`
 
 	// The tenancy of the instance (if the instance is running in a VPC). An instance
 	// with a tenancy of dedicated runs on single-tenant hardware. The host tenancy
@@ -433,7 +439,8 @@ type Placement struct {
 	//
 	// This parameter is not supported by CreateFleet
 	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet).
-	Tenancy *string `json:"tenancy"`
+	// +optional
+	Tenancy string `json:"tenancy,omitempty"`
 }
 
 // PrivateIPAddressSpecification describes a secondary private IPv4 address for a network interface.
