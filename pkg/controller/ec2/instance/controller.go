@@ -173,6 +173,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		BlockDeviceMappings:              ec2.GenerateEC2BlockDeviceMappings(cr.Spec.ForProvider.BlockDeviceMappings),
 		CapacityReservationSpecification: ec2.GenerateEC2CapacityReservationSpecs(cr.Spec.ForProvider.CapacityReservationSpecification),
 		ClientToken:                      cr.Spec.ForProvider.ClientToken,
+		CpuOptions:                       ec2.GenerateEC2CPUOptions(cr.Spec.ForProvider.CPUOptions),
 		// DisableApiTermination: cr.Spec.ForProvider.DisableAPITermination,
 		DryRun:                            cr.Spec.ForProvider.DryRun,
 		EbsOptimized:                      cr.Spec.ForProvider.EBSOptimized,

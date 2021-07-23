@@ -503,6 +503,11 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.CPUOptions != nil {
+		in, out := &in.CPUOptions, &out.CPUOptions
+		*out = new(CPUOptionsRequest)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.DryRun != nil {
 		in, out := &in.DryRun, &out.DryRun
 		*out = new(bool)

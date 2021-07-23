@@ -146,14 +146,23 @@ func GenerateEC2BlockDeviceMappings(mappings []manualv1alpha1.BlockDeviceMapping
 // GenerateEC2CapacityReservationSpecs coverts an internal CapacityReservationSpecification into a ec2.CapacityReservationSpecification
 func GenerateEC2CapacityReservationSpecs(spec *manualv1alpha1.CapacityReservationSpecification) *ec2.CapacityReservationSpecification {
 	if spec != nil {
-		var res ec2.CapacityReservationSpecification
-
-		res.CapacityReservationPreference = ec2.CapacityReservationPreference(spec.CapacityReservationPreference)
-		res.CapacityReservationTarget = &ec2.CapacityReservationTarget{
-			CapacityReservationId: spec.CapacityReservationTarget.CapacityReservationID,
+		return &ec2.CapacityReservationSpecification{
+			CapacityReservationPreference: ec2.CapacityReservationPreference(spec.CapacityReservationPreference),
+			CapacityReservationTarget: &ec2.CapacityReservationTarget{
+				CapacityReservationId: spec.CapacityReservationTarget.CapacityReservationID,
+			},
 		}
+	}
+	return nil
+}
 
-		return &res
+// GenerateEC2CPUOptions converts an internal CPUOptionsRequest into a ec2.CpuOptionsRequest
+func GenerateEC2CPUOptions(opts *manualv1alpha1.CPUOptionsRequest) *ec2.CpuOptionsRequest {
+	if opts != nil {
+		return &ec2.CpuOptionsRequest{
+			CoreCount:      opts.CoreCount,
+			ThreadsPerCore: opts.ThreadsPerCore,
+		}
 	}
 	return nil
 }

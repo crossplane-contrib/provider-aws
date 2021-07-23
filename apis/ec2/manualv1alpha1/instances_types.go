@@ -48,7 +48,7 @@ type InstanceParameters struct {
 	// Options (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-optimize-cpu.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
 	// +optional
-	// CPUOptions *CPUOptionsRequest `json:"cpuOptions,omitempty"`
+	CPUOptions *CPUOptionsRequest `json:"cpuOptions,omitempty"`
 
 	// The credit option for CPU usage of the burstable performance instance. Valid
 	// values are standard and unlimited. To change this attribute after launch,

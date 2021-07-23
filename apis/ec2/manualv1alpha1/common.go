@@ -68,7 +68,7 @@ type CPUOptionsRequest struct {
 
 	// The number of threads per CPU core. To disable multithreading for the instance,
 	// specify a value of 1. Otherwise, specify the default value of 2.
-	ThreadsPerCore *int64 `type:"threadsPerCore"`
+	ThreadsPerCore *int64 `json:"threadsPerCore"`
 }
 
 // CreditSpecificationRequest describes the credit option for CPU usage of a T2 or T3 instance.
