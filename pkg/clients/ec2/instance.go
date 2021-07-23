@@ -26,15 +26,13 @@ const (
 	InstanceNotFound = "InvalidInstanceID.NotFound"
 )
 
-// InstanceClient is the external client used for VPC Custom Resourc
+// InstanceClient is the external client used for Instance Custom Resource
 type InstanceClient interface {
 	RunInstancesRequest(*ec2.RunInstancesInput) ec2.RunInstancesRequest
 	TerminateInstancesRequest(*ec2.TerminateInstancesInput) ec2.TerminateInstancesRequest
 	DescribeInstancesRequest(*ec2.DescribeInstancesInput) ec2.DescribeInstancesRequest
 	DescribeInstanceAttributeRequest(*ec2.DescribeInstanceAttributeInput) ec2.DescribeInstanceAttributeRequest
 	ModifyInstanceAttributeRequest(*ec2.ModifyInstanceAttributeInput) ec2.ModifyInstanceAttributeRequest
-	// CreateTagsRequest(*ec2.CreateTagsInput) ec2.CreateTagsRequest
-	// ModifyVpcTenancyRequest(*ec2.ModifyVpcTenancyInput) ec2.ModifyVpcTenancyRequest
 }
 
 // NewInstanceClient returns a new client using AWS credentials as JSON encoded data.
@@ -56,16 +54,6 @@ func IsInstanceNotFoundErr(err error) bool {
 // IsInstanceUpToDate returns true if there is no update-able difference between desired
 // and observed state of the resource.
 func IsInstanceUpToDate(spec manualv1alpha1.InstanceParameters, instance ec2.Instance, attributes ec2.DescribeInstanceAttributeOutput) bool {
-	// if aws.StringValue(spec.InstanceTenancy) != string(vpc.InstanceTenancy) {
-	// 	return false
-	// }
-
-	// if aws.BoolValue(spec.EnableDNSHostNames) != aws.BoolValue(attributes.EnableDnsHostnames.Value) ||
-	// 	aws.BoolValue(spec.EnableDNSSupport) != aws.BoolValue(attributes.EnableDnsSupport.Value) {
-	// 	return false
-	// }
-
-	// return manualv1alpha1.CompareTags(spec.Tags, vpc.Tags)
 	return true
 }
 

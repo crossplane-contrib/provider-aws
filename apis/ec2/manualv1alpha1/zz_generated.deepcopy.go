@@ -506,6 +506,11 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EBSOptimized != nil {
+		in, out := &in.EBSOptimized, &out.EBSOptimized
+		*out = new(bool)
+		**out = **in
+	}
 	if in.ImageID != nil {
 		in, out := &in.ImageID, &out.ImageID
 		*out = new(string)

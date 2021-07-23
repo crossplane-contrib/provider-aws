@@ -63,6 +63,9 @@ spec:
                   dryRun:
                     description: Checks whether you have the required permissions for the action, without actually making the request, and provides an error response. If you have the required permissions, the error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
                     type: boolean
+                  ebsOptimized:
+                    description: "Indicates whether the instance is optimized for Amazon EBS I/O. This optimization provides dedicated throughput to Amazon EBS and an optimized configuration stack to provide optimal Amazon EBS I/O performance. This optimization isn't available with all instance types. Additional usage charges apply when using an EBS-optimized instance. \n Default: false"
+                    type: boolean
                   imageId:
                     description: The ID of the AMI. An AMI ID is required to launch an instance and must be specified here or in a launch template.
                     type: string

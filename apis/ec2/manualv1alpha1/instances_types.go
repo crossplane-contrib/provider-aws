@@ -85,7 +85,7 @@ type InstanceParameters struct {
 	//
 	// Default: false
 	// +optional
-	// EBSOptimized *bool `json:"ebsOptimized,omitempty"`
+	EBSOptimized *bool `json:"ebsOptimized,omitempty"`
 
 	// An elastic GPU to associate with the instance. An Elastic GPU is a GPU resource
 	// that you can attach to your Windows instance to accelerate the graphics performance
