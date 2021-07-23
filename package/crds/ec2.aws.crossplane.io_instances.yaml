@@ -319,6 +319,28 @@ spec:
                     description: "The maximum number of instances to launch. If you specify more instances than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches the largest possible number of instances above MinCount. \n Constraints: Between 1 and the maximum number you're allowed for the specified instance type. For more information about the default limits, and how to request an increase, see How many instances can I run in Amazon EC2 (http://aws.amazon.com/ec2/faqs/#How_many_instances_can_I_run_in_Amazon_EC2) in the Amazon EC2 FAQ. \n MaxCount is a required field"
                     format: int64
                     type: integer
+                  metadataOptions:
+                    description: The metadata options for the instance. For more information, see Instance Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
+                    properties:
+                      httpEndpoint:
+                        description: "This parameter enables or disables the HTTP metadata endpoint on your instances. If the parameter is not specified, the default state is enabled. \n If you specify a value of disabled, you will not be able to access your instance metadata."
+                        enum:
+                        - enabled
+                        - disabled
+                        type: string
+                      httpPutResponseHopLimit:
+                        description: "The desired HTTP PUT response hop limit for instance metadata requests. The larger the number, the further instance metadata requests can travel. \n Default: 1 \n Possible values: Integers from 1 to 64"
+                        format: int64
+                        type: integer
+                      httpTokens:
+                        description: "The state of token usage for your instance metadata requests. If the parameter is not specified in the request, the default state is optional. \n If the state is optional, you can choose to retrieve instance metadata with or without a signed token header on your request. If you retrieve the IAM role credentials without a token, the version 1.0 role credentials are returned. If you retrieve the IAM role credentials using a valid signed token, the version 2.0 role credentials are returned. \n If the state is required, you must send a signed token header with any instance metadata retrieval requests. In this state, retrieving the IAM role credentials always returns the version 2.0 credentials; the version 1.0 credentials are not available."
+                        enum:
+                        - optional
+                        - required
+                        type: string
+                    required:
+                    - httpTokens
+                    type: object
                   minCount:
                     description: "The minimum number of instances to launch. If you specify a minimum that is more instances than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches no instances. \n Constraints: Between 1 and the maximum number you're allowed for the specified instance type. For more information about the default limits, and how to request an increase, see How many instances can I run in Amazon EC2 (http://aws.amazon.com/ec2/faqs/#How_many_instances_can_I_run_in_Amazon_EC2) in the Amazon EC2 General FAQ. \n MinCount is a required field"
                     format: int64

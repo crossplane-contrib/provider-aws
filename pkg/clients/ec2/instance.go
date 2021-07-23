@@ -261,6 +261,18 @@ func GenerateEC2InstanceIPV6Addresses(addrs []manualv1alpha1.InstanceIPV6Address
 	return nil
 }
 
+// GenerateEC2InstanceMetadataOptionsRequest converts an internal InstanceMetadataOptionsRequest into a ec2.InstanceMetadataOptionsRequest
+func GenerateEC2InstanceMetadataOptionsRequest(opts *manualv1alpha1.InstanceMetadataOptionsRequest) *ec2.InstanceMetadataOptionsRequest {
+	if opts != nil {
+		return &ec2.InstanceMetadataOptionsRequest{
+			HttpEndpoint:            ec2.InstanceMetadataEndpointState(opts.HTTPEndpoint),
+			HttpPutResponseHopLimit: opts.HTTPPutResponseHopLimit,
+			HttpTokens:              ec2.HttpTokensState(opts.HTTPTokens),
+		}
+	}
+	return nil
+}
+
 // GenerateEC2LaunchTemplateSpec converts internal LaunchTemplateSpecification into ec2.LaunchTemplateSpecification
 func GenerateEC2LaunchTemplateSpec(spec *manualv1alpha1.LaunchTemplateSpecification) *ec2.LaunchTemplateSpecification {
 	if spec != nil {

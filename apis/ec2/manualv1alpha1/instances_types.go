@@ -198,7 +198,8 @@ type InstanceParameters struct {
 
 	// The metadata options for the instance. For more information, see Instance
 	// Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
-	// MetadataOptions *InstanceMetadataOptionsRequest `type:"structure"` TODO
+	// +optional
+	MetadataOptions *InstanceMetadataOptionsRequest `json:"metadataOptions"`
 
 	// The minimum number of instances to launch. If you specify a minimum that
 	// is more instances than Amazon EC2 can launch in the target Availability Zone,
