@@ -222,7 +222,7 @@ func TestTransformTagSpecifications(t *testing.T) {
 					ResourceType: "instance",
 					Tags: []awsec2.Tag{
 						{
-							Key:   aws.String("name"),
+							Key:   aws.String("Name"),
 							Value: aws.String(managedName),
 						},
 					},
@@ -272,6 +272,15 @@ func TestTransformTagSpecifications(t *testing.T) {
 						},
 					},
 				},
+				{
+					ResourceType: "instance",
+					Tags: []awsec2.Tag{
+						{
+							Key:   aws.String("Name"),
+							Value: aws.String(managedName),
+						},
+					},
+				},
 			},
 		},
 		"EmptyTagSpecification": {
@@ -284,7 +293,7 @@ func TestTransformTagSpecifications(t *testing.T) {
 					ResourceType: "instance",
 					Tags: []awsec2.Tag{
 						{
-							Key:   aws.String("name"),
+							Key:   aws.String("Name"),
 							Value: aws.String(managedName),
 						},
 					},

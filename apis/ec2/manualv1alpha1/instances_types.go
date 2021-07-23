@@ -121,7 +121,7 @@ type InstanceParameters struct {
 	//
 	// Default: stop
 	// +optional
-	// InstanceInitiatedShutdownBehavior *string `json:"instanceInitiatedShutdownBehavior,omitempty"`
+	InstanceInitiatedShutdownBehavior string `json:"instanceInitiatedShutdownBehavior,omitempty"`
 
 	// The market (purchasing) option for the instances.
 	//

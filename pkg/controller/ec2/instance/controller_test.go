@@ -27,7 +27,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
-	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -37,12 +36,10 @@ import (
 )
 
 var (
-	instanceID     = "some Id"
-	cidr           = "192.168.0.0/32"
-	tenancyDefault = "default"
-	enableDNS      = true
+	instanceID = "some Id"
+	// tenancyDefault = "default"
 
-	errBoom = errors.New("boom")
+	// errBoom = errors.New("boom")
 )
 
 type args struct {
