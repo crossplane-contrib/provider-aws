@@ -16,11 +16,13 @@ package ec2
 import (
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/crossplane/crossplane-runtime/pkg/test"
-	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 	"github.com/google/go-cmp/cmp"
+
+	"github.com/crossplane/crossplane-runtime/pkg/test"
+
+	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 )
 
 const (
