@@ -143,6 +143,21 @@ func GenerateEC2BlockDeviceMappings(mappings []manualv1alpha1.BlockDeviceMapping
 	return nil
 }
 
+// GenerateEC2CapacityReservationSpecs coverts an internal CapacityReservationSpecification into a ec2.CapacityReservationSpecification
+func GenerateEC2CapacityReservationSpecs(spec *manualv1alpha1.CapacityReservationSpecification) *ec2.CapacityReservationSpecification {
+	if spec != nil {
+		var res ec2.CapacityReservationSpecification
+
+		res.CapacityReservationPreference = ec2.CapacityReservationPreference(spec.CapacityReservationPreference)
+		res.CapacityReservationTarget = &ec2.CapacityReservationTarget{
+			CapacityReservationId: spec.CapacityReservationTarget.CapacityReservationID,
+		}
+
+		return &res
+	}
+	return nil
+}
+
 // GenerateEC2Monitoring converts internal RunInstancesMonitoringEnabled into ec2.RunInstancesMonitoringEnabled
 func GenerateEC2Monitoring(m *manualv1alpha1.RunInstancesMonitoringEnabled) *ec2.RunInstancesMonitoringEnabled {
 	if m != nil {

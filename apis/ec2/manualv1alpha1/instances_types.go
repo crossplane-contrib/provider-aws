@@ -32,7 +32,7 @@ type InstanceParameters struct {
 	// to open, which enables it to run in any open Capacity Reservation that has
 	// matching attributes (instance type, platform, Availability Zone).
 	// +optional
-	// CapacityReservationSpecification *CapacityReservationSpecification `json:"capacityReservationSpecification,omitempty"`
+	CapacityReservationSpecification *CapacityReservationSpecification `json:"capacityReservationSpecification,omitempty"`
 
 	// Unique, case-sensitive identifier you provide to ensure the idempotency of
 	// the request. If you do not specify a client token, a randomly generated token

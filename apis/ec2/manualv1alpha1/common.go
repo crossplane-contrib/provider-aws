@@ -47,7 +47,8 @@ type CapacityReservationSpecification struct {
 	//
 	//    * none - The instance avoids running in a Capacity Reservation even if
 	//    one is available. The instance runs as an On-Demand Instance.
-	CapacityReservationPreference *string `json:"capacityReservationsPreference"`
+	// +kubebuilder:validation:Enum=open;none
+	CapacityReservationPreference string `json:"capacityReservationsPreference"`
 
 	// Information about the target Capacity Reservation.
 	CapacityReservationTarget *CapacityReservationTarget `json:"capacityReservationTarget"`

@@ -170,8 +170,9 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	result, err := e.client.RunInstancesRequest(&awsec2.RunInstancesInput{
-		BlockDeviceMappings: ec2.GenerateEC2BlockDeviceMappings(cr.Spec.ForProvider.BlockDeviceMappings),
-		ClientToken:         cr.Spec.ForProvider.ClientToken,
+		BlockDeviceMappings:              ec2.GenerateEC2BlockDeviceMappings(cr.Spec.ForProvider.BlockDeviceMappings),
+		CapacityReservationSpecification: ec2.GenerateEC2CapacityReservationSpecs(cr.Spec.ForProvider.CapacityReservationSpecification),
+		ClientToken:                      cr.Spec.ForProvider.ClientToken,
 		// DisableApiTermination: cr.Spec.ForProvider.DisableAPITermination,
 		DryRun:                            cr.Spec.ForProvider.DryRun,
 		EbsOptimized:                      cr.Spec.ForProvider.EBSOptimized,
