@@ -196,6 +196,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		MetadataOptions:                   ec2.GenerateEC2InstanceMetadataOptionsRequest(cr.Spec.ForProvider.MetadataOptions),
 		MinCount:                          cr.Spec.ForProvider.MinCount,
 		Monitoring:                        ec2.GenerateEC2Monitoring(cr.Spec.ForProvider.Monitoring),
+		NetworkInterfaces:                 ec2.GenerateEC2InstanceNetworkInterfaceSpecs(cr.Spec.ForProvider.NetworkInterfaces),
 		// PrivateIpAddress: cr.Spec.ForProvider.PrivateIPAddress,
 		RamdiskId: cr.Spec.ForProvider.RAMDiskID,
 		// SecurityGroupIds: cr.Spec.ForProvider.SecurityGroupIDs,

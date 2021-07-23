@@ -273,6 +273,34 @@ func GenerateEC2InstanceMetadataOptionsRequest(opts *manualv1alpha1.InstanceMeta
 	return nil
 }
 
+// GenerateEC2InstanceNetworkInterfaceSpecs coverts an internal slice of InstanceNetworkInterfaceSpecification
+// into a slice of ec2.InstanceNetworkInterfaceSpecification
+func GenerateEC2InstanceNetworkInterfaceSpecs(specs []manualv1alpha1.InstanceNetworkInterfaceSpecification) []ec2.InstanceNetworkInterfaceSpecification {
+	if specs != nil {
+		res := make([]ec2.InstanceNetworkInterfaceSpecification, len(specs))
+		for i, s := range specs {
+			res[i] = ec2.InstanceNetworkInterfaceSpecification{
+				AssociatePublicIpAddress:       s.AssociatePublicIPAddress,
+				DeleteOnTermination:            s.DeleteOnTermination,
+				Description:                    s.Description,
+				DeviceIndex:                    s.DeviceIndex,
+				Groups:                         s.Groups,
+				InterfaceType:                  s.InterfaceType,
+				Ipv6AddressCount:               s.Ipv6AddressCount,
+				Ipv6Addresses:                  GenerateEC2InstanceIPV6Addresses(s.IPV6Addresses),
+				NetworkInterfaceId:             s.NetworkInterfaceID,
+				PrivateIpAddress:               s.PrivateIPAddress,
+				PrivateIpAddresses:             GenerateEC2PrivateIPAddressSpecs(s.PrivateIPAddresses),
+				SecondaryPrivateIpAddressCount: s.SecondaryPrivateIPAddressCount,
+				SubnetId:                       s.SubnetID,
+			}
+		}
+
+		return res
+	}
+	return nil
+}
+
 // GenerateEC2LaunchTemplateSpec converts internal LaunchTemplateSpecification into ec2.LaunchTemplateSpecification
 func GenerateEC2LaunchTemplateSpec(spec *manualv1alpha1.LaunchTemplateSpecification) *ec2.LaunchTemplateSpecification {
 	if spec != nil {
@@ -306,6 +334,22 @@ func GenerateEC2Monitoring(m *manualv1alpha1.RunInstancesMonitoringEnabled) *ec2
 		return &ec2.RunInstancesMonitoringEnabled{
 			Enabled: m.Enabled,
 		}
+	}
+	return nil
+}
+
+// GenerateEC2PrivateIPAddressSpecs coverts an internal slice of PrivateIPAddressSpecification into a slice of ec2.PrivateIpAddressSpecification
+func GenerateEC2PrivateIPAddressSpecs(specs []manualv1alpha1.PrivateIPAddressSpecification) []ec2.PrivateIpAddressSpecification {
+	if specs != nil {
+		res := make([]ec2.PrivateIpAddressSpecification, len(specs))
+		for i, s := range specs {
+			res[i] = ec2.PrivateIpAddressSpecification{
+				Primary:          s.Primary,
+				PrivateIpAddress: s.PrivateIPAddress,
+			}
+		}
+
+		return res
 	}
 	return nil
 }

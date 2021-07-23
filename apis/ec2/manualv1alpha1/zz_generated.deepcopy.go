@@ -626,6 +626,13 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		*out = new(RunInstancesMonitoringEnabled)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.NetworkInterfaces != nil {
+		in, out := &in.NetworkInterfaces, &out.NetworkInterfaces
+		*out = make([]InstanceNetworkInterfaceSpecification, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	if in.RAMDiskID != nil {
 		in, out := &in.RAMDiskID, &out.RAMDiskID
 		*out = new(string)

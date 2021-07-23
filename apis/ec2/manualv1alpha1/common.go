@@ -224,15 +224,18 @@ type InstanceNetworkInterfaceSpecification struct {
 	// for eth0, and can only be assigned to a new network interface, not an existing
 	// one. You cannot specify more than one network interface in the request. If
 	// launching into a default subnet, the default value is true.
+	// +optional
 	AssociatePublicIPAddress *bool `json:"associatePublicIpAddress"`
 
 	// If set to true, the interface is deleted when the instance is terminated.
 	// You can specify true only if creating a new network interface when launching
 	// an instance.
+	// +optional
 	DeleteOnTermination *bool `json:"deleteOnTermination"`
 
 	// The description of the network interface. Applies only if creating a network
 	// interface when launching an instance.
+	// +optional
 	Description *string `json:"description"`
 
 	// The position of the network interface in the attachment order. A primary
@@ -253,6 +256,7 @@ type InstanceNetworkInterfaceSpecification struct {
 	// If you are not creating an EFA, specify interface or omit this parameter.
 	//
 	// Valid values: interface | efa
+	// +kubebuilder:validation:Enum=interface;efa
 	InterfaceType *string `json:"interfaceType"`
 
 	// A number of IPv6 addresses to assign to the network interface. Amazon EC2
@@ -260,18 +264,21 @@ type InstanceNetworkInterfaceSpecification struct {
 	// this option and the option to assign specific IPv6 addresses in the same
 	// request. You can specify this option if you've specified a minimum number
 	// of instances to launch.
+	// +optional
 	Ipv6AddressCount *int64 `json:"ipv6AddressCount"`
 
 	// One or more IPv6 addresses to assign to the network interface. You cannot
 	// specify this option and the option to assign a number of IPv6 addresses in
 	// the same request. You cannot specify this option if you've specified a minimum
 	// number of instances to launch.
+	// +optional
 	IPV6Addresses []InstanceIPV6Address `json:"ipv6Addresses"`
 
 	// The ID of the network interface.
 	//
 	// If you are creating a Spot Fleet, omit this parameter because you can’t
 	// specify a network interface ID in a launch specification.
+	// +optional
 	NetworkInterfaceID *string `json:"networkInterfaceId"`
 
 	// The private IPv4 address of the network interface. Applies only if creating
@@ -279,6 +286,7 @@ type InstanceNetworkInterfaceSpecification struct {
 	// if you're launching more than one instance in a RunInstances
 	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html)
 	// request.
+	// +optional
 	PrivateIPAddress *string `json:"privateIpAddress"`
 
 	// One or more private IPv4 addresses to assign to the network interface. Only
@@ -286,6 +294,7 @@ type InstanceNetworkInterfaceSpecification struct {
 	// this option if you're launching more than one instance in a RunInstances
 	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html)
 	// request.
+	// +optional
 	PrivateIPAddresses []PrivateIPAddressSpecification `json:"privateIpAddresses"`
 
 	// The number of secondary private IPv4 addresses. You can't specify this option
@@ -294,11 +303,13 @@ type InstanceNetworkInterfaceSpecification struct {
 	// instance in a RunInstances
 	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html)
 	// request.
+	// +optional
 	SecondaryPrivateIPAddressCount *int64 `json:"secondaryPrivateIpAddressCount"`
 
 	// The ID of the subnet associated with the network interface. Applies only
 	// if creating a network interface when launching an instance.
-	SubnetID *string `json:"subnetId"`
+	// +optional
+	SubnetID *string `json:"subnetId"` // TODO: we probably want to consider refs for this
 }
 
 // LicenseConfigurationRequest describes a license configuration
@@ -429,6 +440,7 @@ type Placement struct {
 type PrivateIPAddressSpecification struct {
 	// Indicates whether the private IPv4 address is the primary private IPv4 address.
 	// Only one IPv4 address can be designated as primary.
+	// +optional
 	Primary *bool `json:"primary"`
 
 	// The private IPv4 addresses.

@@ -221,7 +221,7 @@ type InstanceParameters struct {
 	// interface, you must specify any security groups and subnets as part of the
 	// network interface.
 	// +optional
-	// NetworkInterfaces []InstanceNetworkInterfaceSpecification `json:"networkInterfaces,omitempty"`
+	NetworkInterfaces []InstanceNetworkInterfaceSpecification `json:"networkInterfaces,omitempty"`
 
 	// The placement for the instance.
 	// +optional
