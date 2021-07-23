@@ -246,6 +246,21 @@ func GenerateEC2InstanceMarketOptionsRequest(opts *manualv1alpha1.InstanceMarket
 	return nil
 }
 
+// GenerateEC2InstanceIPV6Addresses coverts an internal slice of InstanceIPV6Address into a slice of ec2.InstanceIpv6Address
+func GenerateEC2InstanceIPV6Addresses(addrs []manualv1alpha1.InstanceIPV6Address) []ec2.InstanceIpv6Address {
+	if addrs != nil {
+		res := make([]ec2.InstanceIpv6Address, len(addrs))
+		for i, a := range addrs {
+			res[i] = ec2.InstanceIpv6Address{
+				Ipv6Address: a.IPV6Address,
+			}
+		}
+
+		return res
+	}
+	return nil
+}
+
 // GenerateEC2Monitoring converts internal RunInstancesMonitoringEnabled into ec2.RunInstancesMonitoringEnabled
 func GenerateEC2Monitoring(m *manualv1alpha1.RunInstancesMonitoringEnabled) *ec2.RunInstancesMonitoringEnabled {
 	if m != nil {

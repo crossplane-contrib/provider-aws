@@ -146,7 +146,7 @@ type InstanceParameters struct {
 	// You cannot specify this option and the network interfaces option in the same
 	// request.
 	// +optional
-	// Ipv6AddressCount *int64 `json:"ipv6AddressCount,omitempty"`
+	IPV6AddressCount *int64 `json:"ipv6AddressCount,omitempty"`
 
 	// [EC2-VPC] The IPv6 addresses from the range of the subnet to associate with
 	// the primary network interface. You cannot specify this option and the option
@@ -156,7 +156,7 @@ type InstanceParameters struct {
 	// You cannot specify this option and the network interfaces option in the same
 	// request.
 	// +optional
-	// IPV6Addresses []InstanceIPV6Address `json:"ipv6Addresses,omitempty"`
+	IPV6Addresses []InstanceIPV6Address `json:"ipv6Addresses,omitempty"`
 
 	// The ID of the kernel.
 	//

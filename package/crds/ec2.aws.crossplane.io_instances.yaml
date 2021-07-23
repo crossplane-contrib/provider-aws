@@ -265,6 +265,22 @@ spec:
                   instanceType:
                     description: "The instance type. For more information, see Instance Types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html) in the Amazon Elastic Compute Cloud User Guide. \n Default: m1.small"
                     type: string
+                  ipv6AddressCount:
+                    description: "[EC2-VPC] The number of IPv6 addresses to associate with the primary network interface. Amazon EC2 chooses the IPv6 addresses from the range of your subnet. You cannot specify this option and the option to assign specific IPv6 addresses in the same request. You can specify this option if you've specified a minimum number of instances to launch. \n You cannot specify this option and the network interfaces option in the same request."
+                    format: int64
+                    type: integer
+                  ipv6Addresses:
+                    description: "[EC2-VPC] The IPv6 addresses from the range of the subnet to associate with the primary network interface. You cannot specify this option and the option to assign a number of IPv6 addresses in the same request. You cannot specify this option if you've specified a minimum number of instances to launch. \n You cannot specify this option and the network interfaces option in the same request."
+                    items:
+                      description: InstanceIPV6Address describes an IPv6 address.
+                      properties:
+                        ipv6Address:
+                          description: The IPv6 address.
+                          type: string
+                      required:
+                      - ipv6Address
+                      type: object
+                    type: array
                   kernelId:
                     description: "The ID of the kernel. \n AWS recommends that you use PV-GRUB instead of kernels and RAM disks. For more information, see PV-GRUB (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedkernels.html) in the Amazon Elastic Compute Cloud User Guide."
                     type: string

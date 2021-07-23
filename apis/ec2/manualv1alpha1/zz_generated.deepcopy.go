@@ -552,6 +552,18 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		*out = new(InstanceMarketOptionsRequest)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.IPV6AddressCount != nil {
+		in, out := &in.IPV6AddressCount, &out.IPV6AddressCount
+		*out = new(int64)
+		**out = **in
+	}
+	if in.IPV6Addresses != nil {
+		in, out := &in.IPV6Addresses, &out.IPV6Addresses
+		*out = make([]InstanceIPV6Address, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	if in.KernelID != nil {
 		in, out := &in.KernelID, &out.KernelID
 		*out = new(string)
