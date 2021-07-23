@@ -167,6 +167,16 @@ func GenerateEC2CPUOptions(opts *manualv1alpha1.CPUOptionsRequest) *ec2.CpuOptio
 	return nil
 }
 
+// GenerateEC2CreditSpec converts an internal CreditSpecificationRequest into a ec2.CreditSpecificationRequest
+func GenerateEC2CreditSpec(spec *manualv1alpha1.CreditSpecificationRequest) *ec2.CreditSpecificationRequest {
+	if spec != nil {
+		return &ec2.CreditSpecificationRequest{
+			CpuCredits: spec.CPUCredits,
+		}
+	}
+	return nil
+}
+
 // GenerateEC2Monitoring converts internal RunInstancesMonitoringEnabled into ec2.RunInstancesMonitoringEnabled
 func GenerateEC2Monitoring(m *manualv1alpha1.RunInstancesMonitoringEnabled) *ec2.RunInstancesMonitoringEnabled {
 	if m != nil {

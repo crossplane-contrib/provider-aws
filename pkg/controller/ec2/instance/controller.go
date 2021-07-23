@@ -174,6 +174,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		CapacityReservationSpecification: ec2.GenerateEC2CapacityReservationSpecs(cr.Spec.ForProvider.CapacityReservationSpecification),
 		ClientToken:                      cr.Spec.ForProvider.ClientToken,
 		CpuOptions:                       ec2.GenerateEC2CPUOptions(cr.Spec.ForProvider.CPUOptions),
+		CreditSpecification:              ec2.GenerateEC2CreditSpec(cr.Spec.ForProvider.CreditSpecification),
 		// DisableApiTermination: cr.Spec.ForProvider.DisableAPITermination,
 		DryRun:                            cr.Spec.ForProvider.DryRun,
 		EbsOptimized:                      cr.Spec.ForProvider.EBSOptimized,

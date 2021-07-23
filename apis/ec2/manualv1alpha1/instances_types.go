@@ -58,7 +58,7 @@ type InstanceParameters struct {
 	//
 	// Default: standard (T2 instances) or unlimited (T3/T3a instances)
 	// +optional
-	// CreditSpecification *CreditSpecificationRequest `json:"creditSpecification,omitempty"`
+	CreditSpecification *CreditSpecificationRequest `json:"creditSpecification,omitempty"`
 
 	// If you set this parameter to true, you can't terminate the instance using
 	// the Amazon EC2 console, CLI, or API; otherwise, you can. To change this attribute

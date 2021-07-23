@@ -153,6 +153,15 @@ spec:
                     - coreCount
                     - threadsPerCore
                     type: object
+                  creditSpecification:
+                    description: "The credit option for CPU usage of the burstable performance instance. Valid values are standard and unlimited. To change this attribute after launch, use ModifyInstanceCreditSpecification (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyInstanceCreditSpecification.html). For more information, see Burstable Performance Instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/burstable-performance-instances.html) in the Amazon Elastic Compute Cloud User Guide. \n Default: standard (T2 instances) or unlimited (T3/T3a instances)"
+                    properties:
+                      cpuCredits:
+                        description: "The credit option for CPU usage of a T2 or T3 instance. Valid values are standard and unlimited. \n CPUCredits is a required field"
+                        type: string
+                    required:
+                    - cpuCredits
+                    type: object
                   dryRun:
                     description: Checks whether you have the required permissions for the action, without actually making the request, and provides an error response. If you have the required permissions, the error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
                     type: boolean
