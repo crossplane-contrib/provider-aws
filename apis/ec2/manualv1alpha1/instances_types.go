@@ -110,7 +110,7 @@ type InstanceParameters struct {
 
 	// The IAM instance profile.
 	// +optional
-	// IamInstanceProfile *IamInstanceProfileSpecification `json:"iamInstanceProfile,omitempty"`
+	IamInstanceProfile *IamInstanceProfileSpecification `json:"iamInstanceProfile,omitempty"`
 
 	// The ID of the AMI. An AMI ID is required to launch an instance and must be
 	// specified here or in a launch template.
@@ -128,7 +128,7 @@ type InstanceParameters struct {
 	// For RunInstances, persistent Spot Instance requests are only supported when
 	// InstanceInterruptionBehavior is set to either hibernate or stop.
 	// +optional
-	// InstanceMarketOptions *InstanceMarketOptionsRequest `type:"structure"`
+	InstanceMarketOptions *InstanceMarketOptionsRequest `json:"instanceMarketOptions,omitempty"`
 
 	// The instance type. For more information, see Instance Types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html)
 	// in the Amazon Elastic Compute Cloud User Guide.

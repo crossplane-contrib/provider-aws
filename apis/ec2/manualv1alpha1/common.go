@@ -1,5 +1,9 @@
 package manualv1alpha1
 
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
 // BlockDeviceMapping describes a block device mapping.
 type BlockDeviceMapping struct {
 	// The device name (for example, /dev/sdh or xvdh).
@@ -201,7 +205,7 @@ type IamInstanceProfileSpecification struct {
 // InstanceMarketOptionsRequest describes the market (purchasing) option for the instances.
 type InstanceMarketOptionsRequest struct {
 	// The market type.
-	MarketType *string `json:"marketType"`
+	MarketType string `json:"marketType"`
 
 	// The options for Spot Instances.
 	SpotOptions *SpotMarketOptions `json:"spotOptions"`
@@ -410,7 +414,7 @@ type SpotMarketOptions struct {
 	BlockDurationMinutes *int64 `json:"blockDurationMinutes"`
 
 	// The behavior when a Spot Instance is interrupted. The default is terminate.
-	InstanceInterruptionBehavior *string `json:"instanceInterruptionBehavior"`
+	InstanceInterruptionBehavior string `json:"instanceInterruptionBehavior"`
 
 	// The maximum hourly price you're willing to pay for the Spot Instances. The
 	// default is the On-Demand price.
@@ -419,7 +423,8 @@ type SpotMarketOptions struct {
 	// The Spot Instance request type. For RunInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances),
 	// persistent Spot Instance requests are only supported when InstanceInterruptionBehavior
 	// is set to either hibernate or stop.
-	SpotInstanceType *string `json:"spotInstanceType"`
+	// +kubebuilder:validation:Enum=one-time;persistent
+	SpotInstanceType string `json:"spotInstanceType"`
 
 	// The end date of the request. For a one-time request, the request remains
 	// active until all instances launch, the request is canceled, or this date
@@ -427,7 +432,7 @@ type SpotMarketOptions struct {
 	// or this date and time is reached. The default end date is 7 days from the
 	// current date.
 	// Must be in UTC format (YYYY-MM-DDTHH:MM:SSZ)
-	ValidUntil *string `json:"validUntil"`
+	ValidUntil *metav1.Time `json:"validUntil"`
 }
 
 // Tag defines a tag

@@ -209,10 +209,38 @@ func GenerateEC2ElasticInferenceAccelerators(accs []manualv1alpha1.ElasticInfere
 }
 
 // GenerateEC2HibernationOptions converts an internal HibernationOptionsRequest into a ec2.HibernationOptionsRequest
-func GenerateEC2HibernationOptions(spec *manualv1alpha1.HibernationOptionsRequest) *ec2.HibernationOptionsRequest {
-	if spec != nil {
+func GenerateEC2HibernationOptions(opts *manualv1alpha1.HibernationOptionsRequest) *ec2.HibernationOptionsRequest {
+	if opts != nil {
 		return &ec2.HibernationOptionsRequest{
-			Configured: spec.Configured,
+			Configured: opts.Configured,
+		}
+	}
+	return nil
+}
+
+// GenerateEC2IamInstanceProfileSpecification converts an internal IamInstanceProfileSpecification into a ec2.IamInstanceProfileSpecification
+func GenerateEC2IamInstanceProfileSpecification(spec *manualv1alpha1.IamInstanceProfileSpecification) *ec2.IamInstanceProfileSpecification {
+	if spec != nil {
+		return &ec2.IamInstanceProfileSpecification{
+			Arn:  spec.ARN,
+			Name: spec.Name,
+		}
+	}
+	return nil
+}
+
+// GenerateEC2InstanceMarketOptionsRequest converts an internal InstanceMarketOptionsRequest into a ec2.InstanceMarketOptionsRequest
+func GenerateEC2InstanceMarketOptionsRequest(opts *manualv1alpha1.InstanceMarketOptionsRequest) *ec2.InstanceMarketOptionsRequest {
+	if opts != nil {
+		return &ec2.InstanceMarketOptionsRequest{
+			MarketType: ec2.MarketType(opts.MarketType),
+			SpotOptions: &ec2.SpotMarketOptions{
+				BlockDurationMinutes:         opts.SpotOptions.BlockDurationMinutes,
+				InstanceInterruptionBehavior: ec2.InstanceInterruptionBehavior(opts.SpotOptions.InstanceInterruptionBehavior),
+				MaxPrice:                     opts.SpotOptions.MaxPrice,
+				SpotInstanceType:             ec2.SpotInstanceType(opts.SpotOptions.SpotInstanceType),
+				ValidUntil:                   &opts.SpotOptions.ValidUntil.DeepCopy().Time, // need to convert to time.Time (YYYY-MM-DDTHH:MM:SSZ)
+			},
 		}
 	}
 	return nil
