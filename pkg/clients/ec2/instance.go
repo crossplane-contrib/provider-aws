@@ -208,6 +208,16 @@ func GenerateEC2ElasticInferenceAccelerators(accs []manualv1alpha1.ElasticInfere
 	return nil
 }
 
+// GenerateEC2HibernationOptions converts an internal HibernationOptionsRequest into a ec2.HibernationOptionsRequest
+func GenerateEC2HibernationOptions(spec *manualv1alpha1.HibernationOptionsRequest) *ec2.HibernationOptionsRequest {
+	if spec != nil {
+		return &ec2.HibernationOptionsRequest{
+			Configured: spec.Configured,
+		}
+	}
+	return nil
+}
+
 // GenerateEC2Monitoring converts internal RunInstancesMonitoringEnabled into ec2.RunInstancesMonitoringEnabled
 func GenerateEC2Monitoring(m *manualv1alpha1.RunInstancesMonitoringEnabled) *ec2.RunInstancesMonitoringEnabled {
 	if m != nil {

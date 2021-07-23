@@ -537,6 +537,11 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.HibernationOptions != nil {
+		in, out := &in.HibernationOptions, &out.HibernationOptions
+		*out = new(HibernationOptionsRequest)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.ImageID != nil {
 		in, out := &in.ImageID, &out.ImageID
 		*out = new(string)

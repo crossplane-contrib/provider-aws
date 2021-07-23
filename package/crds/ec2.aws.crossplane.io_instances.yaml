@@ -196,6 +196,13 @@ spec:
                       - type
                       type: object
                     type: array
+                  hibernationOptions:
+                    description: Indicates whether an instance is enabled for hibernation. For more information, see Hibernate Your Instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html) in the Amazon Elastic Compute Cloud User Guide.
+                    properties:
+                      configured:
+                        description: "If you set this parameter to true, your instance is enabled for hibernation. \n Default: false"
+                        type: boolean
+                    type: object
                   imageId:
                     description: The ID of the AMI. An AMI ID is required to launch an instance and must be specified here or in a launch template.
                     type: string

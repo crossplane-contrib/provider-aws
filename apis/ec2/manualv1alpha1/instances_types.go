@@ -106,7 +106,7 @@ type InstanceParameters struct {
 	// see Hibernate Your Instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
 	// +optional
-	// HibernationOptions *HibernationOptionsRequest `json:"hibernationOptions,omitempty"`
+	HibernationOptions *HibernationOptionsRequest `json:"hibernationOptions,omitempty"`
 
 	// The IAM instance profile.
 	// +optional
