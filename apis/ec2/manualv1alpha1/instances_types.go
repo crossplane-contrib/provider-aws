@@ -92,7 +92,7 @@ type InstanceParameters struct {
 	// of your applications. For more information, see Amazon EC2 Elastic GPUs (https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/elastic-graphics.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
 	// +optional
-	// ElasticGpuSpecification []ElasticGpuSpecification `json:"ElasticGpuSpecification,omitempty"`
+	ElasticGPUSpecification []ElasticGPUSpecification `json:"ElasticGpuSpecification,omitempty"`
 
 	// An elastic inference accelerator to associate with the instance. Elastic
 	// inference accelerators are a resource you can attach to your Amazon EC2 instances

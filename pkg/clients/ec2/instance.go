@@ -177,6 +177,21 @@ func GenerateEC2CreditSpec(spec *manualv1alpha1.CreditSpecificationRequest) *ec2
 	return nil
 }
 
+// GenerateEC2ElasticGPUSpecs coverts an internal slice of ElasticGPUSpecification into a slice of ec2.ElasticGpuSpecification
+func GenerateEC2ElasticGPUSpecs(specs []manualv1alpha1.ElasticGPUSpecification) []ec2.ElasticGpuSpecification {
+	if specs != nil {
+		res := make([]ec2.ElasticGpuSpecification, len(specs))
+		for i, gs := range specs {
+			res[i] = ec2.ElasticGpuSpecification{
+				Type: gs.Type,
+			}
+		}
+
+		return res
+	}
+	return nil
+}
+
 // GenerateEC2Monitoring converts internal RunInstancesMonitoringEnabled into ec2.RunInstancesMonitoringEnabled
 func GenerateEC2Monitoring(m *manualv1alpha1.RunInstancesMonitoringEnabled) *ec2.RunInstancesMonitoringEnabled {
 	if m != nil {

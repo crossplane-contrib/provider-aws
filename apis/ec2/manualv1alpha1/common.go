@@ -153,8 +153,8 @@ type EBSBlockDevice struct {
 	VolumeType string `json:"volumeType"`
 }
 
-// ElasticGpuSpecification is a specification for an Elastic Graphics accelerator.
-type ElasticGpuSpecification struct {
+// ElasticGPUSpecification is a specification for an Elastic Graphics accelerator.
+type ElasticGPUSpecification struct {
 	// The type of Elastic Graphics accelerator. For more information about the
 	// values to specify for Type, see Elastic Graphics Basics (https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/elastic-graphics.html#elastic-graphics-basics),
 	// specifically the Elastic Graphics accelerator column, in the Amazon Elastic

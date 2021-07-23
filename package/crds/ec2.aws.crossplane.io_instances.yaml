@@ -57,6 +57,18 @@ spec:
               forProvider:
                 description: InstanceParameters define the desired state of the Instances
                 properties:
+                  ElasticGpuSpecification:
+                    description: An elastic GPU to associate with the instance. An Elastic GPU is a GPU resource that you can attach to your Windows instance to accelerate the graphics performance of your applications. For more information, see Amazon EC2 Elastic GPUs (https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/elastic-graphics.html) in the Amazon Elastic Compute Cloud User Guide.
+                    items:
+                      description: ElasticGPUSpecification is a specification for an Elastic Graphics accelerator.
+                      properties:
+                        type:
+                          description: "The type of Elastic Graphics accelerator. For more information about the values to specify for Type, see Elastic Graphics Basics (https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/elastic-graphics.html#elastic-graphics-basics), specifically the Elastic Graphics accelerator column, in the Amazon Elastic Compute Cloud User Guide for Windows Instances. \n Type is a required field"
+                          type: string
+                      required:
+                      - type
+                      type: object
+                    type: array
                   blockDeviceMappings:
                     description: The block device mapping entries.
                     items:
