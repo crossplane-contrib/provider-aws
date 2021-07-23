@@ -516,6 +516,11 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.KeyName != nil {
+		in, out := &in.KeyName, &out.KeyName
+		*out = new(string)
+		**out = **in
+	}
 	if in.MaxCount != nil {
 		in, out := &in.MaxCount, &out.MaxCount
 		*out = new(int64)

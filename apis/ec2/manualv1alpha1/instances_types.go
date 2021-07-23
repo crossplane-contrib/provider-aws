@@ -172,7 +172,7 @@ type InstanceParameters struct {
 	// If you do not specify a key pair, you can't connect to the instance unless
 	// you choose an AMI that is configured to allow users another way to log in.
 	// +optional
-	// KeyName *string `json:"keyName,omitempty"`
+	KeyName *string `json:"keyName,omitempty"`
 
 	// The launch template to use to launch the instances. Any parameters that you
 	// specify in RunInstances override the same parameters in the launch template.
