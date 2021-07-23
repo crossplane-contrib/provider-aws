@@ -132,7 +132,6 @@ func TestInjectInstanceNameTagSpecification(t *testing.T) {
 
 func TestGenerateEC2TagSpecifications(t *testing.T) {
 	type args struct {
-		name     string
 		tagSpecs []manualv1alpha1.TagSpecification
 	}
 	cases := map[string]struct {

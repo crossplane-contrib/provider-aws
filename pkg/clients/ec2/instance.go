@@ -371,6 +371,50 @@ func GenerateEC2PrivateIPAddressSpecs(specs []manualv1alpha1.PrivateIPAddressSpe
 	return nil
 }
 
+// GenerateEC2RunInstancesInput generates a ec2.RunInstanceInput based on the supplied managed resource Name and InstanceParameters
+func GenerateEC2RunInstancesInput(name string, p *manualv1alpha1.InstanceParameters) *ec2.RunInstancesInput {
+	return &ec2.RunInstancesInput{
+		BlockDeviceMappings:              GenerateEC2BlockDeviceMappings(p.BlockDeviceMappings),
+		CapacityReservationSpecification: GenerateEC2CapacityReservationSpecs(p.CapacityReservationSpecification),
+		ClientToken:                      p.ClientToken,
+		CpuOptions:                       GenerateEC2CPUOptions(p.CPUOptions),
+		CreditSpecification:              GenerateEC2CreditSpec(p.CreditSpecification),
+		// DisableApiTermination: cr.Spec.ForProvider.DisableAPITermination, // this setting will have some behavior we need to think through
+		DryRun:                            p.DryRun,
+		EbsOptimized:                      p.EBSOptimized,
+		ElasticGpuSpecification:           GenerateEC2ElasticGPUSpecs(p.ElasticGPUSpecification),
+		ElasticInferenceAccelerators:      GenerateEC2ElasticInferenceAccelerators(p.ElasticInferenceAccelerators),
+		HibernationOptions:                GenerateEC2HibernationOptions(p.HibernationOptions),
+		IamInstanceProfile:                GenerateEC2IamInstanceProfileSpecification(p.IamInstanceProfile),
+		ImageId:                           p.ImageID,
+		InstanceInitiatedShutdownBehavior: ec2.ShutdownBehavior(p.InstanceInitiatedShutdownBehavior),
+		InstanceMarketOptions:             GenerateEC2InstanceMarketOptionsRequest(p.InstanceMarketOptions),
+		InstanceType:                      ec2.InstanceType(p.InstanceType),
+		Ipv6AddressCount:                  p.IPV6AddressCount,
+		Ipv6Addresses:                     GenerateEC2InstanceIPV6Addresses(p.IPV6Addresses),
+		KernelId:                          p.KernelID,
+		KeyName:                           p.KeyName,
+		LaunchTemplate:                    GenerateEC2LaunchTemplateSpec(p.LaunchTemplate),
+		LicenseSpecifications:             GenerateEC2LicenseConfigurationRequest(p.LicenseSpecifications),
+		MaxCount:                          p.MaxCount, // TODO handle the case when we have more than 1 here. If this is not 1, each instance has a different instanceID
+		MetadataOptions:                   GenerateEC2InstanceMetadataOptionsRequest(p.MetadataOptions),
+		MinCount:                          p.MinCount,
+		Monitoring:                        GenerateEC2Monitoring(p.Monitoring),
+		NetworkInterfaces:                 GenerateEC2InstanceNetworkInterfaceSpecs(p.NetworkInterfaces),
+		Placement:                         GenerateEC2Placement(p.Placement),
+		PrivateIpAddress:                  p.PrivateIPAddress,
+		RamdiskId:                         p.RAMDiskID,
+		SecurityGroupIds:                  p.SecurityGroupIDs,
+		SecurityGroups:                    p.SecurityGroups,
+		SubnetId:                          p.SubnetID,
+		TagSpecifications: TransformTagSpecifications(
+			name,
+			p.TagSpecifications,
+		),
+		UserData: p.UserData,
+	}
+}
+
 // TransformTagSpecifications takes a slice of TagSpecifications, converts it to a slice
 // of ec2.TagSpecification and lastly injects the special instance name awsec2.TagSpecification
 func TransformTagSpecifications(mdgName string, tagSpecs []manualv1alpha1.TagSpecification) []ec2.TagSpecification {

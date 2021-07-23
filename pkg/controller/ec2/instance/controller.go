@@ -46,12 +46,12 @@ const (
 	errUnexpectedObject = "The managed resource is not an Instance resource"
 	errKubeUpdateFailed = "cannot update Instance custom resource"
 
-	errDescribe            = "failed to describe Instance with id"
-	errMultipleItems       = "retrieved multiple Instances for the given instanceId"
-	errCreate              = "failed to create the Instance resource"
-	errUpdate              = "failed to update Instance resource"
-	errModifyVPCAttributes = "failed to modify the Instance resource attributes"
-	errDelete              = "failed to delete the Instance resource"
+	errDescribe      = "failed to describe Instance with id"
+	errMultipleItems = "retrieved multiple Instances for the given instanceId"
+	errCreate        = "failed to create the Instance resource"
+	errUpdate        = "failed to update Instance resource"
+	// errModifyInstanceAttributes = "failed to modify the Instance resource attributes"
+	errDelete = "failed to delete the Instance resource"
 )
 
 // SetupInstance adds a controller that reconciles Instances.
@@ -145,12 +145,24 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	// ec2.LateInitializeInstance(&cr.Spec.ForProvider, &observed, &o)
 
+	if !cmp.Equal(current, &cr.Spec.ForProvider) {
+		if err := e.kube.Update(ctx, cr); err != nil {
+			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
+		}
+	}
+
 	switch observed.State.Name {
 	case awsec2.InstanceStateNameRunning:
 		cr.SetConditions(xpv1.Available())
 	case awsec2.InstanceStateNamePending:
 		cr.SetConditions(xpv1.Creating())
 	case awsec2.InstanceStateNameShuttingDown:
+		cr.SetConditions(xpv1.Deleting())
+	case awsec2.InstanceStateNameTerminated:
+		cr.SetConditions(xpv1.Deleting())
+	case awsec2.InstanceStateNameStopping:
+		cr.SetConditions(xpv1.Deleting())
+	case awsec2.InstanceStateNameStopped:
 		cr.SetConditions(xpv1.Deleting())
 	}
 
@@ -169,47 +181,9 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	result, err := e.client.RunInstancesRequest(&awsec2.RunInstancesInput{
-		BlockDeviceMappings:              ec2.GenerateEC2BlockDeviceMappings(cr.Spec.ForProvider.BlockDeviceMappings),
-		CapacityReservationSpecification: ec2.GenerateEC2CapacityReservationSpecs(cr.Spec.ForProvider.CapacityReservationSpecification),
-		ClientToken:                      cr.Spec.ForProvider.ClientToken,
-		CpuOptions:                       ec2.GenerateEC2CPUOptions(cr.Spec.ForProvider.CPUOptions),
-		CreditSpecification:              ec2.GenerateEC2CreditSpec(cr.Spec.ForProvider.CreditSpecification),
-		// DisableApiTermination: cr.Spec.ForProvider.DisableAPITermination, // this setting will have some behavior we need to think through
-		DryRun:                            cr.Spec.ForProvider.DryRun,
-		EbsOptimized:                      cr.Spec.ForProvider.EBSOptimized,
-		ElasticGpuSpecification:           ec2.GenerateEC2ElasticGPUSpecs(cr.Spec.ForProvider.ElasticGPUSpecification),
-		ElasticInferenceAccelerators:      ec2.GenerateEC2ElasticInferenceAccelerators(cr.Spec.ForProvider.ElasticInferenceAccelerators),
-		HibernationOptions:                ec2.GenerateEC2HibernationOptions(cr.Spec.ForProvider.HibernationOptions),
-		IamInstanceProfile:                ec2.GenerateEC2IamInstanceProfileSpecification(cr.Spec.ForProvider.IamInstanceProfile),
-		ImageId:                           cr.Spec.ForProvider.ImageID,
-		InstanceInitiatedShutdownBehavior: awsec2.ShutdownBehavior(cr.Spec.ForProvider.InstanceInitiatedShutdownBehavior),
-		InstanceMarketOptions:             ec2.GenerateEC2InstanceMarketOptionsRequest(cr.Spec.ForProvider.InstanceMarketOptions),
-		InstanceType:                      awsec2.InstanceType(cr.Spec.ForProvider.InstanceType),
-		Ipv6AddressCount:                  cr.Spec.ForProvider.IPV6AddressCount,
-		Ipv6Addresses:                     ec2.GenerateEC2InstanceIPV6Addresses(cr.Spec.ForProvider.IPV6Addresses),
-		KernelId:                          cr.Spec.ForProvider.KernelID,
-		KeyName:                           cr.Spec.ForProvider.KeyName,
-		LaunchTemplate:                    ec2.GenerateEC2LaunchTemplateSpec(cr.Spec.ForProvider.LaunchTemplate),
-		LicenseSpecifications:             ec2.GenerateEC2LicenseConfigurationRequest(cr.Spec.ForProvider.LicenseSpecifications),
-		MaxCount:                          cr.Spec.ForProvider.MaxCount, // TODO handle the case when we have more than 1 here. If this is not 1, each instance has a different instanceID
-		MetadataOptions:                   ec2.GenerateEC2InstanceMetadataOptionsRequest(cr.Spec.ForProvider.MetadataOptions),
-		MinCount:                          cr.Spec.ForProvider.MinCount,
-		Monitoring:                        ec2.GenerateEC2Monitoring(cr.Spec.ForProvider.Monitoring),
-		NetworkInterfaces:                 ec2.GenerateEC2InstanceNetworkInterfaceSpecs(cr.Spec.ForProvider.NetworkInterfaces),
-		Placement:                         ec2.GenerateEC2Placement(cr.Spec.ForProvider.Placement),
-		PrivateIpAddress:                  cr.Spec.ForProvider.PrivateIPAddress,
-		RamdiskId:                         cr.Spec.ForProvider.RAMDiskID,
-		SecurityGroupIds:                  cr.Spec.ForProvider.SecurityGroupIDs,
-		SecurityGroups:                    cr.Spec.ForProvider.SecurityGroups,
-		SubnetId:                          cr.Spec.ForProvider.SubnetID,
-		// TODO fill in refs
-		TagSpecifications: ec2.TransformTagSpecifications(
-			mgd.GetName(),
-			cr.Spec.ForProvider.TagSpecifications,
-		),
-		UserData: cr.Spec.ForProvider.UserData,
-	}).Send(ctx)
+	result, err := e.client.RunInstancesRequest(
+		ec2.GenerateEC2RunInstancesInput(mgd.GetName(), &cr.Spec.ForProvider),
+	).Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
@@ -241,5 +215,5 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		InstanceIds: []string{meta.GetExternalName(cr)}, // TODO handle a list of instances
 	}).Send(ctx)
 
-	return awsclient.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDelete)
+	return awsclient.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDelete)
 }
