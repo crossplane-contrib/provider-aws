@@ -46,12 +46,10 @@ const (
 	errUnexpectedObject = "The managed resource is not an Instance resource"
 	errKubeUpdateFailed = "cannot update Instance custom resource"
 
-	errDescribe      = "failed to describe Instance with id"
-	errMultipleItems = "retrieved multiple Instances for the given instanceId"
-	errCreate        = "failed to create the Instance resource"
-	errUpdate        = "failed to update Instance resource"
-	// errModifyInstanceAttributes = "failed to modify the Instance resource attributes"
-	errDelete = "failed to delete the Instance resource"
+	errDescribe = "failed to describe Instance with id"
+	errCreate   = "failed to create the Instance resource"
+	errUpdate   = "failed to update Instance resource"
+	errDelete   = "failed to delete the Instance resource"
 )
 
 // SetupInstance adds a controller that reconciles Instances.
@@ -108,9 +106,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
-	response, err := e.client.DescribeInstancesRequest(&awsec2.DescribeInstancesInput{
-		InstanceIds: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	response, err := e.client.DescribeInstancesRequest(
+		ec2.QueryByName(meta.GetExternalName(cr)),
+	).Send(ctx)
 
 	// deleted instances that have not yet been cleaned up from the cluster return a
 	// 200 OK with a nil response.Reservations slice
@@ -119,29 +117,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDescribe)
+		return managed.ExternalObservation{},
+			awsclient.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDescribe)
 	}
 
-	// in a successful response, there should be one and only one object
-	if len(response.Reservations[0].Instances) != 1 {
-		return managed.ExternalObservation{}, errors.New(errMultipleItems)
-	}
-
-	observed := response.Reservations[0].Instances[0]
-
-	// (tnthornton) Terminated instances remain visible on API calls for a time before
-	// being automatically deleted. Rather than having the delete command hang for that
-	// entire time, return an empty ExternalObservation in this case.
-	//
-	// ref: (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/terminating-instances.html)
-	if observed.State.Name == awsec2.InstanceStateNameTerminated {
-		return managed.ExternalObservation{}, nil
-	}
+	observed := response.Reservations[0].Instances
 
 	// update the CRD spec for any new values from provider
 	current := cr.Spec.ForProvider.DeepCopy()
 
-	o := awsec2.DescribeInstanceAttributeOutput{}
+	// o := awsec2.DescribeInstanceAttributeOutput{}
 
 	// ec2.LateInitializeInstance(&cr.Spec.ForProvider, &observed, &o)
 
@@ -151,26 +136,32 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}
 	}
 
-	switch observed.State.Name {
-	case awsec2.InstanceStateNameRunning:
-		cr.SetConditions(xpv1.Available())
-	case awsec2.InstanceStateNamePending:
+	observation := ec2.GenerateInstanceObservation(observed)
+	condition := ec2.GenerateInstanceCondition(observation)
+
+	switch condition {
+	case ec2.Creating:
 		cr.SetConditions(xpv1.Creating())
-	case awsec2.InstanceStateNameShuttingDown:
+	case ec2.Available:
+		cr.SetConditions(xpv1.Available())
+	case ec2.Deleting:
 		cr.SetConditions(xpv1.Deleting())
-	case awsec2.InstanceStateNameTerminated:
-		cr.SetConditions(xpv1.Deleting())
-	case awsec2.InstanceStateNameStopping:
-		cr.SetConditions(xpv1.Deleting())
-	case awsec2.InstanceStateNameStopped:
-		cr.SetConditions(xpv1.Deleting())
+	case ec2.Deleted:
+		// Terminated instances remain visible on API calls for a time before
+		// being automatically deleted. Rather than having the delete command
+		// hang for that entire time, return an empty ExternalObservation in
+		// this case.
+		//
+		// ref: (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/terminating-instances.html)
+		return managed.ExternalObservation{}, nil
 	}
 
-	cr.Status.AtProvider = ec2.GenerateInstanceObservation(observed)
+	cr.Status.AtProvider = observation
 
 	return managed.ExternalObservation{
-		ResourceExists:          true,
-		ResourceUpToDate:        ec2.IsInstanceUpToDate(cr.Spec.ForProvider, observed, o),
+		ResourceExists:   true,
+		ResourceUpToDate: true,
+		// ResourceUpToDate:        ec2.IsInstanceUpToDate(cr.Spec.ForProvider, observed, o),
 		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }
@@ -181,15 +172,16 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	result, err := e.client.RunInstancesRequest(
+	_, err := e.client.RunInstancesRequest(
 		ec2.GenerateEC2RunInstancesInput(mgd.GetName(), &cr.Spec.ForProvider),
 	).Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
-	// when instance count is greater than 1, maybe add comma separated list as the external name?
-	meta.SetExternalName(cr, aws.StringValue(result.Instances[0].InstanceId))
+	// instance count could be greater than 1.
+	// use the name from metadata.Name to define the externalName
+	meta.SetExternalName(cr, mgd.GetName())
 
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
@@ -211,8 +203,23 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.TerminateInstancesRequest(&awsec2.TerminateInstancesInput{
-		InstanceIds: []string{meta.GetExternalName(cr)}, // TODO handle a list of instances
+	response, err := e.client.DescribeInstancesRequest(
+		ec2.QueryByName(meta.GetExternalName(cr)),
+	).Send(ctx)
+
+	if err != nil {
+		return awsclient.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDelete)
+	}
+
+	instances := response.Reservations[0].Instances
+
+	instanceIds := make([]string, len(instances))
+	for i, ins := range instances {
+		instanceIds[i] = *ins.InstanceId
+	}
+
+	_, err = e.client.TerminateInstancesRequest(&awsec2.TerminateInstancesInput{
+		InstanceIds: instanceIds,
 	}).Send(ctx)
 
 	return awsclient.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDelete)

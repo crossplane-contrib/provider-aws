@@ -1,3 +1,19 @@
+/*
+Copyright 2021 The Crossplane Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package manualv1alpha1
 
 import (
@@ -211,10 +227,10 @@ type InstanceMarketOptionsRequest struct {
 	SpotOptions *SpotMarketOptions `json:"spotOptions"`
 }
 
-// InstanceIPV6Address describes an IPv6 address.
-type InstanceIPV6Address struct {
+// InstanceIPv6Address describes an IPv6 address.
+type InstanceIPv6Address struct {
 	// The IPv6 address.
-	IPV6Address *string `json:"ipv6Address"`
+	IPv6Address *string `json:"ipv6Address"`
 }
 
 // InstanceNetworkInterfaceSpecification describes a network interface.
@@ -272,7 +288,7 @@ type InstanceNetworkInterfaceSpecification struct {
 	// the same request. You cannot specify this option if you've specified a minimum
 	// number of instances to launch.
 	// +optional
-	IPV6Addresses []InstanceIPV6Address `json:"ipv6Addresses"`
+	IPV6Addresses []InstanceIPv6Address `json:"ipv6Addresses"`
 
 	// The ID of the network interface.
 	//

@@ -45,9 +45,9 @@ var (
 )
 
 type args struct {
-	vpc  ec2.InstanceClient
-	kube client.Client
-	cr   *manualv1alpha1.Instance
+	instance ec2.InstanceClient
+	kube     client.Client
+	cr       *manualv1alpha1.Instance
 }
 
 type instanceModifier func(*manualv1alpha1.Instance)
@@ -64,6 +64,10 @@ type instanceModifier func(*manualv1alpha1.Instance)
 
 func withExternalName(name string) instanceModifier {
 	return func(r *manualv1alpha1.Instance) { meta.SetExternalName(r, name) }
+}
+
+func withObjectName(name string) instanceModifier {
+	return func(r *manualv1alpha1.Instance) { r.Name = name }
 }
 
 func withConditions(c ...xpv1.Condition) instanceModifier {
@@ -229,23 +233,17 @@ func TestCreate(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				vpc: &fake.MockInstanceClient{
+				instance: &fake.MockInstanceClient{
 					MockRunInstancesRequest: func(input *awsec2.RunInstancesInput) awsec2.RunInstancesRequest {
 						return awsec2.RunInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.RunInstancesOutput{
-								Instances: []awsec2.Instance{
-									{
-										InstanceId: aws.String(instanceID),
-									},
-								},
-							}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.RunInstancesOutput{}},
 						}
 					},
 				},
-				cr: instance(),
+				cr: instance(withObjectName(instanceID)),
 			},
 			want: want{
-				cr:     instance(withExternalName(instanceID)),
+				cr:     instance(withExternalName(instanceID), withObjectName(instanceID)),
 				result: managed.ExternalCreation{ExternalNameAssigned: true},
 			},
 		},
@@ -300,7 +298,7 @@ func TestCreate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.args.kube, client: tc.vpc}
+			e := &external{kube: tc.args.kube, client: tc.instance}
 			o, err := e.Create(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
@@ -418,10 +416,25 @@ func TestDelete(t *testing.T) {
 	}{
 		"Successful": {
 			args: args{
-				vpc: &fake.MockInstanceClient{
+				instance: &fake.MockInstanceClient{
 					MockTerminateInstancesRequest: func(input *awsec2.TerminateInstancesInput) awsec2.TerminateInstancesRequest {
 						return awsec2.TerminateInstancesRequest{
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.TerminateInstancesOutput{}},
+						}
+					},
+					MockDescribeInstancesRequest: func(input *awsec2.DescribeInstancesInput) awsec2.DescribeInstancesRequest {
+						return awsec2.DescribeInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeInstancesOutput{
+								Reservations: []awsec2.Reservation{
+									{
+										Instances: []awsec2.Instance{
+											{
+												InstanceId: aws.String(instanceID),
+											},
+										},
+									},
+								},
+							}},
 						}
 					},
 				},
@@ -451,7 +464,7 @@ func TestDelete(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			e := &external{kube: tc.args.kube, client: tc.vpc}
+			e := &external{kube: tc.args.kube, client: tc.instance}
 			err := e.Delete(context.Background(), tc.args.cr)
 
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {

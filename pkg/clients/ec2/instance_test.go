@@ -313,3 +313,82 @@ func TestTransformTagSpecifications(t *testing.T) {
 		})
 	}
 }
+
+func TestGenerateInstanceConditions(t *testing.T) {
+	type args struct {
+		obeserved manualv1alpha1.InstanceObservation
+	}
+	cases := map[string]struct {
+		args args
+		want Condition
+	}{
+		"AllInstancesAreRunning": {
+			args: args{
+				obeserved: manualv1alpha1.InstanceObservation{
+					State: manualv1alpha1.InstancesState{
+						Running: 6,
+						Total:   6,
+					},
+				},
+			},
+			want: Available,
+		},
+		"SomeInstancesRunningAndSomePending": {
+			args: args{
+				obeserved: manualv1alpha1.InstanceObservation{
+					State: manualv1alpha1.InstancesState{
+						Running: 4,
+						Pending: 2,
+						Total:   6,
+					},
+				},
+			},
+			want: Creating,
+		},
+		"SomeInstancesRunningAndSomeStopping": {
+			args: args{
+				obeserved: manualv1alpha1.InstanceObservation{
+					State: manualv1alpha1.InstancesState{
+						Running:  4,
+						Stopping: 2,
+						Total:    6,
+					},
+				},
+			},
+			want: Deleting,
+		},
+		"SomeInstancesPendingAndSomeShuttingDown": {
+			args: args{
+				obeserved: manualv1alpha1.InstanceObservation{
+					State: manualv1alpha1.InstancesState{
+						Running:  4,
+						Stopping: 2,
+						Total:    6,
+					},
+				},
+			},
+			want: Deleting,
+		},
+		"AllInstancesAreTerminated": {
+			args: args{
+				obeserved: manualv1alpha1.InstanceObservation{
+					State: manualv1alpha1.InstancesState{
+						Terminated: 6,
+						Total:      6,
+					},
+				},
+			},
+			want: Deleted,
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			condition := GenerateInstanceCondition(tc.args.obeserved)
+
+			if diff := cmp.Diff(tc.want, condition, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}

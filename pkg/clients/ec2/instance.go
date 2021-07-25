@@ -58,13 +58,28 @@ func IsInstanceUpToDate(spec manualv1alpha1.InstanceParameters, instance ec2.Ins
 }
 
 // GenerateInstanceObservation is used to produce manualv1alpha1.InstanceObservation from
-// ec2.Instance.
-func GenerateInstanceObservation(vpc ec2.Instance) manualv1alpha1.InstanceObservation {
-	o := manualv1alpha1.InstanceObservation{
-		// IsDefault:     aws.BoolValue(vpc.IsDefault),
-		// DHCPOptionsID: aws.StringValue(vpc.DhcpOptionsId),
-		// OwnerID:       aws.StringValue(vpc.OwnerId),
-		// VPCState:      string(vpc.State),
+// a []ec2.Instance.
+func GenerateInstanceObservation(instances []ec2.Instance) manualv1alpha1.InstanceObservation {
+	// determine the overall statuses for the obeserved instances
+	state := manualv1alpha1.InstancesState{
+		Total: len(instances),
+	}
+
+	for _, i := range instances {
+		switch i.State.Name {
+		case ec2.InstanceStateNamePending:
+			state.Pending++
+		case ec2.InstanceStateNameRunning:
+			state.Running++
+		case ec2.InstanceStateNameShuttingDown:
+			state.ShuttingDown++
+		case ec2.InstanceStateNameStopped:
+			state.Stopped++
+		case ec2.InstanceStateNameStopping:
+			state.Stopping++
+		case ec2.InstanceStateNameTerminated:
+			state.Terminated++
+		}
 	}
 
 	// if len(vpc.CidrBlockAssociationSet) > 0 {
@@ -97,8 +112,59 @@ func GenerateInstanceObservation(vpc ec2.Instance) manualv1alpha1.InstanceObserv
 	// 	}
 	// }
 
-	return o
+	return manualv1alpha1.InstanceObservation{
+		State: state,
+	}
 }
+
+// GenerateInstanceCondition returns an instance Condition depending on the supplied
+// observation. Currently, the instances (as a group) can be denoted as:
+// * Available
+// * Creating
+// * Deleting
+func GenerateInstanceCondition(o manualv1alpha1.InstanceObservation) Condition {
+	// if all of the instances are in a running state, then we say the
+	// Instance is available
+	if o.State.Running == int64(o.State.Total) {
+		return Available
+	}
+
+	// if all of the instances are terminated, then we say the
+	// Instance is deleted
+	if o.State.Terminated == int64(o.State.Total) {
+		return Deleted
+	}
+
+	// if any of the instances are beginning the termination cycle, we
+	// say the Instance is deleting
+	if o.State.ShuttingDown > 0 ||
+		o.State.Stopped > 0 ||
+		o.State.Stopping > 0 ||
+		o.State.Terminated > 0 {
+
+		return Deleting
+	}
+
+	// otherwise we're creating the Instance
+	return Creating
+}
+
+// Condition denotes the current state across instances
+type Condition string
+
+const (
+	// Available is the condition that represents all instances are running
+	Available Condition = "available"
+	// Creating is the condition that represents some instances could be
+	// running, but the rest are pending
+	Creating Condition = "creating"
+	// Deleting is the condition that represents some instances have entered
+	// the shutdown/termination state
+	Deleting Condition = "deleting"
+	// Deleted is the condition that represents all instances have entered
+	// the terminated state
+	Deleted Condition = "deleted"
+)
 
 // LateInitializeInstance fills the empty fields in *manualv1alpha1.InstanceParameters with
 // the values seen in ec2.Instance and ec2.DescribeInstanceAttributeOutput.
@@ -247,12 +313,12 @@ func GenerateEC2InstanceMarketOptionsRequest(opts *manualv1alpha1.InstanceMarket
 }
 
 // GenerateEC2InstanceIPV6Addresses coverts an internal slice of InstanceIPV6Address into a slice of ec2.InstanceIpv6Address
-func GenerateEC2InstanceIPV6Addresses(addrs []manualv1alpha1.InstanceIPV6Address) []ec2.InstanceIpv6Address {
+func GenerateEC2InstanceIPV6Addresses(addrs []manualv1alpha1.InstanceIPv6Address) []ec2.InstanceIpv6Address {
 	if addrs != nil {
 		res := make([]ec2.InstanceIpv6Address, len(addrs))
 		for i, a := range addrs {
 			res[i] = ec2.InstanceIpv6Address{
-				Ipv6Address: a.IPV6Address,
+				Ipv6Address: a.IPv6Address,
 			}
 		}
 
@@ -390,8 +456,8 @@ func GenerateEC2RunInstancesInput(name string, p *manualv1alpha1.InstanceParamet
 		InstanceInitiatedShutdownBehavior: ec2.ShutdownBehavior(p.InstanceInitiatedShutdownBehavior),
 		InstanceMarketOptions:             GenerateEC2InstanceMarketOptionsRequest(p.InstanceMarketOptions),
 		InstanceType:                      ec2.InstanceType(p.InstanceType),
-		Ipv6AddressCount:                  p.IPV6AddressCount,
-		Ipv6Addresses:                     GenerateEC2InstanceIPV6Addresses(p.IPV6Addresses),
+		Ipv6AddressCount:                  p.IPv6AddressCount,
+		Ipv6Addresses:                     GenerateEC2InstanceIPV6Addresses(p.IPv6Addresses),
 		KernelId:                          p.KernelID,
 		KeyName:                           p.KeyName,
 		LaunchTemplate:                    GenerateEC2LaunchTemplateSpec(p.LaunchTemplate),
@@ -412,6 +478,19 @@ func GenerateEC2RunInstancesInput(name string, p *manualv1alpha1.InstanceParamet
 			p.TagSpecifications,
 		),
 		UserData: p.UserData,
+	}
+}
+
+// QueryByName generates a ec2.DescribeInstancesInput that is used to query for
+// Instances by name.
+func QueryByName(name string) *ec2.DescribeInstancesInput {
+	return &ec2.DescribeInstancesInput{
+		Filters: []ec2.Filter{
+			{
+				Name:   aws.String("tag:Name"),
+				Values: []string{name},
+			},
+		},
 	}
 }
 

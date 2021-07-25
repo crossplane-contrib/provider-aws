@@ -25,12 +25,39 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .metadata.annotations.crossplane\.io/external-name
-      name: ID
-      type: string
+    - jsonPath: .status.atProvider.state.total
+      name: INSTANCES
+      type: integer
+    - jsonPath: .status.atProvider.state.running
+      name: RUNNING
+      type: integer
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: ID
+      priority: 1
+      type: string
+    - jsonPath: .status.atProvider.state.pending
+      name: PENDING
+      priority: 1
+      type: integer
+    - jsonPath: .status.atProvider.state.shuttingDown
+      name: SHUTTINGDOWN
+      priority: 1
+      type: integer
+    - jsonPath: .status.atProvider.state.stopped
+      name: STOPPED
+      priority: 1
+      type: integer
+    - jsonPath: .status.atProvider.state.stopping
+      name: STOPPING
+      priority: 1
+      type: integer
+    - jsonPath: .status.atProvider.state.terminated
+      name: TERMINATED
+      priority: 1
+      type: integer
     name: v1alpha1
     schema:
       openAPIV3Schema:
@@ -272,7 +299,7 @@ spec:
                   ipv6Addresses:
                     description: "[EC2-VPC] The IPv6 addresses from the range of the subnet to associate with the primary network interface. You cannot specify this option and the option to assign a number of IPv6 addresses in the same request. You cannot specify this option if you've specified a minimum number of instances to launch. \n You cannot specify this option and the network interfaces option in the same request."
                     items:
-                      description: InstanceIPV6Address describes an IPv6 address.
+                      description: InstanceIPv6Address describes an IPv6 address.
                       properties:
                         ipv6Address:
                           description: The IPv6 address.
@@ -390,7 +417,7 @@ spec:
                         ipv6Addresses:
                           description: One or more IPv6 addresses to assign to the network interface. You cannot specify this option and the option to assign a number of IPv6 addresses in the same request. You cannot specify this option if you've specified a minimum number of instances to launch.
                           items:
-                            description: InstanceIPV6Address describes an IPv6 address.
+                            description: InstanceIPv6Address describes an IPv6 address.
                             properties:
                               ipv6Address:
                                 description: The IPv6 address.
@@ -660,6 +687,46 @@ spec:
             properties:
               atProvider:
                 description: InstanceObservation keeps the state for the external resource
+                properties:
+                  state:
+                    description: InstancesState helps keep track of the number of instances in a specified state during a given observation.
+                    properties:
+                      pending:
+                        description: Pending is the number of instances in `pending` state
+                        format: int64
+                        type: integer
+                      running:
+                        description: Running is the number of instances in `running` state
+                        format: int64
+                        type: integer
+                      shuttingDown:
+                        description: ShuttingDown is the number of instances in `shutting down` state
+                        format: int64
+                        type: integer
+                      stopped:
+                        description: Stopped is the number of instances in `stopped` state
+                        format: int64
+                        type: integer
+                      stopping:
+                        description: Stopping is the number of instances in `stopping` state
+                        format: int64
+                        type: integer
+                      terminated:
+                        description: Terminated is the number of instances in `terminated` state
+                        format: int64
+                        type: integer
+                      total:
+                        description: Total is total number of instances seen
+                        type: integer
+                    required:
+                    - pending
+                    - running
+                    - shuttingDown
+                    - stopped
+                    - stopping
+                    - terminated
+                    - total
+                    type: object
                 type: object
               conditions:
                 description: Conditions of the resource.

@@ -146,7 +146,7 @@ type InstanceParameters struct {
 	// You cannot specify this option and the network interfaces option in the same
 	// request.
 	// +optional
-	IPV6AddressCount *int64 `json:"ipv6AddressCount,omitempty"`
+	IPv6AddressCount *int64 `json:"ipv6AddressCount,omitempty"`
 
 	// [EC2-VPC] The IPv6 addresses from the range of the subnet to associate with
 	// the primary network interface. You cannot specify this option and the option
@@ -156,7 +156,7 @@ type InstanceParameters struct {
 	// You cannot specify this option and the network interfaces option in the same
 	// request.
 	// +optional
-	IPV6Addresses []InstanceIPV6Address `json:"ipv6Addresses,omitempty"`
+	IPv6Addresses []InstanceIPv6Address `json:"ipv6Addresses,omitempty"`
 
 	// The ID of the kernel.
 	//
@@ -339,15 +339,43 @@ type InstanceStatus struct {
 }
 
 // InstanceObservation keeps the state for the external resource
-type InstanceObservation struct{}
+type InstanceObservation struct {
+	State InstancesState `json:"state,omitempty"`
+}
+
+// InstancesState helps keep track of the number of instances in a
+// specified state during a given observation.
+type InstancesState struct {
+	// Pending is the number of instances in `pending` state
+	Pending int64 `json:"pending"`
+	// Running is the number of instances in `running` state
+	Running int64 `json:"running"`
+	// ShuttingDown is the number of instances in `shutting down` state
+	ShuttingDown int64 `json:"shuttingDown"`
+	// Stopped is the number of instances in `stopped` state
+	Stopped int64 `json:"stopped"`
+	// Stopping is the number of instances in `stopping` state
+	Stopping int64 `json:"stopping"`
+	// Terminated is the number of instances in `terminated` state
+	Terminated int64 `json:"terminated"`
+	// Total is total number of instances seen
+	Total int `json:"total"`
+}
 
 // +kubebuilder:object:root=true
 
 // Instance is a managed resource that represents a specified number of AWS EC2 Instance
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
-// +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
+// +kubebuilder:printcolumn:name="INSTANCES",type="integer",JSONPath=".status.atProvider.state.total"
+// +kubebuilder:printcolumn:name="RUNNING",type="integer",JSONPath=".status.atProvider.state.running"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:printcolumn:name="ID",type="string",priority=1,JSONPath=".metadata.annotations.crossplane\\.io/external-name"
+// +kubebuilder:printcolumn:name="PENDING",type="integer",priority=1,JSONPath=".status.atProvider.state.pending"
+// +kubebuilder:printcolumn:name="SHUTTINGDOWN",type="integer",priority=1,JSONPath=".status.atProvider.state.shuttingDown"
+// +kubebuilder:printcolumn:name="STOPPED",type="integer",priority=1,JSONPath=".status.atProvider.state.stopped"
+// +kubebuilder:printcolumn:name="STOPPING",type="integer",priority=1,JSONPath=".status.atProvider.state.stopping"
+// +kubebuilder:printcolumn:name="TERMINATED",type="integer",priority=1,JSONPath=".status.atProvider.state.terminated"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Instance struct {
