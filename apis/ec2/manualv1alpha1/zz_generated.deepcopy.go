@@ -699,6 +699,11 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		*out = new(v1.Selector)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Tags != nil {
+		in, out := &in.Tags, &out.Tags
+		*out = make([]Tag, len(*in))
+		copy(*out, *in)
+	}
 	if in.TagSpecifications != nil {
 		in, out := &in.TagSpecifications, &out.TagSpecifications
 		*out = make([]TagSpecification, len(*in))

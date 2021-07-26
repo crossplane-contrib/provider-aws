@@ -239,6 +239,11 @@ func TestCreate(t *testing.T) {
 							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.RunInstancesOutput{}},
 						}
 					},
+					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
+						return awsec2.CreateTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
+						}
+					},
 				},
 				cr: instance(withObjectName(instanceID)),
 			},

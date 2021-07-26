@@ -32,6 +32,7 @@ type MockInstanceClient struct {
 	MockDescribeInstancesRequest         func(*ec2.DescribeInstancesInput) ec2.DescribeInstancesRequest
 	MockDescribeInstanceAttributeRequest func(*ec2.DescribeInstanceAttributeInput) ec2.DescribeInstanceAttributeRequest
 	MockModifyInstanceAttributeRequest   func(*ec2.ModifyInstanceAttributeInput) ec2.ModifyInstanceAttributeRequest
+	MockCreateTagsRequest                func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
 }
 
 // RunInstancesRequest mocks RunInstancesRequest method
@@ -57,4 +58,9 @@ func (m *MockInstanceClient) DescribeInstanceAttributeRequest(input *ec2.Describ
 // ModifyInstanceAttributeRequest mocks ModifyInstanceAttributeRequest method
 func (m *MockInstanceClient) ModifyInstanceAttributeRequest(input *ec2.ModifyInstanceAttributeInput) ec2.ModifyInstanceAttributeRequest {
 	return m.MockModifyInstanceAttributeRequest(input)
+}
+
+// CreateTagsRequest mocks CreateTagsRequest method
+func (m *MockInstanceClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
+	return m.MockCreateTagsRequest(input)
 }

@@ -307,6 +307,10 @@ type InstanceParameters struct {
 	// +optional
 	SubnetIDSelector *xpv1.Selector `json:"subnetIdSelector,omitempty"`
 
+	// Tags are used as identification helpers between AWS resources.
+	// +optional
+	Tags []Tag `json:"tags,omitempty"`
+
 	// The tags to apply to the resources during launch. You can only tag instances
 	// and volumes on launch. The specified tags are applied to all instances or
 	// volumes that are created during launch. To tag a resource after it has been

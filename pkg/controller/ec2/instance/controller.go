@@ -18,6 +18,7 @@ package instance
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -37,6 +38,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
+	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -46,10 +48,11 @@ const (
 	errUnexpectedObject = "The managed resource is not an Instance resource"
 	errKubeUpdateFailed = "cannot update Instance custom resource"
 
-	errDescribe = "failed to describe Instance with id"
-	errCreate   = "failed to create the Instance resource"
-	errUpdate   = "failed to update Instance resource"
-	errDelete   = "failed to delete the Instance resource"
+	errDescribe   = "failed to describe Instance with id"
+	errCreate     = "failed to create the Instance resource"
+	errUpdate     = "failed to update Instance resource"
+	errCreateTags = "failed to create tags for the Instance resource"
+	errDelete     = "failed to delete the Instance resource"
 )
 
 // SetupInstance adds a controller that reconciles Instances.
@@ -66,7 +69,7 @@ func SetupInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter,
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewInstanceClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -107,7 +110,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	response, err := e.client.DescribeInstancesRequest(
-		ec2.QueryByName(meta.GetExternalName(cr)),
+		ec2.GenerateDescribeInstancesByExternalTags(resource.GetExternalTags(mgd)),
 	).Send(ctx)
 
 	// deleted instances that have not yet been cleaned up from the cluster return a
@@ -172,11 +175,25 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	_, err := e.client.RunInstancesRequest(
+	result, err := e.client.RunInstancesRequest(
 		ec2.GenerateEC2RunInstancesInput(mgd.GetName(), &cr.Spec.ForProvider),
 	).Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
+	}
+
+	instanceIds := make([]string, len(result.Instances))
+	for i, ins := range result.Instances {
+		instanceIds[i] = *ins.InstanceId
+	}
+
+	// specify the tags post runInstances request so that we can maintain a way
+	// to track the resources as a group
+	if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+		Resources: instanceIds,
+		Tags:      manualv1alpha1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+	}).Send(ctx); err != nil {
+		return managed.ExternalCreation{ExternalNameAssigned: false}, awsclient.Wrap(err, errCreateTags)
 	}
 
 	// instance count could be greater than 1.
@@ -204,7 +221,7 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	cr.Status.SetConditions(xpv1.Deleting())
 
 	response, err := e.client.DescribeInstancesRequest(
-		ec2.QueryByName(meta.GetExternalName(cr)),
+		ec2.GenerateDescribeInstancesByExternalTags(resource.GetExternalTags(mgd)),
 	).Send(ctx)
 
 	if err != nil {
@@ -223,4 +240,32 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	}).Send(ctx)
 
 	return awsclient.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDelete)
+}
+
+type tagger struct {
+	kube client.Client
+}
+
+func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
+	cr, ok := mgd.(*manualv1alpha1.Instance)
+	if !ok {
+		return errors.New(errUnexpectedObject)
+	}
+	tagMap := map[string]string{}
+	for _, t := range cr.Spec.ForProvider.Tags {
+		tagMap[t.Key] = t.Value
+	}
+	for k, v := range resource.GetExternalTags(mgd) {
+		tagMap[k] = v
+	}
+	cr.Spec.ForProvider.Tags = make([]manualv1alpha1.Tag, len(tagMap))
+	i := 0
+	for k, v := range tagMap {
+		cr.Spec.ForProvider.Tags[i] = manualv1alpha1.Tag{Key: k, Value: v}
+		i++
+	}
+	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {
+		return cr.Spec.ForProvider.Tags[i].Key < cr.Spec.ForProvider.Tags[j].Key
+	})
+	return errors.Wrap(t.kube.Update(ctx, cr), errKubeUpdateFailed)
 }

@@ -14,6 +14,9 @@ limitations under the License.
 package ec2
 
 import (
+	"fmt"
+	"sort"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -33,6 +36,7 @@ type InstanceClient interface {
 	DescribeInstancesRequest(*ec2.DescribeInstancesInput) ec2.DescribeInstancesRequest
 	DescribeInstanceAttributeRequest(*ec2.DescribeInstanceAttributeInput) ec2.DescribeInstanceAttributeRequest
 	ModifyInstanceAttributeRequest(*ec2.ModifyInstanceAttributeInput) ec2.ModifyInstanceAttributeRequest
+	CreateTagsRequest(*ec2.CreateTagsInput) ec2.CreateTagsRequest
 }
 
 // NewInstanceClient returns a new client using AWS credentials as JSON encoded data.
@@ -473,94 +477,55 @@ func GenerateEC2RunInstancesInput(name string, p *manualv1alpha1.InstanceParamet
 		SecurityGroupIds:                  p.SecurityGroupIDs,
 		SecurityGroups:                    p.SecurityGroups,
 		SubnetId:                          p.SubnetID,
-		TagSpecifications: TransformTagSpecifications(
-			name,
-			p.TagSpecifications,
-		),
-		UserData: p.UserData,
+		TagSpecifications:                 GenerateEC2TagSpecifications(p.TagSpecifications),
+		UserData:                          p.UserData,
 	}
 }
 
-// QueryByName generates a ec2.DescribeInstancesInput that is used to query for
-// Instances by name.
-func QueryByName(name string) *ec2.DescribeInstancesInput {
-	return &ec2.DescribeInstancesInput{
-		Filters: []ec2.Filter{
-			{
-				Name:   aws.String("tag:Name"),
-				Values: []string{name},
-			},
-		},
-	}
-}
-
-// TransformTagSpecifications takes a slice of TagSpecifications, converts it to a slice
-// of ec2.TagSpecification and lastly injects the special instance name awsec2.TagSpecification
-func TransformTagSpecifications(mdgName string, tagSpecs []manualv1alpha1.TagSpecification) []ec2.TagSpecification {
-	ec2Specs := generateEC2TagSpecifications(tagSpecs)
-	return injectInstanceNameTagSpecification(mdgName, ec2Specs)
-}
-
-// generateEC2TagSpecifications takes a slice of TagSpecifications and converts it to a
+// GenerateEC2TagSpecifications takes a slice of TagSpecifications and converts it to a
 // slice of ec2.TagSpecification
-func generateEC2TagSpecifications(tagSpecs []manualv1alpha1.TagSpecification) []ec2.TagSpecification {
-	res := make([]ec2.TagSpecification, len(tagSpecs))
-	for i, ts := range tagSpecs {
-		res[i] = ec2.TagSpecification{
-			ResourceType: ec2.ResourceType(*ts.ResourceType),
-		}
-
-		tags := make([]ec2.Tag, len(ts.Tags))
-		for i, t := range ts.Tags {
-			tags[i] = ec2.Tag{
-				Key:   aws.String(t.Key),
-				Value: aws.String(t.Value),
+func GenerateEC2TagSpecifications(tagSpecs []manualv1alpha1.TagSpecification) []ec2.TagSpecification {
+	if tagSpecs != nil {
+		res := make([]ec2.TagSpecification, len(tagSpecs))
+		for i, ts := range tagSpecs {
+			res[i] = ec2.TagSpecification{
+				ResourceType: ec2.ResourceType(*ts.ResourceType),
 			}
-		}
 
-		res[i].Tags = tags
-	}
-	return res
-}
-
-// injectInstanceNameTagSpecification will inject a special TagSpecification of the following
-// shape into the give slice, if it does not yet exist:
-// resourceType: instance,
-// tags:
-//   - key: Name
-//     value: <name>
-// The resulting behavior is that the specified instance name in metadata.Name is reflected
-// in the AWS console.
-// Note: If the a TagSpecification of resourceType `instance` with key `Name` was supplied,
-// this method does not modify the supplied TagSpecification.
-func injectInstanceNameTagSpecification(name string, tagSpecs []ec2.TagSpecification) []ec2.TagSpecification {
-	instanceNameKey := "Name"
-
-	specialTagSpec := ec2.TagSpecification{
-		ResourceType: "instance",
-		Tags: []ec2.Tag{
-			{
-				Key:   aws.String(instanceNameKey), // if the 'N' isn't capitalized AWS treats this as a general tag
-				Value: aws.String(name),
-			},
-		},
-	}
-
-	foundSpecial := false
-	for _, ts := range tagSpecs {
-		if ts.ResourceType == "instance" {
-			for _, tag := range ts.Tags {
-				if *tag.Key == instanceNameKey {
-					foundSpecial = true
-					break
+			tags := make([]ec2.Tag, len(ts.Tags))
+			for i, t := range ts.Tags {
+				tags[i] = ec2.Tag{
+					Key:   aws.String(t.Key),
+					Value: aws.String(t.Value),
 				}
 			}
+
+			res[i].Tags = tags
 		}
+		return res
+	}
+	return nil
+}
+
+// GenerateDescribeInstancesByExternalTags generates a ec2.DescribeInstancesInput that is used to query for
+// Instances by the external labels.
+func GenerateDescribeInstancesByExternalTags(extTags map[string]string) *ec2.DescribeInstancesInput {
+
+	ec2Filters := make([]ec2.Filter, len(extTags))
+	i := 0
+	for k, v := range extTags {
+		ec2Filters[i] = ec2.Filter{
+			Name:   aws.String(fmt.Sprintf("tag:%s", k)),
+			Values: []string{v},
+		}
+		i++
 	}
 
-	if !foundSpecial {
-		tagSpecs = append(tagSpecs, specialTagSpec)
-	}
+	sort.Slice(ec2Filters, func(i, j int) bool {
+		return *ec2Filters[i].Name < *ec2Filters[j].Name
+	})
 
-	return tagSpecs
+	return &ec2.DescribeInstancesInput{
+		Filters: ec2Filters,
+	}
 }
