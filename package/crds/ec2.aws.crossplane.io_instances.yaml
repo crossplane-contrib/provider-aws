@@ -25,39 +25,15 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Synced')].status
       name: SYNCED
       type: string
-    - jsonPath: .status.atProvider.state.total
-      name: INSTANCES
-      type: integer
-    - jsonPath: .status.atProvider.state.running
-      name: RUNNING
-      type: integer
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: ID
+      type: string
+    - jsonPath: .status.atProvider.state
+      name: STATE
+      type: string
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    - jsonPath: .metadata.annotations.crossplane\.io/external-name
-      name: ID
-      priority: 1
-      type: string
-    - jsonPath: .status.atProvider.state.pending
-      name: PENDING
-      priority: 1
-      type: integer
-    - jsonPath: .status.atProvider.state.shuttingDown
-      name: SHUTTINGDOWN
-      priority: 1
-      type: integer
-    - jsonPath: .status.atProvider.state.stopped
-      name: STOPPED
-      priority: 1
-      type: integer
-    - jsonPath: .status.atProvider.state.stopping
-      name: STOPPING
-      priority: 1
-      type: integer
-    - jsonPath: .status.atProvider.state.terminated
-      name: TERMINATED
-      priority: 1
-      type: integer
     name: v1alpha1
     schema:
       openAPIV3Schema:
@@ -201,6 +177,9 @@ spec:
                     required:
                     - cpuCredits
                     type: object
+                  disableAPITermination:
+                    description: "If you set this parameter to true, you can't terminate the instance using the Amazon EC2 console, CLI, or API; otherwise, you can. To change this attribute after launch, use ModifyInstanceAttribute (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyInstanceAttribute.html). Alternatively, if you set InstanceInitiatedShutdownBehavior to terminate, you can terminate the instance by running the shutdown command from the instance. \n Default: false"
+                    type: boolean
                   dryRun:
                     description: Checks whether you have the required permissions for the action, without actually making the request, and provides an error response. If you have the required permissions, the error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
                     type: boolean
@@ -342,10 +321,6 @@ spec:
                       - licenseConfigurationArn
                       type: object
                     type: array
-                  maxCount:
-                    description: "The maximum number of instances to launch. If you specify more instances than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches the largest possible number of instances above MinCount. \n Constraints: Between 1 and the maximum number you're allowed for the specified instance type. For more information about the default limits, and how to request an increase, see How many instances can I run in Amazon EC2 (http://aws.amazon.com/ec2/faqs/#How_many_instances_can_I_run_in_Amazon_EC2) in the Amazon EC2 FAQ. \n MaxCount is a required field"
-                    format: int64
-                    type: integer
                   metadataOptions:
                     description: The metadata options for the instance. For more information, see Instance Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
                     properties:
@@ -368,10 +343,6 @@ spec:
                     required:
                     - httpTokens
                     type: object
-                  minCount:
-                    description: "The minimum number of instances to launch. If you specify a minimum that is more instances than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches no instances. \n Constraints: Between 1 and the maximum number you're allowed for the specified instance type. For more information about the default limits, and how to request an increase, see How many instances can I run in Amazon EC2 (http://aws.amazon.com/ec2/faqs/#How_many_instances_can_I_run_in_Amazon_EC2) in the Amazon EC2 General FAQ. \n MinCount is a required field"
-                    format: int64
-                    type: integer
                   monitoring:
                     description: Specifies whether detailed monitoring is enabled for the instance.
                     properties:
@@ -658,8 +629,6 @@ spec:
                     type: string
                 required:
                 - imageId
-                - maxCount
-                - minCount
                 - region
                 type: object
               providerConfigRef:
@@ -705,44 +674,9 @@ spec:
                 description: InstanceObservation keeps the state for the external resource
                 properties:
                   state:
-                    description: InstancesState helps keep track of the number of instances in a specified state during a given observation.
-                    properties:
-                      pending:
-                        description: Pending is the number of instances in `pending` state
-                        format: int64
-                        type: integer
-                      running:
-                        description: Running is the number of instances in `running` state
-                        format: int64
-                        type: integer
-                      shuttingDown:
-                        description: ShuttingDown is the number of instances in `shutting down` state
-                        format: int64
-                        type: integer
-                      stopped:
-                        description: Stopped is the number of instances in `stopped` state
-                        format: int64
-                        type: integer
-                      stopping:
-                        description: Stopping is the number of instances in `stopping` state
-                        format: int64
-                        type: integer
-                      terminated:
-                        description: Terminated is the number of instances in `terminated` state
-                        format: int64
-                        type: integer
-                      total:
-                        description: Total is total number of instances seen
-                        type: integer
-                    required:
-                    - pending
-                    - running
-                    - shuttingDown
-                    - stopped
-                    - stopping
-                    - terminated
-                    - total
-                    type: object
+                    type: string
+                required:
+                - state
                 type: object
               conditions:
                 description: Conditions of the resource.

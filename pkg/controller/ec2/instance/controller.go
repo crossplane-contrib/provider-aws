@@ -38,7 +38,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 	svcapitypes "github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -110,7 +109,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	response, err := e.client.DescribeInstancesRequest(
-		ec2.GenerateDescribeInstancesByExternalTags(resource.GetExternalTags(mgd)),
+		&awsec2.DescribeInstancesInput{
+			InstanceIds: []string{meta.GetExternalName(cr)},
+		},
 	).Send(ctx)
 
 	// deleted instances that have not yet been cleaned up from the cluster return a
@@ -124,7 +125,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			awsclient.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDescribe)
 	}
 
-	observed := response.Reservations[0].Instances
+	observed := response.Reservations[0].Instances[0]
 
 	// update the CRD spec for any new values from provider
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -182,23 +183,16 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
-	instanceIds := make([]string, len(result.Instances))
-	for i, ins := range result.Instances {
-		instanceIds[i] = *ins.InstanceId
-	}
+	instance := result.Instances[0]
 
-	// specify the tags post runInstances request so that we can maintain a way
-	// to track the resources as a group
 	if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
-		Resources: instanceIds,
-		Tags:      manualv1alpha1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+		Resources: []string{aws.StringValue(instance.InstanceId)},
+		Tags:      svcapitypes.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
 	}).Send(ctx); err != nil {
 		return managed.ExternalCreation{ExternalNameAssigned: false}, awsclient.Wrap(err, errCreateTags)
 	}
 
-	// instance count could be greater than 1.
-	// use the name from metadata.Name to define the externalName
-	meta.SetExternalName(cr, mgd.GetName())
+	meta.SetExternalName(cr, aws.StringValue(instance.InstanceId))
 
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
@@ -220,23 +214,8 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	response, err := e.client.DescribeInstancesRequest(
-		ec2.GenerateDescribeInstancesByExternalTags(resource.GetExternalTags(mgd)),
-	).Send(ctx)
-
-	if err != nil {
-		return awsclient.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDelete)
-	}
-
-	instances := response.Reservations[0].Instances
-
-	instanceIds := make([]string, len(instances))
-	for i, ins := range instances {
-		instanceIds[i] = *ins.InstanceId
-	}
-
-	_, err = e.client.TerminateInstancesRequest(&awsec2.TerminateInstancesInput{
-		InstanceIds: instanceIds,
+	_, err := e.client.TerminateInstancesRequest(&awsec2.TerminateInstancesInput{
+		InstanceIds: []string{meta.GetExternalName(cr)},
 	}).Send(ctx)
 
 	return awsclient.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDelete)
@@ -247,7 +226,7 @@ type tagger struct {
 }
 
 func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
-	cr, ok := mgd.(*manualv1alpha1.Instance)
+	cr, ok := mgd.(*svcapitypes.Instance)
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
@@ -258,10 +237,10 @@ func (t *tagger) Initialize(ctx context.Context, mgd resource.Managed) error {
 	for k, v := range resource.GetExternalTags(mgd) {
 		tagMap[k] = v
 	}
-	cr.Spec.ForProvider.Tags = make([]manualv1alpha1.Tag, len(tagMap))
+	cr.Spec.ForProvider.Tags = make([]svcapitypes.Tag, len(tagMap))
 	i := 0
 	for k, v := range tagMap {
-		cr.Spec.ForProvider.Tags[i] = manualv1alpha1.Tag{Key: k, Value: v}
+		cr.Spec.ForProvider.Tags[i] = svcapitypes.Tag{Key: k, Value: v}
 		i++
 	}
 	sort.Slice(cr.Spec.ForProvider.Tags, func(i, j int) bool {

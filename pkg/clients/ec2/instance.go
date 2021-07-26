@@ -63,94 +63,34 @@ func IsInstanceUpToDate(spec manualv1alpha1.InstanceParameters, instance ec2.Ins
 
 // GenerateInstanceObservation is used to produce manualv1alpha1.InstanceObservation from
 // a []ec2.Instance.
-func GenerateInstanceObservation(instances []ec2.Instance) manualv1alpha1.InstanceObservation {
-	// determine the overall statuses for the obeserved instances
-	state := manualv1alpha1.InstancesState{
-		Total: len(instances),
-	}
-
-	for _, i := range instances {
-		switch i.State.Name {
-		case ec2.InstanceStateNamePending:
-			state.Pending++
-		case ec2.InstanceStateNameRunning:
-			state.Running++
-		case ec2.InstanceStateNameShuttingDown:
-			state.ShuttingDown++
-		case ec2.InstanceStateNameStopped:
-			state.Stopped++
-		case ec2.InstanceStateNameStopping:
-			state.Stopping++
-		case ec2.InstanceStateNameTerminated:
-			state.Terminated++
-		}
-	}
-
-	// if len(vpc.CidrBlockAssociationSet) > 0 {
-	// 	o.CIDRBlockAssociationSet = make([]v1beta1.VPCCIDRBlockAssociation, len(vpc.CidrBlockAssociationSet))
-	// 	for i, v := range vpc.CidrBlockAssociationSet {
-	// 		o.CIDRBlockAssociationSet[i] = v1beta1.VPCCIDRBlockAssociation{
-	// 			AssociationID: aws.StringValue(v.AssociationId),
-	// 			CIDRBlock:     aws.StringValue(v.CidrBlock),
-	// 		}
-	// 		o.CIDRBlockAssociationSet[i].CIDRBlockState = v1beta1.VPCCIDRBlockState{
-	// 			State:         string(v.CidrBlockState.State),
-	// 			StatusMessage: aws.StringValue(v.CidrBlockState.StatusMessage),
-	// 		}
-	// 	}
-	// }
-
-	// if len(vpc.Ipv6CidrBlockAssociationSet) > 0 {
-	// 	o.IPv6CIDRBlockAssociationSet = make([]v1beta1.VPCIPv6CidrBlockAssociation, len(vpc.Ipv6CidrBlockAssociationSet))
-	// 	for i, v := range vpc.Ipv6CidrBlockAssociationSet {
-	// 		o.IPv6CIDRBlockAssociationSet[i] = v1beta1.VPCIPv6CidrBlockAssociation{
-	// 			AssociationID:      aws.StringValue(v.AssociationId),
-	// 			IPv6CIDRBlock:      aws.StringValue(v.Ipv6CidrBlock),
-	// 			IPv6Pool:           aws.StringValue(v.Ipv6Pool),
-	// 			NetworkBorderGroup: aws.StringValue(v.NetworkBorderGroup),
-	// 		}
-	// 		o.IPv6CIDRBlockAssociationSet[i].IPv6CIDRBlockState = v1beta1.VPCCIDRBlockState{
-	// 			State:         string(v.Ipv6CidrBlockState.State),
-	// 			StatusMessage: raws.StringValue(v.Ipv6CidrBlockState.StatusMessage),
-	// 		}
-	// 	}
-	// }
-
+func GenerateInstanceObservation(i ec2.Instance) manualv1alpha1.InstanceObservation {
 	return manualv1alpha1.InstanceObservation{
-		State: state,
+		State: string(i.State.Name),
+		// TODO fill in more details from i
 	}
 }
 
 // GenerateInstanceCondition returns an instance Condition depending on the supplied
-// observation. Currently, the instances (as a group) can be denoted as:
+// observation. Currently, the instance can be denoted as:
 // * Available
 // * Creating
 // * Deleting
 func GenerateInstanceCondition(o manualv1alpha1.InstanceObservation) Condition {
-	// if all of the instances are in a running state, then we say the
-	// Instance is available
-	if o.State.Running == int64(o.State.Total) {
+	switch o.State {
+	case string(ec2.InstanceStateNameRunning):
 		return Available
-	}
-
-	// if all of the instances are terminated, then we say the
-	// Instance is deleted
-	if o.State.Terminated == int64(o.State.Total) {
-		return Deleted
-	}
-
-	// if any of the instances are beginning the termination cycle, we
-	// say the Instance is deleting
-	if o.State.ShuttingDown > 0 ||
-		o.State.Stopped > 0 ||
-		o.State.Stopping > 0 ||
-		o.State.Terminated > 0 {
-
+	case string(ec2.InstanceStateNameShuttingDown):
 		return Deleting
+	case string(ec2.InstanceStateNameStopped):
+		return Deleting
+	case string(ec2.InstanceStateNameStopping):
+		return Deleting
+	case string(ec2.InstanceStateNameTerminated):
+		return Deleted
+	default:
+		// ec2.InstanceStateNamePending
+		return Creating
 	}
-
-	// otherwise we're creating the Instance
-	return Creating
 }
 
 // Condition denotes the current state across instances
@@ -176,15 +116,6 @@ func LateInitializeInstance(in *manualv1alpha1.InstanceParameters, v *ec2.Instan
 	if v == nil {
 		return
 	}
-
-	// in.CIDRBlock = awsclients.LateInitializeString(in.CIDRBlock, v.CidrBlock)
-	// in.InstanceTenancy = awsclients.LateInitializeStringPtr(in.InstanceTenancy, aws.String(string(v.InstanceTenancy)))
-	// if attributes.EnableDnsHostnames != nil {
-	// 	in.EnableDNSHostNames = awsclients.LateInitializeBoolPtr(in.EnableDNSHostNames, attributes.EnableDnsHostnames.Value)
-	// }
-	// if attributes.EnableDnsHostnames != nil {
-	// 	in.EnableDNSSupport = awsclients.LateInitializeBoolPtr(in.EnableDNSSupport, attributes.EnableDnsSupport.Value)
-	// }
 }
 
 // GenerateEC2BlockDeviceMappings coverts an internal slice of BlockDeviceMapping into a slice of ec2.BlockDeviceMapping
@@ -442,14 +373,15 @@ func GenerateEC2PrivateIPAddressSpecs(specs []manualv1alpha1.PrivateIPAddressSpe
 }
 
 // GenerateEC2RunInstancesInput generates a ec2.RunInstanceInput based on the supplied managed resource Name and InstanceParameters
+// Note: MaxCount and MinCount are set to 1 each per https://github.com/crossplane/provider-aws/pull/777#issuecomment-887017783
 func GenerateEC2RunInstancesInput(name string, p *manualv1alpha1.InstanceParameters) *ec2.RunInstancesInput {
 	return &ec2.RunInstancesInput{
-		BlockDeviceMappings:              GenerateEC2BlockDeviceMappings(p.BlockDeviceMappings),
-		CapacityReservationSpecification: GenerateEC2CapacityReservationSpecs(p.CapacityReservationSpecification),
-		ClientToken:                      p.ClientToken,
-		CpuOptions:                       GenerateEC2CPUOptions(p.CPUOptions),
-		CreditSpecification:              GenerateEC2CreditSpec(p.CreditSpecification),
-		// DisableApiTermination: cr.Spec.ForProvider.DisableAPITermination, // this setting will have some behavior we need to think through
+		BlockDeviceMappings:               GenerateEC2BlockDeviceMappings(p.BlockDeviceMappings),
+		CapacityReservationSpecification:  GenerateEC2CapacityReservationSpecs(p.CapacityReservationSpecification),
+		ClientToken:                       p.ClientToken,
+		CpuOptions:                        GenerateEC2CPUOptions(p.CPUOptions),
+		CreditSpecification:               GenerateEC2CreditSpec(p.CreditSpecification),
+		DisableApiTermination:             p.DisableAPITermination,
 		DryRun:                            p.DryRun,
 		EbsOptimized:                      p.EBSOptimized,
 		ElasticGpuSpecification:           GenerateEC2ElasticGPUSpecs(p.ElasticGPUSpecification),
@@ -466,9 +398,9 @@ func GenerateEC2RunInstancesInput(name string, p *manualv1alpha1.InstanceParamet
 		KeyName:                           p.KeyName,
 		LaunchTemplate:                    GenerateEC2LaunchTemplateSpec(p.LaunchTemplate),
 		LicenseSpecifications:             GenerateEC2LicenseConfigurationRequest(p.LicenseSpecifications),
-		MaxCount:                          p.MaxCount, // TODO handle the case when we have more than 1 here. If this is not 1, each instance has a different instanceID
+		MaxCount:                          aws.Int64(1),
 		MetadataOptions:                   GenerateEC2InstanceMetadataOptionsRequest(p.MetadataOptions),
-		MinCount:                          p.MinCount,
+		MinCount:                          aws.Int64(1),
 		Monitoring:                        GenerateEC2Monitoring(p.Monitoring),
 		NetworkInterfaces:                 GenerateEC2InstanceNetworkInterfaceSpecs(p.NetworkInterfaces),
 		Placement:                         GenerateEC2Placement(p.Placement),

@@ -39,60 +39,42 @@ func TestGenerateInstanceConditions(t *testing.T) {
 		args args
 		want Condition
 	}{
-		"AllInstancesAreRunning": {
+		"InstanceIsRunning": {
 			args: args{
 				obeserved: manualv1alpha1.InstanceObservation{
-					State: manualv1alpha1.InstancesState{
-						Running: 6,
-						Total:   6,
-					},
+					State: string(ec2.InstanceStateNameRunning),
 				},
 			},
 			want: Available,
 		},
-		"SomeInstancesRunningAndSomePending": {
+		"InstanceIsPending": {
 			args: args{
 				obeserved: manualv1alpha1.InstanceObservation{
-					State: manualv1alpha1.InstancesState{
-						Running: 4,
-						Pending: 2,
-						Total:   6,
-					},
+					State: string(ec2.InstanceStateNamePending),
 				},
 			},
 			want: Creating,
 		},
-		"SomeInstancesRunningAndSomeStopping": {
+		"InstanceIsStopping": {
 			args: args{
 				obeserved: manualv1alpha1.InstanceObservation{
-					State: manualv1alpha1.InstancesState{
-						Running:  4,
-						Stopping: 2,
-						Total:    6,
-					},
+					State: string(ec2.InstanceStateNameStopping),
 				},
 			},
 			want: Deleting,
 		},
-		"SomeInstancesPendingAndSomeShuttingDown": {
+		"InstanceIsShuttingDown": {
 			args: args{
 				obeserved: manualv1alpha1.InstanceObservation{
-					State: manualv1alpha1.InstancesState{
-						Running:  4,
-						Stopping: 2,
-						Total:    6,
-					},
+					State: string(ec2.InstanceStateNameShuttingDown),
 				},
 			},
 			want: Deleting,
 		},
-		"AllInstancesAreTerminated": {
+		"InstanceIsTerminated": {
 			args: args{
 				obeserved: manualv1alpha1.InstanceObservation{
-					State: manualv1alpha1.InstancesState{
-						Terminated: 6,
-						Total:      6,
-					},
+					State: string(ec2.InstanceStateNameTerminated),
 				},
 			},
 			want: Deleted,

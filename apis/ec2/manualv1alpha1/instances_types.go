@@ -68,7 +68,7 @@ type InstanceParameters struct {
 	//
 	// Default: false
 	// +optional
-	// DisableAPITermination *bool `json:"disableAPITermination,omitempty"`
+	DisableAPITermination *bool `json:"disableAPITermination,omitempty"`
 
 	// Checks whether you have the required permissions for the action, without
 	// actually making the request, and provides an error response. If you have
@@ -184,34 +184,10 @@ type InstanceParameters struct {
 	// +optional
 	LicenseSpecifications []LicenseConfigurationRequest `json:"licenseSpecifications,omitempty"`
 
-	// The maximum number of instances to launch. If you specify more instances
-	// than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches
-	// the largest possible number of instances above MinCount.
-	//
-	// Constraints: Between 1 and the maximum number you're allowed for the specified
-	// instance type. For more information about the default limits, and how to
-	// request an increase, see How many instances can I run in Amazon EC2 (http://aws.amazon.com/ec2/faqs/#How_many_instances_can_I_run_in_Amazon_EC2)
-	// in the Amazon EC2 FAQ.
-	//
-	// MaxCount is a required field
-	MaxCount *int64 `json:"maxCount"` // TODO this is probably updatable
-
 	// The metadata options for the instance. For more information, see Instance
 	// Metadata and User Data (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html).
 	// +optional
 	MetadataOptions *InstanceMetadataOptionsRequest `json:"metadataOptions"`
-
-	// The minimum number of instances to launch. If you specify a minimum that
-	// is more instances than Amazon EC2 can launch in the target Availability Zone,
-	// Amazon EC2 launches no instances.
-	//
-	// Constraints: Between 1 and the maximum number you're allowed for the specified
-	// instance type. For more information about the default limits, and how to
-	// request an increase, see How many instances can I run in Amazon EC2 (http://aws.amazon.com/ec2/faqs/#How_many_instances_can_I_run_in_Amazon_EC2)
-	// in the Amazon EC2 General FAQ.
-	//
-	// MinCount is a required field
-	MinCount *int64 `json:"minCount"` // TODO this is probably updatable
 
 	// Specifies whether detailed monitoring is enabled for the instance.
 	// +optional
@@ -344,26 +320,7 @@ type InstanceStatus struct {
 
 // InstanceObservation keeps the state for the external resource
 type InstanceObservation struct {
-	State InstancesState `json:"state,omitempty"`
-}
-
-// InstancesState helps keep track of the number of instances in a
-// specified state during a given observation.
-type InstancesState struct {
-	// Pending is the number of instances in `pending` state
-	Pending int64 `json:"pending"`
-	// Running is the number of instances in `running` state
-	Running int64 `json:"running"`
-	// ShuttingDown is the number of instances in `shutting down` state
-	ShuttingDown int64 `json:"shuttingDown"`
-	// Stopped is the number of instances in `stopped` state
-	Stopped int64 `json:"stopped"`
-	// Stopping is the number of instances in `stopping` state
-	Stopping int64 `json:"stopping"`
-	// Terminated is the number of instances in `terminated` state
-	Terminated int64 `json:"terminated"`
-	// Total is total number of instances seen
-	Total int `json:"total"`
+	State string `json:"state"`
 }
 
 // +kubebuilder:object:root=true
@@ -371,15 +328,9 @@ type InstancesState struct {
 // Instance is a managed resource that represents a specified number of AWS EC2 Instance
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
-// +kubebuilder:printcolumn:name="INSTANCES",type="integer",JSONPath=".status.atProvider.state.total"
-// +kubebuilder:printcolumn:name="RUNNING",type="integer",JSONPath=".status.atProvider.state.running"
+// +kubebuilder:printcolumn:name="ID",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
+// +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".status.atProvider.state"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
-// +kubebuilder:printcolumn:name="ID",type="string",priority=1,JSONPath=".metadata.annotations.crossplane\\.io/external-name"
-// +kubebuilder:printcolumn:name="PENDING",type="integer",priority=1,JSONPath=".status.atProvider.state.pending"
-// +kubebuilder:printcolumn:name="SHUTTINGDOWN",type="integer",priority=1,JSONPath=".status.atProvider.state.shuttingDown"
-// +kubebuilder:printcolumn:name="STOPPED",type="integer",priority=1,JSONPath=".status.atProvider.state.stopped"
-// +kubebuilder:printcolumn:name="STOPPING",type="integer",priority=1,JSONPath=".status.atProvider.state.stopping"
-// +kubebuilder:printcolumn:name="TERMINATED",type="integer",priority=1,JSONPath=".status.atProvider.state.terminated"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,aws}
 type Instance struct {
