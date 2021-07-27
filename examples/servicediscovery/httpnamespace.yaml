@@ -5,7 +5,6 @@ metadata:
 spec:
   forProvider:
     region: us-east-1
-    description: "test"
     name: crossplane-http-namespace-test
     tags:
       - key: cluster
