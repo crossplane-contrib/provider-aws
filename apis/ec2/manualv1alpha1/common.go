@@ -78,6 +78,28 @@ type CapacityReservationSpecification struct {
 	CapacityReservationTarget *CapacityReservationTarget `json:"capacityReservationTarget"`
 }
 
+// CapacityReservationSpecificationResponse describes the instance's Capacity Reservation targeting
+// preferences. The action returns the capacityReservationPreference response element if the
+// instance is configured to run in On-Demand capacity, or if it is configured
+// in run in any open Capacity Reservation that has matching attributes (instance
+// type, platform, Availability Zone). The action returns the capacityReservationTarget
+// response element if the instance explicily targets a specific Capacity Reservation.
+type CapacityReservationSpecificationResponse struct {
+	// Describes the instance's Capacity Reservation preferences. Possible preferences
+	// include:
+	//
+	//    * open - The instance can run in any open Capacity Reservation that has
+	//    matching attributes (instance type, platform, Availability Zone).
+	//
+	//    * none - The instance avoids running in a Capacity Reservation even if
+	//    one is available. The instance runs in On-Demand capacity.
+	CapacityReservationPreference string `json:"capacityReservationPerference"`
+
+	// Information about the targeted Capacity Reservation.
+	// +optional
+	CapacityReservationTarget *CapacityReservationTarget `json:"capacityReservationTarget"`
+}
+
 // CapacityReservationTarget describes a target Capacity Reservation.
 type CapacityReservationTarget struct {
 	// The ID of the Capacity Reservation.
@@ -177,6 +199,37 @@ type EBSBlockDevice struct {
 	VolumeType string `json:"volumeType"`
 }
 
+// EBSInstanceBlockDevice describes a parameter used to set up an EBS volume in a block device mapping.
+type EBSInstanceBlockDevice struct {
+	// The time stamp when the attachment initiated.
+	AttachTime *metav1.Time `json:"attachTime"`
+
+	// Indicates whether the volume is deleted on instance termination.
+	DeleteOnTermination *bool `json:"deleteOnTermination"`
+
+	// The attachment state.
+	Status string `json:"status"`
+
+	// The ID of the EBS volume.
+	VolumeID *string `json:"volumeId"`
+}
+
+// ElasticGPUAssociation describes the association between an instance and an Elastic Graphics accelerator.
+type ElasticGPUAssociation struct {
+	// The ID of the association.
+	ElasticGPUAssociationID *string `json:"elasticGpuAssociationId"`
+
+	// The state of the association between the instance and the Elastic Graphics
+	// accelerator.
+	ElasticGPUAssociationState *string `json:"elasticGpuAssociationState"`
+
+	// The time the Elastic Graphics accelerator was associated with the instance.
+	ElasticGPUAssociationTime *string `json:"elasticGpuAssociationTime"`
+
+	// The ID of the Elastic Graphics accelerator.
+	ElasticGPUID *string `json:"elasticGpuId"`
+}
+
 // ElasticGPUSpecification is a specification for an Elastic Graphics accelerator.
 type ElasticGPUSpecification struct {
 	// The type of Elastic Graphics accelerator. For more information about the
@@ -202,6 +255,30 @@ type ElasticInferenceAccelerator struct {
 	Type *string `json:"type"`
 }
 
+// ElasticInferenceAcceleratorAssociation describes the association between an instance and an elastic inference accelerator.
+type ElasticInferenceAcceleratorAssociation struct {
+	// The Amazon Resource Name (ARN) of the elastic inference accelerator.
+	ElasticInferenceAcceleratorARN *string `json:"elasticInferenceAcceleratorArn"`
+
+	// The ID of the association.
+	ElasticInferenceAcceleratorAssociationID *string `json:"elasticInferenceAcceleratorAssociationId"`
+
+	// The state of the elastic inference accelerator.
+	ElasticInferenceAcceleratorAssociationState *string `json:"elasticInferenceAcceleratorAssociationState"`
+
+	// The time at which the elastic inference accelerator is associated with an
+	// instance.
+	ElasticInferenceAcceleratorAssociationTime *metav1.Time `json:"elasticInferenceAcceleratorAssociationTime"`
+}
+
+// GroupIdentifier describes a security group
+type GroupIdentifier struct {
+	// GroupID is the security group identifier
+	GroupID string `json:"groupId"`
+	// GroupName is the name of the security group
+	GroupName string `json:"groupName"`
+}
+
 // HibernationOptionsRequest indicates whether your instance is configured for hibernation. This parameter
 // is valid only if the instance meets the hibernation prerequisites (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html#hibernating-prerequisites).
 // For more information, see Hibernate Your Instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html)
@@ -213,13 +290,32 @@ type HibernationOptionsRequest struct {
 	Configured *bool `json:"configured,omitempty"`
 }
 
-// IamInstanceProfileSpecification describes an IAM instance profile.
-type IamInstanceProfileSpecification struct {
+// IAMInstanceProfile Describes an IAM instance profile.
+type IAMInstanceProfile struct {
+	// The Amazon Resource Name (ARN) of the instance profile.
+	ARN *string `json:"arn"`
+
+	// The ID of the instance profile.
+	ID *string `json:"id"`
+}
+
+// IAMInstanceProfileSpecification describes an IAM instance profile.
+type IAMInstanceProfileSpecification struct {
 	// The Amazon Resource Name (ARN) of the instance profile.
 	ARN *string `json:"arn"`
 
 	// The name of the instance profile.
 	Name *string `json:"name"`
+}
+
+// InstanceBlockDeviceMapping describes a block device mapping.
+type InstanceBlockDeviceMapping struct {
+	// The device name (for example, /dev/sdh or xvdh).
+	DeviceName *string `json:"deviceName"`
+
+	// Parameters used to automatically set up EBS volumes when the instance is
+	// launched.
+	EBS *EBSInstanceBlockDevice `json:"ebs"`
 }
 
 // InstanceMarketOptionsRequest describes the market (purchasing) option for the instances.
@@ -235,6 +331,142 @@ type InstanceMarketOptionsRequest struct {
 type InstanceIPv6Address struct {
 	// The IPv6 address.
 	IPv6Address *string `json:"ipv6Address"`
+}
+
+// InstanceMetadataOptionsRequest defines the metadata options for the instance.
+type InstanceMetadataOptionsRequest struct {
+	// This parameter enables or disables the HTTP metadata endpoint on your instances.
+	// If the parameter is not specified, the default state is enabled.
+	//
+	// If you specify a value of disabled, you will not be able to access your instance
+	// metadata.
+	// +optional
+	// +kubebuilder:validation:Enum=enabled;disabled
+	HTTPEndpoint string `json:"httpEndpoint"`
+
+	// The desired HTTP PUT response hop limit for instance metadata requests. The
+	// larger the number, the further instance metadata requests can travel.
+	//
+	// Default: 1
+	//
+	// Possible values: Integers from 1 to 64
+	// +optional
+	HTTPPutResponseHopLimit *int64 `json:"httpPutResponseHopLimit"`
+
+	// The state of token usage for your instance metadata requests. If the parameter
+	// is not specified in the request, the default state is optional.
+	//
+	// If the state is optional, you can choose to retrieve instance metadata with
+	// or without a signed token header on your request. If you retrieve the IAM
+	// role credentials without a token, the version 1.0 role credentials are returned.
+	// If you retrieve the IAM role credentials using a valid signed token, the
+	// version 2.0 role credentials are returned.
+	//
+	// If the state is required, you must send a signed token header with any instance
+	// metadata retrieval requests. In this state, retrieving the IAM role credentials
+	// always returns the version 2.0 credentials; the version 1.0 credentials are
+	// not available.
+	// +kubebuilder:validation:Enum=optional;required
+	HTTPTokens string `json:"httpTokens"`
+}
+
+// InstanceNetworkInterface describes a network interface.
+type InstanceNetworkInterface struct {
+	// The association information for an Elastic IPv4 associated with the network
+	// interface.
+	// +optional
+	Association *InstanceNetworkInterfaceAssociation `json:"association"`
+
+	// The network interface attachment.
+	// +optional
+	Attachment *InstanceNetworkInterfaceAttachment `json:"attachment"`
+
+	// The description.
+	// +optional
+	Description *string `json:"description"`
+
+	// One or more security groups.
+	// +optional
+	Groups []GroupIdentifier `json:"groups"`
+
+	// Describes the type of network interface.
+	//
+	// Valid values: interface | efa
+	// +optional
+	InterfaceType *string `json:"interfaceType"`
+
+	// One or more IPv6 addresses associated with the network interface.
+	// +optional
+	IPv6Addresses []InstanceIPv6Address `json:"ipv6Addresses"`
+
+	// The MAC address.
+	// +optional
+	MacAddress *string `json:"macAddress"`
+
+	// The ID of the network interface.
+	// +optional
+	NetworkInterfaceID *string `json:"networkInterfaceId"`
+
+	// The ID of the AWS account that created the network interface.
+	// +optional
+	OwnerID *string `json:"ownerId"`
+
+	// The private DNS name.
+	// +optional
+	PrivateDNSName *string `json:"privateDnsName"`
+
+	// The IPv4 address of the network interface within the subnet.
+	// +optional
+	PrivateIPAddress *string `json:"privateIpAddress"`
+
+	// One or more private IPv4 addresses associated with the network interface.
+	// +optional
+	PrivateIPAddresses []InstancePrivateIPAddress `json:"privateIpAddresses"`
+
+	// Indicates whether to validate network traffic to or from this network interface.
+	// +optional
+	SourceDestCheck *bool `json:"sourceDestCheck"`
+
+	// The status of the network interface.
+	Status string `json:"status"`
+
+	// The ID of the subnet.
+	// +optional
+	SubnetID *string `json:"subnetId"`
+
+	// The ID of the VPC.
+	// +optional
+	VPCID *string `json:"vpcId"`
+}
+
+// InstanceNetworkInterfaceAssociation describes association information for an Elastic IP address (IPv4).
+type InstanceNetworkInterfaceAssociation struct {
+	// The ID of the owner of the Elastic IP address.
+	IPOwnerID *string `json:"ipOwnerId"`
+
+	// The public DNS name.
+	PublicDNSName *string `json:"publicDnsName"`
+
+	// The public IP address or Elastic IP address bound to the network interface.
+	PublicIP *string `json:"publicIp"`
+}
+
+// InstanceNetworkInterfaceAttachment describes a network interface attachment.
+type InstanceNetworkInterfaceAttachment struct {
+	// The time stamp when the attachment initiated.
+	AttachTime *metav1.Time `json:"attachTime"`
+
+	// The ID of the network interface attachment.
+	AttachmentID *string `json:"attachmentId"`
+
+	// Indicates whether the network interface is deleted when the instance is terminated.
+	DeleteOnTermination *bool `json:"deleteOnTermination"`
+
+	// The index of the device on the instance for the network interface attachment.
+	DeviceIndex *int64 `json:"deviceIndex"`
+
+	// The attachment state.
+	Status string `json:"status"`
 }
 
 // InstanceNetworkInterfaceSpecification describes a network interface.
@@ -332,6 +564,22 @@ type InstanceNetworkInterfaceSpecification struct {
 	SubnetID *string `json:"subnetId"` // TODO: we probably want to consider refs for this
 }
 
+// InstancePrivateIPAddress describes a private IPv4 address.
+type InstancePrivateIPAddress struct {
+	// The association information for an Elastic IP address for the network interface.
+	Association *InstanceNetworkInterfaceAssociation `json:"association"`
+
+	// Indicates whether this IPv4 address is the primary private IP address of
+	// the network interface.
+	Primary *bool `json:"primary"`
+
+	// The private IPv4 DNS name.
+	PrivateDNSName *string `json:"privateDnsName"`
+
+	// The private IPv4 address of the network interface.
+	PrivateIPAddress *string `json:"privateIpAddress"`
+}
+
 // LicenseConfigurationRequest describes a license configuration
 type LicenseConfigurationRequest struct {
 	// Amazon Resource Name (ARN) of the license configuration
@@ -355,41 +603,11 @@ type LaunchTemplateSpecification struct {
 	Version *string `json:"version"`
 }
 
-// InstanceMetadataOptionsRequest defines the metadata options for the instance.
-type InstanceMetadataOptionsRequest struct {
-	// This parameter enables or disables the HTTP metadata endpoint on your instances.
-	// If the parameter is not specified, the default state is enabled.
-	//
-	// If you specify a value of disabled, you will not be able to access your instance
-	// metadata.
-	// +optional
-	// +kubebuilder:validation:Enum=enabled;disabled
-	HTTPEndpoint string `json:"httpEndpoint"`
-
-	// The desired HTTP PUT response hop limit for instance metadata requests. The
-	// larger the number, the further instance metadata requests can travel.
-	//
-	// Default: 1
-	//
-	// Possible values: Integers from 1 to 64
-	// +optional
-	HTTPPutResponseHopLimit *int64 `json:"httpPutResponseHopLimit"`
-
-	// The state of token usage for your instance metadata requests. If the parameter
-	// is not specified in the request, the default state is optional.
-	//
-	// If the state is optional, you can choose to retrieve instance metadata with
-	// or without a signed token header on your request. If you retrieve the IAM
-	// role credentials without a token, the version 1.0 role credentials are returned.
-	// If you retrieve the IAM role credentials using a valid signed token, the
-	// version 2.0 role credentials are returned.
-	//
-	// If the state is required, you must send a signed token header with any instance
-	// metadata retrieval requests. In this state, retrieving the IAM role credentials
-	// always returns the version 2.0 credentials; the version 1.0 credentials are
-	// not available.
-	// +kubebuilder:validation:Enum=optional;required
-	HTTPTokens string `json:"httpTokens"`
+// Monitoring describes the monitoring of an instance.
+type Monitoring struct {
+	// Indicates whether detailed monitoring is enabled. Otherwise, basic monitoring
+	// is enabled.
+	State string `json:"state"`
 }
 
 // Placement describes the placement of an instance.
@@ -474,6 +692,15 @@ type PrivateIPAddressSpecification struct {
 	PrivateIPAddress *string `json:"privateIPAddress"`
 }
 
+// ProductCode describes a product code.
+type ProductCode struct {
+	// The product code.
+	ProductCodeID *string `json:"productCodeId"`
+
+	// The type of product code.
+	ProductCodeType string `json:"productCodeType"`
+}
+
 // RunInstancesMonitoringEnabled describes the monitoring of an instance.
 type RunInstancesMonitoringEnabled struct {
 	// Indicates whether detailed monitoring is enabled. Otherwise, basic monitoring
@@ -510,6 +737,53 @@ type SpotMarketOptions struct {
 	// current date.
 	// Must be in UTC format (YYYY-MM-DDTHH:MM:SSZ)
 	ValidUntil *metav1.Time `json:"validUntil"`
+}
+
+// StateReason describes a state change.
+type StateReason struct {
+	// The reason code for the state change.
+	Code *string `json:"code"`
+
+	// The message for the state change.
+	//
+	//    * Server.InsufficientInstanceCapacity: There was insufficient capacity
+	//    available to satisfy the launch request.
+	//
+	//    * Server.InternalError: An internal error caused the instance to terminate
+	//    during launch.
+	//
+	//    * Server.ScheduledStop: The instance was stopped due to a scheduled retirement.
+	//
+	//    * Server.SpotInstanceShutdown: The instance was stopped because the number
+	//    of Spot requests with a maximum price equal to or higher than the Spot
+	//    price exceeded available capacity or because of an increase in the Spot
+	//    price.
+	//
+	//    * Server.SpotInstanceTermination: The instance was terminated because
+	//    the number of Spot requests with a maximum price equal to or higher than
+	//    the Spot price exceeded available capacity or because of an increase in
+	//    the Spot price.
+	//
+	//    * Client.InstanceInitiatedShutdown: The instance was shut down using the
+	//    shutdown -h command from the instance.
+	//
+	//    * Client.InstanceTerminated: The instance was terminated or rebooted during
+	//    AMI creation.
+	//
+	//    * Client.InternalError: A client error caused the instance to terminate
+	//    during launch.
+	//
+	//    * Client.InvalidSnapshot.NotFound: The specified snapshot was not found.
+	//
+	//    * Client.UserInitiatedHibernate: Hibernation was initiated on the instance.
+	//
+	//    * Client.UserInitiatedShutdown: The instance was shut down using the Amazon
+	//    EC2 API.
+	//
+	//    * Client.VolumeLimitExceeded: The limit on the number of EBS volumes or
+	//    total storage was exceeded. Decrease usage or request an increase in your
+	//    account limits.
+	Message *string `json:"message"`
 }
 
 // Tag defines a tag

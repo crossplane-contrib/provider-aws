@@ -6,8 +6,6 @@ spec:
   forProvider:
     region: us-east-1
     imageId: ami-0dc2d3e4c0f9ebd18
-    maxCount: 1
-    minCount: 1
     securityGroupIdRefs:
       - name: sample-cluster-sg
     subnetIdRef:

@@ -671,12 +671,493 @@ spec:
             description: An InstanceStatus represents the observed state of Instances.
             properties:
               atProvider:
-                description: InstanceObservation keeps the state for the external resource
+                description: InstanceObservation keeps the state for the external resource. The below fields follow the Instance response object as closely as possible.
                 properties:
+                  amiLaunchIndex:
+                    format: int64
+                    type: integer
+                  architecture:
+                    type: string
+                  blockDeviceMapping:
+                    items:
+                      description: InstanceBlockDeviceMapping describes a block device mapping.
+                      properties:
+                        deviceName:
+                          description: The device name (for example, /dev/sdh or xvdh).
+                          type: string
+                        ebs:
+                          description: Parameters used to automatically set up EBS volumes when the instance is launched.
+                          properties:
+                            attachTime:
+                              description: The time stamp when the attachment initiated.
+                              format: date-time
+                              type: string
+                            deleteOnTermination:
+                              description: Indicates whether the volume is deleted on instance termination.
+                              type: boolean
+                            status:
+                              description: The attachment state.
+                              type: string
+                            volumeId:
+                              description: The ID of the EBS volume.
+                              type: string
+                          required:
+                          - attachTime
+                          - deleteOnTermination
+                          - status
+                          - volumeId
+                          type: object
+                      required:
+                      - deviceName
+                      - ebs
+                      type: object
+                    type: array
+                  capacityReservationId:
+                    type: string
+                  capacityReservationSpecification:
+                    description: CapacityReservationSpecificationResponse describes the instance's Capacity Reservation targeting preferences. The action returns the capacityReservationPreference response element if the instance is configured to run in On-Demand capacity, or if it is configured in run in any open Capacity Reservation that has matching attributes (instance type, platform, Availability Zone). The action returns the capacityReservationTarget response element if the instance explicily targets a specific Capacity Reservation.
+                    properties:
+                      capacityReservationPerference:
+                        description: "Describes the instance's Capacity Reservation preferences. Possible preferences include: \n    * open - The instance can run in any open Capacity Reservation that has    matching attributes (instance type, platform, Availability Zone). \n    * none - The instance avoids running in a Capacity Reservation even if    one is available. The instance runs in On-Demand capacity."
+                        type: string
+                      capacityReservationTarget:
+                        description: Information about the targeted Capacity Reservation.
+                        properties:
+                          capacityReservationId:
+                            description: The ID of the Capacity Reservation.
+                            type: string
+                        required:
+                        - capacityReservationId
+                        type: object
+                    required:
+                    - capacityReservationPerference
+                    type: object
+                  clientToken:
+                    type: string
+                  cpuOptions:
+                    description: CPUOptionsRequest defines the options for the instance. Both the core count and threads per core must be specified in the request.
+                    properties:
+                      coreCount:
+                        description: The number of CPU cores for the instance.
+                        format: int64
+                        type: integer
+                      threadsPerCore:
+                        description: The number of threads per CPU core. To disable multithreading for the instance, specify a value of 1. Otherwise, specify the default value of 2.
+                        format: int64
+                        type: integer
+                    required:
+                    - coreCount
+                    - threadsPerCore
+                    type: object
+                  ebs:
+                    type: string
+                  ebsOptimized:
+                    type: boolean
+                  elasticGpuAssociation:
+                    items:
+                      description: ElasticGPUAssociation describes the association between an instance and an Elastic Graphics accelerator.
+                      properties:
+                        elasticGpuAssociationId:
+                          description: The ID of the association.
+                          type: string
+                        elasticGpuAssociationState:
+                          description: The state of the association between the instance and the Elastic Graphics accelerator.
+                          type: string
+                        elasticGpuAssociationTime:
+                          description: The time the Elastic Graphics accelerator was associated with the instance.
+                          type: string
+                        elasticGpuId:
+                          description: The ID of the Elastic Graphics accelerator.
+                          type: string
+                      required:
+                      - elasticGpuAssociationId
+                      - elasticGpuAssociationState
+                      - elasticGpuAssociationTime
+                      - elasticGpuId
+                      type: object
+                    type: array
+                  elasticInferenceAcceleratorAssociations:
+                    items:
+                      description: ElasticInferenceAcceleratorAssociation describes the association between an instance and an elastic inference accelerator.
+                      properties:
+                        elasticInferenceAcceleratorArn:
+                          description: The Amazon Resource Name (ARN) of the elastic inference accelerator.
+                          type: string
+                        elasticInferenceAcceleratorAssociationId:
+                          description: The ID of the association.
+                          type: string
+                        elasticInferenceAcceleratorAssociationState:
+                          description: The state of the elastic inference accelerator.
+                          type: string
+                        elasticInferenceAcceleratorAssociationTime:
+                          description: The time at which the elastic inference accelerator is associated with an instance.
+                          format: date-time
+                          type: string
+                      required:
+                      - elasticInferenceAcceleratorArn
+                      - elasticInferenceAcceleratorAssociationId
+                      - elasticInferenceAcceleratorAssociationState
+                      - elasticInferenceAcceleratorAssociationTime
+                      type: object
+                    type: array
+                  enaSupport:
+                    type: boolean
+                  hibernationOptions:
+                    description: HibernationOptionsRequest indicates whether your instance is configured for hibernation. This parameter is valid only if the instance meets the hibernation prerequisites (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html#hibernating-prerequisites). For more information, see Hibernate Your Instance (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Hibernate.html) in the Amazon Elastic Compute Cloud User Guide.
+                    properties:
+                      configured:
+                        description: "If you set this parameter to true, your instance is enabled for hibernation. \n Default: false"
+                        type: boolean
+                    type: object
+                  hypervisor:
+                    type: string
+                  iamInstanceProfile:
+                    description: IAMInstanceProfile Describes an IAM instance profile.
+                    properties:
+                      arn:
+                        description: The Amazon Resource Name (ARN) of the instance profile.
+                        type: string
+                      id:
+                        description: The ID of the instance profile.
+                        type: string
+                    required:
+                    - arn
+                    - id
+                    type: object
+                  imageId:
+                    type: string
+                  instanceId:
+                    type: string
+                  instanceLifecyle:
+                    type: string
+                  instanceType:
+                    type: string
+                  kernelId:
+                    type: string
+                  launchTime:
+                    format: date-time
+                    type: string
+                  licenseSet:
+                    items:
+                      description: LicenseConfigurationRequest describes a license configuration
+                      properties:
+                        licenseConfigurationArn:
+                          description: Amazon Resource Name (ARN) of the license configuration
+                          type: string
+                      required:
+                      - licenseConfigurationArn
+                      type: object
+                    type: array
+                  metadataOptions:
+                    description: InstanceMetadataOptionsRequest defines the metadata options for the instance.
+                    properties:
+                      httpEndpoint:
+                        description: "This parameter enables or disables the HTTP metadata endpoint on your instances. If the parameter is not specified, the default state is enabled. \n If you specify a value of disabled, you will not be able to access your instance metadata."
+                        enum:
+                        - enabled
+                        - disabled
+                        type: string
+                      httpPutResponseHopLimit:
+                        description: "The desired HTTP PUT response hop limit for instance metadata requests. The larger the number, the further instance metadata requests can travel. \n Default: 1 \n Possible values: Integers from 1 to 64"
+                        format: int64
+                        type: integer
+                      httpTokens:
+                        description: "The state of token usage for your instance metadata requests. If the parameter is not specified in the request, the default state is optional. \n If the state is optional, you can choose to retrieve instance metadata with or without a signed token header on your request. If you retrieve the IAM role credentials without a token, the version 1.0 role credentials are returned. If you retrieve the IAM role credentials using a valid signed token, the version 2.0 role credentials are returned. \n If the state is required, you must send a signed token header with any instance metadata retrieval requests. In this state, retrieving the IAM role credentials always returns the version 2.0 credentials; the version 1.0 credentials are not available."
+                        enum:
+                        - optional
+                        - required
+                        type: string
+                    required:
+                    - httpTokens
+                    type: object
+                  monitoring:
+                    description: Monitoring describes the monitoring of an instance.
+                    properties:
+                      state:
+                        description: Indicates whether detailed monitoring is enabled. Otherwise, basic monitoring is enabled.
+                        type: string
+                    required:
+                    - state
+                    type: object
+                  networkInterfaces:
+                    items:
+                      description: InstanceNetworkInterface describes a network interface.
+                      properties:
+                        association:
+                          description: The association information for an Elastic IPv4 associated with the network interface.
+                          properties:
+                            ipOwnerId:
+                              description: The ID of the owner of the Elastic IP address.
+                              type: string
+                            publicDnsName:
+                              description: The public DNS name.
+                              type: string
+                            publicIp:
+                              description: The public IP address or Elastic IP address bound to the network interface.
+                              type: string
+                          required:
+                          - ipOwnerId
+                          - publicDnsName
+                          - publicIp
+                          type: object
+                        attachment:
+                          description: The network interface attachment.
+                          properties:
+                            attachTime:
+                              description: The time stamp when the attachment initiated.
+                              format: date-time
+                              type: string
+                            attachmentId:
+                              description: The ID of the network interface attachment.
+                              type: string
+                            deleteOnTermination:
+                              description: Indicates whether the network interface is deleted when the instance is terminated.
+                              type: boolean
+                            deviceIndex:
+                              description: The index of the device on the instance for the network interface attachment.
+                              format: int64
+                              type: integer
+                            status:
+                              description: The attachment state.
+                              type: string
+                          required:
+                          - attachTime
+                          - attachmentId
+                          - deleteOnTermination
+                          - deviceIndex
+                          - status
+                          type: object
+                        description:
+                          description: The description.
+                          type: string
+                        groups:
+                          description: One or more security groups.
+                          items:
+                            description: GroupIdentifier describes a security group
+                            properties:
+                              groupId:
+                                description: GroupID is the security group identifier
+                                type: string
+                              groupName:
+                                description: GroupName is the name of the security group
+                                type: string
+                            required:
+                            - groupId
+                            - groupName
+                            type: object
+                          type: array
+                        interfaceType:
+                          description: "Describes the type of network interface. \n Valid values: interface | efa"
+                          type: string
+                        ipv6Addresses:
+                          description: One or more IPv6 addresses associated with the network interface.
+                          items:
+                            description: InstanceIPv6Address describes an IPv6 address.
+                            properties:
+                              ipv6Address:
+                                description: The IPv6 address.
+                                type: string
+                            required:
+                            - ipv6Address
+                            type: object
+                          type: array
+                        macAddress:
+                          description: The MAC address.
+                          type: string
+                        networkInterfaceId:
+                          description: The ID of the network interface.
+                          type: string
+                        ownerId:
+                          description: The ID of the AWS account that created the network interface.
+                          type: string
+                        privateDnsName:
+                          description: The private DNS name.
+                          type: string
+                        privateIpAddress:
+                          description: The IPv4 address of the network interface within the subnet.
+                          type: string
+                        privateIpAddresses:
+                          description: One or more private IPv4 addresses associated with the network interface.
+                          items:
+                            description: InstancePrivateIPAddress describes a private IPv4 address.
+                            properties:
+                              association:
+                                description: The association information for an Elastic IP address for the network interface.
+                                properties:
+                                  ipOwnerId:
+                                    description: The ID of the owner of the Elastic IP address.
+                                    type: string
+                                  publicDnsName:
+                                    description: The public DNS name.
+                                    type: string
+                                  publicIp:
+                                    description: The public IP address or Elastic IP address bound to the network interface.
+                                    type: string
+                                required:
+                                - ipOwnerId
+                                - publicDnsName
+                                - publicIp
+                                type: object
+                              primary:
+                                description: Indicates whether this IPv4 address is the primary private IP address of the network interface.
+                                type: boolean
+                              privateDnsName:
+                                description: The private IPv4 DNS name.
+                                type: string
+                              privateIpAddress:
+                                description: The private IPv4 address of the network interface.
+                                type: string
+                            required:
+                            - association
+                            - primary
+                            - privateDnsName
+                            - privateIpAddress
+                            type: object
+                          type: array
+                        sourceDestCheck:
+                          description: Indicates whether to validate network traffic to or from this network interface.
+                          type: boolean
+                        status:
+                          description: The status of the network interface.
+                          type: string
+                        subnetId:
+                          description: The ID of the subnet.
+                          type: string
+                        vpcId:
+                          description: The ID of the VPC.
+                          type: string
+                      required:
+                      - status
+                      type: object
+                    type: array
+                  outpostArn:
+                    type: string
+                  placement:
+                    description: Placement describes the placement of an instance.
+                    properties:
+                      affinity:
+                        description: "The affinity setting for the instance on the Dedicated Host. This parameter is not supported for the ImportInstance (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ImportInstance.html) command. \n This parameter is not supported by CreateFleet (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet)."
+                        type: string
+                      availabilityZone:
+                        description: "The Availability Zone of the instance. \n If not specified, an Availability Zone will be automatically chosen for you based on the load balancing criteria for the Region. \n This parameter is not supported by CreateFleet (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet)."
+                        type: string
+                      groupName:
+                        description: The name of the placement group the instance is in.
+                        type: string
+                      hostId:
+                        description: "The ID of the Dedicated Host on which the instance resides. This parameter is not supported for the ImportInstance (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ImportInstance.html) command. \n This parameter is not supported by CreateFleet (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet)."
+                        type: string
+                      hostResourceGroupArn:
+                        description: "The ARN of the host resource group in which to launch the instances. If you specify a host resource group ARN, omit the Tenancy parameter or set it to host. \n This parameter is not supported by CreateFleet (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet)."
+                        type: string
+                      partitionNumber:
+                        description: "The number of the partition the instance is in. Valid only if the placement group strategy is set to partition. \n This parameter is not supported by CreateFleet (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet)."
+                        format: int64
+                        type: integer
+                      spreadDomain:
+                        description: "Reserved for future use. \n This parameter is not supported by CreateFleet (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet)."
+                        type: string
+                      tenancy:
+                        description: "The tenancy of the instance (if the instance is running in a VPC). An instance with a tenancy of dedicated runs on single-tenant hardware. The host tenancy is not supported for the ImportInstance (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ImportInstance.html) command. \n This parameter is not supported by CreateFleet (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet)."
+                        type: string
+                    required:
+                    - groupName
+                    type: object
+                  platform:
+                    type: string
+                  privateDnsName:
+                    type: string
+                  privateIpAddress:
+                    type: string
+                  productCodes:
+                    items:
+                      description: ProductCode describes a product code.
+                      properties:
+                        productCodeId:
+                          description: The product code.
+                          type: string
+                        productCodeType:
+                          description: The type of product code.
+                          type: string
+                      required:
+                      - productCodeId
+                      - productCodeType
+                      type: object
+                    type: array
+                  publicDnsName:
+                    type: string
+                  publicIpAddress:
+                    type: string
+                  ramDiskId:
+                    type: string
+                  rootDeviceType:
+                    type: string
+                  securityGroups:
+                    items:
+                      description: GroupIdentifier describes a security group
+                      properties:
+                        groupId:
+                          description: GroupID is the security group identifier
+                          type: string
+                        groupName:
+                          description: GroupName is the name of the security group
+                          type: string
+                      required:
+                      - groupId
+                      - groupName
+                      type: object
+                    type: array
+                  sourceDestCheck:
+                    type: boolean
+                  spotInstanceId:
+                    type: string
+                  sriovNetSupport:
+                    type: string
                   state:
                     type: string
+                  stateReason:
+                    description: StateReason describes a state change.
+                    properties:
+                      code:
+                        description: The reason code for the state change.
+                        type: string
+                      message:
+                        description: "The message for the state change. \n    * Server.InsufficientInstanceCapacity: There was insufficient capacity    available to satisfy the launch request. \n    * Server.InternalError: An internal error caused the instance to terminate    during launch. \n    * Server.ScheduledStop: The instance was stopped due to a scheduled retirement. \n    * Server.SpotInstanceShutdown: The instance was stopped because the number    of Spot requests with a maximum price equal to or higher than the Spot    price exceeded available capacity or because of an increase in the Spot    price. \n    * Server.SpotInstanceTermination: The instance was terminated because    the number of Spot requests with a maximum price equal to or higher than    the Spot price exceeded available capacity or because of an increase in    the Spot price. \n    * Client.InstanceInitiatedShutdown: The instance was shut down using the    shutdown -h command from the instance. \n    * Client.InstanceTerminated: The instance was terminated or rebooted during    AMI creation. \n    * Client.InternalError: A client error caused the instance to terminate    during launch. \n    * Client.InvalidSnapshot.NotFound: The specified snapshot was not found. \n    * Client.UserInitiatedHibernate: Hibernation was initiated on the instance. \n    * Client.UserInitiatedShutdown: The instance was shut down using the Amazon    EC2 API. \n    * Client.VolumeLimitExceeded: The limit on the number of EBS volumes or    total storage was exceeded. Decrease usage or request an increase in your    account limits."
+                        type: string
+                    required:
+                    - code
+                    - message
+                    type: object
+                  stateTransitionReason:
+                    type: string
+                  subnetId:
+                    type: string
+                  tags:
+                    items:
+                      description: Tag defines a tag
+                      properties:
+                        key:
+                          description: Key is the name of the tag.
+                          type: string
+                        value:
+                          description: Value is the value of the tag.
+                          type: string
+                      required:
+                      - key
+                      - value
+                      type: object
+                    type: array
+                  virualizationType:
+                    type: string
+                  vpcId:
+                    type: string
                 required:
+                - architecture
+                - instanceType
+                - platform
+                - rootDeviceType
                 - state
+                - virualizationType
                 type: object
               conditions:
                 description: Conditions of the resource.

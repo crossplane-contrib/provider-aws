@@ -16,10 +16,12 @@ package ec2
 import (
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 )
@@ -65,8 +67,52 @@ func IsInstanceUpToDate(spec manualv1alpha1.InstanceParameters, instance ec2.Ins
 // a []ec2.Instance.
 func GenerateInstanceObservation(i ec2.Instance) manualv1alpha1.InstanceObservation {
 	return manualv1alpha1.InstanceObservation{
-		State: string(i.State.Name),
-		// TODO fill in more details from i
+		AmiLaunchIndex:                          i.AmiLaunchIndex,
+		Architecture:                            string(i.Architecture),
+		BlockDeviceMapping:                      GenerateInstanceBlockDeviceMappings(i.BlockDeviceMappings),
+		CapacityReservationID:                   i.CapacityReservationId,
+		CapacityReservationSpecification:        GenerateCapacityReservationSpecResponse(i.CapacityReservationSpecification),
+		ClientToken:                             i.ClientToken,
+		CPUOptons:                               GenerateCPUOptionsRequest(i.CpuOptions),
+		EBSOptimized:                            i.EbsOptimized,
+		ElasticGPUAssociations:                  GenerateElasticGPUAssociation(i.ElasticGpuAssociations),
+		ElasticInferenceAcceleratorAssociations: GenerateElasticInferenceAcceleratorAssociation(i.ElasticInferenceAcceleratorAssociations),
+		EnaSupport:                              i.EnaSupport,
+		HibernationOptions:                      GenerateHibernationOptionsRequest(i.HibernationOptions),
+		Hypervisor:                              string(i.Hypervisor),
+		IAMInstanceProfile:                      GenerateIAMInstanceProfile(i.IamInstanceProfile),
+		ImageID:                                 i.ImageId,
+		InstanceID:                              i.InstanceId,
+		InstanceLifecycle:                       string(i.InstanceLifecycle),
+		InstanceType:                            string(i.InstanceType),
+		KernelID:                                i.KernelId,
+		LaunchTime:                              FromTimePtr(i.LaunchTime),
+		Licenses:                                GenerateLicenseConfigurationRequest(i.Licenses),
+		MetadataOptions:                         GenerateInstanceMetadataOptionsRequest(i.MetadataOptions),
+		Monitoriing:                             GenerateMonitoring(i.Monitoring),
+		NetworkInterfaces:                       GenerateInstanceNetworkInterface(i.NetworkInterfaces),
+		OutpostARN:                              i.OutpostArn,
+		Placement:                               GeneratePlacement(i.Placement),
+		Platform:                                string(i.Platform),
+		PrivateDNSName:                          i.PrivateDnsName,
+		PrivateIPAddress:                        i.PrivateIpAddress,
+		ProductCodes:                            GenerateProductCodes(i.ProductCodes),
+		PublicDNSName:                           i.PublicDnsName,
+		PublicIPAddress:                         i.PublicIpAddress,
+		RAMDiskID:                               i.RamdiskId,
+		RootDeviceName:                          i.RootDeviceName,
+		RootDeviceType:                          string(i.RootDeviceType),
+		SecurityGroups:                          GenerateGroupIdentifiers(i.SecurityGroups),
+		SourceDestCheck:                         i.SourceDestCheck,
+		SpotInstanceRequestID:                   i.SpotInstanceRequestId,
+		SriovNetSupport:                         i.SriovNetSupport,
+		State:                                   string(i.State.Name),
+		StateReason:                             GenerateStateReason(i.StateReason),
+		StateTransitionReason:                   i.StateTransitionReason,
+		SubnetID:                                i.SubnetId,
+		Tags:                                    GenerateTags(i.Tags),
+		VirtualizationType:                      string(i.VirtualizationType),
+		VPCID:                                   i.VpcId,
 	}
 }
 
@@ -157,10 +203,38 @@ func GenerateEC2CapacityReservationSpecs(spec *manualv1alpha1.CapacityReservatio
 	return nil
 }
 
+// GenerateCapacityReservationSpecResponse converts a ec2.CapacityReservationSpecificationResponse into an internal CapacityReservationSpecificationResponse
+func GenerateCapacityReservationSpecResponse(resp *ec2.CapacityReservationSpecificationResponse) *manualv1alpha1.CapacityReservationSpecificationResponse {
+	if resp != nil {
+		var target *manualv1alpha1.CapacityReservationTarget
+
+		if resp.CapacityReservationTarget != nil {
+			target.CapacityReservationID = resp.CapacityReservationTarget.CapacityReservationId
+		}
+
+		return &manualv1alpha1.CapacityReservationSpecificationResponse{
+			CapacityReservationPreference: string(resp.CapacityReservationPreference),
+			CapacityReservationTarget:     target,
+		}
+	}
+	return nil
+}
+
 // GenerateEC2CPUOptions converts an internal CPUOptionsRequest into a ec2.CpuOptionsRequest
 func GenerateEC2CPUOptions(opts *manualv1alpha1.CPUOptionsRequest) *ec2.CpuOptionsRequest {
 	if opts != nil {
 		return &ec2.CpuOptionsRequest{
+			CoreCount:      opts.CoreCount,
+			ThreadsPerCore: opts.ThreadsPerCore,
+		}
+	}
+	return nil
+}
+
+// GenerateCPUOptionsRequest converts a CpuOptions into a internal CpuOptionsRequest
+func GenerateCPUOptionsRequest(opts *ec2.CpuOptions) *manualv1alpha1.CPUOptionsRequest {
+	if opts != nil {
+		return &manualv1alpha1.CPUOptionsRequest{
 			CoreCount:      opts.CoreCount,
 			ThreadsPerCore: opts.ThreadsPerCore,
 		}
@@ -174,6 +248,24 @@ func GenerateEC2CreditSpec(spec *manualv1alpha1.CreditSpecificationRequest) *ec2
 		return &ec2.CreditSpecificationRequest{
 			CpuCredits: spec.CPUCredits,
 		}
+	}
+	return nil
+}
+
+// GenerateElasticGPUAssociation coverts a slice of ec2.ElasticGpuAssociation into an internal slice of ElasticGPUAssociation
+func GenerateElasticGPUAssociation(assocs []ec2.ElasticGpuAssociation) []manualv1alpha1.ElasticGPUAssociation {
+	if assocs != nil {
+		res := make([]manualv1alpha1.ElasticGPUAssociation, len(assocs))
+		for i, a := range assocs {
+			res[i] = manualv1alpha1.ElasticGPUAssociation{
+				ElasticGPUAssociationID:    a.ElasticGpuAssociationId,
+				ElasticGPUAssociationState: a.ElasticGpuAssociationState,
+				ElasticGPUAssociationTime:  a.ElasticGpuAssociationTime,
+				ElasticGPUID:               a.ElasticGpuId,
+			}
+		}
+
+		return res
 	}
 	return nil
 }
@@ -209,6 +301,24 @@ func GenerateEC2ElasticInferenceAccelerators(accs []manualv1alpha1.ElasticInfere
 	return nil
 }
 
+// GenerateElasticInferenceAcceleratorAssociation coverts a slice of ec2.ElasticInferenceAcceleratorAssociation into an internal slice of ElasticInferenceAcceleratorAssociation
+func GenerateElasticInferenceAcceleratorAssociation(assocs []ec2.ElasticInferenceAcceleratorAssociation) []manualv1alpha1.ElasticInferenceAcceleratorAssociation {
+	if assocs != nil {
+		res := make([]manualv1alpha1.ElasticInferenceAcceleratorAssociation, len(assocs))
+		for i, a := range assocs {
+			res[i] = manualv1alpha1.ElasticInferenceAcceleratorAssociation{
+				ElasticInferenceAcceleratorARN:              a.ElasticInferenceAcceleratorArn,
+				ElasticInferenceAcceleratorAssociationID:    a.ElasticInferenceAcceleratorAssociationId,
+				ElasticInferenceAcceleratorAssociationState: a.ElasticInferenceAcceleratorAssociationState,
+				ElasticInferenceAcceleratorAssociationTime:  FromTimePtr(a.ElasticInferenceAcceleratorAssociationTime),
+			}
+		}
+
+		return res
+	}
+	return nil
+}
+
 // GenerateEC2HibernationOptions converts an internal HibernationOptionsRequest into a ec2.HibernationOptionsRequest
 func GenerateEC2HibernationOptions(opts *manualv1alpha1.HibernationOptionsRequest) *ec2.HibernationOptionsRequest {
 	if opts != nil {
@@ -219,13 +329,61 @@ func GenerateEC2HibernationOptions(opts *manualv1alpha1.HibernationOptionsReques
 	return nil
 }
 
-// GenerateEC2IamInstanceProfileSpecification converts an internal IamInstanceProfileSpecification into a ec2.IamInstanceProfileSpecification
-func GenerateEC2IamInstanceProfileSpecification(spec *manualv1alpha1.IamInstanceProfileSpecification) *ec2.IamInstanceProfileSpecification {
+// GenerateGroupIdentifiers coverts a slice of ec2.GroupIdentifier into an internal slice of GroupIdentifier
+func GenerateGroupIdentifiers(ids []ec2.GroupIdentifier) []manualv1alpha1.GroupIdentifier {
+	if ids != nil {
+		res := make([]manualv1alpha1.GroupIdentifier, len(ids))
+		for i, id := range ids {
+			res[i] = manualv1alpha1.GroupIdentifier{
+				GroupID:   *id.GroupId,
+				GroupName: *id.GroupName,
+			}
+		}
+
+		return res
+	}
+	return nil
+}
+
+// GenerateIAMInstanceProfile converts a ec2.IamInstanceProfile into a internal IamInstanceProfile
+func GenerateIAMInstanceProfile(p *ec2.IamInstanceProfile) *manualv1alpha1.IAMInstanceProfile {
+	if p != nil {
+		return &manualv1alpha1.IAMInstanceProfile{
+			ARN: p.Arn,
+			ID:  p.Id,
+		}
+	}
+	return nil
+}
+
+// GenerateEC2IAMInstanceProfileSpecification converts an internal IamInstanceProfileSpecification into a ec2.IamInstanceProfileSpecification
+func GenerateEC2IAMInstanceProfileSpecification(spec *manualv1alpha1.IAMInstanceProfileSpecification) *ec2.IamInstanceProfileSpecification {
 	if spec != nil {
 		return &ec2.IamInstanceProfileSpecification{
 			Arn:  spec.ARN,
 			Name: spec.Name,
 		}
+	}
+	return nil
+}
+
+// GenerateInstanceBlockDeviceMappings coverts a slice of ec2.InstanceBlockDeviceMapping into an internal slice of InstanceBlockDeviceMapping
+func GenerateInstanceBlockDeviceMappings(mappings []ec2.InstanceBlockDeviceMapping) []manualv1alpha1.InstanceBlockDeviceMapping {
+	if mappings != nil {
+		res := make([]manualv1alpha1.InstanceBlockDeviceMapping, len(mappings))
+		for i, m := range mappings {
+			res[i] = manualv1alpha1.InstanceBlockDeviceMapping{
+				DeviceName: m.DeviceName,
+				EBS: &manualv1alpha1.EBSInstanceBlockDevice{
+					AttachTime:          FromTimePtr(m.Ebs.AttachTime),
+					DeleteOnTermination: m.Ebs.DeleteOnTermination,
+					Status:              string(m.Ebs.Status),
+					VolumeID:            m.Ebs.VolumeId,
+				},
+			}
+		}
+
+		return res
 	}
 	return nil
 }
@@ -247,6 +405,18 @@ func GenerateEC2InstanceMarketOptionsRequest(opts *manualv1alpha1.InstanceMarket
 	return nil
 }
 
+// GenerateInstanceMetadataOptionsRequest converts an ec2.InstanceMetadataOptionsResponse into an internal InstanceMetadataOptionsRequest
+func GenerateInstanceMetadataOptionsRequest(opts *ec2.InstanceMetadataOptionsResponse) *manualv1alpha1.InstanceMetadataOptionsRequest {
+	if opts != nil {
+		return &manualv1alpha1.InstanceMetadataOptionsRequest{
+			HTTPEndpoint:            string(opts.HttpEndpoint),
+			HTTPPutResponseHopLimit: opts.HttpPutResponseHopLimit,
+			HTTPTokens:              string(opts.HttpTokens),
+		}
+	}
+	return nil
+}
+
 // GenerateEC2InstanceIPV6Addresses coverts an internal slice of InstanceIPV6Address into a slice of ec2.InstanceIpv6Address
 func GenerateEC2InstanceIPV6Addresses(addrs []manualv1alpha1.InstanceIPv6Address) []ec2.InstanceIpv6Address {
 	if addrs != nil {
@@ -254,6 +424,21 @@ func GenerateEC2InstanceIPV6Addresses(addrs []manualv1alpha1.InstanceIPv6Address
 		for i, a := range addrs {
 			res[i] = ec2.InstanceIpv6Address{
 				Ipv6Address: a.IPv6Address,
+			}
+		}
+
+		return res
+	}
+	return nil
+}
+
+// GenerateInstanceIPV6Addresses coverts a slice of ec2.InstanceIpv6Address into a slice of internal InstanceIPv6Address
+func GenerateInstanceIPV6Addresses(addrs []ec2.InstanceIpv6Address) []manualv1alpha1.InstanceIPv6Address {
+	if addrs != nil {
+		res := make([]manualv1alpha1.InstanceIPv6Address, len(addrs))
+		for i, a := range addrs {
+			res[i] = manualv1alpha1.InstanceIPv6Address{
+				IPv6Address: a.Ipv6Address,
 			}
 		}
 
@@ -270,6 +455,46 @@ func GenerateEC2InstanceMetadataOptionsRequest(opts *manualv1alpha1.InstanceMeta
 			HttpPutResponseHopLimit: opts.HTTPPutResponseHopLimit,
 			HttpTokens:              ec2.HttpTokensState(opts.HTTPTokens),
 		}
+	}
+	return nil
+}
+
+// GenerateInstanceNetworkInterface coverts a slice of ec2.InstanceNetworkInterface into an internal slice of InstanceNetworkInterface
+func GenerateInstanceNetworkInterface(nets []ec2.InstanceNetworkInterface) []manualv1alpha1.InstanceNetworkInterface {
+	if nets != nil {
+		res := make([]manualv1alpha1.InstanceNetworkInterface, len(nets))
+		for i, intr := range nets {
+			res[i] = manualv1alpha1.InstanceNetworkInterface{
+				Association: &manualv1alpha1.InstanceNetworkInterfaceAssociation{
+					IPOwnerID:     intr.Association.IpOwnerId,
+					PublicDNSName: intr.Association.PublicDnsName,
+					PublicIP:      intr.Association.PublicIp,
+				},
+				Attachment: &manualv1alpha1.InstanceNetworkInterfaceAttachment{
+					AttachTime:          FromTimePtr(intr.Attachment.AttachTime),
+					AttachmentID:        intr.Attachment.AttachmentId,
+					DeleteOnTermination: intr.Attachment.DeleteOnTermination,
+					DeviceIndex:         intr.Attachment.DeviceIndex,
+					Status:              string(intr.Attachment.Status),
+				},
+				Description:        intr.Description,
+				Groups:             GenerateGroupIdentifiers(intr.Groups),
+				InterfaceType:      intr.InterfaceType,
+				IPv6Addresses:      GenerateInstanceIPV6Addresses(intr.Ipv6Addresses),
+				MacAddress:         intr.MacAddress,
+				NetworkInterfaceID: intr.NetworkInterfaceId,
+				OwnerID:            intr.OwnerId,
+				PrivateDNSName:     intr.PrivateDnsName,
+				PrivateIPAddress:   intr.PrivateIpAddress,
+				PrivateIPAddresses: GenerateInstancePrivateIPAddresses(intr.PrivateIpAddresses),
+				SourceDestCheck:    intr.SourceDestCheck,
+				Status:             string(intr.Status),
+				SubnetID:           intr.SubnetId,
+				VPCID:              intr.VpcId,
+			}
+		}
+
+		return res
 	}
 	return nil
 }
@@ -302,6 +527,38 @@ func GenerateEC2InstanceNetworkInterfaceSpecs(specs []manualv1alpha1.InstanceNet
 	return nil
 }
 
+// GenerateInstancePrivateIPAddresses coverts a slice of ec2.InstanceIpv6Address into a slice of internal InstanceIPv6Address
+func GenerateInstancePrivateIPAddresses(addrs []ec2.InstancePrivateIpAddress) []manualv1alpha1.InstancePrivateIPAddress {
+	if addrs != nil {
+		res := make([]manualv1alpha1.InstancePrivateIPAddress, len(addrs))
+		for i, a := range addrs {
+			res[i] = manualv1alpha1.InstancePrivateIPAddress{
+				Association: &manualv1alpha1.InstanceNetworkInterfaceAssociation{
+					IPOwnerID:     a.Association.IpOwnerId,
+					PublicDNSName: a.Association.PublicDnsName,
+					PublicIP:      a.Association.PublicIp,
+				},
+				Primary:          a.Primary,
+				PrivateDNSName:   a.PrivateDnsName,
+				PrivateIPAddress: a.PrivateIpAddress,
+			}
+		}
+
+		return res
+	}
+	return nil
+}
+
+// GenerateHibernationOptionsRequest converts a ec2.HibernationOptions into a internal HibernationOptionsRequest
+func GenerateHibernationOptionsRequest(opts *ec2.HibernationOptions) *manualv1alpha1.HibernationOptionsRequest {
+	if opts != nil {
+		return &manualv1alpha1.HibernationOptionsRequest{
+			Configured: opts.Configured,
+		}
+	}
+	return nil
+}
+
 // GenerateEC2LaunchTemplateSpec converts internal LaunchTemplateSpecification into ec2.LaunchTemplateSpecification
 func GenerateEC2LaunchTemplateSpec(spec *manualv1alpha1.LaunchTemplateSpecification) *ec2.LaunchTemplateSpecification {
 	if spec != nil {
@@ -329,11 +586,36 @@ func GenerateEC2LicenseConfigurationRequest(reqs []manualv1alpha1.LicenseConfigu
 	return nil
 }
 
+// GenerateLicenseConfigurationRequest coverts a slice of ec2.LicenseConfiguration into an internal slice of LicenseConfigurationRequest
+func GenerateLicenseConfigurationRequest(reqs []ec2.LicenseConfiguration) []manualv1alpha1.LicenseConfigurationRequest {
+	if reqs != nil {
+		res := make([]manualv1alpha1.LicenseConfigurationRequest, len(reqs))
+		for i, r := range reqs {
+			res[i] = manualv1alpha1.LicenseConfigurationRequest{
+				LicenseConfigurationARN: r.LicenseConfigurationArn,
+			}
+		}
+
+		return res
+	}
+	return nil
+}
+
 // GenerateEC2Monitoring converts internal RunInstancesMonitoringEnabled into ec2.RunInstancesMonitoringEnabled
 func GenerateEC2Monitoring(m *manualv1alpha1.RunInstancesMonitoringEnabled) *ec2.RunInstancesMonitoringEnabled {
 	if m != nil {
 		return &ec2.RunInstancesMonitoringEnabled{
 			Enabled: m.Enabled,
+		}
+	}
+	return nil
+}
+
+// GenerateMonitoring converts a ec2.Monitoring into a internal Monitoring
+func GenerateMonitoring(m *ec2.Monitoring) *manualv1alpha1.Monitoring {
+	if m != nil {
+		return &manualv1alpha1.Monitoring{
+			State: string(m.State),
 		}
 	}
 	return nil
@@ -352,6 +634,38 @@ func GenerateEC2Placement(p *manualv1alpha1.Placement) *ec2.Placement {
 			SpreadDomain:         p.SpreadDomain,
 			Tenancy:              ec2.Tenancy(p.Tenancy),
 		}
+	}
+	return nil
+}
+
+// GeneratePlacement converts ec2.Placement into an internal Placement
+func GeneratePlacement(p *ec2.Placement) *manualv1alpha1.Placement {
+	if p != nil {
+		return &manualv1alpha1.Placement{
+			Affinity:             p.Affinity,
+			AvailabilityZone:     p.AvailabilityZone,
+			GroupName:            p.GroupName,
+			HostID:               p.HostId,
+			HostResourceGroupARN: p.HostResourceGroupArn,
+			PartitionNumber:      p.PartitionNumber,
+			SpreadDomain:         p.SpreadDomain,
+			Tenancy:              string(p.Tenancy),
+		}
+	}
+	return nil
+}
+
+// GenerateProductCodes converts ec2.ProductCode into an internal ProductCode
+func GenerateProductCodes(codes []ec2.ProductCode) []manualv1alpha1.ProductCode {
+	if codes != nil {
+		res := make([]manualv1alpha1.ProductCode, len(codes))
+		for i, c := range codes {
+			res[i] = manualv1alpha1.ProductCode{
+				ProductCodeID:   c.ProductCodeId,
+				ProductCodeType: string(c.ProductCodeType),
+			}
+		}
+		return res
 	}
 	return nil
 }
@@ -387,7 +701,7 @@ func GenerateEC2RunInstancesInput(name string, p *manualv1alpha1.InstanceParamet
 		ElasticGpuSpecification:           GenerateEC2ElasticGPUSpecs(p.ElasticGPUSpecification),
 		ElasticInferenceAccelerators:      GenerateEC2ElasticInferenceAccelerators(p.ElasticInferenceAccelerators),
 		HibernationOptions:                GenerateEC2HibernationOptions(p.HibernationOptions),
-		IamInstanceProfile:                GenerateEC2IamInstanceProfileSpecification(p.IamInstanceProfile),
+		IamInstanceProfile:                GenerateEC2IAMInstanceProfileSpecification(p.IamInstanceProfile),
 		ImageId:                           p.ImageID,
 		InstanceInitiatedShutdownBehavior: ec2.ShutdownBehavior(p.InstanceInitiatedShutdownBehavior),
 		InstanceMarketOptions:             GenerateEC2InstanceMarketOptionsRequest(p.InstanceMarketOptions),
@@ -412,6 +726,32 @@ func GenerateEC2RunInstancesInput(name string, p *manualv1alpha1.InstanceParamet
 		TagSpecifications:                 GenerateEC2TagSpecifications(p.TagSpecifications),
 		UserData:                          p.UserData,
 	}
+}
+
+// GenerateStateReason converts ec2.StateReason into an internal StateReason
+func GenerateStateReason(r *ec2.StateReason) *manualv1alpha1.StateReason {
+	if r != nil {
+		return &manualv1alpha1.StateReason{
+			Code:    r.Code,
+			Message: r.Message,
+		}
+	}
+	return nil
+}
+
+// GenerateTags converts a slice of ec2.Tag into an internal slice of Tag.
+func GenerateTags(tags []ec2.Tag) []manualv1alpha1.Tag {
+	if tags != nil {
+		res := make([]manualv1alpha1.Tag, len(tags))
+		for i, t := range tags {
+			res[i] = manualv1alpha1.Tag{
+				Key:   *t.Key,
+				Value: *t.Value,
+			}
+		}
+		return res
+	}
+	return nil
 }
 
 // GenerateEC2TagSpecifications takes a slice of TagSpecifications and converts it to a
@@ -460,4 +800,13 @@ func GenerateDescribeInstancesByExternalTags(extTags map[string]string) *ec2.Des
 	return &ec2.DescribeInstancesInput{
 		Filters: ec2Filters,
 	}
+}
+
+// FromTimePtr is a helper for converting a *time.Time to a *metav1.Time
+func FromTimePtr(t *time.Time) *metav1.Time {
+	if t != nil {
+		m := metav1.NewTime(*t)
+		return &m
+	}
+	return nil
 }

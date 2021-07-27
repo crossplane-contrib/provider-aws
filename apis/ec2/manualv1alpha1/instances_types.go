@@ -110,7 +110,7 @@ type InstanceParameters struct {
 
 	// The IAM instance profile.
 	// +optional
-	IamInstanceProfile *IamInstanceProfileSpecification `json:"iamInstanceProfile,omitempty"`
+	IamInstanceProfile *IAMInstanceProfileSpecification `json:"iamInstanceProfile,omitempty"`
 
 	// The ID of the AMI. An AMI ID is required to launch an instance and must be
 	// specified here or in a launch template.
@@ -318,9 +318,95 @@ type InstanceStatus struct {
 	AtProvider          InstanceObservation `json:"atProvider,omitempty"`
 }
 
-// InstanceObservation keeps the state for the external resource
+// InstanceObservation keeps the state for the external resource. The below fields
+// follow the Instance response object as closely as possible.
 type InstanceObservation struct {
-	State string `json:"state"`
+	// +optional
+	AmiLaunchIndex *int64 `json:"amiLaunchIndex,omitempty"`
+	Architecture   string `json:"architecture"`
+	// +optional
+	BlockDeviceMapping []InstanceBlockDeviceMapping `json:"blockDeviceMapping,omitempty"`
+	// +optional
+	CapacityReservationID *string `json:"capacityReservationId,omitempty"`
+	// +optional
+	CapacityReservationSpecification *CapacityReservationSpecificationResponse `json:"capacityReservationSpecification,omitempty"`
+	// +optional
+	ClientToken *string `json:"clientToken,omitempty"`
+	// +optional
+	CPUOptons *CPUOptionsRequest `json:"cpuOptions,omitempty"`
+	// +optional
+	EBSOptimized *bool `json:"ebsOptimized,omitempty"`
+	// +optional
+	ElasticGPUAssociations []ElasticGPUAssociation `json:"elasticGpuAssociation,omitempty"`
+	// +optional
+	ElasticInferenceAcceleratorAssociations []ElasticInferenceAcceleratorAssociation `json:"elasticInferenceAcceleratorAssociations,omitempty"`
+	// +optional
+	EnaSupport *bool `json:"enaSupport,omitempty"`
+	// +optional
+	HibernationOptions *HibernationOptionsRequest `json:"hibernationOptions,omitempty"`
+	// +optional
+	Hypervisor string `json:"hypervisor"`
+	// +optional
+	IAMInstanceProfile *IAMInstanceProfile `json:"iamInstanceProfile,omitempty"`
+	// +optional
+	ImageID *string `json:"imageId,omitempty"`
+	// +optional
+	InstanceID *string `json:"instanceId,omitempty"`
+	// +optional
+	InstanceLifecycle string `json:"instanceLifecyle"`
+	InstanceType      string `json:"instanceType"`
+	// +optional
+	KernelID *string `json:"kernelId,omitempty"`
+	// +optional
+	LaunchTime *metav1.Time `json:"launchTime,omitempty"`
+	// +optional
+	Licenses []LicenseConfigurationRequest `json:"licenseSet,omitempty"`
+	// +optional
+	MetadataOptions *InstanceMetadataOptionsRequest `json:"metadataOptions,omitempty"`
+	// +optional
+	Monitoriing *Monitoring `json:"monitoring,omitempty"`
+	// +optional
+	NetworkInterfaces []InstanceNetworkInterface `json:"networkInterfaces,omitempty"`
+	// +optional
+	OutpostARN *string `json:"outpostArn,omitempty"`
+	// +optional
+	Placement *Placement `json:"placement,omitempty"`
+	Platform  string     `json:"platform"`
+	// +optional
+	PrivateDNSName *string `json:"privateDnsName,omitempty"`
+	// +optional
+	PrivateIPAddress *string `json:"privateIpAddress,omitempty"`
+	// +optional
+	ProductCodes []ProductCode `json:"productCodes,omitempty"`
+	// +optional
+	PublicDNSName *string `json:"publicDnsName,omitempty"`
+	// +optional
+	PublicIPAddress *string `json:"publicIpAddress,omitempty"`
+	// +optional
+	RAMDiskID *string `json:"ramDiskId,omitempty"`
+	// +optional
+	RootDeviceName *string `json:"ebs,omitempty"`
+	RootDeviceType string  `json:"rootDeviceType"`
+	// +optional
+	SecurityGroups []GroupIdentifier `json:"securityGroups,omitempty"`
+	// +optional
+	SourceDestCheck *bool `json:"sourceDestCheck,omitempty"`
+	// +optional
+	SpotInstanceRequestID *string `json:"spotInstanceId,omitempty"`
+	// +optional
+	SriovNetSupport *string `json:"sriovNetSupport,omitempty"`
+	State           string  `json:"state"`
+	// +optional
+	StateReason *StateReason `json:"stateReason,omitempty"`
+	// +optional
+	StateTransitionReason *string `json:"stateTransitionReason,omitempty"`
+	// +optional
+	SubnetID *string `json:"subnetId,omitempty"`
+	// +optional
+	Tags               []Tag  `json:"tags,omitempty"`
+	VirtualizationType string `json:"virualizationType"`
+	// +optional
+	VPCID *string `json:"vpcId,omitempty"`
 }
 
 // +kubebuilder:object:root=true
