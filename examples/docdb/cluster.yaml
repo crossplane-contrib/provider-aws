@@ -1,0 +1,27 @@
+apiVersion: docdb.aws.crossplane.io/v1alpha1
+kind: DBCluster
+metadata:
+  name: example-cluster
+spec:
+  forProvider:
+    region: eu-central-1
+    availabilityZones:
+      - eu-central-1a
+      # - eu-central-1b
+      - eu-central-1c
+    dbClusterParameterGroupName: example-parameter-group
+    dbSubnetGroupName: example-subnet-group
+    engine: docdb
+    skipFinalSnapshot: true
+    masterUsername: master
+    masterUserPasswordSecretRef:
+      namespace: crossplane-system
+      name: my-docdb-creds
+      key: password
+    vpcSecurityGroupIDs:
+      - sample-security-group
+    tags:
+      - key: cluster
+        value: "my-cluster"
+  providerConfigRef:
+    name: example

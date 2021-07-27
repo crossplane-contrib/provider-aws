@@ -1,0 +1,15 @@
+apiVersion: docdb.aws.crossplane.io/v1alpha1
+kind: DBInstance
+metadata:
+  name: example-instance
+spec:
+  forProvider:
+    region: eu-central-1
+    dbClusterIdentifier: example-cluster
+    dbInstanceClass: db.t3.medium
+    engine: docdb
+    tags:
+      - key: cluster
+        value: "my-cluster"
+  providerConfigRef:
+    name: example

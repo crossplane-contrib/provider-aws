@@ -46,6 +46,10 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/config"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
 	"github.com/crossplane/provider-aws/pkg/controller/database/dbsubnetgroup"
+	docdbcluster "github.com/crossplane/provider-aws/pkg/controller/docdb/dbcluster"
+	docdbclusterparametergroup "github.com/crossplane/provider-aws/pkg/controller/docdb/dbclusterparametergroup"
+	docdbinstance "github.com/crossplane/provider-aws/pkg/controller/docdb/dbinstance"
+	docdbsubnetgroup "github.com/crossplane/provider-aws/pkg/controller/docdb/dbsubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/backup"
 	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/globaltable"
 	"github.com/crossplane/provider-aws/pkg/controller/dynamodb/table"
@@ -107,6 +111,10 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		cachesubnetgroup.SetupCacheSubnetGroup,
 		cluster.SetupCacheCluster,
 		database.SetupRDSInstance,
+		docdbinstance.SetupDBInstance,
+		docdbcluster.SetupDBCluster,
+		docdbclusterparametergroup.SetupDBClusterParameterGroup,
+		docdbsubnetgroup.SetupDBSubnetGroup,
 		eks.SetupCluster,
 		elb.SetupELB,
 		elbattachment.SetupELBAttachment,
