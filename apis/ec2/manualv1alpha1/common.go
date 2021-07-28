@@ -838,7 +838,59 @@ func GenerateEC2Tags(tags []Tag) []ec2.Tag {
 	return res
 }
 
-// CompareTags compares arrays of v1beta1.Tag and ec2.Tag
+// CompareGroupNames compares slices of group names and ec2.GroupIdentifier
+func CompareGroupNames(groupNames []string, ec2Groups []ec2.GroupIdentifier) bool {
+	if len(groupNames) != len(ec2Groups) {
+		return false
+	}
+
+	sortGroupNames(groupNames, ec2Groups)
+
+	for i, g := range groupNames {
+		if g != *ec2Groups[i].GroupName {
+			return false
+		}
+	}
+
+	return true
+}
+
+// CompareGroupIDs compares slices of group IDs and ec2.GroupIdentifier
+func CompareGroupIDs(groupIDs []string, ec2Groups []ec2.GroupIdentifier) bool {
+	if len(groupIDs) != len(ec2Groups) {
+		return false
+	}
+
+	sortGroupIDs(groupIDs, ec2Groups)
+
+	for i, g := range groupIDs {
+		if g != *ec2Groups[i].GroupId {
+			return false
+		}
+	}
+
+	return true
+}
+
+// sortGroupNames sorts slice of string and ec2.GroupIdentifier on 'GroupName'
+func sortGroupNames(groupNames []string, ec2Groups []ec2.GroupIdentifier) {
+	sort.Strings(groupNames)
+
+	sort.Slice(ec2Groups, func(i, j int) bool {
+		return *ec2Groups[i].GroupName < *ec2Groups[j].GroupName
+	})
+}
+
+// sortGroupNames sorts slice of string and ec2.GroupIdentifier on 'GroupName'
+func sortGroupIDs(groupIDs []string, ec2Groups []ec2.GroupIdentifier) {
+	sort.Strings(groupIDs)
+
+	sort.Slice(ec2Groups, func(i, j int) bool {
+		return *ec2Groups[i].GroupId < *ec2Groups[j].GroupId
+	})
+}
+
+// CompareTags compares arrays of manualv1alpha1.Tag and ec2.Tag
 func CompareTags(tags []Tag, ec2Tags []ec2.Tag) bool {
 	if len(tags) != len(ec2Tags) {
 		return false

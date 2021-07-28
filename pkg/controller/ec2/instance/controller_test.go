@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -33,15 +34,15 @@ import (
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
 )
 
 var (
 	instanceID = "some Id"
-	// tenancyDefault = "default"
 
-	// errBoom = errors.New("boom")
+	errBoom = errors.New("boom")
 )
 
 type args struct {
@@ -52,26 +53,20 @@ type args struct {
 
 type instanceModifier func(*manualv1alpha1.Instance)
 
-// func withTags(tagMaps ...map[string]string) vpcModifier {
-// 	var tagList []v1beta1.Tag
-// 	for _, tagMap := range tagMaps {
-// 		for k, v := range tagMap {
-// 			tagList = append(tagList, v1beta1.Tag{Key: k, Value: v})
-// 		}
-// 	}
-// 	return func(r *v1beta1.VPC) { r.Spec.ForProvider.Tags = tagList }
-// }
-
 func withExternalName(name string) instanceModifier {
 	return func(r *manualv1alpha1.Instance) { meta.SetExternalName(r, name) }
 }
 
-func withObjectName(name string) instanceModifier {
-	return func(r *manualv1alpha1.Instance) { r.Name = name }
-}
-
 func withConditions(c ...xpv1.Condition) instanceModifier {
 	return func(r *manualv1alpha1.Instance) { r.Status.ConditionedStatus.Conditions = c }
+}
+
+func withSpec(p manualv1alpha1.InstanceParameters) instanceModifier {
+	return func(r *manualv1alpha1.Instance) { r.Spec.ForProvider = p }
+}
+
+func withStatus(s manualv1alpha1.InstanceObservation) instanceModifier {
+	return func(r *manualv1alpha1.Instance) { r.Status.AtProvider = s }
 }
 
 func instance(m ...instanceModifier) *manualv1alpha1.Instance {
@@ -84,6 +79,155 @@ func instance(m ...instanceModifier) *manualv1alpha1.Instance {
 
 var _ managed.ExternalClient = &external{}
 var _ managed.ExternalConnecter = &connector{}
+
+func TestObserve(t *testing.T) {
+	type want struct {
+		cr     *manualv1alpha1.Instance
+		result managed.ExternalObservation
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"SuccessfulAvailable": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockClient().Update,
+				},
+				instance: &fake.MockInstanceClient{
+					MockDescribeInstancesRequest: func(input *awsec2.DescribeInstancesInput) awsec2.DescribeInstancesRequest {
+						return awsec2.DescribeInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeInstancesOutput{
+								Reservations: []awsec2.Reservation{{
+									Instances: []awsec2.Instance{
+										{
+											InstanceId:   &instanceID,
+											InstanceType: awsec2.InstanceTypeM1Small,
+											State: &awsec2.InstanceState{
+												Name: awsec2.InstanceStateNameRunning,
+											},
+										},
+									},
+								}},
+							}},
+						}
+					},
+					MockDescribeInstanceAttributeRequest: func(input *awsec2.DescribeInstanceAttributeInput) awsec2.DescribeInstanceAttributeRequest {
+						return awsec2.DescribeInstanceAttributeRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeInstanceAttributeOutput{
+								InstanceId: &instanceID,
+								InstanceType: &awsec2.AttributeValue{
+									Value: aws.String(string(awsec2.InstanceTypeM1Small)),
+								},
+							}},
+						}
+					},
+				},
+				cr: instance(withSpec(manualv1alpha1.InstanceParameters{
+					InstanceType: string(awsec2.InstanceTypeM1Small),
+				}), withExternalName(instanceID)),
+			},
+			want: want{
+				cr: instance(withSpec(manualv1alpha1.InstanceParameters{
+					InstanceType: string(awsec2.InstanceTypeM1Small),
+				}), withStatus(manualv1alpha1.InstanceObservation{
+					InstanceID:   &instanceID,
+					InstanceType: string(awsec2.InstanceTypeM1Small),
+					State:        "running",
+				}), withExternalName(instanceID),
+					withConditions(xpv1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: true,
+				},
+			},
+		},
+		"MultipleInstances": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockClient().Update,
+				},
+				instance: &fake.MockInstanceClient{
+					MockDescribeInstancesRequest: func(input *awsec2.DescribeInstancesInput) awsec2.DescribeInstancesRequest {
+						return awsec2.DescribeInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeInstancesOutput{
+								Reservations: []awsec2.Reservation{{
+									Instances: []awsec2.Instance{
+										{
+											InstanceId:   &instanceID,
+											InstanceType: awsec2.InstanceTypeM1Small,
+											State: &awsec2.InstanceState{
+												Name: awsec2.InstanceStateNameRunning,
+											},
+										},
+										{
+											InstanceId:   &instanceID,
+											InstanceType: awsec2.InstanceTypeM1Small,
+											State: &awsec2.InstanceState{
+												Name: awsec2.InstanceStateNameRunning,
+											},
+										},
+									},
+								}},
+							}},
+						}
+					},
+				},
+				cr: instance(withSpec(manualv1alpha1.InstanceParameters{
+					InstanceType: string(awsec2.InstanceTypeM1Small),
+				}), withExternalName(instanceID)),
+			},
+			want: want{
+				cr: instance(withSpec(manualv1alpha1.InstanceParameters{
+					InstanceType: string(awsec2.InstanceTypeM1Small),
+				}), withExternalName(instanceID)),
+				err: errors.New(errMultipleItems),
+			},
+		},
+		"DescribeFail": {
+			args: args{
+				kube: &test.MockClient{
+					MockUpdate: test.NewMockClient().Update,
+				},
+				instance: &fake.MockInstanceClient{
+					MockDescribeInstancesRequest: func(input *awsec2.DescribeInstancesInput) awsec2.DescribeInstancesRequest {
+						return awsec2.DescribeInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+				},
+				cr: instance(withSpec(manualv1alpha1.InstanceParameters{
+					InstanceType: string(awsec2.InstanceTypeM1Small),
+				}), withExternalName(instanceID)),
+			},
+			want: want{
+				cr: instance(withSpec(manualv1alpha1.InstanceParameters{
+					InstanceType: string(awsec2.InstanceTypeM1Small),
+				}), withExternalName(instanceID)),
+				err: awsclient.Wrap(errBoom, errDescribe),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.instance}
+			o, err := e.Observe(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, o); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
 
 func TestCreate(t *testing.T) {
 	type want struct {
@@ -116,11 +260,32 @@ func TestCreate(t *testing.T) {
 						}
 					},
 				},
-				cr: instance(withObjectName(instanceID)),
+				cr: instance(),
 			},
 			want: want{
-				cr:     instance(withExternalName(instanceID), withObjectName(instanceID)),
+				cr:     instance(withExternalName(instanceID)),
 				result: managed.ExternalCreation{ExternalNameAssigned: true},
+			},
+		},
+		"CreateFail": {
+			args: args{
+				instance: &fake.MockInstanceClient{
+					MockRunInstancesRequest: func(input *awsec2.RunInstancesInput) awsec2.RunInstancesRequest {
+						return awsec2.RunInstancesRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
+						return awsec2.CreateTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
+						}
+					},
+				},
+				cr: instance(),
+			},
+			want: want{
+				cr:  instance(),
+				err: awsclient.Wrap(errBoom, errCreate),
 			},
 		},
 	}

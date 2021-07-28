@@ -47,11 +47,12 @@ const (
 	errUnexpectedObject = "The managed resource is not an Instance resource"
 	errKubeUpdateFailed = "cannot update Instance custom resource"
 
-	errDescribe   = "failed to describe Instance with id"
-	errCreate     = "failed to create the Instance resource"
-	errUpdate     = "failed to update Instance resource"
-	errCreateTags = "failed to create tags for the Instance resource"
-	errDelete     = "failed to delete the Instance resource"
+	errMultipleItems = "retrieved multiple Instances for the given instanceId"
+	errDescribe      = "failed to describe Instance with id"
+	errCreate        = "failed to create the Instance resource"
+	errUpdate        = "failed to update Instance resource"
+	errCreateTags    = "failed to create tags for the Instance resource"
+	errDelete        = "failed to delete the Instance resource"
 )
 
 // SetupInstance adds a controller that reconciles Instances.
@@ -125,14 +126,66 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			awsclient.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDescribe)
 	}
 
+	// in a successful response, there should be one and only one object
+	if len(response.Reservations[0].Instances) != 1 {
+		return managed.ExternalObservation{}, errors.New(errMultipleItems)
+	}
+
 	observed := response.Reservations[0].Instances[0]
 
 	// update the CRD spec for any new values from provider
 	current := cr.Spec.ForProvider.DeepCopy()
 
-	// o := awsec2.DescribeInstanceAttributeOutput{}
+	o := awsec2.DescribeInstanceAttributeOutput{}
 
-	// ec2.LateInitializeInstance(&cr.Spec.ForProvider, &observed, &o)
+	for _, input := range []awsec2.InstanceAttributeName{
+		awsec2.InstanceAttributeNameDisableApiTermination,
+		awsec2.InstanceAttributeNameEbsOptimized,
+		awsec2.InstanceAttributeNameInstanceInitiatedShutdownBehavior,
+		awsec2.InstanceAttributeNameInstanceType,
+		awsec2.InstanceAttributeNameKernel,
+		awsec2.InstanceAttributeNameRamdisk,
+		awsec2.InstanceAttributeNameUserData,
+	} {
+		r, err := e.client.DescribeInstanceAttributeRequest(&awsec2.DescribeInstanceAttributeInput{
+			InstanceId: aws.String(meta.GetExternalName(cr)),
+			Attribute:  input,
+		}).Send(context.Background())
+
+		if err != nil {
+			return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribe)
+		}
+
+		if r.DisableApiTermination != nil {
+			o.DisableApiTermination = r.DisableApiTermination
+		}
+
+		if r.EbsOptimized != nil {
+			o.EbsOptimized = r.EbsOptimized
+		}
+
+		if r.InstanceInitiatedShutdownBehavior != nil {
+			o.InstanceInitiatedShutdownBehavior = r.InstanceInitiatedShutdownBehavior
+		}
+
+		if r.InstanceType != nil {
+			o.InstanceType = r.InstanceType
+		}
+
+		if r.KernelId != nil {
+			o.KernelId = r.KernelId
+		}
+
+		if r.RamdiskId != nil {
+			o.RamdiskId = r.RamdiskId
+		}
+
+		if r.UserData != nil {
+			o.UserData = r.UserData
+		}
+	}
+
+	ec2.LateInitializeInstance(&cr.Spec.ForProvider, &observed, &o)
 
 	if !cmp.Equal(current, &cr.Spec.ForProvider) {
 		if err := e.kube.Update(ctx, cr); err != nil {
@@ -163,9 +216,8 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	cr.Status.AtProvider = observation
 
 	return managed.ExternalObservation{
-		ResourceExists:   true,
-		ResourceUpToDate: true,
-		// ResourceUpToDate:        ec2.IsInstanceUpToDate(cr.Spec.ForProvider, observed, o),
+		ResourceExists:          true,
+		ResourceUpToDate:        ec2.IsInstanceUpToDate(cr.Spec.ForProvider, observed, o),
 		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }

@@ -1,0 +1,214 @@
+package manualv1alpha1
+
+import (
+	"testing"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/crossplane/crossplane-runtime/pkg/test"
+	"github.com/google/go-cmp/cmp"
+)
+
+func TestCompareGroupNames(t *testing.T) {
+	type args struct {
+		groupNames []string
+		ec2Groups  []ec2.GroupIdentifier
+	}
+	cases := map[string]struct {
+		args args
+		want bool
+	}{
+		"GroupNamesAreEqual": {
+			args: args{
+				groupNames: []string{"group-2", "group-1"},
+				ec2Groups: []ec2.GroupIdentifier{
+					{
+						GroupId:   aws.String("group-2"),
+						GroupName: aws.String("group-2"),
+					},
+					{
+						GroupId:   aws.String("group-1"),
+						GroupName: aws.String("group-1"),
+					},
+				},
+			},
+			want: true,
+		},
+		"GroupNamesAreEqualDifferentOrder": {
+			args: args{
+				groupNames: []string{"group-1", "group-2"},
+				ec2Groups: []ec2.GroupIdentifier{
+					{
+						GroupId:   aws.String("group-2"),
+						GroupName: aws.String("group-2"),
+					},
+					{
+						GroupId:   aws.String("group-1"),
+						GroupName: aws.String("group-1"),
+					},
+				},
+			},
+			want: true,
+		},
+		"GroupNamesAreNotEqual": {
+			args: args{
+				groupNames: []string{"group-2", "group-3"},
+				ec2Groups: []ec2.GroupIdentifier{
+					{
+						GroupId:   aws.String("group-2"),
+						GroupName: aws.String("group-2"),
+					},
+					{
+						GroupId:   aws.String("group-1"),
+						GroupName: aws.String("group-1"),
+					},
+				},
+			},
+			want: false,
+		},
+		"GroupNamesAreNotEqualDifferentLength": {
+			args: args{
+				groupNames: []string{"group-1", "group-2", "group-3"},
+				ec2Groups: []ec2.GroupIdentifier{
+					{
+						GroupId:   aws.String("group-2"),
+						GroupName: aws.String("group-2"),
+					},
+					{
+						GroupId:   aws.String("group-1"),
+						GroupName: aws.String("group-1"),
+					},
+				},
+			},
+			want: false,
+		},
+		"GroupNamesAreNil": {
+			args: args{
+				groupNames: nil,
+				ec2Groups: []ec2.GroupIdentifier{
+					{
+						GroupId:   aws.String("group-2"),
+						GroupName: aws.String("group-2"),
+					},
+					{
+						GroupId:   aws.String("group-1"),
+						GroupName: aws.String("group-1"),
+					},
+				},
+			},
+			want: false,
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			result := CompareGroupNames(tc.args.groupNames, tc.args.ec2Groups)
+
+			if diff := cmp.Diff(tc.want, result, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestCompareGroupIDs(t *testing.T) {
+	type args struct {
+		groupIDs  []string
+		ec2Groups []ec2.GroupIdentifier
+	}
+	cases := map[string]struct {
+		args args
+		want bool
+	}{
+		"GroupIDsAreEqual": {
+			args: args{
+				groupIDs: []string{"groupid-2", "groupid-1"},
+				ec2Groups: []ec2.GroupIdentifier{
+					{
+						GroupId:   aws.String("groupid-2"),
+						GroupName: aws.String("group-2"),
+					},
+					{
+						GroupId:   aws.String("groupid-1"),
+						GroupName: aws.String("group-1"),
+					},
+				},
+			},
+			want: true,
+		},
+		"GroupIDsAreEqualDifferentOrder": {
+			args: args{
+				groupIDs: []string{"groupid-1", "groupid-2"},
+				ec2Groups: []ec2.GroupIdentifier{
+					{
+						GroupId:   aws.String("groupid-2"),
+						GroupName: aws.String("group-2"),
+					},
+					{
+						GroupId:   aws.String("groupid-1"),
+						GroupName: aws.String("group-1"),
+					},
+				},
+			},
+			want: true,
+		},
+		"GroupIDsAreNotEqual": {
+			args: args{
+				groupIDs: []string{"groupid-2", "groupid-3"},
+				ec2Groups: []ec2.GroupIdentifier{
+					{
+						GroupId:   aws.String("groupid-2"),
+						GroupName: aws.String("group-2"),
+					},
+					{
+						GroupId:   aws.String("groupid-1"),
+						GroupName: aws.String("group-1"),
+					},
+				},
+			},
+			want: false,
+		},
+		"GroupIDsAreNotEqualDifferentLength": {
+			args: args{
+				groupIDs: []string{"groupid-1", "groupid-2", "groupid-3"},
+				ec2Groups: []ec2.GroupIdentifier{
+					{
+						GroupId:   aws.String("groupid-2"),
+						GroupName: aws.String("group-2"),
+					},
+					{
+						GroupId:   aws.String("groupid-1"),
+						GroupName: aws.String("group-1"),
+					},
+				},
+			},
+			want: false,
+		},
+		"GroupIDsAreNil": {
+			args: args{
+				groupIDs: nil,
+				ec2Groups: []ec2.GroupIdentifier{
+					{
+						GroupId:   aws.String("groupid-2"),
+						GroupName: aws.String("group-2"),
+					},
+					{
+						GroupId:   aws.String("groupid-1"),
+						GroupName: aws.String("group-1"),
+					},
+				},
+			},
+			want: false,
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			result := CompareGroupIDs(tc.args.groupIDs, tc.args.ec2Groups)
+
+			if diff := cmp.Diff(tc.want, result, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}

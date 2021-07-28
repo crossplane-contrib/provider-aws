@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 const (
@@ -60,7 +61,39 @@ func IsInstanceNotFoundErr(err error) bool {
 // IsInstanceUpToDate returns true if there is no update-able difference between desired
 // and observed state of the resource.
 func IsInstanceUpToDate(spec manualv1alpha1.InstanceParameters, instance ec2.Instance, attributes ec2.DescribeInstanceAttributeOutput) bool {
-	return true
+	// DisableApiTermination
+	if aws.BoolValue(spec.DisableAPITermination) != attributeBoolValue(attributes.DisableApiTermination) {
+		return false
+	}
+	// EbsOptimized
+	if aws.BoolValue(spec.EBSOptimized) != aws.BoolValue(instance.EbsOptimized) {
+		return false
+	}
+	// InstanceInitiatedShutdownBehavior
+	if spec.InstanceInitiatedShutdownBehavior != attributeValue(attributes.InstanceInitiatedShutdownBehavior) {
+		return false
+	}
+	// InstanceType
+	if spec.InstanceType != attributeValue(attributes.InstanceType) {
+		return false
+	}
+	// KernalID
+	if aws.StringValue(spec.KernelID) != aws.StringValue(instance.KernelId) {
+		return false
+	}
+	// RamDiskID
+	if aws.StringValue(spec.RAMDiskID) != aws.StringValue(instance.RamdiskId) {
+		return false
+	}
+	// UserData
+	if aws.StringValue(spec.UserData) != attributeValue(attributes.UserData) {
+		return false
+	}
+	// Groups
+	if !manualv1alpha1.CompareGroupIDs(spec.SecurityGroupIDs, instance.SecurityGroups) {
+		return false
+	}
+	return manualv1alpha1.CompareGroupNames(spec.SecurityGroups, instance.SecurityGroups)
 }
 
 // GenerateInstanceObservation is used to produce manualv1alpha1.InstanceObservation from
@@ -158,9 +191,47 @@ const (
 
 // LateInitializeInstance fills the empty fields in *manualv1alpha1.InstanceParameters with
 // the values seen in ec2.Instance and ec2.DescribeInstanceAttributeOutput.
-func LateInitializeInstance(in *manualv1alpha1.InstanceParameters, v *ec2.Instance, attributes *ec2.DescribeInstanceAttributeOutput) { // nolint:gocyclo
-	if v == nil {
+func LateInitializeInstance(in *manualv1alpha1.InstanceParameters, instance *ec2.Instance, attributes *ec2.DescribeInstanceAttributeOutput) { // nolint:gocyclo
+	if instance == nil {
 		return
+	}
+
+	if attributes.DisableApiTermination != nil {
+		in.DisableAPITermination = awsclients.LateInitializeBoolPtr(in.DisableAPITermination, attributes.DisableApiTermination.Value)
+	}
+
+	if attributes.InstanceInitiatedShutdownBehavior != nil {
+		in.InstanceInitiatedShutdownBehavior = awsclients.LateInitializeString(in.InstanceInitiatedShutdownBehavior, attributes.InstanceInitiatedShutdownBehavior.Value)
+	}
+
+	if attributes.InstanceType != nil {
+		in.InstanceType = awsclients.LateInitializeString(in.InstanceType, attributes.InstanceType.Value)
+	}
+
+	if attributes.UserData != nil {
+		in.UserData = awsclients.LateInitializeStringPtr(in.UserData, attributes.UserData.Value)
+	}
+
+	in.EBSOptimized = awsclients.LateInitializeBoolPtr(in.EBSOptimized, instance.EbsOptimized)
+	in.KernelID = awsclients.LateInitializeStringPtr(in.KernelID, instance.KernelId)
+	in.RAMDiskID = awsclients.LateInitializeStringPtr(in.RAMDiskID, instance.RamdiskId)
+
+	if len(in.SecurityGroups) == 0 && len(instance.SecurityGroups) != 0 {
+		in.SecurityGroups = make([]string, len(instance.SecurityGroups))
+		for i, s := range instance.SecurityGroups {
+			in.SecurityGroups[i] = *s.GroupName
+		}
+	}
+
+	if len(in.SecurityGroupIDs) == 0 && len(instance.SecurityGroups) != 0 {
+		in.SecurityGroupIDs = make([]string, len(instance.SecurityGroups))
+		for i, s := range instance.SecurityGroups {
+			in.SecurityGroupIDs[i] = *s.GroupId
+		}
+	}
+
+	if in.SubnetID == nil || *in.SubnetID == "" && instance.SubnetId != nil {
+		in.SubnetID = instance.SubnetId
 	}
 }
 
@@ -809,4 +880,20 @@ func FromTimePtr(t *time.Time) *metav1.Time {
 		return &m
 	}
 	return nil
+}
+
+// attributeBoolValue helps will comparing bool values against nested pointers
+func attributeBoolValue(v *ec2.AttributeBooleanValue) bool {
+	if v == nil {
+		return false
+	}
+	return aws.BoolValue(v.Value)
+}
+
+// attributeValue helps will comparing string values against nested pointers
+func attributeValue(v *ec2.AttributeValue) string {
+	if v == nil {
+		return ""
+	}
+	return aws.StringValue(v.Value)
 }
