@@ -41,10 +41,11 @@ import (
 
 var (
 	// an arbitrary managed resource
-	unexpectedItem resource.Managed
-	repositoryName = "testRepo"
-	policy         = `{"Statement":[{"Action":"ecr:ListImages","Effect":"Allow","Principal":"*"}],"Version":"2012-10-17"}`
-	boolCheck      = true
+	unexpectedItem   resource.Managed
+	repositoryName   = "testRepo"
+	policy           = `{"Statement":[{"Action":"ecr:ListImages","Effect":"Allow","Principal":"*"}],"Version":"2012-10-17"}`
+	needUpdatePolicy = `{"Statement":[{"Action":"ecr:ListImages","Effect":"Allow","Principal":"blah"}],"Version":"2012-10-17"}`
+	boolCheck        = true
 
 	params = v1alpha1.RepositoryPolicyParameters{
 		Policy: &v1alpha1.RepositoryPolicyBody{
@@ -61,10 +62,6 @@ var (
 		},
 	}
 
-	observation = v1alpha1.RepositoryPolicyObservation{
-		PolicyText: policy,
-	}
-
 	errBoom = errors.New("boom")
 )
 
@@ -78,10 +75,6 @@ type repositoryPolicyModifier func(policy *v1alpha1.RepositoryPolicy)
 
 func withConditions(c ...xpv1.Condition) repositoryPolicyModifier {
 	return func(r *v1alpha1.RepositoryPolicy) { r.Status.ConditionedStatus.Conditions = c }
-}
-
-func withObservation(o *v1alpha1.RepositoryPolicyObservation) repositoryPolicyModifier {
-	return func(r *v1alpha1.RepositoryPolicy) { r.Status.AtProvider = *o }
 }
 
 func withPolicy(s *v1alpha1.RepositoryPolicyParameters) repositoryPolicyModifier {
@@ -132,7 +125,6 @@ func TestObserve(t *testing.T) {
 			},
 			want: want{
 				cr: repositoryPolicy(withPolicy(&params),
-					withObservation(&observation),
 					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
@@ -147,6 +139,28 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
+			},
+		},
+		"NeedUpdateInput": {
+			args: args{
+				ecr: &fake.MockRepositoryPolicyClient{
+					MockGet: func(input *awsecr.GetRepositoryPolicyInput) awsecr.GetRepositoryPolicyRequest {
+						return awsecr.GetRepositoryPolicyRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.GetRepositoryPolicyOutput{
+								PolicyText: &needUpdatePolicy,
+							}},
+						}
+					},
+				},
+				cr: repositoryPolicy(withPolicy(&params)),
+			},
+			want: want{
+				cr: repositoryPolicy(withPolicy(&params),
+					withConditions(xpv1.Available())),
+				result: managed.ExternalObservation{
+					ResourceExists:   true,
+					ResourceUpToDate: false,
+				},
 			},
 		},
 		"ClientError": {
