@@ -122,7 +122,7 @@ func GenerateInstanceObservation(i ec2.Instance) manualv1alpha1.InstanceObservat
 		LaunchTime:                              FromTimePtr(i.LaunchTime),
 		Licenses:                                GenerateLicenseConfigurationRequest(i.Licenses),
 		MetadataOptions:                         GenerateInstanceMetadataOptionsRequest(i.MetadataOptions),
-		Monitoriing:                             GenerateMonitoring(i.Monitoring),
+		Monitoring:                              GenerateMonitoring(i.Monitoring),
 		NetworkInterfaces:                       GenerateInstanceNetworkInterface(i.NetworkInterfaces),
 		OutpostARN:                              i.OutpostArn,
 		Placement:                               GeneratePlacement(i.Placement),
@@ -264,10 +264,15 @@ func GenerateEC2BlockDeviceMappings(mappings []manualv1alpha1.BlockDeviceMapping
 // GenerateEC2CapacityReservationSpecs coverts an internal CapacityReservationSpecification into a ec2.CapacityReservationSpecification
 func GenerateEC2CapacityReservationSpecs(spec *manualv1alpha1.CapacityReservationSpecification) *ec2.CapacityReservationSpecification {
 	if spec != nil {
+		var capacityReservationID *string
+		if spec.CapacityReservationTarget != nil {
+			capacityReservationID = spec.CapacityReservationTarget.CapacityReservationID
+		}
+
 		return &ec2.CapacityReservationSpecification{
 			CapacityReservationPreference: ec2.CapacityReservationPreference(spec.CapacityReservationPreference),
 			CapacityReservationTarget: &ec2.CapacityReservationTarget{
-				CapacityReservationId: spec.CapacityReservationTarget.CapacityReservationID,
+				CapacityReservationId: capacityReservationID,
 			},
 		}
 	}
@@ -277,7 +282,7 @@ func GenerateEC2CapacityReservationSpecs(spec *manualv1alpha1.CapacityReservatio
 // GenerateCapacityReservationSpecResponse converts a ec2.CapacityReservationSpecificationResponse into an internal CapacityReservationSpecificationResponse
 func GenerateCapacityReservationSpecResponse(resp *ec2.CapacityReservationSpecificationResponse) *manualv1alpha1.CapacityReservationSpecificationResponse {
 	if resp != nil {
-		var target *manualv1alpha1.CapacityReservationTarget
+		var target manualv1alpha1.CapacityReservationTarget
 
 		if resp.CapacityReservationTarget != nil {
 			target.CapacityReservationID = resp.CapacityReservationTarget.CapacityReservationId
@@ -285,7 +290,7 @@ func GenerateCapacityReservationSpecResponse(resp *ec2.CapacityReservationSpecif
 
 		return &manualv1alpha1.CapacityReservationSpecificationResponse{
 			CapacityReservationPreference: string(resp.CapacityReservationPreference),
-			CapacityReservationTarget:     target,
+			CapacityReservationTarget:     &target,
 		}
 	}
 	return nil
@@ -462,14 +467,30 @@ func GenerateInstanceBlockDeviceMappings(mappings []ec2.InstanceBlockDeviceMappi
 // GenerateEC2InstanceMarketOptionsRequest converts an internal InstanceMarketOptionsRequest into a ec2.InstanceMarketOptionsRequest
 func GenerateEC2InstanceMarketOptionsRequest(opts *manualv1alpha1.InstanceMarketOptionsRequest) *ec2.InstanceMarketOptionsRequest {
 	if opts != nil {
+		var durationMin *int64
+		var behavior ec2.InstanceInterruptionBehavior
+		var maxPrice *string
+		var instanceType ec2.SpotInstanceType
+		var validUntil *time.Time
+
+		if opts.SpotOptions != nil {
+			durationMin = opts.SpotOptions.BlockDurationMinutes
+			behavior = ec2.InstanceInterruptionBehavior(opts.SpotOptions.InstanceInterruptionBehavior)
+			maxPrice = opts.SpotOptions.MaxPrice
+			instanceType = ec2.SpotInstanceType(opts.SpotOptions.SpotInstanceType)
+			if opts.SpotOptions.ValidUntil != nil {
+				validUntil = &opts.SpotOptions.ValidUntil.DeepCopy().Time
+			}
+		}
+
 		return &ec2.InstanceMarketOptionsRequest{
 			MarketType: ec2.MarketType(opts.MarketType),
 			SpotOptions: &ec2.SpotMarketOptions{
-				BlockDurationMinutes:         opts.SpotOptions.BlockDurationMinutes,
-				InstanceInterruptionBehavior: ec2.InstanceInterruptionBehavior(opts.SpotOptions.InstanceInterruptionBehavior),
-				MaxPrice:                     opts.SpotOptions.MaxPrice,
-				SpotInstanceType:             ec2.SpotInstanceType(opts.SpotOptions.SpotInstanceType),
-				ValidUntil:                   &opts.SpotOptions.ValidUntil.DeepCopy().Time, // need to convert to time.Time (YYYY-MM-DDTHH:MM:SSZ)
+				BlockDurationMinutes:         durationMin,
+				InstanceInterruptionBehavior: behavior,
+				MaxPrice:                     maxPrice,
+				SpotInstanceType:             instanceType,
+				ValidUntil:                   validUntil,
 			},
 		}
 	}
@@ -583,8 +604,8 @@ func GenerateEC2InstanceNetworkInterfaceSpecs(specs []manualv1alpha1.InstanceNet
 				DeviceIndex:                    s.DeviceIndex,
 				Groups:                         s.Groups,
 				InterfaceType:                  s.InterfaceType,
-				Ipv6AddressCount:               s.Ipv6AddressCount,
-				Ipv6Addresses:                  GenerateEC2InstanceIPV6Addresses(s.IPV6Addresses),
+				Ipv6AddressCount:               s.IPv6AddressCount,
+				Ipv6Addresses:                  GenerateEC2InstanceIPV6Addresses(s.IPv6Addresses),
 				NetworkInterfaceId:             s.NetworkInterfaceID,
 				PrivateIpAddress:               s.PrivateIPAddress,
 				PrivateIpAddresses:             GenerateEC2PrivateIPAddressSpecs(s.PrivateIPAddresses),
@@ -772,7 +793,7 @@ func GenerateEC2RunInstancesInput(name string, p *manualv1alpha1.InstanceParamet
 		ElasticGpuSpecification:           GenerateEC2ElasticGPUSpecs(p.ElasticGPUSpecification),
 		ElasticInferenceAccelerators:      GenerateEC2ElasticInferenceAccelerators(p.ElasticInferenceAccelerators),
 		HibernationOptions:                GenerateEC2HibernationOptions(p.HibernationOptions),
-		IamInstanceProfile:                GenerateEC2IAMInstanceProfileSpecification(p.IamInstanceProfile),
+		IamInstanceProfile:                GenerateEC2IAMInstanceProfileSpecification(p.IAMInstanceProfile),
 		ImageId:                           p.ImageID,
 		InstanceInitiatedShutdownBehavior: ec2.ShutdownBehavior(p.InstanceInitiatedShutdownBehavior),
 		InstanceMarketOptions:             GenerateEC2InstanceMarketOptionsRequest(p.InstanceMarketOptions),

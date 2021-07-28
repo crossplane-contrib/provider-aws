@@ -517,14 +517,14 @@ type InstanceNetworkInterfaceSpecification struct {
 	// request. You can specify this option if you've specified a minimum number
 	// of instances to launch.
 	// +optional
-	Ipv6AddressCount *int64 `json:"ipv6AddressCount"`
+	IPv6AddressCount *int64 `json:"ipv6AddressCount"`
 
 	// One or more IPv6 addresses to assign to the network interface. You cannot
 	// specify this option and the option to assign a number of IPv6 addresses in
 	// the same request. You cannot specify this option if you've specified a minimum
 	// number of instances to launch.
 	// +optional
-	IPV6Addresses []InstanceIPv6Address `json:"ipv6Addresses"`
+	IPv6Addresses []InstanceIPv6Address `json:"ipv6Addresses"`
 
 	// The ID of the network interface.
 	//
@@ -864,7 +864,7 @@ func CompareGroupIDs(groupIDs []string, ec2Groups []ec2.GroupIdentifier) bool {
 	sortGroupIDs(groupIDs, ec2Groups)
 
 	for i, g := range groupIDs {
-		if g != *ec2Groups[i].GroupId {
+		if g != *ec2Groups[i].GroupName {
 			return false
 		}
 	}

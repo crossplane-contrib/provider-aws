@@ -773,13 +773,13 @@ func (in *InstanceNetworkInterfaceSpecification) DeepCopyInto(out *InstanceNetwo
 		*out = new(string)
 		**out = **in
 	}
-	if in.Ipv6AddressCount != nil {
-		in, out := &in.Ipv6AddressCount, &out.Ipv6AddressCount
+	if in.IPv6AddressCount != nil {
+		in, out := &in.IPv6AddressCount, &out.IPv6AddressCount
 		*out = new(int64)
 		**out = **in
 	}
-	if in.IPV6Addresses != nil {
-		in, out := &in.IPV6Addresses, &out.IPV6Addresses
+	if in.IPv6Addresses != nil {
+		in, out := &in.IPv6Addresses, &out.IPv6Addresses
 		*out = make([]InstanceIPv6Address, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
@@ -924,8 +924,8 @@ func (in *InstanceObservation) DeepCopyInto(out *InstanceObservation) {
 		*out = new(InstanceMetadataOptionsRequest)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.Monitoriing != nil {
-		in, out := &in.Monitoriing, &out.Monitoriing
+	if in.Monitoring != nil {
+		in, out := &in.Monitoring, &out.Monitoring
 		*out = new(Monitoring)
 		**out = **in
 	}
@@ -1104,8 +1104,8 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		*out = new(HibernationOptionsRequest)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.IamInstanceProfile != nil {
-		in, out := &in.IamInstanceProfile, &out.IamInstanceProfile
+	if in.IAMInstanceProfile != nil {
+		in, out := &in.IAMInstanceProfile, &out.IAMInstanceProfile
 		*out = new(IAMInstanceProfileSpecification)
 		(*in).DeepCopyInto(*out)
 	}

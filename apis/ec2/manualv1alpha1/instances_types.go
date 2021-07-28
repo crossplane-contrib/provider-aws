@@ -110,7 +110,7 @@ type InstanceParameters struct {
 
 	// The IAM instance profile.
 	// +optional
-	IamInstanceProfile *IAMInstanceProfileSpecification `json:"iamInstanceProfile,omitempty"`
+	IAMInstanceProfile *IAMInstanceProfileSpecification `json:"iamInstanceProfile,omitempty"`
 
 	// The ID of the AMI. An AMI ID is required to launch an instance and must be
 	// specified here or in a launch template.
@@ -364,7 +364,7 @@ type InstanceObservation struct {
 	// +optional
 	MetadataOptions *InstanceMetadataOptionsRequest `json:"metadataOptions,omitempty"`
 	// +optional
-	Monitoriing *Monitoring `json:"monitoring,omitempty"`
+	Monitoring *Monitoring `json:"monitoring,omitempty"`
 	// +optional
 	NetworkInterfaces []InstanceNetworkInterface `json:"networkInterfaces,omitempty"`
 	// +optional
