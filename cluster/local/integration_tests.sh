@@ -71,7 +71,8 @@ echo "created cache dir at ${CACHE_PATH}"
 docker save "${BUILD_IMAGE}" -o "${CACHE_PATH}/${PACKAGE_NAME}.xpkg" && chmod 644 "${CACHE_PATH}/${PACKAGE_NAME}.xpkg"
 
 # create kind cluster with extra mounts
-echo_step "creating k8s cluster using kind"
+KIND_NODE_IMAGE="kindest/node:${KIND_NODE_IMAGE_TAG}"
+echo_step "creating k8s cluster using kind ${KIND_VERSION} and node image ${KIND_NODE_IMAGE}"
 KIND_CONFIG="$( cat <<EOF
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
@@ -82,7 +83,7 @@ nodes:
     containerPath: /cache
 EOF
 )"
-echo "${KIND_CONFIG}" | "${KIND}" create cluster --name="${K8S_CLUSTER}" --wait=5m --config=-
+echo "${KIND_CONFIG}" | "${KIND}" create cluster --name="${K8S_CLUSTER}" --wait=5m --image="${KIND_NODE_IMAGE}" --config=-
 
 # tag controller image and load it into kind cluster
 docker tag "${CONTROLLER_IMAGE}" "${PACKAGE_CONTROLLER_IMAGE}"

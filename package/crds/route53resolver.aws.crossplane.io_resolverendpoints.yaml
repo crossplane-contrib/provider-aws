@@ -34,10 +34,14 @@ spec:
         description: ResolverEndpoint is the Schema for the ResolverEndpoints API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
             type: object
@@ -46,19 +50,28 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource.
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
                 enum:
                 - Orphan
                 - Delete
                 type: string
               forProvider:
-                description: ResolverEndpointParameters defines the desired state of ResolverEndpoint
+                description: ResolverEndpointParameters defines the desired state
+                  of ResolverEndpoint
                 properties:
                   direction:
-                    description: "Specify the applicable value: \n    * INBOUND: Resolver forwards DNS queries to the DNS service for a VPC    from your network \n    * OUTBOUND: Resolver forwards DNS queries from the DNS service for a VPC    to your network"
+                    description: "Specify the applicable value: \n    * INBOUND: Resolver
+                      forwards DNS queries to the DNS service for a VPC    from your
+                      network \n    * OUTBOUND: Resolver forwards DNS queries from
+                      the DNS service for a VPC    to your network"
                     type: string
                   ipAddresses:
-                    description: IPAddresses are the subnets and IP addresses in your VPC that DNS queries originate from (for outbound endpoints) or that you forward DNS queries to (for inbound endpoints). The subnet ID uniquely identifies a VPC.
+                    description: IPAddresses are the subnets and IP addresses in your
+                      VPC that DNS queries originate from (for outbound endpoints)
+                      or that you forward DNS queries to (for inbound endpoints).
+                      The subnet ID uniquely identifies a VPC.
                     items:
                       description: IPAddressRequest is used by ResolverEndpoint
                       properties:
@@ -66,10 +79,12 @@ spec:
                           description: IP address that you want to use for DNS queries.
                           type: string
                         subnetId:
-                          description: SubnetId is the ID of the subnet that contains the IP address.
+                          description: SubnetId is the ID of the subnet that contains
+                            the IP address.
                           type: string
                         subnetIdRef:
-                          description: SubnetIDRefs is a list of references to Subnets used to set the SubnetIDs.
+                          description: SubnetIDRefs is a list of references to Subnets
+                            used to set the SubnetIDs.
                           properties:
                             name:
                               description: Name of the referenced object.
@@ -78,27 +93,34 @@ spec:
                           - name
                           type: object
                         subnetIdSelector:
-                          description: SubnetIDSelector selects references to Subnets used to set the SubnetIDs.
+                          description: SubnetIDSelector selects references to Subnets
+                            used to set the SubnetIDs.
                           properties:
                             matchControllerRef:
-                              description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                              description: MatchControllerRef ensures an object with
+                                the same controller reference as the selecting object
+                                is selected.
                               type: boolean
                             matchLabels:
                               additionalProperties:
                                 type: string
-                              description: MatchLabels ensures an object with matching labels is selected.
+                              description: MatchLabels ensures an object with matching
+                                labels is selected.
                               type: object
                           type: object
                       type: object
                     type: array
                   name:
-                    description: A friendly name that lets you easily find a configuration in the Resolver dashboard in the Route 53 console.
+                    description: A friendly name that lets you easily find a configuration
+                      in the Resolver dashboard in the Route 53 console.
                     type: string
                   region:
-                    description: Region is which region the ResolverEndpoint will be created.
+                    description: Region is which region the ResolverEndpoint will
+                      be created.
                     type: string
                   securityGroupIdRefs:
-                    description: SecurityGroupIDRefs is a list of references to SecurityGroups used to set the SecurityGroupIDs.
+                    description: SecurityGroupIDRefs is a list of references to SecurityGroups
+                      used to set the SecurityGroupIDs.
                     items:
                       description: A Reference to a named object.
                       properties:
@@ -110,24 +132,34 @@ spec:
                       type: object
                     type: array
                   securityGroupIdSelector:
-                    description: SecurityGroupIDsSelector selects references to SecurityGroupID used to set the SecurityGroupIDs.
+                    description: SecurityGroupIDsSelector selects references to SecurityGroupID
+                      used to set the SecurityGroupIDs.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: MatchLabels ensures an object with matching labels is selected.
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
                         type: object
                     type: object
                   securityGroupIds:
-                    description: The ID of one or more security groups that you want to use to control access to this VPC. The security group that you specify must include one or more inbound rules (for inbound Resolver endpoints) or outbound rules (for outbound Resolver endpoints). Inbound and outbound rules must allow TCP and UDP access. For inbound access, open port 53. For outbound access, open the port that you're using for DNS queries on your network.
+                    description: The ID of one or more security groups that you want
+                      to use to control access to this VPC. The security group that
+                      you specify must include one or more inbound rules (for inbound
+                      Resolver endpoints) or outbound rules (for outbound Resolver
+                      endpoints). Inbound and outbound rules must allow TCP and UDP
+                      access. For inbound access, open port 53. For outbound access,
+                      open the port that you're using for DNS queries on your network.
                     items:
                       type: string
                     type: array
                   tags:
-                    description: A list of the tag keys and values that you want to associate with the endpoint.
+                    description: A list of the tag keys and values that you want to
+                      associate with the endpoint.
                     items:
                       properties:
                         key:
@@ -144,7 +176,9 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -153,7 +187,9 @@ spec:
                 - name
                 type: object
               providerRef:
-                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -162,7 +198,11 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource.
                 properties:
                   name:
                     description: Name of the secret.
@@ -181,40 +221,82 @@ spec:
             description: ResolverEndpointStatus defines the observed state of ResolverEndpoint.
             properties:
               atProvider:
-                description: ResolverEndpointObservation defines the observed state of ResolverEndpoint
+                description: ResolverEndpointObservation defines the observed state
+                  of ResolverEndpoint
                 properties:
                   arn:
                     description: The ARN (Amazon Resource Name) for the Resolver endpoint.
                     type: string
                   creationTime:
-                    description: The date and time that the endpoint was created, in Unix time format and Coordinated Universal Time (UTC).
+                    description: The date and time that the endpoint was created,
+                      in Unix time format and Coordinated Universal Time (UTC).
                     type: string
                   creatorRequestID:
-                    description: A unique string that identifies the request that created the Resolver endpoint. The CreatorRequestId allows failed requests to be retried without the risk of executing the operation twice.
+                    description: A unique string that identifies the request that
+                      created the Resolver endpoint. The CreatorRequestId allows failed
+                      requests to be retried without the risk of executing the operation
+                      twice.
                     type: string
                   hostVPCID:
-                    description: The ID of the VPC that you want to create the Resolver endpoint in.
+                    description: The ID of the VPC that you want to create the Resolver
+                      endpoint in.
                     type: string
                   id:
                     description: The ID of the Resolver endpoint.
                     type: string
                   ipAddressCount:
-                    description: The number of IP addresses that the Resolver endpoint can use for DNS queries.
+                    description: The number of IP addresses that the Resolver endpoint
+                      can use for DNS queries.
                     format: int64
                     type: integer
                   modificationTime:
-                    description: The date and time that the endpoint was last modified, in Unix time format and Coordinated Universal Time (UTC).
+                    description: The date and time that the endpoint was last modified,
+                      in Unix time format and Coordinated Universal Time (UTC).
                     type: string
                   securityGroupIDs:
-                    description: The ID of one or more security groups that control access to this VPC. The security group must include one or more inbound rules (for inbound endpoints) or outbound rules (for outbound endpoints). Inbound and outbound rules must allow TCP and UDP access. For inbound access, open port 53. For outbound access, open the port that you're using for DNS queries on your network.
+                    description: The ID of one or more security groups that control
+                      access to this VPC. The security group must include one or more
+                      inbound rules (for inbound endpoints) or outbound rules (for
+                      outbound endpoints). Inbound and outbound rules must allow TCP
+                      and UDP access. For inbound access, open port 53. For outbound
+                      access, open the port that you're using for DNS queries on your
+                      network.
                     items:
                       type: string
                     type: array
                   status:
-                    description: "A code that specifies the current status of the Resolver endpoint. Valid values include the following: \n    * CREATING: Resolver is creating and configuring one or more Amazon VPC    network interfaces for this endpoint. \n    * OPERATIONAL: The Amazon VPC network interfaces for this endpoint are    correctly configured and able to pass inbound or outbound DNS queries    between your network and Resolver. \n    * UPDATING: Resolver is associating or disassociating one or more network    interfaces with this endpoint. \n    * AUTO_RECOVERING: Resolver is trying to recover one or more of the network    interfaces that are associated with this endpoint. During the recovery    process, the endpoint functions with limited capacity because of the limit    on the number of DNS queries per IP address (per network interface). For    the current limit, see Limits on Route 53 Resolver (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html#limits-api-entities-resolver). \n    * ACTION_NEEDED: This endpoint is unhealthy, and Resolver can't automatically    recover it. To resolve the problem, we recommend that you check each IP    address that you associated with the endpoint. For each IP address that    isn't available, add another IP address and then delete the IP address    that isn't available. (An endpoint must always include at least two IP    addresses.) A status of ACTION_NEEDED can have a variety of causes. Here    are two common causes: One or more of the network interfaces that are    associated with the endpoint were deleted using Amazon VPC. The network    interface couldn't be created for some reason that's outside the control    of Resolver. \n    * DELETING: Resolver is deleting this endpoint and the associated network    interfaces."
+                    description: "A code that specifies the current status of the
+                      Resolver endpoint. Valid values include the following: \n    *
+                      CREATING: Resolver is creating and configuring one or more Amazon
+                      VPC    network interfaces for this endpoint. \n    * OPERATIONAL:
+                      The Amazon VPC network interfaces for this endpoint are    correctly
+                      configured and able to pass inbound or outbound DNS queries
+                      \   between your network and Resolver. \n    * UPDATING: Resolver
+                      is associating or disassociating one or more network    interfaces
+                      with this endpoint. \n    * AUTO_RECOVERING: Resolver is trying
+                      to recover one or more of the network    interfaces that are
+                      associated with this endpoint. During the recovery    process,
+                      the endpoint functions with limited capacity because of the
+                      limit    on the number of DNS queries per IP address (per network
+                      interface). For    the current limit, see Limits on Route 53
+                      Resolver (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html#limits-api-entities-resolver).
+                      \n    * ACTION_NEEDED: This endpoint is unhealthy, and Resolver
+                      can't automatically    recover it. To resolve the problem, we
+                      recommend that you check each IP    address that you associated
+                      with the endpoint. For each IP address that    isn't available,
+                      add another IP address and then delete the IP address    that
+                      isn't available. (An endpoint must always include at least two
+                      IP    addresses.) A status of ACTION_NEEDED can have a variety
+                      of causes. Here    are two common causes: One or more of the
+                      network interfaces that are    associated with the endpoint
+                      were deleted using Amazon VPC. The network    interface couldn't
+                      be created for some reason that's outside the control    of
+                      Resolver. \n    * DELETING: Resolver is deleting this endpoint
+                      and the associated network    interfaces."
                     type: string
                   statusMessage:
-                    description: A detailed description of the status of the Resolver endpoint.
+                    description: A detailed description of the status of the Resolver
+                      endpoint.
                     type: string
                 type: object
               conditions:
@@ -223,20 +305,25 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
                       type: string
                     reason:
-                      description: A Reason for this condition's last transition from one status to another.
+                      description: A Reason for this condition's last transition from
+                        one status to another.
                       type: string
                     status:
-                      description: Status of this condition; is it currently True, False, or Unknown?
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
