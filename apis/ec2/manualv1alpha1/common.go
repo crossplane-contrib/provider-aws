@@ -864,7 +864,7 @@ func CompareGroupIDs(groupIDs []string, ec2Groups []ec2.GroupIdentifier) bool {
 	sortGroupIDs(groupIDs, ec2Groups)
 
 	for i, g := range groupIDs {
-		if g != *ec2Groups[i].GroupName {
+		if g != *ec2Groups[i].GroupId {
 			return false
 		}
 	}
