@@ -556,19 +556,26 @@ func GenerateInstanceNetworkInterface(nets []ec2.InstanceNetworkInterface) []man
 	if nets != nil {
 		res := make([]manualv1alpha1.InstanceNetworkInterface, len(nets))
 		for i, intr := range nets {
+			var association manualv1alpha1.InstanceNetworkInterfaceAssociation
+			var attachment manualv1alpha1.InstanceNetworkInterfaceAttachment
+
+			if intr.Association != nil {
+				association.IPOwnerID = intr.Association.IpOwnerId
+				association.PublicDNSName = intr.Association.PublicDnsName
+				association.PublicIP = intr.Association.PublicIp
+			}
+
+			if intr.Attachment != nil {
+				attachment.AttachTime = FromTimePtr(intr.Attachment.AttachTime)
+				attachment.AttachmentID = intr.Attachment.AttachmentId
+				attachment.DeleteOnTermination = intr.Attachment.DeleteOnTermination
+				attachment.DeviceIndex = intr.Attachment.DeviceIndex
+				attachment.Status = string(intr.Attachment.Status)
+			}
+
 			res[i] = manualv1alpha1.InstanceNetworkInterface{
-				Association: &manualv1alpha1.InstanceNetworkInterfaceAssociation{
-					IPOwnerID:     intr.Association.IpOwnerId,
-					PublicDNSName: intr.Association.PublicDnsName,
-					PublicIP:      intr.Association.PublicIp,
-				},
-				Attachment: &manualv1alpha1.InstanceNetworkInterfaceAttachment{
-					AttachTime:          FromTimePtr(intr.Attachment.AttachTime),
-					AttachmentID:        intr.Attachment.AttachmentId,
-					DeleteOnTermination: intr.Attachment.DeleteOnTermination,
-					DeviceIndex:         intr.Attachment.DeviceIndex,
-					Status:              string(intr.Attachment.Status),
-				},
+				Association:        &association,
+				Attachment:         &attachment,
 				Description:        intr.Description,
 				Groups:             GenerateGroupIdentifiers(intr.Groups),
 				InterfaceType:      intr.InterfaceType,
@@ -624,12 +631,15 @@ func GenerateInstancePrivateIPAddresses(addrs []ec2.InstancePrivateIpAddress) []
 	if addrs != nil {
 		res := make([]manualv1alpha1.InstancePrivateIPAddress, len(addrs))
 		for i, a := range addrs {
+			var association manualv1alpha1.InstanceNetworkInterfaceAssociation
+			if a.Association != nil {
+				association.IPOwnerID = a.Association.IpOwnerId
+				association.PublicDNSName = a.Association.PublicDnsName
+				association.PublicIP = a.Association.PublicIp
+			}
+
 			res[i] = manualv1alpha1.InstancePrivateIPAddress{
-				Association: &manualv1alpha1.InstanceNetworkInterfaceAssociation{
-					IPOwnerID:     a.Association.IpOwnerId,
-					PublicDNSName: a.Association.PublicDnsName,
-					PublicIP:      a.Association.PublicIp,
-				},
+				Association:      &association,
 				Primary:          a.Primary,
 				PrivateDNSName:   a.PrivateDnsName,
 				PrivateIPAddress: a.PrivateIpAddress,

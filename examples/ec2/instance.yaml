@@ -9,6 +9,6 @@ spec:
     securityGroupIdRefs:
       - name: sample-cluster-sg
     subnetIdRef:
-      name: sample-subnet1    
+      name: sample-subnet1  
   providerConfigRef:
     name: example

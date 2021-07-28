@@ -47,12 +47,13 @@ const (
 	errUnexpectedObject = "The managed resource is not an Instance resource"
 	errKubeUpdateFailed = "cannot update Instance custom resource"
 
-	errMultipleItems = "retrieved multiple Instances for the given instanceId"
-	errDescribe      = "failed to describe Instance with id"
-	errCreate        = "failed to create the Instance resource"
-	errUpdate        = "failed to update Instance resource"
-	errCreateTags    = "failed to create tags for the Instance resource"
-	errDelete        = "failed to delete the Instance resource"
+	errMultipleItems            = "retrieved multiple Instances for the given instanceId"
+	errDescribe                 = "failed to describe Instance with id"
+	errCreate                   = "failed to create the Instance resource"
+	errUpdate                   = "failed to update Instance resource"
+	errModifyInstanceAttributes = "failed to modify the Instance resource attributes"
+	errCreateTags               = "failed to create tags for the Instance resource"
+	errDelete                   = "failed to delete the Instance resource"
 )
 
 // SetupInstance adds a controller that reconciles Instances.
@@ -249,13 +250,116 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
-func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
-	_, ok := mgd.(*svcapitypes.Instance)
+func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo
+	cr, ok := mgd.(*svcapitypes.Instance)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	return managed.ExternalUpdate{}, awsclient.Wrap(errors.New("fix this"), errUpdate)
+	if cr.Spec.ForProvider.DisableAPITermination != nil {
+		modifyInput := &awsec2.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(meta.GetExternalName(cr)),
+			DisableApiTermination: &awsec2.AttributeBooleanValue{
+				Value: cr.Spec.ForProvider.DisableAPITermination,
+			},
+		}
+		_, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx)
+
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
+		}
+	}
+
+	if cr.Spec.ForProvider.EBSOptimized != nil {
+		modifyInput := &awsec2.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(meta.GetExternalName(cr)),
+			EbsOptimized: &awsec2.AttributeBooleanValue{
+				Value: cr.Spec.ForProvider.EBSOptimized,
+			},
+		}
+		_, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx)
+
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
+		}
+	}
+
+	if cr.Spec.ForProvider.InstanceInitiatedShutdownBehavior != "" {
+		modifyInput := &awsec2.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(meta.GetExternalName(cr)),
+			InstanceInitiatedShutdownBehavior: &awsec2.AttributeValue{
+				Value: aws.String(cr.Spec.ForProvider.InstanceInitiatedShutdownBehavior),
+			},
+		}
+		_, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx)
+
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
+		}
+	}
+
+	if cr.Spec.ForProvider.InstanceType != "" {
+		modifyInput := &awsec2.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(meta.GetExternalName(cr)),
+			InstanceType: &awsec2.AttributeValue{
+				Value: aws.String(cr.Spec.ForProvider.InstanceType),
+			},
+		}
+		_, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx)
+
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
+		}
+	}
+
+	if cr.Spec.ForProvider.KernelID != nil {
+		modifyInput := &awsec2.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(meta.GetExternalName(cr)),
+			Kernel: &awsec2.AttributeValue{
+				Value: cr.Spec.ForProvider.KernelID,
+			},
+		}
+		_, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx)
+
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
+		}
+	}
+
+	if cr.Spec.ForProvider.RAMDiskID != nil {
+		modifyInput := &awsec2.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(meta.GetExternalName(cr)),
+			Ramdisk: &awsec2.AttributeValue{
+				Value: cr.Spec.ForProvider.RAMDiskID,
+			},
+		}
+		_, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx)
+
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
+		}
+	}
+
+	if cr.Spec.ForProvider.UserData != nil {
+		modifyInput := &awsec2.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(meta.GetExternalName(cr)),
+			UserData: &awsec2.BlobAttributeValue{
+				Value: []byte(*cr.Spec.ForProvider.UserData),
+			},
+		}
+		_, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx)
+
+		if err != nil {
+			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
+		}
+	}
+
+	_, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+		Resources: []string{meta.GetExternalName(cr)},
+		Tags:      svcapitypes.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
+	}).Send(ctx)
+
+	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
 
 func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {

@@ -75,6 +75,7 @@ type CapacityReservationSpecification struct {
 	CapacityReservationPreference string `json:"capacityReservationsPreference"`
 
 	// Information about the target Capacity Reservation.
+	// +optional
 	CapacityReservationTarget *CapacityReservationTarget `json:"capacityReservationTarget"`
 }
 
@@ -93,7 +94,7 @@ type CapacityReservationSpecificationResponse struct {
 	//
 	//    * none - The instance avoids running in a Capacity Reservation even if
 	//    one is available. The instance runs in On-Demand capacity.
-	CapacityReservationPreference string `json:"capacityReservationPerference"`
+	CapacityReservationPreference string `json:"capacityReservationPreference"`
 
 	// Information about the targeted Capacity Reservation.
 	// +optional
@@ -103,6 +104,7 @@ type CapacityReservationSpecificationResponse struct {
 // CapacityReservationTarget describes a target Capacity Reservation.
 type CapacityReservationTarget struct {
 	// The ID of the Capacity Reservation.
+	// +optional
 	CapacityReservationID *string `json:"capacityReservationId"`
 }
 

@@ -36,7 +36,6 @@ import (
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
-	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2"
 	"github.com/crossplane/provider-aws/pkg/clients/ec2/fake"
@@ -378,6 +377,78 @@ func TestDelete(t *testing.T) {
 	}
 }
 
+func TestUpdate(t *testing.T) {
+	type want struct {
+		cr     *manualv1alpha1.Instance
+		result managed.ExternalUpdate
+		err    error
+	}
+
+	cases := map[string]struct {
+		args
+		want
+	}{
+		"Successful": {
+			args: args{
+				instance: &fake.MockInstanceClient{
+					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
+						return awsec2.CreateTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
+						}
+					},
+					MockModifyInstanceAttributeRequest: func(input *awsec2.ModifyInstanceAttributeInput) awsec2.ModifyInstanceAttributeRequest {
+						return awsec2.ModifyInstanceAttributeRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
+						}
+					},
+				},
+				cr: instance(withSpec(manualv1alpha1.InstanceParameters{})),
+			},
+			want: want{
+				cr: instance(withSpec(manualv1alpha1.InstanceParameters{})),
+			},
+		},
+		"ModifyFailed": {
+			args: args{
+				instance: &fake.MockInstanceClient{
+					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
+						return awsec2.CreateTagsRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
+						}
+					},
+					MockModifyInstanceAttributeRequest: func(input *awsec2.ModifyInstanceAttributeInput) awsec2.ModifyInstanceAttributeRequest {
+						return awsec2.ModifyInstanceAttributeRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
+						}
+					},
+				},
+				cr: instance(withSpec(manualv1alpha1.InstanceParameters{})),
+			},
+			want: want{
+				cr:  instance(withSpec(manualv1alpha1.InstanceParameters{})),
+				err: awsclient.Wrap(errBoom, errUpdate),
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			e := &external{kube: tc.kube, client: tc.instance}
+			u, err := e.Update(context.Background(), tc.args.cr)
+
+			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if diff := cmp.Diff(tc.want.result, u); diff != "" {
+				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
 func TestInitialize(t *testing.T) {
 	type args struct {
 		cr   *manualv1alpha1.Instance
@@ -420,7 +491,7 @@ func TestInitialize(t *testing.T) {
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b v1beta1.Tag) bool { return a.Key > b.Key })); err == nil && diff != "" {
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, cmpopts.SortSlices(func(a, b manualv1alpha1.Tag) bool { return a.Key < b.Key })); err == nil && diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
