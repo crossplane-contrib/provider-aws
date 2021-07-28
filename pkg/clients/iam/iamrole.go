@@ -151,23 +151,22 @@ func IsRoleUpToDate(in v1beta1.IAMRoleParameters, observed iam.Role) (bool, stri
 		return false, "", err
 	}
 
-	isRoleUpToDate := cmp.Equal(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}))
-	diff := ""
+	diff := cmp.Diff(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}))
 
-	if !isRoleUpToDate {
-		diff = "Found observed difference in IAM role\n"
-		diff += cmp.Diff(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}))
-
-		// Add extra logging for AssumeRolePolicyDocument because cmp.Diff doesn't show the full difference
-		if *desired.AssumeRolePolicyDocument != *observed.AssumeRolePolicyDocument {
-			diff += "\ndesired assume role policy: "
-			diff += *desired.AssumeRolePolicyDocument
-			diff += "\nobserved assume role policy: "
-			diff += *observed.AssumeRolePolicyDocument
-		}
+	if diff == "" {
+		return true, diff, nil
 	}
 
-	return isRoleUpToDate, diff, nil
+	diff = "Found observed difference in IAM role\n" + diff
+
+	// Add extra logging for AssumeRolePolicyDocument because cmp.Diff doesn't show the full difference
+	if *desired.AssumeRolePolicyDocument != *observed.AssumeRolePolicyDocument {
+		diff += "\ndesired assume role policy: "
+		diff += *desired.AssumeRolePolicyDocument
+		diff += "\nobserved assume role policy: "
+		diff += *observed.AssumeRolePolicyDocument
+	}
+	return false, diff, nil
 }
 
 // DiffIAMTags returns the lists of tags that need to be removed and added according
