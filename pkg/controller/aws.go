@@ -42,6 +42,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/cache"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cachesubnetgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/cache/cluster"
+	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/cachepolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/cloudfront/distribution"
 	"github.com/crossplane/provider-aws/pkg/controller/config"
 	"github.com/crossplane/provider-aws/pkg/controller/database"
@@ -186,6 +187,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		function.SetupFunction,
 		openidconnectprovider.SetupOpenIDConnectProvider,
 		distribution.SetupDistribution,
+		cachepolicy.SetupCachePolicy,
 		resolverendpoint.SetupResolverEndpoint,
 		resolverrule.SetupResolverRule,
 		vpcpeeringconnection.SetupVPCPeeringConnection,

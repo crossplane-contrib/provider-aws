@@ -14,18 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package distribution
+package cloudfront
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/pkg/errors"
+
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 const fmtCanonical = "%s.%s"
 
-// lateInitOption Interface for options that affect late-initialization behavior of a managed resource
-type lateInitOption interface {
+// LateInitOption Interface for options that affect late-initialization behavior of a managed resource
+type LateInitOption interface {
 	apply(options *lateInitOptions)
 }
 
@@ -36,14 +44,14 @@ type lateInitOptions struct {
 	nameFilters filterArr
 }
 
-// apply Store the specified list of `lateInitOption`s in the receiver `lateInitOptions`
-func (opts *lateInitOptions) apply(opt ...lateInitOption) {
+// apply Store the specified list of `LateInitOption`s in the receiver `lateInitOptions`
+func (opts *lateInitOptions) apply(opt ...LateInitOption) {
 	for _, o := range opt {
 		o.apply(opts)
 	}
 }
 
-// nameFilter defines a filter on CR filed names as a `lateInitOption`.
+// nameFilter defines a filter on CR filed names as a `LateInitOption`.
 //   Fields with matching canonical names will not be processed
 //   during late-initialization.
 type nameFilter func(string) bool
@@ -87,15 +95,15 @@ func canonicalNameFilter(cNames ...string) nameFilter {
 	}
 }
 
-// nameMapper defines a transformation from CR field names to response field names
-type nameMapper func(string) string
+// NameMapper defines a transformation from CR field names to response field names
+type NameMapper func(string) string
 
-// apply applies the receiver `nameMapper` to the specified `lateInitOptions`
-func (mapper nameMapper) apply(options *lateInitOptions) {
+// apply applies the receiver `NameMapper` to the specified `lateInitOptions`
+func (mapper NameMapper) apply(options *lateInitOptions) {
 	options.nameMappers = append(options.nameMappers, mapper)
 }
 
-func (mapper nameMapper) getName(name string) string {
+func (mapper NameMapper) getName(name string) string {
 	if mapper == nil {
 		return name
 	}
@@ -103,7 +111,7 @@ func (mapper nameMapper) getName(name string) string {
 	return mapper(name)
 }
 
-type mapperArr []nameMapper
+type mapperArr []NameMapper
 
 func (mArr mapperArr) getName(name string) string {
 	result := name
@@ -115,14 +123,14 @@ func (mArr mapperArr) getName(name string) string {
 	return result
 }
 
-// suffixReplacer returns a `nameMapper` as a `lateInitOption` that
+// suffixReplacer returns a `NameMapper` as a `LateInitOption` that
 //   can be used to replace the specified `suffix` on a CR field name
 //   with the specified `replace` string to obtain the source
 //   response field name.
 //   Example: `suffixReplacer("ID", "Id")` tells
 //   `lateInitializeFromResponse` to fill a target CR field with name `FieldID`
 //   from a corresponding response field with name `FieldId`.
-func suffixReplacer(suffix, replace string) nameMapper {
+func suffixReplacer(suffix, replace string) NameMapper {
 	return func(s string) string {
 		trimmed := strings.TrimSuffix(s, suffix)
 
@@ -134,20 +142,20 @@ func suffixReplacer(suffix, replace string) nameMapper {
 	}
 }
 
-// replacer returns a `nameMapper` as a `lateInitOption` that
+// Replacer returns a `NameMapper` as a `LateInitOption` that
 //   that replaces all occurrences of string `old` to `new` in a
 //   target CR field name to obtain the corresponding
 //   source response field name.
-func replacer(old, new string) nameMapper {
+func Replacer(old, new string) NameMapper {
 	return func(s string) string {
 		return strings.ReplaceAll(s, old, new)
 	}
 }
 
-// mapReplacer returns a `nameMapper` as a `lateInitOption` that
+// MapReplacer returns a `NameMapper` as a `LateInitOption` that
 //   uses the specified `map[string]string` to map from
 //   target CR field names to corresponding source response field names.
-func mapReplacer(m map[string]string) nameMapper {
+func MapReplacer(m map[string]string) NameMapper {
 	return func(s string) string {
 		if result, ok := m[s]; ok {
 			return result
@@ -157,13 +165,13 @@ func mapReplacer(m map[string]string) nameMapper {
 	}
 }
 
-// lateInitializeFromResponse Copy unset (nil) values from responseObject to crObject
+// LateInitializeFromResponse Copy unset (nil) values from responseObject to crObject
 //   Both crObject and responseObject must be pointers to structs.
 //	 Otherwise, an error will be returned. Returns `true` if at least one field has been stored
 //   from source `responseObject` into a corresponding field of target `crObject`.
 // nolint:gocyclo
-func lateInitializeFromResponse(parentName string, crObject interface{}, responseObject interface{},
-	opts ...lateInitOption) (bool, error) {
+func LateInitializeFromResponse(parentName string, crObject interface{}, responseObject interface{},
+	opts ...LateInitOption) (bool, error) {
 	if crObject == nil || reflect.ValueOf(crObject).IsNil() ||
 		responseObject == nil || reflect.ValueOf(responseObject).IsNil() {
 		return false, nil
@@ -260,7 +268,7 @@ func allocate(crFieldValue reflect.Value, alloc allocator) bool {
 
 // nolint:gocyclo
 func handlePtr(cName string, crFieldInitialized bool, crFieldValue, responseFieldValue reflect.Value,
-	responseStructField *reflect.StructField, opts ...lateInitOption) (bool, error) {
+	responseStructField *reflect.StructField, opts ...LateInitOption) (bool, error) {
 	crKeepField := false
 
 	switch {
@@ -277,7 +285,7 @@ func handlePtr(cName string, crFieldInitialized bool, crFieldValue, responseFiel
 			crFieldValue.Set(reflect.New(crFieldValue.Type().Elem()))
 		}
 
-		nestedFieldAssigned, err := lateInitializeFromResponse(cName, crFieldValue.Interface(),
+		nestedFieldAssigned, err := LateInitializeFromResponse(cName, crFieldValue.Interface(),
 			responseFieldValue.Interface(), opts...)
 
 		if err != nil {
@@ -301,7 +309,7 @@ func handlePtr(cName string, crFieldInitialized bool, crFieldValue, responseFiel
 
 // nolint:gocyclo
 func handleSlice(cName string, crFieldInitialized bool, crFieldValue, responseFieldValue reflect.Value,
-	responseStructField *reflect.StructField, opts ...lateInitOption) (bool, error) {
+	responseStructField *reflect.StructField, opts ...LateInitOption) (bool, error) {
 	crKeepField := false
 
 	switch {
@@ -370,4 +378,30 @@ func getCanonicalName(parent, child string) string {
 	}
 
 	return fmt.Sprintf(fmtCanonical, parent, child)
+}
+
+func IsUpToDate(actual, desired interface{}, opts ...LateInitOption) (bool, error) {
+	valDesired := reflect.ValueOf(desired)
+	if valDesired.Kind() != reflect.Ptr {
+		return false, errors.Errorf("desired must be of pointer kind, got: %s", valDesired.Kind().String())
+	}
+	newDesired := func() interface{} {
+		return reflect.New(reflect.TypeOf(valDesired.Elem().Interface())).Interface()
+	}
+	actualConfig := newDesired()
+	if _, err := LateInitializeFromResponse("", actualConfig, actual, opts...); err != nil {
+		return false, err
+	}
+
+	jsonPatch, err := awsclients.CreateJSONPatch(actualConfig, desired)
+	if err != nil {
+		return false, err
+	}
+
+	patch := newDesired()
+	if err := json.Unmarshal(jsonPatch, patch); err != nil {
+		return false, err
+	}
+	return cmp.Equal(newDesired(), patch, cmpopts.EquateEmpty(),
+		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}, []xpv1.Reference{})), nil
 }
