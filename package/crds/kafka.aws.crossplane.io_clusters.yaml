@@ -34,10 +34,14 @@ spec:
         description: Cluster is the Schema for the Clusters API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
             type: object
@@ -46,7 +50,9 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource.
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
                 enum:
                 - Orphan
                 - Delete
@@ -58,7 +64,11 @@ spec:
                     description: Information about the brokers.
                     properties:
                       brokerAZDistribution:
-                        description: The distribution of broker nodes across Availability Zones. By default, broker nodes are distributed among the Availability Zones of your Region. Currently, the only supported value is DEFAULT. You can either specify this value explicitly or leave it out.
+                        description: The distribution of broker nodes across Availability
+                          Zones. By default, broker nodes are distributed among the
+                          Availability Zones of your Region. Currently, the only supported
+                          value is DEFAULT. You can either specify this value explicitly
+                          or leave it out.
                         type: string
                       clientSubnets:
                         items:
@@ -71,10 +81,12 @@ spec:
                           type: string
                         type: array
                       storageInfo:
-                        description: Contains information about storage volumes attached to MSK broker nodes.
+                        description: Contains information about storage volumes attached
+                          to MSK broker nodes.
                         properties:
                           ebsStorageInfo:
-                            description: Contains information about the EBS storage volumes attached to Kafka broker nodes.
+                            description: Contains information about the EBS storage
+                              volumes attached to Kafka broker nodes.
                             properties:
                               volumeSize:
                                 format: int64
@@ -106,7 +118,8 @@ spec:
                     description: The name of the cluster.
                     type: string
                   configurationInfo:
-                    description: Represents the configuration that you want MSK to use for the cluster.
+                    description: Represents the configuration that you want MSK to
+                      use for the cluster.
                     properties:
                       arn:
                         type: string
@@ -134,7 +147,9 @@ spec:
                         type: object
                     type: object
                   enhancedMonitoring:
-                    description: Specifies the level of monitoring for the MSK cluster. The possible values are DEFAULT, PER_BROKER, PER_TOPIC_PER_BROKER, and PER_TOPIC_PER_PARTITION.
+                    description: Specifies the level of monitoring for the MSK cluster.
+                      The possible values are DEFAULT, PER_BROKER, PER_TOPIC_PER_BROKER,
+                      and PER_TOPIC_PER_PARTITION.
                     type: string
                   kafkaVersion:
                     description: The version of Apache Kafka.
@@ -146,7 +161,8 @@ spec:
                         description: The broker logs configuration for this MSK cluster.
                         properties:
                           cloudWatchLogs:
-                            description: Details of the CloudWatch Logs destination for broker logs.
+                            description: Details of the CloudWatch Logs destination
+                              for broker logs.
                             properties:
                               enabled:
                                 type: boolean
@@ -162,7 +178,8 @@ spec:
                                 type: boolean
                             type: object
                           s3:
-                            description: The details of the Amazon S3 destination for broker logs.
+                            description: The details of the Amazon S3 destination
+                              for broker logs.
                             properties:
                               bucket:
                                 type: string
@@ -174,7 +191,8 @@ spec:
                         type: object
                     type: object
                   numberOfBrokerNodes:
-                    description: The number of Kafka broker nodes in the Amazon MSK cluster.
+                    description: The number of Kafka broker nodes in the Amazon MSK
+                      cluster.
                     format: int64
                     type: integer
                   openMonitoring:
@@ -184,13 +202,15 @@ spec:
                         description: Prometheus settings.
                         properties:
                           jmxExporter:
-                            description: Indicates whether you want to enable or disable the JMX Exporter.
+                            description: Indicates whether you want to enable or disable
+                              the JMX Exporter.
                             properties:
                               enabledInBroker:
                                 type: boolean
                             type: object
                           nodeExporter:
-                            description: Indicates whether you want to enable or disable the Node Exporter.
+                            description: Indicates whether you want to enable or disable
+                              the Node Exporter.
                             properties:
                               enabledInBroker:
                                 type: boolean
@@ -206,10 +226,12 @@ spec:
                     description: Create tags when creating the cluster.
                     type: object
                   zookeeperConnectString:
-                    description: The connection string to use to connect to the Apache ZooKeeper cluster.
+                    description: The connection string to use to connect to the Apache
+                      ZooKeeper cluster.
                     type: string
                   zookeeperConnectStringTLS:
-                    description: The connection string to use to connect to zookeeper cluster on Tls port.
+                    description: The connection string to use to connect to zookeeper
+                      cluster on Tls port.
                     type: string
                 required:
                 - brokerNodeGroupInfo
@@ -221,7 +243,9 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -230,7 +254,9 @@ spec:
                 - name
                 type: object
               providerRef:
-                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -239,7 +265,11 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource.
                 properties:
                   name:
                     description: Name of the secret.
@@ -264,7 +294,9 @@ spec:
                     description: The Amazon Resource Name (ARN) of the cluster.
                     type: string
                   state:
-                    description: The state of the cluster. The possible states are ACTIVE, CREATING, DELETING, FAILED, HEALING, MAINTENANCE, REBOOTING_BROKER, and UPDATING.
+                    description: The state of the cluster. The possible states are
+                      ACTIVE, CREATING, DELETING, FAILED, HEALING, MAINTENANCE, REBOOTING_BROKER,
+                      and UPDATING.
                     type: string
                 type: object
               conditions:
@@ -273,20 +305,25 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
                       type: string
                     reason:
-                      description: A Reason for this condition's last transition from one status to another.
+                      description: A Reason for this condition's last transition from
+                        one status to another.
                       type: string
                     status:
-                      description: Status of this condition; is it currently True, False, or Unknown?
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
