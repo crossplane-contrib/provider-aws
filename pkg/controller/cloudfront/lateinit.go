@@ -380,6 +380,7 @@ func getCanonicalName(parent, child string) string {
 	return fmt.Sprintf(fmtCanonical, parent, child)
 }
 
+// IsUpToDate checks whether the actual state is up-to-date with the given desired state
 func IsUpToDate(actual, desired interface{}, opts ...LateInitOption) (bool, error) {
 	valDesired := reflect.ValueOf(desired)
 	if valDesired.Kind() != reflect.Ptr {

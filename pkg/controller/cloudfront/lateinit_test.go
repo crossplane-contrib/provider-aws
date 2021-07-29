@@ -60,7 +60,7 @@ var (
 	})
 )
 
-func TestLateInitOptions_Apply(t *testing.T) {
+func TestApply(t *testing.T) {
 	type fields struct {
 		nameMappers mapperArr
 		nameFilters filterArr
@@ -110,7 +110,7 @@ func TestLateInitOptions_Apply(t *testing.T) {
 	}
 }
 
-func Test_filterArr_filter(t *testing.T) {
+func TestFilter(t *testing.T) {
 	type args struct {
 		name string
 	}
@@ -151,7 +151,7 @@ func Test_filterArr_filter(t *testing.T) {
 	}
 }
 
-func Test_mapperArr_getName(t *testing.T) {
+func TestGetName(t *testing.T) {
 	type args struct {
 		name string
 	}
@@ -631,6 +631,101 @@ func TestLateInitializeFromResponse(t *testing.T) {
 
 			if diff := cmp.Diff(tt.wantCRObject, tt.args.crObject); diff != "" {
 				t.Errorf("lateInitializeFromResponse(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestIsUpToDate(t *testing.T) {
+	valTest := "testValue"
+	valAnotherTest := "anotherTestValue"
+	type args struct {
+		actual  interface{}
+		desired interface{}
+		opts    []LateInitOption
+	}
+	tests := map[string]struct {
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		"SuccessNoOptsNoUpdate": {
+			args: args{
+				actual: &struct {
+					S *string
+				}{
+					S: &valTest,
+				},
+				desired: &struct {
+					S *string
+				}{
+					S: &valTest,
+				},
+			},
+			want: true,
+		},
+		"SuccessNoOptsUpdateRequired": {
+			args: args{
+				actual: &struct {
+					S *string
+				}{
+					S: &valAnotherTest,
+				},
+				desired: &struct {
+					S *string
+				}{
+					S: &valTest,
+				},
+			},
+		},
+		"SuccessWithOptsNoUpdate": {
+			args: args{
+				actual: &struct {
+					// linter disabled because we are testing a case based on
+					// a common naming convention in aws-sdk-go
+					Id *string // nolint:golint
+				}{
+					Id: &valTest,
+				},
+				desired: &struct {
+					ID *string
+				}{
+					ID: &valTest,
+				},
+				opts: []LateInitOption{
+					Replacer("ID", "Id"),
+				},
+			},
+			want: true,
+		},
+		"FailNonPtr": {
+			args: args{
+				actual: &struct {
+					S *string
+				}{
+					S: &valTest,
+				},
+				desired: struct {
+					S *string
+				}{
+					S: &valTest,
+				},
+			},
+			wantErr: true,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			got, err := IsUpToDate(tt.args.actual, tt.args.desired, tt.args.opts...)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("IsUpToDate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.wantErr {
+				return
+			}
+			if got != tt.want {
+				t.Errorf("IsUpToDate() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

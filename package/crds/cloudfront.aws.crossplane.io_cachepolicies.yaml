@@ -34,10 +34,14 @@ spec:
         description: CachePolicy is the Schema for the CachePolicies API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
             type: object
@@ -46,7 +50,9 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource.
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
                 enum:
                 - Orphan
                 - Delete
@@ -71,10 +77,23 @@ spec:
                       name:
                         type: string
                       parametersInCacheKeyAndForwardedToOrigin:
-                        description: "This object determines the values that CloudFront includes in the cache key. These values can include HTTP headers, cookies, and URL query strings. CloudFront uses the cache key to find an object in its cache that it can return to the viewer. \n The headers, cookies, and query strings that are included in the cache key are automatically included in requests that CloudFront sends to the origin. CloudFront sends a request when it can’t find an object in its cache that matches the request’s cache key. If you want to send values to the origin but not include them in the cache key, use OriginRequestPolicy."
+                        description: "This object determines the values that CloudFront
+                          includes in the cache key. These values can include HTTP
+                          headers, cookies, and URL query strings. CloudFront uses
+                          the cache key to find an object in its cache that it can
+                          return to the viewer. \n The headers, cookies, and query
+                          strings that are included in the cache key are automatically
+                          included in requests that CloudFront sends to the origin.
+                          CloudFront sends a request when it can’t find an object
+                          in its cache that matches the request’s cache key. If you
+                          want to send values to the origin but not include them in
+                          the cache key, use OriginRequestPolicy."
                         properties:
                           cookiesConfig:
-                            description: An object that determines whether any cookies in viewer requests (and if so, which cookies) are included in the cache key and automatically included in requests that CloudFront sends to the origin.
+                            description: An object that determines whether any cookies
+                              in viewer requests (and if so, which cookies) are included
+                              in the cache key and automatically included in requests
+                              that CloudFront sends to the origin.
                             properties:
                               cookieBehavior:
                                 type: string
@@ -95,7 +114,10 @@ spec:
                           enableAcceptEncodingGzip:
                             type: boolean
                           headersConfig:
-                            description: An object that determines whether any HTTP headers (and if so, which headers) are included in the cache key and automatically included in requests that CloudFront sends to the origin.
+                            description: An object that determines whether any HTTP
+                              headers (and if so, which headers) are included in the
+                              cache key and automatically included in requests that
+                              CloudFront sends to the origin.
                             properties:
                               headerBehavior:
                                 type: string
@@ -112,7 +134,10 @@ spec:
                                 type: object
                             type: object
                           queryStringsConfig:
-                            description: An object that determines whether any URL query strings in viewer requests (and if so, which query strings) are included in the cache key and automatically included in requests that CloudFront sends to the origin.
+                            description: An object that determines whether any URL
+                              query strings in viewer requests (and if so, which query
+                              strings) are included in the cache key and automatically
+                              included in requests that CloudFront sends to the origin.
                             properties:
                               queryStringBehavior:
                                 type: string
@@ -140,7 +165,9 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -149,7 +176,9 @@ spec:
                 - name
                 type: object
               providerRef:
-                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -158,7 +187,11 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource.
                 properties:
                   name:
                     description: Name of the secret.
@@ -177,13 +210,27 @@ spec:
             description: CachePolicyStatus defines the observed state of CachePolicy.
             properties:
               atProvider:
-                description: CachePolicyObservation defines the observed state of CachePolicy
+                description: CachePolicyObservation defines the observed state of
+                  CachePolicy
                 properties:
                   cachePolicy:
                     description: A cache policy.
                     properties:
                       cachePolicyConfig:
-                        description: "A cache policy configuration. \n This configuration determines the following: \n    * The values that CloudFront includes in the cache key. These values can    include HTTP headers, cookies, and URL query strings. CloudFront uses    the cache key to find an object in its cache that it can return to the    viewer. \n    * The default, minimum, and maximum time to live (TTL) values that you    want objects to stay in the CloudFront cache. \n The headers, cookies, and query strings that are included in the cache key are automatically included in requests that CloudFront sends to the origin. CloudFront sends a request when it can’t find a valid object in its cache that matches the request’s cache key. If you want to send values to the origin but not include them in the cache key, use OriginRequestPolicy."
+                        description: "A cache policy configuration. \n This configuration
+                          determines the following: \n    * The values that CloudFront
+                          includes in the cache key. These values can    include HTTP
+                          headers, cookies, and URL query strings. CloudFront uses
+                          \   the cache key to find an object in its cache that it
+                          can return to the    viewer. \n    * The default, minimum,
+                          and maximum time to live (TTL) values that you    want objects
+                          to stay in the CloudFront cache. \n The headers, cookies,
+                          and query strings that are included in the cache key are
+                          automatically included in requests that CloudFront sends
+                          to the origin. CloudFront sends a request when it can’t
+                          find a valid object in its cache that matches the request’s
+                          cache key. If you want to send values to the origin but
+                          not include them in the cache key, use OriginRequestPolicy."
                         properties:
                           comment:
                             type: string
@@ -199,10 +246,24 @@ spec:
                           name:
                             type: string
                           parametersInCacheKeyAndForwardedToOrigin:
-                            description: "This object determines the values that CloudFront includes in the cache key. These values can include HTTP headers, cookies, and URL query strings. CloudFront uses the cache key to find an object in its cache that it can return to the viewer. \n The headers, cookies, and query strings that are included in the cache key are automatically included in requests that CloudFront sends to the origin. CloudFront sends a request when it can’t find an object in its cache that matches the request’s cache key. If you want to send values to the origin but not include them in the cache key, use OriginRequestPolicy."
+                            description: "This object determines the values that CloudFront
+                              includes in the cache key. These values can include
+                              HTTP headers, cookies, and URL query strings. CloudFront
+                              uses the cache key to find an object in its cache that
+                              it can return to the viewer. \n The headers, cookies,
+                              and query strings that are included in the cache key
+                              are automatically included in requests that CloudFront
+                              sends to the origin. CloudFront sends a request when
+                              it can’t find an object in its cache that matches the
+                              request’s cache key. If you want to send values to the
+                              origin but not include them in the cache key, use OriginRequestPolicy."
                             properties:
                               cookiesConfig:
-                                description: An object that determines whether any cookies in viewer requests (and if so, which cookies) are included in the cache key and automatically included in requests that CloudFront sends to the origin.
+                                description: An object that determines whether any
+                                  cookies in viewer requests (and if so, which cookies)
+                                  are included in the cache key and automatically
+                                  included in requests that CloudFront sends to the
+                                  origin.
                                 properties:
                                   cookieBehavior:
                                     type: string
@@ -223,7 +284,10 @@ spec:
                               enableAcceptEncodingGzip:
                                 type: boolean
                               headersConfig:
-                                description: An object that determines whether any HTTP headers (and if so, which headers) are included in the cache key and automatically included in requests that CloudFront sends to the origin.
+                                description: An object that determines whether any
+                                  HTTP headers (and if so, which headers) are included
+                                  in the cache key and automatically included in requests
+                                  that CloudFront sends to the origin.
                                 properties:
                                   headerBehavior:
                                     type: string
@@ -240,7 +304,11 @@ spec:
                                     type: object
                                 type: object
                               queryStringsConfig:
-                                description: An object that determines whether any URL query strings in viewer requests (and if so, which query strings) are included in the cache key and automatically included in requests that CloudFront sends to the origin.
+                                description: An object that determines whether any
+                                  URL query strings in viewer requests (and if so,
+                                  which query strings) are included in the cache key
+                                  and automatically included in requests that CloudFront
+                                  sends to the origin.
                                 properties:
                                   queryStringBehavior:
                                     type: string
@@ -268,7 +336,8 @@ spec:
                     description: The current version of the cache policy.
                     type: string
                   location:
-                    description: The fully qualified URI of the cache policy just created.
+                    description: The fully qualified URI of the cache policy just
+                      created.
                     type: string
                 type: object
               conditions:
@@ -277,20 +346,25 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
                       type: string
                     reason:
-                      description: A Reason for this condition's last transition from one status to another.
+                      description: A Reason for this condition's last transition from
+                        one status to another.
                       type: string
                     status:
-                      description: Status of this condition; is it currently True, False, or Unknown?
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime
