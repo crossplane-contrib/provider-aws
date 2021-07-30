@@ -444,30 +444,38 @@ type InstanceNetworkInterface struct {
 // InstanceNetworkInterfaceAssociation describes association information for an Elastic IP address (IPv4).
 type InstanceNetworkInterfaceAssociation struct {
 	// The ID of the owner of the Elastic IP address.
+	// +optional
 	IPOwnerID *string `json:"ipOwnerId"`
 
 	// The public DNS name.
+	// +optional
 	PublicDNSName *string `json:"publicDnsName"`
 
 	// The public IP address or Elastic IP address bound to the network interface.
+	// +optional
 	PublicIP *string `json:"publicIp"`
 }
 
 // InstanceNetworkInterfaceAttachment describes a network interface attachment.
 type InstanceNetworkInterfaceAttachment struct {
 	// The time stamp when the attachment initiated.
+	// +optional
 	AttachTime *metav1.Time `json:"attachTime"`
 
 	// The ID of the network interface attachment.
+	// +optional
 	AttachmentID *string `json:"attachmentId"`
 
 	// Indicates whether the network interface is deleted when the instance is terminated.
+	// +optional
 	DeleteOnTermination *bool `json:"deleteOnTermination"`
 
 	// The index of the device on the instance for the network interface attachment.
+	// +optional
 	DeviceIndex *int64 `json:"deviceIndex"`
 
 	// The attachment state.
+	// +optional
 	Status string `json:"status"`
 }
 

@@ -1305,10 +1305,6 @@ spec:
                               description: The public IP address or Elastic IP address
                                 bound to the network interface.
                               type: string
-                          required:
-                          - ipOwnerId
-                          - publicDnsName
-                          - publicIp
                           type: object
                         attachment:
                           description: The network interface attachment.
@@ -1332,12 +1328,6 @@ spec:
                             status:
                               description: The attachment state.
                               type: string
-                          required:
-                          - attachTime
-                          - attachmentId
-                          - deleteOnTermination
-                          - deviceIndex
-                          - status
                           type: object
                         description:
                           description: The description.
@@ -1415,10 +1405,6 @@ spec:
                                     description: The public IP address or Elastic
                                       IP address bound to the network interface.
                                     type: string
-                                required:
-                                - ipOwnerId
-                                - publicDnsName
-                                - publicIp
                                 type: object
                               primary:
                                 description: Indicates whether this IPv4 address is
