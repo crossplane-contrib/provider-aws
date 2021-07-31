@@ -156,7 +156,7 @@ type DBClusterOptionGroupStatus struct {
 	Status *string `json:"status,omitempty"`
 }
 
-type DBClusterParameterGroup struct {
+type DBClusterParameterGroup_SDK struct {
 	DBClusterParameterGroupARN *string `json:"dbClusterParameterGroupARN,omitempty"`
 
 	DBClusterParameterGroupName *string `json:"dbClusterParameterGroupName,omitempty"`

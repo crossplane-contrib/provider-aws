@@ -24,6 +24,10 @@ ignore:
     - DeleteDBParameterGroupInput.DBParameterGroupName
     - ModifyDBParameterGroupInput.DBParameterGroupName
     - DescribeDBParameterGroupsInput.DBParameterGroupName
+    - CreateDBClusterParameterGroupInput.DBClusterParameterGroupName
+    - DeleteDBClusterParameterGroupInput.DBClusterParameterGroupName
+    - ModifyDBClusterParameterGroupInput.DBClusterParameterGroupName
+    - DescribeDBClusterParameterGroupsInput.DBClusterParameterGroupName
     - DescribeGlobalClustersInput.GlobalClusterIdentifier
     - ModifyGlobalClusterInput.GlobalClusterIdentifier
     - CreateGlobalClusterInput.GlobalClusterIdentifier
@@ -31,7 +35,6 @@ ignore:
   resource_names:
     - DBClusterEndpoint
     - CustomAvailabilityZone
-    - DBClusterParameterGroup
     - DBClusterSnapshot
     - DBInstanceReadReplica
     - DBProxy
