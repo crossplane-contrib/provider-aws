@@ -1,0 +1,13 @@
+apiVersion: route53resolver.aws.crossplane.io/v1alpha1
+kind: ResolverRuleAssociation
+metadata:
+  name: sample-resolver-rule-association
+spec:
+  forProvider:
+    region: us-east-1
+    vpcIdRef:
+      name: sample-vpc
+    resolverRuleIdRef:
+      name: sample-resolver-rule
+  providerConfigRef:
+    name: example

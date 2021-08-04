@@ -131,3 +131,59 @@ func (mg *ResolverRule) SetProviderReference(r *xpv1.Reference) {
 func (mg *ResolverRule) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }
+
+// GetCondition of this ResolverRuleAssociation.
+func (mg *ResolverRuleAssociation) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this ResolverRuleAssociation.
+func (mg *ResolverRuleAssociation) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this ResolverRuleAssociation.
+func (mg *ResolverRuleAssociation) GetProviderConfigReference() *xpv1.Reference {
+	return mg.Spec.ProviderConfigReference
+}
+
+/*
+GetProviderReference of this ResolverRuleAssociation.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *ResolverRuleAssociation) GetProviderReference() *xpv1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetWriteConnectionSecretToReference of this ResolverRuleAssociation.
+func (mg *ResolverRuleAssociation) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this ResolverRuleAssociation.
+func (mg *ResolverRuleAssociation) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this ResolverRuleAssociation.
+func (mg *ResolverRuleAssociation) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this ResolverRuleAssociation.
+func (mg *ResolverRuleAssociation) SetProviderConfigReference(r *xpv1.Reference) {
+	mg.Spec.ProviderConfigReference = r
+}
+
+/*
+SetProviderReference of this ResolverRuleAssociation.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *ResolverRuleAssociation) SetProviderReference(r *xpv1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetWriteConnectionSecretToReference of this ResolverRuleAssociation.
+func (mg *ResolverRuleAssociation) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
+}
