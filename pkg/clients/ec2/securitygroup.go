@@ -166,90 +166,11 @@ func LateInitializeSG(in *v1beta1.SecurityGroupParameters, sg *ec2types.Security
 	in.GroupName = awsclients.LateInitializeString(in.GroupName, sg.GroupName)
 	in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, sg.VpcId)
 
-	// If there is a mismatch in lengths, then it's a sign for desire change
-	// that should be handled via add or remove.
-	if len(in.Egress) == len(sg.IpPermissionsEgress) {
-		in.Egress = LateInitializeIPPermissions(in.Egress, sg.IpPermissionsEgress)
-	}
-	if len(in.Ingress) == len(sg.IpPermissions) {
-		in.Ingress = LateInitializeIPPermissions(in.Ingress, sg.IpPermissions)
-	}
+	// We cannot safely late init egress/ingress rules because they are keyless arrays
 
 	if len(in.Tags) == 0 && len(sg.Tags) != 0 {
 		in.Tags = v1beta1.BuildFromEC2Tags(sg.Tags)
 	}
-}
-
-// LateInitializeIPPermissions returns an array of []v1beta1.IPPermission whose
-// empty optional fields are filled with what's observed in []ec2types.IpPermission.
-//
-// Note that since there is no unique identifier for each IPPermission, its order
-// is assumed to be stable and used indexes are used as identifier.
-func LateInitializeIPPermissions(spec []v1beta1.IPPermission, o []ec2types.IpPermission) []v1beta1.IPPermission { // nolint:gocyclo
-	if len(spec) < len(o) {
-		return spec
-	}
-	for i := range o {
-		spec[i].IPProtocol = awsclients.LateInitializeString(spec[i].IPProtocol, o[i].IpProtocol)
-
-		for j := range o[i].IpRanges {
-			if len(spec[i].IPRanges) == j {
-				spec[i].IPRanges = append(spec[i].IPRanges, v1beta1.IPRange{})
-			}
-			spec[i].IPRanges[j].Description = awsclients.LateInitializeStringPtr(
-				spec[i].IPRanges[j].Description,
-				o[i].IpRanges[j].Description,
-			)
-		}
-		for j := range o[i].Ipv6Ranges {
-			if len(spec[i].IPv6Ranges) == j {
-				spec[i].IPv6Ranges = append(spec[i].IPv6Ranges, v1beta1.IPv6Range{})
-			}
-			spec[i].IPv6Ranges[j].Description = awsclients.LateInitializeStringPtr(
-				spec[i].IPv6Ranges[j].Description,
-				o[i].Ipv6Ranges[j].Description,
-			)
-		}
-		for j := range o[i].PrefixListIds {
-			if len(spec[i].PrefixListIDs) == j {
-				spec[i].PrefixListIDs = append(spec[i].PrefixListIDs, v1beta1.PrefixListID{})
-			}
-			spec[i].PrefixListIDs[j].Description = awsclients.LateInitializeStringPtr(
-				spec[i].PrefixListIDs[j].Description,
-				o[i].PrefixListIds[j].Description,
-			)
-		}
-		for j := range o[i].UserIdGroupPairs {
-			if len(spec[i].UserIDGroupPairs) == j {
-				spec[i].UserIDGroupPairs = append(spec[i].UserIDGroupPairs, v1beta1.UserIDGroupPair{})
-			}
-			spec[i].UserIDGroupPairs[j].Description = awsclients.LateInitializeStringPtr(
-				spec[i].UserIDGroupPairs[j].Description,
-				o[i].UserIdGroupPairs[j].Description,
-			)
-			spec[i].UserIDGroupPairs[j].GroupID = awsclients.LateInitializeStringPtr(
-				spec[i].UserIDGroupPairs[j].GroupID,
-				o[i].UserIdGroupPairs[j].GroupId,
-			)
-			spec[i].UserIDGroupPairs[j].GroupName = awsclients.LateInitializeStringPtr(
-				spec[i].UserIDGroupPairs[j].GroupName,
-				o[i].UserIdGroupPairs[j].GroupName,
-			)
-			spec[i].UserIDGroupPairs[j].UserID = awsclients.LateInitializeStringPtr(
-				spec[i].UserIDGroupPairs[j].UserID,
-				o[i].UserIdGroupPairs[j].UserId,
-			)
-			spec[i].UserIDGroupPairs[j].VPCID = awsclients.LateInitializeStringPtr(
-				spec[i].UserIDGroupPairs[j].VPCID,
-				o[i].UserIdGroupPairs[j].VpcId,
-			)
-			spec[i].UserIDGroupPairs[j].VPCPeeringConnectionID = awsclients.LateInitializeStringPtr(
-				spec[i].UserIDGroupPairs[j].VPCPeeringConnectionID,
-				o[i].UserIdGroupPairs[j].VpcPeeringConnectionId,
-			)
-		}
-	}
-	return spec
 }
 
 // IsSGUpToDate checks if the observed security group is up to equal to the desired state
