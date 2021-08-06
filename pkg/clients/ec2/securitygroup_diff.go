@@ -17,7 +17,6 @@ limitations under the License.
 package ec2
 
 import (
-	"sort"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -47,38 +46,15 @@ func getKey(perm ec2types.IpPermission) ruleKey {
 	}
 }
 
-func compareObjects(a, b []*string) int {
-	for i := range a {
-		if a[i] == nil && b[i] != nil {
-			return -1
-		}
-		switch strings.Compare(aws.ToString(a[i]), aws.ToString(b[i])) {
-		case -1:
-			return -1
-		case 1:
-			return 1
-		case 0:
-			// continue
-		}
-	}
-	return 0 // eq
-}
-
-func userIDGroupPairCmp(i, j ec2types.UserIdGroupPair) int {
-	return compareObjects(
-		[]*string{i.Description, i.GroupId, i.GroupName, i.PeeringStatus, i.UserId, i.VpcId, i.VpcPeeringConnectionId},
-		[]*string{j.Description, j.GroupId, j.GroupName, j.PeeringStatus, j.UserId, j.VpcId, j.VpcPeeringConnectionId})
-}
-
 type ipPermissionMap struct {
 	FromPort   *int32
 	ToPort     *int32
 	IPProtocol *string
 
-	ipRanges        map[string]*string
-	ipv6Ranges      map[string]*string
-	prefixListIDs   map[string]*string
-	userIDGroupPair []ec2types.UserIdGroupPair
+	ipRanges      map[string]*string
+	ipv6Ranges    map[string]*string
+	prefixListIDs map[string]*string
+	groups        map[string]ec2types.UserIdGroupPair
 }
 
 // merge adds rules from the permission set m into this permission
@@ -102,17 +78,13 @@ func (i *ipPermissionMap) merge(m ec2types.IpPermission) { // nolint:gocyclo
 	}
 
 	for _, r := range m.UserIdGroupPairs {
-		idx := sort.Search(len(i.userIDGroupPair), func(idx int) bool {
-			return userIDGroupPairCmp(i.userIDGroupPair[idx], r) <= 0
-		})
-
-		if idx == len(i.userIDGroupPair) { // nil or after last element
-			i.userIDGroupPair = append(i.userIDGroupPair, r)
-		} else if userIDGroupPairCmp(i.userIDGroupPair[idx], r) != 0 {
-			// not present, insert at idx
-			i.userIDGroupPair = append(i.userIDGroupPair[:idx+1], i.userIDGroupPair[idx:]...) // index < len(a)
-			i.userIDGroupPair[idx] = r
+		// a UserIdGroupPair must have a group id or group name, and
+		// they are unique so we can use them for keys
+		key := aws.ToString(r.GroupId)
+		if key == "" {
+			key = aws.ToString(r.GroupName)
 		}
+		i.groups[key] = r
 	}
 }
 
@@ -176,12 +148,16 @@ func (i ipPermissionMap) diffPrefixListIDs(other ipPermissionMap) []ec2types.Pre
 
 func (i ipPermissionMap) diffUserIDGroupPair(other ipPermissionMap) []ec2types.UserIdGroupPair {
 	var ret []ec2types.UserIdGroupPair
-	for _, r := range i.userIDGroupPair {
-		idx := sort.Search(len(other.userIDGroupPair), func(idx int) bool {
-			return userIDGroupPairCmp(other.userIDGroupPair[idx], r) <= 0
-		})
-		if idx == len(other.userIDGroupPair) || userIDGroupPairCmp(other.userIDGroupPair[idx], r) != 0 {
-			ret = append(ret, r) // not found
+	for key, r := range i.groups {
+		r2, ok := other.groups[key]
+		if !ok || aws.ToString(r.Description) != aws.ToString(r2.Description) {
+			// there are other fields here:
+			// * peering connection id
+			// * peering status
+			// * VPC ID
+			// * User ID
+			// but all are immutable per `key` (group name/id), or one-way status fields
+			ret = append(ret, r)
 		}
 	}
 	return ret
@@ -198,6 +174,7 @@ func convertToMaps(rules []ec2types.IpPermission) map[ruleKey]*ipPermissionMap {
 			normalized.ipRanges = make(map[string]*string)
 			normalized.ipv6Ranges = make(map[string]*string)
 			normalized.prefixListIDs = make(map[string]*string)
+			normalized.groups = make(map[string]ec2types.UserIdGroupPair)
 			ret[k] = normalized
 		}
 
@@ -211,6 +188,8 @@ func hasRules(perm ec2types.IpPermission) bool {
 	return perm.IpRanges != nil || perm.Ipv6Ranges != nil || perm.UserIdGroupPairs != nil || perm.PrefixListIds != nil
 }
 
+// DiffPermissions compares two permission sets, and returns the rules
+// to add and remove to make them identical
 func DiffPermissions(want, have []ec2types.IpPermission) (add, remove []ec2types.IpPermission) {
 	// Convert the rule matrix to a map of arrays.
 
