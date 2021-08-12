@@ -94,11 +94,10 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if err != nil {
 		return nil, err
 	}
-	return &external{client: c.newClientFn(*cfg), kube: c.kube}, nil
+	return &external{client: c.newClientFn(*cfg)}, nil
 }
 
 type external struct {
-	kube   client.Client
 	client ec2.RouteTableClient
 }
 
