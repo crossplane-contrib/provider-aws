@@ -1,0 +1,31 @@
+apiVersion: rds.aws.crossplane.io/v1alpha1
+kind: DBInstance
+metadata:
+  name: example-dbinstance
+spec:
+  forProvider:
+    allocatedStorage: 20
+    autoMinorVersionUpgrade: true
+    autogeneratePassword: true
+    backupRetentionPeriod: 14
+    dbInstanceClass: db.t2.micro
+    dbName: example
+    engine: postgres
+    engineVersion: "12.4"
+    masterUsername: adminuser
+    masterUserPasswordSecretRef:
+      key: password
+      name: example-dbinstance-in
+      namespace: crossplane-system
+    preferredBackupWindow: "7:00-8:00"
+    preferredMaintenanceWindow: "Sat:8:00-Sat:11:00"
+    publiclyAccessible: false
+    region: us-east-1
+    skipFinalSnapshot: true
+    storageEncrypted: false
+    storageType: gp2
+  writeConnectionSecretToRef:
+    namespace: crossplane-system
+    name: example-dbinstance-out
+  providerConfigRef:
+    name: example
