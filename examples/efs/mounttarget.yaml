@@ -1,0 +1,15 @@
+apiVersion: efs.aws.crossplane.io/v1alpha1
+kind: MountTarget
+metadata:
+  name: example
+spec:
+  forProvider:
+    region: us-east-1
+    fileSystemIDRef: 
+      name: example
+    subnetIDRef:
+      name: sample-subnet1
+    securityGroupsRefs:
+      - name: sample-cluster-sg
+  providerConfigRef:
+    name: example

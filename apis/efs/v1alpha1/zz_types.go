@@ -28,6 +28,8 @@ var (
 )
 
 type AccessPointDescription struct {
+	AccessPointID *string `json:"accessPointID,omitempty"`
+
 	FileSystemID *string `json:"fileSystemID,omitempty"`
 
 	LifeCycleState *string `json:"lifeCycleState,omitempty"`

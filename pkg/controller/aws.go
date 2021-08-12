@@ -65,6 +65,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repositorypolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/efs/filesystem"
+	efsmounttarget "github.com/crossplane/provider-aws/pkg/controller/efs/mounttarget"
 	"github.com/crossplane/provider-aws/pkg/controller/eks"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/fargateprofile"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
@@ -185,6 +186,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		resolverrule.SetupResolverRule,
 		vpcpeeringconnection.SetupVPCPeeringConnection,
 		kafkacluster.SetupCluster,
+		efsmounttarget.SetupMountTarget,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
