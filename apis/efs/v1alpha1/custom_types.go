@@ -48,3 +48,59 @@ type CustomFileSystemParameters struct {
 	// +optional
 	KMSKeyIDSelector *xpv1.Selector `json:"kmsKeyIdSelector,omitempty"`
 }
+
+// CustomMountTargetParameters contains the additional fields for MountTargetParameters.
+type CustomMountTargetParameters struct {
+
+	// Up to five VPC security group IDs, of the form sg-xxxxxxxx. These must be
+	// for the same VPC as subnet specified.
+	// +immutable
+	// +optional
+	SecurityGroups []string `json:"securityGroups,omitempty"`
+
+	// SecurityGroupIDRefs are references to SecurityGroups used to set
+	// the SecurityGroupIDs.
+	// +immutable
+	// +optional
+	SecurityGroupsRefs []xpv1.Reference `json:"securityGroupsRefs,omitempty"`
+
+	// SecurityGroupIDSelector selects references to SecurityGroups used
+	// to set the SecurityGroupIDs.
+	// +immutable
+	// +optional
+	SecurityGroupsSelector *xpv1.Selector `json:"securityGroupsSelector,omitempty"`
+
+	// The ID of the file system for which to create the mount target.
+	// +immutable
+	// +optional
+	FileSystemID *string `json:"fileSystemID,omitempty"`
+
+	// FileSystemIDRef are references to Filesystem used to set
+	// the FileSystemID.
+	// +immutable
+	// +optional
+	FileSystemIDRef *xpv1.Reference `json:"fileSystemIDRef,omitempty"`
+
+	// FileSystemIDSelector selects references to Filesystem used
+	// to set the FileSystemID.
+	// +immutable
+	// +optional
+	FileSystemIDSelector *xpv1.Selector `json:"fileSystemIDSelector,omitempty"`
+
+	// The ID of the subnet to add the mount target in.
+	// +immutable
+	// +optional
+	SubnetID *string `json:"subnetID"`
+
+	// SubnetIDRef are references to Subnet used to set
+	// the SubnetID.
+	// +immutable
+	// +optional
+	SubnetIDRef *xpv1.Reference `json:"subnetIDRef,omitempty"`
+
+	// SubnetIDSelector selects references to Subnet used
+	// to set the SubnetID.
+	// +immutable
+	// +optional
+	SubnetIDSelector *xpv1.Selector `json:"subnetIDSelector,omitempty"`
+}

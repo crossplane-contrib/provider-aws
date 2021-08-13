@@ -1,9 +1,17 @@
 ignore:
   resource_names:
     - AccessPoint
-    - MountTarget
   field_paths:
     - CreateFileSystemInput.CreationToken
     - CreateFileSystemInput.ProvisionedThroughputInMibps
     - UpdateFileSystemInput.ProvisionedThroughputInMibps
     - FileSystemDescription.ProvisionedThroughputInMibps
+    - CreateMountTargetInput.SecurityGroups
+    - CreateMountTargetInput.FileSystemId
+    - CreateMountTargetInput.SubnetId
+resources:
+  MountTarget:
+    exceptions:
+      errors:
+        404:
+          code: MountTargetNotFound
