@@ -24,6 +24,8 @@ import (
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/util/retry"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -58,6 +60,14 @@ const (
 	errCreateTags         = "failed to create tags for the RouteTable resource"
 	errDeleteTags         = "failed to delete tags for the RouteTable resource"
 )
+
+// Retry 5 times over ~8 seconds.
+var backoff = wait.Backoff{
+	Duration: 250 * time.Millisecond,
+	Factor:   2,
+	Steps:    5,
+	Jitter:   0.1,
+}
 
 // SetupRouteTable adds a controller that reconciles RouteTables.
 func SetupRouteTable(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
@@ -116,11 +126,17 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
-	response, err := e.client.DescribeRouteTablesRequest(&awsec2.DescribeRouteTablesInput{
-		RouteTableIds: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
-
-	if err != nil {
+	// DescribeRouteTables appears to be eventually consistent in that it
+	// will sometimes report that a route table does not exist shortly after
+	// it was created. We therefore retry a few times to determine whether
+	// the route table exists.
+	i := &awsec2.DescribeRouteTablesInput{RouteTableIds: []string{meta.GetExternalName(cr)}}
+	var response *awsec2.DescribeRouteTablesResponse
+	if err := retry.OnError(backoff, ec2.IsRouteTableNotFoundErr, func() error {
+		var err error
+		response, err = e.client.DescribeRouteTablesRequest(i).Send(ctx)
+		return err
+	}); err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDescribe)
 	}
 
