@@ -59,6 +59,15 @@ const (
 	errDeleteTags         = "failed to delete tags for the RouteTable resource"
 )
 
+// TODO(negz): Tune the below grace period - it was chosen fairly arbitrarily.
+// In my testing 3 minutes appears to be sufficient. The only other value I
+// tested was 8 seconds, which was not long enough.
+
+// We wait up to 3 minutes for DescribeRouteTables to start reporting that a
+// newly created RouteTable exists, to work around what appears to be a somewhat
+// rare eventual consistency in the AWS API.
+const creationGracePeriod = 3 * time.Minute
+
 // SetupRouteTable adds a controller that reconciles RouteTables.
 func SetupRouteTable(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.RouteTableGroupKind)
@@ -107,21 +116,32 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	// To find out whether a RouteTable exist:
-	// - the object's ExternalName should have routeTableId populated
-	// - a RouteTable with the given routeTableId should exist
+	// The AWS API returns an unpredictable ID for each RouteTable at create
+	// time. We rely on this ID having been recorded at create time in order
+	// to be able to determine whether the table exists.
 	if meta.GetExternalName(cr) == "" {
-		return managed.ExternalObservation{
-			ResourceExists: false,
-		}, nil
+		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 
-	response, err := e.client.DescribeRouteTablesRequest(&awsec2.DescribeRouteTablesInput{
-		RouteTableIds: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
-
+	// If we've recorded an ExternalName we must have created the table at
+	// some point. Unfortunately there is sometimes a slight delay between
+	// the creation of a RouteTable and when the AWS API reports that it
+	// exists. If the table doesn't appear to exist at this point it most
+	// likely has either been deleted, or was only recently created. We
+	// handle the latter case by waiting a few minutes after the most recent
+	// creation before we decide whether or not it exists.
+	i := &awsec2.DescribeRouteTablesInput{RouteTableIds: []string{meta.GetExternalName(cr)}}
+	response, err := e.client.DescribeRouteTablesRequest(i).Send(ctx)
+	if ec2.IsRouteTableNotFoundErr(err) {
+		if t := meta.GetExternalCreateTime(cr); t != nil && time.Since(t.Time) < creationGracePeriod {
+			return managed.ExternalObservation{ResourcePending: true}, nil
+		}
+		// If our grace period is up we assume the managed resource does
+		// not exist.
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsRouteTableNotFoundErr, err), errDescribe)
+		return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -163,14 +183,13 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	result, err := e.client.CreateRouteTableRequest(&awsec2.CreateRouteTableInput{
-		VpcId: cr.Spec.ForProvider.VPCID,
-	}).Send(ctx)
+	result, err := e.client.CreateRouteTableRequest(&awsec2.CreateRouteTableInput{VpcId: cr.Spec.ForProvider.VPCID}).Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 	meta.SetExternalName(cr, aws.StringValue(result.RouteTable.RouteTableId))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	meta.SetExternalCreateTime(cr)
+	return managed.ExternalCreation{ExternalNameAssigned: true, ExternalCreateTimeSet: true}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) { // nolint:gocyclo

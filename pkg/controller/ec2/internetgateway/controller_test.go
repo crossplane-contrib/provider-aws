@@ -58,6 +58,10 @@ func withExternalName(name string) igModifier {
 	return func(r *v1beta1.InternetGateway) { meta.SetExternalName(r, name) }
 }
 
+func withExternameCreateTime() igModifier {
+	return func(r *v1beta1.InternetGateway) { meta.SetExternalCreateTime(r) }
+}
+
 func withConditions(c ...xpv1.Condition) igModifier {
 	return func(r *v1beta1.InternetGateway) { r.Status.ConditionedStatus.Conditions = c }
 }
@@ -257,12 +261,16 @@ func TestCreate(t *testing.T) {
 				})),
 			},
 			want: want{
-				cr: ig(withSpec(v1beta1.InternetGatewayParameters{
-					VPCID: aws.String(vpcID),
-				}),
+				cr: ig(
+					withSpec(v1beta1.InternetGatewayParameters{VPCID: aws.String(vpcID)}),
 					withExternalName(igID),
-					withConditions(xpv1.Creating())),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+					withExternameCreateTime(),
+					withConditions(xpv1.Creating()),
+				),
+				result: managed.ExternalCreation{
+					ExternalNameAssigned:  true,
+					ExternalCreateTimeSet: true,
+				},
 			},
 		},
 		"FailedRequest": {

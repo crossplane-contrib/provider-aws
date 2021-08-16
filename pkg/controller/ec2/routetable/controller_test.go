@@ -20,10 +20,12 @@ import (
 	"context"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -63,6 +65,10 @@ type rtModifier func(*v1beta1.RouteTable)
 
 func withExternalName(name string) rtModifier {
 	return func(r *v1beta1.RouteTable) { meta.SetExternalName(r, name) }
+}
+
+func withExternalCreateTime() rtModifier {
+	return func(r *v1beta1.RouteTable) { meta.SetExternalCreateTime(r) }
 }
 
 func withSpec(p v1beta1.RouteTableParameters) rtModifier {
@@ -211,10 +217,15 @@ func TestCreate(t *testing.T) {
 				})),
 			},
 			want: want{
-				cr: rt(withSpec(v1beta1.RouteTableParameters{
-					VPCID: aws.String(vpcID),
-				}), withExternalName(rtID)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				cr: rt(
+					withExternalName(rtID),
+					withExternalCreateTime(),
+					withSpec(v1beta1.RouteTableParameters{VPCID: aws.String(vpcID)}),
+				),
+				result: managed.ExternalCreation{
+					ExternalNameAssigned:  true,
+					ExternalCreateTimeSet: true,
+				},
 			},
 		},
 		"CreateFailed": {
@@ -251,7 +262,7 @@ func TestCreate(t *testing.T) {
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions()); diff != "" {
+			if diff := cmp.Diff(tc.want.cr, tc.args.cr, test.EquateConditions(), cmpopts.EquateApproxTime(1*time.Minute)); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			if diff := cmp.Diff(tc.want.result, o); diff != "" {

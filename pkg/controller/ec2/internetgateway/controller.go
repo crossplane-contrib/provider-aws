@@ -55,6 +55,14 @@ const (
 	errCreateTags          = "failed to create tags for the InternetGateway resource"
 )
 
+// TODO(negz): Tune the below grace period - it was chosen fairly arbitrarily.
+// In my testing 3 minutes appears to be sufficient.
+
+// We wait up to 3 minutes for DescribeInternetGateways to start reporting that
+// a newly created InternetGateway exists, to work around what appears to be a
+// somewhat rare eventual consistency in the AWS API.
+const creationGracePeriod = 3 * time.Minute
+
 // SetupInternetGateway adds a controller that reconciles InternetGateways.
 func SetupInternetGateway(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll time.Duration) error {
 	name := managed.ControllerName(v1beta1.InternetGatewayGroupKind)
@@ -105,16 +113,21 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	if meta.GetExternalName(cr) == "" {
-		return managed.ExternalObservation{
-			ResourceExists: false,
-		}, nil
+		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 
-	response, err := e.client.DescribeInternetGatewaysRequest(&awsec2.DescribeInternetGatewaysInput{
-		InternetGatewayIds: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	i := &awsec2.DescribeInternetGatewaysInput{InternetGatewayIds: []string{meta.GetExternalName(cr)}}
+	response, err := e.client.DescribeInternetGatewaysRequest(i).Send(ctx)
+	if ec2.IsInternetGatewayNotFoundErr(err) {
+		if t := meta.GetExternalCreateTime(cr); t != nil && time.Since(t.Time) < creationGracePeriod {
+			return managed.ExternalObservation{ResourcePending: true}, nil
+		}
+		// If our grace period is up we assume the managed resource does
+		// not exist.
+		return managed.ExternalObservation{ResourceExists: false}, nil
+	}
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsInternetGatewayNotFoundErr, err), errDescribe)
+		return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -155,8 +168,9 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	meta.SetExternalName(cr, aws.StringValue(ig.InternetGateway.InternetGatewayId))
+	meta.SetExternalCreateTime(cr)
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{ExternalNameAssigned: true, ExternalCreateTimeSet: true}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
