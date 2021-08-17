@@ -1,0 +1,14 @@
+apiVersion: acm.aws.crossplane.io/v1alpha1
+kind: Certificate
+metadata:
+  name: dev.crossplane.io
+spec:
+  forProvider:
+    domainName: dev.crossplane.io
+    region: us-east-1
+    validationMethod: DNS
+    tags:
+    - key: Name
+      value: example
+  providerConfigRef:
+    name: example
