@@ -20,6 +20,7 @@ package v1alpha1
 
 import resource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
+<<<<<<< HEAD
 // GetItems of this RouteList.
 func (l *RouteList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
@@ -40,6 +41,10 @@ func (l *TransitGatewayList) GetItems() []resource.Managed {
 
 // GetItems of this TransitGatewayVPCAttachmentList.
 func (l *TransitGatewayVPCAttachmentList) GetItems() []resource.Managed {
+=======
+// GetItems of this VPCEndpointList.
+func (l *VPCEndpointList) GetItems() []resource.Managed {
+>>>>>>> b9fac427 (feat: implement VPC Endpoint for AWS Provider)
 	items := make([]resource.Managed, len(l.Items))
 	for i := range l.Items {
 		items[i] = &l.Items[i]

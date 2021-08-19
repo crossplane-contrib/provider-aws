@@ -20,6 +20,7 @@ package v1alpha1
 
 import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
+<<<<<<< HEAD
 // GetCondition of this Route.
 func (mg *Route) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
@@ -32,10 +33,25 @@ func (mg *Route) GetDeletionPolicy() xpv1.DeletionPolicy {
 
 // GetProviderConfigReference of this Route.
 func (mg *Route) GetProviderConfigReference() *xpv1.Reference {
+=======
+// GetCondition of this VPCEndpoint.
+func (mg *VPCEndpoint) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// GetDeletionPolicy of this VPCEndpoint.
+func (mg *VPCEndpoint) GetDeletionPolicy() xpv1.DeletionPolicy {
+	return mg.Spec.DeletionPolicy
+}
+
+// GetProviderConfigReference of this VPCEndpoint.
+func (mg *VPCEndpoint) GetProviderConfigReference() *xpv1.Reference {
+>>>>>>> b9fac427 (feat: implement VPC Endpoint for AWS Provider)
 	return mg.Spec.ProviderConfigReference
 }
 
 /*
+<<<<<<< HEAD
 GetProviderReference of this Route.
 Deprecated: Use GetProviderConfigReference.
 */
@@ -60,10 +76,37 @@ func (mg *Route) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 
 // SetProviderConfigReference of this Route.
 func (mg *Route) SetProviderConfigReference(r *xpv1.Reference) {
+=======
+GetProviderReference of this VPCEndpoint.
+Deprecated: Use GetProviderConfigReference.
+*/
+func (mg *VPCEndpoint) GetProviderReference() *xpv1.Reference {
+	return mg.Spec.ProviderReference
+}
+
+// GetWriteConnectionSecretToReference of this VPCEndpoint.
+func (mg *VPCEndpoint) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetConditions of this VPCEndpoint.
+func (mg *VPCEndpoint) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// SetDeletionPolicy of this VPCEndpoint.
+func (mg *VPCEndpoint) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+	mg.Spec.DeletionPolicy = r
+}
+
+// SetProviderConfigReference of this VPCEndpoint.
+func (mg *VPCEndpoint) SetProviderConfigReference(r *xpv1.Reference) {
+>>>>>>> b9fac427 (feat: implement VPC Endpoint for AWS Provider)
 	mg.Spec.ProviderConfigReference = r
 }
 
 /*
+<<<<<<< HEAD
 SetProviderReference of this Route.
 Deprecated: Use SetProviderConfigReference.
 */
@@ -185,6 +228,17 @@ func (mg *TransitGatewayVPCAttachment) SetProviderReference(r *xpv1.Reference) {
 
 // SetWriteConnectionSecretToReference of this TransitGatewayVPCAttachment.
 func (mg *TransitGatewayVPCAttachment) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+=======
+SetProviderReference of this VPCEndpoint.
+Deprecated: Use SetProviderConfigReference.
+*/
+func (mg *VPCEndpoint) SetProviderReference(r *xpv1.Reference) {
+	mg.Spec.ProviderReference = r
+}
+
+// SetWriteConnectionSecretToReference of this VPCEndpoint.
+func (mg *VPCEndpoint) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+>>>>>>> b9fac427 (feat: implement VPC Endpoint for AWS Provider)
 	mg.Spec.WriteConnectionSecretToReference = r
 }
 
