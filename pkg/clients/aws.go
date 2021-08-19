@@ -929,11 +929,11 @@ func IsPolicyUpToDate(local, remote *string) bool {
 	var remoteUnmarshalled interface{}
 
 	var err error
-	err = json.Unmarshal([]byte(*local), &localUnmarshalled)
+	err = json.Unmarshal([]byte(StringValue(local)), &localUnmarshalled)
 	if err != nil {
 		return false
 	}
-	err = json.Unmarshal([]byte(*remote), &remoteUnmarshalled)
+	err = json.Unmarshal([]byte(StringValue(remote)), &remoteUnmarshalled)
 	if err != nil {
 		return false
 	}
