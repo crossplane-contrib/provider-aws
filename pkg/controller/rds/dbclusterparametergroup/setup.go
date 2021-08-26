@@ -135,7 +135,7 @@ func (c *custom) isUpToDate(cr *svcapitypes.DBClusterParameterGroup, _ *svcsdk.D
 func (c *custom) getCurrentDBClusterParameters(ctx context.Context, cr *svcapitypes.DBClusterParameterGroup) ([]*svcsdk.Parameter, error) {
 	input := &svcsdk.DescribeDBClusterParametersInput{
 		DBClusterParameterGroupName: awsclients.String(meta.GetExternalName(cr)),
-		MaxRecords:                  awsclients.Int64(20),
+		MaxRecords:                  awsclients.Int64(100),
 	}
 	var results []*svcsdk.Parameter
 	err := c.client.DescribeDBClusterParametersPagesWithContext(ctx, input, func(page *svcsdk.DescribeDBClusterParametersOutput, lastPage bool) bool {
