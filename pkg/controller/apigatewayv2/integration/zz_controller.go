@@ -119,15 +119,111 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.APIGatewayManaged = nil
 	}
+	if resp.ConnectionId != nil {
+		cr.Spec.ForProvider.ConnectionID = resp.ConnectionId
+	} else {
+		cr.Spec.ForProvider.ConnectionID = nil
+	}
+	if resp.ConnectionType != nil {
+		cr.Spec.ForProvider.ConnectionType = resp.ConnectionType
+	} else {
+		cr.Spec.ForProvider.ConnectionType = nil
+	}
+	if resp.ContentHandlingStrategy != nil {
+		cr.Spec.ForProvider.ContentHandlingStrategy = resp.ContentHandlingStrategy
+	} else {
+		cr.Spec.ForProvider.ContentHandlingStrategy = nil
+	}
+	if resp.CredentialsArn != nil {
+		cr.Spec.ForProvider.CredentialsARN = resp.CredentialsArn
+	} else {
+		cr.Spec.ForProvider.CredentialsARN = nil
+	}
+	if resp.Description != nil {
+		cr.Spec.ForProvider.Description = resp.Description
+	} else {
+		cr.Spec.ForProvider.Description = nil
+	}
 	if resp.IntegrationId != nil {
 		cr.Status.AtProvider.IntegrationID = resp.IntegrationId
 	} else {
 		cr.Status.AtProvider.IntegrationID = nil
 	}
+	if resp.IntegrationMethod != nil {
+		cr.Spec.ForProvider.IntegrationMethod = resp.IntegrationMethod
+	} else {
+		cr.Spec.ForProvider.IntegrationMethod = nil
+	}
 	if resp.IntegrationResponseSelectionExpression != nil {
 		cr.Status.AtProvider.IntegrationResponseSelectionExpression = resp.IntegrationResponseSelectionExpression
 	} else {
 		cr.Status.AtProvider.IntegrationResponseSelectionExpression = nil
+	}
+	if resp.IntegrationSubtype != nil {
+		cr.Spec.ForProvider.IntegrationSubtype = resp.IntegrationSubtype
+	} else {
+		cr.Spec.ForProvider.IntegrationSubtype = nil
+	}
+	if resp.IntegrationType != nil {
+		cr.Spec.ForProvider.IntegrationType = resp.IntegrationType
+	} else {
+		cr.Spec.ForProvider.IntegrationType = nil
+	}
+	if resp.IntegrationUri != nil {
+		cr.Spec.ForProvider.IntegrationURI = resp.IntegrationUri
+	} else {
+		cr.Spec.ForProvider.IntegrationURI = nil
+	}
+	if resp.PassthroughBehavior != nil {
+		cr.Spec.ForProvider.PassthroughBehavior = resp.PassthroughBehavior
+	} else {
+		cr.Spec.ForProvider.PassthroughBehavior = nil
+	}
+	if resp.PayloadFormatVersion != nil {
+		cr.Spec.ForProvider.PayloadFormatVersion = resp.PayloadFormatVersion
+	} else {
+		cr.Spec.ForProvider.PayloadFormatVersion = nil
+	}
+	if resp.RequestParameters != nil {
+		f14 := map[string]*string{}
+		for f14key, f14valiter := range resp.RequestParameters {
+			var f14val string
+			f14val = *f14valiter
+			f14[f14key] = &f14val
+		}
+		cr.Spec.ForProvider.RequestParameters = f14
+	} else {
+		cr.Spec.ForProvider.RequestParameters = nil
+	}
+	if resp.RequestTemplates != nil {
+		f15 := map[string]*string{}
+		for f15key, f15valiter := range resp.RequestTemplates {
+			var f15val string
+			f15val = *f15valiter
+			f15[f15key] = &f15val
+		}
+		cr.Spec.ForProvider.RequestTemplates = f15
+	} else {
+		cr.Spec.ForProvider.RequestTemplates = nil
+	}
+	if resp.TemplateSelectionExpression != nil {
+		cr.Spec.ForProvider.TemplateSelectionExpression = resp.TemplateSelectionExpression
+	} else {
+		cr.Spec.ForProvider.TemplateSelectionExpression = nil
+	}
+	if resp.TimeoutInMillis != nil {
+		cr.Spec.ForProvider.TimeoutInMillis = resp.TimeoutInMillis
+	} else {
+		cr.Spec.ForProvider.TimeoutInMillis = nil
+	}
+	if resp.TlsConfig != nil {
+		f18 := &svcapitypes.TLSConfigInput{}
+		if resp.TlsConfig.ServerNameToVerify != nil {
+			f18.ServerNameToVerify = resp.TlsConfig.ServerNameToVerify
+		}
+		cr.Spec.ForProvider.TLSConfig = f18
+	} else {
+		cr.Spec.ForProvider.TLSConfig = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

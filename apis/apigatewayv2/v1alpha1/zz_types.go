@@ -55,7 +55,7 @@ type API_SDK struct {
 	// Represents a CORS configuration. Supported only for HTTP APIs. See Configuring
 	// CORS (https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-cors.html)
 	// for more information.
-	CorsConfiguration *Cors `json:"corsConfiguration,omitempty"`
+	CORSConfiguration *CORS `json:"corsConfiguration,omitempty"`
 
 	CreatedDate *metav1.Time `json:"createdDate,omitempty"`
 	// A string with a length between [0-1024].
@@ -119,9 +119,9 @@ type Authorizer_SDK struct {
 	// response without calling the Lambda function. The valid value is a string
 	// of comma-separated mapping expressions of the specified request parameters.
 	// When the authorization caching is not enabled, this property is optional.
-	IDentitySource []*string `json:"identitySource,omitempty"`
+	IdentitySource []*string `json:"identitySource,omitempty"`
 	// A string with a length between [0-1024].
-	IDentityValidationExpression *string `json:"identityValidationExpression,omitempty"`
+	IdentityValidationExpression *string `json:"identityValidationExpression,omitempty"`
 	// Represents the configuration of a JWT authorizer. Required for the JWT authorizer
 	// type. Supported only for HTTP APIs.
 	JWTConfiguration *JWTConfiguration `json:"jwtConfiguration,omitempty"`
@@ -129,7 +129,7 @@ type Authorizer_SDK struct {
 	Name *string `json:"name,omitempty"`
 }
 
-type Cors struct {
+type CORS struct {
 	AllowCredentials *bool `json:"allowCredentials,omitempty"`
 	// Represents a collection of allowed headers. Supported only for HTTP APIs.
 	AllowHeaders []*string `json:"allowHeaders,omitempty"`
@@ -365,7 +365,7 @@ type RouteResponse_SDK struct {
 	// The route models.
 	ResponseModels map[string]*string `json:"responseModels,omitempty"`
 	// The route parameters.
-	ResponseParameters []map[string]*ParameterConstraints `json:"responseParameters,omitempty"`
+	ResponseParameters map[string]*ParameterConstraints `json:"responseParameters,omitempty"`
 	// The identifier.
 	RouteResponseID *string `json:"routeResponseID,omitempty"`
 	// After evaluating a selection expression, the result is compared against one
@@ -417,7 +417,7 @@ type Route_SDK struct {
 	// The route models.
 	RequestModels map[string]*string `json:"requestModels,omitempty"`
 	// The route parameters.
-	RequestParameters []map[string]*ParameterConstraints `json:"requestParameters,omitempty"`
+	RequestParameters map[string]*ParameterConstraints `json:"requestParameters,omitempty"`
 	// The identifier.
 	RouteID *string `json:"routeID,omitempty"`
 	// After evaluating a selection expression, the result is compared against one
@@ -456,7 +456,7 @@ type Stage_SDK struct {
 
 	LastUpdatedDate *metav1.Time `json:"lastUpdatedDate,omitempty"`
 	// The route settings map.
-	RouteSettings []map[string]*RouteSettings `json:"routeSettings,omitempty"`
+	RouteSettings map[string]*RouteSettings `json:"routeSettings,omitempty"`
 	// A string with a length between [1-128].
 	StageName *string `json:"stageName,omitempty"`
 	// The stage variable map.

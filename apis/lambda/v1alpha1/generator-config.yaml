@@ -6,6 +6,7 @@ ignore:
     - GetFunctionInput.FunctionName
     - DeleteFunctionInput.FunctionName
     - CreateFunctionInput.Role
+    - CreateFunctionInput.Layers
   resource_names:
     - Alias
     - CodeSigningConfig

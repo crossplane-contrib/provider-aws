@@ -45,15 +45,68 @@ func GenerateGetStageInput(cr *svcapitypes.Stage) *svcsdk.GetStageInput {
 func GenerateStage(resp *svcsdk.GetStageOutput) *svcapitypes.Stage {
 	cr := &svcapitypes.Stage{}
 
+	if resp.AccessLogSettings != nil {
+		f0 := &svcapitypes.AccessLogSettings{}
+		if resp.AccessLogSettings.DestinationArn != nil {
+			f0.DestinationARN = resp.AccessLogSettings.DestinationArn
+		}
+		if resp.AccessLogSettings.Format != nil {
+			f0.Format = resp.AccessLogSettings.Format
+		}
+		cr.Spec.ForProvider.AccessLogSettings = f0
+	} else {
+		cr.Spec.ForProvider.AccessLogSettings = nil
+	}
 	if resp.ApiGatewayManaged != nil {
 		cr.Status.AtProvider.APIGatewayManaged = resp.ApiGatewayManaged
 	} else {
 		cr.Status.AtProvider.APIGatewayManaged = nil
 	}
+	if resp.AutoDeploy != nil {
+		cr.Spec.ForProvider.AutoDeploy = resp.AutoDeploy
+	} else {
+		cr.Spec.ForProvider.AutoDeploy = nil
+	}
+	if resp.ClientCertificateId != nil {
+		cr.Spec.ForProvider.ClientCertificateID = resp.ClientCertificateId
+	} else {
+		cr.Spec.ForProvider.ClientCertificateID = nil
+	}
 	if resp.CreatedDate != nil {
 		cr.Status.AtProvider.CreatedDate = &metav1.Time{*resp.CreatedDate}
 	} else {
 		cr.Status.AtProvider.CreatedDate = nil
+	}
+	if resp.DefaultRouteSettings != nil {
+		f5 := &svcapitypes.RouteSettings{}
+		if resp.DefaultRouteSettings.DataTraceEnabled != nil {
+			f5.DataTraceEnabled = resp.DefaultRouteSettings.DataTraceEnabled
+		}
+		if resp.DefaultRouteSettings.DetailedMetricsEnabled != nil {
+			f5.DetailedMetricsEnabled = resp.DefaultRouteSettings.DetailedMetricsEnabled
+		}
+		if resp.DefaultRouteSettings.LoggingLevel != nil {
+			f5.LoggingLevel = resp.DefaultRouteSettings.LoggingLevel
+		}
+		if resp.DefaultRouteSettings.ThrottlingBurstLimit != nil {
+			f5.ThrottlingBurstLimit = resp.DefaultRouteSettings.ThrottlingBurstLimit
+		}
+		if resp.DefaultRouteSettings.ThrottlingRateLimit != nil {
+			f5.ThrottlingRateLimit = resp.DefaultRouteSettings.ThrottlingRateLimit
+		}
+		cr.Spec.ForProvider.DefaultRouteSettings = f5
+	} else {
+		cr.Spec.ForProvider.DefaultRouteSettings = nil
+	}
+	if resp.DeploymentId != nil {
+		cr.Spec.ForProvider.DeploymentID = resp.DeploymentId
+	} else {
+		cr.Spec.ForProvider.DeploymentID = nil
+	}
+	if resp.Description != nil {
+		cr.Spec.ForProvider.Description = resp.Description
+	} else {
+		cr.Spec.ForProvider.Description = nil
 	}
 	if resp.LastDeploymentStatusMessage != nil {
 		cr.Status.AtProvider.LastDeploymentStatusMessage = resp.LastDeploymentStatusMessage
@@ -65,10 +118,57 @@ func GenerateStage(resp *svcsdk.GetStageOutput) *svcapitypes.Stage {
 	} else {
 		cr.Status.AtProvider.LastUpdatedDate = nil
 	}
+	if resp.RouteSettings != nil {
+		f10 := map[string]*svcapitypes.RouteSettings{}
+		for f10key, f10valiter := range resp.RouteSettings {
+			f10val := &svcapitypes.RouteSettings{}
+			if f10valiter.DataTraceEnabled != nil {
+				f10val.DataTraceEnabled = f10valiter.DataTraceEnabled
+			}
+			if f10valiter.DetailedMetricsEnabled != nil {
+				f10val.DetailedMetricsEnabled = f10valiter.DetailedMetricsEnabled
+			}
+			if f10valiter.LoggingLevel != nil {
+				f10val.LoggingLevel = f10valiter.LoggingLevel
+			}
+			if f10valiter.ThrottlingBurstLimit != nil {
+				f10val.ThrottlingBurstLimit = f10valiter.ThrottlingBurstLimit
+			}
+			if f10valiter.ThrottlingRateLimit != nil {
+				f10val.ThrottlingRateLimit = f10valiter.ThrottlingRateLimit
+			}
+			f10[f10key] = f10val
+		}
+		cr.Spec.ForProvider.RouteSettings = f10
+	} else {
+		cr.Spec.ForProvider.RouteSettings = nil
+	}
 	if resp.StageName != nil {
 		cr.Status.AtProvider.StageName = resp.StageName
 	} else {
 		cr.Status.AtProvider.StageName = nil
+	}
+	if resp.StageVariables != nil {
+		f12 := map[string]*string{}
+		for f12key, f12valiter := range resp.StageVariables {
+			var f12val string
+			f12val = *f12valiter
+			f12[f12key] = &f12val
+		}
+		cr.Spec.ForProvider.StageVariables = f12
+	} else {
+		cr.Spec.ForProvider.StageVariables = nil
+	}
+	if resp.Tags != nil {
+		f13 := map[string]*string{}
+		for f13key, f13valiter := range resp.Tags {
+			var f13val string
+			f13val = *f13valiter
+			f13[f13key] = &f13val
+		}
+		cr.Spec.ForProvider.Tags = f13
+	} else {
+		cr.Spec.ForProvider.Tags = nil
 	}
 
 	return cr

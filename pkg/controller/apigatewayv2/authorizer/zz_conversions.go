@@ -44,10 +44,79 @@ func GenerateGetAuthorizerInput(cr *svcapitypes.Authorizer) *svcsdk.GetAuthorize
 func GenerateAuthorizer(resp *svcsdk.GetAuthorizerOutput) *svcapitypes.Authorizer {
 	cr := &svcapitypes.Authorizer{}
 
+	if resp.AuthorizerCredentialsArn != nil {
+		cr.Spec.ForProvider.AuthorizerCredentialsARN = resp.AuthorizerCredentialsArn
+	} else {
+		cr.Spec.ForProvider.AuthorizerCredentialsARN = nil
+	}
 	if resp.AuthorizerId != nil {
 		cr.Status.AtProvider.AuthorizerID = resp.AuthorizerId
 	} else {
 		cr.Status.AtProvider.AuthorizerID = nil
+	}
+	if resp.AuthorizerPayloadFormatVersion != nil {
+		cr.Spec.ForProvider.AuthorizerPayloadFormatVersion = resp.AuthorizerPayloadFormatVersion
+	} else {
+		cr.Spec.ForProvider.AuthorizerPayloadFormatVersion = nil
+	}
+	if resp.AuthorizerResultTtlInSeconds != nil {
+		cr.Spec.ForProvider.AuthorizerResultTtlInSeconds = resp.AuthorizerResultTtlInSeconds
+	} else {
+		cr.Spec.ForProvider.AuthorizerResultTtlInSeconds = nil
+	}
+	if resp.AuthorizerType != nil {
+		cr.Spec.ForProvider.AuthorizerType = resp.AuthorizerType
+	} else {
+		cr.Spec.ForProvider.AuthorizerType = nil
+	}
+	if resp.AuthorizerUri != nil {
+		cr.Spec.ForProvider.AuthorizerURI = resp.AuthorizerUri
+	} else {
+		cr.Spec.ForProvider.AuthorizerURI = nil
+	}
+	if resp.EnableSimpleResponses != nil {
+		cr.Spec.ForProvider.EnableSimpleResponses = resp.EnableSimpleResponses
+	} else {
+		cr.Spec.ForProvider.EnableSimpleResponses = nil
+	}
+	if resp.IdentitySource != nil {
+		f7 := []*string{}
+		for _, f7iter := range resp.IdentitySource {
+			var f7elem string
+			f7elem = *f7iter
+			f7 = append(f7, &f7elem)
+		}
+		cr.Spec.ForProvider.IdentitySource = f7
+	} else {
+		cr.Spec.ForProvider.IdentitySource = nil
+	}
+	if resp.IdentityValidationExpression != nil {
+		cr.Spec.ForProvider.IdentityValidationExpression = resp.IdentityValidationExpression
+	} else {
+		cr.Spec.ForProvider.IdentityValidationExpression = nil
+	}
+	if resp.JwtConfiguration != nil {
+		f9 := &svcapitypes.JWTConfiguration{}
+		if resp.JwtConfiguration.Audience != nil {
+			f9f0 := []*string{}
+			for _, f9f0iter := range resp.JwtConfiguration.Audience {
+				var f9f0elem string
+				f9f0elem = *f9f0iter
+				f9f0 = append(f9f0, &f9f0elem)
+			}
+			f9.Audience = f9f0
+		}
+		if resp.JwtConfiguration.Issuer != nil {
+			f9.Issuer = resp.JwtConfiguration.Issuer
+		}
+		cr.Spec.ForProvider.JWTConfiguration = f9
+	} else {
+		cr.Spec.ForProvider.JWTConfiguration = nil
+	}
+	if resp.Name != nil {
+		cr.Spec.ForProvider.Name = resp.Name
+	} else {
+		cr.Spec.ForProvider.Name = nil
 	}
 
 	return cr
@@ -75,17 +144,17 @@ func GenerateCreateAuthorizerInput(cr *svcapitypes.Authorizer) *svcsdk.CreateAut
 	if cr.Spec.ForProvider.EnableSimpleResponses != nil {
 		res.SetEnableSimpleResponses(*cr.Spec.ForProvider.EnableSimpleResponses)
 	}
-	if cr.Spec.ForProvider.IDentitySource != nil {
+	if cr.Spec.ForProvider.IdentitySource != nil {
 		f6 := []*string{}
-		for _, f6iter := range cr.Spec.ForProvider.IDentitySource {
+		for _, f6iter := range cr.Spec.ForProvider.IdentitySource {
 			var f6elem string
 			f6elem = *f6iter
 			f6 = append(f6, &f6elem)
 		}
 		res.SetIdentitySource(f6)
 	}
-	if cr.Spec.ForProvider.IDentityValidationExpression != nil {
-		res.SetIdentityValidationExpression(*cr.Spec.ForProvider.IDentityValidationExpression)
+	if cr.Spec.ForProvider.IdentityValidationExpression != nil {
+		res.SetIdentityValidationExpression(*cr.Spec.ForProvider.IdentityValidationExpression)
 	}
 	if cr.Spec.ForProvider.JWTConfiguration != nil {
 		f8 := &svcsdk.JWTConfiguration{}
@@ -135,17 +204,17 @@ func GenerateUpdateAuthorizerInput(cr *svcapitypes.Authorizer) *svcsdk.UpdateAut
 	if cr.Spec.ForProvider.EnableSimpleResponses != nil {
 		res.SetEnableSimpleResponses(*cr.Spec.ForProvider.EnableSimpleResponses)
 	}
-	if cr.Spec.ForProvider.IDentitySource != nil {
+	if cr.Spec.ForProvider.IdentitySource != nil {
 		f8 := []*string{}
-		for _, f8iter := range cr.Spec.ForProvider.IDentitySource {
+		for _, f8iter := range cr.Spec.ForProvider.IdentitySource {
 			var f8elem string
 			f8elem = *f8iter
 			f8 = append(f8, &f8elem)
 		}
 		res.SetIdentitySource(f8)
 	}
-	if cr.Spec.ForProvider.IDentityValidationExpression != nil {
-		res.SetIdentityValidationExpression(*cr.Spec.ForProvider.IDentityValidationExpression)
+	if cr.Spec.ForProvider.IdentityValidationExpression != nil {
+		res.SetIdentityValidationExpression(*cr.Spec.ForProvider.IdentityValidationExpression)
 	}
 	if cr.Spec.ForProvider.JWTConfiguration != nil {
 		f10 := &svcsdk.JWTConfiguration{}

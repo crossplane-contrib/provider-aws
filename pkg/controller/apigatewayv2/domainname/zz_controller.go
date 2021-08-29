@@ -26,6 +26,7 @@ import (
 	svcsdkapi "github.com/aws/aws-sdk-go/service/apigatewayv2/apigatewayv2iface"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -123,6 +124,66 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 		cr.Status.AtProvider.DomainName = resp.DomainName
 	} else {
 		cr.Status.AtProvider.DomainName = nil
+	}
+	if resp.DomainNameConfigurations != nil {
+		f2 := []*svcapitypes.DomainNameConfiguration{}
+		for _, f2iter := range resp.DomainNameConfigurations {
+			f2elem := &svcapitypes.DomainNameConfiguration{}
+			if f2iter.ApiGatewayDomainName != nil {
+				f2elem.APIGatewayDomainName = f2iter.ApiGatewayDomainName
+			}
+			if f2iter.CertificateArn != nil {
+				f2elem.CertificateARN = f2iter.CertificateArn
+			}
+			if f2iter.CertificateName != nil {
+				f2elem.CertificateName = f2iter.CertificateName
+			}
+			if f2iter.CertificateUploadDate != nil {
+				f2elem.CertificateUploadDate = &metav1.Time{*f2iter.CertificateUploadDate}
+			}
+			if f2iter.DomainNameStatus != nil {
+				f2elem.DomainNameStatus = f2iter.DomainNameStatus
+			}
+			if f2iter.DomainNameStatusMessage != nil {
+				f2elem.DomainNameStatusMessage = f2iter.DomainNameStatusMessage
+			}
+			if f2iter.EndpointType != nil {
+				f2elem.EndpointType = f2iter.EndpointType
+			}
+			if f2iter.HostedZoneId != nil {
+				f2elem.HostedZoneID = f2iter.HostedZoneId
+			}
+			if f2iter.SecurityPolicy != nil {
+				f2elem.SecurityPolicy = f2iter.SecurityPolicy
+			}
+			f2 = append(f2, f2elem)
+		}
+		cr.Spec.ForProvider.DomainNameConfigurations = f2
+	} else {
+		cr.Spec.ForProvider.DomainNameConfigurations = nil
+	}
+	if resp.MutualTlsAuthentication != nil {
+		f3 := &svcapitypes.MutualTLSAuthenticationInput{}
+		if resp.MutualTlsAuthentication.TruststoreUri != nil {
+			f3.TruststoreURI = resp.MutualTlsAuthentication.TruststoreUri
+		}
+		if resp.MutualTlsAuthentication.TruststoreVersion != nil {
+			f3.TruststoreVersion = resp.MutualTlsAuthentication.TruststoreVersion
+		}
+		cr.Spec.ForProvider.MutualTLSAuthentication = f3
+	} else {
+		cr.Spec.ForProvider.MutualTLSAuthentication = nil
+	}
+	if resp.Tags != nil {
+		f4 := map[string]*string{}
+		for f4key, f4valiter := range resp.Tags {
+			var f4val string
+			f4val = *f4valiter
+			f4[f4key] = &f4val
+		}
+		cr.Spec.ForProvider.Tags = f4
+	} else {
+		cr.Spec.ForProvider.Tags = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)

@@ -50,10 +50,56 @@ func GenerateStateMachine(resp *svcsdk.DescribeStateMachineOutput) *svcapitypes.
 	} else {
 		cr.Status.AtProvider.CreationDate = nil
 	}
+	if resp.Definition != nil {
+		cr.Spec.ForProvider.Definition = resp.Definition
+	} else {
+		cr.Spec.ForProvider.Definition = nil
+	}
+	if resp.LoggingConfiguration != nil {
+		f2 := &svcapitypes.LoggingConfiguration{}
+		if resp.LoggingConfiguration.Destinations != nil {
+			f2f0 := []*svcapitypes.LogDestination{}
+			for _, f2f0iter := range resp.LoggingConfiguration.Destinations {
+				f2f0elem := &svcapitypes.LogDestination{}
+				if f2f0iter.CloudWatchLogsLogGroup != nil {
+					f2f0elemf0 := &svcapitypes.CloudWatchLogsLogGroup{}
+					if f2f0iter.CloudWatchLogsLogGroup.LogGroupArn != nil {
+						f2f0elemf0.LogGroupARN = f2f0iter.CloudWatchLogsLogGroup.LogGroupArn
+					}
+					f2f0elem.CloudWatchLogsLogGroup = f2f0elemf0
+				}
+				f2f0 = append(f2f0, f2f0elem)
+			}
+			f2.Destinations = f2f0
+		}
+		if resp.LoggingConfiguration.IncludeExecutionData != nil {
+			f2.IncludeExecutionData = resp.LoggingConfiguration.IncludeExecutionData
+		}
+		if resp.LoggingConfiguration.Level != nil {
+			f2.Level = resp.LoggingConfiguration.Level
+		}
+		cr.Spec.ForProvider.LoggingConfiguration = f2
+	} else {
+		cr.Spec.ForProvider.LoggingConfiguration = nil
+	}
+	if resp.Name != nil {
+		cr.Spec.ForProvider.Name = resp.Name
+	} else {
+		cr.Spec.ForProvider.Name = nil
+	}
 	if resp.StateMachineArn != nil {
 		cr.Status.AtProvider.StateMachineARN = resp.StateMachineArn
 	} else {
 		cr.Status.AtProvider.StateMachineARN = nil
+	}
+	if resp.TracingConfiguration != nil {
+		f7 := &svcapitypes.TracingConfiguration{}
+		if resp.TracingConfiguration.Enabled != nil {
+			f7.Enabled = resp.TracingConfiguration.Enabled
+		}
+		cr.Spec.ForProvider.TracingConfiguration = f7
+	} else {
+		cr.Spec.ForProvider.TracingConfiguration = nil
 	}
 
 	return cr

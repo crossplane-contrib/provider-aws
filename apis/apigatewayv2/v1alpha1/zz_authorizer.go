@@ -44,9 +44,9 @@ type AuthorizerParameters struct {
 	EnableSimpleResponses *bool `json:"enableSimpleResponses,omitempty"`
 
 	// +kubebuilder:validation:Required
-	IDentitySource []*string `json:"identitySource"`
+	IdentitySource []*string `json:"identitySource"`
 
-	IDentityValidationExpression *string `json:"identityValidationExpression,omitempty"`
+	IdentityValidationExpression *string `json:"identityValidationExpression,omitempty"`
 
 	JWTConfiguration *JWTConfiguration `json:"jwtConfiguration,omitempty"`
 

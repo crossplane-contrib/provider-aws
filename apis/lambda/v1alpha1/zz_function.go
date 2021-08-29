@@ -55,10 +55,6 @@ type FunctionParameters struct {
 	// your function's environment variables. If it's not provided, AWS Lambda uses
 	// a default service key.
 	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
-	// A list of function layers (https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html)
-	// to add to the function's execution environment. Specify each layer by its
-	// ARN, including the version.
-	Layers []*string `json:"layers,omitempty"`
 	// The amount of memory available to the function at runtime. Increasing the
 	// function's memory also increases its CPU allocation. The default value is
 	// 128 MB. The value can be any multiple of 1 MB.
@@ -110,6 +106,8 @@ type FunctionObservation struct {
 	LastUpdateStatusReason *string `json:"lastUpdateStatusReason,omitempty"`
 	// The reason code for the last update that was performed on the function.
 	LastUpdateStatusReasonCode *string `json:"lastUpdateStatusReasonCode,omitempty"`
+	// The function's layers (https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html).
+	Layers []*Layer `json:"layers,omitempty"`
 	// For Lambda@Edge functions, the ARN of the master function.
 	MasterARN *string `json:"masterARN,omitempty"`
 	// The latest updated revision of the function or alias.

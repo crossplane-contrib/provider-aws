@@ -821,19 +821,19 @@ type Origin struct {
 	S3OriginConfig *S3OriginConfig `json:"s3OriginConfig,omitempty"`
 }
 
-type OriginAccessIDentity struct {
+type OriginAccessIdentity struct {
 	ID *string `json:"id,omitempty"`
 
 	S3CanonicalUserID *string `json:"s3CanonicalUserID,omitempty"`
 }
 
-type OriginAccessIDentityConfig struct {
+type OriginAccessIdentityConfig struct {
 	CallerReference *string `json:"callerReference,omitempty"`
 
 	Comment *string `json:"comment,omitempty"`
 }
 
-type OriginAccessIDentityList struct {
+type OriginAccessIdentityList struct {
 	IsTruncated *bool `json:"isTruncated,omitempty"`
 
 	Marker *string `json:"marker,omitempty"`
@@ -845,7 +845,7 @@ type OriginAccessIDentityList struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
-type OriginAccessIDentitySummary struct {
+type OriginAccessIdentitySummary struct {
 	Comment *string `json:"comment,omitempty"`
 
 	ID *string `json:"id,omitempty"`
@@ -1037,11 +1037,11 @@ type Restrictions struct {
 type S3Origin struct {
 	DomainName *string `json:"domainName,omitempty"`
 
-	OriginAccessIDentity *string `json:"originAccessIDentity,omitempty"`
+	OriginAccessIdentity *string `json:"originAccessIdentity,omitempty"`
 }
 
 type S3OriginConfig struct {
-	OriginAccessIDentity *string `json:"originAccessIDentity,omitempty"`
+	OriginAccessIdentity *string `json:"originAccessIdentity,omitempty"`
 }
 
 type Signer struct {

@@ -186,13 +186,6 @@ spec:
                           is selected.
                         type: object
                     type: object
-                  layers:
-                    description: A list of function layers (https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html)
-                      to add to the function's execution environment. Specify each
-                      layer by its ARN, including the version.
-                    items:
-                      type: string
-                    type: array
                   memorySize:
                     description: The amount of memory available to the function at
                       runtime. Increasing the function's memory also increases its
@@ -447,6 +440,21 @@ spec:
                     description: The reason code for the last update that was performed
                       on the function.
                     type: string
+                  layers:
+                    description: The function's layers (https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html).
+                    items:
+                      properties:
+                        arn:
+                          type: string
+                        codeSize:
+                          format: int64
+                          type: integer
+                        signingJobARN:
+                          type: string
+                        signingProfileVersionARN:
+                          type: string
+                      type: object
+                    type: array
                   masterARN:
                     description: For Lambda@Edge functions, the ARN of the master
                       function.

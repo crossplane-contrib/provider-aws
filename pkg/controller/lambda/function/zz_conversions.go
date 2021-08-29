@@ -40,6 +40,18 @@ func GenerateGetFunctionInput(cr *svcapitypes.Function) *svcsdk.GetFunctionInput
 func GenerateFunction(resp *svcsdk.GetFunctionOutput) *svcapitypes.Function {
 	cr := &svcapitypes.Function{}
 
+	if resp.Tags != nil {
+		f3 := map[string]*string{}
+		for f3key, f3valiter := range resp.Tags {
+			var f3val string
+			f3val = *f3valiter
+			f3[f3key] = &f3val
+		}
+		cr.Spec.ForProvider.Tags = f3
+	} else {
+		cr.Spec.ForProvider.Tags = nil
+	}
+
 	return cr
 }
 
@@ -118,15 +130,6 @@ func GenerateCreateFunctionInput(cr *svcapitypes.Function) *svcsdk.CreateFunctio
 	if cr.Spec.ForProvider.KMSKeyARN != nil {
 		res.SetKMSKeyArn(*cr.Spec.ForProvider.KMSKeyARN)
 	}
-	if cr.Spec.ForProvider.Layers != nil {
-		f8 := []*string{}
-		for _, f8iter := range cr.Spec.ForProvider.Layers {
-			var f8elem string
-			f8elem = *f8iter
-			f8 = append(f8, &f8elem)
-		}
-		res.SetLayers(f8)
-	}
 	if cr.Spec.ForProvider.MemorySize != nil {
 		res.SetMemorySize(*cr.Spec.ForProvider.MemorySize)
 	}
@@ -140,23 +143,23 @@ func GenerateCreateFunctionInput(cr *svcapitypes.Function) *svcsdk.CreateFunctio
 		res.SetRuntime(*cr.Spec.ForProvider.Runtime)
 	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f13 := map[string]*string{}
-		for f13key, f13valiter := range cr.Spec.ForProvider.Tags {
-			var f13val string
-			f13val = *f13valiter
-			f13[f13key] = &f13val
+		f12 := map[string]*string{}
+		for f12key, f12valiter := range cr.Spec.ForProvider.Tags {
+			var f12val string
+			f12val = *f12valiter
+			f12[f12key] = &f12val
 		}
-		res.SetTags(f13)
+		res.SetTags(f12)
 	}
 	if cr.Spec.ForProvider.Timeout != nil {
 		res.SetTimeout(*cr.Spec.ForProvider.Timeout)
 	}
 	if cr.Spec.ForProvider.TracingConfig != nil {
-		f15 := &svcsdk.TracingConfig{}
+		f14 := &svcsdk.TracingConfig{}
 		if cr.Spec.ForProvider.TracingConfig.Mode != nil {
-			f15.SetMode(*cr.Spec.ForProvider.TracingConfig.Mode)
+			f14.SetMode(*cr.Spec.ForProvider.TracingConfig.Mode)
 		}
-		res.SetTracingConfig(f15)
+		res.SetTracingConfig(f14)
 	}
 
 	return res

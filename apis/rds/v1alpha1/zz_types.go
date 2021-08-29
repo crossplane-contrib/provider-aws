@@ -189,6 +189,8 @@ type DBClusterSnapshot struct {
 
 	Engine *string `json:"engine,omitempty"`
 
+	EngineMode *string `json:"engineMode,omitempty"`
+
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	IAMDatabaseAuthenticationEnabled *bool `json:"iamDatabaseAuthenticationEnabled,omitempty"`
@@ -876,6 +878,14 @@ type ExportTask struct {
 	WarningMessage *string `json:"warningMessage,omitempty"`
 }
 
+type FailoverState struct {
+	FromDBClusterARN *string `json:"fromDBClusterARN,omitempty"`
+
+	Status *string `json:"status,omitempty"`
+
+	ToDBClusterARN *string `json:"toDBClusterARN,omitempty"`
+}
+
 type Filter struct {
 	Name *string `json:"name,omitempty"`
 
@@ -900,6 +910,10 @@ type GlobalCluster_SDK struct {
 	Engine *string `json:"engine,omitempty"`
 
 	EngineVersion *string `json:"engineVersion,omitempty"`
+	// Contains the state of scheduled or in-process failover operations on an Aurora
+	// global database (GlobalCluster). This Data type is empty unless a failover
+	// operation is scheduled or is currently underway on the Aurora global database.
+	FailoverState *FailoverState `json:"failoverState,omitempty"`
 
 	GlobalClusterARN *string `json:"globalClusterARN,omitempty"`
 
@@ -1341,6 +1355,12 @@ type UpgradeTarget struct {
 	EngineVersion *string `json:"engineVersion,omitempty"`
 
 	IsMajorVersionUpgrade *bool `json:"isMajorVersionUpgrade,omitempty"`
+
+	SupportedEngineModes []*string `json:"supportedEngineModes,omitempty"`
+
+	SupportsGlobalDatabases *bool `json:"supportsGlobalDatabases,omitempty"`
+
+	SupportsParallelQuery *bool `json:"supportsParallelQuery,omitempty"`
 }
 
 type UserAuthConfig struct {

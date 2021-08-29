@@ -90,6 +90,73 @@ type FunctionCodeLocation struct {
 	ResolvedImageURI *string `json:"resolvedImageURI,omitempty"`
 }
 
+type FunctionConfiguration struct {
+	CodeSHA256 *string `json:"codeSHA256,omitempty"`
+
+	CodeSize *int64 `json:"codeSize,omitempty"`
+	// The dead-letter queue (https://docs.aws.amazon.com/lambda/latest/dg/invocation-async.html#dlq)
+	// for failed asynchronous invocations.
+	DeadLetterConfig *DeadLetterConfig `json:"deadLetterConfig,omitempty"`
+
+	Description *string `json:"description,omitempty"`
+	// The results of an operation to update or read environment variables. If the
+	// operation is successful, the response contains the environment variables.
+	// If it failed, the response contains details about the error.
+	Environment *EnvironmentResponse `json:"environment,omitempty"`
+
+	FileSystemConfigs []*FileSystemConfig `json:"fileSystemConfigs,omitempty"`
+
+	FunctionARN *string `json:"functionARN,omitempty"`
+
+	FunctionName *string `json:"functionName,omitempty"`
+
+	Handler *string `json:"handler,omitempty"`
+	// Response to GetFunctionConfiguration request.
+	ImageConfigResponse *ImageConfigResponse `json:"imageConfigResponse,omitempty"`
+
+	KMSKeyARN *string `json:"kmsKeyARN,omitempty"`
+
+	LastModified *string `json:"lastModified,omitempty"`
+
+	LastUpdateStatus *string `json:"lastUpdateStatus,omitempty"`
+
+	LastUpdateStatusReason *string `json:"lastUpdateStatusReason,omitempty"`
+
+	LastUpdateStatusReasonCode *string `json:"lastUpdateStatusReasonCode,omitempty"`
+
+	Layers []*Layer `json:"layers,omitempty"`
+
+	MasterARN *string `json:"masterARN,omitempty"`
+
+	MemorySize *int64 `json:"memorySize,omitempty"`
+
+	PackageType *string `json:"packageType,omitempty"`
+
+	RevisionID *string `json:"revisionID,omitempty"`
+
+	Role *string `json:"role,omitempty"`
+
+	Runtime *string `json:"runtime,omitempty"`
+
+	SigningJobARN *string `json:"signingJobARN,omitempty"`
+
+	SigningProfileVersionARN *string `json:"signingProfileVersionARN,omitempty"`
+
+	State *string `json:"state,omitempty"`
+
+	StateReason *string `json:"stateReason,omitempty"`
+
+	StateReasonCode *string `json:"stateReasonCode,omitempty"`
+
+	Timeout *int64 `json:"timeout,omitempty"`
+	// The function's AWS X-Ray tracing configuration.
+	TracingConfig *TracingConfigResponse `json:"tracingConfig,omitempty"`
+
+	Version *string `json:"version,omitempty"`
+	// The VPC security groups and subnets that are attached to a Lambda function.
+	VPCConfig *VPCConfigResponse `json:"vpcConfig,omitempty"`
+}
+
 type FunctionEventInvokeConfig struct {
 	FunctionARN *string `json:"functionARN,omitempty"`
 }
@@ -152,6 +219,10 @@ type ProvisionedConcurrencyConfigListItem struct {
 	LastModified *string `json:"lastModified,omitempty"`
 
 	StatusReason *string `json:"statusReason,omitempty"`
+}
+
+type PutFunctionConcurrencyOutput struct {
+	ReservedConcurrentExecutions *int64 `json:"reservedConcurrentExecutions,omitempty"`
 }
 
 type TracingConfig struct {

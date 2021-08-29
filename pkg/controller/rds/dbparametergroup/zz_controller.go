@@ -123,10 +123,20 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 	} else {
 		cr.Status.AtProvider.DBParameterGroupARN = nil
 	}
+	if resp.DBParameterGroup.DBParameterGroupFamily != nil {
+		cr.Spec.ForProvider.DBParameterGroupFamily = resp.DBParameterGroup.DBParameterGroupFamily
+	} else {
+		cr.Spec.ForProvider.DBParameterGroupFamily = nil
+	}
 	if resp.DBParameterGroup.DBParameterGroupName != nil {
 		cr.Status.AtProvider.DBParameterGroupName = resp.DBParameterGroup.DBParameterGroupName
 	} else {
 		cr.Status.AtProvider.DBParameterGroupName = nil
+	}
+	if resp.DBParameterGroup.Description != nil {
+		cr.Spec.ForProvider.Description = resp.DBParameterGroup.Description
+	} else {
+		cr.Spec.ForProvider.Description = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
