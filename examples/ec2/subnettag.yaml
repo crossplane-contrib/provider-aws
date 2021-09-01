@@ -1,0 +1,13 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: ResourceTag
+metadata:
+  name: test-tag-2
+spec:
+  forProvider:
+    resourceIds:
+      - # subnet-xyz
+    tags:
+      - key: foo
+        value: bar
+  providerConfigRef:
+    name: example

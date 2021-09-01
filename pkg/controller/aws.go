@@ -56,6 +56,7 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/address"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/internetgateway"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/natgateway"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/resourcetag"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/routetable"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/securitygroup"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
@@ -191,6 +192,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		vpcpeeringconnection.SetupVPCPeeringConnection,
 		kafkacluster.SetupCluster,
 		efsmounttarget.SetupMountTarget,
+		resourcetag.SetupResourceTag,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err

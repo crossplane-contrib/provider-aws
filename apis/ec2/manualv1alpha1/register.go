@@ -48,6 +48,15 @@ var (
 	VPCCIDRBlockGroupVersionKind = SchemeGroupVersion.WithKind(VPCCIDRBlockKind)
 )
 
+// ResourceTag type metadata.
+var (
+	ResourceTagKind             = reflect.TypeOf(ResourceTag{}).Name()
+	ResourceTagGroupKind        = schema.GroupKind{Group: Group, Kind: ResourceTagKind}.String()
+	ResourceTagKindAPIVersion   = ResourceTagKind + "." + SchemeGroupVersion.String()
+	ResourceTagGroupVersionKind = SchemeGroupVersion.WithKind(ResourceTagKind)
+)
+
 func init() {
 	SchemeBuilder.Register(&VPCCIDRBlock{}, &VPCCIDRBlockList{})
+	SchemeBuilder.Register(&ResourceTag{}, &ResourceTagList{})
 }
