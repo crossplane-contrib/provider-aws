@@ -25,6 +25,13 @@ type CustomDBParameterGroupParameters struct {
 	Parameters []Parameter `json:"parameters,omitempty"`
 }
 
+// CustomDBClusterParameterGroupParameters are custom parameters for DBClusterParameterGroup
+type CustomDBClusterParameterGroupParameters struct {
+	// A list of parameters to associate with this DB cluster parameter group
+	// +optional
+	Parameters []Parameter `json:"parameters,omitempty"`
+}
+
 // CustomDBClusterParameters are custom parameters for DBCluster
 type CustomDBClusterParameters struct {
 
