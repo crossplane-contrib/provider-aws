@@ -485,11 +485,6 @@ spec:
               atProvider:
                 description: RepositoryPolicyObservation keeps the state for the external
                   resource
-                properties:
-                  policyText:
-                    description: The JSON repository policy text associated with the
-                      repository.
-                    type: string
                 type: object
               conditions:
                 description: Conditions of the resource.
