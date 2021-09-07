@@ -80,7 +80,7 @@ func (mg *SecurityGroup) ResolveReferences(ctx context.Context, c client.Reader)
 
 	for i, ing := range mg.Spec.ForProvider.Ingress {
 		for j, pair := range ing.UserIDGroupPairs {
-			// Resolve spec.forProvider.ingress[*].userIdGroupPairs[*]
+			// Resolve spec.forProvider.ingress[*].userIdGroupPairs[*].vpcId
 			rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 				CurrentValue: reference.FromPtrValue(pair.VPCID),
 				Reference:    pair.VPCIDRef,
@@ -94,6 +94,7 @@ func (mg *SecurityGroup) ResolveReferences(ctx context.Context, c client.Reader)
 			mg.Spec.ForProvider.Ingress[i].UserIDGroupPairs[j].VPCID = reference.ToPtrValue(rsp.ResolvedValue)
 			mg.Spec.ForProvider.Ingress[i].UserIDGroupPairs[j].VPCIDRef = rsp.ResolvedReference
 
+			// Resolve spec.forProvider.ingress[*].userIdGroupPairs[*].groupId
 			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 				CurrentValue: reference.FromPtrValue(pair.GroupID),
 				Reference:    pair.GroupIDRef,
@@ -111,7 +112,7 @@ func (mg *SecurityGroup) ResolveReferences(ctx context.Context, c client.Reader)
 
 	for i, egr := range mg.Spec.ForProvider.Egress {
 		for j, pair := range egr.UserIDGroupPairs {
-			// Resolve spec.forProvider.egress[*].userIdGroupPairs[*]
+			// Resolve spec.forProvider.egress[*].userIdGroupPairs[*].vpcId
 			rsp, err := r.Resolve(ctx, reference.ResolutionRequest{
 				CurrentValue: reference.FromPtrValue(pair.VPCID),
 				Reference:    pair.VPCIDRef,
@@ -125,6 +126,7 @@ func (mg *SecurityGroup) ResolveReferences(ctx context.Context, c client.Reader)
 			mg.Spec.ForProvider.Egress[i].UserIDGroupPairs[j].VPCID = reference.ToPtrValue(rsp.ResolvedValue)
 			mg.Spec.ForProvider.Egress[i].UserIDGroupPairs[j].VPCIDRef = rsp.ResolvedReference
 
+			// Resolve spec.forProvider.egress[*].userIdGroupPairs[*].groupId
 			rsp, err = r.Resolve(ctx, reference.ResolutionRequest{
 				CurrentValue: reference.FromPtrValue(pair.GroupID),
 				Reference:    pair.GroupIDRef,
