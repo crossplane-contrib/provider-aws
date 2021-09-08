@@ -211,7 +211,7 @@ func TestCreate(t *testing.T) {
 					withSpecGroupName(groupName),
 					withSpecUserName(userName),
 					withExternalName(groupName+"/"+userName)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"InValidInput": {

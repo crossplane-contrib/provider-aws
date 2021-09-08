@@ -88,7 +88,6 @@ func postCreate(_ context.Context, cr *svcapitypes.Route, res *svcsdk.CreateRout
 	// NOTE(muvaf): Route ID is chosen as external name since it's the only unique
 	// identifier.
 	meta.SetExternalName(cr, aws.StringValue(res.RouteId))
-	cre.ExternalNameAssigned = true
 	return cre, nil
 }
 

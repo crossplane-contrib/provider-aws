@@ -92,7 +92,6 @@ func postCreate(_ context.Context, cr *svcapitypes.VPCLink, resp *svcsdk.CreateV
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.VpcLinkId))
-	cre.ExternalNameAssigned = true
 	return cre, nil
 }
 

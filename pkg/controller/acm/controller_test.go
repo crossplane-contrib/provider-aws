@@ -248,7 +248,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: certificate(
 					withDomainName()),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"InValidInput": {

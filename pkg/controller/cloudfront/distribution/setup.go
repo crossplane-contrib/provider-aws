@@ -93,7 +93,6 @@ func postCreate(_ context.Context, cr *svcapitypes.Distribution, cdo *svcsdk.Cre
 	}
 
 	meta.SetExternalName(cr, awsclients.StringValue(cdo.Distribution.Id))
-	ec.ExternalNameAssigned = true
 	return ec, nil
 }
 

@@ -214,7 +214,7 @@ func TestCreate(t *testing.T) {
 					withSpecGroupName(groupName),
 					withSpecPolicyArn(policyArn),
 					withExternalName(groupName+"/"+policyArn)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"InValidInput": {

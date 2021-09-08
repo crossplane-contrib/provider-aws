@@ -18,6 +18,7 @@ package subnet
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -64,6 +65,7 @@ func SetupSubnet(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) e
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.SubnetGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewSubnetClient}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
@@ -160,7 +162,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	meta.SetExternalName(cr, aws.StringValue(result.Subnet.SubnetId))
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
