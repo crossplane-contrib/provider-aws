@@ -18,6 +18,7 @@ package vpccidrblock
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -60,6 +61,7 @@ func SetupVPCCIDRBlock(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1alpha1.VPCCIDRBlockGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewVPCCIDRBlockClient}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
@@ -168,7 +170,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {

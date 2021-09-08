@@ -254,7 +254,7 @@ func TestCreate(t *testing.T) {
 						Name:     name,
 					}),
 					withExterName(arn)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"InValidInput": {

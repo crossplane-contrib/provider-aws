@@ -300,7 +300,7 @@ func TestCreate(t *testing.T) {
 				cr: topic(
 					withDisplayName(&topicDisplayName),
 					withTopicName(&topicName)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"InValidInput": {

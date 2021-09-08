@@ -88,7 +88,6 @@ func postCreate(_ context.Context, cr *svcapitypes.APIMapping, resp *svcsdk.Crea
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.ApiMappingId))
-	cre.ExternalNameAssigned = true
 	return cre, nil
 }
 

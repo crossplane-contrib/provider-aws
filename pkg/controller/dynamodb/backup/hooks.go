@@ -92,7 +92,6 @@ func postCreate(_ context.Context, cr *svcapitypes.Backup, resp *svcsdk.CreateBa
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.BackupDetails.BackupArn))
-	cre.ExternalNameAssigned = true
 	return cre, err
 }
 
