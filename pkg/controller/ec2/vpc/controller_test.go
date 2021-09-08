@@ -240,6 +240,25 @@ func TestCreate(t *testing.T) {
 							},
 						}, nil
 					},
+				},
+				cr: vpc(),
+			},
+			want: want{
+				cr:     vpc(withExternalName(vpcID)),
+				result: managed.ExternalCreation{},
+			},
+		},
+		"SuccessfulWithAttributes": {
+			args: args{
+				vpc: &fake.MockVPCClient{
+					MockCreate: func(ctx context.Context, input *awsec2.CreateVpcInput, opts []func(*awsec2.Options)) (*awsec2.CreateVpcOutput, error) {
+						return &awsec2.CreateVpcOutput{
+							Vpc: &awsec2types.Vpc{
+								VpcId:     aws.String(vpcID),
+								CidrBlock: aws.String(cidr),
+							},
+						}, nil
+					},
 					MockModifyAttribute: func(ctx context.Context, input *awsec2.ModifyVpcAttributeInput, opts []func(*awsec2.Options)) (*awsec2.ModifyVpcAttributeOutput, error) {
 						return &awsec2.ModifyVpcAttributeOutput{}, nil
 					},

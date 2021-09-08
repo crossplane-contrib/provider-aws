@@ -146,7 +146,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 	meta.SetExternalName(cr, aws.ToString(response.AccessKey.AccessKeyId))
-	return managed.ExternalCreation{ExternalNameAssigned: true, ConnectionDetails: conn}, nil
+	return managed.ExternalCreation{ConnectionDetails: conn}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {

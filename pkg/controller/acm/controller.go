@@ -165,7 +165,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
-	meta.SetExternalName(cr, awsclient.StringValue(response.CertificateArn))
+	meta.SetExternalName(cr, aws.ToString(response.CertificateArn))
 	return managed.ExternalCreation{}, nil
 
 }

@@ -236,6 +236,7 @@ func TestCreate(t *testing.T) {
 				cr: oidcProvider(withURL(url), func(provider *svcapitypes.OpenIDConnectProvider) {
 					meta.SetExternalName(provider, providerArn)
 				}),
+				result: managed.ExternalCreation{},
 			},
 		},
 	}
