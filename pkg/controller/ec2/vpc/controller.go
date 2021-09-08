@@ -69,6 +69,7 @@ func SetupVPC(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.VPCGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewVPCClient}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),

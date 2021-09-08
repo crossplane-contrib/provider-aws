@@ -63,6 +63,7 @@ func SetupVPCCIDRBlock(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(manualv1alpha1.VPCCIDRBlockGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewVPCCIDRBlockClient}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(),

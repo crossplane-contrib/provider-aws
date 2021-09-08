@@ -46,6 +46,7 @@ func SetupVPCPeeringConnection(mgr ctrl.Manager, l logging.Logger, rl workqueue.
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.VPCPeeringConnectionGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
