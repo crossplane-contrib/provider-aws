@@ -234,7 +234,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:     subnet(withExternalName(subnetID)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"CreateFailed": {

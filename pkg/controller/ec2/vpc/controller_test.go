@@ -251,7 +251,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:     vpc(withExternalName(vpcID)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"SuccessfulWithAttributes": {
@@ -282,7 +282,7 @@ func TestCreate(t *testing.T) {
 					withSpec(v1beta1.VPCParameters{
 						EnableDNSSupport: &enableDNS,
 					})),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"CreateFail": {

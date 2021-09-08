@@ -106,5 +106,5 @@ func postCreate(_ context.Context, cr *svcapitypes.FileSystem, obj *svcsdk.FileS
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, awsclients.StringValue(obj.FileSystemId))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }

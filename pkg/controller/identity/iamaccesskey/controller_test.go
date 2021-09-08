@@ -263,7 +263,6 @@ func TestCreate(t *testing.T) {
 					withUsername(userName),
 					withAccessKey(accessKeyID)),
 				result: managed.ExternalCreation{
-					ExternalNameAssigned: true,
 					ConnectionDetails: map[string][]byte{
 						xpv1.ResourceCredentialsSecretPasswordKey: []byte(secretKeyID),
 						xpv1.ResourceCredentialsSecretUserKey:     []byte(accessKeyID),

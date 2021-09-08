@@ -210,7 +210,7 @@ func TestCreate(t *testing.T) {
 					withPrincipal(principal),
 					withCertificateAuthorityARN(arn),
 					withExternalName(principal+"/"+arn)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"InValidInput": {

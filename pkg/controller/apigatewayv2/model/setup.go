@@ -86,7 +86,6 @@ func postCreate(_ context.Context, cr *svcapitypes.Model, resp *svcsdk.CreateMod
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.ModelId))
-	cre.ExternalNameAssigned = true
 	return cre, nil
 }
 

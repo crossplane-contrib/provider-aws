@@ -86,7 +86,6 @@ func postCreate(_ context.Context, cr *svcapitypes.Authorizer, resp *svcsdk.Crea
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.AuthorizerId))
-	cre.ExternalNameAssigned = true
 	return cre, err
 }
 

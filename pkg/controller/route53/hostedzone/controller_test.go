@@ -268,7 +268,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: instance(
 					withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1])),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"InValidInput": {

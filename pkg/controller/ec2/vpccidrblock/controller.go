@@ -171,7 +171,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {

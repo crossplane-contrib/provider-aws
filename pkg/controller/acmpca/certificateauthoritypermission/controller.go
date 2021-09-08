@@ -155,7 +155,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// identity of the CA it applies to, and the principal it applies.
 	meta.SetExternalName(cr, cr.Spec.ForProvider.Principal+"/"+awsclient.StringValue(cr.Spec.ForProvider.CertificateAuthorityARN))
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 
 }
 

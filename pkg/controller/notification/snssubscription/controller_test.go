@@ -133,7 +133,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:     subscription(withSubARN(&subName)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"InValidInput": {
