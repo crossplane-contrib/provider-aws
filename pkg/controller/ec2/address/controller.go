@@ -19,6 +19,7 @@ package address
 import (
 	"context"
 	"sort"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -66,6 +67,7 @@ func SetupAddress(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) 
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.AddressGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient()}),
+			managed.WithCreationGracePeriod(3*time.Minute),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
 			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient()), &tagger{kube: mgr.GetClient()}),
