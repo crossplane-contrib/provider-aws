@@ -274,7 +274,7 @@ func TestCreate(t *testing.T) {
 					CIDRBlock: &cidr,
 					VPCID:     &vpcID,
 				}), withExternalName(matchAssociationID)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"SuccessfulIPv6": {
@@ -303,7 +303,7 @@ func TestCreate(t *testing.T) {
 					IPv6CIDRBlock: &ipv6CIDR,
 					VPCID:         &vpcID,
 				}), withExternalName(matchAssociationID)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"CreateFail": {

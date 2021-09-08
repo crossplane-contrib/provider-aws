@@ -86,7 +86,6 @@ func postCreate(_ context.Context, cr *svcapitypes.Integration, resp *svcsdk.Cre
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.IntegrationId))
-	cre.ExternalNameAssigned = true
 	return cre, nil
 }
 

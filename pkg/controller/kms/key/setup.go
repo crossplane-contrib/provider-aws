@@ -84,7 +84,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Key, obj *svcsdk.CreateKeyOut
 		return creation, err
 	}
 	meta.SetExternalName(cr, awsclients.StringValue(obj.KeyMetadata.KeyId))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 type updater struct {

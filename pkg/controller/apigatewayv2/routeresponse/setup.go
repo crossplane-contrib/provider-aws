@@ -88,7 +88,6 @@ func postCreate(_ context.Context, cr *svcapitypes.RouteResponse, resp *svcsdk.C
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.RouteResponseId))
-	cre.ExternalNameAssigned = true
 	return cre, nil
 }
 
