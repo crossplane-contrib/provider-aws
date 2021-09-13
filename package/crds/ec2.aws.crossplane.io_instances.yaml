@@ -37,69 +37,6 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        properties:
-          capacityReservationID:
-            type: string
-          clientToken:
-            type: string
-          ebsOptimized:
-            type: boolean
-          enaSupport:
-            type: boolean
-          imageID:
-            type: string
-          instanceID:
-            type: string
-          kernelID:
-            type: string
-          keyName:
-            type: string
-          launchTime:
-            format: date-time
-            type: string
-          outpostARN:
-            type: string
-          privateDNSName:
-            type: string
-          privateIPAddress:
-            type: string
-          publicDNSName:
-            type: string
-          publicIPAddress:
-            type: string
-          ramdiskID:
-            type: string
-          rootDeviceName:
-            type: string
-          sourceDestCheck:
-            type: boolean
-          spotInstanceRequestID:
-            type: string
-          sriovNetSupport:
-            type: string
-          stateTransitionReason:
-            type: string
-          subnetID:
-            type: string
-          tags:
-            items:
-              properties:
-                key:
-                  type: string
-                value:
-                  type: string
-              type: object
-            type: array
-          vpcID:
-            type: string
-        type: object
-    served: true
-    storage: true
-    subresources:
-      status: {}
-  - name: v1alpha1
-    schema:
-      openAPIV3Schema:
         description: Instance is a managed resource that represents a specified number
           of AWS EC2 Instance
         properties:
@@ -1720,7 +1657,9 @@ spec:
         - spec
         type: object
     served: true
-    storage: false
+    storage: true
+    subresources:
+      status: {}
 status:
   acceptedNames:
     kind: ""

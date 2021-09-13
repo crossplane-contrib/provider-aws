@@ -12,6 +12,7 @@ ignore:
     - Fleet
     - FpgaImage
     - Image
+    - Instance
     - InstanceExportTask
     - InternetGateway
     - KeyPair
