@@ -61,9 +61,11 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/subnet"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpc"
 	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpccidrblock"
+	"github.com/crossplane/provider-aws/pkg/controller/ec2/vpcpeeringconnection"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repository"
 	"github.com/crossplane/provider-aws/pkg/controller/ecr/repositorypolicy"
 	"github.com/crossplane/provider-aws/pkg/controller/efs/filesystem"
+	efsmounttarget "github.com/crossplane/provider-aws/pkg/controller/efs/mounttarget"
 	"github.com/crossplane/provider-aws/pkg/controller/eks"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/fargateprofile"
 	"github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
@@ -85,6 +87,8 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snssubscription"
 	"github.com/crossplane/provider-aws/pkg/controller/notification/snstopic"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbcluster"
+	"github.com/crossplane/provider-aws/pkg/controller/rds/dbclusterparametergroup"
+	"github.com/crossplane/provider-aws/pkg/controller/rds/dbinstance"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/dbparametergroup"
 	"github.com/crossplane/provider-aws/pkg/controller/rds/globalcluster"
 	"github.com/crossplane/provider-aws/pkg/controller/redshift"
@@ -171,6 +175,8 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		key.SetupKey,
 		filesystem.SetupFileSystem,
 		dbcluster.SetupDBCluster,
+		dbclusterparametergroup.SetupDBClusterParameterGroup,
+		dbinstance.SetupDBInstance,
 		dbparametergroup.SetupDBParameterGroup,
 		globalcluster.SetupGlobalCluster,
 		vpccidrblock.SetupVPCCIDRBlock,
@@ -182,7 +188,9 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		distribution.SetupDistribution,
 		resolverendpoint.SetupResolverEndpoint,
 		resolverrule.SetupResolverRule,
+		vpcpeeringconnection.SetupVPCPeeringConnection,
 		kafkacluster.SetupCluster,
+		efsmounttarget.SetupMountTarget,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err

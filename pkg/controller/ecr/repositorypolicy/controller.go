@@ -109,10 +109,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.Wrap(err, errGet)
 	}
 
-	if response.PolicyText != nil {
-		cr.Status.AtProvider.PolicyText = *response.PolicyText
-	}
-
 	current := cr.Spec.ForProvider.DeepCopy()
 	ecr.LateInitializeRepositoryPolicy(&cr.Spec.ForProvider, response)
 
@@ -120,7 +116,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	return managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceUpToDate:        ecr.IsRepositoryPolicyUpToDate(&policyData, &cr.Status.AtProvider.PolicyText),
+		ResourceUpToDate:        ecr.IsRepositoryPolicyUpToDate(&policyData, response.PolicyText),
 		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }

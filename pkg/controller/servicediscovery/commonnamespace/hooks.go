@@ -104,6 +104,7 @@ func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 		if !ok {
 			return managed.ExternalObservation{}, errors.New(errOperationResponseMalformed)
 		}
+
 		if meta.GetExternalName(mg) != awsclient.StringValue(namespaceID) {
 			// We need to make sure external name makes it to api-server no matter what.
 			err := retry.OnError(retry.DefaultRetry, cpresource.IsAPIError, func() error {
@@ -129,12 +130,16 @@ func (h *Hooks) Observe(ctx context.Context, mg cpresource.Managed) (managed.Ext
 		return managed.ExternalObservation{},
 			awsclient.Wrap(cpresource.Ignore(ActualIsNotFound, err), errGetNamespace)
 	}
+
 	cr.SetConditions(xpv1.Available())
+
 	lateInited := false
-	if awsclient.StringValue(cr.GetDescription()) == "" {
+	if awsclient.StringValue(cr.GetDescription()) == "" && awsclient.StringValue(nsReqResp.Namespace.Description) != "" {
 		cr.SetDescription(nsReqResp.Namespace.Description)
+		// set READY false
 		lateInited = true
 	}
+
 	return managed.ExternalObservation{
 		ResourceExists:          true,
 		ResourceLateInitialized: lateInited,

@@ -9,10 +9,25 @@ ignore:
     - CreateDBClusterInput.VpcSecurityGroupIds
     - ModifyDBClusterInput.VpcSecurityGroupIds
     - DBCluster.PendingModifiedValues
+    - DescribeDBInstancesInput.DBInstanceIndentifier
+    - CreateDBInstanceInput.DBInstanceIdentifier
+    - ModifyDBInstanceInput.DBInstanceIdentifier
+    - DeleteDBInstanceInput.DBInstanceIdentifier
+    - CreateDBInstanceInput.MasterUserPassword
+    - ModifyDBInstanceInput.MasterUserPassword
+    - CreateDBInstanceInput.VpcSecurityGroupIds
+    - ModifyDBInstanceInput.VpcSecurityGroupIds
+    - CreateDBInstanceInput.DBSecurityGroups
+    - ModifyDBInstanceInput.DBSecurityGroups
+    - ModifyDBInstanceInput.DBSubnetGroupName # this is immutable
     - CreateDBParameterGroupInput.DBParameterGroupName
     - DeleteDBParameterGroupInput.DBParameterGroupName
     - ModifyDBParameterGroupInput.DBParameterGroupName
     - DescribeDBParameterGroupsInput.DBParameterGroupName
+    - CreateDBClusterParameterGroupInput.DBClusterParameterGroupName
+    - DeleteDBClusterParameterGroupInput.DBClusterParameterGroupName
+    - ModifyDBClusterParameterGroupInput.DBClusterParameterGroupName
+    - DescribeDBClusterParameterGroupsInput.DBClusterParameterGroupName
     - DescribeGlobalClustersInput.GlobalClusterIdentifier
     - ModifyGlobalClusterInput.GlobalClusterIdentifier
     - CreateGlobalClusterInput.GlobalClusterIdentifier
@@ -20,9 +35,7 @@ ignore:
   resource_names:
     - DBClusterEndpoint
     - CustomAvailabilityZone
-    - DBClusterParameterGroup
     - DBClusterSnapshot
-    - DBInstance
     - DBInstanceReadReplica
     - DBProxy
     - DBSecurityGroup

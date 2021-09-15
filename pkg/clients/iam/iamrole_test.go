@@ -2,6 +2,7 @@ package iam
 
 import (
 	"sort"
+	"strings"
 	"testing"
 	"time"
 
@@ -223,8 +224,9 @@ func TestIsRoleUpToDate(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		args args
-		want bool
+		args     args
+		want     bool
+		wantDiff string
 	}{
 		"SameFields": {
 			args: args{
@@ -249,7 +251,8 @@ func TestIsRoleUpToDate(t *testing.T) {
 					}},
 				},
 			},
-			want: true,
+			want:     true,
+			wantDiff: "",
 		},
 		"DifferentFields": {
 			args: args{
@@ -274,15 +277,27 @@ func TestIsRoleUpToDate(t *testing.T) {
 					}},
 				},
 			},
-			want: false,
+			want:     false,
+			wantDiff: "Found observed difference in IAM role",
 		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got, _ := IsRoleUpToDate(tc.args.p, tc.args.role)
+			got, testDiff, _ := IsRoleUpToDate(tc.args.p, tc.args.role)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
+			}
+			if tc.wantDiff == "" {
+				if tc.wantDiff != testDiff {
+					t.Errorf("r: -want, +got:\n%s", testDiff)
+				}
+			}
+
+			if tc.wantDiff == "Found observed difference in IAM role" {
+				if !strings.Contains(testDiff, tc.wantDiff) {
+					t.Errorf("r: -want, +got:\n%s", testDiff)
+				}
 			}
 		})
 	}

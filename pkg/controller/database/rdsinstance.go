@@ -128,7 +128,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr.Status.AtProvider = rds.GenerateObservation(instance)
 
 	switch cr.Status.AtProvider.DBInstanceStatus {
-	case v1beta1.RDSInstanceStateAvailable:
+	case v1beta1.RDSInstanceStateAvailable, v1beta1.RDSInstanceStateModifying, v1beta1.RDSInstanceStateBackingUp, v1beta1.RDSInstanceStateConfiguringEnhancedMonitoring:
 		cr.Status.SetConditions(xpv1.Available())
 	case v1beta1.RDSInstanceStateCreating:
 		cr.Status.SetConditions(xpv1.Creating())

@@ -34,10 +34,14 @@ spec:
         description: GlobalCluster is the Schema for the GlobalClusters API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
             type: object
@@ -46,34 +50,46 @@ spec:
             properties:
               deletionPolicy:
                 default: Delete
-                description: DeletionPolicy specifies what will happen to the underlying external when this managed resource is deleted - either "Delete" or "Orphan" the external resource.
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
                 enum:
                 - Orphan
                 - Delete
                 type: string
               forProvider:
-                description: GlobalClusterParameters defines the desired state of GlobalCluster
+                description: GlobalClusterParameters defines the desired state of
+                  GlobalCluster
                 properties:
                   databaseName:
-                    description: The name for your database of up to 64 alpha-numeric characters. If you do not provide a name, Amazon Aurora will not create a database in the global database cluster you are creating.
+                    description: The name for your database of up to 64 alpha-numeric
+                      characters. If you do not provide a name, Amazon Aurora will
+                      not create a database in the global database cluster you are
+                      creating.
                     type: string
                   deletionProtection:
-                    description: The deletion protection setting for the new global database. The global database can't be deleted when deletion protection is enabled.
+                    description: The deletion protection setting for the new global
+                      database. The global database can't be deleted when deletion
+                      protection is enabled.
                     type: boolean
                   engine:
-                    description: The name of the database engine to be used for this DB cluster.
+                    description: The name of the database engine to be used for this
+                      DB cluster.
                     type: string
                   engineVersion:
                     description: The engine version of the Aurora global database.
                     type: string
                   region:
-                    description: Region is which region the GlobalCluster will be created.
+                    description: Region is which region the GlobalCluster will be
+                      created.
                     type: string
                   sourceDBClusterIdentifier:
-                    description: The Amazon Resource Name (ARN) to use as the primary cluster of the global database. This parameter is optional.
+                    description: The Amazon Resource Name (ARN) to use as the primary
+                      cluster of the global database. This parameter is optional.
                     type: string
                   sourceDBClusterIdentifierRef:
-                    description: SourceDBClusterIdentifierRef is a reference to a DBCluster used to set SourceDBClusterIdentifier.
+                    description: SourceDBClusterIdentifierRef is a reference to a
+                      DBCluster used to set SourceDBClusterIdentifier.
                     properties:
                       name:
                         description: Name of the referenced object.
@@ -82,19 +98,23 @@ spec:
                     - name
                     type: object
                   sourceDBClusterIdentifierSelector:
-                    description: SourceDBClusterIdentifierSelector selects a reference to a DBCluster used to set SourceDBClusterIdentifier.
+                    description: SourceDBClusterIdentifierSelector selects a reference
+                      to a DBCluster used to set SourceDBClusterIdentifier.
                     properties:
                       matchControllerRef:
-                        description: MatchControllerRef ensures an object with the same controller reference as the selecting object is selected.
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
                         type: boolean
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: MatchLabels ensures an object with matching labels is selected.
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
                         type: object
                     type: object
                   storageEncrypted:
-                    description: The storage encryption setting for the new global database cluster.
+                    description: The storage encryption setting for the new global
+                      database cluster.
                     type: boolean
                 required:
                 - region
@@ -102,7 +122,9 @@ spec:
               providerConfigRef:
                 default:
                   name: default
-                description: ProviderConfigReference specifies how the provider that will be used to create, observe, update, and delete this managed resource should be configured.
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -111,7 +133,9 @@ spec:
                 - name
                 type: object
               providerRef:
-                description: 'ProviderReference specifies the provider that will be used to create, observe, update, and delete this managed resource. Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
                 properties:
                   name:
                     description: Name of the referenced object.
@@ -120,7 +144,11 @@ spec:
                 - name
                 type: object
               writeConnectionSecretToRef:
-                description: WriteConnectionSecretToReference specifies the namespace and name of a Secret to which any connection details for this managed resource should be written. Connection details frequently include the endpoint, username, and password required to connect to the managed resource.
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource.
                 properties:
                   name:
                     description: Name of the secret.
@@ -139,16 +167,21 @@ spec:
             description: GlobalClusterStatus defines the observed state of GlobalCluster.
             properties:
               atProvider:
-                description: GlobalClusterObservation defines the observed state of GlobalCluster
+                description: GlobalClusterObservation defines the observed state of
+                  GlobalCluster
                 properties:
                   globalClusterARN:
-                    description: The Amazon Resource Name (ARN) for the global database cluster.
+                    description: The Amazon Resource Name (ARN) for the global database
+                      cluster.
                     type: string
                   globalClusterIdentifier:
-                    description: Contains a user-supplied global database cluster identifier. This identifier is the unique key that identifies a global database cluster.
+                    description: Contains a user-supplied global database cluster
+                      identifier. This identifier is the unique key that identifies
+                      a global database cluster.
                     type: string
                   globalClusterMembers:
-                    description: The list of cluster IDs for secondary clusters within the global database cluster. Currently limited to 1 item.
+                    description: The list of cluster IDs for secondary clusters within
+                      the global database cluster. Currently limited to 1 item.
                     items:
                       properties:
                         dbClusterARN:
@@ -164,10 +197,14 @@ spec:
                       type: object
                     type: array
                   globalClusterResourceID:
-                    description: The AWS Region-unique, immutable identifier for the global database cluster. This identifier is found in AWS CloudTrail log entries whenever the AWS KMS customer master key (CMK) for the DB cluster is accessed.
+                    description: The AWS Region-unique, immutable identifier for the
+                      global database cluster. This identifier is found in AWS CloudTrail
+                      log entries whenever the AWS KMS customer master key (CMK) for
+                      the DB cluster is accessed.
                     type: string
                   status:
-                    description: Specifies the current state of this global database cluster.
+                    description: Specifies the current state of this global database
+                      cluster.
                     type: string
                 type: object
               conditions:
@@ -176,20 +213,25 @@ spec:
                   description: A Condition that may apply to a resource.
                   properties:
                     lastTransitionTime:
-                      description: LastTransitionTime is the last time this condition transitioned from one status to another.
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
                       format: date-time
                       type: string
                     message:
-                      description: A Message containing details about this condition's last transition from one status to another, if any.
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
                       type: string
                     reason:
-                      description: A Reason for this condition's last transition from one status to another.
+                      description: A Reason for this condition's last transition from
+                        one status to another.
                       type: string
                     status:
-                      description: Status of this condition; is it currently True, False, or Unknown?
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
                       type: string
                     type:
-                      description: Type of this condition. At most one of each condition type may apply to a resource at any point in time.
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
                       type: string
                   required:
                   - lastTransitionTime

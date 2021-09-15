@@ -235,10 +235,7 @@ type RepositoryPolicySpec struct {
 }
 
 // RepositoryPolicyObservation keeps the state for the external resource
-type RepositoryPolicyObservation struct {
-	// The JSON repository policy text associated with the repository.
-	PolicyText string `json:"policyText,omitempty"`
-}
+type RepositoryPolicyObservation struct{}
 
 // A RepositoryPolicyStatus represents the observed state of a repository policy
 type RepositoryPolicyStatus struct {

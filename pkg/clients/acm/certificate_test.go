@@ -137,6 +137,10 @@ func TestLateInitializeCertificate(t *testing.T) {
 }
 
 func TestGenerateCertificateStatus(t *testing.T) {
+	sName := "_xyz.crossplane.io."
+	sType := "CNAME"
+	sValue := "_xxx.zzz.acm-validations.aws."
+
 	cases := map[string]struct {
 		in  acm.CertificateDetail
 		out v1alpha1.CertificateExternalStatus
@@ -159,6 +163,35 @@ func TestGenerateCertificateStatus(t *testing.T) {
 			out: v1alpha1.CertificateExternalStatus{
 				CertificateARN:     "",
 				RenewalEligibility: acm.RenewalEligibilityEligible,
+			},
+		},
+		"DomainValidationOptionsResourceRecord": {
+			in: acm.CertificateDetail{
+				CertificateArn:     aws.String(certificateArn),
+				RenewalEligibility: acm.RenewalEligibilityIneligible,
+				Type:               acm.CertificateTypeAmazonIssued,
+				Status:             acm.CertificateStatusPendingValidation,
+				DomainValidationOptions: []acm.DomainValidation{
+					{
+						DomainName: &sName,
+						ResourceRecord: &acm.ResourceRecord{
+							Name:  &sName,
+							Value: &sValue,
+							Type:  acm.RecordType(sType),
+						},
+					},
+				},
+			},
+			out: v1alpha1.CertificateExternalStatus{
+				CertificateARN:     certificateArn,
+				RenewalEligibility: acm.RenewalEligibilityIneligible,
+				Type:               acm.CertificateTypeAmazonIssued,
+				Status:             acm.CertificateStatusPendingValidation,
+				ResourceRecord: &v1alpha1.ResourceRecord{
+					Name:  &sName,
+					Value: &sValue,
+					Type:  &sType,
+				},
 			},
 		},
 	}

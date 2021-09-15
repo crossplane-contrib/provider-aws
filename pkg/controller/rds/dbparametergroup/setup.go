@@ -136,7 +136,7 @@ func (e *custom) isUpToDate(cr *svcapitypes.DBParameterGroup, obj *svcsdk.Descri
 func (e *custom) getCurrentDBParameters(ctx context.Context, cr *svcapitypes.DBParameterGroup) ([]*svcsdk.Parameter, error) {
 	input := &svcsdk.DescribeDBParametersInput{
 		DBParameterGroupName: awsclients.String(meta.GetExternalName(cr)),
-		MaxRecords:           awsclients.Int64(20),
+		MaxRecords:           awsclients.Int64(100),
 	}
 	var results []*svcsdk.Parameter
 	err := e.client.DescribeDBParametersPagesWithContext(ctx, input, func(page *svcsdk.DescribeDBParametersOutput, lastPage bool) bool {

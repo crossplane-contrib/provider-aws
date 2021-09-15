@@ -124,7 +124,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.Status.AtProvider = iam.GenerateRoleObservation(*observed.Role)
 
-	upToDate, err := iam.IsRoleUpToDate(cr.Spec.ForProvider, role)
+	upToDate, diff, err := iam.IsRoleUpToDate(cr.Spec.ForProvider, role)
 	if err != nil {
 		return managed.ExternalObservation{}, errors.Wrap(err, errUpToDateFailed)
 	}
@@ -132,6 +132,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	return managed.ExternalObservation{
 		ResourceExists:   true,
 		ResourceUpToDate: upToDate,
+		Diff:             diff,
 	}, nil
 }
 

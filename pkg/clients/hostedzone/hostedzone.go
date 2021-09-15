@@ -68,7 +68,9 @@ func LateInitialize(spec *v1alpha1.HostedZoneParameters, obs *route53.GetHostedZ
 	if obs == nil || obs.HostedZone == nil {
 		return
 	}
-	spec.DelegationSetID = awsclients.LateInitializeStringPtr(spec.DelegationSetID, obs.DelegationSet.Id)
+	if obs.DelegationSet != nil {
+		spec.DelegationSetID = awsclients.LateInitializeStringPtr(spec.DelegationSetID, obs.DelegationSet.Id)
+	}
 	if spec.Config == nil && obs.HostedZone != nil {
 		spec.Config = &v1alpha1.Config{}
 	}

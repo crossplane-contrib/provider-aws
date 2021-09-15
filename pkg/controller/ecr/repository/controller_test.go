@@ -89,6 +89,10 @@ func withSpec(p v1alpha1.RepositoryParameters) repositoryModifier {
 	return func(r *v1alpha1.Repository) { r.Spec.ForProvider = p }
 }
 
+func withForceDelete(forceDelete bool) repositoryModifier {
+	return func(r *v1alpha1.Repository) { r.Spec.ForProvider.ForceDelete = &forceDelete }
+}
+
 func withStatus(s v1alpha1.RepositoryObservation) repositoryModifier {
 	return func(r *v1alpha1.Repository) { r.Status.AtProvider = s }
 }
@@ -605,19 +609,42 @@ func TestDelete(t *testing.T) {
 		args
 		want
 	}{
-		"Successful": {
+		"SuccessfulForce": {
 			args: args{
 				repository: &fake.MockRepositoryClient{
 					MockDelete: func(input *awsecr.DeleteRepositoryInput) awsecr.DeleteRepositoryRequest {
+						var err error
+						if !aws.BoolValue(input.Force) {
+							err = errors.New("force must be set when forceDelete=true")
+						}
 						return awsecr.DeleteRepositoryRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DeleteRepositoryOutput{}},
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DeleteRepositoryOutput{}, Error: err},
 						}
 					},
 				},
-				cr: repository(),
+				cr: repository(withForceDelete(true)),
 			},
 			want: want{
-				cr: repository(withConditions(xpv1.Deleting())),
+				cr: repository(withForceDelete(true), withConditions(xpv1.Deleting())),
+			},
+		},
+		"SuccessfulNoForce": {
+			args: args{
+				repository: &fake.MockRepositoryClient{
+					MockDelete: func(input *awsecr.DeleteRepositoryInput) awsecr.DeleteRepositoryRequest {
+						var err error
+						if aws.BoolValue(input.Force) {
+							err = errors.New("force must not be true when forceDelete is not set")
+						}
+						return awsecr.DeleteRepositoryRequest{
+							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DeleteRepositoryOutput{}, Error: err},
+						}
+					},
+				},
+				cr: repository(withForceDelete(false)),
+			},
+			want: want{
+				cr: repository(withForceDelete(false), withConditions(xpv1.Deleting())),
 			},
 		},
 		"DeleteFailed": {
