@@ -44,15 +44,23 @@ func GenerateDBSubnetGroup(resp *svcsdk.DescribeDBSubnetGroupsOutput) *svcapityp
 	for _, elem := range resp.DBSubnetGroups {
 		if elem.DBSubnetGroupArn != nil {
 			cr.Status.AtProvider.DBSubnetGroupARN = elem.DBSubnetGroupArn
+		} else {
+			cr.Status.AtProvider.DBSubnetGroupARN = nil
 		}
 		if elem.DBSubnetGroupDescription != nil {
 			cr.Spec.ForProvider.DBSubnetGroupDescription = elem.DBSubnetGroupDescription
+		} else {
+			cr.Spec.ForProvider.DBSubnetGroupDescription = nil
 		}
 		if elem.DBSubnetGroupName != nil {
 			cr.Status.AtProvider.DBSubnetGroupName = elem.DBSubnetGroupName
+		} else {
+			cr.Status.AtProvider.DBSubnetGroupName = nil
 		}
 		if elem.SubnetGroupStatus != nil {
 			cr.Status.AtProvider.SubnetGroupStatus = elem.SubnetGroupStatus
+		} else {
+			cr.Status.AtProvider.SubnetGroupStatus = nil
 		}
 		if elem.Subnets != nil {
 			f4 := []*svcapitypes.Subnet{}
@@ -74,9 +82,13 @@ func GenerateDBSubnetGroup(resp *svcsdk.DescribeDBSubnetGroupsOutput) *svcapityp
 				f4 = append(f4, f4elem)
 			}
 			cr.Status.AtProvider.Subnets = f4
+		} else {
+			cr.Status.AtProvider.Subnets = nil
 		}
 		if elem.VpcId != nil {
 			cr.Status.AtProvider.VPCID = elem.VpcId
+		} else {
+			cr.Status.AtProvider.VPCID = nil
 		}
 		found = true
 		break
@@ -95,28 +107,19 @@ func GenerateCreateDBSubnetGroupInput(cr *svcapitypes.DBSubnetGroup) *svcsdk.Cre
 	if cr.Spec.ForProvider.DBSubnetGroupDescription != nil {
 		res.SetDBSubnetGroupDescription(*cr.Spec.ForProvider.DBSubnetGroupDescription)
 	}
-	if cr.Spec.ForProvider.SubnetIDs != nil {
-		f1 := []*string{}
-		for _, f1iter := range cr.Spec.ForProvider.SubnetIDs {
-			var f1elem string
-			f1elem = *f1iter
-			f1 = append(f1, &f1elem)
-		}
-		res.SetSubnetIds(f1)
-	}
 	if cr.Spec.ForProvider.Tags != nil {
-		f2 := []*svcsdk.Tag{}
-		for _, f2iter := range cr.Spec.ForProvider.Tags {
-			f2elem := &svcsdk.Tag{}
-			if f2iter.Key != nil {
-				f2elem.SetKey(*f2iter.Key)
+		f1 := []*svcsdk.Tag{}
+		for _, f1iter := range cr.Spec.ForProvider.Tags {
+			f1elem := &svcsdk.Tag{}
+			if f1iter.Key != nil {
+				f1elem.SetKey(*f1iter.Key)
 			}
-			if f2iter.Value != nil {
-				f2elem.SetValue(*f2iter.Value)
+			if f1iter.Value != nil {
+				f1elem.SetValue(*f1iter.Value)
 			}
-			f2 = append(f2, f2elem)
+			f1 = append(f1, f1elem)
 		}
-		res.SetTags(f2)
+		res.SetTags(f1)
 	}
 
 	return res
@@ -128,15 +131,6 @@ func GenerateModifyDBSubnetGroupInput(cr *svcapitypes.DBSubnetGroup) *svcsdk.Mod
 
 	if cr.Spec.ForProvider.DBSubnetGroupDescription != nil {
 		res.SetDBSubnetGroupDescription(*cr.Spec.ForProvider.DBSubnetGroupDescription)
-	}
-	if cr.Spec.ForProvider.SubnetIDs != nil {
-		f1 := []*string{}
-		for _, f1iter := range cr.Spec.ForProvider.SubnetIDs {
-			var f1elem string
-			f1elem = *f1iter
-			f1 = append(f1, &f1elem)
-		}
-		res.SetSubnetIds(f1)
 	}
 
 	return res

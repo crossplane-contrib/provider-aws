@@ -120,9 +120,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	if resp.DBClusterParameterGroup.DBClusterParameterGroupArn != nil {
 		cr.Status.AtProvider.DBClusterParameterGroupARN = resp.DBClusterParameterGroup.DBClusterParameterGroupArn
+	} else {
+		cr.Status.AtProvider.DBClusterParameterGroupARN = nil
 	}
 	if resp.DBClusterParameterGroup.DBClusterParameterGroupName != nil {
 		cr.Status.AtProvider.DBClusterParameterGroupName = resp.DBClusterParameterGroup.DBClusterParameterGroupName
+	} else {
+		cr.Status.AtProvider.DBClusterParameterGroupName = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -138,10 +142,7 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
 	}
 	resp, err := e.client.ModifyDBClusterParameterGroupWithContext(ctx, input)
-	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
-	}
-	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, err)
+	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate))
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
@@ -172,6 +173,7 @@ func newExternal(kube client.Client, client svcsdkapi.DocDBAPI, opts []option) *
 		postObserve:    nopPostObserve,
 		lateInitialize: nopLateInitialize,
 		isUpToDate:     alwaysUpToDate,
+		filterList:     nopFilterList,
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,

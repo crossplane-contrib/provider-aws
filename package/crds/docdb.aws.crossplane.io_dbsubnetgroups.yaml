@@ -69,10 +69,34 @@ spec:
                       created.
                     type: string
                   subnetIDs:
-                    description: The Amazon EC2 subnet IDs for the subnet group.
                     items:
                       type: string
                     type: array
+                  subnetIDsRefs:
+                    items:
+                      description: A Reference to a named object.
+                      properties:
+                        name:
+                          description: Name of the referenced object.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                  subnetIDsSelector:
+                    description: A Selector selects an object.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
                   tags:
                     description: The tags to be assigned to the subnet group.
                     items:
@@ -86,7 +110,6 @@ spec:
                 required:
                 - dbSubnetGroupDescription
                 - region
-                - subnetIDs
                 type: object
               providerConfigRef:
                 default:
@@ -204,9 +227,9 @@ spec:
                   - type
                   type: object
                 type: array
-            required:
-            - atProvider
             type: object
+        required:
+        - spec
         type: object
     served: true
     storage: true

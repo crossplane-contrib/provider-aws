@@ -89,11 +89,57 @@ spec:
                     description: The name of the cluster parameter group to associate
                       with this cluster.
                     type: string
+                  dbClusterParameterGroupNameRef:
+                    description: A Reference to a named object.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  dbClusterParameterGroupNameSelector:
+                    description: A Selector selects an object.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
                   dbSubnetGroupName:
                     description: "A subnet group to associate with this cluster. \n
                       Constraints: Must match the name of an existing DBSubnetGroup.
                       Must not be default. \n Example: mySubnetgroup"
                     type: string
+                  dbSubnetGroupNameRef:
+                    description: A Reference to a named object.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  dbSubnetGroupNameSelector:
+                    description: A Selector selects an object.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
                   deletionProtection:
                     description: Specifies whether this cluster can be deleted. If
                       DeletionProtection is enabled, the cluster cannot be deleted
@@ -136,19 +182,34 @@ spec:
                       key that is used to encrypt the new cluster, you can use the
                       AWS KMS key alias instead of the ARN for the AWS KMS encryption
                       key. \n If an encryption key is not specified in KmsKeyId: \n
-                      \   * If ReplicationSourceIdentifier identifies an encrypted
-                      source, then    Amazon DocumentDB uses the encryption key that
-                      is used to encrypt the    source. Otherwise, Amazon DocumentDB
-                      uses your default encryption key. \n    * If the StorageEncrypted
-                      parameter is true and ReplicationSourceIdentifier    is not
-                      specified, Amazon DocumentDB uses your default encryption key.
-                      \n AWS KMS creates the default encryption key for your AWS account.
-                      Your AWS account has a different default encryption key for
-                      each AWS Region. \n If you create a replica of an encrypted
-                      cluster in another AWS Region, you must set KmsKeyId to a KMS
-                      key ID that is valid in the destination AWS Region. This key
-                      is used to encrypt the replica in that AWS Region."
+                      \   * If the StorageEncrypted parameter is true, Amazon DocumentDB
+                      uses your    default encryption key. \n AWS KMS creates the
+                      default encryption key for your AWS account. Your AWS account
+                      has a different default encryption key for each AWS Region."
                     type: string
+                  kmsKeyIDRef:
+                    description: A Reference to a named object.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  kmsKeyIDSelector:
+                    description: A Selector selects an object.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
                   masterUserPasswordSecretRef:
                     description: "MasterUserPasswordSecretRef references the secret
                       that contains the password for the master database user. This
@@ -232,6 +293,31 @@ spec:
                     items:
                       type: string
                     type: array
+                  vpcSecurityGroupIDsRefs:
+                    items:
+                      description: A Reference to a named object.
+                      properties:
+                        name:
+                          description: Name of the referenced object.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
+                  vpcSecurityGroupIDsSelector:
+                    description: A Selector selects an object.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
                 required:
                 - engine
                 - masterUsername
@@ -434,9 +520,9 @@ spec:
                   - type
                   type: object
                 type: array
-            required:
-            - atProvider
             type: object
+        required:
+        - spec
         type: object
     served: true
     storage: true

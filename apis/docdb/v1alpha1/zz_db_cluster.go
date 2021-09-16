@@ -80,19 +80,11 @@ type DBClusterParameters struct {
 	//
 	// If an encryption key is not specified in KmsKeyId:
 	//
-	//    * If ReplicationSourceIdentifier identifies an encrypted source, then
-	//    Amazon DocumentDB uses the encryption key that is used to encrypt the
-	//    source. Otherwise, Amazon DocumentDB uses your default encryption key.
-	//
-	//    * If the StorageEncrypted parameter is true and ReplicationSourceIdentifier
-	//    is not specified, Amazon DocumentDB uses your default encryption key.
+	//    * If the StorageEncrypted parameter is true, Amazon DocumentDB uses your
+	//    default encryption key.
 	//
 	// AWS KMS creates the default encryption key for your AWS account. Your AWS
 	// account has a different default encryption key for each AWS Region.
-	//
-	// If you create a replica of an encrypted cluster in another AWS Region, you
-	// must set KmsKeyId to a KMS key ID that is valid in the destination AWS Region.
-	// This key is used to encrypt the replica in that AWS Region.
 	KMSKeyID *string `json:"kmsKeyID,omitempty"`
 	// The name of the master user for the cluster.
 	//
@@ -216,7 +208,7 @@ type DBClusterObservation struct {
 // DBClusterStatus defines the observed state of DBCluster.
 type DBClusterStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          DBClusterObservation `json:"atProvider"`
+	AtProvider          DBClusterObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -230,7 +222,7 @@ type DBClusterStatus struct {
 type DBCluster struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              DBClusterSpec   `json:"spec,omitempty"`
+	Spec              DBClusterSpec   `json:"spec"`
 	Status            DBClusterStatus `json:"status,omitempty"`
 }
 

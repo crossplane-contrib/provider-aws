@@ -136,6 +136,7 @@ func areSubnetsEqual(specSubnetIds []*string, current []*svcsdk.Subnet) bool {
 
 func preUpdate(ctx context.Context, cr *svcapitypes.DBSubnetGroup, obj *svcsdk.ModifyDBSubnetGroupInput) error {
 	obj.DBSubnetGroupName = awsclient.String(meta.GetExternalName(cr))
+	obj.SubnetIds = cr.Spec.ForProvider.SubnetIDs
 	return nil
 }
 
@@ -150,6 +151,7 @@ func (e *hooks) postUpdate(ctx context.Context, cr *svcapitypes.DBSubnetGroup, r
 
 func preCreate(ctx context.Context, cr *svcapitypes.DBSubnetGroup, obj *svcsdk.CreateDBSubnetGroupInput) error {
 	obj.DBSubnetGroupName = awsclient.String(meta.GetExternalName(cr))
+	obj.SubnetIds = cr.Spec.ForProvider.SubnetIDs
 	return nil
 }
 

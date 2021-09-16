@@ -120,12 +120,18 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	if resp.DBSubnetGroup.DBSubnetGroupArn != nil {
 		cr.Status.AtProvider.DBSubnetGroupARN = resp.DBSubnetGroup.DBSubnetGroupArn
+	} else {
+		cr.Status.AtProvider.DBSubnetGroupARN = nil
 	}
 	if resp.DBSubnetGroup.DBSubnetGroupName != nil {
 		cr.Status.AtProvider.DBSubnetGroupName = resp.DBSubnetGroup.DBSubnetGroupName
+	} else {
+		cr.Status.AtProvider.DBSubnetGroupName = nil
 	}
 	if resp.DBSubnetGroup.SubnetGroupStatus != nil {
 		cr.Status.AtProvider.SubnetGroupStatus = resp.DBSubnetGroup.SubnetGroupStatus
+	} else {
+		cr.Status.AtProvider.SubnetGroupStatus = nil
 	}
 	if resp.DBSubnetGroup.Subnets != nil {
 		f4 := []*svcapitypes.Subnet{}
@@ -147,9 +153,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f4 = append(f4, f4elem)
 		}
 		cr.Status.AtProvider.Subnets = f4
+	} else {
+		cr.Status.AtProvider.Subnets = nil
 	}
 	if resp.DBSubnetGroup.VpcId != nil {
 		cr.Status.AtProvider.VPCID = resp.DBSubnetGroup.VpcId
+	} else {
+		cr.Status.AtProvider.VPCID = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -165,10 +175,7 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
 	}
 	resp, err := e.client.ModifyDBSubnetGroupWithContext(ctx, input)
-	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
-	}
-	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, err)
+	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate))
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
@@ -199,6 +206,7 @@ func newExternal(kube client.Client, client svcsdkapi.DocDBAPI, opts []option) *
 		postObserve:    nopPostObserve,
 		lateInitialize: nopLateInitialize,
 		isUpToDate:     alwaysUpToDate,
+		filterList:     nopFilterList,
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,

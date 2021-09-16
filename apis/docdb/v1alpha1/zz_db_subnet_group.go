@@ -32,9 +32,6 @@ type DBSubnetGroupParameters struct {
 	// The description for the subnet group.
 	// +kubebuilder:validation:Required
 	DBSubnetGroupDescription *string `json:"dbSubnetGroupDescription"`
-	// The Amazon EC2 subnet IDs for the subnet group.
-	// +kubebuilder:validation:Required
-	SubnetIDs []*string `json:"subnetIDs"`
 	// The tags to be assigned to the subnet group.
 	Tags                          []*Tag `json:"tags,omitempty"`
 	CustomDBSubnetGroupParameters `json:",inline"`
@@ -63,7 +60,7 @@ type DBSubnetGroupObservation struct {
 // DBSubnetGroupStatus defines the observed state of DBSubnetGroup.
 type DBSubnetGroupStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          DBSubnetGroupObservation `json:"atProvider"`
+	AtProvider          DBSubnetGroupObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -77,7 +74,7 @@ type DBSubnetGroupStatus struct {
 type DBSubnetGroup struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              DBSubnetGroupSpec   `json:"spec,omitempty"`
+	Spec              DBSubnetGroupSpec   `json:"spec"`
 	Status            DBSubnetGroupStatus `json:"status,omitempty"`
 }
 
