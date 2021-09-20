@@ -15,7 +15,6 @@ import (
 
 	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
-	"github.com/crossplane/provider-aws/pkg/clients/ecr"
 )
 
 const (
@@ -154,7 +153,7 @@ func isAssumeRolePolicyUpToDate(a, b *string) (bool, error) {
 		return false, errors.Wrap(err, errPolicyJSONUnescape)
 	}
 
-	return ecr.IsRepositoryPolicyUpToDate(&jsonA, &jsonB), nil
+	return awsclients.IsPolicyUpToDate(&jsonA, &jsonB), nil
 }
 
 // IsRoleUpToDate checks whether there is a change in any of the modifiable fields in role.
