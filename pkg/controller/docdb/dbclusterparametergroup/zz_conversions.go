@@ -44,15 +44,23 @@ func GenerateDBClusterParameterGroup(resp *svcsdk.DescribeDBClusterParameterGrou
 	for _, elem := range resp.DBClusterParameterGroups {
 		if elem.DBClusterParameterGroupArn != nil {
 			cr.Status.AtProvider.DBClusterParameterGroupARN = elem.DBClusterParameterGroupArn
+		} else {
+			cr.Status.AtProvider.DBClusterParameterGroupARN = nil
 		}
 		if elem.DBClusterParameterGroupName != nil {
 			cr.Status.AtProvider.DBClusterParameterGroupName = elem.DBClusterParameterGroupName
+		} else {
+			cr.Status.AtProvider.DBClusterParameterGroupName = nil
 		}
 		if elem.DBParameterGroupFamily != nil {
 			cr.Spec.ForProvider.DBParameterGroupFamily = elem.DBParameterGroupFamily
+		} else {
+			cr.Spec.ForProvider.DBParameterGroupFamily = nil
 		}
 		if elem.Description != nil {
 			cr.Spec.ForProvider.Description = elem.Description
+		} else {
+			cr.Spec.ForProvider.Description = nil
 		}
 		found = true
 		break

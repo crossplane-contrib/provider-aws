@@ -84,9 +84,32 @@ spec:
                       instance.
                     type: string
                   dbClusterIdentifier:
-                    description: The identifier of the cluster that the instance will
-                      belong to.
+                    description: The identifier of the cluster this instance will
+                      belong to
                     type: string
+                  dbClusterIdentifierRef:
+                    description: A Reference to a named object.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                  dbClusterIdentifierSelector:
+                    description: A Selector selects an object.
+                    properties:
+                      matchControllerRef:
+                        description: MatchControllerRef ensures an object with the
+                          same controller reference as the selecting object is selected.
+                        type: boolean
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: MatchLabels ensures an object with matching labels
+                          is selected.
+                        type: object
+                    type: object
                   dbInstanceClass:
                     description: The compute and memory capacity of the instance;
                       for example, db.r5.large.
@@ -125,7 +148,6 @@ spec:
                       type: object
                     type: array
                 required:
-                - dbClusterIdentifier
                 - dbInstanceClass
                 - engine
                 - region
@@ -188,6 +210,10 @@ spec:
                   caCertificateIdentifier:
                     description: The identifier of the CA certificate for this DB
                       instance.
+                    type: string
+                  dbClusterIdentifier:
+                    description: Contains the name of the cluster that the instance
+                      is a member of if the instance is a member of a cluster.
                     type: string
                   dbInstanceARN:
                     description: The Amazon Resource Name (ARN) for the instance.
@@ -392,9 +418,9 @@ spec:
                   - type
                   type: object
                 type: array
-            required:
-            - atProvider
             type: object
+        required:
+        - spec
         type: object
     served: true
     storage: true

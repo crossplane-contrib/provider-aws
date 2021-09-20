@@ -159,6 +159,7 @@ func (e *hooks) postUpdate(ctx context.Context, cr *svcapitypes.DBInstance, resp
 
 func preCreate(ctx context.Context, cr *svcapitypes.DBInstance, obj *svcsdk.CreateDBInstanceInput) error {
 	obj.DBInstanceIdentifier = awsclient.String(meta.GetExternalName(cr))
+	obj.DBClusterIdentifier = cr.Spec.ForProvider.DBClusterIdentifier
 	return nil
 }
 

@@ -41,9 +41,6 @@ type DBInstanceParameters struct {
 	//
 	// Example: us-east-1d
 	AvailabilityZone *string `json:"availabilityZone,omitempty"`
-	// The identifier of the cluster that the instance will belong to.
-	// +kubebuilder:validation:Required
-	DBClusterIdentifier *string `json:"dbClusterIdentifier"`
 	// The compute and memory capacity of the instance; for example, db.r5.large.
 	// +kubebuilder:validation:Required
 	DBInstanceClass *string `json:"dbInstanceClass"`
@@ -90,6 +87,9 @@ type DBInstanceObservation struct {
 	BackupRetentionPeriod *int64 `json:"backupRetentionPeriod,omitempty"`
 	// The identifier of the CA certificate for this DB instance.
 	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
+	// Contains the name of the cluster that the instance is a member of if the
+	// instance is a member of a cluster.
+	DBClusterIdentifier *string `json:"dbClusterIdentifier,omitempty"`
 	// The Amazon Resource Name (ARN) for the instance.
 	DBInstanceARN *string `json:"dbInstanceARN,omitempty"`
 	// Contains a user-provided database identifier. This identifier is the unique
@@ -141,7 +141,7 @@ type DBInstanceObservation struct {
 // DBInstanceStatus defines the observed state of DBInstance.
 type DBInstanceStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          DBInstanceObservation `json:"atProvider"`
+	AtProvider          DBInstanceObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -155,7 +155,7 @@ type DBInstanceStatus struct {
 type DBInstance struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              DBInstanceSpec   `json:"spec,omitempty"`
+	Spec              DBInstanceSpec   `json:"spec"`
 	Status            DBInstanceStatus `json:"status,omitempty"`
 }
 
