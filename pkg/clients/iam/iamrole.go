@@ -2,6 +2,7 @@ package iam
 
 import (
 	"encoding/json"
+	"net/url"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -17,8 +18,9 @@ import (
 )
 
 const (
-	errCheckUpToDate    = "unable to determine if external resource is up to date"
-	errPolicyJSONEscape = "malformed AssumeRolePolicyDocument JSON"
+	errCheckUpToDate      = "unable to determine if external resource is up to date"
+	errPolicyJSONEscape   = "malformed AssumeRolePolicyDocument JSON"
+	errPolicyJSONUnescape = "malformed AssumeRolePolicyDocument escaping"
 )
 
 // RoleClient is the external client used for IAMRole Custom Resource
@@ -136,6 +138,24 @@ func CreatePatch(in *iam.Role, target *v1beta1.IAMRoleParameters) (*v1beta1.IAMR
 	return patch, nil
 }
 
+func isAssumeRolePolicyUpToDate(a, b *string) (bool, error) {
+	if a == nil || b == nil {
+		return a == b, nil
+	}
+
+	jsonA, err := url.QueryUnescape(*a)
+	if err != nil {
+		return false, errors.Wrap(err, errPolicyJSONUnescape)
+	}
+
+	jsonB, err := url.QueryUnescape(*b)
+	if err != nil {
+		return false, errors.Wrap(err, errPolicyJSONUnescape)
+	}
+
+	return awsclients.IsPolicyUpToDate(&jsonA, &jsonB), nil
+}
+
 // IsRoleUpToDate checks whether there is a change in any of the modifiable fields in role.
 func IsRoleUpToDate(in v1beta1.IAMRoleParameters, observed iam.Role) (bool, string, error) {
 	generated, err := copystructure.Copy(&observed)
@@ -151,16 +171,20 @@ func IsRoleUpToDate(in v1beta1.IAMRoleParameters, observed iam.Role) (bool, stri
 		return false, "", err
 	}
 
-	diff := cmp.Diff(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}))
+	policyUpToDate, err := isAssumeRolePolicyUpToDate(desired.AssumeRolePolicyDocument, observed.AssumeRolePolicyDocument)
+	if err != nil {
+		return false, "", err
+	}
 
-	if diff == "" {
+	diff := cmp.Diff(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}), cmpopts.IgnoreFields(observed, "AssumeRolePolicyDocument"))
+	if diff == "" && policyUpToDate {
 		return true, diff, nil
 	}
 
 	diff = "Found observed difference in IAM role\n" + diff
 
 	// Add extra logging for AssumeRolePolicyDocument because cmp.Diff doesn't show the full difference
-	if *desired.AssumeRolePolicyDocument != *observed.AssumeRolePolicyDocument {
+	if !policyUpToDate {
 		diff += "\ndesired assume role policy: "
 		diff += *desired.AssumeRolePolicyDocument
 		diff += "\nobserved assume role policy: "

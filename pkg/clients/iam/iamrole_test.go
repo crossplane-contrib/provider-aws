@@ -29,6 +29,21 @@ var (
 		  }
 		]
 	   }`
+	assumeRolePolicyDocument2 = `{
+		"Version": "2012-10-17",
+		"Statement": [
+		  {
+			"Effect": "Allow",
+			"Principal": {
+			  "Service": "eks.amazonaws.com"
+			},
+			"Action": "sts:AssumeRole",
+			"Condition": {
+			  "StringEquals": {"foo": "bar"}
+			}
+		  }
+		]
+	   }`
 	roleID   = "some Id"
 	roleName = "some name"
 	tagKey   = "key"
@@ -254,6 +269,27 @@ func TestIsRoleUpToDate(t *testing.T) {
 			want:     true,
 			wantDiff: "",
 		},
+		"DifferentPolicy": {
+			args: args{
+				role: iam.Role{
+					AssumeRolePolicyDocument: escapedPolicyJSON(),
+					Description:              &description,
+					MaxSessionDuration:       aws.Int64(1),
+					Path:                     aws.String("/"),
+				},
+				p: v1beta1.IAMRoleParameters{
+					Description:              &description,
+					AssumeRolePolicyDocument: assumeRolePolicyDocument2,
+					MaxSessionDuration:       aws.Int64(1),
+					Path:                     aws.String("/"),
+				},
+			},
+			want: false,
+			wantDiff: `Found observed difference in IAM role
+
+desired assume role policy: %7B%22Version%22%3A%222012-10-17%22%2C%22Statement%22%3A%5B%7B%22Effect%22%3A%22Allow%22%2C%22Principal%22%3A%7B%22Service%22%3A%22eks.amazonaws.com%22%7D%2C%22Action%22%3A%22sts%3AAssumeRole%22%2C%22Condition%22%3A%7B%22StringEquals%22%3A%7B%22foo%22%3A%22bar%22%7D%7D%7D%5D%7D
+observed assume role policy: %7B%22Version%22%3A%222012-10-17%22%2C%22Statement%22%3A%5B%7B%22Effect%22%3A%22Allow%22%2C%22Principal%22%3A%7B%22Service%22%3A%22eks.amazonaws.com%22%7D%2C%22Action%22%3A%22sts%3AAssumeRole%22%7D%5D%7D`,
+		},
 		"DifferentFields": {
 			args: args{
 				role: iam.Role{
@@ -284,7 +320,10 @@ func TestIsRoleUpToDate(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			got, testDiff, _ := IsRoleUpToDate(tc.args.p, tc.args.role)
+			got, testDiff, err := IsRoleUpToDate(tc.args.p, tc.args.role)
+			if err != nil {
+				t.Errorf("r: unexpected error: %v", err)
+			}
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
