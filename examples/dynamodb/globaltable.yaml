@@ -7,3 +7,5 @@ spec:
     region: us-east-1
     replicationGroup:
       - regionName: us-east-1
+  providerConfigRef:
+    name: example
