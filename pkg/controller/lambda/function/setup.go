@@ -439,14 +439,6 @@ func GenerateUpdateFunctionConfigurationInput(cr *svcapitypes.Function) *svcsdk.
 	if cr.Spec.ForProvider.KMSKeyARN != nil {
 		res.SetKMSKeyArn(*cr.Spec.ForProvider.KMSKeyARN)
 	}
-	// if cr.Spec.ForProvider.Layers != nil {
-	// 	f10 := []*string{}
-	// 	for _, f10iter := range cr.Spec.ForProvider.Layers {
-	// 		var f10elem = *f10iter
-	// 		f10 = append(f10, &f10elem)
-	// 	}
-	// 	res.SetLayers(f10)
-	// }
 	if cr.Spec.ForProvider.MemorySize != nil {
 		res.SetMemorySize(*cr.Spec.ForProvider.MemorySize)
 	}
