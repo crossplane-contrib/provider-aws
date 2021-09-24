@@ -83,6 +83,9 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elb"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elbattachment"
+	"github.com/crossplane/provider-aws/pkg/controller/elbv2/listener"
+	"github.com/crossplane/provider-aws/pkg/controller/elbv2/loadbalancer"
+	"github.com/crossplane/provider-aws/pkg/controller/elbv2/targetgroup"
 	glueclassifier "github.com/crossplane/provider-aws/pkg/controller/glue/classifier"
 	glueconnection "github.com/crossplane/provider-aws/pkg/controller/glue/connection"
 	gluecrawler "github.com/crossplane/provider-aws/pkg/controller/glue/crawler"
@@ -245,6 +248,9 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		athenaworkgroup.SetupWorkGroup,
 		resourceshare.SetupResourceShare,
 		kafkaconfiguration.SetupConfiguration,
+		listener.SetupListener,
+		loadbalancer.SetupLoadBalancer,
+		targetgroup.SetupTargetGroup,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err

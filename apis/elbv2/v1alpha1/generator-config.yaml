@@ -1,0 +1,25 @@
+model_name: elasticloadbalancingv2
+ignore:
+  field_paths:
+    - CreateListenerInput.LoadBalancerArn
+    - CreateListenerInput.DefaultActions
+    # Type has a json key of type_, so it's reimplemented with loadBalancerType
+    - CreateLoadBalancerInput.Type
+  resource_names:
+    - Rule
+resources:
+  Listener:
+    exceptions:
+      errors:
+        404:
+          code: ListenerNotFound
+  LoadBalancer:
+    exceptions:
+      errors:
+        404:
+          code: LoadBalancerNotFound
+  TargetGroup:
+    exceptions:
+      errors:
+        404:
+          code: TargetGroupNotFound
