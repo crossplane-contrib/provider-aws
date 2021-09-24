@@ -43,6 +43,7 @@ import (
 	eksv1alpha1 "github.com/crossplane/provider-aws/apis/eks/v1alpha1"
 	eksv1beta1 "github.com/crossplane/provider-aws/apis/eks/v1beta1"
 	elasticloadbalancingv1alpha1 "github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
+	elbv2v1alpha1 "github.com/crossplane/provider-aws/apis/elbv2/v1alpha1"
 	gluev1alpha1 "github.com/crossplane/provider-aws/apis/glue/v1alpha1"
 	iamv1beta1 "github.com/crossplane/provider-aws/apis/iam/v1beta1"
 	iotv1alpha1 "github.com/crossplane/provider-aws/apis/iot/v1alpha1"
@@ -76,6 +77,7 @@ func init() {
 		docdbv1alpha1.AddToScheme,
 		elasticloadbalancingv1alpha1.SchemeBuilder.AddToScheme,
 		iamv1beta1.SchemeBuilder.AddToScheme,
+		elbv2v1alpha1.SchemeBuilder.AddToScheme,
 		route53v1alpha1.SchemeBuilder.AddToScheme,
 		notificationv1alpha3.SchemeBuilder.AddToScheme,
 		ec2v1beta1.SchemeBuilder.AddToScheme,
