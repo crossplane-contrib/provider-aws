@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -24,8 +24,8 @@ var (
 	natFailureMessage     = "some failure message"
 )
 
-func natTags() []ec2.Tag {
-	return []ec2.Tag{
+func natTags() []ec2types.Tag {
+	return []ec2types.Tag{
 		{
 			Key:   aws.String("key1"),
 			Value: aws.String("value1"),
@@ -37,8 +37,8 @@ func natTags() []ec2.Tag {
 	}
 }
 
-func natAddresses() []ec2.NatGatewayAddress {
-	return []ec2.NatGatewayAddress{
+func natAddresses() []ec2types.NatGatewayAddress {
+	return []ec2types.NatGatewayAddress{
 		{
 			AllocationId:       aws.String(natAllocationID),
 			NetworkInterfaceId: aws.String(natNetworkInterfaceID),
@@ -62,11 +62,11 @@ func specAddresses() []v1beta1.NATGatewayAddress {
 func TestGenerateNATGatewayObservation(t *testing.T) {
 	time := time.Now()
 	cases := map[string]struct {
-		in  ec2.NatGateway
+		in  ec2types.NatGateway
 		out v1beta1.NATGatewayObservation
 	}{
 		"AllFilled": {
-			in: ec2.NatGateway{
+			in: ec2types.NatGateway{
 				CreateTime:          &time,
 				NatGatewayAddresses: natAddresses(),
 				NatGatewayId:        aws.String(natGatewayID),
@@ -84,7 +84,7 @@ func TestGenerateNATGatewayObservation(t *testing.T) {
 			},
 		},
 		"DeleteTime": {
-			in: ec2.NatGateway{
+			in: ec2types.NatGateway{
 				CreateTime:          &time,
 				DeleteTime:          &time,
 				NatGatewayAddresses: natAddresses(),
@@ -104,7 +104,7 @@ func TestGenerateNATGatewayObservation(t *testing.T) {
 			},
 		},
 		"stateFailed": {
-			in: ec2.NatGateway{
+			in: ec2types.NatGateway{
 				CreateTime:          &time,
 				DeleteTime:          &time,
 				FailureCode:         aws.String(natFailureCode),

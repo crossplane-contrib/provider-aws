@@ -390,7 +390,7 @@ func (in *NodeGroupParameters) DeepCopyInto(out *NodeGroupParameters) {
 	}
 	if in.DiskSize != nil {
 		in, out := &in.DiskSize, &out.DiskSize
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.InstanceTypes != nil {
@@ -494,17 +494,17 @@ func (in *NodeGroupScalingConfig) DeepCopyInto(out *NodeGroupScalingConfig) {
 	*out = *in
 	if in.DesiredSize != nil {
 		in, out := &in.DesiredSize, &out.DesiredSize
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.MaxSize != nil {
 		in, out := &in.MaxSize, &out.MaxSize
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.MinSize != nil {
 		in, out := &in.MinSize, &out.MinSize
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 }
@@ -524,7 +524,7 @@ func (in *NodeGroupScalingConfigStatus) DeepCopyInto(out *NodeGroupScalingConfig
 	*out = *in
 	if in.DesiredSize != nil {
 		in, out := &in.DesiredSize, &out.DesiredSize
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 }

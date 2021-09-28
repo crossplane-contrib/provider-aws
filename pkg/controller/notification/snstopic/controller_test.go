@@ -19,7 +19,6 @@ package snstopic
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -42,7 +41,7 @@ import (
 
 var (
 	// an arbitrary managed resource
-	unexpecedItem    resource.Managed
+	unexpectedItem   resource.Managed
 	topicName        = "some-topic"
 	topicDisplayName = "some-topic-01"
 	errBoom          = errors.New("boom")
@@ -124,13 +123,13 @@ func TestObserve(t *testing.T) {
 	}{
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 				kube: &test.MockClient{
 					MockUpdate: test.NewMockUpdateFn(nil),
 				},
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
@@ -152,15 +151,8 @@ func TestObserve(t *testing.T) {
 		"TopicNotFound": {
 			args: args{
 				topic: &fake.MockTopicClient{
-					MockGetTopicAttributesRequest: func(input *awssns.GetTopicAttributesInput) awssns.GetTopicAttributesRequest {
-						return awssns.GetTopicAttributesRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Error:       errBoom,
-								Data:        &awssns.GetTopicAttributesOutput{},
-								Retryer:     aws.NoOpRetryer{},
-							},
-						}
+					MockGetTopicAttributes: func(ctx context.Context, input *awssns.GetTopicAttributesInput, opts []func(*awssns.Options)) (*awssns.GetTopicAttributesOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: topic(withTopicARN(&topicName)),
@@ -180,14 +172,8 @@ func TestObserve(t *testing.T) {
 		"ClientGetTopicAttributesError": {
 			args: args{
 				topic: &fake.MockTopicClient{
-					MockGetTopicAttributesRequest: func(input *awssns.GetTopicAttributesInput) awssns.GetTopicAttributesRequest {
-						return awssns.GetTopicAttributesRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Error:       errBoom,
-							},
-						}
+					MockGetTopicAttributes: func(ctx context.Context, input *awssns.GetTopicAttributesInput, opts []func(*awssns.Options)) (*awssns.GetTopicAttributesOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: topic(withTopicARN(&topicName)),
@@ -207,18 +193,12 @@ func TestObserve(t *testing.T) {
 		"ValidInputResourceNotUpToDate": {
 			args: args{
 				topic: &fake.MockTopicClient{
-					MockGetTopicAttributesRequest: func(input *awssns.GetTopicAttributesInput) awssns.GetTopicAttributesRequest {
-						return awssns.GetTopicAttributesRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data: &awssns.GetTopicAttributesOutput{
-									Attributes: map[string]string{
-										"TopicArn": makeARN(topicName),
-									},
-								},
+					MockGetTopicAttributes: func(ctx context.Context, input *awssns.GetTopicAttributesInput, opts []func(*awssns.Options)) (*awssns.GetTopicAttributesOutput, error) {
+						return &awssns.GetTopicAttributesOutput{
+							Attributes: map[string]string{
+								"TopicArn": makeARN(topicName),
 							},
-						}
+						}, nil
 					},
 				},
 				kube: &test.MockClient{
@@ -281,14 +261,8 @@ func TestCreate(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				topic: &fake.MockTopicClient{
-					MockCreateTopicRequest: func(input *awssns.CreateTopicInput) awssns.CreateTopicRequest {
-						return awssns.CreateTopicRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        &awssns.CreateTopicOutput{TopicArn: aws.String(topicName)},
-							},
-						}
+					MockCreateTopic: func(ctx context.Context, input *awssns.CreateTopicInput, opts []func(*awssns.Options)) (*awssns.CreateTopicOutput, error) {
+						return &awssns.CreateTopicOutput{TopicArn: aws.String(topicName)}, nil
 					},
 				},
 				cr: topic(
@@ -305,24 +279,18 @@ func TestCreate(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientCreateTopicError": {
 			args: args{
 				topic: &fake.MockTopicClient{
-					MockCreateTopicRequest: func(input *awssns.CreateTopicInput) awssns.CreateTopicRequest {
-						return awssns.CreateTopicRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Error:       errBoom,
-							},
-						}
+					MockCreateTopic: func(ctx context.Context, input *awssns.CreateTopicInput, opts []func(*awssns.Options)) (*awssns.CreateTopicOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: topic(
@@ -371,14 +339,8 @@ func TestUpdate(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				topic: &fake.MockTopicClient{
-					MockGetTopicAttributesRequest: func(input *awssns.GetTopicAttributesInput) awssns.GetTopicAttributesRequest {
-						return awssns.GetTopicAttributesRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        &awssns.GetTopicAttributesOutput{},
-							},
-						}
+					MockGetTopicAttributes: func(ctx context.Context, input *awssns.GetTopicAttributesInput, opts []func(*awssns.Options)) (*awssns.GetTopicAttributesOutput, error) {
+						return &awssns.GetTopicAttributesOutput{}, nil
 					},
 				},
 				cr: topic(withTopicName(&topicName)),
@@ -390,23 +352,11 @@ func TestUpdate(t *testing.T) {
 		"VaildInputWithChangedAttributes": {
 			args: args{
 				topic: &fake.MockTopicClient{
-					MockGetTopicAttributesRequest: func(input *awssns.GetTopicAttributesInput) awssns.GetTopicAttributesRequest {
-						return awssns.GetTopicAttributesRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        &awssns.GetTopicAttributesOutput{},
-							},
-						}
+					MockGetTopicAttributes: func(ctx context.Context, input *awssns.GetTopicAttributesInput, opts []func(*awssns.Options)) (*awssns.GetTopicAttributesOutput, error) {
+						return &awssns.GetTopicAttributesOutput{}, nil
 					},
-					MockSetTopicAttributesRequest: func(input *awssns.SetTopicAttributesInput) awssns.SetTopicAttributesRequest {
-						return awssns.SetTopicAttributesRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        &awssns.SetTopicAttributesOutput{},
-							},
-						}
+					MockSetTopicAttributes: func(ctx context.Context, input *awssns.SetTopicAttributesInput, opts []func(*awssns.Options)) (*awssns.SetTopicAttributesOutput, error) {
+						return &awssns.SetTopicAttributesOutput{}, nil
 					},
 				},
 				cr: topic(
@@ -423,24 +373,18 @@ func TestUpdate(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientGetTopicAttributeError": {
 			args: args{
 				topic: &fake.MockTopicClient{
-					MockGetTopicAttributesRequest: func(input *awssns.GetTopicAttributesInput) awssns.GetTopicAttributesRequest {
-						return awssns.GetTopicAttributesRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Error:       errBoom,
-							},
-						}
+					MockGetTopicAttributes: func(ctx context.Context, input *awssns.GetTopicAttributesInput, opts []func(*awssns.Options)) (*awssns.GetTopicAttributesOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: topic(withTopicName(&topicName)),
@@ -453,23 +397,11 @@ func TestUpdate(t *testing.T) {
 		"ClientSetTopicAttributeError": {
 			args: args{
 				topic: &fake.MockTopicClient{
-					MockGetTopicAttributesRequest: func(input *awssns.GetTopicAttributesInput) awssns.GetTopicAttributesRequest {
-						return awssns.GetTopicAttributesRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        &awssns.GetTopicAttributesOutput{},
-							},
-						}
+					MockGetTopicAttributes: func(ctx context.Context, input *awssns.GetTopicAttributesInput, opts []func(*awssns.Options)) (*awssns.GetTopicAttributesOutput, error) {
+						return &awssns.GetTopicAttributesOutput{}, nil
 					},
-					MockSetTopicAttributesRequest: func(input *awssns.SetTopicAttributesInput) awssns.SetTopicAttributesRequest {
-						return awssns.SetTopicAttributesRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Error:       errBoom,
-							},
-						}
+					MockSetTopicAttributes: func(ctx context.Context, input *awssns.SetTopicAttributesInput, opts []func(*awssns.Options)) (*awssns.SetTopicAttributesOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: topic(
@@ -517,14 +449,8 @@ func TestDelete(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				topic: &fake.MockTopicClient{
-					MockDeleteTopicRequest: func(input *awssns.DeleteTopicInput) awssns.DeleteTopicRequest {
-						return awssns.DeleteTopicRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        &awssns.DeleteTopicOutput{},
-							},
-						}
+					MockDeleteTopic: func(ctx context.Context, input *awssns.DeleteTopicInput, opts []func(*awssns.Options)) (*awssns.DeleteTopicOutput, error) {
+						return &awssns.DeleteTopicOutput{}, nil
 					},
 				},
 				cr: topic(withTopicName(&topicName)),
@@ -538,24 +464,18 @@ func TestDelete(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				topic: &fake.MockTopicClient{
-					MockDeleteTopicRequest: func(input *awssns.DeleteTopicInput) awssns.DeleteTopicRequest {
-						return awssns.DeleteTopicRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Error:       errBoom,
-							},
-						}
+					MockDeleteTopic: func(ctx context.Context, input *awssns.DeleteTopicInput, opts []func(*awssns.Options)) (*awssns.DeleteTopicOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: topic(),
@@ -568,15 +488,8 @@ func TestDelete(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				topic: &fake.MockTopicClient{
-					MockDeleteTopicRequest: func(input *awssns.DeleteTopicInput) awssns.DeleteTopicRequest {
-						return awssns.DeleteTopicRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data:        &awssns.DeleteTopicOutput{},
-								Error:       nil,
-							},
-						}
+					MockDeleteTopic: func(ctx context.Context, input *awssns.DeleteTopicInput, opts []func(*awssns.Options)) (*awssns.DeleteTopicOutput, error) {
+						return &awssns.DeleteTopicOutput{}, nil
 					},
 				},
 				cr: topic(),

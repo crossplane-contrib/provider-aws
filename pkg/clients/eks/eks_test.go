@@ -17,11 +17,11 @@ limitations under the License.
 package eks
 
 import (
-	"errors"
 	"testing"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/eks"
+	ekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -45,11 +45,11 @@ func TestIsErrorNotFound(t *testing.T) {
 		want bool
 	}{
 		"IsErrorNotFound": {
-			err:  errors.New(eks.ErrCodeResourceNotFoundException),
+			err:  &ekstypes.ResourceNotFoundException{},
 			want: true,
 		},
 		"NotErrorNotFound": {
-			err:  errors.New(eks.ErrCodeInvalidRequestException),
+			err:  &ekstypes.InvalidRequestException{},
 			want: false,
 		},
 		"Nil": {
@@ -73,11 +73,11 @@ func TestIsErrorInUse(t *testing.T) {
 		want bool
 	}{
 		"IsErrorInUse": {
-			err:  errors.New(eks.ErrCodeResourceInUseException),
+			err:  &ekstypes.ResourceInUseException{},
 			want: true,
 		},
 		"NotErrorInUse": {
-			err:  errors.New(eks.ErrCodeNotFoundException),
+			err:  &ekstypes.ResourceNotFoundException{},
 			want: false,
 		},
 		"Nil": {
@@ -101,11 +101,11 @@ func TestIsErrorInvalidRequest(t *testing.T) {
 		want bool
 	}{
 		"IsErrorInvalidRequest": {
-			err:  errors.New(eks.ErrCodeInvalidRequestException),
+			err:  &ekstypes.InvalidRequestException{},
 			want: true,
 		},
 		"NotErrorInvalidRequest": {
-			err:  errors.New(eks.ErrCodeNotFoundException),
+			err:  &ekstypes.ResourceNotFoundException{},
 			want: false,
 		},
 		"Nil": {
@@ -168,26 +168,26 @@ func TestGenerateCreateClusterInput(t *testing.T) {
 				},
 			},
 			want: &eks.CreateClusterInput{
-				EncryptionConfig: []eks.EncryptionConfig{
+				EncryptionConfig: []ekstypes.EncryptionConfig{
 					{
-						Provider: &eks.Provider{
+						Provider: &ekstypes.Provider{
 							KeyArn: &keyArn,
 						},
 						Resources: []string{"secrets"},
 					},
 				},
-				Logging: &eks.Logging{
-					ClusterLogging: []eks.LogSetup{
+				Logging: &ekstypes.Logging{
+					ClusterLogging: []ekstypes.LogSetup{
 						{
 							Enabled: &falseVal,
-							Types: []eks.LogType{
-								eks.LogTypeApi,
+							Types: []ekstypes.LogType{
+								ekstypes.LogTypeApi,
 							},
 						},
 					},
 				},
 				Name: &clusterName,
-				ResourcesVpcConfig: &eks.VpcConfigRequest{
+				ResourcesVpcConfig: &ekstypes.VpcConfigRequest{
 					EndpointPrivateAccess: &trueVal,
 					EndpointPublicAccess:  &trueVal,
 					PublicAccessCidrs:     []string{"0.0.0.0/0"},
@@ -216,7 +216,7 @@ func TestGenerateCreateClusterInput(t *testing.T) {
 			},
 			want: &eks.CreateClusterInput{
 				Name: &clusterName,
-				ResourcesVpcConfig: &eks.VpcConfigRequest{
+				ResourcesVpcConfig: &ekstypes.VpcConfigRequest{
 					EndpointPrivateAccess: &trueVal,
 					EndpointPublicAccess:  &trueVal,
 					PublicAccessCidrs:     []string{"0.0.0.0/0"},
@@ -282,18 +282,18 @@ func TestGenerateUpdateClusterInput(t *testing.T) {
 				},
 			},
 			want: &eks.UpdateClusterConfigInput{
-				Logging: &eks.Logging{
-					ClusterLogging: []eks.LogSetup{
+				Logging: &ekstypes.Logging{
+					ClusterLogging: []ekstypes.LogSetup{
 						{
 							Enabled: &falseVal,
-							Types: []eks.LogType{
-								eks.LogTypeApi,
+							Types: []ekstypes.LogType{
+								ekstypes.LogTypeApi,
 							},
 						},
 					},
 				},
 				Name: &clusterName,
-				ResourcesVpcConfig: &eks.VpcConfigRequest{
+				ResourcesVpcConfig: &ekstypes.VpcConfigRequest{
 					EndpointPrivateAccess: &trueVal,
 					EndpointPublicAccess:  &trueVal,
 					PublicAccessCidrs:     []string{"0.0.0.0/0"},
@@ -315,7 +315,7 @@ func TestGenerateUpdateClusterInput(t *testing.T) {
 			},
 			want: &eks.UpdateClusterConfigInput{
 				Name: &clusterName,
-				ResourcesVpcConfig: &eks.VpcConfigRequest{
+				ResourcesVpcConfig: &ekstypes.VpcConfigRequest{
 					EndpointPrivateAccess: &trueVal,
 					EndpointPublicAccess:  &trueVal,
 					PublicAccessCidrs:     []string{"0.0.0.0/0"},
@@ -344,25 +344,25 @@ func TestGenerateObservation(t *testing.T) {
 	vpc := "vpc-1234"
 
 	cases := map[string]struct {
-		cluster *eks.Cluster
+		cluster *ekstypes.Cluster
 		want    v1beta1.ClusterObservation
 	}{
 		"AllFields": {
-			cluster: &eks.Cluster{
+			cluster: &ekstypes.Cluster{
 				Arn:       &clusterArn,
 				CreatedAt: &createTime,
 				Endpoint:  &endpoint,
-				Identity: &eks.Identity{
-					Oidc: &eks.OIDC{
+				Identity: &ekstypes.Identity{
+					Oidc: &ekstypes.OIDC{
 						Issuer: &oidcIssuer,
 					},
 				},
 				PlatformVersion: &platformVersion,
-				ResourcesVpcConfig: &eks.VpcConfigResponse{
+				ResourcesVpcConfig: &ekstypes.VpcConfigResponse{
 					ClusterSecurityGroupId: &securityGrp,
 					VpcId:                  &vpc,
 				},
-				Status: eks.ClusterStatusActive,
+				Status: ekstypes.ClusterStatusActive,
 			},
 			want: v1beta1.ClusterObservation{
 				Arn:       clusterArn,
@@ -382,15 +382,15 @@ func TestGenerateObservation(t *testing.T) {
 			},
 		},
 		"SomeFields": {
-			cluster: &eks.Cluster{
+			cluster: &ekstypes.Cluster{
 				Arn:             &clusterArn,
 				CreatedAt:       &createTime,
 				PlatformVersion: &platformVersion,
-				ResourcesVpcConfig: &eks.VpcConfigResponse{
+				ResourcesVpcConfig: &ekstypes.VpcConfigResponse{
 					ClusterSecurityGroupId: &securityGrp,
 					VpcId:                  &vpc,
 				},
-				Status: eks.ClusterStatusActive,
+				Status: ekstypes.ClusterStatusActive,
 			},
 			want: v1beta1.ClusterObservation{
 				Arn:             clusterArn,
@@ -422,7 +422,7 @@ func TestGenerateObservation(t *testing.T) {
 func TestLateInitialize(t *testing.T) {
 	cases := map[string]struct {
 		parameters *v1beta1.ClusterParameters
-		cluster    *eks.Cluster
+		cluster    *ekstypes.Cluster
 		want       *v1beta1.ClusterParameters
 	}{
 		"AllOptionalFields": {
@@ -435,29 +435,29 @@ func TestLateInitialize(t *testing.T) {
 				Tags:    map[string]string{"key": "val"},
 				Version: &version,
 			},
-			cluster: &eks.Cluster{
-				EncryptionConfig: []eks.EncryptionConfig{
+			cluster: &ekstypes.Cluster{
+				EncryptionConfig: []ekstypes.EncryptionConfig{
 					{
-						Provider: &eks.Provider{
+						Provider: &ekstypes.Provider{
 							KeyArn: &keyArn,
 						},
 						Resources: []string{"secrets"},
 					},
 				},
-				Logging: &eks.Logging{
-					ClusterLogging: []eks.LogSetup{
+				Logging: &ekstypes.Logging{
+					ClusterLogging: []ekstypes.LogSetup{
 						{
 							Enabled: &falseVal,
-							Types: []eks.LogType{
-								eks.LogTypeApi,
+							Types: []ekstypes.LogType{
+								ekstypes.LogTypeApi,
 							},
 						},
 					},
 				},
 				Name: &clusterName,
-				ResourcesVpcConfig: &eks.VpcConfigResponse{
-					EndpointPrivateAccess: &trueVal,
-					EndpointPublicAccess:  &trueVal,
+				ResourcesVpcConfig: &ekstypes.VpcConfigResponse{
+					EndpointPrivateAccess: trueVal,
+					EndpointPublicAccess:  trueVal,
 					PublicAccessCidrs:     []string{"0.0.0.0/0"},
 					SecurityGroupIds:      []string{"cool-sg-1"},
 					SubnetIds:             []string{"cool-subnet"},
@@ -507,10 +507,10 @@ func TestLateInitialize(t *testing.T) {
 				Tags:    map[string]string{"key": "val"},
 				Version: &version,
 			},
-			cluster: &eks.Cluster{
-				EncryptionConfig: []eks.EncryptionConfig{
+			cluster: &ekstypes.Cluster{
+				EncryptionConfig: []ekstypes.EncryptionConfig{
 					{
-						Provider: &eks.Provider{
+						Provider: &ekstypes.Provider{
 							KeyArn: &keyArn,
 						},
 						Resources: []string{"secrets"},
@@ -554,7 +554,7 @@ func TestIsUpToDate(t *testing.T) {
 	otherVersion := "1.15"
 
 	type args struct {
-		cluster *eks.Cluster
+		cluster *ekstypes.Cluster
 		p       *v1beta1.ClusterParameters
 	}
 
@@ -594,29 +594,29 @@ func TestIsUpToDate(t *testing.T) {
 					Tags:    map[string]string{"key": "val"},
 					Version: &version,
 				},
-				cluster: &eks.Cluster{
-					EncryptionConfig: []eks.EncryptionConfig{
+				cluster: &ekstypes.Cluster{
+					EncryptionConfig: []ekstypes.EncryptionConfig{
 						{
-							Provider: &eks.Provider{
+							Provider: &ekstypes.Provider{
 								KeyArn: &keyArn,
 							},
 							Resources: []string{"secrets"},
 						},
 					},
-					Logging: &eks.Logging{
-						ClusterLogging: []eks.LogSetup{
+					Logging: &ekstypes.Logging{
+						ClusterLogging: []ekstypes.LogSetup{
 							{
 								Enabled: &falseVal,
-								Types: []eks.LogType{
-									eks.LogTypeApi,
+								Types: []ekstypes.LogType{
+									ekstypes.LogTypeApi,
 								},
 							},
 						},
 					},
 					Name: &clusterName,
-					ResourcesVpcConfig: &eks.VpcConfigResponse{
-						EndpointPrivateAccess: &trueVal,
-						EndpointPublicAccess:  &trueVal,
+					ResourcesVpcConfig: &ekstypes.VpcConfigResponse{
+						EndpointPrivateAccess: trueVal,
+						EndpointPublicAccess:  trueVal,
 						PublicAccessCidrs:     []string{"0.0.0.0/0"},
 						SecurityGroupIds:      []string{"cool-sg-1"},
 						SubnetIds:             []string{"cool-subnet"},
@@ -642,11 +642,11 @@ func TestIsUpToDate(t *testing.T) {
 					Tags:    map[string]string{"key": "val"},
 					Version: &version,
 				},
-				cluster: &eks.Cluster{
+				cluster: &ekstypes.Cluster{
 					Name: &clusterName,
-					ResourcesVpcConfig: &eks.VpcConfigResponse{
-						EndpointPrivateAccess: &trueVal,
-						EndpointPublicAccess:  &trueVal,
+					ResourcesVpcConfig: &ekstypes.VpcConfigResponse{
+						EndpointPrivateAccess: trueVal,
+						EndpointPublicAccess:  trueVal,
 						PublicAccessCidrs:     []string{"0.0.0.0/0"},
 						SecurityGroupIds:      []string{"cool-sg-1"},
 						SubnetIds:             []string{"cool-subnet"},
@@ -694,11 +694,11 @@ func TestIsUpToDate(t *testing.T) {
 					Tags:    map[string]string{"key": "val"},
 					Version: &version,
 				},
-				cluster: &eks.Cluster{
+				cluster: &ekstypes.Cluster{
 					Name: &clusterName,
-					ResourcesVpcConfig: &eks.VpcConfigResponse{
-						EndpointPrivateAccess: &trueVal,
-						EndpointPublicAccess:  &trueVal,
+					ResourcesVpcConfig: &ekstypes.VpcConfigResponse{
+						EndpointPrivateAccess: trueVal,
+						EndpointPublicAccess:  trueVal,
 						PublicAccessCidrs:     []string{"0.0.0.0/0"},
 						SecurityGroupIds:      []string{"cool-sg-1"},
 						SubnetIds:             []string{"cool-subnet"},
@@ -717,8 +717,8 @@ func TestIsUpToDate(t *testing.T) {
 						PublicAccessCidrs: []string{"0.0.0.10/24"},
 					},
 				},
-				cluster: &eks.Cluster{
-					ResourcesVpcConfig: &eks.VpcConfigResponse{
+				cluster: &ekstypes.Cluster{
+					ResourcesVpcConfig: &ekstypes.VpcConfigResponse{
 						PublicAccessCidrs: []string{"0.0.0.0/24"},
 					},
 				},
@@ -732,8 +732,8 @@ func TestIsUpToDate(t *testing.T) {
 						PublicAccessCidrs: []string{"0.0.0.10/24", "0.0.0.255/24", "1.1.1.1/8"},
 					},
 				},
-				cluster: &eks.Cluster{
-					ResourcesVpcConfig: &eks.VpcConfigResponse{
+				cluster: &ekstypes.Cluster{
+					ResourcesVpcConfig: &ekstypes.VpcConfigResponse{
 						PublicAccessCidrs: []string{"0.0.0.0/24", "1.0.0.0/8"},
 					},
 				},
@@ -747,8 +747,8 @@ func TestIsUpToDate(t *testing.T) {
 						PublicAccessCidrs: []string{"0.0.0.10/24", "0.0.0.255/24", "1.1.1.1/16"},
 					},
 				},
-				cluster: &eks.Cluster{
-					ResourcesVpcConfig: &eks.VpcConfigResponse{
+				cluster: &ekstypes.Cluster{
+					ResourcesVpcConfig: &ekstypes.VpcConfigResponse{
 						PublicAccessCidrs: []string{"0.0.0.0/24", "1.0.0.0/8"},
 					},
 				},
@@ -791,11 +791,11 @@ func TestIsUpToDate(t *testing.T) {
 					Tags:    map[string]string{"key": "val", "another": "tag"},
 					Version: &version,
 				},
-				cluster: &eks.Cluster{
+				cluster: &ekstypes.Cluster{
 					Name: &clusterName,
-					ResourcesVpcConfig: &eks.VpcConfigResponse{
-						EndpointPrivateAccess: &trueVal,
-						EndpointPublicAccess:  &trueVal,
+					ResourcesVpcConfig: &ekstypes.VpcConfigResponse{
+						EndpointPrivateAccess: trueVal,
+						EndpointPublicAccess:  trueVal,
 						PublicAccessCidrs:     []string{"0.0.0.0/0"},
 						SecurityGroupIds:      []string{"cool-sg-1"},
 						SubnetIds:             []string{"cool-subnet"},

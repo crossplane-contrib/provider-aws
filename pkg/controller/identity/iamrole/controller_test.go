@@ -18,12 +18,11 @@ package iamrole
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
@@ -41,10 +40,10 @@ import (
 
 var (
 	// an arbitrary managed resource
-	unexpecedItem resource.Managed
-	roleName      = "some arbitrary name"
-	description   = "some description"
-	policy        = `{
+	unexpectedItem resource.Managed
+	roleName       = "some arbitrary name"
+	description    = "some description"
+	policy         = `{
 		"Version": "2012-10-17",
 		"Statement": [
 		  {
@@ -114,12 +113,10 @@ func TestObserve(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockRoleClient{
-					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
-						return awsiam.GetRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.GetRoleOutput{
-								Role: &awsiam.Role{},
-							}},
-						}
+					MockGetRole: func(ctx context.Context, input *awsiam.GetRoleInput, opts []func(*awsiam.Options)) (*awsiam.GetRoleOutput, error) {
+						return &awsiam.GetRoleOutput{
+							Role: &awsiamtypes.Role{},
+						}, nil
 					},
 				},
 				cr: role(withRoleName(&roleName)),
@@ -136,20 +133,18 @@ func TestObserve(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				iam: &fake.MockRoleClient{
-					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
-						return awsiam.GetRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockGetRole: func(ctx context.Context, input *awsiam.GetRoleInput, opts []func(*awsiam.Options)) (*awsiam.GetRoleOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: role(withRoleName(&roleName)),
@@ -162,10 +157,8 @@ func TestObserve(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				iam: &fake.MockRoleClient{
-					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
-						return awsiam.GetRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: awserr.New(awsiam.ErrCodeNoSuchEntityException, "", nil)},
-						}
+					MockGetRole: func(ctx context.Context, input *awsiam.GetRoleInput, opts []func(*awsiam.Options)) (*awsiam.GetRoleOutput, error) {
+						return nil, &awsiamtypes.NoSuchEntityException{}
 					},
 				},
 				cr: role(),
@@ -209,10 +202,8 @@ func TestCreate(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockRoleClient{
-					MockCreateRoleRequest: func(input *awsiam.CreateRoleInput) awsiam.CreateRoleRequest {
-						return awsiam.CreateRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.CreateRoleOutput{}},
-						}
+					MockCreateRole: func(ctx context.Context, input *awsiam.CreateRoleInput, opts []func(*awsiam.Options)) (*awsiam.CreateRoleOutput, error) {
+						return &awsiam.CreateRoleOutput{}, nil
 					},
 				},
 				cr: role(withRoleName(&roleName)),
@@ -225,20 +216,18 @@ func TestCreate(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				iam: &fake.MockRoleClient{
-					MockCreateRoleRequest: func(input *awsiam.CreateRoleInput) awsiam.CreateRoleRequest {
-						return awsiam.CreateRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockCreateRole: func(ctx context.Context, input *awsiam.CreateRoleInput, opts []func(*awsiam.Options)) (*awsiam.CreateRoleOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: role(),
@@ -283,17 +272,13 @@ func TestUpdate(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockRoleClient{
-					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
-						return awsiam.GetRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.GetRoleOutput{
-								Role: &awsiam.Role{},
-							}},
-						}
+					MockGetRole: func(ctx context.Context, input *awsiam.GetRoleInput, opts []func(*awsiam.Options)) (*awsiam.GetRoleOutput, error) {
+						return &awsiam.GetRoleOutput{
+							Role: &awsiamtypes.Role{},
+						}, nil
 					},
-					MockUpdateRoleRequest: func(input *awsiam.UpdateRoleInput) awsiam.UpdateRoleRequest {
-						return awsiam.UpdateRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.UpdateRoleOutput{}},
-						}
+					MockUpdateRole: func(ctx context.Context, input *awsiam.UpdateRoleInput, opts []func(*awsiam.Options)) (*awsiam.UpdateRoleOutput, error) {
+						return &awsiam.UpdateRoleOutput{}, nil
 					},
 				},
 				cr: role(withRoleName(&roleName)),
@@ -304,27 +289,23 @@ func TestUpdate(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientUpdateRoleError": {
 			args: args{
 				iam: &fake.MockRoleClient{
-					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
-						return awsiam.GetRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.GetRoleOutput{
-								Role: &awsiam.Role{},
-							}},
-						}
+					MockGetRole: func(ctx context.Context, input *awsiam.GetRoleInput, opts []func(*awsiam.Options)) (*awsiam.GetRoleOutput, error) {
+						return &awsiam.GetRoleOutput{
+							Role: &awsiamtypes.Role{},
+						}, nil
 					},
-					MockUpdateRoleRequest: func(input *awsiam.UpdateRoleInput) awsiam.UpdateRoleRequest {
-						return awsiam.UpdateRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockUpdateRole: func(ctx context.Context, input *awsiam.UpdateRoleInput, opts []func(*awsiam.Options)) (*awsiam.UpdateRoleOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: role(withDescription()),
@@ -337,22 +318,16 @@ func TestUpdate(t *testing.T) {
 		"ClientUpdatePolicyError": {
 			args: args{
 				iam: &fake.MockRoleClient{
-					MockGetRoleRequest: func(input *awsiam.GetRoleInput) awsiam.GetRoleRequest {
-						return awsiam.GetRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.GetRoleOutput{
-								Role: &awsiam.Role{},
-							}},
-						}
+					MockGetRole: func(ctx context.Context, input *awsiam.GetRoleInput, opts []func(*awsiam.Options)) (*awsiam.GetRoleOutput, error) {
+						return &awsiam.GetRoleOutput{
+							Role: &awsiamtypes.Role{},
+						}, nil
 					},
-					MockUpdateRoleRequest: func(input *awsiam.UpdateRoleInput) awsiam.UpdateRoleRequest {
-						return awsiam.UpdateRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.UpdateRoleOutput{}},
-						}
+					MockUpdateRole: func(ctx context.Context, input *awsiam.UpdateRoleInput, opts []func(*awsiam.Options)) (*awsiam.UpdateRoleOutput, error) {
+						return &awsiam.UpdateRoleOutput{}, nil
 					},
-					MockUpdateAssumeRolePolicyRequest: func(input *awsiam.UpdateAssumeRolePolicyInput) awsiam.UpdateAssumeRolePolicyRequest {
-						return awsiam.UpdateAssumeRolePolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockUpdateAssumeRolePolicy: func(ctx context.Context, input *awsiam.UpdateAssumeRolePolicyInput, opts []func(*awsiam.Options)) (*awsiam.UpdateAssumeRolePolicyOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: role(withPolicy()),
@@ -396,10 +371,8 @@ func TestDelete(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockRoleClient{
-					MockDeleteRoleRequest: func(input *awsiam.DeleteRoleInput) awsiam.DeleteRoleRequest {
-						return awsiam.DeleteRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DeleteRoleOutput{}},
-						}
+					MockDeleteRole: func(ctx context.Context, input *awsiam.DeleteRoleInput, opts []func(*awsiam.Options)) (*awsiam.DeleteRoleOutput, error) {
+						return &awsiam.DeleteRoleOutput{}, nil
 					},
 				},
 				cr: role(withRoleName(&roleName)),
@@ -411,20 +384,18 @@ func TestDelete(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				iam: &fake.MockRoleClient{
-					MockDeleteRoleRequest: func(input *awsiam.DeleteRoleInput) awsiam.DeleteRoleRequest {
-						return awsiam.DeleteRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDeleteRole: func(ctx context.Context, input *awsiam.DeleteRoleInput, opts []func(*awsiam.Options)) (*awsiam.DeleteRoleOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: role(),
@@ -437,10 +408,8 @@ func TestDelete(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				iam: &fake.MockRoleClient{
-					MockDeleteRoleRequest: func(input *awsiam.DeleteRoleInput) awsiam.DeleteRoleRequest {
-						return awsiam.DeleteRoleRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: awserr.New(awsiam.ErrCodeNoSuchEntityException, "", nil)},
-						}
+					MockDeleteRole: func(ctx context.Context, input *awsiam.DeleteRoleInput, opts []func(*awsiam.Options)) (*awsiam.DeleteRoleOutput, error) {
+						return nil, &awsiamtypes.NoSuchEntityException{}
 					},
 				},
 				cr: role(),

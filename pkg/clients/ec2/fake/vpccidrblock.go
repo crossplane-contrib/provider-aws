@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -27,22 +29,22 @@ var _ clientset.VPCCIDRBlockClient = (*MockVPCCIDRBlockClient)(nil)
 
 // MockVPCCIDRBlockClient is a type that implements all the methods for MockVPCCIDRBlockClient interface
 type MockVPCCIDRBlockClient struct {
-	MockDescribe     func(*ec2.DescribeVpcsInput) ec2.DescribeVpcsRequest
-	MockAssociate    func(*ec2.AssociateVpcCidrBlockInput) ec2.AssociateVpcCidrBlockRequest
-	MockDisassociate func(*ec2.DisassociateVpcCidrBlockInput) ec2.DisassociateVpcCidrBlockRequest
+	MockDescribe     func(ctx context.Context, input *ec2.DescribeVpcsInput, opts []func(*ec2.Options)) (*ec2.DescribeVpcsOutput, error)
+	MockAssociate    func(ctx context.Context, input *ec2.AssociateVpcCidrBlockInput, opts []func(*ec2.Options)) (*ec2.AssociateVpcCidrBlockOutput, error)
+	MockDisassociate func(ctx context.Context, input *ec2.DisassociateVpcCidrBlockInput, opts []func(*ec2.Options)) (*ec2.DisassociateVpcCidrBlockOutput, error)
 }
 
-// DescribeVpcsRequest mocks DescribeVpcsRequest method
-func (m *MockVPCCIDRBlockClient) DescribeVpcsRequest(input *ec2.DescribeVpcsInput) ec2.DescribeVpcsRequest {
-	return m.MockDescribe(input)
+// DescribeVpcs mocks DescribeVpcs method
+func (m *MockVPCCIDRBlockClient) DescribeVpcs(ctx context.Context, input *ec2.DescribeVpcsInput, opts ...func(*ec2.Options)) (*ec2.DescribeVpcsOutput, error) {
+	return m.MockDescribe(ctx, input, opts)
 }
 
-// AssociateVpcCidrBlockRequest mocks AssociateVpcCidrBlockRequest method
-func (m *MockVPCCIDRBlockClient) AssociateVpcCidrBlockRequest(input *ec2.AssociateVpcCidrBlockInput) ec2.AssociateVpcCidrBlockRequest {
-	return m.MockAssociate(input)
+// AssociateVpcCidrBlock mocks AssociateVpcCidrBlockmethod
+func (m *MockVPCCIDRBlockClient) AssociateVpcCidrBlock(ctx context.Context, input *ec2.AssociateVpcCidrBlockInput, opts ...func(*ec2.Options)) (*ec2.AssociateVpcCidrBlockOutput, error) {
+	return m.MockAssociate(ctx, input, opts)
 }
 
-// DisassociateVpcCidrBlockRequest mocks DisassociateVpcCidrBlockRequest method
-func (m *MockVPCCIDRBlockClient) DisassociateVpcCidrBlockRequest(input *ec2.DisassociateVpcCidrBlockInput) ec2.DisassociateVpcCidrBlockRequest {
-	return m.MockDisassociate(input)
+// DisassociateVpcCidrBlock mocks DisassociateVpcCidrBlock method
+func (m *MockVPCCIDRBlockClient) DisassociateVpcCidrBlock(ctx context.Context, input *ec2.DisassociateVpcCidrBlockInput, opts ...func(*ec2.Options)) (*ec2.DisassociateVpcCidrBlockOutput, error) {
+	return m.MockDisassociate(ctx, input, opts)
 }

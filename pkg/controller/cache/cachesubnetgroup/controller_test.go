@@ -17,11 +17,11 @@ package cachesubnetgroup
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awscache "github.com/aws/aws-sdk-go-v2/service/elasticache"
+	awscachetypes "github.com/aws/aws-sdk-go-v2/service/elasticache/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
@@ -83,12 +83,10 @@ func TestObserve(t *testing.T) {
 		"SuccessfulAvailable": {
 			args: args{
 				cache: &fake.MockClient{
-					MockDescribeCacheSubnetGroupsRequest: func(input *awscache.DescribeCacheSubnetGroupsInput) awscache.DescribeCacheSubnetGroupsRequest {
-						return awscache.DescribeCacheSubnetGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awscache.DescribeCacheSubnetGroupsOutput{
-								CacheSubnetGroups: []awscache.CacheSubnetGroup{{}},
-							}},
-						}
+					MockDescribeCacheSubnetGroups: func(ctx context.Context, input *awscache.DescribeCacheSubnetGroupsInput, opts []func(*awscache.Options)) (*awscache.DescribeCacheSubnetGroupsOutput, error) {
+						return &awscache.DescribeCacheSubnetGroupsOutput{
+							CacheSubnetGroups: []awscachetypes.CacheSubnetGroup{{}},
+						}, nil
 					},
 				},
 				cr: csg(),
@@ -104,19 +102,17 @@ func TestObserve(t *testing.T) {
 		"UpToDate": {
 			args: args{
 				cache: &fake.MockClient{
-					MockDescribeCacheSubnetGroupsRequest: func(input *awscache.DescribeCacheSubnetGroupsInput) awscache.DescribeCacheSubnetGroupsRequest {
-						return awscache.DescribeCacheSubnetGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awscache.DescribeCacheSubnetGroupsOutput{
-								CacheSubnetGroups: []awscache.CacheSubnetGroup{{
-									CacheSubnetGroupDescription: aws.String(sgDescription),
-									Subnets: []awscache.Subnet{
-										{
-											SubnetIdentifier: aws.String(subnetID),
-										},
+					MockDescribeCacheSubnetGroups: func(ctx context.Context, input *awscache.DescribeCacheSubnetGroupsInput, opts []func(*awscache.Options)) (*awscache.DescribeCacheSubnetGroupsOutput, error) {
+						return &awscache.DescribeCacheSubnetGroupsOutput{
+							CacheSubnetGroups: []awscachetypes.CacheSubnetGroup{{
+								CacheSubnetGroupDescription: aws.String(sgDescription),
+								Subnets: []awscachetypes.Subnet{
+									{
+										SubnetIdentifier: aws.String(subnetID),
 									},
-								}},
+								},
 							}},
-						}
+						}, nil
 					},
 				},
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
@@ -138,10 +134,8 @@ func TestObserve(t *testing.T) {
 		"DescribeFail": {
 			args: args{
 				cache: &fake.MockClient{
-					MockDescribeCacheSubnetGroupsRequest: func(input *awscache.DescribeCacheSubnetGroupsInput) awscache.DescribeCacheSubnetGroupsRequest {
-						return awscache.DescribeCacheSubnetGroupsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDescribeCacheSubnetGroups: func(ctx context.Context, input *awscache.DescribeCacheSubnetGroupsInput, opts []func(*awscache.Options)) (*awscache.DescribeCacheSubnetGroupsOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: csg(),
@@ -185,10 +179,8 @@ func TestCreate(t *testing.T) {
 		"Successful": {
 			args: args{
 				cache: &fake.MockClient{
-					MockCreateCacheSubnetGroupRequest: func(input *awscache.CreateCacheSubnetGroupInput) awscache.CreateCacheSubnetGroupRequest {
-						return awscache.CreateCacheSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awscache.CreateCacheSubnetGroupOutput{}},
-						}
+					MockCreateCacheSubnetGroup: func(ctx context.Context, input *awscache.CreateCacheSubnetGroupInput, opts []func(*awscache.Options)) (*awscache.CreateCacheSubnetGroupOutput, error) {
+						return &awscache.CreateCacheSubnetGroupOutput{}, nil
 					},
 				},
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
@@ -206,10 +198,8 @@ func TestCreate(t *testing.T) {
 		"CreateFail": {
 			args: args{
 				cache: &fake.MockClient{
-					MockCreateCacheSubnetGroupRequest: func(input *awscache.CreateCacheSubnetGroupInput) awscache.CreateCacheSubnetGroupRequest {
-						return awscache.CreateCacheSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockCreateCacheSubnetGroup: func(ctx context.Context, input *awscache.CreateCacheSubnetGroupInput, opts []func(*awscache.Options)) (*awscache.CreateCacheSubnetGroupOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
@@ -259,10 +249,8 @@ func TestUpdate(t *testing.T) {
 		"Successful": {
 			args: args{
 				cache: &fake.MockClient{
-					MockModifyCacheSubnetGroupRequest: func(input *awscache.ModifyCacheSubnetGroupInput) awscache.ModifyCacheSubnetGroupRequest {
-						return awscache.ModifyCacheSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awscache.ModifyCacheSubnetGroupOutput{}},
-						}
+					MockModifyCacheSubnetGroup: func(ctx context.Context, input *awscache.ModifyCacheSubnetGroupInput, opts []func(*awscache.Options)) (*awscache.ModifyCacheSubnetGroupOutput, error) {
+						return &awscache.ModifyCacheSubnetGroupOutput{}, nil
 					},
 				},
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
@@ -280,10 +268,8 @@ func TestUpdate(t *testing.T) {
 		"ModifyFailed": {
 			args: args{
 				cache: &fake.MockClient{
-					MockModifyCacheSubnetGroupRequest: func(input *awscache.ModifyCacheSubnetGroupInput) awscache.ModifyCacheSubnetGroupRequest {
-						return awscache.ModifyCacheSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockModifyCacheSubnetGroup: func(ctx context.Context, input *awscache.ModifyCacheSubnetGroupInput, opts []func(*awscache.Options)) (*awscache.ModifyCacheSubnetGroupOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
@@ -332,10 +318,8 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				cache: &fake.MockClient{
-					MockDeleteCacheSubnetGroupRequest: func(input *awscache.DeleteCacheSubnetGroupInput) awscache.DeleteCacheSubnetGroupRequest {
-						return awscache.DeleteCacheSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awscache.DeleteCacheSubnetGroupOutput{}},
-						}
+					MockDeleteCacheSubnetGroup: func(ctx context.Context, input *awscache.DeleteCacheSubnetGroupInput, opts []func(*awscache.Options)) (*awscache.DeleteCacheSubnetGroupOutput, error) {
+						return &awscache.DeleteCacheSubnetGroupOutput{}, nil
 					},
 				},
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{
@@ -353,10 +337,8 @@ func TestDelete(t *testing.T) {
 		"DeleteFailed": {
 			args: args{
 				cache: &fake.MockClient{
-					MockDeleteCacheSubnetGroupRequest: func(input *awscache.DeleteCacheSubnetGroupInput) awscache.DeleteCacheSubnetGroupRequest {
-						return awscache.DeleteCacheSubnetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDeleteCacheSubnetGroup: func(ctx context.Context, input *awscache.DeleteCacheSubnetGroupInput, opts []func(*awscache.Options)) (*awscache.DeleteCacheSubnetGroupOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: csg(withSpec(v1alpha1.CacheSubnetGroupParameters{

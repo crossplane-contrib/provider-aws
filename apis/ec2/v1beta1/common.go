@@ -20,7 +20,7 @@ import (
 	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 )
 
 // Tag defines a tag
@@ -34,29 +34,29 @@ type Tag struct {
 }
 
 // BuildFromEC2Tags returns a list of tags, off of the given ec2 tags
-func BuildFromEC2Tags(tags []ec2.Tag) []Tag {
+func BuildFromEC2Tags(tags []ec2types.Tag) []Tag {
 	if len(tags) < 1 {
 		return nil
 	}
 	res := make([]Tag, len(tags))
 	for i, t := range tags {
-		res[i] = Tag{aws.StringValue(t.Key), aws.StringValue(t.Value)}
+		res[i] = Tag{aws.ToString(t.Key), aws.ToString(t.Value)}
 	}
 
 	return res
 }
 
 // GenerateEC2Tags generates a tag array with type that EC2 client expects.
-func GenerateEC2Tags(tags []Tag) []ec2.Tag {
-	res := make([]ec2.Tag, len(tags))
+func GenerateEC2Tags(tags []Tag) []ec2types.Tag {
+	res := make([]ec2types.Tag, len(tags))
 	for i, t := range tags {
-		res[i] = ec2.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
+		res[i] = ec2types.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
 	}
 	return res
 }
 
-// CompareTags compares arrays of v1beta1.Tag and ec2.Tag
-func CompareTags(tags []Tag, ec2Tags []ec2.Tag) bool {
+// CompareTags compares arrays of v1beta1.Tag and ec2type.Tag
+func CompareTags(tags []Tag, ec2Tags []ec2types.Tag) bool {
 	if len(tags) != len(ec2Tags) {
 		return false
 	}
@@ -72,8 +72,8 @@ func CompareTags(tags []Tag, ec2Tags []ec2.Tag) bool {
 	return true
 }
 
-// SortTags sorts array of v1beta1.Tag and ec2.Tag on 'Key'
-func SortTags(tags []Tag, ec2Tags []ec2.Tag) {
+// SortTags sorts array of v1beta1.Tag and ec2type.Tag on 'Key'
+func SortTags(tags []Tag, ec2Tags []ec2types.Tag) {
 	sort.Slice(tags, func(i, j int) bool {
 		return tags[i].Key < tags[j].Key
 	})

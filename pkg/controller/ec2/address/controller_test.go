@@ -18,7 +18,6 @@ package address
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -26,8 +25,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	awsec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -111,14 +110,12 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				address: &fake.MockAddressClient{
-					MockDescribe: func(input *awsec2.DescribeAddressesInput) awsec2.DescribeAddressesRequest {
-						return awsec2.DescribeAddressesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeAddressesOutput{
-								Addresses: []awsec2.Address{{
-									AllocationId: &allocationID,
-								}},
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeAddressesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeAddressesOutput, error) {
+						return &awsec2.DescribeAddressesOutput{
+							Addresses: []awsec2types.Address{{
+								AllocationId: &allocationID,
 							}},
-						}
+						}, nil
 					},
 				},
 				cr: address(withSpec(v1beta1.AddressParameters{
@@ -144,12 +141,10 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				address: &fake.MockAddressClient{
-					MockDescribe: func(input *awsec2.DescribeAddressesInput) awsec2.DescribeAddressesRequest {
-						return awsec2.DescribeAddressesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeAddressesOutput{
-								Addresses: []awsec2.Address{{}, {}},
-							}},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeAddressesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeAddressesOutput, error) {
+						return &awsec2.DescribeAddressesOutput{
+							Addresses: []awsec2types.Address{{}, {}},
+						}, nil
 					},
 				},
 				cr: address(withSpec(v1beta1.AddressParameters{
@@ -169,10 +164,9 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				address: &fake.MockAddressClient{
-					MockDescribe: func(input *awsec2.DescribeAddressesInput) awsec2.DescribeAddressesRequest {
-						return awsec2.DescribeAddressesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeAddressesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeAddressesOutput, error) {
+						return nil, errBoom
+
 					},
 				},
 				cr: address(withSpec(v1beta1.AddressParameters{
@@ -224,12 +218,10 @@ func TestCreate(t *testing.T) {
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
 				address: &fake.MockAddressClient{
-					MockAllocate: func(input *awsec2.AllocateAddressInput) awsec2.AllocateAddressRequest {
-						return awsec2.AllocateAddressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.AllocateAddressOutput{
-								AllocationId: &allocationID,
-							}},
-						}
+					MockAllocate: func(ctx context.Context, input *awsec2.AllocateAddressInput, opts []func(*awsec2.Options)) (*awsec2.AllocateAddressOutput, error) {
+						return &awsec2.AllocateAddressOutput{
+							AllocationId: &allocationID,
+						}, nil
 					},
 				},
 				cr: address(),
@@ -247,12 +239,10 @@ func TestCreate(t *testing.T) {
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
 				address: &fake.MockAddressClient{
-					MockAllocate: func(input *awsec2.AllocateAddressInput) awsec2.AllocateAddressRequest {
-						return awsec2.AllocateAddressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.AllocateAddressOutput{
-								PublicIp: &publicIP,
-							}},
-						}
+					MockAllocate: func(ctx context.Context, input *awsec2.AllocateAddressInput, opts []func(*awsec2.Options)) (*awsec2.AllocateAddressOutput, error) {
+						return &awsec2.AllocateAddressOutput{
+							PublicIp: &publicIP,
+						}, nil
 					},
 				},
 				cr: address(withSpec(v1beta1.AddressParameters{
@@ -275,10 +265,8 @@ func TestCreate(t *testing.T) {
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
 				address: &fake.MockAddressClient{
-					MockAllocate: func(input *awsec2.AllocateAddressInput) awsec2.AllocateAddressRequest {
-						return awsec2.AllocateAddressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockAllocate: func(ctx context.Context, input *awsec2.AllocateAddressInput, opts []func(*awsec2.Options)) (*awsec2.AllocateAddressOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: address(),
@@ -322,11 +310,8 @@ func TestUpdate(t *testing.T) {
 		"Successful": {
 			args: args{
 				address: &fake.MockAddressClient{
-
-					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
-						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
-						}
+					MockCreateTags: func(ctx context.Context, input *awsec2.CreateTagsInput, opts []func(*awsec2.Options)) (*awsec2.CreateTagsOutput, error) {
+						return &awsec2.CreateTagsOutput{}, nil
 					},
 				},
 				cr: address(withSpec(v1beta1.AddressParameters{
@@ -342,10 +327,8 @@ func TestUpdate(t *testing.T) {
 		"ModifyFailed": {
 			args: args{
 				address: &fake.MockAddressClient{
-					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
-						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockCreateTags: func(ctx context.Context, input *awsec2.CreateTagsInput, opts []func(*awsec2.Options)) (*awsec2.CreateTagsOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: address(withSpec(v1beta1.AddressParameters{
@@ -392,10 +375,8 @@ func TestRelease(t *testing.T) {
 		"SuccessfulVPC": {
 			args: args{
 				address: &fake.MockAddressClient{
-					MockRelease: func(input *awsec2.ReleaseAddressInput) awsec2.ReleaseAddressRequest {
-						return awsec2.ReleaseAddressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ReleaseAddressOutput{}},
-						}
+					MockRelease: func(ctx context.Context, input *awsec2.ReleaseAddressInput, opts []func(*awsec2.Options)) (*awsec2.ReleaseAddressOutput, error) {
+						return &awsec2.ReleaseAddressOutput{}, nil
 					},
 				},
 				cr: address(),
@@ -407,10 +388,8 @@ func TestRelease(t *testing.T) {
 		"SuccessfulStandard": {
 			args: args{
 				address: &fake.MockAddressClient{
-					MockRelease: func(input *awsec2.ReleaseAddressInput) awsec2.ReleaseAddressRequest {
-						return awsec2.ReleaseAddressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ReleaseAddressOutput{}},
-						}
+					MockRelease: func(ctx context.Context, input *awsec2.ReleaseAddressInput, opts []func(*awsec2.Options)) (*awsec2.ReleaseAddressOutput, error) {
+						return &awsec2.ReleaseAddressOutput{}, nil
 					},
 				},
 				cr: address(withSpec(v1beta1.AddressParameters{
@@ -428,10 +407,8 @@ func TestRelease(t *testing.T) {
 		"DeleteFailed": {
 			args: args{
 				address: &fake.MockAddressClient{
-					MockRelease: func(input *awsec2.ReleaseAddressInput) awsec2.ReleaseAddressRequest {
-						return awsec2.ReleaseAddressRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockRelease: func(ctx context.Context, input *awsec2.ReleaseAddressInput, opts []func(*awsec2.Options)) (*awsec2.ReleaseAddressOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: address(),

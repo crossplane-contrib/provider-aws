@@ -20,6 +20,7 @@ import (
 	"context"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
+	awss3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/pkg/errors"
 
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -48,7 +49,7 @@ func NewPublicAccessBlockClient(client s3.BucketClient) *PublicAccessBlockClient
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *PublicAccessBlockClient) Observe(ctx context.Context, cr *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetPublicAccessBlockRequest(&awss3.GetPublicAccessBlockInput{Bucket: awsclient.String(meta.GetExternalName(cr))}).Send(ctx)
+	external, err := in.client.GetPublicAccessBlock(ctx, &awss3.GetPublicAccessBlockInput{Bucket: awsclient.String(meta.GetExternalName(cr))})
 	if s3.PublicAccessBlockConfigurationNotFound(err) && cr.Spec.ForProvider.PublicAccessBlockConfiguration == nil {
 		return Updated, nil
 	}
@@ -57,13 +58,13 @@ func (in *PublicAccessBlockClient) Observe(ctx context.Context, cr *v1beta1.Buck
 	}
 	if cr.Spec.ForProvider.PublicAccessBlockConfiguration != nil {
 		switch {
-		case awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls) != awsclient.BoolValue(external.PublicAccessBlockConfiguration.BlockPublicAcls):
+		case awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls) != external.PublicAccessBlockConfiguration.BlockPublicAcls:
 			return NeedsUpdate, nil
-		case awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy) != awsclient.BoolValue(external.PublicAccessBlockConfiguration.BlockPublicPolicy):
+		case awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy) != external.PublicAccessBlockConfiguration.BlockPublicPolicy:
 			return NeedsUpdate, nil
-		case awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets) != awsclient.BoolValue(external.PublicAccessBlockConfiguration.RestrictPublicBuckets):
+		case awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets) != external.PublicAccessBlockConfiguration.RestrictPublicBuckets:
 			return NeedsUpdate, nil
-		case awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls) != awsclient.BoolValue(external.PublicAccessBlockConfiguration.IgnorePublicAcls):
+		case awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls) != external.PublicAccessBlockConfiguration.IgnorePublicAcls:
 			return NeedsUpdate, nil
 		}
 	}
@@ -77,14 +78,14 @@ func (in *PublicAccessBlockClient) CreateOrUpdate(ctx context.Context, cr *v1bet
 	}
 	input := &awss3.PutPublicAccessBlockInput{
 		Bucket: awsclient.String(meta.GetExternalName(cr)),
-		PublicAccessBlockConfiguration: &awss3.PublicAccessBlockConfiguration{
-			BlockPublicAcls:       cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls,
-			BlockPublicPolicy:     cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy,
-			RestrictPublicBuckets: cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets,
-			IgnorePublicAcls:      cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls,
+		PublicAccessBlockConfiguration: &awss3types.PublicAccessBlockConfiguration{
+			BlockPublicAcls:       awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls),
+			BlockPublicPolicy:     awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy),
+			RestrictPublicBuckets: awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets),
+			IgnorePublicAcls:      awsclient.BoolValue(cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls),
 		},
 	}
-	_, err := in.client.PutPublicAccessBlockRequest(input).Send(ctx)
+	_, err := in.client.PutPublicAccessBlock(ctx, input)
 	return awsclient.Wrap(err, publicAccessBlockPutFailed)
 }
 
@@ -93,13 +94,13 @@ func (in *PublicAccessBlockClient) Delete(ctx context.Context, cr *v1beta1.Bucke
 	input := &awss3.DeletePublicAccessBlockInput{
 		Bucket: awsclient.String(meta.GetExternalName(cr)),
 	}
-	_, err := in.client.DeletePublicAccessBlockRequest(input).Send(ctx)
+	_, err := in.client.DeletePublicAccessBlock(ctx, input)
 	return errors.Wrap(resource.Ignore(s3.PublicAccessBlockConfigurationNotFound, err), publicAccessBlockDeleteFailed)
 }
 
 // LateInitialize is responsible for initializing the resource based on the external value
 func (in *PublicAccessBlockClient) LateInitialize(ctx context.Context, cr *v1beta1.Bucket) error {
-	external, err := in.client.GetPublicAccessBlockRequest(&awss3.GetPublicAccessBlockInput{Bucket: awsclient.String(meta.GetExternalName(cr))}).Send(ctx)
+	external, err := in.client.GetPublicAccessBlock(ctx, &awss3.GetPublicAccessBlockInput{Bucket: awsclient.String(meta.GetExternalName(cr))})
 	if err != nil {
 		return awsclient.Wrap(resource.Ignore(s3.PublicAccessBlockConfigurationNotFound, err), publicAccessBlockGetFailed)
 	}
@@ -107,10 +108,10 @@ func (in *PublicAccessBlockClient) LateInitialize(ctx context.Context, cr *v1bet
 	if cr.Spec.ForProvider.PublicAccessBlockConfiguration == nil {
 		cr.Spec.ForProvider.PublicAccessBlockConfiguration = &v1beta1.PublicAccessBlockConfiguration{}
 	}
-	cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls = awsclient.LateInitializeBoolPtr(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls, external.PublicAccessBlockConfiguration.BlockPublicAcls)
-	cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy = awsclient.LateInitializeBoolPtr(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy, external.PublicAccessBlockConfiguration.BlockPublicPolicy)
-	cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets = awsclient.LateInitializeBoolPtr(cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets, external.PublicAccessBlockConfiguration.RestrictPublicBuckets)
-	cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls = awsclient.LateInitializeBoolPtr(cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls, external.PublicAccessBlockConfiguration.IgnorePublicAcls)
+	cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls = awsclient.LateInitializeBoolPtr(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicAcls, awsclient.Bool(external.PublicAccessBlockConfiguration.BlockPublicAcls))
+	cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy = awsclient.LateInitializeBoolPtr(cr.Spec.ForProvider.PublicAccessBlockConfiguration.BlockPublicPolicy, awsclient.Bool(external.PublicAccessBlockConfiguration.BlockPublicPolicy))
+	cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets = awsclient.LateInitializeBoolPtr(cr.Spec.ForProvider.PublicAccessBlockConfiguration.RestrictPublicBuckets, awsclient.Bool(external.PublicAccessBlockConfiguration.RestrictPublicBuckets))
+	cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls = awsclient.LateInitializeBoolPtr(cr.Spec.ForProvider.PublicAccessBlockConfiguration.IgnorePublicAcls, awsclient.Bool(external.PublicAccessBlockConfiguration.IgnorePublicAcls))
 	return nil
 }
 

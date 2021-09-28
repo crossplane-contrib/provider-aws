@@ -18,17 +18,21 @@ package s3
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 )
 
+// See - https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html#RESTErrorResponses
 var (
 	// BucketNotFoundErrCode is the error code sent by AWS when a bucket does not exist
 	BucketNotFoundErrCode = "NotFound"
@@ -46,6 +50,7 @@ var (
 	TaggingNotFoundErrCode = "NoSuchTagSet"
 	// WebsiteNotFoundErrCode is the error code sent by AWS when the website config does not exist
 	WebsiteNotFoundErrCode = "NoSuchWebsiteConfiguration"
+
 	// MethodNotAllowed is the error code sent by AWS when the request method for an object is not allowed
 	MethodNotAllowed = "MethodNotAllowed"
 	// UnsupportedArgument is the error code sent by AWS when the request fields contain an argument that is not supported
@@ -54,101 +59,90 @@ var (
 
 // BucketClient is the interface for Client for making S3 Bucket requests.
 type BucketClient interface {
-	HeadBucketRequest(input *s3.HeadBucketInput) s3.HeadBucketRequest
-	CreateBucketRequest(input *s3.CreateBucketInput) s3.CreateBucketRequest
-	DeleteBucketRequest(input *s3.DeleteBucketInput) s3.DeleteBucketRequest
+	HeadBucket(ctx context.Context, input *s3.HeadBucketInput, opts ...func(*s3.Options)) (*s3.HeadBucketOutput, error)
+	CreateBucket(ctx context.Context, input *s3.CreateBucketInput, opts ...func(*s3.Options)) (*s3.CreateBucketOutput, error)
+	DeleteBucket(ctx context.Context, input *s3.DeleteBucketInput, opts ...func(*s3.Options)) (*s3.DeleteBucketOutput, error)
 
-	PutBucketEncryptionRequest(input *s3.PutBucketEncryptionInput) s3.PutBucketEncryptionRequest
-	GetBucketEncryptionRequest(input *s3.GetBucketEncryptionInput) s3.GetBucketEncryptionRequest
-	DeleteBucketEncryptionRequest(input *s3.DeleteBucketEncryptionInput) s3.DeleteBucketEncryptionRequest
+	PutBucketEncryption(ctx context.Context, input *s3.PutBucketEncryptionInput, opts ...func(*s3.Options)) (*s3.PutBucketEncryptionOutput, error)
+	GetBucketEncryption(ctx context.Context, input *s3.GetBucketEncryptionInput, opts ...func(*s3.Options)) (*s3.GetBucketEncryptionOutput, error)
+	DeleteBucketEncryption(ctx context.Context, input *s3.DeleteBucketEncryptionInput, opts ...func(*s3.Options)) (*s3.DeleteBucketEncryptionOutput, error)
 
-	PutBucketVersioningRequest(input *s3.PutBucketVersioningInput) s3.PutBucketVersioningRequest
-	GetBucketVersioningRequest(input *s3.GetBucketVersioningInput) s3.GetBucketVersioningRequest
+	PutBucketVersioning(ctx context.Context, input *s3.PutBucketVersioningInput, opts ...func(*s3.Options)) (*s3.PutBucketVersioningOutput, error)
+	GetBucketVersioning(ctx context.Context, input *s3.GetBucketVersioningInput, opts ...func(*s3.Options)) (*s3.GetBucketVersioningOutput, error)
 
-	PutBucketAccelerateConfigurationRequest(input *s3.PutBucketAccelerateConfigurationInput) s3.PutBucketAccelerateConfigurationRequest
-	GetBucketAccelerateConfigurationRequest(input *s3.GetBucketAccelerateConfigurationInput) s3.GetBucketAccelerateConfigurationRequest
+	PutBucketAccelerateConfiguration(ctx context.Context, input *s3.PutBucketAccelerateConfigurationInput, opts ...func(*s3.Options)) (*s3.PutBucketAccelerateConfigurationOutput, error)
+	GetBucketAccelerateConfiguration(ctx context.Context, input *s3.GetBucketAccelerateConfigurationInput, opts ...func(*s3.Options)) (*s3.GetBucketAccelerateConfigurationOutput, error)
 
-	PutBucketCorsRequest(input *s3.PutBucketCorsInput) s3.PutBucketCorsRequest
-	GetBucketCorsRequest(input *s3.GetBucketCorsInput) s3.GetBucketCorsRequest
-	DeleteBucketCorsRequest(input *s3.DeleteBucketCorsInput) s3.DeleteBucketCorsRequest
+	PutBucketCors(ctx context.Context, input *s3.PutBucketCorsInput, opts ...func(*s3.Options)) (*s3.PutBucketCorsOutput, error)
+	GetBucketCors(ctx context.Context, input *s3.GetBucketCorsInput, opts ...func(*s3.Options)) (*s3.GetBucketCorsOutput, error)
+	DeleteBucketCors(ctx context.Context, input *s3.DeleteBucketCorsInput, opts ...func(*s3.Options)) (*s3.DeleteBucketCorsOutput, error)
 
-	PutBucketWebsiteRequest(input *s3.PutBucketWebsiteInput) s3.PutBucketWebsiteRequest
-	GetBucketWebsiteRequest(input *s3.GetBucketWebsiteInput) s3.GetBucketWebsiteRequest
-	DeleteBucketWebsiteRequest(input *s3.DeleteBucketWebsiteInput) s3.DeleteBucketWebsiteRequest
+	PutBucketWebsite(ctx context.Context, input *s3.PutBucketWebsiteInput, opts ...func(*s3.Options)) (*s3.PutBucketWebsiteOutput, error)
+	GetBucketWebsite(ctx context.Context, input *s3.GetBucketWebsiteInput, opts ...func(*s3.Options)) (*s3.GetBucketWebsiteOutput, error)
+	DeleteBucketWebsite(ctx context.Context, input *s3.DeleteBucketWebsiteInput, opts ...func(*s3.Options)) (*s3.DeleteBucketWebsiteOutput, error)
 
-	PutBucketLoggingRequest(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest
-	GetBucketLoggingRequest(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest
+	PutBucketLogging(ctx context.Context, input *s3.PutBucketLoggingInput, opts ...func(*s3.Options)) (*s3.PutBucketLoggingOutput, error)
+	GetBucketLogging(ctx context.Context, input *s3.GetBucketLoggingInput, opts ...func(*s3.Options)) (*s3.GetBucketLoggingOutput, error)
 
-	PutBucketReplicationRequest(input *s3.PutBucketReplicationInput) s3.PutBucketReplicationRequest
-	GetBucketReplicationRequest(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest
-	DeleteBucketReplicationRequest(input *s3.DeleteBucketReplicationInput) s3.DeleteBucketReplicationRequest
+	PutBucketReplication(ctx context.Context, input *s3.PutBucketReplicationInput, opts ...func(*s3.Options)) (*s3.PutBucketReplicationOutput, error)
+	GetBucketReplication(ctx context.Context, input *s3.GetBucketReplicationInput, opts ...func(*s3.Options)) (*s3.GetBucketReplicationOutput, error)
+	DeleteBucketReplication(ctx context.Context, input *s3.DeleteBucketReplicationInput, opts ...func(*s3.Options)) (*s3.DeleteBucketReplicationOutput, error)
 
-	PutBucketRequestPaymentRequest(input *s3.PutBucketRequestPaymentInput) s3.PutBucketRequestPaymentRequest
-	GetBucketRequestPaymentRequest(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest
+	PutBucketRequestPayment(ctx context.Context, input *s3.PutBucketRequestPaymentInput, opts ...func(*s3.Options)) (*s3.PutBucketRequestPaymentOutput, error)
+	GetBucketRequestPayment(ctx context.Context, input *s3.GetBucketRequestPaymentInput, opts ...func(*s3.Options)) (*s3.GetBucketRequestPaymentOutput, error)
 
-	PutBucketTaggingRequest(input *s3.PutBucketTaggingInput) s3.PutBucketTaggingRequest
-	GetBucketTaggingRequest(input *s3.GetBucketTaggingInput) s3.GetBucketTaggingRequest
-	DeleteBucketTaggingRequest(input *s3.DeleteBucketTaggingInput) s3.DeleteBucketTaggingRequest
+	PutBucketTagging(ctx context.Context, input *s3.PutBucketTaggingInput, opts ...func(*s3.Options)) (*s3.PutBucketTaggingOutput, error)
+	GetBucketTagging(ctx context.Context, input *s3.GetBucketTaggingInput, opts ...func(*s3.Options)) (*s3.GetBucketTaggingOutput, error)
+	DeleteBucketTagging(ctx context.Context, input *s3.DeleteBucketTaggingInput, opts ...func(*s3.Options)) (*s3.DeleteBucketTaggingOutput, error)
 
-	PutBucketAnalyticsConfigurationRequest(input *s3.PutBucketAnalyticsConfigurationInput) s3.PutBucketAnalyticsConfigurationRequest
-	GetBucketAnalyticsConfigurationRequest(input *s3.GetBucketAnalyticsConfigurationInput) s3.GetBucketAnalyticsConfigurationRequest
+	PutBucketAnalyticsConfiguration(ctx context.Context, input *s3.PutBucketAnalyticsConfigurationInput, opts ...func(*s3.Options)) (*s3.PutBucketAnalyticsConfigurationOutput, error)
+	GetBucketAnalyticsConfiguration(ctx context.Context, input *s3.GetBucketAnalyticsConfigurationInput, opts ...func(*s3.Options)) (*s3.GetBucketAnalyticsConfigurationOutput, error)
 
-	PutBucketLifecycleConfigurationRequest(input *s3.PutBucketLifecycleConfigurationInput) s3.PutBucketLifecycleConfigurationRequest
-	GetBucketLifecycleConfigurationRequest(input *s3.GetBucketLifecycleConfigurationInput) s3.GetBucketLifecycleConfigurationRequest
-	DeleteBucketLifecycleRequest(input *s3.DeleteBucketLifecycleInput) s3.DeleteBucketLifecycleRequest
+	PutBucketLifecycleConfiguration(ctx context.Context, input *s3.PutBucketLifecycleConfigurationInput, opts ...func(*s3.Options)) (*s3.PutBucketLifecycleConfigurationOutput, error)
+	GetBucketLifecycleConfiguration(ctx context.Context, input *s3.GetBucketLifecycleConfigurationInput, opts ...func(*s3.Options)) (*s3.GetBucketLifecycleConfigurationOutput, error)
+	DeleteBucketLifecycle(ctx context.Context, input *s3.DeleteBucketLifecycleInput, opts ...func(*s3.Options)) (*s3.DeleteBucketLifecycleOutput, error)
 
-	PutBucketNotificationConfigurationRequest(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest
-	GetBucketNotificationConfigurationRequest(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest
+	PutBucketNotificationConfiguration(ctx context.Context, input *s3.PutBucketNotificationConfigurationInput, opts ...func(*s3.Options)) (*s3.PutBucketNotificationConfigurationOutput, error)
+	GetBucketNotificationConfiguration(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts ...func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error)
 
-	GetBucketAclRequest(*s3.GetBucketAclInput) s3.GetBucketAclRequest
-	PutBucketAclRequest(*s3.PutBucketAclInput) s3.PutBucketAclRequest
-
-	GetPublicAccessBlockRequest(input *s3.GetPublicAccessBlockInput) s3.GetPublicAccessBlockRequest
-	PutPublicAccessBlockRequest(input *s3.PutPublicAccessBlockInput) s3.PutPublicAccessBlockRequest
-	DeletePublicAccessBlockRequest(input *s3.DeletePublicAccessBlockInput) s3.DeletePublicAccessBlockRequest
+	GetBucketAcl(ctx context.Context, input *s3.GetBucketAclInput, opts ...func(*s3.Options)) (*s3.GetBucketAclOutput, error) //nolint
+	PutBucketAcl(ctx context.Context, input *s3.PutBucketAclInput, opts ...func(*s3.Options)) (*s3.PutBucketAclOutput, error) //nolint
+	GetPublicAccessBlock(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts ...func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error)
+	PutPublicAccessBlock(ctx context.Context, input *s3.PutPublicAccessBlockInput, opts ...func(*s3.Options)) (*s3.PutPublicAccessBlockOutput, error)
+	DeletePublicAccessBlock(ctx context.Context, input *s3.DeletePublicAccessBlockInput, opts ...func(*s3.Options)) (*s3.DeletePublicAccessBlockOutput, error)
 }
 
 // NewClient returns a new client using AWS credentials as JSON encoded data.
 func NewClient(cfg aws.Config) BucketClient {
-	return s3.New(cfg)
+	return s3.NewFromConfig(cfg)
 }
 
 // IsNotFound helper function to test for NotFound error
 func IsNotFound(err error) bool {
-	if err == nil {
-		return false
-	}
-	if bucketErr, ok := err.(awserr.Error); ok && bucketErr.Code() == BucketNotFoundErrCode {
-		return true
-	}
-	return false
+	var nsb *s3types.NoSuchBucket
+	return errors.As(err, &nsb)
 }
 
 // IsAlreadyExists helper function to test for ErrCodeBucketAlreadyOwnedByYou error
 func IsAlreadyExists(err error) bool {
-	if err == nil {
-		return false
-	}
-	if bucketErr, ok := err.(awserr.Error); ok && bucketErr.Code() == s3.ErrCodeBucketAlreadyOwnedByYou {
-		return true
-	}
-	return false
+	var nsb *s3types.BucketAlreadyOwnedByYou
+	return errors.As(err, &nsb)
 }
 
 // GenerateCreateBucketInput creates the input for CreateBucket S3 Client request
 func GenerateCreateBucketInput(name string, s v1beta1.BucketParameters) *s3.CreateBucketInput {
 	cbi := &s3.CreateBucketInput{
-		ACL:                        s3.BucketCannedACL(aws.StringValue(s.ACL)),
+		ACL:                        s3types.BucketCannedACL(aws.ToString(s.ACL)),
 		Bucket:                     aws.String(name),
 		GrantFullControl:           s.GrantFullControl,
 		GrantRead:                  s.GrantRead,
 		GrantReadACP:               s.GrantReadACP,
 		GrantWrite:                 s.GrantWrite,
 		GrantWriteACP:              s.GrantWriteACP,
-		ObjectLockEnabledForBucket: s.ObjectLockEnabledForBucket,
+		ObjectLockEnabledForBucket: aws.ToBool(s.ObjectLockEnabledForBucket),
 	}
 	if s.LocationConstraint != "us-east-1" {
-		cbi.CreateBucketConfiguration = &s3.CreateBucketConfiguration{LocationConstraint: s3.BucketLocationConstraint(s.LocationConstraint)}
+		cbi.CreateBucketConfiguration = &s3types.CreateBucketConfiguration{LocationConstraint: s3types.BucketLocationConstraint(s.LocationConstraint)}
 	}
 	return cbi
 }
@@ -162,62 +156,98 @@ func GenerateBucketObservation(name string) v1beta1.BucketExternalStatus {
 
 // CORSConfigurationNotFound is parses the aws Error and validates if the cors configuration does not exist
 func CORSConfigurationNotFound(err error) bool {
-	s3Err, ok := err.(awserr.Error)
-	return ok && s3Err.Code() == CORSNotFoundErrCode
+	if awsErr, ok := err.(smithy.APIError); ok {
+		if awsErr.ErrorCode() == CORSNotFoundErrCode {
+			return true
+		}
+	}
+	return false
 }
 
 // ReplicationConfigurationNotFound is parses the aws Error and validates if the replication configuration does not exist
 func ReplicationConfigurationNotFound(err error) bool {
-	s3Err, ok := err.(awserr.Error)
-	return ok && s3Err.Code() == ReplicationNotFoundErrCode
+	if awsErr, ok := err.(smithy.APIError); ok {
+		if awsErr.ErrorCode() == ReplicationNotFoundErrCode {
+			return true
+		}
+	}
+	return false
 }
 
 // PublicAccessBlockConfigurationNotFound is parses the aws Error and validates if the public access block does not exist
 func PublicAccessBlockConfigurationNotFound(err error) bool {
-	s3Err, ok := err.(awserr.Error)
-	return ok && s3Err.Code() == PublicAccessBlockNotFoundErrCode
+	if awsErr, ok := err.(smithy.APIError); ok {
+		if awsErr.ErrorCode() == PublicAccessBlockNotFoundErrCode {
+			return true
+		}
+	}
+	return false
 }
 
 // LifecycleConfigurationNotFound is parses the aws Error and validates if the lifecycle configuration does not exist
 func LifecycleConfigurationNotFound(err error) bool {
-	s3Err, ok := err.(awserr.Error)
-	return ok && s3Err.Code() == LifecycleNotFoundErrCode
+	if awsErr, ok := err.(smithy.APIError); ok {
+		if awsErr.ErrorCode() == LifecycleNotFoundErrCode {
+			return true
+		}
+	}
+	return false
 }
 
 // SSEConfigurationNotFound is parses the aws Error and validates if the SSE configuration does not exist
 func SSEConfigurationNotFound(err error) bool {
-	s3Err, ok := err.(awserr.Error)
-	return ok && s3Err.Code() == SSENotFoundErrCode
+	if awsErr, ok := err.(smithy.APIError); ok {
+		if awsErr.ErrorCode() == SSENotFoundErrCode {
+			return true
+		}
+	}
+	return false
 }
 
 // TaggingNotFound is parses the aws Error and validates if the tagging configuration does not exist
 func TaggingNotFound(err error) bool {
-	s3Err, ok := err.(awserr.Error)
-	return ok && s3Err.Code() == TaggingNotFoundErrCode
+	if awsErr, ok := err.(smithy.APIError); ok {
+		if awsErr.ErrorCode() == TaggingNotFoundErrCode {
+			return true
+		}
+	}
+	return false
 }
 
 // WebsiteConfigurationNotFound is parses the aws Error and validates if the website configuration does not exist
 func WebsiteConfigurationNotFound(err error) bool {
-	s3Err, ok := err.(awserr.Error)
-	return ok && s3Err.Code() == WebsiteNotFoundErrCode
+	if awsErr, ok := err.(smithy.APIError); ok {
+		if awsErr.ErrorCode() == WebsiteNotFoundErrCode {
+			return true
+		}
+	}
+	return false
 }
 
 // MethodNotSupported is parses the aws Error and validates if the method is allowed for a request
 func MethodNotSupported(err error) bool {
-	s3Err, ok := err.(awserr.Error)
-	return ok && s3Err.Code() == MethodNotAllowed
+	if awsErr, ok := err.(smithy.APIError); ok {
+		if awsErr.ErrorCode() == MethodNotAllowed {
+			return true
+		}
+	}
+	return false
 }
 
 // ArgumentNotSupported is parses the aws Error and validates if parameters are now allowed for a request
 func ArgumentNotSupported(err error) bool {
-	s3Err, ok := err.(awserr.Error)
-	return ok && s3Err.Code() == UnsupportedArgument
+	if awsErr, ok := err.(smithy.APIError); ok {
+		if awsErr.ErrorCode() == UnsupportedArgument {
+			return true
+		}
+	}
+	return false
 }
 
 // UpdateBucketACL creates the ACLInput, sends the request to put an ACL based on the bucket
 func UpdateBucketACL(ctx context.Context, client BucketClient, bucket *v1beta1.Bucket) error {
 	config := &s3.PutBucketAclInput{
-		ACL:              s3.BucketCannedACL(aws.StringValue(bucket.Spec.ForProvider.ACL)),
+		ACL:              s3types.BucketCannedACL(aws.ToString(bucket.Spec.ForProvider.ACL)),
 		Bucket:           aws.String(meta.GetExternalName(bucket)),
 		GrantFullControl: bucket.Spec.ForProvider.GrantFullControl,
 		GrantRead:        bucket.Spec.ForProvider.GrantRead,
@@ -225,34 +255,34 @@ func UpdateBucketACL(ctx context.Context, client BucketClient, bucket *v1beta1.B
 		GrantWrite:       bucket.Spec.ForProvider.GrantWrite,
 		GrantWriteACP:    bucket.Spec.ForProvider.GrantWriteACP,
 	}
-	_, err := client.PutBucketAclRequest(config).Send(ctx)
+	_, err := client.PutBucketAcl(ctx, config)
 	return err
 }
 
 // CopyTags converts a list of local v1beta.Tags to S3 Tags
-func CopyTags(tags []v1beta1.Tag) []s3.Tag {
-	out := make([]s3.Tag, 0)
+func CopyTags(tags []v1beta1.Tag) []s3types.Tag {
+	out := make([]s3types.Tag, 0)
 	for _, one := range tags {
-		out = append(out, s3.Tag{Key: aws.String(one.Key), Value: aws.String(one.Value)})
+		out = append(out, s3types.Tag{Key: aws.String(one.Key), Value: aws.String(one.Value)})
 	}
 	return out
 }
 
 // CopyAWSTags converts a list of external s3.Tags to local Tags
-func CopyAWSTags(tags []s3.Tag) []v1beta1.Tag {
+func CopyAWSTags(tags []s3types.Tag) []v1beta1.Tag {
 	out := make([]v1beta1.Tag, len(tags))
 	for i, one := range tags {
-		out[i] = v1beta1.Tag{Key: aws.StringValue(one.Key), Value: aws.StringValue(one.Value)}
+		out[i] = v1beta1.Tag{Key: awsclient.StringValue(one.Key), Value: awsclient.StringValue(one.Value)}
 	}
 	return out
 }
 
 // SortS3TagSet stable sorts an external s3 tag list by the key and value.
-func SortS3TagSet(tags []s3.Tag) []s3.Tag {
-	outTags := make([]s3.Tag, len(tags))
+func SortS3TagSet(tags []s3types.Tag) []s3types.Tag {
+	outTags := make([]s3types.Tag, len(tags))
 	copy(outTags, tags)
 	sort.SliceStable(outTags, func(i, j int) bool {
-		return aws.StringValue(outTags[i].Key) < aws.StringValue(outTags[j].Key)
+		return aws.ToString(outTags[i].Key) < aws.ToString(outTags[j].Key)
 	})
 	return outTags
 }

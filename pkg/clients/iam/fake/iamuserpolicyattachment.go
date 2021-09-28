@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/iam"
@@ -27,22 +29,22 @@ var _ clientset.UserPolicyAttachmentClient = (*MockUserPolicyAttachmentClient)(n
 
 // MockUserPolicyAttachmentClient is a type that implements all the methods for UserPolicyAttachmentClient interface
 type MockUserPolicyAttachmentClient struct {
-	MockAttachUserPolicy         func(*iam.AttachUserPolicyInput) iam.AttachUserPolicyRequest
-	MockListAttachedUserPolicies func(*iam.ListAttachedUserPoliciesInput) iam.ListAttachedUserPoliciesRequest
-	MockDetachUserPolicy         func(*iam.DetachUserPolicyInput) iam.DetachUserPolicyRequest
+	MockAttachUserPolicy         func(ctx context.Context, input *iam.AttachUserPolicyInput, opts []func(*iam.Options)) (*iam.AttachUserPolicyOutput, error)
+	MockListAttachedUserPolicies func(ctx context.Context, input *iam.ListAttachedUserPoliciesInput, opts []func(*iam.Options)) (*iam.ListAttachedUserPoliciesOutput, error)
+	MockDetachUserPolicy         func(ctx context.Context, input *iam.DetachUserPolicyInput, opts []func(*iam.Options)) (*iam.DetachUserPolicyOutput, error)
 }
 
-// AttachUserPolicyRequest mocks AttachUserPolicyRequest method
-func (m *MockUserPolicyAttachmentClient) AttachUserPolicyRequest(input *iam.AttachUserPolicyInput) iam.AttachUserPolicyRequest {
-	return m.MockAttachUserPolicy(input)
+// AttachUserPolicy mocks AttachUserPolicy method
+func (m *MockUserPolicyAttachmentClient) AttachUserPolicy(ctx context.Context, input *iam.AttachUserPolicyInput, opts ...func(*iam.Options)) (*iam.AttachUserPolicyOutput, error) {
+	return m.MockAttachUserPolicy(ctx, input, opts)
 }
 
-// ListAttachedUserPoliciesRequest mocks ListAttachedUserPoliciesRequest method
-func (m *MockUserPolicyAttachmentClient) ListAttachedUserPoliciesRequest(input *iam.ListAttachedUserPoliciesInput) iam.ListAttachedUserPoliciesRequest {
-	return m.MockListAttachedUserPolicies(input)
+// ListAttachedUserPolicies mocks ListAttachedUserPolicies method
+func (m *MockUserPolicyAttachmentClient) ListAttachedUserPolicies(ctx context.Context, input *iam.ListAttachedUserPoliciesInput, opts ...func(*iam.Options)) (*iam.ListAttachedUserPoliciesOutput, error) {
+	return m.MockListAttachedUserPolicies(ctx, input, opts)
 }
 
-// DetachUserPolicyRequest mocks DetachUserPolicyRequest method
-func (m *MockUserPolicyAttachmentClient) DetachUserPolicyRequest(input *iam.DetachUserPolicyInput) iam.DetachUserPolicyRequest {
-	return m.MockDetachUserPolicy(input)
+// DetachUserPolicy mocks DetachUserPolicy method
+func (m *MockUserPolicyAttachmentClient) DetachUserPolicy(ctx context.Context, input *iam.DetachUserPolicyInput, opts ...func(*iam.Options)) (*iam.DetachUserPolicyOutput, error) {
+	return m.MockDetachUserPolicy(ctx, input, opts)
 }

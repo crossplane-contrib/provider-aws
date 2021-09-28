@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/eks"
+	ekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/eks/v1alpha1"
@@ -66,7 +67,7 @@ func TestGenerateCreateFargateProfileInput(t *testing.T) {
 				PodExecutionRoleArn: &podExecutionRoleArn,
 				Subnets:             subnets,
 				Tags:                map[string]string{"cool": "tag"},
-				Selectors: []eks.FargateProfileSelector{
+				Selectors: []ekstypes.FargateProfileSelector{
 					{
 						Namespace: &namespace,
 						Labels: map[string]string{
@@ -96,7 +97,7 @@ func TestGenerateCreateFargateProfileInput(t *testing.T) {
 				FargateProfileName:  &fpName,
 				ClusterName:         &clusterName,
 				PodExecutionRoleArn: &podExecutionRoleArn,
-				Selectors: []eks.FargateProfileSelector{
+				Selectors: []ekstypes.FargateProfileSelector{
 					{
 						Namespace: &namespace,
 						Labels: map[string]string{
@@ -121,7 +122,7 @@ func TestGenerateCreateFargateProfileInput(t *testing.T) {
 func TestLateInitializeFargateProfile(t *testing.T) {
 	type args struct {
 		p *v1alpha1.FargateProfileParameters
-		n *eks.FargateProfile
+		n *ekstypes.FargateProfile
 	}
 
 	cases := map[string]struct {
@@ -131,7 +132,7 @@ func TestLateInitializeFargateProfile(t *testing.T) {
 		"AllFieldsEmpty": {
 			args: args{
 				p: &v1alpha1.FargateProfileParameters{},
-				n: &eks.FargateProfile{
+				n: &ekstypes.FargateProfile{
 					Subnets: subnets,
 					Tags:    map[string]string{"cool": "tag"},
 				},
@@ -156,7 +157,7 @@ func TestLateInitializeFargateProfile(t *testing.T) {
 func TestIsFargateProfileUpToDate(t *testing.T) {
 	type args struct {
 		p v1alpha1.FargateProfileParameters
-		n *eks.FargateProfile
+		n *ekstypes.FargateProfile
 	}
 
 	cases := map[string]struct {
@@ -168,7 +169,7 @@ func TestIsFargateProfileUpToDate(t *testing.T) {
 				p: v1alpha1.FargateProfileParameters{
 					Tags: map[string]string{"cool": "tag"},
 				},
-				n: &eks.FargateProfile{
+				n: &ekstypes.FargateProfile{
 					Tags: map[string]string{"cool": "tag"},
 				},
 			},
@@ -179,7 +180,7 @@ func TestIsFargateProfileUpToDate(t *testing.T) {
 				p: v1alpha1.FargateProfileParameters{
 					Tags: map[string]string{"cool": "tag", "another": "tag"},
 				},
-				n: &eks.FargateProfile{
+				n: &ekstypes.FargateProfile{
 					Tags: map[string]string{"cool": "tag"},
 				},
 			},

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
@@ -26,8 +26,8 @@ func specAssociations() []v1beta1.Association {
 	}
 }
 
-func rtAssociations() []ec2.RouteTableAssociation {
-	return []ec2.RouteTableAssociation{
+func rtAssociations() []ec2types.RouteTableAssociation {
+	return []ec2types.RouteTableAssociation{
 		{
 			SubnetId: aws.String(rtSubnetID),
 		},
@@ -36,7 +36,7 @@ func rtAssociations() []ec2.RouteTableAssociation {
 
 func TestIsRTUpToDate(t *testing.T) {
 	type args struct {
-		rt ec2.RouteTable
+		rt ec2types.RouteTable
 		p  v1beta1.RouteTableParameters
 	}
 
@@ -46,7 +46,7 @@ func TestIsRTUpToDate(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				rt: ec2.RouteTable{
+				rt: ec2types.RouteTable{
 					VpcId: aws.String(rtVPC),
 				},
 				p: v1beta1.RouteTableParameters{
@@ -57,7 +57,7 @@ func TestIsRTUpToDate(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				rt: ec2.RouteTable{
+				rt: ec2types.RouteTable{
 					VpcId: aws.String(rtVPC),
 				},
 				p: v1beta1.RouteTableParameters{
@@ -80,11 +80,11 @@ func TestIsRTUpToDate(t *testing.T) {
 
 func TestGenerateRTObservation(t *testing.T) {
 	cases := map[string]struct {
-		in  ec2.RouteTable
+		in  ec2types.RouteTable
 		out v1beta1.RouteTableObservation
 	}{
 		"AllFilled": {
-			in: ec2.RouteTable{
+			in: ec2types.RouteTable{
 				OwnerId:      aws.String(rtOwner),
 				RouteTableId: aws.String(rtID),
 			},
@@ -94,7 +94,7 @@ func TestGenerateRTObservation(t *testing.T) {
 			},
 		},
 		"NoOwnerID": {
-			in: ec2.RouteTable{
+			in: ec2types.RouteTable{
 				RouteTableId: aws.String(rtID),
 			},
 			out: v1beta1.RouteTableObservation{
@@ -115,7 +115,7 @@ func TestGenerateRTObservation(t *testing.T) {
 
 func TestCreateRTPatch(t *testing.T) {
 	type args struct {
-		rt ec2.RouteTable
+		rt ec2types.RouteTable
 		p  *v1beta1.RouteTableParameters
 	}
 
@@ -129,7 +129,7 @@ func TestCreateRTPatch(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				rt: ec2.RouteTable{
+				rt: ec2types.RouteTable{
 					Associations: rtAssociations(),
 					VpcId:        aws.String(vpcID),
 				},
@@ -144,7 +144,7 @@ func TestCreateRTPatch(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				rt: ec2.RouteTable{
+				rt: ec2types.RouteTable{
 					Associations: rtAssociations(),
 					VpcId:        aws.String(rtVPC),
 				},

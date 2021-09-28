@@ -1,9 +1,12 @@
 package ec2
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/smithy-go"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -19,62 +22,60 @@ const (
 
 // InternetGatewayClient is the external client used for InternetGateway Custom Resource
 type InternetGatewayClient interface {
-	CreateInternetGatewayRequest(input *ec2.CreateInternetGatewayInput) ec2.CreateInternetGatewayRequest
-	DeleteInternetGatewayRequest(input *ec2.DeleteInternetGatewayInput) ec2.DeleteInternetGatewayRequest
-	DescribeInternetGatewaysRequest(input *ec2.DescribeInternetGatewaysInput) ec2.DescribeInternetGatewaysRequest
-	AttachInternetGatewayRequest(input *ec2.AttachInternetGatewayInput) ec2.AttachInternetGatewayRequest
-	DetachInternetGatewayRequest(input *ec2.DetachInternetGatewayInput) ec2.DetachInternetGatewayRequest
-	CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest
+	CreateInternetGateway(ctx context.Context, input *ec2.CreateInternetGatewayInput, opts ...func(*ec2.Options)) (*ec2.CreateInternetGatewayOutput, error)
+	DeleteInternetGateway(ctx context.Context, input *ec2.DeleteInternetGatewayInput, opts ...func(*ec2.Options)) (*ec2.DeleteInternetGatewayOutput, error)
+	DescribeInternetGateways(ctx context.Context, input *ec2.DescribeInternetGatewaysInput, opts ...func(*ec2.Options)) (*ec2.DescribeInternetGatewaysOutput, error)
+	AttachInternetGateway(ctx context.Context, input *ec2.AttachInternetGatewayInput, opts ...func(*ec2.Options)) (*ec2.AttachInternetGatewayOutput, error)
+	DetachInternetGateway(ctx context.Context, input *ec2.DetachInternetGatewayInput, opts ...func(*ec2.Options)) (*ec2.DetachInternetGatewayOutput, error)
+	CreateTags(ctx context.Context, input *ec2.CreateTagsInput, opts ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
 }
 
 // NewInternetGatewayClient returns a new client using AWS credentials as JSON encoded data.
 func NewInternetGatewayClient(cfg aws.Config) InternetGatewayClient {
-	return ec2.New(cfg)
+	return ec2.NewFromConfig(cfg)
 }
 
 // IsInternetGatewayNotFoundErr returns true if the error is because the item doesn't exist
 func IsInternetGatewayNotFoundErr(err error) bool {
-	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == InternetGatewayIDNotFound {
+	if awsErr, ok := err.(smithy.APIError); ok {
+		if awsErr.ErrorCode() == InternetGatewayIDNotFound {
 			return true
 		}
 	}
-
 	return false
 }
 
 // IsInternetGatewayAlreadyAttached returns true if the error is because the item doesn't exist
 func IsInternetGatewayAlreadyAttached(err error) bool {
-	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == InternetGatewayAlreadyAttached {
+	if awsErr, ok := err.(smithy.APIError); ok {
+		if awsErr.ErrorCode() == InternetGatewayAlreadyAttached {
 			return true
 		}
 	}
-
 	return false
 }
 
 // GenerateIGObservation is used to produce v1beta1.InternetGatewayExternalStatus from
-// ec2.InternetGateway.
-func GenerateIGObservation(ig ec2.InternetGateway) v1beta1.InternetGatewayObservation {
+// ec2types.InternetGateway.
+func GenerateIGObservation(ig ec2types.InternetGateway) v1beta1.InternetGatewayObservation {
 	attachments := make([]v1beta1.InternetGatewayAttachment, len(ig.Attachments))
 	for k, a := range ig.Attachments {
 		attachments[k] = v1beta1.InternetGatewayAttachment{
 			AttachmentStatus: string(a.State),
-			VPCID:            aws.StringValue(a.VpcId),
+			VPCID:            aws.ToString(a.VpcId),
 		}
 	}
 
 	return v1beta1.InternetGatewayObservation{
-		InternetGatewayID: aws.StringValue(ig.InternetGatewayId),
+		InternetGatewayID: aws.ToString(ig.InternetGatewayId),
 		Attachments:       attachments,
-		OwnerID:           aws.StringValue(ig.OwnerId),
+		OwnerID:           aws.ToString(ig.OwnerId),
 	}
 }
 
 // LateInitializeIG fills the empty fields in *v1beta1.InternetGatewayParameters with
-// the values seen in ec2.InternetGateway.
-func LateInitializeIG(in *v1beta1.InternetGatewayParameters, ig *ec2.InternetGateway) { // nolint:gocyclo
+// the values seen in ec2types.InternetGateway.
+func LateInitializeIG(in *v1beta1.InternetGatewayParameters, ig *ec2types.InternetGateway) { // nolint:gocyclo
 	if ig == nil {
 		return
 	}
@@ -87,7 +88,7 @@ func LateInitializeIG(in *v1beta1.InternetGatewayParameters, ig *ec2.InternetGat
 }
 
 // IsIgUpToDate checks whether there is a change in any of the modifiable fields.
-func IsIgUpToDate(p v1beta1.InternetGatewayParameters, ig ec2.InternetGateway) bool {
+func IsIgUpToDate(p v1beta1.InternetGatewayParameters, ig ec2types.InternetGateway) bool {
 
 	// if there are no attachments for observed IG and in spec.
 	if len(ig.Attachments) == 0 && p.VPCID != nil {
@@ -96,7 +97,7 @@ func IsIgUpToDate(p v1beta1.InternetGatewayParameters, ig ec2.InternetGateway) b
 
 	// if the attachment in spec exists in ig.Attachments, compare the tags and return
 	for _, a := range ig.Attachments {
-		if aws.StringValue(p.VPCID) == aws.StringValue(a.VpcId) {
+		if aws.ToString(p.VPCID) == aws.ToString(a.VpcId) {
 			return v1beta1.CompareTags(p.Tags, ig.Tags)
 		}
 	}

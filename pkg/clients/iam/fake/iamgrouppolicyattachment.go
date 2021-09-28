@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/iam"
@@ -27,22 +29,22 @@ var _ clientset.GroupPolicyAttachmentClient = (*MockGroupPolicyAttachmentClient)
 
 // MockGroupPolicyAttachmentClient is a type that implements all the methods for GroupPolicyAttachmentClient interface
 type MockGroupPolicyAttachmentClient struct {
-	MockAttachGroupPolicy         func(*iam.AttachGroupPolicyInput) iam.AttachGroupPolicyRequest
-	MockListAttachedGroupPolicies func(*iam.ListAttachedGroupPoliciesInput) iam.ListAttachedGroupPoliciesRequest
-	MockDetachGroupPolicy         func(*iam.DetachGroupPolicyInput) iam.DetachGroupPolicyRequest
+	MockAttachGroupPolicy         func(ctx context.Context, input *iam.AttachGroupPolicyInput, opts []func(*iam.Options)) (*iam.AttachGroupPolicyOutput, error)
+	MockListAttachedGroupPolicies func(ctx context.Context, input *iam.ListAttachedGroupPoliciesInput, opts []func(*iam.Options)) (*iam.ListAttachedGroupPoliciesOutput, error)
+	MockDetachGroupPolicy         func(ctx context.Context, input *iam.DetachGroupPolicyInput, opts []func(*iam.Options)) (*iam.DetachGroupPolicyOutput, error)
 }
 
-// AttachGroupPolicyRequest mocks AttachGroupPolicyRequest method
-func (m *MockGroupPolicyAttachmentClient) AttachGroupPolicyRequest(input *iam.AttachGroupPolicyInput) iam.AttachGroupPolicyRequest {
-	return m.MockAttachGroupPolicy(input)
+// AttachGroupPolicy mocks AttachGroupPolicy method
+func (m *MockGroupPolicyAttachmentClient) AttachGroupPolicy(ctx context.Context, input *iam.AttachGroupPolicyInput, opts ...func(*iam.Options)) (*iam.AttachGroupPolicyOutput, error) {
+	return m.MockAttachGroupPolicy(ctx, input, opts)
 }
 
-// ListAttachedGroupPoliciesRequest mocks ListAttachedGroupPoliciesRequest method
-func (m *MockGroupPolicyAttachmentClient) ListAttachedGroupPoliciesRequest(input *iam.ListAttachedGroupPoliciesInput) iam.ListAttachedGroupPoliciesRequest {
-	return m.MockListAttachedGroupPolicies(input)
+// ListAttachedGroupPolicies mocks ListAttachedGroupPolicies method
+func (m *MockGroupPolicyAttachmentClient) ListAttachedGroupPolicies(ctx context.Context, input *iam.ListAttachedGroupPoliciesInput, opts ...func(*iam.Options)) (*iam.ListAttachedGroupPoliciesOutput, error) {
+	return m.MockListAttachedGroupPolicies(ctx, input, opts)
 }
 
-// DetachGroupPolicyRequest mocks DetachGroupPolicyRequest method
-func (m *MockGroupPolicyAttachmentClient) DetachGroupPolicyRequest(input *iam.DetachGroupPolicyInput) iam.DetachGroupPolicyRequest {
-	return m.MockDetachGroupPolicy(input)
+// DetachGroupPolicy mocks DetachGroupPolicy method
+func (m *MockGroupPolicyAttachmentClient) DetachGroupPolicy(ctx context.Context, input *iam.DetachGroupPolicyInput, opts ...func(*iam.Options)) (*iam.DetachGroupPolicyOutput, error) {
+	return m.MockDetachGroupPolicy(ctx, input, opts)
 }

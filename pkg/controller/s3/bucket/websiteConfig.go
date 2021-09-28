@@ -20,6 +20,7 @@ import (
 	"context"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
@@ -47,7 +48,7 @@ func NewWebsiteConfigurationClient(client s3.BucketClient) *WebsiteConfiguration
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
-	external, err := in.client.GetBucketWebsiteRequest(&awss3.GetBucketWebsiteInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketWebsite(ctx, &awss3.GetBucketWebsiteInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	config := bucket.Spec.ForProvider.WebsiteConfiguration
 	if err != nil {
 		if s3.WebsiteConfigurationNotFound(err) && config == nil {
@@ -59,12 +60,12 @@ func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 	switch {
 	case external.RoutingRules == nil && external.RedirectAllRequestsTo == nil && external.IndexDocument == nil && external.ErrorDocument == nil && config == nil:
 		return Updated, nil
-	case external.GetBucketWebsiteOutput != nil && config == nil:
+	case external != nil && config == nil:
 		return NeedsDeletion, nil
 	}
 
 	source := GenerateWebsiteConfiguration(config)
-	confBody := &awss3.WebsiteConfiguration{
+	confBody := &types.WebsiteConfiguration{
 		ErrorDocument:         external.ErrorDocument,
 		IndexDocument:         external.IndexDocument,
 		RedirectAllRequestsTo: external.RedirectAllRequestsTo,
@@ -84,29 +85,29 @@ func (in *WebsiteConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 		return nil
 	}
 	input := GeneratePutBucketWebsiteInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.WebsiteConfiguration)
-	_, err := in.client.PutBucketWebsiteRequest(input).Send(ctx)
+	_, err := in.client.PutBucketWebsite(ctx, input)
 	return awsclient.Wrap(err, websitePutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
 func (in *WebsiteConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
-	_, err := in.client.DeleteBucketWebsiteRequest(
+	_, err := in.client.DeleteBucketWebsite(ctx,
 		&awss3.DeleteBucketWebsiteInput{
 			Bucket: awsclient.String(meta.GetExternalName(bucket)),
 		},
-	).Send(ctx)
+	)
 	return awsclient.Wrap(err, websiteDeleteFailed)
 }
 
 // LateInitialize does nothing because the resource might have been deleted by
 // the user.
 func (in *WebsiteConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketWebsiteRequest(&awss3.GetBucketWebsiteInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketWebsite(ctx, &awss3.GetBucketWebsiteInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
 		return awsclient.Wrap(resource.Ignore(s3.WebsiteConfigurationNotFound, err), websiteGetFailed)
 	}
 
-	if external.GetBucketWebsiteOutput == nil || (len(external.RoutingRules) == 0 &&
+	if external == nil || (len(external.RoutingRules) == 0 &&
 		external.ErrorDocument == nil &&
 		external.IndexDocument == nil &&
 		external.RedirectAllRequestsTo == nil) {
@@ -118,7 +119,7 @@ func (in *WebsiteConfigurationClient) LateInitialize(ctx context.Context, bucket
 		bucket.Spec.ForProvider.WebsiteConfiguration = &v1beta1.WebsiteConfiguration{}
 	}
 
-	createWebsiteConfigFromExternal(external.GetBucketWebsiteOutput, bucket.Spec.ForProvider.WebsiteConfiguration)
+	createWebsiteConfigFromExternal(external, bucket.Spec.ForProvider.WebsiteConfiguration)
 	return nil
 }
 
@@ -128,41 +129,35 @@ func (in *WebsiteConfigurationClient) SubresourceExists(bucket *v1beta1.Bucket) 
 }
 
 // GenerateWebsiteConfiguration is responsible for creating the Website Configuration for requests.
-func GenerateWebsiteConfiguration(config *v1beta1.WebsiteConfiguration) *awss3.WebsiteConfiguration {
-	wi := &awss3.WebsiteConfiguration{}
+func GenerateWebsiteConfiguration(config *v1beta1.WebsiteConfiguration) *types.WebsiteConfiguration {
+	wi := &types.WebsiteConfiguration{}
 	if config.ErrorDocument != nil {
-		wi.ErrorDocument = &awss3.ErrorDocument{Key: awsclient.String(config.ErrorDocument.Key)}
+		wi.ErrorDocument = &types.ErrorDocument{Key: awsclient.String(config.ErrorDocument.Key)}
 	}
 	if config.IndexDocument != nil {
-		wi.IndexDocument = &awss3.IndexDocument{Suffix: awsclient.String(config.IndexDocument.Suffix)}
+		wi.IndexDocument = &types.IndexDocument{Suffix: awsclient.String(config.IndexDocument.Suffix)}
 	}
 	if config.RedirectAllRequestsTo != nil {
-		wi.RedirectAllRequestsTo = &awss3.RedirectAllRequestsTo{
+		wi.RedirectAllRequestsTo = &types.RedirectAllRequestsTo{
 			HostName: awsclient.String(config.RedirectAllRequestsTo.HostName),
-		}
-		if config.RedirectAllRequestsTo.Protocol != "" {
-			wi.RedirectAllRequestsTo.Protocol = awss3.Protocol(config.RedirectAllRequestsTo.Protocol)
+			Protocol: types.Protocol(config.RedirectAllRequestsTo.Protocol),
 		}
 	}
-	if len(config.RoutingRules) != 0 {
-		wi.RoutingRules = make([]awss3.RoutingRule, len(config.RoutingRules))
-		for i, rule := range config.RoutingRules {
-			rr := awss3.RoutingRule{
-				Redirect: &awss3.Redirect{
-					HostName:             rule.Redirect.HostName,
-					HttpRedirectCode:     rule.Redirect.HTTPRedirectCode,
-					ReplaceKeyPrefixWith: rule.Redirect.ReplaceKeyPrefixWith,
-					ReplaceKeyWith:       rule.Redirect.ReplaceKeyWith,
-				},
-			}
-			if rule.Redirect.Protocol != "" {
-				rr.Redirect.Protocol = awss3.Protocol(rule.Redirect.Protocol)
-			}
-			if rule.Condition != nil {
-				rr.Condition = &awss3.Condition{
-					HttpErrorCodeReturnedEquals: rule.Condition.HTTPErrorCodeReturnedEquals,
-					KeyPrefixEquals:             rule.Condition.KeyPrefixEquals,
-				}
+	wi.RoutingRules = make([]types.RoutingRule, len(config.RoutingRules))
+	for i, rule := range config.RoutingRules {
+		rr := types.RoutingRule{
+			Redirect: &types.Redirect{
+				HostName:             rule.Redirect.HostName,
+				HttpRedirectCode:     rule.Redirect.HTTPRedirectCode,
+				Protocol:             types.Protocol(rule.Redirect.Protocol),
+				ReplaceKeyPrefixWith: rule.Redirect.ReplaceKeyPrefixWith,
+				ReplaceKeyWith:       rule.Redirect.ReplaceKeyWith,
+			},
+		}
+		if rule.Condition != nil {
+			rr.Condition = &types.Condition{
+				HttpErrorCodeReturnedEquals: rule.Condition.HTTPErrorCodeReturnedEquals,
+				KeyPrefixEquals:             rule.Condition.KeyPrefixEquals,
 			}
 			wi.RoutingRules[i] = rr
 		}

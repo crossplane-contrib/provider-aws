@@ -239,12 +239,12 @@ type CacheClusterParameters struct {
 	NotificationTopicARN *string `json:"notificationTopicArn,omitempty"`
 
 	// The initial number of cache nodes that the cluster has.
-	NumCacheNodes int64 `json:"numCacheNodes"`
+	NumCacheNodes int32 `json:"numCacheNodes"`
 
 	// The port number on which each of the cache nodes accepts connections.
 	// +optional
 	// +immutable
-	Port *int64 `json:"port,omitempty"`
+	Port *int32 `json:"port,omitempty"`
 
 	// The EC2 Availability Zone in which the cluster is created.
 	// Default: System chosen Availability Zone.
@@ -292,7 +292,7 @@ type CacheClusterParameters struct {
 	// The number of days for which ElastiCache retains automatic snapshots before
 	// deleting them.
 	// +optional
-	SnapshotRetentionLimit *int64 `json:"snapshotRetentionLimit,omitempty"`
+	SnapshotRetentionLimit *int32 `json:"snapshotRetentionLimit,omitempty"`
 
 	// The daily time range (in UTC) during which ElastiCache begins taking a daily
 	// snapshot of your node group (shard).

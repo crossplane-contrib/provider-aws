@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -27,46 +29,46 @@ var _ clientset.VPCClient = (*MockVPCClient)(nil)
 
 // MockVPCClient is a type that implements all the methods for VPCClient interface
 type MockVPCClient struct {
-	MockCreate                      func(*ec2.CreateVpcInput) ec2.CreateVpcRequest
-	MockDelete                      func(*ec2.DeleteVpcInput) ec2.DeleteVpcRequest
-	MockDescribe                    func(*ec2.DescribeVpcsInput) ec2.DescribeVpcsRequest
-	MockModifyAttribute             func(*ec2.ModifyVpcAttributeInput) ec2.ModifyVpcAttributeRequest
-	MockModifyTenancy               func(*ec2.ModifyVpcTenancyInput) ec2.ModifyVpcTenancyRequest
-	MockCreateTagsRequest           func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
-	MockDescribeVpcAttributeRequest func(*ec2.DescribeVpcAttributeInput) ec2.DescribeVpcAttributeRequest
+	MockCreate               func(ctx context.Context, input *ec2.CreateVpcInput, opts []func(*ec2.Options)) (*ec2.CreateVpcOutput, error)
+	MockDelete               func(ctx context.Context, input *ec2.DeleteVpcInput, opts []func(*ec2.Options)) (*ec2.DeleteVpcOutput, error)
+	MockDescribe             func(ctx context.Context, input *ec2.DescribeVpcsInput, opts []func(*ec2.Options)) (*ec2.DescribeVpcsOutput, error)
+	MockModifyAttribute      func(ctx context.Context, input *ec2.ModifyVpcAttributeInput, opts []func(*ec2.Options)) (*ec2.ModifyVpcAttributeOutput, error)
+	MockModifyTenancy        func(ctx context.Context, input *ec2.ModifyVpcTenancyInput, opts []func(*ec2.Options)) (*ec2.ModifyVpcTenancyOutput, error)
+	MockCreateTags           func(ctx context.Context, input *ec2.CreateTagsInput, opts []func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
+	MockDescribeVpcAttribute func(ctx context.Context, input *ec2.DescribeVpcAttributeInput, opts []func(*ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error)
 }
 
-// CreateVpcRequest mocks CreateVpcRequest method
-func (m *MockVPCClient) CreateVpcRequest(input *ec2.CreateVpcInput) ec2.CreateVpcRequest {
-	return m.MockCreate(input)
+// CreateVpc mocks CreateVpc method
+func (m *MockVPCClient) CreateVpc(ctx context.Context, input *ec2.CreateVpcInput, opts ...func(*ec2.Options)) (*ec2.CreateVpcOutput, error) {
+	return m.MockCreate(ctx, input, opts)
 }
 
-// DeleteVpcRequest mocks DeleteVpcRequest method
-func (m *MockVPCClient) DeleteVpcRequest(input *ec2.DeleteVpcInput) ec2.DeleteVpcRequest {
-	return m.MockDelete(input)
+// DeleteVpc mocks DeleteVpc method
+func (m *MockVPCClient) DeleteVpc(ctx context.Context, input *ec2.DeleteVpcInput, opts ...func(*ec2.Options)) (*ec2.DeleteVpcOutput, error) {
+	return m.MockDelete(ctx, input, opts)
 }
 
-// DescribeVpcsRequest mocks DescribeVpcsRequest method
-func (m *MockVPCClient) DescribeVpcsRequest(input *ec2.DescribeVpcsInput) ec2.DescribeVpcsRequest {
-	return m.MockDescribe(input)
+// DescribeVpcs mocks DescribeVpcs method
+func (m *MockVPCClient) DescribeVpcs(ctx context.Context, input *ec2.DescribeVpcsInput, opts ...func(*ec2.Options)) (*ec2.DescribeVpcsOutput, error) {
+	return m.MockDescribe(ctx, input, opts)
 }
 
-// ModifyVpcAttributeRequest mocks ModifyVpcAttributeRequest method
-func (m *MockVPCClient) ModifyVpcAttributeRequest(input *ec2.ModifyVpcAttributeInput) ec2.ModifyVpcAttributeRequest {
-	return m.MockModifyAttribute(input)
+// ModifyVpcAttribute mocks ModifyVpcAttribute method
+func (m *MockVPCClient) ModifyVpcAttribute(ctx context.Context, input *ec2.ModifyVpcAttributeInput, opts ...func(*ec2.Options)) (*ec2.ModifyVpcAttributeOutput, error) {
+	return m.MockModifyAttribute(ctx, input, opts)
 }
 
-// ModifyVpcTenancyRequest mocks ModifyVpcTenancyRequest method
-func (m *MockVPCClient) ModifyVpcTenancyRequest(input *ec2.ModifyVpcTenancyInput) ec2.ModifyVpcTenancyRequest {
-	return m.MockModifyTenancy(input)
+// ModifyVpcTenancy mocks ModifyVpcTenancy method
+func (m *MockVPCClient) ModifyVpcTenancy(ctx context.Context, input *ec2.ModifyVpcTenancyInput, opts ...func(*ec2.Options)) (*ec2.ModifyVpcTenancyOutput, error) {
+	return m.MockModifyTenancy(ctx, input, opts)
 }
 
-// CreateTagsRequest mocks CreateTagsRequest method
-func (m *MockVPCClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
-	return m.MockCreateTagsRequest(input)
+// CreateTags mocks CreateTags method
+func (m *MockVPCClient) CreateTags(ctx context.Context, input *ec2.CreateTagsInput, opts ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error) {
+	return m.MockCreateTags(ctx, input, opts)
 }
 
-// DescribeVpcAttributeRequest mocks DescribeVpcAttributeRequest method
-func (m *MockVPCClient) DescribeVpcAttributeRequest(input *ec2.DescribeVpcAttributeInput) ec2.DescribeVpcAttributeRequest {
-	return m.MockDescribeVpcAttributeRequest(input)
+// DescribeVpcAttribute mocks DescribeVpcAttribute method
+func (m *MockVPCClient) DescribeVpcAttribute(ctx context.Context, input *ec2.DescribeVpcAttributeInput, opts ...func(*ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error) {
+	return m.MockDescribeVpcAttribute(ctx, input, opts)
 }

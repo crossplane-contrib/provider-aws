@@ -20,6 +20,7 @@ import (
 	"context"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
+	awss3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
@@ -44,7 +45,7 @@ func NewVersioningConfigurationClient(client s3.BucketClient) *VersioningConfigu
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *VersioningConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) { // nolint:gocyclo
-	external, err := in.client.GetBucketVersioningRequest(&awss3.GetBucketVersioningInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketVersioning(ctx, &awss3.GetBucketVersioningInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
 		return NeedsUpdate, awsclient.Wrap(err, versioningGetFailed)
 	}
@@ -64,7 +65,7 @@ func (in *VersioningConfigurationClient) CreateOrUpdate(ctx context.Context, buc
 		return nil
 	}
 	input := GeneratePutBucketVersioningInput(meta.GetExternalName(bucket), bucket.Spec.ForProvider.VersioningConfiguration)
-	_, err := in.client.PutBucketVersioningRequest(input).Send(ctx)
+	_, err := in.client.PutBucketVersioning(ctx, input)
 	return awsclient.Wrap(err, versioningPutFailed)
 }
 
@@ -75,7 +76,7 @@ func (*VersioningConfigurationClient) Delete(_ context.Context, _ *v1beta1.Bucke
 
 // LateInitialize is responsible for initializing the resource based on the external value
 func (in *VersioningConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketVersioningRequest(&awss3.GetBucketVersioningInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketVersioning(ctx, &awss3.GetBucketVersioningInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
 		return awsclient.Wrap(err, versioningGetFailed)
 	}
@@ -103,9 +104,9 @@ func (in *VersioningConfigurationClient) SubresourceExists(bucket *v1beta1.Bucke
 func GeneratePutBucketVersioningInput(name string, config *v1beta1.VersioningConfiguration) *awss3.PutBucketVersioningInput {
 	return &awss3.PutBucketVersioningInput{
 		Bucket: awsclient.String(name),
-		VersioningConfiguration: &awss3.VersioningConfiguration{
-			MFADelete: awss3.MFADelete(awsclient.StringValue(config.MFADelete)),
-			Status:    awss3.BucketVersioningStatus(awsclient.StringValue(config.Status)),
+		VersioningConfiguration: &awss3types.VersioningConfiguration{
+			MFADelete: awss3types.MFADelete(awsclient.StringValue(config.MFADelete)),
+			Status:    awss3types.BucketVersioningStatus(awsclient.StringValue(config.Status)),
 		},
 	}
 }

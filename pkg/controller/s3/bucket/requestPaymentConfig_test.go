@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 
@@ -41,9 +42,9 @@ func generateRequestPaymentConfig() *v1beta1.PaymentConfiguration {
 	}
 }
 
-func generateAWSPayment() *s3.RequestPaymentConfiguration {
-	return &s3.RequestPaymentConfiguration{
-		Payer: s3.PayerRequester,
+func generateAWSPayment() *s3types.RequestPaymentConfiguration {
+	return &s3types.RequestPaymentConfiguration{
+		Payer: s3types.PayerRequester,
 	}
 }
 
@@ -66,10 +67,8 @@ func TestRequestPaymentObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
 				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
-					MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
-						return s3.GetBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketRequestPaymentOutput{Payer: generateAWSPayment().Payer}),
-						}
+					MockGetBucketRequestPayment: func(ctx context.Context, input *s3.GetBucketRequestPaymentInput, opts []func(*s3.Options)) (*s3.GetBucketRequestPaymentOutput, error) {
+						return nil, errBoom
 					},
 				}),
 			},
@@ -82,10 +81,8 @@ func TestRequestPaymentObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
 				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
-					MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
-						return s3.GetBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketRequestPaymentOutput{}),
-						}
+					MockGetBucketRequestPayment: func(ctx context.Context, input *s3.GetBucketRequestPaymentInput, opts []func(*s3.Options)) (*s3.GetBucketRequestPaymentOutput, error) {
+						return &s3.GetBucketRequestPaymentOutput{}, nil
 					},
 				}),
 			},
@@ -98,10 +95,8 @@ func TestRequestPaymentObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
 				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
-					MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
-						return s3.GetBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketRequestPaymentOutput{Payer: generateAWSPayment().Payer}),
-						}
+					MockGetBucketRequestPayment: func(ctx context.Context, input *s3.GetBucketRequestPaymentInput, opts []func(*s3.Options)) (*s3.GetBucketRequestPaymentOutput, error) {
+						return &s3.GetBucketRequestPaymentOutput{Payer: generateAWSPayment().Payer}, nil
 					},
 				}),
 			},
@@ -143,10 +138,8 @@ func TestRequestPaymentCreateOrUpdate(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
 				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
-					MockPutBucketRequestPaymentRequest: func(input *s3.PutBucketRequestPaymentInput) s3.PutBucketRequestPaymentRequest {
-						return s3.PutBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketRequestPaymentOutput{}),
-						}
+					MockPutBucketRequestPayment: func(ctx context.Context, input *s3.PutBucketRequestPaymentInput, opts []func(*s3.Options)) (*s3.PutBucketRequestPaymentOutput, error) {
+						return nil, errBoom
 					},
 				}),
 			},
@@ -158,10 +151,8 @@ func TestRequestPaymentCreateOrUpdate(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
 				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
-					MockPutBucketRequestPaymentRequest: func(input *s3.PutBucketRequestPaymentInput) s3.PutBucketRequestPaymentRequest {
-						return s3.PutBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.PutBucketRequestPaymentOutput{}),
-						}
+					MockPutBucketRequestPayment: func(ctx context.Context, input *s3.PutBucketRequestPaymentInput, opts []func(*s3.Options)) (*s3.PutBucketRequestPaymentOutput, error) {
+						return &s3.PutBucketRequestPaymentOutput{}, nil
 					},
 				}),
 			},
@@ -173,10 +164,8 @@ func TestRequestPaymentCreateOrUpdate(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
 				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
-					MockPutBucketRequestPaymentRequest: func(input *s3.PutBucketRequestPaymentInput) s3.PutBucketRequestPaymentRequest {
-						return s3.PutBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.PutBucketRequestPaymentOutput{}),
-						}
+					MockPutBucketRequestPayment: func(ctx context.Context, input *s3.PutBucketRequestPaymentInput, opts []func(*s3.Options)) (*s3.PutBucketRequestPaymentOutput, error) {
+						return &s3.PutBucketRequestPaymentOutput{}, nil
 					},
 				}),
 			},
@@ -215,10 +204,8 @@ func TestReqPaymentLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(),
 				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
-					MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
-						return s3.GetBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketRequestPaymentOutput{}),
-						}
+					MockGetBucketRequestPayment: func(ctx context.Context, input *s3.GetBucketRequestPaymentInput, opts []func(*s3.Options)) (*s3.GetBucketRequestPaymentOutput, error) {
+						return &s3.GetBucketRequestPaymentOutput{}, errBoom
 					},
 				}),
 			},
@@ -231,10 +218,8 @@ func TestReqPaymentLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(),
 				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
-					MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
-						return s3.GetBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketRequestPaymentOutput{Payer: ""}),
-						}
+					MockGetBucketRequestPayment: func(ctx context.Context, input *s3.GetBucketRequestPaymentInput, opts []func(*s3.Options)) (*s3.GetBucketRequestPaymentOutput, error) {
+						return &s3.GetBucketRequestPaymentOutput{Payer: ""}, nil
 					},
 				}),
 			},
@@ -247,10 +232,8 @@ func TestReqPaymentLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithPayerConfig(nil)),
 				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
-					MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
-						return s3.GetBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketRequestPaymentOutput{Payer: s3.PayerRequester}),
-						}
+					MockGetBucketRequestPayment: func(ctx context.Context, input *s3.GetBucketRequestPaymentInput, opts []func(*s3.Options)) (*s3.GetBucketRequestPaymentOutput, error) {
+						return &s3.GetBucketRequestPaymentOutput{Payer: s3types.PayerRequester}, nil
 					},
 				}),
 			},
@@ -263,10 +246,8 @@ func TestReqPaymentLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithPayerConfig(generateRequestPaymentConfig())),
 				cl: NewRequestPaymentConfigurationClient(fake.MockBucketClient{
-					MockGetBucketRequestPaymentRequest: func(input *s3.GetBucketRequestPaymentInput) s3.GetBucketRequestPaymentRequest {
-						return s3.GetBucketRequestPaymentRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketRequestPaymentOutput{Payer: s3.PayerBucketOwner}),
-						}
+					MockGetBucketRequestPayment: func(ctx context.Context, input *s3.GetBucketRequestPaymentInput, opts []func(*s3.Options)) (*s3.GetBucketRequestPaymentOutput, error) {
+						return &s3.GetBucketRequestPaymentOutput{Payer: s3types.PayerBucketOwner}, nil
 					},
 				}),
 			},

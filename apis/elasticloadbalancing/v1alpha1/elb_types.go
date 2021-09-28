@@ -37,7 +37,7 @@ type Tag struct {
 type Listener struct {
 
 	// The port on which the instance is listening.
-	InstancePort int64 `json:"instancePort"`
+	InstancePort int32 `json:"instancePort"`
 
 	// The protocol to use for routing traffic to instances: HTTP, HTTPS, TCP, or
 	// SSL. If not specified, the value is same as for Protocol.
@@ -45,7 +45,7 @@ type Listener struct {
 	InstanceProtocol *string `json:"instanceProtocol,omitempty"`
 
 	// The port on which the load balancer is listening.
-	LoadBalancerPort int64 `json:"loadBalancerPort"`
+	LoadBalancerPort int32 `json:"loadBalancerPort"`
 
 	// The load balancer transport protocol to use for routing: HTTP, HTTPS, TCP,
 	// or SSL.
@@ -60,7 +60,7 @@ type Listener struct {
 type BackendServerDescription struct {
 
 	// The port on which the EC2 instance is listening.
-	InstancePort int64 `json:"instancePort,omitempty"`
+	InstancePort int32 `json:"instancePort,omitempty"`
 
 	// The names of the policies enabled for the EC2 instance.
 	PolicyNames []string `json:"policyNames,omitempty"`
@@ -71,22 +71,22 @@ type HealthCheck struct {
 
 	// The number of consecutive health checks successes required before moving
 	// the instance to the Healthy state.
-	HealthyThreshold int64 `json:"healthyThreshold"`
+	HealthyThreshold int32 `json:"healthyThreshold"`
 
 	// The approximate interval, in seconds, between health checks of an individual
 	// instance.
-	Interval int64 `json:"interval"`
+	Interval int32 `json:"interval"`
 
 	// The instance being checked.
 	Target string `json:"target"`
 
 	// The amount of time, in seconds, during which no response means a failed health
 	// check.
-	Timeout int64 `json:"timeout"`
+	Timeout int32 `json:"timeout"`
 
 	// The number of consecutive health check failures required before moving the
 	// instance to the Unhealthy state.
-	UnhealthyThreshold int64 `json:"unhealthyThreshold"`
+	UnhealthyThreshold int32 `json:"unhealthyThreshold"`
 }
 
 // ELBParameters define the desired state of an AWS ELB.

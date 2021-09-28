@@ -17,6 +17,7 @@ limitations under the License.
 package sqs
 
 import (
+	"context"
 	"encoding/json"
 	"strconv"
 	"strings"
@@ -25,8 +26,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	"github.com/aws/smithy-go"
 	"github.com/google/go-cmp/cmp"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -43,25 +44,25 @@ const (
 
 // Client defines Queue client operations
 type Client interface {
-	CreateQueueRequest(input *sqs.CreateQueueInput) sqs.CreateQueueRequest
-	DeleteQueueRequest(input *sqs.DeleteQueueInput) sqs.DeleteQueueRequest
-	TagQueueRequest(input *sqs.TagQueueInput) sqs.TagQueueRequest
-	ListQueueTagsRequest(*sqs.ListQueueTagsInput) sqs.ListQueueTagsRequest
-	GetQueueAttributesRequest(*sqs.GetQueueAttributesInput) sqs.GetQueueAttributesRequest
-	SetQueueAttributesRequest(input *sqs.SetQueueAttributesInput) sqs.SetQueueAttributesRequest
-	UntagQueueRequest(input *sqs.UntagQueueInput) sqs.UntagQueueRequest
-	GetQueueUrlRequest(input *sqs.GetQueueUrlInput) sqs.GetQueueUrlRequest
+	CreateQueue(ctx context.Context, input *sqs.CreateQueueInput, opts ...func(*sqs.Options)) (*sqs.CreateQueueOutput, error)
+	DeleteQueue(ctx context.Context, input *sqs.DeleteQueueInput, opts ...func(*sqs.Options)) (*sqs.DeleteQueueOutput, error)
+	TagQueue(ctx context.Context, input *sqs.TagQueueInput, opts ...func(*sqs.Options)) (*sqs.TagQueueOutput, error)
+	UntagQueue(ctx context.Context, input *sqs.UntagQueueInput, opts ...func(*sqs.Options)) (*sqs.UntagQueueOutput, error)
+	ListQueueTags(ctx context.Context, input *sqs.ListQueueTagsInput, opts ...func(*sqs.Options)) (*sqs.ListQueueTagsOutput, error)
+	GetQueueAttributes(ctx context.Context, input *sqs.GetQueueAttributesInput, opts ...func(*sqs.Options)) (*sqs.GetQueueAttributesOutput, error)
+	SetQueueAttributes(ctx context.Context, input *sqs.SetQueueAttributesInput, opts ...func(*sqs.Options)) (*sqs.SetQueueAttributesOutput, error)
+	GetQueueUrl(ctx context.Context, input *sqs.GetQueueUrlInput, opts ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error)
 }
 
 // NewClient returns a new SQS Client.
 func NewClient(cfg aws.Config) Client {
-	return sqs.New(cfg)
+	return sqs.NewFromConfig(cfg)
 }
 
 // GenerateCreateAttributes returns a map of queue attributes for Create operation
 func GenerateCreateAttributes(p *v1beta1.QueueParameters) map[string]string {
 	m := GenerateQueueAttributes(p)
-	if aws.BoolValue(p.FIFOQueue) {
+	if aws.ToBool(p.FIFOQueue) {
 		// SQS expects this attribute only if its value is true.
 		// https://github.com/aws/aws-sdk-php/issues/1331
 		if m == nil {
@@ -76,24 +77,24 @@ func GenerateCreateAttributes(p *v1beta1.QueueParameters) map[string]string {
 func GenerateQueueAttributes(p *v1beta1.QueueParameters) map[string]string { // nolint:gocyclo
 	m := map[string]string{}
 	if p.DelaySeconds != nil {
-		m[v1beta1.AttributeDelaySeconds] = strconv.FormatInt(aws.Int64Value(p.DelaySeconds), 10)
+		m[v1beta1.AttributeDelaySeconds] = strconv.FormatInt(aws.ToInt64(p.DelaySeconds), 10)
 	}
 	if p.MaximumMessageSize != nil {
-		m[v1beta1.AttributeMaximumMessageSize] = strconv.FormatInt(aws.Int64Value(p.MaximumMessageSize), 10)
+		m[v1beta1.AttributeMaximumMessageSize] = strconv.FormatInt(aws.ToInt64(p.MaximumMessageSize), 10)
 	}
 	if p.MessageRetentionPeriod != nil {
-		m[v1beta1.AttributeMessageRetentionPeriod] = strconv.FormatInt(aws.Int64Value(p.MessageRetentionPeriod), 10)
+		m[v1beta1.AttributeMessageRetentionPeriod] = strconv.FormatInt(aws.ToInt64(p.MessageRetentionPeriod), 10)
 	}
 	if p.Policy != nil {
-		m[v1beta1.AttributePolicy] = aws.StringValue(p.Policy)
+		m[v1beta1.AttributePolicy] = aws.ToString(p.Policy)
 	}
 	if p.ReceiveMessageWaitTimeSeconds != nil {
-		m[v1beta1.AttributeReceiveMessageWaitTimeSeconds] = strconv.FormatInt(aws.Int64Value(p.ReceiveMessageWaitTimeSeconds), 10)
+		m[v1beta1.AttributeReceiveMessageWaitTimeSeconds] = strconv.FormatInt(aws.ToInt64(p.ReceiveMessageWaitTimeSeconds), 10)
 	}
 	if p.ReceiveMessageWaitTimeSeconds != nil {
-		m[v1beta1.AttributeReceiveMessageWaitTimeSeconds] = strconv.FormatInt(aws.Int64Value(p.ReceiveMessageWaitTimeSeconds), 10)
+		m[v1beta1.AttributeReceiveMessageWaitTimeSeconds] = strconv.FormatInt(aws.ToInt64(p.ReceiveMessageWaitTimeSeconds), 10)
 	}
-	if p.RedrivePolicy != nil && aws.StringValue(p.RedrivePolicy.DeadLetterTargetARN) != "" {
+	if p.RedrivePolicy != nil && aws.ToString(p.RedrivePolicy.DeadLetterTargetARN) != "" {
 		r := map[string]interface{}{
 			"deadLetterTargetArn": p.RedrivePolicy.DeadLetterTargetARN,
 			"maxReceiveCount":     p.RedrivePolicy.MaxReceiveCount,
@@ -104,16 +105,16 @@ func GenerateQueueAttributes(p *v1beta1.QueueParameters) map[string]string { // 
 		}
 	}
 	if p.VisibilityTimeout != nil {
-		m[v1beta1.AttributeVisibilityTimeout] = strconv.FormatInt(aws.Int64Value(p.VisibilityTimeout), 10)
+		m[v1beta1.AttributeVisibilityTimeout] = strconv.FormatInt(aws.ToInt64(p.VisibilityTimeout), 10)
 	}
 	if p.KMSMasterKeyID != nil {
-		m[v1beta1.AttributeKmsMasterKeyID] = aws.StringValue(p.KMSMasterKeyID)
+		m[v1beta1.AttributeKmsMasterKeyID] = aws.ToString(p.KMSMasterKeyID)
 	}
 	if p.KMSDataKeyReusePeriodSeconds != nil {
-		m[v1beta1.AttributeKmsDataKeyReusePeriodSeconds] = strconv.FormatInt(aws.Int64Value(p.KMSDataKeyReusePeriodSeconds), 10)
+		m[v1beta1.AttributeKmsDataKeyReusePeriodSeconds] = strconv.FormatInt(aws.ToInt64(p.KMSDataKeyReusePeriodSeconds), 10)
 	}
 	if p.ContentBasedDeduplication != nil {
-		m[v1beta1.AttributeContentBasedDeduplication] = strconv.FormatBool(aws.BoolValue(p.ContentBasedDeduplication))
+		m[v1beta1.AttributeContentBasedDeduplication] = strconv.FormatBool(aws.ToBool(p.ContentBasedDeduplication))
 	}
 	if len(m) == 0 {
 		return nil
@@ -144,12 +145,11 @@ func GenerateQueueObservation(url string, attr map[string]string) v1beta1.QueueO
 
 // IsNotFound checks if the error returned by AWS API says that the queue being probed doesn't exist
 func IsNotFound(err error) bool {
-	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == QueueNotFound {
+	if awsErr, ok := err.(smithy.APIError); ok {
+		if awsErr.ErrorCode() == QueueNotFound {
 			return true
 		}
 	}
-
 	return false
 }
 
@@ -187,31 +187,31 @@ func IsUpToDate(p v1beta1.QueueParameters, attributes map[string]string, tags ma
 		}
 	}
 
-	if aws.Int64Value(p.DelaySeconds) != int64Value(attributes[v1beta1.AttributeDelaySeconds]) {
+	if aws.ToInt64(p.DelaySeconds) != toInt64(attributes[v1beta1.AttributeDelaySeconds]) {
 		return false
 	}
-	if aws.Int64Value(p.KMSDataKeyReusePeriodSeconds) != int64Value(attributes[v1beta1.AttributeKmsDataKeyReusePeriodSeconds]) {
+	if aws.ToInt64(p.KMSDataKeyReusePeriodSeconds) != toInt64(attributes[v1beta1.AttributeKmsDataKeyReusePeriodSeconds]) {
 		return false
 	}
-	if aws.Int64Value(p.MaximumMessageSize) != int64Value(attributes[v1beta1.AttributeMaximumMessageSize]) {
+	if aws.ToInt64(p.MaximumMessageSize) != toInt64(attributes[v1beta1.AttributeMaximumMessageSize]) {
 		return false
 	}
-	if aws.Int64Value(p.MessageRetentionPeriod) != int64Value(attributes[v1beta1.AttributeMessageRetentionPeriod]) {
+	if aws.ToInt64(p.MessageRetentionPeriod) != toInt64(attributes[v1beta1.AttributeMessageRetentionPeriod]) {
 		return false
 	}
-	if aws.Int64Value(p.ReceiveMessageWaitTimeSeconds) != int64Value(attributes[v1beta1.AttributeReceiveMessageWaitTimeSeconds]) {
+	if aws.ToInt64(p.ReceiveMessageWaitTimeSeconds) != toInt64(attributes[v1beta1.AttributeReceiveMessageWaitTimeSeconds]) {
 		return false
 	}
-	if aws.Int64Value(p.VisibilityTimeout) != int64Value(attributes[v1beta1.AttributeVisibilityTimeout]) {
+	if aws.ToInt64(p.VisibilityTimeout) != toInt64(attributes[v1beta1.AttributeVisibilityTimeout]) {
 		return false
 	}
-	if !cmp.Equal(aws.StringValue(p.KMSMasterKeyID), attributes[v1beta1.AttributeKmsMasterKeyID]) {
+	if !cmp.Equal(aws.ToString(p.KMSMasterKeyID), attributes[v1beta1.AttributeKmsMasterKeyID]) {
 		return false
 	}
-	if !cmp.Equal(aws.StringValue(p.Policy), attributes[v1beta1.AttributePolicy]) {
+	if !cmp.Equal(aws.ToString(p.Policy), attributes[v1beta1.AttributePolicy]) {
 		return false
 	}
-	if attributes[v1beta1.AttributeContentBasedDeduplication] != "" && strconv.FormatBool(aws.BoolValue(p.ContentBasedDeduplication)) != attributes[v1beta1.AttributeContentBasedDeduplication] {
+	if attributes[v1beta1.AttributeContentBasedDeduplication] != "" && strconv.FormatBool(aws.ToBool(p.ContentBasedDeduplication)) != attributes[v1beta1.AttributeContentBasedDeduplication] {
 		return false
 	}
 	if p.RedrivePolicy != nil {
@@ -247,7 +247,7 @@ func TagsDiff(sqsTags map[string]string, newTags map[string]string) (removed, ad
 	return
 }
 
-func int64Value(s string) int64 {
+func toInt64(s string) int64 {
 	v, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
 		return 0

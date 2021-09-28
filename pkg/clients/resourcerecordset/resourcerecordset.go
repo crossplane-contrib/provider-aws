@@ -24,6 +24,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
@@ -39,8 +40,8 @@ const (
 
 // Client defines ResourceRecordSet operations
 type Client interface {
-	ChangeResourceRecordSetsRequest(input *route53.ChangeResourceRecordSetsInput) route53.ChangeResourceRecordSetsRequest
-	ListResourceRecordSetsRequest(input *route53.ListResourceRecordSetsInput) route53.ListResourceRecordSetsRequest
+	ChangeResourceRecordSets(ctx context.Context, input *route53.ChangeResourceRecordSetsInput, opts ...func(*route53.Options)) (*route53.ChangeResourceRecordSetsOutput, error)
+	ListResourceRecordSets(ctx context.Context, input *route53.ListResourceRecordSetsInput, opts ...func(*route53.Options)) (*route53.ListResourceRecordSetsOutput, error)
 }
 
 // NotFoundError will be raised when there is no ResourceRecordSet
@@ -61,16 +62,16 @@ func IsNotFound(err error) bool {
 
 // NewClient creates new AWS client with provided AWS Configuration/Credentials
 func NewClient(cfg aws.Config) Client {
-	return route53.New(cfg)
+	return route53.NewFromConfig(cfg)
 }
 
 // GetResourceRecordSet returns recordSet if present or err
-func GetResourceRecordSet(ctx context.Context, name string, params v1alpha1.ResourceRecordSetParameters, c Client) (*route53.ResourceRecordSet, error) {
-	res, err := c.ListResourceRecordSetsRequest(&route53.ListResourceRecordSetsInput{
+func GetResourceRecordSet(ctx context.Context, name string, params v1alpha1.ResourceRecordSetParameters, c Client) (*route53types.ResourceRecordSet, error) {
+	res, err := c.ListResourceRecordSets(ctx, &route53.ListResourceRecordSetsInput{
 		HostedZoneId:    params.ZoneID,
 		StartRecordName: &name,
-		StartRecordType: route53.RRType(params.Type),
-	}).Send(ctx)
+		StartRecordType: route53types.RRType(params.Type),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -81,9 +82,9 @@ func GetResourceRecordSet(ctx context.Context, name string, params v1alpha1.Reso
 		return s
 	}
 	for _, rr := range res.ResourceRecordSets {
-		if appendDot(aws.StringValue(rr.Name)) == appendDot(name) &&
+		if appendDot(aws.ToString(rr.Name)) == appendDot(name) &&
 			string(rr.Type) == params.Type &&
-			aws.StringValue(rr.SetIdentifier) == aws.StringValue(params.SetIdentifier) {
+			aws.ToString(rr.SetIdentifier) == aws.ToString(params.SetIdentifier) {
 			return &rr, nil
 		}
 	}
@@ -91,33 +92,33 @@ func GetResourceRecordSet(ctx context.Context, name string, params v1alpha1.Reso
 }
 
 // GenerateChangeResourceRecordSetsInput prepares input for a ChangeResourceRecordSetsInput
-func GenerateChangeResourceRecordSetsInput(name string, p v1alpha1.ResourceRecordSetParameters, action route53.ChangeAction) *route53.ChangeResourceRecordSetsInput {
-	r := &route53.ResourceRecordSet{
+func GenerateChangeResourceRecordSetsInput(name string, p v1alpha1.ResourceRecordSetParameters, action route53types.ChangeAction) *route53.ChangeResourceRecordSetsInput {
+	r := &route53types.ResourceRecordSet{
 		Name:                    aws.String(name),
-		Type:                    route53.RRType(p.Type),
+		Type:                    route53types.RRType(p.Type),
 		TTL:                     p.TTL,
 		SetIdentifier:           p.SetIdentifier,
 		Weight:                  p.Weight,
-		Failover:                route53.ResourceRecordSetFailover(p.Failover),
+		Failover:                route53types.ResourceRecordSetFailover(p.Failover),
 		HealthCheckId:           p.HealthCheckID,
 		MultiValueAnswer:        p.MultiValueAnswer,
-		Region:                  route53.ResourceRecordSetRegion(p.Region),
+		Region:                  route53types.ResourceRecordSetRegion(p.Region),
 		TrafficPolicyInstanceId: p.TrafficPolicyInstanceID,
 	}
 	for _, v := range p.ResourceRecords {
-		r.ResourceRecords = append(r.ResourceRecords, route53.ResourceRecord{
+		r.ResourceRecords = append(r.ResourceRecords, route53types.ResourceRecord{
 			Value: aws.String(v.Value),
 		})
 	}
 	if p.AliasTarget != nil {
-		r.AliasTarget = &route53.AliasTarget{
+		r.AliasTarget = &route53types.AliasTarget{
 			DNSName:              aws.String(p.AliasTarget.DNSName),
-			EvaluateTargetHealth: aws.Bool(p.AliasTarget.EvaluateTargetHealth),
+			EvaluateTargetHealth: p.AliasTarget.EvaluateTargetHealth,
 			HostedZoneId:         aws.String(p.AliasTarget.HostedZoneID),
 		}
 	}
 	if p.GeoLocation != nil {
-		r.GeoLocation = &route53.GeoLocation{
+		r.GeoLocation = &route53types.GeoLocation{
 			ContinentCode:   p.GeoLocation.ContinentCode,
 			CountryCode:     p.GeoLocation.CountryCode,
 			SubdivisionCode: p.GeoLocation.SubdivisionCode,
@@ -126,8 +127,8 @@ func GenerateChangeResourceRecordSetsInput(name string, p v1alpha1.ResourceRecor
 
 	return &route53.ChangeResourceRecordSetsInput{
 		HostedZoneId: p.ZoneID,
-		ChangeBatch: &route53.ChangeBatch{
-			Changes: []route53.Change{
+		ChangeBatch: &route53types.ChangeBatch{
+			Changes: []route53types.Change{
 				{
 					Action:            action,
 					ResourceRecordSet: r,
@@ -138,7 +139,7 @@ func GenerateChangeResourceRecordSetsInput(name string, p v1alpha1.ResourceRecor
 }
 
 // IsUpToDate checks if object is up to date
-func IsUpToDate(p v1alpha1.ResourceRecordSetParameters, rrset route53.ResourceRecordSet) (bool, error) {
+func IsUpToDate(p v1alpha1.ResourceRecordSetParameters, rrset route53types.ResourceRecordSet) (bool, error) {
 	patch, err := CreatePatch(&rrset, &p)
 	if err != nil {
 		return false, err
@@ -149,8 +150,8 @@ func IsUpToDate(p v1alpha1.ResourceRecordSetParameters, rrset route53.ResourceRe
 }
 
 // LateInitialize fills the empty fields in *v1alpha1.ResourceRecordSetParameters with
-// the values seen in route53.ResourceRecordSet.
-func LateInitialize(in *v1alpha1.ResourceRecordSetParameters, rrSet *route53.ResourceRecordSet) {
+// the values seen in route53types.ResourceRecordSet.
+func LateInitialize(in *v1alpha1.ResourceRecordSetParameters, rrSet *route53types.ResourceRecordSet) {
 	if rrSet == nil || in == nil {
 		return
 	}
@@ -169,12 +170,12 @@ func LateInitialize(in *v1alpha1.ResourceRecordSetParameters, rrSet *route53.Res
 
 // CreatePatch creates a *v1beta1.ResourceRecordSetParameters that has only the changed
 // values between the target *v1beta1.ResourceRecordSetParameters and the current
-// *route53.ResourceRecordSet
-func CreatePatch(in *route53.ResourceRecordSet, target *v1alpha1.ResourceRecordSetParameters) (*v1alpha1.ResourceRecordSetParameters, error) {
+// *route53types.ResourceRecordSet
+func CreatePatch(in *route53types.ResourceRecordSet, target *v1alpha1.ResourceRecordSetParameters) (*v1alpha1.ResourceRecordSetParameters, error) {
 	currentParams := &v1alpha1.ResourceRecordSetParameters{}
 	LateInitialize(currentParams, in)
 
-	// ZoneID doesn't exist in *route53.ResourceRecordSet object, so, we have to
+	// ZoneID doesn't exist in *route53types.ResourceRecordSet object, so, we have to
 	// skip its comparison.
 	currentParams.ZoneID = target.ZoneID
 

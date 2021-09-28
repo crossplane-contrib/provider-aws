@@ -18,11 +18,10 @@ package iamuser
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
@@ -40,8 +39,8 @@ import (
 )
 
 var (
-	unexpecedItem resource.Managed
-	userName      = "some user"
+	unexpectedItem resource.Managed
+	userName       = "some user"
 
 	errBoom = errors.New("boom")
 )
@@ -84,12 +83,10 @@ func TestObserve(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockUserClient{
-					MockGetUser: func(input *awsiam.GetUserInput) awsiam.GetUserRequest {
-						return awsiam.GetUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.GetUserOutput{
-								User: &awsiam.User{},
-							}},
-						}
+					MockGetUser: func(ctx context.Context, input *awsiam.GetUserInput, opts []func(*awsiam.Options)) (*awsiam.GetUserOutput, error) {
+						return &awsiam.GetUserOutput{
+							User: &awsiamtypes.User{},
+						}, nil
 					},
 				},
 				cr: user(withExternalName(userName)),
@@ -105,20 +102,18 @@ func TestObserve(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"GetUserError": {
 			args: args{
 				iam: &fake.MockUserClient{
-					MockGetUser: func(input *awsiam.GetUserInput) awsiam.GetUserRequest {
-						return awsiam.GetUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockGetUser: func(ctx context.Context, input *awsiam.GetUserInput, opts []func(*awsiam.Options)) (*awsiam.GetUserOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: user(withExternalName(userName)),
@@ -163,10 +158,8 @@ func TestCreate(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockUserClient{
-					MockCreateUser: func(input *awsiam.CreateUserInput) awsiam.CreateUserRequest {
-						return awsiam.CreateUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.CreateUserOutput{}},
-						}
+					MockCreateUser: func(ctx context.Context, input *awsiam.CreateUserInput, opts []func(*awsiam.Options)) (*awsiam.CreateUserOutput, error) {
+						return &awsiam.CreateUserOutput{}, nil
 					},
 				},
 				cr: user(withExternalName(userName)),
@@ -179,20 +172,18 @@ func TestCreate(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				iam: &fake.MockUserClient{
-					MockCreateUser: func(input *awsiam.CreateUserInput) awsiam.CreateUserRequest {
-						return awsiam.CreateUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockCreateUser: func(ctx context.Context, input *awsiam.CreateUserInput, opts []func(*awsiam.Options)) (*awsiam.CreateUserOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: user(),
@@ -237,10 +228,8 @@ func TestUpdate(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockUserClient{
-					MockUpdateUser: func(input *awsiam.UpdateUserInput) awsiam.UpdateUserRequest {
-						return awsiam.UpdateUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.UpdateUserOutput{}},
-						}
+					MockUpdateUser: func(ctx context.Context, input *awsiam.UpdateUserInput, opts []func(*awsiam.Options)) (*awsiam.UpdateUserOutput, error) {
+						return &awsiam.UpdateUserOutput{}, nil
 					},
 				},
 				cr: user(withExternalName(userName)),
@@ -251,10 +240,10 @@ func TestUpdate(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
@@ -292,10 +281,8 @@ func TestDelete(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				iam: &fake.MockUserClient{
-					MockDeleteUser: func(input *awsiam.DeleteUserInput) awsiam.DeleteUserRequest {
-						return awsiam.DeleteUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DeleteUserOutput{}},
-						}
+					MockDeleteUser: func(ctx context.Context, input *awsiam.DeleteUserInput, opts []func(*awsiam.Options)) (*awsiam.DeleteUserOutput, error) {
+						return &awsiam.DeleteUserOutput{}, nil
 					},
 				},
 				cr: user(withExternalName(userName)),
@@ -307,20 +294,18 @@ func TestDelete(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"DeleteError": {
 			args: args{
 				iam: &fake.MockUserClient{
-					MockDeleteUser: func(input *awsiam.DeleteUserInput) awsiam.DeleteUserRequest {
-						return awsiam.DeleteUserRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDeleteUser: func(ctx context.Context, input *awsiam.DeleteUserInput, opts []func(*awsiam.Options)) (*awsiam.DeleteUserOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: user(withExternalName(userName)),

@@ -20,14 +20,15 @@ import (
 	"context"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
+	clientss3 "github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
@@ -53,12 +54,12 @@ func generateReplicationConfig() *v1beta1.ReplicationConfiguration {
 				Bucket:                   &bucketName,
 				EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: kmsID},
 				Metrics: &v1beta1.Metrics{
-					EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int64(replicationTime)},
+					EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
 					Status:         enabled,
 				},
 				ReplicationTime: &v1beta1.ReplicationTime{
 					Status: enabled,
-					Time:   v1beta1.ReplicationTimeValue{Minutes: int64(replicationTime)},
+					Time:   v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
 				},
 				StorageClass: &storage,
 			},
@@ -72,46 +73,44 @@ func generateReplicationConfig() *v1beta1.ReplicationConfiguration {
 				Tag:    &tag,
 			},
 			ID:                      &id,
-			Priority:                awsclient.Int64(priority),
+			Priority:                awsclient.Int32(priority),
 			SourceSelectionCriteria: &v1beta1.SourceSelectionCriteria{SseKmsEncryptedObjects: v1beta1.SseKmsEncryptedObjects{Status: enabled}},
 			Status:                  enabled,
 		}},
 	}
 }
 
-func generateAWSReplication() *s3.ReplicationConfiguration {
-	return &s3.ReplicationConfiguration{
+func generateAWSReplication() *s3types.ReplicationConfiguration {
+	return &s3types.ReplicationConfiguration{
 		Role: &role,
-		Rules: []s3.ReplicationRule{{
-			DeleteMarkerReplication: &s3.DeleteMarkerReplication{Status: s3.DeleteMarkerReplicationStatusEnabled},
-			Destination: &s3.Destination{
-				AccessControlTranslation: &s3.AccessControlTranslation{Owner: s3.OwnerOverrideDestination},
+		Rules: []s3types.ReplicationRule{{
+			DeleteMarkerReplication: &s3types.DeleteMarkerReplication{Status: s3types.DeleteMarkerReplicationStatusEnabled},
+			Destination: &s3types.Destination{
+				AccessControlTranslation: &s3types.AccessControlTranslation{Owner: s3types.OwnerOverrideDestination},
 				Account:                  &accountID,
 				Bucket:                   &bucketName,
-				EncryptionConfiguration:  &s3.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
-				Metrics: &s3.Metrics{
-					EventThreshold: &s3.ReplicationTimeValue{Minutes: awsclient.Int64(replicationTime)},
-					Status:         s3.MetricsStatusEnabled,
+				EncryptionConfiguration:  &s3types.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
+				Metrics: &s3types.Metrics{
+					EventThreshold: &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+					Status:         s3types.MetricsStatusEnabled,
 				},
-				ReplicationTime: &s3.ReplicationTime{
-					Time:   &s3.ReplicationTimeValue{Minutes: awsclient.Int64(replicationTime)},
-					Status: s3.ReplicationTimeStatusEnabled,
+				ReplicationTime: &s3types.ReplicationTime{
+					Time:   &s3types.ReplicationTimeValue{Minutes: int32(replicationTime)},
+					Status: s3types.ReplicationTimeStatusEnabled,
 				},
-				StorageClass: s3.StorageClassOnezoneIa,
+				StorageClass: s3types.StorageClassOnezoneIa,
 			},
-			ExistingObjectReplication: &s3.ExistingObjectReplication{Status: s3.ExistingObjectReplicationStatusEnabled},
-			Filter: &s3.ReplicationRuleFilter{
-				And: &s3.ReplicationRuleAndOperator{
+			ExistingObjectReplication: &s3types.ExistingObjectReplication{Status: s3types.ExistingObjectReplicationStatusEnabled},
+			Filter: &s3types.ReplicationRuleFilterMemberAnd{
+				Value: s3types.ReplicationRuleAndOperator{
 					Prefix: &prefix,
 					Tags:   awsTags,
 				},
-				Prefix: &prefix,
-				Tag:    &awsTag,
 			},
 			ID:                      &id,
-			Priority:                awsclient.Int64(priority),
-			SourceSelectionCriteria: &s3.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3.SseKmsEncryptedObjects{Status: s3.SseKmsEncryptedObjectsStatusEnabled}},
-			Status:                  s3.ReplicationRuleStatusEnabled,
+			Priority:                int32(priority),
+			SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
+			Status:                  s3types.ReplicationRuleStatusEnabled,
 		}},
 	}
 }
@@ -135,10 +134,8 @@ func TestReplicationObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketReplicationRequest: func(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest {
-						return s3.GetBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketReplicationOutput{}),
-						}
+					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+						return nil, errBoom
 					},
 				}),
 			},
@@ -151,10 +148,8 @@ func TestReplicationObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketReplicationRequest: func(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest {
-						return s3.GetBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketReplicationOutput{ReplicationConfiguration: nil}),
-						}
+					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: nil}, nil
 					},
 				}),
 			},
@@ -167,10 +162,8 @@ func TestReplicationObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithReplConfig(nil)),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketReplicationRequest: func(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest {
-						return s3.GetBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketReplicationOutput{ReplicationConfiguration: generateAWSReplication()}),
-						}
+					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: generateAWSReplication()}, nil
 					},
 				}),
 			},
@@ -183,10 +176,8 @@ func TestReplicationObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithReplConfig(nil)),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketReplicationRequest: func(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest {
-						return s3.GetBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.ReplicationNotFoundErrCode, "", nil), &s3.GetBucketReplicationOutput{}),
-						}
+					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+						return nil, &smithy.GenericAPIError{Code: clientss3.ReplicationNotFoundErrCode}
 					},
 				}),
 			},
@@ -199,10 +190,8 @@ func TestReplicationObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithReplConfig(nil)),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketReplicationRequest: func(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest {
-						return s3.GetBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketReplicationOutput{ReplicationConfiguration: nil}),
-						}
+					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: nil}, nil
 					},
 				}),
 			},
@@ -215,10 +204,8 @@ func TestReplicationObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketReplicationRequest: func(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest {
-						return s3.GetBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketReplicationOutput{ReplicationConfiguration: generateAWSReplication()}),
-						}
+					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: generateAWSReplication()}, nil
 					},
 				}),
 			},
@@ -260,10 +247,8 @@ func TestReplicationCreateOrUpdate(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockPutBucketReplicationRequest: func(input *s3.PutBucketReplicationInput) s3.PutBucketReplicationRequest {
-						return s3.PutBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketReplicationOutput{}),
-						}
+					MockPutBucketReplication: func(ctx context.Context, input *s3.PutBucketReplicationInput, opts []func(*s3.Options)) (*s3.PutBucketReplicationOutput, error) {
+						return nil, errBoom
 					},
 				}),
 			},
@@ -275,10 +260,8 @@ func TestReplicationCreateOrUpdate(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockPutBucketReplicationRequest: func(input *s3.PutBucketReplicationInput) s3.PutBucketReplicationRequest {
-						return s3.PutBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.PutBucketReplicationOutput{}),
-						}
+					MockPutBucketReplication: func(ctx context.Context, input *s3.PutBucketReplicationInput, opts []func(*s3.Options)) (*s3.PutBucketReplicationOutput, error) {
+						return &s3.PutBucketReplicationOutput{}, nil
 					},
 				}),
 			},
@@ -290,10 +273,8 @@ func TestReplicationCreateOrUpdate(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockPutBucketReplicationRequest: func(input *s3.PutBucketReplicationInput) s3.PutBucketReplicationRequest {
-						return s3.PutBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.PutBucketReplicationOutput{}),
-						}
+					MockPutBucketReplication: func(ctx context.Context, input *s3.PutBucketReplicationInput, opts []func(*s3.Options)) (*s3.PutBucketReplicationOutput, error) {
+						return &s3.PutBucketReplicationOutput{}, nil
 					},
 				}),
 			},
@@ -331,10 +312,8 @@ func TestReplicationDelete(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockDeleteBucketReplicationRequest: func(input *s3.DeleteBucketReplicationInput) s3.DeleteBucketReplicationRequest {
-						return s3.DeleteBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.DeleteBucketReplicationOutput{}),
-						}
+					MockDeleteBucketReplication: func(ctx context.Context, input *s3.DeleteBucketReplicationInput, opts []func(*s3.Options)) (*s3.DeleteBucketReplicationOutput, error) {
+						return nil, errBoom
 					},
 				}),
 			},
@@ -346,10 +325,8 @@ func TestReplicationDelete(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockDeleteBucketReplicationRequest: func(input *s3.DeleteBucketReplicationInput) s3.DeleteBucketReplicationRequest {
-						return s3.DeleteBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.DeleteBucketReplicationOutput{}),
-						}
+					MockDeleteBucketReplication: func(ctx context.Context, input *s3.DeleteBucketReplicationInput, opts []func(*s3.Options)) (*s3.DeleteBucketReplicationOutput, error) {
+						return &s3.DeleteBucketReplicationOutput{}, nil
 					},
 				}),
 			},
@@ -388,10 +365,8 @@ func TestReplicationLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketReplicationRequest: func(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest {
-						return s3.GetBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketReplicationOutput{}),
-						}
+					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+						return &s3.GetBucketReplicationOutput{}, errBoom
 					},
 				}),
 			},
@@ -404,10 +379,8 @@ func TestReplicationLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketReplicationRequest: func(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest {
-						return s3.GetBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.ReplicationNotFoundErrCode, "error", nil), &s3.GetBucketReplicationOutput{}),
-						}
+					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+						return &s3.GetBucketReplicationOutput{}, &smithy.GenericAPIError{Code: clientss3.ReplicationNotFoundErrCode}
 					},
 				}),
 			},
@@ -420,10 +393,8 @@ func TestReplicationLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketReplicationRequest: func(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest {
-						return s3.GetBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketReplicationOutput{}),
-						}
+					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+						return &s3.GetBucketReplicationOutput{}, nil
 					},
 				}),
 			},
@@ -436,10 +407,8 @@ func TestReplicationLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketReplicationRequest: func(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest {
-						return s3.GetBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketReplicationOutput{ReplicationConfiguration: nil}),
-						}
+					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: nil}, nil
 					},
 				}),
 			},
@@ -452,10 +421,8 @@ func TestReplicationLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithReplConfig(nil)),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketReplicationRequest: func(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest {
-						return s3.GetBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketReplicationOutput{ReplicationConfiguration: generateAWSReplication()}),
-						}
+					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+						return &s3.GetBucketReplicationOutput{ReplicationConfiguration: generateAWSReplication()}, nil
 					},
 				}),
 			},
@@ -468,12 +435,10 @@ func TestReplicationLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithReplConfig(generateReplicationConfig())),
 				cl: NewReplicationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketReplicationRequest: func(input *s3.GetBucketReplicationInput) s3.GetBucketReplicationRequest {
-						return s3.GetBucketReplicationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketReplicationOutput{
-								ReplicationConfiguration: &s3.ReplicationConfiguration{},
-							}),
-						}
+					MockGetBucketReplication: func(ctx context.Context, input *s3.GetBucketReplicationInput, opts []func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+						return &s3.GetBucketReplicationOutput{
+							ReplicationConfiguration: &s3types.ReplicationConfiguration{},
+						}, nil
 					},
 				}),
 			},

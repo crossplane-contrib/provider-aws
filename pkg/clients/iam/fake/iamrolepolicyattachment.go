@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/iam"
@@ -27,22 +29,22 @@ var _ clientset.RolePolicyAttachmentClient = (*MockRolePolicyAttachmentClient)(n
 
 // MockRolePolicyAttachmentClient is a type that implements all the methods for RolePolicyAttachmentClient interface
 type MockRolePolicyAttachmentClient struct {
-	MockAttachRolePolicyRequest         func(*iam.AttachRolePolicyInput) iam.AttachRolePolicyRequest
-	MockListAttachedRolePoliciesRequest func(*iam.ListAttachedRolePoliciesInput) iam.ListAttachedRolePoliciesRequest
-	MockDetachRolePolicyRequest         func(*iam.DetachRolePolicyInput) iam.DetachRolePolicyRequest
+	MockAttachRolePolicy         func(ctx context.Context, input *iam.AttachRolePolicyInput, opts []func(*iam.Options)) (*iam.AttachRolePolicyOutput, error)
+	MockListAttachedRolePolicies func(ctx context.Context, input *iam.ListAttachedRolePoliciesInput, opts []func(*iam.Options)) (*iam.ListAttachedRolePoliciesOutput, error)
+	MockDetachRolePolicy         func(ctx context.Context, input *iam.DetachRolePolicyInput, opts []func(*iam.Options)) (*iam.DetachRolePolicyOutput, error)
 }
 
-// AttachRolePolicyRequest mocks AttachRolePolicyRequest method
-func (m *MockRolePolicyAttachmentClient) AttachRolePolicyRequest(input *iam.AttachRolePolicyInput) iam.AttachRolePolicyRequest {
-	return m.MockAttachRolePolicyRequest(input)
+// AttachRolePolicy mocks AttachRolePolicy method
+func (m *MockRolePolicyAttachmentClient) AttachRolePolicy(ctx context.Context, input *iam.AttachRolePolicyInput, opts ...func(*iam.Options)) (*iam.AttachRolePolicyOutput, error) {
+	return m.MockAttachRolePolicy(ctx, input, opts)
 }
 
-// ListAttachedRolePoliciesRequest mocks ListAttachedRolePoliciesRequest method
-func (m *MockRolePolicyAttachmentClient) ListAttachedRolePoliciesRequest(input *iam.ListAttachedRolePoliciesInput) iam.ListAttachedRolePoliciesRequest {
-	return m.MockListAttachedRolePoliciesRequest(input)
+// ListAttachedRolePolicies mocks ListAttachedRolePolicies method
+func (m *MockRolePolicyAttachmentClient) ListAttachedRolePolicies(ctx context.Context, input *iam.ListAttachedRolePoliciesInput, opts ...func(*iam.Options)) (*iam.ListAttachedRolePoliciesOutput, error) {
+	return m.MockListAttachedRolePolicies(ctx, input, opts)
 }
 
-// DetachRolePolicyRequest mocks DetachRolePolicyRequest method
-func (m *MockRolePolicyAttachmentClient) DetachRolePolicyRequest(input *iam.DetachRolePolicyInput) iam.DetachRolePolicyRequest {
-	return m.MockDetachRolePolicyRequest(input)
+// DetachRolePolicy mocks DetachRolePolicy method
+func (m *MockRolePolicyAttachmentClient) DetachRolePolicy(ctx context.Context, input *iam.DetachRolePolicyInput, opts ...func(*iam.Options)) (*iam.DetachRolePolicyOutput, error) {
+	return m.MockDetachRolePolicy(ctx, input, opts)
 }

@@ -22,6 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
@@ -96,16 +97,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	observed, err := e.client.ListAttachedUserPoliciesRequest(&awsiam.ListAttachedUserPoliciesInput{
+	observed, err := e.client.ListAttachedUserPolicies(ctx, &awsiam.ListAttachedUserPoliciesInput{
 		UserName: aws.String(cr.Spec.ForProvider.UserName),
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
-	var attachedPolicyObject *awsiam.AttachedPolicy
+	var attachedPolicyObject *awsiamtypes.AttachedPolicy
 	for i, policy := range observed.AttachedPolicies {
-		if cr.Spec.ForProvider.PolicyARN == aws.StringValue(policy.PolicyArn) {
+		if cr.Spec.ForProvider.PolicyARN == aws.ToString(policy.PolicyArn) {
 			attachedPolicyObject = &observed.AttachedPolicies[i]
 			break
 		}
@@ -128,7 +129,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	cr.SetConditions(xpv1.Available())
 
 	cr.Status.AtProvider = v1alpha1.IAMUserPolicyAttachmentObservation{
-		AttachedPolicyARN: aws.StringValue(attachedPolicyObject.PolicyArn),
+		AttachedPolicyARN: aws.ToString(attachedPolicyObject.PolicyArn),
 	}
 
 	return managed.ExternalObservation{
@@ -145,10 +146,10 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	cr.SetConditions(xpv1.Creating())
 
-	_, err := e.client.AttachUserPolicyRequest(&awsiam.AttachUserPolicyInput{
+	_, err := e.client.AttachUserPolicy(ctx, &awsiam.AttachUserPolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
 		UserName:  aws.String(cr.Spec.ForProvider.UserName),
-	}).Send(ctx)
+	})
 
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
 }
@@ -168,10 +169,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.DetachUserPolicyRequest(&awsiam.DetachUserPolicyInput{
+	_, err := e.client.DetachUserPolicy(ctx, &awsiam.DetachUserPolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
 		UserName:  aws.String(cr.Spec.ForProvider.UserName),
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDetach)
 }

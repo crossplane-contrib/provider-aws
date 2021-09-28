@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	. "github.com/onsi/gomega"
@@ -144,12 +144,12 @@ func TestDiffTags(t *testing.T) {
 
 func TestDiffEC2Tags(t *testing.T) {
 	type args struct {
-		local  []ec2.Tag
-		remote []ec2.Tag
+		local  []ec2types.Tag
+		remote []ec2types.Tag
 	}
 	type want struct {
-		add    []ec2.Tag
-		remove []ec2.Tag
+		add    []ec2types.Tag
+		remove []ec2types.Tag
 	}
 	cases := map[string]struct {
 		args
@@ -157,23 +157,23 @@ func TestDiffEC2Tags(t *testing.T) {
 	}{
 		"EmptyLocalAndRemote": {
 			args: args{
-				local:  []ec2.Tag{},
-				remote: []ec2.Tag{},
+				local:  []ec2types.Tag{},
+				remote: []ec2types.Tag{},
 			},
 			want: want{
-				add:    []ec2.Tag{},
-				remove: []ec2.Tag{},
+				add:    []ec2types.Tag{},
+				remove: []ec2types.Tag{},
 			},
 		},
 		"TagsWithSameKeyValuesAndLength": {
 			args: args{
-				local: []ec2.Tag{
+				local: []ec2types.Tag{
 					{
 						Key:   aws.String("name"),
 						Value: aws.String("somename"),
 					},
 				},
-				remote: []ec2.Tag{
+				remote: []ec2types.Tag{
 					{
 						Key:   aws.String("name"),
 						Value: aws.String("somename"),
@@ -181,19 +181,19 @@ func TestDiffEC2Tags(t *testing.T) {
 				},
 			},
 			want: want{
-				add:    []ec2.Tag{},
-				remove: []ec2.Tag{},
+				add:    []ec2types.Tag{},
+				remove: []ec2types.Tag{},
 			},
 		},
 		"TagsWithSameKeyDifferentValuesAndSameLength": {
 			args: args{
-				local: []ec2.Tag{
+				local: []ec2types.Tag{
 					{
 						Key:   aws.String("name"),
 						Value: aws.String("somename"),
 					},
 				},
-				remote: []ec2.Tag{
+				remote: []ec2types.Tag{
 					{
 						Key:   aws.String("name"),
 						Value: aws.String("somenames"),
@@ -201,18 +201,18 @@ func TestDiffEC2Tags(t *testing.T) {
 				},
 			},
 			want: want{
-				add: []ec2.Tag{
+				add: []ec2types.Tag{
 					{
 						Key:   aws.String("name"),
 						Value: aws.String("somename"),
 					},
 				},
-				remove: []ec2.Tag{},
+				remove: []ec2types.Tag{},
 			},
 		},
 		"EmptyRemoteAndMultipleInputs": {
 			args: args{
-				local: []ec2.Tag{
+				local: []ec2types.Tag{
 					{
 						Key:   aws.String("name"),
 						Value: aws.String("somename"),
@@ -222,10 +222,10 @@ func TestDiffEC2Tags(t *testing.T) {
 						Value: aws.String("True"),
 					},
 				},
-				remote: []ec2.Tag{},
+				remote: []ec2types.Tag{},
 			},
 			want: want{
-				add: []ec2.Tag{
+				add: []ec2types.Tag{
 					{
 						Key:   aws.String("name"),
 						Value: aws.String("somename"),
@@ -235,13 +235,13 @@ func TestDiffEC2Tags(t *testing.T) {
 						Value: aws.String("True"),
 					},
 				},
-				remove: []ec2.Tag{},
+				remove: []ec2types.Tag{},
 			},
 		},
 		"EmptyLocalAndMultipleRemote": {
 			args: args{
-				local: []ec2.Tag{},
-				remote: []ec2.Tag{
+				local: []ec2types.Tag{},
+				remote: []ec2types.Tag{
 					{
 						Key:   aws.String("name"),
 						Value: aws.String("somename"),
@@ -253,8 +253,8 @@ func TestDiffEC2Tags(t *testing.T) {
 				},
 			},
 			want: want{
-				add: []ec2.Tag{},
-				remove: []ec2.Tag{
+				add: []ec2types.Tag{},
+				remove: []ec2types.Tag{
 					{
 						Key:   aws.String("name"),
 						Value: nil,
@@ -268,7 +268,7 @@ func TestDiffEC2Tags(t *testing.T) {
 		},
 		"LocalHaveMoreTags": {
 			args: args{
-				local: []ec2.Tag{
+				local: []ec2types.Tag{
 					{
 						Key:   aws.String("name"),
 						Value: aws.String("somename"),
@@ -278,7 +278,7 @@ func TestDiffEC2Tags(t *testing.T) {
 						Value: aws.String("True"),
 					},
 				},
-				remote: []ec2.Tag{
+				remote: []ec2types.Tag{
 					{
 						Key:   aws.String("name"),
 						Value: aws.String("somename"),
@@ -294,13 +294,13 @@ func TestDiffEC2Tags(t *testing.T) {
 				},
 			},
 			want: want{
-				add: []ec2.Tag{
+				add: []ec2types.Tag{
 					{
 						Key:   aws.String("tags"),
 						Value: aws.String("True"),
 					},
 				},
-				remove: []ec2.Tag{
+				remove: []ec2types.Tag{
 					{
 						Key:   aws.String("val"),
 						Value: nil,
@@ -314,7 +314,7 @@ func TestDiffEC2Tags(t *testing.T) {
 		},
 		"RemoteHaveMoreTags": {
 			args: args{
-				local: []ec2.Tag{
+				local: []ec2types.Tag{
 					{
 						Key:   aws.String("name"),
 						Value: aws.String("somename"),
@@ -324,7 +324,7 @@ func TestDiffEC2Tags(t *testing.T) {
 						Value: aws.String("key"),
 					},
 				},
-				remote: []ec2.Tag{
+				remote: []ec2types.Tag{
 					{
 						Key:   aws.String("name"),
 						Value: aws.String("somename"),
@@ -340,8 +340,8 @@ func TestDiffEC2Tags(t *testing.T) {
 				},
 			},
 			want: want{
-				add: []ec2.Tag{},
-				remove: []ec2.Tag{
+				add: []ec2types.Tag{},
+				remove: []ec2types.Tag{
 					{
 						Key:   aws.String("tags"),
 						Value: nil,
@@ -353,7 +353,7 @@ func TestDiffEC2Tags(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			tagCmp := cmpopts.SortSlices(func(i, j ec2.Tag) bool {
+			tagCmp := cmpopts.SortSlices(func(i, j ec2types.Tag) bool {
 				return StringValue(i.Key) < StringValue(j.Key)
 			})
 			add, remove := DiffEC2Tags(tc.args.local, tc.args.remote)

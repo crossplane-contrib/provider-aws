@@ -4,8 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/crossplane-runtime/pkg/test"
@@ -14,7 +15,6 @@ import (
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
-	s3Testing "github.com/crossplane/provider-aws/pkg/controller/s3/testing"
 )
 
 func TestPublicAccessBlockClient_Observe(t *testing.T) {
@@ -36,10 +36,8 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 			args: args{
 				cr: &v1beta1.Bucket{},
 				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
-					MockGetPublicAccessBlockRequest: func(input *s3.GetPublicAccessBlockInput) s3.GetPublicAccessBlockRequest {
-						return s3.GetPublicAccessBlockRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.GetPublicAccessBlockOutput{}),
-						}
+					MockGetPublicAccessBlock: func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
+						return &s3.GetPublicAccessBlockOutput{}, errBoom
 					},
 				}),
 			},
@@ -56,10 +54,8 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 					},
 				},
 				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
-					MockGetPublicAccessBlockRequest: func(input *s3.GetPublicAccessBlockInput) s3.GetPublicAccessBlockRequest {
-						return s3.GetPublicAccessBlockRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.PublicAccessBlockNotFoundErrCode, "error", nil), &s3.GetPublicAccessBlockOutput{}),
-						}
+					MockGetPublicAccessBlock: func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
+						return &s3.GetPublicAccessBlockOutput{}, &smithy.GenericAPIError{Code: clients3.PublicAccessBlockNotFoundErrCode}
 					},
 				}),
 			},
@@ -79,13 +75,10 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 					},
 				},
 				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
-					MockGetPublicAccessBlockRequest: func(input *s3.GetPublicAccessBlockInput) s3.GetPublicAccessBlockRequest {
-						return s3.GetPublicAccessBlockRequest{
-							Request: s3Testing.CreateRequest(nil,
-								&s3.GetPublicAccessBlockOutput{PublicAccessBlockConfiguration: &s3.PublicAccessBlockConfiguration{
-									BlockPublicAcls: awsclient.Bool(false),
-								}}),
-						}
+					MockGetPublicAccessBlock: func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
+						return &s3.GetPublicAccessBlockOutput{PublicAccessBlockConfiguration: &s3types.PublicAccessBlockConfiguration{
+							BlockPublicAcls: false,
+						}}, nil
 					},
 				}),
 			},
@@ -105,14 +98,11 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 					},
 				},
 				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
-					MockGetPublicAccessBlockRequest: func(input *s3.GetPublicAccessBlockInput) s3.GetPublicAccessBlockRequest {
-						return s3.GetPublicAccessBlockRequest{
-							Request: s3Testing.CreateRequest(nil,
-								&s3.GetPublicAccessBlockOutput{PublicAccessBlockConfiguration: &s3.PublicAccessBlockConfiguration{
-									BlockPublicAcls:  awsclient.Bool(true),
-									IgnorePublicAcls: awsclient.Bool(true),
-								}}),
-						}
+					MockGetPublicAccessBlock: func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
+						return &s3.GetPublicAccessBlockOutput{PublicAccessBlockConfiguration: &s3types.PublicAccessBlockConfiguration{
+							BlockPublicAcls:  true,
+							IgnorePublicAcls: true,
+						}}, nil
 					},
 				}),
 			},
@@ -132,13 +122,10 @@ func TestPublicAccessBlockClient_Observe(t *testing.T) {
 					},
 				},
 				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
-					MockGetPublicAccessBlockRequest: func(input *s3.GetPublicAccessBlockInput) s3.GetPublicAccessBlockRequest {
-						return s3.GetPublicAccessBlockRequest{
-							Request: s3Testing.CreateRequest(nil,
-								&s3.GetPublicAccessBlockOutput{PublicAccessBlockConfiguration: &s3.PublicAccessBlockConfiguration{
-									BlockPublicAcls: awsclient.Bool(true),
-								}}),
-						}
+					MockGetPublicAccessBlock: func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
+						return &s3.GetPublicAccessBlockOutput{PublicAccessBlockConfiguration: &s3types.PublicAccessBlockConfiguration{
+							BlockPublicAcls: true,
+						}}, nil
 					},
 				}),
 			},
@@ -191,10 +178,8 @@ func TestPublicAccessBlockClient_CreateOrUpdate(t *testing.T) {
 					},
 				},
 				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
-					MockPutPublicAccessBlockRequest: func(input *s3.PutPublicAccessBlockInput) s3.PutPublicAccessBlockRequest {
-						return s3.PutPublicAccessBlockRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.PutPublicAccessBlockOutput{}),
-						}
+					MockPutPublicAccessBlock: func(ctx context.Context, input *s3.PutPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.PutPublicAccessBlockOutput, error) {
+						return &s3.PutPublicAccessBlockOutput{}, errBoom
 					},
 				}),
 			},
@@ -232,10 +217,8 @@ func TestPublicAccessBlockClient_Delete(t *testing.T) {
 			args: args{
 				cr: &v1beta1.Bucket{},
 				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
-					MockDeletePublicAccessBlockRequest: func(input *s3.DeletePublicAccessBlockInput) s3.DeletePublicAccessBlockRequest {
-						return s3.DeletePublicAccessBlockRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.DeletePublicAccessBlockOutput{}),
-						}
+					MockDeletePublicAccessBlock: func(ctx context.Context, input *s3.DeletePublicAccessBlockInput, opts []func(*s3.Options)) (*s3.DeletePublicAccessBlockOutput, error) {
+						return &s3.DeletePublicAccessBlockOutput{}, errBoom
 					},
 				}),
 			},
@@ -247,10 +230,8 @@ func TestPublicAccessBlockClient_Delete(t *testing.T) {
 			args: args{
 				cr: &v1beta1.Bucket{},
 				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
-					MockDeletePublicAccessBlockRequest: func(input *s3.DeletePublicAccessBlockInput) s3.DeletePublicAccessBlockRequest {
-						return s3.DeletePublicAccessBlockRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.PublicAccessBlockNotFoundErrCode, "error", nil), &s3.DeletePublicAccessBlockOutput{}),
-						}
+					MockDeletePublicAccessBlock: func(ctx context.Context, input *s3.DeletePublicAccessBlockInput, opts []func(*s3.Options)) (*s3.DeletePublicAccessBlockOutput, error) {
+						return &s3.DeletePublicAccessBlockOutput{}, &smithy.GenericAPIError{Code: clients3.PublicAccessBlockNotFoundErrCode}
 					},
 				}),
 			},
@@ -285,10 +266,8 @@ func TestPublicAccessBlockClient_LateInitialize(t *testing.T) {
 			args: args{
 				cr: &v1beta1.Bucket{},
 				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
-					MockGetPublicAccessBlockRequest: func(input *s3.GetPublicAccessBlockInput) s3.GetPublicAccessBlockRequest {
-						return s3.GetPublicAccessBlockRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.GetPublicAccessBlockOutput{}),
-						}
+					MockGetPublicAccessBlock: func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
+						return &s3.GetPublicAccessBlockOutput{}, errBoom
 					},
 				}),
 			},
@@ -300,10 +279,8 @@ func TestPublicAccessBlockClient_LateInitialize(t *testing.T) {
 			args: args{
 				cr: &v1beta1.Bucket{},
 				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
-					MockGetPublicAccessBlockRequest: func(input *s3.GetPublicAccessBlockInput) s3.GetPublicAccessBlockRequest {
-						return s3.GetPublicAccessBlockRequest{
-							Request: s3Testing.CreateRequest(awserr.New(clients3.PublicAccessBlockNotFoundErrCode, "error", nil), &s3.GetPublicAccessBlockOutput{}),
-						}
+					MockGetPublicAccessBlock: func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
+						return &s3.GetPublicAccessBlockOutput{}, &smithy.GenericAPIError{Code: clients3.PublicAccessBlockNotFoundErrCode}
 					},
 				}),
 			},
@@ -312,12 +289,10 @@ func TestPublicAccessBlockClient_LateInitialize(t *testing.T) {
 			args: args{
 				cr: &v1beta1.Bucket{},
 				cl: NewPublicAccessBlockClient(fake.MockBucketClient{
-					MockGetPublicAccessBlockRequest: func(input *s3.GetPublicAccessBlockInput) s3.GetPublicAccessBlockRequest {
-						return s3.GetPublicAccessBlockRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetPublicAccessBlockOutput{
-								PublicAccessBlockConfiguration: &s3.PublicAccessBlockConfiguration{},
-							}),
-						}
+					MockGetPublicAccessBlock: func(ctx context.Context, input *s3.GetPublicAccessBlockInput, opts []func(*s3.Options)) (*s3.GetPublicAccessBlockOutput, error) {
+						return &s3.GetPublicAccessBlockOutput{
+							PublicAccessBlockConfiguration: &s3types.PublicAccessBlockConfiguration{},
+						}, nil
 					},
 				}),
 			},

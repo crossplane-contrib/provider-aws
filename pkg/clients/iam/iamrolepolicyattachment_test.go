@@ -3,7 +3,7 @@ package iam
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1beta1"
@@ -25,8 +25,8 @@ func policyParams(m ...func(*v1beta1.IAMRolePolicyAttachmentParameters)) *v1beta
 	return o
 }
 
-func policy(m ...func(*iam.AttachedPolicy)) *iam.AttachedPolicy {
-	o := &iam.AttachedPolicy{
+func policy(m ...func(*iamtypes.AttachedPolicy)) *iamtypes.AttachedPolicy {
+	o := &iamtypes.AttachedPolicy{
 		PolicyArn: &policyARN,
 	}
 
@@ -50,7 +50,7 @@ func policyObservation(m ...func(*v1beta1.IAMRolePolicyAttachmentExternalStatus)
 }
 func TestGeneratePolicyObservation(t *testing.T) {
 	cases := map[string]struct {
-		in  iam.AttachedPolicy
+		in  iamtypes.AttachedPolicy
 		out v1beta1.IAMRolePolicyAttachmentExternalStatus
 	}{
 		"AllFilled": {
@@ -72,7 +72,7 @@ func TestGeneratePolicyObservation(t *testing.T) {
 func TestLateInitializePolicy(t *testing.T) {
 	type args struct {
 		spec *v1beta1.IAMRolePolicyAttachmentParameters
-		in   iam.AttachedPolicy
+		in   iamtypes.AttachedPolicy
 	}
 	cases := map[string]struct {
 		args args

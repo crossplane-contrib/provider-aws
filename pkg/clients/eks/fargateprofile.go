@@ -18,6 +18,7 @@ package eks
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/eks"
+	ekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,9 +37,9 @@ func GenerateCreateFargateProfileInput(name string, p v1alpha1.FargateProfilePar
 		Tags:                p.Tags,
 	}
 	if len(p.Selectors) > 0 {
-		c.Selectors = make([]eks.FargateProfileSelector, len(p.Selectors))
+		c.Selectors = make([]ekstypes.FargateProfileSelector, len(p.Selectors))
 		for i, sel := range p.Selectors {
-			c.Selectors[i] = eks.FargateProfileSelector{
+			c.Selectors[i] = ekstypes.FargateProfileSelector{
 				Labels:    sel.Labels,
 				Namespace: sel.Namespace,
 			}
@@ -49,7 +50,7 @@ func GenerateCreateFargateProfileInput(name string, p v1alpha1.FargateProfilePar
 
 // GenerateFargateProfileObservation is used to produce v1alpha1.FargateProfileObservation
 // from eks.FargateProfile.
-func GenerateFargateProfileObservation(fp *eks.FargateProfile) v1alpha1.FargateProfileObservation { // nolint:gocyclo
+func GenerateFargateProfileObservation(fp *ekstypes.FargateProfile) v1alpha1.FargateProfileObservation { // nolint:gocyclo
 	if fp == nil {
 		return v1alpha1.FargateProfileObservation{}
 	}
@@ -65,7 +66,7 @@ func GenerateFargateProfileObservation(fp *eks.FargateProfile) v1alpha1.FargateP
 
 // LateInitializeFargateProfile fills the empty fields in *v1alpha1.FargateProfileParameters with the
 // values seen in eks.FargateProfile.
-func LateInitializeFargateProfile(in *v1alpha1.FargateProfileParameters, fp *eks.FargateProfile) { // nolint:gocyclo
+func LateInitializeFargateProfile(in *v1alpha1.FargateProfileParameters, fp *ekstypes.FargateProfile) { // nolint:gocyclo
 	if fp == nil {
 		return
 	}
@@ -83,6 +84,6 @@ func LateInitializeFargateProfile(in *v1alpha1.FargateProfileParameters, fp *eks
 
 // IsFargateProfileUpToDate checks whether there is a change in the tags.
 // Any other field is immutable and can't be updated.
-func IsFargateProfileUpToDate(p v1alpha1.FargateProfileParameters, fp *eks.FargateProfile) bool { // nolint:gocyclo
+func IsFargateProfileUpToDate(p v1alpha1.FargateProfileParameters, fp *ekstypes.FargateProfile) bool { // nolint:gocyclo
 	return cmp.Equal(p.Tags, fp.Tags, cmpopts.EquateEmpty())
 }

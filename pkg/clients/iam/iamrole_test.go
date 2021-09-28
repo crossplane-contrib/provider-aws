@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
@@ -54,7 +55,7 @@ func roleParams(m ...func(*v1beta1.IAMRoleParameters)) *v1beta1.IAMRoleParameter
 	o := &v1beta1.IAMRoleParameters{
 		Description:              &description,
 		AssumeRolePolicyDocument: assumeRolePolicyDocument,
-		MaxSessionDuration:       aws.Int64(1),
+		MaxSessionDuration:       aws.Int32(1),
 	}
 
 	for _, f := range m {
@@ -72,11 +73,11 @@ func escapedPolicyJSON() *string {
 	return nil
 }
 
-func role(m ...func(*iam.Role)) *iam.Role {
-	o := &iam.Role{
+func role(m ...func(*iamtypes.Role)) *iamtypes.Role {
+	o := &iamtypes.Role{
 		Description:              &description,
 		AssumeRolePolicyDocument: &assumeRolePolicyDocument,
-		MaxSessionDuration:       aws.Int64(1),
+		MaxSessionDuration:       aws.Int32(1),
 	}
 
 	for _, f := range m {
@@ -86,7 +87,7 @@ func role(m ...func(*iam.Role)) *iam.Role {
 	return o
 }
 
-func addRoleOutputFields(r *iam.Role) {
+func addRoleOutputFields(r *iamtypes.Role) {
 	r.Arn = aws.String(roleARN)
 	r.RoleId = aws.String(roleID)
 }
@@ -115,7 +116,7 @@ func TestGenerateCreateRoleInput(t *testing.T) {
 				RoleName:                 aws.String(roleName),
 				Description:              &description,
 				AssumeRolePolicyDocument: aws.String(assumeRolePolicyDocument),
-				MaxSessionDuration:       aws.Int64(1),
+				MaxSessionDuration:       aws.Int32(1),
 			},
 		},
 	}
@@ -132,7 +133,7 @@ func TestGenerateCreateRoleInput(t *testing.T) {
 
 func TestGenerateRoleObservation(t *testing.T) {
 	cases := map[string]struct {
-		in  iam.Role
+		in  iamtypes.Role
 		out v1beta1.IAMRoleExternalStatus
 	}{
 		"AllFilled": {
@@ -140,7 +141,7 @@ func TestGenerateRoleObservation(t *testing.T) {
 			out: *roleObservation(),
 		},
 		"NoRoleId": {
-			in: *role(addRoleOutputFields, func(r *iam.Role) {
+			in: *role(addRoleOutputFields, func(r *iamtypes.Role) {
 				r.RoleId = nil
 			}),
 			out: *roleObservation(func(o *v1beta1.IAMRoleExternalStatus) {
@@ -162,7 +163,7 @@ func TestGenerateRoleObservation(t *testing.T) {
 func TestLateInitializeRole(t *testing.T) {
 	type args struct {
 		spec *v1beta1.IAMRoleParameters
-		in   iam.Role
+		in   iamtypes.Role
 	}
 	cases := map[string]struct {
 		args args
@@ -178,7 +179,7 @@ func TestLateInitializeRole(t *testing.T) {
 		"AllFilledExternalDiff": {
 			args: args{
 				spec: roleParams(),
-				in: *role(func(r *iam.Role) {
+				in: *role(func(r *iamtypes.Role) {
 					r.CreateDate = &time.Time{}
 				}),
 			},
@@ -198,14 +199,14 @@ func TestLateInitializeRole(t *testing.T) {
 		"PointerFields": {
 			args: args{
 				spec: roleParams(),
-				in: *role(func(r *iam.Role) {
-					r.Tags = []iam.Tag{
+				in: *role(func(r *iamtypes.Role) {
+					r.Tags = []iamtypes.Tag{
 						{
 							Key:   &tagKey,
 							Value: &tagValue,
 						},
 					}
-					r.PermissionsBoundary = &iam.AttachedPermissionsBoundary{
+					r.PermissionsBoundary = &iamtypes.AttachedPermissionsBoundary{
 						PermissionsBoundaryArn: &roleARN,
 					}
 				}),
@@ -234,7 +235,7 @@ func TestLateInitializeRole(t *testing.T) {
 
 func TestIsRoleUpToDate(t *testing.T) {
 	type args struct {
-		role iam.Role
+		role iamtypes.Role
 		p    v1beta1.IAMRoleParameters
 	}
 
@@ -245,12 +246,12 @@ func TestIsRoleUpToDate(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				role: iam.Role{
+				role: iamtypes.Role{
 					AssumeRolePolicyDocument: escapedPolicyJSON(),
 					Description:              &description,
-					MaxSessionDuration:       aws.Int64(1),
+					MaxSessionDuration:       aws.Int32(1),
 					Path:                     aws.String("/"),
-					Tags: []iam.Tag{{
+					Tags: []iamtypes.Tag{{
 						Key:   aws.String("key1"),
 						Value: aws.String("value1"),
 					}},
@@ -258,7 +259,7 @@ func TestIsRoleUpToDate(t *testing.T) {
 				p: v1beta1.IAMRoleParameters{
 					Description:              &description,
 					AssumeRolePolicyDocument: assumeRolePolicyDocument,
-					MaxSessionDuration:       aws.Int64(1),
+					MaxSessionDuration:       aws.Int32(1),
 					Path:                     aws.String("/"),
 					Tags: []v1beta1.Tag{{
 						Key:   "key1",
@@ -292,12 +293,12 @@ observed assume role policy: %7B%22Version%22%3A%222012-10-17%22%2C%22Statement%
 		},
 		"DifferentFields": {
 			args: args{
-				role: iam.Role{
+				role: iamtypes.Role{
 					AssumeRolePolicyDocument: &assumeRolePolicyDocument,
 					Description:              &description,
-					MaxSessionDuration:       aws.Int64(1),
+					MaxSessionDuration:       aws.Int32(1),
 					Path:                     aws.String("//"),
-					Tags: []iam.Tag{{
+					Tags: []iamtypes.Tag{{
 						Key:   aws.String("key1"),
 						Value: aws.String("value1"),
 					}},
@@ -305,7 +306,7 @@ observed assume role policy: %7B%22Version%22%3A%222012-10-17%22%2C%22Statement%
 				p: v1beta1.IAMRoleParameters{
 					Description:              &description,
 					AssumeRolePolicyDocument: assumeRolePolicyDocument,
-					MaxSessionDuration:       aws.Int64(1),
+					MaxSessionDuration:       aws.Int32(1),
 					Path:                     aws.String("/"),
 					Tags: []v1beta1.Tag{{
 						Key:   "key1",
@@ -345,10 +346,10 @@ observed assume role policy: %7B%22Version%22%3A%222012-10-17%22%2C%22Statement%
 func TestDiffIAMTags(t *testing.T) {
 	type args struct {
 		local  []v1beta1.Tag
-		remote []iam.Tag
+		remote []iamtypes.Tag
 	}
 	type want struct {
-		add    []iam.Tag
+		add    []iamtypes.Tag
 		remove []string
 	}
 	cases := map[string]struct {
@@ -362,7 +363,7 @@ func TestDiffIAMTags(t *testing.T) {
 				},
 			},
 			want: want{
-				add: []iam.Tag{
+				add: []iamtypes.Tag{
 					{Key: aws.String("key"), Value: aws.String("val")},
 				},
 			},
@@ -374,12 +375,12 @@ func TestDiffIAMTags(t *testing.T) {
 					{Key: "key1", Value: "val1"},
 					{Key: "key2", Value: "val2"},
 				},
-				remote: []iam.Tag{
+				remote: []iamtypes.Tag{
 					{Key: aws.String("key"), Value: aws.String("val")},
 				},
 			},
 			want: want{
-				add: []iam.Tag{
+				add: []iamtypes.Tag{
 					{Key: aws.String("key1"), Value: aws.String("val1")},
 					{Key: aws.String("key2"), Value: aws.String("val2")},
 				},
@@ -392,14 +393,14 @@ func TestDiffIAMTags(t *testing.T) {
 					{Key: "key1", Value: "val1"},
 					{Key: "key2", Value: "val2"},
 				},
-				remote: []iam.Tag{
+				remote: []iamtypes.Tag{
 					{Key: aws.String("key"), Value: aws.String("val")},
 					{Key: aws.String("key1"), Value: aws.String("val1")},
 					{Key: aws.String("key2"), Value: aws.String("val2")},
 				},
 			},
 			want: want{
-				add: []iam.Tag{
+				add: []iamtypes.Tag{
 					{Key: aws.String("key"), Value: aws.String("different")},
 				},
 				remove: []string{"key"},
@@ -407,7 +408,7 @@ func TestDiffIAMTags(t *testing.T) {
 		},
 		"RemoveAll": {
 			args: args{
-				remote: []iam.Tag{
+				remote: []iamtypes.Tag{
 					{Key: aws.String("key"), Value: aws.String("val")},
 					{Key: aws.String("key1"), Value: aws.String("val1")},
 					{Key: aws.String("key2"), Value: aws.String("val2")},
@@ -421,7 +422,7 @@ func TestDiffIAMTags(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			tagCmp := cmpopts.SortSlices(func(i, j iam.Tag) bool {
+			tagCmp := cmpopts.SortSlices(func(i, j iamtypes.Tag) bool {
 				return aws.StringValue(i.Key) < aws.StringValue(j.Key)
 			})
 			add, remove := DiffIAMTags(tc.args.local, tc.args.remote)

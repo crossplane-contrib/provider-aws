@@ -18,10 +18,8 @@ package repositorypolicy
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	awsecr "github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -35,7 +33,7 @@ import (
 
 	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	ecr "github.com/crossplane/provider-aws/pkg/clients/ecr"
+	"github.com/crossplane/provider-aws/pkg/clients/ecr"
 	"github.com/crossplane/provider-aws/pkg/clients/ecr/fake"
 )
 
@@ -113,12 +111,8 @@ func TestObserve(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				ecr: &fake.MockRepositoryPolicyClient{
-					MockGet: func(input *awsecr.GetRepositoryPolicyInput) awsecr.GetRepositoryPolicyRequest {
-						return awsecr.GetRepositoryPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.GetRepositoryPolicyOutput{
-								PolicyText: &policy,
-							}},
-						}
+					MockGet: func(ctx context.Context, input *awsecr.GetRepositoryPolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetRepositoryPolicyOutput, error) {
+						return &awsecr.GetRepositoryPolicyOutput{PolicyText: &policy}, nil
 					},
 				},
 				cr: repositoryPolicy(withPolicy(&params)),
@@ -166,10 +160,8 @@ func TestObserve(t *testing.T) {
 		"ClientError": {
 			args: args{
 				ecr: &fake.MockRepositoryPolicyClient{
-					MockGet: func(input *awsecr.GetRepositoryPolicyInput) awsecr.GetRepositoryPolicyRequest {
-						return awsecr.GetRepositoryPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockGet: func(ctx context.Context, input *awsecr.GetRepositoryPolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetRepositoryPolicyOutput, error) {
+						return &awsecr.GetRepositoryPolicyOutput{}, errBoom
 					},
 				},
 				cr: repositoryPolicy(withPolicy(&params)),
@@ -182,13 +174,10 @@ func TestObserve(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				ecr: &fake.MockRepositoryPolicyClient{
-					MockGet: func(input *awsecr.GetRepositoryPolicyInput) awsecr.GetRepositoryPolicyRequest {
-						return awsecr.GetRepositoryPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: awserr.New(ecr.RepositoryPolicyNotFoundException, "", nil)},
-						}
+					MockGet: func(ctx context.Context, input *awsecr.GetRepositoryPolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetRepositoryPolicyOutput, error) {
+						return &awsecr.GetRepositoryPolicyOutput{}, awserr.New(ecr.RepositoryPolicyNotFoundException, "", nil)
 					},
 				},
-
 				cr: repositoryPolicy(),
 			},
 			want: want{
@@ -234,10 +223,8 @@ func TestCreate(t *testing.T) {
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
 				ecr: &fake.MockRepositoryPolicyClient{
-					MockSet: func(input *awsecr.SetRepositoryPolicyInput) awsecr.SetRepositoryPolicyRequest {
-						return awsecr.SetRepositoryPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.SetRepositoryPolicyOutput{}},
-						}
+					MockSet: func(ctx context.Context, input *awsecr.SetRepositoryPolicyInput, opts []func(*awsecr.Options)) (*awsecr.SetRepositoryPolicyOutput, error) {
+						return &awsecr.SetRepositoryPolicyOutput{}, nil
 					},
 				},
 				cr: repositoryPolicy(withPolicy(&params)),
@@ -262,10 +249,8 @@ func TestCreate(t *testing.T) {
 					MockStatusUpdate: test.NewMockClient().MockStatusUpdate,
 				},
 				ecr: &fake.MockRepositoryPolicyClient{
-					MockSet: func(input *awsecr.SetRepositoryPolicyInput) awsecr.SetRepositoryPolicyRequest {
-						return awsecr.SetRepositoryPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockSet: func(ctx context.Context, input *awsecr.SetRepositoryPolicyInput, opts []func(*awsecr.Options)) (*awsecr.SetRepositoryPolicyOutput, error) {
+						return &awsecr.SetRepositoryPolicyOutput{}, errBoom
 					},
 				},
 				cr: repositoryPolicy(withPolicy(&params)),
@@ -311,10 +296,8 @@ func TestUpdate(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				ecr: &fake.MockRepositoryPolicyClient{
-					MockSet: func(input *awsecr.SetRepositoryPolicyInput) awsecr.SetRepositoryPolicyRequest {
-						return awsecr.SetRepositoryPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.SetRepositoryPolicyOutput{}},
-						}
+					MockSet: func(ctx context.Context, input *awsecr.SetRepositoryPolicyInput, opts []func(*awsecr.Options)) (*awsecr.SetRepositoryPolicyOutput, error) {
+						return &awsecr.SetRepositoryPolicyOutput{}, nil
 					},
 				},
 				cr: repositoryPolicy(withPolicy(&params)),
@@ -326,10 +309,8 @@ func TestUpdate(t *testing.T) {
 		"ClientError": {
 			args: args{
 				ecr: &fake.MockRepositoryPolicyClient{
-					MockSet: func(input *awsecr.SetRepositoryPolicyInput) awsecr.SetRepositoryPolicyRequest {
-						return awsecr.SetRepositoryPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockSet: func(ctx context.Context, input *awsecr.SetRepositoryPolicyInput, opts []func(*awsecr.Options)) (*awsecr.SetRepositoryPolicyOutput, error) {
+						return &awsecr.SetRepositoryPolicyOutput{}, errBoom
 					},
 				},
 				cr: repositoryPolicy(withPolicy(&params)),
@@ -373,10 +354,8 @@ func TestDelete(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				ecr: &fake.MockRepositoryPolicyClient{
-					MockDelete: func(input *awsecr.DeleteRepositoryPolicyInput) awsecr.DeleteRepositoryPolicyRequest {
-						return awsecr.DeleteRepositoryPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DeleteRepositoryPolicyOutput{}},
-						}
+					MockDelete: func(ctx context.Context, input *awsecr.DeleteRepositoryPolicyInput, opts []func(*awsecr.Options)) (*awsecr.DeleteRepositoryPolicyOutput, error) {
+						return &awsecr.DeleteRepositoryPolicyOutput{}, nil
 					},
 				},
 				cr: repositoryPolicy(withPolicy(&params)),
@@ -397,10 +376,8 @@ func TestDelete(t *testing.T) {
 		"ClientError": {
 			args: args{
 				ecr: &fake.MockRepositoryPolicyClient{
-					MockDelete: func(input *awsecr.DeleteRepositoryPolicyInput) awsecr.DeleteRepositoryPolicyRequest {
-						return awsecr.DeleteRepositoryPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockDelete: func(ctx context.Context, input *awsecr.DeleteRepositoryPolicyInput, opts []func(*awsecr.Options)) (*awsecr.DeleteRepositoryPolicyOutput, error) {
+						return &awsecr.DeleteRepositoryPolicyOutput{}, errBoom
 					},
 				},
 				cr: repositoryPolicy(withPolicy(&params)),
@@ -413,10 +390,8 @@ func TestDelete(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				ecr: &fake.MockRepositoryPolicyClient{
-					MockDelete: func(input *awsecr.DeleteRepositoryPolicyInput) awsecr.DeleteRepositoryPolicyRequest {
-						return awsecr.DeleteRepositoryPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: awserr.New(ecr.RepositoryPolicyNotFoundException, "", nil)},
-						}
+					MockDelete: func(ctx context.Context, input *awsecr.DeleteRepositoryPolicyInput, opts []func(*awsecr.Options)) (*awsecr.DeleteRepositoryPolicyOutput, error) {
+						return &awsecr.DeleteRepositoryPolicyOutput{}, awserr.New(ecr.RepositoryPolicyNotFoundException, "", nil)
 					},
 				},
 				cr: repositoryPolicy(withPolicy(&params)),

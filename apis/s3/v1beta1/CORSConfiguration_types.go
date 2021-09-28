@@ -51,5 +51,5 @@ type CORSRule struct {
 	// The time in seconds that your browser is to cache the preflight response
 	// for the specified resource.
 	// +optional
-	MaxAgeSeconds *int64 `json:"maxAgeSeconds,omitempty"`
+	MaxAgeSeconds *int32 `json:"maxAgeSeconds,omitempty"`
 }

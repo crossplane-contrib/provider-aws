@@ -17,117 +17,126 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
+	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
-	"github.com/aws/aws-sdk-go-v2/service/eks/eksiface"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 )
 
-var _ eksiface.ClientAPI = &MockClient{}
-
-// MockClient is a fake implementation of cloudmemorystore.Client.
+// MockClient is a fake implementation of eks.Client.
 type MockClient struct {
-	eksiface.ClientAPI
+	MockCreateCluster        func(ctx context.Context, input *eks.CreateClusterInput, opts []func(*eks.Options)) (*eks.CreateClusterOutput, error)
+	MockDescribeCluster      func(ctx context.Context, input *eks.DescribeClusterInput, opts []func(*eks.Options)) (*eks.DescribeClusterOutput, error)
+	MockUpdateClusterConfig  func(ctx context.Context, input *eks.UpdateClusterConfigInput, opts []func(*eks.Options)) (*eks.UpdateClusterConfigOutput, error)
+	MockDeleteCluster        func(ctx context.Context, input *eks.DeleteClusterInput, opts []func(*eks.Options)) (*eks.DeleteClusterOutput, error)
+	MockTagResource          func(ctx context.Context, input *eks.TagResourceInput, opts []func(*eks.Options)) (*eks.TagResourceOutput, error)
+	MockUntagResource        func(ctx context.Context, input *eks.UntagResourceInput, opts []func(*eks.Options)) (*eks.UntagResourceOutput, error)
+	MockUpdateClusterVersion func(ctx context.Context, input *eks.UpdateClusterVersionInput, opts []func(*eks.Options)) (*eks.UpdateClusterVersionOutput, error)
 
-	MockCreateClusterRequest        func(*eks.CreateClusterInput) eks.CreateClusterRequest
-	MockDescribeClusterRequest      func(*eks.DescribeClusterInput) eks.DescribeClusterRequest
-	MockUpdateClusterConfigRequest  func(*eks.UpdateClusterConfigInput) eks.UpdateClusterConfigRequest
-	MockDeleteClusterRequest        func(*eks.DeleteClusterInput) eks.DeleteClusterRequest
-	MockTagResourceRequest          func(*eks.TagResourceInput) eks.TagResourceRequest
-	MockUntagResourceRequest        func(*eks.UntagResourceInput) eks.UntagResourceRequest
-	MockUpdateClusterVersionRequest func(*eks.UpdateClusterVersionInput) eks.UpdateClusterVersionRequest
+	MockDescribeNodegroup      func(ctx context.Context, input *eks.DescribeNodegroupInput, opts []func(*eks.Options)) (*eks.DescribeNodegroupOutput, error)
+	MockCreateNodegroup        func(ctx context.Context, input *eks.CreateNodegroupInput, opts []func(*eks.Options)) (*eks.CreateNodegroupOutput, error)
+	MockUpdateNodegroupVersion func(ctx context.Context, input *eks.UpdateNodegroupVersionInput, opts []func(*eks.Options)) (*eks.UpdateNodegroupVersionOutput, error)
+	MockUpdateNodegroupConfig  func(ctx context.Context, input *eks.UpdateNodegroupConfigInput, opts []func(*eks.Options)) (*eks.UpdateNodegroupConfigOutput, error)
+	MockDeleteNodegroup        func(ctx context.Context, input *eks.DeleteNodegroupInput, opts []func(*eks.Options)) (*eks.DeleteNodegroupOutput, error)
 
-	MockDescribeNodegroupRequest      func(*eks.DescribeNodegroupInput) eks.DescribeNodegroupRequest
-	MockCreateNodegroupRequest        func(*eks.CreateNodegroupInput) eks.CreateNodegroupRequest
-	MockUpdateNodegroupVersionRequest func(*eks.UpdateNodegroupVersionInput) eks.UpdateNodegroupVersionRequest
-	MockUpdateNodegroupConfigRequest  func(*eks.UpdateNodegroupConfigInput) eks.UpdateNodegroupConfigRequest
-	MockDeleteNodegroupRequest        func(*eks.DeleteNodegroupInput) eks.DeleteNodegroupRequest
-
-	MockDescribeFargateProfileRequest func(*eks.DescribeFargateProfileInput) eks.DescribeFargateProfileRequest
-	MockCreateFargateProfileRequest   func(*eks.CreateFargateProfileInput) eks.CreateFargateProfileRequest
-	MockDeleteFargateProfileRequest   func(*eks.DeleteFargateProfileInput) eks.DeleteFargateProfileRequest
+	MockDescribeFargateProfile func(ctx context.Context, input *eks.DescribeFargateProfileInput, opts []func(*eks.Options)) (*eks.DescribeFargateProfileOutput, error)
+	MockCreateFargateProfile   func(ctx context.Context, input *eks.CreateFargateProfileInput, opts []func(*eks.Options)) (*eks.CreateFargateProfileOutput, error)
+	MockDeleteFargateProfile   func(ctx context.Context, input *eks.DeleteFargateProfileInput, opts []func(*eks.Options)) (*eks.DeleteFargateProfileOutput, error)
 }
 
-// CreateClusterRequest calls the underlying MockCreateClusterRequest method.
-func (c *MockClient) CreateClusterRequest(i *eks.CreateClusterInput) eks.CreateClusterRequest {
-	return c.MockCreateClusterRequest(i)
+// MockSTSClient mock sts client
+type MockSTSClient struct {
+	MockPresignGetCallerIdentity func(ctx context.Context, input *sts.GetCallerIdentityInput, opts []func(*sts.PresignOptions)) (*v4.PresignedHTTPRequest, error)
 }
 
-// DescribeClusterRequest calls the underlying MockDescribeClusterRequest
+// PresignGetCallerIdentity calls the underlying MockPresignGetCallerIdentity method.
+func (c *MockSTSClient) PresignGetCallerIdentity(ctx context.Context, input *sts.GetCallerIdentityInput, opts ...func(*sts.PresignOptions)) (*v4.PresignedHTTPRequest, error) {
+	return c.MockPresignGetCallerIdentity(ctx, input, opts)
+}
+
+// CreateCluster calls the underlying MockCreateCluster method.
+func (c *MockClient) CreateCluster(ctx context.Context, input *eks.CreateClusterInput, opts ...func(*eks.Options)) (*eks.CreateClusterOutput, error) {
+	return c.MockCreateCluster(ctx, input, opts)
+}
+
+// DescribeCluster calls the underlying MockDescribeCluster
 // method.
-func (c *MockClient) DescribeClusterRequest(i *eks.DescribeClusterInput) eks.DescribeClusterRequest {
-	return c.MockDescribeClusterRequest(i)
+func (c *MockClient) DescribeCluster(ctx context.Context, input *eks.DescribeClusterInput, opts ...func(*eks.Options)) (*eks.DescribeClusterOutput, error) {
+	return c.MockDescribeCluster(ctx, input, opts)
 }
 
-// UpdateClusterConfigRequest calls the underlying
-// MockUpdateClusterConfigRequest method.
-func (c *MockClient) UpdateClusterConfigRequest(i *eks.UpdateClusterConfigInput) eks.UpdateClusterConfigRequest {
-	return c.MockUpdateClusterConfigRequest(i)
+// UpdateClusterConfig calls the underlying
+// MockUpdateClusterConfig method.
+func (c *MockClient) UpdateClusterConfig(ctx context.Context, input *eks.UpdateClusterConfigInput, opts ...func(*eks.Options)) (*eks.UpdateClusterConfigOutput, error) {
+	return c.MockUpdateClusterConfig(ctx, input, opts)
 }
 
-// DeleteClusterRequest calls the underlying MockDeleteClusterRequest method.
-func (c *MockClient) DeleteClusterRequest(i *eks.DeleteClusterInput) eks.DeleteClusterRequest {
-	return c.MockDeleteClusterRequest(i)
+// DeleteCluster calls the underlying MockDeleteCluster method.
+func (c *MockClient) DeleteCluster(ctx context.Context, input *eks.DeleteClusterInput, opts ...func(*eks.Options)) (*eks.DeleteClusterOutput, error) {
+	return c.MockDeleteCluster(ctx, input, opts)
 }
 
-// TagResourceRequest calls the underlying MockTagResourceRequest method.
-func (c *MockClient) TagResourceRequest(i *eks.TagResourceInput) eks.TagResourceRequest {
-	return c.MockTagResourceRequest(i)
+// TagResource calls the underlying MockTagResource method.
+func (c *MockClient) TagResource(ctx context.Context, input *eks.TagResourceInput, opts ...func(*eks.Options)) (*eks.TagResourceOutput, error) {
+	return c.MockTagResource(ctx, input, opts)
 }
 
-// UntagResourceRequest calls the underlying MockUntagResourceRequest method.
-func (c *MockClient) UntagResourceRequest(i *eks.UntagResourceInput) eks.UntagResourceRequest {
-	return c.MockUntagResourceRequest(i)
+// UntagResource calls the underlying MockUntagResource method.
+func (c *MockClient) UntagResource(ctx context.Context, input *eks.UntagResourceInput, opts ...func(*eks.Options)) (*eks.UntagResourceOutput, error) {
+	return c.MockUntagResource(ctx, input, opts)
 }
 
-// UpdateClusterVersionRequest calls the underlying
-// MockUpdateClusterVersionRequest method.
-func (c *MockClient) UpdateClusterVersionRequest(i *eks.UpdateClusterVersionInput) eks.UpdateClusterVersionRequest {
-	return c.MockUpdateClusterVersionRequest(i)
+// UpdateClusterVersion calls the underlying
+// MockUpdateClusterVersion method.
+func (c *MockClient) UpdateClusterVersion(ctx context.Context, input *eks.UpdateClusterVersionInput, opts ...func(*eks.Options)) (*eks.UpdateClusterVersionOutput, error) {
+	return c.MockUpdateClusterVersion(ctx, input, opts)
 }
 
-// DescribeNodegroupRequest calls the underlying MockDescribeNodegroupRequest
+// DescribeNodegroup calls the underlying MockDescribeNodegroup
 // method.
-func (c *MockClient) DescribeNodegroupRequest(i *eks.DescribeNodegroupInput) eks.DescribeNodegroupRequest {
-	return c.MockDescribeNodegroupRequest(i)
+func (c *MockClient) DescribeNodegroup(ctx context.Context, input *eks.DescribeNodegroupInput, opts ...func(*eks.Options)) (*eks.DescribeNodegroupOutput, error) {
+	return c.MockDescribeNodegroup(ctx, input, opts)
 }
 
-// CreateNodegroupRequest calls the underlying MockCreateNodegroupRequest
+// CreateNodegroup calls the underlying MockCreateNodegroup
 // method.
-func (c *MockClient) CreateNodegroupRequest(i *eks.CreateNodegroupInput) eks.CreateNodegroupRequest {
-	return c.MockCreateNodegroupRequest(i)
+func (c *MockClient) CreateNodegroup(ctx context.Context, input *eks.CreateNodegroupInput, opts ...func(*eks.Options)) (*eks.CreateNodegroupOutput, error) {
+	return c.MockCreateNodegroup(ctx, input, opts)
 }
 
-// UpdateNodegroupVersionRequest calls the underlying
-// MockUpdateNodegroupVersionRequest method.
-func (c *MockClient) UpdateNodegroupVersionRequest(i *eks.UpdateNodegroupVersionInput) eks.UpdateNodegroupVersionRequest {
-	return c.MockUpdateNodegroupVersionRequest(i)
+// UpdateNodegroupVersion calls the underlying
+// MockUpdateNodegroupVersion method.
+func (c *MockClient) UpdateNodegroupVersion(ctx context.Context, input *eks.UpdateNodegroupVersionInput, opts ...func(*eks.Options)) (*eks.UpdateNodegroupVersionOutput, error) {
+	return c.MockUpdateNodegroupVersion(ctx, input, opts)
 }
 
-// UpdateNodegroupConfigRequest calls the underlying
-// MockUpdateNodegroupConfigRequest method.
-func (c *MockClient) UpdateNodegroupConfigRequest(i *eks.UpdateNodegroupConfigInput) eks.UpdateNodegroupConfigRequest {
-	return c.MockUpdateNodegroupConfigRequest(i)
+// UpdateNodegroupConfig calls the underlying
+// MockUpdateNodegroupConfig method.
+func (c *MockClient) UpdateNodegroupConfig(ctx context.Context, input *eks.UpdateNodegroupConfigInput, opts ...func(*eks.Options)) (*eks.UpdateNodegroupConfigOutput, error) {
+	return c.MockUpdateNodegroupConfig(ctx, input, opts)
 }
 
-// DeleteNodegroupRequest calls the underlying MockDeleteNodegroupRequest
+// DeleteNodegroup calls the underlying MockDeleteNodegroup
 // method.
-func (c *MockClient) DeleteNodegroupRequest(i *eks.DeleteNodegroupInput) eks.DeleteNodegroupRequest {
-	return c.MockDeleteNodegroupRequest(i)
+func (c *MockClient) DeleteNodegroup(ctx context.Context, input *eks.DeleteNodegroupInput, opts ...func(*eks.Options)) (*eks.DeleteNodegroupOutput, error) {
+	return c.MockDeleteNodegroup(ctx, input, opts)
 }
 
-// DescribeFargateProfileRequest calls the underlying MockDescribeFargateProfileRequest
+// DescribeFargateProfile calls the underlying MockDescribeFargateProfile
 // method.
-func (c *MockClient) DescribeFargateProfileRequest(i *eks.DescribeFargateProfileInput) eks.DescribeFargateProfileRequest {
-	return c.MockDescribeFargateProfileRequest(i)
+func (c *MockClient) DescribeFargateProfile(ctx context.Context, input *eks.DescribeFargateProfileInput, opts ...func(*eks.Options)) (*eks.DescribeFargateProfileOutput, error) {
+	return c.MockDescribeFargateProfile(ctx, input, opts)
 }
 
-// CreateFargateProfileRequest calls the underlying MockCreateFargateProfileRequest
+// CreateFargateProfile calls the underlying MockCreateFargateProfile
 // method.
-func (c *MockClient) CreateFargateProfileRequest(i *eks.CreateFargateProfileInput) eks.CreateFargateProfileRequest {
-	return c.MockCreateFargateProfileRequest(i)
+func (c *MockClient) CreateFargateProfile(ctx context.Context, input *eks.CreateFargateProfileInput, opts ...func(*eks.Options)) (*eks.CreateFargateProfileOutput, error) {
+	return c.MockCreateFargateProfile(ctx, input, opts)
 }
 
-// DeleteFargateProfileRequest calls the underlying MockDeleteFargateProfileRequest
+// DeleteFargateProfile calls the underlying MockDeleteFargateProfile
 // method.
-func (c *MockClient) DeleteFargateProfileRequest(i *eks.DeleteFargateProfileInput) eks.DeleteFargateProfileRequest {
-	return c.MockDeleteFargateProfileRequest(i)
+func (c *MockClient) DeleteFargateProfile(ctx context.Context, input *eks.DeleteFargateProfileInput, opts ...func(*eks.Options)) (*eks.DeleteFargateProfileOutput, error) {
+	return c.MockDeleteFargateProfile(ctx, input, opts)
 }

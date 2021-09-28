@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/iam"
@@ -27,28 +29,28 @@ var _ clientset.AccessClient = (*MockAccessClient)(nil)
 
 // MockAccessClient is a type that implements all the methods for AccessClient interface
 type MockAccessClient struct {
-	MockCreateAccessKeyRequest func(*iam.CreateAccessKeyInput) iam.CreateAccessKeyRequest
-	MockDeleteAccessKeyRequest func(*iam.DeleteAccessKeyInput) iam.DeleteAccessKeyRequest
-	MockListAccessKeysRequest  func(*iam.ListAccessKeysInput) iam.ListAccessKeysRequest
-	MockUpdateAccessKeyRequest func(*iam.UpdateAccessKeyInput) iam.UpdateAccessKeyRequest
+	MockCreateAccessKey func(ctx context.Context, input *iam.CreateAccessKeyInput, opts []func(*iam.Options)) (*iam.CreateAccessKeyOutput, error)
+	MockDeleteAccessKey func(ctx context.Context, input *iam.DeleteAccessKeyInput, opts []func(*iam.Options)) (*iam.DeleteAccessKeyOutput, error)
+	MockListAccessKeys  func(ctx context.Context, input *iam.ListAccessKeysInput, opts []func(*iam.Options)) (*iam.ListAccessKeysOutput, error)
+	MockUpdateAccessKey func(ctx context.Context, input *iam.UpdateAccessKeyInput, opts []func(*iam.Options)) (*iam.UpdateAccessKeyOutput, error)
 }
 
-// UpdateAccessKeyRequest mocks UpdateAccessKeyRequest method
-func (m MockAccessClient) UpdateAccessKeyRequest(input *iam.UpdateAccessKeyInput) iam.UpdateAccessKeyRequest {
-	return m.MockUpdateAccessKeyRequest(input)
+// UpdateAccessKey mocks UpdateAccessKey method
+func (m MockAccessClient) UpdateAccessKey(ctx context.Context, input *iam.UpdateAccessKeyInput, opts ...func(*iam.Options)) (*iam.UpdateAccessKeyOutput, error) {
+	return m.MockUpdateAccessKey(ctx, input, opts)
 }
 
-// ListAccessKeysRequest mocks ListAccessKeysRequest method
-func (m MockAccessClient) ListAccessKeysRequest(input *iam.ListAccessKeysInput) iam.ListAccessKeysRequest {
-	return m.MockListAccessKeysRequest(input)
+// ListAccessKeys mocks ListAccessKeys method
+func (m MockAccessClient) ListAccessKeys(ctx context.Context, input *iam.ListAccessKeysInput, opts ...func(*iam.Options)) (*iam.ListAccessKeysOutput, error) {
+	return m.MockListAccessKeys(ctx, input, opts)
 }
 
-// CreateAccessKeyRequest mocks CreateAccessKeyRequest method
-func (m MockAccessClient) CreateAccessKeyRequest(input *iam.CreateAccessKeyInput) iam.CreateAccessKeyRequest {
-	return m.MockCreateAccessKeyRequest(input)
+// CreateAccessKey mocks CreateAccessKey method
+func (m MockAccessClient) CreateAccessKey(ctx context.Context, input *iam.CreateAccessKeyInput, opts ...func(*iam.Options)) (*iam.CreateAccessKeyOutput, error) {
+	return m.MockCreateAccessKey(ctx, input, opts)
 }
 
-// DeleteAccessKeyRequest mocks DeleteAccessKeyRequest method
-func (m MockAccessClient) DeleteAccessKeyRequest(input *iam.DeleteAccessKeyInput) iam.DeleteAccessKeyRequest {
-	return m.MockDeleteAccessKeyRequest(input)
+// DeleteAccessKey mocks DeleteAccessKey method
+func (m MockAccessClient) DeleteAccessKey(ctx context.Context, input *iam.DeleteAccessKeyInput, opts ...func(*iam.Options)) (*iam.DeleteAccessKeyOutput, error) {
+	return m.MockDeleteAccessKey(ctx, input, opts)
 }

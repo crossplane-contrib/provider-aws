@@ -22,6 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsgo "github.com/aws/aws-sdk-go/aws"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
@@ -107,18 +108,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
-	observed, err := e.client.GetOpenIDConnectProviderRequest(&awsiam.GetOpenIDConnectProviderInput{
+	observedProvider, err := e.client.GetOpenIDConnectProvider(ctx, &awsiam.GetOpenIDConnectProviderInput{
 		OpenIDConnectProviderArn: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
-	if observed.GetOpenIDConnectProviderOutput == nil {
+	if observedProvider == nil {
 		return managed.ExternalObservation{}, errors.New(errSDK)
 	}
-
-	observedProvider := observed.GetOpenIDConnectProviderOutput
 
 	// No observation or late initialization is necessary for this resource
 	cr.SetConditions(xpv1.Available())
@@ -135,17 +134,17 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	observed, err := e.client.CreateOpenIDConnectProviderRequest(&awsiam.CreateOpenIDConnectProviderInput{
+	observed, err := e.client.CreateOpenIDConnectProvider(ctx, &awsiam.CreateOpenIDConnectProviderInput{
 		ClientIDList:   cr.Spec.ForProvider.ClientIDList,
 		ThumbprintList: cr.Spec.ForProvider.ThumbprintList,
 		Url:            aws.String(cr.Spec.ForProvider.URL),
-	}).Send(ctx)
+	})
 
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
-	meta.SetExternalName(cr, aws.StringValue(observed.OpenIDConnectProviderArn))
+	meta.SetExternalName(cr, awsgo.StringValue(observed.OpenIDConnectProviderArn))
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
@@ -154,45 +153,44 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
-	observed, err := e.client.GetOpenIDConnectProviderRequest(&awsiam.GetOpenIDConnectProviderInput{
+	observedProvider, err := e.client.GetOpenIDConnectProvider(ctx, &awsiam.GetOpenIDConnectProviderInput{
 		OpenIDConnectProviderArn: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
-	if observed.GetOpenIDConnectProviderOutput == nil {
+	if observedProvider == nil {
 		return managed.ExternalUpdate{}, errors.New(errSDK)
 	}
-	observedProvider := observed.GetOpenIDConnectProviderOutput
 
 	if !cmp.Equal(cr.Spec.ForProvider.ThumbprintList, observedProvider.ThumbprintList, cmpopts.EquateEmpty(),
 		cmpopts.SortSlices(func(x, y string) bool {
 			return x < y
 		})) {
-		if _, err := e.client.UpdateOpenIDConnectProviderThumbprintRequest(&awsiam.UpdateOpenIDConnectProviderThumbprintInput{
+		if _, err := e.client.UpdateOpenIDConnectProviderThumbprint(ctx, &awsiam.UpdateOpenIDConnectProviderThumbprintInput{
 			OpenIDConnectProviderArn: aws.String(meta.GetExternalName(cr)),
 			ThumbprintList:           cr.Spec.ForProvider.ThumbprintList,
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateThumbprint)
 		}
 	}
 
 	addClientIDList, removeClientIDList := iam.SliceDifference(observedProvider.ClientIDList, cr.Spec.ForProvider.ClientIDList)
 	for _, clientID := range addClientIDList {
-		if _, err := e.client.AddClientIDToOpenIDConnectProviderRequest(&awsiam.AddClientIDToOpenIDConnectProviderInput{
+		if _, err := e.client.AddClientIDToOpenIDConnectProvider(ctx, &awsiam.AddClientIDToOpenIDConnectProviderInput{
 			OpenIDConnectProviderArn: aws.String(meta.GetExternalName(cr)),
 			ClientID:                 aws.String(clientID),
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddClientID)
 		}
 	}
 
 	for _, clientID := range removeClientIDList {
-		if _, err := e.client.RemoveClientIDFromOpenIDConnectProviderRequest(&awsiam.RemoveClientIDFromOpenIDConnectProviderInput{
+		if _, err := e.client.RemoveClientIDFromOpenIDConnectProvider(ctx, &awsiam.RemoveClientIDFromOpenIDConnectProviderInput{
 			OpenIDConnectProviderArn: aws.String(meta.GetExternalName(cr)),
 			ClientID:                 aws.String(clientID),
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errRemoveClientID)
 		}
 	}
@@ -205,9 +203,9 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
-	_, err := e.client.DeleteOpenIDConnectProviderRequest(&awsiam.DeleteOpenIDConnectProviderInput{
+	_, err := e.client.DeleteOpenIDConnectProvider(ctx, &awsiam.DeleteOpenIDConnectProviderInput{
 		OpenIDConnectProviderArn: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errDelete)
 }

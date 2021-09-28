@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/iam"
@@ -27,46 +29,46 @@ var _ clientset.PolicyClient = (*MockPolicyClient)(nil)
 
 // MockPolicyClient is a type that implements all the methods for PolicyClient interface
 type MockPolicyClient struct {
-	MockGetPolicyRequest           func(*iam.GetPolicyInput) iam.GetPolicyRequest
-	MockCreatePolicyRequest        func(*iam.CreatePolicyInput) iam.CreatePolicyRequest
-	MockDeletePolicyRequest        func(*iam.DeletePolicyInput) iam.DeletePolicyRequest
-	MockGetPolicyVersionRequest    func(*iam.GetPolicyVersionInput) iam.GetPolicyVersionRequest
-	MockCreatePolicyVersionRequest func(*iam.CreatePolicyVersionInput) iam.CreatePolicyVersionRequest
-	MockListPolicyVersionsRequest  func(*iam.ListPolicyVersionsInput) iam.ListPolicyVersionsRequest
-	MockDeletePolicyVersionRequest func(*iam.DeletePolicyVersionInput) iam.DeletePolicyVersionRequest
+	MockGetPolicy           func(ctx context.Context, input *iam.GetPolicyInput, opts []func(*iam.Options)) (*iam.GetPolicyOutput, error)
+	MockCreatePolicy        func(ctx context.Context, input *iam.CreatePolicyInput, opts []func(*iam.Options)) (*iam.CreatePolicyOutput, error)
+	MockDeletePolicy        func(ctx context.Context, input *iam.DeletePolicyInput, opts []func(*iam.Options)) (*iam.DeletePolicyOutput, error)
+	MockGetPolicyVersion    func(ctx context.Context, input *iam.GetPolicyVersionInput, opts []func(*iam.Options)) (*iam.GetPolicyVersionOutput, error)
+	MockCreatePolicyVersion func(ctx context.Context, input *iam.CreatePolicyVersionInput, opts []func(*iam.Options)) (*iam.CreatePolicyVersionOutput, error)
+	MockListPolicyVersions  func(ctx context.Context, input *iam.ListPolicyVersionsInput, opts []func(*iam.Options)) (*iam.ListPolicyVersionsOutput, error)
+	MockDeletePolicyVersion func(ctx context.Context, input *iam.DeletePolicyVersionInput, opts []func(*iam.Options)) (*iam.DeletePolicyVersionOutput, error)
 }
 
-// GetPolicyRequest mocks GetPolicyRequest method
-func (m *MockPolicyClient) GetPolicyRequest(input *iam.GetPolicyInput) iam.GetPolicyRequest {
-	return m.MockGetPolicyRequest(input)
+// GetPolicy mocks GetPolicy method
+func (m *MockPolicyClient) GetPolicy(ctx context.Context, input *iam.GetPolicyInput, opts ...func(*iam.Options)) (*iam.GetPolicyOutput, error) {
+	return m.MockGetPolicy(ctx, input, opts)
 }
 
-// CreatePolicyRequest mocks CreatePolicyRequest method
-func (m *MockPolicyClient) CreatePolicyRequest(input *iam.CreatePolicyInput) iam.CreatePolicyRequest {
-	return m.MockCreatePolicyRequest(input)
+// CreatePolicy mocks CreatePolicy method
+func (m *MockPolicyClient) CreatePolicy(ctx context.Context, input *iam.CreatePolicyInput, opts ...func(*iam.Options)) (*iam.CreatePolicyOutput, error) {
+	return m.MockCreatePolicy(ctx, input, opts)
 }
 
-// DeletePolicyRequest mocks DeletePolicyRequest method
-func (m *MockPolicyClient) DeletePolicyRequest(input *iam.DeletePolicyInput) iam.DeletePolicyRequest {
-	return m.MockDeletePolicyRequest(input)
+// DeletePolicy mocks DeletePolicy method
+func (m *MockPolicyClient) DeletePolicy(ctx context.Context, input *iam.DeletePolicyInput, opts ...func(*iam.Options)) (*iam.DeletePolicyOutput, error) {
+	return m.MockDeletePolicy(ctx, input, opts)
 }
 
-// GetPolicyVersionRequest mocks GetPolicyVersionRequest method
-func (m *MockPolicyClient) GetPolicyVersionRequest(input *iam.GetPolicyVersionInput) iam.GetPolicyVersionRequest {
-	return m.MockGetPolicyVersionRequest(input)
+// GetPolicyVersion mocks GetPolicyVersion method
+func (m *MockPolicyClient) GetPolicyVersion(ctx context.Context, input *iam.GetPolicyVersionInput, opts ...func(*iam.Options)) (*iam.GetPolicyVersionOutput, error) {
+	return m.MockGetPolicyVersion(ctx, input, opts)
 }
 
-// CreatePolicyVersionRequest mocks CreatePolicyVersionRequest method
-func (m *MockPolicyClient) CreatePolicyVersionRequest(input *iam.CreatePolicyVersionInput) iam.CreatePolicyVersionRequest {
-	return m.MockCreatePolicyVersionRequest(input)
+// CreatePolicyVersion mocks CreatePolicyVersion method
+func (m *MockPolicyClient) CreatePolicyVersion(ctx context.Context, input *iam.CreatePolicyVersionInput, opts ...func(*iam.Options)) (*iam.CreatePolicyVersionOutput, error) {
+	return m.MockCreatePolicyVersion(ctx, input, opts)
 }
 
-// ListPolicyVersionsRequest mocks ListPolicyVersionsRequest method
-func (m *MockPolicyClient) ListPolicyVersionsRequest(input *iam.ListPolicyVersionsInput) iam.ListPolicyVersionsRequest {
-	return m.MockListPolicyVersionsRequest(input)
+// ListPolicyVersions mocks ListPolicyVersions method
+func (m *MockPolicyClient) ListPolicyVersions(ctx context.Context, input *iam.ListPolicyVersionsInput, opts ...func(*iam.Options)) (*iam.ListPolicyVersionsOutput, error) {
+	return m.MockListPolicyVersions(ctx, input, opts)
 }
 
-// DeletePolicyVersionRequest mocks DeletePolicyVersionRequest method
-func (m *MockPolicyClient) DeletePolicyVersionRequest(input *iam.DeletePolicyVersionInput) iam.DeletePolicyVersionRequest {
-	return m.MockDeletePolicyVersionRequest(input)
+// DeletePolicyVersion mocks DeletePolicyVersion method
+func (m *MockPolicyClient) DeletePolicyVersion(ctx context.Context, input *iam.DeletePolicyVersionInput, opts ...func(*iam.Options)) (*iam.DeletePolicyVersionOutput, error) {
+	return m.MockDeletePolicyVersion(ctx, input, opts)
 }

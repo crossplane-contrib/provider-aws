@@ -162,7 +162,7 @@ func TestGenerateSubscribeInput(t *testing.T) {
 				TopicArn:              aws.String(topicArn),
 				Endpoint:              &subEmailEndpoint,
 				Protocol:              &subEmailProtocol,
-				ReturnSubscriptionArn: &subBoolTrue,
+				ReturnSubscriptionArn: subBoolTrue,
 			},
 		},
 	}

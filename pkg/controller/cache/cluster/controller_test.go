@@ -18,11 +18,11 @@ package cluster
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awscache "github.com/aws/aws-sdk-go-v2/service/elasticache"
+	awscachetypes "github.com/aws/aws-sdk-go-v2/service/elasticache/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
@@ -92,14 +92,12 @@ func TestObserve(t *testing.T) {
 		"SuccessfulAvailable": {
 			args: args{
 				cache: &fake.MockClient{
-					MockDescribeCacheClustersRequest: func(input *awscache.DescribeCacheClustersInput) awscache.DescribeCacheClustersRequest {
-						return awscache.DescribeCacheClustersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awscache.DescribeCacheClustersOutput{
-								CacheClusters: []awscache.CacheCluster{{
-									CacheClusterStatus: aws.String(v1alpha1.StatusCreating),
-								}},
+					MockDescribeCacheClusters: func(ctx context.Context, input *awscache.DescribeCacheClustersInput, opts []func(*awscache.Options)) (*awscache.DescribeCacheClustersOutput, error) {
+						return &awscache.DescribeCacheClustersOutput{
+							CacheClusters: []awscachetypes.CacheCluster{{
+								CacheClusterStatus: aws.String(v1alpha1.StatusCreating),
 							}},
-						}
+						}, nil
 					},
 				},
 				cr: cluster(withExternalName(),
@@ -127,17 +125,15 @@ func TestObserve(t *testing.T) {
 		"UpToDate": {
 			args: args{
 				cache: &fake.MockClient{
-					MockDescribeCacheClustersRequest: func(input *awscache.DescribeCacheClustersInput) awscache.DescribeCacheClustersRequest {
-						return awscache.DescribeCacheClustersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awscache.DescribeCacheClustersOutput{
-								CacheClusters: []awscache.CacheCluster{{
-									CacheClusterStatus: aws.String(v1alpha1.StatusAvailable),
-									CacheNodeType:      aws.String(nodeType),
-									NumCacheNodes:      aws.Int64(2),
-									CacheClusterId:     aws.String(externalName),
-								}},
+					MockDescribeCacheClusters: func(ctx context.Context, input *awscache.DescribeCacheClustersInput, opts []func(*awscache.Options)) (*awscache.DescribeCacheClustersOutput, error) {
+						return &awscache.DescribeCacheClustersOutput{
+							CacheClusters: []awscachetypes.CacheCluster{{
+								CacheClusterStatus: aws.String(v1alpha1.StatusAvailable),
+								CacheNodeType:      aws.String(nodeType),
+								NumCacheNodes:      aws.Int32(2),
+								CacheClusterId:     aws.String(externalName),
 							}},
-						}
+						}, nil
 					},
 				},
 				cr: cluster(withExternalName(),
@@ -165,10 +161,8 @@ func TestObserve(t *testing.T) {
 		"DescribeFail": {
 			args: args{
 				cache: &fake.MockClient{
-					MockDescribeCacheClustersRequest: func(input *awscache.DescribeCacheClustersInput) awscache.DescribeCacheClustersRequest {
-						return awscache.DescribeCacheClustersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDescribeCacheClusters: func(ctx context.Context, input *awscache.DescribeCacheClustersInput, opts []func(*awscache.Options)) (*awscache.DescribeCacheClustersOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: cluster(),
@@ -212,10 +206,8 @@ func TestCreate(t *testing.T) {
 		"Successful": {
 			args: args{
 				cache: &fake.MockClient{
-					MockCreateCacheClusterRequest: func(input *awscache.CreateCacheClusterInput) awscache.CreateCacheClusterRequest {
-						return awscache.CreateCacheClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awscache.CreateCacheClusterOutput{}},
-						}
+					MockCreateCacheCluster: func(ctx context.Context, input *awscache.CreateCacheClusterInput, opts []func(*awscache.Options)) (*awscache.CreateCacheClusterOutput, error) {
+						return &awscache.CreateCacheClusterOutput{}, nil
 					},
 				},
 				cr: cluster(withExternalName(),
@@ -235,10 +227,8 @@ func TestCreate(t *testing.T) {
 		"CreateFail": {
 			args: args{
 				cache: &fake.MockClient{
-					MockCreateCacheClusterRequest: func(input *awscache.CreateCacheClusterInput) awscache.CreateCacheClusterRequest {
-						return awscache.CreateCacheClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockCreateCacheCluster: func(ctx context.Context, input *awscache.CreateCacheClusterInput, opts []func(*awscache.Options)) (*awscache.CreateCacheClusterOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: cluster(withSpec(v1alpha1.CacheClusterParameters{
@@ -288,10 +278,8 @@ func TestUpdate(t *testing.T) {
 		"Successful": {
 			args: args{
 				cache: &fake.MockClient{
-					MockModifyCacheClusterRequest: func(input *awscache.ModifyCacheClusterInput) awscache.ModifyCacheClusterRequest {
-						return awscache.ModifyCacheClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awscache.ModifyCacheClusterOutput{}},
-						}
+					MockModifyCacheCluster: func(ctx context.Context, input *awscache.ModifyCacheClusterInput, opts []func(*awscache.Options)) (*awscache.ModifyCacheClusterOutput, error) {
+						return &awscache.ModifyCacheClusterOutput{}, nil
 					},
 				},
 				cr: cluster(withExternalName(),
@@ -311,10 +299,8 @@ func TestUpdate(t *testing.T) {
 		"ModifyFailed": {
 			args: args{
 				cache: &fake.MockClient{
-					MockModifyCacheClusterRequest: func(input *awscache.ModifyCacheClusterInput) awscache.ModifyCacheClusterRequest {
-						return awscache.ModifyCacheClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockModifyCacheCluster: func(ctx context.Context, input *awscache.ModifyCacheClusterInput, opts []func(*awscache.Options)) (*awscache.ModifyCacheClusterOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: cluster(withExternalName(),
@@ -341,10 +327,8 @@ func TestUpdate(t *testing.T) {
 		"NotAvailable": {
 			args: args{
 				cache: &fake.MockClient{
-					MockModifyCacheClusterRequest: func(input *awscache.ModifyCacheClusterInput) awscache.ModifyCacheClusterRequest {
-						return awscache.ModifyCacheClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockModifyCacheCluster: func(ctx context.Context, input *awscache.ModifyCacheClusterInput, opts []func(*awscache.Options)) (*awscache.ModifyCacheClusterOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: cluster(withExternalName(),
@@ -394,10 +378,8 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				cache: &fake.MockClient{
-					MockDeleteCacheClusterRequest: func(input *awscache.DeleteCacheClusterInput) awscache.DeleteCacheClusterRequest {
-						return awscache.DeleteCacheClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awscache.DeleteCacheClusterOutput{}},
-						}
+					MockDeleteCacheCluster: func(ctx context.Context, input *awscache.DeleteCacheClusterInput, opts []func(*awscache.Options)) (*awscache.DeleteCacheClusterOutput, error) {
+						return &awscache.DeleteCacheClusterOutput{}, nil
 					},
 				},
 				cr: cluster(withExternalName(), withConditions(xpv1.Deleting())),
@@ -410,10 +392,8 @@ func TestDelete(t *testing.T) {
 		"DeleteFailed": {
 			args: args{
 				cache: &fake.MockClient{
-					MockDeleteCacheClusterRequest: func(input *awscache.DeleteCacheClusterInput) awscache.DeleteCacheClusterRequest {
-						return awscache.DeleteCacheClusterRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockDeleteCacheCluster: func(ctx context.Context, input *awscache.DeleteCacheClusterInput, opts []func(*awscache.Options)) (*awscache.DeleteCacheClusterOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: cluster(withExternalName()),

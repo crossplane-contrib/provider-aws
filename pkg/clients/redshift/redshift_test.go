@@ -21,8 +21,9 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/redshift"
+	redshifttypes "github.com/aws/aws-sdk-go-v2/service/redshift/types"
+	"github.com/aws/smithy-go"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/redshift/v1alpha1"
@@ -32,12 +33,13 @@ var (
 	dbName     = "example-name"
 	nodeType   = "dc1.large"
 	singleNode = "single-node"
+	upgrade    = false
 )
 
 func fullClusterParam() *v1alpha1.ClusterParameters {
 	o := &v1alpha1.ClusterParameters{
 		AllowVersionUpgrade:                 aws.Bool(false),
-		AutomatedSnapshotRetentionPeriod:    aws.Int64(0),
+		AutomatedSnapshotRetentionPeriod:    aws.Int32(0),
 		AvailabilityZone:                    aws.String(""),
 		ClusterVersion:                      aws.String("1.0"),
 		ClusterSubnetGroupName:              aws.String("default"),
@@ -47,16 +49,16 @@ func fullClusterParam() *v1alpha1.ClusterParameters {
 		EnhancedVPCRouting:                  aws.Bool(false),
 		KMSKeyID:                            aws.String(""),
 		MaintenanceTrackName:                aws.String(""),
-		ManualSnapshotRetentionPeriod:       aws.Int64(0),
+		ManualSnapshotRetentionPeriod:       aws.Int32(0),
 		NodeType:                            "dc1.large",
-		NumberOfNodes:                       aws.Int64(1),
+		NumberOfNodes:                       aws.Int32(1),
 		PreferredMaintenanceWindow:          aws.String(""),
-		Port:                                aws.Int64(5439),
+		Port:                                aws.Int32(5439),
 		PubliclyAccessible:                  aws.Bool(false),
 		SnapshotScheduleIdentifier:          aws.String(""),
 		VPCSecurityGroupIDs:                 []string{"sg-44444444"},
 		FinalClusterSnapshotIdentifier:      aws.String("doom"),
-		FinalClusterSnapshotRetentionPeriod: aws.Int64(1),
+		FinalClusterSnapshotRetentionPeriod: aws.Int32(1),
 		SkipFinalClusterSnapshot:            aws.Bool(true),
 	}
 	return o
@@ -75,12 +77,12 @@ func clusterParam(m ...func(*v1alpha1.ClusterParameters)) *v1alpha1.ClusterParam
 	return o
 }
 
-func cluster(m ...func(*redshift.Cluster)) *redshift.Cluster {
-	o := &redshift.Cluster{
-		AllowVersionUpgrade:              aws.Bool(true),
-		AutomatedSnapshotRetentionPeriod: aws.Int64(1),
+func cluster(m ...func(*redshifttypes.Cluster)) *redshifttypes.Cluster {
+	o := &redshifttypes.Cluster{
+		AllowVersionUpgrade:              true,
+		AutomatedSnapshotRetentionPeriod: 1,
 		AvailabilityZone:                 aws.String("us-east-1d"),
-		ClusterParameterGroups: []redshift.ClusterParameterGroupStatus{
+		ClusterParameterGroups: []redshifttypes.ClusterParameterGroupStatus{
 			{
 				ParameterGroupName: aws.String("default"),
 			},
@@ -88,17 +90,17 @@ func cluster(m ...func(*redshift.Cluster)) *redshift.Cluster {
 		ClusterSubnetGroupName: aws.String("default"),
 		ClusterVersion:         aws.String("1.0"),
 		DBName:                 aws.String("dev"),
-		Encrypted:              aws.Bool(false),
-		Endpoint: &redshift.Endpoint{
-			Port: aws.Int64(5439),
+		Encrypted:              false,
+		Endpoint: &redshifttypes.Endpoint{
+			Port: 5439,
 		},
-		EnhancedVpcRouting:            aws.Bool(false),
+		EnhancedVpcRouting:            false,
 		MaintenanceTrackName:          aws.String("current"),
-		ManualSnapshotRetentionPeriod: aws.Int64(-1),
+		ManualSnapshotRetentionPeriod: -1,
 		NodeType:                      aws.String("dc1.large"),
-		NumberOfNodes:                 aws.Int64(1),
-		PubliclyAccessible:            aws.Bool(true),
-		VpcSecurityGroups: []redshift.VpcSecurityGroupMembership{
+		NumberOfNodes:                 1,
+		PubliclyAccessible:            true,
+		VpcSecurityGroups: []redshifttypes.VpcSecurityGroupMembership{
 			{
 				VpcSecurityGroupId: aws.String("sg-44444444"),
 			},
@@ -113,7 +115,7 @@ func cluster(m ...func(*redshift.Cluster)) *redshift.Cluster {
 
 func TestCreatePatch(t *testing.T) {
 	type args struct {
-		cl *redshift.Cluster
+		cl *redshifttypes.Cluster
 		p  *v1alpha1.ClusterParameters
 	}
 
@@ -127,10 +129,10 @@ func TestCreatePatch(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				cl: &redshift.Cluster{
+				cl: &redshifttypes.Cluster{
 					NodeType:          &nodeType,
 					ClusterIdentifier: aws.String(""),
-					NumberOfNodes:     aws.Int64(1),
+					NumberOfNodes:     1,
 				},
 				p: &v1alpha1.ClusterParameters{
 					NodeType:    nodeType,
@@ -143,19 +145,19 @@ func TestCreatePatch(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				cl: &redshift.Cluster{
+				cl: &redshifttypes.Cluster{
 					NodeType:          &nodeType,
 					ClusterIdentifier: aws.String(""),
-					NumberOfNodes:     aws.Int64(2),
+					NumberOfNodes:     2,
 				},
 				p: &v1alpha1.ClusterParameters{
 					NodeType:      nodeType,
-					NumberOfNodes: aws.Int64(1),
+					NumberOfNodes: aws.Int32(1),
 				},
 			},
 			want: want{
 				patch: &v1alpha1.ClusterParameters{
-					NumberOfNodes: aws.Int64(1),
+					NumberOfNodes: aws.Int32(1),
 				},
 			},
 		},
@@ -175,7 +177,7 @@ func TestIsUpToDate(t *testing.T) {
 	ClusterSubnetGroupName := "example-subnet"
 
 	type args struct {
-		cl redshift.Cluster
+		cl redshifttypes.Cluster
 		p  v1alpha1.ClusterParameters
 	}
 
@@ -185,10 +187,10 @@ func TestIsUpToDate(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				cl: redshift.Cluster{
+				cl: redshifttypes.Cluster{
 					NodeType:          &nodeType,
 					ClusterIdentifier: aws.String(""),
-					NumberOfNodes:     aws.Int64(1),
+					NumberOfNodes:     1,
 				},
 				p: v1alpha1.ClusterParameters{
 					NodeType:    nodeType,
@@ -199,10 +201,10 @@ func TestIsUpToDate(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				cl: redshift.Cluster{
+				cl: redshifttypes.Cluster{
 					NodeType:          &nodeType,
 					ClusterIdentifier: aws.String(""),
-					NumberOfNodes:     aws.Int64(2),
+					NumberOfNodes:     2,
 				},
 				p: v1alpha1.ClusterParameters{
 					NodeType:    nodeType,
@@ -213,7 +215,7 @@ func TestIsUpToDate(t *testing.T) {
 		},
 		"IgnoresRefs": {
 			args: args{
-				cl: redshift.Cluster{
+				cl: redshifttypes.Cluster{
 					DBName:                 &dbName,
 					ClusterSubnetGroupName: &ClusterSubnetGroupName,
 				},
@@ -239,7 +241,7 @@ func TestIsUpToDate(t *testing.T) {
 func TestLateInitialize(t *testing.T) {
 	type args struct {
 		in *v1alpha1.ClusterParameters
-		cl redshift.Cluster
+		cl redshifttypes.Cluster
 	}
 	cases := map[string]struct {
 		args args
@@ -252,7 +254,7 @@ func TestLateInitialize(t *testing.T) {
 			},
 			want: &v1alpha1.ClusterParameters{
 				AllowVersionUpgrade:              aws.Bool(true),
-				AutomatedSnapshotRetentionPeriod: aws.Int64(1),
+				AutomatedSnapshotRetentionPeriod: aws.Int32(1),
 				AvailabilityZone:                 aws.String("us-east-1d"),
 				ClusterSubnetGroupName:           aws.String("default"),
 				ClusterType:                      aws.String("single-node"),
@@ -261,11 +263,11 @@ func TestLateInitialize(t *testing.T) {
 				Encrypted:                        aws.Bool(false),
 				EnhancedVPCRouting:               aws.Bool(false),
 				MaintenanceTrackName:             aws.String("current"),
-				ManualSnapshotRetentionPeriod:    aws.Int64(-1),
+				ManualSnapshotRetentionPeriod:    aws.Int32(-1),
 				MasterUsername:                   "admin",
 				NodeType:                         "dc1.large",
-				NumberOfNodes:                    aws.Int64(1),
-				Port:                             aws.Int64(5439),
+				NumberOfNodes:                    aws.Int32(1),
+				Port:                             aws.Int32(5439),
 				PubliclyAccessible:               aws.Bool(true),
 				SkipFinalClusterSnapshot:         aws.Bool(true),
 				VPCSecurityGroupIDs:              []string{"sg-44444444"},
@@ -274,9 +276,21 @@ func TestLateInitialize(t *testing.T) {
 		"EmptyExternalResponse": {
 			args: args{
 				in: clusterParam(),
-				cl: redshift.Cluster{},
+				cl: redshifttypes.Cluster{},
 			},
-			want: clusterParam(),
+			want: &v1alpha1.ClusterParameters{
+				AllowVersionUpgrade:              aws.Bool(false),
+				AutomatedSnapshotRetentionPeriod: aws.Int32(0),
+				ClusterType:                      aws.String("single-node"),
+				Encrypted:                        aws.Bool(false),
+				EnhancedVPCRouting:               aws.Bool(false),
+				MasterUsername:                   "admin",
+				ManualSnapshotRetentionPeriod:    aws.Int32(0),
+				NodeType:                         "dc1.large",
+				PubliclyAccessible:               aws.Bool(false),
+				SkipFinalClusterSnapshot:         aws.Bool(true),
+				NumberOfNodes:                    aws.Int32(0),
+			},
 		},
 		"FullSpec": {
 			args: args{
@@ -303,11 +317,11 @@ func TestIsNotFound(t *testing.T) {
 		want bool
 	}{
 		"validError": {
-			err:  awserr.New(redshift.ErrCodeClusterNotFoundFault, "ClusterNotFound", errors.New(redshift.ErrCodeClusterNotFoundFault)),
+			err:  &redshifttypes.ClusterNotFoundFault{},
 			want: true,
 		},
 		"invalidAwsError": {
-			err:  awserr.New(redshift.ErrCodeClusterAlreadyExistsFault, "ClusterAlreadyExists", errors.New(redshift.ErrCodeClusterAlreadyExistsFault)),
+			err:  &smithy.GenericAPIError{Code: "something"},
 			want: false,
 		},
 		"randomError": {
@@ -343,7 +357,7 @@ func TestGenerateCreateClusterInput(t *testing.T) {
 			in: fullClusterParam(),
 			out: &redshift.CreateClusterInput{
 				AllowVersionUpgrade:              aws.Bool(false),
-				AutomatedSnapshotRetentionPeriod: aws.Int64(0),
+				AutomatedSnapshotRetentionPeriod: aws.Int32(0),
 				AvailabilityZone:                 aws.String(""),
 				ClusterIdentifier:                aws.String("unit-test"),
 				ClusterVersion:                   aws.String("1.0"),
@@ -354,13 +368,13 @@ func TestGenerateCreateClusterInput(t *testing.T) {
 				EnhancedVpcRouting:               aws.Bool(false),
 				KmsKeyId:                         aws.String(""),
 				MaintenanceTrackName:             aws.String(""),
-				ManualSnapshotRetentionPeriod:    aws.Int64(0),
+				ManualSnapshotRetentionPeriod:    aws.Int32(0),
 				MasterUsername:                   aws.String(""),
 				MasterUserPassword:               aws.String("very-strong-password"),
 				NodeType:                         aws.String("dc1.large"),
-				NumberOfNodes:                    aws.Int64(1),
+				NumberOfNodes:                    aws.Int32(1),
 				PreferredMaintenanceWindow:       aws.String(""),
-				Port:                             aws.Int64(5439),
+				Port:                             aws.Int32(5439),
 				PubliclyAccessible:               aws.Bool(false),
 				SnapshotScheduleIdentifier:       aws.String(""),
 				VpcSecurityGroupIds:              []string{"sg-44444444"},
@@ -381,7 +395,7 @@ func TestGenerateCreateClusterInput(t *testing.T) {
 func TestGenerateModifyClusterInput(t *testing.T) {
 	type args struct {
 		in *v1alpha1.ClusterParameters
-		cl redshift.Cluster
+		cl redshifttypes.Cluster
 	}
 	cases := map[string]struct {
 		args args
@@ -392,14 +406,14 @@ func TestGenerateModifyClusterInput(t *testing.T) {
 				in: &v1alpha1.ClusterParameters{
 					ClusterType:   aws.String("multi-node"),
 					NodeType:      "dc1.large",
-					NumberOfNodes: aws.Int64(2),
+					NumberOfNodes: aws.Int32(2),
 				},
 				cl: *cluster(),
 			},
 			want: &redshift.ModifyClusterInput{
 				ClusterType:   aws.String("multi-node"),
 				NodeType:      aws.String("dc1.large"),
-				NumberOfNodes: aws.Int64(2),
+				NumberOfNodes: aws.Int32(2),
 			},
 		},
 		"PublicAccessibility": {
@@ -440,21 +454,20 @@ func TestGenerateModifyClusterInput(t *testing.T) {
 		"EverythingElse": {
 			args: args{
 				in: &v1alpha1.ClusterParameters{
-					AllowVersionUpgrade:              aws.Bool(false),
-					AutomatedSnapshotRetentionPeriod: aws.Int64(2),
+					AllowVersionUpgrade:              &upgrade,
+					AutomatedSnapshotRetentionPeriod: aws.Int32(2),
 					Encrypted:                        aws.Bool(true),
 					MaintenanceTrackName:             aws.String("r2d2"),
-					ManualSnapshotRetentionPeriod:    aws.Int64(42),
+					ManualSnapshotRetentionPeriod:    aws.Int32(42),
 					VPCSecurityGroupIDs:              []string{"sg-666"},
 				},
-				cl: redshift.Cluster{},
+				cl: redshifttypes.Cluster{},
 			},
 			want: &redshift.ModifyClusterInput{
-				AllowVersionUpgrade:              aws.Bool(false),
-				AutomatedSnapshotRetentionPeriod: aws.Int64(2),
+				AutomatedSnapshotRetentionPeriod: aws.Int32(2),
 				Encrypted:                        aws.Bool(true),
 				MaintenanceTrackName:             aws.String("r2d2"),
-				ManualSnapshotRetentionPeriod:    aws.Int64(42),
+				ManualSnapshotRetentionPeriod:    aws.Int32(42),
 				VpcSecurityGroupIds:              []string{"sg-666"},
 			},
 		},
@@ -479,7 +492,7 @@ func TestGenerateDeleteClusterInput(t *testing.T) {
 			in: clusterParam(),
 			out: &redshift.DeleteClusterInput{
 				ClusterIdentifier:        aws.String("unit-test"),
-				SkipFinalClusterSnapshot: aws.Bool(true),
+				SkipFinalClusterSnapshot: true,
 			},
 		},
 		"FullSpec": {
@@ -487,8 +500,8 @@ func TestGenerateDeleteClusterInput(t *testing.T) {
 			out: &redshift.DeleteClusterInput{
 				ClusterIdentifier:                   aws.String("unit-test"),
 				FinalClusterSnapshotIdentifier:      aws.String("doom"),
-				FinalClusterSnapshotRetentionPeriod: aws.Int64(1),
-				SkipFinalClusterSnapshot:            aws.Bool(true),
+				FinalClusterSnapshotRetentionPeriod: aws.Int32(1),
+				SkipFinalClusterSnapshot:            true,
 			},
 		},
 	}

@@ -3,7 +3,6 @@ package snssubscription
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -25,9 +24,9 @@ import (
 
 var (
 	// an arbitrary managed resource
-	unexpecedItem resource.Managed
-	subName       = "some-topic"
-	errBoom       = errors.New("boom")
+	unexpectedItem resource.Managed
+	subName        = "some-topic"
+	errBoom        = errors.New("boom")
 )
 
 type args struct {
@@ -75,10 +74,10 @@ func TestObserve(t *testing.T) {
 	}{
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
@@ -117,14 +116,8 @@ func TestCreate(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				sub: &fake.MockSubscriptionClient{
-					MockSubscribeRequest: func(input *awssns.SubscribeInput) awssns.SubscribeRequest {
-						return awssns.SubscribeRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Data:        &awssns.SubscribeOutput{SubscriptionArn: aws.String(makeARN(subName))},
-								Retryer:     aws.NoOpRetryer{},
-							},
-						}
+					MockSubscribe: func(ctx context.Context, input *awssns.SubscribeInput, opts []func(*awssns.Options)) (*awssns.SubscribeOutput, error) {
+						return &awssns.SubscribeOutput{SubscriptionArn: aws.String(makeARN(subName))}, nil
 					},
 				},
 				cr: subscription(
@@ -138,24 +131,18 @@ func TestCreate(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientSubscribeError": {
 			args: args{
 				sub: &fake.MockSubscriptionClient{
-					MockSubscribeRequest: func(input *awssns.SubscribeInput) awssns.SubscribeRequest {
-						return awssns.SubscribeRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Error:       errBoom,
-								Retryer:     aws.NoOpRetryer{},
-							},
-						}
+					MockSubscribe: func(ctx context.Context, input *awssns.SubscribeInput, opts []func(*awssns.Options)) (*awssns.SubscribeOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: subscription(
@@ -201,14 +188,8 @@ func TestUpdate(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				sub: &fake.MockSubscriptionClient{
-					MockGetSubscriptionAttributesRequest: func(input *awssns.GetSubscriptionAttributesInput) awssns.GetSubscriptionAttributesRequest {
-						return awssns.GetSubscriptionAttributesRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Data:        &awssns.GetSubscriptionAttributesOutput{},
-								Retryer:     aws.NoOpRetryer{},
-							},
-						}
+					MockGetSubscriptionAttributes: func(ctx context.Context, input *awssns.GetSubscriptionAttributesInput, opts []func(*awssns.Options)) (*awssns.GetSubscriptionAttributesOutput, error) {
+						return &awssns.GetSubscriptionAttributesOutput{}, nil
 					},
 				},
 				cr: subscription(
@@ -224,23 +205,11 @@ func TestUpdate(t *testing.T) {
 		"VaildInputWithChangedAttributes": {
 			args: args{
 				sub: &fake.MockSubscriptionClient{
-					MockGetSubscriptionAttributesRequest: func(input *awssns.GetSubscriptionAttributesInput) awssns.GetSubscriptionAttributesRequest {
-						return awssns.GetSubscriptionAttributesRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Data:        &awssns.GetSubscriptionAttributesOutput{},
-								Retryer:     aws.NoOpRetryer{},
-							},
-						}
+					MockGetSubscriptionAttributes: func(ctx context.Context, input *awssns.GetSubscriptionAttributesInput, opts []func(*awssns.Options)) (*awssns.GetSubscriptionAttributesOutput, error) {
+						return &awssns.GetSubscriptionAttributesOutput{}, nil
 					},
-					MockSetSubscriptionAttributesRequest: func(input *awssns.SetSubscriptionAttributesInput) awssns.SetSubscriptionAttributesRequest {
-						return awssns.SetSubscriptionAttributesRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Data:        &awssns.SetSubscriptionAttributesOutput{},
-								Retryer:     aws.NoOpRetryer{},
-							},
-						}
+					MockSetSubscriptionAttributes: func(ctx context.Context, input *awssns.SetSubscriptionAttributesInput, opts []func(*awssns.Options)) (*awssns.SetSubscriptionAttributesOutput, error) {
+						return &awssns.SetSubscriptionAttributesOutput{}, nil
 					},
 				},
 				cr: subscription(
@@ -255,24 +224,18 @@ func TestUpdate(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientGetSubscriptionAttributeError": {
 			args: args{
 				sub: &fake.MockSubscriptionClient{
-					MockGetSubscriptionAttributesRequest: func(input *awssns.GetSubscriptionAttributesInput) awssns.GetSubscriptionAttributesRequest {
-						return awssns.GetSubscriptionAttributesRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Error:       errBoom,
-								Retryer:     aws.NoOpRetryer{},
-							},
-						}
+					MockGetSubscriptionAttributes: func(ctx context.Context, input *awssns.GetSubscriptionAttributesInput, opts []func(*awssns.Options)) (*awssns.GetSubscriptionAttributesOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: subscription(
@@ -289,28 +252,14 @@ func TestUpdate(t *testing.T) {
 		"ClientSetSubscriptionAttributeError": {
 			args: args{
 				sub: &fake.MockSubscriptionClient{
-					MockGetSubscriptionAttributesRequest: func(input *awssns.GetSubscriptionAttributesInput) awssns.GetSubscriptionAttributesRequest {
-						return awssns.GetSubscriptionAttributesRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data: &awssns.GetSubscriptionAttributesOutput{
-									// To trigger Changed Attributes
-									Attributes: map[string]string{
-										"DeliveryPolicy": "fake-del-policy",
-									},
-								},
-							},
-						}
+					MockGetSubscriptionAttributes: func(ctx context.Context, input *awssns.GetSubscriptionAttributesInput, opts []func(*awssns.Options)) (*awssns.GetSubscriptionAttributesOutput, error) {
+						return &awssns.GetSubscriptionAttributesOutput{
+							Attributes: map[string]string{
+								"DeliveryPolicy": "fake-del-policy",
+							}}, nil
 					},
-					MockSetSubscriptionAttributesRequest: func(input *awssns.SetSubscriptionAttributesInput) awssns.SetSubscriptionAttributesRequest {
-						return awssns.SetSubscriptionAttributesRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Error:       errBoom,
-								Retryer:     aws.NoOpRetryer{},
-							},
-						}
+					MockSetSubscriptionAttributes: func(ctx context.Context, input *awssns.SetSubscriptionAttributesInput, opts []func(*awssns.Options)) (*awssns.SetSubscriptionAttributesOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: subscription(
@@ -356,14 +305,8 @@ func TestDelete(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				sub: &fake.MockSubscriptionClient{
-					MockUnsubscribeRequest: func(input *awssns.UnsubscribeInput) awssns.UnsubscribeRequest {
-						return awssns.UnsubscribeRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Data:        &awssns.UnsubscribeOutput{},
-								Retryer:     aws.NoOpRetryer{},
-							},
-						}
+					MockUnsubscribe: func(ctx context.Context, input *awssns.UnsubscribeInput, opts []func(*awssns.Options)) (*awssns.UnsubscribeOutput, error) {
+						return &awssns.UnsubscribeOutput{}, nil
 					},
 				},
 				cr: subscription(
@@ -380,24 +323,18 @@ func TestDelete(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				sub: &fake.MockSubscriptionClient{
-					MockUnsubscribeRequest: func(input *awssns.UnsubscribeInput) awssns.UnsubscribeRequest {
-						return awssns.UnsubscribeRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Error:       errBoom,
-								Retryer:     aws.NoOpRetryer{},
-							},
-						}
+					MockUnsubscribe: func(ctx context.Context, input *awssns.UnsubscribeInput, opts []func(*awssns.Options)) (*awssns.UnsubscribeOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: subscription(
@@ -415,15 +352,8 @@ func TestDelete(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				sub: &fake.MockSubscriptionClient{
-					MockUnsubscribeRequest: func(input *awssns.UnsubscribeInput) awssns.UnsubscribeRequest {
-						return awssns.UnsubscribeRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Data:        &awssns.UnsubscribeOutput{},
-								Error:       nil,
-								Retryer:     aws.NoOpRetryer{},
-							},
-						}
+					MockUnsubscribe: func(ctx context.Context, input *awssns.UnsubscribeInput, opts []func(*awssns.Options)) (*awssns.UnsubscribeOutput, error) {
+						return &awssns.UnsubscribeOutput{}, nil
 					},
 				},
 				cr: subscription(

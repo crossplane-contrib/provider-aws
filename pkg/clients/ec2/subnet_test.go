@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
@@ -20,7 +20,7 @@ var (
 
 func TestIsSubnetUpToDate(t *testing.T) {
 	type args struct {
-		subnet ec2.Subnet
+		subnet ec2types.Subnet
 		p      v1beta1.SubnetParameters
 	}
 
@@ -30,11 +30,11 @@ func TestIsSubnetUpToDate(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				subnet: ec2.Subnet{
+				subnet: ec2types.Subnet{
 					CidrBlock:                   aws.String(cidr),
 					VpcId:                       aws.String(vpc),
-					AssignIpv6AddressOnCreation: aws.Bool(true),
-					MapPublicIpOnLaunch:         aws.Bool(true),
+					AssignIpv6AddressOnCreation: true,
+					MapPublicIpOnLaunch:         true,
 				},
 				p: v1beta1.SubnetParameters{
 					CIDRBlock:                   cidr,
@@ -47,11 +47,11 @@ func TestIsSubnetUpToDate(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				subnet: ec2.Subnet{
+				subnet: ec2types.Subnet{
 					CidrBlock:                   aws.String(cidr),
 					VpcId:                       aws.String(vpc),
-					AssignIpv6AddressOnCreation: aws.Bool(true),
-					MapPublicIpOnLaunch:         aws.Bool(false),
+					AssignIpv6AddressOnCreation: true,
+					MapPublicIpOnLaunch:         false,
 				},
 				p: v1beta1.SubnetParameters{
 					CIDRBlock:                   cidr,
@@ -76,28 +76,28 @@ func TestIsSubnetUpToDate(t *testing.T) {
 
 func TestGenerateSubnetObservation(t *testing.T) {
 	cases := map[string]struct {
-		in  ec2.Subnet
+		in  ec2types.Subnet
 		out v1beta1.SubnetObservation
 	}{
 		"AllFilled": {
-			in: ec2.Subnet{
-				AvailableIpAddressCount: aws.Int64(int64(availableIPCount)),
-				DefaultForAz:            aws.Bool(true),
+			in: ec2types.Subnet{
+				AvailableIpAddressCount: int32(availableIPCount),
+				DefaultForAz:            true,
 				SubnetId:                aws.String(subnetID),
-				State:                   ec2.SubnetStateAvailable,
+				State:                   ec2types.SubnetStateAvailable,
 			},
 			out: v1beta1.SubnetObservation{
-				AvailableIPAddressCount: int64(availableIPCount),
+				AvailableIPAddressCount: int32(availableIPCount),
 				DefaultForAZ:            true,
 				SubnetID:                subnetID,
 				SubnetState:             state,
 			},
 		},
 		"NoIpCount": {
-			in: ec2.Subnet{
-				DefaultForAz: aws.Bool(true),
+			in: ec2types.Subnet{
+				DefaultForAz: true,
 				SubnetId:     aws.String(subnetID),
-				State:        ec2.SubnetStateAvailable,
+				State:        ec2types.SubnetStateAvailable,
 			},
 			out: v1beta1.SubnetObservation{
 				DefaultForAZ: true,

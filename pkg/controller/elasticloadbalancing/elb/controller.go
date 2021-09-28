@@ -22,6 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awselb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
+	awselbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
@@ -102,9 +103,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	response, err := e.client.DescribeLoadBalancersRequest(&awselb.DescribeLoadBalancersInput{
+	response, err := e.client.DescribeLoadBalancers(ctx, &awselb.DescribeLoadBalancersInput{
 		LoadBalancerNames: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDescribe)
 	}
@@ -116,9 +117,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	observed := response.LoadBalancerDescriptions[0]
 
-	tagsResponse, err := e.client.DescribeTagsRequest(&awselb.DescribeTagsInput{
+	tagsResponse, err := e.client.DescribeTags(ctx, &awselb.DescribeTagsInput{
 		LoadBalancerNames: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDescribeTags)
 	}
@@ -155,8 +156,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	cr.Status.SetConditions(xpv1.Creating())
 
-	_, err := e.client.CreateLoadBalancerRequest(elb.GenerateCreateELBInput(meta.GetExternalName(cr),
-		cr.Spec.ForProvider)).Send(ctx)
+	_, err := e.client.CreateLoadBalancer(ctx, elb.GenerateCreateELBInput(meta.GetExternalName(cr),
+		cr.Spec.ForProvider))
 
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 }
@@ -167,9 +168,9 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	response, err := e.client.DescribeLoadBalancersRequest(&awselb.DescribeLoadBalancersInput{
+	response, err := e.client.DescribeLoadBalancers(ctx, &awselb.DescribeLoadBalancersInput{
 		LoadBalancerNames: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(elb.IsELBNotFound, err), errUpdate)
 	}
@@ -180,9 +181,9 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	observed := response.LoadBalancerDescriptions[0]
 
-	tagsResponse, err := e.client.DescribeTagsRequest(&awselb.DescribeTagsInput{
+	tagsResponse, err := e.client.DescribeTags(ctx, &awselb.DescribeTagsInput{
 		LoadBalancerNames: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDescribeTags)
 	}
@@ -201,10 +202,10 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	if len(patch.SecurityGroupIDs) != 0 {
-		if _, err := e.client.ApplySecurityGroupsToLoadBalancerRequest(&awselb.ApplySecurityGroupsToLoadBalancerInput{
+		if _, err := e.client.ApplySecurityGroupsToLoadBalancer(ctx, &awselb.ApplySecurityGroupsToLoadBalancerInput{
 			SecurityGroups:   cr.Spec.ForProvider.SecurityGroupIDs,
 			LoadBalancerName: aws.String(meta.GetExternalName(cr)),
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 		}
 	}
@@ -216,16 +217,16 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	if patch.HealthCheck != nil {
-		if _, err := e.client.ConfigureHealthCheckRequest(&awselb.ConfigureHealthCheckInput{
+		if _, err := e.client.ConfigureHealthCheck(ctx, &awselb.ConfigureHealthCheckInput{
 			LoadBalancerName: aws.String(meta.GetExternalName(cr)),
-			HealthCheck: &awselb.HealthCheck{
-				HealthyThreshold:   aws.Int64(cr.Spec.ForProvider.HealthCheck.HealthyThreshold),
-				Interval:           aws.Int64(cr.Spec.ForProvider.HealthCheck.Interval),
+			HealthCheck: &awselbtypes.HealthCheck{
+				HealthyThreshold:   cr.Spec.ForProvider.HealthCheck.HealthyThreshold,
+				Interval:           cr.Spec.ForProvider.HealthCheck.Interval,
 				Target:             aws.String(cr.Spec.ForProvider.HealthCheck.Target),
-				Timeout:            aws.Int64(cr.Spec.ForProvider.HealthCheck.Timeout),
-				UnhealthyThreshold: aws.Int64(cr.Spec.ForProvider.HealthCheck.HealthyThreshold),
+				Timeout:            cr.Spec.ForProvider.HealthCheck.Timeout,
+				UnhealthyThreshold: cr.Spec.ForProvider.HealthCheck.HealthyThreshold,
 			},
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 		}
 	}
@@ -253,9 +254,9 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.DeleteLoadBalancerRequest(&awselb.DeleteLoadBalancerInput{
+	_, err := e.client.DeleteLoadBalancer(ctx, &awselb.DeleteLoadBalancerInput{
 		LoadBalancerName: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(elb.IsELBNotFound, err), errDelete)
 }
@@ -264,20 +265,20 @@ func (e *external) updateAvailabilityZones(ctx context.Context, zones, elbZones 
 
 	addZones := stringSliceDiff(zones, elbZones)
 	if len(addZones) != 0 {
-		if _, err := e.client.EnableAvailabilityZonesForLoadBalancerRequest(&awselb.EnableAvailabilityZonesForLoadBalancerInput{
+		if _, err := e.client.EnableAvailabilityZonesForLoadBalancer(ctx, &awselb.EnableAvailabilityZonesForLoadBalancerInput{
 			AvailabilityZones: addZones,
 			LoadBalancerName:  aws.String(name),
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return err
 		}
 	}
 
 	removeZones := stringSliceDiff(elbZones, zones)
 	if len(removeZones) != 0 {
-		if _, err := e.client.DisableAvailabilityZonesForLoadBalancerRequest(&awselb.DisableAvailabilityZonesForLoadBalancerInput{
+		if _, err := e.client.DisableAvailabilityZonesForLoadBalancer(ctx, &awselb.DisableAvailabilityZonesForLoadBalancerInput{
 			AvailabilityZones: removeZones,
 			LoadBalancerName:  aws.String(name),
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return err
 		}
 	}
@@ -289,20 +290,20 @@ func (e *external) updateSubnets(ctx context.Context, subnets, elbSubnets []stri
 
 	addSubnets := stringSliceDiff(subnets, elbSubnets)
 	if len(addSubnets) != 0 {
-		if _, err := e.client.AttachLoadBalancerToSubnetsRequest(&awselb.AttachLoadBalancerToSubnetsInput{
+		if _, err := e.client.AttachLoadBalancerToSubnets(ctx, &awselb.AttachLoadBalancerToSubnetsInput{
 			LoadBalancerName: aws.String(name),
 			Subnets:          addSubnets,
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return err
 		}
 	}
 
 	removeSubnets := stringSliceDiff(elbSubnets, subnets)
 	if len(elbSubnets) != 0 {
-		if _, err := e.client.DetachLoadBalancerFromSubnetsRequest(&awselb.DetachLoadBalancerFromSubnetsInput{
+		if _, err := e.client.DetachLoadBalancerFromSubnets(ctx, &awselb.DetachLoadBalancerFromSubnetsInput{
 			LoadBalancerName: aws.String(name),
 			Subnets:          removeSubnets,
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return err
 		}
 	}
@@ -310,27 +311,27 @@ func (e *external) updateSubnets(ctx context.Context, subnets, elbSubnets []stri
 	return nil
 }
 
-func (e *external) updateListeners(ctx context.Context, listeners []v1alpha1.Listener, elbListeners []awselb.ListenerDescription, name string) error {
+func (e *external) updateListeners(ctx context.Context, listeners []v1alpha1.Listener, elbListeners []awselbtypes.ListenerDescription, name string) error {
 
 	if len(elbListeners) != 0 {
-		ports := []int64{}
+		ports := []int32{}
 		for _, v := range elbListeners {
-			ports = append(ports, aws.Int64Value(v.Listener.LoadBalancerPort))
+			ports = append(ports, v.Listener.LoadBalancerPort)
 		}
 
-		if _, err := e.client.DeleteLoadBalancerListenersRequest(&awselb.DeleteLoadBalancerListenersInput{
+		if _, err := e.client.DeleteLoadBalancerListeners(ctx, &awselb.DeleteLoadBalancerListenersInput{
 			LoadBalancerName:  aws.String(name),
 			LoadBalancerPorts: ports,
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return err
 		}
 	}
 
 	if len(listeners) != 0 {
-		if _, err := e.client.CreateLoadBalancerListenersRequest(&awselb.CreateLoadBalancerListenersInput{
+		if _, err := e.client.CreateLoadBalancerListeners(ctx, &awselb.CreateLoadBalancerListenersInput{
 			Listeners:        elb.BuildELBListeners(listeners),
 			LoadBalancerName: aws.String(name),
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return err
 		}
 	}
@@ -338,26 +339,26 @@ func (e *external) updateListeners(ctx context.Context, listeners []v1alpha1.Lis
 	return nil
 }
 
-func (e *external) updateTags(ctx context.Context, tags []v1alpha1.Tag, elbTags []awselb.Tag, name string) error {
+func (e *external) updateTags(ctx context.Context, tags []v1alpha1.Tag, elbTags []awselbtypes.Tag, name string) error {
 
 	if len(elbTags) > 0 {
-		keysOnly := make([]awselb.TagKeyOnly, len(elbTags))
+		keysOnly := make([]awselbtypes.TagKeyOnly, len(elbTags))
 		for i, v := range elbTags {
-			keysOnly[i] = awselb.TagKeyOnly{Key: v.Key}
+			keysOnly[i] = awselbtypes.TagKeyOnly{Key: v.Key}
 		}
-		if _, err := e.client.RemoveTagsRequest(&awselb.RemoveTagsInput{
+		if _, err := e.client.RemoveTags(ctx, &awselb.RemoveTagsInput{
 			LoadBalancerNames: []string{name},
 			Tags:              keysOnly,
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return err
 		}
 	}
 
 	if len(tags) > 0 {
-		if _, err := e.client.AddTagsRequest(&awselb.AddTagsInput{
+		if _, err := e.client.AddTags(ctx, &awselb.AddTagsInput{
 			LoadBalancerNames: []string{name},
 			Tags:              elb.BuildELBTags(tags),
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return err
 		}
 	}

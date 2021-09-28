@@ -17,13 +17,13 @@ limitations under the License.
 package fake
 
 import (
-	"github.com/aws/aws-sdk-go-v2/service/cloudformation"
+	cloudformationtypes "github.com/aws/aws-sdk-go-v2/service/cloudformation/types"
 )
 
 // MockCloudFormationClient mock
 type MockCloudFormationClient struct {
 	MockCreateStack func(stackName *string, templateBody *string, parameters map[string]string) (stackID *string, err error)
-	MockGetStack    func(stackID *string) (status *cloudformation.Stack, err error)
+	MockGetStack    func(stackID *string) (status *cloudformationtypes.Stack, err error)
 	MockDeleteStack func(stackID *string) error
 }
 
@@ -33,7 +33,7 @@ func (m *MockCloudFormationClient) CreateStack(stackName *string, templateBody *
 }
 
 // GetStack mock
-func (m *MockCloudFormationClient) GetStack(stackID *string) (status *cloudformation.Stack, err error) {
+func (m *MockCloudFormationClient) GetStack(stackID *string) (status *cloudformationtypes.Stack, err error) {
 	return m.MockGetStack(stackID)
 }
 

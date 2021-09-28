@@ -22,6 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
@@ -95,16 +96,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	observed, err := e.client.ListAttachedRolePoliciesRequest(&awsiam.ListAttachedRolePoliciesInput{
+	observed, err := e.client.ListAttachedRolePolicies(ctx, &awsiam.ListAttachedRolePoliciesInput{
 		RoleName: aws.String(cr.Spec.ForProvider.RoleName),
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
-	var attachedPolicyObject *awsiam.AttachedPolicy
+	var attachedPolicyObject *awsiamtypes.AttachedPolicy
 	for i, policy := range observed.AttachedPolicies {
-		if cr.Spec.ForProvider.PolicyARN == aws.StringValue(policy.PolicyArn) {
+		if cr.Spec.ForProvider.PolicyARN == aws.ToString(policy.PolicyArn) {
 			attachedPolicyObject = &observed.AttachedPolicies[i]
 			break
 		}
@@ -142,10 +143,10 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	cr.SetConditions(xpv1.Creating())
 
-	_, err := e.client.AttachRolePolicyRequest(&awsiam.AttachRolePolicyInput{
+	_, err := e.client.AttachRolePolicy(ctx, &awsiam.AttachRolePolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
 		RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
-	}).Send(ctx)
+	})
 
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
 }
@@ -163,10 +164,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.DetachRolePolicyRequest(&awsiam.DetachRolePolicyInput{
+	_, err := e.client.DetachRolePolicy(ctx, &awsiam.DetachRolePolicyInput{
 		PolicyArn: aws.String(cr.Spec.ForProvider.PolicyARN),
 		RoleName:  aws.String(cr.Spec.ForProvider.RoleName),
-	}).Send(ctx)
+	})
 
 	if iam.IsErrorNotFound(err) {
 		return nil

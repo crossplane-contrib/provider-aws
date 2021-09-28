@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/iam"
@@ -27,46 +29,46 @@ var _ clientset.RoleClient = (*MockRoleClient)(nil)
 
 // MockRoleClient is a type that implements all the methods for RoleClient interface
 type MockRoleClient struct {
-	MockGetRoleRequest                func(*iam.GetRoleInput) iam.GetRoleRequest
-	MockCreateRoleRequest             func(*iam.CreateRoleInput) iam.CreateRoleRequest
-	MockDeleteRoleRequest             func(*iam.DeleteRoleInput) iam.DeleteRoleRequest
-	MockUpdateRoleRequest             func(*iam.UpdateRoleInput) iam.UpdateRoleRequest
-	MockUpdateAssumeRolePolicyRequest func(*iam.UpdateAssumeRolePolicyInput) iam.UpdateAssumeRolePolicyRequest
-	MockTagRoleRequest                func(input *iam.TagRoleInput) iam.TagRoleRequest
-	MockUntagRoleRequest              func(input *iam.UntagRoleInput) iam.UntagRoleRequest
+	MockGetRole                func(ctx context.Context, input *iam.GetRoleInput, opts []func(*iam.Options)) (*iam.GetRoleOutput, error)
+	MockCreateRole             func(ctx context.Context, input *iam.CreateRoleInput, opts []func(*iam.Options)) (*iam.CreateRoleOutput, error)
+	MockDeleteRole             func(ctx context.Context, input *iam.DeleteRoleInput, opts []func(*iam.Options)) (*iam.DeleteRoleOutput, error)
+	MockUpdateRole             func(ctx context.Context, input *iam.UpdateRoleInput, opts []func(*iam.Options)) (*iam.UpdateRoleOutput, error)
+	MockUpdateAssumeRolePolicy func(ctx context.Context, input *iam.UpdateAssumeRolePolicyInput, opts []func(*iam.Options)) (*iam.UpdateAssumeRolePolicyOutput, error)
+	MockTagRole                func(ctx context.Context, input *iam.TagRoleInput, opts []func(*iam.Options)) (*iam.TagRoleOutput, error)
+	MockUntagRole              func(ctx context.Context, input *iam.UntagRoleInput, opts []func(*iam.Options)) (*iam.UntagRoleOutput, error)
 }
 
-// GetRoleRequest mocks GetRoleRequest method
-func (m *MockRoleClient) GetRoleRequest(input *iam.GetRoleInput) iam.GetRoleRequest {
-	return m.MockGetRoleRequest(input)
+// GetRole mocks GetRole method
+func (m *MockRoleClient) GetRole(ctx context.Context, input *iam.GetRoleInput, opts ...func(*iam.Options)) (*iam.GetRoleOutput, error) {
+	return m.MockGetRole(ctx, input, opts)
 }
 
-// CreateRoleRequest mocks CreateRoleRequest method
-func (m *MockRoleClient) CreateRoleRequest(input *iam.CreateRoleInput) iam.CreateRoleRequest {
-	return m.MockCreateRoleRequest(input)
+// CreateRole mocks CreateRole method
+func (m *MockRoleClient) CreateRole(ctx context.Context, input *iam.CreateRoleInput, opts ...func(*iam.Options)) (*iam.CreateRoleOutput, error) {
+	return m.MockCreateRole(ctx, input, opts)
 }
 
-// DeleteRoleRequest mocks DeleteRoleRequest method
-func (m *MockRoleClient) DeleteRoleRequest(input *iam.DeleteRoleInput) iam.DeleteRoleRequest {
-	return m.MockDeleteRoleRequest(input)
+// DeleteRole mocks DeleteRole method
+func (m *MockRoleClient) DeleteRole(ctx context.Context, input *iam.DeleteRoleInput, opts ...func(*iam.Options)) (*iam.DeleteRoleOutput, error) {
+	return m.MockDeleteRole(ctx, input, opts)
 }
 
-// UpdateRoleRequest mocks UpdateRoleRequest method
-func (m *MockRoleClient) UpdateRoleRequest(input *iam.UpdateRoleInput) iam.UpdateRoleRequest {
-	return m.MockUpdateRoleRequest(input)
+// UpdateRole mocks UpdateRole method
+func (m *MockRoleClient) UpdateRole(ctx context.Context, input *iam.UpdateRoleInput, opts ...func(*iam.Options)) (*iam.UpdateRoleOutput, error) {
+	return m.MockUpdateRole(ctx, input, opts)
 }
 
-// UpdateAssumeRolePolicyRequest mocks UpdateAssumeRolePolicyRequest method
-func (m *MockRoleClient) UpdateAssumeRolePolicyRequest(input *iam.UpdateAssumeRolePolicyInput) iam.UpdateAssumeRolePolicyRequest {
-	return m.MockUpdateAssumeRolePolicyRequest(input)
+// UpdateAssumeRolePolicy mocks UpdateAssumeRolePolicy method
+func (m *MockRoleClient) UpdateAssumeRolePolicy(ctx context.Context, input *iam.UpdateAssumeRolePolicyInput, opts ...func(*iam.Options)) (*iam.UpdateAssumeRolePolicyOutput, error) {
+	return m.MockUpdateAssumeRolePolicy(ctx, input, opts)
 }
 
-// TagRoleRequest mocks TagRoleRequest method
-func (m *MockRoleClient) TagRoleRequest(input *iam.TagRoleInput) iam.TagRoleRequest {
-	return m.MockTagRoleRequest(input)
+// TagRole mocks TagRole method
+func (m *MockRoleClient) TagRole(ctx context.Context, input *iam.TagRoleInput, opts ...func(*iam.Options)) (*iam.TagRoleOutput, error) {
+	return m.MockTagRole(ctx, input, opts)
 }
 
-// UntagRoleRequest mocks UntagRoleRequest method
-func (m *MockRoleClient) UntagRoleRequest(input *iam.UntagRoleInput) iam.UntagRoleRequest {
-	return m.MockUntagRoleRequest(input)
+// UntagRole mocks UntagRole method
+func (m *MockRoleClient) UntagRole(ctx context.Context, input *iam.UntagRoleInput, opts ...func(*iam.Options)) (*iam.UntagRoleOutput, error) {
+	return m.MockUntagRole(ctx, input, opts)
 }

@@ -3,7 +3,7 @@
 package fake
 
 import (
-	serviceiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	serviceiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -34,15 +34,15 @@ func (_m *Client) CreatePolicyAndAttach(username string, policyName string, poli
 }
 
 // CreateUser provides a mock function with given fields: username
-func (_m *Client) CreateUser(username string) (*serviceiam.AccessKey, error) {
+func (_m *Client) CreateUser(username string) (*serviceiamtypes.AccessKey, error) {
 	ret := _m.Called(username)
 
-	var r0 *serviceiam.AccessKey
-	if rf, ok := ret.Get(0).(func(string) *serviceiam.AccessKey); ok {
+	var r0 *serviceiamtypes.AccessKey
+	if rf, ok := ret.Get(0).(func(string) *serviceiamtypes.AccessKey); ok {
 		r0 = rf(username)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*serviceiam.AccessKey)
+			r0 = ret.Get(0).(*serviceiamtypes.AccessKey)
 		}
 	}
 

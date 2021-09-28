@@ -107,9 +107,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	// Fetch Subscription Attributes with matching SubscriptionARN
-	res, err := e.client.GetSubscriptionAttributesRequest(&awssns.GetSubscriptionAttributesInput{
+	res, err := e.client.GetSubscriptionAttributes(ctx, &awssns.GetSubscriptionAttributesInput{
 		SubscriptionArn: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{},
 			awsclient.Wrap(resource.Ignore(sns.IsSubscriptionNotFound, err), errGetSubscriptionAttr)
@@ -144,13 +144,13 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	input := snsclient.GenerateSubscribeInput(&cr.Spec.ForProvider)
-	res, err := e.client.SubscribeRequest(input).Send(ctx)
+	res, err := e.client.Subscribe(ctx, input)
 
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
-	meta.SetExternalName(cr, aws.StringValue(res.SubscribeOutput.SubscriptionArn))
+	meta.SetExternalName(cr, aws.ToString(res.SubscriptionArn))
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
@@ -161,20 +161,20 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	// Fetch Subscription Attributes again
-	resp, err := e.client.GetSubscriptionAttributesRequest(&awssns.GetSubscriptionAttributesInput{
+	resp, err := e.client.GetSubscriptionAttributes(ctx, &awssns.GetSubscriptionAttributesInput{
 		SubscriptionArn: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 	}
 	// Update Subscription
 	attrs := snsclient.GetChangedSubAttributes(cr.Spec.ForProvider, resp.Attributes)
 	for k, v := range attrs {
-		_, err := e.client.SetSubscriptionAttributesRequest(&awssns.SetSubscriptionAttributesInput{
+		_, err := e.client.SetSubscriptionAttributes(ctx, &awssns.SetSubscriptionAttributesInput{
 			AttributeName:   aws.String(k),
 			AttributeValue:  aws.String(v),
 			SubscriptionArn: aws.String(meta.GetExternalName(cr)),
-		}).Send(ctx)
+		})
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 		}
@@ -193,8 +193,8 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	if meta.GetExternalName(cr) == "" {
 		return nil
 	}
-	_, err := e.client.UnsubscribeRequest(&awssns.UnsubscribeInput{
+	_, err := e.client.Unsubscribe(ctx, &awssns.UnsubscribeInput{
 		SubscriptionArn: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 	return awsclient.Wrap(resource.Ignore(sns.IsSubscriptionNotFound, err), errDelete)
 }

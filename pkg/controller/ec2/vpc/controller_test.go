@@ -18,7 +18,6 @@ package vpc
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -28,6 +27,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	awsec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -112,34 +112,34 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				vpc: &fake.MockVPCClient{
-					MockDescribe: func(input *awsec2.DescribeVpcsInput) awsec2.DescribeVpcsRequest {
-						return awsec2.DescribeVpcsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeVpcsOutput{
-								Vpcs: []awsec2.Vpc{{
-									InstanceTenancy: awsec2.TenancyDefault,
-									State:           awsec2.VpcStateAvailable,
-								}},
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeVpcsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeVpcsOutput, error) {
+						return &awsec2.DescribeVpcsOutput{
+							Vpcs: []awsec2types.Vpc{{
+								InstanceTenancy: awsec2types.TenancyDefault,
+								State:           awsec2types.VpcStateAvailable,
 							}},
-						}
+						}, nil
 					},
-					MockDescribeVpcAttributeRequest: func(input *awsec2.DescribeVpcAttributeInput) awsec2.DescribeVpcAttributeRequest {
-						return awsec2.DescribeVpcAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeVpcAttributeOutput{
-								EnableDnsHostnames: &awsec2.AttributeBooleanValue{},
-								EnableDnsSupport:   &awsec2.AttributeBooleanValue{},
-							}},
-						}
+					MockDescribeVpcAttribute: func(ctx context.Context, input *awsec2.DescribeVpcAttributeInput, opts []func(*awsec2.Options)) (*awsec2.DescribeVpcAttributeOutput, error) {
+						return &awsec2.DescribeVpcAttributeOutput{
+							EnableDnsHostnames: &awsec2types.AttributeBooleanValue{},
+							EnableDnsSupport:   &awsec2types.AttributeBooleanValue{},
+						}, nil
 					},
 				},
 				cr: vpc(withSpec(v1beta1.VPCParameters{
-					InstanceTenancy: aws.String(tenancyDefault),
-					CIDRBlock:       cidr,
+					InstanceTenancy:    aws.String(tenancyDefault),
+					CIDRBlock:          cidr,
+					EnableDNSHostNames: aws.Bool(false),
+					EnableDNSSupport:   aws.Bool(false),
 				}), withExternalName(vpcID)),
 			},
 			want: want{
 				cr: vpc(withSpec(v1beta1.VPCParameters{
-					InstanceTenancy: aws.String(tenancyDefault),
-					CIDRBlock:       cidr,
+					InstanceTenancy:    aws.String(tenancyDefault),
+					CIDRBlock:          cidr,
+					EnableDNSHostNames: aws.Bool(false),
+					EnableDNSSupport:   aws.Bool(false),
 				}), withStatus(v1beta1.VPCObservation{
 					VPCState: "available",
 				}), withExternalName(vpcID),
@@ -156,12 +156,10 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				vpc: &fake.MockVPCClient{
-					MockDescribe: func(input *awsec2.DescribeVpcsInput) awsec2.DescribeVpcsRequest {
-						return awsec2.DescribeVpcsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeVpcsOutput{
-								Vpcs: []awsec2.Vpc{{}, {}},
-							}},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeVpcsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeVpcsOutput, error) {
+						return &awsec2.DescribeVpcsOutput{
+							Vpcs: []awsec2types.Vpc{{}, {}},
+						}, nil
 					},
 				},
 				cr: vpc(withSpec(v1beta1.VPCParameters{
@@ -183,10 +181,8 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				vpc: &fake.MockVPCClient{
-					MockDescribe: func(input *awsec2.DescribeVpcsInput) awsec2.DescribeVpcsRequest {
-						return awsec2.DescribeVpcsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDescribe: func(ctx context.Context, input *awsec2.DescribeVpcsInput, opts []func(*awsec2.Options)) (*awsec2.DescribeVpcsOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: vpc(withSpec(v1beta1.VPCParameters{
@@ -236,41 +232,16 @@ func TestCreate(t *testing.T) {
 		"Successful": {
 			args: args{
 				vpc: &fake.MockVPCClient{
-					MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
-						return awsec2.CreateVpcRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateVpcOutput{
-								Vpc: &awsec2.Vpc{
-									VpcId:     aws.String(vpcID),
-									CidrBlock: aws.String(cidr),
-								},
-							}},
-						}
+					MockCreate: func(ctx context.Context, input *awsec2.CreateVpcInput, opts []func(*awsec2.Options)) (*awsec2.CreateVpcOutput, error) {
+						return &awsec2.CreateVpcOutput{
+							Vpc: &awsec2types.Vpc{
+								VpcId:     aws.String(vpcID),
+								CidrBlock: aws.String(cidr),
+							},
+						}, nil
 					},
-				},
-				cr: vpc(),
-			},
-			want: want{
-				cr:     vpc(withExternalName(vpcID)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
-			},
-		},
-		"SuccessfulWithAttributes": {
-			args: args{
-				vpc: &fake.MockVPCClient{
-					MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
-						return awsec2.CreateVpcRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateVpcOutput{
-								Vpc: &awsec2.Vpc{
-									VpcId:     aws.String(vpcID),
-									CidrBlock: aws.String(cidr),
-								},
-							}},
-						}
-					},
-					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
-						return awsec2.ModifyVpcAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
-						}
+					MockModifyAttribute: func(ctx context.Context, input *awsec2.ModifyVpcAttributeInput, opts []func(*awsec2.Options)) (*awsec2.ModifyVpcAttributeOutput, error) {
+						return &awsec2.ModifyVpcAttributeOutput{}, nil
 					},
 				},
 				cr: vpc(withSpec(v1beta1.VPCParameters{
@@ -288,10 +259,8 @@ func TestCreate(t *testing.T) {
 		"CreateFail": {
 			args: args{
 				vpc: &fake.MockVPCClient{
-					MockCreate: func(input *awsec2.CreateVpcInput) awsec2.CreateVpcRequest {
-						return awsec2.CreateVpcRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockCreate: func(ctx context.Context, input *awsec2.CreateVpcInput, opts []func(*awsec2.Options)) (*awsec2.CreateVpcOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: vpc(),
@@ -335,20 +304,14 @@ func TestUpdate(t *testing.T) {
 		"Successful": {
 			args: args{
 				vpc: &fake.MockVPCClient{
-					MockModifyTenancy: func(input *awsec2.ModifyVpcTenancyInput) awsec2.ModifyVpcTenancyRequest {
-						return awsec2.ModifyVpcTenancyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifyVpcTenancyOutput{}},
-						}
+					MockModifyTenancy: func(ctx context.Context, input *awsec2.ModifyVpcTenancyInput, opts []func(*awsec2.Options)) (*awsec2.ModifyVpcTenancyOutput, error) {
+						return &awsec2.ModifyVpcTenancyOutput{}, nil
 					},
-					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
-						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
-						}
+					MockCreateTags: func(ctx context.Context, input *awsec2.CreateTagsInput, opts []func(*awsec2.Options)) (*awsec2.CreateTagsOutput, error) {
+						return &awsec2.CreateTagsOutput{}, nil
 					},
-					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
-						return awsec2.ModifyVpcAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
-						}
+					MockModifyAttribute: func(ctx context.Context, input *awsec2.ModifyVpcAttributeInput, opts []func(*awsec2.Options)) (*awsec2.ModifyVpcAttributeOutput, error) {
+						return &awsec2.ModifyVpcAttributeOutput{}, nil
 					},
 				},
 				cr: vpc(withSpec(v1beta1.VPCParameters{
@@ -364,20 +327,14 @@ func TestUpdate(t *testing.T) {
 		"ModifyFailed": {
 			args: args{
 				vpc: &fake.MockVPCClient{
-					MockModifyTenancy: func(input *awsec2.ModifyVpcTenancyInput) awsec2.ModifyVpcTenancyRequest {
-						return awsec2.ModifyVpcTenancyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockModifyTenancy: func(ctx context.Context, input *awsec2.ModifyVpcTenancyInput, opts []func(*awsec2.Options)) (*awsec2.ModifyVpcTenancyOutput, error) {
+						return nil, errBoom
 					},
-					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
-						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
-						}
+					MockCreateTags: func(ctx context.Context, input *awsec2.CreateTagsInput, opts []func(*awsec2.Options)) (*awsec2.CreateTagsOutput, error) {
+						return &awsec2.CreateTagsOutput{}, nil
 					},
-					MockModifyAttribute: func(input *awsec2.ModifyVpcAttributeInput) awsec2.ModifyVpcAttributeRequest {
-						return awsec2.ModifyVpcAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
-						}
+					MockModifyAttribute: func(ctx context.Context, input *awsec2.ModifyVpcAttributeInput, opts []func(*awsec2.Options)) (*awsec2.ModifyVpcAttributeOutput, error) {
+						return &awsec2.ModifyVpcAttributeOutput{}, nil
 					},
 				},
 				cr: vpc(withSpec(v1beta1.VPCParameters{
@@ -424,10 +381,8 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				vpc: &fake.MockVPCClient{
-					MockDelete: func(input *awsec2.DeleteVpcInput) awsec2.DeleteVpcRequest {
-						return awsec2.DeleteVpcRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DeleteVpcOutput{}},
-						}
+					MockDelete: func(ctx context.Context, input *awsec2.DeleteVpcInput, opts []func(*awsec2.Options)) (*awsec2.DeleteVpcOutput, error) {
+						return &awsec2.DeleteVpcOutput{}, nil
 					},
 				},
 				cr: vpc(),
@@ -439,10 +394,8 @@ func TestDelete(t *testing.T) {
 		"DeleteFailed": {
 			args: args{
 				vpc: &fake.MockVPCClient{
-					MockDelete: func(input *awsec2.DeleteVpcInput) awsec2.DeleteVpcRequest {
-						return awsec2.DeleteVpcRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDelete: func(ctx context.Context, input *awsec2.DeleteVpcInput, opts []func(*awsec2.Options)) (*awsec2.DeleteVpcOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: vpc(),

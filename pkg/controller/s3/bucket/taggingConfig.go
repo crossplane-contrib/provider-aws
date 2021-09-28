@@ -20,6 +20,7 @@ import (
 	"context"
 
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
@@ -47,7 +48,7 @@ func NewTaggingConfigurationClient(client s3.BucketClient) *TaggingConfiguration
 
 // Observe checks if the resource exists and if it matches the local configuration
 func (in *TaggingConfigurationClient) Observe(ctx context.Context, bucket *v1beta1.Bucket) (ResourceStatus, error) {
-	external, err := in.client.GetBucketTaggingRequest(&awss3.GetBucketTaggingInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	config := bucket.Spec.ForProvider.BucketTagging
 	if err != nil {
 		if s3.TaggingNotFound(err) && config == nil {
@@ -74,30 +75,30 @@ func (in *TaggingConfigurationClient) CreateOrUpdate(ctx context.Context, bucket
 		return nil
 	}
 	input := GeneratePutBucketTagging(meta.GetExternalName(bucket), bucket.Spec.ForProvider.BucketTagging)
-	_, err := in.client.PutBucketTaggingRequest(input).Send(ctx)
+	_, err := in.client.PutBucketTagging(ctx, input)
 	return awsclient.Wrap(err, taggingPutFailed)
 }
 
 // Delete creates the request to delete the resource on AWS or set it to the default value.
 func (in *TaggingConfigurationClient) Delete(ctx context.Context, bucket *v1beta1.Bucket) error {
-	_, err := in.client.DeleteBucketTaggingRequest(
+	_, err := in.client.DeleteBucketTagging(ctx,
 		&awss3.DeleteBucketTaggingInput{
 			Bucket: awsclient.String(meta.GetExternalName(bucket)),
 		},
-	).Send(ctx)
+	)
 	return awsclient.Wrap(err, taggingDeleteFailed)
 }
 
 // LateInitialize does nothing because the resource might have been deleted by
 // the user.
 func (in *TaggingConfigurationClient) LateInitialize(ctx context.Context, bucket *v1beta1.Bucket) error {
-	external, err := in.client.GetBucketTaggingRequest(&awss3.GetBucketTaggingInput{Bucket: awsclient.String(meta.GetExternalName(bucket))}).Send(ctx)
+	external, err := in.client.GetBucketTagging(ctx, &awss3.GetBucketTaggingInput{Bucket: awsclient.String(meta.GetExternalName(bucket))})
 	if err != nil {
 		return awsclient.Wrap(resource.Ignore(s3.TaggingNotFound, err), taggingGetFailed)
 	}
 
 	// We need the second check here because by default the tags are not set
-	if external.GetBucketTaggingOutput == nil || len(external.TagSet) == 0 {
+	if external == nil || len(external.TagSet) == 0 {
 		return nil
 	}
 
@@ -119,15 +120,15 @@ func (in *TaggingConfigurationClient) SubresourceExists(bucket *v1beta1.Bucket) 
 }
 
 // GenerateTagging creates the awss3.Tagging for the AWS SDK
-func GenerateTagging(config *v1beta1.Tagging) *awss3.Tagging {
+func GenerateTagging(config *v1beta1.Tagging) *types.Tagging {
 	if config == nil || config.TagSet == nil {
-		return &awss3.Tagging{TagSet: make([]awss3.Tag, 0)}
+		return &types.Tagging{TagSet: make([]types.Tag, 0)}
 	}
-	return &awss3.Tagging{TagSet: s3.CopyTags(config.TagSet)}
+	return &types.Tagging{TagSet: s3.CopyTags(config.TagSet)}
 }
 
 // GenerateLocalTagging creates the v1beta1.Tagging from the AWS SDK tagging
-func GenerateLocalTagging(config []awss3.Tag) *v1beta1.Tagging {
+func GenerateLocalTagging(config []types.Tag) *v1beta1.Tagging {
 	if config == nil {
 		return nil
 	}

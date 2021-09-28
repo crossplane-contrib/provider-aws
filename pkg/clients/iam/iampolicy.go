@@ -1,10 +1,12 @@
 package iam
 
 import (
+	"context"
 	"net/url"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
@@ -13,22 +15,22 @@ import (
 
 // PolicyClient is the external client used for IAMPolicy Custom Resource
 type PolicyClient interface {
-	CreatePolicyRequest(*iam.CreatePolicyInput) iam.CreatePolicyRequest
-	GetPolicyRequest(*iam.GetPolicyInput) iam.GetPolicyRequest
-	DeletePolicyRequest(*iam.DeletePolicyInput) iam.DeletePolicyRequest
-	GetPolicyVersionRequest(*iam.GetPolicyVersionInput) iam.GetPolicyVersionRequest
-	CreatePolicyVersionRequest(*iam.CreatePolicyVersionInput) iam.CreatePolicyVersionRequest
-	ListPolicyVersionsRequest(*iam.ListPolicyVersionsInput) iam.ListPolicyVersionsRequest
-	DeletePolicyVersionRequest(*iam.DeletePolicyVersionInput) iam.DeletePolicyVersionRequest
+	GetPolicy(ctx context.Context, input *iam.GetPolicyInput, opts ...func(*iam.Options)) (*iam.GetPolicyOutput, error)
+	CreatePolicy(ctx context.Context, input *iam.CreatePolicyInput, opts ...func(*iam.Options)) (*iam.CreatePolicyOutput, error)
+	DeletePolicy(ctx context.Context, input *iam.DeletePolicyInput, opts ...func(*iam.Options)) (*iam.DeletePolicyOutput, error)
+	GetPolicyVersion(ctx context.Context, input *iam.GetPolicyVersionInput, opts ...func(*iam.Options)) (*iam.GetPolicyVersionOutput, error)
+	CreatePolicyVersion(ctx context.Context, input *iam.CreatePolicyVersionInput, opts ...func(*iam.Options)) (*iam.CreatePolicyVersionOutput, error)
+	ListPolicyVersions(ctx context.Context, input *iam.ListPolicyVersionsInput, opts ...func(*iam.Options)) (*iam.ListPolicyVersionsOutput, error)
+	DeletePolicyVersion(ctx context.Context, input *iam.DeletePolicyVersionInput, opts ...func(*iam.Options)) (*iam.DeletePolicyVersionOutput, error)
 }
 
 // NewPolicyClient returns a new client using AWS credentials as JSON encoded data.
 func NewPolicyClient(cfg aws.Config) PolicyClient {
-	return iam.New(cfg)
+	return iam.NewFromConfig(cfg)
 }
 
 // IsPolicyUpToDate checks whether there is a change in any of the modifiable fields in policy.
-func IsPolicyUpToDate(in v1alpha1.IAMPolicyParameters, policy iam.PolicyVersion) (bool, error) {
+func IsPolicyUpToDate(in v1alpha1.IAMPolicyParameters, policy iamtypes.PolicyVersion) (bool, error) {
 	// The AWS API reutrns Policy Document as an escaped string.
 	// Due to differences in the methods to escape a string, the comparison result between
 	// the spec.Document and policy.Document can sometimes be false negative (due to spaces, line feeds).
@@ -38,7 +40,7 @@ func IsPolicyUpToDate(in v1alpha1.IAMPolicyParameters, policy iam.PolicyVersion)
 		return false, nil
 	}
 
-	unescapedPolicy, err := url.QueryUnescape(aws.StringValue(policy.Document))
+	unescapedPolicy, err := url.QueryUnescape(aws.ToString(policy.Document))
 	if err != nil {
 		return false, nil
 	}

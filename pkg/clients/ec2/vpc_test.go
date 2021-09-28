@@ -3,7 +3,7 @@ package ec2
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
@@ -18,15 +18,15 @@ var (
 
 func TestGenerateVPCObservation(t *testing.T) {
 	cases := map[string]struct {
-		in  ec2.Vpc
+		in  ec2types.Vpc
 		out v1beta1.VPCObservation
 	}{
 		"AllFilled": {
-			in: ec2.Vpc{
-				IsDefault: aws.Bool(boolFalse),
+			in: ec2types.Vpc{
+				IsDefault: boolFalse,
 				OwnerId:   aws.String(vpcOwner),
 				VpcId:     aws.String(vpcID),
-				State:     ec2.VpcStateAvailable,
+				State:     ec2types.VpcStateAvailable,
 			},
 			out: v1beta1.VPCObservation{
 				IsDefault: boolFalse,
@@ -35,10 +35,10 @@ func TestGenerateVPCObservation(t *testing.T) {
 			},
 		},
 		"NoOwner": {
-			in: ec2.Vpc{
-				IsDefault: aws.Bool(boolFalse),
+			in: ec2types.Vpc{
+				IsDefault: boolFalse,
 				VpcId:     aws.String(vpcID),
-				State:     ec2.VpcStateAvailable,
+				State:     ec2types.VpcStateAvailable,
 			},
 			out: v1beta1.VPCObservation{
 				IsDefault: boolFalse,

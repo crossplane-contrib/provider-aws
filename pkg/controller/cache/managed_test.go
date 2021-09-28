@@ -18,13 +18,11 @@ package cache
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
+	"github.com/aws/aws-sdk-go-v2/service/elasticache/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/pkg/errors"
@@ -152,10 +150,8 @@ func TestCreate(t *testing.T) {
 		{
 			name: "SuccessfulCreate",
 			e: &external{client: &fake.MockClient{
-				MockCreateReplicationGroupRequest: func(_ *elasticache.CreateReplicationGroupInput) elasticache.CreateReplicationGroupRequest {
-					return elasticache.CreateReplicationGroupRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &elasticache.CreateReplicationGroupOutput{}},
-					}
+				MockCreateReplicationGroup: func(ctx context.Context, _ *elasticache.CreateReplicationGroupInput, opts []func(*elasticache.Options)) (*elasticache.CreateReplicationGroupOutput, error) {
+					return &elasticache.CreateReplicationGroupOutput{}, nil
 				},
 			}},
 			r: replicationGroup(withAuthEnabled(true)),
@@ -169,10 +165,8 @@ func TestCreate(t *testing.T) {
 		{
 			name: "FailedCreate",
 			e: &external{client: &fake.MockClient{
-				MockCreateReplicationGroupRequest: func(_ *elasticache.CreateReplicationGroupInput) elasticache.CreateReplicationGroupRequest {
-					return elasticache.CreateReplicationGroupRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errorBoom},
-					}
+				MockCreateReplicationGroup: func(ctx context.Context, _ *elasticache.CreateReplicationGroupInput, opts []func(*elasticache.Options)) (*elasticache.CreateReplicationGroupOutput, error) {
+					return nil, errorBoom
 				},
 			}},
 			r: replicationGroup(),
@@ -206,16 +200,10 @@ func TestObserve(t *testing.T) {
 		{
 			name: "SuccessfulObserveWhileGroupCreating",
 			e: &external{client: &fake.MockClient{
-				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
-					return elasticache.DescribeReplicationGroupsRequest{
-						Request: &aws.Request{
-							HTTPRequest: &http.Request{},
-							Retryer:     aws.NoOpRetryer{},
-							Data: &elasticache.DescribeReplicationGroupsOutput{
-								ReplicationGroups: []elasticache.ReplicationGroup{{Status: aws.String(v1beta1.StatusCreating)}},
-							},
-						},
-					}
+				MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+					return &elasticache.DescribeReplicationGroupsOutput{
+						ReplicationGroups: []types.ReplicationGroup{{Status: aws.String(v1beta1.StatusCreating)}},
+					}, nil
 				},
 			}},
 			r: replicationGroup(withReplicationGroupID(name)),
@@ -228,16 +216,10 @@ func TestObserve(t *testing.T) {
 		{
 			name: "SuccessfulObserveWhileGroupDeleting",
 			e: &external{client: &fake.MockClient{
-				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
-					return elasticache.DescribeReplicationGroupsRequest{
-						Request: &aws.Request{
-							HTTPRequest: &http.Request{},
-							Retryer:     aws.NoOpRetryer{},
-							Data: &elasticache.DescribeReplicationGroupsOutput{
-								ReplicationGroups: []elasticache.ReplicationGroup{{Status: aws.String(v1beta1.StatusDeleting)}},
-							},
-						},
-					}
+				MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+					return &elasticache.DescribeReplicationGroupsOutput{
+						ReplicationGroups: []types.ReplicationGroup{{Status: aws.String(v1beta1.StatusDeleting)}},
+					}, nil
 				},
 			}},
 			r: replicationGroup(
@@ -252,16 +234,10 @@ func TestObserve(t *testing.T) {
 		{
 			name: "SuccessfulObserveWhileGroupModifying",
 			e: &external{client: &fake.MockClient{
-				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
-					return elasticache.DescribeReplicationGroupsRequest{
-						Request: &aws.Request{
-							HTTPRequest: &http.Request{},
-							Retryer:     aws.NoOpRetryer{},
-							Data: &elasticache.DescribeReplicationGroupsOutput{
-								ReplicationGroups: []elasticache.ReplicationGroup{{Status: aws.String(v1beta1.StatusModifying)}},
-							},
-						},
-					}
+				MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+					return &elasticache.DescribeReplicationGroupsOutput{
+						ReplicationGroups: []types.ReplicationGroup{{Status: aws.String(v1beta1.StatusModifying)}},
+					}, nil
 				},
 			}},
 			r: replicationGroup(
@@ -276,20 +252,14 @@ func TestObserve(t *testing.T) {
 		{
 			name: "SuccessfulObserveAfterCreationCompleted",
 			e: &external{client: &fake.MockClient{
-				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
-					return elasticache.DescribeReplicationGroupsRequest{
-						Request: &aws.Request{
-							HTTPRequest: &http.Request{},
-							Retryer:     aws.NoOpRetryer{},
-							Data: &elasticache.DescribeReplicationGroupsOutput{
-								ReplicationGroups: []elasticache.ReplicationGroup{{
-									ClusterEnabled:        aws.Bool(true),
-									Status:                aws.String(v1beta1.StatusAvailable),
-									ConfigurationEndpoint: &elasticache.Endpoint{Address: aws.String(host), Port: aws.Int64(int64(port))},
-								}},
-							},
-						},
-					}
+				MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+					return &elasticache.DescribeReplicationGroupsOutput{
+						ReplicationGroups: []types.ReplicationGroup{{
+							ClusterEnabled:        aws.Bool(true),
+							Status:                aws.String(v1beta1.StatusAvailable),
+							ConfigurationEndpoint: &types.Endpoint{Address: aws.String(host), Port: int32(port)},
+						}},
+					}, nil
 				},
 			}},
 			r: replicationGroup(
@@ -311,21 +281,15 @@ func TestObserve(t *testing.T) {
 			name: "SuccessfulObserveLateInitialized",
 			e: &external{
 				client: &fake.MockClient{
-					MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
-						return elasticache.DescribeReplicationGroupsRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data: &elasticache.DescribeReplicationGroupsOutput{
-									ReplicationGroups: []elasticache.ReplicationGroup{
-										{
-											AuthTokenEnabled: aws.Bool(true),
-											Status:           aws.String(v1beta1.StatusCreating),
-										},
-									},
+					MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+						return &elasticache.DescribeReplicationGroupsOutput{
+							ReplicationGroups: []types.ReplicationGroup{
+								{
+									AuthTokenEnabled: aws.Bool(true),
+									Status:           aws.String(v1beta1.StatusCreating),
 								},
 							},
-						}
+						}, nil
 					},
 				},
 				kube: &test.MockClient{
@@ -344,21 +308,15 @@ func TestObserve(t *testing.T) {
 			name: "FailedObserveLateInitializeError",
 			e: &external{
 				client: &fake.MockClient{
-					MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
-						return elasticache.DescribeReplicationGroupsRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Retryer:     aws.NoOpRetryer{},
-								Data: &elasticache.DescribeReplicationGroupsOutput{
-									ReplicationGroups: []elasticache.ReplicationGroup{
-										{
-											AuthTokenEnabled: aws.Bool(true),
-											Status:           aws.String(v1beta1.StatusCreating),
-										},
-									},
+					MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+						return &elasticache.DescribeReplicationGroupsOutput{
+							ReplicationGroups: []types.ReplicationGroup{
+								{
+									AuthTokenEnabled: aws.Bool(true),
+									Status:           aws.String(v1beta1.StatusCreating),
 								},
 							},
-						}
+						}, nil
 					},
 				},
 				kube: &test.MockClient{
@@ -374,10 +332,8 @@ func TestObserve(t *testing.T) {
 		{
 			name: "FailedDescribeReplicationGroups",
 			e: &external{client: &fake.MockClient{
-				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
-					return elasticache.DescribeReplicationGroupsRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errorBoom},
-					}
+				MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+					return nil, errorBoom
 				},
 			}},
 			r: replicationGroup(
@@ -393,29 +349,21 @@ func TestObserve(t *testing.T) {
 		{
 			name: "FailedDescribeCacheClusters",
 			e: &external{client: &fake.MockClient{
-				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
-					return elasticache.DescribeReplicationGroupsRequest{
-						Request: &aws.Request{
-							HTTPRequest: &http.Request{},
-							Retryer:     aws.NoOpRetryer{},
-							Data: &elasticache.DescribeReplicationGroupsOutput{
-								ReplicationGroups: []elasticache.ReplicationGroup{{
-									Status:                 aws.String(v1beta1.StatusAvailable),
-									AutomaticFailover:      elasticache.AutomaticFailoverStatusEnabled,
-									CacheNodeType:          aws.String(cacheNodeType),
-									SnapshotRetentionLimit: aws.Int64(int64(snapshotRetentionLimit)),
-									SnapshotWindow:         aws.String(snapshotWindow),
-									ClusterEnabled:         aws.Bool(true),
-									MemberClusters:         []string{cacheClusterID},
-								}},
-							},
-						},
-					}
+				MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+					return &elasticache.DescribeReplicationGroupsOutput{
+						ReplicationGroups: []types.ReplicationGroup{{
+							Status:                 aws.String(v1beta1.StatusAvailable),
+							AutomaticFailover:      types.AutomaticFailoverStatusEnabled,
+							CacheNodeType:          aws.String(cacheNodeType),
+							SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
+							SnapshotWindow:         aws.String(snapshotWindow),
+							ClusterEnabled:         aws.Bool(true),
+							MemberClusters:         []string{cacheClusterID},
+						}},
+					}, nil
 				},
-				MockDescribeCacheClustersRequest: func(_ *elasticache.DescribeCacheClustersInput) elasticache.DescribeCacheClustersRequest {
-					return elasticache.DescribeCacheClustersRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errorBoom},
-					}
+				MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
+					return nil, errorBoom
 				},
 			}},
 			r: replicationGroup(
@@ -464,44 +412,30 @@ func TestUpdate(t *testing.T) {
 		{
 			name: "FailedModifyReplicationGroup",
 			e: &external{client: &fake.MockClient{
-				MockDescribeReplicationGroupsRequest: func(_ *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
-					return elasticache.DescribeReplicationGroupsRequest{
-						Request: &aws.Request{
-							HTTPRequest: &http.Request{},
-							Retryer:     aws.NoOpRetryer{},
-							Data: &elasticache.DescribeReplicationGroupsOutput{
-								ReplicationGroups: []elasticache.ReplicationGroup{{
-									Status:                 aws.String(v1beta1.StatusAvailable),
-									MemberClusters:         []string{cacheClusterID},
-									AutomaticFailover:      elasticache.AutomaticFailoverStatusEnabled,
-									CacheNodeType:          aws.String(cacheNodeType),
-									SnapshotRetentionLimit: aws.Int64(int64(snapshotRetentionLimit)),
-									SnapshotWindow:         aws.String(snapshotWindow),
-									ClusterEnabled:         aws.Bool(true),
-									ConfigurationEndpoint:  &elasticache.Endpoint{Address: aws.String(host), Port: aws.Int64(int64(port))},
-								}},
-							},
-						},
-					}
+				MockDescribeReplicationGroups: func(ctx context.Context, _ *elasticache.DescribeReplicationGroupsInput, opts []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+					return &elasticache.DescribeReplicationGroupsOutput{
+						ReplicationGroups: []types.ReplicationGroup{{
+							Status:                 aws.String(v1beta1.StatusAvailable),
+							MemberClusters:         []string{cacheClusterID},
+							AutomaticFailover:      types.AutomaticFailoverStatusEnabled,
+							CacheNodeType:          aws.String(cacheNodeType),
+							SnapshotRetentionLimit: aws.Int32(int32(snapshotRetentionLimit)),
+							SnapshotWindow:         aws.String(snapshotWindow),
+							ClusterEnabled:         aws.Bool(true),
+							ConfigurationEndpoint:  &types.Endpoint{Address: aws.String(host), Port: int32(port)},
+						}},
+					}, nil
 				},
-				MockDescribeCacheClustersRequest: func(_ *elasticache.DescribeCacheClustersInput) elasticache.DescribeCacheClustersRequest {
-					return elasticache.DescribeCacheClustersRequest{
-						Request: &aws.Request{
-							HTTPRequest: &http.Request{},
-							Retryer:     aws.NoOpRetryer{},
-							Data: &elasticache.DescribeCacheClustersOutput{
-								CacheClusters: []elasticache.CacheCluster{{
-									EngineVersion:              aws.String(engineVersion),
-									PreferredMaintenanceWindow: aws.String("never!"), // This field needs to be updated.
-								}},
-							},
-						},
-					}
+				MockDescribeCacheClusters: func(ctx context.Context, _ *elasticache.DescribeCacheClustersInput, opts []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
+					return &elasticache.DescribeCacheClustersOutput{
+						CacheClusters: []types.CacheCluster{{
+							EngineVersion:              aws.String(engineVersion),
+							PreferredMaintenanceWindow: aws.String("never!"), // This field needs to be updated.
+						}},
+					}, nil
 				},
-				MockModifyReplicationGroupRequest: func(_ *elasticache.ModifyReplicationGroupInput) elasticache.ModifyReplicationGroupRequest {
-					return elasticache.ModifyReplicationGroupRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errorBoom},
-					}
+				MockModifyReplicationGroup: func(ctx context.Context, _ *elasticache.ModifyReplicationGroupInput, opts []func(*elasticache.Options)) (*elasticache.ModifyReplicationGroupOutput, error) {
+					return nil, errorBoom
 				},
 			}},
 			r: replicationGroup(
@@ -543,10 +477,8 @@ func TestDelete(t *testing.T) {
 		{
 			name: "Successful",
 			e: &external{client: &fake.MockClient{
-				MockDeleteReplicationGroupRequest: func(_ *elasticache.DeleteReplicationGroupInput) elasticache.DeleteReplicationGroupRequest {
-					return elasticache.DeleteReplicationGroupRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &elasticache.DeleteReplicationGroupOutput{}},
-					}
+				MockDeleteReplicationGroup: func(ctx context.Context, _ *elasticache.DeleteReplicationGroupInput, opts []func(*elasticache.Options)) (*elasticache.DeleteReplicationGroupOutput, error) {
+					return &elasticache.DeleteReplicationGroupOutput{}, nil
 				},
 			}},
 			r: replicationGroup(),
@@ -558,17 +490,11 @@ func TestDelete(t *testing.T) {
 		{
 			name: "SuccessfulNotFound",
 			e: &external{client: &fake.MockClient{
-				MockDeleteReplicationGroupRequest: func(_ *elasticache.DeleteReplicationGroupInput) elasticache.DeleteReplicationGroupRequest {
-					return elasticache.DeleteReplicationGroupRequest{
-						Request: &aws.Request{
-							HTTPRequest: &http.Request{},
-							Error: awserr.New(
-								elasticache.ErrCodeReplicationGroupNotFoundFault,
-								"NotFound",
-								fmt.Errorf("NotFound"))},
-					}
+				MockDeleteReplicationGroup: func(ctx context.Context, _ *elasticache.DeleteReplicationGroupInput, opts []func(*elasticache.Options)) (*elasticache.DeleteReplicationGroupOutput, error) {
+					return nil, &types.ReplicationGroupNotFoundFault{}
 				},
-			}},
+			},
+			},
 			r:          replicationGroup(),
 			want:       replicationGroup(withConditions(xpv1.Deleting())),
 			returnsErr: false,
@@ -585,10 +511,8 @@ func TestDelete(t *testing.T) {
 		{
 			name: "Failed",
 			e: &external{client: &fake.MockClient{
-				MockDeleteReplicationGroupRequest: func(_ *elasticache.DeleteReplicationGroupInput) elasticache.DeleteReplicationGroupRequest {
-					return elasticache.DeleteReplicationGroupRequest{
-						Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errorBoom},
-					}
+				MockDeleteReplicationGroup: func(ctx context.Context, _ *elasticache.DeleteReplicationGroupInput, opts []func(*elasticache.Options)) (*elasticache.DeleteReplicationGroupOutput, error) {
+					return nil, errorBoom
 				},
 			}},
 			r: replicationGroup(),

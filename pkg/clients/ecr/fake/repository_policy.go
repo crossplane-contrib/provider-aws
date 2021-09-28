@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/ecr"
@@ -27,22 +29,22 @@ var _ clientset.RepositoryPolicyClient = (*MockRepositoryPolicyClient)(nil)
 
 // MockRepositoryPolicyClient is a type that implements all the methods for ECRClient interface
 type MockRepositoryPolicyClient struct {
-	MockSet    func(*ecr.SetRepositoryPolicyInput) ecr.SetRepositoryPolicyRequest
-	MockDelete func(*ecr.DeleteRepositoryPolicyInput) ecr.DeleteRepositoryPolicyRequest
-	MockGet    func(*ecr.GetRepositoryPolicyInput) ecr.GetRepositoryPolicyRequest
+	MockSet    func(ctx context.Context, input *ecr.SetRepositoryPolicyInput, opts []func(*ecr.Options)) (*ecr.SetRepositoryPolicyOutput, error)
+	MockDelete func(ctx context.Context, input *ecr.DeleteRepositoryPolicyInput, opts []func(*ecr.Options)) (*ecr.DeleteRepositoryPolicyOutput, error)
+	MockGet    func(ctx context.Context, input *ecr.GetRepositoryPolicyInput, opts []func(*ecr.Options)) (*ecr.GetRepositoryPolicyOutput, error)
 }
 
-// SetRepositoryPolicyRequest mocks SetRepositoryPolicyRequest method
-func (m *MockRepositoryPolicyClient) SetRepositoryPolicyRequest(input *ecr.SetRepositoryPolicyInput) ecr.SetRepositoryPolicyRequest {
-	return m.MockSet(input)
+// SetRepositoryPolicy mocks ecr method
+func (m *MockRepositoryPolicyClient) SetRepositoryPolicy(ctx context.Context, input *ecr.SetRepositoryPolicyInput, opts ...func(*ecr.Options)) (*ecr.SetRepositoryPolicyOutput, error) {
+	return m.MockSet(ctx, input, opts)
 }
 
-// DeleteRepositoryPolicyRequest mocks DeleteRepositoryPolicyRequest method
-func (m *MockRepositoryPolicyClient) DeleteRepositoryPolicyRequest(input *ecr.DeleteRepositoryPolicyInput) ecr.DeleteRepositoryPolicyRequest {
-	return m.MockDelete(input)
+// DeleteRepositoryPolicy mocks ecr method
+func (m *MockRepositoryPolicyClient) DeleteRepositoryPolicy(ctx context.Context, input *ecr.DeleteRepositoryPolicyInput, opts ...func(*ecr.Options)) (*ecr.DeleteRepositoryPolicyOutput, error) {
+	return m.MockDelete(ctx, input, opts)
 }
 
-// GetRepositoryPolicyRequest mocks GetRepositoryPolicyRequest method
-func (m *MockRepositoryPolicyClient) GetRepositoryPolicyRequest(input *ecr.GetRepositoryPolicyInput) ecr.GetRepositoryPolicyRequest {
-	return m.MockGet(input)
+// GetRepositoryPolicy mocks ecr method
+func (m *MockRepositoryPolicyClient) GetRepositoryPolicy(ctx context.Context, input *ecr.GetRepositoryPolicyInput, opts ...func(*ecr.Options)) (*ecr.GetRepositoryPolicyOutput, error) {
+	return m.MockGet(ctx, input, opts)
 }

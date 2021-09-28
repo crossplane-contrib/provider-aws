@@ -3,7 +3,7 @@ package ec2
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
@@ -22,22 +22,23 @@ var (
 	networkInterfaceOwnerID = "owner"
 	testKey                 = "key"
 	testValue               = "value"
-	ec2tag                  = ec2.Tag{Key: &testKey, Value: &testValue}
-	v1beta1Tag              = v1beta1.Tag{Key: testKey, Value: testValue}
+
+	ec2tag     = ec2types.Tag{Key: &testKey, Value: &testValue}
+	v1beta1Tag = v1beta1.Tag{Key: testKey, Value: testValue}
 )
 
 func TestGenerateAddressObservation(t *testing.T) {
 	cases := map[string]struct {
-		in  ec2.Address
+		in  ec2types.Address
 		out v1beta1.AddressObservation
 	}{
 		"AllFilled": {
-			in: ec2.Address{
+			in: ec2types.Address{
 				AllocationId:            aws.String(allocationID),
 				AssociationId:           aws.String(associationID),
 				CustomerOwnedIp:         aws.String(testIPAddress),
 				CustomerOwnedIpv4Pool:   aws.String(poolName),
-				Domain:                  ec2.DomainType(domain),
+				Domain:                  ec2types.DomainType(domain),
 				InstanceId:              aws.String(instanceID),
 				NetworkBorderGroup:      aws.String(networkBorderGroup),
 				NetworkInterfaceId:      aws.String(networkInterfaceID),
@@ -45,7 +46,7 @@ func TestGenerateAddressObservation(t *testing.T) {
 				PrivateIpAddress:        aws.String(testIPAddress),
 				PublicIp:                aws.String(testIPAddress),
 				PublicIpv4Pool:          aws.String(poolName),
-				Tags:                    []ec2.Tag{ec2tag},
+				Tags:                    []ec2types.Tag{ec2tag},
 			},
 			out: v1beta1.AddressObservation{
 				AllocationID:            allocationID,
@@ -75,7 +76,7 @@ func TestGenerateAddressObservation(t *testing.T) {
 
 func TestIsEIPUpToDate(t *testing.T) {
 	type args struct {
-		eip ec2.Address
+		eip ec2types.Address
 		e   v1beta1.AddressParameters
 	}
 
@@ -85,8 +86,8 @@ func TestIsEIPUpToDate(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				eip: ec2.Address{
-					Tags: []ec2.Tag{ec2tag},
+				eip: ec2types.Address{
+					Tags: []ec2types.Tag{ec2tag},
 				},
 				e: v1beta1.AddressParameters{
 					Tags: []v1beta1.Tag{v1beta1Tag},
@@ -96,8 +97,8 @@ func TestIsEIPUpToDate(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				eip: ec2.Address{
-					Tags: []ec2.Tag{},
+				eip: ec2types.Address{
+					Tags: []ec2types.Tag{},
 				},
 				e: v1beta1.AddressParameters{
 					Tags: []v1beta1.Tag{v1beta1Tag},

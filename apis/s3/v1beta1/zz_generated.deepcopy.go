@@ -357,7 +357,7 @@ func (in *CORSRule) DeepCopyInto(out *CORSRule) {
 	}
 	if in.MaxAgeSeconds != nil {
 		in, out := &in.MaxAgeSeconds, &out.MaxAgeSeconds
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 }
@@ -591,7 +591,7 @@ func (in *LifecycleExpiration) DeepCopyInto(out *LifecycleExpiration) {
 	}
 	if in.Days != nil {
 		in, out := &in.Days, &out.Days
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.ExpiredObjectDeleteMarker != nil {
@@ -778,7 +778,7 @@ func (in *NoncurrentVersionExpiration) DeepCopyInto(out *NoncurrentVersionExpira
 	*out = *in
 	if in.NoncurrentDays != nil {
 		in, out := &in.NoncurrentDays, &out.NoncurrentDays
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 }
@@ -798,7 +798,7 @@ func (in *NoncurrentVersionTransition) DeepCopyInto(out *NoncurrentVersionTransi
 	*out = *in
 	if in.NoncurrentDays != nil {
 		in, out := &in.NoncurrentDays, &out.NoncurrentDays
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 }
@@ -1062,7 +1062,7 @@ func (in *ReplicationRule) DeepCopyInto(out *ReplicationRule) {
 	}
 	if in.Priority != nil {
 		in, out := &in.Priority, &out.Priority
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.SourceSelectionCriteria != nil {
@@ -1440,7 +1440,7 @@ func (in *Transition) DeepCopyInto(out *Transition) {
 	}
 	if in.Days != nil {
 		in, out := &in.Days, &out.Days
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 }

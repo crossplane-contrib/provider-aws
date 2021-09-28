@@ -23,6 +23,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	awsec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
@@ -88,7 +89,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if err != nil {
 		return nil, err
 	}
-	return &external{client: awsec2.New(*cfg), kube: c.kube}, nil
+	return &external{client: awsec2.NewFromConfig(*cfg), kube: c.kube}, nil
 }
 
 type external struct {
@@ -107,20 +108,20 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			ResourceExists: false,
 		}, nil
 	}
-	var response *awsec2.DescribeAddressesResponse
+	var output *awsec2.DescribeAddressesOutput
 	var err error
 
 	if ec2.IsStandardDomain(cr.Spec.ForProvider) {
-		response, err = e.client.DescribeAddressesRequest(&awsec2.DescribeAddressesInput{
+		output, err = e.client.DescribeAddresses(ctx, &awsec2.DescribeAddressesInput{
 			PublicIps: []string{meta.GetExternalName(cr)},
-		}).Send(ctx)
+		})
 		if err != nil {
 			return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsAddressNotFoundErr, err), errDescribe)
 		}
 	} else {
-		response, err = e.client.DescribeAddressesRequest(&awsec2.DescribeAddressesInput{
+		output, err = e.client.DescribeAddresses(ctx, &awsec2.DescribeAddressesInput{
 			AllocationIds: []string{meta.GetExternalName(cr)},
-		}).Send(ctx)
+		})
 		if err != nil {
 			return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsAddressNotFoundErr, err), errDescribe)
 		}
@@ -128,11 +129,11 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	// in a successful response, there should be one and only one object
-	if len(response.Addresses) != 1 {
+	if len(output.Addresses) != 1 {
 		return managed.ExternalObservation{}, errors.New(errMultipleItems)
 	}
 
-	observed := response.Addresses[0]
+	observed := output.Addresses[0]
 
 	// update the CRD spec for any new values from provider
 	current := cr.Spec.ForProvider.DeepCopy()
@@ -160,21 +161,21 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.Wrap(err, errStatusUpdate)
 	}
 
-	result, err := e.client.AllocateAddressRequest(&awsec2.AllocateAddressInput{
+	result, err := e.client.AllocateAddress(ctx, &awsec2.AllocateAddressInput{
 		Address:               cr.Spec.ForProvider.Address,
 		CustomerOwnedIpv4Pool: cr.Spec.ForProvider.CustomerOwnedIPv4Pool,
-		Domain:                awsec2.DomainType(aws.StringValue(cr.Spec.ForProvider.Domain)),
+		Domain:                awsec2types.DomainType(aws.ToString(cr.Spec.ForProvider.Domain)),
 		NetworkBorderGroup:    cr.Spec.ForProvider.NetworkBorderGroup,
 		PublicIpv4Pool:        cr.Spec.ForProvider.PublicIPv4Pool,
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
 	if ec2.IsStandardDomain(cr.Spec.ForProvider) {
-		meta.SetExternalName(cr, aws.StringValue(result.AllocateAddressOutput.PublicIp))
+		meta.SetExternalName(cr, aws.ToString(result.PublicIp))
 	} else {
-		meta.SetExternalName(cr, aws.StringValue(result.AllocateAddressOutput.AllocationId))
+		meta.SetExternalName(cr, aws.ToString(result.AllocationId))
 	}
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
@@ -187,13 +188,12 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	// NOTE: Addresss can only be tagged after the creation and this request
 	// is idempotent.
-	if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+	if _, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
 		Resources: []string{meta.GetExternalName(cr)},
 		Tags:      ec2.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
-	}).Send(ctx); err != nil {
+	}); err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errCreateTags)
 	}
-
 	return managed.ExternalUpdate{}, nil
 }
 
@@ -206,14 +206,14 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	cr.Status.SetConditions(xpv1.Deleting())
 	var err error
 	if ec2.IsStandardDomain(cr.Spec.ForProvider) {
-		_, err = e.client.ReleaseAddressRequest(&awsec2.ReleaseAddressInput{
+		_, err = e.client.ReleaseAddress(ctx, &awsec2.ReleaseAddressInput{
 			PublicIp: aws.String(meta.GetExternalName(cr)),
-		}).Send(ctx)
+		})
 	} else {
-		_, err = e.client.ReleaseAddressRequest(&awsec2.ReleaseAddressInput{
+		_, err = e.client.ReleaseAddress(ctx, &awsec2.ReleaseAddressInput{
 			AllocationId:       aws.String(meta.GetExternalName(cr)),
 			NetworkBorderGroup: cr.Spec.ForProvider.NetworkBorderGroup,
-		}).Send(ctx)
+		})
 	}
 
 	return awsclient.Wrap(resource.Ignore(ec2.IsAddressNotFoundErr, err), errDelete)
