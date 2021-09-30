@@ -73,6 +73,12 @@ import (
 	"github.com/crossplane/provider-aws/pkg/controller/eks/nodegroup"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elb"
 	"github.com/crossplane/provider-aws/pkg/controller/elasticloadbalancing/elbattachment"
+	glueclassifier "github.com/crossplane/provider-aws/pkg/controller/glue/classifier"
+	glueconnection "github.com/crossplane/provider-aws/pkg/controller/glue/connection"
+	gluecrawler "github.com/crossplane/provider-aws/pkg/controller/glue/crawler"
+	glueDatabase "github.com/crossplane/provider-aws/pkg/controller/glue/database"
+	gluejob "github.com/crossplane/provider-aws/pkg/controller/glue/job"
+	gluesecurityconfiguration "github.com/crossplane/provider-aws/pkg/controller/glue/securityconfiguration"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamaccesskey"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgroup"
 	"github.com/crossplane/provider-aws/pkg/controller/identity/iamgrouppolicyattachment"
@@ -199,6 +205,12 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll ti
 		transferserver.SetupServer,
 		transferuser.SetupUser,
 		instance.SetupInstance,
+		gluejob.SetupJob,
+		gluesecurityconfiguration.SetupSecurityConfiguration,
+		glueconnection.SetupConnection,
+		glueDatabase.SetupDatabase,
+		gluecrawler.SetupCrawler,
+		glueclassifier.SetupClassifier,
 	} {
 		if err := setup(mgr, l, rl, poll); err != nil {
 			return err
