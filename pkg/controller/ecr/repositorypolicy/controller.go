@@ -116,7 +116,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	return managed.ExternalObservation{
 		ResourceExists:          true,
-		ResourceUpToDate:        ecr.IsRepositoryPolicyUpToDate(&policyData, response.PolicyText),
+		ResourceUpToDate:        awsclient.IsPolicyUpToDate(&policyData, response.PolicyText),
 		ResourceLateInitialized: !cmp.Equal(current, &cr.Spec.ForProvider),
 	}, nil
 }

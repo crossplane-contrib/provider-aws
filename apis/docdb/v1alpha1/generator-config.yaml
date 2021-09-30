@@ -6,11 +6,14 @@ ignore:
     - DeleteDBClusterParameterGroupInput.DBClusterParameterGroupName
     - DescribeDBSubnetGroupsInput.DBSubnetGroupName
     - ModifyDBSubnetGroupInput.DBSubnetGroupName
+    - ModifyDBSubnetGroupInput.SubnetIds
     - CreateDBSubnetGroupInput.DBSubnetGroupName
+    - CreateDBSubnetGroupInput.SubnetIds
     - DeleteDBSubnetGroupInput.DBSubnetGroupName
     - DescribeDBInstancesOutput.DBInstanceIdentifier
     - ModifyDBInstanceInput.DBInstanceIdentifier
     - CreateDBInstanceInput.DBInstanceIdentifier
+    - CreateDBInstanceInput.DBClusterIdentifier
     - DeleteDBInstanceInput.DBInstanceIdentifier
     - DescribeDBClustersInput.DBClusterIdentifier
     - ModifyDBClusterInput.DBClusterIdentifier

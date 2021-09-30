@@ -121,18 +121,33 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 
 	if resp.DBInstance.BackupRetentionPeriod != nil {
 		cr.Status.AtProvider.BackupRetentionPeriod = resp.DBInstance.BackupRetentionPeriod
+	} else {
+		cr.Status.AtProvider.BackupRetentionPeriod = nil
 	}
 	if resp.DBInstance.CACertificateIdentifier != nil {
 		cr.Status.AtProvider.CACertificateIdentifier = resp.DBInstance.CACertificateIdentifier
+	} else {
+		cr.Status.AtProvider.CACertificateIdentifier = nil
+	}
+	if resp.DBInstance.DBClusterIdentifier != nil {
+		cr.Status.AtProvider.DBClusterIdentifier = resp.DBInstance.DBClusterIdentifier
+	} else {
+		cr.Status.AtProvider.DBClusterIdentifier = nil
 	}
 	if resp.DBInstance.DBInstanceArn != nil {
 		cr.Status.AtProvider.DBInstanceARN = resp.DBInstance.DBInstanceArn
+	} else {
+		cr.Status.AtProvider.DBInstanceARN = nil
 	}
 	if resp.DBInstance.DBInstanceIdentifier != nil {
 		cr.Status.AtProvider.DBInstanceIdentifier = resp.DBInstance.DBInstanceIdentifier
+	} else {
+		cr.Status.AtProvider.DBInstanceIdentifier = nil
 	}
 	if resp.DBInstance.DBInstanceStatus != nil {
 		cr.Status.AtProvider.DBInstanceStatus = resp.DBInstance.DBInstanceStatus
+	} else {
+		cr.Status.AtProvider.DBInstanceStatus = nil
 	}
 	if resp.DBInstance.DBSubnetGroup != nil {
 		f9 := &svcapitypes.DBSubnetGroup_SDK{}
@@ -173,9 +188,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f9.VPCID = resp.DBInstance.DBSubnetGroup.VpcId
 		}
 		cr.Status.AtProvider.DBSubnetGroup = f9
+	} else {
+		cr.Status.AtProvider.DBSubnetGroup = nil
 	}
 	if resp.DBInstance.DbiResourceId != nil {
 		cr.Status.AtProvider.DBIResourceID = resp.DBInstance.DbiResourceId
+	} else {
+		cr.Status.AtProvider.DBIResourceID = nil
 	}
 	if resp.DBInstance.EnabledCloudwatchLogsExports != nil {
 		f11 := []*string{}
@@ -185,6 +204,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f11 = append(f11, &f11elem)
 		}
 		cr.Status.AtProvider.EnabledCloudwatchLogsExports = f11
+	} else {
+		cr.Status.AtProvider.EnabledCloudwatchLogsExports = nil
 	}
 	if resp.DBInstance.Endpoint != nil {
 		f12 := &svcapitypes.Endpoint{}
@@ -198,18 +219,28 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f12.Port = resp.DBInstance.Endpoint.Port
 		}
 		cr.Status.AtProvider.Endpoint = f12
+	} else {
+		cr.Status.AtProvider.Endpoint = nil
 	}
 	if resp.DBInstance.EngineVersion != nil {
 		cr.Status.AtProvider.EngineVersion = resp.DBInstance.EngineVersion
+	} else {
+		cr.Status.AtProvider.EngineVersion = nil
 	}
 	if resp.DBInstance.InstanceCreateTime != nil {
 		cr.Status.AtProvider.InstanceCreateTime = &metav1.Time{*resp.DBInstance.InstanceCreateTime}
+	} else {
+		cr.Status.AtProvider.InstanceCreateTime = nil
 	}
 	if resp.DBInstance.KmsKeyId != nil {
 		cr.Status.AtProvider.KMSKeyID = resp.DBInstance.KmsKeyId
+	} else {
+		cr.Status.AtProvider.KMSKeyID = nil
 	}
 	if resp.DBInstance.LatestRestorableTime != nil {
 		cr.Status.AtProvider.LatestRestorableTime = &metav1.Time{*resp.DBInstance.LatestRestorableTime}
+	} else {
+		cr.Status.AtProvider.LatestRestorableTime = nil
 	}
 	if resp.DBInstance.PendingModifiedValues != nil {
 		f18 := &svcapitypes.PendingModifiedValues{}
@@ -275,12 +306,18 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f18.StorageType = resp.DBInstance.PendingModifiedValues.StorageType
 		}
 		cr.Status.AtProvider.PendingModifiedValues = f18
+	} else {
+		cr.Status.AtProvider.PendingModifiedValues = nil
 	}
 	if resp.DBInstance.PreferredBackupWindow != nil {
 		cr.Status.AtProvider.PreferredBackupWindow = resp.DBInstance.PreferredBackupWindow
+	} else {
+		cr.Status.AtProvider.PreferredBackupWindow = nil
 	}
 	if resp.DBInstance.PubliclyAccessible != nil {
 		cr.Status.AtProvider.PubliclyAccessible = resp.DBInstance.PubliclyAccessible
+	} else {
+		cr.Status.AtProvider.PubliclyAccessible = nil
 	}
 	if resp.DBInstance.StatusInfos != nil {
 		f23 := []*svcapitypes.DBInstanceStatusInfo{}
@@ -301,9 +338,13 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f23 = append(f23, f23elem)
 		}
 		cr.Status.AtProvider.StatusInfos = f23
+	} else {
+		cr.Status.AtProvider.StatusInfos = nil
 	}
 	if resp.DBInstance.StorageEncrypted != nil {
 		cr.Status.AtProvider.StorageEncrypted = resp.DBInstance.StorageEncrypted
+	} else {
+		cr.Status.AtProvider.StorageEncrypted = nil
 	}
 	if resp.DBInstance.VpcSecurityGroups != nil {
 		f25 := []*svcapitypes.VPCSecurityGroupMembership{}
@@ -318,6 +359,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f25 = append(f25, f25elem)
 		}
 		cr.Status.AtProvider.VPCSecurityGroups = f25
+	} else {
+		cr.Status.AtProvider.VPCSecurityGroups = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -333,10 +376,7 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
 	}
 	resp, err := e.client.ModifyDBInstanceWithContext(ctx, input)
-	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
-	}
-	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, err)
+	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate))
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
@@ -367,6 +407,7 @@ func newExternal(kube client.Client, client svcsdkapi.DocDBAPI, opts []option) *
 		postObserve:    nopPostObserve,
 		lateInitialize: nopLateInitialize,
 		isUpToDate:     alwaysUpToDate,
+		filterList:     nopFilterList,
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,

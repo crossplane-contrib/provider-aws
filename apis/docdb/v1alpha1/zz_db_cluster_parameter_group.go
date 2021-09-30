@@ -57,7 +57,7 @@ type DBClusterParameterGroupObservation struct {
 // DBClusterParameterGroupStatus defines the observed state of DBClusterParameterGroup.
 type DBClusterParameterGroupStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          DBClusterParameterGroupObservation `json:"atProvider"`
+	AtProvider          DBClusterParameterGroupObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -71,7 +71,7 @@ type DBClusterParameterGroupStatus struct {
 type DBClusterParameterGroup struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              DBClusterParameterGroupSpec   `json:"spec,omitempty"`
+	Spec              DBClusterParameterGroupSpec   `json:"spec"`
 	Status            DBClusterParameterGroupStatus `json:"status,omitempty"`
 }
 

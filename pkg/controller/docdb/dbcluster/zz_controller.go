@@ -132,15 +132,23 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f0 = append(f0, f0elem)
 		}
 		cr.Status.AtProvider.AssociatedRoles = f0
+	} else {
+		cr.Status.AtProvider.AssociatedRoles = nil
 	}
 	if resp.DBCluster.ClusterCreateTime != nil {
 		cr.Status.AtProvider.ClusterCreateTime = &metav1.Time{*resp.DBCluster.ClusterCreateTime}
+	} else {
+		cr.Status.AtProvider.ClusterCreateTime = nil
 	}
 	if resp.DBCluster.DBClusterArn != nil {
 		cr.Status.AtProvider.DBClusterARN = resp.DBCluster.DBClusterArn
+	} else {
+		cr.Status.AtProvider.DBClusterARN = nil
 	}
 	if resp.DBCluster.DBClusterIdentifier != nil {
 		cr.Status.AtProvider.DBClusterIdentifier = resp.DBCluster.DBClusterIdentifier
+	} else {
+		cr.Status.AtProvider.DBClusterIdentifier = nil
 	}
 	if resp.DBCluster.DBClusterMembers != nil {
 		f6 := []*svcapitypes.DBClusterMember{}
@@ -161,18 +169,28 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f6 = append(f6, f6elem)
 		}
 		cr.Status.AtProvider.DBClusterMembers = f6
+	} else {
+		cr.Status.AtProvider.DBClusterMembers = nil
 	}
 	if resp.DBCluster.DBClusterParameterGroup != nil {
 		cr.Status.AtProvider.DBClusterParameterGroup = resp.DBCluster.DBClusterParameterGroup
+	} else {
+		cr.Status.AtProvider.DBClusterParameterGroup = nil
 	}
 	if resp.DBCluster.DBSubnetGroup != nil {
 		cr.Status.AtProvider.DBSubnetGroup = resp.DBCluster.DBSubnetGroup
+	} else {
+		cr.Status.AtProvider.DBSubnetGroup = nil
 	}
 	if resp.DBCluster.DbClusterResourceId != nil {
 		cr.Status.AtProvider.DBClusterResourceID = resp.DBCluster.DbClusterResourceId
+	} else {
+		cr.Status.AtProvider.DBClusterResourceID = nil
 	}
 	if resp.DBCluster.EarliestRestorableTime != nil {
 		cr.Status.AtProvider.EarliestRestorableTime = &metav1.Time{*resp.DBCluster.EarliestRestorableTime}
+	} else {
+		cr.Status.AtProvider.EarliestRestorableTime = nil
 	}
 	if resp.DBCluster.EnabledCloudwatchLogsExports != nil {
 		f12 := []*string{}
@@ -182,27 +200,43 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f12 = append(f12, &f12elem)
 		}
 		cr.Status.AtProvider.EnabledCloudwatchLogsExports = f12
+	} else {
+		cr.Status.AtProvider.EnabledCloudwatchLogsExports = nil
 	}
 	if resp.DBCluster.Endpoint != nil {
 		cr.Status.AtProvider.Endpoint = resp.DBCluster.Endpoint
+	} else {
+		cr.Status.AtProvider.Endpoint = nil
 	}
 	if resp.DBCluster.HostedZoneId != nil {
 		cr.Status.AtProvider.HostedZoneID = resp.DBCluster.HostedZoneId
+	} else {
+		cr.Status.AtProvider.HostedZoneID = nil
 	}
 	if resp.DBCluster.LatestRestorableTime != nil {
 		cr.Status.AtProvider.LatestRestorableTime = &metav1.Time{*resp.DBCluster.LatestRestorableTime}
+	} else {
+		cr.Status.AtProvider.LatestRestorableTime = nil
 	}
 	if resp.DBCluster.MultiAZ != nil {
 		cr.Status.AtProvider.MultiAZ = resp.DBCluster.MultiAZ
+	} else {
+		cr.Status.AtProvider.MultiAZ = nil
 	}
 	if resp.DBCluster.PercentProgress != nil {
 		cr.Status.AtProvider.PercentProgress = resp.DBCluster.PercentProgress
+	} else {
+		cr.Status.AtProvider.PercentProgress = nil
 	}
 	if resp.DBCluster.ReaderEndpoint != nil {
 		cr.Status.AtProvider.ReaderEndpoint = resp.DBCluster.ReaderEndpoint
+	} else {
+		cr.Status.AtProvider.ReaderEndpoint = nil
 	}
 	if resp.DBCluster.Status != nil {
 		cr.Status.AtProvider.Status = resp.DBCluster.Status
+	} else {
+		cr.Status.AtProvider.Status = nil
 	}
 	if resp.DBCluster.VpcSecurityGroups != nil {
 		f28 := []*svcapitypes.VPCSecurityGroupMembership{}
@@ -217,6 +251,8 @@ func (e *external) Create(ctx context.Context, mg cpresource.Managed) (managed.E
 			f28 = append(f28, f28elem)
 		}
 		cr.Status.AtProvider.VPCSecurityGroups = f28
+	} else {
+		cr.Status.AtProvider.VPCSecurityGroups = nil
 	}
 
 	return e.postCreate(ctx, cr, resp, managed.ExternalCreation{}, err)
@@ -232,10 +268,7 @@ func (e *external) Update(ctx context.Context, mg cpresource.Managed) (managed.E
 		return managed.ExternalUpdate{}, errors.Wrap(err, "pre-update failed")
 	}
 	resp, err := e.client.ModifyDBClusterWithContext(ctx, input)
-	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
-	}
-	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, err)
+	return e.postUpdate(ctx, cr, resp, managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate))
 }
 
 func (e *external) Delete(ctx context.Context, mg cpresource.Managed) error {
@@ -266,6 +299,7 @@ func newExternal(kube client.Client, client svcsdkapi.DocDBAPI, opts []option) *
 		postObserve:    nopPostObserve,
 		lateInitialize: nopLateInitialize,
 		isUpToDate:     alwaysUpToDate,
+		filterList:     nopFilterList,
 		preCreate:      nopPreCreate,
 		postCreate:     nopPostCreate,
 		preDelete:      nopPreDelete,

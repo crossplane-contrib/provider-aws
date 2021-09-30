@@ -51,10 +51,19 @@ type CustomDBInstanceParameters struct {
 	// The identifier of the CA certificate for this DB instance.
 	// +optional
 	CACertificateIdentifier *string `json:"caCertificateIdentifier,omitempty"`
+
+	// The identifier of the cluster this instance will belong to
+	DBClusterIdentifier         *string         `json:"dbClusterIdentifier,omitempty"`
+	DBClusterIdentifierRef      *xpv1.Reference `json:"dbClusterIdentifierRef,omitempty"`
+	DBClusterIdentifierSelector *xpv1.Selector  `json:"dbClusterIdentifierSelector,omitempty"`
 }
 
 // CustomDBSubnetGroupParameters for DBSubnetGroupParameters
-type CustomDBSubnetGroupParameters struct{}
+type CustomDBSubnetGroupParameters struct {
+	SubnetIDs         []*string        `json:"subnetIDs,omitempty"`
+	SubnetIDsRefs     []xpv1.Reference `json:"subnetIDsRefs,omitempty"`
+	SUbnetIDsSelector *xpv1.Selector   `json:"subnetIDsSelector,omitempty"`
+}
 
 // CustomDBClusterParameterGroupParameters for DBClusterParameterGroup
 type CustomDBClusterParameterGroupParameters struct {
@@ -112,4 +121,16 @@ type CustomDBClusterParameters struct {
 	//
 	// Constraints: Must contain from 8 to 100 characters.
 	MasterUserPasswordSecretRef *xpv1.SecretKeySelector `json:"masterUserPasswordSecretRef,omitempty"`
+
+	DBSubnetGroupNameRef      *xpv1.Reference `json:"dbSubnetGroupNameRef,omitempty"`
+	DBSubnetGroupNameSelector *xpv1.Selector  `json:"dbSubnetGroupNameSelector,omitempty"`
+
+	DBClusterParameterGroupNameRef      *xpv1.Reference `json:"dbClusterParameterGroupNameRef,omitempty"`
+	DBClusterParameterGroupNameSelector *xpv1.Selector  `json:"dbClusterParameterGroupNameSelector,omitempty"`
+
+	KMSKeyIDRef      *xpv1.Reference `json:"kmsKeyIDRef,omitempty"`
+	KMSKeyIDSelector *xpv1.Selector  `json:"kmsKeyIDSelector,omitempty"`
+
+	VPCSecurityGroupIDsRefs     []xpv1.Reference `json:"vpcSecurityGroupIDsRefs,omitempty"`
+	VPCSecurityGroupIDsSelector *xpv1.Selector   `json:"vpcSecurityGroupIDsSelector,omitempty"`
 }

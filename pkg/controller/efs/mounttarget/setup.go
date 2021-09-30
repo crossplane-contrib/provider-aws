@@ -49,6 +49,11 @@ func SetupMountTarget(mgr ctrl.Manager, l logging.Logger, limiter workqueue.Rate
 func preCreate(_ context.Context, cr *svcapitypes.MountTarget, obj *svcsdk.CreateMountTargetInput) error {
 	obj.FileSystemId = cr.Spec.ForProvider.FileSystemID
 	obj.SubnetId = cr.Spec.ForProvider.SubnetID
+
+	for i := range cr.Spec.ForProvider.SecurityGroups {
+		obj.SecurityGroups = append(obj.SecurityGroups, &cr.Spec.ForProvider.SecurityGroups[i])
+	}
+
 	return nil
 }
 

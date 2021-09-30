@@ -9,8 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
@@ -204,36 +202,6 @@ func tryFirst(slc []string) interface{} {
 		return slc[0]
 	}
 	return slc
-}
-
-// IsRepositoryPolicyUpToDate Marshall policies to json for a compare to get around string ordering
-func IsRepositoryPolicyUpToDate(local, remote *string) bool {
-	var localUnmarshalled interface{}
-	var remoteUnmarshalled interface{}
-
-	var err error
-	err = json.Unmarshal([]byte(*local), &localUnmarshalled)
-	if err != nil {
-		return false
-	}
-	err = json.Unmarshal([]byte(*remote), &remoteUnmarshalled)
-	if err != nil {
-		return false
-	}
-
-	sortSlicesOpt := cmpopts.SortSlices(func(x, y interface{}) bool {
-		if a, ok := x.(string); ok {
-			if b, ok := y.(string); ok {
-				return a < b
-			}
-		}
-		// Note: Unknown types in slices will not cause a panic, but
-		// may not be sorted correctly. Depending on how AWS handles
-		// these, it may cause constant updates - but better this than
-		// panicing.
-		return false
-	})
-	return cmp.Equal(localUnmarshalled, remoteUnmarshalled, cmpopts.EquateEmpty(), sortSlicesOpt)
 }
 
 // RawPolicyData parses and formats the RepositoryPolicy struct
