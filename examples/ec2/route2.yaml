@@ -1,0 +1,12 @@
+apiVersion: ec2.aws.crossplane.io/v1alpha1
+kind: Route
+metadata:
+  name: sample
+spec:
+  forProvider:
+    destinationCIDRBlock: 10.10.10.0/24
+    region: eu-central-1
+    routeTableID: rtb-0cbef54fcb337189a
+    natGatewayID: nat-09006d31dab13864b
+  providerConfigRef:
+    name: aws-provider-config
