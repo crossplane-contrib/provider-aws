@@ -70,13 +70,6 @@ type InstanceParameters struct {
 	// +optional
 	DisableAPITermination *bool `json:"disableAPITermination,omitempty"`
 
-	// Checks whether you have the required permissions for the action, without
-	// actually making the request, and provides an error response. If you have
-	// the required permissions, the error response is DryRunOperation. Otherwise,
-	// it is UnauthorizedOperation.
-	// +optional
-	DryRun *bool `json:"dryRun,omitempty"`
-
 	// Indicates whether the instance is optimized for Amazon EBS I/O. This optimization
 	// provides dedicated throughput to Amazon EBS and an optimized configuration
 	// stack to provide optimal Amazon EBS I/O performance. This optimization isn't
@@ -237,16 +230,6 @@ type InstanceParameters struct {
 	// as part of the network interface.
 	// +optional
 	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
-
-	// SecurityGroupIDRefs is a list of references to SecurityGroups used to set
-	// the SecurityGroupIDs.
-	// +optional
-	SecurityGroupIDRefs []xpv1.Reference `json:"securityGroupIdRefs,omitempty"`
-
-	// SecurityGroupIDsSelector selects references to SecurityGroupID used
-	// to set the SecurityGroupIDs.
-	// +optional
-	SecurityGroupIDSelector *xpv1.Selector `json:"securityGroupIdSelector,omitempty"`
 
 	// [EC2-Classic, default VPC] The names of the security groups. For a nondefault
 	// VPC, you must use security group IDs instead.

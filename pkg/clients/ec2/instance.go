@@ -798,7 +798,6 @@ func GenerateEC2RunInstancesInput(name string, p *manualv1alpha1.InstanceParamet
 		CpuOptions:                        GenerateEC2CPUOptions(p.CPUOptions),
 		CreditSpecification:               GenerateEC2CreditSpec(p.CreditSpecification),
 		DisableApiTermination:             p.DisableAPITermination,
-		DryRun:                            p.DryRun,
 		EbsOptimized:                      p.EBSOptimized,
 		ElasticGpuSpecification:           GenerateEC2ElasticGPUSpecs(p.ElasticGPUSpecification),
 		ElasticInferenceAccelerators:      GenerateEC2ElasticInferenceAccelerators(p.ElasticInferenceAccelerators),

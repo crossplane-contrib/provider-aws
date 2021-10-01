@@ -51,25 +51,11 @@ func (mg *VPCCIDRBlock) ResolveReferences(ctx context.Context, c client.Reader) 
 func (mg *Instance) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.forProvider.securityGroupIds
-	rgids, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
-		CurrentValues: mg.Spec.ForProvider.SecurityGroupIDs,
-		References:    mg.Spec.ForProvider.SecurityGroupIDRefs,
-		Selector:      mg.Spec.ForProvider.SecurityGroupIDSelector,
-		To:            reference.To{Managed: &v1beta1.SecurityGroup{}, List: &v1beta1.SecurityGroupList{}},
-		Extract:       reference.ExternalName(),
-	})
-	if err != nil {
-		return errors.Wrap(err, "spec.forProvider.securityGroupIds")
-	}
-	mg.Spec.ForProvider.SecurityGroupIDs = rgids.ResolvedValues
-	mg.Spec.ForProvider.SecurityGroupIDRefs = rgids.ResolvedReferences
-
 	// Resolve spec.forProvider.securityGroups
 	rg, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
 		CurrentValues: mg.Spec.ForProvider.SecurityGroups,
 		References:    mg.Spec.ForProvider.SecurityGroupRefs,
-		Selector:      mg.Spec.ForProvider.SecurityGroupIDSelector,
+		Selector:      mg.Spec.ForProvider.SecurityGroupSelector,
 		To:            reference.To{Managed: &v1beta1.SecurityGroup{}, List: &v1beta1.SecurityGroupList{}},
 		Extract:       reference.ExternalName(),
 	})

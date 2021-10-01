@@ -293,12 +293,6 @@ spec:
                       to terminate, you can terminate the instance by running the
                       shutdown command from the instance. \n Default: false"
                     type: boolean
-                  dryRun:
-                    description: Checks whether you have the required permissions
-                      for the action, without actually making the request, and provides
-                      an error response. If you have the required permissions, the
-                      error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
-                    type: boolean
                   ebsOptimized:
                     description: "Indicates whether the instance is optimized for
                       Amazon EBS I/O. This optimization provides dedicated throughput
@@ -771,34 +765,6 @@ spec:
                     description: Region is the region you'd like your Instance to
                       be created in.
                     type: string
-                  securityGroupIdRefs:
-                    description: SecurityGroupIDRefs is a list of references to SecurityGroups
-                      used to set the SecurityGroupIDs.
-                    items:
-                      description: A Reference to a named object.
-                      properties:
-                        name:
-                          description: Name of the referenced object.
-                          type: string
-                      required:
-                      - name
-                      type: object
-                    type: array
-                  securityGroupIdSelector:
-                    description: SecurityGroupIDsSelector selects references to SecurityGroupID
-                      used to set the SecurityGroupIDs.
-                    properties:
-                      matchControllerRef:
-                        description: MatchControllerRef ensures an object with the
-                          same controller reference as the selecting object is selected.
-                        type: boolean
-                      matchLabels:
-                        additionalProperties:
-                          type: string
-                        description: MatchLabels ensures an object with matching labels
-                          is selected.
-                        type: object
-                    type: object
                   securityGroupIds:
                     description: "The IDs of the security groups. You can create a
                       security group using CreateSecurityGroup (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateSecurityGroup.html).

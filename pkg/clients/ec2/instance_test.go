@@ -592,7 +592,6 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 					CPUCredits: aws.String(cpuCredits),
 				},
 				DisableAPITermination: aws.Bool(false),
-				DryRun:                aws.Bool(false),
 				EBSOptimized:          aws.Bool(false),
 				ElasticGPUSpecification: []manualv1alpha1.ElasticGPUSpecification{
 					{
@@ -739,7 +738,6 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 				},
 				ClientToken:           aws.String(clientToken),
 				DisableApiTermination: aws.Bool(false),
-				DryRun:                aws.Bool(false),
 				EbsOptimized:          aws.Bool(false),
 				ElasticGpuSpecification: []ec2.ElasticGpuSpecification{
 					{
