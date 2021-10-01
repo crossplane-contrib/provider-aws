@@ -1,0 +1,322 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.0
+  creationTimestamp: null
+  name: routes.ec2.aws.crossplane.io
+spec:
+  group: ec2.aws.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - aws
+    kind: Route
+    listKind: RouteList
+    plural: routes
+    singular: route
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Route is the Schema for the Routes API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: RouteSpec defines the desired state of Route
+            properties:
+              deletionPolicy:
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              forProvider:
+                description: RouteParameters defines the desired state of Route
+                properties:
+                  carrierGatewayID:
+                    description: "The ID of the carrier gateway. \n You can only use
+                      this option when the VPC contains a subnet which is associated
+                      with a Wavelength Zone."
+                    type: string
+                  destinationCIDRBlock:
+                    description: The IPv4 CIDR address block used for the destination
+                      match. Routing decisions are based on the most specific match.
+                      We modify the specified CIDR block to its canonical form; for
+                      example, if you specify 100.68.0.18/18, we modify it to 100.68.0.0/18.
+                    type: string
+                  destinationIPv6CIDRBlock:
+                    description: The IPv6 CIDR block used for the destination match.
+                      Routing decisions are based on the most specific match.
+                    type: string
+                  destinationPrefixListID:
+                    description: The ID of a prefix list used for the destination
+                      match.
+                    type: string
+                  dryRun:
+                    description: Checks whether you have the required permissions
+                      for the action, without actually making the request, and provides
+                      an error response. If you have the required permissions, the
+                      error response is DryRunOperation. Otherwise, it is UnauthorizedOperation.
+                    type: boolean
+                  egressOnlyInternetGatewayID:
+                    description: '[IPv6 traffic only] The ID of an egress-only internet
+                      gateway.'
+                    type: string
+                  gatewayID:
+                    description: The ID of an internet gateway or virtual private
+                      gateway attached to your VPC.
+                    type: string
+                  instanceID:
+                    description: The ID of a NAT instance in your VPC. The operation
+                      fails if you specify an instance ID unless exactly one network
+                      interface is attached.
+                    type: string
+                  localGatewayID:
+                    description: The ID of the local gateway.
+                    type: string
+                  natGatewayID:
+                    description: '[IPv4 traffic only] The ID of a NAT gateway.'
+                    type: string
+                  networkInterfaceID:
+                    description: The ID of a network interface.
+                    type: string
+                  region:
+                    description: Region is which region the Route will be created.
+                    type: string
+                  routeTableID:
+                    description: The ID of the route table for the route.
+                    type: string
+                  transitGatewayID:
+                    description: The ID of a transit gateway.
+                    type: string
+                  vpcEndpointID:
+                    description: The ID of a VPC endpoint. Supported for Gateway Load
+                      Balancer endpoints only.
+                    type: string
+                  vpcPeeringConnectionID:
+                    description: The ID of a VPC peering connection.
+                    type: string
+                required:
+                - region
+                - routeTableID
+                type: object
+              providerConfigRef:
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: RouteStatus defines the observed state of Route.
+            properties:
+              atProvider:
+                description: RouteObservation defines the observed state of Route
+                properties:
+                  return_:
+                    description: Returns true if the request succeeds; otherwise,
+                      it returns an error.
+                    type: boolean
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time this condition
+                        transitioned from one status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: A Message containing details about this condition's
+                        last transition from one status to another, if any.
+                      type: string
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: Type of this condition. At most one of each condition
+                        type may apply to a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+  - name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: Route describes a route in a route table.
+        properties:
+          destinationCidrBlock:
+            description: The IPv4 CIDR address block used for the destination match.
+              Routing decisions are based on the most specific match.
+            type: string
+          destinationIpv6CidrBlock:
+            description: The IPv6 CIDR address block used for the destination match.
+              Routing decisions are based on the most specific match.
+            type: string
+          egressOnlyInternetGatewayId:
+            description: '[IPv6 traffic only] The ID of an egress-only internet gateway.'
+            type: string
+          gatewayId:
+            description: The ID of an internet gateway or virtual private gateway
+              attached to your VPC.
+            type: string
+          gatewayIdRef:
+            description: A referencer to retrieve the ID of a gateway
+            properties:
+              name:
+                description: Name of the referenced object.
+                type: string
+            required:
+            - name
+            type: object
+          gatewayIdSelector:
+            description: A selector to select a referencer to retrieve the ID of a
+              gateway
+            properties:
+              matchControllerRef:
+                description: MatchControllerRef ensures an object with the same controller
+                  reference as the selecting object is selected.
+                type: boolean
+              matchLabels:
+                additionalProperties:
+                  type: string
+                description: MatchLabels ensures an object with matching labels is
+                  selected.
+                type: object
+            type: object
+          instanceId:
+            description: The ID of a NAT instance in your VPC. The operation fails
+              if you specify an instance ID unless exactly one network interface is
+              attached.
+            type: string
+          localGatewayId:
+            description: The ID of the local gateway.
+            type: string
+          natGatewayId:
+            description: '[IPv4 traffic only] The ID of a NAT gateway.'
+            type: string
+          natGatewayIdRef:
+            description: A referencer to retrieve the ID of a NAT gateway
+            properties:
+              name:
+                description: Name of the referenced object.
+                type: string
+            required:
+            - name
+            type: object
+          natGatewayIdSelector:
+            description: A selector to select a referencer to retrieve the ID of a
+              NAT gateway
+            properties:
+              matchControllerRef:
+                description: MatchControllerRef ensures an object with the same controller
+                  reference as the selecting object is selected.
+                type: boolean
+              matchLabels:
+                additionalProperties:
+                  type: string
+                description: MatchLabels ensures an object with matching labels is
+                  selected.
+                type: object
+            type: object
+          networkInterfaceId:
+            description: The ID of a network interface.
+            type: string
+          transitGatewayId:
+            description: The ID of a transit gateway.
+            type: string
+          vpcPeeringConnectionId:
+            description: The ID of a VPC peering connection.
+            type: string
+        type: object
+    served: true
+    storage: false
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

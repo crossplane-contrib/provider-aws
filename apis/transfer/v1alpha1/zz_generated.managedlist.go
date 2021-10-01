@@ -20,8 +20,8 @@ package v1alpha1
 
 import resource "github.com/crossplane/crossplane-runtime/pkg/resource"
 
-// GetItems of this RouteList.
-func (l *RouteList) GetItems() []resource.Managed {
+// GetItems of this ServerList.
+func (l *ServerList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
 	for i := range l.Items {
 		items[i] = &l.Items[i]
@@ -29,8 +29,8 @@ func (l *RouteList) GetItems() []resource.Managed {
 	return items
 }
 
-// GetItems of this VPCPeeringConnectionList.
-func (l *VPCPeeringConnectionList) GetItems() []resource.Managed {
+// GetItems of this UserList.
+func (l *UserList) GetItems() []resource.Managed {
 	items := make([]resource.Managed, len(l.Items))
 	for i := range l.Items {
 		items[i] = &l.Items[i]
