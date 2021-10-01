@@ -2,7 +2,6 @@ package route
 
 import (
 	"context"
-	"log"
 	"time"
 
 	svcsdk "github.com/aws/aws-sdk-go/service/ec2"
@@ -47,7 +46,6 @@ func postCreate(ctx context.Context, cr *svcapitypes.Route, obj *svcsdk.CreateRo
 	if obj.Return == aws.Bool(true) {
 		cr.SetConditions(xpv1.Available())
 		cr.Status.AtProvider.Return = aws.Bool(true)
-		log.Println("BANGER")
 	}
 	return cre, err
 }
