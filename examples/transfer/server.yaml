@@ -1,0 +1,28 @@
+apiVersion: transfer.aws.crossplane.io/v1alpha1
+kind: Server
+metadata:
+  name: example
+spec:
+  forProvider:
+    region: us-east-1
+    domain: S3
+    endpointDetails:
+      securityGroupIDRefs:
+        - name: sample-cluster-sg
+      subnetIDRefs:
+        - name: sample-subnet1
+      vpcIDRef: 
+        name: sample-vpc
+    endpointType: VPC
+    identityProviderType: SERVICE_MANAGED
+    securityPolicyName: TransferSecurityPolicy-2020-06
+    protocols:
+      - SFTP
+    tags:
+      - key: myKey
+        value: myValue
+  writeConnectionSecretToRef:
+    name: example-conn
+    namespace: default
+  providerConfigRef:
+    name: example
