@@ -10,7 +10,7 @@ spec:
       rowTag: "timestamp"
       classification: "xml"
   providerConfigRef:
-    name: default
+    name: example
 ---
 apiVersion: glue.aws.crossplane.io/v1alpha1
 kind: Classifier
@@ -26,7 +26,7 @@ spec:
       disableValueTrimming: true 
       allowSingleColumn: false
   providerConfigRef:
-    name: default
+    name: example
 ---
 apiVersion: glue.aws.crossplane.io/v1alpha1
 kind: Classifier
@@ -38,7 +38,7 @@ spec:
     jsonClassifier: 
       jsonPath: "[<timestampe>]"
   providerConfigRef:
-    name: default
+    name: example
 ---
 apiVersion: glue.aws.crossplane.io/v1alpha1
 kind: Classifier
@@ -52,4 +52,4 @@ spec:
       grokPattern: "%{MY_TIMESTAMP} "
       customPatterns: "MY_TIMESTAMP (%{USERNAME:test}[,]%{YEAR:year}[-]%{MONTHNUM:mm}[-]%{MONTHDAY:dd} %{TIME:time})"
   providerConfigRef:
-    name: default
+    name: example

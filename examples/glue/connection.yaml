@@ -19,4 +19,4 @@ spec:
         securityGroupIDRefs:
           - name: sample-cluster-sg
   providerConfigRef:
-    name: default
+    name: example

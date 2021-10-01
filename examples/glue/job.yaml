@@ -13,4 +13,4 @@ spec:
       pythonVersion: "3"
       scriptLocation: "s3://aws-glue-crossplane-us-east-1/scripts"
   providerConfigRef:
-    name: default
+    name: example

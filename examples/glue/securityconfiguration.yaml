@@ -16,4 +16,4 @@ spec:
         kmsKeyARNRef:
           name: dev-key
   providerConfigRef:
-    name: default
+    name: example

@@ -25,4 +25,4 @@ spec:
         connectionName: "glue-connection",
       ]
   providerConfigRef:
-    name: default
+    name: example
