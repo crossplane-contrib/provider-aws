@@ -691,9 +691,6 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 				SecurityGroupIDs: []string{
 					groupID,
 				},
-				SecurityGroups: []string{
-					groupName,
-				},
 				SubnetID: aws.String(subnetID),
 				TagSpecifications: []manualv1alpha1.TagSpecification{
 					{
@@ -838,9 +835,6 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 				RamdiskId:        aws.String(ramDiskID),
 				SecurityGroupIds: []string{
 					groupID,
-				},
-				SecurityGroups: []string{
-					groupName,
 				},
 				SubnetId: aws.String(subnetID),
 				TagSpecifications: []ec2.TagSpecification{

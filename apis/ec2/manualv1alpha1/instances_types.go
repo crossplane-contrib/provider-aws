@@ -231,16 +231,6 @@ type InstanceParameters struct {
 	// +optional
 	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
 
-	// [EC2-Classic, default VPC] The names of the security groups. For a nondefault
-	// VPC, you must use security group IDs instead.
-	//
-	// If you specify a network interface, you must specify any security groups
-	// as part of the network interface.
-	//
-	// Default: Amazon EC2 uses the default security group.
-	// +optional
-	SecurityGroups []string `json:"securityGroups,omitempty"`
-
 	// SecurityGroupsRefs is a list of references to SecurityGroups used to set
 	// the SecurityGroupIDs.
 	// +optional

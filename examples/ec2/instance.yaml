@@ -6,7 +6,7 @@ spec:
   forProvider:
     region: us-east-1
     imageId: ami-0dc2d3e4c0f9ebd18
-    securityGroupIdRefs:
+    securityGroupRefs:
       - name: sample-cluster-sg
     subnetIdRef:
       name: sample-subnet1  

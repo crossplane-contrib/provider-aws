@@ -89,11 +89,7 @@ func IsInstanceUpToDate(spec manualv1alpha1.InstanceParameters, instance ec2.Ins
 	if aws.StringValue(spec.UserData) != attributeValue(attributes.UserData) {
 		return false
 	}
-	// Groups
-	if !manualv1alpha1.CompareGroupIDs(spec.SecurityGroupIDs, instance.SecurityGroups) {
-		return false
-	}
-	return manualv1alpha1.CompareGroupNames(spec.SecurityGroups, instance.SecurityGroups)
+	return manualv1alpha1.CompareGroupNames(spec.SecurityGroupIDs, instance.SecurityGroups)
 }
 
 // GenerateInstanceObservation is used to produce manualv1alpha1.InstanceObservation from
@@ -215,13 +211,6 @@ func LateInitializeInstance(in *manualv1alpha1.InstanceParameters, instance *ec2
 	in.EBSOptimized = awsclients.LateInitializeBoolPtr(in.EBSOptimized, instance.EbsOptimized)
 	in.KernelID = awsclients.LateInitializeStringPtr(in.KernelID, instance.KernelId)
 	in.RAMDiskID = awsclients.LateInitializeStringPtr(in.RAMDiskID, instance.RamdiskId)
-
-	if len(in.SecurityGroups) == 0 && len(instance.SecurityGroups) != 0 {
-		in.SecurityGroups = make([]string, len(instance.SecurityGroups))
-		for i, s := range instance.SecurityGroups {
-			in.SecurityGroups[i] = *s.GroupName
-		}
-	}
 
 	if len(in.SecurityGroupIDs) == 0 && len(instance.SecurityGroups) != 0 {
 		in.SecurityGroupIDs = make([]string, len(instance.SecurityGroups))
@@ -822,7 +811,6 @@ func GenerateEC2RunInstancesInput(name string, p *manualv1alpha1.InstanceParamet
 		PrivateIpAddress:                  p.PrivateIPAddress,
 		RamdiskId:                         p.RAMDiskID,
 		SecurityGroupIds:                  p.SecurityGroupIDs,
-		SecurityGroups:                    p.SecurityGroups,
 		SubnetId:                          p.SubnetID,
 		TagSpecifications:                 GenerateEC2TagSpecifications(p.TagSpecifications),
 		UserData:                          p.UserData,

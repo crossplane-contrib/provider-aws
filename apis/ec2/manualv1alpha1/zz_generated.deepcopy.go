@@ -1190,11 +1190,6 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
-	if in.SecurityGroups != nil {
-		in, out := &in.SecurityGroups, &out.SecurityGroups
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
 	if in.SecurityGroupRefs != nil {
 		in, out := &in.SecurityGroupRefs, &out.SecurityGroupRefs
 		*out = make([]v1.Reference, len(*in))

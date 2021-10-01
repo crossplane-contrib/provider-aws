@@ -27,7 +27,7 @@ import (
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
 
-// ResolveReferences of this VPCCIDRBlock
+// ResolveReferences of this Instance
 func (mg *VPCCIDRBlock) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
@@ -47,22 +47,22 @@ func (mg *VPCCIDRBlock) ResolveReferences(ctx context.Context, c client.Reader) 
 	return nil
 }
 
-// ResolveReferences of this VPCCIDRBlock
+// ResolveReferences of this Instance
 func (mg *Instance) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
 	// Resolve spec.forProvider.securityGroups
 	rg, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
-		CurrentValues: mg.Spec.ForProvider.SecurityGroups,
+		CurrentValues: mg.Spec.ForProvider.SecurityGroupIDs,
 		References:    mg.Spec.ForProvider.SecurityGroupRefs,
 		Selector:      mg.Spec.ForProvider.SecurityGroupSelector,
 		To:            reference.To{Managed: &v1beta1.SecurityGroup{}, List: &v1beta1.SecurityGroupList{}},
 		Extract:       reference.ExternalName(),
 	})
 	if err != nil {
-		return errors.Wrap(err, "spec.forProvider.securityGroups")
+		return errors.Wrap(err, "spec.forProvider.securityGroupIDs")
 	}
-	mg.Spec.ForProvider.SecurityGroups = rg.ResolvedValues
+	mg.Spec.ForProvider.SecurityGroupIDs = rg.ResolvedValues
 	mg.Spec.ForProvider.SecurityGroupRefs = rg.ResolvedReferences
 
 	// Resolve spec.forProvider.subnetId
