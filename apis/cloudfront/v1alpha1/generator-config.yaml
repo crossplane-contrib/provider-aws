@@ -1,6 +1,5 @@
 ignore:
   resource_names:
-    - CachePolicy
     - FieldLevelEncryptionProfile
     - Invalidation
     - KeyGroup

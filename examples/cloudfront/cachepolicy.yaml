@@ -1,0 +1,15 @@
+apiVersion: cloudfront.aws.crossplane.io/v1alpha1
+kind: CachePolicy
+metadata:
+  name: example-cachepolicy
+spec:
+  forProvider:
+    region: us-east-1
+    cachePolicyConfig:
+      comment: Example CloudFront CachePolicy
+      defaultTTL: 300
+      maxTTL: 300
+      minTTL: 60
+      name: example-cachepolicy
+  providerConfigRef:
+    name: example

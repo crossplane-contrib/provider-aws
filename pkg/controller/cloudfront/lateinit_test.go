@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package distribution
+package cloudfront
 
 import (
 	"reflect"
@@ -42,7 +42,7 @@ const (
 )
 
 var (
-	testNameMapper = nameMapper(func(s string) string {
+	testNameMapper = NameMapper(func(s string) string {
 		return s + suffixTestNameMapper
 	})
 
@@ -60,14 +60,14 @@ var (
 	})
 )
 
-func TestLateInitOptions_Apply(t *testing.T) {
+func TestApply(t *testing.T) {
 	type fields struct {
 		nameMappers mapperArr
 		nameFilters filterArr
 	}
 
 	type args struct {
-		opt []lateInitOption
+		opt []LateInitOption
 	}
 
 	tests := map[string]struct {
@@ -77,11 +77,11 @@ func TestLateInitOptions_Apply(t *testing.T) {
 		"EmptyOptions": {},
 		"NonEmptyOptions": {
 			fields: fields{
-				nameMappers: []nameMapper{testNameMapper},
+				nameMappers: []NameMapper{testNameMapper},
 				nameFilters: []nameFilter{testNameFilter},
 			},
 			args: args{
-				opt: []lateInitOption{testNameFilter, testNameMapper},
+				opt: []LateInitOption{testNameFilter, testNameMapper},
 			},
 		},
 	}
@@ -98,7 +98,7 @@ func TestLateInitOptions_Apply(t *testing.T) {
 			got.apply(tt.args.opt...)
 
 			if diff := cmp.Diff(*want, got, cmp.AllowUnexported(lateInitOptions{}),
-				cmp.Comparer(func(nm1, nm2 nameMapper) bool {
+				cmp.Comparer(func(nm1, nm2 NameMapper) bool {
 					return reflect.ValueOf(nm1).Pointer() == reflect.ValueOf(nm2).Pointer()
 				}),
 				cmp.Comparer(func(nf1, nf2 nameFilter) bool {
@@ -110,7 +110,7 @@ func TestLateInitOptions_Apply(t *testing.T) {
 	}
 }
 
-func Test_filterArr_filter(t *testing.T) {
+func TestFilter(t *testing.T) {
 	type args struct {
 		name string
 	}
@@ -151,7 +151,7 @@ func Test_filterArr_filter(t *testing.T) {
 	}
 }
 
-func Test_mapperArr_getName(t *testing.T) {
+func TestGetName(t *testing.T) {
 	type args struct {
 		name string
 	}
@@ -311,7 +311,7 @@ func TestReplacer(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			if got := replacer(tt.args.old, tt.args.new)(tt.args.name); !reflect.DeepEqual(got, tt.want) {
+			if got := Replacer(tt.args.old, tt.args.new)(tt.args.name); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("replacer() = %v, want %v", got, tt.want)
 			}
 		})
@@ -346,7 +346,7 @@ func TestMapReplacer(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			if got := mapReplacer(tt.args.replaceMap)(tt.args.name); !reflect.DeepEqual(got, tt.want) {
+			if got := MapReplacer(tt.args.replaceMap)(tt.args.name); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("mapReplacer() = %v, want %v", got, tt.want)
 			}
 		})
@@ -358,7 +358,7 @@ func TestLateInitializeFromResponse(t *testing.T) {
 		parentName     string
 		crObject       interface{}
 		responseObject interface{}
-		opts           []lateInitOption
+		opts           []LateInitOption
 	}
 
 	testStringCRField := "test-string-crField"
@@ -613,7 +613,7 @@ func TestLateInitializeFromResponse(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			got, err := lateInitializeFromResponse(tt.args.parentName, tt.args.crObject, tt.args.responseObject, tt.args.opts...)
+			got, err := LateInitializeFromResponse(tt.args.parentName, tt.args.crObject, tt.args.responseObject, tt.args.opts...)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("lateInitializeFromResponse() error = %v, wantErr %v", err, tt.wantErr)
@@ -631,6 +631,101 @@ func TestLateInitializeFromResponse(t *testing.T) {
 
 			if diff := cmp.Diff(tt.wantCRObject, tt.args.crObject); diff != "" {
 				t.Errorf("lateInitializeFromResponse(...): -want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestIsUpToDate(t *testing.T) {
+	valTest := "testValue"
+	valAnotherTest := "anotherTestValue"
+	type args struct {
+		actual  interface{}
+		desired interface{}
+		opts    []LateInitOption
+	}
+	tests := map[string]struct {
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		"SuccessNoOptsNoUpdate": {
+			args: args{
+				actual: &struct {
+					S *string
+				}{
+					S: &valTest,
+				},
+				desired: &struct {
+					S *string
+				}{
+					S: &valTest,
+				},
+			},
+			want: true,
+		},
+		"SuccessNoOptsUpdateRequired": {
+			args: args{
+				actual: &struct {
+					S *string
+				}{
+					S: &valAnotherTest,
+				},
+				desired: &struct {
+					S *string
+				}{
+					S: &valTest,
+				},
+			},
+		},
+		"SuccessWithOptsNoUpdate": {
+			args: args{
+				actual: &struct {
+					// linter disabled because we are testing a case based on
+					// a common naming convention in aws-sdk-go
+					Id *string // nolint:golint
+				}{
+					Id: &valTest,
+				},
+				desired: &struct {
+					ID *string
+				}{
+					ID: &valTest,
+				},
+				opts: []LateInitOption{
+					Replacer("ID", "Id"),
+				},
+			},
+			want: true,
+		},
+		"FailNonPtr": {
+			args: args{
+				actual: &struct {
+					S *string
+				}{
+					S: &valTest,
+				},
+				desired: struct {
+					S *string
+				}{
+					S: &valTest,
+				},
+			},
+			wantErr: true,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			got, err := IsUpToDate(tt.args.actual, tt.args.desired, tt.args.opts...)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("IsUpToDate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.wantErr {
+				return
+			}
+			if got != tt.want {
+				t.Errorf("IsUpToDate() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

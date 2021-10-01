@@ -155,12 +155,6 @@ type CacheBehaviors struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
-type CachePolicy struct {
-	ID *string `json:"id,omitempty"`
-
-	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
-}
-
 type CachePolicyConfig struct {
 	Comment *string `json:"comment,omitempty"`
 
@@ -171,24 +165,94 @@ type CachePolicyConfig struct {
 	MinTTL *int64 `json:"minTTL,omitempty"`
 
 	Name *string `json:"name,omitempty"`
+	// This object determines the values that CloudFront includes in the cache key.
+	// These values can include HTTP headers, cookies, and URL query strings. CloudFront
+	// uses the cache key to find an object in its cache that it can return to the
+	// viewer.
+	//
+	// The headers, cookies, and query strings that are included in the cache key
+	// are automatically included in requests that CloudFront sends to the origin.
+	// CloudFront sends a request when it can’t find an object in its cache that
+	// matches the request’s cache key. If you want to send values to the origin
+	// but not include them in the cache key, use OriginRequestPolicy.
+	ParametersInCacheKeyAndForwardedToOrigin *ParametersInCacheKeyAndForwardedToOrigin `json:"parametersInCacheKeyAndForwardedToOrigin,omitempty"`
 }
 
 type CachePolicyCookiesConfig struct {
+	CookieBehavior *string `json:"cookieBehavior,omitempty"`
 	// Contains a list of cookie names.
 	Cookies *CookieNames `json:"cookies,omitempty"`
 }
 
 type CachePolicyHeadersConfig struct {
+	HeaderBehavior *string `json:"headerBehavior,omitempty"`
 	// Contains a list of HTTP header names.
 	Headers *Headers `json:"headers,omitempty"`
 }
 
-type CachePolicyList struct {
+type CachePolicyList_SDK struct {
+	Items []*CachePolicySummary `json:"items,omitempty"`
+
 	MaxItems *int64 `json:"maxItems,omitempty"`
 
 	NextMarker *string `json:"nextMarker,omitempty"`
 
 	Quantity *int64 `json:"quantity,omitempty"`
+}
+
+type CachePolicyQueryStringsConfig struct {
+	QueryStringBehavior *string `json:"queryStringBehavior,omitempty"`
+	// Contains a list of query string names.
+	QueryStrings *QueryStringNames `json:"queryStrings,omitempty"`
+}
+
+type CachePolicySummary struct {
+	// A cache policy.
+	//
+	// When it’s attached to a cache behavior, the cache policy determines the
+	// following:
+	//
+	//    * The values that CloudFront includes in the cache key. These values can
+	//    include HTTP headers, cookies, and URL query strings. CloudFront uses
+	//    the cache key to find an object in its cache that it can return to the
+	//    viewer.
+	//
+	//    * The default, minimum, and maximum time to live (TTL) values that you
+	//    want objects to stay in the CloudFront cache.
+	//
+	// The headers, cookies, and query strings that are included in the cache key
+	// are automatically included in requests that CloudFront sends to the origin.
+	// CloudFront sends a request when it can’t find a valid object in its cache
+	// that matches the request’s cache key. If you want to send values to the
+	// origin but not include them in the cache key, use OriginRequestPolicy.
+	CachePolicy *CachePolicy_SDK `json:"cachePolicy,omitempty"`
+
+	Type *string `json:"type_,omitempty"`
+}
+
+type CachePolicy_SDK struct {
+	// A cache policy configuration.
+	//
+	// This configuration determines the following:
+	//
+	//    * The values that CloudFront includes in the cache key. These values can
+	//    include HTTP headers, cookies, and URL query strings. CloudFront uses
+	//    the cache key to find an object in its cache that it can return to the
+	//    viewer.
+	//
+	//    * The default, minimum, and maximum time to live (TTL) values that you
+	//    want objects to stay in the CloudFront cache.
+	//
+	// The headers, cookies, and query strings that are included in the cache key
+	// are automatically included in requests that CloudFront sends to the origin.
+	// CloudFront sends a request when it can’t find a valid object in its cache
+	// that matches the request’s cache key. If you want to send values to the
+	// origin but not include them in the cache key, use OriginRequestPolicy.
+	CachePolicyConfig *CachePolicyConfig `json:"cachePolicyConfig,omitempty"`
+
+	ID *string `json:"id,omitempty"`
+
+	LastModifiedTime *metav1.Time `json:"lastModifiedTime,omitempty"`
 }
 
 type CachedMethods struct {
@@ -924,6 +988,11 @@ type OriginRequestPolicyList struct {
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
+type OriginRequestPolicyQueryStringsConfig struct {
+	// Contains a list of query string names.
+	QueryStrings *QueryStringNames `json:"queryStrings,omitempty"`
+}
+
 type OriginSSLProtocols struct {
 	Items []*string `json:"items,omitempty"`
 
@@ -941,9 +1010,22 @@ type Origins struct {
 }
 
 type ParametersInCacheKeyAndForwardedToOrigin struct {
+	// An object that determines whether any cookies in viewer requests (and if
+	// so, which cookies) are included in the cache key and automatically included
+	// in requests that CloudFront sends to the origin.
+	CookiesConfig *CachePolicyCookiesConfig `json:"cookiesConfig,omitempty"`
+
 	EnableAcceptEncodingBrotli *bool `json:"enableAcceptEncodingBrotli,omitempty"`
 
 	EnableAcceptEncodingGzip *bool `json:"enableAcceptEncodingGzip,omitempty"`
+	// An object that determines whether any HTTP headers (and if so, which headers)
+	// are included in the cache key and automatically included in requests that
+	// CloudFront sends to the origin.
+	HeadersConfig *CachePolicyHeadersConfig `json:"headersConfig,omitempty"`
+	// An object that determines whether any URL query strings in viewer requests
+	// (and if so, which query strings) are included in the cache key and automatically
+	// included in requests that CloudFront sends to the origin.
+	QueryStringsConfig *CachePolicyQueryStringsConfig `json:"queryStringsConfig,omitempty"`
 }
 
 type Paths struct {
@@ -1007,6 +1089,8 @@ type QueryStringCacheKeys struct {
 }
 
 type QueryStringNames struct {
+	Items []*string `json:"items,omitempty"`
+
 	Quantity *int64 `json:"quantity,omitempty"`
 }
 
