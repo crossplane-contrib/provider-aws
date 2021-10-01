@@ -109,8 +109,17 @@ spec:
                   cacheSubnetGroupName:
                     description: CacheSubnetGroupName specifies the name of the cache subnet group to be used for the replication group. If you're going to launch your cluster in an Amazon VPC, you need to create a subnet group before you start creating a cluster. For more information, see Subnets and Subnet Groups (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/SubnetGroups.html).
                     type: string
+                  cacheSubnetGroupNameRef:
+                    description: CacheSubnetGroupNameRef is a reference to a Subnet Group used to set the CacheSubnetGroupName.
+                    properties:
+                      name:
+                        description: Name of the referenced object.
+                        type: string
+                    required:
+                    - name
+                    type: object
                   cacheSubnetGroupNameRefs:
-                    description: CacheSubnetGroupNameRef is a reference to a Subnet Group the CacheSubnetGroupName.
+                    description: "DeprecatedCacheSubnetGroupNameRef is a reference to a Subnet Group used to set the CacheSubnetGroupName. \n Deprecated: Use CacheSubnetGroupNameRef. This field exists because we introduced it with the JSON tag cacheSubnetGroupNameRefs (plural) when it should have been cacheSubnetGroupNameRef (singular). This is a bug that we need to avoid a breaking change to this v1beta1 API."
                     properties:
                       name:
                         description: Name of the referenced object.

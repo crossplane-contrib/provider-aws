@@ -28,23 +28,47 @@ import (
 	"github.com/crossplane/provider-aws/apis/ec2/v1beta1"
 )
 
+const errDeprecatedRef = "spec.forProvider.cacheSubnetGroupNameRefs is deprecated - please set only spec.forProvider.cacheSubnetGroupNameRef"
+
 // ResolveReferences of this ReplicationGroup
 func (mg *ReplicationGroup) ResolveReferences(ctx context.Context, c client.Reader) error {
 	r := reference.NewAPIResolver(c, mg)
 
-	// Resolve spec.forProvider.cacheSubnetGroupName
-	resp, err := r.Resolve(ctx, reference.ResolutionRequest{
-		CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CacheSubnetGroupName),
-		Reference:    mg.Spec.ForProvider.CacheSubnetGroupNameRef,
-		Selector:     mg.Spec.ForProvider.CacheSubnetGroupNameSelector,
-		To:           reference.To{Managed: &v1alpha1.CacheSubnetGroup{}, List: &v1alpha1.CacheSubnetGroupList{}},
-		Extract:      reference.ExternalName(),
-	})
-	if err != nil {
-		return errors.Wrap(err, "spec.forProvider.cacheSubnetGroupName")
+	// We have two variants of this reference because it was originally
+	// introduced with a plural JSON tag, when it should be singular. We
+	// maintain both in order to avoid making a breaking change.
+	switch {
+	case mg.Spec.ForProvider.CacheSubnetGroupNameRef != nil && mg.Spec.ForProvider.DeprecatedCacheSubnetGroupNameRef != nil:
+		return errors.New(errDeprecatedRef)
+	case mg.Spec.ForProvider.DeprecatedCacheSubnetGroupNameRef != nil:
+		// Resolve (deprecated) spec.forProvider.cacheSubnetGroupName
+		resp, err := r.Resolve(ctx, reference.ResolutionRequest{
+			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CacheSubnetGroupName),
+			Reference:    mg.Spec.ForProvider.DeprecatedCacheSubnetGroupNameRef,
+			Selector:     mg.Spec.ForProvider.CacheSubnetGroupNameSelector,
+			To:           reference.To{Managed: &v1alpha1.CacheSubnetGroup{}, List: &v1alpha1.CacheSubnetGroupList{}},
+			Extract:      reference.ExternalName(),
+		})
+		if err != nil {
+			return errors.Wrap(err, "spec.forProvider.cacheSubnetGroupName")
+		}
+		mg.Spec.ForProvider.CacheSubnetGroupName = reference.ToPtrValue(resp.ResolvedValue)
+		mg.Spec.ForProvider.DeprecatedCacheSubnetGroupNameRef = resp.ResolvedReference
+	default:
+		// Resolve spec.forProvider.cacheSubnetGroupName
+		resp, err := r.Resolve(ctx, reference.ResolutionRequest{
+			CurrentValue: reference.FromPtrValue(mg.Spec.ForProvider.CacheSubnetGroupName),
+			Reference:    mg.Spec.ForProvider.CacheSubnetGroupNameRef,
+			Selector:     mg.Spec.ForProvider.CacheSubnetGroupNameSelector,
+			To:           reference.To{Managed: &v1alpha1.CacheSubnetGroup{}, List: &v1alpha1.CacheSubnetGroupList{}},
+			Extract:      reference.ExternalName(),
+		})
+		if err != nil {
+			return errors.Wrap(err, "spec.forProvider.cacheSubnetGroupName")
+		}
+		mg.Spec.ForProvider.CacheSubnetGroupName = reference.ToPtrValue(resp.ResolvedValue)
+		mg.Spec.ForProvider.CacheSubnetGroupNameRef = resp.ResolvedReference
 	}
-	mg.Spec.ForProvider.CacheSubnetGroupName = reference.ToPtrValue(resp.ResolvedValue)
-	mg.Spec.ForProvider.CacheSubnetGroupNameRef = resp.ResolvedReference
 
 	// Resolve spec.forProvider.securityGroupIds
 	mrsp, err := r.ResolveMultiple(ctx, reference.MultiResolutionRequest{
