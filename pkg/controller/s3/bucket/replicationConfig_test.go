@@ -39,7 +39,7 @@ var (
 	accountID                         = "test-account-id"
 	kmsID                             = "encKmsID"
 	replicationTime                   = 15
-	priority                          = 1
+	priority        int32             = 1
 	_               SubresourceClient = &ReplicationConfigurationClient{}
 )
 
@@ -52,7 +52,7 @@ func generateReplicationConfig() *v1beta1.ReplicationConfiguration {
 				AccessControlTranslation: &v1beta1.AccessControlTranslation{Owner: owner},
 				Account:                  &accountID,
 				Bucket:                   &bucketName,
-				EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: kmsID},
+				EncryptionConfiguration:  &v1beta1.EncryptionConfiguration{ReplicaKmsKeyID: &kmsID},
 				Metrics: &v1beta1.Metrics{
 					EventThreshold: v1beta1.ReplicationTimeValue{Minutes: int32(replicationTime)},
 					Status:         enabled,
@@ -69,11 +69,9 @@ func generateReplicationConfig() *v1beta1.ReplicationConfiguration {
 					Prefix: &prefix,
 					Tags:   tags,
 				},
-				Prefix: &prefix,
-				Tag:    &tag,
 			},
 			ID:                      &id,
-			Priority:                awsclient.Int32(priority),
+			Priority:                priority,
 			SourceSelectionCriteria: &v1beta1.SourceSelectionCriteria{SseKmsEncryptedObjects: v1beta1.SseKmsEncryptedObjects{Status: enabled}},
 			Status:                  enabled,
 		}},
@@ -108,7 +106,7 @@ func generateAWSReplication() *s3types.ReplicationConfiguration {
 				},
 			},
 			ID:                      &id,
-			Priority:                int32(priority),
+			Priority:                priority,
 			SourceSelectionCriteria: &s3types.SourceSelectionCriteria{SseKmsEncryptedObjects: &s3types.SseKmsEncryptedObjects{Status: s3types.SseKmsEncryptedObjectsStatusEnabled}},
 			Status:                  s3types.ReplicationRuleStatusEnabled,
 		}},

@@ -167,27 +167,27 @@ func TestGenerateCertificateStatus(t *testing.T) {
 			},
 		},
 		"DomainValidationOptionsResourceRecord": {
-			in: acm.CertificateDetail{
+			in: acmtypes.CertificateDetail{
 				CertificateArn:     aws.String(certificateArn),
-				RenewalEligibility: acm.RenewalEligibilityIneligible,
-				Type:               acm.CertificateTypeAmazonIssued,
-				Status:             acm.CertificateStatusPendingValidation,
-				DomainValidationOptions: []acm.DomainValidation{
+				RenewalEligibility: acmtypes.RenewalEligibilityIneligible,
+				Type:               acmtypes.CertificateTypeAmazonIssued,
+				Status:             acmtypes.CertificateStatusPendingValidation,
+				DomainValidationOptions: []acmtypes.DomainValidation{
 					{
 						DomainName: &sName,
-						ResourceRecord: &acm.ResourceRecord{
+						ResourceRecord: &acmtypes.ResourceRecord{
 							Name:  &sName,
 							Value: &sValue,
-							Type:  acm.RecordType(sType),
+							Type:  acmtypes.RecordType(sType),
 						},
 					},
 				},
 			},
 			out: v1alpha1.CertificateExternalStatus{
 				CertificateARN:     certificateArn,
-				RenewalEligibility: acm.RenewalEligibilityIneligible,
-				Type:               acm.CertificateTypeAmazonIssued,
-				Status:             acm.CertificateStatusPendingValidation,
+				RenewalEligibility: acmtypes.RenewalEligibilityIneligible,
+				Type:               acmtypes.CertificateTypeAmazonIssued,
+				Status:             acmtypes.CertificateStatusPendingValidation,
 				ResourceRecord: &v1alpha1.ResourceRecord{
 					Name:  &sName,
 					Value: &sValue,

@@ -310,7 +310,6 @@ func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation 
 	}
 	if db.PendingModifiedValues != nil {
 		o.PendingModifiedValues = v1beta1.PendingModifiedValues{
-<<<<<<< HEAD
 			AllocatedStorage:        int(aws.ToInt32(db.PendingModifiedValues.AllocatedStorage)),
 			BackupRetentionPeriod:   int(aws.ToInt32(db.PendingModifiedValues.BackupRetentionPeriod)),
 			CACertificateIdentifier: aws.ToString(db.PendingModifiedValues.CACertificateIdentifier),
@@ -321,19 +320,6 @@ func GenerateObservation(db rdstypes.DBInstance) v1beta1.RDSInstanceObservation 
 			MultiAZ:                 aws.ToBool(db.PendingModifiedValues.MultiAZ),
 			Port:                    int(aws.ToInt32(db.PendingModifiedValues.Port)),
 			StorageType:             aws.ToString(db.PendingModifiedValues.StorageType),
-=======
-			AllocatedStorage:        int(aws.Int64Value(db.PendingModifiedValues.AllocatedStorage)),
-			BackupRetentionPeriod:   int(aws.Int64Value(db.PendingModifiedValues.BackupRetentionPeriod)),
-			CACertificateIdentifier: aws.StringValue(db.PendingModifiedValues.CACertificateIdentifier),
-			DBInstanceClass:         aws.StringValue(db.PendingModifiedValues.DBInstanceClass),
-			DBSubnetGroupName:       aws.StringValue(db.PendingModifiedValues.DBSubnetGroupName),
-			EngineVersion:           aws.StringValue(db.PendingModifiedValues.EngineVersion),
-			IOPS:                    int(aws.Int64Value(db.PendingModifiedValues.Iops)),
-			LicenseModel:            aws.StringValue(db.PendingModifiedValues.LicenseModel),
-			MultiAZ:                 aws.BoolValue(db.PendingModifiedValues.MultiAZ),
-			Port:                    int(aws.Int64Value(db.PendingModifiedValues.Port)),
-			StorageType:             aws.StringValue(db.PendingModifiedValues.StorageType),
->>>>>>> upstream/master
 		}
 		if db.PendingModifiedValues.PendingCloudwatchLogsExports != nil {
 			o.PendingModifiedValues.PendingCloudwatchLogsExports = v1beta1.PendingCloudwatchLogsExports{

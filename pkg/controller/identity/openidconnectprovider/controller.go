@@ -158,7 +158,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	})
 
 	if err != nil {
-		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
+		return managed.ExternalUpdate{}, awsclient.Wrap(err, errGet)
 	}
 	if observedProvider == nil {
 		return managed.ExternalUpdate{}, errors.New(errSDK)

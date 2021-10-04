@@ -23,11 +23,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
-<<<<<<< HEAD
 	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
-=======
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
->>>>>>> upstream/master
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -100,11 +97,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-<<<<<<< HEAD
-	observed, err := e.client.ListGroupsForUser(ctx, &awsiam.ListGroupsForUserInput{
-		UserName: &cr.Spec.ForProvider.UserName,
-	})
-=======
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
@@ -116,21 +108,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 	groupName, userName := nn[0], nn[1]
 
-	observed, err := e.client.ListGroupsForUserRequest(&awsiam.ListGroupsForUserInput{
+	observed, err := e.client.ListGroupsForUser(ctx, &awsiam.ListGroupsForUserInput{
 		UserName: &userName,
-	}).Send(ctx)
->>>>>>> upstream/master
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(err, errGet)
 	}
 
 	var attachedGroupObject *awsiamtypes.Group
 	for i, group := range observed.Groups {
-<<<<<<< HEAD
-		if cr.Spec.ForProvider.GroupName == aws.ToString(group.GroupName) {
-=======
-		if groupName == aws.StringValue(group.GroupName) {
->>>>>>> upstream/master
+		if groupName == aws.ToString(group.GroupName) {
 			attachedGroupObject = &observed.Groups[i]
 			break
 		}
@@ -160,18 +147,10 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-<<<<<<< HEAD
-	cr.SetConditions(xpv1.Creating())
-
 	_, err := e.client.AddUserToGroup(ctx, &awsiam.AddUserToGroupInput{
 		GroupName: &cr.Spec.ForProvider.GroupName,
 		UserName:  &cr.Spec.ForProvider.UserName,
 	})
-=======
-	_, err := e.client.AddUserToGroupRequest(&awsiam.AddUserToGroupInput{
-		GroupName: &cr.Spec.ForProvider.GroupName,
-		UserName:  &cr.Spec.ForProvider.UserName,
-	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errAdd)
 	}
@@ -180,7 +159,6 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// external identity. We therefore derive an external name from the
 	// names of the group and user that are bound.
 	meta.SetExternalName(cr, cr.Spec.ForProvider.GroupName+"/"+cr.Spec.ForProvider.UserName)
->>>>>>> upstream/master
 
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }

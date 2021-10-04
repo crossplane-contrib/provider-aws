@@ -159,11 +159,7 @@ func isAssumeRolePolicyUpToDate(a, b *string) (bool, error) {
 }
 
 // IsRoleUpToDate checks whether there is a change in any of the modifiable fields in role.
-<<<<<<< HEAD
-func IsRoleUpToDate(in v1beta1.IAMRoleParameters, observed iamtypes.Role) (bool, error) {
-=======
-func IsRoleUpToDate(in v1beta1.IAMRoleParameters, observed iam.Role) (bool, string, error) {
->>>>>>> upstream/master
+func IsRoleUpToDate(in v1beta1.IAMRoleParameters, observed iamtypes.Role) (bool, string, error) {
 	generated, err := copystructure.Copy(&observed)
 	if err != nil {
 		return true, "", errors.Wrap(err, errCheckUpToDate)

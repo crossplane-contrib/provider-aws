@@ -95,8 +95,7 @@ func TestObserve(t *testing.T) {
 			args: args{
 				s3: &fake.MockBucketClient{
 					MockHeadBucket: func(ctx context.Context, input *awss3.HeadBucketInput, opts []func(*awss3.Options)) (*awss3.HeadBucketOutput, error) {
-						return nil, &smithy.GenericAPIError{Code: clients3.BucketNotFoundErrCode}
-
+						return nil, &awss3types.NoSuchBucket{}
 					},
 				},
 				cr: s3Testing.Bucket(),
@@ -281,7 +280,7 @@ func TestCreate(t *testing.T) {
 				cr: s3Testing.Bucket(),
 			},
 			want: want{
-				cr: s3Testing.Bucket(s3Testing.WithConditions(xpv1.Creating())),
+				cr: s3Testing.Bucket(),
 			},
 		},
 		"InValidInput": {
@@ -307,7 +306,7 @@ func TestCreate(t *testing.T) {
 				cr: s3Testing.Bucket(),
 			},
 			want: want{
-				cr:  s3Testing.Bucket(s3Testing.WithConditions(xpv1.Creating())),
+				cr:  s3Testing.Bucket(),
 				err: awsclient.Wrap(errors.New("api error boom: "), errCreate),
 			},
 		},
@@ -328,7 +327,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(xpv1.Creating()),
+
 					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
 				),
 				result: managed.ExternalCreation{},
@@ -344,18 +343,16 @@ func TestCreate(t *testing.T) {
 						return &awss3.CreateBucketOutput{}, nil
 					}),
 					s3Testing.WithGetRequestPayment(func(ctx context.Context, input *awss3.GetBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.GetBucketRequestPaymentOutput, error) {
-						return &awss3.GetBucketRequestPaymentOutput{Payer: awss3types.PayerRequester}, nil
+						return &awss3.GetBucketRequestPaymentOutput{}, errBoom
 					}),
 					s3Testing.WithGetSSE(func(ctx context.Context, input *awss3.GetBucketEncryptionInput, opts []func(*awss3.Options)) (*awss3.GetBucketEncryptionOutput, error) {
-						return &awss3.GetBucketEncryptionOutput{}, nil
+						return &awss3.GetBucketEncryptionOutput{}, errBoom
 					}),
 				),
 				cr: s3Testing.Bucket(),
 			},
 			want: want{
-				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(xpv1.Creating()),
-				),
+				cr:     s3Testing.Bucket(),
 				result: managed.ExternalCreation{},
 				err:    k8serrors.NewAggregate([]error{awsclient.Wrap(errBoom, "cannot get request payment configuration"), awsclient.Wrap(errBoom, "cannot get encryption configuration")}),
 			},
@@ -400,7 +397,6 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr: s3Testing.Bucket(
-					s3Testing.WithConditions(xpv1.Creating()),
 					s3Testing.WithSSEConfig(&v1beta1.ServerSideEncryptionConfiguration{
 						Rules: []v1beta1.ServerSideEncryptionRule{
 							{
@@ -434,7 +430,6 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: s3Testing.Bucket(
 					s3Testing.WithPayerConfig(&v1beta1.PaymentConfiguration{Payer: "Requester"}),
-					s3Testing.WithConditions(xpv1.Creating()),
 				),
 				result: managed.ExternalCreation{},
 				err:    k8serrors.NewAggregate([]error{awsclient.Wrap(errBoom, errKubeUpdateFailed)}),
@@ -710,7 +705,7 @@ func TestDelete(t *testing.T) {
 			args: args{
 				s3: &fake.MockBucketClient{
 					MockDeleteBucket: func(ctx context.Context, input *awss3.DeleteBucketInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketOutput, error) {
-						return nil, &smithy.GenericAPIError{Code: clients3.BucketNotFoundErrCode}
+						return nil, &awss3types.NoSuchBucket{}
 					},
 				},
 				cr: s3Testing.Bucket(),

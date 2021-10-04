@@ -136,7 +136,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
 		}
 	}
-	if certificateAuthority.Status == awsacmpca.CertificateAuthorityStatusActive {
+	if certificateAuthority.Status == awsacmpcatypes.CertificateAuthorityStatusActive {
 		cr.SetConditions(xpv1.Available())
 	}
 

@@ -272,16 +272,16 @@ func TestIsRoleUpToDate(t *testing.T) {
 		},
 		"DifferentPolicy": {
 			args: args{
-				role: iam.Role{
+				role: iamtypes.Role{
 					AssumeRolePolicyDocument: escapedPolicyJSON(),
 					Description:              &description,
-					MaxSessionDuration:       aws.Int64(1),
+					MaxSessionDuration:       aws.Int32(1),
 					Path:                     aws.String("/"),
 				},
 				p: v1beta1.IAMRoleParameters{
 					Description:              &description,
 					AssumeRolePolicyDocument: assumeRolePolicyDocument2,
-					MaxSessionDuration:       aws.Int64(1),
+					MaxSessionDuration:       aws.Int32(1),
 					Path:                     aws.String("/"),
 				},
 			},

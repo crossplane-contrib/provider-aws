@@ -20,6 +20,8 @@ import (
 	"context"
 	"testing"
 
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/google/go-cmp/cmp"
@@ -128,7 +130,7 @@ func TestObserve(t *testing.T) {
 			args: args{
 				iam: &fake.MockOpenIDConnectProviderClient{
 					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
-						return nil, iam.NewErrorNotFound()
+						return nil, &iamtypes.NoSuchEntityException{}
 					},
 				},
 				cr: oidcProvider(withURL(url),
@@ -309,9 +311,7 @@ func TestUpdate(t *testing.T) {
 			args: args{
 				iam: &fake.MockOpenIDConnectProviderClient{
 					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
-						return &awsiam.GetOpenIDConnectProviderOutput{
-							ThumbprintList: []string{"a"},
-						}, nil
+						return &awsiam.GetOpenIDConnectProviderOutput{}, nil
 					},
 					MockAddClientIDToOpenIDConnectProvider: func(ctx context.Context, input *awsiam.AddClientIDToOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.AddClientIDToOpenIDConnectProviderOutput, error) {
 						return &awsiam.AddClientIDToOpenIDConnectProviderOutput{}, errBoom

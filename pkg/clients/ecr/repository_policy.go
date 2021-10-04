@@ -8,20 +8,13 @@ import (
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
-<<<<<<< HEAD
-	"github.com/aws/smithy-go"
-	"github.com/google/go-cmp/cmp"
-=======
->>>>>>> upstream/master
+	awsecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 
 	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 const (
-	// RepositoryPolicyNotFoundException policy was not found
-	RepositoryPolicyNotFoundException = "RepositoryPolicyNotFoundException"
-
 	errNotSpecified = "failed to format Repository Policy, no rawPolicy or policy specified"
 )
 
@@ -55,12 +48,8 @@ func LateInitializeRepositoryPolicy(in *v1alpha1.RepositoryPolicyParameters, r *
 
 // IsPolicyNotFoundErr returns true if the error code indicates that the policy was not found
 func IsPolicyNotFoundErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
-		if awsErr.ErrorCode() == RepositoryPolicyNotFoundException {
-			return true
-		}
-	}
-	return false
+	_, ok := err.(*awsecrtypes.RepositoryPolicyNotFoundException)
+	return ok
 }
 
 // Serialize is the custom marshaller for the RepositoryPolicyBody

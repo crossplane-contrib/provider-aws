@@ -235,13 +235,8 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	cr.Status.SetConditions(xpv1.Deleting())
 	_, err := e.client.DeleteRepository(ctx, &awsecr.DeleteRepositoryInput{
 		RepositoryName: aws.String(meta.GetExternalName(cr)),
-<<<<<<< HEAD
+		Force:          aws.ToBool(cr.Spec.ForProvider.ForceDelete),
 	})
-=======
-		Force:          cr.Spec.ForProvider.ForceDelete,
-	}).Send(ctx)
->>>>>>> upstream/master
-
 	return awsclient.Wrap(resource.Ignore(ecr.IsRepoNotFoundErr, err), errDelete)
 }
 

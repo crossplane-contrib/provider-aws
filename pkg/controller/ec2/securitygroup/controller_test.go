@@ -60,8 +60,8 @@ type sgModifier func(*v1beta1.SecurityGroup)
 func specPermissions() []v1beta1.IPPermission {
 	return []v1beta1.IPPermission{
 		{
-			FromPort: aws.Int32(port80),
-			ToPort:   aws.Int32(80),
+			FromPort: port80,
+			ToPort:   port80,
 			IPRanges: []v1beta1.IPRange{
 				{CIDRIP: cidr},
 			},

@@ -97,11 +97,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-<<<<<<< HEAD
-	observed, err := e.client.ListAttachedGroupPolicies(ctx, &awsiam.ListAttachedGroupPoliciesInput{
-		GroupName: &cr.Spec.ForProvider.GroupName,
-	})
-=======
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
@@ -113,21 +108,16 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 	groupName, policyARN := nn[0], nn[1]
 
-	observed, err := e.client.ListAttachedGroupPoliciesRequest(&awsiam.ListAttachedGroupPoliciesInput{
+	observed, err := e.client.ListAttachedGroupPolicies(ctx, &awsiam.ListAttachedGroupPoliciesInput{
 		GroupName: &groupName,
-	}).Send(ctx)
->>>>>>> upstream/master
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(iam.IsErrorNotFound, err), errGet)
 	}
 
 	var attachedPolicyObject *awsiamtypes.AttachedPolicy
 	for i, policy := range observed.AttachedPolicies {
-<<<<<<< HEAD
-		if cr.Spec.ForProvider.PolicyARN == aws.ToString(policy.PolicyArn) {
-=======
-		if policyARN == aws.StringValue(policy.PolicyArn) {
->>>>>>> upstream/master
+		if policyARN == aws.ToString(policy.PolicyArn) {
 			attachedPolicyObject = &observed.AttachedPolicies[i]
 			break
 		}
@@ -157,18 +147,10 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-<<<<<<< HEAD
-	cr.SetConditions(xpv1.Creating())
-
 	_, err := e.client.AttachGroupPolicy(ctx, &awsiam.AttachGroupPolicyInput{
 		PolicyArn: &cr.Spec.ForProvider.PolicyARN,
 		GroupName: &cr.Spec.ForProvider.GroupName,
 	})
-=======
-	_, err := e.client.AttachGroupPolicyRequest(&awsiam.AttachGroupPolicyInput{
-		PolicyArn: &cr.Spec.ForProvider.PolicyARN,
-		GroupName: &cr.Spec.ForProvider.GroupName,
-	}).Send(ctx)
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errAttach)
 	}
@@ -177,9 +159,8 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// external identity. We therefore derive an external name from the
 	// names of the group and user that are bound.
 	meta.SetExternalName(cr, cr.Spec.ForProvider.GroupName+"/"+cr.Spec.ForProvider.PolicyARN)
->>>>>>> upstream/master
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {

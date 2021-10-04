@@ -32,9 +32,9 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
-	v1alpha1 "github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
+	"github.com/crossplane/provider-aws/apis/acmpca/v1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
-	acmpca "github.com/crossplane/provider-aws/pkg/clients/acmpca"
+	"github.com/crossplane/provider-aws/pkg/clients/acmpca"
 	"github.com/crossplane/provider-aws/pkg/clients/acmpca/fake"
 )
 
@@ -95,24 +95,13 @@ func TestObserve(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityPermissionClient{
-<<<<<<< HEAD
 					MockListPermissions: func(ctx context.Context, input *awsacmpca.ListPermissionsInput, opts []func(*awsacmpca.Options)) (*awsacmpca.ListPermissionsOutput, error) {
 						return &awsacmpca.ListPermissionsOutput{
 							NextToken: aws.String(nextToken),
 							Permissions: []awsacmpcatypes.Permission{{
 								Actions:                 []awsacmpcatypes.ActionType{awsacmpcatypes.ActionTypeIssueCertificate, awsacmpcatypes.ActionTypeGetCertificate, awsacmpcatypes.ActionTypeListPermissions},
 								CertificateAuthorityArn: aws.String(certificateAuthorityArn),
-=======
-					MockListPermissionsRequest: func(input *awsacmpca.ListPermissionsInput) awsacmpca.ListPermissionsRequest {
-						return awsacmpca.ListPermissionsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.ListPermissionsOutput{
-								NextToken: aws.String(nextToken),
-								Permissions: []awsacmpca.Permission{{
-									Actions:                 []awsacmpca.ActionType{awsacmpca.ActionTypeIssueCertificate, awsacmpca.ActionTypeGetCertificate, awsacmpca.ActionTypeListPermissions},
-									CertificateAuthorityArn: aws.String(certificateAuthorityArn),
-									Principal:               &principal,
-								}},
->>>>>>> upstream/master
+								Principal:               &principal,
 							}},
 						}, nil
 					},
@@ -340,13 +329,8 @@ func TestDelete(t *testing.T) {
 				cr: certificateAuthorityPermission(),
 			},
 			want: want{
-<<<<<<< HEAD
-				cr:  certificateAuthorityPermission(withConditions(xpv1.Deleting())),
-				err: awsclient.Wrap(&awsacmpcatypes.ResourceNotFoundException{}, errDelete),
-=======
 				cr:  certificateAuthorityPermission(),
-				err: awsclient.Wrap(awserr.New(awsacmpca.ErrCodeResourceNotFoundException, "", nil), errDelete),
->>>>>>> upstream/master
+				err: awsclient.Wrap(&awsacmpcatypes.ResourceNotFoundException{}, errDelete),
 			},
 		},
 	}

@@ -105,22 +105,14 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
-<<<<<<< HEAD
 	response, err := e.client.DescribeVpcs(ctx, &awsec2.DescribeVpcsInput{
-		VpcIds: []string{awsgo.StringValue(cr.Spec.ForProvider.VPCID)},
+		VpcIds: []string{aws.ToString(cr.Spec.ForProvider.VPCID)},
 	})
-	if err != nil && !ec2.IsCIDRNotFound(err) {
-		return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribe)
-=======
-	response, err := e.client.DescribeVpcsRequest(&awsec2.DescribeVpcsInput{
-		VpcIds: []string{aws.StringValue(cr.Spec.ForProvider.VPCID)},
-	}).Send(ctx)
 
 	if err != nil {
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, awsclient.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDescribe)
->>>>>>> upstream/master
 	}
 
 	// in a successful response, there should be one and only one object

@@ -126,28 +126,15 @@ func TestObserve(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				acmpca: &fake.MockCertificateAuthorityClient{
-<<<<<<< HEAD
 					MockDescribeCertificateAuthority: func(ctx context.Context, input *awsacmpca.DescribeCertificateAuthorityInput, opts []func(*awsacmpca.Options)) (*awsacmpca.DescribeCertificateAuthorityOutput, error) {
 						return &awsacmpca.DescribeCertificateAuthorityOutput{
 							CertificateAuthority: &awsacmpcatypes.CertificateAuthority{
-								Arn:  aws.String(certificateAuthorityArn),
-								Type: awsacmpcatypes.CertificateAuthorityTypeRoot,
+								Arn:    aws.String(certificateAuthorityArn),
+								Type:   awsacmpcatypes.CertificateAuthorityTypeRoot,
+								Status: awsacmpcatypes.CertificateAuthorityStatusActive,
 								RevocationConfiguration: &awsacmpcatypes.RevocationConfiguration{
 									CrlConfiguration: &awsacmpcatypes.CrlConfiguration{
 										Enabled: false,
-=======
-					MockDescribeCertificateAuthorityRequest: func(*awsacmpca.DescribeCertificateAuthorityInput) awsacmpca.DescribeCertificateAuthorityRequest {
-						return awsacmpca.DescribeCertificateAuthorityRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacmpca.DescribeCertificateAuthorityOutput{
-								CertificateAuthority: &awsacmpca.CertificateAuthority{
-									Arn:    aws.String(certificateAuthorityArn),
-									Type:   awsacmpca.CertificateAuthorityTypeRoot,
-									Status: awsacmpca.CertificateAuthorityStatusActive,
-									RevocationConfiguration: &awsacmpca.RevocationConfiguration{
-										CrlConfiguration: &awsacmpca.CrlConfiguration{
-											Enabled: aws.Bool(false),
-										},
->>>>>>> upstream/master
 									},
 								},
 								CertificateAuthorityConfiguration: &awsacmpcatypes.CertificateAuthorityConfiguration{
