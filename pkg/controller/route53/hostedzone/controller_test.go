@@ -19,13 +19,12 @@ package hostedzone
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awsroute53 "github.com/aws/aws-sdk-go-v2/service/route53"
+	awsroute53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -49,7 +48,7 @@ var (
 	id                   = "/hostedzone/XXXXXXXXXXXXXXXXXXX"
 	rrCount        int64 = 2
 	c                    = new(string)
-	b                    = new(bool)
+	b                    = false
 )
 
 type zoneModifier func(*v1alpha1.HostedZone)
@@ -98,7 +97,7 @@ func instance(m ...zoneModifier) *v1alpha1.HostedZone {
 			ForProvider: v1alpha1.HostedZoneParameters{
 				Config: &v1alpha1.Config{
 					Comment:     c,
-					PrivateZone: b,
+					PrivateZone: &b,
 				},
 				Name: id,
 			},
@@ -128,33 +127,27 @@ func TestObserve(t *testing.T) {
 					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
 				},
 				route53: &fake.MockHostedZoneClient{
-					MockGetHostedZoneRequest: func(input *awsroute53.GetHostedZoneInput) awsroute53.GetHostedZoneRequest {
-						return awsroute53.GetHostedZoneRequest{
-							Request: &aws.Request{
-								HTTPRequest: &http.Request{},
-								Data: &awsroute53.GetHostedZoneOutput{
-									DelegationSet: &awsroute53.DelegationSet{
-										NameServers: []string{
-											"ns-2048.awsdns-64.com",
-											"ns-2049.awsdns-65.net",
-											"ns-2050.awsdns-66.org",
-											"ns-2051.awsdns-67.co.uk",
-										},
-									},
-									HostedZone: &awsroute53.HostedZone{
-										CallerReference:        &uuid,
-										Id:                     &id,
-										ResourceRecordSetCount: &rrCount,
-										Config: &awsroute53.HostedZoneConfig{
-											Comment:     c,
-											PrivateZone: b,
-										},
-									},
-									VPCs: make([]awsroute53.VPC, 0),
+					MockGetHostedZone: func(ctx context.Context, input *awsroute53.GetHostedZoneInput, opts []func(*awsroute53.Options)) (*awsroute53.GetHostedZoneOutput, error) {
+						return &awsroute53.GetHostedZoneOutput{
+							DelegationSet: &awsroute53types.DelegationSet{
+								NameServers: []string{
+									"ns-2048.awsdns-64.com",
+									"ns-2049.awsdns-65.net",
+									"ns-2050.awsdns-66.org",
+									"ns-2051.awsdns-67.co.uk",
 								},
-								Retryer: aws.NoOpRetryer{},
 							},
-						}
+							HostedZone: &awsroute53types.HostedZone{
+								CallerReference:        &uuid,
+								Id:                     &id,
+								ResourceRecordSetCount: &rrCount,
+								Config: &awsroute53types.HostedZoneConfig{
+									Comment:     c,
+									PrivateZone: b,
+								},
+							},
+							VPCs: make([]awsroute53types.VPC, 0),
+						}, nil
 					},
 				},
 				cr: instance(
@@ -184,10 +177,8 @@ func TestObserve(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				route53: &fake.MockHostedZoneClient{
-					MockGetHostedZoneRequest: func(input *awsroute53.GetHostedZoneInput) awsroute53.GetHostedZoneRequest {
-						return awsroute53.GetHostedZoneRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: awserr.New(awsroute53.ErrCodeNoSuchHostedZone, "", nil), Retryer: aws.NoOpRetryer{}},
-						}
+					MockGetHostedZone: func(ctx context.Context, input *awsroute53.GetHostedZoneInput, opts []func(*awsroute53.Options)) (*awsroute53.GetHostedZoneOutput, error) {
+						return nil, &awsroute53types.NoSuchHostedZone{}
 					},
 				},
 				cr: instance(),
@@ -235,32 +226,27 @@ func TestCreate(t *testing.T) {
 					MockStatusUpdate: test.NewMockStatusUpdateFn(nil),
 				},
 				route53: &fake.MockHostedZoneClient{
-					MockCreateHostedZoneRequest: func(input *awsroute53.CreateHostedZoneInput) awsroute53.CreateHostedZoneRequest {
-						return awsroute53.CreateHostedZoneRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{},
-								Data: &awsroute53.CreateHostedZoneOutput{
-									DelegationSet: &awsroute53.DelegationSet{
-										NameServers: []string{
-											"ns-2048.awsdns-64.com",
-											"ns-2049.awsdns-65.net",
-											"ns-2050.awsdns-66.org",
-											"ns-2051.awsdns-67.co.uk",
-										},
-									},
-									HostedZone: &awsroute53.HostedZone{
-										CallerReference:        &uuid,
-										Id:                     &id,
-										ResourceRecordSetCount: &rrCount,
-										Config: &awsroute53.HostedZoneConfig{
-											Comment:     c,
-											PrivateZone: b,
-										},
-									},
-									Location: aws.String(fmt.Sprintf("%s%s", "https://route53.amazonaws.com/2013-04-01/", id)),
+					MockCreateHostedZone: func(ctx context.Context, input *awsroute53.CreateHostedZoneInput, opts []func(*awsroute53.Options)) (*awsroute53.CreateHostedZoneOutput, error) {
+						return &awsroute53.CreateHostedZoneOutput{
+							DelegationSet: &awsroute53types.DelegationSet{
+								NameServers: []string{
+									"ns-2048.awsdns-64.com",
+									"ns-2049.awsdns-65.net",
+									"ns-2050.awsdns-66.org",
+									"ns-2051.awsdns-67.co.uk",
 								},
-								Retryer: aws.NoOpRetryer{},
 							},
-						}
+							HostedZone: &awsroute53types.HostedZone{
+								CallerReference:        &uuid,
+								Id:                     &id,
+								ResourceRecordSetCount: &rrCount,
+								Config: &awsroute53types.HostedZoneConfig{
+									Comment:     c,
+									PrivateZone: b,
+								},
+							},
+							Location: aws.String(fmt.Sprintf("%s%s", "https://route53.amazonaws.com/2013-04-01/", id)),
+						}, nil
 					},
 				},
 				cr: instance(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1])),
@@ -283,10 +269,8 @@ func TestCreate(t *testing.T) {
 		"ClientError": {
 			args: args{
 				route53: &fake.MockHostedZoneClient{
-					MockCreateHostedZoneRequest: func(input *awsroute53.CreateHostedZoneInput) awsroute53.CreateHostedZoneRequest {
-						return awsroute53.CreateHostedZoneRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom, Retryer: aws.NoOpRetryer{}},
-						}
+					MockCreateHostedZone: func(ctx context.Context, input *awsroute53.CreateHostedZoneInput, opts []func(*awsroute53.Options)) (*awsroute53.CreateHostedZoneOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: instance(),
@@ -331,23 +315,18 @@ func TestUpdate(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				route53: &fake.MockHostedZoneClient{
-					MockUpdateHostedZoneCommentRequest: func(input *awsroute53.UpdateHostedZoneCommentInput) awsroute53.UpdateHostedZoneCommentRequest {
-						return awsroute53.UpdateHostedZoneCommentRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{},
-								Data: &awsroute53.UpdateHostedZoneCommentOutput{
-									HostedZone: &awsroute53.HostedZone{
-										CallerReference:        &uuid,
-										Id:                     &id,
-										ResourceRecordSetCount: &rrCount,
-										Config: &awsroute53.HostedZoneConfig{
-											Comment:     c,
-											PrivateZone: b,
-										},
-									},
+					MockUpdateHostedZoneComment: func(ctx context.Context, input *awsroute53.UpdateHostedZoneCommentInput, opts []func(*awsroute53.Options)) (*awsroute53.UpdateHostedZoneCommentOutput, error) {
+						return &awsroute53.UpdateHostedZoneCommentOutput{
+							HostedZone: &awsroute53types.HostedZone{
+								CallerReference:        &uuid,
+								Id:                     &id,
+								ResourceRecordSetCount: &rrCount,
+								Config: &awsroute53types.HostedZoneConfig{
+									Comment:     c,
+									PrivateZone: b,
 								},
-								Retryer: aws.NoOpRetryer{},
 							},
-						}
+						}, nil
 					},
 				},
 				cr: instance(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1]),
@@ -401,10 +380,8 @@ func TestDelete(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				route53: &fake.MockHostedZoneClient{
-					MockDeleteHostedZoneRequest: func(input *awsroute53.DeleteHostedZoneInput) awsroute53.DeleteHostedZoneRequest {
-						return awsroute53.DeleteHostedZoneRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsroute53.DeleteHostedZoneOutput{}, Retryer: aws.NoOpRetryer{}},
-						}
+					MockDeleteHostedZone: func(ctx context.Context, input *awsroute53.DeleteHostedZoneInput, opts []func(*awsroute53.Options)) (*awsroute53.DeleteHostedZoneOutput, error) {
+						return &awsroute53.DeleteHostedZoneOutput{}, nil
 					},
 				},
 				cr: instance(withExternalName(strings.SplitAfter(id, hostedzone.IDPrefix)[1])),
@@ -426,10 +403,8 @@ func TestDelete(t *testing.T) {
 		"ClientError": {
 			args: args{
 				route53: &fake.MockHostedZoneClient{
-					MockDeleteHostedZoneRequest: func(input *awsroute53.DeleteHostedZoneInput) awsroute53.DeleteHostedZoneRequest {
-						return awsroute53.DeleteHostedZoneRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom, Retryer: aws.NoOpRetryer{}},
-						}
+					MockDeleteHostedZone: func(ctx context.Context, input *awsroute53.DeleteHostedZoneInput, opts []func(*awsroute53.Options)) (*awsroute53.DeleteHostedZoneOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: instance(),
@@ -442,10 +417,8 @@ func TestDelete(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				route53: &fake.MockHostedZoneClient{
-					MockDeleteHostedZoneRequest: func(input *awsroute53.DeleteHostedZoneInput) awsroute53.DeleteHostedZoneRequest {
-						return awsroute53.DeleteHostedZoneRequest{
-							Request: &aws.Request{Retryer: aws.NoOpRetryer{}, HTTPRequest: &http.Request{}, Error: awserr.New(awsroute53.ErrCodeNoSuchHostedZone, "", nil)},
-						}
+					MockDeleteHostedZone: func(ctx context.Context, input *awsroute53.DeleteHostedZoneInput, opts []func(*awsroute53.Options)) (*awsroute53.DeleteHostedZoneOutput, error) {
+						return nil, &awsroute53types.NoSuchHostedZone{}
 					},
 				},
 				cr: instance(),

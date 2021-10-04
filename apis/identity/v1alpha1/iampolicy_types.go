@@ -52,7 +52,7 @@ type IAMPolicyObservation struct {
 
 	// The number of entities (users, groups, and roles) that the policy is attached
 	// to.
-	AttachmentCount int64 `json:"attachmentCount,omitempty"`
+	AttachmentCount int32 `json:"attachmentCount,omitempty"`
 
 	// The identifier for the version of the policy that is set as the default version.
 	DefaultVersionID string `json:"defaultVersionId,omitempty"`
@@ -62,7 +62,7 @@ type IAMPolicyObservation struct {
 
 	// The number of entities (users and roles) for which the policy is used to
 	// set the permissions boundary.
-	PermissionsBoundaryUsageCount int64 `json:"permissionsBoundaryUsageCount,omitempty"`
+	PermissionsBoundaryUsageCount int32 `json:"permissionsBoundaryUsageCount,omitempty"`
 
 	// The stable and unique string identifying the policy.
 	PolicyID string `json:"policyId,omitempty"`

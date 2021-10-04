@@ -22,6 +22,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	awsec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	awsgo "github.com/aws/aws-sdk-go/aws"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -103,6 +105,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
+<<<<<<< HEAD
+	response, err := e.client.DescribeVpcs(ctx, &awsec2.DescribeVpcsInput{
+		VpcIds: []string{awsgo.StringValue(cr.Spec.ForProvider.VPCID)},
+	})
+	if err != nil && !ec2.IsCIDRNotFound(err) {
+		return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribe)
+=======
 	response, err := e.client.DescribeVpcsRequest(&awsec2.DescribeVpcsInput{
 		VpcIds: []string{aws.StringValue(cr.Spec.ForProvider.VPCID)},
 	}).Send(ctx)
@@ -111,6 +120,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{
 			ResourceExists: false,
 		}, awsclient.Wrap(resource.Ignore(ec2.IsVPCNotFoundErr, err), errDescribe)
+>>>>>>> upstream/master
 	}
 
 	// in a successful response, there should be one and only one object
@@ -126,13 +136,13 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	switch currentStatusCode { //nolint:exhaustive
-	case awsec2.VpcCidrBlockStateCodeAssociated:
+	case awsec2types.VpcCidrBlockStateCodeAssociated:
 		cr.SetConditions(xpv1.Available())
-	case awsec2.VpcCidrBlockStateCodeAssociating:
+	case awsec2types.VpcCidrBlockStateCodeAssociating:
 		cr.SetConditions(xpv1.Creating())
-	case awsec2.VpcCidrBlockStateCodeDisassociated:
+	case awsec2types.VpcCidrBlockStateCodeDisassociated:
 		cr.Status.SetConditions(xpv1.Deleting())
-	case awsec2.VpcCidrBlockStateCodeDisassociating:
+	case awsec2types.VpcCidrBlockStateCodeDisassociating:
 		cr.Status.SetConditions(xpv1.Deleting())
 	default:
 		cr.SetConditions(xpv1.Unavailable())
@@ -152,24 +162,24 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	result, err := e.client.AssociateVpcCidrBlockRequest(&awsec2.AssociateVpcCidrBlockInput{
-		AmazonProvidedIpv6CidrBlock:     cr.Spec.ForProvider.AmazonProvidedIPv6CIDRBlock,
+	result, err := e.client.AssociateVpcCidrBlock(ctx, &awsec2.AssociateVpcCidrBlockInput{
+		AmazonProvidedIpv6CidrBlock:     awsgo.BoolValue(cr.Spec.ForProvider.AmazonProvidedIPv6CIDRBlock),
 		CidrBlock:                       cr.Spec.ForProvider.CIDRBlock,
 		Ipv6CidrBlock:                   cr.Spec.ForProvider.IPv6CIDRBlock,
 		Ipv6CidrBlockNetworkBorderGroup: cr.Spec.ForProvider.IPv6CIDRBlockNetworkBorderGroup,
 		Ipv6Pool:                        cr.Spec.ForProvider.IPv6Pool,
 		VpcId:                           cr.Spec.ForProvider.VPCID,
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errAssociate)
 	}
 
 	if result != nil {
 		if result.CidrBlockAssociation != nil {
-			meta.SetExternalName(cr, aws.StringValue(result.CidrBlockAssociation.AssociationId))
+			meta.SetExternalName(cr, awsgo.StringValue(result.CidrBlockAssociation.AssociationId))
 		}
 		if result.Ipv6CidrBlockAssociation != nil {
-			meta.SetExternalName(cr, aws.StringValue(result.Ipv6CidrBlockAssociation.AssociationId))
+			meta.SetExternalName(cr, awsgo.StringValue(result.Ipv6CidrBlockAssociation.AssociationId))
 		}
 	}
 
@@ -189,9 +199,9 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return nil
 	}
 
-	_, err := e.client.DisassociateVpcCidrBlockRequest(&awsec2.DisassociateVpcCidrBlockInput{
+	_, err := e.client.DisassociateVpcCidrBlock(ctx, &awsec2.DisassociateVpcCidrBlockInput{
 		AssociationId: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(ec2.IsCIDRNotFound, err), errDisassociate)
 }

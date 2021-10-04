@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
+	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/elasticloadbalancing/v1alpha1"
@@ -35,14 +36,14 @@ var (
 		LoadBalancerPort: 80,
 		Protocol:         "HTTP",
 	}
-	elbListener = elb.Listener{
-		InstancePort:     aws.Int64(80),
+	elbListener = elbtypes.Listener{
+		InstancePort:     int32(80),
 		InstanceProtocol: aws.String("HTTP"),
-		LoadBalancerPort: aws.Int64(80),
+		LoadBalancerPort: int32(80),
 		Protocol:         aws.String("HTTP"),
 	}
 	scheme  = "internal"
-	elbTags = []elb.Tag{
+	elbTags = []elbtypes.Tag{
 		{
 			Key:   aws.String("k1"),
 			Value: aws.String("v1"),
@@ -77,10 +78,10 @@ func elbParams(m ...func(*v1alpha1.ELBParameters)) *v1alpha1.ELBParameters {
 	return o
 }
 
-func loadBalancer(m ...func(*elb.LoadBalancerDescription)) *elb.LoadBalancerDescription {
-	o := &elb.LoadBalancerDescription{
+func loadBalancer(m ...func(*elbtypes.LoadBalancerDescription)) *elbtypes.LoadBalancerDescription {
+	o := &elbtypes.LoadBalancerDescription{
 		AvailabilityZones:    availabilityZones,
-		ListenerDescriptions: []elb.ListenerDescription{{Listener: &elbListener}},
+		ListenerDescriptions: []elbtypes.ListenerDescription{{Listener: &elbListener}},
 	}
 
 	for _, f := range m {
@@ -93,8 +94,8 @@ func loadBalancer(m ...func(*elb.LoadBalancerDescription)) *elb.LoadBalancerDesc
 func TestLateInitializeELB(t *testing.T) {
 	type args struct {
 		spec *v1alpha1.ELBParameters
-		in   elb.LoadBalancerDescription
-		tags []elb.Tag
+		in   elbtypes.LoadBalancerDescription
+		tags []elbtypes.Tag
 	}
 	cases := map[string]struct {
 		args args
@@ -110,7 +111,7 @@ func TestLateInitializeELB(t *testing.T) {
 		"AllFilledExternalDiff": {
 			args: args{
 				spec: elbParams(),
-				in: *loadBalancer(func(lb *elb.LoadBalancerDescription) {
+				in: *loadBalancer(func(lb *elbtypes.LoadBalancerDescription) {
 					lb.Scheme = aws.String(scheme)
 				}),
 			},
@@ -159,7 +160,7 @@ func TestGenerateCreateRoleInput(t *testing.T) {
 			out: elb.CreateLoadBalancerInput{
 				LoadBalancerName:  &elbName,
 				AvailabilityZones: availabilityZones,
-				Listeners:         []elb.Listener{elbListener},
+				Listeners:         []elbtypes.Listener{elbListener},
 			},
 		},
 	}
@@ -177,11 +178,11 @@ func TestGenerateCreateRoleInput(t *testing.T) {
 func TestBuildELBListeners(t *testing.T) {
 	cases := map[string]struct {
 		in  []v1alpha1.Listener
-		out []elb.Listener
+		out []elbtypes.Listener
 	}{
 		"FilledInput": {
 			in:  []v1alpha1.Listener{listener},
-			out: []elb.Listener{elbListener},
+			out: []elbtypes.Listener{elbListener},
 		},
 	}
 
@@ -198,7 +199,7 @@ func TestBuildELBListeners(t *testing.T) {
 func TestBuildELBTags(t *testing.T) {
 	cases := map[string]struct {
 		in  []v1alpha1.Tag
-		out []elb.Tag
+		out []elbtypes.Tag
 	}{
 		"FilledInput": {
 			in:  tags,
@@ -218,9 +219,9 @@ func TestBuildELBTags(t *testing.T) {
 
 func TestCreatePatch(t *testing.T) {
 	type args struct {
-		lb   elb.LoadBalancerDescription
+		lb   elbtypes.LoadBalancerDescription
 		p    v1alpha1.ELBParameters
-		tags []elb.Tag
+		tags []elbtypes.Tag
 	}
 
 	type want struct {
@@ -233,9 +234,9 @@ func TestCreatePatch(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				lb: elb.LoadBalancerDescription{
+				lb: elbtypes.LoadBalancerDescription{
 					AvailabilityZones: availabilityZones,
-					ListenerDescriptions: []elb.ListenerDescription{{
+					ListenerDescriptions: []elbtypes.ListenerDescription{{
 						Listener: &elbListener,
 					}},
 				},
@@ -250,7 +251,7 @@ func TestCreatePatch(t *testing.T) {
 		},
 		"DifferentOrder": {
 			args: args{
-				lb: elb.LoadBalancerDescription{
+				lb: elbtypes.LoadBalancerDescription{
 					AvailabilityZones: availabilityZones,
 					Subnets:           []string{"sub1", "sub2"},
 					SecurityGroups:    []string{"sg1", "sg2"},
@@ -261,7 +262,7 @@ func TestCreatePatch(t *testing.T) {
 					SecurityGroupIDs:  []string{"sg2", "sg1"},
 					Tags:              tags,
 				},
-				tags: []elb.Tag{{
+				tags: []elbtypes.Tag{{
 					Key:   aws.String("k2"),
 					Value: aws.String("v2"),
 				},
@@ -276,9 +277,9 @@ func TestCreatePatch(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				lb: elb.LoadBalancerDescription{
+				lb: elbtypes.LoadBalancerDescription{
 					AvailabilityZones: availabilityZones,
-					ListenerDescriptions: []elb.ListenerDescription{{
+					ListenerDescriptions: []elbtypes.ListenerDescription{{
 						Listener: &elbListener,
 					}},
 					Subnets: []string{"subnet1", "subnet2"},
@@ -326,9 +327,9 @@ func TestCreatePatch(t *testing.T) {
 
 func TestIsUpToDate(t *testing.T) {
 	type args struct {
-		lb   elb.LoadBalancerDescription
+		lb   elbtypes.LoadBalancerDescription
 		p    v1alpha1.ELBParameters
-		tags []elb.Tag
+		tags []elbtypes.Tag
 	}
 
 	cases := map[string]struct {
@@ -337,9 +338,9 @@ func TestIsUpToDate(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				lb: elb.LoadBalancerDescription{
+				lb: elbtypes.LoadBalancerDescription{
 					AvailabilityZones: availabilityZones,
-					ListenerDescriptions: []elb.ListenerDescription{{
+					ListenerDescriptions: []elbtypes.ListenerDescription{{
 						Listener: &elbListener,
 					}},
 				},
@@ -352,9 +353,9 @@ func TestIsUpToDate(t *testing.T) {
 		},
 		"DifferentFields": {
 			args: args{
-				lb: elb.LoadBalancerDescription{
+				lb: elbtypes.LoadBalancerDescription{
 					AvailabilityZones: availabilityZones,
-					ListenerDescriptions: []elb.ListenerDescription{{
+					ListenerDescriptions: []elbtypes.ListenerDescription{{
 						Listener: &elbListener,
 					}},
 					SecurityGroups: []string{"sg1", "sg2"},

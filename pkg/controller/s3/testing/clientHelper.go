@@ -1,10 +1,13 @@
 package testing
 
 import (
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
+	"context"
+
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/smithy-go"
 
 	"github.com/crossplane/provider-aws/pkg/clients/s3"
+	clients3 "github.com/crossplane/provider-aws/pkg/clients/s3"
 	"github.com/crossplane/provider-aws/pkg/clients/s3/fake"
 )
 
@@ -12,90 +15,56 @@ import (
 // ClientModifiers
 func Client(m ...ClientModifier) *fake.MockBucketClient {
 	client := &fake.MockBucketClient{
-		MockCreateBucketRequest: func(input *awss3.CreateBucketInput) awss3.CreateBucketRequest {
-			return awss3.CreateBucketRequest{
-				Request: CreateRequest(nil, &awss3.CreateBucketOutput{}),
-			}
+		MockHeadBucket: func(ctx context.Context, input *awss3.HeadBucketInput, opts []func(*awss3.Options)) (*awss3.HeadBucketOutput, error) {
+			return &awss3.HeadBucketOutput{}, nil
 		},
-		MockHeadBucketRequest: func(input *awss3.HeadBucketInput) awss3.HeadBucketRequest {
-			return awss3.HeadBucketRequest{
-				Request: CreateRequest(nil, &awss3.HeadBucketOutput{}),
-			}
+		MockCreateBucket: func(ctx context.Context, input *awss3.CreateBucketInput, opts []func(*awss3.Options)) (*awss3.CreateBucketOutput, error) {
+			return &awss3.CreateBucketOutput{}, nil
 		},
-		MockGetBucketAccelerateConfigurationRequest: func(input *awss3.GetBucketAccelerateConfigurationInput) awss3.GetBucketAccelerateConfigurationRequest {
-			return awss3.GetBucketAccelerateConfigurationRequest{
-				Request: CreateRequest(nil, &awss3.GetBucketAccelerateConfigurationOutput{}),
-			}
+		MockGetBucketAccelerateConfiguration: func(ctx context.Context, input *awss3.GetBucketAccelerateConfigurationInput, opts []func(*awss3.Options)) (*awss3.GetBucketAccelerateConfigurationOutput, error) {
+			return &awss3.GetBucketAccelerateConfigurationOutput{}, nil
 		},
-		MockGetBucketCorsRequest: func(input *awss3.GetBucketCorsInput) awss3.GetBucketCorsRequest {
-			return awss3.GetBucketCorsRequest{
-				Request: CreateRequest(awserr.New(s3.CORSNotFoundErrCode, "", nil), &awss3.GetBucketCorsOutput{}),
-			}
+		MockGetBucketCors: func(ctx context.Context, input *awss3.GetBucketCorsInput, opts []func(*awss3.Options)) (*awss3.GetBucketCorsOutput, error) {
+			return &awss3.GetBucketCorsOutput{}, &smithy.GenericAPIError{Code: clients3.CORSNotFoundErrCode}
 		},
-		MockGetBucketLifecycleConfigurationRequest: func(input *awss3.GetBucketLifecycleConfigurationInput) awss3.GetBucketLifecycleConfigurationRequest {
-			return awss3.GetBucketLifecycleConfigurationRequest{
-				Request: CreateRequest(awserr.New(s3.LifecycleNotFoundErrCode, "", nil), &awss3.GetBucketLifecycleConfigurationOutput{}),
-			}
+		MockGetBucketLifecycleConfiguration: func(ctx context.Context, input *awss3.GetBucketLifecycleConfigurationInput, opts []func(*awss3.Options)) (*awss3.GetBucketLifecycleConfigurationOutput, error) {
+			return &awss3.GetBucketLifecycleConfigurationOutput{}, &smithy.GenericAPIError{Code: clients3.LifecycleNotFoundErrCode}
 		},
-		MockGetBucketLoggingRequest: func(input *awss3.GetBucketLoggingInput) awss3.GetBucketLoggingRequest {
-			return awss3.GetBucketLoggingRequest{
-				Request: CreateRequest(nil, &awss3.GetBucketLoggingOutput{}),
-			}
+		MockGetBucketLogging: func(ctx context.Context, input *awss3.GetBucketLoggingInput, opts []func(*awss3.Options)) (*awss3.GetBucketLoggingOutput, error) {
+			return &awss3.GetBucketLoggingOutput{}, nil
 		},
-		MockGetBucketNotificationConfigurationRequest: func(input *awss3.GetBucketNotificationConfigurationInput) awss3.GetBucketNotificationConfigurationRequest {
-			return awss3.GetBucketNotificationConfigurationRequest{
-				Request: CreateRequest(nil, &awss3.GetBucketNotificationConfigurationOutput{}),
-			}
+		MockGetBucketNotificationConfiguration: func(ctx context.Context, input *awss3.GetBucketNotificationConfigurationInput, opts []func(*awss3.Options)) (*awss3.GetBucketNotificationConfigurationOutput, error) {
+			return &awss3.GetBucketNotificationConfigurationOutput{}, nil
 		},
-		MockGetBucketReplicationRequest: func(input *awss3.GetBucketReplicationInput) awss3.GetBucketReplicationRequest {
-			return awss3.GetBucketReplicationRequest{
-				Request: CreateRequest(awserr.New(s3.ReplicationNotFoundErrCode, "", nil), &awss3.GetBucketReplicationOutput{}),
-			}
+		MockGetBucketReplication: func(ctx context.Context, input *awss3.GetBucketReplicationInput, opts []func(*awss3.Options)) (*awss3.GetBucketReplicationOutput, error) {
+			return nil, &smithy.GenericAPIError{Code: clients3.ReplicationNotFoundErrCode}
 		},
-		MockGetBucketRequestPaymentRequest: func(input *awss3.GetBucketRequestPaymentInput) awss3.GetBucketRequestPaymentRequest {
-			return awss3.GetBucketRequestPaymentRequest{
-				Request: CreateRequest(nil, &awss3.GetBucketRequestPaymentOutput{}),
-			}
+		MockGetBucketRequestPayment: func(ctx context.Context, input *awss3.GetBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.GetBucketRequestPaymentOutput, error) {
+			return &awss3.GetBucketRequestPaymentOutput{}, nil
 		},
-		MockGetBucketEncryptionRequest: func(input *awss3.GetBucketEncryptionInput) awss3.GetBucketEncryptionRequest {
-			return awss3.GetBucketEncryptionRequest{
-				Request: CreateRequest(awserr.New(s3.SSENotFoundErrCode, "", nil), &awss3.GetBucketEncryptionOutput{}),
-			}
+		MockGetBucketEncryption: func(ctx context.Context, input *awss3.GetBucketEncryptionInput, opts []func(*awss3.Options)) (*awss3.GetBucketEncryptionOutput, error) {
+			return nil, &smithy.GenericAPIError{Code: s3.SSENotFoundErrCode}
 		},
-		MockGetBucketTaggingRequest: func(input *awss3.GetBucketTaggingInput) awss3.GetBucketTaggingRequest {
-			return awss3.GetBucketTaggingRequest{
-				Request: CreateRequest(awserr.New(s3.TaggingNotFoundErrCode, "", nil), &awss3.GetBucketTaggingOutput{}),
-			}
+		MockGetBucketTagging: func(ctx context.Context, input *awss3.GetBucketTaggingInput, opts []func(*awss3.Options)) (*awss3.GetBucketTaggingOutput, error) {
+			return nil, &smithy.GenericAPIError{Code: clients3.TaggingNotFoundErrCode}
 		},
-		MockGetBucketVersioningRequest: func(input *awss3.GetBucketVersioningInput) awss3.GetBucketVersioningRequest {
-			return awss3.GetBucketVersioningRequest{
-				Request: CreateRequest(nil, &awss3.GetBucketVersioningOutput{}),
-			}
+		MockGetBucketVersioning: func(ctx context.Context, input *awss3.GetBucketVersioningInput, opts []func(*awss3.Options)) (*awss3.GetBucketVersioningOutput, error) {
+			return &awss3.GetBucketVersioningOutput{}, nil
 		},
-		MockGetBucketWebsiteRequest: func(input *awss3.GetBucketWebsiteInput) awss3.GetBucketWebsiteRequest {
-			return awss3.GetBucketWebsiteRequest{
-				Request: CreateRequest(awserr.New(s3.WebsiteNotFoundErrCode, "", nil), &awss3.GetBucketWebsiteOutput{}),
-			}
+		MockGetBucketWebsite: func(ctx context.Context, input *awss3.GetBucketWebsiteInput, opts []func(*awss3.Options)) (*awss3.GetBucketWebsiteOutput, error) {
+			return nil, &smithy.GenericAPIError{Code: clients3.WebsiteNotFoundErrCode}
 		},
-		MockPutBucketAclRequest: func(input *awss3.PutBucketAclInput) awss3.PutBucketAclRequest {
-			return awss3.PutBucketAclRequest{
-				Request: CreateRequest(nil, &awss3.PutBucketAclOutput{}),
-			}
+		MockPutBucketAcl: func(ctx context.Context, input *awss3.PutBucketAclInput, opts []func(*awss3.Options)) (*awss3.PutBucketAclOutput, error) {
+			return &awss3.PutBucketAclOutput{}, nil
 		},
-		MockGetPublicAccessBlockRequest: func(input *awss3.GetPublicAccessBlockInput) awss3.GetPublicAccessBlockRequest {
-			return awss3.GetPublicAccessBlockRequest{
-				Request: CreateRequest(awserr.New(s3.PublicAccessBlockNotFoundErrCode, "error", nil), &awss3.GetPublicAccessBlockOutput{}),
-			}
+		MockGetPublicAccessBlock: func(ctx context.Context, input *awss3.GetPublicAccessBlockInput, opts []func(*awss3.Options)) (*awss3.GetPublicAccessBlockOutput, error) {
+			return &awss3.GetPublicAccessBlockOutput{}, nil
 		},
-		MockPutPublicAccessBlockRequest: func(input *awss3.PutPublicAccessBlockInput) awss3.PutPublicAccessBlockRequest {
-			return awss3.PutPublicAccessBlockRequest{
-				Request: CreateRequest(nil, &awss3.PutPublicAccessBlockOutput{}),
-			}
+		MockPutPublicAccessBlock: func(ctx context.Context, input *awss3.PutPublicAccessBlockInput, opts []func(*awss3.Options)) (*awss3.PutPublicAccessBlockOutput, error) {
+			return &awss3.PutPublicAccessBlockOutput{}, nil
 		},
-		MockDeletePublicAccessBlockRequest: func(input *awss3.DeletePublicAccessBlockInput) awss3.DeletePublicAccessBlockRequest {
-			return awss3.DeletePublicAccessBlockRequest{
-				Request: CreateRequest(awserr.New(s3.PublicAccessBlockNotFoundErrCode, "error", nil), &awss3.DeletePublicAccessBlockOutput{}),
-			}
+		MockDeletePublicAccessBlock: func(ctx context.Context, input *awss3.DeletePublicAccessBlockInput, opts []func(*awss3.Options)) (*awss3.DeletePublicAccessBlockOutput, error) {
+			return &awss3.DeletePublicAccessBlockOutput{}, nil
 		},
 	}
 	for _, v := range m {
@@ -108,43 +77,43 @@ func Client(m ...ClientModifier) *fake.MockBucketClient {
 type ClientModifier func(client *fake.MockBucketClient)
 
 // WithGetRequestPayment sets the MockGetBucketRequestPaymentRequest of the mock S3 Client
-func WithGetRequestPayment(input func(input *awss3.GetBucketRequestPaymentInput) awss3.GetBucketRequestPaymentRequest) ClientModifier {
+func WithGetRequestPayment(input func(ctx context.Context, input *awss3.GetBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.GetBucketRequestPaymentOutput, error)) ClientModifier {
 	return func(client *fake.MockBucketClient) {
-		client.MockGetBucketRequestPaymentRequest = input
+		client.MockGetBucketRequestPayment = input
 	}
 }
 
 // WithCreateBucket sets the MockCreateBucketRequest of the mock S3 Client
-func WithCreateBucket(input func(input *awss3.CreateBucketInput) awss3.CreateBucketRequest) ClientModifier {
+func WithCreateBucket(input func(ctx context.Context, input *awss3.CreateBucketInput, opts []func(*awss3.Options)) (*awss3.CreateBucketOutput, error)) ClientModifier {
 	return func(client *fake.MockBucketClient) {
-		client.MockCreateBucketRequest = input
+		client.MockCreateBucket = input
 	}
 }
 
 // WithPutRequestPayment sets the MockPutBucketRequestPaymentRequest of the mock S3 Client
-func WithPutRequestPayment(input func(input *awss3.PutBucketRequestPaymentInput) awss3.PutBucketRequestPaymentRequest) ClientModifier {
+func WithPutRequestPayment(input func(ctx context.Context, input *awss3.PutBucketRequestPaymentInput, opts []func(*awss3.Options)) (*awss3.PutBucketRequestPaymentOutput, error)) ClientModifier {
 	return func(client *fake.MockBucketClient) {
-		client.MockPutBucketRequestPaymentRequest = input
+		client.MockPutBucketRequestPayment = input
 	}
 }
 
 // WithGetSSE sets the MockGetBucketEncryptionRequest of the mock S3 Client
-func WithGetSSE(input func(input *awss3.GetBucketEncryptionInput) awss3.GetBucketEncryptionRequest) ClientModifier {
+func WithGetSSE(input func(ctx context.Context, input *awss3.GetBucketEncryptionInput, opts []func(*awss3.Options)) (*awss3.GetBucketEncryptionOutput, error)) ClientModifier {
 	return func(client *fake.MockBucketClient) {
-		client.MockGetBucketEncryptionRequest = input
+		client.MockGetBucketEncryption = input
 	}
 }
 
 // WithDeleteSSE sets the MockDeleteBucketEncryptionRequest of the mock S3 Client
-func WithDeleteSSE(input func(input *awss3.DeleteBucketEncryptionInput) awss3.DeleteBucketEncryptionRequest) ClientModifier {
+func WithDeleteSSE(input func(ctx context.Context, input *awss3.DeleteBucketEncryptionInput, opts []func(*awss3.Options)) (*awss3.DeleteBucketEncryptionOutput, error)) ClientModifier {
 	return func(client *fake.MockBucketClient) {
-		client.MockDeleteBucketEncryptionRequest = input
+		client.MockDeleteBucketEncryption = input
 	}
 }
 
 // WithPutACL sets the MockPutBucketAclRequest of the mock S3 Client
-func WithPutACL(input func(input *awss3.PutBucketAclInput) awss3.PutBucketAclRequest) ClientModifier {
+func WithPutACL(input func(ctx context.Context, input *awss3.PutBucketAclInput, opts []func(*awss3.Options)) (*awss3.PutBucketAclOutput, error)) ClientModifier {
 	return func(client *fake.MockBucketClient) {
-		client.MockPutBucketAclRequest = input
+		client.MockPutBucketAcl = input
 	}
 }

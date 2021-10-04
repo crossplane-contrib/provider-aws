@@ -17,11 +17,13 @@ limitations under the License.
 package sns
 
 import (
+	"context"
+	"errors"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
+	snstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
 
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -50,16 +52,16 @@ const (
 
 // SubscriptionClient is the external client used for AWS SNSSubscription
 type SubscriptionClient interface {
-	SubscribeRequest(*sns.SubscribeInput) sns.SubscribeRequest
-	UnsubscribeRequest(*sns.UnsubscribeInput) sns.UnsubscribeRequest
-	GetSubscriptionAttributesRequest(*sns.GetSubscriptionAttributesInput) sns.GetSubscriptionAttributesRequest
-	SetSubscriptionAttributesRequest(*sns.SetSubscriptionAttributesInput) sns.SetSubscriptionAttributesRequest
+	Subscribe(ctx context.Context, input *sns.SubscribeInput, opts ...func(*sns.Options)) (*sns.SubscribeOutput, error)
+	Unsubscribe(ctx context.Context, input *sns.UnsubscribeInput, opts ...func(*sns.Options)) (*sns.UnsubscribeOutput, error)
+	GetSubscriptionAttributes(ctx context.Context, input *sns.GetSubscriptionAttributesInput, opts ...func(*sns.Options)) (*sns.GetSubscriptionAttributesOutput, error)
+	SetSubscriptionAttributes(ctx context.Context, input *sns.SetSubscriptionAttributesInput, opts ...func(*sns.Options)) (*sns.SetSubscriptionAttributesOutput, error)
 }
 
 // NewSubscriptionClient returns a new client using AWS credentials as JSON encoded
 // data
 func NewSubscriptionClient(cfg aws.Config) SubscriptionClient {
-	return sns.New(cfg)
+	return sns.NewFromConfig(cfg)
 }
 
 // GenerateSubscribeInput prepares input for SubscribeRequest
@@ -68,7 +70,7 @@ func GenerateSubscribeInput(p *v1alpha1.SNSSubscriptionParameters) *sns.Subscrib
 		Endpoint:              aws.String(p.Endpoint),
 		Protocol:              aws.String(p.Protocol),
 		TopicArn:              aws.String(p.TopicARN),
-		ReturnSubscriptionArn: aws.Bool(true),
+		ReturnSubscriptionArn: true,
 	}
 
 	return input
@@ -110,10 +112,10 @@ func LateInitializeSubscription(in *v1alpha1.SNSSubscriptionParameters, subAttri
 // getSubAttributes returns map of SNS Sunscription Attributes
 func getSubAttributes(p v1alpha1.SNSSubscriptionParameters) map[string]string {
 	return map[string]string{
-		SubscriptionDeliveryPolicy:     aws.StringValue(p.DeliveryPolicy),
-		SubscriptionFilterPolicy:       aws.StringValue(p.FilterPolicy),
-		SubscriptionRawMessageDelivery: aws.StringValue(p.RawMessageDelivery),
-		SubscriptionRedrivePolicy:      aws.StringValue(p.RedrivePolicy),
+		SubscriptionDeliveryPolicy:     aws.ToString(p.DeliveryPolicy),
+		SubscriptionFilterPolicy:       aws.ToString(p.FilterPolicy),
+		SubscriptionRawMessageDelivery: aws.ToString(p.RawMessageDelivery),
+		SubscriptionRedrivePolicy:      aws.ToString(p.RedrivePolicy),
 	}
 }
 
@@ -133,15 +135,17 @@ func GetChangedSubAttributes(p v1alpha1.SNSSubscriptionParameters, attrs map[str
 
 // IsSNSSubscriptionAttributesUpToDate checks if attributes are up to date
 func IsSNSSubscriptionAttributesUpToDate(p v1alpha1.SNSSubscriptionParameters, subAttributes map[string]string) bool {
-	return aws.StringValue(p.DeliveryPolicy) == subAttributes[SubscriptionDeliveryPolicy] &&
-		aws.StringValue(p.FilterPolicy) == subAttributes[SubscriptionFilterPolicy] &&
-		aws.StringValue(p.RawMessageDelivery) == subAttributes[SubscriptionRawMessageDelivery] &&
-		aws.StringValue(p.RedrivePolicy) == subAttributes[SubscriptionRedrivePolicy]
+	return aws.ToString(p.DeliveryPolicy) == subAttributes[SubscriptionDeliveryPolicy] &&
+		aws.ToString(p.FilterPolicy) == subAttributes[SubscriptionFilterPolicy] &&
+		aws.ToString(p.RawMessageDelivery) == subAttributes[SubscriptionRawMessageDelivery] &&
+		aws.ToString(p.RedrivePolicy) == subAttributes[SubscriptionRedrivePolicy]
 }
 
 // IsSubscriptionNotFound returns true if the error code indicates that the item was not found
 func IsSubscriptionNotFound(err error) bool {
-	if subErr, ok := err.(awserr.Error); ok && subErr.Code() == sns.ErrCodeNotFoundException {
+	var nfe *snstypes.NotFoundException
+	var rnfe *snstypes.ResourceNotFoundException
+	if errors.As(err, &nfe) || errors.As(err, &rnfe) {
 		return true
 	}
 	return false

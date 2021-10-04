@@ -1,17 +1,19 @@
 package ecr
 
 import (
+	"context"
 	"encoding/json"
 	"sort"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
+	ecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
+	"github.com/aws/smithy-go"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
-	awsclients "github.com/crossplane/provider-aws/pkg/clients"
+	awsclient "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 const (
@@ -27,24 +29,24 @@ const (
 
 // RepositoryClient is the external client used for ECR Custom Resource
 type RepositoryClient interface {
-	CreateRepositoryRequest(input *ecr.CreateRepositoryInput) ecr.CreateRepositoryRequest
-	DescribeRepositoriesRequest(input *ecr.DescribeRepositoriesInput) ecr.DescribeRepositoriesRequest
-	DeleteRepositoryRequest(input *ecr.DeleteRepositoryInput) ecr.DeleteRepositoryRequest
-	ListTagsForResourceRequest(*ecr.ListTagsForResourceInput) ecr.ListTagsForResourceRequest
-	TagResourceRequest(*ecr.TagResourceInput) ecr.TagResourceRequest
-	PutImageTagMutabilityRequest(*ecr.PutImageTagMutabilityInput) ecr.PutImageTagMutabilityRequest
-	PutImageScanningConfigurationRequest(*ecr.PutImageScanningConfigurationInput) ecr.PutImageScanningConfigurationRequest
-	UntagResourceRequest(*ecr.UntagResourceInput) ecr.UntagResourceRequest
+	CreateRepository(ctx context.Context, input *ecr.CreateRepositoryInput, opts ...func(*ecr.Options)) (*ecr.CreateRepositoryOutput, error)
+	DescribeRepositories(ctx context.Context, input *ecr.DescribeRepositoriesInput, opts ...func(*ecr.Options)) (*ecr.DescribeRepositoriesOutput, error)
+	DeleteRepository(ctx context.Context, input *ecr.DeleteRepositoryInput, opts ...func(*ecr.Options)) (*ecr.DeleteRepositoryOutput, error)
+	ListTagsForResource(ctx context.Context, input *ecr.ListTagsForResourceInput, opts ...func(*ecr.Options)) (*ecr.ListTagsForResourceOutput, error)
+	TagResource(ctx context.Context, input *ecr.TagResourceInput, opts ...func(*ecr.Options)) (*ecr.TagResourceOutput, error)
+	PutImageTagMutability(ctx context.Context, input *ecr.PutImageTagMutabilityInput, opts ...func(*ecr.Options)) (*ecr.PutImageTagMutabilityOutput, error)
+	PutImageScanningConfiguration(ctx context.Context, input *ecr.PutImageScanningConfigurationInput, opts ...func(*ecr.Options)) (*ecr.PutImageScanningConfigurationOutput, error)
+	UntagResource(ctx context.Context, input *ecr.UntagResourceInput, opts ...func(*ecr.Options)) (*ecr.UntagResourceOutput, error)
 }
 
 // GenerateRepositoryObservation is used to produce v1alpha1.RepositoryObservation from
 // ecr.Repository
-func GenerateRepositoryObservation(repo ecr.Repository) v1alpha1.RepositoryObservation {
+func GenerateRepositoryObservation(repo ecrtypes.Repository) v1alpha1.RepositoryObservation {
 	o := v1alpha1.RepositoryObservation{
-		RegistryID:     aws.StringValue(repo.RegistryId),
-		RepositoryArn:  aws.StringValue(repo.RepositoryArn),
-		RepositoryName: aws.StringValue(repo.RepositoryName),
-		RepositoryURI:  aws.StringValue(repo.RepositoryUri),
+		RegistryID:     awsclient.StringValue(repo.RegistryId),
+		RepositoryArn:  awsclient.StringValue(repo.RepositoryArn),
+		RepositoryName: awsclient.StringValue(repo.RepositoryName),
+		RepositoryURI:  awsclient.StringValue(repo.RepositoryUri),
 	}
 
 	if repo.CreatedAt != nil {
@@ -55,27 +57,27 @@ func GenerateRepositoryObservation(repo ecr.Repository) v1alpha1.RepositoryObser
 
 // LateInitializeRepository fills the empty fields in *v1alpha1.RepositoryParameters with
 // the values seen in ecr.Repository.
-func LateInitializeRepository(in *v1alpha1.RepositoryParameters, r *ecr.Repository) { // nolint:gocyclo
+func LateInitializeRepository(in *v1alpha1.RepositoryParameters, r *ecrtypes.Repository) { // nolint:gocyclo
 	if r == nil {
 		return
 	}
 	if r.ImageScanningConfiguration != nil && in.ImageScanningConfiguration == nil {
 		scanConfig := v1alpha1.ImageScanningConfiguration{
-			ScanOnPush: aws.BoolValue(r.ImageScanningConfiguration.ScanOnPush),
+			ScanOnPush: r.ImageScanningConfiguration.ScanOnPush,
 		}
 		in.ImageScanningConfiguration = &scanConfig
 	}
-	in.ImageTagMutability = awsclients.LateInitializeStringPtr(in.ImageTagMutability, aws.String(string(r.ImageTagMutability)))
+	in.ImageTagMutability = awsclient.LateInitializeStringPtr(in.ImageTagMutability, aws.String(string(r.ImageTagMutability)))
 }
 
 // CreatePatch creates a *v1alpha1.RepositoryParameters that has only the changed
 // values between the target *v1alpha1.RepositoryParameters and the current
 // *ecr.Repository.
-func CreatePatch(in *ecr.Repository, target *v1alpha1.RepositoryParameters) (*v1alpha1.RepositoryParameters, error) {
+func CreatePatch(in *ecrtypes.Repository, target *v1alpha1.RepositoryParameters) (*v1alpha1.RepositoryParameters, error) {
 	currentParams := &v1alpha1.RepositoryParameters{}
 	LateInitializeRepository(currentParams, in)
 
-	jsonPatch, err := awsclients.CreateJSONPatch(currentParams, target)
+	jsonPatch, err := awsclient.CreateJSONPatch(currentParams, target)
 	if err != nil {
 		return nil, err
 	}
@@ -87,10 +89,10 @@ func CreatePatch(in *ecr.Repository, target *v1alpha1.RepositoryParameters) (*v1
 }
 
 // IsRepositoryUpToDate checks whether there is a change in any of the modifiable fields.
-func IsRepositoryUpToDate(e *v1alpha1.RepositoryParameters, tags []ecr.Tag, repo *ecr.Repository) bool {
+func IsRepositoryUpToDate(e *v1alpha1.RepositoryParameters, tags []ecrtypes.Tag, repo *ecrtypes.Repository) bool {
 	switch {
 	case e.ImageScanningConfiguration != nil && repo.ImageScanningConfiguration != nil:
-		if e.ImageScanningConfiguration.ScanOnPush != aws.BoolValue(repo.ImageScanningConfiguration.ScanOnPush) {
+		if e.ImageScanningConfiguration.ScanOnPush != repo.ImageScanningConfiguration.ScanOnPush {
 			return false
 		}
 	case e.ImageScanningConfiguration != nil && repo.ImageScanningConfiguration == nil:
@@ -98,14 +100,14 @@ func IsRepositoryUpToDate(e *v1alpha1.RepositoryParameters, tags []ecr.Tag, repo
 	case e.ImageScanningConfiguration == nil && repo.ImageScanningConfiguration != nil:
 		return false
 	}
-	return strings.EqualFold(aws.StringValue(e.ImageTagMutability), string(repo.ImageTagMutability)) &&
+	return strings.EqualFold(awsclient.StringValue(e.ImageTagMutability), string(repo.ImageTagMutability)) &&
 		CompareTags(e.Tags, tags)
 }
 
 // IsRepoNotFoundErr returns true if the error is because the item doesn't exist
 func IsRepoNotFoundErr(err error) bool {
-	if awsErr, ok := err.(awserr.Error); ok {
-		if awsErr.Code() == RepositoryNotFoundException {
+	if awsErr, ok := err.(smithy.APIError); ok {
+		if awsErr.ErrorCode() == RepositoryNotFoundException {
 			return true
 		}
 	}
@@ -115,20 +117,20 @@ func IsRepoNotFoundErr(err error) bool {
 // GenerateCreateRepositoryInput Generates the CreateRepositoryInput from the RepositoryParameters
 func GenerateCreateRepositoryInput(name string, params *v1alpha1.RepositoryParameters) *ecr.CreateRepositoryInput {
 	c := &ecr.CreateRepositoryInput{
-		RepositoryName:     awsclients.String(name),
-		ImageTagMutability: ecr.ImageTagMutability(aws.StringValue(params.ImageTagMutability)),
+		RepositoryName:     awsclient.String(name),
+		ImageTagMutability: ecrtypes.ImageTagMutability(awsclient.StringValue(params.ImageTagMutability)),
 	}
 	if params.ImageScanningConfiguration != nil {
-		scanConfig := ecr.ImageScanningConfiguration{
-			ScanOnPush: awsclients.Bool(params.ImageScanningConfiguration.ScanOnPush),
+		scanConfig := ecrtypes.ImageScanningConfiguration{
+			ScanOnPush: params.ImageScanningConfiguration.ScanOnPush,
 		}
 		c.ImageScanningConfiguration = &scanConfig
 	}
 	return c
 }
 
-// CompareTags compares arrays of v1alpha1.Tag and ecr.Tag
-func CompareTags(tags []v1alpha1.Tag, ecrTags []ecr.Tag) bool {
+// CompareTags compares arrays of v1alpha1.Tag and ecrtypes.Tag
+func CompareTags(tags []v1alpha1.Tag, ecrTags []ecrtypes.Tag) bool {
 	if len(tags) != len(ecrTags) {
 		return false
 	}
@@ -136,7 +138,7 @@ func CompareTags(tags []v1alpha1.Tag, ecrTags []ecr.Tag) bool {
 	SortTags(tags, ecrTags)
 
 	for i, t := range tags {
-		if t.Key != aws.StringValue(ecrTags[i].Key) || t.Value != aws.StringValue(ecrTags[i].Value) {
+		if t.Key != aws.ToString(ecrTags[i].Key) || t.Value != aws.ToString(ecrTags[i].Value) {
 			return false
 		}
 	}
@@ -144,8 +146,8 @@ func CompareTags(tags []v1alpha1.Tag, ecrTags []ecr.Tag) bool {
 	return true
 }
 
-// SortTags sorts array of v1alpha1.Tag and ecr.Tag on 'Key'
-func SortTags(tags []v1alpha1.Tag, ecrTags []ecr.Tag) {
+// SortTags sorts array of v1alpha1.Tag and ecrtypes.Tag on 'Key'
+func SortTags(tags []v1alpha1.Tag, ecrTags []ecrtypes.Tag) {
 	sort.Slice(tags, func(i, j int) bool {
 		return tags[i].Key < tags[j].Key
 	})
@@ -156,21 +158,21 @@ func SortTags(tags []v1alpha1.Tag, ecrTags []ecr.Tag) {
 }
 
 // DiffTags returns tags that should be added or removed.
-func DiffTags(spec []v1alpha1.Tag, current []ecr.Tag) (addTags []ecr.Tag, remove []string) {
+func DiffTags(spec []v1alpha1.Tag, current []ecrtypes.Tag) (addTags []ecrtypes.Tag, remove []string) {
 	addMap := make(map[string]string, len(spec))
 	for _, t := range spec {
 		addMap[t.Key] = t.Value
 	}
 	removeMap := map[string]struct{}{}
 	for _, t := range current {
-		if addMap[aws.StringValue(t.Key)] == aws.StringValue(t.Value) {
-			delete(addMap, aws.StringValue(t.Key))
+		if addMap[aws.ToString(t.Key)] == aws.ToString(t.Value) {
+			delete(addMap, aws.ToString(t.Key))
 			continue
 		}
-		removeMap[aws.StringValue(t.Key)] = struct{}{}
+		removeMap[aws.ToString(t.Key)] = struct{}{}
 	}
 	for k, v := range addMap {
-		addTags = append(addTags, ecr.Tag{Key: aws.String(k), Value: aws.String(v)})
+		addTags = append(addTags, ecrtypes.Tag{Key: aws.String(k), Value: aws.String(v)})
 	}
 	for k := range removeMap {
 		remove = append(remove, k)

@@ -18,7 +18,6 @@ package openidconnectprovider
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -101,12 +100,8 @@ func TestObserve(t *testing.T) {
 		"ClientError": {
 			args: args{
 				iam: &fake.MockOpenIDConnectProviderClient{
-					MockGetOpenIDConnectProviderRequest: func(input *awsiam.GetOpenIDConnectProviderInput) awsiam.GetOpenIDConnectProviderRequest {
-						return awsiam.GetOpenIDConnectProviderRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Error: errBoom,
-							},
-						}
+					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: oidcProvider(withURL(url),
@@ -132,12 +127,8 @@ func TestObserve(t *testing.T) {
 		"ResourceDoesNotExistAWS": {
 			args: args{
 				iam: &fake.MockOpenIDConnectProviderClient{
-					MockGetOpenIDConnectProviderRequest: func(input *awsiam.GetOpenIDConnectProviderInput) awsiam.GetOpenIDConnectProviderRequest {
-						return awsiam.GetOpenIDConnectProviderRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Error: iam.NewErrorNotFound(),
-							},
-						}
+					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
+						return nil, iam.NewErrorNotFound()
 					},
 				},
 				cr: oidcProvider(withURL(url),
@@ -154,14 +145,10 @@ func TestObserve(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				iam: &fake.MockOpenIDConnectProviderClient{
-					MockGetOpenIDConnectProviderRequest: func(input *awsiam.GetOpenIDConnectProviderInput) awsiam.GetOpenIDConnectProviderRequest {
-						return awsiam.GetOpenIDConnectProviderRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Data: &awsiam.GetOpenIDConnectProviderOutput{
-									CreateDate: &now.Time,
-								},
-							},
-						}
+					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
+						return &awsiam.GetOpenIDConnectProviderOutput{
+							CreateDate: &now.Time,
+						}, nil
 					},
 				},
 				cr: oidcProvider(withURL(url),
@@ -223,12 +210,8 @@ func TestCreate(t *testing.T) {
 		"ClientError": {
 			args: args{
 				iam: &fake.MockOpenIDConnectProviderClient{
-					MockCreateOpenIDConnectProviderRequest: func(input *awsiam.CreateOpenIDConnectProviderInput) awsiam.CreateOpenIDConnectProviderRequest {
-						return awsiam.CreateOpenIDConnectProviderRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Error: errBoom,
-							},
-						}
+					MockCreateOpenIDConnectProvider: func(ctx context.Context, input *awsiam.CreateOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.CreateOpenIDConnectProviderOutput, error) {
+						return &awsiam.CreateOpenIDConnectProviderOutput{}, errBoom
 					},
 				},
 				cr: oidcProvider(withURL(url)),
@@ -241,14 +224,8 @@ func TestCreate(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				iam: &fake.MockOpenIDConnectProviderClient{
-					MockCreateOpenIDConnectProviderRequest: func(input *awsiam.CreateOpenIDConnectProviderInput) awsiam.CreateOpenIDConnectProviderRequest {
-						return awsiam.CreateOpenIDConnectProviderRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Data: &awsiam.CreateOpenIDConnectProviderOutput{
-									OpenIDConnectProviderArn: aws.String(providerArn),
-								},
-							},
-						}
+					MockCreateOpenIDConnectProvider: func(ctx context.Context, input *awsiam.CreateOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.CreateOpenIDConnectProviderOutput, error) {
+						return &awsiam.CreateOpenIDConnectProviderOutput{OpenIDConnectProviderArn: aws.String(providerArn)}, nil
 					},
 				},
 				cr: oidcProvider(withURL(url)),
@@ -305,21 +282,13 @@ func TestUpdate(t *testing.T) {
 		"ThumbprintUpdateError": {
 			args: args{
 				iam: &fake.MockOpenIDConnectProviderClient{
-					MockGetOpenIDConnectProviderRequest: func(input *awsiam.GetOpenIDConnectProviderInput) awsiam.GetOpenIDConnectProviderRequest {
-						return awsiam.GetOpenIDConnectProviderRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Data: &awsiam.GetOpenIDConnectProviderOutput{
-									ThumbprintList: []string{"b"},
-								},
-							},
-						}
+					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
+						return &awsiam.GetOpenIDConnectProviderOutput{
+							ThumbprintList: []string{"b"},
+						}, nil
 					},
-					MockUpdateOpenIDConnectProviderThumbprintRequest: func(input *awsiam.UpdateOpenIDConnectProviderThumbprintInput) awsiam.UpdateOpenIDConnectProviderThumbprintRequest {
-						return awsiam.UpdateOpenIDConnectProviderThumbprintRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Error: errBoom,
-							},
-						}
+					MockUpdateOpenIDConnectProviderThumbprint: func(ctx context.Context, input *awsiam.UpdateOpenIDConnectProviderThumbprintInput, opts []func(*awsiam.Options)) (*awsiam.UpdateOpenIDConnectProviderThumbprintOutput, error) {
+						return &awsiam.UpdateOpenIDConnectProviderThumbprintOutput{}, errBoom
 					},
 				},
 				cr: oidcProvider(withURL(url),
@@ -339,21 +308,13 @@ func TestUpdate(t *testing.T) {
 		"AddClientError": {
 			args: args{
 				iam: &fake.MockOpenIDConnectProviderClient{
-					MockGetOpenIDConnectProviderRequest: func(input *awsiam.GetOpenIDConnectProviderInput) awsiam.GetOpenIDConnectProviderRequest {
-						return awsiam.GetOpenIDConnectProviderRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Data: &awsiam.GetOpenIDConnectProviderOutput{
-									ClientIDList: []string{"a"},
-								},
-							},
-						}
+					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
+						return &awsiam.GetOpenIDConnectProviderOutput{
+							ThumbprintList: []string{"a"},
+						}, nil
 					},
-					MockAddClientIDToOpenIDConnectProviderRequest: func(input *awsiam.AddClientIDToOpenIDConnectProviderInput) awsiam.AddClientIDToOpenIDConnectProviderRequest {
-						return awsiam.AddClientIDToOpenIDConnectProviderRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Error: errBoom,
-							},
-						}
+					MockAddClientIDToOpenIDConnectProvider: func(ctx context.Context, input *awsiam.AddClientIDToOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.AddClientIDToOpenIDConnectProviderOutput, error) {
+						return &awsiam.AddClientIDToOpenIDConnectProviderOutput{}, errBoom
 					},
 				},
 				cr: oidcProvider(withURL(url),
@@ -373,21 +334,13 @@ func TestUpdate(t *testing.T) {
 		"RemoveClientError": {
 			args: args{
 				iam: &fake.MockOpenIDConnectProviderClient{
-					MockGetOpenIDConnectProviderRequest: func(input *awsiam.GetOpenIDConnectProviderInput) awsiam.GetOpenIDConnectProviderRequest {
-						return awsiam.GetOpenIDConnectProviderRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Data: &awsiam.GetOpenIDConnectProviderOutput{
-									ClientIDList: []string{"a", "b"},
-								},
-							},
-						}
+					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
+						return &awsiam.GetOpenIDConnectProviderOutput{
+							ClientIDList: []string{"a", "b"},
+						}, nil
 					},
-					MockRemoveClientIDFromOpenIDConnectProviderRequest: func(input *awsiam.RemoveClientIDFromOpenIDConnectProviderInput) awsiam.RemoveClientIDFromOpenIDConnectProviderRequest {
-						return awsiam.RemoveClientIDFromOpenIDConnectProviderRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Error: errBoom,
-							},
-						}
+					MockRemoveClientIDFromOpenIDConnectProvider: func(ctx context.Context, input *awsiam.RemoveClientIDFromOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.RemoveClientIDFromOpenIDConnectProviderOutput, error) {
+						return &awsiam.RemoveClientIDFromOpenIDConnectProviderOutput{}, errBoom
 					},
 				},
 				cr: oidcProvider(withURL(url),
@@ -407,33 +360,21 @@ func TestUpdate(t *testing.T) {
 		"SuccessfulUpdate": {
 			args: args{
 				iam: &fake.MockOpenIDConnectProviderClient{
-					MockGetOpenIDConnectProviderRequest: func(input *awsiam.GetOpenIDConnectProviderInput) awsiam.GetOpenIDConnectProviderRequest {
-						return awsiam.GetOpenIDConnectProviderRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Data: &awsiam.GetOpenIDConnectProviderOutput{
-									ThumbprintList: []string{"b"},
-									ClientIDList:   []string{"b"},
-								},
-							},
-						}
+
+					MockGetOpenIDConnectProvider: func(ctx context.Context, input *awsiam.GetOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.GetOpenIDConnectProviderOutput, error) {
+						return &awsiam.GetOpenIDConnectProviderOutput{
+							ThumbprintList: []string{"b"},
+							ClientIDList:   []string{"b"},
+						}, nil
 					},
-					MockUpdateOpenIDConnectProviderThumbprintRequest: func(input *awsiam.UpdateOpenIDConnectProviderThumbprintInput) awsiam.UpdateOpenIDConnectProviderThumbprintRequest {
-						return awsiam.UpdateOpenIDConnectProviderThumbprintRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Data: &awsiam.UpdateOpenIDConnectProviderThumbprintOutput{}},
-						}
+					MockUpdateOpenIDConnectProviderThumbprint: func(ctx context.Context, input *awsiam.UpdateOpenIDConnectProviderThumbprintInput, opts []func(*awsiam.Options)) (*awsiam.UpdateOpenIDConnectProviderThumbprintOutput, error) {
+						return &awsiam.UpdateOpenIDConnectProviderThumbprintOutput{}, nil
 					},
-					MockAddClientIDToOpenIDConnectProviderRequest: func(input *awsiam.AddClientIDToOpenIDConnectProviderInput) awsiam.AddClientIDToOpenIDConnectProviderRequest {
-						return awsiam.AddClientIDToOpenIDConnectProviderRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Data: &awsiam.AddClientIDToOpenIDConnectProviderOutput{}},
-						}
+					MockAddClientIDToOpenIDConnectProvider: func(ctx context.Context, input *awsiam.AddClientIDToOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.AddClientIDToOpenIDConnectProviderOutput, error) {
+						return &awsiam.AddClientIDToOpenIDConnectProviderOutput{}, nil
 					},
-					MockRemoveClientIDFromOpenIDConnectProviderRequest: func(input *awsiam.RemoveClientIDFromOpenIDConnectProviderInput) awsiam.RemoveClientIDFromOpenIDConnectProviderRequest {
-						return awsiam.RemoveClientIDFromOpenIDConnectProviderRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Data: &awsiam.RemoveClientIDFromOpenIDConnectProviderOutput{}},
-						}
+					MockRemoveClientIDFromOpenIDConnectProvider: func(ctx context.Context, input *awsiam.RemoveClientIDFromOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.RemoveClientIDFromOpenIDConnectProviderOutput, error) {
+						return &awsiam.RemoveClientIDFromOpenIDConnectProviderOutput{}, nil
 					},
 				},
 				cr: oidcProvider(withURL(url),
@@ -494,12 +435,8 @@ func TestDelete(t *testing.T) {
 		"ClientError": {
 			args: args{
 				iam: &fake.MockOpenIDConnectProviderClient{
-					MockDeleteOpenIDConnectProviderRequest: func(input *awsiam.DeleteOpenIDConnectProviderInput) awsiam.DeleteOpenIDConnectProviderRequest {
-						return awsiam.DeleteOpenIDConnectProviderRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Error: errBoom,
-							},
-						}
+					MockDeleteOpenIDConnectProvider: func(ctx context.Context, input *awsiam.DeleteOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.DeleteOpenIDConnectProviderOutput, error) {
+						return &awsiam.DeleteOpenIDConnectProviderOutput{}, errBoom
 					},
 				},
 				cr: oidcProvider(withURL(url)),
@@ -512,12 +449,8 @@ func TestDelete(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				iam: &fake.MockOpenIDConnectProviderClient{
-					MockDeleteOpenIDConnectProviderRequest: func(input *awsiam.DeleteOpenIDConnectProviderInput) awsiam.DeleteOpenIDConnectProviderRequest {
-						return awsiam.DeleteOpenIDConnectProviderRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{},
-								Data: &awsiam.DeleteOpenIDConnectProviderOutput{},
-							},
-						}
+					MockDeleteOpenIDConnectProvider: func(ctx context.Context, input *awsiam.DeleteOpenIDConnectProviderInput, opts []func(*awsiam.Options)) (*awsiam.DeleteOpenIDConnectProviderOutput, error) {
+						return &awsiam.DeleteOpenIDConnectProviderOutput{}, nil
 					},
 				},
 				cr: oidcProvider(withURL(url)),

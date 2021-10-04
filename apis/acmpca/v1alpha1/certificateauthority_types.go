@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/aws/aws-sdk-go-v2/service/acmpca"
+	"github.com/aws/aws-sdk-go-v2/service/acmpca/types"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -29,7 +29,7 @@ type CertificateAuthorityParameters struct {
 
 	// Type of the certificate authority
 	// +kubebuilder:validation:Enum=ROOT;SUBORDINATE
-	Type acmpca.CertificateAuthorityType `json:"type"`
+	Type types.CertificateAuthorityType `json:"type"`
 
 	// RevocationConfiguration to associate with the certificateAuthority.
 	// +optional
@@ -40,7 +40,7 @@ type CertificateAuthorityParameters struct {
 
 	// The number of days to make a CA restorable after it has been deleted
 	// +optional
-	PermanentDeletionTimeInDays *int64 `json:"permanentDeletionTimeInDays,omitempty"`
+	PermanentDeletionTimeInDays *int32 `json:"permanentDeletionTimeInDays,omitempty"`
 
 	// Status of the certificate authority.
 	// This value cannot be configured at creation, but can be updated to set a
@@ -79,7 +79,7 @@ type RevocationConfiguration struct {
 
 	// Number of days until a certificate expires
 	// +optional
-	ExpirationInDays *int64 `json:"expirationInDays,omitempty"`
+	ExpirationInDays *int32 `json:"expirationInDays,omitempty"`
 }
 
 // CertificateAuthorityConfiguration is
@@ -87,11 +87,11 @@ type CertificateAuthorityConfiguration struct {
 
 	// Type of the public key algorithm
 	// +kubebuilder:validation:Enum=RSA_2048;EC_secp384r1;EC_prime256v1;RSA_4096
-	KeyAlgorithm acmpca.KeyAlgorithm `json:"keyAlgorithm"`
+	KeyAlgorithm types.KeyAlgorithm `json:"keyAlgorithm"`
 
 	// Algorithm that private CA uses to sign certificate requests
 	// +kubebuilder:validation:Enum=SHA512WITHECDSA;SHA256WITHECDSA;SHA384WITHECDSA;SHA512WITHRSA;SHA256WITHRSA;SHA384WITHRSA
-	SigningAlgorithm acmpca.SigningAlgorithm `json:"signingAlgorithm"`
+	SigningAlgorithm types.SigningAlgorithm `json:"signingAlgorithm"`
 
 	// Subject is information of Certificate Authority
 	Subject Subject `json:"subject"`

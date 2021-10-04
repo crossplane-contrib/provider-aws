@@ -99,7 +99,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errNotEKSFargateProfile)
 	}
 
-	rsp, err := e.client.DescribeFargateProfileRequest(&awseks.DescribeFargateProfileInput{FargateProfileName: aws.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName}).Send(ctx)
+	rsp, err := e.client.DescribeFargateProfile(ctx, &awseks.DescribeFargateProfileInput{FargateProfileName: aws.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDescribeFailed)
 	}
@@ -137,7 +137,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if cr.Status.AtProvider.Status == v1alpha1.FargateProfileStatusCreating {
 		return managed.ExternalCreation{}, nil
 	}
-	_, err := e.client.CreateFargateProfileRequest(eks.GenerateCreateFargateProfileInput(meta.GetExternalName(cr), cr.Spec.ForProvider)).Send(ctx)
+	_, err := e.client.CreateFargateProfile(ctx, eks.GenerateCreateFargateProfileInput(meta.GetExternalName(cr), cr.Spec.ForProvider))
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
 }
 
@@ -149,18 +149,18 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	// NOTE(knappek): we have to describe the fargate profile again because
 	// a fargate profile is actually immutable and can't be updated.
-	rsp, err := e.client.DescribeFargateProfileRequest(&awseks.DescribeFargateProfileInput{FargateProfileName: aws.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName}).Send(ctx)
+	rsp, err := e.client.DescribeFargateProfile(ctx, &awseks.DescribeFargateProfileInput{FargateProfileName: aws.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName})
 	if err != nil || rsp.FargateProfile == nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errDescribeFailed)
 	}
 	add, remove := awsclient.DiffTags(cr.Spec.ForProvider.Tags, rsp.FargateProfile.Tags)
 	if len(remove) != 0 {
-		if _, err := e.client.UntagResourceRequest(&awseks.UntagResourceInput{ResourceArn: rsp.FargateProfile.FargateProfileArn, TagKeys: remove}).Send(ctx); err != nil {
+		if _, err := e.client.UntagResource(ctx, &awseks.UntagResourceInput{ResourceArn: rsp.FargateProfile.FargateProfileArn, TagKeys: remove}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 		}
 	}
 	if len(add) != 0 {
-		if _, err := e.client.TagResourceRequest(&awseks.TagResourceInput{ResourceArn: rsp.FargateProfile.FargateProfileArn, Tags: add}).Send(ctx); err != nil {
+		if _, err := e.client.TagResource(ctx, &awseks.TagResourceInput{ResourceArn: rsp.FargateProfile.FargateProfileArn, Tags: add}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(eks.IsErrorInUse, err), errAddTagsFailed)
 		}
 	}
@@ -176,7 +176,7 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if cr.Status.AtProvider.Status == v1alpha1.FargateProfileStatusDeleting {
 		return nil
 	}
-	_, err := e.client.DeleteFargateProfileRequest(&awseks.DeleteFargateProfileInput{FargateProfileName: awsclient.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName}).Send(ctx)
+	_, err := e.client.DeleteFargateProfile(ctx, &awseks.DeleteFargateProfileInput{FargateProfileName: awsclient.String(meta.GetExternalName(cr)), ClusterName: &cr.Spec.ForProvider.ClusterName})
 	return awsclient.Wrap(resource.Ignore(eks.IsErrorNotFound, err), errDeleteFailed)
 }
 

@@ -1,3 +1,5 @@
+
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -152,12 +154,12 @@ spec:
                   numCacheNodes:
                     description: The initial number of cache nodes that the cluster
                       has.
-                    format: int64
+                    format: int32
                     type: integer
                   port:
                     description: The port number on which each of the cache nodes
                       accepts connections.
-                    format: int64
+                    format: int32
                     type: integer
                   preferredAvailabilityZone:
                     description: 'The EC2 Availability Zone in which the cluster is
@@ -228,7 +230,7 @@ spec:
                   snapshotRetentionLimit:
                     description: The number of days for which ElastiCache retains
                       automatic snapshots before deleting them.
-                    format: int64
+                    format: int32
                     type: integer
                   snapshotWindow:
                     description: The daily time range (in UTC) during which ElastiCache

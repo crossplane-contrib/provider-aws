@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 
@@ -37,14 +38,15 @@ var (
 	lambdaArn                         = "lambda::123"
 	queueArn                          = "queue::123"
 	topicArn                          = "topic::123"
+	lostEvent                         = s3types.Event("s3:ReducedRedundancyLostObject")
 )
 
 func generateNotificationEvents() []string {
 	return []string{"s3:ReducedRedundancyLostObject"}
 }
 
-func generateNotificationAWSEvents() []s3.Event {
-	return []s3.Event{s3.EventS3ReducedRedundancyLostObject}
+func generateNotificationAWSEvents() []s3types.Event {
+	return []s3types.Event{lostEvent}
 }
 
 func generateNotificationFilter() *v1beta1.NotificationConfigurationFilter {
@@ -58,11 +60,11 @@ func generateNotificationFilter() *v1beta1.NotificationConfigurationFilter {
 	}
 }
 
-func generateAWSNotificationFilter() *s3.NotificationConfigurationFilter {
-	return &s3.NotificationConfigurationFilter{
-		Key: &s3.S3KeyFilter{
-			FilterRules: []s3.FilterRule{{
-				Name:  s3.FilterRuleNamePrefix,
+func generateAWSNotificationFilter() *s3types.NotificationConfigurationFilter {
+	return &s3types.NotificationConfigurationFilter{
+		Key: &s3types.S3KeyFilter{
+			FilterRules: []s3types.FilterRule{{
+				Name:  s3types.FilterRuleNamePrefix,
 				Value: &filterRuleValue,
 			}},
 		},
@@ -92,21 +94,21 @@ func generateNotificationConfig() *v1beta1.NotificationConfiguration {
 	}
 }
 
-func generateAWSNotification() *s3.NotificationConfiguration {
-	return &s3.NotificationConfiguration{
-		LambdaFunctionConfigurations: []s3.LambdaFunctionConfiguration{{
+func generateAWSNotification() *s3types.NotificationConfiguration {
+	return &s3types.NotificationConfiguration{
+		LambdaFunctionConfigurations: []s3types.LambdaFunctionConfiguration{{
 			Events:            generateNotificationAWSEvents(),
 			Filter:            generateAWSNotificationFilter(),
 			Id:                &id,
 			LambdaFunctionArn: &lambdaArn,
 		}},
-		QueueConfigurations: []s3.QueueConfiguration{{
+		QueueConfigurations: []s3types.QueueConfiguration{{
 			Events:   generateNotificationAWSEvents(),
 			Filter:   generateAWSNotificationFilter(),
 			Id:       &id,
 			QueueArn: &queueArn,
 		}},
-		TopicConfigurations: []s3.TopicConfiguration{{
+		TopicConfigurations: []s3types.TopicConfiguration{{
 			Events:   generateNotificationAWSEvents(),
 			Filter:   generateAWSNotificationFilter(),
 			Id:       &id,
@@ -134,10 +136,8 @@ func TestNotificationObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-						return s3.GetBucketNotificationConfigurationRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketNotificationConfigurationOutput{}),
-						}
+					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
+						return nil, errBoom
 					},
 				}),
 			},
@@ -150,10 +150,8 @@ func TestNotificationObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-						return s3.GetBucketNotificationConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{}),
-						}
+					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
+						return &s3.GetBucketNotificationConfigurationOutput{}, nil
 					},
 				}),
 			},
@@ -166,13 +164,11 @@ func TestNotificationObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-						return s3.GetBucketNotificationConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{
-								LambdaFunctionConfigurations: generateAWSNotification().LambdaFunctionConfigurations,
-								TopicConfigurations:          generateAWSNotification().TopicConfigurations,
-							}),
-						}
+					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
+						return &s3.GetBucketNotificationConfigurationOutput{
+							LambdaFunctionConfigurations: generateAWSNotification().LambdaFunctionConfigurations,
+							TopicConfigurations:          generateAWSNotification().TopicConfigurations,
+						}, nil
 					},
 				}),
 			},
@@ -185,10 +181,8 @@ func TestNotificationObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(nil)),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-						return s3.GetBucketNotificationConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{}),
-						}
+					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
+						return &s3.GetBucketNotificationConfigurationOutput{}, nil
 					},
 				}),
 			},
@@ -201,14 +195,12 @@ func TestNotificationObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-						return s3.GetBucketNotificationConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{
-								LambdaFunctionConfigurations: generateAWSNotification().LambdaFunctionConfigurations,
-								QueueConfigurations:          generateAWSNotification().QueueConfigurations,
-								TopicConfigurations:          generateAWSNotification().TopicConfigurations,
-							}),
-						}
+					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
+						return &s3.GetBucketNotificationConfigurationOutput{
+							LambdaFunctionConfigurations: generateAWSNotification().LambdaFunctionConfigurations,
+							QueueConfigurations:          generateAWSNotification().QueueConfigurations,
+							TopicConfigurations:          generateAWSNotification().TopicConfigurations,
+						}, nil
 					},
 				}),
 			},
@@ -250,10 +242,8 @@ func TestNotificationCreateOrUpdate(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
-					MockPutBucketNotificationConfigurationRequest: func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
-						return s3.PutBucketNotificationConfigurationRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketNotificationConfigurationOutput{}),
-						}
+					MockPutBucketNotificationConfiguration: func(ctx context.Context, input *s3.PutBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketNotificationConfigurationOutput, error) {
+						return nil, errBoom
 					},
 				}),
 			},
@@ -265,10 +255,8 @@ func TestNotificationCreateOrUpdate(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
-					MockPutBucketNotificationConfigurationRequest: func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
-						return s3.PutBucketNotificationConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.PutBucketNotificationConfigurationOutput{}),
-						}
+					MockPutBucketNotificationConfiguration: func(ctx context.Context, input *s3.PutBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketNotificationConfigurationOutput, error) {
+						return &s3.PutBucketNotificationConfigurationOutput{}, nil
 					},
 				}),
 			},
@@ -280,10 +268,8 @@ func TestNotificationCreateOrUpdate(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
-					MockPutBucketNotificationConfigurationRequest: func(input *s3.PutBucketNotificationConfigurationInput) s3.PutBucketNotificationConfigurationRequest {
-						return s3.PutBucketNotificationConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.PutBucketNotificationConfigurationOutput{}),
-						}
+					MockPutBucketNotificationConfiguration: func(ctx context.Context, input *s3.PutBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.PutBucketNotificationConfigurationOutput, error) {
+						return &s3.PutBucketNotificationConfigurationOutput{}, nil
 					},
 				}),
 			},
@@ -322,10 +308,8 @@ func TestNotifLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-						return s3.GetBucketNotificationConfigurationRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketNotificationConfigurationOutput{}),
-						}
+					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
+						return &s3.GetBucketNotificationConfigurationOutput{}, errBoom
 					},
 				}),
 			},
@@ -338,10 +322,8 @@ func TestNotifLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-						return s3.GetBucketNotificationConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{}),
-						}
+					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
+						return &s3.GetBucketNotificationConfigurationOutput{}, nil
 					},
 				}),
 			},
@@ -354,14 +336,12 @@ func TestNotifLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(nil)),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-						return s3.GetBucketNotificationConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{
-								LambdaFunctionConfigurations: generateAWSNotification().LambdaFunctionConfigurations,
-								TopicConfigurations:          generateAWSNotification().TopicConfigurations,
-								QueueConfigurations:          generateAWSNotification().QueueConfigurations,
-							}),
-						}
+					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
+						return &s3.GetBucketNotificationConfigurationOutput{
+							LambdaFunctionConfigurations: generateAWSNotification().LambdaFunctionConfigurations,
+							TopicConfigurations:          generateAWSNotification().TopicConfigurations,
+							QueueConfigurations:          generateAWSNotification().QueueConfigurations,
+						}, nil
 					},
 				}),
 			},
@@ -374,10 +354,8 @@ func TestNotifLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithNotificationConfig(generateNotificationConfig())),
 				cl: NewNotificationConfigurationClient(fake.MockBucketClient{
-					MockGetBucketNotificationConfigurationRequest: func(input *s3.GetBucketNotificationConfigurationInput) s3.GetBucketNotificationConfigurationRequest {
-						return s3.GetBucketNotificationConfigurationRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketNotificationConfigurationOutput{}),
-						}
+					MockGetBucketNotificationConfiguration: func(ctx context.Context, input *s3.GetBucketNotificationConfigurationInput, opts []func(*s3.Options)) (*s3.GetBucketNotificationConfigurationOutput, error) {
+						return &s3.GetBucketNotificationConfigurationOutput{}, nil
 					},
 				}),
 			},

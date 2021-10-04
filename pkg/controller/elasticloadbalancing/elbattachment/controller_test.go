@@ -18,11 +18,10 @@ package elbattachment
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	awselb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
+	awselbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
@@ -45,8 +44,8 @@ var (
 
 	errBoom = errors.New("boom")
 
-	loadBalancer = awselb.LoadBalancerDescription{
-		Instances: []awselb.Instance{
+	loadBalancer = awselbtypes.LoadBalancerDescription{
+		Instances: []awselbtypes.Instance{
 			{
 				InstanceId: &instanceID,
 			},
@@ -96,12 +95,10 @@ func TestObserve(t *testing.T) {
 		"Successful": {
 			args: args{
 				elb: &fake.MockClient{
-					MockDescribeLoadBalancersRequest: func(input *awselb.DescribeLoadBalancersInput) awselb.DescribeLoadBalancersRequest {
-						return awselb.DescribeLoadBalancersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeLoadBalancersOutput{
-								LoadBalancerDescriptions: []awselb.LoadBalancerDescription{loadBalancer},
-							}},
-						}
+					MockDescribeLoadBalancers: func(ctx context.Context, input *awselb.DescribeLoadBalancersInput, opts []func(*awselb.Options)) (*awselb.DescribeLoadBalancersOutput, error) {
+						return &awselb.DescribeLoadBalancersOutput{
+							LoadBalancerDescriptions: []awselbtypes.LoadBalancerDescription{loadBalancer},
+						}, nil
 					},
 				},
 				cr: elbAttachmentResource(withExternalName(elbName),
@@ -126,12 +123,10 @@ func TestObserve(t *testing.T) {
 		"NoAttachment": {
 			args: args{
 				elb: &fake.MockClient{
-					MockDescribeLoadBalancersRequest: func(input *awselb.DescribeLoadBalancersInput) awselb.DescribeLoadBalancersRequest {
-						return awselb.DescribeLoadBalancersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DescribeLoadBalancersOutput{
-								LoadBalancerDescriptions: []awselb.LoadBalancerDescription{loadBalancer},
-							}},
-						}
+					MockDescribeLoadBalancers: func(ctx context.Context, input *awselb.DescribeLoadBalancersInput, opts []func(*awselb.Options)) (*awselb.DescribeLoadBalancersOutput, error) {
+						return &awselb.DescribeLoadBalancersOutput{
+							LoadBalancerDescriptions: []awselbtypes.LoadBalancerDescription{loadBalancer},
+						}, nil
 					},
 				},
 				cr: elbAttachmentResource(withSpec(v1alpha1.ELBAttachmentParameters{
@@ -151,10 +146,8 @@ func TestObserve(t *testing.T) {
 		"DescribeError": {
 			args: args{
 				elb: &fake.MockClient{
-					MockDescribeLoadBalancersRequest: func(input *awselb.DescribeLoadBalancersInput) awselb.DescribeLoadBalancersRequest {
-						return awselb.DescribeLoadBalancersRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockDescribeLoadBalancers: func(ctx context.Context, input *awselb.DescribeLoadBalancersInput, opts []func(*awselb.Options)) (*awselb.DescribeLoadBalancersOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: elbAttachmentResource(withSpec(v1alpha1.ELBAttachmentParameters{
@@ -205,10 +198,8 @@ func TestCreate(t *testing.T) {
 		"VaildInput": {
 			args: args{
 				elb: &fake.MockClient{
-					MockRegisterInstancesWithLoadBalancerRequest: func(input *awselb.RegisterInstancesWithLoadBalancerInput) awselb.RegisterInstancesWithLoadBalancerRequest {
-						return awselb.RegisterInstancesWithLoadBalancerRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.RegisterInstancesWithLoadBalancerOutput{}},
-						}
+					MockRegisterInstancesWithLoadBalancer: func(ctx context.Context, input *awselb.RegisterInstancesWithLoadBalancerInput, opts []func(*awselb.Options)) (*awselb.RegisterInstancesWithLoadBalancerOutput, error) {
+						return &awselb.RegisterInstancesWithLoadBalancerOutput{}, nil
 					},
 				},
 				cr: elbAttachmentResource(withExternalName(elbName),
@@ -229,10 +220,8 @@ func TestCreate(t *testing.T) {
 		"CreateError": {
 			args: args{
 				elb: &fake.MockClient{
-					MockRegisterInstancesWithLoadBalancerRequest: func(input *awselb.RegisterInstancesWithLoadBalancerInput) awselb.RegisterInstancesWithLoadBalancerRequest {
-						return awselb.RegisterInstancesWithLoadBalancerRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockRegisterInstancesWithLoadBalancer: func(ctx context.Context, input *awselb.RegisterInstancesWithLoadBalancerInput, opts []func(*awselb.Options)) (*awselb.RegisterInstancesWithLoadBalancerOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: elbAttachmentResource(withExternalName(elbName),
@@ -285,10 +274,8 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				elb: &fake.MockClient{
-					MockDeregisterInstancesFromLoadBalancerRequest: func(input *awselb.DeregisterInstancesFromLoadBalancerInput) awselb.DeregisterInstancesFromLoadBalancerRequest {
-						return awselb.DeregisterInstancesFromLoadBalancerRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awselb.DeregisterInstancesFromLoadBalancerOutput{}},
-						}
+					MockDeregisterInstancesFromLoadBalancer: func(ctx context.Context, input *awselb.DeregisterInstancesFromLoadBalancerInput, opts []func(*awselb.Options)) (*awselb.DeregisterInstancesFromLoadBalancerOutput, error) {
+						return &awselb.DeregisterInstancesFromLoadBalancerOutput{}, nil
 					},
 				},
 				cr: elbAttachmentResource(withExternalName(elbName)),
@@ -301,10 +288,8 @@ func TestDelete(t *testing.T) {
 		"DeleteError": {
 			args: args{
 				elb: &fake.MockClient{
-					MockDeregisterInstancesFromLoadBalancerRequest: func(input *awselb.DeregisterInstancesFromLoadBalancerInput) awselb.DeregisterInstancesFromLoadBalancerRequest {
-						return awselb.DeregisterInstancesFromLoadBalancerRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockDeregisterInstancesFromLoadBalancer: func(ctx context.Context, input *awselb.DeregisterInstancesFromLoadBalancerInput, opts []func(*awselb.Options)) (*awselb.DeregisterInstancesFromLoadBalancerOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: elbAttachmentResource(withExternalName(elbName)),

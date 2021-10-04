@@ -1,31 +1,35 @@
 package fake
 
-import "github.com/aws/aws-sdk-go-v2/service/sns"
+import (
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/service/sns"
+)
 
 // MockSubscriptionClient is a type that implements all the methods for SubscriptionClient interface
 type MockSubscriptionClient struct {
-	MockSubscribeRequest                 func(*sns.SubscribeInput) sns.SubscribeRequest
-	MockUnsubscribeRequest               func(*sns.UnsubscribeInput) sns.UnsubscribeRequest
-	MockGetSubscriptionAttributesRequest func(*sns.GetSubscriptionAttributesInput) sns.GetSubscriptionAttributesRequest
-	MockSetSubscriptionAttributesRequest func(*sns.SetSubscriptionAttributesInput) sns.SetSubscriptionAttributesRequest
+	MockSubscribe                 func(ctx context.Context, input *sns.SubscribeInput, opts []func(*sns.Options)) (*sns.SubscribeOutput, error)
+	MockUnsubscribe               func(ctx context.Context, input *sns.UnsubscribeInput, opts []func(*sns.Options)) (*sns.UnsubscribeOutput, error)
+	MockGetSubscriptionAttributes func(ctx context.Context, input *sns.GetSubscriptionAttributesInput, opts []func(*sns.Options)) (*sns.GetSubscriptionAttributesOutput, error)
+	MockSetSubscriptionAttributes func(ctx context.Context, input *sns.SetSubscriptionAttributesInput, opts []func(*sns.Options)) (*sns.SetSubscriptionAttributesOutput, error)
 }
 
-// SubscribeRequest mocks SubscribeRequest method
-func (m *MockSubscriptionClient) SubscribeRequest(input *sns.SubscribeInput) sns.SubscribeRequest {
-	return m.MockSubscribeRequest(input)
+// Subscribe mocks Subscribe method
+func (m *MockSubscriptionClient) Subscribe(ctx context.Context, input *sns.SubscribeInput, opts ...func(*sns.Options)) (*sns.SubscribeOutput, error) {
+	return m.MockSubscribe(ctx, input, opts)
 }
 
-// UnsubscribeRequest mocks UnsubscribeRequest method
-func (m *MockSubscriptionClient) UnsubscribeRequest(input *sns.UnsubscribeInput) sns.UnsubscribeRequest {
-	return m.MockUnsubscribeRequest(input)
+// Unsubscribe mocks Unsubscribe method
+func (m *MockSubscriptionClient) Unsubscribe(ctx context.Context, input *sns.UnsubscribeInput, opts ...func(*sns.Options)) (*sns.UnsubscribeOutput, error) {
+	return m.MockUnsubscribe(ctx, input, opts)
 }
 
-// GetSubscriptionAttributesRequest mocks GetSubscriptionAttributesRequest method
-func (m *MockSubscriptionClient) GetSubscriptionAttributesRequest(input *sns.GetSubscriptionAttributesInput) sns.GetSubscriptionAttributesRequest {
-	return m.MockGetSubscriptionAttributesRequest(input)
+// GetSubscriptionAttributes mocks GetSubscriptionAttributes method
+func (m *MockSubscriptionClient) GetSubscriptionAttributes(ctx context.Context, input *sns.GetSubscriptionAttributesInput, opts ...func(*sns.Options)) (*sns.GetSubscriptionAttributesOutput, error) {
+	return m.MockGetSubscriptionAttributes(ctx, input, opts)
 }
 
-// SetSubscriptionAttributesRequest mocks SetSubscriptionAttributesRequest method
-func (m *MockSubscriptionClient) SetSubscriptionAttributesRequest(input *sns.SetSubscriptionAttributesInput) sns.SetSubscriptionAttributesRequest {
-	return m.MockSetSubscriptionAttributesRequest(input)
+// SetSubscriptionAttributes mocks SetSubscriptionAttributes method
+func (m *MockSubscriptionClient) SetSubscriptionAttributes(ctx context.Context, input *sns.SetSubscriptionAttributesInput, opts ...func(*sns.Options)) (*sns.SetSubscriptionAttributesOutput, error) {
+	return m.MockSetSubscriptionAttributes(ctx, input, opts)
 }

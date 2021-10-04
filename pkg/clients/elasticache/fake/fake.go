@@ -17,100 +17,99 @@ limitations under the License.
 package fake
 
 import (
-	"github.com/aws/aws-sdk-go-v2/service/elasticache"
-	"github.com/aws/aws-sdk-go-v2/service/elasticache/elasticacheiface"
-)
+	"context"
 
-var _ elasticacheiface.ClientAPI = &MockClient{}
+	"github.com/aws/aws-sdk-go-v2/service/elasticache"
+)
 
 // MockClient is a fake implementation of cloudmemorystore.Client.
 type MockClient struct {
-	elasticacheiface.ClientAPI
+	elasticache.Client
 
-	MockDescribeReplicationGroupsRequest func(*elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest
-	MockCreateReplicationGroupRequest    func(*elasticache.CreateReplicationGroupInput) elasticache.CreateReplicationGroupRequest
-	MockModifyReplicationGroupRequest    func(*elasticache.ModifyReplicationGroupInput) elasticache.ModifyReplicationGroupRequest
-	MockDeleteReplicationGroupRequest    func(*elasticache.DeleteReplicationGroupInput) elasticache.DeleteReplicationGroupRequest
+	MockDescribeReplicationGroups func(context.Context, *elasticache.DescribeReplicationGroupsInput, []func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error)
+	MockCreateReplicationGroup    func(context.Context, *elasticache.CreateReplicationGroupInput, []func(*elasticache.Options)) (*elasticache.CreateReplicationGroupOutput, error)
+	MockModifyReplicationGroup    func(context.Context, *elasticache.ModifyReplicationGroupInput, []func(*elasticache.Options)) (*elasticache.ModifyReplicationGroupOutput, error)
+	MockDeleteReplicationGroup    func(context.Context, *elasticache.DeleteReplicationGroupInput, []func(*elasticache.Options)) (*elasticache.DeleteReplicationGroupOutput, error)
 
-	MockDescribeCacheSubnetGroupsRequest func(*elasticache.DescribeCacheSubnetGroupsInput) elasticache.DescribeCacheSubnetGroupsRequest
-	MockCreateCacheSubnetGroupRequest    func(*elasticache.CreateCacheSubnetGroupInput) elasticache.CreateCacheSubnetGroupRequest
-	MockModifyCacheSubnetGroupRequest    func(*elasticache.ModifyCacheSubnetGroupInput) elasticache.ModifyCacheSubnetGroupRequest
-	MockDeleteCacheSubnetGroupRequest    func(*elasticache.DeleteCacheSubnetGroupInput) elasticache.DeleteCacheSubnetGroupRequest
+	MockDescribeCacheSubnetGroups func(context.Context, *elasticache.DescribeCacheSubnetGroupsInput, []func(*elasticache.Options)) (*elasticache.DescribeCacheSubnetGroupsOutput, error)
+	MockCreateCacheSubnetGroup    func(context.Context, *elasticache.CreateCacheSubnetGroupInput, []func(*elasticache.Options)) (*elasticache.CreateCacheSubnetGroupOutput, error)
+	MockModifyCacheSubnetGroup    func(context.Context, *elasticache.ModifyCacheSubnetGroupInput, []func(*elasticache.Options)) (*elasticache.ModifyCacheSubnetGroupOutput, error)
+	MockDeleteCacheSubnetGroup    func(context.Context, *elasticache.DeleteCacheSubnetGroupInput, []func(*elasticache.Options)) (*elasticache.DeleteCacheSubnetGroupOutput, error)
 
-	MockDescribeCacheClustersRequest func(*elasticache.DescribeCacheClustersInput) elasticache.DescribeCacheClustersRequest
-	MockCreateCacheClusterRequest    func(*elasticache.CreateCacheClusterInput) elasticache.CreateCacheClusterRequest
-	MockDeleteCacheClusterRequest    func(*elasticache.DeleteCacheClusterInput) elasticache.DeleteCacheClusterRequest
-	MockModifyCacheClusterRequest    func(*elasticache.ModifyCacheClusterInput) elasticache.ModifyCacheClusterRequest
+	MockDescribeCacheClusters func(context.Context, *elasticache.DescribeCacheClustersInput, []func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error)
+	MockCreateCacheCluster    func(context.Context, *elasticache.CreateCacheClusterInput, []func(*elasticache.Options)) (*elasticache.CreateCacheClusterOutput, error)
+	MockDeleteCacheCluster    func(context.Context, *elasticache.DeleteCacheClusterInput, []func(*elasticache.Options)) (*elasticache.DeleteCacheClusterOutput, error)
+	MockModifyCacheCluster    func(context.Context, *elasticache.ModifyCacheClusterInput, []func(*elasticache.Options)) (*elasticache.ModifyCacheClusterOutput, error)
 }
 
-// DescribeReplicationGroupsRequest calls the underlying
-// MockDescribeReplicationGroupsRequest method.
-func (c *MockClient) DescribeReplicationGroupsRequest(i *elasticache.DescribeReplicationGroupsInput) elasticache.DescribeReplicationGroupsRequest {
-	return c.MockDescribeReplicationGroupsRequest(i)
+// DescribeReplicationGroups calls the underlying
+// MockDescribeReplicationGroups method.
+func (c *MockClient) DescribeReplicationGroups(ctx context.Context, i *elasticache.DescribeReplicationGroupsInput, opts ...func(*elasticache.Options)) (*elasticache.DescribeReplicationGroupsOutput, error) {
+	return c.MockDescribeReplicationGroups(ctx, i, opts)
 }
 
-// CreateReplicationGroupRequest calls the underlying
-// MockCreateReplicationGroupRequest method.
-func (c *MockClient) CreateReplicationGroupRequest(i *elasticache.CreateReplicationGroupInput) elasticache.CreateReplicationGroupRequest {
-	return c.MockCreateReplicationGroupRequest(i)
+// CreateReplicationGroup calls the underlying
+// MockCreateReplicationGroup method.
+func (c *MockClient) CreateReplicationGroup(ctx context.Context, i *elasticache.CreateReplicationGroupInput, opts ...func(*elasticache.Options)) (*elasticache.CreateReplicationGroupOutput, error) {
+	return c.MockCreateReplicationGroup(ctx, i, opts)
 }
 
-// ModifyReplicationGroupRequest calls the underlying
-// MockModifyReplicationGroupRequest method.
-func (c *MockClient) ModifyReplicationGroupRequest(i *elasticache.ModifyReplicationGroupInput) elasticache.ModifyReplicationGroupRequest {
-	return c.MockModifyReplicationGroupRequest(i)
+// ModifyReplicationGroup calls the underlying
+// MockModifyReplicationGroup method.
+func (c *MockClient) ModifyReplicationGroup(ctx context.Context, i *elasticache.ModifyReplicationGroupInput, opts ...func(*elasticache.Options)) (*elasticache.ModifyReplicationGroupOutput, error) {
+	return c.MockModifyReplicationGroup(ctx, i, opts)
 }
 
-// DeleteReplicationGroupRequest calls the underlying
-// MockDeleteReplicationGroupRequest method.
-func (c *MockClient) DeleteReplicationGroupRequest(i *elasticache.DeleteReplicationGroupInput) elasticache.DeleteReplicationGroupRequest {
-	return c.MockDeleteReplicationGroupRequest(i)
+// DeleteReplicationGroup calls the underlying
+// MockDeleteReplicationGroup method.
+func (c *MockClient) DeleteReplicationGroup(ctx context.Context, i *elasticache.DeleteReplicationGroupInput, opts ...func(*elasticache.Options)) (*elasticache.DeleteReplicationGroupOutput, error) {
+	return c.MockDeleteReplicationGroup(ctx, i, opts)
 }
 
-// DescribeCacheClustersRequest calls the underlying
-// MockDescribeCacheClustersRequest method.
-func (c *MockClient) DescribeCacheClustersRequest(i *elasticache.DescribeCacheClustersInput) elasticache.DescribeCacheClustersRequest {
-	return c.MockDescribeCacheClustersRequest(i)
+// DescribeCacheClusters calls the underlying
+// MockDescribeCacheClusters method.
+func (c *MockClient) DescribeCacheClusters(ctx context.Context, i *elasticache.DescribeCacheClustersInput, opts ...func(*elasticache.Options)) (*elasticache.DescribeCacheClustersOutput, error) {
+	return c.MockDescribeCacheClusters(ctx, i, opts)
 }
 
-// DescribeCacheSubnetGroupsRequest calls the underlying
-// MockDescribeCacheSubnetGroupsRequest method.
-func (c *MockClient) DescribeCacheSubnetGroupsRequest(i *elasticache.DescribeCacheSubnetGroupsInput) elasticache.DescribeCacheSubnetGroupsRequest {
-	return c.MockDescribeCacheSubnetGroupsRequest(i)
+// DescribeCacheSubnetGroups calls the underlying
+// MockDescribeCacheSubnetGroups method.
+func (c *MockClient) DescribeCacheSubnetGroups(ctx context.Context, i *elasticache.DescribeCacheSubnetGroupsInput, opts ...func(*elasticache.Options)) (*elasticache.DescribeCacheSubnetGroupsOutput, error) {
+	return c.MockDescribeCacheSubnetGroups(ctx, i, opts)
 }
 
-// CreateCacheSubnetGroupRequest calls the underlying
-// MockCreateCacheSubnetGroupRequest method.
-func (c *MockClient) CreateCacheSubnetGroupRequest(i *elasticache.CreateCacheSubnetGroupInput) elasticache.CreateCacheSubnetGroupRequest {
-	return c.MockCreateCacheSubnetGroupRequest(i)
+// CreateCacheSubnetGroup calls the underlying
+// MockCreateCacheSubnetGroup method.
+func (c *MockClient) CreateCacheSubnetGroup(ctx context.Context, i *elasticache.CreateCacheSubnetGroupInput, opts ...func(*elasticache.Options)) (*elasticache.CreateCacheSubnetGroupOutput, error) {
+	return c.MockCreateCacheSubnetGroup(ctx, i, opts)
 }
 
-// ModifyCacheSubnetGroupRequest calls the underlying
-// MockCreateCacheSubnetGroupRequest method.
-func (c *MockClient) ModifyCacheSubnetGroupRequest(i *elasticache.ModifyCacheSubnetGroupInput) elasticache.ModifyCacheSubnetGroupRequest {
-	return c.MockModifyCacheSubnetGroupRequest(i)
+// ModifyCacheSubnetGroup calls the underlying
+// MockCreateCacheSubnetGroup method.
+func (c *MockClient) ModifyCacheSubnetGroup(ctx context.Context, i *elasticache.ModifyCacheSubnetGroupInput, opts ...func(*elasticache.Options)) (*elasticache.ModifyCacheSubnetGroupOutput, error) {
+	return c.MockModifyCacheSubnetGroup(ctx, i, opts)
 }
 
-// DeleteCacheSubnetGroupRequest calls the underlying
-// MockDeleteCacheSubnetGroupRequest method.
-func (c *MockClient) DeleteCacheSubnetGroupRequest(i *elasticache.DeleteCacheSubnetGroupInput) elasticache.DeleteCacheSubnetGroupRequest {
-	return c.MockDeleteCacheSubnetGroupRequest(i)
+// DeleteCacheSubnetGroup calls the underlying
+// MockDeleteCacheSubnetGroup method.
+func (c *MockClient) DeleteCacheSubnetGroup(ctx context.Context, i *elasticache.DeleteCacheSubnetGroupInput, opts ...func(*elasticache.Options)) (*elasticache.DeleteCacheSubnetGroupOutput, error) {
+	return c.MockDeleteCacheSubnetGroup(ctx, i, opts)
 }
 
-// CreateCacheClusterRequest calls the underlying
-// MockCreateCacheClusterRequest method.
-func (c *MockClient) CreateCacheClusterRequest(i *elasticache.CreateCacheClusterInput) elasticache.CreateCacheClusterRequest {
-	return c.MockCreateCacheClusterRequest(i)
+// CreateCacheCluster calls the underlying
+// MockCreateCacheCluster method.
+func (c *MockClient) CreateCacheCluster(ctx context.Context, i *elasticache.CreateCacheClusterInput, opts ...func(*elasticache.Options)) (*elasticache.CreateCacheClusterOutput, error) {
+	return c.MockCreateCacheCluster(ctx, i, opts)
 }
 
-// DeleteCacheClusterRequest calls the underlying
-// MockDeleteCacheClusterRequest method.
-func (c *MockClient) DeleteCacheClusterRequest(i *elasticache.DeleteCacheClusterInput) elasticache.DeleteCacheClusterRequest {
-	return c.MockDeleteCacheClusterRequest(i)
+// DeleteCacheCluster calls the underlying
+// MockDeleteCacheCluster method.
+func (c *MockClient) DeleteCacheCluster(ctx context.Context, i *elasticache.DeleteCacheClusterInput, opts ...func(*elasticache.Options)) (*elasticache.DeleteCacheClusterOutput, error) {
+	return c.MockDeleteCacheCluster(ctx, i, opts)
 }
 
-// ModifyCacheClusterRequest calls the underlying
-// MockModifyCacheClusterRequest method.
-func (c *MockClient) ModifyCacheClusterRequest(i *elasticache.ModifyCacheClusterInput) elasticache.ModifyCacheClusterRequest {
-	return c.MockModifyCacheClusterRequest(i)
+// ModifyCacheCluster calls the underlying
+// MockModifyCacheCluster method.
+func (c *MockClient) ModifyCacheCluster(ctx context.Context, i *elasticache.ModifyCacheClusterInput, opts ...func(*elasticache.Options)) (*elasticache.ModifyCacheClusterOutput, error) {
+	return c.MockModifyCacheCluster(ctx, i, opts)
 }

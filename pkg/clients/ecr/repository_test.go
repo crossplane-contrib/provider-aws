@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
+	ecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,23 +27,23 @@ var (
 	imageScanConfig = v1alpha1.ImageScanningConfiguration{
 		ScanOnPush: true,
 	}
-	awsImageScanConfig = ecr.ImageScanningConfiguration{
-		ScanOnPush: &imageScanConfig.ScanOnPush,
+	awsImageScanConfig = ecrtypes.ImageScanningConfiguration{
+		ScanOnPush: imageScanConfig.ScanOnPush,
 	}
-	ecrTag    = ecr.Tag{Key: &testKey, Value: &testValue}
+	ecrTag    = ecrtypes.Tag{Key: &testKey, Value: &testValue}
 	alpha1Tag = v1alpha1.Tag{Key: testKey, Value: testValue}
 )
 
 func TestGenerateRepositoryObservation(t *testing.T) {
 	cases := map[string]struct {
-		in  ecr.Repository
+		in  ecrtypes.Repository
 		out v1alpha1.RepositoryObservation
 	}{
 		"AllFilled": {
-			in: ecr.Repository{
+			in: ecrtypes.Repository{
 				CreatedAt:                  &createTime,
 				ImageScanningConfiguration: &awsImageScanConfig,
-				ImageTagMutability:         ecr.ImageTagMutability(tagMutability),
+				ImageTagMutability:         ecrtypes.ImageTagMutability(tagMutability),
 				RegistryId:                 aws.String(registryID),
 				RepositoryName:             aws.String(repositoryName),
 				RepositoryArn:              aws.String(repositoryARN),
@@ -70,9 +71,9 @@ func TestGenerateRepositoryObservation(t *testing.T) {
 
 func TestIsRepositoryUpToDate(t *testing.T) {
 	type args struct {
-		ecrTags []ecr.Tag
+		ecrTags []ecrtypes.Tag
 		e       v1alpha1.RepositoryParameters
-		repo    ecr.Repository
+		repo    ecrtypes.Repository
 	}
 
 	cases := map[string]struct {
@@ -81,28 +82,28 @@ func TestIsRepositoryUpToDate(t *testing.T) {
 	}{
 		"SameFields": {
 			args: args{
-				ecrTags: []ecr.Tag{ecrTag},
+				ecrTags: []ecrtypes.Tag{ecrTag},
 				e: v1alpha1.RepositoryParameters{
 					ImageScanningConfiguration: &imageScanConfig,
 					ImageTagMutability:         &tagMutability,
 					Tags:                       []v1alpha1.Tag{alpha1Tag},
 				},
-				repo: ecr.Repository{
+				repo: ecrtypes.Repository{
 					ImageScanningConfiguration: &awsImageScanConfig,
-					ImageTagMutability:         ecr.ImageTagMutabilityMutable,
+					ImageTagMutability:         ecrtypes.ImageTagMutabilityMutable,
 				},
 			},
 			want: true,
 		},
 		"DifferentFields": {
 			args: args{
-				ecrTags: []ecr.Tag{},
+				ecrTags: []ecrtypes.Tag{},
 				e: v1alpha1.RepositoryParameters{
 					Tags: []v1alpha1.Tag{alpha1Tag},
 				},
-				repo: ecr.Repository{
+				repo: ecrtypes.Repository{
 					ImageScanningConfiguration: &awsImageScanConfig,
-					ImageTagMutability:         ecr.ImageTagMutabilityMutable,
+					ImageTagMutability:         ecrtypes.ImageTagMutabilityMutable,
 				},
 			},
 			want: false,
@@ -140,7 +141,7 @@ func TestGenerateCreateRepositoryInput(t *testing.T) {
 			},
 			want: &ecr.CreateRepositoryInput{
 				RepositoryName:             &repositoryName,
-				ImageTagMutability:         ecr.ImageTagMutabilityMutable,
+				ImageTagMutability:         ecrtypes.ImageTagMutabilityMutable,
 				ImageScanningConfiguration: &awsImageScanConfig,
 			},
 		},
@@ -154,7 +155,7 @@ func TestGenerateCreateRepositoryInput(t *testing.T) {
 			},
 			want: &ecr.CreateRepositoryInput{
 				RepositoryName:     &repositoryName,
-				ImageTagMutability: ecr.ImageTagMutabilityMutable,
+				ImageTagMutability: ecrtypes.ImageTagMutabilityMutable,
 			},
 		},
 	}
@@ -172,14 +173,14 @@ func TestGenerateCreateRepositoryInput(t *testing.T) {
 func TestLateInitialize(t *testing.T) {
 	cases := map[string]struct {
 		parameters *v1alpha1.RepositoryParameters
-		repository *ecr.Repository
+		repository *ecrtypes.Repository
 		want       *v1alpha1.RepositoryParameters
 	}{
 		"AllOptionalFields": {
 			parameters: &v1alpha1.RepositoryParameters{},
-			repository: &ecr.Repository{
+			repository: &ecrtypes.Repository{
 				ImageScanningConfiguration: &awsImageScanConfig,
-				ImageTagMutability:         ecr.ImageTagMutabilityMutable,
+				ImageTagMutability:         ecrtypes.ImageTagMutabilityMutable,
 			},
 			want: &v1alpha1.RepositoryParameters{
 				ImageScanningConfiguration: &imageScanConfig,
@@ -192,9 +193,9 @@ func TestLateInitialize(t *testing.T) {
 				ImageTagMutability:         &tagMutability,
 				Tags:                       []v1alpha1.Tag{alpha1Tag},
 			},
-			repository: &ecr.Repository{
+			repository: &ecrtypes.Repository{
 				ImageScanningConfiguration: &awsImageScanConfig,
-				ImageTagMutability:         ecr.ImageTagMutabilityMutable,
+				ImageTagMutability:         ecrtypes.ImageTagMutabilityMutable,
 			},
 			want: &v1alpha1.RepositoryParameters{
 				ImageScanningConfiguration: &imageScanConfig,
@@ -217,10 +218,10 @@ func TestLateInitialize(t *testing.T) {
 func TestDiffTags(t *testing.T) {
 	type args struct {
 		local  []v1alpha1.Tag
-		remote []ecr.Tag
+		remote []ecrtypes.Tag
 	}
 	type want struct {
-		add    []ecr.Tag
+		add    []ecrtypes.Tag
 		remove []string
 	}
 	cases := map[string]struct {
@@ -234,7 +235,7 @@ func TestDiffTags(t *testing.T) {
 				},
 			},
 			want: want{
-				add: []ecr.Tag{
+				add: []ecrtypes.Tag{
 					{Key: aws.String("key"), Value: aws.String("val")},
 				},
 			},
@@ -246,12 +247,12 @@ func TestDiffTags(t *testing.T) {
 					{Key: "key1", Value: "val1"},
 					{Key: "key2", Value: "val2"},
 				},
-				remote: []ecr.Tag{
+				remote: []ecrtypes.Tag{
 					{Key: aws.String("key"), Value: aws.String("val")},
 				},
 			},
 			want: want{
-				add: []ecr.Tag{
+				add: []ecrtypes.Tag{
 					{Key: aws.String("key1"), Value: aws.String("val1")},
 					{Key: aws.String("key2"), Value: aws.String("val2")},
 				},
@@ -264,14 +265,14 @@ func TestDiffTags(t *testing.T) {
 					{Key: "key1", Value: "val1"},
 					{Key: "key2", Value: "val2"},
 				},
-				remote: []ecr.Tag{
+				remote: []ecrtypes.Tag{
 					{Key: aws.String("key"), Value: aws.String("val")},
 					{Key: aws.String("key1"), Value: aws.String("val1")},
 					{Key: aws.String("key2"), Value: aws.String("val2")},
 				},
 			},
 			want: want{
-				add: []ecr.Tag{
+				add: []ecrtypes.Tag{
 					{Key: aws.String("key"), Value: aws.String("different")},
 				},
 				remove: []string{"key"},
@@ -279,7 +280,7 @@ func TestDiffTags(t *testing.T) {
 		},
 		"RemoveAll": {
 			args: args{
-				remote: []ecr.Tag{
+				remote: []ecrtypes.Tag{
 					{Key: aws.String("key"), Value: aws.String("val")},
 					{Key: aws.String("key1"), Value: aws.String("val1")},
 					{Key: aws.String("key2"), Value: aws.String("val2")},
@@ -293,7 +294,7 @@ func TestDiffTags(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			tagCmp := cmpopts.SortSlices(func(i, j ecr.Tag) bool {
+			tagCmp := cmpopts.SortSlices(func(i, j ecrtypes.Tag) bool {
 				return aws.StringValue(i.Key) < aws.StringValue(j.Key)
 			})
 			add, remove := DiffTags(tc.args.local, tc.args.remote)

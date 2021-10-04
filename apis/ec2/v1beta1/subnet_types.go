@@ -93,7 +93,7 @@ type SubnetSpec struct {
 // SubnetObservation keeps the state for the external resource
 type SubnetObservation struct {
 	// The number of unused private IPv4 addresses in the subnet.
-	AvailableIPAddressCount int64 `json:"availableIpAddressCount,omitempty"`
+	AvailableIPAddressCount int32 `json:"availableIpAddressCount,omitempty"`
 
 	// Indicates whether this is the default subnet for the Availability Zone.
 	DefaultForAZ bool `json:"defaultForAz,omitempty"`

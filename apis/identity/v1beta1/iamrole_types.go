@@ -61,7 +61,7 @@ type IAMRoleParameters struct {
 	// role. The default maximum of one hour is applied. This setting can have a value from 1 hour to 12 hours.
 	// Default: 3600
 	// +optional
-	MaxSessionDuration *int64 `json:"maxSessionDuration,omitempty"`
+	MaxSessionDuration *int32 `json:"maxSessionDuration,omitempty"`
 
 	// Path is the path to the role.
 	// Default: /

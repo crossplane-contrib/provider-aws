@@ -22,6 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsacmpca "github.com/aws/aws-sdk-go-v2/service/acmpca"
+	awsacmpcatypes "github.com/aws/aws-sdk-go-v2/service/acmpca/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
@@ -114,9 +115,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
-	response, err := e.client.DescribeCertificateAuthorityRequest(&awsacmpca.DescribeCertificateAuthorityInput{
+	response, err := e.client.DescribeCertificateAuthority(ctx, &awsacmpca.DescribeCertificateAuthorityInput{
 		CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errGet)
@@ -141,9 +142,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	cr.Status.AtProvider = acmpca.GenerateCertificateAuthorityExternalStatus(certificateAuthority)
 
-	tags, err := e.client.ListTagsRequest(&awsacmpca.ListTagsInput{
+	tags, err := e.client.ListTags(ctx, &awsacmpca.ListTagsInput{
 		CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errListTagsFailed)
@@ -162,11 +163,11 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	response, err := e.client.CreateCertificateAuthorityRequest(acmpca.GenerateCreateCertificateAuthorityInput(&cr.Spec.ForProvider)).Send(ctx)
+	response, err := e.client.CreateCertificateAuthority(ctx, acmpca.GenerateCreateCertificateAuthorityInput(&cr.Spec.ForProvider))
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
-	meta.SetExternalName(cr, aws.StringValue(response.CreateCertificateAuthorityOutput.CertificateAuthorityArn))
+	meta.SetExternalName(cr, aws.ToString(response.CertificateAuthorityArn))
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 
 }
@@ -180,40 +181,41 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	// Update the Certificate Authority tags
 	if len(cr.Spec.ForProvider.Tags) > 0 {
-		tags := make([]awsacmpca.Tag, len(cr.Spec.ForProvider.Tags))
+		tags := make([]awsacmpcatypes.Tag, len(cr.Spec.ForProvider.Tags))
 		for i, t := range cr.Spec.ForProvider.Tags {
-			tags[i] = awsacmpca.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
+			tag := t
+			tags[i] = awsacmpcatypes.Tag{Key: &tag.Key, Value: &tag.Value}
 		}
-		currentTags, err := e.client.ListTagsRequest(&awsacmpca.ListTagsInput{
+		currentTags, err := e.client.ListTags(ctx, &awsacmpca.ListTagsInput{
 			CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
-		}).Send(ctx)
+		})
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errListTagsFailed)
 		}
 		if len(tags) != len(currentTags.Tags) {
-			_, err := e.client.UntagCertificateAuthorityRequest(&awsacmpca.UntagCertificateAuthorityInput{
+			_, err := e.client.UntagCertificateAuthority(ctx, &awsacmpca.UntagCertificateAuthorityInput{
 				CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
 				Tags:                    currentTags.Tags,
-			}).Send(ctx)
+			})
 			if err != nil {
 				return managed.ExternalUpdate{}, awsclient.Wrap(err, errRemoveTagsFailed)
 			}
 		}
-		_, err = e.client.TagCertificateAuthorityRequest(&awsacmpca.TagCertificateAuthorityInput{
+		_, err = e.client.TagCertificateAuthority(ctx, &awsacmpca.TagCertificateAuthorityInput{
 			CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
 			Tags:                    tags,
-		}).Send(ctx)
+		})
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddTagsFailed)
 		}
 	}
 
 	// Update Certificate Authority configuration
-	_, err := e.client.UpdateCertificateAuthorityRequest(&awsacmpca.UpdateCertificateAuthorityInput{
+	_, err := e.client.UpdateCertificateAuthority(ctx, &awsacmpca.UpdateCertificateAuthorityInput{
 		CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
 		RevocationConfiguration: acmpca.GenerateRevocationConfiguration(cr.Spec.ForProvider.RevocationConfiguration),
-		Status:                  awsacmpca.CertificateAuthorityStatus(aws.StringValue(cr.Spec.ForProvider.Status)),
-	}).Send(ctx)
+		Status:                  awsacmpcatypes.CertificateAuthorityStatus(aws.ToString(cr.Spec.ForProvider.Status)),
+	})
 
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errCertificateAuthority)
 }
@@ -226,20 +228,20 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	response, err := e.client.DescribeCertificateAuthorityRequest(&awsacmpca.DescribeCertificateAuthorityInput{
+	response, err := e.client.DescribeCertificateAuthority(ctx, &awsacmpca.DescribeCertificateAuthorityInput{
 		CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	if err != nil {
 		return awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
 	}
 
 	if response != nil {
-		if response.CertificateAuthority.Status == awsacmpca.CertificateAuthorityStatusActive {
-			_, err = e.client.UpdateCertificateAuthorityRequest(&awsacmpca.UpdateCertificateAuthorityInput{
+		if response.CertificateAuthority.Status == awsacmpcatypes.CertificateAuthorityStatusActive {
+			_, err = e.client.UpdateCertificateAuthority(ctx, &awsacmpca.UpdateCertificateAuthorityInput{
 				CertificateAuthorityArn: aws.String(meta.GetExternalName(cr)),
-				Status:                  awsacmpca.CertificateAuthorityStatusDisabled,
-			}).Send(ctx)
+				Status:                  awsacmpcatypes.CertificateAuthorityStatusDisabled,
+			})
 
 			if err != nil {
 				return awsclient.Wrap(err, errDelete)
@@ -247,10 +249,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		}
 	}
 
-	_, err = e.client.DeleteCertificateAuthorityRequest(&awsacmpca.DeleteCertificateAuthorityInput{
+	_, err = e.client.DeleteCertificateAuthority(ctx, &awsacmpca.DeleteCertificateAuthorityInput{
 		CertificateAuthorityArn:     aws.String(meta.GetExternalName(cr)),
 		PermanentDeletionTimeInDays: cr.Spec.ForProvider.PermanentDeletionTimeInDays,
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
 }

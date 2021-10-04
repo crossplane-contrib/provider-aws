@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/aws/aws-sdk-go-v2/service/acm"
+	"github.com/aws/aws-sdk-go-v2/service/acm/types"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -56,15 +56,15 @@ type CertificateExternalStatus struct {
 
 	// Flag to check eligibility for renewal status
 	// +kubebuilder:validation:Enum=ELIGIBLE;INELIGIBLE
-	RenewalEligibility acm.RenewalEligibility `json:"renewalEligibility,omitempty"`
+	RenewalEligibility types.RenewalEligibility `json:"renewalEligibility,omitempty"`
 
 	// Status of the certificate
 	// +kubebuilder:validation:Enum=PENDING_VALIDATION;ISSUED;INACTIVE;EXPIRED;VALIDATION_TIMED_OUT;REVOKED;FAILED
-	Status acm.CertificateStatus `json:"status,omitempty"`
+	Status types.CertificateStatus `json:"status,omitempty"`
 
 	// Type of the certificate
 	// +kubebuilder:validation:Enum=IMPORTED;AMAZON_ISSUED;PRIVATE
-	Type acm.CertificateType `json:"type,omitempty"`
+	Type types.CertificateType `json:"type,omitempty"`
 
 	// Contains the CNAME record that you add to your DNS database for domain
 	// validation. For more information, see Use DNS to Validate Domain Ownership
@@ -127,7 +127,7 @@ type CertificateParameters struct {
 	// Parameter add the certificate to a certificate transparency log.
 	// +optional
 	// +kubebuilder:validation:Enum=ENABLED;DISABLED
-	CertificateTransparencyLoggingPreference *acm.CertificateTransparencyLoggingPreference `json:"certificateTransparencyLoggingPreference,omitempty"`
+	CertificateTransparencyLoggingPreference *types.CertificateTransparencyLoggingPreference `json:"certificateTransparencyLoggingPreference,omitempty"`
 
 	// Subject Alternative Name extension of the ACM certificate.
 	// +optional
@@ -140,7 +140,7 @@ type CertificateParameters struct {
 	// Method to validate certificate.
 	// +optional
 	// +kubebuilder:validation:Enum=DNS;EMAIL
-	ValidationMethod *acm.ValidationMethod `json:"validationMethod,omitempty"`
+	ValidationMethod *types.ValidationMethod `json:"validationMethod,omitempty"`
 
 	// Flag to renew the certificate
 	// +optional

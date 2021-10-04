@@ -1,3 +1,5 @@
+
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -74,7 +76,7 @@ spec:
                       that you want to set for the specified role. The default maximum
                       of one hour is applied. This setting can have a value from 1
                       hour to 12 hours. Default: 3600'
-                    format: int64
+                    format: int32
                     type: integer
                   path:
                     description: 'Path is the path to the role. Default: /'

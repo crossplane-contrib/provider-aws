@@ -3,7 +3,7 @@ package ec2
 import (
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
@@ -15,25 +15,30 @@ var (
 	testCidrBlock      = "10.0.0.0/0"
 	otherCidrBlock     = "10.0.0.0/16"
 	testStatus         = "status"
-	testStateString    = string(ec2.VpcCidrBlockStateCodeAssociated)
-	testState          = ec2.VpcCidrBlockStateCodeAssociated
+	testStateString    = string(types.VpcCidrBlockStateCodeAssociated)
+	testState          = types.VpcCidrBlockStateCodeAssociated
 )
 
 func TestGenerateVPCCIDRBlockObservation(t *testing.T) {
 	cases := map[string]struct {
 		associationID string
+<<<<<<< HEAD
+		in            types.Vpc
+		out           v1alpha1.VPCCIDRBlockObservation
+=======
 		in            ec2.Vpc
 		out           manualv1alpha1.VPCCIDRBlockObservation
+>>>>>>> upstream/master
 	}{
 		"IPv4": {
 			associationID: matchAssociationID,
-			in: ec2.Vpc{
-				CidrBlockAssociationSet: []ec2.VpcCidrBlockAssociation{
+			in: types.Vpc{
+				CidrBlockAssociationSet: []types.VpcCidrBlockAssociation{
 					{
 						AssociationId: &matchAssociationID,
 						CidrBlock:     &testCidrBlock,
-						CidrBlockState: &ec2.VpcCidrBlockState{
-							State:         ec2.VpcCidrBlockStateCodeAssociated,
+						CidrBlockState: &types.VpcCidrBlockState{
+							State:         types.VpcCidrBlockStateCodeAssociated,
 							StatusMessage: &testStatus,
 						},
 					},
@@ -54,21 +59,21 @@ func TestGenerateVPCCIDRBlockObservation(t *testing.T) {
 		},
 		"IPv6": {
 			associationID: matchAssociationID,
-			in: ec2.Vpc{
-				Ipv6CidrBlockAssociationSet: []ec2.VpcIpv6CidrBlockAssociation{
+			in: types.Vpc{
+				Ipv6CidrBlockAssociationSet: []types.VpcIpv6CidrBlockAssociation{
 					{
 						AssociationId: &matchAssociationID,
 						Ipv6CidrBlock: &testCidrBlock,
-						Ipv6CidrBlockState: &ec2.VpcCidrBlockState{
-							State:         ec2.VpcCidrBlockStateCodeAssociated,
+						Ipv6CidrBlockState: &types.VpcCidrBlockState{
+							State:         types.VpcCidrBlockStateCodeAssociated,
 							StatusMessage: &testStatus,
 						},
 					},
 					{
 						AssociationId: &otherAssociationID,
 						Ipv6CidrBlock: &otherCidrBlock,
-						Ipv6CidrBlockState: &ec2.VpcCidrBlockState{
-							State:         ec2.VpcCidrBlockStateCodeAssociated,
+						Ipv6CidrBlockState: &types.VpcCidrBlockState{
+							State:         types.VpcCidrBlockStateCodeAssociated,
 							StatusMessage: &testStatus,
 						},
 					},
@@ -98,26 +103,26 @@ func TestGenerateVPCCIDRBlockObservation(t *testing.T) {
 func TestFindVPCCIDRBlockStatus(t *testing.T) {
 	cases := map[string]struct {
 		associationID string
-		in            ec2.Vpc
-		out           ec2.VpcCidrBlockStateCode
+		in            types.Vpc
+		out           types.VpcCidrBlockStateCode
 	}{
 		"IPv4": {
 			associationID: matchAssociationID,
-			in: ec2.Vpc{
-				CidrBlockAssociationSet: []ec2.VpcCidrBlockAssociation{
+			in: types.Vpc{
+				CidrBlockAssociationSet: []types.VpcCidrBlockAssociation{
 					{
 						AssociationId: &matchAssociationID,
 						CidrBlock:     &testCidrBlock,
-						CidrBlockState: &ec2.VpcCidrBlockState{
-							State:         ec2.VpcCidrBlockStateCodeAssociated,
+						CidrBlockState: &types.VpcCidrBlockState{
+							State:         types.VpcCidrBlockStateCodeAssociated,
 							StatusMessage: &testStatus,
 						},
 					},
 					{
 						AssociationId: &otherAssociationID,
 						CidrBlock:     &otherCidrBlock,
-						CidrBlockState: &ec2.VpcCidrBlockState{
-							State:         ec2.VpcCidrBlockStateCodeDisassociated,
+						CidrBlockState: &types.VpcCidrBlockState{
+							State:         types.VpcCidrBlockStateCodeDisassociated,
 							StatusMessage: &testStatus,
 						},
 					},
@@ -127,21 +132,21 @@ func TestFindVPCCIDRBlockStatus(t *testing.T) {
 		},
 		"IPv6": {
 			associationID: matchAssociationID,
-			in: ec2.Vpc{
-				Ipv6CidrBlockAssociationSet: []ec2.VpcIpv6CidrBlockAssociation{
+			in: types.Vpc{
+				Ipv6CidrBlockAssociationSet: []types.VpcIpv6CidrBlockAssociation{
 					{
 						AssociationId: &matchAssociationID,
 						Ipv6CidrBlock: &testCidrBlock,
-						Ipv6CidrBlockState: &ec2.VpcCidrBlockState{
-							State:         ec2.VpcCidrBlockStateCodeAssociated,
+						Ipv6CidrBlockState: &types.VpcCidrBlockState{
+							State:         types.VpcCidrBlockStateCodeAssociated,
 							StatusMessage: &testStatus,
 						},
 					},
 					{
 						AssociationId: &otherAssociationID,
 						Ipv6CidrBlock: &otherCidrBlock,
-						Ipv6CidrBlockState: &ec2.VpcCidrBlockState{
-							State:         ec2.VpcCidrBlockStateCodeDisassociated,
+						Ipv6CidrBlockState: &types.VpcCidrBlockState{
+							State:         types.VpcCidrBlockStateCodeDisassociated,
 							StatusMessage: &testStatus,
 						},
 					},

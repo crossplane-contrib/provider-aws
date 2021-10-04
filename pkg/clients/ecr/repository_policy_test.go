@@ -173,15 +173,13 @@ func TestSerializeRepositoryPolicyStatement(t *testing.T) {
 func TestLateInitializePolicy(t *testing.T) {
 	cases := map[string]struct {
 		parameters   *v1alpha1.RepositoryPolicyParameters
-		policyOutput *ecr.GetRepositoryPolicyResponse
+		policyOutput *ecr.GetRepositoryPolicyOutput
 		want         *v1alpha1.RepositoryPolicyParameters
 	}{
 		"AllOptionalFields": {
 			parameters: &v1alpha1.RepositoryPolicyParameters{},
-			policyOutput: &ecr.GetRepositoryPolicyResponse{
-				GetRepositoryPolicyOutput: &ecr.GetRepositoryPolicyOutput{
-					RegistryId: &testID,
-				},
+			policyOutput: &ecr.GetRepositoryPolicyOutput{
+				RegistryId: &testID,
 			},
 			want: &v1alpha1.RepositoryPolicyParameters{
 				RegistryID: &testID,

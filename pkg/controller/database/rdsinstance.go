@@ -24,6 +24,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
+	awsrdstypes "github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -87,7 +88,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errNotRDSInstance)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.ToString(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -108,8 +109,7 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	// TODO(muvaf): There are some parameters that require a specific call
 	// for retrieval. For example, DescribeDBInstancesOutput does not expose
 	// the tags map of the RDS instance, you have to make ListTagsForResourceRequest
-	req := e.client.DescribeDBInstancesRequest(&awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
-	rsp, err := req.Send(ctx)
+	rsp, err := e.client.DescribeDBInstances(ctx, &awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDescribeFailed)
 	}
@@ -169,8 +169,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		}
 	}
 
-	req := e.client.CreateDBInstanceRequest(rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
-	_, err = req.Send(ctx)
+	_, err = e.client.CreateDBInstance(ctx, rds.GenerateCreateDBInstanceInput(meta.GetExternalName(cr), pw, &cr.Spec.ForProvider))
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreateFailed)
 	}
@@ -178,7 +177,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		xpv1.ResourceCredentialsSecretPasswordKey: []byte(pw),
 	}
 	if cr.Spec.ForProvider.MasterUsername != nil {
-		conn[xpv1.ResourceCredentialsSecretUserKey] = []byte(aws.StringValue(cr.Spec.ForProvider.MasterUsername))
+		conn[xpv1.ResourceCredentialsSecretUserKey] = []byte(aws.ToString(cr.Spec.ForProvider.MasterUsername))
 	}
 	return managed.ExternalCreation{ConnectionDetails: conn}, nil
 }
@@ -197,8 +196,7 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	// and the current state. Since the DBInstance is not fully mirrored in status,
 	// we lose the current state after a change is made to spec, which forces us
 	// to make a DescribeDBInstancesRequest to get the current state.
-	describe := e.client.DescribeDBInstancesRequest(&awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
-	rsp, err := describe.Send(ctx)
+	rsp, err := e.client.DescribeDBInstances(ctx, &awsrds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(meta.GetExternalName(cr))})
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errDescribeFailed)
 	}
@@ -220,18 +218,18 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		modify.MasterUserPassword = aws.String(pwd)
 	}
 
-	if _, err = e.client.ModifyDBInstanceRequest(modify).Send(ctx); err != nil {
+	if _, err = e.client.ModifyDBInstance(ctx, modify); err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyFailed)
 	}
 	if len(patch.Tags) > 0 {
-		tags := make([]awsrds.Tag, len(patch.Tags))
+		tags := make([]awsrdstypes.Tag, len(patch.Tags))
 		for i, t := range patch.Tags {
-			tags[i] = awsrds.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
+			tags[i] = awsrdstypes.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
 		}
-		_, err = e.client.AddTagsToResourceRequest(&awsrds.AddTagsToResourceInput{
+		_, err = e.client.AddTagsToResource(ctx, &awsrds.AddTagsToResourceInput{
 			ResourceName: aws.String(cr.Status.AtProvider.DBInstanceArn),
 			Tags:         tags,
-		}).Send(ctx)
+		})
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddTagsFailed)
 		}
@@ -261,10 +259,10 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
 	}
 	input := awsrds.DeleteDBInstanceInput{
 		DBInstanceIdentifier:      aws.String(meta.GetExternalName(cr)),
-		SkipFinalSnapshot:         cr.Spec.ForProvider.SkipFinalSnapshotBeforeDeletion,
+		SkipFinalSnapshot:         aws.ToBool(cr.Spec.ForProvider.SkipFinalSnapshotBeforeDeletion),
 		FinalDBSnapshotIdentifier: cr.Spec.ForProvider.FinalDBSnapshotIdentifier,
 	}
-	_, err = e.client.DeleteDBInstanceRequest(&input).Send(ctx)
+	_, err = e.client.DeleteDBInstance(ctx, &input)
 	return awsclient.Wrap(resource.Ignore(rds.IsErrorNotFound, err), errDeleteFailed)
 }
 

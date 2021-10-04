@@ -17,11 +17,13 @@ limitations under the License.
 package sns
 
 import (
+	"context"
+	"errors"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
+	snstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
 
 	"github.com/crossplane/provider-aws/apis/notification/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -54,15 +56,15 @@ const (
 
 // TopicClient is the external client used for AWS SNSTopic
 type TopicClient interface {
-	CreateTopicRequest(*sns.CreateTopicInput) sns.CreateTopicRequest
-	DeleteTopicRequest(*sns.DeleteTopicInput) sns.DeleteTopicRequest
-	GetTopicAttributesRequest(*sns.GetTopicAttributesInput) sns.GetTopicAttributesRequest
-	SetTopicAttributesRequest(*sns.SetTopicAttributesInput) sns.SetTopicAttributesRequest
+	CreateTopic(ctx context.Context, input *sns.CreateTopicInput, opts ...func(*sns.Options)) (*sns.CreateTopicOutput, error)
+	DeleteTopic(ctx context.Context, input *sns.DeleteTopicInput, opts ...func(*sns.Options)) (*sns.DeleteTopicOutput, error)
+	GetTopicAttributes(ctx context.Context, input *sns.GetTopicAttributesInput, opts ...func(*sns.Options)) (*sns.GetTopicAttributesOutput, error)
+	SetTopicAttributes(ctx context.Context, input *sns.SetTopicAttributesInput, opts ...func(*sns.Options)) (*sns.SetTopicAttributesOutput, error)
 }
 
 // NewTopicClient returns a new client using AWS credentials as JSON encoded data.
 func NewTopicClient(cfg aws.Config) TopicClient {
-	return sns.New(cfg)
+	return sns.NewFromConfig(cfg)
 }
 
 // GenerateCreateTopicInput prepares input for CreateTopicRequest
@@ -72,9 +74,9 @@ func GenerateCreateTopicInput(p *v1alpha1.SNSTopicParameters) *sns.CreateTopicIn
 	}
 
 	if len(p.Tags) != 0 {
-		input.Tags = make([]sns.Tag, len(p.Tags))
+		input.Tags = make([]snstypes.Tag, len(p.Tags))
 		for i, val := range p.Tags {
-			input.Tags[i] = sns.Tag{
+			input.Tags[i] = snstypes.Tag{
 				Key:   aws.String(val.Key),
 				Value: val.Value,
 			}
@@ -137,27 +139,29 @@ func GenerateTopicObservation(attr map[string]string) v1alpha1.SNSTopicObservati
 
 // IsSNSTopicUpToDate checks if object is up to date
 func IsSNSTopicUpToDate(p v1alpha1.SNSTopicParameters, attr map[string]string) bool {
-	return aws.StringValue(p.DeliveryPolicy) == attr[string(TopicDeliveryPolicy)] &&
-		aws.StringValue(p.DisplayName) == attr[string(TopicDisplayName)] &&
-		aws.StringValue(p.KMSMasterKeyID) == attr[string(TopicKmsMasterKeyID)] &&
-		aws.StringValue(p.Policy) == attr[string(TopicPolicy)]
+	return aws.ToString(p.DeliveryPolicy) == attr[string(TopicDeliveryPolicy)] &&
+		aws.ToString(p.DisplayName) == attr[string(TopicDisplayName)] &&
+		aws.ToString(p.KMSMasterKeyID) == attr[string(TopicKmsMasterKeyID)] &&
+		aws.ToString(p.Policy) == attr[string(TopicPolicy)]
 }
 
 func getTopicAttributes(p v1alpha1.SNSTopicParameters) map[string]string {
 
 	topicAttr := make(map[string]string)
 
-	topicAttr[string(TopicDeliveryPolicy)] = aws.StringValue(p.DeliveryPolicy)
-	topicAttr[string(TopicDisplayName)] = aws.StringValue(p.DisplayName)
-	topicAttr[string(TopicKmsMasterKeyID)] = aws.StringValue(p.KMSMasterKeyID)
-	topicAttr[string(TopicPolicy)] = aws.StringValue(p.Policy)
+	topicAttr[string(TopicDeliveryPolicy)] = aws.ToString(p.DeliveryPolicy)
+	topicAttr[string(TopicDisplayName)] = aws.ToString(p.DisplayName)
+	topicAttr[string(TopicKmsMasterKeyID)] = aws.ToString(p.KMSMasterKeyID)
+	topicAttr[string(TopicPolicy)] = aws.ToString(p.Policy)
 
 	return topicAttr
 }
 
 // IsTopicNotFound returns true if the error code indicates that the item was not found
 func IsTopicNotFound(err error) bool {
-	if topicErr, ok := err.(awserr.Error); ok && topicErr.Code() == sns.ErrCodeNotFoundException {
+	var nfe *snstypes.NotFoundException
+	var rnfe *snstypes.ResourceNotFoundException
+	if errors.As(err, &nfe) || errors.As(err, &rnfe) {
 		return true
 	}
 	return false

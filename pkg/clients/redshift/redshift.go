@@ -17,12 +17,14 @@ limitations under the License.
 package redshift
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"strconv"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/redshift"
+	redshifttypes "github.com/aws/aws-sdk-go-v2/service/redshift/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -37,53 +39,53 @@ import (
 
 // Client defines Redshift client operations
 type Client interface {
-	DescribeClustersRequest(input *redshift.DescribeClustersInput) redshift.DescribeClustersRequest
-	CreateClusterRequest(input *redshift.CreateClusterInput) redshift.CreateClusterRequest
-	ModifyClusterRequest(input *redshift.ModifyClusterInput) redshift.ModifyClusterRequest
-	DeleteClusterRequest(input *redshift.DeleteClusterInput) redshift.DeleteClusterRequest
+	DescribeClusters(ctx context.Context, input *redshift.DescribeClustersInput, opts ...func(*redshift.Options)) (*redshift.DescribeClustersOutput, error)
+	CreateCluster(ctx context.Context, input *redshift.CreateClusterInput, opts ...func(*redshift.Options)) (*redshift.CreateClusterOutput, error)
+	ModifyCluster(ctx context.Context, input *redshift.ModifyClusterInput, opts ...func(*redshift.Options)) (*redshift.ModifyClusterOutput, error)
+	DeleteCluster(ctx context.Context, input *redshift.DeleteClusterInput, opts ...func(*redshift.Options)) (*redshift.DeleteClusterOutput, error)
 }
 
 // NewClient creates new Redshift Client with provided AWS Configurations/Credentials
 func NewClient(cfg aws.Config) Client {
-	return redshift.New(cfg)
+	return redshift.NewFromConfig(cfg)
 }
 
 // LateInitialize fills the empty fields in *v1alpha1.ClusterParameters with
 // the values seen in redshift.Cluster.
-func LateInitialize(in *v1alpha1.ClusterParameters, cl *redshift.Cluster) { // nolint:gocyclo
+func LateInitialize(in *v1alpha1.ClusterParameters, cl *redshifttypes.Cluster) { // nolint:gocyclo
 	if cl == nil {
 		return
 	}
-	in.AllowVersionUpgrade = awsclients.LateInitializeBoolPtr(in.AllowVersionUpgrade, cl.AllowVersionUpgrade)
-	in.AutomatedSnapshotRetentionPeriod = awsclients.LateInitializeInt64Ptr(in.AutomatedSnapshotRetentionPeriod, cl.AutomatedSnapshotRetentionPeriod)
+	in.AllowVersionUpgrade = awsclients.LateInitializeBoolPtr(in.AllowVersionUpgrade, &cl.AllowVersionUpgrade)
+	in.AutomatedSnapshotRetentionPeriod = awsclients.LateInitializeInt32Ptr(in.AutomatedSnapshotRetentionPeriod, &cl.AutomatedSnapshotRetentionPeriod)
 	in.AvailabilityZone = awsclients.LateInitializeStringPtr(in.AvailabilityZone, cl.AvailabilityZone)
 	in.ClusterVersion = awsclients.LateInitializeStringPtr(in.ClusterVersion, cl.ClusterVersion)
 	in.ClusterSubnetGroupName = awsclients.LateInitializeStringPtr(in.ClusterSubnetGroupName, cl.ClusterSubnetGroupName)
 	in.DBName = awsclients.LateInitializeStringPtr(in.DBName, cl.DBName)
-	in.Encrypted = awsclients.LateInitializeBoolPtr(in.Encrypted, cl.Encrypted)
-	in.EnhancedVPCRouting = awsclients.LateInitializeBoolPtr(in.EnhancedVPCRouting, cl.EnhancedVpcRouting)
+	in.Encrypted = awsclients.LateInitializeBoolPtr(in.Encrypted, &cl.Encrypted)
+	in.EnhancedVPCRouting = awsclients.LateInitializeBoolPtr(in.EnhancedVPCRouting, &cl.EnhancedVpcRouting)
 	in.KMSKeyID = awsclients.LateInitializeStringPtr(in.KMSKeyID, cl.KmsKeyId)
 	in.MaintenanceTrackName = awsclients.LateInitializeStringPtr(in.MaintenanceTrackName, cl.MaintenanceTrackName)
-	in.ManualSnapshotRetentionPeriod = awsclients.LateInitializeInt64Ptr(in.ManualSnapshotRetentionPeriod, cl.ManualSnapshotRetentionPeriod)
+	in.ManualSnapshotRetentionPeriod = awsclients.LateInitializeInt32Ptr(in.ManualSnapshotRetentionPeriod, &cl.ManualSnapshotRetentionPeriod)
 	in.MasterUsername = awsclients.LateInitializeString(in.MasterUsername, cl.MasterUsername)
 	in.NodeType = awsclients.LateInitializeString(in.NodeType, cl.NodeType)
-	in.NumberOfNodes = awsclients.LateInitializeInt64Ptr(in.NumberOfNodes, cl.NumberOfNodes)
+	in.NumberOfNodes = awsclients.LateInitializeInt32Ptr(in.NumberOfNodes, &cl.NumberOfNodes)
 	in.PreferredMaintenanceWindow = awsclients.LateInitializeStringPtr(in.PreferredMaintenanceWindow, cl.PreferredMaintenanceWindow)
-	in.PubliclyAccessible = awsclients.LateInitializeBoolPtr(in.PubliclyAccessible, cl.PubliclyAccessible)
+	in.PubliclyAccessible = awsclients.LateInitializeBoolPtr(in.PubliclyAccessible, &cl.PubliclyAccessible)
 	in.SnapshotScheduleIdentifier = awsclients.LateInitializeStringPtr(in.SnapshotScheduleIdentifier, cl.SnapshotScheduleIdentifier)
 
 	// If ClusterType is not provided by the user then set it to it's default value.
 	// As redshift.Cluster type doesn't hold this info.
 	if in.ClusterType == nil {
-		if aws.Int64Value(cl.NumberOfNodes) > 1 {
+		if cl.NumberOfNodes > 1 {
 			in.ClusterType = aws.String("multi-node")
 		}
-		if aws.Int64Value(cl.NumberOfNodes) == 1 {
+		if cl.NumberOfNodes == 1 {
 			in.ClusterType = aws.String("single-node")
 		}
 	}
 	if cl.Endpoint != nil {
-		in.Port = awsclients.LateInitializeInt64Ptr(in.Port, cl.Endpoint.Port)
+		in.Port = awsclients.LateInitializeInt32Ptr(in.Port, &cl.Endpoint.Port)
 	}
 	if cl.HsmStatus != nil {
 		in.HSMClientCertificateIdentifier = awsclients.LateInitializeStringPtr(in.HSMClientCertificateIdentifier, cl.HsmStatus.HsmClientCertificateIdentifier)
@@ -96,48 +98,51 @@ func LateInitialize(in *v1alpha1.ClusterParameters, cl *redshift.Cluster) { // n
 	if len(cl.ClusterSecurityGroups) != 0 {
 		s := make([]string, len(cl.ClusterSecurityGroups))
 		for i, v := range cl.ClusterSecurityGroups {
-			s[i] = aws.StringValue(v.ClusterSecurityGroupName)
+			s[i] = aws.ToString(v.ClusterSecurityGroupName)
 		}
 		in.ClusterSecurityGroups = s
 	}
 	if len(cl.IamRoles) != 0 {
 		s := make([]string, len(cl.IamRoles))
 		for i, v := range cl.IamRoles {
-			s[i] = aws.StringValue(v.IamRoleArn)
+			s[i] = aws.ToString(v.IamRoleArn)
 		}
 		in.IAMRoles = s
 	}
 	if len(cl.Tags) != 0 {
 		s := make([]v1alpha1.Tag, len(cl.Tags))
 		for i, v := range cl.Tags {
-			s[i] = v1alpha1.Tag{Key: aws.StringValue(v.Key), Value: aws.StringValue(v.Value)}
+			s[i] = v1alpha1.Tag{Key: aws.ToString(v.Key), Value: aws.ToString(v.Value)}
 		}
 		in.Tags = s
 	}
 	if len(cl.VpcSecurityGroups) != 0 {
 		s := make([]string, len(cl.VpcSecurityGroups))
 		for i, v := range cl.VpcSecurityGroups {
-			s[i] = aws.StringValue(v.VpcSecurityGroupId)
+			s[i] = aws.ToString(v.VpcSecurityGroupId)
+		}
+		if in.VPCSecurityGroupIDs == nil {
+			in.VPCSecurityGroupIDs = make([]string, len(cl.VpcSecurityGroups))
 		}
 		in.VPCSecurityGroupIDs = s
 	}
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
-func IsUpToDate(p v1alpha1.ClusterParameters, cl redshift.Cluster) (bool, error) { // nolint:gocyclo
+func IsUpToDate(p v1alpha1.ClusterParameters, cl redshifttypes.Cluster) (bool, error) { // nolint:gocyclo
 	// We need to check it explicitly as redshift.Cluster can have multiple ClusterParameterGroups
 	found := isClusterParameterGroupNameUpdated(p.ClusterParameterGroupName, cl.ClusterParameterGroups)
 
 	// Check if it is a cluster rename request
-	if p.NewClusterIdentifier != nil && (aws.StringValue(p.NewClusterIdentifier) != aws.StringValue(cl.ClusterIdentifier)) {
+	if p.NewClusterIdentifier != nil && (aws.ToString(p.NewClusterIdentifier) != aws.ToString(cl.ClusterIdentifier)) {
 		return false, nil
 	}
 
 	// Since redshift.Cluster doesn't have a ClusterType field therefore determine its value based upon number of nodes.
-	if aws.Int64Value(cl.NumberOfNodes) > 1 && aws.StringValue(p.ClusterType) != "multi-node" {
+	if cl.NumberOfNodes > 1 && aws.ToString(p.ClusterType) != "multi-node" {
 		return false, nil
 	}
-	if aws.Int64Value(cl.NumberOfNodes) == 1 && aws.StringValue(p.ClusterType) != "single-node" {
+	if cl.NumberOfNodes == 1 && aws.ToString(p.ClusterType) != "single-node" {
 		return false, nil
 	}
 
@@ -164,7 +169,7 @@ func initializeModifyandDeleteParameters(orig *v1alpha1.ClusterParameters, new *
 // CreatePatch creates a *v1alpha1.ClusterParameters that has only the changed
 // values between the target *v1alpha1.ClusterParameters and the current
 // *redshift.Cluster
-func CreatePatch(target *v1alpha1.ClusterParameters, in *redshift.Cluster) (*v1alpha1.ClusterParameters, error) {
+func CreatePatch(target *v1alpha1.ClusterParameters, in *redshifttypes.Cluster) (*v1alpha1.ClusterParameters, error) {
 	currentParams := &v1alpha1.ClusterParameters{}
 	initializeModifyandDeleteParameters(target, currentParams)
 	LateInitialize(currentParams, in)
@@ -182,20 +187,18 @@ func CreatePatch(target *v1alpha1.ClusterParameters, in *redshift.Cluster) (*v1a
 
 // IsNotFound helper function to test for ErrCodeClusterNotFoundFault error
 func IsNotFound(err error) bool {
-	if err == nil {
-		return false
-	}
-	return strings.Contains(err.Error(), redshift.ErrCodeClusterNotFoundFault)
+	var cnff *redshifttypes.ClusterNotFoundFault
+	return errors.As(err, &cnff)
 }
 
 // GenerateCreateClusterInput from RedshiftSpec
 func GenerateCreateClusterInput(p *v1alpha1.ClusterParameters, cid, pw *string) *redshift.CreateClusterInput {
-	var tags []redshift.Tag
+	var tags []redshifttypes.Tag
 
 	if len(p.Tags) != 0 {
-		tags = make([]redshift.Tag, len(p.Tags))
+		tags = make([]redshifttypes.Tag, len(p.Tags))
 		for i, val := range p.Tags {
-			tags[i] = redshift.Tag{Key: aws.String(val.Key), Value: aws.String(val.Value)}
+			tags[i] = redshifttypes.Tag{Key: aws.String(val.Key), Value: aws.String(val.Value)}
 		}
 	}
 
@@ -233,7 +236,7 @@ func GenerateCreateClusterInput(p *v1alpha1.ClusterParameters, cid, pw *string) 
 }
 
 // GenerateModifyClusterInput from RedshiftSpec
-func GenerateModifyClusterInput(p *v1alpha1.ClusterParameters, cl redshift.Cluster) *redshift.ModifyClusterInput { //nolint:gocyclo
+func GenerateModifyClusterInput(p *v1alpha1.ClusterParameters, cl redshifttypes.Cluster) *redshift.ModifyClusterInput { //nolint:gocyclo
 	patch, err := CreatePatch(p, &cl)
 	if err != nil {
 		return &redshift.ModifyClusterInput{}
@@ -291,7 +294,7 @@ func GenerateModifyClusterInput(p *v1alpha1.ClusterParameters, cl redshift.Clust
 		o.MasterUserPassword = p.NewMasterUserPassword
 	}
 	// When a rename operation is requested, no other modifications are allowed in the same request
-	if aws.StringValue(p.NewClusterIdentifier) != aws.StringValue(cl.ClusterIdentifier) {
+	if aws.ToString(p.NewClusterIdentifier) != aws.ToString(cl.ClusterIdentifier) {
 		o.NewClusterIdentifier = p.NewClusterIdentifier
 		return o
 	}
@@ -319,23 +322,23 @@ func GenerateDeleteClusterInput(p *v1alpha1.ClusterParameters, cid *string) *red
 		ClusterIdentifier:                   cid,
 		FinalClusterSnapshotIdentifier:      p.FinalClusterSnapshotIdentifier,
 		FinalClusterSnapshotRetentionPeriod: p.FinalClusterSnapshotRetentionPeriod,
-		SkipFinalClusterSnapshot:            p.SkipFinalClusterSnapshot,
+		SkipFinalClusterSnapshot:            aws.ToBool(p.SkipFinalClusterSnapshot),
 	}
 }
 
 // GenerateObservation is used to produce v1alpha1.ClusterObservation from
 // redshift.Cluster.
-func GenerateObservation(in redshift.Cluster) v1alpha1.ClusterObservation { // nolint:gocyclo
+func GenerateObservation(in redshifttypes.Cluster) v1alpha1.ClusterObservation { // nolint:gocyclo
 	o := v1alpha1.ClusterObservation{
-		ClusterPublicKey:                       aws.StringValue(in.ClusterPublicKey),
-		ClusterRevisionNumber:                  aws.StringValue(in.ClusterRevisionNumber),
-		ClusterStatus:                          aws.StringValue(in.ClusterStatus),
-		ClusterAvailabilityStatus:              aws.StringValue(in.ClusterAvailabilityStatus),
-		ElasticResizeNumberOfNodeOptions:       aws.StringValue(in.ElasticResizeNumberOfNodeOptions),
-		ExpectedNextSnapshotScheduleTimeStatus: aws.StringValue(in.ExpectedNextSnapshotScheduleTimeStatus),
-		ModifyStatus:                           aws.StringValue(in.ModifyStatus),
+		ClusterPublicKey:                       aws.ToString(in.ClusterPublicKey),
+		ClusterRevisionNumber:                  aws.ToString(in.ClusterRevisionNumber),
+		ClusterStatus:                          aws.ToString(in.ClusterStatus),
+		ClusterAvailabilityStatus:              aws.ToString(in.ClusterAvailabilityStatus),
+		ElasticResizeNumberOfNodeOptions:       aws.ToString(in.ElasticResizeNumberOfNodeOptions),
+		ExpectedNextSnapshotScheduleTimeStatus: aws.ToString(in.ExpectedNextSnapshotScheduleTimeStatus),
+		ModifyStatus:                           aws.ToString(in.ModifyStatus),
 		SnapshotScheduleState:                  string(in.SnapshotScheduleState),
-		VPCID:                                  aws.StringValue(in.VpcId),
+		VPCID:                                  aws.ToString(in.VpcId),
 	}
 
 	if in.ClusterCreateTime != nil {
@@ -355,9 +358,9 @@ func GenerateObservation(in redshift.Cluster) v1alpha1.ClusterObservation { // n
 		s := make([]v1alpha1.ClusterNode, len(in.ClusterNodes))
 		for i, v := range in.ClusterNodes {
 			s[i] = v1alpha1.ClusterNode{
-				NodeRole:         aws.StringValue(v.NodeRole),
-				PrivateIPAddress: aws.StringValue(v.PrivateIPAddress),
-				PublicIPAddress:  aws.StringValue(v.PublicIPAddress),
+				NodeRole:         aws.ToString(v.NodeRole),
+				PrivateIPAddress: aws.ToString(v.PrivateIPAddress),
+				PublicIPAddress:  aws.ToString(v.PublicIPAddress),
 			}
 		}
 		o.ClusterNodes = s
@@ -366,16 +369,16 @@ func GenerateObservation(in redshift.Cluster) v1alpha1.ClusterObservation { // n
 		s := make([]v1alpha1.ClusterParameterGroupStatus, len(in.ClusterParameterGroups))
 		for i, v := range in.ClusterParameterGroups {
 			s[i] = v1alpha1.ClusterParameterGroupStatus{
-				ParameterApplyStatus: aws.StringValue(v.ParameterApplyStatus),
-				ParameterGroupName:   aws.StringValue(v.ParameterGroupName),
+				ParameterApplyStatus: aws.ToString(v.ParameterApplyStatus),
+				ParameterGroupName:   aws.ToString(v.ParameterGroupName),
 			}
 			if len(v.ClusterParameterStatusList) != 0 {
 				cps := make([]v1alpha1.ClusterParameterStatus, len(v.ClusterParameterStatusList))
 				for j, k := range v.ClusterParameterStatusList {
 					cps[j] = v1alpha1.ClusterParameterStatus{
-						ParameterApplyErrorDescription: aws.StringValue(k.ParameterApplyErrorDescription),
-						ParameterApplyStatus:           aws.StringValue(k.ParameterApplyStatus),
-						ParameterName:                  aws.StringValue(k.ParameterName),
+						ParameterApplyErrorDescription: aws.ToString(k.ParameterApplyErrorDescription),
+						ParameterApplyStatus:           aws.ToString(k.ParameterApplyStatus),
+						ParameterName:                  aws.ToString(k.ParameterName),
 					}
 				}
 				s[i].ClusterParameterStatusList = cps
@@ -387,7 +390,7 @@ func GenerateObservation(in redshift.Cluster) v1alpha1.ClusterObservation { // n
 		s := make([]v1alpha1.DeferredMaintenanceWindow, len(in.DeferredMaintenanceWindows))
 		for i, v := range in.DeferredMaintenanceWindows {
 			s[i] = v1alpha1.DeferredMaintenanceWindow{
-				DeferMaintenanceIdentifier: aws.StringValue(v.DeferMaintenanceIdentifier),
+				DeferMaintenanceIdentifier: aws.ToString(v.DeferMaintenanceIdentifier),
 			}
 			if v.DeferMaintenanceStartTime != nil {
 				t := metav1.NewTime(*v.DeferMaintenanceStartTime)
@@ -406,39 +409,39 @@ func GenerateObservation(in redshift.Cluster) v1alpha1.ClusterObservation { // n
 
 	if in.ClusterSnapshotCopyStatus != nil {
 		o.ClusterSnapshotCopyStatus = v1alpha1.ClusterSnapshotCopyStatus{
-			DestinationRegion:             aws.StringValue(in.ClusterSnapshotCopyStatus.DestinationRegion),
-			ManualSnapshotRetentionPeriod: aws.Int64Value(in.ClusterSnapshotCopyStatus.ManualSnapshotRetentionPeriod),
-			RetentionPeriod:               aws.Int64Value(in.ClusterSnapshotCopyStatus.RetentionPeriod),
-			SnapshotCopyGrantName:         aws.StringValue(in.ClusterSnapshotCopyStatus.SnapshotCopyGrantName),
+			DestinationRegion:             aws.ToString(in.ClusterSnapshotCopyStatus.DestinationRegion),
+			ManualSnapshotRetentionPeriod: in.ClusterSnapshotCopyStatus.ManualSnapshotRetentionPeriod,
+			RetentionPeriod:               in.ClusterSnapshotCopyStatus.RetentionPeriod,
+			SnapshotCopyGrantName:         aws.ToString(in.ClusterSnapshotCopyStatus.SnapshotCopyGrantName),
 		}
 	}
 	if in.DataTransferProgress != nil {
 		o.DataTransferProgress = v1alpha1.DataTransferProgress{
-			CurrentRateInMegaBytesPerSecond:    int(aws.Float64Value(in.DataTransferProgress.CurrentRateInMegaBytesPerSecond)),
-			DataTransferredInMegaBytes:         aws.Int64Value(in.DataTransferProgress.DataTransferredInMegaBytes),
-			ElapsedTimeInSeconds:               aws.Int64Value(in.DataTransferProgress.ElapsedTimeInSeconds),
-			EstimatedTimeToCompletionInSeconds: aws.Int64Value(in.DataTransferProgress.EstimatedTimeToCompletionInSeconds),
-			Status:                             aws.StringValue(in.DataTransferProgress.Status),
-			TotalDataInMegaBytes:               aws.Int64Value(in.DataTransferProgress.TotalDataInMegaBytes),
+			CurrentRateInMegaBytesPerSecond:    int(aws.ToFloat64(in.DataTransferProgress.CurrentRateInMegaBytesPerSecond)),
+			DataTransferredInMegaBytes:         in.DataTransferProgress.DataTransferredInMegaBytes,
+			ElapsedTimeInSeconds:               aws.ToInt64(in.DataTransferProgress.ElapsedTimeInSeconds),
+			EstimatedTimeToCompletionInSeconds: aws.ToInt64(in.DataTransferProgress.EstimatedTimeToCompletionInSeconds),
+			Status:                             aws.ToString(in.DataTransferProgress.Status),
+			TotalDataInMegaBytes:               in.DataTransferProgress.TotalDataInMegaBytes,
 		}
 	}
 	if in.ElasticIpStatus != nil {
 		o.ElasticIPStatus = v1alpha1.ElasticIPStatus{
-			ElasticIP: aws.StringValue(in.ElasticIpStatus.ElasticIp),
-			Status:    aws.StringValue(in.ElasticIpStatus.Status),
+			ElasticIP: aws.ToString(in.ElasticIpStatus.ElasticIp),
+			Status:    aws.ToString(in.ElasticIpStatus.Status),
 		}
 	}
 	if in.Endpoint != nil {
 		o.Endpoint = v1alpha1.Endpoint{
-			Address: aws.StringValue(in.Endpoint.Address),
-			Port:    aws.Int64Value(in.Endpoint.Port),
+			Address: aws.ToString(in.Endpoint.Address),
+			Port:    in.Endpoint.Port,
 		}
 	}
 	if in.HsmStatus != nil {
 		o.HSMStatus = v1alpha1.HSMStatus{
-			HSMClientCertificateIdentifier: aws.StringValue(in.HsmStatus.HsmClientCertificateIdentifier),
-			HSMConfigurationIdentifier:     aws.StringValue(in.HsmStatus.HsmConfigurationIdentifier),
-			Status:                         aws.StringValue(in.HsmStatus.Status),
+			HSMClientCertificateIdentifier: aws.ToString(in.HsmStatus.HsmClientCertificateIdentifier),
+			HSMConfigurationIdentifier:     aws.ToString(in.HsmStatus.HsmConfigurationIdentifier),
+			Status:                         aws.ToString(in.HsmStatus.Status),
 		}
 	}
 
@@ -457,11 +460,11 @@ func GetConnectionDetails(in v1alpha1.Cluster) managed.ConnectionDetails {
 }
 
 // isClusterParameterGroupNameUpdated check if ClusterParameterGroupName is updated or not.
-func isClusterParameterGroupNameUpdated(name *string, status []redshift.ClusterParameterGroupStatus) bool {
+func isClusterParameterGroupNameUpdated(name *string, status []redshifttypes.ClusterParameterGroupStatus) bool {
 	var updated = true
 	if name != nil {
 		for _, v := range status {
-			if aws.StringValue(name) != aws.StringValue(v.ParameterGroupName) {
+			if aws.ToString(name) != aws.ToString(v.ParameterGroupName) {
 				updated = false
 			}
 		}

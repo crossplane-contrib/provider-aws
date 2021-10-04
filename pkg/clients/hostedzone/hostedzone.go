@@ -17,9 +17,12 @@ limitations under the License.
 package hostedzone
 
 import (
+	"context"
+	"errors"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
+	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 
 	"github.com/crossplane/provider-aws/apis/route53/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -30,27 +33,25 @@ const IDPrefix = "/hostedzone/"
 
 // Client defines Route53 Client operations
 type Client interface {
-	CreateHostedZoneRequest(input *route53.CreateHostedZoneInput) route53.CreateHostedZoneRequest
-	DeleteHostedZoneRequest(input *route53.DeleteHostedZoneInput) route53.DeleteHostedZoneRequest
-	GetHostedZoneRequest(input *route53.GetHostedZoneInput) route53.GetHostedZoneRequest
-	UpdateHostedZoneCommentRequest(input *route53.UpdateHostedZoneCommentInput) route53.UpdateHostedZoneCommentRequest
+	CreateHostedZone(ctx context.Context, input *route53.CreateHostedZoneInput, opts ...func(*route53.Options)) (*route53.CreateHostedZoneOutput, error)
+	DeleteHostedZone(ctx context.Context, input *route53.DeleteHostedZoneInput, opts ...func(*route53.Options)) (*route53.DeleteHostedZoneOutput, error)
+	GetHostedZone(ctx context.Context, input *route53.GetHostedZoneInput, opts ...func(*route53.Options)) (*route53.GetHostedZoneOutput, error)
+	UpdateHostedZoneComment(ctx context.Context, input *route53.UpdateHostedZoneCommentInput, opts ...func(*route53.Options)) (*route53.UpdateHostedZoneCommentOutput, error)
 }
 
 // NewClient creates new RDS RDSClient with provided AWS Configurations/Credentials
 func NewClient(cfg aws.Config) Client {
-	return route53.New(cfg)
+	return route53.NewFromConfig(cfg)
 }
 
 // IsNotFound returns true if the error code indicates that the requested Zone was not found
 func IsNotFound(err error) bool {
-	if zoneErr, ok := err.(awserr.Error); ok && zoneErr.Code() == route53.ErrCodeNoSuchHostedZone {
-		return true
-	}
-	return false
+	var nshz *route53types.NoSuchHostedZone
+	return errors.As(err, &nshz)
 }
 
 // IsUpToDate check whether the comment in Spec and Response are same or not
-func IsUpToDate(spec v1alpha1.HostedZoneParameters, obs route53.HostedZone) bool {
+func IsUpToDate(spec v1alpha1.HostedZoneParameters, obs route53types.HostedZone) bool {
 	s := ""
 	if spec.Config != nil {
 		s = awsclients.StringValue(spec.Config.Comment)
@@ -63,8 +64,8 @@ func IsUpToDate(spec v1alpha1.HostedZoneParameters, obs route53.HostedZone) bool
 }
 
 // LateInitialize fills the empty fields in *v1alpha1.HostedZoneParameters with
-// the values seen in route53.HostedZone.
-func LateInitialize(spec *v1alpha1.HostedZoneParameters, obs *route53.GetHostedZoneResponse) {
+// the values seen in route53types.HostedZone.
+func LateInitialize(spec *v1alpha1.HostedZoneParameters, obs *route53.GetHostedZoneOutput) {
 	if obs == nil || obs.HostedZone == nil {
 		return
 	}
@@ -76,7 +77,7 @@ func LateInitialize(spec *v1alpha1.HostedZoneParameters, obs *route53.GetHostedZ
 	}
 	if spec.Config != nil && obs.HostedZone.Config != nil {
 		spec.Config.Comment = awsclients.LateInitializeStringPtr(spec.Config.Comment, obs.HostedZone.Config.Comment)
-		spec.Config.PrivateZone = awsclients.LateInitializeBoolPtr(spec.Config.PrivateZone, obs.HostedZone.Config.PrivateZone)
+		spec.Config.PrivateZone = awsclients.LateInitializeBoolPtr(spec.Config.PrivateZone, &obs.HostedZone.Config.PrivateZone)
 	}
 }
 
@@ -89,40 +90,40 @@ func GenerateCreateHostedZoneInput(cr *v1alpha1.HostedZone) *route53.CreateHoste
 		DelegationSetId: cr.Spec.ForProvider.DelegationSetID,
 	}
 	if cr.Spec.ForProvider.Config != nil {
-		reqInput.HostedZoneConfig = &route53.HostedZoneConfig{
-			PrivateZone: cr.Spec.ForProvider.Config.PrivateZone,
+		reqInput.HostedZoneConfig = &route53types.HostedZoneConfig{
+			PrivateZone: aws.ToBool(cr.Spec.ForProvider.Config.PrivateZone),
 			Comment:     cr.Spec.ForProvider.Config.Comment,
 		}
 	}
 	if cr.Spec.ForProvider.VPC != nil {
-		reqInput.VPC = &route53.VPC{VPCId: cr.Spec.ForProvider.VPC.VPCID, VPCRegion: route53.VPCRegion(awsclients.StringValue(cr.Spec.ForProvider.VPC.VPCRegion))}
+		reqInput.VPC = &route53types.VPC{VPCId: cr.Spec.ForProvider.VPC.VPCID, VPCRegion: route53types.VPCRegion(awsclients.StringValue(cr.Spec.ForProvider.VPC.VPCRegion))}
 	}
 	return reqInput
 }
 
 // GenerateObservation generates and returns v1alpha1.HostedZoneObservation which can be used as the status of the runtime object
-func GenerateObservation(op *route53.GetHostedZoneResponse) v1alpha1.HostedZoneObservation {
+func GenerateObservation(op *route53.GetHostedZoneOutput) v1alpha1.HostedZoneObservation {
 	o := v1alpha1.HostedZoneObservation{}
 	if op.DelegationSet != nil {
 		n := make([]string, len(op.DelegationSet.NameServers))
 		copy(n, op.DelegationSet.NameServers)
 		o.DelegationSet = v1alpha1.DelegationSet{
-			CallerReference: aws.StringValue(op.DelegationSet.CallerReference),
-			ID:              aws.StringValue(op.DelegationSet.Id),
+			CallerReference: aws.ToString(op.DelegationSet.CallerReference),
+			ID:              aws.ToString(op.DelegationSet.Id),
 			NameServers:     n,
 		}
 	}
 	if op.HostedZone != nil {
 		o.HostedZone = v1alpha1.HostedZoneResponse{
-			CallerReference:        aws.StringValue(op.HostedZone.CallerReference),
-			ID:                     aws.StringValue(op.HostedZone.Id),
-			ResourceRecordSetCount: aws.Int64Value(op.HostedZone.ResourceRecordSetCount),
+			CallerReference:        aws.ToString(op.HostedZone.CallerReference),
+			ID:                     aws.ToString(op.HostedZone.Id),
+			ResourceRecordSetCount: aws.ToInt64(op.HostedZone.ResourceRecordSetCount),
 		}
 
 		if op.HostedZone.LinkedService != nil {
 			o.HostedZone.LinkedService = v1alpha1.LinkedService{
-				Description:      aws.StringValue(op.HostedZone.LinkedService.Description),
-				ServicePrincipal: aws.StringValue(op.HostedZone.LinkedService.ServicePrincipal),
+				Description:      aws.ToString(op.HostedZone.LinkedService.Description),
+				ServicePrincipal: aws.ToString(op.HostedZone.LinkedService.ServicePrincipal),
 			}
 		}
 	}

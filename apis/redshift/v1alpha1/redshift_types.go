@@ -71,7 +71,7 @@ type ClusterParameters struct {
 	// +kubebuilder:validation:Maximum=35
 	// +kubebuilder:validation:Minimum=0
 	// +optional
-	AutomatedSnapshotRetentionPeriod *int64 `json:"automatedSnapshotRetentionPeriod,omitempty"`
+	AutomatedSnapshotRetentionPeriod *int32 `json:"automatedSnapshotRetentionPeriod,omitempty"`
 
 	// AvailabilityZone is the EC2 Availability Zone in which you want
 	// Amazon Redshift to provision the cluster.
@@ -184,7 +184,7 @@ type ClusterParameters struct {
 	// The value must be either -1 or an integer between 1 and 3,653.
 	// default -1
 	// +optional
-	FinalClusterSnapshotRetentionPeriod *int64 `json:"finalClusterSnapshotRetentionPeriod,omitempty"`
+	FinalClusterSnapshotRetentionPeriod *int32 `json:"finalClusterSnapshotRetentionPeriod,omitempty"`
 
 	// HSMClientCertificateIdentifier specifies the name of the HSM client certificate
 	// the Amazon Redshift cluster uses to retrieve the data encryption keys stored in an HSM.
@@ -235,7 +235,7 @@ type ClusterParameters struct {
 	// default=1
 	// +kubebuilder:validation:Maximum=3653
 	// +optional
-	ManualSnapshotRetentionPeriod *int64 `json:"manualSnapshotRetentionPeriod,omitempty"`
+	ManualSnapshotRetentionPeriod *int32 `json:"manualSnapshotRetentionPeriod,omitempty"`
 
 	// NewMasterUserPassword is the new password to be associated with the master user account
 	// for the cluster that has being created.
@@ -266,7 +266,7 @@ type ClusterParameters struct {
 	// +kubebuilder:validation:Maximum=100
 	// +kubebuilder:validation:Minimum=1
 	// +optional
-	NumberOfNodes *int64 `json:"numberOfNodes,omitempty"`
+	NumberOfNodes *int32 `json:"numberOfNodes,omitempty"`
 
 	// Port specifies the port number on which the cluster accepts incoming connections.
 	// The cluster is accessible only via the JDBC and ODBC connection strings.
@@ -276,7 +276,7 @@ type ClusterParameters struct {
 	// +kubebuilder:validation:Maximum=65535
 	// +kubebuilder:validation:Minimum=1150
 	// +optional
-	Port *int64 `json:"port,omitempty"`
+	Port *int32 `json:"port,omitempty"`
 
 	// PreferredMaintenanceWindow is the weekly time range (in UTC) during which
 	// automated cluster maintenance can occur.
@@ -496,7 +496,7 @@ type ClusterSnapshotCopyStatus struct {
 	// manual snapshot is retained indefinitely.
 	//
 	// The value must be either -1 or an integer between 1 and 3,653.
-	ManualSnapshotRetentionPeriod int64 `json:"manualSnapshotRetentionPeriod,omitempty"`
+	ManualSnapshotRetentionPeriod int32 `json:"manualSnapshotRetentionPeriod,omitempty"`
 
 	// The number of days that automated snapshots are retained in the destination
 	// region after they are copied from a source region.
@@ -563,7 +563,7 @@ type Endpoint struct {
 	Address string `json:"address,omitempty"`
 
 	// Port specifies the port that the database engine is listening on.
-	Port int64 `json:"port,omitempty"`
+	Port int32 `json:"port,omitempty"`
 }
 
 // HSMStatus describes the status of changes to HSM settings.

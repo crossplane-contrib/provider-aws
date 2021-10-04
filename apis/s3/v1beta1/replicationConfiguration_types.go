@@ -93,7 +93,7 @@ type ReplicationRule struct {
 	//
 	// For more information, see Replication (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication.html)
 	// in the Amazon Simple Storage Service Developer Guide.
-	Priority *int64 `json:"priority,omitempty"`
+	Priority *int32 `json:"priority,omitempty"`
 
 	// A container that describes additional filters for identifying the source
 	// objects that you want to replicate. You can choose to enable or disable the
@@ -231,7 +231,7 @@ type ReplicationTimeValue struct {
 	// Contains an integer specifying time in minutes.
 	//
 	// Valid values: 15 minutes.
-	Minutes int64 `json:"minutes"`
+	Minutes int32 `json:"minutes"`
 }
 
 // ReplicationTime specifies S3 Replication Time Control (S3 RTC) related information,

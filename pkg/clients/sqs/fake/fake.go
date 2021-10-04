@@ -17,57 +17,59 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 )
 
 // MockSQSClient for testing.
 type MockSQSClient struct {
-	MockCreateQueueRequest        func(input *sqs.CreateQueueInput) sqs.CreateQueueRequest
-	MockDeleteQueueRequest        func(input *sqs.DeleteQueueInput) sqs.DeleteQueueRequest
-	MockTagQueueRequest           func(input *sqs.TagQueueInput) sqs.TagQueueRequest
-	MockUntagQueueRequest         func(input *sqs.UntagQueueInput) sqs.UntagQueueRequest
-	MockListQueueTagsRequest      func(input *sqs.ListQueueTagsInput) sqs.ListQueueTagsRequest
-	MockGetQueueAttributesRequest func(input *sqs.GetQueueAttributesInput) sqs.GetQueueAttributesRequest
-	MockSetQueueAttributesRequest func(input *sqs.SetQueueAttributesInput) sqs.SetQueueAttributesRequest
-	MockGetQueueURLRequest        func(input *sqs.GetQueueUrlInput) sqs.GetQueueUrlRequest
+	MockCreateQueue        func(ctx context.Context, input *sqs.CreateQueueInput, opts []func(*sqs.Options)) (*sqs.CreateQueueOutput, error)
+	MockDeleteQueue        func(ctx context.Context, input *sqs.DeleteQueueInput, opts []func(*sqs.Options)) (*sqs.DeleteQueueOutput, error)
+	MockTagQueue           func(ctx context.Context, input *sqs.TagQueueInput, opts []func(*sqs.Options)) (*sqs.TagQueueOutput, error)
+	MockUntagQueue         func(ctx context.Context, input *sqs.UntagQueueInput, opts []func(*sqs.Options)) (*sqs.UntagQueueOutput, error)
+	MockListQueueTags      func(ctx context.Context, input *sqs.ListQueueTagsInput, opts []func(*sqs.Options)) (*sqs.ListQueueTagsOutput, error)
+	MockGetQueueAttributes func(ctx context.Context, input *sqs.GetQueueAttributesInput, opts []func(*sqs.Options)) (*sqs.GetQueueAttributesOutput, error)
+	MockSetQueueAttributes func(ctx context.Context, input *sqs.SetQueueAttributesInput, opts []func(*sqs.Options)) (*sqs.SetQueueAttributesOutput, error)
+	MockGetQueueURL        func(ctx context.Context, input *sqs.GetQueueUrlInput, opts []func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error)
 }
 
-// CreateQueueRequest mocks CreateQueueRequest
-func (m *MockSQSClient) CreateQueueRequest(i *sqs.CreateQueueInput) sqs.CreateQueueRequest {
-	return m.MockCreateQueueRequest(i)
+// CreateQueue mocks CreateQueue
+func (m *MockSQSClient) CreateQueue(ctx context.Context, i *sqs.CreateQueueInput, opts ...func(*sqs.Options)) (*sqs.CreateQueueOutput, error) {
+	return m.MockCreateQueue(ctx, i, opts)
 }
 
-// DeleteQueueRequest mocks DeleteQueueRequest
-func (m *MockSQSClient) DeleteQueueRequest(i *sqs.DeleteQueueInput) sqs.DeleteQueueRequest {
-	return m.MockDeleteQueueRequest(i)
+// DeleteQueue mocks DeleteQueue
+func (m *MockSQSClient) DeleteQueue(ctx context.Context, i *sqs.DeleteQueueInput, opts ...func(*sqs.Options)) (*sqs.DeleteQueueOutput, error) {
+	return m.MockDeleteQueue(ctx, i, opts)
 }
 
-// TagQueueRequest mocks TagQueueRequest
-func (m *MockSQSClient) TagQueueRequest(i *sqs.TagQueueInput) sqs.TagQueueRequest {
-	return m.MockTagQueueRequest(i)
+// TagQueue mocks TagQueue
+func (m *MockSQSClient) TagQueue(ctx context.Context, i *sqs.TagQueueInput, opts ...func(*sqs.Options)) (*sqs.TagQueueOutput, error) {
+	return m.MockTagQueue(ctx, i, opts)
 }
 
-// UntagQueueRequest mocks UntagQueueRequest
-func (m *MockSQSClient) UntagQueueRequest(i *sqs.UntagQueueInput) sqs.UntagQueueRequest {
-	return m.MockUntagQueueRequest(i)
+// UntagQueue mocks UntagQueue
+func (m *MockSQSClient) UntagQueue(ctx context.Context, i *sqs.UntagQueueInput, opts ...func(*sqs.Options)) (*sqs.UntagQueueOutput, error) {
+	return m.MockUntagQueue(ctx, i, opts)
 }
 
-// ListQueueTagsRequest mocks ListQueueTagsRequest
-func (m *MockSQSClient) ListQueueTagsRequest(i *sqs.ListQueueTagsInput) sqs.ListQueueTagsRequest {
-	return m.MockListQueueTagsRequest(i)
+// ListQueueTags mocks ListQueueTags
+func (m *MockSQSClient) ListQueueTags(ctx context.Context, i *sqs.ListQueueTagsInput, opts ...func(*sqs.Options)) (*sqs.ListQueueTagsOutput, error) {
+	return m.MockListQueueTags(ctx, i, opts)
 }
 
-// GetQueueAttributesRequest mocks GetQueueAttributesRequest
-func (m *MockSQSClient) GetQueueAttributesRequest(i *sqs.GetQueueAttributesInput) sqs.GetQueueAttributesRequest {
-	return m.MockGetQueueAttributesRequest(i)
+// GetQueueAttributes mocks GetQueueAttributes
+func (m *MockSQSClient) GetQueueAttributes(ctx context.Context, i *sqs.GetQueueAttributesInput, opts ...func(*sqs.Options)) (*sqs.GetQueueAttributesOutput, error) {
+	return m.MockGetQueueAttributes(ctx, i, opts)
 }
 
-// SetQueueAttributesRequest mocks SetQueueAttributesRequest
-func (m *MockSQSClient) SetQueueAttributesRequest(i *sqs.SetQueueAttributesInput) sqs.SetQueueAttributesRequest {
-	return m.MockSetQueueAttributesRequest(i)
+// SetQueueAttributes mocks SetQueueAttributes
+func (m *MockSQSClient) SetQueueAttributes(ctx context.Context, i *sqs.SetQueueAttributesInput, opts ...func(*sqs.Options)) (*sqs.SetQueueAttributesOutput, error) {
+	return m.MockSetQueueAttributes(ctx, i, opts)
 }
 
-// GetQueueUrlRequest mocks GetQueueUrlRequest
-func (m *MockSQSClient) GetQueueUrlRequest(i *sqs.GetQueueUrlInput) sqs.GetQueueUrlRequest { //nolint:golint
-	return m.MockGetQueueURLRequest(i)
+// GetQueueUrl mocks GetQueueUrl
+func (m *MockSQSClient) GetQueueUrl(ctx context.Context, i *sqs.GetQueueUrlInput, opts ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) { //nolint:golint
+	return m.MockGetQueueURL(ctx, i, opts)
 }

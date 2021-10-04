@@ -105,9 +105,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 
 	// Fetch SNS Topic Attributes with matching TopicARN
-	res, err := e.client.GetTopicAttributesRequest(&awssns.GetTopicAttributesInput{
+	res, err := e.client.GetTopicAttributes(ctx, &awssns.GetTopicAttributesInput{
 		TopicArn: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{},
 			awsclient.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errGetTopicAttr)
@@ -135,12 +135,12 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	resp, err := e.client.CreateTopicRequest(snsclient.GenerateCreateTopicInput(&cr.Spec.ForProvider)).Send(ctx)
+	resp, err := e.client.CreateTopic(ctx, snsclient.GenerateCreateTopicInput(&cr.Spec.ForProvider))
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
-	meta.SetExternalName(cr, aws.StringValue(resp.CreateTopicOutput.TopicArn))
+	meta.SetExternalName(cr, aws.ToString(resp.TopicArn))
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
@@ -151,9 +151,9 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	// Fetch Topic Attributes again
-	resp, err := e.client.GetTopicAttributesRequest(&awssns.GetTopicAttributesInput{
+	resp, err := e.client.GetTopicAttributes(ctx, &awssns.GetTopicAttributesInput{
 		TopicArn: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errGetTopicAttr)
 	}
@@ -161,11 +161,11 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// Update Topic Attributes
 	attrs := snsclient.GetChangedAttributes(cr.Spec.ForProvider, resp.Attributes)
 	for k, v := range attrs {
-		_, err = e.client.SetTopicAttributesRequest(&awssns.SetTopicAttributesInput{
+		_, err = e.client.SetTopicAttributes(ctx, &awssns.SetTopicAttributesInput{
 			AttributeName:  aws.String(k),
 			AttributeValue: aws.String(v),
 			TopicArn:       aws.String(meta.GetExternalName(cr)),
-		}).Send(ctx)
+		})
 
 	}
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
@@ -179,9 +179,9 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.DeleteTopicRequest(&awssns.DeleteTopicInput{
+	_, err := e.client.DeleteTopic(ctx, &awssns.DeleteTopicInput{
 		TopicArn: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(sns.IsTopicNotFound, err), errDelete)
 }

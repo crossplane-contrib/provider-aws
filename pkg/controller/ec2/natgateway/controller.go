@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	awsec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -90,9 +91,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
-	response, err := e.client.DescribeNatGatewaysRequest(&awsec2.DescribeNatGatewaysInput{
+	response, err := e.client.DescribeNatGateways(ctx, &awsec2.DescribeNatGatewaysInput{
 		NatGatewayIds: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDescribe)
 	}
@@ -110,7 +111,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	case v1beta1.NatGatewayStatusPending:
 		cr.SetConditions(xpv1.Unavailable())
 	case v1beta1.NatGatewayStatusFailed:
-		cr.SetConditions(xpv1.Unavailable().WithMessage(aws.StringValue(observed.FailureMessage)))
+		cr.SetConditions(xpv1.Unavailable().WithMessage(aws.ToString(observed.FailureMessage)))
 	case v1beta1.NatGatewayStatusAvailable:
 		cr.SetConditions(xpv1.Available())
 	case v1beta1.NatGatewayStatusDeleting:
@@ -133,20 +134,20 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	nat, err := e.client.CreateNatGatewayRequest(&awsec2.CreateNatGatewayInput{
+	nat, err := e.client.CreateNatGateway(ctx, &awsec2.CreateNatGatewayInput{
 		AllocationId: cr.Spec.ForProvider.AllocationID,
 		SubnetId:     cr.Spec.ForProvider.SubnetID,
-		TagSpecifications: []awsec2.TagSpecification{
+		TagSpecifications: []awsec2types.TagSpecification{
 			{
 				ResourceType: "natgateway",
 				Tags:         v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
 			},
 		},
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
-	meta.SetExternalName(cr, aws.StringValue(nat.NatGateway.NatGatewayId))
+	meta.SetExternalName(cr, aws.ToString(nat.NatGateway.NatGatewayId))
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
 
@@ -156,9 +157,9 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	response, err := e.client.DescribeNatGatewaysRequest(&awsec2.DescribeNatGatewaysInput{
+	response, err := e.client.DescribeNatGateways(ctx, &awsec2.DescribeNatGatewaysInput{
 		NatGatewayIds: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDescribe)
 	}
@@ -172,18 +173,18 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	addTags, RemoveTags := awsclient.DiffEC2Tags(v1beta1.GenerateEC2Tags(cr.Spec.ForProvider.Tags), observed.Tags)
 	if len(RemoveTags) > 0 {
-		if _, err := e.client.DeleteTagsRequest(&awsec2.DeleteTagsInput{
+		if _, err := e.client.DeleteTags(ctx, &awsec2.DeleteTagsInput{
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      RemoveTags,
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errDeleteTags)
 		}
 	}
 	if len(addTags) > 0 {
-		if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+		if _, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
 			Resources: []string{meta.GetExternalName(cr)},
 			Tags:      addTags,
-		}).Send(ctx); err != nil {
+		}); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdateTags)
 		}
 	}
@@ -202,9 +203,9 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 		return nil
 	}
 
-	_, err := e.client.DeleteNatGatewayRequest(&awsec2.DeleteNatGatewayInput{
+	_, err := e.client.DeleteNatGateway(ctx, &awsec2.DeleteNatGatewayInput{
 		NatGatewayId: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(ec2.IsNatGatewayNotFoundErr, err), errDelete)
 }

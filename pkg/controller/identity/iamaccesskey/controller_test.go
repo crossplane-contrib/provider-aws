@@ -18,12 +18,11 @@ package iamaccesskey
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -42,10 +41,10 @@ import (
 
 var (
 	// an arbitrary managed resource
-	unexpecedItem  resource.Managed
+	unexpectedItem resource.Managed
 	userName       = "some arbitrary name"
-	activeStatus   = awsiam.StatusTypeActive
-	inactiveStatus = awsiam.StatusTypeInactive
+	activeStatus   = awsiamtypes.StatusTypeActive
+	inactiveStatus = awsiamtypes.StatusTypeInactive
 	accessKeyID    = "accessKeyID"
 	secretKeyID    = "secretKeyID"
 
@@ -104,16 +103,14 @@ func TestObserve(t *testing.T) {
 		"ValidInputExists": {
 			args: args{
 				iam: &fake.MockAccessClient{
-					MockListAccessKeysRequest: func(input *awsiam.ListAccessKeysInput) awsiam.ListAccessKeysRequest {
-						return awsiam.ListAccessKeysRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListAccessKeysOutput{
-								AccessKeyMetadata: []awsiam.AccessKeyMetadata{{
-									AccessKeyId: aws.String(accessKeyID),
-									Status:      activeStatus,
-									UserName:    aws.String(userName),
-								}},
+					MockListAccessKeys: func(ctx context.Context, input *awsiam.ListAccessKeysInput, opts []func(*awsiam.Options)) (*awsiam.ListAccessKeysOutput, error) {
+						return &awsiam.ListAccessKeysOutput{
+							AccessKeyMetadata: []awsiamtypes.AccessKeyMetadata{{
+								AccessKeyId: aws.String(accessKeyID),
+								Status:      activeStatus,
+								UserName:    aws.String(userName),
 							}},
-						}
+						}, nil
 					},
 				},
 				cr: accesskey(withUsername(userName), withAccessKey(accessKeyID), withStatus(string(activeStatus))),
@@ -132,16 +129,14 @@ func TestObserve(t *testing.T) {
 		"ValidInputNeedsUpdate": {
 			args: args{
 				iam: &fake.MockAccessClient{
-					MockListAccessKeysRequest: func(input *awsiam.ListAccessKeysInput) awsiam.ListAccessKeysRequest {
-						return awsiam.ListAccessKeysRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListAccessKeysOutput{
-								AccessKeyMetadata: []awsiam.AccessKeyMetadata{{
-									AccessKeyId: aws.String(accessKeyID),
-									Status:      inactiveStatus,
-									UserName:    aws.String(userName),
-								}},
+					MockListAccessKeys: func(ctx context.Context, input *awsiam.ListAccessKeysInput, opts []func(*awsiam.Options)) (*awsiam.ListAccessKeysOutput, error) {
+						return &awsiam.ListAccessKeysOutput{
+							AccessKeyMetadata: []awsiamtypes.AccessKeyMetadata{{
+								AccessKeyId: aws.String(accessKeyID),
+								Status:      inactiveStatus,
+								UserName:    aws.String(userName),
 							}},
-						}
+						}, nil
 					},
 				},
 				cr: accesskey(withUsername(userName), withAccessKey(accessKeyID), withStatus(string(activeStatus))),
@@ -160,12 +155,10 @@ func TestObserve(t *testing.T) {
 		"ValidInputNotExists": {
 			args: args{
 				iam: &fake.MockAccessClient{
-					MockListAccessKeysRequest: func(input *awsiam.ListAccessKeysInput) awsiam.ListAccessKeysRequest {
-						return awsiam.ListAccessKeysRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.ListAccessKeysOutput{
-								AccessKeyMetadata: []awsiam.AccessKeyMetadata{},
-							}},
-						}
+					MockListAccessKeys: func(ctx context.Context, input *awsiam.ListAccessKeysInput, opts []func(*awsiam.Options)) (*awsiam.ListAccessKeysOutput, error) {
+						return &awsiam.ListAccessKeysOutput{
+							AccessKeyMetadata: []awsiamtypes.AccessKeyMetadata{},
+						}, nil
 					},
 				},
 				cr: accesskey(withUsername(userName), withAccessKey(accessKeyID), withStatus(string(activeStatus))),
@@ -182,20 +175,18 @@ func TestObserve(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ListError": {
 			args: args{
 				iam: &fake.MockAccessClient{
-					MockListAccessKeysRequest: func(input *awsiam.ListAccessKeysInput) awsiam.ListAccessKeysRequest {
-						return awsiam.ListAccessKeysRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom, Retryer: aws.NoOpRetryer{}},
-						}
+					MockListAccessKeys: func(ctx context.Context, input *awsiam.ListAccessKeysInput, opts []func(*awsiam.Options)) (*awsiam.ListAccessKeysOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: accesskey(withAccessKey("test")),
@@ -240,17 +231,15 @@ func TestCreate(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				iam: &fake.MockAccessClient{
-					MockCreateAccessKeyRequest: func(input *awsiam.CreateAccessKeyInput) awsiam.CreateAccessKeyRequest {
-						return awsiam.CreateAccessKeyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.CreateAccessKeyOutput{
-								AccessKey: &awsiam.AccessKey{
-									AccessKeyId:     aws.String(accessKeyID),
-									SecretAccessKey: aws.String(secretKeyID),
-									Status:          activeStatus,
-									UserName:        aws.String(userName),
-								},
-							}},
-						}
+					MockCreateAccessKey: func(ctx context.Context, input *awsiam.CreateAccessKeyInput, opts []func(*awsiam.Options)) (*awsiam.CreateAccessKeyOutput, error) {
+						return &awsiam.CreateAccessKeyOutput{
+							AccessKey: &awsiamtypes.AccessKey{
+								AccessKeyId:     aws.String(accessKeyID),
+								SecretAccessKey: aws.String(secretKeyID),
+								Status:          activeStatus,
+								UserName:        aws.String(userName),
+							},
+						}, nil
 					},
 				},
 				cr: accesskey(withUsername(userName)),
@@ -272,20 +261,18 @@ func TestCreate(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				iam: &fake.MockAccessClient{
-					MockCreateAccessKeyRequest: func(input *awsiam.CreateAccessKeyInput) awsiam.CreateAccessKeyRequest {
-						return awsiam.CreateAccessKeyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockCreateAccessKey: func(ctx context.Context, input *awsiam.CreateAccessKeyInput, opts []func(*awsiam.Options)) (*awsiam.CreateAccessKeyOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: accesskey(),
@@ -329,10 +316,8 @@ func TestDelete(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				iam: &fake.MockAccessClient{
-					MockDeleteAccessKeyRequest: func(input *awsiam.DeleteAccessKeyInput) awsiam.DeleteAccessKeyRequest {
-						return awsiam.DeleteAccessKeyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DeleteAccessKeyOutput{}},
-						}
+					MockDeleteAccessKey: func(ctx context.Context, input *awsiam.DeleteAccessKeyInput, opts []func(*awsiam.Options)) (*awsiam.DeleteAccessKeyOutput, error) {
+						return &awsiam.DeleteAccessKeyOutput{}, nil
 					},
 				},
 				cr: accesskey(withAccessKey(accessKeyID), withUsername(userName)),
@@ -344,20 +329,18 @@ func TestDelete(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				iam: &fake.MockAccessClient{
-					MockDeleteAccessKeyRequest: func(input *awsiam.DeleteAccessKeyInput) awsiam.DeleteAccessKeyRequest {
-						return awsiam.DeleteAccessKeyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDeleteAccessKey: func(ctx context.Context, input *awsiam.DeleteAccessKeyInput, opts []func(*awsiam.Options)) (*awsiam.DeleteAccessKeyOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: accesskey(),
@@ -370,10 +353,8 @@ func TestDelete(t *testing.T) {
 		"ResourceDoesNotExist": {
 			args: args{
 				iam: &fake.MockAccessClient{
-					MockDeleteAccessKeyRequest: func(input *awsiam.DeleteAccessKeyInput) awsiam.DeleteAccessKeyRequest {
-						return awsiam.DeleteAccessKeyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: awserr.New(awsiam.ErrCodeNoSuchEntityException, "", nil)},
-						}
+					MockDeleteAccessKey: func(ctx context.Context, input *awsiam.DeleteAccessKeyInput, opts []func(*awsiam.Options)) (*awsiam.DeleteAccessKeyOutput, error) {
+						return nil, &awsiamtypes.NoSuchEntityException{}
 					},
 				},
 				cr: accesskey(),
@@ -413,10 +394,8 @@ func TestUpdate(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				iam: &fake.MockAccessClient{
-					MockUpdateAccessKeyRequest: func(input *awsiam.UpdateAccessKeyInput) awsiam.UpdateAccessKeyRequest {
-						return awsiam.UpdateAccessKeyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.UpdateAccessKeyOutput{}},
-						}
+					MockUpdateAccessKey: func(ctx context.Context, input *awsiam.UpdateAccessKeyInput, opts []func(*awsiam.Options)) (*awsiam.UpdateAccessKeyOutput, error) {
+						return &awsiam.UpdateAccessKeyOutput{}, nil
 					},
 				},
 				cr: accesskey(withAccessKey(accessKeyID), withUsername(userName), withStatus(string(activeStatus))),
@@ -427,20 +406,18 @@ func TestUpdate(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				iam: &fake.MockAccessClient{
-					MockUpdateAccessKeyRequest: func(input *awsiam.UpdateAccessKeyInput) awsiam.UpdateAccessKeyRequest {
-						return awsiam.UpdateAccessKeyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockUpdateAccessKey: func(ctx context.Context, input *awsiam.UpdateAccessKeyInput, opts []func(*awsiam.Options)) (*awsiam.UpdateAccessKeyOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: accesskey(withStatus(string(activeStatus))),

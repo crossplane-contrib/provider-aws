@@ -18,11 +18,11 @@ package iamgroup
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
+	awsiamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 
@@ -40,8 +40,8 @@ import (
 )
 
 var (
-	unexpecedItem resource.Managed
-	groupName     = "some group"
+	unexpectedItem resource.Managed
+	groupName      = "some group"
 
 	errBoom = errors.New("boom")
 )
@@ -92,15 +92,13 @@ func TestObserve(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				iam: &fake.MockGroupClient{
-					MockGetGroup: func(input *awsiam.GetGroupInput) awsiam.GetGroupRequest {
-						return awsiam.GetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.GetGroupOutput{
-								Group: &awsiam.Group{
-									GroupName: aws.String(groupName),
-									Path:      aws.String(groupPath),
-								},
-							}},
-						}
+					MockGetGroup: func(ctx context.Context, input *awsiam.GetGroupInput, opts []func(*awsiam.Options)) (*awsiam.GetGroupOutput, error) {
+						return &awsiam.GetGroupOutput{
+							Group: &awsiamtypes.Group{
+								GroupName: aws.String(groupName),
+								Path:      aws.String(groupPath),
+							},
+						}, nil
 					},
 				},
 				cr: group(withExternalName(groupName),
@@ -118,20 +116,18 @@ func TestObserve(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"GetGroupError": {
 			args: args{
 				iam: &fake.MockGroupClient{
-					MockGetGroup: func(input *awsiam.GetGroupInput) awsiam.GetGroupRequest {
-						return awsiam.GetGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom, Retryer: aws.NoOpRetryer{}},
-						}
+					MockGetGroup: func(ctx context.Context, input *awsiam.GetGroupInput, opts []func(*awsiam.Options)) (*awsiam.GetGroupOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: group(withExternalName(groupName)),
@@ -176,8 +172,8 @@ func TestCreate(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				iam: &fake.MockGroupClient{
-					MockCreateGroup: func(input *awsiam.CreateGroupInput) awsiam.CreateGroupRequest {
-						return awsiam.CreateGroupRequest{Request: &aws.Request{HTTPRequest: &http.Request{}, Data: &awsiam.CreateGroupOutput{}, Retryer: aws.NoOpRetryer{}}}
+					MockCreateGroup: func(ctx context.Context, input *awsiam.CreateGroupInput, opts []func(*awsiam.Options)) (*awsiam.CreateGroupOutput, error) {
+						return &awsiam.CreateGroupOutput{}, nil
 					},
 				},
 				cr: group(withExternalName(groupName)),
@@ -190,20 +186,18 @@ func TestCreate(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"ClientError": {
 			args: args{
 				iam: &fake.MockGroupClient{
-					MockCreateGroup: func(input *awsiam.CreateGroupInput) awsiam.CreateGroupRequest {
-						return awsiam.CreateGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockCreateGroup: func(ctx context.Context, input *awsiam.CreateGroupInput, opts []func(*awsiam.Options)) (*awsiam.CreateGroupOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: group(),
@@ -248,10 +242,8 @@ func TestUpdate(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				iam: &fake.MockGroupClient{
-					MockUpdateGroup: func(input *awsiam.UpdateGroupInput) awsiam.UpdateGroupRequest {
-						return awsiam.UpdateGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.UpdateGroupOutput{}},
-						}
+					MockUpdateGroup: func(ctx context.Context, input *awsiam.UpdateGroupInput, opts []func(*awsiam.Options)) (*awsiam.UpdateGroupOutput, error) {
+						return &awsiam.UpdateGroupOutput{}, nil
 					},
 				},
 				cr: group(withExternalName(groupName)),
@@ -262,10 +254,10 @@ func TestUpdate(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
@@ -303,10 +295,8 @@ func TestDelete(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				iam: &fake.MockGroupClient{
-					MockDeleteGroup: func(input *awsiam.DeleteGroupInput) awsiam.DeleteGroupRequest {
-						return awsiam.DeleteGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsiam.DeleteGroupOutput{}},
-						}
+					MockDeleteGroup: func(ctx context.Context, input *awsiam.DeleteGroupInput, opts []func(*awsiam.Options)) (*awsiam.DeleteGroupOutput, error) {
+						return &awsiam.DeleteGroupOutput{}, nil
 					},
 				},
 				cr: group(withExternalName(groupName)),
@@ -318,20 +308,18 @@ func TestDelete(t *testing.T) {
 		},
 		"InValidInput": {
 			args: args{
-				cr: unexpecedItem,
+				cr: unexpectedItem,
 			},
 			want: want{
-				cr:  unexpecedItem,
+				cr:  unexpectedItem,
 				err: errors.New(errUnexpectedObject),
 			},
 		},
 		"DeleteError": {
 			args: args{
 				iam: &fake.MockGroupClient{
-					MockDeleteGroup: func(input *awsiam.DeleteGroupInput) awsiam.DeleteGroupRequest {
-						return awsiam.DeleteGroupRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Error: errBoom},
-						}
+					MockDeleteGroup: func(ctx context.Context, input *awsiam.DeleteGroupInput, opts []func(*awsiam.Options)) (*awsiam.DeleteGroupOutput, error) {
+						return nil, errBoom
 					},
 				},
 				cr: group(withExternalName(groupName)),

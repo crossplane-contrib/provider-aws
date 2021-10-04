@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 
@@ -57,18 +58,18 @@ func generateLoggingConfig() *v1beta1.LoggingConfiguration {
 	}
 }
 
-func generateAWSLogging() *s3.LoggingEnabled {
-	return &s3.LoggingEnabled{
+func generateAWSLogging() *s3types.LoggingEnabled {
+	return &s3types.LoggingEnabled{
 		TargetBucket: &bucketName,
-		TargetGrants: []s3.TargetGrant{{
-			Grantee: &s3.Grantee{
+		TargetGrants: []s3types.TargetGrant{{
+			Grantee: &s3types.Grantee{
 				DisplayName:  &displayName,
 				EmailAddress: &email,
 				ID:           &id,
-				Type:         s3.TypeCanonicalUser,
+				Type:         s3types.TypeCanonicalUser,
 				URI:          &groupURI,
 			},
-			Permission: s3.BucketLogsPermissionFullControl,
+			Permission: s3types.BucketLogsPermissionFullControl,
 		}},
 		TargetPrefix: &prefix,
 	}
@@ -93,10 +94,8 @@ func TestLoggingObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
 				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
-						return s3.GetBucketLoggingRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLogging()}),
-						}
+					MockGetBucketLogging: func(ctx context.Context, input *s3.GetBucketLoggingInput, opts []func(*s3.Options)) (*s3.GetBucketLoggingOutput, error) {
+						return nil, errBoom
 					},
 				}),
 			},
@@ -109,10 +108,8 @@ func TestLoggingObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
 				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
-						return s3.GetBucketLoggingRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: nil}),
-						}
+					MockGetBucketLogging: func(ctx context.Context, input *s3.GetBucketLoggingInput, opts []func(*s3.Options)) (*s3.GetBucketLoggingOutput, error) {
+						return &s3.GetBucketLoggingOutput{LoggingEnabled: nil}, nil
 					},
 				}),
 			},
@@ -125,10 +122,8 @@ func TestLoggingObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(nil)),
 				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
-						return s3.GetBucketLoggingRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: nil}),
-						}
+					MockGetBucketLogging: func(ctx context.Context, input *s3.GetBucketLoggingInput, opts []func(*s3.Options)) (*s3.GetBucketLoggingOutput, error) {
+						return &s3.GetBucketLoggingOutput{LoggingEnabled: nil}, nil
 					},
 				}),
 			},
@@ -141,10 +136,8 @@ func TestLoggingObserve(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
 				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
-						return s3.GetBucketLoggingRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLogging()}),
-						}
+					MockGetBucketLogging: func(ctx context.Context, input *s3.GetBucketLoggingInput, opts []func(*s3.Options)) (*s3.GetBucketLoggingOutput, error) {
+						return &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLogging()}, nil
 					},
 				}),
 			},
@@ -186,10 +179,8 @@ func TestLoggingCreateOrUpdate(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
 				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockPutBucketLoggingRequest: func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
-						return s3.PutBucketLoggingRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.PutBucketLoggingOutput{}),
-						}
+					MockPutBucketLogging: func(ctx context.Context, input *s3.PutBucketLoggingInput, opts []func(*s3.Options)) (*s3.PutBucketLoggingOutput, error) {
+						return nil, errBoom
 					},
 				}),
 			},
@@ -201,10 +192,8 @@ func TestLoggingCreateOrUpdate(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
 				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockPutBucketLoggingRequest: func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
-						return s3.PutBucketLoggingRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.PutBucketLoggingOutput{}),
-						}
+					MockPutBucketLogging: func(ctx context.Context, input *s3.PutBucketLoggingInput, opts []func(*s3.Options)) (*s3.PutBucketLoggingOutput, error) {
+						return &s3.PutBucketLoggingOutput{}, nil
 					},
 				}),
 			},
@@ -216,10 +205,8 @@ func TestLoggingCreateOrUpdate(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
 				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockPutBucketLoggingRequest: func(input *s3.PutBucketLoggingInput) s3.PutBucketLoggingRequest {
-						return s3.PutBucketLoggingRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.PutBucketLoggingOutput{}),
-						}
+					MockPutBucketLogging: func(ctx context.Context, input *s3.PutBucketLoggingInput, opts []func(*s3.Options)) (*s3.PutBucketLoggingOutput, error) {
+						return &s3.PutBucketLoggingOutput{}, nil
 					},
 				}),
 			},
@@ -258,10 +245,8 @@ func TestLoggingLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(),
 				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
-						return s3.GetBucketLoggingRequest{
-							Request: s3Testing.CreateRequest(errBoom, &s3.GetBucketLoggingOutput{}),
-						}
+					MockGetBucketLogging: func(ctx context.Context, input *s3.GetBucketLoggingInput, opts []func(*s3.Options)) (*s3.GetBucketLoggingOutput, error) {
+						return &s3.GetBucketLoggingOutput{}, errBoom
 					},
 				}),
 			},
@@ -274,10 +259,8 @@ func TestLoggingLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(),
 				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
-						return s3.GetBucketLoggingRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{}),
-						}
+					MockGetBucketLogging: func(ctx context.Context, input *s3.GetBucketLoggingInput, opts []func(*s3.Options)) (*s3.GetBucketLoggingOutput, error) {
+						return &s3.GetBucketLoggingOutput{}, nil
 					},
 				}),
 			},
@@ -290,10 +273,8 @@ func TestLoggingLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(nil)),
 				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
-						return s3.GetBucketLoggingRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLogging()}),
-						}
+					MockGetBucketLogging: func(ctx context.Context, input *s3.GetBucketLoggingInput, opts []func(*s3.Options)) (*s3.GetBucketLoggingOutput, error) {
+						return &s3.GetBucketLoggingOutput{LoggingEnabled: generateAWSLogging()}, nil
 					},
 				}),
 			},
@@ -306,10 +287,8 @@ func TestLoggingLateInit(t *testing.T) {
 			args: args{
 				b: s3Testing.Bucket(s3Testing.WithLoggingConfig(generateLoggingConfig())),
 				cl: NewLoggingConfigurationClient(fake.MockBucketClient{
-					MockGetBucketLoggingRequest: func(input *s3.GetBucketLoggingInput) s3.GetBucketLoggingRequest {
-						return s3.GetBucketLoggingRequest{
-							Request: s3Testing.CreateRequest(nil, &s3.GetBucketLoggingOutput{LoggingEnabled: &s3.LoggingEnabled{}}),
-						}
+					MockGetBucketLogging: func(ctx context.Context, input *s3.GetBucketLoggingInput, opts []func(*s3.Options)) (*s3.GetBucketLoggingOutput, error) {
+						return &s3.GetBucketLoggingOutput{LoggingEnabled: &s3types.LoggingEnabled{}}, nil
 					},
 				}),
 			},

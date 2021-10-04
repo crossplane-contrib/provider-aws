@@ -1,3 +1,5 @@
+
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -104,7 +106,7 @@ spec:
                   diskSize:
                     description: The root device disk size (in GiB) for your node
                       group instances. The default disk size is 20 GiB.
-                    format: int64
+                    format: int32
                     type: integer
                   instanceTypes:
                     description: The instance type to use for your node group. Currently,
@@ -232,19 +234,19 @@ spec:
                           to manage the desired size of the node group. If not set,
                           the initial desired size will be the configured minimum
                           size of the node group.
-                        format: int64
+                        format: int32
                         type: integer
                       maxSize:
                         description: The maximum number of worker nodes that the managed
                           node group can scale out to. Managed node groups can support
                           up to 100 nodes by default.
-                        format: int64
+                        format: int32
                         type: integer
                       minSize:
                         description: The minimum number of worker nodes that the managed
                           node group can scale in to. This number must be greater
                           than zero.
-                        format: int64
+                        format: int32
                         type: integer
                     type: object
                   subnetRefs:
@@ -464,7 +466,7 @@ spec:
                       desiredSize:
                         description: The current number of worker nodes for the managed
                           node group.
-                        format: int64
+                        format: int32
                         type: integer
                     type: object
                   status:

@@ -17,39 +17,41 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 )
 
 // MockRDSClient for testing.
 type MockRDSClient struct {
-	MockCreate   func(*rds.CreateDBInstanceInput) rds.CreateDBInstanceRequest
-	MockDescribe func(*rds.DescribeDBInstancesInput) rds.DescribeDBInstancesRequest
-	MockModify   func(*rds.ModifyDBInstanceInput) rds.ModifyDBInstanceRequest
-	MockDelete   func(*rds.DeleteDBInstanceInput) rds.DeleteDBInstanceRequest
-	MockAddTags  func(*rds.AddTagsToResourceInput) rds.AddTagsToResourceRequest
+	MockCreate   func(context.Context, *rds.CreateDBInstanceInput, []func(*rds.Options)) (*rds.CreateDBInstanceOutput, error)
+	MockDescribe func(context.Context, *rds.DescribeDBInstancesInput, []func(*rds.Options)) (*rds.DescribeDBInstancesOutput, error)
+	MockModify   func(context.Context, *rds.ModifyDBInstanceInput, []func(*rds.Options)) (*rds.ModifyDBInstanceOutput, error)
+	MockDelete   func(context.Context, *rds.DeleteDBInstanceInput, []func(*rds.Options)) (*rds.DeleteDBInstanceOutput, error)
+	MockAddTags  func(context.Context, *rds.AddTagsToResourceInput, []func(*rds.Options)) (*rds.AddTagsToResourceOutput, error)
 }
 
-// DescribeDBInstancesRequest finds RDS Instance by name
-func (m *MockRDSClient) DescribeDBInstancesRequest(i *rds.DescribeDBInstancesInput) rds.DescribeDBInstancesRequest {
-	return m.MockDescribe(i)
+// DescribeDBInstances finds RDS Instance by name
+func (m *MockRDSClient) DescribeDBInstances(ctx context.Context, i *rds.DescribeDBInstancesInput, opts ...func(*rds.Options)) (*rds.DescribeDBInstancesOutput, error) {
+	return m.MockDescribe(ctx, i, opts)
 }
 
-// CreateDBInstanceRequest creates RDS Instance with provided Specification
-func (m *MockRDSClient) CreateDBInstanceRequest(i *rds.CreateDBInstanceInput) rds.CreateDBInstanceRequest {
-	return m.MockCreate(i)
+// CreateDBInstance creates RDS Instance with provided Specification
+func (m *MockRDSClient) CreateDBInstance(ctx context.Context, i *rds.CreateDBInstanceInput, opts ...func(*rds.Options)) (*rds.CreateDBInstanceOutput, error) {
+	return m.MockCreate(ctx, i, opts)
 }
 
-// ModifyDBInstanceRequest modifies RDS Instance with provided Specification
-func (m *MockRDSClient) ModifyDBInstanceRequest(i *rds.ModifyDBInstanceInput) rds.ModifyDBInstanceRequest {
-	return m.MockModify(i)
+// ModifyDBInstance modifies RDS Instance with provided Specification
+func (m *MockRDSClient) ModifyDBInstance(ctx context.Context, i *rds.ModifyDBInstanceInput, opts ...func(*rds.Options)) (*rds.ModifyDBInstanceOutput, error) {
+	return m.MockModify(ctx, i, opts)
 }
 
-// DeleteDBInstanceRequest deletes RDS Instance
-func (m *MockRDSClient) DeleteDBInstanceRequest(i *rds.DeleteDBInstanceInput) rds.DeleteDBInstanceRequest {
-	return m.MockDelete(i)
+// DeleteDBInstance deletes RDS Instance
+func (m *MockRDSClient) DeleteDBInstance(ctx context.Context, i *rds.DeleteDBInstanceInput, opts ...func(*rds.Options)) (*rds.DeleteDBInstanceOutput, error) {
+	return m.MockDelete(ctx, i, opts)
 }
 
-// AddTagsToResourceRequest adds tags to RDS Instance.
-func (m *MockRDSClient) AddTagsToResourceRequest(i *rds.AddTagsToResourceInput) rds.AddTagsToResourceRequest {
-	return m.MockAddTags(i)
+// AddTagsToResource adds tags to RDS Instance.
+func (m *MockRDSClient) AddTagsToResource(ctx context.Context, i *rds.AddTagsToResourceInput, opts ...func(*rds.Options)) (*rds.AddTagsToResourceOutput, error) {
+	return m.MockAddTags(ctx, i, opts)
 }

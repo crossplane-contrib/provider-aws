@@ -17,14 +17,15 @@ limitations under the License.
 package elb
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"sort"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
-	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/elasticloadbalancingiface"
+	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
@@ -35,12 +36,29 @@ import (
 )
 
 // A Client handles CRUD operations for Elastic Load Balancing resources.
-type Client elasticloadbalancingiface.ClientAPI
+type Client interface {
+	DescribeLoadBalancers(ctx context.Context, input *elb.DescribeLoadBalancersInput, opts ...func(*elb.Options)) (*elb.DescribeLoadBalancersOutput, error)
+	CreateLoadBalancer(ctx context.Context, input *elb.CreateLoadBalancerInput, opts ...func(*elb.Options)) (*elb.CreateLoadBalancerOutput, error)
+	DeleteLoadBalancer(ctx context.Context, input *elb.DeleteLoadBalancerInput, opts ...func(*elb.Options)) (*elb.DeleteLoadBalancerOutput, error)
+	EnableAvailabilityZonesForLoadBalancer(ctx context.Context, input *elb.EnableAvailabilityZonesForLoadBalancerInput, opts ...func(*elb.Options)) (*elb.EnableAvailabilityZonesForLoadBalancerOutput, error)
+	DisableAvailabilityZonesForLoadBalancer(ctx context.Context, input *elb.DisableAvailabilityZonesForLoadBalancerInput, opts ...func(*elb.Options)) (*elb.DisableAvailabilityZonesForLoadBalancerOutput, error)
+	DetachLoadBalancerFromSubnets(ctx context.Context, input *elb.DetachLoadBalancerFromSubnetsInput, opts ...func(*elb.Options)) (*elb.DetachLoadBalancerFromSubnetsOutput, error)
+	AttachLoadBalancerToSubnets(ctx context.Context, input *elb.AttachLoadBalancerToSubnetsInput, opts ...func(*elb.Options)) (*elb.AttachLoadBalancerToSubnetsOutput, error)
+	ApplySecurityGroupsToLoadBalancer(ctx context.Context, input *elb.ApplySecurityGroupsToLoadBalancerInput, opts ...func(*elb.Options)) (*elb.ApplySecurityGroupsToLoadBalancerOutput, error)
+	CreateLoadBalancerListeners(ctx context.Context, input *elb.CreateLoadBalancerListenersInput, opts ...func(*elb.Options)) (*elb.CreateLoadBalancerListenersOutput, error)
+	DeleteLoadBalancerListeners(ctx context.Context, input *elb.DeleteLoadBalancerListenersInput, opts ...func(*elb.Options)) (*elb.DeleteLoadBalancerListenersOutput, error)
+	RegisterInstancesWithLoadBalancer(ctx context.Context, input *elb.RegisterInstancesWithLoadBalancerInput, opts ...func(*elb.Options)) (*elb.RegisterInstancesWithLoadBalancerOutput, error)
+	DeregisterInstancesFromLoadBalancer(ctx context.Context, input *elb.DeregisterInstancesFromLoadBalancerInput, opts ...func(*elb.Options)) (*elb.DeregisterInstancesFromLoadBalancerOutput, error)
+	DescribeTags(ctx context.Context, input *elb.DescribeTagsInput, opts ...func(*elb.Options)) (*elb.DescribeTagsOutput, error)
+	AddTags(ctx context.Context, input *elb.AddTagsInput, opts ...func(*elb.Options)) (*elb.AddTagsOutput, error)
+	RemoveTags(ctx context.Context, input *elb.RemoveTagsInput, opts ...func(*elb.Options)) (*elb.RemoveTagsOutput, error)
+	ConfigureHealthCheck(ctx context.Context, params *elb.ConfigureHealthCheckInput, opts ...func(*elb.Options)) (*elb.ConfigureHealthCheckOutput, error)
+}
 
 // NewClient returns a new Elastic Load Balancer client. Credentials must be passed as
 // JSON encoded data.
 func NewClient(cfg aws.Config) Client {
-	return elb.New(cfg)
+	return elb.NewFromConfig(cfg)
 }
 
 // GenerateCreateELBInput generate instance of elasticLoadBlancing.CreateLoadBalancerInput
@@ -59,7 +77,7 @@ func GenerateCreateELBInput(name string, p v1alpha1.ELBParameters) *elb.CreateLo
 
 // LateInitializeELB fills the empty fields in *v1alpha1.ELBParameters with
 // the values seen in elasticLoadBalancing.ELB.
-func LateInitializeELB(in *v1alpha1.ELBParameters, v *elb.LoadBalancerDescription, elbTags []elb.Tag) { // nolint:gocyclo
+func LateInitializeELB(in *v1alpha1.ELBParameters, v *elbtypes.LoadBalancerDescription, elbTags []elbtypes.Tag) { // nolint:gocyclo
 	if v == nil {
 		return
 	}
@@ -82,10 +100,10 @@ func LateInitializeELB(in *v1alpha1.ELBParameters, v *elb.LoadBalancerDescriptio
 		in.Listeners = make([]v1alpha1.Listener, len(v.ListenerDescriptions))
 		for k, l := range v.ListenerDescriptions {
 			in.Listeners[k] = v1alpha1.Listener{
-				InstancePort:     aws.Int64Value(l.Listener.InstancePort),
+				InstancePort:     l.Listener.InstancePort,
 				InstanceProtocol: l.Listener.InstanceProtocol,
-				LoadBalancerPort: aws.Int64Value(l.Listener.LoadBalancerPort),
-				Protocol:         aws.StringValue(l.Listener.Protocol),
+				LoadBalancerPort: l.Listener.LoadBalancerPort,
+				Protocol:         aws.ToString(l.Listener.Protocol),
 				SSLCertificateID: l.Listener.SSLCertificateId,
 			}
 		}
@@ -95,7 +113,7 @@ func LateInitializeELB(in *v1alpha1.ELBParameters, v *elb.LoadBalancerDescriptio
 		in.Tags = make([]v1alpha1.Tag, len(elbTags))
 		for k, t := range elbTags {
 			in.Tags[k] = v1alpha1.Tag{
-				Key:   aws.StringValue(t.Key),
+				Key:   aws.ToString(t.Key),
 				Value: t.Value,
 			}
 		}
@@ -104,27 +122,25 @@ func LateInitializeELB(in *v1alpha1.ELBParameters, v *elb.LoadBalancerDescriptio
 
 // IsELBNotFound returns true if the error is because the item doesn't exist.
 func IsELBNotFound(err error) bool {
-	if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() == elb.ErrCodeAccessPointNotFoundException {
-		return true
-	}
-	return false
+	var apnf *elbtypes.AccessPointNotFoundException
+	return errors.As(err, &apnf)
 }
 
 // GenerateELBObservation is used to produce v1alpha1.ELBObservation from
 // elasticLoadBalancing.LoadBalancerDescription.
-func GenerateELBObservation(e elb.LoadBalancerDescription) v1alpha1.ELBObservation {
+func GenerateELBObservation(e elbtypes.LoadBalancerDescription) v1alpha1.ELBObservation {
 	o := v1alpha1.ELBObservation{
-		CanonicalHostedZoneName:   aws.StringValue(e.CanonicalHostedZoneName),
-		CanonicalHostedZoneNameID: aws.StringValue(e.CanonicalHostedZoneNameID),
-		DNSName:                   aws.StringValue(e.DNSName),
-		VPCID:                     aws.StringValue(e.VPCId),
+		CanonicalHostedZoneName:   aws.ToString(e.CanonicalHostedZoneName),
+		CanonicalHostedZoneNameID: aws.ToString(e.CanonicalHostedZoneNameID),
+		DNSName:                   aws.ToString(e.DNSName),
+		VPCID:                     aws.ToString(e.VPCId),
 	}
 
 	if len(e.BackendServerDescriptions) > 0 {
 		descriptions := []v1alpha1.BackendServerDescription{}
 		for _, v := range e.BackendServerDescriptions {
 			descriptions = append(descriptions, v1alpha1.BackendServerDescription{
-				InstancePort: aws.Int64Value(v.InstancePort),
+				InstancePort: v.InstancePort,
 				PolicyNames:  v.PolicyNames,
 			})
 		}
@@ -136,8 +152,8 @@ func GenerateELBObservation(e elb.LoadBalancerDescription) v1alpha1.ELBObservati
 
 // CreatePatch creates a v1alpha1.ELBParameters that has only the changed
 // values between the target v1alpha1.ELBParameters and the current
-// elb.LoadBalancerDescription.
-func CreatePatch(in elb.LoadBalancerDescription, target v1alpha1.ELBParameters, elbTags []elb.Tag) (*v1alpha1.ELBParameters, error) {
+// elbtypes.LoadBalancerDescription.
+func CreatePatch(in elbtypes.LoadBalancerDescription, target v1alpha1.ELBParameters, elbTags []elbtypes.Tag) (*v1alpha1.ELBParameters, error) {
 	// v1alpha1.ELBParameters contains multiple list types. Sorting these list types is required before
 	// creating a patch as jsonpatch.CreateMergePatch considers the order of items in a list.
 
@@ -152,7 +168,7 @@ func CreatePatch(in elb.LoadBalancerDescription, target v1alpha1.ELBParameters, 
 	// are allowed. But the AWS API always returns the upper case strings.
 	for i, v := range targetCopy.Listeners {
 		targetCopy.Listeners[i].Protocol = strings.ToUpper(v.Protocol)
-		targetCopy.Listeners[i].InstanceProtocol = aws.String(strings.ToUpper(aws.StringValue(v.InstanceProtocol)))
+		targetCopy.Listeners[i].InstanceProtocol = aws.String(strings.ToUpper(aws.ToString(v.InstanceProtocol)))
 	}
 
 	jsonPatch, err := clients.CreateJSONPatch(currentParams, targetCopy)
@@ -167,7 +183,7 @@ func CreatePatch(in elb.LoadBalancerDescription, target v1alpha1.ELBParameters, 
 }
 
 // IsUpToDate checks whether there is a change in any of the modifiable fields.
-func IsUpToDate(p v1alpha1.ELBParameters, elb elb.LoadBalancerDescription, elbTags []elb.Tag) (bool, error) {
+func IsUpToDate(p v1alpha1.ELBParameters, elb elbtypes.LoadBalancerDescription, elbTags []elbtypes.Tag) (bool, error) {
 	patch, err := CreatePatch(elb, p, elbTags)
 	if err != nil {
 		return false, err
@@ -177,14 +193,14 @@ func IsUpToDate(p v1alpha1.ELBParameters, elb elb.LoadBalancerDescription, elbTa
 		cmpopts.IgnoreFields(v1alpha1.ELBParameters{}, "Region")), nil
 }
 
-// BuildELBListeners builds a list of elb.Listener from given list of v1alpha1.Listener.
-func BuildELBListeners(l []v1alpha1.Listener) []elb.Listener {
-	out := make([]elb.Listener, len(l))
+// BuildELBListeners builds a list of elbtypes.Listener from given list of v1alpha1.Listener.
+func BuildELBListeners(l []v1alpha1.Listener) []elbtypes.Listener {
+	out := make([]elbtypes.Listener, len(l))
 	for i := range l {
-		out[i] = elb.Listener{
-			InstancePort:     &l[i].InstancePort,
+		out[i] = elbtypes.Listener{
+			InstancePort:     aws.ToInt32(&l[i].InstancePort),
 			InstanceProtocol: l[i].InstanceProtocol,
-			LoadBalancerPort: &l[i].LoadBalancerPort,
+			LoadBalancerPort: aws.ToInt32(&l[i].LoadBalancerPort),
 			Protocol:         &l[i].Protocol,
 			SSLCertificateId: l[i].SSLCertificateID,
 		}
@@ -192,15 +208,15 @@ func BuildELBListeners(l []v1alpha1.Listener) []elb.Listener {
 	return out
 }
 
-// BuildELBTags generates a list of elb.Tag from given list of v1alpha1.Tag
-func BuildELBTags(tags []v1alpha1.Tag) []elb.Tag {
+// BuildELBTags generates a list of elbtypes.Tag from given list of v1alpha1.Tag
+func BuildELBTags(tags []v1alpha1.Tag) []elbtypes.Tag {
 	if len(tags) == 0 {
 		return nil
 	}
 
-	elbTags := make([]elb.Tag, len(tags))
+	elbTags := make([]elbtypes.Tag, len(tags))
 	for k, t := range tags {
-		elbTags[k] = elb.Tag{
+		elbTags[k] = elbtypes.Tag{
 			Key:   aws.String(t.Key),
 			Value: t.Value,
 		}

@@ -1,3 +1,5 @@
+
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -135,7 +137,7 @@ spec:
                               description: The time in seconds that your browser is
                                 to cache the preflight response for the specified
                                 resource.
-                              format: int64
+                              format: int32
                               type: integer
                           required:
                           - allowedMethods
@@ -189,7 +191,7 @@ spec:
                                   description: Specifies the number of days after
                                     which Amazon S3 aborts an incomplete multipart
                                     upload.
-                                  format: int64
+                                  format: int32
                                   type: integer
                               required:
                               - daysAfterInitiation
@@ -208,7 +210,7 @@ spec:
                                   description: Indicates the lifetime, in days, of
                                     the objects that are subject to the rule. The
                                     value must be a non-zero positive integer.
-                                  format: int64
+                                  format: int32
                                   minimum: 1
                                   type: integer
                                 expiredObjectDeleteMarker:
@@ -302,7 +304,7 @@ spec:
                                     When an Object Became Noncurrent (https://docs.aws.amazon.com/AmazonS3/latest/dev/intro-lifecycle-rules.html#non-current-days-calculations)
                                     in the Amazon Simple Storage Service Developer
                                     Guide.
-                                  format: int64
+                                  format: int32
                                   type: integer
                               type: object
                             noncurrentVersionTransitions:
@@ -334,7 +336,7 @@ spec:
                                       (https://docs.aws.amazon.com/AmazonS3/latest/dev/intro-lifecycle-rules.html#non-current-days-calculations)
                                       in the Amazon Simple Storage Service Developer
                                       Guide.
-                                    format: int64
+                                    format: int32
                                     type: integer
                                   storageClass:
                                     description: 'The class of storage used to store
@@ -383,7 +385,7 @@ spec:
                                       creation when objects are transitioned to the
                                       specified storage class. The value must be a
                                       positive integer.
-                                    format: int64
+                                    format: int32
                                     minimum: 1
                                     type: integer
                                   storageClass:
@@ -1024,7 +1026,7 @@ spec:
                                         minutes:
                                           description: "Contains an integer specifying
                                             time in minutes. \n Valid values: 15 minutes."
-                                          format: int64
+                                          format: int32
                                           type: integer
                                       required:
                                       - minutes
@@ -1065,7 +1067,7 @@ spec:
                                         minutes:
                                           description: "Contains an integer specifying
                                             time in minutes. \n Valid values: 15 minutes."
-                                          format: int64
+                                          format: int32
                                           type: integer
                                       required:
                                       - minutes
@@ -1190,7 +1192,7 @@ spec:
                                 specified in multiple    rules \n For more information,
                                 see Replication (https://docs.aws.amazon.com/AmazonS3/latest/dev/replication.html)
                                 in the Amazon Simple Storage Service Developer Guide."
-                              format: int64
+                              format: int32
                               type: integer
                             sourceSelectionCriteria:
                               description: A container that describes additional filters

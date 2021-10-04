@@ -1,12 +1,20 @@
 package ec2
 
 import (
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"context"
 
+	awsgo "github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+
+<<<<<<< HEAD
+	"github.com/crossplane/provider-aws/apis/ec2/v1alpha1"
+	aws "github.com/crossplane/provider-aws/pkg/clients"
+=======
 	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
+>>>>>>> upstream/master
 )
 
 const (
@@ -15,14 +23,14 @@ const (
 
 // VPCCIDRBlockClient is the external client used for VPC CIDR Block Custom Resource
 type VPCCIDRBlockClient interface {
-	DescribeVpcsRequest(*ec2.DescribeVpcsInput) ec2.DescribeVpcsRequest
-	AssociateVpcCidrBlockRequest(*ec2.AssociateVpcCidrBlockInput) ec2.AssociateVpcCidrBlockRequest
-	DisassociateVpcCidrBlockRequest(*ec2.DisassociateVpcCidrBlockInput) ec2.DisassociateVpcCidrBlockRequest
+	DescribeVpcs(ctx context.Context, input *ec2.DescribeVpcsInput, opts ...func(*ec2.Options)) (*ec2.DescribeVpcsOutput, error)
+	AssociateVpcCidrBlock(ctx context.Context, input *ec2.AssociateVpcCidrBlockInput, opts ...func(*ec2.Options)) (*ec2.AssociateVpcCidrBlockOutput, error)
+	DisassociateVpcCidrBlock(ctx context.Context, input *ec2.DisassociateVpcCidrBlockInput, opts ...func(*ec2.Options)) (*ec2.DisassociateVpcCidrBlockOutput, error)
 }
 
 // NewVPCCIDRBlockClient returns a new client using AWS credentials as JSON encoded data.
-func NewVPCCIDRBlockClient(cfg aws.Config) VPCCIDRBlockClient {
-	return ec2.New(cfg)
+func NewVPCCIDRBlockClient(cfg awsgo.Config) VPCCIDRBlockClient {
+	return ec2.NewFromConfig(cfg)
 }
 
 // CIDRNotFoundError will be raised when there is no Association
@@ -49,7 +57,11 @@ func IsCIDRNotFound(err error) bool {
 
 // IsVpcCidrBlockUpToDate returns true if there is no update-able difference between desired
 // and observed state of the resource.
+<<<<<<< HEAD
+func IsVpcCidrBlockUpToDate(associationID string, spec v1alpha1.VPCCIDRBlockParameters, vpc ec2types.Vpc) (bool, error) {
+=======
 func IsVpcCidrBlockUpToDate(associationID string, spec manualv1alpha1.VPCCIDRBlockParameters, vpc ec2.Vpc) (bool, error) {
+>>>>>>> upstream/master
 	IPv4, IPv6 := FindCIDRAssociation(associationID, vpc)
 
 	if IPv4 != nil {
@@ -69,9 +81,9 @@ func IsVpcCidrDeleting(observation manualv1alpha1.VPCCIDRBlockObservation) bool 
 	switch {
 	case observation.CIDRBlockState == nil && observation.IPv6CIDRBlockState == nil:
 		return true
-	case observation.CIDRBlockState != nil && (*observation.CIDRBlockState.State == string(ec2.VpcCidrBlockStateCodeDisassociating) || *observation.CIDRBlockState.State == string(ec2.VpcCidrBlockStateCodeDisassociated)):
+	case observation.CIDRBlockState != nil && (*observation.CIDRBlockState.State == string(ec2types.VpcCidrBlockStateCodeDisassociating) || *observation.CIDRBlockState.State == string(ec2types.VpcCidrBlockStateCodeDisassociated)):
 		return true
-	case observation.IPv6CIDRBlockState != nil && (*observation.IPv6CIDRBlockState.State == string(ec2.VpcCidrBlockStateCodeDisassociating) || *observation.IPv6CIDRBlockState.State == string(ec2.VpcCidrBlockStateCodeDisassociated)):
+	case observation.IPv6CIDRBlockState != nil && (*observation.IPv6CIDRBlockState.State == string(ec2types.VpcCidrBlockStateCodeDisassociating) || *observation.IPv6CIDRBlockState.State == string(ec2types.VpcCidrBlockStateCodeDisassociated)):
 		return true
 	default:
 		return false
@@ -80,15 +92,25 @@ func IsVpcCidrDeleting(observation manualv1alpha1.VPCCIDRBlockObservation) bool 
 
 // GenerateVpcCIDRBlockObservation is used to produce v1alpha1.VPCObservation from
 // ec2.Vpc.
+<<<<<<< HEAD
+func GenerateVpcCIDRBlockObservation(associationID string, vpc ec2types.Vpc) v1alpha1.VPCCIDRBlockObservation {
+	o := v1alpha1.VPCCIDRBlockObservation{}
+=======
 func GenerateVpcCIDRBlockObservation(associationID string, vpc ec2.Vpc) manualv1alpha1.VPCCIDRBlockObservation {
 	o := manualv1alpha1.VPCCIDRBlockObservation{}
+>>>>>>> upstream/master
 
 	IPv4, IPv6 := FindCIDRAssociation(associationID, vpc)
 
 	if IPv4 != nil {
 		o.AssociationID = IPv4.AssociationId
+<<<<<<< HEAD
+		o.CIDRBlockState = &v1alpha1.VPCCIDRBlockState{
+			State:         aws.String(string(IPv4.CidrBlockState.State)),
+=======
 		o.CIDRBlockState = &manualv1alpha1.VPCCIDRBlockState{
 			State:         awsclient.String(string(IPv4.CidrBlockState.State)),
+>>>>>>> upstream/master
 			StatusMessage: IPv4.CidrBlockState.StatusMessage,
 		}
 		o.CIDRBlock = IPv4.CidrBlock
@@ -97,8 +119,13 @@ func GenerateVpcCIDRBlockObservation(associationID string, vpc ec2.Vpc) manualv1
 
 	if IPv6 != nil {
 		o.AssociationID = IPv6.AssociationId
+<<<<<<< HEAD
+		o.IPv6CIDRBlockState = &v1alpha1.VPCCIDRBlockState{
+			State:         aws.String(string(IPv6.Ipv6CidrBlockState.State)),
+=======
 		o.IPv6CIDRBlockState = &manualv1alpha1.VPCCIDRBlockState{
 			State:         awsclient.String(string(IPv6.Ipv6CidrBlockState.State)),
+>>>>>>> upstream/master
 			StatusMessage: IPv6.Ipv6CidrBlockState.StatusMessage,
 		}
 		o.IPv6CIDRBlock = IPv6.Ipv6CidrBlock
@@ -110,8 +137,8 @@ func GenerateVpcCIDRBlockObservation(associationID string, vpc ec2.Vpc) manualv1
 }
 
 // FindVPCCIDRBlockStatus is used to grab ec2.VpcCidrBlockStateCode from
-// ec2.Vpc.
-func FindVPCCIDRBlockStatus(associationID string, vpc ec2.Vpc) (ec2.VpcCidrBlockStateCode, error) {
+// ec2types.Vpc.
+func FindVPCCIDRBlockStatus(associationID string, vpc ec2types.Vpc) (ec2types.VpcCidrBlockStateCode, error) {
 	IPv4, IPv6 := FindCIDRAssociation(associationID, vpc)
 
 	if IPv4 != nil {
@@ -121,11 +148,11 @@ func FindVPCCIDRBlockStatus(associationID string, vpc ec2.Vpc) (ec2.VpcCidrBlock
 	if IPv6 != nil {
 		return IPv6.Ipv6CidrBlockState.State, nil
 	}
-	return ec2.VpcCidrBlockStateCodeFailing, &CIDRNotFoundError{}
+	return ec2types.VpcCidrBlockStateCodeFailing, &CIDRNotFoundError{}
 }
 
 // FindCIDRAssociation will find the matching CIDRAssociation in the ec2.VPC or return nil
-func FindCIDRAssociation(associationID string, vpc ec2.Vpc) (*ec2.VpcCidrBlockAssociation, *ec2.VpcIpv6CidrBlockAssociation) {
+func FindCIDRAssociation(associationID string, vpc ec2types.Vpc) (*ec2types.VpcCidrBlockAssociation, *ec2types.VpcIpv6CidrBlockAssociation) {
 	if len(vpc.CidrBlockAssociationSet) > 0 {
 		for _, v := range vpc.CidrBlockAssociationSet {
 			if aws.StringValue(v.AssociationId) == associationID {

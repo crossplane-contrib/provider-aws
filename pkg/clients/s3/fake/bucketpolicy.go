@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
@@ -30,24 +32,24 @@ var _ clientset.BucketPolicyClient = (*MockBucketPolicyClient)(nil)
 
 // MockBucketPolicyClient is a type that implements all the methods for RolePolicyAttachmentClient interface
 type MockBucketPolicyClient struct {
-	MockGetBucketPolicyRequest    func(*s3.GetBucketPolicyInput) s3.GetBucketPolicyRequest
-	MockPutBucketPolicyRequest    func(*s3.PutBucketPolicyInput) s3.PutBucketPolicyRequest
-	MockDeleteBucketPolicyRequest func(*s3.DeleteBucketPolicyInput) s3.DeleteBucketPolicyRequest
+	MockGetBucketPolicy    func(ctx context.Context, input *s3.GetBucketPolicyInput, opts []func(*s3.Options)) (*s3.GetBucketPolicyOutput, error)
+	MockPutBucketPolicy    func(ctx context.Context, input *s3.PutBucketPolicyInput, opts []func(*s3.Options)) (*s3.PutBucketPolicyOutput, error)
+	MockDeleteBucketPolicy func(ctx context.Context, input *s3.DeleteBucketPolicyInput, opts []func(*s3.Options)) (*s3.DeleteBucketPolicyOutput, error)
 }
 
-// GetBucketPolicyRequest mocks GetBucketPolicyRequest method
-func (m *MockBucketPolicyClient) GetBucketPolicyRequest(input *s3.GetBucketPolicyInput) s3.GetBucketPolicyRequest {
-	return m.MockGetBucketPolicyRequest(input)
+// GetBucketPolicy mocks GetBucketPolicy method
+func (m *MockBucketPolicyClient) GetBucketPolicy(ctx context.Context, input *s3.GetBucketPolicyInput, opts ...func(*s3.Options)) (*s3.GetBucketPolicyOutput, error) {
+	return m.MockGetBucketPolicy(ctx, input, opts)
 }
 
-// PutBucketPolicyRequest mocks PutBucketPolicyRequest method
-func (m *MockBucketPolicyClient) PutBucketPolicyRequest(input *s3.PutBucketPolicyInput) s3.PutBucketPolicyRequest {
-	return m.MockPutBucketPolicyRequest(input)
+// PutBucketPolicy mocks PutBucketPolicy method
+func (m *MockBucketPolicyClient) PutBucketPolicy(ctx context.Context, input *s3.PutBucketPolicyInput, opts ...func(*s3.Options)) (*s3.PutBucketPolicyOutput, error) {
+	return m.MockPutBucketPolicy(ctx, input, opts)
 }
 
-// DeleteBucketPolicyRequest mocks DeleteBucketPolicyRequest method
-func (m *MockBucketPolicyClient) DeleteBucketPolicyRequest(input *s3.DeleteBucketPolicyInput) s3.DeleteBucketPolicyRequest {
-	return m.MockDeleteBucketPolicyRequest(input)
+// DeleteBucketPolicy mocks DeleteBucketPolicy method
+func (m *MockBucketPolicyClient) DeleteBucketPolicy(ctx context.Context, input *s3.DeleteBucketPolicyInput, opts ...func(*s3.Options)) (*s3.DeleteBucketPolicyOutput, error) {
+	return m.MockDeleteBucketPolicy(ctx, input, opts)
 }
 
 // NewMockBucketPolicyClient returns a new client given an aws config

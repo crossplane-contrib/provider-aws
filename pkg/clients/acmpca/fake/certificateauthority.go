@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/acmpca"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/acmpca"
@@ -27,58 +29,58 @@ var _ clientset.Client = (*MockCertificateAuthorityClient)(nil)
 
 // MockCertificateAuthorityClient is a type that implements all the methods for Certificate Authority Client interface
 type MockCertificateAuthorityClient struct {
-	MockCreateCertificateAuthorityRequest   func(*acmpca.CreateCertificateAuthorityInput) acmpca.CreateCertificateAuthorityRequest
-	MockCreatePermissionRequest             func(*acmpca.CreatePermissionInput) acmpca.CreatePermissionRequest
-	MockDeleteCertificateAuthorityRequest   func(*acmpca.DeleteCertificateAuthorityInput) acmpca.DeleteCertificateAuthorityRequest
-	MockDeletePermissionRequest             func(*acmpca.DeletePermissionInput) acmpca.DeletePermissionRequest
-	MockUpdateCertificateAuthorityRequest   func(*acmpca.UpdateCertificateAuthorityInput) acmpca.UpdateCertificateAuthorityRequest
-	MockDescribeCertificateAuthorityRequest func(*acmpca.DescribeCertificateAuthorityInput) acmpca.DescribeCertificateAuthorityRequest
-	MockListTagsRequest                     func(*acmpca.ListTagsInput) acmpca.ListTagsRequest
-	MockUntagCertificateAuthorityRequest    func(*acmpca.UntagCertificateAuthorityInput) acmpca.UntagCertificateAuthorityRequest
-	MockTagCertificateAuthorityRequest      func(*acmpca.TagCertificateAuthorityInput) acmpca.TagCertificateAuthorityRequest
+	MockCreateCertificateAuthority   func(context.Context, *acmpca.CreateCertificateAuthorityInput, []func(*acmpca.Options)) (*acmpca.CreateCertificateAuthorityOutput, error)
+	MockCreatePermission             func(context.Context, *acmpca.CreatePermissionInput, []func(*acmpca.Options)) (*acmpca.CreatePermissionOutput, error)
+	MockDeleteCertificateAuthority   func(context.Context, *acmpca.DeleteCertificateAuthorityInput, []func(*acmpca.Options)) (*acmpca.DeleteCertificateAuthorityOutput, error)
+	MockDeletePermission             func(context.Context, *acmpca.DeletePermissionInput, []func(*acmpca.Options)) (*acmpca.DeletePermissionOutput, error)
+	MockUpdateCertificateAuthority   func(context.Context, *acmpca.UpdateCertificateAuthorityInput, []func(*acmpca.Options)) (*acmpca.UpdateCertificateAuthorityOutput, error)
+	MockDescribeCertificateAuthority func(context.Context, *acmpca.DescribeCertificateAuthorityInput, []func(*acmpca.Options)) (*acmpca.DescribeCertificateAuthorityOutput, error)
+	MockListTags                     func(context.Context, *acmpca.ListTagsInput, []func(*acmpca.Options)) (*acmpca.ListTagsOutput, error)
+	MockUntagCertificateAuthority    func(context.Context, *acmpca.UntagCertificateAuthorityInput, []func(*acmpca.Options)) (*acmpca.UntagCertificateAuthorityOutput, error)
+	MockTagCertificateAuthority      func(context.Context, *acmpca.TagCertificateAuthorityInput, []func(*acmpca.Options)) (*acmpca.TagCertificateAuthorityOutput, error)
 }
 
-// CreateCertificateAuthorityRequest mocks CreateCertificateAuthorityRequest method
-func (m *MockCertificateAuthorityClient) CreateCertificateAuthorityRequest(input *acmpca.CreateCertificateAuthorityInput) acmpca.CreateCertificateAuthorityRequest {
-	return m.MockCreateCertificateAuthorityRequest(input)
+// CreateCertificateAuthority mocks CreateCertificateAuthority method
+func (m *MockCertificateAuthorityClient) CreateCertificateAuthority(ctx context.Context, input *acmpca.CreateCertificateAuthorityInput, opts ...func(*acmpca.Options)) (*acmpca.CreateCertificateAuthorityOutput, error) {
+	return m.MockCreateCertificateAuthority(ctx, input, opts)
 }
 
-// CreatePermissionRequest mocks CreatePermissionRequest method
-func (m *MockCertificateAuthorityClient) CreatePermissionRequest(input *acmpca.CreatePermissionInput) acmpca.CreatePermissionRequest {
-	return m.MockCreatePermissionRequest(input)
+// CreatePermission mocks CreatePermission method
+func (m *MockCertificateAuthorityClient) CreatePermission(ctx context.Context, input *acmpca.CreatePermissionInput, opts ...func(*acmpca.Options)) (*acmpca.CreatePermissionOutput, error) {
+	return m.MockCreatePermission(ctx, input, opts)
 }
 
-// DeleteCertificateAuthorityRequest mocks DeleteCertificateAuthorityRequest method
-func (m *MockCertificateAuthorityClient) DeleteCertificateAuthorityRequest(input *acmpca.DeleteCertificateAuthorityInput) acmpca.DeleteCertificateAuthorityRequest {
-	return m.MockDeleteCertificateAuthorityRequest(input)
+// DeleteCertificateAuthority mocks DeleteCertificateAuthority method
+func (m *MockCertificateAuthorityClient) DeleteCertificateAuthority(ctx context.Context, input *acmpca.DeleteCertificateAuthorityInput, opts ...func(*acmpca.Options)) (*acmpca.DeleteCertificateAuthorityOutput, error) {
+	return m.MockDeleteCertificateAuthority(ctx, input, opts)
 }
 
-// TagCertificateAuthorityRequest mocks TagCertificateAuthorityRequest method
-func (m *MockCertificateAuthorityClient) TagCertificateAuthorityRequest(input *acmpca.TagCertificateAuthorityInput) acmpca.TagCertificateAuthorityRequest {
-	return m.MockTagCertificateAuthorityRequest(input)
+// TagCertificateAuthority mocks TagCertificateAuthority method
+func (m *MockCertificateAuthorityClient) TagCertificateAuthority(ctx context.Context, input *acmpca.TagCertificateAuthorityInput, opts ...func(*acmpca.Options)) (*acmpca.TagCertificateAuthorityOutput, error) {
+	return m.MockTagCertificateAuthority(ctx, input, opts)
 }
 
-// UntagCertificateAuthorityRequest mocks UntagCertificateAuthorityRequest method
-func (m *MockCertificateAuthorityClient) UntagCertificateAuthorityRequest(input *acmpca.UntagCertificateAuthorityInput) acmpca.UntagCertificateAuthorityRequest {
-	return m.MockUntagCertificateAuthorityRequest(input)
+// UntagCertificateAuthority mocks UntagCertificateAuthority method
+func (m *MockCertificateAuthorityClient) UntagCertificateAuthority(ctx context.Context, input *acmpca.UntagCertificateAuthorityInput, opts ...func(*acmpca.Options)) (*acmpca.UntagCertificateAuthorityOutput, error) {
+	return m.MockUntagCertificateAuthority(ctx, input, opts)
 }
 
-// ListTagsRequest mocks ListTagsRequest method
-func (m *MockCertificateAuthorityClient) ListTagsRequest(input *acmpca.ListTagsInput) acmpca.ListTagsRequest {
-	return m.MockListTagsRequest(input)
+// ListTags mocks ListTags method
+func (m *MockCertificateAuthorityClient) ListTags(ctx context.Context, input *acmpca.ListTagsInput, opts ...func(*acmpca.Options)) (*acmpca.ListTagsOutput, error) {
+	return m.MockListTags(ctx, input, opts)
 }
 
-// DescribeCertificateAuthorityRequest mocks DescribeCertificateAuthorityRequest method
-func (m *MockCertificateAuthorityClient) DescribeCertificateAuthorityRequest(input *acmpca.DescribeCertificateAuthorityInput) acmpca.DescribeCertificateAuthorityRequest {
-	return m.MockDescribeCertificateAuthorityRequest(input)
+// DescribeCertificateAuthority mocks DescribeCertificateAuthority method
+func (m *MockCertificateAuthorityClient) DescribeCertificateAuthority(ctx context.Context, input *acmpca.DescribeCertificateAuthorityInput, opts ...func(*acmpca.Options)) (*acmpca.DescribeCertificateAuthorityOutput, error) {
+	return m.MockDescribeCertificateAuthority(ctx, input, opts)
 }
 
-// UpdateCertificateAuthorityRequest mocks UpdateCertificateAuthorityRequest method
-func (m *MockCertificateAuthorityClient) UpdateCertificateAuthorityRequest(input *acmpca.UpdateCertificateAuthorityInput) acmpca.UpdateCertificateAuthorityRequest {
-	return m.MockUpdateCertificateAuthorityRequest(input)
+// UpdateCertificateAuthority mocks UpdateCertificateAuthority method
+func (m *MockCertificateAuthorityClient) UpdateCertificateAuthority(ctx context.Context, input *acmpca.UpdateCertificateAuthorityInput, opts ...func(*acmpca.Options)) (*acmpca.UpdateCertificateAuthorityOutput, error) {
+	return m.MockUpdateCertificateAuthority(ctx, input, opts)
 }
 
-// DeletePermissionRequest mocks DeletePermissionRequest method
-func (m *MockCertificateAuthorityClient) DeletePermissionRequest(input *acmpca.DeletePermissionInput) acmpca.DeletePermissionRequest {
-	return m.MockDeletePermissionRequest(input)
+// DeletePermission mocks DeletePermission method
+func (m *MockCertificateAuthorityClient) DeletePermission(ctx context.Context, input *acmpca.DeletePermissionInput, opts ...func(*acmpca.Options)) (*acmpca.DeletePermissionOutput, error) {
+	return m.MockDeletePermission(ctx, input, opts)
 }

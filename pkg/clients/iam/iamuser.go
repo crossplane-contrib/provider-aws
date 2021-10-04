@@ -1,9 +1,12 @@
 package iam
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
+	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 
 	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
 	awsclients "github.com/crossplane/provider-aws/pkg/clients"
@@ -11,20 +14,20 @@ import (
 
 // UserClient is the external client used for IAM User Custom Resource
 type UserClient interface {
-	GetUserRequest(*iam.GetUserInput) iam.GetUserRequest
-	CreateUserRequest(*iam.CreateUserInput) iam.CreateUserRequest
-	UpdateUserRequest(*iam.UpdateUserInput) iam.UpdateUserRequest
-	DeleteUserRequest(*iam.DeleteUserInput) iam.DeleteUserRequest
+	GetUser(ctx context.Context, input *iam.GetUserInput, opts ...func(*iam.Options)) (*iam.GetUserOutput, error)
+	CreateUser(ctx context.Context, input *iam.CreateUserInput, opts ...func(*iam.Options)) (*iam.CreateUserOutput, error)
+	DeleteUser(ctx context.Context, input *iam.DeleteUserInput, opts ...func(*iam.Options)) (*iam.DeleteUserOutput, error)
+	UpdateUser(ctx context.Context, input *iam.UpdateUserInput, opts ...func(*iam.Options)) (*iam.UpdateUserOutput, error)
 }
 
 // NewUserClient returns a new client using AWS credentials as JSON encoded data.
 func NewUserClient(cfg aws.Config) UserClient {
-	return iam.New(cfg)
+	return iam.NewFromConfig(cfg)
 }
 
 // LateInitializeUser fills the empty fields in *v1alpha1.User with
 // the values seen in iam.User.
-func LateInitializeUser(in *v1alpha1.IAMUserParameters, user *iam.User) {
+func LateInitializeUser(in *v1alpha1.IAMUserParameters, user *iamtypes.User) {
 	if user == nil {
 		return
 	}

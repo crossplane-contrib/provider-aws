@@ -25,6 +25,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsrds "github.com/aws/aws-sdk-go-v2/service/rds"
+	awsrdstypes "github.com/aws/aws-sdk-go-v2/service/rds/types"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -86,7 +87,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.ToString(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -104,12 +105,11 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
 
-	req := e.client.DescribeDBSubnetGroupsRequest(&awsrds.DescribeDBSubnetGroupsInput{
+	res, err := e.client.DescribeDBSubnetGroups(ctx, &awsrds.DescribeDBSubnetGroupsInput{
 		DBSubnetGroupName: aws.String(meta.GetExternalName(cr)),
 	})
-	res, err := req.Send(ctx)
 	if err != nil {
-		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(dbsg.IsErrorNotFound, err), errDescribe)
+		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(dbsg.IsDBSubnetGroupNotFoundErr, err), errDescribe)
 	}
 
 	// in a successful response, there should be one and only one object
@@ -133,9 +133,9 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		cr.Status.SetConditions(xpv1.Unavailable())
 	}
 
-	tags, err := e.client.ListTagsForResourceRequest(&awsrds.ListTagsForResourceInput{
+	tags, err := e.client.ListTagsForResource(ctx, &awsrds.ListTagsForResourceInput{
 		ResourceName: aws.String(cr.Status.AtProvider.ARN),
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(err, errListTagsFailed)
 	}
@@ -160,13 +160,13 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	if len(cr.Spec.ForProvider.Tags) != 0 {
-		input.Tags = make([]awsrds.Tag, len(cr.Spec.ForProvider.Tags))
+		input.Tags = make([]awsrdstypes.Tag, len(cr.Spec.ForProvider.Tags))
 		for i, val := range cr.Spec.ForProvider.Tags {
-			input.Tags[i] = awsrds.Tag{Key: aws.String(val.Key), Value: aws.String(val.Value)}
+			input.Tags[i] = awsrdstypes.Tag{Key: aws.String(val.Key), Value: aws.String(val.Value)}
 		}
 	}
 
-	_, err := e.client.CreateDBSubnetGroupRequest(input).Send(ctx)
+	_, err := e.client.CreateDBSubnetGroup(ctx, input)
 	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 }
 
@@ -176,25 +176,25 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalUpdate{}, errors.New(errUnexpectedObject)
 	}
 
-	_, err := e.client.ModifyDBSubnetGroupRequest(&awsrds.ModifyDBSubnetGroupInput{
+	_, err := e.client.ModifyDBSubnetGroup(ctx, &awsrds.ModifyDBSubnetGroupInput{
 		DBSubnetGroupName:        aws.String(meta.GetExternalName(cr)),
 		DBSubnetGroupDescription: aws.String(cr.Spec.ForProvider.Description),
 		SubnetIds:                cr.Spec.ForProvider.SubnetIDs,
-	}).Send(ctx)
+	})
 
 	if err != nil {
 		return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 	}
 
 	if len(cr.Spec.ForProvider.Tags) > 0 {
-		tags := make([]awsrds.Tag, len(cr.Spec.ForProvider.Tags))
+		tags := make([]awsrdstypes.Tag, len(cr.Spec.ForProvider.Tags))
 		for i, t := range cr.Spec.ForProvider.Tags {
-			tags[i] = awsrds.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
+			tags[i] = awsrdstypes.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
 		}
-		_, err = e.client.AddTagsToResourceRequest(&awsrds.AddTagsToResourceInput{
+		_, err = e.client.AddTagsToResource(ctx, &awsrds.AddTagsToResourceInput{
 			ResourceName: aws.String(cr.Status.AtProvider.ARN),
 			Tags:         tags,
-		}).Send(ctx)
+		})
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errAddTagsFailed)
 		}
@@ -209,8 +209,8 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	}
 
 	cr.SetConditions(xpv1.Deleting())
-	_, err := e.client.DeleteDBSubnetGroupRequest(&awsrds.DeleteDBSubnetGroupInput{
+	_, err := e.client.DeleteDBSubnetGroup(ctx, &awsrds.DeleteDBSubnetGroupInput{
 		DBSubnetGroupName: aws.String(meta.GetExternalName(cr)),
-	}).Send(ctx)
+	})
 	return awsclient.Wrap(resource.Ignore(dbsg.IsDBSubnetGroupNotFoundErr, err), errDelete)
 }

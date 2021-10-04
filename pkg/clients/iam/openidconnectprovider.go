@@ -17,35 +17,36 @@ limitations under the License.
 package iam
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/crossplane/provider-aws/apis/identity/v1alpha1"
 	svcapitypes "github.com/crossplane/provider-aws/apis/identity/v1alpha1"
 )
 
 // NewOpenIDConnectProviderClient returns a new client using AWS credentials as JSON encoded data.
 func NewOpenIDConnectProviderClient(cfg aws.Config) OpenIDConnectProviderClient {
-	return iam.New(cfg)
+	return iam.NewFromConfig(cfg)
 }
 
 // OpenIDConnectProviderClient is the external client used for IAM OpenIDConnectProvide Custom Resource
 type OpenIDConnectProviderClient interface {
-	GetOpenIDConnectProviderRequest(input *iam.GetOpenIDConnectProviderInput) iam.GetOpenIDConnectProviderRequest
-	CreateOpenIDConnectProviderRequest(input *iam.CreateOpenIDConnectProviderInput) iam.CreateOpenIDConnectProviderRequest
-	AddClientIDToOpenIDConnectProviderRequest(input *iam.AddClientIDToOpenIDConnectProviderInput) iam.AddClientIDToOpenIDConnectProviderRequest
-	RemoveClientIDFromOpenIDConnectProviderRequest(input *iam.RemoveClientIDFromOpenIDConnectProviderInput) iam.RemoveClientIDFromOpenIDConnectProviderRequest
-	UpdateOpenIDConnectProviderThumbprintRequest(input *iam.UpdateOpenIDConnectProviderThumbprintInput) iam.UpdateOpenIDConnectProviderThumbprintRequest
-	DeleteOpenIDConnectProviderRequest(input *iam.DeleteOpenIDConnectProviderInput) iam.DeleteOpenIDConnectProviderRequest
+	GetOpenIDConnectProvider(ctx context.Context, input *iam.GetOpenIDConnectProviderInput, opts ...func(*iam.Options)) (*iam.GetOpenIDConnectProviderOutput, error)
+	CreateOpenIDConnectProvider(ctx context.Context, input *iam.CreateOpenIDConnectProviderInput, opts ...func(*iam.Options)) (*iam.CreateOpenIDConnectProviderOutput, error)
+	AddClientIDToOpenIDConnectProvider(ctx context.Context, input *iam.AddClientIDToOpenIDConnectProviderInput, opts ...func(*iam.Options)) (*iam.AddClientIDToOpenIDConnectProviderOutput, error)
+	RemoveClientIDFromOpenIDConnectProvider(ctx context.Context, input *iam.RemoveClientIDFromOpenIDConnectProviderInput, opts ...func(*iam.Options)) (*iam.RemoveClientIDFromOpenIDConnectProviderOutput, error)
+	UpdateOpenIDConnectProviderThumbprint(ctx context.Context, input *iam.UpdateOpenIDConnectProviderThumbprintInput, opts ...func(*iam.Options)) (*iam.UpdateOpenIDConnectProviderThumbprintOutput, error)
+	DeleteOpenIDConnectProvider(ctx context.Context, input *iam.DeleteOpenIDConnectProviderInput, opts ...func(*iam.Options)) (*iam.DeleteOpenIDConnectProviderOutput, error)
 }
 
 // GenerateOIDCProviderObservation is used to produce v1alpha1.OpenIDConnectProvider
 // from iam.OpenIDConnectProvider
 func GenerateOIDCProviderObservation(observed iam.GetOpenIDConnectProviderOutput) svcapitypes.OpenIDConnectProviderObservation {
-	o := v1alpha1.OpenIDConnectProviderObservation{}
+	o := svcapitypes.OpenIDConnectProviderObservation{}
 	if observed.CreateDate != nil {
 		createdTime := metav1.NewTime(*observed.CreateDate)
 		o.CreateDate = &createdTime
