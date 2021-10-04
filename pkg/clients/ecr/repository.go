@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	ecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
-	"github.com/aws/smithy-go"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane/provider-aws/apis/ecr/v1alpha1"
@@ -106,12 +105,8 @@ func IsRepositoryUpToDate(e *v1alpha1.RepositoryParameters, tags []ecrtypes.Tag,
 
 // IsRepoNotFoundErr returns true if the error is because the item doesn't exist
 func IsRepoNotFoundErr(err error) bool {
-	if awsErr, ok := err.(smithy.APIError); ok {
-		if awsErr.ErrorCode() == RepositoryNotFoundException {
-			return true
-		}
-	}
-	return false
+	_, ok := err.(*ecrtypes.RepositoryNotFoundException)
+	return ok
 }
 
 // GenerateCreateRepositoryInput Generates the CreateRepositoryInput from the RepositoryParameters

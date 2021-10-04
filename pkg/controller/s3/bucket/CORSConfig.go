@@ -16,7 +16,6 @@ package bucket
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -124,7 +123,7 @@ func GeneratePutBucketCorsInput(name string, config *v1beta1.CORSConfiguration) 
 			AllowedMethods: cors.AllowedMethods,
 			AllowedOrigins: cors.AllowedOrigins,
 			ExposeHeaders:  cors.ExposeHeaders,
-			MaxAgeSeconds:  aws.ToInt32(cors.MaxAgeSeconds),
+			MaxAgeSeconds:  cors.MaxAgeSeconds,
 		})
 	}
 	return bci
@@ -147,7 +146,7 @@ func CompareCORS(local []v1beta1.CORSRule, external []types.CORSRule) ResourceSt
 			cmp.Equal(local[i].AllowedMethods, outputRule.AllowedMethods) &&
 			cmp.Equal(local[i].AllowedOrigins, outputRule.AllowedOrigins) &&
 			cmp.Equal(local[i].ExposeHeaders, outputRule.ExposeHeaders) &&
-			cmp.Equal(local[i].MaxAgeSeconds, outputRule.MaxAgeSeconds)) {
+			local[i].MaxAgeSeconds == outputRule.MaxAgeSeconds) {
 			return NeedsUpdate
 		}
 	}
@@ -164,7 +163,7 @@ func GenerateCORSRule(config []types.CORSRule) []v1beta1.CORSRule {
 			AllowedMethods: cors.AllowedMethods,
 			AllowedOrigins: cors.AllowedOrigins,
 			ExposeHeaders:  cors.ExposeHeaders,
-			MaxAgeSeconds:  aws.Int32(cors.MaxAgeSeconds),
+			MaxAgeSeconds:  cors.MaxAgeSeconds,
 		}
 	}
 	return output

@@ -60,14 +60,14 @@ func SetupSubnet(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, p
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1beta1.Subnet{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(v1beta1.SubnetGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewSubnetClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -163,7 +163,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	meta.SetExternalName(cr, aws.ToString(result.Subnet.SubnetId))
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -195,10 +195,10 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	if subnet.MapPublicIpOnLaunch != aws.ToBool(cr.Spec.ForProvider.MapPublicIPOnLaunch) {
+	if aws.ToBool(subnet.MapPublicIpOnLaunch) != aws.ToBool(cr.Spec.ForProvider.MapPublicIPOnLaunch) {
 		_, err = e.client.ModifySubnetAttribute(ctx, &awsec2.ModifySubnetAttributeInput{
 			MapPublicIpOnLaunch: &awsec2types.AttributeBooleanValue{
-				Value: aws.ToBool(cr.Spec.ForProvider.MapPublicIPOnLaunch),
+				Value: cr.Spec.ForProvider.MapPublicIPOnLaunch,
 			},
 			SubnetId: aws.String(meta.GetExternalName(cr)),
 		})
@@ -207,10 +207,10 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	if subnet.AssignIpv6AddressOnCreation != aws.ToBool(cr.Spec.ForProvider.AssignIPv6AddressOnCreation) {
+	if aws.ToBool(subnet.AssignIpv6AddressOnCreation) != aws.ToBool(cr.Spec.ForProvider.AssignIPv6AddressOnCreation) {
 		_, err = e.client.ModifySubnetAttribute(ctx, &awsec2.ModifySubnetAttributeInput{
 			AssignIpv6AddressOnCreation: &awsec2types.AttributeBooleanValue{
-				Value: aws.ToBool(cr.Spec.ForProvider.AssignIPv6AddressOnCreation),
+				Value: cr.Spec.ForProvider.AssignIPv6AddressOnCreation,
 			},
 			SubnetId: aws.String(meta.GetExternalName(cr)),
 		})

@@ -59,7 +59,7 @@ func SetupBucketPolicy(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha3.BucketPolicy{}).
 		Complete(managed.NewReconciler(mgr,

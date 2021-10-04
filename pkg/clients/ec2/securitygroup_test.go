@@ -39,8 +39,8 @@ func specIPPermission(ports ...int) (ret []v1beta1.IPPermission) {
 func sgIPPermission(ports ...int) (ret []ec2types.IpPermission) {
 	for _, port := range ports {
 		ret = append(ret, ec2types.IpPermission{
-			FromPort:   int32(port),
-			ToPort:     int32(port),
+			FromPort:   aws.Int32(int32(port)),
+			ToPort:     aws.Int32(int32(port)),
 			IpProtocol: aws.String(sgProtocol),
 			IpRanges: []ec2types.IpRange{
 				{

@@ -20,8 +20,9 @@ import (
 	"context"
 	"testing"
 
+	awsecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
+
 	awsecr "github.com/aws/aws-sdk-go-v2/service/ecr"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
@@ -138,12 +139,10 @@ func TestObserve(t *testing.T) {
 		"NeedUpdateInput": {
 			args: args{
 				ecr: &fake.MockRepositoryPolicyClient{
-					MockGet: func(input *awsecr.GetRepositoryPolicyInput) awsecr.GetRepositoryPolicyRequest {
-						return awsecr.GetRepositoryPolicyRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.GetRepositoryPolicyOutput{
-								PolicyText: &needUpdatePolicy,
-							}},
-						}
+					MockGet: func(_ context.Context, _ *awsecr.GetRepositoryPolicyInput, _ []func(*awsecr.Options)) (*awsecr.GetRepositoryPolicyOutput, error) {
+						return &awsecr.GetRepositoryPolicyOutput{
+							PolicyText: &needUpdatePolicy,
+						}, nil
 					},
 				},
 				cr: repositoryPolicy(withPolicy(&params)),
@@ -175,7 +174,7 @@ func TestObserve(t *testing.T) {
 			args: args{
 				ecr: &fake.MockRepositoryPolicyClient{
 					MockGet: func(ctx context.Context, input *awsecr.GetRepositoryPolicyInput, opts []func(*awsecr.Options)) (*awsecr.GetRepositoryPolicyOutput, error) {
-						return &awsecr.GetRepositoryPolicyOutput{}, awserr.New(ecr.RepositoryPolicyNotFoundException, "", nil)
+						return &awsecr.GetRepositoryPolicyOutput{}, &awsecrtypes.RepositoryPolicyNotFoundException{}
 					},
 				},
 				cr: repositoryPolicy(),
@@ -391,7 +390,7 @@ func TestDelete(t *testing.T) {
 			args: args{
 				ecr: &fake.MockRepositoryPolicyClient{
 					MockDelete: func(ctx context.Context, input *awsecr.DeleteRepositoryPolicyInput, opts []func(*awsecr.Options)) (*awsecr.DeleteRepositoryPolicyOutput, error) {
-						return &awsecr.DeleteRepositoryPolicyOutput{}, awserr.New(ecr.RepositoryPolicyNotFoundException, "", nil)
+						return &awsecr.DeleteRepositoryPolicyOutput{}, &awsecrtypes.RepositoryPolicyNotFoundException{}
 					},
 				},
 				cr: repositoryPolicy(withPolicy(&params)),

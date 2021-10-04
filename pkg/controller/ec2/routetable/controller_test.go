@@ -206,7 +206,7 @@ func TestCreate(t *testing.T) {
 				cr: rt(withSpec(v1beta1.RouteTableParameters{
 					VPCID: aws.String(vpcID),
 				}), withExternalName(rtID)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"CreateFailed": {

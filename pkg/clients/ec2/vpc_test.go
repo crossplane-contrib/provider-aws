@@ -23,7 +23,7 @@ func TestGenerateVPCObservation(t *testing.T) {
 	}{
 		"AllFilled": {
 			in: ec2types.Vpc{
-				IsDefault: boolFalse,
+				IsDefault: &boolFalse,
 				OwnerId:   aws.String(vpcOwner),
 				VpcId:     aws.String(vpcID),
 				State:     ec2types.VpcStateAvailable,
@@ -36,7 +36,7 @@ func TestGenerateVPCObservation(t *testing.T) {
 		},
 		"NoOwner": {
 			in: ec2types.Vpc{
-				IsDefault: boolFalse,
+				IsDefault: &boolFalse,
 				VpcId:     aws.String(vpcID),
 				State:     ec2types.VpcStateAvailable,
 			},

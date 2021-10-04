@@ -20,6 +20,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/aws/smithy-go/document"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
 	awsec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -60,8 +62,8 @@ type sgModifier func(*v1beta1.SecurityGroup)
 func specPermissions() []v1beta1.IPPermission {
 	return []v1beta1.IPPermission{
 		{
-			FromPort: aws.Int32(port80),
-			ToPort:   aws.Int32(80),
+			FromPort: &port80,
+			ToPort:   &port80,
 			IPRanges: []v1beta1.IPRange{
 				{CIDRIP: cidr},
 			},
@@ -73,8 +75,8 @@ func specPermissions() []v1beta1.IPPermission {
 func sgPersmissions() []awsec2types.IpPermission {
 	return []awsec2types.IpPermission{
 		{
-			FromPort:   port100,
-			ToPort:     port100,
+			FromPort:   &port100,
+			ToPort:     &port100,
 			IpProtocol: aws.String(tcpProtocol),
 			IpRanges: []awsec2types.IpRange{{
 				CidrIp: aws.String(cidr),
@@ -505,14 +507,14 @@ func TestUpdateTags(t *testing.T) {
 								Key:   aws.String("k3"),
 								Value: aws.String("v3"),
 							},
-						}, cmpopts.SortSlices(compareTags)); diff != "" {
+						}, cmpopts.SortSlices(compareTags), cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 							t.Errorf("r: -want, +got:\n%s", diff)
 						}
 
 						return &awsec2.CreateTagsOutput{}, nil
 					},
 					MockDeleteTags: func(ctx context.Context, input *awsec2.DeleteTagsInput, opts []func(*awsec2.Options)) (*awsec2.DeleteTagsOutput, error) {
-						if diff := cmp.Diff(input.Tags, []awsec2types.Tag{{Key: aws.String("k4")}}); diff != "" {
+						if diff := cmp.Diff(input.Tags, []awsec2types.Tag{{Key: aws.String("k4")}}, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 							t.Errorf("r: -want, +got:\n%s", diff)
 						}
 

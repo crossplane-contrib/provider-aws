@@ -57,7 +57,7 @@ func SetupCertificateAuthorityPermission(mgr ctrl.Manager, l logging.Logger, rl 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.CertificateAuthorityPermission{}).
 		Complete(managed.NewReconciler(mgr,
@@ -66,7 +66,7 @@ func SetupCertificateAuthorityPermission(mgr ctrl.Manager, l logging.Logger, rl 
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(poll),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -98,11 +98,6 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errUnexpectedObject)
 	}
-<<<<<<< HEAD
-	response, err := e.client.ListPermissions(ctx, &awsacmpca.ListPermissionsInput{
-		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
-	})
-=======
 
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{ResourceExists: false}, nil
@@ -115,15 +110,14 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 	}
 	principal, caARN := nn[0], nn[1]
 
-	response, err := e.client.ListPermissionsRequest(&awsacmpca.ListPermissionsInput{
+	response, err := e.client.ListPermissions(ctx, &awsacmpca.ListPermissionsInput{
 		CertificateAuthorityArn: &caARN,
-	}).Send(ctx)
->>>>>>> upstream/master
+	})
 	if err != nil {
 		return managed.ExternalObservation{}, awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errGet)
 	}
 
-	var attachedPermission *awsacmpca.Permission
+	var attachedPermission *awsacmpcatypes.Permission
 	for i := range response.Permissions {
 		if awsclient.StringValue(response.Permissions[i].Principal) == principal {
 			attachedPermission = &response.Permissions[i]
@@ -149,21 +143,16 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-<<<<<<< HEAD
-	cr.Status.SetConditions(xpv1.Creating())
-	_, err := e.client.CreatePermission(ctx, &awsacmpca.CreatePermissionInput{
-		Actions:                 []awsacmpcatypes.ActionType{awsacmpcatypes.ActionTypeIssueCertificate, awsacmpcatypes.ActionTypeGetCertificate, awsacmpcatypes.ActionTypeListPermissions},
-		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
-		Principal:               aws.String(principal),
-	})
-	return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
-=======
 
-	_, err := e.client.CreatePermissionRequest(&awsacmpca.CreatePermissionInput{
-		Actions:                 []awsacmpca.ActionType{awsacmpca.ActionTypeIssueCertificate, awsacmpca.ActionTypeGetCertificate, awsacmpca.ActionTypeListPermissions},
+	_, err := e.client.CreatePermission(ctx, &awsacmpca.CreatePermissionInput{
+		Actions: []awsacmpcatypes.ActionType{
+			awsacmpcatypes.ActionTypeIssueCertificate,
+			awsacmpcatypes.ActionTypeGetCertificate,
+			awsacmpcatypes.ActionTypeListPermissions,
+		},
 		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
 		Principal:               aws.String(cr.Spec.ForProvider.Principal),
-	}).Send(ctx)
+	})
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
@@ -173,12 +162,11 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// identity of the CA it applies to, and the principal it applies.
 	meta.SetExternalName(cr, cr.Spec.ForProvider.Principal+"/"+awsclient.StringValue(cr.Spec.ForProvider.CertificateAuthorityARN))
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
->>>>>>> upstream/master
+	return managed.ExternalCreation{}, nil
 
 }
 
-func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
+func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {
 	return managed.ExternalUpdate{}, nil
 }
 
@@ -187,20 +175,10 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 	if !ok {
 		return errors.New(errUnexpectedObject)
 	}
-
-<<<<<<< HEAD
-	cr.Status.SetConditions(xpv1.Deleting())
-
 	_, err := e.client.DeletePermission(ctx, &awsacmpca.DeletePermissionInput{
 		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
-		Principal:               aws.String(principal),
-	})
-=======
-	_, err := e.client.DeletePermissionRequest(&awsacmpca.DeletePermissionInput{
-		CertificateAuthorityArn: cr.Spec.ForProvider.CertificateAuthorityARN,
 		Principal:               aws.String(cr.Spec.ForProvider.Principal),
-	}).Send(ctx)
->>>>>>> upstream/master
+	})
 
 	return awsclient.Wrap(resource.Ignore(acmpca.IsErrorNotFound, err), errDelete)
 }

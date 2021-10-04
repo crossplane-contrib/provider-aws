@@ -63,7 +63,7 @@ func SetupVPC(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1beta1.VPC{}).
 		Complete(managed.NewReconciler(mgr,
@@ -196,7 +196,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 
 	meta.SetExternalName(cr, aws.ToString(result.Vpc.VpcId))
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {
@@ -208,7 +208,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if cr.Spec.ForProvider.EnableDNSSupport != nil {
 		modifyInput := &awsec2.ModifyVpcAttributeInput{
 			VpcId:            aws.String(meta.GetExternalName(cr)),
-			EnableDnsSupport: &awsec2types.AttributeBooleanValue{Value: aws.ToBool(cr.Spec.ForProvider.EnableDNSSupport)},
+			EnableDnsSupport: &awsec2types.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableDNSSupport},
 		}
 		if _, err := e.client.ModifyVpcAttribute(ctx, modifyInput); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyVPCAttributes)
@@ -218,7 +218,7 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if cr.Spec.ForProvider.EnableDNSHostNames != nil {
 		modifyInput := &awsec2.ModifyVpcAttributeInput{
 			VpcId:              aws.String(meta.GetExternalName(cr)),
-			EnableDnsHostnames: &awsec2types.AttributeBooleanValue{Value: aws.ToBool(cr.Spec.ForProvider.EnableDNSHostNames)},
+			EnableDnsHostnames: &awsec2types.AttributeBooleanValue{Value: cr.Spec.ForProvider.EnableDNSHostNames},
 		}
 		if _, err := e.client.ModifyVpcAttribute(ctx, modifyInput); err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyVPCAttributes)

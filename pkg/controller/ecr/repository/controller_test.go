@@ -557,19 +557,12 @@ func TestDelete(t *testing.T) {
 		"SuccessfulForce": {
 			args: args{
 				repository: &fake.MockRepositoryClient{
-<<<<<<< HEAD
 					MockDelete: func(ctx context.Context, input *awsecr.DeleteRepositoryInput, opts []func(*awsecr.Options)) (*awsecr.DeleteRepositoryOutput, error) {
-						return &awsecr.DeleteRepositoryOutput{}, nil
-=======
-					MockDelete: func(input *awsecr.DeleteRepositoryInput) awsecr.DeleteRepositoryRequest {
 						var err error
-						if !aws.BoolValue(input.Force) {
+						if !input.Force {
 							err = errors.New("force must be set when forceDelete=true")
 						}
-						return awsecr.DeleteRepositoryRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DeleteRepositoryOutput{}, Error: err},
-						}
->>>>>>> upstream/master
+						return &awsecr.DeleteRepositoryOutput{}, err
 					},
 				},
 				cr: repository(withForceDelete(true)),
@@ -581,14 +574,12 @@ func TestDelete(t *testing.T) {
 		"SuccessfulNoForce": {
 			args: args{
 				repository: &fake.MockRepositoryClient{
-					MockDelete: func(input *awsecr.DeleteRepositoryInput) awsecr.DeleteRepositoryRequest {
+					MockDelete: func(ctx context.Context, input *awsecr.DeleteRepositoryInput, opts []func(*awsecr.Options)) (*awsecr.DeleteRepositoryOutput, error) {
 						var err error
-						if aws.BoolValue(input.Force) {
+						if input.Force {
 							err = errors.New("force must not be true when forceDelete is not set")
 						}
-						return awsecr.DeleteRepositoryRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsecr.DeleteRepositoryOutput{}, Error: err},
-						}
+						return &awsecr.DeleteRepositoryOutput{}, err
 					},
 				},
 				cr: repository(withForceDelete(false)),

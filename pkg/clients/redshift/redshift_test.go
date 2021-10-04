@@ -20,6 +20,9 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/aws/smithy-go/document"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/redshift"
 	redshifttypes "github.com/aws/aws-sdk-go-v2/service/redshift/types"
@@ -385,7 +388,7 @@ func TestGenerateCreateClusterInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			r := GenerateCreateClusterInput(tc.in, aws.String("unit-test"), aws.String("very-strong-password"))
-			if diff := cmp.Diff(r, tc.out); diff != "" {
+			if diff := cmp.Diff(r, tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateCreateClusterInput(...): -want, +got:\n%s", diff)
 			}
 		})
@@ -476,7 +479,7 @@ func TestGenerateModifyClusterInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			r := GenerateModifyClusterInput(tc.args.in, tc.args.cl)
-			if diff := cmp.Diff(r, tc.want); diff != "" {
+			if diff := cmp.Diff(r, tc.want, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateModifyClusterInput(...): -want, +got:\n%s", diff)
 			}
 		})
@@ -509,7 +512,7 @@ func TestGenerateDeleteClusterInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			r := GenerateDeleteClusterInput(tc.in, aws.String("unit-test"))
-			if diff := cmp.Diff(r, tc.out); diff != "" {
+			if diff := cmp.Diff(r, tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateDeleteClusterInput(...): -want, +got:\n%s", diff)
 			}
 		})

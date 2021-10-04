@@ -33,8 +33,8 @@ func TestIsSubnetUpToDate(t *testing.T) {
 				subnet: ec2types.Subnet{
 					CidrBlock:                   aws.String(cidr),
 					VpcId:                       aws.String(vpc),
-					AssignIpv6AddressOnCreation: true,
-					MapPublicIpOnLaunch:         true,
+					AssignIpv6AddressOnCreation: aws.Bool(true),
+					MapPublicIpOnLaunch:         aws.Bool(true),
 				},
 				p: v1beta1.SubnetParameters{
 					CIDRBlock:                   cidr,
@@ -50,8 +50,8 @@ func TestIsSubnetUpToDate(t *testing.T) {
 				subnet: ec2types.Subnet{
 					CidrBlock:                   aws.String(cidr),
 					VpcId:                       aws.String(vpc),
-					AssignIpv6AddressOnCreation: true,
-					MapPublicIpOnLaunch:         false,
+					AssignIpv6AddressOnCreation: aws.Bool(true),
+					MapPublicIpOnLaunch:         aws.Bool(false),
 				},
 				p: v1beta1.SubnetParameters{
 					CIDRBlock:                   cidr,
@@ -81,8 +81,8 @@ func TestGenerateSubnetObservation(t *testing.T) {
 	}{
 		"AllFilled": {
 			in: ec2types.Subnet{
-				AvailableIpAddressCount: int32(availableIPCount),
-				DefaultForAz:            true,
+				AvailableIpAddressCount: aws.Int32(int32(availableIPCount)),
+				DefaultForAz:            aws.Bool(true),
 				SubnetId:                aws.String(subnetID),
 				State:                   ec2types.SubnetStateAvailable,
 			},
@@ -95,7 +95,7 @@ func TestGenerateSubnetObservation(t *testing.T) {
 		},
 		"NoIpCount": {
 			in: ec2types.Subnet{
-				DefaultForAz: true,
+				DefaultForAz: aws.Bool(true),
 				SubnetId:     aws.String(subnetID),
 				State:        ec2types.SubnetStateAvailable,
 			},

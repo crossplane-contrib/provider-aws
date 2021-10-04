@@ -94,7 +94,7 @@ func withCertificateArn() certificateModifier {
 	}
 }
 
-func withStatus(status awsacm.CertificateStatus) certificateModifier {
+func withStatus(status awsacmtype.CertificateStatus) certificateModifier {
 	return func(r *v1alpha1.Certificate) {
 		r.Status.AtProvider.Status = status
 	}
@@ -124,26 +124,14 @@ func TestObserve(t *testing.T) {
 		"ValidInput": {
 			args: args{
 				acm: &fake.MockCertificateClient{
-<<<<<<< HEAD
 					MockDescribeCertificate: func(ctx context.Context, input *awsacm.DescribeCertificateInput, opts []func(*awsacm.Options)) (*awsacm.DescribeCertificateOutput, error) {
 						return &awsacm.DescribeCertificateOutput{
 							Certificate: &awsacmtype.CertificateDetail{
 								CertificateArn: aws.String(certificateArn),
 								Options:        &awsacmtype.CertificateOptions{CertificateTransparencyLoggingPreference: awsacmtype.CertificateTransparencyLoggingPreferenceDisabled},
+								Status:         awsacmtype.CertificateStatusIssued,
 							},
 						}, nil
-=======
-					MockDescribeCertificateRequest: func(input *awsacm.DescribeCertificateInput) awsacm.DescribeCertificateRequest {
-						return awsacm.DescribeCertificateRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsacm.DescribeCertificateOutput{
-								Certificate: &awsacm.CertificateDetail{
-									CertificateArn: aws.String(certificateArn),
-									Options:        &awsacm.CertificateOptions{CertificateTransparencyLoggingPreference: awsacm.CertificateTransparencyLoggingPreferenceDisabled},
-									Status:         awsacm.CertificateStatusIssued,
-								},
-							}},
-						}
->>>>>>> upstream/master
 					},
 					MockListTagsForCertificate: func(ctx context.Context, input *awsacm.ListTagsForCertificateInput, opts []func(*awsacm.Options)) (*awsacm.ListTagsForCertificateOutput, error) {
 						return &awsacm.ListTagsForCertificateOutput{
@@ -154,7 +142,7 @@ func TestObserve(t *testing.T) {
 				cr: certificate(),
 			},
 			want: want{
-				cr: certificate(withCertificateArn(), withStatus(awsacm.CertificateStatusIssued), withConditions(xpv1.Available())),
+				cr: certificate(withCertificateArn(), withStatus(awsacmtype.CertificateStatusIssued), withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
 					ResourceExists:   true,
 					ResourceUpToDate: false,
@@ -249,7 +237,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: certificate(
 					withDomainName()),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"InValidInput": {

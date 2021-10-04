@@ -22,9 +22,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go/document"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
@@ -71,7 +73,7 @@ func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v
 
 	sortReplicationRules(external.ReplicationConfiguration.Rules)
 
-	if cmp.Equal(external.ReplicationConfiguration, source) {
+	if cmp.Equal(external.ReplicationConfiguration, source, cmpopts.IgnoreTypes(document.NoSerde{})) {
 		return Updated, nil
 	}
 
@@ -135,9 +137,9 @@ func createReplicationRulesFromExternal(external *types.ReplicationConfiguration
 
 	for i, rule := range external.Rules {
 		config.Rules[i] = v1beta1.ReplicationRule{
-			ID:       awsclient.LateInitializeStringPtr(config.Rules[i].ID, rule.ID),
-			Priority: awsclient.LateInitializeInt32Ptr(config.Rules[i].Priority, aws.Int32(rule.Priority)),
-			Status:   awsclient.LateInitializeString(config.Rules[i].Status, awsclient.String(string(rule.Status))),
+			ID:       rule.ID,
+			Priority: rule.Priority,
+			Status:   string(rule.Status),
 		}
 
 		if rule.Filter != nil {
@@ -149,17 +151,17 @@ func createReplicationRulesFromExternal(external *types.ReplicationConfiguration
 			case *types.ReplicationRuleFilterMemberAnd:
 				// Value is types.ReplicationRuleAndOperator
 				config.Rules[i].Filter.And = &v1beta1.ReplicationRuleAndOperator{}
-				config.Rules[i].Filter.And.Prefix = awsclient.LateInitializeStringPtr(config.Rules[i].Filter.And.Prefix, v.Value.Prefix)
+				config.Rules[i].Filter.And.Prefix = v.Value.Prefix
 				config.Rules[i].Filter.And.Tags = GenerateLocalTagging(v.Value.Tags).TagSet
 			case *types.ReplicationRuleFilterMemberPrefix:
 				// Value is string
 				config.Rules[i].Filter = &v1beta1.ReplicationRuleFilter{}
-				config.Rules[i].Filter.Prefix = awsclient.LateInitializeStringPtr(config.Rules[i].Filter.Prefix, aws.String(v.Value))
+				config.Rules[i].Filter.Prefix = aws.String(v.Value)
 			case *types.ReplicationRuleFilterMemberTag:
 				// Value is types.Tag
 				config.Rules[i].Filter.Tag = &v1beta1.Tag{}
-				config.Rules[i].Filter.Tag.Key = awsclient.LateInitializeString(config.Rules[i].Filter.Tag.Key, v.Value.Key)
-				config.Rules[i].Filter.Tag.Value = awsclient.LateInitializeString(config.Rules[i].Filter.Tag.Value, v.Value.Value)
+				config.Rules[i].Filter.Tag.Key = aws.ToString(v.Value.Key)
+				config.Rules[i].Filter.Tag.Value = aws.ToString(v.Value.Value)
 			case *types.UnknownUnionMember:
 			//	fmt.Println("unknown tag:", v.Tag)
 			default:
@@ -169,70 +171,42 @@ func createReplicationRulesFromExternal(external *types.ReplicationConfiguration
 
 		if rule.DeleteMarkerReplication != nil {
 			config.Rules[i].DeleteMarkerReplication = &v1beta1.DeleteMarkerReplication{}
-			config.Rules[i].DeleteMarkerReplication.Status = awsclient.LateInitializeString(
-				config.Rules[i].DeleteMarkerReplication.Status,
-				awsclient.String(string(rule.DeleteMarkerReplication.Status)),
-			)
+			config.Rules[i].DeleteMarkerReplication.Status = string(rule.DeleteMarkerReplication.Status)
 		}
 		if rule.Destination != nil {
-			config.Rules[i].Destination.Account = awsclient.LateInitializeStringPtr(config.Rules[i].Destination.Account, rule.Destination.Account)
-			config.Rules[i].Destination.Bucket = awsclient.LateInitializeStringPtr(config.Rules[i].Destination.Bucket, rule.Destination.Bucket)
-			config.Rules[i].Destination.StorageClass = awsclient.LateInitializeStringPtr(
-				config.Rules[i].Destination.StorageClass,
-				awsclient.String(string(rule.Destination.StorageClass)),
-			)
+			config.Rules[i].Destination.Account = rule.Destination.Account
+			config.Rules[i].Destination.Bucket = rule.Destination.Bucket
+			config.Rules[i].Destination.StorageClass = awsclient.String(string(rule.Destination.StorageClass))
 			if rule.Destination.AccessControlTranslation != nil {
 				config.Rules[i].Destination.AccessControlTranslation = &v1beta1.AccessControlTranslation{}
-				config.Rules[i].Destination.AccessControlTranslation.Owner = awsclient.LateInitializeString(
-					config.Rules[i].Destination.AccessControlTranslation.Owner,
-					awsclient.String(string(rule.Destination.AccessControlTranslation.Owner)),
-				)
+				config.Rules[i].Destination.AccessControlTranslation.Owner = string(rule.Destination.AccessControlTranslation.Owner)
 			}
 			if rule.Destination.EncryptionConfiguration != nil {
 				config.Rules[i].Destination.EncryptionConfiguration = &v1beta1.EncryptionConfiguration{}
-				config.Rules[i].Destination.EncryptionConfiguration.ReplicaKmsKeyID = awsclient.LateInitializeString(
-					config.Rules[i].Destination.EncryptionConfiguration.ReplicaKmsKeyID,
-					rule.Destination.EncryptionConfiguration.ReplicaKmsKeyID,
-				)
+				config.Rules[i].Destination.EncryptionConfiguration.ReplicaKmsKeyID = rule.Destination.EncryptionConfiguration.ReplicaKmsKeyID
 			}
 			if rule.Destination.Metrics != nil {
 				config.Rules[i].Destination.Metrics = &v1beta1.Metrics{}
 				if rule.Destination.Metrics.EventThreshold != nil {
-					config.Rules[i].Destination.Metrics.EventThreshold.Minutes = awsclient.LateInitializeInt32(
-						config.Rules[i].Destination.Metrics.EventThreshold.Minutes,
-						rule.Destination.Metrics.EventThreshold.Minutes)
+					config.Rules[i].Destination.Metrics.EventThreshold.Minutes = rule.Destination.Metrics.EventThreshold.Minutes
 				}
-				config.Rules[i].Destination.Metrics.Status = awsclient.LateInitializeString(
-					config.Rules[i].Destination.Metrics.Status,
-					awsclient.String(string(rule.Destination.Metrics.Status)),
-				)
+				config.Rules[i].Destination.Metrics.Status = string(rule.Destination.Metrics.Status)
 			}
 			if rule.Destination.ReplicationTime != nil {
 				config.Rules[i].Destination.ReplicationTime = &v1beta1.ReplicationTime{}
-				config.Rules[i].Destination.ReplicationTime.Status = awsclient.LateInitializeString(
-					config.Rules[i].Destination.ReplicationTime.Status,
-					awsclient.String(string(rule.Destination.ReplicationTime.Status)),
-				)
+				config.Rules[i].Destination.ReplicationTime.Status = string(rule.Destination.ReplicationTime.Status)
 				if rule.Destination.ReplicationTime.Time != nil {
-					config.Rules[i].Destination.ReplicationTime.Time.Minutes = awsclient.LateInitializeInt32(
-						config.Rules[i].Destination.ReplicationTime.Time.Minutes,
-						rule.Destination.ReplicationTime.Time.Minutes)
+					config.Rules[i].Destination.ReplicationTime.Time.Minutes = rule.Destination.ReplicationTime.Time.Minutes
 				}
 			}
 		}
 		if rule.ExistingObjectReplication != nil {
 			config.Rules[i].ExistingObjectReplication = &v1beta1.ExistingObjectReplication{}
-			config.Rules[i].ExistingObjectReplication.Status = awsclient.LateInitializeString(
-				config.Rules[i].ExistingObjectReplication.Status,
-				awsclient.String(string(rule.ExistingObjectReplication.Status)),
-			)
+			config.Rules[i].ExistingObjectReplication.Status = string(rule.ExistingObjectReplication.Status)
 		}
 		if rule.SourceSelectionCriteria != nil && rule.SourceSelectionCriteria.SseKmsEncryptedObjects != nil {
 			config.Rules[i].SourceSelectionCriteria = &v1beta1.SourceSelectionCriteria{}
-			config.Rules[i].SourceSelectionCriteria.SseKmsEncryptedObjects.Status = awsclient.LateInitializeString(
-				config.Rules[i].SourceSelectionCriteria.SseKmsEncryptedObjects.Status,
-				awsclient.String(string(rule.SourceSelectionCriteria.SseKmsEncryptedObjects.Status)),
-			)
+			config.Rules[i].SourceSelectionCriteria.SseKmsEncryptedObjects.Status = string(rule.SourceSelectionCriteria.SseKmsEncryptedObjects.Status)
 		}
 	}
 }
@@ -263,7 +237,7 @@ func copyDestination(input *v1beta1.ReplicationRule, newRule *types.ReplicationR
 	}
 	if input.Destination.EncryptionConfiguration != nil {
 		newRule.Destination.EncryptionConfiguration = &types.EncryptionConfiguration{
-			ReplicaKmsKeyID: awsclient.String(input.Destination.EncryptionConfiguration.ReplicaKmsKeyID),
+			ReplicaKmsKeyID: input.Destination.EncryptionConfiguration.ReplicaKmsKeyID,
 		}
 	}
 	if input.Destination.Metrics != nil {
@@ -289,7 +263,7 @@ func createRule(input v1beta1.ReplicationRule) types.ReplicationRule {
 	Rule := input
 	newRule := types.ReplicationRule{
 		ID:       Rule.ID,
-		Priority: aws.ToInt32(Rule.Priority),
+		Priority: Rule.Priority,
 		Status:   types.ReplicationRuleStatus(Rule.Status),
 	}
 	if Rule.Filter != nil {
@@ -307,8 +281,6 @@ func createRule(input v1beta1.ReplicationRule) types.ReplicationRule {
 		case Rule.Filter.Prefix != nil:
 			newRule.Filter = &types.ReplicationRuleFilterMemberPrefix{Value: *Rule.Filter.Prefix}
 		}
-	} else {
-		newRule.Filter = &awss3.ReplicationRuleFilter{}
 	}
 	if Rule.SourceSelectionCriteria != nil {
 		newRule.SourceSelectionCriteria = &types.SourceSelectionCriteria{

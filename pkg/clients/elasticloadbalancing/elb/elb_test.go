@@ -19,6 +19,9 @@ package elb
 import (
 	"testing"
 
+	"github.com/aws/smithy-go/document"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
@@ -168,7 +171,7 @@ func TestGenerateCreateRoleInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			r := GenerateCreateELBInput(elbName, tc.in)
-			if diff := cmp.Diff(r, &tc.out); diff != "" {
+			if diff := cmp.Diff(r, &tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateNetworkObservation(...): -want, +got:\n%s", diff)
 			}
 		})
@@ -189,7 +192,7 @@ func TestBuildELBListeners(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			r := BuildELBListeners(tc.in)
-			if diff := cmp.Diff(r, tc.out); diff != "" {
+			if diff := cmp.Diff(r, tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateNetworkObservation(...): -want, +got:\n%s", diff)
 			}
 		})
@@ -210,7 +213,7 @@ func TestBuildELBTags(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			r := BuildELBTags(tc.in)
-			if diff := cmp.Diff(r, tc.out); diff != "" {
+			if diff := cmp.Diff(r, tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateNetworkObservation(...): -want, +got:\n%s", diff)
 			}
 		})

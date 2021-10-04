@@ -42,7 +42,7 @@ func generateCORSConfig() *v1beta1.CORSConfiguration {
 			AllowedMethods: []string{"GET"},
 			AllowedOrigins: []string{"test.origin"},
 			ExposeHeaders:  []string{"test.expose"},
-			MaxAgeSeconds:  awsclient.Int32(10),
+			MaxAgeSeconds:  10,
 		},
 	},
 	}
@@ -157,7 +157,6 @@ func TestCORSObserve(t *testing.T) {
 			},
 			want: want{
 				status: Updated,
-				err:    nil,
 			},
 		},
 	}

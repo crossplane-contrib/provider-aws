@@ -71,7 +71,7 @@ func SetupSecret(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, p
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&svcapitypes.Secret{}).
 		Complete(managed.NewReconciler(mgr,

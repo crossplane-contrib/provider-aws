@@ -52,13 +52,13 @@ func SetupStateMachine(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&svcapitypes.StateMachine{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.StateMachineGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -93,7 +93,6 @@ func postCreate(_ context.Context, cr *svcapitypes.StateMachine, resp *svcsdk.Cr
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, aws.StringValue(resp.StateMachineArn))
-	cre.ExternalNameAssigned = true
 	return cre, nil
 }
 

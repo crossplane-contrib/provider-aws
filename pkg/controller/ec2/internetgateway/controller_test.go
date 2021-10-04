@@ -253,7 +253,7 @@ func TestCreate(t *testing.T) {
 				}),
 					withExternalName(igID),
 					withConditions(xpv1.Creating())),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"FailedRequest": {

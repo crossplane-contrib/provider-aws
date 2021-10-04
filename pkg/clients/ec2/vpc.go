@@ -51,8 +51,8 @@ func IsVpcUpToDate(spec v1beta1.VPCParameters, vpc ec2types.Vpc, attributes ec2.
 		return false
 	}
 
-	if aws.ToBool(spec.EnableDNSHostNames) != attributes.EnableDnsHostnames.Value ||
-		aws.ToBool(spec.EnableDNSSupport) != attributes.EnableDnsSupport.Value {
+	if aws.ToBool(spec.EnableDNSHostNames) != aws.ToBool(attributes.EnableDnsHostnames.Value) ||
+		aws.ToBool(spec.EnableDNSSupport) != aws.ToBool(attributes.EnableDnsSupport.Value) {
 		return false
 	}
 
@@ -63,7 +63,7 @@ func IsVpcUpToDate(spec v1beta1.VPCParameters, vpc ec2types.Vpc, attributes ec2.
 // ec2types.Vpc.
 func GenerateVpcObservation(vpc ec2types.Vpc) v1beta1.VPCObservation {
 	o := v1beta1.VPCObservation{
-		IsDefault:     vpc.IsDefault,
+		IsDefault:     aws.ToBool(vpc.IsDefault),
 		DHCPOptionsID: aws.ToString(vpc.DhcpOptionsId),
 		OwnerID:       aws.ToString(vpc.OwnerId),
 		VPCState:      string(vpc.State),
@@ -112,9 +112,9 @@ func LateInitializeVPC(in *v1beta1.VPCParameters, v *ec2types.Vpc, attributes *e
 	in.CIDRBlock = awsclients.LateInitializeString(in.CIDRBlock, v.CidrBlock)
 	in.InstanceTenancy = awsclients.LateInitializeStringPtr(in.InstanceTenancy, aws.String(string(v.InstanceTenancy)))
 	if attributes.EnableDnsHostnames != nil {
-		in.EnableDNSHostNames = awsclients.LateInitializeBoolPtr(in.EnableDNSHostNames, aws.Bool(attributes.EnableDnsHostnames.Value))
+		in.EnableDNSHostNames = awsclients.LateInitializeBoolPtr(in.EnableDNSHostNames, attributes.EnableDnsHostnames.Value)
 	}
 	if attributes.EnableDnsHostnames != nil {
-		in.EnableDNSSupport = awsclients.LateInitializeBoolPtr(in.EnableDNSSupport, aws.Bool(attributes.EnableDnsSupport.Value))
+		in.EnableDNSSupport = awsclients.LateInitializeBoolPtr(in.EnableDNSSupport, attributes.EnableDnsSupport.Value)
 	}
 }

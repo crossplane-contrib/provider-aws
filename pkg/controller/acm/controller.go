@@ -67,7 +67,7 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimit
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.Certificate{}).
 		Complete(managed.NewReconciler(mgr,
@@ -76,7 +76,7 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimit
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(poll),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -135,7 +135,7 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 			return managed.ExternalObservation{}, errors.Wrap(err, errKubeUpdateFailed)
 		}
 	}
-	if certificate.Status == awsacm.CertificateStatusIssued {
+	if certificate.Status == awsacmtypes.CertificateStatusIssued {
 		cr.SetConditions(xpv1.Available())
 	}
 
@@ -166,7 +166,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 	meta.SetExternalName(cr, awsclient.StringValue(response.CertificateArn))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 
 }
 
@@ -211,23 +211,14 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-<<<<<<< HEAD
-	// Update the Certificate Option
-	if cr.Spec.ForProvider.CertificateTransparencyLoggingPreference != nil {
-		_, err := e.client.UpdateCertificateOptions(ctx, &awsacm.UpdateCertificateOptionsInput{
-			CertificateArn: aws.String(meta.GetExternalName(cr)),
-			Options:        &awsacmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: *cr.Spec.ForProvider.CertificateTransparencyLoggingPreference},
-		})
-=======
 	// the UpdateCertificateOptions command is not permitted for private certificates.
-	if cr.Status.AtProvider.Type != awsacm.CertificateTypePrivate {
+	if cr.Status.AtProvider.Type != awsacmtypes.CertificateTypePrivate {
 		// Update the Certificate Option
 		if cr.Spec.ForProvider.CertificateTransparencyLoggingPreference != nil {
-			_, err := e.client.UpdateCertificateOptionsRequest(&awsacm.UpdateCertificateOptionsInput{
+			_, err := e.client.UpdateCertificateOptions(ctx, &awsacm.UpdateCertificateOptionsInput{
 				CertificateArn: aws.String(meta.GetExternalName(cr)),
-				Options:        &awsacm.CertificateOptions{CertificateTransparencyLoggingPreference: *cr.Spec.ForProvider.CertificateTransparencyLoggingPreference},
-			}).Send(ctx)
->>>>>>> upstream/master
+				Options:        &awsacmtypes.CertificateOptions{CertificateTransparencyLoggingPreference: *cr.Spec.ForProvider.CertificateTransparencyLoggingPreference},
+			})
 
 			if err != nil {
 				return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
@@ -236,16 +227,9 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	// Renew the certificate if request for RenewCertificate and Certificate is eligible
-<<<<<<< HEAD
 	if aws.ToBool(cr.Spec.ForProvider.RenewCertificate) {
-
 		if cr.Status.AtProvider.RenewalEligibility == awsacmtypes.RenewalEligibilityEligible {
 			_, err := e.client.RenewCertificate(ctx, &awsacm.RenewCertificateInput{
-=======
-	if aws.BoolValue(cr.Spec.ForProvider.RenewCertificate) {
-		if cr.Status.AtProvider.RenewalEligibility == awsacm.RenewalEligibilityEligible {
-			_, err := e.client.RenewCertificateRequest(&awsacm.RenewCertificateInput{
->>>>>>> upstream/master
 				CertificateArn: aws.String(meta.GetExternalName(cr)),
 			})
 

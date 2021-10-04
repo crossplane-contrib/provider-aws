@@ -22,13 +22,8 @@ var (
 func TestGenerateVPCCIDRBlockObservation(t *testing.T) {
 	cases := map[string]struct {
 		associationID string
-<<<<<<< HEAD
 		in            types.Vpc
-		out           v1alpha1.VPCCIDRBlockObservation
-=======
-		in            ec2.Vpc
 		out           manualv1alpha1.VPCCIDRBlockObservation
->>>>>>> upstream/master
 	}{
 		"IPv4": {
 			associationID: matchAssociationID,

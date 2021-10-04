@@ -19,6 +19,9 @@ package acmpca
 import (
 	"testing"
 
+	"github.com/aws/smithy-go/document"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/aws/aws-sdk-go-v2/service/acmpca"
 	"github.com/aws/aws-sdk-go-v2/service/acmpca/types"
 	"github.com/google/go-cmp/cmp"
@@ -113,7 +116,7 @@ func TestGenerateCreateCertificateAuthorityInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			r := GenerateCreateCertificateAuthorityInput(tc.in)
-			if diff := cmp.Diff(r, tc.out); diff != "" {
+			if diff := cmp.Diff(r, tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateCreateCertificateAuthorityInput(...): -want, +got:\n%s", diff)
 			}
 		})
@@ -172,7 +175,7 @@ func TestGenerateCertificateAuthorityConfiguration(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			r := GenerateCertificateAuthorityConfiguration(tc.in)
-			if diff := cmp.Diff(r, tc.out); diff != "" {
+			if diff := cmp.Diff(r, tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateCertificateAuthorityConfiguration(...): -want, +got:\n%s", diff)
 			}
 		})
@@ -203,7 +206,7 @@ func TestGenerateRevocationConfiguration(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			r := GenerateRevocationConfiguration(tc.in)
-			if diff := cmp.Diff(r, tc.out); diff != "" {
+			if diff := cmp.Diff(r, tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateRevocationConfiguration(...): -want, +got:\n%s", diff)
 			}
 		})

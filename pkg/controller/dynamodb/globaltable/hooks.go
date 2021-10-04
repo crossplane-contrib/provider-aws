@@ -59,7 +59,7 @@ func SetupGlobalTable(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimit
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&svcapitypes.GlobalTable{}).
 		Complete(managed.NewReconciler(mgr,

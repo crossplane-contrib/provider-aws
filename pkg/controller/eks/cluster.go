@@ -63,7 +63,7 @@ func SetupCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1beta1.Cluster{}).
 		Complete(managed.NewReconciler(mgr,

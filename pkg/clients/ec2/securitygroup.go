@@ -73,9 +73,9 @@ func GenerateEC2Permissions(objectPerms []v1beta1.IPPermission) []ec2types.IpPer
 	permissions := make([]ec2types.IpPermission, len(objectPerms))
 	for i, p := range objectPerms {
 		ipPerm := ec2types.IpPermission{
-			FromPort:   *p.FromPort,
+			FromPort:   p.FromPort,
 			IpProtocol: aws.String(p.IPProtocol),
-			ToPort:     *p.ToPort,
+			ToPort:     p.ToPort,
 		}
 		for _, c := range p.IPRanges {
 			ipPerm.IpRanges = append(ipPerm.IpRanges, ec2types.IpRange{
@@ -118,9 +118,9 @@ func GenerateIPPermissions(objectPerms []ec2types.IpPermission) []v1beta1.IPPerm
 	permissions := make([]v1beta1.IPPermission, len(objectPerms))
 	for i, p := range objectPerms {
 		ipPerm := v1beta1.IPPermission{
-			FromPort:   awsgo.Int32(p.FromPort),
+			FromPort:   p.FromPort,
 			IPProtocol: aws.StringValue(p.IpProtocol),
-			ToPort:     awsgo.Int32(p.ToPort),
+			ToPort:     p.ToPort,
 		}
 		for _, c := range p.IpRanges {
 			ipPerm.IPRanges = append(ipPerm.IPRanges, v1beta1.IPRange{
@@ -202,8 +202,6 @@ func LateInitializeIPPermissions(spec []v1beta1.IPPermission, o []ec2types.IpPer
 		return spec
 	}
 	for i := range o {
-		spec[i].FromPort = awsclients.LateInitializeInt32Ptr(spec[i].FromPort, &o[i].FromPort)
-		spec[i].ToPort = awsclients.LateInitializeInt32Ptr(spec[i].FromPort, &o[i].ToPort)
 		spec[i].IPProtocol = awsclients.LateInitializeString(spec[i].IPProtocol, o[i].IpProtocol)
 
 		for j := range o[i].IpRanges {
@@ -271,6 +269,12 @@ func LateInitializeIPPermissions(spec []v1beta1.IPPermission, o []ec2types.IpPer
 // *ec2types.SecurityGroup
 func CreateSGPatch(in ec2types.SecurityGroup, target v1beta1.SecurityGroupParameters) (*v1beta1.SecurityGroupParameters, error) { // nolint:gocyclo
 	v1beta1.SortTags(target.Tags, in.Tags)
+	sort.Slice(target.Egress, func(i, j int) bool {
+		return awsgo.ToInt32(target.Egress[i].FromPort) < awsgo.ToInt32(target.Egress[j].FromPort)
+	})
+	sort.Slice(target.Ingress, func(i, j int) bool {
+		return awsgo.ToInt32(target.Ingress[i].FromPort) < awsgo.ToInt32(target.Ingress[j].FromPort)
+	})
 	currentParams := &v1beta1.SecurityGroupParameters{
 		Description: awsclients.StringValue(in.Description),
 		GroupName:   awsclients.StringValue(in.GroupName),
@@ -305,13 +309,6 @@ func CreateSGPatch(in ec2types.SecurityGroup, target v1beta1.SecurityGroupParame
 			}
 		}
 	}
-
-	sort.Slice(target.Egress, func(i, j int) bool {
-		return awsgo.ToInt32(target.Egress[i].FromPort) < awsgo.ToInt32(target.Egress[j].FromPort)
-	})
-	sort.Slice(target.Ingress, func(i, j int) bool {
-		return awsgo.ToInt32(target.Ingress[i].FromPort) < awsgo.ToInt32(target.Ingress[j].FromPort)
-	})
 
 	jsonPatch, err := awsclients.CreateJSONPatch(*currentParams, target)
 	if err != nil {

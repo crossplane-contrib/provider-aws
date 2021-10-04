@@ -60,7 +60,7 @@ func SetupDBCluster(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter
 		Named(name).
 		For(&svcapitypes.DBCluster{}).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.DBClusterGroupVersionKind),

@@ -22,6 +22,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/aws/smithy-go/document"
+
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/google/go-cmp/cmp"
@@ -615,5 +617,5 @@ func IsClusterUpToDate(name string, in *cachev1alpha1.CacheClusterParameters, ob
 	}
 	GenerateCluster(name, *in, desired)
 
-	return cmp.Equal(desired, observed, cmpopts.EquateEmpty()), nil
+	return cmp.Equal(desired, observed, cmpopts.EquateEmpty(), cmpopts.IgnoreTypes(document.NoSerde{})), nil
 }

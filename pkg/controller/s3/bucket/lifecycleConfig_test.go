@@ -21,6 +21,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/smithy-go/document"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
@@ -36,14 +39,14 @@ import (
 )
 
 var (
-	days        = 1
-	location, _ = time.LoadLocation("UTC")
-	date        = metav1.Date(2020, time.September, 25, 11, 40, 0, 0, location)
-	awsDate     = time.Date(2020, time.September, 25, 11, 40, 0, 0, location)
-	marker      = false
-	prefix      = "test-"
-	id          = "test-id"
-	storage     = "ONEZONE_IA"
+	days        int32 = 1
+	location, _       = time.LoadLocation("UTC")
+	date              = metav1.Date(2020, time.September, 25, 11, 40, 0, 0, location)
+	awsDate           = time.Date(2020, time.September, 25, 11, 40, 0, 0, location)
+	marker            = false
+	prefix            = "test-"
+	id                = "test-id"
+	storage           = "ONEZONE_IA"
 )
 
 var _ SubresourceClient = &LifecycleConfigurationClient{}
@@ -55,27 +58,25 @@ func generateLifecycleConfig() *v1beta1.BucketLifecycleConfiguration {
 				AbortIncompleteMultipartUpload: &v1beta1.AbortIncompleteMultipartUpload{DaysAfterInitiation: 1},
 				Expiration: &v1beta1.LifecycleExpiration{
 					Date:                      &date,
-					Days:                      awsclient.Int32(days),
-					ExpiredObjectDeleteMarker: awsclient.Bool(marker),
+					Days:                      days,
+					ExpiredObjectDeleteMarker: marker,
 				},
 				Filter: &v1beta1.LifecycleRuleFilter{
 					And: &v1beta1.LifecycleRuleAndOperator{
 						Prefix: awsclient.String(prefix),
 						Tags:   tags,
 					},
-					Prefix: awsclient.String(prefix),
-					Tag:    &tag,
 				},
 				ID:                          awsclient.String(id),
-				NoncurrentVersionExpiration: &v1beta1.NoncurrentVersionExpiration{NoncurrentDays: awsclient.Int32(days)},
+				NoncurrentVersionExpiration: &v1beta1.NoncurrentVersionExpiration{NoncurrentDays: days},
 				NoncurrentVersionTransitions: []v1beta1.NoncurrentVersionTransition{{
-					NoncurrentDays: awsclient.Int32(days),
+					NoncurrentDays: days,
 					StorageClass:   storage,
 				}},
 				Status: enabled,
 				Transitions: []v1beta1.Transition{{
 					Date:         &date,
-					Days:         awsclient.Int32(days),
+					Days:         days,
 					StorageClass: storage,
 				}},
 			},
@@ -90,7 +91,7 @@ func generateAWSLifecycle(sortTag bool) *s3types.BucketLifecycleConfiguration {
 				AbortIncompleteMultipartUpload: &s3types.AbortIncompleteMultipartUpload{DaysAfterInitiation: 1},
 				Expiration: &s3types.LifecycleExpiration{
 					Date:                      &awsDate,
-					Days:                      int32(days),
+					Days:                      days,
 					ExpiredObjectDeleteMarker: marker,
 				},
 				Filter: &s3types.LifecycleRuleFilterMemberAnd{
@@ -100,15 +101,15 @@ func generateAWSLifecycle(sortTag bool) *s3types.BucketLifecycleConfiguration {
 					},
 				},
 				ID:                          awsclient.String(id),
-				NoncurrentVersionExpiration: &s3types.NoncurrentVersionExpiration{NoncurrentDays: int32(days)},
+				NoncurrentVersionExpiration: &s3types.NoncurrentVersionExpiration{NoncurrentDays: days},
 				NoncurrentVersionTransitions: []s3types.NoncurrentVersionTransition{{
-					NoncurrentDays: int32(days),
+					NoncurrentDays: days,
 					StorageClass:   s3types.TransitionStorageClassOnezoneIa,
 				}},
 				Status: s3types.ExpirationStatusEnabled,
 				Transitions: []s3types.Transition{{
 					Date:         &awsDate,
-					Days:         int32(days),
+					Days:         days,
 					StorageClass: s3types.TransitionStorageClassOnezoneIa,
 				}},
 			},
@@ -146,7 +147,7 @@ func TestGenerateLifecycleConfiguration(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			generated := GenerateLifecycleRules(tc.args.b.Spec.ForProvider.LifecycleConfiguration.Rules)
-			if diff := cmp.Diff(generated, tc.want.input); diff != "" {
+			if diff := cmp.Diff(generated, tc.want.input, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
@@ -260,7 +261,7 @@ func TestLifecycleObserve(t *testing.T) {
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.status, status); diff != "" {
+			if diff := cmp.Diff(tc.want.status, status, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

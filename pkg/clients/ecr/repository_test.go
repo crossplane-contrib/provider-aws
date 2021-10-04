@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/smithy-go/document"
+
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	ecrtypes "github.com/aws/aws-sdk-go-v2/service/ecr/types"
 	"github.com/google/go-cmp/cmp"
@@ -163,7 +165,7 @@ func TestGenerateCreateRepositoryInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			got := GenerateCreateRepositoryInput(tc.args.name, tc.args.p)
-			if diff := cmp.Diff(tc.want, got); diff != "" {
+			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
@@ -298,7 +300,7 @@ func TestDiffTags(t *testing.T) {
 				return aws.StringValue(i.Key) < aws.StringValue(j.Key)
 			})
 			add, remove := DiffTags(tc.args.local, tc.args.remote)
-			if diff := cmp.Diff(tc.want.add, add, tagCmp); diff != "" {
+			if diff := cmp.Diff(tc.want.add, add, tagCmp, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			sort.Strings(tc.want.remove)

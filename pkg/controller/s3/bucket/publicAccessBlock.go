@@ -104,6 +104,9 @@ func (in *PublicAccessBlockClient) LateInitialize(ctx context.Context, cr *v1bet
 	if err != nil {
 		return awsclient.Wrap(resource.Ignore(s3.PublicAccessBlockConfigurationNotFound, err), publicAccessBlockGetFailed)
 	}
+	if external.PublicAccessBlockConfiguration == nil {
+		return nil
+	}
 
 	if cr.Spec.ForProvider.PublicAccessBlockConfiguration == nil {
 		cr.Spec.ForProvider.PublicAccessBlockConfiguration = &v1beta1.PublicAccessBlockConfiguration{}

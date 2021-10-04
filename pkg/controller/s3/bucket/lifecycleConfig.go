@@ -19,6 +19,8 @@ package bucket
 import (
 	"context"
 
+	"github.com/aws/smithy-go/document"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -73,7 +75,7 @@ func (in *LifecycleConfigurationClient) Observe(ctx context.Context, bucket *v1b
 	// and we don't have late-init for this subresource. Besides, a change in ID
 	// is almost never expected.
 	case cmp.Equal(external, GenerateLifecycleRules(local),
-		cmpopts.IgnoreFields(types.LifecycleRule{}, "ID")):
+		cmpopts.IgnoreFields(types.LifecycleRule{}, "ID"), cmpopts.IgnoreTypes(document.NoSerde{})):
 		return Updated, nil
 	default:
 		return NeedsUpdate, nil
@@ -159,21 +161,21 @@ func GenerateLifecycleRules(in []v1beta1.LifecycleRule) []types.LifecycleRule { 
 		}
 		if local.Expiration != nil {
 			rule.Expiration = &types.LifecycleExpiration{
-				Days:                      aws.ToInt32(local.Expiration.Days),
-				ExpiredObjectDeleteMarker: aws.ToBool(local.Expiration.ExpiredObjectDeleteMarker),
+				Days:                      local.Expiration.Days,
+				ExpiredObjectDeleteMarker: local.Expiration.ExpiredObjectDeleteMarker,
 			}
 			if local.Expiration.Date != nil {
 				rule.Expiration.Date = &local.Expiration.Date.Time
 			}
 		}
 		if local.NoncurrentVersionExpiration != nil {
-			rule.NoncurrentVersionExpiration = &types.NoncurrentVersionExpiration{NoncurrentDays: aws.ToInt32(local.NoncurrentVersionExpiration.NoncurrentDays)}
+			rule.NoncurrentVersionExpiration = &types.NoncurrentVersionExpiration{NoncurrentDays: local.NoncurrentVersionExpiration.NoncurrentDays}
 		}
 		if local.NoncurrentVersionTransitions != nil {
 			rule.NoncurrentVersionTransitions = make([]types.NoncurrentVersionTransition, len(local.NoncurrentVersionTransitions))
 			for tIndex, transition := range local.NoncurrentVersionTransitions {
 				rule.NoncurrentVersionTransitions[tIndex] = types.NoncurrentVersionTransition{
-					NoncurrentDays: aws.ToInt32(transition.NoncurrentDays),
+					NoncurrentDays: transition.NoncurrentDays,
 					StorageClass:   types.TransitionStorageClass(transition.StorageClass),
 				}
 			}
@@ -182,7 +184,7 @@ func GenerateLifecycleRules(in []v1beta1.LifecycleRule) []types.LifecycleRule { 
 			rule.Transitions = make([]types.Transition, len(local.Transitions))
 			for tIndex, transition := range local.Transitions {
 				rule.Transitions[tIndex] = types.Transition{
-					Days:         aws.ToInt32(transition.Days),
+					Days:         transition.Days,
 					StorageClass: types.TransitionStorageClass(transition.StorageClass),
 				}
 				if transition.Date != nil {
@@ -232,8 +234,8 @@ func createLifecycleRulesFromExternal(external []types.LifecycleRule, config *v1
 
 	for i, rule := range external {
 		config.Rules[i] = v1beta1.LifecycleRule{
-			ID:     awsclient.LateInitializeStringPtr(config.Rules[i].ID, rule.ID),
-			Status: awsclient.LateInitializeString(config.Rules[i].Status, awsclient.String(string(rule.Status))),
+			ID:     rule.ID,
+			Status: string(rule.Status),
 		}
 
 		if rule.Filter != nil {
@@ -245,17 +247,17 @@ func createLifecycleRulesFromExternal(external []types.LifecycleRule, config *v1
 			case *types.LifecycleRuleFilterMemberAnd:
 				// Value is types.ReplicationRuleAndOperator
 				config.Rules[i].Filter.And = &v1beta1.LifecycleRuleAndOperator{}
-				config.Rules[i].Filter.And.Prefix = awsclient.LateInitializeStringPtr(config.Rules[i].Filter.And.Prefix, v.Value.Prefix)
+				config.Rules[i].Filter.And.Prefix = v.Value.Prefix
 				config.Rules[i].Filter.And.Tags = GenerateLocalTagging(v.Value.Tags).TagSet
 			case *types.LifecycleRuleFilterMemberPrefix:
 				// Value is string
 				config.Rules[i].Filter = &v1beta1.LifecycleRuleFilter{}
-				config.Rules[i].Filter.Prefix = awsclient.LateInitializeStringPtr(config.Rules[i].Filter.Prefix, aws.String(v.Value))
+				config.Rules[i].Filter.Prefix = aws.String(v.Value)
 			case *types.LifecycleRuleFilterMemberTag:
 				// Value is types.Tag
 				config.Rules[i].Filter.Tag = &v1beta1.Tag{}
-				config.Rules[i].Filter.Tag.Key = awsclient.LateInitializeString(config.Rules[i].Filter.Tag.Key, v.Value.Key)
-				config.Rules[i].Filter.Tag.Value = awsclient.LateInitializeString(config.Rules[i].Filter.Tag.Value, v.Value.Value)
+				config.Rules[i].Filter.Tag.Key = aws.ToString(v.Value.Key)
+				config.Rules[i].Filter.Tag.Value = aws.ToString(v.Value.Value)
 			case *types.UnknownUnionMember:
 			//	fmt.Println("unknown tag:", v.Tag)
 			default:
@@ -265,9 +267,7 @@ func createLifecycleRulesFromExternal(external []types.LifecycleRule, config *v1
 
 		if rule.AbortIncompleteMultipartUpload != nil {
 			config.Rules[i].AbortIncompleteMultipartUpload = &v1beta1.AbortIncompleteMultipartUpload{}
-			config.Rules[i].AbortIncompleteMultipartUpload.DaysAfterInitiation = awsclient.LateInitializeInt32(
-				config.Rules[i].AbortIncompleteMultipartUpload.DaysAfterInitiation,
-				rule.AbortIncompleteMultipartUpload.DaysAfterInitiation)
+			config.Rules[i].AbortIncompleteMultipartUpload.DaysAfterInitiation = rule.AbortIncompleteMultipartUpload.DaysAfterInitiation
 		}
 		if rule.Expiration != nil {
 			config.Rules[i].Expiration = &v1beta1.LifecycleExpiration{}
@@ -275,51 +275,30 @@ func createLifecycleRulesFromExternal(external []types.LifecycleRule, config *v1
 				config.Rules[i].Expiration.Date,
 				rule.Expiration.Date,
 			)
-			config.Rules[i].Expiration.Days = awsclient.LateInitializeInt32Ptr(
-				config.Rules[i].Expiration.Days,
-				&rule.Expiration.Days,
-			)
-			config.Rules[i].Expiration.ExpiredObjectDeleteMarker = awsclient.LateInitializeBoolPtr(
-				config.Rules[i].Expiration.ExpiredObjectDeleteMarker,
-				&rule.Expiration.ExpiredObjectDeleteMarker,
-			)
+			config.Rules[i].Expiration.Days = rule.Expiration.Days
+			config.Rules[i].Expiration.ExpiredObjectDeleteMarker = rule.Expiration.ExpiredObjectDeleteMarker
 		}
 		if rule.NoncurrentVersionExpiration != nil {
 			config.Rules[i].NoncurrentVersionExpiration = &v1beta1.NoncurrentVersionExpiration{}
-			config.Rules[i].NoncurrentVersionExpiration.NoncurrentDays = awsclient.LateInitializeInt32Ptr(
-				config.Rules[i].NoncurrentVersionExpiration.NoncurrentDays,
-				&rule.NoncurrentVersionExpiration.NoncurrentDays,
-			)
+			config.Rules[i].NoncurrentVersionExpiration.NoncurrentDays = rule.NoncurrentVersionExpiration.NoncurrentDays
 		}
 		if len(rule.NoncurrentVersionTransitions) != 0 {
 			config.Rules[i].NoncurrentVersionTransitions = make([]v1beta1.NoncurrentVersionTransition, len(rule.NoncurrentVersionTransitions))
 
 			for j, nvt := range rule.NoncurrentVersionTransitions {
-				config.Rules[i].NoncurrentVersionTransitions[j].NoncurrentDays = awsclient.LateInitializeInt32Ptr(
-					config.Rules[i].NoncurrentVersionTransitions[j].NoncurrentDays,
-					&nvt.NoncurrentDays,
-				)
-				config.Rules[i].NoncurrentVersionTransitions[j].StorageClass = awsclient.LateInitializeString(
-					config.Rules[i].NoncurrentVersionTransitions[j].StorageClass,
-					awsclient.String(string(nvt.StorageClass)),
-				)
+				config.Rules[i].NoncurrentVersionTransitions[j].NoncurrentDays = nvt.NoncurrentDays
+				config.Rules[i].NoncurrentVersionTransitions[j].StorageClass = string(nvt.StorageClass)
 			}
 		}
 		if len(rule.Transitions) != 0 {
 			config.Rules[i].Transitions = make([]v1beta1.Transition, len(rule.Transitions))
 			for j, transition := range rule.Transitions {
-				config.Rules[i].Transitions[j].Days = awsclient.LateInitializeInt32Ptr(
-					config.Rules[i].Transitions[j].Days,
-					&transition.Days,
-				)
+				config.Rules[i].Transitions[j].Days = transition.Days
 				config.Rules[i].Transitions[j].Date = awsclient.LateInitializeTimePtr(
 					config.Rules[i].Transitions[j].Date,
 					transition.Date,
 				)
-				config.Rules[i].Transitions[j].StorageClass = awsclient.LateInitializeString(
-					config.Rules[i].Transitions[j].StorageClass,
-					awsclient.String(string(transition.StorageClass)),
-				)
+				config.Rules[i].Transitions[j].StorageClass = string(transition.StorageClass)
 			}
 		}
 	}

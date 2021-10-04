@@ -50,12 +50,12 @@ func SetupServer(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, p
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&svcapitypes.Server{}).
 		Complete(managed.NewReconciler(mgr,
 			resource.ManagedKind(svcapitypes.ServerGroupVersionKind),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
@@ -63,7 +63,7 @@ func SetupServer(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, p
 }
 
 func preObserve(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.DescribeServerInput) error {
-	if cr.Name != *awsclients.String(meta.GetExternalName(cr)) {
+	if meta.GetExternalName(cr) != "" {
 		obj.ServerId = awsclients.String(meta.GetExternalName(cr))
 	}
 	return nil
@@ -106,7 +106,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.CreateSer
 		return managed.ExternalCreation{}, err
 	}
 	meta.SetExternalName(cr, awsclients.StringValue(obj.ServerId))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func preCreate(_ context.Context, cr *svcapitypes.Server, obj *svcsdk.CreateServerInput) error {

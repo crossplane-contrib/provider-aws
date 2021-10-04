@@ -75,15 +75,11 @@ func GenerateCreateCertificateInput(name string, p *v1alpha1.CertificateParamete
 }
 
 // GenerateCertificateStatus is used to produce CertificateExternalStatus from acm.certificateStatus
-<<<<<<< HEAD
 func GenerateCertificateStatus(certificate types.CertificateDetail) v1alpha1.CertificateExternalStatus {
-=======
-func GenerateCertificateStatus(certificate acm.CertificateDetail) v1alpha1.CertificateExternalStatus {
-
-	if certificate.Type == acm.CertificateTypeAmazonIssued && len(certificate.DomainValidationOptions) > 0 {
+	if certificate.Type == acmtypes.CertificateTypeAmazonIssued && len(certificate.DomainValidationOptions) > 0 {
 		if certificate.DomainValidationOptions[0].ResourceRecord != nil {
 			return v1alpha1.CertificateExternalStatus{
-				CertificateARN:     aws.StringValue(certificate.CertificateArn),
+				CertificateARN:     aws.ToString(certificate.CertificateArn),
 				RenewalEligibility: certificate.RenewalEligibility,
 				Status:             certificate.Status,
 				Type:               certificate.Type,
@@ -96,7 +92,6 @@ func GenerateCertificateStatus(certificate acm.CertificateDetail) v1alpha1.Certi
 		}
 	}
 
->>>>>>> upstream/master
 	return v1alpha1.CertificateExternalStatus{
 		CertificateARN:     aws.ToString(certificate.CertificateArn),
 		RenewalEligibility: certificate.RenewalEligibility,

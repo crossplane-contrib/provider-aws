@@ -60,7 +60,7 @@ func SetupBucket(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, p
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1beta1.Bucket{}).
 		Complete(managed.NewReconciler(mgr,
@@ -162,7 +162,6 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
-	cr.Status.SetConditions(xpv1.Creating())
 
 	_, err := e.s3client.CreateBucket(ctx, s3.GenerateCreateBucketInput(meta.GetExternalName(cr), cr.Spec.ForProvider))
 	if resource.Ignore(s3.IsAlreadyExists, err) != nil {

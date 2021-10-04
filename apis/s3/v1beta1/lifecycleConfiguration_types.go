@@ -98,13 +98,13 @@ type LifecycleExpiration struct {
 	// Indicates the lifetime, in days, of the objects that are subject to the rule.
 	// The value must be a non-zero positive integer.
 	// +kubebuilder:validation:Minimum=1
-	Days *int32 `json:"days,omitempty"`
+	Days int32 `json:"days,omitempty"`
 
 	// Indicates whether Amazon S3 will remove a delete marker with no noncurrent
 	// versions. If set to true, the delete marker will be expired; if set to false
 	// the policy takes no action. This cannot be specified with Days or Date in
 	// a Lifecycle Expiration Policy.
-	ExpiredObjectDeleteMarker *bool `json:"expiredObjectDeleteMarker,omitempty"`
+	ExpiredObjectDeleteMarker bool `json:"expiredObjectDeleteMarker,omitempty"`
 }
 
 // LifecycleRuleFilter is used to identify objects that a Lifecycle Rule applies to.
@@ -145,7 +145,7 @@ type NoncurrentVersionExpiration struct {
 	// calculations, see How Amazon S3 Calculates When an Object Became Noncurrent
 	// (https://docs.aws.amazon.com/AmazonS3/latest/dev/intro-lifecycle-rules.html#non-current-days-calculations)
 	// in the Amazon Simple Storage Service Developer Guide.
-	NoncurrentDays *int32 `json:"noncurrentDays,omitempty"`
+	NoncurrentDays int32 `json:"noncurrentDays,omitempty"`
 }
 
 // NoncurrentVersionTransition contains the transition rule that describes when noncurrent objects
@@ -161,7 +161,7 @@ type NoncurrentVersionTransition struct {
 	// calculations, see How Amazon S3 Calculates How Long an Object Has Been Noncurrent
 	// (https://docs.aws.amazon.com/AmazonS3/latest/dev/intro-lifecycle-rules.html#non-current-days-calculations)
 	// in the Amazon Simple Storage Service Developer Guide.
-	NoncurrentDays *int32 `json:"noncurrentDays,omitempty"`
+	NoncurrentDays int32 `json:"noncurrentDays,omitempty"`
 
 	// The class of storage used to store the object.
 	// Valid values are: GLACIER, STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, DEEP_ARCHIVE
@@ -181,7 +181,7 @@ type Transition struct {
 	// Indicates the number of days after creation when objects are transitioned
 	// to the specified storage class. The value must be a positive integer.
 	// +kubebuilder:validation:Minimum=1
-	Days *int32 `json:"days,omitempty"`
+	Days int32 `json:"days,omitempty"`
 
 	// The storage class to which you want the object to transition.
 	// Valid values are: GLACIER, STANDARD_IA, ONEZONE_IA, INTELLIGENT_TIERING, DEEP_ARCHIVE

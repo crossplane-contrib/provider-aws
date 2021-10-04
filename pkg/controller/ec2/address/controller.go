@@ -62,7 +62,7 @@ func SetupAddress(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1beta1.Address{}).
 		Complete(managed.NewReconciler(mgr,
@@ -177,7 +177,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	} else {
 		meta.SetExternalName(cr, aws.ToString(result.AllocationId))
 	}
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.ExternalUpdate, error) {

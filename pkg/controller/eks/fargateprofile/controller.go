@@ -58,7 +58,7 @@ func SetupFargateProfile(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLi
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.FargateProfile{}).
 		Complete(managed.NewReconciler(mgr,

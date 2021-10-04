@@ -19,6 +19,8 @@ package bucket
 import (
 	"context"
 
+	"github.com/aws/smithy-go/document"
+
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -53,7 +55,7 @@ func (in *LoggingConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 		return NeedsUpdate, awsclient.Wrap(err, loggingGetFailed)
 	}
 	if !cmp.Equal(GenerateAWSLogging(bucket.Spec.ForProvider.LoggingConfiguration), external.LoggingEnabled,
-		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{})) {
+		cmpopts.IgnoreTypes(&xpv1.Reference{}, &xpv1.Selector{}), cmpopts.IgnoreTypes(document.NoSerde{})) {
 		return NeedsUpdate, nil
 	}
 	return Updated, nil
