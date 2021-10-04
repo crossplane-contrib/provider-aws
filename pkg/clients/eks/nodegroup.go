@@ -43,6 +43,9 @@ func GenerateCreateNodeGroupInput(name string, p *v1alpha1.NodeGroupParameters) 
 		Tags:           p.Tags,
 		Version:        p.Version,
 	}
+	if p.CapacityType != nil {
+		c.CapacityType = ekstypes.CapacityTypes(*p.CapacityType)
+	}
 	if p.RemoteAccess != nil {
 		c.RemoteAccess = &ekstypes.RemoteAccessConfig{
 			Ec2SshKey:            p.RemoteAccess.EC2SSHKey,
@@ -62,6 +65,23 @@ func GenerateCreateNodeGroupInput(name string, p *v1alpha1.NodeGroupParameters) 
 		// to the minSize as an initial value.
 		if p.ScalingConfig.DesiredSize == nil {
 			c.ScalingConfig.DesiredSize = p.ScalingConfig.MinSize
+		}
+	}
+	if p.LaunchTemplate != nil {
+		c.LaunchTemplate = &ekstypes.LaunchTemplateSpecification{
+			Id:      p.LaunchTemplate.ID,
+			Name:    p.LaunchTemplate.Name,
+			Version: p.LaunchTemplate.Version,
+		}
+	}
+	if len(p.Taints) != 0 {
+		c.Taints = make([]ekstypes.Taint, len(p.Taints))
+		for i, t := range p.Taints {
+			c.Taints[i] = ekstypes.Taint{
+				Effect: ekstypes.TaintEffect(t.Effect),
+				Key:    t.Key,
+				Value:  t.Value,
+			}
 		}
 	}
 	return c
@@ -102,6 +122,7 @@ func GenerateUpdateNodeGroupConfigInput(name string, p *v1alpha1.NodeGroupParame
 			}
 		}
 	}
+	// TODO(muvaf): Add support for updating taints.
 	return u
 }
 
@@ -161,6 +182,7 @@ func LateInitializeNodeGroup(in *v1alpha1.NodeGroupParameters, ng *ekstypes.Node
 		return
 	}
 	in.AMIType = awsclient.LateInitializeStringPtr(in.AMIType, awsclient.String(string(ng.AmiType)))
+	in.CapacityType = awsclient.LateInitializeStringPtr(in.CapacityType, awsclient.String(string(ng.CapacityType)))
 	in.DiskSize = awsclient.LateInitializeInt32Ptr(in.DiskSize, ng.DiskSize)
 	if len(in.InstanceTypes) == 0 && len(ng.InstanceTypes) > 0 {
 		in.InstanceTypes = ng.InstanceTypes
@@ -188,6 +210,16 @@ func LateInitializeNodeGroup(in *v1alpha1.NodeGroupParameters, ng *ekstypes.Node
 	// exist for consistency with expected late initialization behavior.
 	if len(in.Tags) == 0 {
 		in.Tags = ng.Tags
+	}
+	if len(in.Taints) == 0 && len(ng.Taints) != 0 {
+		in.Taints = make([]v1alpha1.Taint, len(ng.Taints))
+		for i, t := range ng.Taints {
+			in.Taints[i] = v1alpha1.Taint{
+				Effect: string(t.Effect),
+				Key:    t.Key,
+				Value:  t.Value,
+			}
+		}
 	}
 }
 

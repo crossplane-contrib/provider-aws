@@ -72,6 +72,12 @@ spec:
                       should use the AL2_x86_64 AMI type, which uses the Amazon EKS-optimized
                       Linux AMI.
                     type: string
+                  capacityType:
+                    description: CapacityType for your node group.
+                    enum:
+                    - ON_DEMAND
+                    - SPOT
+                    type: string
                   clusterName:
                     description: "The name of the cluster to create the node group
                       in. \n ClusterName is a required field"
@@ -120,6 +126,24 @@ spec:
                       type: string
                     description: The Kubernetes labels to be applied to the nodes
                       in the node group when they are created.
+                    type: object
+                  launchTemplate:
+                    description: An object representing a node group's launch template
+                      specification. If specified, then do not specify instanceTypes,
+                      diskSize, or remoteAccess and make sure that the launch template
+                      meets the requirements in launchTemplateSpecification.
+                    properties:
+                      id:
+                        description: The ID of the launch template.
+                        type: string
+                      name:
+                        description: The name of the launch template.
+                        type: string
+                      version:
+                        description: The version of the launch template to use. If
+                          no version is specified, then the template's default version
+                          is used.
+                        type: string
                     type: object
                   nodeRole:
                     description: "The Amazon Resource Name (ARN) of the IAM role to
@@ -293,6 +317,30 @@ spec:
                       tags do not propagate to any other resources associated with
                       the node group, such as the Amazon EC2 instances or subnets.
                     type: object
+                  taints:
+                    description: The Kubernetes taints to be applied to the nodes
+                      in the node group.
+                    items:
+                      description: Taint is a property that allows a node to repel
+                        a set of pods.
+                      properties:
+                        effect:
+                          description: The effect of the taint.
+                          enum:
+                          - NO_SCHEDULE
+                          - NO_EXECUTE
+                          - PREFER_NO_SCHEDULE
+                          type: string
+                        key:
+                          description: The key of the taint.
+                          type: string
+                        value:
+                          description: The value of the taint.
+                          type: string
+                      required:
+                      - effect
+                      type: object
+                    type: array
                   version:
                     description: The Kubernetes version to use for your managed nodes.
                       By default, the Kubernetes version of the cluster is used, and
