@@ -229,7 +229,7 @@ func TestCreate(t *testing.T) {
 			want: want{
 				cr: address(withExternalName(allocationID),
 					withConditions(xpv1.Creating())),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"SuccessfulStandard": {
@@ -255,7 +255,7 @@ func TestCreate(t *testing.T) {
 					withSpec(v1beta1.AddressParameters{
 						Domain: &domainStandard,
 					})),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"CreateFail": {

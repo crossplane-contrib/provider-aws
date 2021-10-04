@@ -20,6 +20,9 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/aws/smithy-go/document"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/aws/aws-sdk-go-v2/service/elasticache"
 	elasticachetypes "github.com/aws/aws-sdk-go-v2/service/elasticache/types"
 	"github.com/google/go-cmp/cmp"
@@ -215,7 +218,7 @@ func TestNewCreateReplicationGroupInput(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got := NewCreateReplicationGroupInput(tc.params, name, tc.authToken)
 
-			if diff := cmp.Diff(tc.want, got); diff != "" {
+			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("NewCreateReplicationGroupInput(...): -want, +got:\n%s", diff)
 			}
 		})
@@ -283,7 +286,7 @@ func TestNewModifyReplicationGroupInput(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got := NewModifyReplicationGroupInput(tc.params, name)
 
-			if diff := cmp.Diff(tc.want, got); diff != "" {
+			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("NewModifyReplicationGroupInput(...): -want, +got:\n%s", diff)
 			}
 		})
@@ -305,7 +308,7 @@ func TestNewDeleteReplicationGroupInput(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got := NewDeleteReplicationGroupInput(name)
 
-			if diff := cmp.Diff(tc.want, got); diff != "" {
+			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("NewDeleteReplicationGroupInput(...): -want, +got:\n%s", diff)
 			}
 		})
@@ -326,7 +329,7 @@ func TestNewDescribeReplicationGroupsInput(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			got := NewDescribeReplicationGroupsInput(name)
-			if diff := cmp.Diff(tc.want, got); diff != "" {
+			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("NewDescribeReplicationGroupsInput(...): -want, +got:\n%s", diff)
 			}
 		})
@@ -349,7 +352,7 @@ func TestNewDescribeCacheClustersInput(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			got := NewDescribeCacheClustersInput(tc.cluster)
-			if diff := cmp.Diff(tc.want, got); diff != "" {
+			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("NewDescribeCacheClustersInput(...): -want, +got:\n%s", diff)
 			}
 		})

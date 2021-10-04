@@ -51,7 +51,7 @@ func SetupPrivateDNSNamespace(mgr ctrl.Manager, l logging.Logger, rl workqueue.R
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&svcapitypes.PrivateDNSNamespace{}).
 		Complete(managed.NewReconciler(mgr,

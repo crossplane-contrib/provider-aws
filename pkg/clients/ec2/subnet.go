@@ -46,8 +46,8 @@ func IsSubnetNotFoundErr(err error) bool {
 // ec2types.Subnet
 func GenerateSubnetObservation(subnet ec2types.Subnet) v1beta1.SubnetObservation {
 	o := v1beta1.SubnetObservation{
-		AvailableIPAddressCount: subnet.AvailableIpAddressCount,
-		DefaultForAZ:            subnet.DefaultForAz,
+		AvailableIPAddressCount: aws.ToInt32(subnet.AvailableIpAddressCount),
+		DefaultForAZ:            aws.ToBool(subnet.DefaultForAz),
 		SubnetID:                aws.ToString(subnet.SubnetId),
 		SubnetState:             string(subnet.State),
 	}
@@ -64,11 +64,11 @@ func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2types.Subnet) { //
 		return
 	}
 
-	in.AssignIPv6AddressOnCreation = awsclients.LateInitializeBoolPtr(in.AssignIPv6AddressOnCreation, &s.AssignIpv6AddressOnCreation)
+	in.AssignIPv6AddressOnCreation = awsclients.LateInitializeBoolPtr(in.AssignIPv6AddressOnCreation, s.AssignIpv6AddressOnCreation)
 	in.AvailabilityZone = awsclients.LateInitializeStringPtr(in.AvailabilityZone, s.AvailabilityZone)
 	in.AvailabilityZoneID = awsclients.LateInitializeStringPtr(in.AvailabilityZoneID, s.AvailabilityZoneId)
 	in.CIDRBlock = awsclients.LateInitializeString(in.CIDRBlock, s.CidrBlock)
-	in.MapPublicIPOnLaunch = awsclients.LateInitializeBoolPtr(in.MapPublicIPOnLaunch, &s.MapPublicIpOnLaunch)
+	in.MapPublicIPOnLaunch = awsclients.LateInitializeBoolPtr(in.MapPublicIPOnLaunch, s.MapPublicIpOnLaunch)
 	in.VPCID = awsclients.LateInitializeStringPtr(in.VPCID, s.VpcId)
 
 	if s.Ipv6CidrBlockAssociationSet != nil {
@@ -82,13 +82,11 @@ func LateInitializeSubnet(in *v1beta1.SubnetParameters, s *ec2types.Subnet) { //
 
 // IsSubnetUpToDate checks whether there is a change in any of the modifiable fields.
 func IsSubnetUpToDate(p v1beta1.SubnetParameters, s ec2types.Subnet) bool {
-	if p.MapPublicIPOnLaunch != nil && (*p.MapPublicIPOnLaunch != s.MapPublicIpOnLaunch) {
+	if aws.ToBool(p.MapPublicIPOnLaunch) != aws.ToBool(s.MapPublicIpOnLaunch) {
 		return false
 	}
-
-	if p.AssignIPv6AddressOnCreation != nil && (*p.AssignIPv6AddressOnCreation != s.AssignIpv6AddressOnCreation) {
+	if aws.ToBool(p.AssignIPv6AddressOnCreation) != aws.ToBool(s.AssignIpv6AddressOnCreation) {
 		return false
 	}
-
 	return v1beta1.CompareTags(p.Tags, s.Tags)
 }

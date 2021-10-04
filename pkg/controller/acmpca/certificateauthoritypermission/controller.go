@@ -57,7 +57,7 @@ func SetupCertificateAuthorityPermission(mgr ctrl.Manager, l logging.Logger, rl 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.CertificateAuthorityPermission{}).
 		Complete(managed.NewReconciler(mgr,
@@ -66,7 +66,7 @@ func SetupCertificateAuthorityPermission(mgr ctrl.Manager, l logging.Logger, rl 
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(poll),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -162,7 +162,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// identity of the CA it applies to, and the principal it applies.
 	meta.SetExternalName(cr, cr.Spec.ForProvider.Principal+"/"+awsclient.StringValue(cr.Spec.ForProvider.CertificateAuthorityARN))
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 
 }
 

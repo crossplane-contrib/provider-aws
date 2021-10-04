@@ -3,6 +3,10 @@ package acm
 import (
 	"testing"
 
+	"github.com/aws/smithy-go/document"
+
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/aws/aws-sdk-go-v2/service/acm"
 	acmtypes "github.com/aws/aws-sdk-go-v2/service/acm/types"
 	"github.com/google/go-cmp/cmp"
@@ -52,7 +56,7 @@ func TestGenerateCreateCertificateInput(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			r := GenerateCreateCertificateInput(name, &tc.in)
 
-			if diff := cmp.Diff(r, &tc.out); diff != "" {
+			if diff := cmp.Diff(r, &tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateCreateCertificateInput(...): -want, +got:\n%s", diff)
 			}
 		})

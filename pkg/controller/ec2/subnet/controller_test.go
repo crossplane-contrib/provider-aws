@@ -108,15 +108,11 @@ func TestObserve(t *testing.T) {
 			want: want{
 				cr: subnet(withStatus(v1beta1.SubnetObservation{
 					SubnetState: "available",
-				}), withExternalName(subnetID), withSpec(v1beta1.SubnetParameters{
-					MapPublicIPOnLaunch:         aws.Bool(false),
-					AssignIPv6AddressOnCreation: aws.Bool(false),
-				}),
+				}), withExternalName(subnetID),
 					withConditions(xpv1.Available())),
 				result: managed.ExternalObservation{
-					ResourceExists:          true,
-					ResourceUpToDate:        true,
-					ResourceLateInitialized: true,
+					ResourceExists:   true,
+					ResourceUpToDate: true,
 				},
 			},
 		},
@@ -143,8 +139,9 @@ func TestObserve(t *testing.T) {
 						return &awsec2.DescribeSubnetsOutput{
 							Subnets: []awsec2types.Subnet{
 								{
-									State:               awsec2types.SubnetStateAvailable,
-									MapPublicIpOnLaunch: false,
+									State:                       awsec2types.SubnetStateAvailable,
+									MapPublicIpOnLaunch:         aws.Bool(false),
+									AssignIpv6AddressOnCreation: aws.Bool(false),
 								},
 							},
 						}, nil
@@ -230,7 +227,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: want{
 				cr:     subnet(withExternalName(subnetID)),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"CreateFailed": {
@@ -292,7 +289,7 @@ func TestUpdate(t *testing.T) {
 						return &awsec2.DescribeSubnetsOutput{
 							Subnets: []awsec2types.Subnet{{
 								SubnetId:            aws.String(subnetID),
-								MapPublicIpOnLaunch: false,
+								MapPublicIpOnLaunch: aws.Bool(false),
 							}},
 						}, nil
 					},
@@ -321,7 +318,7 @@ func TestUpdate(t *testing.T) {
 						return &awsec2.DescribeSubnetsOutput{
 							Subnets: []awsec2types.Subnet{{
 								SubnetId:            aws.String(subnetID),
-								MapPublicIpOnLaunch: false,
+								MapPublicIpOnLaunch: aws.Bool(false),
 							}},
 						}, nil
 					},

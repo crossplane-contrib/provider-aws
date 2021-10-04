@@ -43,7 +43,7 @@ func SetupCachePolicy(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimit
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&svcapitypes.CachePolicy{}).
 		Complete(managed.NewReconciler(mgr,
@@ -74,7 +74,6 @@ func postCreate(_ context.Context, cp *svcapitypes.CachePolicy, cpo *svcsdk.Crea
 	}
 
 	meta.SetExternalName(cp, awsclients.StringValue(cpo.CachePolicy.Id))
-	ec.ExternalNameAssigned = true
 	return ec, nil
 }
 

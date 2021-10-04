@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/smithy-go/document"
+
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/google/go-cmp/cmp"
@@ -124,7 +126,7 @@ func TestGenerateCreateRoleInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			r := GenerateCreateRoleInput(roleName, &tc.in)
-			if diff := cmp.Diff(r, &tc.out); diff != "" {
+			if diff := cmp.Diff(r, &tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateNetworkObservation(...): -want, +got:\n%s", diff)
 			}
 		})
@@ -426,12 +428,12 @@ func TestDiffIAMTags(t *testing.T) {
 				return aws.StringValue(i.Key) < aws.StringValue(j.Key)
 			})
 			add, remove := DiffIAMTags(tc.args.local, tc.args.remote)
-			if diff := cmp.Diff(tc.want.add, add, tagCmp); diff != "" {
+			if diff := cmp.Diff(tc.want.add, add, tagCmp, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 			sort.Strings(tc.want.remove)
 			sort.Strings(remove)
-			if diff := cmp.Diff(tc.want.remove, remove, tagCmp); diff != "" {
+			if diff := cmp.Diff(tc.want.remove, remove, tagCmp, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

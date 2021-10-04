@@ -23,6 +23,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	. "github.com/onsi/gomega"
@@ -357,10 +358,10 @@ func TestDiffEC2Tags(t *testing.T) {
 				return StringValue(i.Key) < StringValue(j.Key)
 			})
 			add, remove := DiffEC2Tags(tc.args.local, tc.args.remote)
-			if diff := cmp.Diff(tc.want.add, add, tagCmp); diff != "" {
+			if diff := cmp.Diff(tc.want.add, add, tagCmp, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.remove, remove, tagCmp); diff != "" {
+			if diff := cmp.Diff(tc.want.remove, remove, tagCmp, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

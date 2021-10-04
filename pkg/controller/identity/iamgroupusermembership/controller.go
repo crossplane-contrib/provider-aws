@@ -59,7 +59,7 @@ func SetupIAMGroupUserMembership(mgr ctrl.Manager, l logging.Logger, rl workqueu
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.IAMGroupUserMembership{}).
 		Complete(managed.NewReconciler(mgr,
@@ -67,7 +67,7 @@ func SetupIAMGroupUserMembership(mgr ctrl.Manager, l logging.Logger, rl workqueu
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewGroupUserMembershipClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -160,7 +160,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	// names of the group and user that are bound.
 	meta.SetExternalName(cr, cr.Spec.ForProvider.GroupName+"/"+cr.Spec.ForProvider.UserName)
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {

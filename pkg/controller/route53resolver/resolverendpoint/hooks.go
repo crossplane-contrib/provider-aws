@@ -37,13 +37,13 @@ func SetupResolverEndpoint(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rate
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.ResolverEndpoint{}).
 		Complete(managed.NewReconciler(mgr,
 			cpresource.ManagedKind(v1alpha1.ResolverEndpointGroupVersionKind),
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), opts: opts}),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -75,7 +75,6 @@ func preCreate(_ context.Context, cr *v1alpha1.ResolverEndpoint, obj *svcsdk.Cre
 
 func postCreate(_ context.Context, cr *v1alpha1.ResolverEndpoint, obj *svcsdk.CreateResolverEndpointOutput, cre managed.ExternalCreation, err error) (managed.ExternalCreation, error) {
 	meta.SetExternalName(cr, aws.StringValue(obj.ResolverEndpoint.Id))
-	cre.ExternalNameAssigned = true
 	return cre, err
 }
 

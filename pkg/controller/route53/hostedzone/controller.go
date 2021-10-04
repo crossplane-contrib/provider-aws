@@ -59,7 +59,7 @@ func SetupHostedZone(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.HostedZone{}).
 		Complete(managed.NewReconciler(
@@ -67,7 +67,7 @@ func SetupHostedZone(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimite
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: hostedzone.NewClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))),
@@ -138,7 +138,7 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.Wrap(errors.New("returned id does not contain /hostedzone/ prefix"), errCreate)
 	}
 	meta.SetExternalName(cr, id[1])
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {

@@ -21,6 +21,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/smithy-go/document"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
@@ -144,7 +147,7 @@ func TestGenerateLifecycleConfiguration(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			generated := GenerateLifecycleRules(tc.args.b.Spec.ForProvider.LifecycleConfiguration.Rules)
-			if diff := cmp.Diff(generated, tc.want.input); diff != "" {
+			if diff := cmp.Diff(generated, tc.want.input, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
@@ -258,7 +261,7 @@ func TestLifecycleObserve(t *testing.T) {
 			if diff := cmp.Diff(tc.want.err, err, test.EquateErrors()); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
-			if diff := cmp.Diff(tc.want.status, status); diff != "" {
+			if diff := cmp.Diff(tc.want.status, status, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

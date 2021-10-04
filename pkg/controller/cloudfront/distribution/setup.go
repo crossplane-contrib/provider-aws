@@ -48,7 +48,7 @@ func SetupDistribution(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&svcapitypes.Distribution{}).
 		Complete(managed.NewReconciler(mgr,
@@ -92,7 +92,6 @@ func postCreate(_ context.Context, cr *svcapitypes.Distribution, cdo *svcsdk.Cre
 	}
 
 	meta.SetExternalName(cr, awsclients.StringValue(cdo.Distribution.Id))
-	ec.ExternalNameAssigned = true
 	return ec, nil
 }
 

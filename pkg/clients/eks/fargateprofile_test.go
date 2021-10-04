@@ -19,6 +19,9 @@ package eks
 import (
 	"testing"
 
+	"github.com/aws/smithy-go/document"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	ekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
 	"github.com/google/go-cmp/cmp"
@@ -112,7 +115,7 @@ func TestGenerateCreateFargateProfileInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			got := GenerateCreateFargateProfileInput(tc.args.name, tc.args.p)
-			if diff := cmp.Diff(tc.want, got); diff != "" {
+			if diff := cmp.Diff(tc.want, got, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})

@@ -153,7 +153,7 @@ func GenerateIPPermissions(objectPerms []ec2types.IpPermission) []v1beta1.IPPerm
 		permissions[i] = ipPerm
 	}
 	sort.Slice(permissions, func(i, j int) bool {
-		return permissions[i].FromPort < permissions[j].FromPort
+		return awsgo.ToInt32(permissions[i].FromPort) < awsgo.ToInt32(permissions[j].FromPort)
 	})
 	return permissions
 }
@@ -270,10 +270,10 @@ func LateInitializeIPPermissions(spec []v1beta1.IPPermission, o []ec2types.IpPer
 func CreateSGPatch(in ec2types.SecurityGroup, target v1beta1.SecurityGroupParameters) (*v1beta1.SecurityGroupParameters, error) { // nolint:gocyclo
 	v1beta1.SortTags(target.Tags, in.Tags)
 	sort.Slice(target.Egress, func(i, j int) bool {
-		return target.Egress[i].FromPort < target.Egress[j].FromPort
+		return awsgo.ToInt32(target.Egress[i].FromPort) < awsgo.ToInt32(target.Egress[j].FromPort)
 	})
 	sort.Slice(target.Ingress, func(i, j int) bool {
-		return target.Ingress[i].FromPort < target.Ingress[j].FromPort
+		return awsgo.ToInt32(target.Ingress[i].FromPort) < awsgo.ToInt32(target.Ingress[j].FromPort)
 	})
 	currentParams := &v1beta1.SecurityGroupParameters{
 		Description: awsclients.StringValue(in.Description),
@@ -288,15 +288,16 @@ func CreateSGPatch(in ec2types.SecurityGroup, target v1beta1.SecurityGroupParame
 	// that the returned value is also -1 in case if it's nil.
 	// See the following about usage of -1
 	// https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-security-group-egress.html
+	mOne := int32(-1)
 	for i, spec := range target.Egress {
 		if len(currentParams.Egress) <= i {
 			break
 		}
-		if spec.FromPort == -1 && currentParams.Egress[i].FromPort == 0 {
-			currentParams.Egress[i].FromPort = -1
+		if awsgo.ToInt32(spec.FromPort) == mOne {
+			currentParams.Egress[i].FromPort = awsclients.LateInitializeInt32Ptr(currentParams.Egress[i].FromPort, &mOne)
 		}
-		if spec.ToPort == -1 && currentParams.Egress[i].ToPort == 0 {
-			currentParams.Egress[i].ToPort = -1
+		if awsgo.ToInt32(spec.ToPort) == mOne {
+			currentParams.Egress[i].ToPort = awsclients.LateInitializeInt32Ptr(currentParams.Egress[i].ToPort, &mOne)
 		}
 	}
 	// Same happens with VPCID in egress user group id pairs. The value of that

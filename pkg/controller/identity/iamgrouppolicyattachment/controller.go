@@ -59,7 +59,7 @@ func SetupIAMGroupPolicyAttachment(mgr ctrl.Manager, l logging.Logger, rl workqu
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.IAMGroupPolicyAttachment{}).
 		Complete(managed.NewReconciler(mgr,
@@ -67,7 +67,7 @@ func SetupIAMGroupPolicyAttachment(mgr ctrl.Manager, l logging.Logger, rl workqu
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: iam.NewGroupPolicyAttachmentClient}),
 			managed.WithConnectionPublishers(),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))

@@ -22,9 +22,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go/document"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane/provider-aws/apis/s3/v1beta1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
@@ -71,7 +73,7 @@ func (in *ReplicationConfigurationClient) Observe(ctx context.Context, bucket *v
 
 	sortReplicationRules(external.ReplicationConfiguration.Rules)
 
-	if cmp.Equal(external.ReplicationConfiguration, source) {
+	if cmp.Equal(external.ReplicationConfiguration, source, cmpopts.IgnoreTypes(document.NoSerde{})) {
 		return Updated, nil
 	}
 

@@ -58,7 +58,7 @@ func SetupResourceRecordSet(mgr ctrl.Manager, l logging.Logger, rl workqueue.Rat
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.ResourceRecordSet{}).
 		Complete(managed.NewReconciler(mgr,

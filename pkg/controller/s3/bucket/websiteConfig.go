@@ -19,6 +19,9 @@ package bucket
 import (
 	"context"
 
+	"github.com/aws/smithy-go/document"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -72,7 +75,7 @@ func (in *WebsiteConfigurationClient) Observe(ctx context.Context, bucket *v1bet
 		RoutingRules:          external.RoutingRules,
 	}
 
-	if cmp.Equal(confBody, source) {
+	if cmp.Equal(confBody, source, cmpopts.IgnoreTypes(document.NoSerde{})) {
 		return Updated, nil
 	}
 

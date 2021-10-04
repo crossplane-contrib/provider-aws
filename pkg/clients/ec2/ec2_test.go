@@ -21,6 +21,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/smithy-go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/onsi/gomega"
@@ -278,8 +279,8 @@ func Test_SecurityGroup_BuildEC2Permissions(t *testing.T) {
 
 	res := GenerateEC2Permissions([]v1beta1.IPPermission{
 		{
-			FromPort: 8080,
-			ToPort:   8080,
+			FromPort: aws.Int32(8080),
+			ToPort:   aws.Int32(8080),
 			IPRanges: []v1beta1.IPRange{
 				{CIDRIP: "arbitranry cidrip"},
 			},

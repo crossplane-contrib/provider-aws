@@ -60,7 +60,7 @@ func SetupIAMUserPolicyAttachment(mgr ctrl.Manager, l logging.Logger, rl workque
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.IAMUserPolicyAttachment{}).
 		Complete(managed.NewReconciler(mgr,

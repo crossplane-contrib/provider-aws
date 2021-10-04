@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/url"
 
+	"github.com/aws/smithy-go/document"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
@@ -178,7 +180,7 @@ func IsRoleUpToDate(in v1beta1.IAMRoleParameters, observed iamtypes.Role) (bool,
 		return false, "", err
 	}
 
-	diff := cmp.Diff(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}), cmpopts.IgnoreFields(observed, "AssumeRolePolicyDocument"))
+	diff := cmp.Diff(desired, &observed, cmpopts.IgnoreInterfaces(struct{ resource.AttributeReferencer }{}), cmpopts.IgnoreFields(observed, "AssumeRolePolicyDocument"), cmpopts.IgnoreTypes(document.NoSerde{}))
 	if diff == "" && policyUpToDate {
 		return true, diff, nil
 	}

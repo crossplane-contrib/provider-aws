@@ -67,7 +67,7 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimit
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&v1alpha1.Certificate{}).
 		Complete(managed.NewReconciler(mgr,
@@ -76,7 +76,7 @@ func SetupCertificate(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimit
 			managed.WithConnectionPublishers(),
 			managed.WithPollInterval(poll),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
 }
@@ -166,7 +166,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 	meta.SetExternalName(cr, awsclient.StringValue(response.CertificateArn))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 
 }
 

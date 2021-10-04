@@ -19,6 +19,9 @@ package elasticache
 import (
 	"testing"
 
+	"github.com/aws/smithy-go/document"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	awscache "github.com/aws/aws-sdk-go-v2/service/elasticache"
 	awscachetypes "github.com/aws/aws-sdk-go-v2/service/elasticache/types"
 	"github.com/google/go-cmp/cmp"
@@ -156,7 +159,7 @@ func TestGenerateCreateCacheClusterInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			r := GenerateCreateCacheClusterInput(tc.in, clusterID)
-			if diff := cmp.Diff(r, &tc.out); diff != "" {
+			if diff := cmp.Diff(r, &tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateNetworkObservation(...): -want, +got:\n%s", diff)
 			}
 		})
@@ -184,7 +187,7 @@ func TestGenerateModifyCacheClusterInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			r := GenerateModifyCacheClusterInput(tc.in, clusterID)
-			if diff := cmp.Diff(r, &tc.out); diff != "" {
+			if diff := cmp.Diff(r, &tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateNetworkObservation(...): -want, +got:\n%s", diff)
 			}
 		})

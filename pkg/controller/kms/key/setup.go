@@ -43,7 +43,7 @@ func SetupKey(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter, poll
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&svcapitypes.Key{}).
 		Complete(managed.NewReconciler(mgr,
@@ -86,7 +86,7 @@ func postCreate(_ context.Context, cr *svcapitypes.Key, obj *svcsdk.CreateKeyOut
 		return creation, err
 	}
 	meta.SetExternalName(cr, awsclients.StringValue(obj.KeyMetadata.KeyId))
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 type updater struct {

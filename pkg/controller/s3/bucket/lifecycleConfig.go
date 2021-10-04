@@ -19,6 +19,8 @@ package bucket
 import (
 	"context"
 
+	"github.com/aws/smithy-go/document"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -73,7 +75,7 @@ func (in *LifecycleConfigurationClient) Observe(ctx context.Context, bucket *v1b
 	// and we don't have late-init for this subresource. Besides, a change in ID
 	// is almost never expected.
 	case cmp.Equal(external, GenerateLifecycleRules(local),
-		cmpopts.IgnoreFields(types.LifecycleRule{}, "ID")):
+		cmpopts.IgnoreFields(types.LifecycleRule{}, "ID"), cmpopts.IgnoreTypes(document.NoSerde{})):
 		return Updated, nil
 	default:
 		return NeedsUpdate, nil

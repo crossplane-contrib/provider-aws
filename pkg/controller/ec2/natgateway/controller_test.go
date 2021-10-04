@@ -428,7 +428,7 @@ func TestCreate(t *testing.T) {
 				cr: nat(withExternalName(natGatewayID),
 					withSpec(specNatSpec()),
 				),
-				result: managed.ExternalCreation{ExternalNameAssigned: true},
+				result: managed.ExternalCreation{},
 			},
 		},
 		"FailedRequest": {

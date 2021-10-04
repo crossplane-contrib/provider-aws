@@ -19,6 +19,9 @@ package bucket
 import (
 	"context"
 
+	"github.com/aws/smithy-go/document"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
@@ -60,9 +63,9 @@ func (in *NotificationConfigurationClient) Observe(ctx context.Context, bucket *
 
 	generated := GenerateConfiguration(config)
 
-	if cmp.Equal(external.LambdaFunctionConfigurations, generated.LambdaFunctionConfigurations) &&
-		cmp.Equal(external.QueueConfigurations, generated.QueueConfigurations) &&
-		cmp.Equal(external.TopicConfigurations, generated.TopicConfigurations) {
+	if cmp.Equal(external.LambdaFunctionConfigurations, generated.LambdaFunctionConfigurations, cmpopts.IgnoreTypes(document.NoSerde{})) &&
+		cmp.Equal(external.QueueConfigurations, generated.QueueConfigurations, cmpopts.IgnoreTypes(document.NoSerde{})) &&
+		cmp.Equal(external.TopicConfigurations, generated.TopicConfigurations, cmpopts.IgnoreTypes(document.NoSerde{})) {
 		return Updated, nil
 	}
 

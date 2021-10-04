@@ -57,7 +57,7 @@ func SetupVPCCIDRBlock(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&manualv1alpha1.VPCCIDRBlock{}).
 		Complete(managed.NewReconciler(mgr,
@@ -65,7 +65,7 @@ func SetupVPCCIDRBlock(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimi
 			managed.WithExternalConnecter(&connector{kube: mgr.GetClient(), newClientFn: ec2.NewVPCCIDRBlockClient}),
 			managed.WithReferenceResolver(managed.NewAPISimpleReferenceResolver(mgr.GetClient())),
 			managed.WithConnectionPublishers(),
-			managed.WithInitializers(managed.NewDefaultProviderConfig(mgr.GetClient())),
+			managed.WithInitializers(),
 			managed.WithPollInterval(poll),
 			managed.WithLogger(l.WithValues("controller", name)),
 			managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name)))))
@@ -155,7 +155,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 	}
 
 	result, err := e.client.AssociateVpcCidrBlock(ctx, &awsec2.AssociateVpcCidrBlockInput{
-		AmazonProvidedIpv6CidrBlock:     awsgo.BoolValue(cr.Spec.ForProvider.AmazonProvidedIPv6CIDRBlock),
+		AmazonProvidedIpv6CidrBlock:     cr.Spec.ForProvider.AmazonProvidedIPv6CIDRBlock,
 		CidrBlock:                       cr.Spec.ForProvider.CIDRBlock,
 		Ipv6CidrBlock:                   cr.Spec.ForProvider.IPv6CIDRBlock,
 		Ipv6CidrBlockNetworkBorderGroup: cr.Spec.ForProvider.IPv6CIDRBlockNetworkBorderGroup,
@@ -175,7 +175,7 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
+	return managed.ExternalCreation{}, nil
 }
 
 func (e *external) Update(_ context.Context, _ resource.Managed) (managed.ExternalUpdate, error) {

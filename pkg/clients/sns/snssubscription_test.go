@@ -19,6 +19,9 @@ package sns
 import (
 	"testing"
 
+	"github.com/aws/smithy-go/document"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/google/go-cmp/cmp"
 
@@ -170,7 +173,7 @@ func TestGenerateSubscribeInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			input := GenerateSubscribeInput(&tc.in)
-			if diff := cmp.Diff(input, &tc.out); diff != "" {
+			if diff := cmp.Diff(input, &tc.out, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateSubscribeInput(...): -want, +got\n:%s", diff)
 			}
 		})
