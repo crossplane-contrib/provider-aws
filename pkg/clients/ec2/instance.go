@@ -65,16 +65,8 @@ func IsInstanceUpToDate(spec manualv1alpha1.InstanceParameters, instance ec2.Ins
 	if aws.BoolValue(spec.DisableAPITermination) != attributeBoolValue(attributes.DisableApiTermination) {
 		return false
 	}
-	// EbsOptimized
-	if aws.BoolValue(spec.EBSOptimized) != aws.BoolValue(instance.EbsOptimized) {
-		return false
-	}
 	// InstanceInitiatedShutdownBehavior
 	if spec.InstanceInitiatedShutdownBehavior != attributeValue(attributes.InstanceInitiatedShutdownBehavior) {
-		return false
-	}
-	// InstanceType
-	if spec.InstanceType != attributeValue(attributes.InstanceType) {
 		return false
 	}
 	// KernalID
@@ -89,7 +81,7 @@ func IsInstanceUpToDate(spec manualv1alpha1.InstanceParameters, instance ec2.Ins
 	if aws.StringValue(spec.UserData) != attributeValue(attributes.UserData) {
 		return false
 	}
-	return manualv1alpha1.CompareGroupNames(spec.SecurityGroupIDs, instance.SecurityGroups)
+	return manualv1alpha1.CompareGroupIDs(spec.SecurityGroupIDs, instance.SecurityGroups)
 }
 
 // GenerateInstanceObservation is used to produce manualv1alpha1.InstanceObservation from

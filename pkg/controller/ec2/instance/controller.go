@@ -270,39 +270,11 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 		}
 	}
 
-	if cr.Spec.ForProvider.EBSOptimized != nil {
-		modifyInput := &awsec2.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(meta.GetExternalName(cr)),
-			EbsOptimized: &awsec2.AttributeBooleanValue{
-				Value: cr.Spec.ForProvider.EBSOptimized,
-			},
-		}
-		_, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx)
-
-		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
-		}
-	}
-
 	if cr.Spec.ForProvider.InstanceInitiatedShutdownBehavior != "" {
 		modifyInput := &awsec2.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(meta.GetExternalName(cr)),
 			InstanceInitiatedShutdownBehavior: &awsec2.AttributeValue{
 				Value: aws.String(cr.Spec.ForProvider.InstanceInitiatedShutdownBehavior),
-			},
-		}
-		_, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx)
-
-		if err != nil {
-			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
-		}
-	}
-
-	if cr.Spec.ForProvider.InstanceType != "" {
-		modifyInput := &awsec2.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(meta.GetExternalName(cr)),
-			InstanceType: &awsec2.AttributeValue{
-				Value: aws.String(cr.Spec.ForProvider.InstanceType),
 			},
 		}
 		_, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx)
