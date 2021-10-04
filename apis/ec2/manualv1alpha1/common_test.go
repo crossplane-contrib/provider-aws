@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 	"github.com/google/go-cmp/cmp"
 )
@@ -28,7 +28,7 @@ import (
 func TestCompareGroupNames(t *testing.T) {
 	type args struct {
 		groupNames []string
-		ec2Groups  []ec2.GroupIdentifier
+		ec2Groups  []types.GroupIdentifier
 	}
 	cases := map[string]struct {
 		args args
@@ -37,7 +37,7 @@ func TestCompareGroupNames(t *testing.T) {
 		"GroupNamesAreEqual": {
 			args: args{
 				groupNames: []string{"group-2", "group-1"},
-				ec2Groups: []ec2.GroupIdentifier{
+				ec2Groups: []types.GroupIdentifier{
 					{
 						GroupId:   aws.String("group-2"),
 						GroupName: aws.String("group-2"),
@@ -53,7 +53,7 @@ func TestCompareGroupNames(t *testing.T) {
 		"GroupNamesAreEqualDifferentOrder": {
 			args: args{
 				groupNames: []string{"group-1", "group-2"},
-				ec2Groups: []ec2.GroupIdentifier{
+				ec2Groups: []types.GroupIdentifier{
 					{
 						GroupId:   aws.String("group-2"),
 						GroupName: aws.String("group-2"),
@@ -69,7 +69,7 @@ func TestCompareGroupNames(t *testing.T) {
 		"GroupNamesAreNotEqual": {
 			args: args{
 				groupNames: []string{"group-2", "group-3"},
-				ec2Groups: []ec2.GroupIdentifier{
+				ec2Groups: []types.GroupIdentifier{
 					{
 						GroupId:   aws.String("group-2"),
 						GroupName: aws.String("group-2"),
@@ -85,7 +85,7 @@ func TestCompareGroupNames(t *testing.T) {
 		"GroupNamesAreNotEqualDifferentLength": {
 			args: args{
 				groupNames: []string{"group-1", "group-2", "group-3"},
-				ec2Groups: []ec2.GroupIdentifier{
+				ec2Groups: []types.GroupIdentifier{
 					{
 						GroupId:   aws.String("group-2"),
 						GroupName: aws.String("group-2"),
@@ -101,7 +101,7 @@ func TestCompareGroupNames(t *testing.T) {
 		"GroupNamesAreNil": {
 			args: args{
 				groupNames: nil,
-				ec2Groups: []ec2.GroupIdentifier{
+				ec2Groups: []types.GroupIdentifier{
 					{
 						GroupId:   aws.String("group-2"),
 						GroupName: aws.String("group-2"),
@@ -130,7 +130,7 @@ func TestCompareGroupNames(t *testing.T) {
 func TestCompareGroupIDs(t *testing.T) {
 	type args struct {
 		groupIDs  []string
-		ec2Groups []ec2.GroupIdentifier
+		ec2Groups []types.GroupIdentifier
 	}
 	cases := map[string]struct {
 		args args
@@ -139,7 +139,7 @@ func TestCompareGroupIDs(t *testing.T) {
 		"GroupIDsAreEqual": {
 			args: args{
 				groupIDs: []string{"groupid-2", "groupid-1"},
-				ec2Groups: []ec2.GroupIdentifier{
+				ec2Groups: []types.GroupIdentifier{
 					{
 						GroupId:   aws.String("groupid-2"),
 						GroupName: aws.String("group-2"),
@@ -155,7 +155,7 @@ func TestCompareGroupIDs(t *testing.T) {
 		"GroupIDsAreEqualDifferentOrder": {
 			args: args{
 				groupIDs: []string{"groupid-1", "groupid-2"},
-				ec2Groups: []ec2.GroupIdentifier{
+				ec2Groups: []types.GroupIdentifier{
 					{
 						GroupId:   aws.String("groupid-2"),
 						GroupName: aws.String("group-2"),
@@ -171,7 +171,7 @@ func TestCompareGroupIDs(t *testing.T) {
 		"GroupIDsAreNotEqual": {
 			args: args{
 				groupIDs: []string{"groupid-2", "groupid-3"},
-				ec2Groups: []ec2.GroupIdentifier{
+				ec2Groups: []types.GroupIdentifier{
 					{
 						GroupId:   aws.String("groupid-2"),
 						GroupName: aws.String("group-2"),
@@ -187,7 +187,7 @@ func TestCompareGroupIDs(t *testing.T) {
 		"GroupIDsAreNotEqualDifferentLength": {
 			args: args{
 				groupIDs: []string{"groupid-1", "groupid-2", "groupid-3"},
-				ec2Groups: []ec2.GroupIdentifier{
+				ec2Groups: []types.GroupIdentifier{
 					{
 						GroupId:   aws.String("groupid-2"),
 						GroupName: aws.String("group-2"),
@@ -203,7 +203,7 @@ func TestCompareGroupIDs(t *testing.T) {
 		"GroupIDsAreNil": {
 			args: args{
 				groupIDs: nil,
-				ec2Groups: []ec2.GroupIdentifier{
+				ec2Groups: []types.GroupIdentifier{
 					{
 						GroupId:   aws.String("groupid-2"),
 						GroupName: aws.String("group-2"),

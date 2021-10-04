@@ -23,6 +23,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
@@ -62,7 +63,7 @@ func SetupInstance(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter,
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
+			RateLimiter: ratelimiter.NewController(rl),
 		}).
 		For(&svcapitypes.Instance{}).
 		Complete(managed.NewReconciler(mgr,
@@ -86,7 +87,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 	if !ok {
 		return nil, errors.New(errUnexpectedObject)
 	}
-	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, aws.StringValue(cr.Spec.ForProvider.Region))
+	cfg, err := awsclient.GetConfig(ctx, c.kube, mg, awsclient.StringValue(cr.Spec.ForProvider.Region))
 	if err != nil {
 		return nil, err
 	}
@@ -110,11 +111,10 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 		}, nil
 	}
 
-	response, err := e.client.DescribeInstancesRequest(
+	response, err := e.client.DescribeInstances(ctx,
 		&awsec2.DescribeInstancesInput{
 			InstanceIds: []string{meta.GetExternalName(cr)},
-		},
-	).Send(ctx)
+		})
 
 	// deleted instances that have not yet been cleaned up from the cluster return a
 	// 200 OK with a nil response.Reservations slice
@@ -139,19 +139,19 @@ func (e *external) Observe(ctx context.Context, mgd resource.Managed) (managed.E
 
 	o := awsec2.DescribeInstanceAttributeOutput{}
 
-	for _, input := range []awsec2.InstanceAttributeName{
-		awsec2.InstanceAttributeNameDisableApiTermination,
-		awsec2.InstanceAttributeNameEbsOptimized,
-		awsec2.InstanceAttributeNameInstanceInitiatedShutdownBehavior,
-		awsec2.InstanceAttributeNameInstanceType,
-		awsec2.InstanceAttributeNameKernel,
-		awsec2.InstanceAttributeNameRamdisk,
-		awsec2.InstanceAttributeNameUserData,
+	for _, input := range []types.InstanceAttributeName{
+		types.InstanceAttributeNameDisableApiTermination,
+		types.InstanceAttributeNameEbsOptimized,
+		types.InstanceAttributeNameInstanceInitiatedShutdownBehavior,
+		types.InstanceAttributeNameInstanceType,
+		types.InstanceAttributeNameKernel,
+		types.InstanceAttributeNameRamdisk,
+		types.InstanceAttributeNameUserData,
 	} {
-		r, err := e.client.DescribeInstanceAttributeRequest(&awsec2.DescribeInstanceAttributeInput{
+		r, err := e.client.DescribeInstanceAttribute(ctx, &awsec2.DescribeInstanceAttributeInput{
 			InstanceId: aws.String(meta.GetExternalName(cr)),
 			Attribute:  input,
-		}).Send(context.Background())
+		})
 
 		if err != nil {
 			return managed.ExternalObservation{}, awsclient.Wrap(err, errDescribe)
@@ -229,23 +229,23 @@ func (e *external) Create(ctx context.Context, mgd resource.Managed) (managed.Ex
 		return managed.ExternalCreation{}, errors.New(errUnexpectedObject)
 	}
 
-	result, err := e.client.RunInstancesRequest(
+	result, err := e.client.RunInstances(ctx,
 		ec2.GenerateEC2RunInstancesInput(mgd.GetName(), &cr.Spec.ForProvider),
-	).Send(ctx)
+	)
 	if err != nil {
 		return managed.ExternalCreation{}, awsclient.Wrap(err, errCreate)
 	}
 
 	instance := result.Instances[0]
 
-	if _, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
-		Resources: []string{aws.StringValue(instance.InstanceId)},
+	if _, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
+		Resources: []string{awsclient.StringValue(instance.InstanceId)},
 		Tags:      svcapitypes.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
-	}).Send(ctx); err != nil {
+	}); err != nil {
 		return managed.ExternalCreation{ExternalNameAssigned: false}, awsclient.Wrap(err, errCreateTags)
 	}
 
-	meta.SetExternalName(cr, aws.StringValue(instance.InstanceId))
+	meta.SetExternalName(cr, awsclient.StringValue(instance.InstanceId))
 
 	return managed.ExternalCreation{ExternalNameAssigned: true}, nil
 }
@@ -259,11 +259,11 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if cr.Spec.ForProvider.DisableAPITermination != nil {
 		modifyInput := &awsec2.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(meta.GetExternalName(cr)),
-			DisableApiTermination: &awsec2.AttributeBooleanValue{
+			DisableApiTermination: &types.AttributeBooleanValue{
 				Value: cr.Spec.ForProvider.DisableAPITermination,
 			},
 		}
-		_, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx)
+		_, err := e.client.ModifyInstanceAttribute(ctx, modifyInput)
 
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
@@ -273,11 +273,11 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if cr.Spec.ForProvider.InstanceInitiatedShutdownBehavior != "" {
 		modifyInput := &awsec2.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(meta.GetExternalName(cr)),
-			InstanceInitiatedShutdownBehavior: &awsec2.AttributeValue{
+			InstanceInitiatedShutdownBehavior: &types.AttributeValue{
 				Value: aws.String(cr.Spec.ForProvider.InstanceInitiatedShutdownBehavior),
 			},
 		}
-		_, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx)
+		_, err := e.client.ModifyInstanceAttribute(ctx, modifyInput)
 
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
@@ -287,11 +287,11 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if cr.Spec.ForProvider.KernelID != nil {
 		modifyInput := &awsec2.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(meta.GetExternalName(cr)),
-			Kernel: &awsec2.AttributeValue{
+			Kernel: &types.AttributeValue{
 				Value: cr.Spec.ForProvider.KernelID,
 			},
 		}
-		_, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx)
+		_, err := e.client.ModifyInstanceAttribute(ctx, modifyInput)
 
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
@@ -301,11 +301,11 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if cr.Spec.ForProvider.RAMDiskID != nil {
 		modifyInput := &awsec2.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(meta.GetExternalName(cr)),
-			Ramdisk: &awsec2.AttributeValue{
+			Ramdisk: &types.AttributeValue{
 				Value: cr.Spec.ForProvider.RAMDiskID,
 			},
 		}
-		_, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx)
+		_, err := e.client.ModifyInstanceAttribute(ctx, modifyInput)
 
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
@@ -315,21 +315,21 @@ func (e *external) Update(ctx context.Context, mgd resource.Managed) (managed.Ex
 	if cr.Spec.ForProvider.UserData != nil {
 		modifyInput := &awsec2.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(meta.GetExternalName(cr)),
-			UserData: &awsec2.BlobAttributeValue{
+			UserData: &types.BlobAttributeValue{
 				Value: []byte(*cr.Spec.ForProvider.UserData),
 			},
 		}
-		_, err := e.client.ModifyInstanceAttributeRequest(modifyInput).Send(ctx)
+		_, err := e.client.ModifyInstanceAttribute(ctx, modifyInput)
 
 		if err != nil {
 			return managed.ExternalUpdate{}, awsclient.Wrap(err, errModifyInstanceAttributes)
 		}
 	}
 
-	_, err := e.client.CreateTagsRequest(&awsec2.CreateTagsInput{
+	_, err := e.client.CreateTags(ctx, &awsec2.CreateTagsInput{
 		Resources: []string{meta.GetExternalName(cr)},
 		Tags:      svcapitypes.GenerateEC2Tags(cr.Spec.ForProvider.Tags),
-	}).Send(ctx)
+	})
 
 	return managed.ExternalUpdate{}, awsclient.Wrap(err, errUpdate)
 }
@@ -342,9 +342,9 @@ func (e *external) Delete(ctx context.Context, mgd resource.Managed) error {
 
 	cr.Status.SetConditions(xpv1.Deleting())
 
-	_, err := e.client.TerminateInstancesRequest(&awsec2.TerminateInstancesInput{
+	_, err := e.client.TerminateInstances(ctx, &awsec2.TerminateInstancesInput{
 		InstanceIds: []string{meta.GetExternalName(cr)},
-	}).Send(ctx)
+	})
 
 	return awsclient.Wrap(resource.Ignore(ec2.IsInstanceNotFoundErr, err), errDelete)
 }

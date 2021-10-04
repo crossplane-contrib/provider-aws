@@ -18,7 +18,10 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/smithy-go/document"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/crossplane/crossplane-runtime/pkg/test"
 
@@ -94,7 +97,7 @@ func TestGenerateInstanceConditions(t *testing.T) {
 		"InstanceIsRunning": {
 			args: args{
 				obeserved: manualv1alpha1.InstanceObservation{
-					State: string(ec2.InstanceStateNameRunning),
+					State: string(types.InstanceStateNameRunning),
 				},
 			},
 			want: Available,
@@ -102,7 +105,7 @@ func TestGenerateInstanceConditions(t *testing.T) {
 		"InstanceIsPending": {
 			args: args{
 				obeserved: manualv1alpha1.InstanceObservation{
-					State: string(ec2.InstanceStateNamePending),
+					State: string(types.InstanceStateNamePending),
 				},
 			},
 			want: Creating,
@@ -110,7 +113,7 @@ func TestGenerateInstanceConditions(t *testing.T) {
 		"InstanceIsStopping": {
 			args: args{
 				obeserved: manualv1alpha1.InstanceObservation{
-					State: string(ec2.InstanceStateNameStopping),
+					State: string(types.InstanceStateNameStopping),
 				},
 			},
 			want: Deleting,
@@ -118,7 +121,7 @@ func TestGenerateInstanceConditions(t *testing.T) {
 		"InstanceIsShuttingDown": {
 			args: args{
 				obeserved: manualv1alpha1.InstanceObservation{
-					State: string(ec2.InstanceStateNameShuttingDown),
+					State: string(types.InstanceStateNameShuttingDown),
 				},
 			},
 			want: Deleting,
@@ -126,7 +129,7 @@ func TestGenerateInstanceConditions(t *testing.T) {
 		"InstanceIsTerminated": {
 			args: args{
 				obeserved: manualv1alpha1.InstanceObservation{
-					State: string(ec2.InstanceStateNameTerminated),
+					State: string(types.InstanceStateNameTerminated),
 				},
 			},
 			want: Deleted,
@@ -161,7 +164,7 @@ func TestGenerateDescribeInstancesByExternalTags(t *testing.T) {
 				},
 			},
 			want: &ec2.DescribeInstancesInput{
-				Filters: []ec2.Filter{
+				Filters: []types.Filter{
 					{
 						Name:   aws.String("tag:crossplane-kind"),
 						Values: []string{managedKind},
@@ -183,7 +186,7 @@ func TestGenerateDescribeInstancesByExternalTags(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			input := GenerateDescribeInstancesByExternalTags(tc.args.extTags)
 
-			if diff := cmp.Diff(tc.want, input, test.EquateConditions()); diff != "" {
+			if diff := cmp.Diff(tc.want, input, test.EquateConditions(), cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("r: -want, +got:\n%s", diff)
 			}
 		})
@@ -192,38 +195,38 @@ func TestGenerateDescribeInstancesByExternalTags(t *testing.T) {
 
 func TestGenerateInstanceObservation(t *testing.T) {
 	cases := map[string]struct {
-		in  ec2.Instance
+		in  types.Instance
 		out manualv1alpha1.InstanceObservation
 	}{
 		"AllFilled": {
-			in: ec2.Instance{
-				AmiLaunchIndex: aws.Int64(0),
+			in: types.Instance{
+				AmiLaunchIndex: aws.Int32(0),
 				Architecture:   arch,
-				BlockDeviceMappings: []ec2.InstanceBlockDeviceMapping{
+				BlockDeviceMappings: []types.InstanceBlockDeviceMapping{
 					{
 						DeviceName: aws.String(blockDeviceName),
-						Ebs: &ec2.EbsInstanceBlockDevice{
+						Ebs: &types.EbsInstanceBlockDevice{
 							AttachTime:          nil,
 							DeleteOnTermination: aws.Bool(false),
-							Status:              ec2.AttachmentStatusAttached,
+							Status:              types.AttachmentStatusAttached,
 							VolumeId:            aws.String(volumeID),
 						},
 					},
 				},
 				CapacityReservationId: aws.String(capacityReservationID),
-				CapacityReservationSpecification: &ec2.CapacityReservationSpecificationResponse{
-					CapacityReservationPreference: ec2.CapacityReservationPreferenceNone,
-					CapacityReservationTarget: &ec2.CapacityReservationTargetResponse{
+				CapacityReservationSpecification: &types.CapacityReservationSpecificationResponse{
+					CapacityReservationPreference: types.CapacityReservationPreferenceNone,
+					CapacityReservationTarget: &types.CapacityReservationTargetResponse{
 						CapacityReservationId: aws.String(capacityReservationID),
 					},
 				},
 				ClientToken: aws.String(clientToken),
-				CpuOptions: &ec2.CpuOptions{
-					CoreCount:      aws.Int64(1),
-					ThreadsPerCore: aws.Int64(1),
+				CpuOptions: &types.CpuOptions{
+					CoreCount:      aws.Int32(1),
+					ThreadsPerCore: aws.Int32(1),
 				},
 				EbsOptimized: aws.Bool(false),
-				ElasticGpuAssociations: []ec2.ElasticGpuAssociation{
+				ElasticGpuAssociations: []types.ElasticGpuAssociation{
 					{
 						ElasticGpuAssociationId:    aws.String(assocID),
 						ElasticGpuAssociationState: aws.String(assocState),
@@ -231,7 +234,7 @@ func TestGenerateInstanceObservation(t *testing.T) {
 						ElasticGpuId:               aws.String(gpuID),
 					},
 				},
-				ElasticInferenceAcceleratorAssociations: []ec2.ElasticInferenceAcceleratorAssociation{
+				ElasticInferenceAcceleratorAssociations: []types.ElasticInferenceAcceleratorAssociation{
 					{
 						ElasticInferenceAcceleratorArn:              aws.String(elasticInferAccARN),
 						ElasticInferenceAcceleratorAssociationId:    aws.String(elasticInferAccID),
@@ -240,57 +243,57 @@ func TestGenerateInstanceObservation(t *testing.T) {
 					},
 				},
 				EnaSupport: aws.Bool(false),
-				HibernationOptions: &ec2.HibernationOptions{
+				HibernationOptions: &types.HibernationOptions{
 					Configured: aws.Bool(false),
 				},
-				Hypervisor: ec2.HypervisorTypeOvm,
-				IamInstanceProfile: &ec2.IamInstanceProfile{
+				Hypervisor: types.HypervisorTypeOvm,
+				IamInstanceProfile: &types.IamInstanceProfile{
 					Arn: aws.String(iamARN),
 					Id:  aws.String(iamID),
 				},
 				ImageId:           aws.String(imageID),
 				InstanceId:        aws.String(instanceID),
-				InstanceLifecycle: ec2.InstanceLifecycleTypeScheduled,
-				InstanceType:      ec2.InstanceTypeM1Small,
+				InstanceLifecycle: types.InstanceLifecycleTypeScheduled,
+				InstanceType:      types.InstanceTypeM1Small,
 				KernelId:          aws.String(kernelID),
 				LaunchTime:        nil,
-				Licenses: []ec2.LicenseConfiguration{
+				Licenses: []types.LicenseConfiguration{
 					{
 						LicenseConfigurationArn: aws.String(licenseConfig),
 					},
 				},
-				MetadataOptions: &ec2.InstanceMetadataOptionsResponse{
-					HttpEndpoint:            ec2.InstanceMetadataEndpointStateEnabled,
-					HttpPutResponseHopLimit: aws.Int64(0),
-					HttpTokens:              ec2.HttpTokensStateOptional,
-					State:                   ec2.InstanceMetadataOptionsStateApplied,
+				MetadataOptions: &types.InstanceMetadataOptionsResponse{
+					HttpEndpoint:            types.InstanceMetadataEndpointStateEnabled,
+					HttpPutResponseHopLimit: aws.Int32(0),
+					HttpTokens:              types.HttpTokensStateOptional,
+					State:                   types.InstanceMetadataOptionsStateApplied,
 				},
-				Monitoring: &ec2.Monitoring{
-					State: ec2.MonitoringStateEnabled,
+				Monitoring: &types.Monitoring{
+					State: types.MonitoringStateEnabled,
 				},
-				NetworkInterfaces: []ec2.InstanceNetworkInterface{
+				NetworkInterfaces: []types.InstanceNetworkInterface{
 					{
-						Association: &ec2.InstanceNetworkInterfaceAssociation{
+						Association: &types.InstanceNetworkInterfaceAssociation{
 							IpOwnerId:     aws.String(ipOwnerID),
 							PublicDnsName: aws.String(publicDNSName),
 							PublicIp:      aws.String(publicIPAddress),
 						},
-						Attachment: &ec2.InstanceNetworkInterfaceAttachment{
+						Attachment: &types.InstanceNetworkInterfaceAttachment{
 							AttachTime:          nil,
 							AttachmentId:        aws.String(attachmentID),
 							DeleteOnTermination: aws.Bool(false),
-							DeviceIndex:         aws.Int64(0),
-							Status:              ec2.AttachmentStatusAttached,
+							DeviceIndex:         aws.Int32(0),
+							Status:              types.AttachmentStatusAttached,
 						},
 						Description: aws.String(description),
-						Groups: []ec2.GroupIdentifier{
+						Groups: []types.GroupIdentifier{
 							{
 								GroupId:   aws.String(groupID),
 								GroupName: aws.String(groupName),
 							},
 						},
 						InterfaceType: aws.String(interfaceType),
-						Ipv6Addresses: []ec2.InstanceIpv6Address{
+						Ipv6Addresses: []types.InstanceIpv6Address{
 							{
 								Ipv6Address: aws.String(ipv6Address),
 							},
@@ -300,9 +303,9 @@ func TestGenerateInstanceObservation(t *testing.T) {
 						OwnerId:            aws.String(ownerID),
 						PrivateDnsName:     aws.String(privateDNSName),
 						PrivateIpAddress:   aws.String(privateIPAddress),
-						PrivateIpAddresses: []ec2.InstancePrivateIpAddress{
+						PrivateIpAddresses: []types.InstancePrivateIpAddress{
 							{
-								Association: &ec2.InstanceNetworkInterfaceAssociation{
+								Association: &types.InstanceNetworkInterfaceAssociation{
 									IpOwnerId:     aws.String(ipOwnerID),
 									PublicDnsName: aws.String(publicDNSName),
 									PublicIp:      aws.String(publicIPAddress),
@@ -310,36 +313,36 @@ func TestGenerateInstanceObservation(t *testing.T) {
 							},
 						},
 						SourceDestCheck: aws.Bool(false),
-						Status:          ec2.NetworkInterfaceStatusAvailable,
+						Status:          types.NetworkInterfaceStatusAvailable,
 						SubnetId:        aws.String(subnetID),
 						VpcId:           aws.String(vpcID),
 					},
 				},
 				OutpostArn: aws.String(outpostARN),
-				Placement: &ec2.Placement{
+				Placement: &types.Placement{
 					Affinity:             aws.String(placementAff),
 					GroupName:            aws.String(groupName),
 					HostId:               aws.String(hostID),
 					HostResourceGroupArn: aws.String(hostGroupARN),
-					PartitionNumber:      aws.Int64(0),
+					PartitionNumber:      aws.Int32(0),
 					SpreadDomain:         aws.String(spreadDomain),
-					Tenancy:              ec2.TenancyHost,
+					Tenancy:              types.TenancyHost,
 				},
-				Platform:         ec2.PlatformValuesWindows,
+				Platform:         types.PlatformValuesWindows,
 				PrivateDnsName:   aws.String(privateDNSName),
 				PrivateIpAddress: aws.String(privateIPAddress),
-				ProductCodes: []ec2.ProductCode{
+				ProductCodes: []types.ProductCode{
 					{
 						ProductCodeId:   aws.String(productCodeID),
-						ProductCodeType: ec2.ProductCodeValuesMarketplace,
+						ProductCodeType: types.ProductCodeValuesMarketplace,
 					},
 				},
 				PublicDnsName:   aws.String(publicDNSName),
 				PublicIpAddress: aws.String(publicIPAddress),
 				RamdiskId:       aws.String(ramDiskID),
 				RootDeviceName:  aws.String(rootDeviceName),
-				RootDeviceType:  ec2.DeviceTypeEbs,
-				SecurityGroups: []ec2.GroupIdentifier{
+				RootDeviceType:  types.DeviceTypeEbs,
+				SecurityGroups: []types.GroupIdentifier{
 					{
 						GroupId:   aws.String(groupID),
 						GroupName: aws.String(groupName),
@@ -348,25 +351,25 @@ func TestGenerateInstanceObservation(t *testing.T) {
 				SourceDestCheck:       aws.Bool(false),
 				SpotInstanceRequestId: aws.String(spotInstanceReqID),
 				SriovNetSupport:       aws.String(sriovNetSupport),
-				State: &ec2.InstanceState{
-					Name: ec2.InstanceStateNameRunning,
+				State: &types.InstanceState{
+					Name: types.InstanceStateNameRunning,
 				},
-				StateReason: &ec2.StateReason{
+				StateReason: &types.StateReason{
 					Message: aws.String(stateReason),
 				},
 				StateTransitionReason: aws.String(stateReason),
 				SubnetId:              aws.String(subnetID),
-				Tags: []ec2.Tag{
+				Tags: []types.Tag{
 					{
 						Key:   aws.String(tagsKey),
 						Value: aws.String(tagsVal),
 					},
 				},
-				VirtualizationType: ec2.VirtualizationTypeHvm,
+				VirtualizationType: types.VirtualizationTypeHvm,
 				VpcId:              aws.String(vpcID),
 			},
 			out: manualv1alpha1.InstanceObservation{
-				AmiLaunchIndex: aws.Int64(0),
+				AmiLaunchIndex: aws.Int32(0),
 				Architecture:   arch,
 				BlockDeviceMapping: []manualv1alpha1.InstanceBlockDeviceMapping{
 					{
@@ -374,22 +377,22 @@ func TestGenerateInstanceObservation(t *testing.T) {
 						EBS: &manualv1alpha1.EBSInstanceBlockDevice{
 							AttachTime:          nil,
 							DeleteOnTermination: aws.Bool(false),
-							Status:              string(ec2.AttachmentStatusAttached),
+							Status:              string(types.AttachmentStatusAttached),
 							VolumeID:            aws.String(volumeID),
 						},
 					},
 				},
 				CapacityReservationID: aws.String(capacityReservationID),
 				CapacityReservationSpecification: &manualv1alpha1.CapacityReservationSpecificationResponse{
-					CapacityReservationPreference: string(ec2.CapacityReservationPreferenceNone),
+					CapacityReservationPreference: string(types.CapacityReservationPreferenceNone),
 					CapacityReservationTarget: &manualv1alpha1.CapacityReservationTarget{
 						CapacityReservationID: aws.String(capacityReservationID),
 					},
 				},
 				ClientToken: aws.String(clientToken),
 				CPUOptons: &manualv1alpha1.CPUOptionsRequest{
-					CoreCount:      aws.Int64(1),
-					ThreadsPerCore: aws.Int64(1),
+					CoreCount:      aws.Int32(1),
+					ThreadsPerCore: aws.Int32(1),
 				},
 				EBSOptimized: aws.Bool(false),
 				EnaSupport:   aws.Bool(false),
@@ -412,15 +415,15 @@ func TestGenerateInstanceObservation(t *testing.T) {
 				HibernationOptions: &manualv1alpha1.HibernationOptionsRequest{
 					Configured: aws.Bool(false),
 				},
-				Hypervisor: string(ec2.HypervisorTypeOvm),
+				Hypervisor: string(types.HypervisorTypeOvm),
 				IAMInstanceProfile: &manualv1alpha1.IAMInstanceProfile{
 					ARN: aws.String(iamARN),
 					ID:  aws.String(iamID),
 				},
 				ImageID:           aws.String(imageID),
 				InstanceID:        aws.String(instanceID),
-				InstanceLifecycle: string(ec2.InstanceLifecycleTypeScheduled),
-				InstanceType:      string(ec2.InstanceTypeM1Small),
+				InstanceLifecycle: string(types.InstanceLifecycleTypeScheduled),
+				InstanceType:      string(types.InstanceTypeM1Small),
 				KernelID:          aws.String(kernelID),
 				Licenses: []manualv1alpha1.LicenseConfigurationRequest{
 					{
@@ -428,12 +431,12 @@ func TestGenerateInstanceObservation(t *testing.T) {
 					},
 				},
 				MetadataOptions: &manualv1alpha1.InstanceMetadataOptionsRequest{
-					HTTPEndpoint:            string(ec2.InstanceMetadataEndpointStateEnabled),
-					HTTPPutResponseHopLimit: aws.Int64(0),
-					HTTPTokens:              string(ec2.HttpTokensStateOptional),
+					HTTPEndpoint:            string(types.InstanceMetadataEndpointStateEnabled),
+					HTTPPutResponseHopLimit: aws.Int32(0),
+					HTTPTokens:              string(types.HttpTokensStateOptional),
 				},
 				Monitoring: &manualv1alpha1.Monitoring{
-					State: string(ec2.MonitoringStateEnabled),
+					State: string(types.MonitoringStateEnabled),
 				},
 				NetworkInterfaces: []manualv1alpha1.InstanceNetworkInterface{
 					{
@@ -446,8 +449,8 @@ func TestGenerateInstanceObservation(t *testing.T) {
 							AttachTime:          nil,
 							AttachmentID:        aws.String(attachmentID),
 							DeleteOnTermination: aws.Bool(false),
-							DeviceIndex:         aws.Int64(0),
-							Status:              string(ec2.AttachmentStatusAttached),
+							DeviceIndex:         aws.Int32(0),
+							Status:              string(types.AttachmentStatusAttached),
 						},
 						Description: aws.String(description),
 						Groups: []manualv1alpha1.GroupIdentifier{
@@ -477,35 +480,35 @@ func TestGenerateInstanceObservation(t *testing.T) {
 							},
 						},
 						SourceDestCheck: aws.Bool(false),
-						Status:          string(ec2.NetworkInterfaceStatusAvailable),
+						Status:          string(types.NetworkInterfaceStatusAvailable),
 						SubnetID:        aws.String(subnetID),
 						VPCID:           aws.String(vpcID),
 					},
 				},
 				OutpostARN: aws.String(outpostARN),
-				Platform:   string(ec2.PlatformValuesWindows),
+				Platform:   string(types.PlatformValuesWindows),
 				Placement: &manualv1alpha1.Placement{
 					Affinity:             aws.String(placementAff),
 					GroupName:            aws.String(groupName),
 					HostID:               aws.String(hostID),
 					HostResourceGroupARN: aws.String(hostGroupARN),
-					PartitionNumber:      aws.Int64(0),
+					PartitionNumber:      aws.Int32(0),
 					SpreadDomain:         aws.String(spreadDomain),
-					Tenancy:              string(ec2.TenancyHost),
+					Tenancy:              string(types.TenancyHost),
 				},
 				PrivateDNSName:   aws.String(privateDNSName),
 				PrivateIPAddress: aws.String(privateIPAddress),
 				ProductCodes: []manualv1alpha1.ProductCode{
 					{
 						ProductCodeID:   aws.String(productCodeID),
-						ProductCodeType: string(ec2.ProductCodeValuesMarketplace),
+						ProductCodeType: string(types.ProductCodeValuesMarketplace),
 					},
 				},
 				PublicDNSName:   aws.String(publicDNSName),
 				PublicIPAddress: aws.String(publicIPAddress),
 				RAMDiskID:       aws.String(ramDiskID),
 				RootDeviceName:  aws.String(rootDeviceName),
-				RootDeviceType:  string(ec2.DeviceTypeEbs),
+				RootDeviceType:  string(types.DeviceTypeEbs),
 				SecurityGroups: []manualv1alpha1.GroupIdentifier{
 					{
 						GroupID:   groupID,
@@ -515,7 +518,7 @@ func TestGenerateInstanceObservation(t *testing.T) {
 				SourceDestCheck:       aws.Bool(false),
 				SpotInstanceRequestID: aws.String(spotInstanceReqID),
 				SriovNetSupport:       aws.String(sriovNetSupport),
-				State:                 string(ec2.InstanceStateNameRunning),
+				State:                 string(types.InstanceStateNameRunning),
 				StateReason: &manualv1alpha1.StateReason{
 					Message: aws.String(stateReason),
 				},
@@ -527,7 +530,7 @@ func TestGenerateInstanceObservation(t *testing.T) {
 						Value: tagsVal,
 					},
 				},
-				VirtualizationType: string(ec2.VirtualizationTypeHvm),
+				VirtualizationType: string(types.VirtualizationTypeHvm),
 				VPCID:              aws.String(vpcID),
 			},
 		},
@@ -556,8 +559,8 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 			},
 			out: &ec2.RunInstancesInput{
 				ImageId:  aws.String(imageID),
-				MaxCount: aws.Int64(1),
-				MinCount: aws.Int64(1),
+				MaxCount: aws.Int32(1),
+				MinCount: aws.Int32(1),
 			},
 		},
 		"AllFilled": {
@@ -569,24 +572,24 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 						EBS: &manualv1alpha1.EBSBlockDevice{
 							DeleteOnTermination: aws.Bool(false),
 							Encrypted:           aws.Bool(false),
-							IOps:                aws.Int64(1),
+							IOps:                aws.Int32(1),
 							KmsKeyID:            aws.String(keyName),
 							SnapshotID:          aws.String(snapshotID),
-							VolumeSize:          aws.Int64(1),
+							VolumeSize:          aws.Int32(1),
 							VolumeType:          volumeType,
 						},
 					},
 				},
 				CapacityReservationSpecification: &manualv1alpha1.CapacityReservationSpecification{
-					CapacityReservationPreference: string(ec2.CapacityReservationPreferenceNone),
+					CapacityReservationPreference: string(types.CapacityReservationPreferenceNone),
 					CapacityReservationTarget: &manualv1alpha1.CapacityReservationTarget{
 						CapacityReservationID: aws.String(capacityReservationID),
 					},
 				},
 				ClientToken: aws.String(clientToken),
 				CPUOptions: &manualv1alpha1.CPUOptionsRequest{
-					CoreCount:      aws.Int64(1),
-					ThreadsPerCore: aws.Int64(1),
+					CoreCount:      aws.Int32(1),
+					ThreadsPerCore: aws.Int32(1),
 				},
 				CreditSpecification: &manualv1alpha1.CreditSpecificationRequest{
 					CPUCredits: aws.String(cpuCredits),
@@ -600,7 +603,7 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 				},
 				ElasticInferenceAccelerators: []manualv1alpha1.ElasticInferenceAccelerator{
 					{
-						Count: aws.Int64(1),
+						Count: aws.Int32(1),
 						Type:  aws.String(gpuType),
 					},
 				},
@@ -612,18 +615,18 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 					Name: aws.String(iamID),
 				},
 				ImageID:                           aws.String(imageID),
-				InstanceInitiatedShutdownBehavior: string(ec2.ShutdownBehaviorStop),
+				InstanceInitiatedShutdownBehavior: string(types.ShutdownBehaviorStop),
 				InstanceMarketOptions: &manualv1alpha1.InstanceMarketOptionsRequest{
 					MarketType: spotMarketType,
 					SpotOptions: &manualv1alpha1.SpotMarketOptions{
-						BlockDurationMinutes:         aws.Int64(1),
-						InstanceInterruptionBehavior: string(ec2.InstanceInterruptionBehaviorHibernate),
+						BlockDurationMinutes:         aws.Int32(1),
+						InstanceInterruptionBehavior: string(types.InstanceInterruptionBehaviorHibernate),
 						MaxPrice:                     aws.String("1"),
-						SpotInstanceType:             string(ec2.SpotInstanceTypeOneTime),
+						SpotInstanceType:             string(types.SpotInstanceTypeOneTime),
 					},
 				},
-				InstanceType:     string(ec2.InstanceTypeA12xlarge),
-				IPv6AddressCount: aws.Int64(1),
+				InstanceType:     string(types.InstanceTypeA12xlarge),
+				IPv6AddressCount: aws.Int32(1),
 				IPv6Addresses: []manualv1alpha1.InstanceIPv6Address{
 					{
 						IPv6Address: aws.String(ipv6Address),
@@ -642,9 +645,9 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 					},
 				},
 				MetadataOptions: &manualv1alpha1.InstanceMetadataOptionsRequest{
-					HTTPEndpoint:            string(ec2.InstanceMetadataEndpointStateEnabled),
-					HTTPPutResponseHopLimit: aws.Int64(0),
-					HTTPTokens:              string(ec2.HttpTokensStateOptional),
+					HTTPEndpoint:            string(types.InstanceMetadataEndpointStateEnabled),
+					HTTPPutResponseHopLimit: aws.Int32(0),
+					HTTPTokens:              string(types.HttpTokensStateOptional),
 				},
 				Monitoring: &manualv1alpha1.RunInstancesMonitoringEnabled{
 					Enabled: aws.Bool(false),
@@ -654,12 +657,12 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 						AssociatePublicIPAddress: aws.Bool(false),
 						DeleteOnTermination:      aws.Bool(false),
 						Description:              aws.String(description),
-						DeviceIndex:              aws.Int64(0),
+						DeviceIndex:              aws.Int32(0),
 						Groups: []string{
 							groupID,
 						},
 						InterfaceType:    aws.String(interfaceType),
-						IPv6AddressCount: aws.Int64(1),
+						IPv6AddressCount: aws.Int32(1),
 						IPv6Addresses: []manualv1alpha1.InstanceIPv6Address{
 							{
 								IPv6Address: aws.String(ipv6Address),
@@ -673,7 +676,7 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 								PrivateIPAddress: aws.String(privateIPAddress),
 							},
 						},
-						SecondaryPrivateIPAddressCount: aws.Int64(0),
+						SecondaryPrivateIPAddressCount: aws.Int32(0),
 						SubnetID:                       aws.String(subnetID),
 					},
 				},
@@ -682,9 +685,9 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 					GroupName:            aws.String(groupName),
 					HostID:               aws.String(hostID),
 					HostResourceGroupARN: aws.String(hostGroupARN),
-					PartitionNumber:      aws.Int64(0),
+					PartitionNumber:      aws.Int32(0),
 					SpreadDomain:         aws.String(spreadDomain),
-					Tenancy:              string(ec2.TenancyHost),
+					Tenancy:              string(types.TenancyHost),
 				},
 				PrivateIPAddress: aws.String(privateIPAddress),
 				RAMDiskID:        aws.String(ramDiskID),
@@ -706,130 +709,130 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 				UserData: aws.String(userData),
 			},
 			out: &ec2.RunInstancesInput{
-				BlockDeviceMappings: []ec2.BlockDeviceMapping{
+				BlockDeviceMappings: []types.BlockDeviceMapping{
 					{
 						DeviceName: aws.String(blockDeviceName),
-						Ebs: &ec2.EbsBlockDevice{
+						Ebs: &types.EbsBlockDevice{
 							DeleteOnTermination: aws.Bool(false),
 							Encrypted:           aws.Bool(false),
-							Iops:                aws.Int64(1),
+							Iops:                aws.Int32(1),
 							KmsKeyId:            aws.String(keyName),
 							SnapshotId:          aws.String(snapshotID),
-							VolumeSize:          aws.Int64(1),
+							VolumeSize:          aws.Int32(1),
 							VolumeType:          volumeType,
 						},
 					},
 				},
-				CapacityReservationSpecification: &ec2.CapacityReservationSpecification{
-					CapacityReservationPreference: ec2.CapacityReservationPreferenceNone,
-					CapacityReservationTarget: &ec2.CapacityReservationTarget{
+				CapacityReservationSpecification: &types.CapacityReservationSpecification{
+					CapacityReservationPreference: types.CapacityReservationPreferenceNone,
+					CapacityReservationTarget: &types.CapacityReservationTarget{
 						CapacityReservationId: aws.String(capacityReservationID),
 					},
 				},
-				CpuOptions: &ec2.CpuOptionsRequest{
-					CoreCount:      aws.Int64(1),
-					ThreadsPerCore: aws.Int64(1),
+				CpuOptions: &types.CpuOptionsRequest{
+					CoreCount:      aws.Int32(1),
+					ThreadsPerCore: aws.Int32(1),
 				},
-				CreditSpecification: &ec2.CreditSpecificationRequest{
+				CreditSpecification: &types.CreditSpecificationRequest{
 					CpuCredits: aws.String(cpuCredits),
 				},
 				ClientToken:           aws.String(clientToken),
 				DisableApiTermination: aws.Bool(false),
 				EbsOptimized:          aws.Bool(false),
-				ElasticGpuSpecification: []ec2.ElasticGpuSpecification{
+				ElasticGpuSpecification: []types.ElasticGpuSpecification{
 					{
 						Type: aws.String(gpuType),
 					},
 				},
-				ElasticInferenceAccelerators: []ec2.ElasticInferenceAccelerator{
+				ElasticInferenceAccelerators: []types.ElasticInferenceAccelerator{
 					{
-						Count: aws.Int64(1),
+						Count: aws.Int32(1),
 						Type:  aws.String(gpuType),
 					},
 				},
-				HibernationOptions: &ec2.HibernationOptionsRequest{
+				HibernationOptions: &types.HibernationOptionsRequest{
 					Configured: aws.Bool(false),
 				},
-				IamInstanceProfile: &ec2.IamInstanceProfileSpecification{
+				IamInstanceProfile: &types.IamInstanceProfileSpecification{
 					Arn:  aws.String(iamARN),
 					Name: aws.String(iamID),
 				},
 				ImageId: aws.String(imageID),
-				InstanceMarketOptions: &ec2.InstanceMarketOptionsRequest{
+				InstanceMarketOptions: &types.InstanceMarketOptionsRequest{
 					MarketType: spotMarketType,
-					SpotOptions: &ec2.SpotMarketOptions{
-						BlockDurationMinutes:         aws.Int64(1),
-						InstanceInterruptionBehavior: ec2.InstanceInterruptionBehaviorHibernate,
+					SpotOptions: &types.SpotMarketOptions{
+						BlockDurationMinutes:         aws.Int32(1),
+						InstanceInterruptionBehavior: types.InstanceInterruptionBehaviorHibernate,
 						MaxPrice:                     aws.String("1"),
-						SpotInstanceType:             ec2.SpotInstanceTypeOneTime,
+						SpotInstanceType:             types.SpotInstanceTypeOneTime,
 					},
 				},
-				InstanceType:                      ec2.InstanceTypeA12xlarge,
-				InstanceInitiatedShutdownBehavior: ec2.ShutdownBehaviorStop,
-				Ipv6AddressCount:                  aws.Int64(1),
-				Ipv6Addresses: []ec2.InstanceIpv6Address{
+				InstanceType:                      types.InstanceTypeA12xlarge,
+				InstanceInitiatedShutdownBehavior: types.ShutdownBehaviorStop,
+				Ipv6AddressCount:                  aws.Int32(1),
+				Ipv6Addresses: []types.InstanceIpv6Address{
 					{
 						Ipv6Address: aws.String(ipv6Address),
 					},
 				},
 				KernelId: aws.String(kernelID),
 				KeyName:  aws.String(keyName),
-				LaunchTemplate: &ec2.LaunchTemplateSpecification{
+				LaunchTemplate: &types.LaunchTemplateSpecification{
 					LaunchTemplateId:   aws.String(launchTemplateID),
 					LaunchTemplateName: aws.String(launchTemplateName),
 					Version:            aws.String("1"),
 				},
-				LicenseSpecifications: []ec2.LicenseConfigurationRequest{
+				LicenseSpecifications: []types.LicenseConfigurationRequest{
 					{
 						LicenseConfigurationArn: aws.String(licenseConfig),
 					},
 				},
-				MinCount: aws.Int64(1),
-				MaxCount: aws.Int64(1),
-				MetadataOptions: &ec2.InstanceMetadataOptionsRequest{
-					HttpEndpoint:            ec2.InstanceMetadataEndpointStateEnabled,
-					HttpPutResponseHopLimit: aws.Int64(0),
-					HttpTokens:              ec2.HttpTokensStateOptional,
+				MinCount: aws.Int32(1),
+				MaxCount: aws.Int32(1),
+				MetadataOptions: &types.InstanceMetadataOptionsRequest{
+					HttpEndpoint:            types.InstanceMetadataEndpointStateEnabled,
+					HttpPutResponseHopLimit: aws.Int32(0),
+					HttpTokens:              types.HttpTokensStateOptional,
 				},
-				Monitoring: &ec2.RunInstancesMonitoringEnabled{
+				Monitoring: &types.RunInstancesMonitoringEnabled{
 					Enabled: aws.Bool(false),
 				},
-				NetworkInterfaces: []ec2.InstanceNetworkInterfaceSpecification{
+				NetworkInterfaces: []types.InstanceNetworkInterfaceSpecification{
 					{
 						AssociatePublicIpAddress: aws.Bool(false),
 						DeleteOnTermination:      aws.Bool(false),
 						Description:              aws.String(description),
-						DeviceIndex:              aws.Int64(0),
+						DeviceIndex:              aws.Int32(0),
 						Groups: []string{
 							groupID,
 						},
 						InterfaceType:    aws.String(interfaceType),
-						Ipv6AddressCount: aws.Int64(1),
-						Ipv6Addresses: []ec2.InstanceIpv6Address{
+						Ipv6AddressCount: aws.Int32(1),
+						Ipv6Addresses: []types.InstanceIpv6Address{
 							{
 								Ipv6Address: aws.String(ipv6Address),
 							},
 						},
 						NetworkInterfaceId: aws.String(networkInterfaceID),
 						PrivateIpAddress:   aws.String(privateIPAddress),
-						PrivateIpAddresses: []ec2.PrivateIpAddressSpecification{
+						PrivateIpAddresses: []types.PrivateIpAddressSpecification{
 							{
 								Primary:          aws.Bool(false),
 								PrivateIpAddress: aws.String(privateIPAddress),
 							},
 						},
-						SecondaryPrivateIpAddressCount: aws.Int64(0),
+						SecondaryPrivateIpAddressCount: aws.Int32(0),
 						SubnetId:                       aws.String(subnetID),
 					},
 				},
-				Placement: &ec2.Placement{
+				Placement: &types.Placement{
 					Affinity:             aws.String(placementAff),
 					GroupName:            aws.String(groupName),
 					HostId:               aws.String(hostID),
 					HostResourceGroupArn: aws.String(hostGroupARN),
-					PartitionNumber:      aws.Int64(0),
+					PartitionNumber:      aws.Int32(0),
 					SpreadDomain:         aws.String(spreadDomain),
-					Tenancy:              ec2.TenancyHost,
+					Tenancy:              types.TenancyHost,
 				},
 				PrivateIpAddress: aws.String(privateIPAddress),
 				RamdiskId:        aws.String(ramDiskID),
@@ -837,10 +840,10 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 					groupID,
 				},
 				SubnetId: aws.String(subnetID),
-				TagSpecifications: []ec2.TagSpecification{
+				TagSpecifications: []types.TagSpecification{
 					{
-						ResourceType: ec2.ResourceTypeInstance,
-						Tags: []ec2.Tag{
+						ResourceType: types.ResourceTypeInstance,
+						Tags: []types.Tag{
 							{
 								Key:   aws.String(tagsKey),
 								Value: aws.String(tagsVal),
@@ -856,7 +859,7 @@ func TestGenerateEC2RunInstancesInput(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			r := GenerateEC2RunInstancesInput(tc.name, tc.in)
-			if diff := cmp.Diff(tc.out, r); diff != "" {
+			if diff := cmp.Diff(tc.out, r, cmpopts.IgnoreTypes(document.NoSerde{})); diff != "" {
 				t.Errorf("GenerateEC2RunInstancesInput(...): -want, +got:\n%s", diff)
 			}
 		})

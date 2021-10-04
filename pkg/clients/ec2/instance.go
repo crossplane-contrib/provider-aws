@@ -14,13 +14,15 @@ limitations under the License.
 package ec2
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/awserr"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	ec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
@@ -34,17 +36,17 @@ const (
 
 // InstanceClient is the external client used for Instance Custom Resource
 type InstanceClient interface {
-	RunInstancesRequest(*ec2.RunInstancesInput) ec2.RunInstancesRequest
-	TerminateInstancesRequest(*ec2.TerminateInstancesInput) ec2.TerminateInstancesRequest
-	DescribeInstancesRequest(*ec2.DescribeInstancesInput) ec2.DescribeInstancesRequest
-	DescribeInstanceAttributeRequest(*ec2.DescribeInstanceAttributeInput) ec2.DescribeInstanceAttributeRequest
-	ModifyInstanceAttributeRequest(*ec2.ModifyInstanceAttributeInput) ec2.ModifyInstanceAttributeRequest
-	CreateTagsRequest(*ec2.CreateTagsInput) ec2.CreateTagsRequest
+	RunInstances(context.Context, *ec2.RunInstancesInput, ...func(*ec2.Options)) (*ec2.RunInstancesOutput, error)
+	TerminateInstances(context.Context, *ec2.TerminateInstancesInput, ...func(*ec2.Options)) (*ec2.TerminateInstancesOutput, error)
+	DescribeInstances(context.Context, *ec2.DescribeInstancesInput, ...func(*ec2.Options)) (*ec2.DescribeInstancesOutput, error)
+	DescribeInstanceAttribute(context.Context, *ec2.DescribeInstanceAttributeInput, ...func(*ec2.Options)) (*ec2.DescribeInstanceAttributeOutput, error)
+	ModifyInstanceAttribute(context.Context, *ec2.ModifyInstanceAttributeInput, ...func(*ec2.Options)) (*ec2.ModifyInstanceAttributeOutput, error)
+	CreateTags(context.Context, *ec2.CreateTagsInput, ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
 }
 
 // NewInstanceClient returns a new client using AWS credentials as JSON encoded data.
 func NewInstanceClient(cfg aws.Config) InstanceClient {
-	return ec2.New(cfg)
+	return ec2.NewFromConfig(cfg)
 }
 
 // IsInstanceNotFoundErr returns true if the error is because the item doesn't exist
@@ -60,9 +62,9 @@ func IsInstanceNotFoundErr(err error) bool {
 
 // IsInstanceUpToDate returns true if there is no update-able difference between desired
 // and observed state of the resource.
-func IsInstanceUpToDate(spec manualv1alpha1.InstanceParameters, instance ec2.Instance, attributes ec2.DescribeInstanceAttributeOutput) bool {
+func IsInstanceUpToDate(spec manualv1alpha1.InstanceParameters, instance types.Instance, attributes ec2.DescribeInstanceAttributeOutput) bool {
 	// DisableApiTermination
-	if aws.BoolValue(spec.DisableAPITermination) != attributeBoolValue(attributes.DisableApiTermination) {
+	if awsclients.BoolValue(spec.DisableAPITermination) != attributeBoolValue(attributes.DisableApiTermination) {
 		return false
 	}
 	// InstanceInitiatedShutdownBehavior
@@ -70,15 +72,15 @@ func IsInstanceUpToDate(spec manualv1alpha1.InstanceParameters, instance ec2.Ins
 		return false
 	}
 	// KernalID
-	if aws.StringValue(spec.KernelID) != aws.StringValue(instance.KernelId) {
+	if awsclients.StringValue(spec.KernelID) != awsclients.StringValue(instance.KernelId) {
 		return false
 	}
 	// RamDiskID
-	if aws.StringValue(spec.RAMDiskID) != aws.StringValue(instance.RamdiskId) {
+	if awsclients.StringValue(spec.RAMDiskID) != awsclients.StringValue(instance.RamdiskId) {
 		return false
 	}
 	// UserData
-	if aws.StringValue(spec.UserData) != attributeValue(attributes.UserData) {
+	if awsclients.StringValue(spec.UserData) != attributeValue(attributes.UserData) {
 		return false
 	}
 	return manualv1alpha1.CompareGroupIDs(spec.SecurityGroupIDs, instance.SecurityGroups)
@@ -86,7 +88,7 @@ func IsInstanceUpToDate(spec manualv1alpha1.InstanceParameters, instance ec2.Ins
 
 // GenerateInstanceObservation is used to produce manualv1alpha1.InstanceObservation from
 // a []ec2.Instance.
-func GenerateInstanceObservation(i ec2.Instance) manualv1alpha1.InstanceObservation {
+func GenerateInstanceObservation(i types.Instance) manualv1alpha1.InstanceObservation {
 	return manualv1alpha1.InstanceObservation{
 		AmiLaunchIndex:                          i.AmiLaunchIndex,
 		Architecture:                            string(i.Architecture),
@@ -144,15 +146,15 @@ func GenerateInstanceObservation(i ec2.Instance) manualv1alpha1.InstanceObservat
 // * Deleting
 func GenerateInstanceCondition(o manualv1alpha1.InstanceObservation) Condition {
 	switch o.State {
-	case string(ec2.InstanceStateNameRunning):
+	case string(types.InstanceStateNameRunning):
 		return Available
-	case string(ec2.InstanceStateNameShuttingDown):
+	case string(types.InstanceStateNameShuttingDown):
 		return Deleting
-	case string(ec2.InstanceStateNameStopped):
+	case string(types.InstanceStateNameStopped):
 		return Deleting
-	case string(ec2.InstanceStateNameStopping):
+	case string(types.InstanceStateNameStopping):
 		return Deleting
-	case string(ec2.InstanceStateNameTerminated):
+	case string(types.InstanceStateNameTerminated):
 		return Deleted
 	default:
 		// ec2.InstanceStateNamePending
@@ -179,7 +181,7 @@ const (
 
 // LateInitializeInstance fills the empty fields in *manualv1alpha1.InstanceParameters with
 // the values seen in ec2.Instance and ec2.DescribeInstanceAttributeOutput.
-func LateInitializeInstance(in *manualv1alpha1.InstanceParameters, instance *ec2.Instance, attributes *ec2.DescribeInstanceAttributeOutput) { // nolint:gocyclo
+func LateInitializeInstance(in *manualv1alpha1.InstanceParameters, instance *types.Instance, attributes *ec2.DescribeInstanceAttributeOutput) { // nolint:gocyclo
 	if instance == nil {
 		return
 	}
@@ -217,20 +219,20 @@ func LateInitializeInstance(in *manualv1alpha1.InstanceParameters, instance *ec2
 }
 
 // GenerateEC2BlockDeviceMappings coverts an internal slice of BlockDeviceMapping into a slice of ec2.BlockDeviceMapping
-func GenerateEC2BlockDeviceMappings(mappings []manualv1alpha1.BlockDeviceMapping) []ec2.BlockDeviceMapping {
+func GenerateEC2BlockDeviceMappings(mappings []manualv1alpha1.BlockDeviceMapping) []types.BlockDeviceMapping {
 	if mappings != nil {
-		res := make([]ec2.BlockDeviceMapping, len(mappings))
+		res := make([]types.BlockDeviceMapping, len(mappings))
 		for i, bm := range mappings {
-			res[i] = ec2.BlockDeviceMapping{
+			res[i] = types.BlockDeviceMapping{
 				DeviceName: bm.DeviceName,
-				Ebs: &ec2.EbsBlockDevice{
+				Ebs: &types.EbsBlockDevice{
 					DeleteOnTermination: bm.EBS.DeleteOnTermination,
 					Encrypted:           bm.EBS.Encrypted,
 					Iops:                bm.EBS.IOps,
 					KmsKeyId:            bm.EBS.KmsKeyID,
 					SnapshotId:          bm.EBS.SnapshotID,
 					VolumeSize:          bm.EBS.VolumeSize,
-					VolumeType:          ec2.VolumeType(bm.EBS.VolumeType),
+					VolumeType:          types.VolumeType(bm.EBS.VolumeType),
 				},
 				NoDevice:    bm.NoDevice,
 				VirtualName: bm.VirtualName,
@@ -243,16 +245,16 @@ func GenerateEC2BlockDeviceMappings(mappings []manualv1alpha1.BlockDeviceMapping
 }
 
 // GenerateEC2CapacityReservationSpecs coverts an internal CapacityReservationSpecification into a ec2.CapacityReservationSpecification
-func GenerateEC2CapacityReservationSpecs(spec *manualv1alpha1.CapacityReservationSpecification) *ec2.CapacityReservationSpecification {
+func GenerateEC2CapacityReservationSpecs(spec *manualv1alpha1.CapacityReservationSpecification) *types.CapacityReservationSpecification {
 	if spec != nil {
 		var capacityReservationID *string
 		if spec.CapacityReservationTarget != nil {
 			capacityReservationID = spec.CapacityReservationTarget.CapacityReservationID
 		}
 
-		return &ec2.CapacityReservationSpecification{
-			CapacityReservationPreference: ec2.CapacityReservationPreference(spec.CapacityReservationPreference),
-			CapacityReservationTarget: &ec2.CapacityReservationTarget{
+		return &types.CapacityReservationSpecification{
+			CapacityReservationPreference: types.CapacityReservationPreference(spec.CapacityReservationPreference),
+			CapacityReservationTarget: &types.CapacityReservationTarget{
 				CapacityReservationId: capacityReservationID,
 			},
 		}
@@ -261,7 +263,7 @@ func GenerateEC2CapacityReservationSpecs(spec *manualv1alpha1.CapacityReservatio
 }
 
 // GenerateCapacityReservationSpecResponse converts a ec2.CapacityReservationSpecificationResponse into an internal CapacityReservationSpecificationResponse
-func GenerateCapacityReservationSpecResponse(resp *ec2.CapacityReservationSpecificationResponse) *manualv1alpha1.CapacityReservationSpecificationResponse {
+func GenerateCapacityReservationSpecResponse(resp *types.CapacityReservationSpecificationResponse) *manualv1alpha1.CapacityReservationSpecificationResponse {
 	if resp != nil {
 		var target manualv1alpha1.CapacityReservationTarget
 
@@ -278,9 +280,9 @@ func GenerateCapacityReservationSpecResponse(resp *ec2.CapacityReservationSpecif
 }
 
 // GenerateEC2CPUOptions converts an internal CPUOptionsRequest into a ec2.CpuOptionsRequest
-func GenerateEC2CPUOptions(opts *manualv1alpha1.CPUOptionsRequest) *ec2.CpuOptionsRequest {
+func GenerateEC2CPUOptions(opts *manualv1alpha1.CPUOptionsRequest) *types.CpuOptionsRequest {
 	if opts != nil {
-		return &ec2.CpuOptionsRequest{
+		return &types.CpuOptionsRequest{
 			CoreCount:      opts.CoreCount,
 			ThreadsPerCore: opts.ThreadsPerCore,
 		}
@@ -289,7 +291,7 @@ func GenerateEC2CPUOptions(opts *manualv1alpha1.CPUOptionsRequest) *ec2.CpuOptio
 }
 
 // GenerateCPUOptionsRequest converts a CpuOptions into a internal CpuOptionsRequest
-func GenerateCPUOptionsRequest(opts *ec2.CpuOptions) *manualv1alpha1.CPUOptionsRequest {
+func GenerateCPUOptionsRequest(opts *types.CpuOptions) *manualv1alpha1.CPUOptionsRequest {
 	if opts != nil {
 		return &manualv1alpha1.CPUOptionsRequest{
 			CoreCount:      opts.CoreCount,
@@ -300,9 +302,9 @@ func GenerateCPUOptionsRequest(opts *ec2.CpuOptions) *manualv1alpha1.CPUOptionsR
 }
 
 // GenerateEC2CreditSpec converts an internal CreditSpecificationRequest into a ec2.CreditSpecificationRequest
-func GenerateEC2CreditSpec(spec *manualv1alpha1.CreditSpecificationRequest) *ec2.CreditSpecificationRequest {
+func GenerateEC2CreditSpec(spec *manualv1alpha1.CreditSpecificationRequest) *types.CreditSpecificationRequest {
 	if spec != nil {
-		return &ec2.CreditSpecificationRequest{
+		return &types.CreditSpecificationRequest{
 			CpuCredits: spec.CPUCredits,
 		}
 	}
@@ -310,7 +312,7 @@ func GenerateEC2CreditSpec(spec *manualv1alpha1.CreditSpecificationRequest) *ec2
 }
 
 // GenerateElasticGPUAssociation coverts a slice of ec2.ElasticGpuAssociation into an internal slice of ElasticGPUAssociation
-func GenerateElasticGPUAssociation(assocs []ec2.ElasticGpuAssociation) []manualv1alpha1.ElasticGPUAssociation {
+func GenerateElasticGPUAssociation(assocs []types.ElasticGpuAssociation) []manualv1alpha1.ElasticGPUAssociation {
 	if assocs != nil {
 		res := make([]manualv1alpha1.ElasticGPUAssociation, len(assocs))
 		for i, a := range assocs {
@@ -328,11 +330,11 @@ func GenerateElasticGPUAssociation(assocs []ec2.ElasticGpuAssociation) []manualv
 }
 
 // GenerateEC2ElasticGPUSpecs coverts an internal slice of ElasticGPUSpecification into a slice of ec2.ElasticGpuSpecification
-func GenerateEC2ElasticGPUSpecs(specs []manualv1alpha1.ElasticGPUSpecification) []ec2.ElasticGpuSpecification {
+func GenerateEC2ElasticGPUSpecs(specs []manualv1alpha1.ElasticGPUSpecification) []types.ElasticGpuSpecification {
 	if specs != nil {
-		res := make([]ec2.ElasticGpuSpecification, len(specs))
+		res := make([]types.ElasticGpuSpecification, len(specs))
 		for i, gs := range specs {
-			res[i] = ec2.ElasticGpuSpecification{
+			res[i] = types.ElasticGpuSpecification{
 				Type: gs.Type,
 			}
 		}
@@ -343,11 +345,11 @@ func GenerateEC2ElasticGPUSpecs(specs []manualv1alpha1.ElasticGPUSpecification) 
 }
 
 // GenerateEC2ElasticInferenceAccelerators coverts an internal slice of ElasticInferenceAccelerator into a slice of ec2.ElasticInferenceAccelerator
-func GenerateEC2ElasticInferenceAccelerators(accs []manualv1alpha1.ElasticInferenceAccelerator) []ec2.ElasticInferenceAccelerator {
+func GenerateEC2ElasticInferenceAccelerators(accs []manualv1alpha1.ElasticInferenceAccelerator) []types.ElasticInferenceAccelerator {
 	if accs != nil {
-		res := make([]ec2.ElasticInferenceAccelerator, len(accs))
+		res := make([]types.ElasticInferenceAccelerator, len(accs))
 		for i, a := range accs {
-			res[i] = ec2.ElasticInferenceAccelerator{
+			res[i] = types.ElasticInferenceAccelerator{
 				Count: a.Count,
 				Type:  a.Type,
 			}
@@ -359,7 +361,7 @@ func GenerateEC2ElasticInferenceAccelerators(accs []manualv1alpha1.ElasticInfere
 }
 
 // GenerateElasticInferenceAcceleratorAssociation coverts a slice of ec2.ElasticInferenceAcceleratorAssociation into an internal slice of ElasticInferenceAcceleratorAssociation
-func GenerateElasticInferenceAcceleratorAssociation(assocs []ec2.ElasticInferenceAcceleratorAssociation) []manualv1alpha1.ElasticInferenceAcceleratorAssociation {
+func GenerateElasticInferenceAcceleratorAssociation(assocs []types.ElasticInferenceAcceleratorAssociation) []manualv1alpha1.ElasticInferenceAcceleratorAssociation {
 	if assocs != nil {
 		res := make([]manualv1alpha1.ElasticInferenceAcceleratorAssociation, len(assocs))
 		for i, a := range assocs {
@@ -377,9 +379,9 @@ func GenerateElasticInferenceAcceleratorAssociation(assocs []ec2.ElasticInferenc
 }
 
 // GenerateEC2HibernationOptions converts an internal HibernationOptionsRequest into a ec2.HibernationOptionsRequest
-func GenerateEC2HibernationOptions(opts *manualv1alpha1.HibernationOptionsRequest) *ec2.HibernationOptionsRequest {
+func GenerateEC2HibernationOptions(opts *manualv1alpha1.HibernationOptionsRequest) *types.HibernationOptionsRequest {
 	if opts != nil {
-		return &ec2.HibernationOptionsRequest{
+		return &types.HibernationOptionsRequest{
 			Configured: opts.Configured,
 		}
 	}
@@ -387,7 +389,7 @@ func GenerateEC2HibernationOptions(opts *manualv1alpha1.HibernationOptionsReques
 }
 
 // GenerateGroupIdentifiers coverts a slice of ec2.GroupIdentifier into an internal slice of GroupIdentifier
-func GenerateGroupIdentifiers(ids []ec2.GroupIdentifier) []manualv1alpha1.GroupIdentifier {
+func GenerateGroupIdentifiers(ids []types.GroupIdentifier) []manualv1alpha1.GroupIdentifier {
 	if ids != nil {
 		res := make([]manualv1alpha1.GroupIdentifier, len(ids))
 		for i, id := range ids {
@@ -403,7 +405,7 @@ func GenerateGroupIdentifiers(ids []ec2.GroupIdentifier) []manualv1alpha1.GroupI
 }
 
 // GenerateIAMInstanceProfile converts a ec2.IamInstanceProfile into a internal IamInstanceProfile
-func GenerateIAMInstanceProfile(p *ec2.IamInstanceProfile) *manualv1alpha1.IAMInstanceProfile {
+func GenerateIAMInstanceProfile(p *types.IamInstanceProfile) *manualv1alpha1.IAMInstanceProfile {
 	if p != nil {
 		return &manualv1alpha1.IAMInstanceProfile{
 			ARN: p.Arn,
@@ -414,9 +416,9 @@ func GenerateIAMInstanceProfile(p *ec2.IamInstanceProfile) *manualv1alpha1.IAMIn
 }
 
 // GenerateEC2IAMInstanceProfileSpecification converts an internal IamInstanceProfileSpecification into a ec2.IamInstanceProfileSpecification
-func GenerateEC2IAMInstanceProfileSpecification(spec *manualv1alpha1.IAMInstanceProfileSpecification) *ec2.IamInstanceProfileSpecification {
+func GenerateEC2IAMInstanceProfileSpecification(spec *manualv1alpha1.IAMInstanceProfileSpecification) *types.IamInstanceProfileSpecification {
 	if spec != nil {
-		return &ec2.IamInstanceProfileSpecification{
+		return &types.IamInstanceProfileSpecification{
 			Arn:  spec.ARN,
 			Name: spec.Name,
 		}
@@ -425,7 +427,7 @@ func GenerateEC2IAMInstanceProfileSpecification(spec *manualv1alpha1.IAMInstance
 }
 
 // GenerateInstanceBlockDeviceMappings coverts a slice of ec2.InstanceBlockDeviceMapping into an internal slice of InstanceBlockDeviceMapping
-func GenerateInstanceBlockDeviceMappings(mappings []ec2.InstanceBlockDeviceMapping) []manualv1alpha1.InstanceBlockDeviceMapping {
+func GenerateInstanceBlockDeviceMappings(mappings []types.InstanceBlockDeviceMapping) []manualv1alpha1.InstanceBlockDeviceMapping {
 	if mappings != nil {
 		res := make([]manualv1alpha1.InstanceBlockDeviceMapping, len(mappings))
 		for i, m := range mappings {
@@ -446,27 +448,27 @@ func GenerateInstanceBlockDeviceMappings(mappings []ec2.InstanceBlockDeviceMappi
 }
 
 // GenerateEC2InstanceMarketOptionsRequest converts an internal InstanceMarketOptionsRequest into a ec2.InstanceMarketOptionsRequest
-func GenerateEC2InstanceMarketOptionsRequest(opts *manualv1alpha1.InstanceMarketOptionsRequest) *ec2.InstanceMarketOptionsRequest {
+func GenerateEC2InstanceMarketOptionsRequest(opts *manualv1alpha1.InstanceMarketOptionsRequest) *types.InstanceMarketOptionsRequest {
 	if opts != nil {
-		var durationMin *int64
-		var behavior ec2.InstanceInterruptionBehavior
+		var durationMin *int32
+		var behavior types.InstanceInterruptionBehavior
 		var maxPrice *string
-		var instanceType ec2.SpotInstanceType
+		var instanceType types.SpotInstanceType
 		var validUntil *time.Time
 
 		if opts.SpotOptions != nil {
 			durationMin = opts.SpotOptions.BlockDurationMinutes
-			behavior = ec2.InstanceInterruptionBehavior(opts.SpotOptions.InstanceInterruptionBehavior)
+			behavior = types.InstanceInterruptionBehavior(opts.SpotOptions.InstanceInterruptionBehavior)
 			maxPrice = opts.SpotOptions.MaxPrice
-			instanceType = ec2.SpotInstanceType(opts.SpotOptions.SpotInstanceType)
+			instanceType = types.SpotInstanceType(opts.SpotOptions.SpotInstanceType)
 			if opts.SpotOptions.ValidUntil != nil {
 				validUntil = &opts.SpotOptions.ValidUntil.DeepCopy().Time
 			}
 		}
 
-		return &ec2.InstanceMarketOptionsRequest{
-			MarketType: ec2.MarketType(opts.MarketType),
-			SpotOptions: &ec2.SpotMarketOptions{
+		return &types.InstanceMarketOptionsRequest{
+			MarketType: types.MarketType(opts.MarketType),
+			SpotOptions: &types.SpotMarketOptions{
 				BlockDurationMinutes:         durationMin,
 				InstanceInterruptionBehavior: behavior,
 				MaxPrice:                     maxPrice,
@@ -479,7 +481,7 @@ func GenerateEC2InstanceMarketOptionsRequest(opts *manualv1alpha1.InstanceMarket
 }
 
 // GenerateInstanceMetadataOptionsRequest converts an ec2.InstanceMetadataOptionsResponse into an internal InstanceMetadataOptionsRequest
-func GenerateInstanceMetadataOptionsRequest(opts *ec2.InstanceMetadataOptionsResponse) *manualv1alpha1.InstanceMetadataOptionsRequest {
+func GenerateInstanceMetadataOptionsRequest(opts *types.InstanceMetadataOptionsResponse) *manualv1alpha1.InstanceMetadataOptionsRequest {
 	if opts != nil {
 		return &manualv1alpha1.InstanceMetadataOptionsRequest{
 			HTTPEndpoint:            string(opts.HttpEndpoint),
@@ -491,11 +493,11 @@ func GenerateInstanceMetadataOptionsRequest(opts *ec2.InstanceMetadataOptionsRes
 }
 
 // GenerateEC2InstanceIPV6Addresses coverts an internal slice of InstanceIPV6Address into a slice of ec2.InstanceIpv6Address
-func GenerateEC2InstanceIPV6Addresses(addrs []manualv1alpha1.InstanceIPv6Address) []ec2.InstanceIpv6Address {
+func GenerateEC2InstanceIPV6Addresses(addrs []manualv1alpha1.InstanceIPv6Address) []types.InstanceIpv6Address {
 	if addrs != nil {
-		res := make([]ec2.InstanceIpv6Address, len(addrs))
+		res := make([]types.InstanceIpv6Address, len(addrs))
 		for i, a := range addrs {
-			res[i] = ec2.InstanceIpv6Address{
+			res[i] = types.InstanceIpv6Address{
 				Ipv6Address: a.IPv6Address,
 			}
 		}
@@ -506,7 +508,7 @@ func GenerateEC2InstanceIPV6Addresses(addrs []manualv1alpha1.InstanceIPv6Address
 }
 
 // GenerateInstanceIPV6Addresses coverts a slice of ec2.InstanceIpv6Address into a slice of internal InstanceIPv6Address
-func GenerateInstanceIPV6Addresses(addrs []ec2.InstanceIpv6Address) []manualv1alpha1.InstanceIPv6Address {
+func GenerateInstanceIPV6Addresses(addrs []types.InstanceIpv6Address) []manualv1alpha1.InstanceIPv6Address {
 	if addrs != nil {
 		res := make([]manualv1alpha1.InstanceIPv6Address, len(addrs))
 		for i, a := range addrs {
@@ -521,19 +523,19 @@ func GenerateInstanceIPV6Addresses(addrs []ec2.InstanceIpv6Address) []manualv1al
 }
 
 // GenerateEC2InstanceMetadataOptionsRequest converts an internal InstanceMetadataOptionsRequest into a ec2.InstanceMetadataOptionsRequest
-func GenerateEC2InstanceMetadataOptionsRequest(opts *manualv1alpha1.InstanceMetadataOptionsRequest) *ec2.InstanceMetadataOptionsRequest {
+func GenerateEC2InstanceMetadataOptionsRequest(opts *manualv1alpha1.InstanceMetadataOptionsRequest) *types.InstanceMetadataOptionsRequest {
 	if opts != nil {
-		return &ec2.InstanceMetadataOptionsRequest{
-			HttpEndpoint:            ec2.InstanceMetadataEndpointState(opts.HTTPEndpoint),
+		return &types.InstanceMetadataOptionsRequest{
+			HttpEndpoint:            types.InstanceMetadataEndpointState(opts.HTTPEndpoint),
 			HttpPutResponseHopLimit: opts.HTTPPutResponseHopLimit,
-			HttpTokens:              ec2.HttpTokensState(opts.HTTPTokens),
+			HttpTokens:              types.HttpTokensState(opts.HTTPTokens),
 		}
 	}
 	return nil
 }
 
 // GenerateInstanceNetworkInterface coverts a slice of ec2.InstanceNetworkInterface into an internal slice of InstanceNetworkInterface
-func GenerateInstanceNetworkInterface(nets []ec2.InstanceNetworkInterface) []manualv1alpha1.InstanceNetworkInterface {
+func GenerateInstanceNetworkInterface(nets []types.InstanceNetworkInterface) []manualv1alpha1.InstanceNetworkInterface {
 	if nets != nil {
 		res := make([]manualv1alpha1.InstanceNetworkInterface, len(nets))
 		for i, intr := range nets {
@@ -581,11 +583,11 @@ func GenerateInstanceNetworkInterface(nets []ec2.InstanceNetworkInterface) []man
 
 // GenerateEC2InstanceNetworkInterfaceSpecs coverts an internal slice of InstanceNetworkInterfaceSpecification
 // into a slice of ec2.InstanceNetworkInterfaceSpecification
-func GenerateEC2InstanceNetworkInterfaceSpecs(specs []manualv1alpha1.InstanceNetworkInterfaceSpecification) []ec2.InstanceNetworkInterfaceSpecification {
+func GenerateEC2InstanceNetworkInterfaceSpecs(specs []manualv1alpha1.InstanceNetworkInterfaceSpecification) []types.InstanceNetworkInterfaceSpecification {
 	if specs != nil {
-		res := make([]ec2.InstanceNetworkInterfaceSpecification, len(specs))
+		res := make([]types.InstanceNetworkInterfaceSpecification, len(specs))
 		for i, s := range specs {
-			res[i] = ec2.InstanceNetworkInterfaceSpecification{
+			res[i] = types.InstanceNetworkInterfaceSpecification{
 				AssociatePublicIpAddress:       s.AssociatePublicIPAddress,
 				DeleteOnTermination:            s.DeleteOnTermination,
 				Description:                    s.Description,
@@ -608,7 +610,7 @@ func GenerateEC2InstanceNetworkInterfaceSpecs(specs []manualv1alpha1.InstanceNet
 }
 
 // GenerateInstancePrivateIPAddresses coverts a slice of ec2.InstanceIpv6Address into a slice of internal InstanceIPv6Address
-func GenerateInstancePrivateIPAddresses(addrs []ec2.InstancePrivateIpAddress) []manualv1alpha1.InstancePrivateIPAddress {
+func GenerateInstancePrivateIPAddresses(addrs []types.InstancePrivateIpAddress) []manualv1alpha1.InstancePrivateIPAddress {
 	if addrs != nil {
 		res := make([]manualv1alpha1.InstancePrivateIPAddress, len(addrs))
 		for i, a := range addrs {
@@ -633,7 +635,7 @@ func GenerateInstancePrivateIPAddresses(addrs []ec2.InstancePrivateIpAddress) []
 }
 
 // GenerateHibernationOptionsRequest converts a ec2.HibernationOptions into a internal HibernationOptionsRequest
-func GenerateHibernationOptionsRequest(opts *ec2.HibernationOptions) *manualv1alpha1.HibernationOptionsRequest {
+func GenerateHibernationOptionsRequest(opts *types.HibernationOptions) *manualv1alpha1.HibernationOptionsRequest {
 	if opts != nil {
 		return &manualv1alpha1.HibernationOptionsRequest{
 			Configured: opts.Configured,
@@ -643,9 +645,9 @@ func GenerateHibernationOptionsRequest(opts *ec2.HibernationOptions) *manualv1al
 }
 
 // GenerateEC2LaunchTemplateSpec converts internal LaunchTemplateSpecification into ec2.LaunchTemplateSpecification
-func GenerateEC2LaunchTemplateSpec(spec *manualv1alpha1.LaunchTemplateSpecification) *ec2.LaunchTemplateSpecification {
+func GenerateEC2LaunchTemplateSpec(spec *manualv1alpha1.LaunchTemplateSpecification) *types.LaunchTemplateSpecification {
 	if spec != nil {
-		return &ec2.LaunchTemplateSpecification{
+		return &types.LaunchTemplateSpecification{
 			LaunchTemplateId:   spec.LaunchTemplateID,
 			LaunchTemplateName: spec.LaunchTemplateName,
 			Version:            spec.Version,
@@ -655,11 +657,11 @@ func GenerateEC2LaunchTemplateSpec(spec *manualv1alpha1.LaunchTemplateSpecificat
 }
 
 // GenerateEC2LicenseConfigurationRequest coverts an internal slice of LicenseConfigurationRequest into a slice of ec2.LicenseConfigurationRequest
-func GenerateEC2LicenseConfigurationRequest(reqs []manualv1alpha1.LicenseConfigurationRequest) []ec2.LicenseConfigurationRequest {
+func GenerateEC2LicenseConfigurationRequest(reqs []manualv1alpha1.LicenseConfigurationRequest) []types.LicenseConfigurationRequest {
 	if reqs != nil {
-		res := make([]ec2.LicenseConfigurationRequest, len(reqs))
+		res := make([]types.LicenseConfigurationRequest, len(reqs))
 		for i, r := range reqs {
-			res[i] = ec2.LicenseConfigurationRequest{
+			res[i] = types.LicenseConfigurationRequest{
 				LicenseConfigurationArn: r.LicenseConfigurationARN,
 			}
 		}
@@ -670,7 +672,7 @@ func GenerateEC2LicenseConfigurationRequest(reqs []manualv1alpha1.LicenseConfigu
 }
 
 // GenerateLicenseConfigurationRequest coverts a slice of ec2.LicenseConfiguration into an internal slice of LicenseConfigurationRequest
-func GenerateLicenseConfigurationRequest(reqs []ec2.LicenseConfiguration) []manualv1alpha1.LicenseConfigurationRequest {
+func GenerateLicenseConfigurationRequest(reqs []types.LicenseConfiguration) []manualv1alpha1.LicenseConfigurationRequest {
 	if reqs != nil {
 		res := make([]manualv1alpha1.LicenseConfigurationRequest, len(reqs))
 		for i, r := range reqs {
@@ -685,9 +687,9 @@ func GenerateLicenseConfigurationRequest(reqs []ec2.LicenseConfiguration) []manu
 }
 
 // GenerateEC2Monitoring converts internal RunInstancesMonitoringEnabled into ec2.RunInstancesMonitoringEnabled
-func GenerateEC2Monitoring(m *manualv1alpha1.RunInstancesMonitoringEnabled) *ec2.RunInstancesMonitoringEnabled {
+func GenerateEC2Monitoring(m *manualv1alpha1.RunInstancesMonitoringEnabled) *types.RunInstancesMonitoringEnabled {
 	if m != nil {
-		return &ec2.RunInstancesMonitoringEnabled{
+		return &types.RunInstancesMonitoringEnabled{
 			Enabled: m.Enabled,
 		}
 	}
@@ -695,7 +697,7 @@ func GenerateEC2Monitoring(m *manualv1alpha1.RunInstancesMonitoringEnabled) *ec2
 }
 
 // GenerateMonitoring converts a ec2.Monitoring into a internal Monitoring
-func GenerateMonitoring(m *ec2.Monitoring) *manualv1alpha1.Monitoring {
+func GenerateMonitoring(m *types.Monitoring) *manualv1alpha1.Monitoring {
 	if m != nil {
 		return &manualv1alpha1.Monitoring{
 			State: string(m.State),
@@ -705,9 +707,9 @@ func GenerateMonitoring(m *ec2.Monitoring) *manualv1alpha1.Monitoring {
 }
 
 // GenerateEC2Placement converts internal Placement into ec2.Placement
-func GenerateEC2Placement(p *manualv1alpha1.Placement) *ec2.Placement {
+func GenerateEC2Placement(p *manualv1alpha1.Placement) *types.Placement {
 	if p != nil {
-		return &ec2.Placement{
+		return &types.Placement{
 			Affinity:             p.Affinity,
 			AvailabilityZone:     p.AvailabilityZone,
 			GroupName:            p.GroupName,
@@ -715,14 +717,14 @@ func GenerateEC2Placement(p *manualv1alpha1.Placement) *ec2.Placement {
 			HostResourceGroupArn: p.HostResourceGroupARN,
 			PartitionNumber:      p.PartitionNumber,
 			SpreadDomain:         p.SpreadDomain,
-			Tenancy:              ec2.Tenancy(p.Tenancy),
+			Tenancy:              types.Tenancy(p.Tenancy),
 		}
 	}
 	return nil
 }
 
 // GeneratePlacement converts ec2.Placement into an internal Placement
-func GeneratePlacement(p *ec2.Placement) *manualv1alpha1.Placement {
+func GeneratePlacement(p *types.Placement) *manualv1alpha1.Placement {
 	if p != nil {
 		return &manualv1alpha1.Placement{
 			Affinity:             p.Affinity,
@@ -739,7 +741,7 @@ func GeneratePlacement(p *ec2.Placement) *manualv1alpha1.Placement {
 }
 
 // GenerateProductCodes converts ec2.ProductCode into an internal ProductCode
-func GenerateProductCodes(codes []ec2.ProductCode) []manualv1alpha1.ProductCode {
+func GenerateProductCodes(codes []types.ProductCode) []manualv1alpha1.ProductCode {
 	if codes != nil {
 		res := make([]manualv1alpha1.ProductCode, len(codes))
 		for i, c := range codes {
@@ -754,11 +756,11 @@ func GenerateProductCodes(codes []ec2.ProductCode) []manualv1alpha1.ProductCode 
 }
 
 // GenerateEC2PrivateIPAddressSpecs coverts an internal slice of PrivateIPAddressSpecification into a slice of ec2.PrivateIpAddressSpecification
-func GenerateEC2PrivateIPAddressSpecs(specs []manualv1alpha1.PrivateIPAddressSpecification) []ec2.PrivateIpAddressSpecification {
+func GenerateEC2PrivateIPAddressSpecs(specs []manualv1alpha1.PrivateIPAddressSpecification) []types.PrivateIpAddressSpecification {
 	if specs != nil {
-		res := make([]ec2.PrivateIpAddressSpecification, len(specs))
+		res := make([]types.PrivateIpAddressSpecification, len(specs))
 		for i, s := range specs {
-			res[i] = ec2.PrivateIpAddressSpecification{
+			res[i] = types.PrivateIpAddressSpecification{
 				Primary:          s.Primary,
 				PrivateIpAddress: s.PrivateIPAddress,
 			}
@@ -785,18 +787,18 @@ func GenerateEC2RunInstancesInput(name string, p *manualv1alpha1.InstanceParamet
 		HibernationOptions:                GenerateEC2HibernationOptions(p.HibernationOptions),
 		IamInstanceProfile:                GenerateEC2IAMInstanceProfileSpecification(p.IAMInstanceProfile),
 		ImageId:                           p.ImageID,
-		InstanceInitiatedShutdownBehavior: ec2.ShutdownBehavior(p.InstanceInitiatedShutdownBehavior),
+		InstanceInitiatedShutdownBehavior: types.ShutdownBehavior(p.InstanceInitiatedShutdownBehavior),
 		InstanceMarketOptions:             GenerateEC2InstanceMarketOptionsRequest(p.InstanceMarketOptions),
-		InstanceType:                      ec2.InstanceType(p.InstanceType),
+		InstanceType:                      types.InstanceType(p.InstanceType),
 		Ipv6AddressCount:                  p.IPv6AddressCount,
 		Ipv6Addresses:                     GenerateEC2InstanceIPV6Addresses(p.IPv6Addresses),
 		KernelId:                          p.KernelID,
 		KeyName:                           p.KeyName,
 		LaunchTemplate:                    GenerateEC2LaunchTemplateSpec(p.LaunchTemplate),
 		LicenseSpecifications:             GenerateEC2LicenseConfigurationRequest(p.LicenseSpecifications),
-		MaxCount:                          aws.Int64(1),
+		MaxCount:                          aws.Int32(1),
 		MetadataOptions:                   GenerateEC2InstanceMetadataOptionsRequest(p.MetadataOptions),
-		MinCount:                          aws.Int64(1),
+		MinCount:                          aws.Int32(1),
 		Monitoring:                        GenerateEC2Monitoring(p.Monitoring),
 		NetworkInterfaces:                 GenerateEC2InstanceNetworkInterfaceSpecs(p.NetworkInterfaces),
 		Placement:                         GenerateEC2Placement(p.Placement),
@@ -810,7 +812,7 @@ func GenerateEC2RunInstancesInput(name string, p *manualv1alpha1.InstanceParamet
 }
 
 // GenerateStateReason converts ec2.StateReason into an internal StateReason
-func GenerateStateReason(r *ec2.StateReason) *manualv1alpha1.StateReason {
+func GenerateStateReason(r *types.StateReason) *manualv1alpha1.StateReason {
 	if r != nil {
 		return &manualv1alpha1.StateReason{
 			Code:    r.Code,
@@ -821,7 +823,7 @@ func GenerateStateReason(r *ec2.StateReason) *manualv1alpha1.StateReason {
 }
 
 // GenerateTags converts a slice of ec2.Tag into an internal slice of Tag.
-func GenerateTags(tags []ec2.Tag) []manualv1alpha1.Tag {
+func GenerateTags(tags []types.Tag) []manualv1alpha1.Tag {
 	if tags != nil {
 		res := make([]manualv1alpha1.Tag, len(tags))
 		for i, t := range tags {
@@ -837,17 +839,17 @@ func GenerateTags(tags []ec2.Tag) []manualv1alpha1.Tag {
 
 // GenerateEC2TagSpecifications takes a slice of TagSpecifications and converts it to a
 // slice of ec2.TagSpecification
-func GenerateEC2TagSpecifications(tagSpecs []manualv1alpha1.TagSpecification) []ec2.TagSpecification {
+func GenerateEC2TagSpecifications(tagSpecs []manualv1alpha1.TagSpecification) []types.TagSpecification {
 	if tagSpecs != nil {
-		res := make([]ec2.TagSpecification, len(tagSpecs))
+		res := make([]types.TagSpecification, len(tagSpecs))
 		for i, ts := range tagSpecs {
-			res[i] = ec2.TagSpecification{
-				ResourceType: ec2.ResourceType(*ts.ResourceType),
+			res[i] = types.TagSpecification{
+				ResourceType: types.ResourceType(*ts.ResourceType),
 			}
 
-			tags := make([]ec2.Tag, len(ts.Tags))
+			tags := make([]types.Tag, len(ts.Tags))
 			for i, t := range ts.Tags {
-				tags[i] = ec2.Tag{
+				tags[i] = types.Tag{
 					Key:   aws.String(t.Key),
 					Value: aws.String(t.Value),
 				}
@@ -864,10 +866,10 @@ func GenerateEC2TagSpecifications(tagSpecs []manualv1alpha1.TagSpecification) []
 // Instances by the external labels.
 func GenerateDescribeInstancesByExternalTags(extTags map[string]string) *ec2.DescribeInstancesInput {
 
-	ec2Filters := make([]ec2.Filter, len(extTags))
+	ec2Filters := make([]types.Filter, len(extTags))
 	i := 0
 	for k, v := range extTags {
-		ec2Filters[i] = ec2.Filter{
+		ec2Filters[i] = types.Filter{
 			Name:   aws.String(fmt.Sprintf("tag:%s", k)),
 			Values: []string{v},
 		}
@@ -893,17 +895,17 @@ func FromTimePtr(t *time.Time) *metav1.Time {
 }
 
 // attributeBoolValue helps will comparing bool values against nested pointers
-func attributeBoolValue(v *ec2.AttributeBooleanValue) bool {
+func attributeBoolValue(v *types.AttributeBooleanValue) bool {
 	if v == nil {
 		return false
 	}
-	return aws.BoolValue(v.Value)
+	return awsclients.BoolValue(v.Value)
 }
 
 // attributeValue helps will comparing string values against nested pointers
-func attributeValue(v *ec2.AttributeValue) string {
+func attributeValue(v *types.AttributeValue) string {
 	if v == nil {
 		return ""
 	}
-	return aws.StringValue(v.Value)
+	return awsclients.StringValue(v.Value)
 }

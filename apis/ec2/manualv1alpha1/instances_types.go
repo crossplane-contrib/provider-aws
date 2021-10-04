@@ -139,7 +139,7 @@ type InstanceParameters struct {
 	// You cannot specify this option and the network interfaces option in the same
 	// request.
 	// +optional
-	IPv6AddressCount *int64 `json:"ipv6AddressCount,omitempty"`
+	IPv6AddressCount *int32 `json:"ipv6AddressCount,omitempty"`
 
 	// [EC2-VPC] The IPv6 addresses from the range of the subnet to associate with
 	// the primary network interface. You cannot specify this option and the option
@@ -295,7 +295,7 @@ type InstanceStatus struct {
 // follow the Instance response object as closely as possible.
 type InstanceObservation struct {
 	// +optional
-	AmiLaunchIndex *int64 `json:"amiLaunchIndex,omitempty"`
+	AmiLaunchIndex *int32 `json:"amiLaunchIndex,omitempty"`
 	Architecture   string `json:"architecture"`
 	// +optional
 	BlockDeviceMapping []InstanceBlockDeviceMapping `json:"blockDeviceMapping,omitempty"`

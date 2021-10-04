@@ -65,12 +65,12 @@ func (in *CPUOptionsRequest) DeepCopyInto(out *CPUOptionsRequest) {
 	*out = *in
 	if in.CoreCount != nil {
 		in, out := &in.CoreCount, &out.CoreCount
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.ThreadsPerCore != nil {
 		in, out := &in.ThreadsPerCore, &out.ThreadsPerCore
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 }
@@ -180,7 +180,7 @@ func (in *EBSBlockDevice) DeepCopyInto(out *EBSBlockDevice) {
 	}
 	if in.IOps != nil {
 		in, out := &in.IOps, &out.IOps
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.KmsKeyID != nil {
@@ -195,7 +195,7 @@ func (in *EBSBlockDevice) DeepCopyInto(out *EBSBlockDevice) {
 	}
 	if in.VolumeSize != nil {
 		in, out := &in.VolumeSize, &out.VolumeSize
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 }
@@ -299,7 +299,7 @@ func (in *ElasticInferenceAccelerator) DeepCopyInto(out *ElasticInferenceAcceler
 	*out = *in
 	if in.Count != nil {
 		in, out := &in.Count, &out.Count
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.Type != nil {
@@ -567,7 +567,7 @@ func (in *InstanceMetadataOptionsRequest) DeepCopyInto(out *InstanceMetadataOpti
 	*out = *in
 	if in.HTTPPutResponseHopLimit != nil {
 		in, out := &in.HTTPPutResponseHopLimit, &out.HTTPPutResponseHopLimit
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 }
@@ -725,7 +725,7 @@ func (in *InstanceNetworkInterfaceAttachment) DeepCopyInto(out *InstanceNetworkI
 	}
 	if in.DeviceIndex != nil {
 		in, out := &in.DeviceIndex, &out.DeviceIndex
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 }
@@ -760,7 +760,7 @@ func (in *InstanceNetworkInterfaceSpecification) DeepCopyInto(out *InstanceNetwo
 	}
 	if in.DeviceIndex != nil {
 		in, out := &in.DeviceIndex, &out.DeviceIndex
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.Groups != nil {
@@ -775,7 +775,7 @@ func (in *InstanceNetworkInterfaceSpecification) DeepCopyInto(out *InstanceNetwo
 	}
 	if in.IPv6AddressCount != nil {
 		in, out := &in.IPv6AddressCount, &out.IPv6AddressCount
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.IPv6Addresses != nil {
@@ -804,7 +804,7 @@ func (in *InstanceNetworkInterfaceSpecification) DeepCopyInto(out *InstanceNetwo
 	}
 	if in.SecondaryPrivateIPAddressCount != nil {
 		in, out := &in.SecondaryPrivateIPAddressCount, &out.SecondaryPrivateIPAddressCount
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.SubnetID != nil {
@@ -829,7 +829,7 @@ func (in *InstanceObservation) DeepCopyInto(out *InstanceObservation) {
 	*out = *in
 	if in.AmiLaunchIndex != nil {
 		in, out := &in.AmiLaunchIndex, &out.AmiLaunchIndex
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.BlockDeviceMapping != nil {
@@ -1116,7 +1116,7 @@ func (in *InstanceParameters) DeepCopyInto(out *InstanceParameters) {
 	}
 	if in.IPv6AddressCount != nil {
 		in, out := &in.IPv6AddressCount, &out.IPv6AddressCount
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.IPv6Addresses != nil {
@@ -1408,7 +1408,7 @@ func (in *Placement) DeepCopyInto(out *Placement) {
 	}
 	if in.PartitionNumber != nil {
 		in, out := &in.PartitionNumber, &out.PartitionNumber
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.SpreadDomain != nil {
@@ -1498,7 +1498,7 @@ func (in *SpotMarketOptions) DeepCopyInto(out *SpotMarketOptions) {
 	*out = *in
 	if in.BlockDurationMinutes != nil {
 		in, out := &in.BlockDurationMinutes, &out.BlockDurationMinutes
-		*out = new(int64)
+		*out = new(int32)
 		**out = **in
 	}
 	if in.MaxPrice != nil {

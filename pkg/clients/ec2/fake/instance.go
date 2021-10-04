@@ -17,6 +17,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 
 	clientset "github.com/crossplane/provider-aws/pkg/clients/ec2"
@@ -27,40 +29,40 @@ var _ clientset.InstanceClient = (*MockInstanceClient)(nil)
 
 // MockInstanceClient is a type that implements all the methods for MockInstanceClient interface
 type MockInstanceClient struct {
-	MockRunInstancesRequest              func(*ec2.RunInstancesInput) ec2.RunInstancesRequest
-	MockTerminateInstancesRequest        func(*ec2.TerminateInstancesInput) ec2.TerminateInstancesRequest
-	MockDescribeInstancesRequest         func(*ec2.DescribeInstancesInput) ec2.DescribeInstancesRequest
-	MockDescribeInstanceAttributeRequest func(*ec2.DescribeInstanceAttributeInput) ec2.DescribeInstanceAttributeRequest
-	MockModifyInstanceAttributeRequest   func(*ec2.ModifyInstanceAttributeInput) ec2.ModifyInstanceAttributeRequest
-	MockCreateTagsRequest                func(*ec2.CreateTagsInput) ec2.CreateTagsRequest
+	MockRunInstances              func(context.Context, *ec2.RunInstancesInput, []func(*ec2.Options)) (*ec2.RunInstancesOutput, error)
+	MockTerminateInstances        func(context.Context, *ec2.TerminateInstancesInput, []func(*ec2.Options)) (*ec2.TerminateInstancesOutput, error)
+	MockDescribeInstances         func(context.Context, *ec2.DescribeInstancesInput, []func(*ec2.Options)) (*ec2.DescribeInstancesOutput, error)
+	MockDescribeInstanceAttribute func(context.Context, *ec2.DescribeInstanceAttributeInput, []func(*ec2.Options)) (*ec2.DescribeInstanceAttributeOutput, error)
+	MockModifyInstanceAttribute   func(context.Context, *ec2.ModifyInstanceAttributeInput, []func(*ec2.Options)) (*ec2.ModifyInstanceAttributeOutput, error)
+	MockCreateTags                func(context.Context, *ec2.CreateTagsInput, []func(*ec2.Options)) (*ec2.CreateTagsOutput, error)
 }
 
-// RunInstancesRequest mocks RunInstancesRequest method
-func (m *MockInstanceClient) RunInstancesRequest(input *ec2.RunInstancesInput) ec2.RunInstancesRequest {
-	return m.MockRunInstancesRequest(input)
+// RunInstances mocks RunInstances method
+func (m *MockInstanceClient) RunInstances(ctx context.Context, input *ec2.RunInstancesInput, opts ...func(*ec2.Options)) (*ec2.RunInstancesOutput, error) {
+	return m.MockRunInstances(ctx, input, opts)
 }
 
-// TerminateInstancesRequest mocks TerminateInstancesRequest method
-func (m *MockInstanceClient) TerminateInstancesRequest(input *ec2.TerminateInstancesInput) ec2.TerminateInstancesRequest {
-	return m.MockTerminateInstancesRequest(input)
+// TerminateInstances mocks TerminateInstances method
+func (m *MockInstanceClient) TerminateInstances(ctx context.Context, input *ec2.TerminateInstancesInput, opts ...func(*ec2.Options)) (*ec2.TerminateInstancesOutput, error) {
+	return m.MockTerminateInstances(ctx, input, opts)
 }
 
-// DescribeInstancesRequest mocks DescribeInstancesRequest method
-func (m *MockInstanceClient) DescribeInstancesRequest(input *ec2.DescribeInstancesInput) ec2.DescribeInstancesRequest {
-	return m.MockDescribeInstancesRequest(input)
+// DescribeInstances mocks DescribeInstances method
+func (m *MockInstanceClient) DescribeInstances(ctx context.Context, input *ec2.DescribeInstancesInput, opts ...func(*ec2.Options)) (*ec2.DescribeInstancesOutput, error) {
+	return m.MockDescribeInstances(ctx, input, opts)
 }
 
-// DescribeInstanceAttributeRequest mocks DescribeInstanceAttributeRequest method
-func (m *MockInstanceClient) DescribeInstanceAttributeRequest(input *ec2.DescribeInstanceAttributeInput) ec2.DescribeInstanceAttributeRequest {
-	return m.MockDescribeInstanceAttributeRequest(input)
+// DescribeInstanceAttribute mocks DescribeInstanceAttribute method
+func (m *MockInstanceClient) DescribeInstanceAttribute(ctx context.Context, input *ec2.DescribeInstanceAttributeInput, opts ...func(*ec2.Options)) (*ec2.DescribeInstanceAttributeOutput, error) {
+	return m.MockDescribeInstanceAttribute(ctx, input, opts)
 }
 
-// ModifyInstanceAttributeRequest mocks ModifyInstanceAttributeRequest method
-func (m *MockInstanceClient) ModifyInstanceAttributeRequest(input *ec2.ModifyInstanceAttributeInput) ec2.ModifyInstanceAttributeRequest {
-	return m.MockModifyInstanceAttributeRequest(input)
+// ModifyInstanceAttribute mocks ModifyInstanceAttribute method
+func (m *MockInstanceClient) ModifyInstanceAttribute(ctx context.Context, input *ec2.ModifyInstanceAttributeInput, opts ...func(*ec2.Options)) (*ec2.ModifyInstanceAttributeOutput, error) {
+	return m.MockModifyInstanceAttribute(ctx, input, opts)
 }
 
-// CreateTagsRequest mocks CreateTagsRequest method
-func (m *MockInstanceClient) CreateTagsRequest(input *ec2.CreateTagsInput) ec2.CreateTagsRequest {
-	return m.MockCreateTagsRequest(input)
+// CreateTags mocks CreateTags method
+func (m *MockInstanceClient) CreateTags(ctx context.Context, input *ec2.CreateTagsInput, opts ...func(*ec2.Options)) (*ec2.CreateTagsOutput, error) {
+	return m.MockCreateTags(ctx, input, opts)
 }

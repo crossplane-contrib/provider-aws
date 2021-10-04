@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
+    controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
   name: instances.ec2.aws.crossplane.io
 spec:
@@ -144,7 +144,7 @@ spec:
                                 Condition: This parameter is required for requests
                                 to create io1 volumes; it is not used in requests
                                 to create gp2, st1, sc1, or standard volumes."
-                              format: int64
+                              format: int32
                               type: integer
                             kmsKeyId:
                               description: "Identifier (key ID, key alias, ID ARN,
@@ -168,7 +168,7 @@ spec:
                                 for Cold HDD (sc1), and 1-1024 for Magnetic (standard)
                                 volumes. If you specify a snapshot, the volume size
                                 must be equal to or larger than the snapshot size."
-                              format: int64
+                              format: int32
                               type: integer
                             volumeType:
                               description: "The volume type. If you set the type to
@@ -255,13 +255,13 @@ spec:
                     properties:
                       coreCount:
                         description: The number of CPU cores for the instance.
-                        format: int64
+                        format: int32
                         type: integer
                       threadsPerCore:
                         description: The number of threads per CPU core. To disable
                           multithreading for the instance, specify a value of 1. Otherwise,
                           specify the default value of 2.
-                        format: int64
+                        format: int32
                         type: integer
                     required:
                     - coreCount
@@ -314,7 +314,7 @@ spec:
                         count:
                           description: "The number of elastic inference accelerators
                             to attach to the instance. \n Default: 1"
-                          format: int64
+                          format: int32
                           type: integer
                         type:
                           description: "The type of elastic inference accelerator.
@@ -375,7 +375,7 @@ spec:
                               (also known as Spot blocks), in minutes. This value
                               must be a multiple of 60 (60, 120, 180, 240, 300, or
                               360).
-                            format: int64
+                            format: int32
                             type: integer
                           instanceInterruptionBehavior:
                             description: The behavior when a Spot Instance is interrupted.
@@ -431,7 +431,7 @@ spec:
                       in the same request. You can specify this option if you've specified
                       a minimum number of instances to launch. \n You cannot specify
                       this option and the network interfaces option in the same request."
-                    format: int64
+                    format: int32
                     type: integer
                   ipv6Addresses:
                     description: "[EC2-VPC] The IPv6 addresses from the range of the
@@ -517,7 +517,7 @@ spec:
                           instance metadata requests. The larger the number, the further
                           instance metadata requests can travel. \n Default: 1 \n
                           Possible values: Integers from 1 to 64"
-                        format: int64
+                        format: int32
                         type: integer
                       httpTokens:
                         description: "The state of token usage for your instance metadata
@@ -585,7 +585,7 @@ spec:
                             attachment order. A primary network interface has a device
                             index of 0. \n If you specify a network interface when
                             launching an instance, you must specify the device index."
-                          format: int64
+                          format: int32
                           type: integer
                         groups:
                           description: The IDs of the security groups for the network
@@ -612,7 +612,7 @@ spec:
                             option and the option to assign specific IPv6 addresses
                             in the same request. You can specify this option if you've
                             specified a minimum number of instances to launch.
-                          format: int64
+                          format: int32
                           type: integer
                         ipv6Addresses:
                           description: One or more IPv6 addresses to assign to the
@@ -672,7 +672,7 @@ spec:
                             You cannot specify this option if you're launching more
                             than one instance in a RunInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html)
                             request.
-                          format: int64
+                          format: int32
                           type: integer
                         subnetId:
                           description: The ID of the subnet associated with the network
@@ -724,7 +724,7 @@ spec:
                           in. Valid only if the placement group strategy is set to
                           partition. \n This parameter is not supported by CreateFleet
                           (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet)."
-                        format: int64
+                        format: int32
                         type: integer
                       spreadDomain:
                         description: "Reserved for future use. \n This parameter is
@@ -985,7 +985,7 @@ spec:
                   closely as possible.
                 properties:
                   amiLaunchIndex:
-                    format: int64
+                    format: int32
                     type: integer
                   architecture:
                     type: string
@@ -1067,13 +1067,13 @@ spec:
                     properties:
                       coreCount:
                         description: The number of CPU cores for the instance.
-                        format: int64
+                        format: int32
                         type: integer
                       threadsPerCore:
                         description: The number of threads per CPU core. To disable
                           multithreading for the instance, specify a value of 1. Otherwise,
                           specify the default value of 2.
-                        format: int64
+                        format: int32
                         type: integer
                     required:
                     - coreCount
@@ -1211,7 +1211,7 @@ spec:
                           instance metadata requests. The larger the number, the further
                           instance metadata requests can travel. \n Default: 1 \n
                           Possible values: Integers from 1 to 64"
-                        format: int64
+                        format: int32
                         type: integer
                       httpTokens:
                         description: "The state of token usage for your instance metadata
@@ -1280,7 +1280,7 @@ spec:
                             deviceIndex:
                               description: The index of the device on the instance
                                 for the network interface attachment.
-                              format: int64
+                              format: int32
                               type: integer
                             status:
                               description: The attachment state.
@@ -1439,7 +1439,7 @@ spec:
                           in. Valid only if the placement group strategy is set to
                           partition. \n This parameter is not supported by CreateFleet
                           (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet)."
-                        format: int64
+                        format: int32
                         type: integer
                       spreadDomain:
                         description: "Reserved for future use. \n This parameter is

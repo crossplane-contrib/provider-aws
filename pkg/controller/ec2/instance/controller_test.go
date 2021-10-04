@@ -18,7 +18,6 @@ package instance
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -34,6 +33,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsec2 "github.com/aws/aws-sdk-go-v2/service/ec2"
+	types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	"github.com/crossplane/provider-aws/apis/ec2/manualv1alpha1"
 	awsclient "github.com/crossplane/provider-aws/pkg/clients"
@@ -109,44 +109,40 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				instance: &fake.MockInstanceClient{
-					MockDescribeInstancesRequest: func(input *awsec2.DescribeInstancesInput) awsec2.DescribeInstancesRequest {
-						return awsec2.DescribeInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeInstancesOutput{
-								Reservations: []awsec2.Reservation{{
-									Instances: []awsec2.Instance{
-										{
-											InstanceId:   &instanceID,
-											InstanceType: awsec2.InstanceTypeM1Small,
-											State: &awsec2.InstanceState{
-												Name: awsec2.InstanceStateNameRunning,
-											},
+					MockDescribeInstances: func(ctx context.Context, input *awsec2.DescribeInstancesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeInstancesOutput, error) {
+						return &awsec2.DescribeInstancesOutput{
+							Reservations: []types.Reservation{{
+								Instances: []types.Instance{
+									{
+										InstanceId:   &instanceID,
+										InstanceType: types.InstanceTypeM1Small,
+										State: &types.InstanceState{
+											Name: types.InstanceStateNameRunning,
 										},
 									},
-								}},
-							}},
-						}
-					},
-					MockDescribeInstanceAttributeRequest: func(input *awsec2.DescribeInstanceAttributeInput) awsec2.DescribeInstanceAttributeRequest {
-						return awsec2.DescribeInstanceAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeInstanceAttributeOutput{
-								InstanceId: &instanceID,
-								InstanceType: &awsec2.AttributeValue{
-									Value: aws.String(string(awsec2.InstanceTypeM1Small)),
 								},
 							}},
-						}
+						}, nil
+					},
+					MockDescribeInstanceAttribute: func(ctx context.Context, input *awsec2.DescribeInstanceAttributeInput, opts []func(*awsec2.Options)) (*awsec2.DescribeInstanceAttributeOutput, error) {
+						return &awsec2.DescribeInstanceAttributeOutput{
+							InstanceId: &instanceID,
+							InstanceType: &types.AttributeValue{
+								Value: aws.String(string(types.InstanceTypeM1Small)),
+							},
+						}, nil
 					},
 				},
 				cr: instance(withSpec(manualv1alpha1.InstanceParameters{
-					InstanceType: string(awsec2.InstanceTypeM1Small),
+					InstanceType: string(types.InstanceTypeM1Small),
 				}), withExternalName(instanceID)),
 			},
 			want: want{
 				cr: instance(withSpec(manualv1alpha1.InstanceParameters{
-					InstanceType: string(awsec2.InstanceTypeM1Small),
+					InstanceType: string(types.InstanceTypeM1Small),
 				}), withStatus(manualv1alpha1.InstanceObservation{
 					InstanceID:   &instanceID,
-					InstanceType: string(awsec2.InstanceTypeM1Small),
+					InstanceType: string(types.InstanceTypeM1Small),
 					State:        "running",
 				}), withExternalName(instanceID),
 					withConditions(xpv1.Available())),
@@ -162,38 +158,36 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				instance: &fake.MockInstanceClient{
-					MockDescribeInstancesRequest: func(input *awsec2.DescribeInstancesInput) awsec2.DescribeInstancesRequest {
-						return awsec2.DescribeInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeInstancesOutput{
-								Reservations: []awsec2.Reservation{{
-									Instances: []awsec2.Instance{
-										{
-											InstanceId:   &instanceID,
-											InstanceType: awsec2.InstanceTypeM1Small,
-											State: &awsec2.InstanceState{
-												Name: awsec2.InstanceStateNameRunning,
-											},
-										},
-										{
-											InstanceId:   &instanceID,
-											InstanceType: awsec2.InstanceTypeM1Small,
-											State: &awsec2.InstanceState{
-												Name: awsec2.InstanceStateNameRunning,
-											},
+					MockDescribeInstances: func(ctx context.Context, input *awsec2.DescribeInstancesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeInstancesOutput, error) {
+						return &awsec2.DescribeInstancesOutput{
+							Reservations: []types.Reservation{{
+								Instances: []types.Instance{
+									{
+										InstanceId:   &instanceID,
+										InstanceType: types.InstanceTypeM1Small,
+										State: &types.InstanceState{
+											Name: types.InstanceStateNameRunning,
 										},
 									},
-								}},
+									{
+										InstanceId:   &instanceID,
+										InstanceType: types.InstanceTypeM1Small,
+										State: &types.InstanceState{
+											Name: types.InstanceStateNameRunning,
+										},
+									},
+								},
 							}},
-						}
+						}, nil
 					},
 				},
 				cr: instance(withSpec(manualv1alpha1.InstanceParameters{
-					InstanceType: string(awsec2.InstanceTypeM1Small),
+					InstanceType: string(types.InstanceTypeM1Small),
 				}), withExternalName(instanceID)),
 			},
 			want: want{
 				cr: instance(withSpec(manualv1alpha1.InstanceParameters{
-					InstanceType: string(awsec2.InstanceTypeM1Small),
+					InstanceType: string(types.InstanceTypeM1Small),
 				}), withExternalName(instanceID)),
 				err: errors.New(errMultipleItems),
 			},
@@ -204,19 +198,17 @@ func TestObserve(t *testing.T) {
 					MockUpdate: test.NewMockClient().Update,
 				},
 				instance: &fake.MockInstanceClient{
-					MockDescribeInstancesRequest: func(input *awsec2.DescribeInstancesInput) awsec2.DescribeInstancesRequest {
-						return awsec2.DescribeInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockDescribeInstances: func(ctx context.Context, input *awsec2.DescribeInstancesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeInstancesOutput, error) {
+						return &awsec2.DescribeInstancesOutput{}, errBoom
 					},
 				},
 				cr: instance(withSpec(manualv1alpha1.InstanceParameters{
-					InstanceType: string(awsec2.InstanceTypeM1Small),
+					InstanceType: string(types.InstanceTypeM1Small),
 				}), withExternalName(instanceID)),
 			},
 			want: want{
 				cr: instance(withSpec(manualv1alpha1.InstanceParameters{
-					InstanceType: string(awsec2.InstanceTypeM1Small),
+					InstanceType: string(types.InstanceTypeM1Small),
 				}), withExternalName(instanceID)),
 				err: awsclient.Wrap(errBoom, errDescribe),
 			},
@@ -255,21 +247,17 @@ func TestCreate(t *testing.T) {
 		"Successful": {
 			args: args{
 				instance: &fake.MockInstanceClient{
-					MockRunInstancesRequest: func(input *awsec2.RunInstancesInput) awsec2.RunInstancesRequest {
-						return awsec2.RunInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.RunInstancesOutput{
-								Instances: []awsec2.Instance{
-									{
-										InstanceId: &instanceID,
-									},
+					MockRunInstances: func(ctx context.Context, input *awsec2.RunInstancesInput, opts []func(*awsec2.Options)) (*awsec2.RunInstancesOutput, error) {
+						return &awsec2.RunInstancesOutput{
+							Instances: []types.Instance{
+								{
+									InstanceId: &instanceID,
 								},
-							}},
-						}
+							},
+						}, nil
 					},
-					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
-						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
-						}
+					MockCreateTags: func(ctx context.Context, input *awsec2.CreateTagsInput, opts []func(*awsec2.Options)) (*awsec2.CreateTagsOutput, error) {
+						return &awsec2.CreateTagsOutput{}, nil
 					},
 				},
 				cr: instance(),
@@ -282,15 +270,11 @@ func TestCreate(t *testing.T) {
 		"CreateFail": {
 			args: args{
 				instance: &fake.MockInstanceClient{
-					MockRunInstancesRequest: func(input *awsec2.RunInstancesInput) awsec2.RunInstancesRequest {
-						return awsec2.RunInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockRunInstances: func(ctx context.Context, input *awsec2.RunInstancesInput, opts []func(*awsec2.Options)) (*awsec2.RunInstancesOutput, error) {
+						return &awsec2.RunInstancesOutput{}, errBoom
 					},
-					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
-						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
-						}
+					MockCreateTags: func(ctx context.Context, input *awsec2.CreateTagsInput, opts []func(*awsec2.Options)) (*awsec2.CreateTagsOutput, error) {
+						return &awsec2.CreateTagsOutput{}, nil
 					},
 				},
 				cr: instance(),
@@ -333,25 +317,21 @@ func TestDelete(t *testing.T) {
 		"Successful": {
 			args: args{
 				instance: &fake.MockInstanceClient{
-					MockTerminateInstancesRequest: func(input *awsec2.TerminateInstancesInput) awsec2.TerminateInstancesRequest {
-						return awsec2.TerminateInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.TerminateInstancesOutput{}},
-						}
+					MockTerminateInstances: func(ctx context.Context, input *awsec2.TerminateInstancesInput, opts []func(*awsec2.Options)) (*awsec2.TerminateInstancesOutput, error) {
+						return &awsec2.TerminateInstancesOutput{}, nil
 					},
-					MockDescribeInstancesRequest: func(input *awsec2.DescribeInstancesInput) awsec2.DescribeInstancesRequest {
-						return awsec2.DescribeInstancesRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.DescribeInstancesOutput{
-								Reservations: []awsec2.Reservation{
-									{
-										Instances: []awsec2.Instance{
-											{
-												InstanceId: aws.String(instanceID),
-											},
+					MockDescribeInstances: func(ctx context.Context, input *awsec2.DescribeInstancesInput, opts []func(*awsec2.Options)) (*awsec2.DescribeInstancesOutput, error) {
+						return &awsec2.DescribeInstancesOutput{
+							Reservations: []types.Reservation{
+								{
+									Instances: []types.Instance{
+										{
+											InstanceId: aws.String(instanceID),
 										},
 									},
 								},
-							}},
-						}
+							},
+						}, nil
 					},
 				},
 				cr: instance(),
@@ -391,15 +371,11 @@ func TestUpdate(t *testing.T) {
 		"Successful": {
 			args: args{
 				instance: &fake.MockInstanceClient{
-					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
-						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.CreateTagsOutput{}},
-						}
+					MockCreateTags: func(ctx context.Context, input *awsec2.CreateTagsInput, opts []func(*awsec2.Options)) (*awsec2.CreateTagsOutput, error) {
+						return &awsec2.CreateTagsOutput{}, nil
 					},
-					MockModifyInstanceAttributeRequest: func(input *awsec2.ModifyInstanceAttributeInput) awsec2.ModifyInstanceAttributeRequest {
-						return awsec2.ModifyInstanceAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
-						}
+					MockModifyInstanceAttribute: func(ctx context.Context, input *awsec2.ModifyInstanceAttributeInput, opts []func(*awsec2.Options)) (*awsec2.ModifyInstanceAttributeOutput, error) {
+						return &awsec2.ModifyInstanceAttributeOutput{}, nil
 					},
 				},
 				cr: instance(withSpec(manualv1alpha1.InstanceParameters{})),
@@ -411,15 +387,11 @@ func TestUpdate(t *testing.T) {
 		"ModifyFailed": {
 			args: args{
 				instance: &fake.MockInstanceClient{
-					MockCreateTagsRequest: func(input *awsec2.CreateTagsInput) awsec2.CreateTagsRequest {
-						return awsec2.CreateTagsRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Error: errBoom},
-						}
+					MockCreateTags: func(ctx context.Context, input *awsec2.CreateTagsInput, opts []func(*awsec2.Options)) (*awsec2.CreateTagsOutput, error) {
+						return &awsec2.CreateTagsOutput{}, errBoom
 					},
-					MockModifyInstanceAttributeRequest: func(input *awsec2.ModifyInstanceAttributeInput) awsec2.ModifyInstanceAttributeRequest {
-						return awsec2.ModifyInstanceAttributeRequest{
-							Request: &aws.Request{HTTPRequest: &http.Request{}, Retryer: aws.NoOpRetryer{}, Data: &awsec2.ModifyVpcAttributeOutput{}},
-						}
+					MockModifyInstanceAttribute: func(ctx context.Context, input *awsec2.ModifyInstanceAttributeInput, opts []func(*awsec2.Options)) (*awsec2.ModifyInstanceAttributeOutput, error) {
+						return &awsec2.ModifyInstanceAttributeOutput{}, nil
 					},
 				},
 				cr: instance(withSpec(manualv1alpha1.InstanceParameters{})),

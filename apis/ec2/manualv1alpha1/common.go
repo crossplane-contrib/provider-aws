@@ -20,8 +20,10 @@ import (
 	"sort"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	awsclients "github.com/crossplane/provider-aws/pkg/clients"
 )
 
 // BlockDeviceMapping describes a block device mapping.
@@ -112,11 +114,11 @@ type CapacityReservationTarget struct {
 // must be specified in the request.
 type CPUOptionsRequest struct {
 	// The number of CPU cores for the instance.
-	CoreCount *int64 `json:"coreCount"`
+	CoreCount *int32 `json:"coreCount"`
 
 	// The number of threads per CPU core. To disable multithreading for the instance,
 	// specify a value of 1. Otherwise, specify the default value of 2.
-	ThreadsPerCore *int64 `json:"threadsPerCore"`
+	ThreadsPerCore *int32 `json:"threadsPerCore"`
 }
 
 // CreditSpecificationRequest describes the credit option for CPU usage of a T2 or T3 instance.
@@ -167,7 +169,7 @@ type EBSBlockDevice struct {
 	//
 	// Condition: This parameter is required for requests to create io1 volumes;
 	// it is not used in requests to create gp2, st1, sc1, or standard volumes.
-	IOps *int64 `json:"iops"`
+	IOps *int32 `json:"iops"`
 
 	// Identifier (key ID, key alias, ID ARN, or alias ARN) for a customer managed
 	// CMK under which the EBS volume is encrypted.
@@ -191,7 +193,7 @@ type EBSBlockDevice struct {
 	// Cold HDD (sc1), and 1-1024 for Magnetic (standard) volumes. If you specify
 	// a snapshot, the volume size must be equal to or larger than the snapshot
 	// size.
-	VolumeSize *int64 `json:"volumeSize"`
+	VolumeSize *int32 `json:"volumeSize"`
 
 	// The volume type. If you set the type to io1, you must also specify the Iops
 	// parameter. If you set the type to gp2, st1, sc1, or standard, you must omit
@@ -248,7 +250,7 @@ type ElasticInferenceAccelerator struct {
 	// The number of elastic inference accelerators to attach to the instance.
 	//
 	// Default: 1
-	Count *int64 `json:"count,omitempty"`
+	Count *int32 `json:"count,omitempty"`
 
 	// The type of elastic inference accelerator. The possible values are eia1.medium,
 	// eia1.large, and eia1.xlarge.
@@ -353,7 +355,7 @@ type InstanceMetadataOptionsRequest struct {
 	//
 	// Possible values: Integers from 1 to 64
 	// +optional
-	HTTPPutResponseHopLimit *int64 `json:"httpPutResponseHopLimit"`
+	HTTPPutResponseHopLimit *int32 `json:"httpPutResponseHopLimit"`
 
 	// The state of token usage for your instance metadata requests. If the parameter
 	// is not specified in the request, the default state is optional.
@@ -472,7 +474,7 @@ type InstanceNetworkInterfaceAttachment struct {
 
 	// The index of the device on the instance for the network interface attachment.
 	// +optional
-	DeviceIndex *int64 `json:"deviceIndex"`
+	DeviceIndex *int32 `json:"deviceIndex"`
 
 	// The attachment state.
 	// +optional
@@ -505,7 +507,7 @@ type InstanceNetworkInterfaceSpecification struct {
 	//
 	// If you specify a network interface when launching an instance, you must specify
 	// the device index.
-	DeviceIndex *int64 `json:"deviceIndex"`
+	DeviceIndex *int32 `json:"deviceIndex"`
 
 	// The IDs of the security groups for the network interface. Applies only if
 	// creating a network interface when launching an instance.
@@ -527,7 +529,7 @@ type InstanceNetworkInterfaceSpecification struct {
 	// request. You can specify this option if you've specified a minimum number
 	// of instances to launch.
 	// +optional
-	IPv6AddressCount *int64 `json:"ipv6AddressCount"`
+	IPv6AddressCount *int32 `json:"ipv6AddressCount"`
 
 	// One or more IPv6 addresses to assign to the network interface. You cannot
 	// specify this option and the option to assign a number of IPv6 addresses in
@@ -566,7 +568,7 @@ type InstanceNetworkInterfaceSpecification struct {
 	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html)
 	// request.
 	// +optional
-	SecondaryPrivateIPAddressCount *int64 `json:"secondaryPrivateIpAddressCount"`
+	SecondaryPrivateIPAddressCount *int32 `json:"secondaryPrivateIpAddressCount"`
 
 	// The ID of the subnet associated with the network interface. Applies only
 	// if creating a network interface when launching an instance.
@@ -670,7 +672,7 @@ type Placement struct {
 	// This parameter is not supported by CreateFleet
 	// (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateFleet).
 	// +optional
-	PartitionNumber *int64 `json:"partitionNumber,omitempty"`
+	PartitionNumber *int32 `json:"partitionNumber,omitempty"`
 
 	// Reserved for future use.
 	//
@@ -725,7 +727,7 @@ type SpotMarketOptions struct {
 	// The required duration for the Spot Instances (also known as Spot blocks),
 	// in minutes. This value must be a multiple of 60 (60, 120, 180, 240, 300,
 	// or 360).
-	BlockDurationMinutes *int64 `json:"blockDurationMinutes"`
+	BlockDurationMinutes *int32 `json:"blockDurationMinutes"`
 
 	// The behavior when a Spot Instance is interrupted. The default is terminate.
 	InstanceInterruptionBehavior string `json:"instanceInterruptionBehavior"`
@@ -827,29 +829,29 @@ type TagSpecification struct {
 }
 
 // BuildFromEC2Tags returns a list of tags, off of the given ec2 tags
-func BuildFromEC2Tags(tags []ec2.Tag) []Tag {
+func BuildFromEC2Tags(tags []types.Tag) []Tag {
 	if len(tags) < 1 {
 		return nil
 	}
 	res := make([]Tag, len(tags))
 	for i, t := range tags {
-		res[i] = Tag{aws.StringValue(t.Key), aws.StringValue(t.Value)}
+		res[i] = Tag{awsclients.StringValue(t.Key), awsclients.StringValue(t.Value)}
 	}
 
 	return res
 }
 
 // GenerateEC2Tags generates a tag array with type that EC2 client expects.
-func GenerateEC2Tags(tags []Tag) []ec2.Tag {
-	res := make([]ec2.Tag, len(tags))
+func GenerateEC2Tags(tags []Tag) []types.Tag {
+	res := make([]types.Tag, len(tags))
 	for i, t := range tags {
-		res[i] = ec2.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
+		res[i] = types.Tag{Key: aws.String(t.Key), Value: aws.String(t.Value)}
 	}
 	return res
 }
 
 // CompareGroupNames compares slices of group names and ec2.GroupIdentifier
-func CompareGroupNames(groupNames []string, ec2Groups []ec2.GroupIdentifier) bool {
+func CompareGroupNames(groupNames []string, ec2Groups []types.GroupIdentifier) bool {
 	if len(groupNames) != len(ec2Groups) {
 		return false
 	}
@@ -866,7 +868,7 @@ func CompareGroupNames(groupNames []string, ec2Groups []ec2.GroupIdentifier) boo
 }
 
 // CompareGroupIDs compares slices of group IDs and ec2.GroupIdentifier
-func CompareGroupIDs(groupIDs []string, ec2Groups []ec2.GroupIdentifier) bool {
+func CompareGroupIDs(groupIDs []string, ec2Groups []types.GroupIdentifier) bool {
 	if len(groupIDs) != len(ec2Groups) {
 		return false
 	}
@@ -883,7 +885,7 @@ func CompareGroupIDs(groupIDs []string, ec2Groups []ec2.GroupIdentifier) bool {
 }
 
 // sortGroupNames sorts slice of string and ec2.GroupIdentifier on 'GroupName'
-func sortGroupNames(groupNames []string, ec2Groups []ec2.GroupIdentifier) {
+func sortGroupNames(groupNames []string, ec2Groups []types.GroupIdentifier) {
 	sort.Strings(groupNames)
 
 	sort.Slice(ec2Groups, func(i, j int) bool {
@@ -892,7 +894,7 @@ func sortGroupNames(groupNames []string, ec2Groups []ec2.GroupIdentifier) {
 }
 
 // sortGroupNames sorts slice of string and ec2.GroupIdentifier on 'GroupName'
-func sortGroupIDs(groupIDs []string, ec2Groups []ec2.GroupIdentifier) {
+func sortGroupIDs(groupIDs []string, ec2Groups []types.GroupIdentifier) {
 	sort.Strings(groupIDs)
 
 	sort.Slice(ec2Groups, func(i, j int) bool {
@@ -901,7 +903,7 @@ func sortGroupIDs(groupIDs []string, ec2Groups []ec2.GroupIdentifier) {
 }
 
 // CompareTags compares arrays of manualv1alpha1.Tag and ec2.Tag
-func CompareTags(tags []Tag, ec2Tags []ec2.Tag) bool {
+func CompareTags(tags []Tag, ec2Tags []types.Tag) bool {
 	if len(tags) != len(ec2Tags) {
 		return false
 	}
@@ -918,7 +920,7 @@ func CompareTags(tags []Tag, ec2Tags []ec2.Tag) bool {
 }
 
 // SortTags sorts array of v1beta1.Tag and ec2.Tag on 'Key'
-func SortTags(tags []Tag, ec2Tags []ec2.Tag) {
+func SortTags(tags []Tag, ec2Tags []types.Tag) {
 	sort.Slice(tags, func(i, j int) bool {
 		return tags[i].Key < tags[j].Key
 	})
